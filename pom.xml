@@ -23,8 +23,7 @@
 	<description>
 		Imixs Workflow provides a platform for an open and standardized workflow technology. 
 		This is the meta project for the Imixs Workflow artefacts 
-		imixs-workflow-core, imixs-workflow-engine, imixs-workflow-faces
-		and imixs-workflow-jax-rs
+		imixs-workflow-core, imixs-workflow-engine, imixs-workflow-faces and imixs-workflow-jax-rs
 	</description>
 
 	<url>https://github.com/imixs/imixs-workflow</url>
