@@ -12,6 +12,7 @@
 
 	<description>Imixs Workflow REST Service API provides a servlet implementation for the Imixs JEE Workflow Components.</description>
 
+<!-- 
 	<scm>
 		<connection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-jax-rs/trunk</connection>
 		<developerConnection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-jax-rs/trunk</developerConnection>
@@ -28,7 +29,7 @@
 			<comments>All the results of the imixs workflow project are subject to the GPL licensing model. </comments>
 		</license>
 	</licenses>
-
+ -->
 
 	<build>
 

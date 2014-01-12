@@ -13,7 +13,7 @@
   		The Imixs Workflow JSF Utilities simplify the usage of the Java EE components in a web module    
   	</description>
  
-
+<!--  
 	<scm>
 		<connection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-faces/trunk</connection>
 		<developerConnection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-faces/trunk</developerConnection>
@@ -30,6 +30,9 @@
 			<comments>All the results of the imixs workflow project are subject to the GPL licensing model. </comments>
 		</license>
 	</licenses>
+-->
+
+
 	<build>
 	
 	</build>

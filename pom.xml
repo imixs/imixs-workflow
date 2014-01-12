@@ -64,10 +64,9 @@
 	</developers>
 
 	<scm>
-		<connection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-core/trunk</connection>
-		<developerConnection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-core/trunk</developerConnection>
-		<url>
-			scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-core/trunk</url>
+		<connection>scm:git:git://github.com/imixs/imixs-workflow</connection>
+		<developerConnection>scm:git:git://github.com/imixs/imixs-workflow</developerConnection>
+		<url>https://github.com/imixs/imixs-workflow/</url>
 	</scm>
 
 	<issueManagement>

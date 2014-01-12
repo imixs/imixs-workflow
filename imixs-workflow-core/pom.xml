@@ -17,7 +17,7 @@
 	</description>
 
 
-
+<!--  
 	<scm>
 		<connection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-core/trunk</connection>
 		<developerConnection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-core/trunk</developerConnection>
@@ -34,7 +34,7 @@
 			<comments>All the results of the imixs workflow project are subject to the GPL licensing model. </comments>
 		</license>
 	</licenses>
-
+-->
 	<build>
 	
 
