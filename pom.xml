@@ -14,9 +14,6 @@
 		<module>imixs-workflow-jax-rs</module>
 	</modules>
 
-
-
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<lucene.version>4.5.1</lucene.version>
@@ -25,8 +22,7 @@
 
 	<description>
 		Imixs Workflow provides a platform for an open and standardized workflow technology. 
-	
-		imixs-workflow is the meta project for the Imixs Workflow artefacts 
+		This is the meta project for the Imixs Workflow artefacts 
 		imixs-workflow-core, imixs-workflow-engine, imixs-workflow-faces
 		and imixs-workflow-jax-rs
 	</description>
@@ -171,14 +167,14 @@
 
 
 	<dependencies>
-	<!-- JEE dependencies -->
+		<!-- JEE dependencies -->
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-api</artifactId>
 			<version>6.0</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<!-- JUnit Tests -->
 		<dependency>
 			<groupId>junit</groupId>
