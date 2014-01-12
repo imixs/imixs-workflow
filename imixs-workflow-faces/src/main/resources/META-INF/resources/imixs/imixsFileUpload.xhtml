@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:cc="http://java.sun.com/jsf/composite">
+
+<cc:interface>
+	<cc:attribute name="hideattachments" default="false"
+		type="java.lang.Boolean"></cc:attribute>
+	<cc:attribute name="hideuploads" default="false"
+		type="java.lang.Boolean"></cc:attribute>
+</cc:interface>
+<!-- 
+
+	This component includes the imixsFileUploadFrame using an iFrame component.
+	
+ -->
+<cc:implementation>
+	<script type="text/javascript">
+		/*<![CDATA[*/
+		   // provide environment vars to be asked by the imixsFileUploadPanel
+		   var imixsfileupload_hideattachments=#{cc.attrs.hideattachments};
+		   var imixsfileupload_hideuploads=#{cc.attrs.hideuploads};
+		
+		   
+		   // Adjust the frame height..
+		   function iframeLoaded() {
+			   
+			    // var testH=$("#imixs_file_upload").height();
+			    // alert("iframe h=" + testH);
+			    // $("#imixs_file_upload").height(50);
+			    var minHeight=140;
+			    var iFrameID = document.getElementById('imixs_file_upload');
+			    var testH=iFrameID.contentWindow.document.body.scrollHeight;
+			    if (testH<minHeight)
+			    	testH=minHeight;
+			    //alert("iframe h=" + testH);
+			    $("#imixs_file_upload").height(testH);
+			     
+			  
+			  }
+		/*]]>*/	
+	</script>
+
+	<style>
+iframe {
+	height: 40px;
+}
+</style>
+
+
+	<!-- Normal Browser -->
+	<ui:fragment rendered="#{!header['User-Agent'].contains('; MSIE ')}">
+		<iframe id="imixs_file_upload" onload="iframeLoaded()"
+			style="border: 0; width: 360px; height: 40px;"
+			src="#{facesContext.externalContext.requestContextPath}/imixs/imixsFileUploadFrame.jsf"></iframe>
+	</ui:fragment>
+
+	<!-- Unnormal Browser MSIE -->
+	<ui:fragment rendered="#{header['User-Agent'].contains('; MSIE ')}">
+		<iframe id="imixs_file_upload" onload="iframeLoaded()"
+			style="border: 0; width: 380px; height: 140px;"
+			src="#{facesContext.externalContext.requestContextPath}/imixs/imixsFileUploadFrameIE.jsf"></iframe>
+	</ui:fragment>
+
+</cc:implementation>
+
+
+
+</html>
+
+

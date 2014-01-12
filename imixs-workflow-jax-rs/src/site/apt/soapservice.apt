@@ -1,0 +1,37 @@
+
+The Imixs SOAP Service
+~~~~~~~~~~~~~~~~~~~~
+
+ Service-Oriented Architecture (SOA) is an architecture principally based upon service-oriented applications
+ that can be implemented with different technologies such as web services. They provide an a loosely coupled
+ interface using XML. Web service standards specify that the interface to which a message is sent should define 
+ the format of  the message request and response, and mechanisms to publish and to discover web service interfaces. 
+  
+* SOAP
+~~~~~~~~~~~~~~~~~~~~
+ SOAP is the standard web service application protocol. It provides the communication mechanism to connect 
+ web services exchanging formatted XML data across the network protocol,
+ commonly HTTP. SOAP relies on XML because a SOAP message is an XML document containing several elements 
+ like an envelop, a header and a body.
+  
+* JAX-WS
+~~~~~~~~~~~~~~~~~~~~
+ The Imixs SOAP Web services are based on JAX-WS (JSR 224). JAX-WS defines a set of APPPIs and annotations that
+ allow to build and consume web services with Java. JAX-WS is part of the JEE specification and 
+ provides the consumer and service facilities to send and receive web service requests via SOAP, masking the 
+ complexity 
+ of the protocol. The JAX-WS depends on the Java Architecture for XML binding (JAXB) so the Imixs SOAP services
+ are using the Imixs-XML API.
+  
+  
+* The Implementation
+~~~~~~~~~~~~~~~~~~~~
+ The Imixs SOAP web services are implemented in three different components. The Components are annotated with
+ the @WebService annotation and wrapping the Service methods of the Imxis Workflow services.
+ 
+ 
+    * ModelWebService - provides the business logic of the Imixs Model Service
+    
+    * WorkflowWebService - provides the business logic of the Imixs Workflow Service
+
+    * ReportWebService - provides the business logic of the Imixs Report Service

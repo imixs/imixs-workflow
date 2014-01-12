@@ -1,0 +1,240 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.imixs.workflow</groupId>
+	<artifactId>imixs-workflow</artifactId>
+	<name>Imixs Workflow</name>
+	<packaging>pom</packaging>
+	<version>3.1.6-SNAPSHOT</version>
+
+	<modules>
+		<module>imixs-workflow-core</module>
+		<module>imixs-workflow-engine</module>
+		<module>imixs-workflow-faces</module>
+		<module>imixs-workflow-jax-rs</module>
+	</modules>
+
+
+
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<lucene.version>4.5.1</lucene.version>
+	</properties>
+
+
+	<description>
+		Imixs Workflow provides a platform for an open and standardized workflow technology. 
+	
+		imixs-workflow is the meta project for the Imixs Workflow artefacts 
+		imixs-workflow-core, imixs-workflow-engine, imixs-workflow-faces
+		and imixs-workflow-jax-rs
+	</description>
+
+	<url>https://github.com/imixs/imixs-workflow</url>
+	<organization>
+		<name>Imixs Software Solutions GmbH</name>
+		<url>http://www.imixs.com</url>
+	</organization>
+	<inceptionYear>2006</inceptionYear>
+
+	<developers>
+		<developer>
+			<id>rsoika</id>
+			<name>Ralph Soika</name>
+			<email>ralph.soika@imixs.com</email>
+			<url>http://www-02.imixs.com/roller/ralphsjavablog/</url>
+			<organization>Imixs Software Solutions GmbH</organization>
+			<organizationUrl>http://www.imixs.com</organizationUrl>
+			<roles>
+				<role>developer</role>
+				<role>testing</role>
+			</roles>
+			<timezone>2</timezone>
+		</developer>
+
+		<developer>
+			<id>gaheinle</id>
+			<name>Gaby Heinle</name>
+			<email />
+			<url />
+			<organization>Imixs Software Solutions GmbH</organization>
+			<organizationUrl>http://www.imixs.com</organizationUrl>
+			<roles>
+				<role>developer</role>
+				<role>testing</role>
+			</roles>
+			<timezone>2</timezone>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-core/trunk</connection>
+		<developerConnection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-core/trunk</developerConnection>
+		<url>
+			scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-core/trunk</url>
+	</scm>
+
+	<issueManagement>
+		<system>JIRA Issue Tracker</system>
+		<url>http://java.net/jira/browse/IMIXS_WORKFLOW</url>
+	</issueManagement>
+
+	<mailingLists>
+		<!-- no mailing lists supported -->
+	</mailingLists>
+
+	<licenses>
+		<license>
+			<name>GNU General Public License</name>
+			<url>http://www.gnu.org/licenses/gpl-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>All the results of the imixs workflow project are subject to the GPL licensing model. </comments>
+		</license>
+	</licenses>
+
+	<build>
+		<plugins>
+			<!-- use JDK 1.6 settings for compiling -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.2</version>
+				<configuration>
+					<locales>en</locales>
+					<reportPlugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-project-info-reports-plugin</artifactId>
+							<version>2.4</version>
+							<reports>
+								<report>index</report>
+								<report>project-team</report>
+								<report>license</report>
+								<report>mailing-list</report>
+								<report>dependencies</report>
+								<report>dependency-convergence</report>
+								<report>plugin-management</report>
+								<report>cim</report>
+								<report>issue-tracking</report>
+								<report>scm</report>
+								<report>summary</report>
+							</reports>
+						</plugin>
+
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-javadoc-plugin</artifactId>
+							<version>2.9</version>
+						</plugin>
+
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-jxr-plugin</artifactId>
+							<version>2.1</version>
+						</plugin>
+						<!-- Findbugs -->
+						<plugin>
+							<groupId>org.codehaus.mojo</groupId>
+							<artifactId>findbugs-maven-plugin</artifactId>
+							<version>2.4.0</version>
+							<configuration>
+								<effort>Default</effort><!-- Min, Default, Max -->
+								<threshold>Default</threshold><!-- High, Default, Low, Ignore -->
+							</configuration>
+						</plugin>
+					</reportPlugins>
+				</configuration>
+			</plugin>
+			<!-- relase management -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<tagBase>xxxxxhttps://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-core/tags</tagBase>
+					<mavenExecutorId>forked-path</mavenExecutorId>
+				</configuration>
+			</plugin>
+
+		</plugins>
+
+	</build>
+
+
+	<dependencies>
+	<!-- JEE dependencies -->
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>6.0</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		<!-- JUnit Tests -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.1</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.9.5</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+
+	<!-- Distributen Management oss.sonatype.org -->
+	<distributionManagement>
+		<snapshotRepository>
+			<id>sonatype-nexus-snapshots</id>
+			<name>Sonatype Nexus Snapshots</name>
+			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>sonatype-nexus-staging</id>
+			<name>Nexus Release Repository</name>
+			<url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+	<profiles>
+		<profile>
+			<id>release-sign-artifacts</id>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>

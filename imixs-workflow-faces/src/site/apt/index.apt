@@ -1,0 +1,40 @@
+ 
+About Imixs Faces
+~~~~~~~~~~~~~~
+ Imixs Faces is a component library based on JSF and jQuery, which helps you to develop business 
+ applications much faster. This library contains a set of components to be used in a JSF 2.0 Web 
+ Application and builds up on the capabilities of the Imixs Workflow Engine.
+ 
+[images/imixs-architecture_web.png]
+ 
+ Since Java EE6 the lightweight Web Profiles simplifies the deployment of Java EE applications.
+ This means that you can use Imixs Faces in your Web application without worry about the details of
+ EJB and JPA deployment.
+ 
+ Imixs Faces provides widgets to design modern user interfaces. These widgets are based on 
+ {{{http://jquery.com/}jQuery and jQuery UI}} which is a powerful JavaScript framework to design 
+ Web 2.0 UIs. If you like to work with other JSF Web frameworks like RichFaces or Primefaces you can 
+ also use only a subset of this component library.  
+ 
+ This project site gives an overview about the basic concepts behind the Imixs Faces 
+ and you will find also examples how to work with the components. Additional informations 
+ about this project are also given on this site.
+ 
+  
+* General Goals
+~~~~~~~~~~~~~~~~~~~~
+ The goal of this project is to simplify the development of JSF based BPM Applications and provide a
+ flexible and powerful Web 2.0 UI.
+ Developers using Imixs Faces should focus on the business process and not on technical aspects of 
+ integrating a enterprise application. As Imixs Faces is build on top of the Imixs Workflow Engine the 
+ result of using these components is a scaleable and robust workflow application.
+ Imixs Faces is build on Maven and fits into the lightweight Web Profiles supported by Java EE 6.
+    
+ 
+* License
+~~~~~~~~~~~~~~~~~~~~
+ All results of the Imixs Workflow project and sub-projects are subject to the GNU General Public License (GPL). 
+ You are free to use the results of the project in you own software project. We also invite you to participate 
+ as much as you wish. Every project obtains its strengths in virtue of the persons involved. The role and 
+ responsibility of everybody involved in this project is based on merits.
+ Every input counts!   

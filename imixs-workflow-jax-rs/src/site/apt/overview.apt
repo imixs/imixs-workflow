@@ -1,0 +1,44 @@
+
+Overview
+~~~~~~~~~~~~~~
+
+ The Imixs XML & Web Service components provide an XML api and XML schema to describe the Imixs business objects
+ in xml as also web services to provide business logic in a standardized open way.  
+ Web services are said to be "loosely coupled" because the client of a web service dosen't have to know its 
+ implementation details like the Imixs JEE implementation. This makes it mostly easy to use web services. 
+ The consumer is able to invoke a web service using a self-explanatory interface describing the available 
+ business methods. The underlying implementation can be done in any language (Java, Visual Basic, C#, etc.).
+ 
+ The Imixs XML & Web Sevice components are divided into three subcomponents which provide
+ the general XML API as also the Web Service implementations to provide and to consume Web Services using
+ different technologies.
+ 
+ This XML & Web Service components are typical included into an Imixs Workflow Enterprise Application to provide
+ Web Service Interfaces. But the components are also used by the Imixs Eclipse Modeler Plugin. So these components
+ did not depend only on the JEE Framework. 
+ 
+*XML API  -  JAXB
+~~~~~~~~~~~~~~
+
+ The Imixs XML API provides XML Dataobjects to exchanged data between an Imixs Workflow Implementation and a 
+ service client. The API provides also Client implementations for consuming SOAP or REST Services provided
+ by an  Workflow Enterprise Application. 
+ 
+ The Imixs XML API is based on the {{{http://java.sun.com/developer/technicalArticles/WebServices/jaxb/}JAXB specification (JSR-222)}}. 
+ These means that you can integrate the library very easy in any java framework. 
+
+*REST Services  -  JAX-RS
+~~~~~~~~~~~~~~
+
+ The Imixs REST Service implementation is a full featured REST Service Provider based on the 
+ {{{http://jcp.org/en/jsr/detail?id=311}JAX-RS specification (JSR-311)}}. The library can be bundled with a Imixs Workflow Enterprise Application together with the
+ Imixs-JEE components. 
+ 
+*SOAP Services  -  JAX-WS
+~~~~~~~~~~~~~~
+
+ The Imixs SOAP Service implementation is a full featured Web Service Service Provider using SOAP based on the 
+ {{{https://jax-ws.dev.java.net/}JAX-WS specification (JSR-224)}}. The library can be bundled with a Imixs Workflow Enterprise Application together with the
+ Imixs-JEE components. 
+    
+ 

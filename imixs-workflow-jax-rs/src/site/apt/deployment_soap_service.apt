@@ -1,0 +1,7 @@
+
+Deployment SOAP Service
+~~~~~~~~~~~~~~
+ 
+ The Imixs SOAP Service is provided as a WAR Module which can be added into a EAR file.
+ The library is based on the JAX-WS specification.
+  

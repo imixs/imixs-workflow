@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:i="http://java.sun.com/jsf/composite/imixs">
+<h:head>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta content="text/javascript" http-equiv="Content-Script-Type" />
+	<meta content="text/css" http-equiv="Content-Style-Type" />
+	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+
+	<title>Imixs Fileupload Panel</title>
+	
+	<link
+		href="#{facesContext.externalContext.requestContextPath}/imixs/css/imixs.css"
+		charset="UTF-8" type="text/css" rel="stylesheet" />
+		
+	<i:imixsHeader />
+			
+	<script type="text/javascript">
+		/*<![CDATA[*/
+			/**
+			 * The following code adds the style sheet URIs from the 
+			 * parent document to this iframe
+			 **/
+			$(document).ready(function() {
+			   
+			      // get all css link elements from the parent window...
+		          cssLinks=parent.top.$('link');
+		          cssLinks.each(function(index) {
+	              // if stylesheet and text/css then add this link to the current header		          
+			          if ('stylesheet'==this.rel &&  'text/css'==this.sheet.type) {
+			          	   //alert(this.sheet.href);
+			          	   $('head').append($("<link/>", 
+						        { rel: "stylesheet", href: this.sheet.href, type: "text/css" }
+		 	               ));
+			          }
+			     });
+			     
+			     
+			});	
+		/*]]>*/	
+	</script>
+</h:head>
+<h:body style="min-width:0;padding:0;">
+	<i:imixsFileUploadPanel id="imixsfileuploadpanel" />
+</h:body>
+
+</html>

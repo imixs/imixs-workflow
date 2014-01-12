@@ -1,0 +1,108 @@
+  
+Download & Maven support
+~~~~~~~~~~~~~~~~~~~~
+
+ The Imixs Workflow Project contains a great deal of technologies which helps you building your 
+ own workflow application.
+ If you want to start with an example of an Imixs Workflow business application you can download the 
+ Imixs JSF Sample Application from the {{{http://java.net/projects/imixs-workflow/downloads}download center}}.
+ You will find an installation guide {{{http://www.imixs.org/jee/install.html}here}}.
+     
+ If you are working with maven you can also start with the {{{http://www.imixs.org/jee/archetype/usage.html}Imixs JSF Archetype}}
+ which gives you an easy starting point for building a JEE business application.
+      
+  
+  
+* Maven support
+~~~~~~~~~~~~~~~~~~~~
+ 
+ All results from the Imixs Workflow Project are provided as maven artifacts. 
+ Working with maven makes it almost simple to build applications based on different libraries or 
+ frameworks. Maven is a build and configuration tool which helps you to organize your project and finding
+ necessary libraries and artifacts through the Internet. 
+ 
+ Imixs supports maven which allows you to access all Imixs Workflow libraries easily and build 
+ your projects using Maven. General information about using maven in a project you will
+ find {{{http://maven.apache.org/}in the maven project site}}.
+
+*How to download an artifact from the maven repository 
+~~~~~~~~~~~~~~~~~~~~
+
+ All binaries from the Imixs Workflow Project are provided as maven artifacts 
+ through the {{{http://search.maven.org/#browse}maven central repository}}. 
+ You can download each binary directly from the maven central repository.
+ To browse the Imixs artifacts provided by this project go to 
+ the {{{http://search.maven.org/#browse}maven central repository}} and search for the keyword 'imixs'.
+ 
+ 
+
+*How to add a maven dependency to your project
+~~~~~~~~~~~~~~~~~~~~
+
+ To add a dependency for a Imixs Workflow artifact into you own project add a dependency to your pom.xml like 
+ shown in the following example:
+
++------------------------------------------------------------------------+
+	<dependency>
+		<groupId>org.imixs.workflow</groupId>
+		<artifactId>imixs-workflow-api</artifactId>
+		<version>2.1.1</version>
+		<type>jar</type>
+	</dependency>
++------------------------------------------------------------------------+
+  
+ Please take care about the version number. You will find the latest version number by browsing the
+ Maven central repository.
+ You will find also more detailed informations about adding dependencies in the separate sections
+ of the Imixs Workflow technologies.
+    
+
+
+
+*How to access Snapshot Releases 
+~~~~~~~~~~~~~~~~~~~~
+
+ Snapshot releases are newer releases of a component which are still under development. 
+ A Snapshot release should only be used in cases where the latest final release did not provide a
+ special feature or implementation you need to work with. 
+ You will find the Imixs snapshot releases at the
+ {{{http://oss.sonatype.org/content/repositories/snapshots}Sonatype Snapshot repository}}
+
+     [Note:] The snapshot repository should only be used if snapshot releases are necessary for 
+     a specific build.
+
+ To access the Snapshot repository you need to add an additional configuration into your 
+ Maven settings.xml configuration file. 
+ On windows this config file is typically found or to be created  in 'Documents and Settings/USERNAME/.m2'.
+ On Linux the folder /.m2 will be found on the users home directory.
+
+ To access the Sonatype Snapshot repository you only need to add the repository location.
+ Here is an example of a settings.xml file. 
+ 
++------------------------------------------------------------------------+
+<settings xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/settings-1.0.0.xsd">
+ 
+  <profiles>
+      <profile>
+          <id>default</id>
+          <activation>
+          </activation>
+          <repositories>
+            <!-- Sonatype Snapshot repository -->
+            <repository>
+            	<id>sonatype-snaptshots</id>
+            	<name>Sonatype Snapshot repository</name>
+            	<url>http://oss.sonatype.org/content/repositories/snapshots</url>
+            </repository>				
+          </repositories>
+      </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>default</activeProfile>
+  </activeProfiles> 
+</settings> 
++------------------------------------------------------------------------+
+

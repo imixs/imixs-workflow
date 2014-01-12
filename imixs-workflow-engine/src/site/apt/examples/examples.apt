@@ -1,0 +1,43 @@
+            ------
+            Examples
+            ------
+            Ralph Soika - Imixs Software Solutions GmbH
+            ------
+ 
+ 
+
+Examples
+~~~~~~~~~~~~~~~~~~~~
+ 
+ The next section we will give some examples how the Imixs JEE Workflow components
+ can be used in a Java EE application. 
+ The examples are very easy to understand and demonstrating the basic concepts of the
+ Imixs JEE components. 
+ 
+    [Note:] The Imixs EJB components provide a full featured Workflow Management System. So there is no need 
+    to implement additional EJBs or write any line of EJB code. You can use the Imixs JEE 
+    components directly from your web/jsf application. 
+    
+    {{{./jsf_example.html}See the JSF Tools Example for more informations}}.
+    
+    
+    You can also use the Imixs EJB components in an existing EJB project to add additional business logic. 
+    In this case you typical call the Imixs EJBs from your own Session EJB. You will
+    find several examples about how to integrate the Imixs Workflow into your own EJB code in the following sections.
+    
+ 
+* How to install
+~~~~~~~~~~~~~~~~~~~~
+ To use the Imixs Workflow components you simply bundle the Imixs EJBs into your Java EE project.
+ The {{{../deployment.html}deployment section}} contains informations about how to add the 
+ Imixs Workflow components to your Java EE Application.
+ 
+ 
+* Maven & Downloads
+~~~~~~~~~~~~~~~~~~~~
+ 
+ All binaries of the Imixs Workflow Project are provided as Maven artifacts. 
+ Working with Maven makes it almost simple to add the Imixs Workflow JEE components to your application.
+ You will find informations about using Maven in the {{{../maven_howto.html}Maven HowTo guidelines}}.
+ 
+

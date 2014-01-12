@@ -1,0 +1,86 @@
+ 
+The Model Interface
+~~~~~~~~~~~~~~~~~~~~
+
+ The interface org.imixs.workflow.Model is used to encapsulate the behavior of a workflow model 
+ logic. For this purpose, the model provides functions for finding Process Entities and 
+ Activity Entities inside a model definition. 
+ A Process Entity contains informations about a model state within the model definition such 
+ as a name or status designation. 
+ A Process Entity is typically represented as a Node inside a graphical workflow model. 
+ On the contrary, an Activity Entity contains all information required for process
+ control. An Activity Entity is typical represented as an edge inside a graphical workflow model. 
+ An Activty Entity can be assigend to a workitem by the property "$ActivityID". 
+ The WorkflowKernel determine the associated ActivityEntity and 
+ forwards the activity together with the WorkItem to the registered plugins.
+
+ The model is always instantiated by a specific WorkflowManager Implementation like the 
+ {{{/jee/}Imixs JEE Workflow}}.
+ 
+       [Note:]  When you work with a WorkflowManager implementation like the 
+       {{{/jee/}Imixs JEE Workflow}}  it is not necessary to 
+       manage the model definition manaual in your code. This will be done by the WorkflowManager
+       and the {{{/modeler/}Imixs Workflow Modeler}}.
+ 
+ 
+*Accessing a Model Instance
+~~~~~~~~~~~~~~~~~~~~
+ 
+ An instance of a Model can be fetched typical by the WorkflowContext. 
+ A context object is provided by the WorkflowKernel during the process method
+
++-----------------------------------------------+
+ public void init(WorkflowContext actx) throws Exception {
+   ctx=actx;
+   Model model=ctx.getModel();
+   // your code goes here....
+ } 
++-----------------------------------------------+
+ 
+
+*The Extended Model
+~~~~~~~~~~~~~~~~~~~~
+
+ The ExtendedModel interface extends the Model interface with additional methods to 
+ manage different versions of the same model.
+
+    * getProcessListByVersion
+    
+    * getActivityListByVersion
+    
+    * getEnvironmentListByVerson
+    
+    * removeModelVersion
+    
+
+ This additional methods allow the management of different versions of the same model inside 
+ one Workflow Instance. Such a feature is typical used in log running business processes 
+ which need to take care of consistent models during the runtime of a process instance. So 
+ if the model will be improved, running processes can benefit form new behavior.
+
+ The ExtendedModel is proveded also by the ExtendedWorkflowContext which subclasses the 
+ Interface WorkflowContext.
+
+ The WorkflowKernel dertermines if a ExtendedModel is supported by a workflowManager / 
+ workflowContext during processing a workitem.   
+
+ The following code example shows how an implementation can verify if a Model or ExtendedModel 
+ is provided by the current WorkflowManager Instance
+
++-----------------------------------------------+
+ public void init(WorkflowContext actx) throws Exception {
+    ctx=actx;
+ 
+    if (ctx.getModel() instanceof ExtendedModel) {
+       // use extended Model
+       // try to get from model version
+       ExtendedModel extendedModel= (ExtendedModel) ctx.getModel();
+       // your code goes here
+    } else {
+       // use standard Model
+       Model model= ctx.getModel();
+       // your code goes here
+    }
+ } 
++-----------------------------------------------+ 
+

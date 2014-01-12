@@ -1,0 +1,44 @@
+
+About Imixs Workflow Interfaces
+~~~~~~~~~~~~~~
+
+ The Imixs Workflow Interfaces defining an XML- and Web Service API to exchange data from the Imixs Workflow
+ System to other technologies. 
+ 
+[images/imixs-architecture_interfaces.png] 
+ 
+ The XML Subcomponents provide also Client Implementations to be used to interact
+ with an existing Workflow System. The following documentation describes the most important concepts and fundamentals 
+ of the Imixs Workflow XML & Web Services. The documentation does not cover each detail of the implementation.
+
+* General Goals
+~~~~~~~~~~~~~~~~~~~~
+
+ The goal of this project is to provide an easy to use set of libraries to provide Web Service interfaces 
+ as also to interact with an Workflow Implementation using the Web Service Client API.
+ Therefore the XML & Web Service components simplify the way to interact with the JEE Workflow Components.
+ Developers using these components should focus on the buisins process and not on technical aspects of integrating 
+ a enterprise application. The components can be used from web designers as also of developers who are not focusing on 
+ Java. 
+ As the XML & Web Service components are build on top of the Imixs JEE Workflow the result of using these components is a 
+ scaleable and flexible way to interact with an workflow application. 
+ 
+ 
+  
+      [Note:] The Imixs JEE Workflow is based on the fundamental concepts of the JEE component model. This means 
+      that it is not necessary to be a JEE developer to used these components. Our goal is to provide java and 
+      web developers with functional components which can be used without knowing much about all the JEE stuff. 
+      On the other hand, if you are interested in this technology and the implementation of the Imixs JEE Workflow 
+      you are welcome to join our developer team and help to improve these components.
+
+ This project site gives an overview over the basic concepts behind the Imixs XML & Web Sevice components  
+ and you will find also examples how to work with different interfaces and classes. 
+ Additional informations about this project are also given on this site.
+
+* License
+~~~~~~~~~~~~~~~~~~~~
+ All results of the Imixs Workflow project and subprojects are subject to the GNU General Public License (GPL). 
+ You are free to use the results of the project in you own software project. We also invite you to participate 
+ as much as you wish. Every project obtains its strengths in virtue of the persons involved. The role and 
+ responsibility of everybody involved in this project is based on merits.
+ Every input counts!   

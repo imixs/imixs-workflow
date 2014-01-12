@@ -1,0 +1,191 @@
+
+Deployment on JBoss 5.1 (JEE5)
+~~~~~~~~~~~~~~
+
+ Deploying the Imixs JEE Workflow components on JBoss 5.1.0.GA Application Server differs in
+ some details from the deployment on a JEE6 compliant server like Glassfish v3. 
+ So examine carefully the following hints if you are deploying the Imixs JEE components on
+ a JEE5 Server. 
+ The following section will explain the additional configuration for an Imixs Enterprise
+ Workflow Project to be deployed on JBoss 5
+ 
+   [Note:] The configuration for other JEE5 application servers like glassfish or JBoss will differ in 
+    some details. But most informations provided here should help deploying the Imixs 
+    components also on other JEE5 servers. 
+    Please provide your experience or ask your questions in the {{{http://www.imixs.com/forum}Imixs Forum}}.
+    
+ 
+*ejb-jar.xml 
+~~~~~~~~~~~~~~
+ JBoss 5 did not parse provided jars automatically for EJB annotations. For this reason
+ the EJB components provided in the imixs-workflow-jee-impl jar file will be ignored.
+ To get the provided EJBs deployed successfully into the EJB container you need to provide an 
+ ejb-jar.xml descriptor declaring all included ejbs.
+ So add the following ejb-jar.xml file into your EJB module.
+ 
+
++------------------------------------------------------------------------+
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:ejb="http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"
+	version="3.0">
+	
+	<!-- Glassfish 2.1 descriptions are dispansable in JEE6 -->
+	<enterprise-beans>
+		<session>
+			<ejb-name>EntityServiceBean</ejb-name>
+			<ejb-class>org.imixs.workflow.jee.ejb.EntityServiceBean</ejb-class>
+			<session-type>Stateless</session-type>
+		</session>	
+		<session>
+			<ejb-name>ModelServiceBean</ejb-name>
+			<ejb-class>org.imixs.workflow.jee.ejb.ModelServiceBean</ejb-class>
+			<session-type>Stateless</session-type>
+		</session>
+		<session>
+			<ejb-name>WorkflowServiceBean</ejb-name>
+			<ejb-class>org.imixs.workflow.jee.ejb.WorkflowServiceBean</ejb-class>
+			<session-type>Stateless</session-type>
+		</session>
+		<session>
+			<ejb-name>ReportServiceBean</ejb-name>
+			<ejb-class>org.imixs.workflow.jee.ejb.ReportServiceBean</ejb-class>
+			<session-type>Stateless</session-type>
+		</session>
+		
+		<session>
+			<ejb-name>WorkflowSchedulerBean</ejb-name>
+			<ejb-class>org.imixs.workflow.jee.ejb.WorkflowSchedulerBean</ejb-class>
+			<session-type>Stateless</session-type>
+		</session>
+		
+	</enterprise-beans>
+
+	<assembly-descriptor>
+	</assembly-descriptor>
+</ejb-jar>
++------------------------------------------------------------------------+
+
+ 
+ 
+ 
+
+* Adding MySQL support 
+~~~~~~~~~~~~~~ 
+
+ JBoss supports a build in database. To use the MySQL Database you can add an additional configuration
+ with the environment settings for MySQL as shown here:
+ 
+
++-------------------------------------------+
+<?xml version="1.0" encoding="UTF-8"?>
+<datasources>
+  <local-tx-datasource>
+    <jndi-name>jdbc/workflow-db</jndi-name>
+    <connection-url>jdbc:mysql://localhost:3306/jboss_test</connection-url>
+    <driver-class>com.mysql.jdbc.Driver</driver-class>
+    <user-name>root</user-name>
+    <password>adminadmin</password>
+    <exception-sorter-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLExceptionSorter</exception-sorter-class-name>
+    <use-java-context>false</use-java-context>
+    <exception-sorter-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLExceptionSorter</exception-sorter-class-name>
+    <valid-connection-checker-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLValidConnectionChecker</valid-connection-checker-class-name>
+    <metadata>
+       <type-mapping>mySQL</type-mapping>
+    </metadata>
+  </local-tx-datasource>
+</datasources>
++-------------------------------------------+
+
+ Take care about the proeprty 'use-java-context'. This should be set to 'false' so the 'java:/' prafix is not
+ needed in the persistence.xml file of your EJB module.
+ 
+*Install EclipseLink 
+~~~~~~~~~~
+
+ Most of the EJB/JPA examples for Imixs JEE components expect the EclipseLink JPA Provider. To add this
+ provider to your JBoss server download EclipseLink from the 
+ {{{http://www.eclipse.org/eclipselink/downloads/}eclipse download site}}
+ 
+ Unzip the libraries and copy form the jlib folder the eclipselink.jar into your JBoss lib
+ 
+ JBOSS_INSTALL/server/imixs/lib 
+ 
+ if you are running JBoss with a custom configuration. (Otherwise copy the jar into the JBOSS_INSTALL/server/default/lib)
+ 
+ Read more about using MySQL with JBoss on the {{{http://wiki.eclipse.org/EclipseLink/Examples/JPA/Migration/JBoss}EclipseLink Migration guide}}.
+ 
+ 
+
+*Adding Jersey Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ 
+ The Imixs REST Service API which is used by the Imixs Sample Application is build on Jersey which 
+ is not part of JBoss 5.1.0.GA. But you can add the jersey-server to your jboss server configuration
+ when you copy the following jersey jars into the lib folder 
+ 
+ JBOSS_INSTALL/server/imixs/lib 
+ 
+ if you are running jboss with a custom configuration. (Otherwise copy the jar into the JBOSS_INSTALL/server/default/lib)
+ 
+	* asm-3.1.jar
+	
+	* jersey-core-1.3.jar
+
+	* jersey-server-1.3.jar
+
+	* jsr311-api-1.1.1.jar
+ 
+ See also the {{{http://www.imixs.org/xml/deployment_rest_service.html}Imixs Rest Service deployment guide}} 
+ for additional informations about Jersey.
+ 
+ 
+* Using a security domain in JBoss
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+ To use a security domain in your EAR you need to add a security domain to the jboss.xml
+ file which is located in the ear /META-INF/ folder
+ 
++-------------------------------------------+
+  <jboss>  
+   <security-domain>java:/jaas/imixsrealm</security-domain>  
+  </jboss> 
++-------------------------------------------+ 
+ 
+* Persistence xml
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+
+ The configuration of the persistence.xml file differ in a detail form the persistence.xml typical used on 
+ glassfish. 
+ Thake care about the jta-data-source which should start with the prafix 'java:/' and 
+ also provide the proeprties 'eclipselink.target-server' and 'eclipselink.weaving'.
+ 
+ You can use the 'use-java-context' property in the databaseconnection setting to avoid the need to add
+ the 'java:/' prafix to the jta-data-source tag. 
+ 
+ See the following example
+ 
++-------------------------------------------+
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"  
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"  
+              version="1.0"> 
+   
+	<persistence-unit name="org.imixs.workflow.jee.jpa" transaction-type="JTA">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<!-- <jta-data-source>java:/jdbc/workflow-db</jta-data-source> -->
+		<jta-data-source>jdbc/workflow-db</jta-data-source>
+		<jar-file>imixs-workflow-jee-2.1.1-SNAPSHOT.jar</jar-file>
+		<properties>
+			<property name="eclipselink.ddl-generation" value="create-tables" />
+			<property name="eclipselink.logging.level" value="INFO" />
+			<property name="eclipselink.ddl-generation.output-mode"
+				value="database" />
+			<property name="eclipselink.target-server" value="JBoss" />
+			<property name="eclipselink.weaving" value="false" />
+		</properties>
+	</persistence-unit>
+</persistence> 
++-------------------------------------------+
+ 

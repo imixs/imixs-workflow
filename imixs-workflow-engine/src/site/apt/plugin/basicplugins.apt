@@ -1,0 +1,155 @@
+
+Plugins  
+~~~~~~~~~~~~~~
+
+ The following section gives an overview about the plugins provided by the Imixs Workflow project.
+ 
+* History Plugin
+~~~~~~~~~~~~~~
+
+ The HistoryPlugin generates a workflow history for each WorkItem depending on the configuration in the workflow model. 
+
++-----------------------------------------+
+org.imixs.workflow.plugins.HistoryPlugin
++-----------------------------------------+
+ 
+ For each workflow step the HistoryPlugin generates a separate entry which is added into the history list of the WorkItem. 
+ The plugin generates a descending and an ascending history list stored in the properties
+
+    * txtworkflowhistorylog  (String)
+    
+    * txtworkflowhistorylogRev  (String)
+
+ The number of entries for the history list can be restricted to a maximum number of
+ entries by the attribute "numworkflowhistoryLength". The Attribute indicates the maximum number of entries. 
+ If lower 0 no limit is set.
+
+ The History entries can be configured in the workflow model using the {{{http://www.imixs.org/modeler/}Imixs Workflow Modeler}}.
+
+ This is an example how to output the workflow history list of a WorkItem in a JSF page:
+ 
++-----------------------------------------+
+<ui:fragment>
+	<ui:repeat
+		value="#{workflowController.workitem.itemListArray['txtworkflowhistoryLog']}"
+		var="log">
+		<h:outputText value="#{log}" />
+		<br />
+	</ui:repeat>
+</ui:fragment>
++-----------------------------------------+
+
+** JEE Version of History Plugin
+~~~~~~~~~~~~~~  
+ Since version 3.1.1 the Imixs Workflow engine provides a new JEE version of the History Plugin 
+ 
++-----------------------------------------+
+ org.imixs.workflow.plugins.jee.HistoryPlugin
++-----------------------------------------+
+ 
+ This plugin provides a structured data list for each history entry. 
+ This allows a more flexible way of usage. Each history entry provides a list with 
+ the following entries:
+ 
+  * date of creation (Date)
+  
+  * comment (String)
+  
+  * userID (String)
+  
+ See the following example how to display the history list in a JSF page:
+ 
++-----------------------------------------+
+<ui:fragment rendered="#{!empty workflowController.workitem.item['txtworkflowhistory']}">
+	<h:dataTable var="log"
+		value="#{workflowController.workitem.itemListArray['txtworkflowhistory']}">
+		<h:column>
+			<h:outputText value="#{log[0]}">
+				<f:convertDateTime timeZone="#{message.timeZone}" type="both"
+					pattern="#{message.dateTimePattern}" /> 
+			</h:outputText>
+		</h:column>
+		<h:column>
+			<h:outputText value="#{log[1]}" />
+		</h:column>
+	</h:dataTable>
+</ui:fragment>
++-----------------------------------------+
+
+ For the JEE version of the HistoryPlugin it is no longer necessary to define the date/time format in the workflow model.
+ It is recommended to use the org.imixs.workflow.plugins.jee.HistoryPlugin instead of the deprecated org.imixs.workflow.plugins.HistoryPlugin.
+ 
+* AccessPlugin
+~~~~~~~~~~~~~~
+ The AccessPlugin is responsible for the ACL settings in a workitem. The Plugin adds or removes read and write access entries
+ into the WorkItem properties:
+ 
+    * $ReadAccess
+    
+    * $WriteAccess
+   
+ Which entries are added can be defined in the workflow model using the {{{http://www.imixs.org/modeler/}Imixs Workflow Modeler}}.
+ 
+ See the {{{http://www.imixs.org/jee/acl.html}security settings}} for further details. 
+ 
+ 
+* ApplicationPlugin
+~~~~~~~~~~~~~~
+
+ The ApplicationPlugin updates application specific properties for the current WorkItem.
+
+    * txtWorkflowEditorID - optional EditorID to be used by an application (provided by the activityEntity property 'txtEditorID')
+    
+    * txtWorkflowImageURL - visual image can be displayed by an application (provided by the activityEntity property 'txtImageURL')
+
+    * txtWorkflowStatus - evaluated status of new process state
+ 
+    * txtWorkflowGroup - name of the workflow group from the current process
+ 
+    * txtWorkflowAbstract - Abstract text  (provided by the processEntity property 'txtworkflowabstract')
+ 
+    * txtWorkflowSummary - Summary (provided by the processEntity property 'txtworkflowsummary')
+ 
+
+ All these settings can be modeled using the Imixs Modeler on the Application
+ Property Tab off the corresponding ProcessEntity. 
+ The  corresponding ProcessEntity is defined by the ActivityEntity attribute 'numNextID'  
+ 
+ 
+* ResultPlugin
+~~~~~~~~~~~~~~
+ The Result Plugi-In can be used to provide additional property values during a process step.
+ The Plug-In evaluates the result message provided by the Activity property
+ 'txtActivityResult'. The value will be parsed for the xml tag 'item'. 
+ 
++------------------------------------+
+<item name="fieldname">value</item> 
++------------------------------------+
+
+ The provided value will be assigned to the named property.
+ See the following examples:
+ 
++------------------------------------+
+<item name="txtName">Some Title</item> 
+<item name="numAccount" type="integer">500</item> 
+<item name="type">workitemarchive</item> 
++------------------------------------+
+
+ This example will set the property 'txtName' to the value 'Some Title' and change the value 
+ of the field 'numAccount' to 500. The value will be of type 'integer'. The last will change the type
+ of the workitem to 'workitemarchive'.
+ 
+    [Note:] It is not possible to update any workflow processing properties beginning with an 
+     '$' character in the item name!
+ 
+ The new value can also be evaluated by the tag 'itemValue' to assign a value form any existing field.
+ See the following example which assignes the value of 'namCreator' to the item 'responsible':
+ 
++------------------------------------+
+<item name="responsible"><itemvalue>namCreator</itemvalue></item> 
++------------------------------------+
+
+ If the result message can not be evaluated, it will be stored into the attribute 
+ "txtworkflowresultmessage". 
+ 
+ 

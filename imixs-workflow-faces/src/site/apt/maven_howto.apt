@@ -1,0 +1,29 @@
+
+Maven Support
+~~~~~~~~~~~~~~~~~~~~
+
+ All binaries of the Imixs Workflow Project are provided as Maven artifacts 
+ through the Maven Central repository. 
+ To browse the Imixs artifacts provided by this project you can go to 
+ the {{{http://search.maven.org/#browse}Maven repository}} and simply search for the keyword 'imixs'.
+
+ Find more information about using Maven in section {{{http://www.imixs.org/api/maven_howto.html}Download & Maven support}}. 
+
+*How to add a Imixs Workflow maven dependency
+~~~~~~~~~~~~~~~~~~~~
+
+ To add the necessary dependencies for the Imixs Workflow engine add the following dependency to your pom.xml
+
++------------------------------------------------------------------------+
+	<dependency>
+		<groupId>org.imixs.workflow</groupId>
+		<artifactId>imixs-workflow-faces</artifactId>
+		<version>3.0.0</version>
+		<type>jar</type>
+	</dependency>
++------------------------------------------------------------------------+
+  
+ Take care about the version number. You will find the latest version number by browsing the
+ {{{http://search.maven.org/#browse}Maven repository}}.
+    
+

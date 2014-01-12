@@ -1,0 +1,97 @@
+package org.imixs.workflow.jaxrs;
+
+import java.io.InputStream;
+import java.text.ParseException;
+import java.util.List;
+
+import junit.framework.Assert;
+
+import org.imixs.workflow.ItemCollection;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class test the parsing of a json file used by the workflowRestService
+ * method postWorkitemJSON(InputStream requestBodyStream)
+ * 
+ * 
+ * @author rsoika
+ */
+public class TestJSONParser {
+
+	@Before
+	public void setup() {
+
+	}
+
+	@After
+	public void teardown() {
+
+	}
+
+	@Test
+	public void testSimple() throws ParseException {
+
+		InputStream inputStream = getClass()
+				.getResourceAsStream("/simple.json");
+
+		ItemCollection itemCol = JSONParser.parseWorkitem(inputStream);
+
+		Assert.assertNotNull(itemCol);
+
+		Assert.assertEquals("Anna", itemCol.getItemValueString("$readaccess"));
+		
+		List<?> list=itemCol.getItemValue("txtLog");
+		Assert.assertEquals(3, list.size());
+		
+		Assert.assertEquals("C", list.get(2));
+		
+		
+		Assert.assertEquals(10, itemCol.getItemValueInteger("$ActivityID"));
+	}
+	
+	
+	
+	
+	
+	
+	@Test(expected = ParseException.class)  
+	public void testCorrupted() throws ParseException {
+
+		InputStream inputStream = getClass()
+				.getResourceAsStream("/corrupted.json");
+
+		ItemCollection itemCol = JSONParser.parseWorkitem(inputStream);
+
+	
+		Assert.assertNull(itemCol);
+	}
+	
+	
+	
+	
+	
+	
+	@Test
+	public void testComplexWorkitem() throws ParseException {
+
+		InputStream inputStream = getClass()
+				.getResourceAsStream("/workitem.json");
+
+		ItemCollection itemCol = JSONParser.parseWorkitem(inputStream);
+
+		Assert.assertNotNull(itemCol);
+
+		Assert.assertEquals("worklist", itemCol.getItemValueString("txtworkflowresultmessage"));
+		
+		Assert.assertEquals("14194929161-1003e42a", itemCol.getItemValueString("$UniqueID"));
+		
+		
+		
+		List<?> list=itemCol.getItemValue("txtworkflowpluginlog");
+		Assert.assertEquals(7, list.size());
+		
+		
+	}
+}

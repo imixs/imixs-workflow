@@ -1,0 +1,62 @@
+            ------
+            About
+            ------
+            Ralph Soika - Imixs Software Solutions GmbH
+            ------
+ 
+ 
+
+
+About the Imixs Workflow Engine
+~~~~~~~~~~~~~~
+ The Imixs Workflow Engine is a full featured Workflow Management System (WFMS) based on the 
+ Java Enterprise Edition (Java EE). It provides an architecture to store business data and process
+ workflows defined in a business process model. 
+ This makes it easy to develop business applications in a fast and flexible way, since there is no 
+ need to invest much time in the persistence and management of business objects.
+ 
+ The project extends the {{{/api/}Imixs Workflow API}} to fulfill the requirements to a scalable, 
+ transactional, robust and simple deployable java enterprise business application.
+ The Imixs Workflow provides different service components which can be used in any kind of enterprise
+ BPM application. 
+  
+[images/imixs-architecture_jee.png] 
+
+  
+* General Goals
+~~~~~~~~~~~~~~~~~~~~
+ The goal of this project is to provide an easy to use enterprise architecture for the development of
+ business applications. 
+ The Imixs Workflow is typical used for human-to-human workflows but it can also be used for complex 
+ technical business process management (BPM) solutions. 
+ 
+ The project is based on the Java EE specification and the Java EE component model. It offers a set of enterprise
+ java beans (EJBs) providing a reusable and robust workflow solution to be used in any kind of enterprise application. 
+ The Imixs Workflow Engine enables software developers to reduce the time to implement BPM functionality inside 
+ there own applications. Therefore the project provides business services and a JPA based 
+ persistence architecture for the management and the persistence of business process data. 
+ 
+   [Note:] The Imixs Workflow Engine is based on the concepts of the Java EE component model. 
+    	This means also that it is not necessary to be a Java EE developer to use these components. 
+   		One goal of this project is to provide developers with functional components out of the box. 
+   		These components can be used without paying much attention about all the internal JPA and EJB stuff. 
+   		If you just want to use the Imixs Workflow Engine in your own Web Project you can use the {{{/jsf/}Imixs Web Tools}} 
+   		providing an easy to use JSF workflow framework. 
+   		On the other hand, if you are interested in Java EE and EJB technology and the implementation of the
+   		Imixs Workflow Engine you will find useful informations about building robust and scaleable enterprise BPM 
+   		applications.
+      
+      
+ This project site gives an overview about the basic concepts behind the Imixs Workflow Engine  
+ and you will find also examples about the usage and the deployment of the components. 
+ 
+ All components of the project are build using Maven to simplify the development process and usage of 
+ the components in a Java project. 
+ 
+* License
+~~~~~~~~~~~~~~~~~~~~
+ All results of the Imixs Workflow project and subprojects are subject to the GNU General Public License (GPL). 
+ You are free to use the results of the project in you own software project. We also invite you to participate 
+ as much as you wish. Every project obtains its strengths in virtue of the persons involved. The role and 
+ responsibility of everybody involved in this project is based on merits.
+ Every input counts!   

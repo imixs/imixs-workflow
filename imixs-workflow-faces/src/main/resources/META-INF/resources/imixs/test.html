@@ -1,0 +1,53 @@
+<html>
+<head>
+<script>
+/*
+ * This method converts a Java Date String into the jQuery format. 
+ * See: http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+ * http://docs.jquery.com/UI/Datepicker/formatDate
+ */
+function convertJavaDate(javaDate) {
+
+var old=javaDate;
+	// convert yyyy to yy,
+	// yy to y, 
+	if (javaDate.indexOf('yyyy')>-1) 
+		javaDate=javaDate.replace('yyyy','yy');
+	 else 
+		if (javaDate.indexOf('yy')>-1) 
+		 	javaDate=javaDate.replace('yy','y');
+		
+	
+	
+
+	
+	// MMM to M, 
+	// MM to m, 
+	// M to m
+		if (javaDate.indexOf('MMMM')>-1) 
+		javaDate=javaDate.replace('MMMM','MM');
+	 else 
+		if (javaDate.indexOf('MMM')>-1) 
+		 	javaDate=javaDate.replace('MMM','M');
+		 else 
+			if (javaDate.indexOf('MM')>-1) 
+			 	javaDate=javaDate.replace('MM','mm');
+		 	else 
+				if (javaDate.indexOf('M')>-1) 
+			 		javaDate=javaDate.replace('M','m');
+	
+	
+		alert("covert: " + old + " to: " +javaDate);
+	
+}
+</script>
+
+
+</head>
+<body>
+<script>
+convertJavaDate('dd.MM.yy');
+</script>
+
+</body>
+</html>

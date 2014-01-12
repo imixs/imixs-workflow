@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	id="sywappWebApp_ID" version="2.5">
+	<display-name>org.imixs.workflow.jax-rs</display-name>
+
+	<servlet>
+		<servlet-name>Jersey Web Application</servlet-name>
+		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>org.imixs.workflow.jaxrs</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Jersey Web Application</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+	
+	
+	<!-- BASIC Login - used for REST Service -->
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>imixsrealm</realm-name>
+	</login-config>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>restricted</web-resource-name>
+			<url-pattern>/*</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>POST</http-method>
+			<http-method>PUT</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>org.imixs.ACCESSLEVEL.READERACCESS</role-name>
+			<role-name>org.imixs.ACCESSLEVEL.AUTHORACCESS</role-name>
+			<role-name>org.imixs.ACCESSLEVEL.EDITORACCESS</role-name>
+			<role-name>org.imixs.ACCESSLEVEL.MANAGERACCESS</role-name>
+		</auth-constraint>
+	</security-constraint>
+
+	<security-role>
+		<role-name>org.imixs.ACCESSLEVEL.NOACCESS</role-name>
+	</security-role>
+	<security-role>
+		<role-name>org.imixs.ACCESSLEVEL.READERACCESS</role-name>
+	</security-role>
+	<security-role>
+		<role-name>org.imixs.ACCESSLEVEL.AUTHORACCESS</role-name>
+	</security-role>
+	<security-role>
+		<role-name>org.imixs.ACCESSLEVEL.EDITORACCESS</role-name>
+	</security-role>
+	<security-role>
+		<role-name>org.imixs.ACCESSLEVEL.MANAGERACCESS</role-name>
+	</security-role>
+</web-app>

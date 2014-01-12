@@ -1,0 +1,62 @@
+
+Mail Plugin 
+~~~~~~~~~~~~~~
+
+ The MailPlugin is a Java mail implementation for sending mails when processing a workItem.
+ To use this plugin in a Workflow application you need to add the following PluginClass to the Model 
+ Configuration:
+
++--------------------------------------------------------------------+
+ org.imixs.workflow.jee.plugins.MailPlugin
++--------------------------------------------------------------------+
+
+ See the Imixs Modeler Mail Documentation for details about mail activities.
+
+ Running the Imixs Java EE plugin requires a JNDI mail session configured for the application server
+ environment. 
+ The expected JNDI name for the mail session is
+
++--------------------------------------------------------------------+
+ org.imixs.workflow.mail
++--------------------------------------------------------------------+
+
+ The mail session object is used to send outgoing mails from the workflowManager EJB to Mailserver
+ See Java EE spec for details about Java mail sessions.
+
+* Deployment Descriptors
+~~~~~~~~~~~~~~~~~~~~~~~~
+ As the MailPlugin needs to lookup the Java mail session using a JNDI Lookup you need to provide a 
+ valide Resource Reference to the WorkflowManager Session EJB. Therefore you need to customize the
+  ejb-jar.xml and also sun-ejb-jar.xml in GlassFish to provide the WorkflowManager with a valid JNDI
+   Object.
+   
+**ejb-jar.xml
+~~~~~~~~~~~~~~~~~~~~~~~~
+  
++--------------------------------------------------------------------+
+......   
+	<session>
+		<ejb-name>WorkflowService</ejb-name>
+		<ejb-class>org.imixs.workflow.jee.ejb.WorkflowService</ejb-class>
+		<session-type>Stateless</session-type>
+		
+		<!-- Mail Configuration -->
+		<env-entry>
+			<description>Mail Plugin Session name</description>
+			<env-entry-name>IMIXS_MAIL_SESSION</env-entry-name>
+			<env-entry-type>java.lang.String</env-entry-type>
+			<env-entry-value>mail/org.imixs.workflow.mail</env-entry-value>
+		</env-entry>
+	   ....
+		<!-- Mail resource -->
+		<resource-ref>
+			<res-ref-name>mail/org.imixs.workflow.mail</res-ref-name>
+			<res-type>javax.mail.Session</res-type>
+			<res-auth>Container</res-auth>
+			<res-sharing-scope>Shareable</res-sharing-scope>
+		</resource-ref>
+ </session>
++--------------------------------------------------------------------+
+
+
+

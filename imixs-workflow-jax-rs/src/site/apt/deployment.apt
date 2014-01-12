@@ -1,0 +1,183 @@
+
+Deployment
+~~~~~~~~~~~~~~
+
+ Using the Imixs XML & Web Services in a Java Enterprise Application is really simple as all components follow
+ the JEE specification and are based on standard APIs. So these components can be included in any EAR very easy.
+  The following section describes the steps integrating the Imixs XML & Web Services into an Enterprise Archive 
+  (EAR).  
+  
+ If you whant to use the Client API to access a REST or SOAP Service from an existing Imixs Workflow Enterprise
+ Application you simply need the imixs-workflow-xml and imixs-workflow-api jars which can be added to any kind
+ of java application.
+ 
+   [Note:] The most easiest way building mixs Workflow Enterprise Application based on the JEE Workflow 
+   Components is to checkout either the imixs-workflow-jsf-sample Application ore
+   use the imixs-workflow-jee-archetype. The imixs-workflow-jee-archetype is a Maven module which automatically 
+   generates a file structure and default configuration for a deployable application. 
+   See the guide  {{{/jee/archetype/usage.html}Using the Imixs JEE Archetype}}.
+   
+
+ 
+ 
+* The EAR file structure
+~~~~~~~~~~~~~~
+ Basicly the Imixs XML & Web Services can be added as simple Java libraries (JARs) to your Java Application.
+ The REST and SOAP services are web modules which should be added into the root of your EAR.
+ The XML api can be deployed togehter with the core api and the JEE jar into the  
+ /lib folder of your archive as these are shared libaries which are used from all other modules.
+ 
+ So a typical folder structure of an EAR looks like this:
+ 
++------------------------------------------------------------------------+
+/
++- lib/
+|  +- imixs-workflow-api-x.x.x.jar    (Imixs Core Java api)
+|  +- imixs-workflow-jee-x.x.x.jar    (Imixs EJB & JPA)
+|  +- imixs-workflow-xml-x.x.x.jar    (Imixs XML)
++- imixs-workflow-jee-impl-x.x.x.jar  (Imixs EJB Implementation)
++- imixs-workflow-rest-x.x.x.jar      (Imixs REST Service)
++- imixs-workflow-soap-x.x.x.jar      (Imixs SOAP Service)
++- my_ejb_module.jar
++- my_web_module.war
++- ... 
++------------------------------------------------------------------------+
+
+   [Note:] The SOAP Services is optional and not necessary for a Imixs Enterprise Workflow 
+   Application.
+   For more details see also the {{{http://www.imixs.org/jee/deployment.html}Deployment introductions}}
+   for the Imixs JEE Implementation
+
+ 
+* Building an EAR file structure using Maven
+~~~~~~~~~~~~~~~~~~~~
+
+ As all components are provided as Maven Artifacts you can use a pom.xml file to build the EAR
+ Structure. The following example shows how to configure an Imixs Enterprise Workflow EAR with Maven
+ 
++------------------------------------------------------------------------+
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<description>jsf sample application</description>
+	<parent>
+		<artifactId>imixs-workflow-jsf-sample</artifactId>
+		<groupId>org.imixs.workflow</groupId>
+		<version>0.0.2-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.imixs.workflow</groupId>
+	<artifactId>imixs-workflow-jsf-sample-ear</artifactId>
+	<packaging>ear</packaging>
+	<version>0.0.2-SNAPSHOT</version>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-ear-plugin</artifactId>
+				<configuration>
+					<version>5</version>
+					<modules>
+						<webModule>
+							<groupId>org.imixs.workflow</groupId>
+							<artifactId>imixs-workflow-jsf-sample-web </artifactId>
+							<contextRoot>/workflow</contextRoot>
+						</webModule>
+						<ejbModule>
+							<groupId>org.imixs.workflow</groupId>
+							<artifactId>imixs-workflow-jsf-sample-ejb</artifactId>
+						</ejbModule>
+						
+						<!-- EJB JPA -->
+						<JarModule>
+							<groupId>org.imixs.workflow</groupId>
+							<artifactId>imixs-workflow-jee-impl </artifactId>
+						</JarModule>	
+						
+						<!-- SOAP Service -->
+						<webModule>
+							<groupId>org.imixs.workflow</groupId>
+							<artifactId>imixs-workflow-soap</artifactId>
+							<contextRoot>/workflow-soap</contextRoot>
+						</webModule>
+						
+						<!-- REST Service -->
+						<webModule>
+							<groupId>org.imixs.workflow</groupId>
+							<artifactId>imixs-workflow-rest</artifactId>
+							<contextRoot>/workflow-rest</contextRoot>
+						</webModule>
+						 	
+						<!-- Imixs Shared Libs -->
+						<JarModule>
+							<groupId>org.imixs.workflow</groupId>
+							<artifactId> imixs-workflow-api </artifactId>
+							<bundleDir>lib</bundleDir>
+						</JarModule>
+						<JarModule>
+							<groupId>org.imixs.workflow</groupId>
+							<artifactId> imixs-workflow-xml </artifactId>
+							<bundleDir>lib</bundleDir>
+						</JarModule>
+						<JarModule>
+							<groupId>org.imixs.workflow</groupId>
+							<artifactId>imixs-workflow-jee </artifactId>
+							<bundleDir>lib</bundleDir>
+						</JarModule>
+					
+					</modules>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<!-- Imixs Workflow  -->
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-api</artifactId>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-xml</artifactId>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-jee</artifactId>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-soap</artifactId>
+			<type>war</type>
+		</dependency>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-rest</artifactId> 
+			<type>war</type>
+		</dependency>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-jee-impl</artifactId>
+			<type>jar</type>
+		</dependency>
+	
+		<!-- Application dependencies -->
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-jsf-sample-web</artifactId>
+			<type>war</type>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-jsf-sample-ejb</artifactId>
+			<type>ejb</type>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+</project>
+
++------------------------------------------------------------------------+
+ 

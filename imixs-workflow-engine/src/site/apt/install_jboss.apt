@@ -1,0 +1,228 @@
+
+Installation and setup the JBoss Application Server
+~~~~~~~~~~~~~~
+
+ This sections will explain the configuration steps needed to successfully deploy the
+ Imixs Sample Application in conjunction with the JBoss Application Server. 
+ 
+ You can download the JBoss Server from the {{{http://www.jboss.org/jbossas}Jboss project site}}.
+ This side also includes an Installation guide for installing JBoss on different plattforms.
+ 
+ After you have installed (simply unzip the jboss-5.1.0.GA.zip) JBoss server you can start the server by
+ swtching into the 
+ JBOSS_DIST/jboss-<release>/bin 
+ directory and execute the run.bat (for Windows) 
+ or run.sh (for Linux) script, as appropriate for your operating system. 
+ 
+  After the server is started you can open the JBoss web console with
+
++------------------------------------+  
+  http://localhost:8080/admin-console
++------------------------------------+  
+  
+ The default user name and password is 'admin'
+ 
+ You can setup easily a new JBoss server configuration by simply copying the folder
+ 
+ JBOSS_DIST/jboss-as/server/default
+ 
+ into a new folder. For example
+ 
+ JBOSS_DIST/jboss-as/server/imixs
+ 
+ To start the server with this alternate configuration file set, pass the name of the server configuration
+ file set [same as the name of the server configuration directory under JBOSS_DIST/jboss-as/server]
+ that you want to use, as the value to the -c  command line option.
+ For example, to start a imixs configuration file set you should specify:
+
++------------------------------------+  
+ [bin]$ ./run.sh -c imixs
++------------------------------------+  
+ 
+ 
+* Download the Imixs Sample Application
+~~~~~~~~~~~~~~
+
+ After you have successful installed the JBoss Server you can download the Imixs Sample Application
+ for JBoss from the
+ {{{http://java.net/projects/imixs-workflow/downloads}Imixs Download page}}
+
+
+* Adding MySQL support 
+~~~~~~~~~~~~~~ 
+
+ JBoss supports a build in database. To use the MySQL Database you can add an additional configuration
+ with the environment settings for MySQL.
+ The following guide shows how to add a new MySQL datasource for the Imixs Sample Application:
+ 
+ First make the JDBC driver classes available to the JBoss Application Server. Copy the 
+ archive mysql-mysql-connector-java-5.1.5-bin.jar from the Connector/J distribution to
+ the lib  directory in the default server configuration (assuming that is the server 
+ configuration you are running). 
+ 
+ JBOSS_INSTALL/server/imixs/lib 
+ 
+ if you are running jboss with a custom configuration. 
+ (Otherwise copy the jar into the JBOSS_INSTALL/server/default/lib)
+ 
+ Then create a text file in the deploy directory called mysql-ds.xml with the following 
+ datasource descriptor:
+
++-------------------------------------------+
+<?xml version="1.0" encoding="UTF-8"?>
+<datasources>
+  <local-tx-datasource>
+    <jndi-name>jdbc/workflow-db</jndi-name>
+    <connection-url>jdbc:mysql://localhost:3306/jboss_test</connection-url>
+    <driver-class>com.mysql.jdbc.Driver</driver-class>
+    <user-name>root</user-name>
+    <password>adminadmin</password>
+    <exception-sorter-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLExceptionSorter</exception-sorter-class-name>
+    <use-java-context>false</use-java-context>
+    <exception-sorter-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLExceptionSorter</exception-sorter-class-name>
+    <valid-connection-checker-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLValidConnectionChecker</valid-connection-checker-class-name>
+    <metadata>
+       <type-mapping>mySQL</type-mapping>
+    </metadata>
+  </local-tx-datasource>
+</datasources>
++-------------------------------------------+
+
+ This mysql setting file assumes that you have created a MySQL Database schema called 'imixs_test'
+ The datasource is pointing at the database called imixs_test provided by default with 
+ MySQL 5.x. Remember to update the connection url attributes as well as the
+ combo username/password to match your environment setup. 
+ 
+ 
+ 
+*Install EclipseLink 
+~~~~~~~~~~
+
+ Most of the EJB/JPA examples for Imixs JEE components expect the EclipseLink JPA Provider. To add this
+ provider to your JBoss server download EclipseLink from the 
+ {{{http://www.eclipse.org/eclipselink/downloads/}eclipse download site}}
+ 
+ Unzip the libraries and copy form the jlib folder the eclipselink.jar into your JBoss lib
+ 
+ JBOSS_INSTALL/server/imixs/lib 
+ 
+ if you are running jboss with a custom configuration. (Otherwise copy the jar into the JBOSS_INSTALL/server/default/lib)
+ 
+ Read more about using MySQL with JBoss on the {{{http://wiki.eclipse.org/EclipseLink/Examples/JPA/Migration/JBoss}EclipseLink Migration guide}}.
+ 
+ 
+
+*Adding Jersey Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ 
+ The {{{http://www.imixs.org/xml/restservice.html}Imixs REST Service API}} which is used by the Imixs Sample Application is build on Jersey which 
+ is not part of JBoss 5.1.0.GA. But you can add the jersey-server to your jboss server configuration
+ when you copy the following jersey jars into the lib folder 
+ 
+ JBOSS_INSTALL/server/imixs/lib 
+ 
+ if you are running jboss with a custom configuration. (Otherwise copy the jar into the JBOSS_INSTALL/server/default/lib)
+ 
+	* asm-3.1.jar
+	
+	* jersey-core-1.3.jar
+
+	* jersey-server-1.3.jar
+
+	* jsr311-api-1.1.1.jar
+ 
+ You will find download links on the {{{https://jersey.dev.java.net/}Jersey project site}}.
+ See also the {{{http://www.imixs.org/xml/deployment_rest_service.html}Imixs Rest Service deployment guide}} 
+ for additional informations about Jersey.
+ 
+
+*Adding a Security Policy for the realm 'imixsrealm'
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ The Imixs Sample Application expects a relam named 'imixsrealm'.
+ You can add the Security Policy for this realm to your JBOSS_INSTALL/server/imixs/conf/login-config.xml
+
++-------------------------------------------+
+.....
+    <application-policy name = "imixsrealm">  
+           <authentication>  
+              <login-module code="org.jboss.security.auth.spi.UsersRolesLoginModule"  
+                 flag = "required">  
+               <module-option name="usersProperties">users.properties</module-option>  
+               <module-option name="rolesProperties">roles.properties</module-option>  
+              </login-module>  
+           </authentication>  
+    </application-policy>   
+...
++-------------------------------------------+
+ 
+ Place this additional application-policy just before the application-policy named "other"
+ 
+ Next create two new files named 'users.properties' and 'roless.properties' into the /conf/ folder. In these files
+ you can define the usersnames and roles.
+ 
+ For testing use the following Usernames and Roles
+
+*--------------+-------------------------+------------------------------------+ 
+| UserID       |GroupName                |Description                         | 
+*--------------*-------------------------*------------------------------------+
+|Manfred       |IMIXS-WORKFLOW-Manager   | This user will have maximum access |
+*--------------*-------------------------*------------------------------------+
+|Eddy          |IMIXS-WORKFLOW-Editor    | User can edit all workitems         |
+*--------------*-------------------------*------------------------------------+
+|Anna          |IMIXS-WORKFLOW-Author    | User will be allowed to create     |
+|              |                         | workitems and edit his own         |
+*--------------*-------------------------*------------------------------------+
+|Ronny         |IMIXS-WORKFLOW-Reader    | This user will be only allowd to   |
+|              |                         | read workitems                     |
+*--------------*-------------------------*------------------------------------+
+|Norbert       |                         |This user will have no access (just |
+|              |                         |to be sure security works well)    |
+*--------------*-------------------------*------------------------------------+
+
+
+ users.properties
+
++------------------------------------+  
+Manfred=123
+Eddy=123
+Anna=123
+Ronny=123
+Norbert=123
++------------------------------------+  
+
+ roless.properties
+
++------------------------------------+  
+Manfred=IMIXS-WORKFLOW-Manager
+Eddy=IMIXS-WORKFLOW-Editor
+Anna=IMIXS-WORKFLOW-Author
+Ronny=IMIXS-WORKFLOW-Reader
++------------------------------------+  
+
+ It is also possible to configure other security bindings as the file based described here. 
+ Only the realm name and user roles should match to "imixsrealm" and the role names defined here. 
+ 
+ 
+ 
+* Deploy the Imixs Sample Application
+~~~~~~~~~~~~~~
+
+ Now install the EAR file of the Imixs Sample Application by the following steps:
+
+   1. Be sure, that your database server is up and running. 
+
+   2. Be sure, that the server, which you will deploy the application on, is alive. 
+
+   3. Now you can start the Admin Console in the browser. 
+      >http://[ name of the server ]:8080/admin-console/
+
+   4. Choose Applications -> Enterprise Application (EAR)s  and click the button "add new resource" in the main frame
+
+   5. browse to where the ear file of the Imixs Sample Application is stored
+
+   7. press the button "continue" 
+
+
+ {{{./install_model.html}Next...}}
+ 

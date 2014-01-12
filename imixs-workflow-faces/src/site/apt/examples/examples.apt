@@ -1,0 +1,13 @@
+
+How to use the Imixs JSF Tools
+~~~~~~~~~~~~~~~~~~~~
+ 
+ In the next section we will give you some examples how the Imixs Web Tools can be used in a web
+ application. The examples assume that you are familiar with JSF development.
+ Before your can use the Imixs Web Tools you need to deploy the Imixs Workflow engine into 
+ your web module (WAR) or enterprise archive (EAR). 
+ 
+ See the {{{../deployment.html}deployment sections}} fore more details.
+
+
+ 

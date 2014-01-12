@@ -1,0 +1,13 @@
+{
+	"item":[
+			{"name":"$isauthor","value":{"@type":"xs:boolean","$":"true"}},
+			{"name":"$readaccess","value":{"@type":"xs:string","$":"Anna"},
+	"value":{"@type":"xs:string","$":"worklist"}},
+			{"name":"txtlog","value":[
+				{"@type":"xs:string","$":"A"},
+				{"@type":"xs:string","$":"B"},
+				{"@type":"xs:string","$":"C"}]
+			},
+			{"name":"$activityid","value":{"@type":"xs:int","$":"10"}}
+		]
+}

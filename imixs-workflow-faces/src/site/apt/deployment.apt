@@ -1,0 +1,115 @@
+
+Deployment
+~~~~~~~~~~~~~~
+
+ Since Java EE 6 now supports the lightweight Web Profiles it is much easier to deploy Java EE component
+ into a web module.
+ To install and deploy the Imixs Workflow engine into your web application it is sufficient to bundle the 
+ Imixs Workflow engine together with the imixs-faces.jar into your web module.
+ You can add the Imixs components into the /lib folder of your web module:
+ 
++---------------------------------------------+ 
+  /
+  +- lib/
+  |  |- imixs-workflow-core.jar
+  |  |- imixs-workflow-engine.jar
+  |  |- imixs-workflow-faces.jar
+  |  |- imixs-workflow-jax-rs.jar
+  
++---------------------------------------------+ 
+ 
+ Or if you are using Maven (which is recommended) you can simply add the following dependency into your pom.xml
+ 
++---------------------------------------------+ 
+	<!-- Imixs Workflow -->
+	<dependency>
+		<groupId>org.imixs.workflow</groupId>
+		<artifactId>imixs-workflow-engine</artifactId>
+		<type>jar</type>
+		<version>3.0.0-SNAPSHOT</version>
+	</dependency>
+	
+	<dependency>
+		<groupId>org.imixs.workflow</groupId>
+		<artifactId>imixs-workflow-jax-rs</artifactId>
+		<type>jar</type>
+		<version>3.0.0-SNAPSHOT</version>
+	</dependency>
+
+	<dependency>
+		<groupId>org.imixs.workflow</groupId>
+		<artifactId>imixs-workflow-faces</artifactId>
+		<type>jar</type>
+		<version>3.0.0-SNAPSHOT</version>
+	</dependency>
++---------------------------------------------+
+
+ This includes also the Imixs Rest Services which allow the deployment of Workflow models and an easy web service
+ interface. 
+
+ To check for the latest versions and download components provided by this project you can browse the 
+ {{{http://search.maven.org/#browse}Maven repository}} and search for keyword 'imixs'. 
+
+Adding a Database connection 
+~~~~~~~~~~~~~~~~~~~~
+
+ Finally you need to add a persistence.xml file into your web module. The persistence.xml file defines
+ how the workitems managed by the Imixs Workflow Engine will be persisted into a database.  
+ Add a file named persistence.xml into your web module:
+ 
++---------------------------------------------+ 
+	/
+	+- WEB-INF/classes/META-INF/
+	|  |- persistence.xml
++---------------------------------------------+  
+ 
+ The persistence.xml describes the location of you database. The following example shows a typical 
+ configuration using the Eclipselink driver provided by most JEE Application servers.
+ 
++---------------------------------------------+  
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence">
+	<!-- eclipselink -->
+	<persistence-unit name="org.imixs.workflow.jee.jpa" transaction-type="JTA">	
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>	
+		<jta-data-source>jdbc/workflow-db</jta-data-source>
+		<jar-file>lib/imixs-workflow-engine-3.0.0-SNAPSHOT.jar</jar-file>
+		<properties>
+			<property name="eclipselink.ddl-generation"
+				value="create-tables" />
+			<property name="eclipselink.logging.level" value="INFO"/>
+		</properties>				
+	</persistence-unit>
+</persistence>
++---------------------------------------------+  
+ 
+ A jndi database resource with the name "jdbc/workflow-db" have to be provided in your application server. 
+ For more details read {{{http://www.imixs.org/jee/install_glassfish.html}Setting up a Imixs Workflow database pool}}
+ 
+    [Note:] You can download the Imixs Sample Web Application from the {{{http://java.net/projects/imixs-workflow/downloads}download center}} to
+    get a deployable sample application. You can also checkout the source code from the {{{http://java.net/projects/imixs-workflow/sources/svn/show}Imixs souce code repository}}
+    to start with a web application template.
+ 
+ 
+Adding a BackingBean 
+~~~~~~~~~~~~~~~~~~~~
+
+ After you have added the Imixs Workflow engine to you web project you can add a BackingBean provided
+ by the Imixs-Faces jar file by simply extending the faces-config.xml file located in the /WEB-INF folder of
+ you web project.
+ 
++---------------------------------------------+
+<managed-bean>
+	<managed-bean-name>workflowMB</managed-bean-name>
+	<managed-bean-class>org.imixs.workflow.jee.jsf.util.SimpleWorkflowController</managed-bean-class>
+	<managed-bean-scope>session</managed-bean-scope>
+</managed-bean>
++---------------------------------------------+
+ 
+ If you subclass the AbstractWorkflowController you should add the Class name provided by the 
+ tag managed-bean-class.
+ This Example make use of the default SimpleWorkflowController.
+ 
+ Now deployment is finished and you can use the new Controller in you JSF Pages. 
+ 
+ 

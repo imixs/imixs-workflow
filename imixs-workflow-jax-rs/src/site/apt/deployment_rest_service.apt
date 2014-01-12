@@ -1,0 +1,249 @@
+
+Deployment REST Service
+~~~~~~~~~~~~~~
+ 
+ The Imixs REST Service is provided as a WAR Module which can be simply added into an EAR together 
+ with the Imixs JEE Workflow. In this case the Imixs REST Service runs in the default configuration. 
+ So no additional configuration is necessary here. The Rest Services connects automatically to the
+ local EJBs from the Imixs JEE Workflow. For authentification against the Imixs REST Service 
+ the default configuration expects a realm name called "imixsrealm". 
+ So you should provide a realm with the name "imixsrealm" in your server configuration if you are using 
+ the default configuration. 
+ 
+ This is an example of a EAR pom.xml showing how to add the Imixs REST Service as a web Module into 
+ the EAR.
+ 
++------------------------------------------------------------------------+
+ <project>
+  .....
+
+  <build>
+   <plugins>
+    <plugin>
+	 <groupId>org.apache.maven.plugins</groupId>
+	 <artifactId>maven-ear-plugin</artifactId>
+	 <configuration>
+		<version>5</version>
+		<modules>			
+	     <!-- REST Service -->
+	     <webModule>
+		  <groupId>org.imixs.workflow</groupId>
+		  <artifactId>imixs-workflow-rest</artifactId>
+		  <contextRoot>/workflow-rest</contextRoot>
+	     </webModule>
+  	     ......
+	    </modules>
+	</configuration>
+	</plugin>	
+	</plugins>
+</build>
+<dependencies>
+	....
+	<dependency>
+	 <groupId>org.imixs.workflow</groupId>
+	 <artifactId>imixs-workflow-rest</artifactId> 
+	 <type>war</type>
+	 <version>2.1.1</version>	 
+	</dependency>
+	......
+</dependencies>
+</project>
++------------------------------------------------------------------------+
+ 
+* Using Maven Overlays to add the Imixs-REST into a web module
+~~~~~~~~~~~~~~
+ 
+ Alternatively you can bundle the Imixs REST Service with an existing web module provided by an EAR.
+ 
+ In this deployment scenario you have lot of flexibility to configure the Imixs REST Service.
+ For example you can change the authentification mechanism from BASIC to a session based 
+ authentification.
+ Also you can configure additional user roles provided by your workflow instance.  
+ You can overwrite the existing implementation by using
+ the Maven overlay mechanism. 
+ To use the Maven overlay simply add the dependency to the imixs-workflow-rest artifact to you web module. 
+ See the following example:
+
++------------------------------------------------------------------------+ 
+ <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>imixs-workflow-jsf-sample</artifactId>
+		<groupId>org.imixs.workflow</groupId>
+		<version>0.0.2</version>
+	</parent>
+	<groupId>org.imixs.workflow</groupId>
+	<artifactId>imixs-workflow-jsf-sample-rest</artifactId>
+	<version>0.0.2</version>
+	<packaging>war</packaging>
+	<dependencies>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-rest</artifactId>
+			<version>2.1.1</version>
+			<type>war</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>1.3</version>
+		</dependency>
+	</dependencies>
+</project>
++------------------------------------------------------------------------+ 
+
+ The Imixs REST Service will become part of your own web module and so you can add the Servlet configuration 
+ for the Imixs REST Service directly to your existing web.xml descriptor.
+ 
+ Example:
+
++------------------------------------------------------------------------+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app>
+......
+	<servlet>
+		<servlet-name>Jersey Web Application</servlet-name>
+		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>org.imixs.workflow.jee.rest.jaxrs</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Jersey Web Application</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+......	
+	
+	<!-- EJB Refs necessary for GF 1.2 and GF 3 if @session annotation is left -->
+	<ejb-local-ref>
+		<ejb-ref-name>org.imixs.workflow.jee.ejb.EntityService</ejb-ref-name>
+		<ejb-ref-type>Session</ejb-ref-type>
+		<local-home/>
+		<local>org.imixs.workflow.jee.ejb.EntityService</local>
+	</ejb-local-ref>
+	<ejb-local-ref>
+		<ejb-ref-name>org.imixs.workflow.jee.ejb.WorkflowService</ejb-ref-name>
+		<ejb-ref-type>Session</ejb-ref-type>
+		<local-home/>
+		<local>org.imixs.workflow.jee.ejb.WorkflowService</local>
+	</ejb-local-ref>
+	<ejb-local-ref>
+		<ejb-ref-name>org.imixs.workflow.jee.ejb.ModelService</ejb-ref-name>
+		<ejb-ref-type>Session</ejb-ref-type>
+		<local-home/>
+		<local>org.imixs.workflow.jee.ejb.ModelService</local>
+	</ejb-local-ref>
+	<ejb-local-ref>
+		<ejb-ref-name>org.imixs.workflow.jee.ejb.ReportService</ejb-ref-name>
+		<ejb-ref-type>Session</ejb-ref-type>
+		<local-home/>
+		<local>org.imixs.workflow.jee.ejb.ReportService</local>
+	</ejb-local-ref>
+
+	<!-- BASIC Login - used for REST Service -->
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>imixsrealm</realm-name>
+	</login-config>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>restricted</web-resource-name>
+			<url-pattern>/*</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>POST</http-method>
+			<http-method>PUT</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>org.imixs.ACCESSLEVEL.MANAGERACCESS</role-name>
+		</auth-constraint>
+	</security-constraint>
+
+	<security-role>
+		<role-name>org.imixs.ACCESSLEVEL.NOACCESS</role-name>
+	</security-role>
+	<security-role>
+		<role-name>org.imixs.ACCESSLEVEL.READERACCESS</role-name>
+	</security-role>
+	<security-role>
+		<role-name>org.imixs.ACCESSLEVEL.AUTHORACCESS</role-name>
+	</security-role>
+	<security-role>
+		<role-name>org.imixs.ACCESSLEVEL.EDITORACCESS</role-name>
+	</security-role>
+	<security-role>
+		<role-name>org.imixs.ACCESSLEVEL.MANAGERACCESS</role-name>
+	</security-role>
+</web-app>
+ 
++------------------------------------------------------------------------+
+
+
+ When using the maven overlay mechanism it is no longer necessary to add the Imixs REST Service in the 
+ devault configuration to your EAR because maven will add the content of the Imixs REST Service to your 
+ own Web module. 
+ 
+ 
+   [Note:] Because of a restriction of the Jersey 1.3 Implementation the 
+   root resource classes of the Imixs REST Service module can not be accessed by the Jersey Server if they are 
+   not part of a web module. Since Glassfish 3 you can not reference the root resource classes from an 
+   external jar or war. The root resource classes need to be part of the war where the Jersey servlet is configured. 
+   You will see the following exception if Imixs REST Service classes are not found in WEB-INF/classes:
+
+	com.sun.jersey.api.container.ContainerException: The ResourceConfig instance does not contain any root resource classes.
+    
+
+
+*Using Jersey on JEE5 plattform
+~~~~~~~~~~~~~~
+
+ JAX-RS is part of the Java EE6 specification. So in cases when you are deploying the Imixs REST 
+ Service on a JEE6 Application Server providing the Jersey implementation (like Glassfish V3) there is 
+ no additional configuration needed.
+ 
+ If you want to deploy the Imixs REST Services on a JEE5 Server or other App Servers without a Jersey implementation
+ like JBoss 5.1.x you need to add Jersey support manually.
+ 
+ You can simply add the following libraries to the classpath of the app server to add the Jersey Server:
+ 
+	* asm-3.1.jar
+    
+	* jersey-core-1.3.jar
+	
+	* jersey-server-1.3.jar
+	
+	* jsr311-api-1.1.1.jar
+ 
+ 
+ Another solution is to add the Jersey/JAX-RS API directly into the EAR. 
+ Use the following Maven dependency to add Jersey to your EAR module:
+
++------------------------------------------------------------------------+
+....
+		  <dependency> 
+                 <groupId>com.sun.jersey</groupId>
+                 <artifactId>jersey-server</artifactId> 
+                 <version>1.3</version>
+		 </dependency>
+....		
++------------------------------------------------------------------------+
+
+
+*EJB Injection
+~~~~~~~~~~~~~~
+		
+ The Imixs REST Service implementation provides an EJB Provider to inject EJB ressources. 
+ This provider is based on the Jersey Implementation.
+ 
+ Read more: 
+ 
+  {{{http://blogs.sun.com/sandoz/entry/ejb_injection}http://blogs.sun.com/sandoz/entry/ejb_injection}}
+
+  {{{https://jersey.dev.java.net/servlets/ReadMsg?listName=users&msgNo=3712}https://jersey.dev.java.net/servlets/ReadMsg?listName=users&msgNo=3712}}
+
+  {{{http://forums.java.net/jive/message.jspa?messageID=398185}http://forums.java.net/jive/message.jspa?messageID=398185}}
+  

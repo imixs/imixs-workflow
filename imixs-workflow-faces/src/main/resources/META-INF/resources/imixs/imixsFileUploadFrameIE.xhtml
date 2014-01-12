@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:i="http://java.sun.com/jsf/composite/imixs">
+<h:head>
+
+	<!-- special implementation for windows IE  -->
+
+
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta content="text/javascript" http-equiv="Content-Script-Type" />
+	<meta content="text/css" http-equiv="Content-Style-Type" />
+	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+
+	<title>Imixs Fileupload Panel</title>
+	<link
+		href="#{facesContext.externalContext.requestContextPath}/imixs/css/imixs.css"
+		charset="UTF-8" type="text/css" rel="stylesheet" />
+
+	<i:imixsHeader disablecss="true" disabletinymce="true" />
+
+	<script type="text/javascript">
+		/*<![CDATA[*/
+		$(document).ready(function() {
+			// hide sections if query param available
+			if (parent.top.imixsfileupload_hideattachments) {
+				$(this).find('table[id$=imixsfileuploadattachments]').hide();
+			}
+			if (parent.top.imixsfileupload_hideuploads) {
+				$(this).find('table[id$=imixsfileuploaduploads]').hide();
+			}
+		});
+
+		function autoupload() {
+			$("[id$=uploadfileButton]").click();
+		}
+
+		/*]]>*/
+	</script>
+</h:head>
+<h:body style="min-width:0;padding:0;">
+
+
+	<h:form id="imixsfileuploadform" enctype="multipart/form-data">
+
+		<div id="imixsfileuploadcontrol">
+
+			<div id="imixsfileuploadcontent" style="font-size: 12px; color: #444">
+				<h:dataTable id="imixsfileuploaduploads"
+					value="#{fileUploadController.uploadedFiles}" var="file"
+					class="imixsfileuploadtable">
+
+					<h:column>
+						<h:outputText value="#{file.name}">
+						</h:outputText>
+					</h:column>
+					<h:column>
+						<h:outputText value="#{file.contentType}">
+						</h:outputText>
+					</h:column>
+					<h:column>
+						<h:outputText value="#{file.size}">
+						</h:outputText>
+					</h:column>
+				</h:dataTable>
+
+				<!-- attached files -->
+				<h:dataTable id="imixsfileuploadattachments"
+					value="#{fileUploadController.attachedFiles}" var="attachment"
+					class="imixsfileuploadtable">
+
+					<h:column>
+						<h:outputText escape="false" value="&lt;a target='_balnk' href='" />
+						<h:outputText escape="false"
+							value="#{fileUploadController.restServiceURI}#{fileUploadController.workitemID}/file/#{attachment}" />
+						<h:outputText escape="false" value="'&gt;#{attachment}&lt;/a&gt;" />
+					</h:column>
+
+					<!--  Loeschen  -->
+					<h:column>
+						<h:commandLink title="#{global.delete}"
+							action="#{fileUploadController.removeAttachmentAction(attachment)}">
+							<h:graphicImage border="0" url="/layout/icons/remove.gif" />
+						</h:commandLink>
+					</h:column>
+
+				</h:dataTable>
+
+			</div>
+
+			<!-- hidden control elements -->
+			<div id="uploader" style="">
+				<span><input type="file" name="imixsFileUpload"
+					onchange="autoupload();" id="#{cc.clientId}:imixsFileUpload"
+					style="" /><h:commandButton id="clearbutton"
+						actionListener="#{fileUploadController.doClear}" value="Clear"></h:commandButton>
+				</span>
+				<h:commandButton id="uploadfileButton" style="visibility:hidden; "
+					actionListener="#{fileUploadController.doUpload}" value="Upload" />
+
+			</div>
+			<div style="clear: left;" />
+		</div>
+	</h:form>
+
+
+
+</h:body>
+
+</html>

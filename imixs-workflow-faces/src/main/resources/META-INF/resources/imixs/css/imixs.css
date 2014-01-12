@@ -1,0 +1,35 @@
+/* Fileupload control */
+#imixsfileuploadform {
+	
+}
+
+#imixsfileuploadcontrol {
+	width: 340px;
+	overflow: hidden;
+}
+
+#imixsfileuploadcontent {
+	overflow: auto;
+}
+
+#imixsfileuploadattachments {
+	
+}
+
+#imixsfileuploaduploads {
+	
+}
+
+.imixsfileuploadtable tbody tr td {
+	border: 0px;
+	border-bottom: 1px solid #CCC;
+}
+
+.imixsfileuploadtable tbody tr {
+	border: 0px;
+	border-bottom: 1px solid red;
+}
+
+.imixsfileuploadtable a {
+	text-decoration: none;
+}

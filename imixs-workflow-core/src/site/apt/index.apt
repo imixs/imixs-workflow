@@ -1,0 +1,68 @@
+            ------
+            How dos it work?
+            ------
+            Ralph Soika - Imixs Software Solutions GmbH
+            ------
+
+            
+             
+             
+How does it work?
+~~~~~~~~~~~~~~
+
+ Imixs Workflow provides a framework for the development and management of business applications 
+ in a very simple and flexible way. Imixs Workflow allows you to store business data and define 
+ the workflow in a business process model, so you can implement your applications faster and more flexible!
+ 
+ The Imixs Workflow project focuses on human based workflow. This means that a business process is 
+ typically controlled by the user (actor). During a business process Imixs Workflow provides users 
+ with all necessary information such as different task lists and process documentation. The Workflow 
+ System assists users in starting a new process, finding a document and in the completion of 
+ current jobs. The following illustration demonstrates the typical flow of a document or datasheet 
+ from one user to another controlled by a Workflow Management System.
+ 
+[images/imixs-overview.png]
+ 
+ The Workflow Management System - also called WFMS or Workflow System - controls the flow of a document or datasheet 
+ between the different users. The workflow model defines the process flow from one actor to another.
+ 
+* The Actors
+~~~~~~~~~~~~~~~~~~~~ 
+ A Workflow Management System controls which users can start a new business process or process a running task.
+ Each business process defines different users to be involved during a workflow. These users are called Actors. 
+ The Actor interacts with the Workflow Management System during a business process. 
+ Actors can either start, update or read a process instance. 
+ The Workflow Mangement System grants actors to access a specific process instance. 
+ This means that a user which is not in involved during a workflow will not be allowed
+ to access a running process instance. A Workflow Management System provides a security layer
+ to process confidential business data.  
+ 
+ 
+* The Workitem
+~~~~~~~~~~~~~~~~~~~~ 
+ In a Workflow Management System the document or data which is edited by different actors is called a 
+ Workitem. One workitem can assume different states during a business process.
+ If a workitem is still processed by actors and not yet finished the workitem is 
+ called a running process instance. The status of a process instance is defined by the workflow model.
+ 
+
+* The Workflow Model
+~~~~~~~~~~~~~~~~~~~~ 
+  The Workflow Model defines which status a process instance can present. If an actor completes a task 
+  from his tasklist the process instance is processed by the
+  Workflow Management System and can be assigned to a new status. This change form one status to another 
+  is defined by a Workflow Activity. 
+  
+
+
+* Tasklist and Statuslist
+~~~~~~~~~~~~~~~~~~~~ 
+ A Workflow Management System provides actors with different views about running process instances.
+ A tasklist contains all open tasks from the view of an individual actor.
+ The statuslist provides the user with the latest status information about running process instances.
+ For example a tasklist can contain new customers orders from an online shop. 
+ The statuslist can be used by a customer to see the current processing status of his own orders.  
+ 
+ 
+ 
+ 

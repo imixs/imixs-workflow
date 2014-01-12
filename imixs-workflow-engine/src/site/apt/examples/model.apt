@@ -1,0 +1,29 @@
+
+The Workflow Model
+~~~~~~~~~~~~~~~~~~~~
+  The Model interface defines a workflow model used by the WorkflowManger.
+  Typical there is no need to interact with the Model Interface inside you 
+  application as the model is controlled by the WorkflowManger.
+  
+  But in some cases is will be necessary to lookup a ProcessEntity or ActivityEntity
+  from the mode.
+  
+  To process a workitem you can simply call the process() method of the 
+  WorkflowManager interface. 
+
++------------------------------------------------------------------------+
+  Model model;
+  //....
+  // lookup a ProcessEntiy 
+  model.getProcessEntity(100);
+  //...
+  // receive the processEntityList containing all Process Entities
+  Collection<ItemCollection> col1=model.getProcessEntityList();
+  // receive a collection of all Activities for a Process Entity
+  Collection<ItemCollection> col2=model.getActivityEntityList(processid)
+	
++------------------------------------------------------------------------+
+
+  For more informations of how a Model Implementation works see the Imixs JEE Components
+  which provide a Workflow Model Component used by the Imixs JEE Workflow Manger.
+     

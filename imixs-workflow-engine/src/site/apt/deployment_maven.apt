@@ -1,0 +1,152 @@
+
+Deployment using Maven
+~~~~~~~~~~~~~~
+
+ Using {{{/api/maven_howto.html}Maven}} makes it easy to setup an Enterprise Workflow Application.
+ Most of the steps described in the {{{./deployment.html}deplyoment guide}} can be simplified.
+ The following section will describe how you can use maven in your EAR and how you should setup
+ the EAR and EJB pom.xml files.
+ 
+* Configuring the EJB Module using maven
+~~~~~~~~~~~~~~ 
+ 
+ Using the maven-ejb-plugin you can add a declaration for additional manifest entries.
+ This makes it easy to add the Imixs JEE Components into your EJB module. 
+ The following example shows how to add the additional configuration to your pom.xml 
+ 
++------------------------------------------------------------------------+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<artifactId>imixs-workflow-jsf-sample</artifactId>
+		<groupId>org.imixs.workflow</groupId>
+		<version>0.0.2-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.imixs.workflow</groupId>
+	<artifactId>imixs-workflow-jsf-sample-ejb</artifactId>
+	<packaging>ejb</packaging>
+	<version>0.0.2-SNAPSHOT</version>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-ejb-plugin</artifactId>
+				<configuration>
+					<ejbVersion>3.0</ejbVersion>
+					<archive>
+						<!-- add the EJB module imixs-workflow-jee-impl -->
+						<manifestEntries>
+							<Class-Path>imixs-workflow-engine-3.0.0.jar imixs-workflow-core-3.0.0.jar</Class-Path>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+	</dependencies>
+</project>
++------------------------------------------------------------------------+ 
+ 
+ Be careful that the jar versions defined by the Class-Path entry are matching the versions provided by 
+ the EAR module!
+ 
+*Packaging the Imixs JEE Component into an EAR using maven
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ 
+ To package the Imixs JEE components into your EAR you can extend the pom.xml of your ear module.
+ The following example shows how you define the structure of your EAR using maven:
+ 
++------------------------------------------------------------------------+ 
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<description>jsf sample application</description>
+	<parent>
+		<artifactId>imixs-workflow-jsf-sample</artifactId>
+		<groupId>org.imixs.workflow</groupId>
+		<version>0.0.2-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.imixs.workflow</groupId>
+	<artifactId>imixs-workflow-jsf-sample-ear</artifactId>
+	<packaging>ear</packaging>
+	<version>0.0.2-SNAPSHOT</version>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-ear-plugin</artifactId>
+				<configuration>
+					<version>5</version>
+					<modules>
+						<webModule>
+							<groupId>org.imixs.workflow</groupId>
+							<artifactId>imixs-workflow-jsf-sample-web </artifactId>
+							<contextRoot>/workflow</contextRoot>
+						</webModule>
+						<!--  -->
+						<ejbModule>
+							<groupId>org.imixs.workflow</groupId>
+							<artifactId>imixs-workflow-jsf-sample-ejb</artifactId>
+						</ejbModule>
+						
+						<!-- EJB JPA -->
+						<JarModule>
+							<groupId>org.imixs.workflow</groupId>
+							<artifactId>imixs-workflow-engine </artifactId>
+						</JarModule>	
+						
+						<!-- Imixs Shared Libs -->
+						<JarModule>
+							<groupId>org.imixs.workflow</groupId>
+							<artifactId> imixs-workflow-core </artifactId>							
+						</JarModule>
+						
+					
+					</modules>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<!-- Imixs Workflow  -->
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-core</artifactId>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-engine</artifactId>
+			<type>jar</type>
+		</dependency>
+	
+		<!-- Application dependencies -->
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-jsf-sample-web</artifactId>
+			<type>war</type>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-jsf-sample-ejb</artifactId>
+			<type>ejb</type>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+</project>
+
++------------------------------------------------------------------------+ 
+ 
+ 
+ 

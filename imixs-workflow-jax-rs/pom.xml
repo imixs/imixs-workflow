@@ -1,0 +1,70 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>imixs-workflow</artifactId>
+		<groupId>org.imixs.workflow</groupId>
+		<version>3.1.6-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>imixs-workflow-jax-rs</artifactId>
+	<name>RESTful API</name>
+
+
+	<description>Imixs Workflow REST Service API provides a servlet implementation for the Imixs JEE Workflow Components.</description>
+
+	<scm>
+		<connection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-jax-rs/trunk</connection>
+		<developerConnection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-jax-rs/trunk</developerConnection>
+		<url>
+			scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-jax-rs/trunk
+		</url>
+	</scm>
+
+	<licenses>
+		<license>
+			<name>GNU General Public License</name>
+			<url>http://www.gnu.org/licenses/gpl-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>All the results of the imixs workflow project are subject to the GPL licensing model. </comments>
+		</license>
+	</licenses>
+
+
+	<build>
+
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-engine</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>jsr311-api</artifactId>
+			<version>1.1.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>1.1.5.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- apache fop dependency -->
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>fop</artifactId>
+			<version>1.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+	</dependencies>
+
+
+</project>

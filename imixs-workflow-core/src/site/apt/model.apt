@@ -1,0 +1,89 @@
+            ------
+            The Workflow Model
+            ------
+            Ralph Soika - Imixs Software Solutions GmbH
+            ------
+ 
+ 
+ 
+ 
+ 
+The Model Interface
+~~~~~~~~~~~~~~~~~~~~
+
+ The interface org.imixs.workflow.Model is used to encapsulate the behavior of a workflow model 
+ logic. For this purpose, the model provides functions for finding Process Entities and 
+ Activity Entities inside a model definition. 
+ A Process Entity contains informations about a model state within the model definition such 
+ as a name or status designation. 
+ A Process Entity is typically represented as a Node inside a graphical workflow model. 
+ On the contrary, an activity entity contains all information required for process
+ control. An activity entity is typical represented as an edge inside a graphical workflow model. 
+ An activity entity can be assigned to a workitem by the property "$ActivityID". 
+ The WorkflowKernel determine the associated ActivityEntity and 
+ forwards the activity together with the WorkItem to the registered plugins.
+
+ The model is always instantiated by a specific WorkflowManager Implementation like the 
+ {{{/jee/}Imixs JEE Workflow}}.
+ 
+       [Note:]  When you work with a WorkflowManager implementation like the 
+       {{{/jee/}Imixs JEE Workflow}}  it is not necessary to 
+       manage the model definition manual in your code. This will be done by the WorkflowManager
+       and the {{{/modeler/}Imixs Workflow Modeler}}.
+ 
+ 
+
+
+ModelService
+~~~~~~~~~~~~~~
+
+  A model defines the process flow in a workflow management system. 
+  The Model Interface provides methods to access the model informations. 
+  The workflow model is basically defined by two data objects. The ProcessEntity and the ActivityEntity.
+  A ProcessEntity can contain a set of ActivityEntites. This means that a  1:n relationship exists 
+  between ProcessEntities and ActivityEntities. So an ActivityEntity is unambiguously assigned to 
+  a ProcessEntity.
+  Both the ProcessEntity and the ActivityEntity Data objects are represented as instances of the Class 
+  {{{../examples/itemcollection.html}ItemCollection}}.
+
+*The ProcessEntity
+~~~~~~~~~~~~~~ 
+
+ A ProcessEntity contains accurate information about a process stage within the WorkflowModel
+  such as the name or the status designation. It is used to unambiguously define the status of 
+  a WorkItem. A ProcessEntity is defined by a unique ID. A model cannot contain several ProcessEntities
+   having the same ID.
+  The following attributes must be provided by each instance of an ProcessEntity 
+  
+   * numProcessID  - an integer unique identifier for the ProcessEntity inside the model
+   
+   * txtName  - The name for the Entity
+   
+   * txtWorkflowGroup - The name of the ProcessGroup the Entity belongs to.
+
+*ActivityEntity
+~~~~~~~~~~~~~~
+ On the contrary, an ActivityEntity contains all information required to process a workitem. 
+ The Activity defines the process flow of a Workitem from one ProcessEntiy to another. A ActivityEntity
+ is assigned to a ProcessEntiy. The ID of each ActivityEntiy must be unique inside a collection of
+ Activities assigned to the same ProcessEntity.
+ The ActivityEntity must provide the following items:
+ 
+   * numProcessID - an integer ID which associates the ActivityEntity to a ProcessEntity
+   
+   * numActivityID - an integer unique identifier for the ActivityEntity
+   
+   * numNextID - an Iteger ID which defines the next ProcessEntity a workitem is assigned to after processing.
+
+   * txtName  - The name for the Entity
+ 
+ 
+
+ The WorkflCopy of modelservice.aptowKernel determines the associated Process and ActivityEntity and forwards 
+  the WorkItem to the registered plug-ins that then perform the platform specific process handling. 
+  After finishing process handling, the WorkflowKernel can update the status of the WorkItem using the 
+  information in the ActivityEntity and the associated ProcessEntity. The WorkflowKernel controls the 
+  process as defined by the model while the plug-ins perform the process handling.
+
+
+ See JavaDocs for detailed informations about the methods defined by the Model Interface

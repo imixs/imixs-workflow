@@ -1,0 +1,105 @@
+            ------
+            The Imixs API - Overview
+            ------
+            Ralph Soika - Imixs Software Solutions GmbH
+            ------
+ 
+ 
+ 
+The Imixs API - Overview
+~~~~~~~~~~~~~~~~~~~~
+ 
+ The Imixs Workflow API provides a platform independent open source workflow technology. This API is the 
+ foundation for all other components of the Imixs Workflow technology like the {{{/jee/}JEE based Workflow Engine}} or the 
+ {{{/jsf/}Imixs Web Tools}}.
+ 
+[images/imixs-architecture_api.png] 
+ 
+ The Imixs Workflow API defines a set of java classes and interfaces to create, control and monitor process-oriented
+ business tasks.  
+ The following section will give you a brief overview about the architecture defined by the Imixs Workflow API.
+ 
+* The Architecture
+~~~~~~~~~~~~~~~~~~~~
+
+ The Imixs Workflow API consists of a small set of interfaces and classes which are implemented by the different parts
+ of the Imixs Workflow Project.
+ Next you find a short description of these components and their basic concepts.
+ The Imixs Workflow API is independent from a specific platform or technology an can be used in general in all 
+ java applications. 
+ 
+[images/api-architecture.gif]Figure 1
+
+** The Imixs WorkflowManager
+~~~~~~~~~~~~~~~~~~~~
+
+ The WorkflowManager is the uppermost layer of each workflow system based on the Imixs Workflow API. 
+ A WorkflwoManager provides basic methods to process a workitem, find a workitem or remove a workitem.
+ A workitem is the process instance inside a Workflow Management System which is controlled by the WorkflowManager. 
+ The WorkflowManager acts as a controller to manage a process instance. 
+ An implementation of this interface typical provides also functionality to persist workitems into a database. 
+ See the {{{./workflowmanager.html}WorkflowManager section}} for more detailed information.
+ 
+ 
+** The Imixs Workflow Model
+~~~~~~~~~~~~~~~~~~~~
+
+ A workflow model describes the process flow of a business process. 
+ The model interface provides methods to access a workflow model and navigate through the entities inside a model. 
+ Each model consists of a set of process entities and activity entities. 
+ A process entity defines the status of a process instance. In a graphical workflow model a process entity is 
+ typical represented by a node. An activity entity defines an action 
+ which can be performed on a workitem and also the next status of a 
+ Workitem after processing is finished by the WorkflowManager. In a graphical workflow model an activity entity 
+ is typical represented by an edge. 
+
+[images/processflow.png]
+ 
+ Each process entity and activity entity can store a set of informations to provide the WorkflowManager
+ with additional processing introductions. These informations are not predefined by the Imixs Workflow API and can 
+ diversify depending on the implementation of a workflow management system.
+ There are different ways a Model can be implemented by a Workflow Management System. 
+ The Imixs Workflow provides an eclipse based graphical editor to define workflow models.  
+ 
+
+
+** The Imixs Workflow Plugins
+~~~~~~~~~~~~~~~~~~~~
+
+ Plugins are workflow components which are implementing a concrete behavior of a workflow management system. 
+ A Plugin is called by the WorkflowManager to process a workitem. A plugin can implement application specific 
+ functionality. They are reusable 
+ components in a Workflow Management System and typical used by the application developer to design the 
+ behavior of a business application. 
+ See the {{{./plugin-api.html}Plugin API section}} for more detailed information.
+
+ 
+ 
+** The Imixs WorkflowKernel
+~~~~~~~~~~~~~~~~~~~~
+
+ The WorkflowKernel implements the core functionality of the Imixs Workflow API. The WorkflowKernel can start
+ a new process instance and control the status of a workitem processed by a workflow system.
+ When a WorkItem is processed by the WorkflowManager, the WorkflowKernel
+ control the status defined by the workflow model. The WorkflowKernel is a kind of statemachine 
+ inside the workflow management system. But the WorkflowKernel is also responsible to initialize and run the 
+ workflow plugins provided by a workflow system. The WorkflowKernel provides the 
+ execution environment for plugins.
+ As an application developer you did not interact with the WorkflowKernel as this component is typical 
+ encapsulated by the Implementaion of a WorkflowManager.
+ See the {{{./workflowkernel.html}WorkflowKernel section}} for more detailed information.
+ 
+
+** The Imixs ItemCollection
+~~~~~~~~~~~~~~~~~~~~
+
+ The ItemCollection is the general Data Object used by the Imixs Workflow API. Each workitem processed by the 
+ Imixs Workflow is represented as an ItemCollection. But also all other entities like a process entity or an 
+ activity entity are represented as ItemCollections.
+ An ItemColleciton is a kind of document with a set of attributes (Items). Each Item of an ItemCollectio 
+ has a name and a value. The value of an Item can be any java based data object which is serializeable. 
+ So the ItemCollection is a very flexible and easy to use generic value object.
+ The ItemCollection provides methods which makes it easy to work with an ItemCollection creating or modify item values.
+ See the {{{./examples/itemcollection.html}Example page}} for more information about how to work with a ItemCollection.
+ 
+  

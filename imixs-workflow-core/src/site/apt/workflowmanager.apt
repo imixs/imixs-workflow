@@ -1,0 +1,87 @@
+            ------
+            The Imixs Workflow Manager
+            ------
+            Ralph Soika - Imixs Software Solutions GmbH
+            ------
+            
+            
+The Imixs Workflow Manager
+~~~~~~~~~~~~~~
+
+ The WorkflowManager is the central element of a Workflow implementation. 
+ This interface provides all basic functions and can be implemented in various ways.
+  The WorkflowManager acts as a business delegate and provides the actual business functions of a 
+  workflow system.
+
+[images/org.imixs.workflow.WorkflowManager.gif]
+[/images/org.imixs.workflow.WorkflowManager]Figure 1
+
+ The WorkflowManager serves as the central interface between a software system and the actual
+ WorkflowKernel. For this purpose, the WorkflowManager provides methods for generating of and 
+ searching for WorkItems, makes a WorkflowModel available, and registers concrete plug-ins for 
+ processing with the WorkflowKernel. The WorkflowManager works as a controller that loads and 
+ stores the WorkItems to be processed, and registers the functions required for process handling 
+ as plug-ins with the WorkflowKernel. The WorkflowManager is not responsible for process control 
+ (WorkflowKernel) or processing (plug-ins). The WorkflowManager just provides the infrastructure
+ that allows a user or a software system to process WorkItems within a business process.
+
+ This concept facilitates the implementation of a concrete WorkflowManager in a defined software 
+ environment.
+ 
+*Registering of Plug-Ins
+~~~~~~~~~~~~~~
+ An essential task of the WorkflowManager is to register the plug-ins required for processing with a 
+ WorkflowKernel. This requires the WorkflowManager to instantiate an instance of class 
+ org.imixs.workflow.WorkflowKernel, and to subsequently register the plug-ins required for 
+ process handling. A typical program section is structured as follows:
+
++------------------------------------------------------------------------+
+....
+  // init WorkflowKernel 
+  WorkflowKernel workflowKernel =new org.imixs.workflow.WorkflowKernel(this);
+  // register Plugins.....
+  workflowKernel.registerPlugin("org.imixs.workflow.plugins.AccessPlugin");
+  workflowKernel.registerPlugin("org.imixs.workflow.plugins.HistoryPlugin");
+  
+....
++------------------------------------------------------------------------+
+
+ The WorkflowManager forwards a so-called WorkflowContext to the WorkflowKernel. 
+ The WorkflowContext is an abstract interface that describes the environment of a workflow system. 
+ For instance, a surrounding EJB container of an application server. The WorkflowContext is used 
+ to establish a connection between the WorkflowManager and the plug-ins called by the WorkflowKernel.
+
+ In most cases, the WorkflowContext is implemented by the WorkflowManager itself. As the WorkflowManager 
+ has best knowledge of the actual program function and thus of the environment (e.g., a servlet 
+ environment or an EJB container), this is not a big problem in most cases.
+
+*Process Handling
+~~~~~~~~~~~~~~
+
+ The WorkflowManager provides several methods for actual process handling of a WorkItem. The most 
+ important one is the process method().
+ 
++------------------------------------------------------------------------+
+ public void processWorkItem(ItemCollection workitem) throws Exception;
++------------------------------------------------------------------------+
+
+ The method processWorkItem() processes the forwarded WorkItem (ItemCollection). For this purpose, 
+ the WorkItem is forwarded to the WorkflowKernel. The WorkflowManager finds the WorkItem and 
+ implements the persistence strategy. All processing is performed by the WorkflowKernel.
+
++------------------------------------------------------------------------+
+    public void processWorkItem(ItemCollection aWorkItem,int aActivityInstanceID)throws Exception {
+     // Finding ItemCollection
+    .... getItemCollection(.....);...
+    workflowKernel.process(itemCol);
+    // Store ItemCollection to a database
+    .... saveItemCollection(....);
+    ....
+    }
++------------------------------------------------------------------------+
+
+ Also the WorkflowManager implementation have to verifiy if the items $processID and $ActivityID by the
+ workitem are defining a valid model entry. If not the method should throw an ProcessingErrorException. 
+
+ For more informations about the interfaces see also the JavaDocs.
+ 

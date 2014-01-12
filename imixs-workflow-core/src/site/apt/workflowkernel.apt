@@ -1,0 +1,87 @@
+            ------
+            The Workflow-Kernel
+            ------
+            Ralph Soika - Imixs Software Solutions GmbH
+            ------
+            
+
+The Workflow-Kernel
+~~~~~~~~~~~~~~~~~~~~
+
+ The Workflowkernel is the core component of this Imixs Workflow API to control the processing of 
+ a workitem. A Workflowmanager implementation (like the Imixs JEE Workflow) loads an instance
+ of the Workflowkernel, hand over a Model Instance and register a list of workflow plugins.
+
+ To process a single Workitem you typical call the method 'process' of the WorkflowManager 
+ interface.
+ 
++-----------------------------------------+
+ process(ItemCollection workitem) 
++-----------------------------------------+
+
+*Registration of a Workflow Plugin
+~~~~~~~~~~~~~~~~~~~~
+
+ The WorkflowManager over hands the workitem to the WorkflowKernel to process the workitem by a
+ predefined set of workflow plugins. Therefore the WorkflowKernel provides the method :
+
++-----------------------------------------+
+ registerPlugin(String) 
++-----------------------------------------+
+
+ This method enables the WorkflowManager to register different PluginClasses to be loaded by 
+ the Kernel during the Process method.
+ 
+       [Note:]  When you work with a WorkflowManager implementation like the 
+       {{{/jee/}Imixs JEE Workflow}}  it is not necessary to 
+       registerPlugins as this will be done by the WorkflowManager.
+ 
+ The internal method processActivity() process an activity instance by loading and running all 
+ registered plugins. Then the method computes the next processId which will be stored in the 
+ property $ProcessID. 
+ The method processActivity will run as long as the property $ActivtyList holds additional 
+ ActivityIds to be processed. So a WorkflowManger can also run through a process queue 
+ on a single Workitem.
+  
+*The Workflow Log
+~~~~~~~~~~~~~~~~~~~~
+
+ The WorkflowKernel generates two Log Entries. 
+
+    * txtWorkflowPluginLog - holds the registred and processed plugin classes during a process step. If a Plugin breaks with an error during processing this plugin will not be logged. So the log can be used to analyze a process step in detail.
+    
+    * txtWorkflowActivityLog - holds the activity details for each process method. The entry holds the latest ProcessEntity, the processed ActivityEntity and the new ProcessEntity. 
+
+
+ The following examples show how the values will be stored in the workitem:
+
+** txtWorkflowPluginLog
+~~~~~~~~~~~~~~~~~~~~
+
+ Time - PluginClass - Result
+
++-----------------------------------------+
+ June 23, 2008 1:58:25 PM org.imixs.workflow.plugins.AccessPlugin=0
+ June 23, 2008 1:58:25 PM org.imixs.workflow.plugins.HistoryPlugin=0
+ June 23, 2008 1:58:25 PM org.imixs.workflow.plugins.ResultPlugin=0
+ June 30, 2008 1:37:10 PM org.imixs.workflow.plugins.AccessPlugin=0
+ June 30, 2008 1:37:10 PM org.imixs.workflow.plugins.HistoryPlugin=0
+ June 30, 2008 1:37:10 PM org.imixs.workflow.plugins.ResultPlugin=0
+ June 30, 2008 1:37:26 PM org.imixs.workflow.plugins.AccessPlugin=0
+ June 30, 2008 1:37:26 PM org.imixs.workflow.plugins.HistoryPlugin=0
+ June 30, 2008 1:37:26 PM org.imixs.workflow.plugins.ResultPlugin=0 
++-----------------------------------------+
+
+** txtWorkflowActivityLog
+~~~~~~~~~~~~~~~~~~~~
+
+ Time - Process.ActivityID -  NewProcessID
+
++-----------------------------------------+
+ 28.12.2008 14:07:19|11040.10:=11042, 
+ 24.01.2009 10:51:31|11042.20:=11043, 
+ 24.01.2009 10:51:36|11043.30:=11041, 
+ 24.01.2009 10:51:40|11041.10:=11042 
++-----------------------------------------+
+
+    

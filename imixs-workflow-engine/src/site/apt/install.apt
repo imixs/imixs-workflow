@@ -1,0 +1,90 @@
+            ------
+            Installation
+            ------
+            Ralph Soika - Imixs Software Solutions GmbH
+            ------
+ 
+ 
+
+
+
+
+Installation
+~~~~~~~~~~~~~~
+
+ The Imixs Workflow project provides a Sample Application which demonstrates the behavior and the concepts
+ of the Imixs Workflow Engine. You can download the Sample Application from the
+ {{{http://java.net/projects/imixs-workflow/downloads}Imixs Download page}}.
+ The following section gives a brief overview how to install the Imixs Sample Application 
+ into a Java EE Application Server. The installation guide is also helpful to get a better understanding 
+ what is necessary to integrate the Imixs Workflow engine into your own project.  		
+ 
+ This introduction refers the basic steps needed to get the Sample Application up and 
+ running on different platforms. If you need further informations about the deployment of the 
+ Imixs Workflow components into an Java EE Application server see the {{{./deployment.html}deployment section}} 
+ for more detailed informations.
+ 
+ 
+* Install and setup your Application Server 
+~~~~~~~~~~~~~~
+
+ To install the Imixs Sample Application you first need a Java EE application server like 
+ {{{http://www.glassfish.org/}Glassfish}} (Oracle), {{{http://geronimo.apache.org}Geronimo}} (IBM) or 
+ {{{http://www.jboss.org/jbossas}JBoss}}. 
+ To run the Imixs Workflow on a Java EE Server you need at least the following resources:
+ 
+  	* a Database to store workitems processed by the Imixs Workflow engine
+  	
+  	* a JPA based Database connection from your Application Server to your database
+  	
+  	* a Security Realm to authenticate users who should interact with the Workflow Management System
+  	
+  	
+ After you have set up your server environment you can install the Imixs Sample Application. This setup is 
+ equal also if you plan to deploy your own project using the Imixs Workflow eninge. 
+ 
+ 
+    * {{{./install_glassfish.html}Install the Imixs Sample Application on Glassfish}}
+    
+    * {{{./install_jboss.html}Install the Imixs Sample Application on JBoss}}
+    
+  
+
+* Setup a Workflow Model
+~~~~~~~~~~~~~~
+
+
+ Before you can start the sample application you need to provide a process model. The process model describes the
+ behavior of the Workflow Management System. Things like the Read- or Write-Access, the Process History or 
+ Email notifications are declared in the Model.
+ 
+ The Sample Application contains a valid model file of a "Trouble Ticket Workflow System". 
+ A trouble ticket system is based on a business process that manages and maintains lists of issues, 
+ as needed by an organization. Trouble Ticket Systems are commonly used in an organization's customer support call center to create, 
+ update, and resolve reported customer issues, or even issues reported by that organization's other employees.
+
+
+ {{{./install_model.html}Setup the Imixs Sample Application}}
+    
+     
+
+[images/modeler-01.png]
+
+
+* Run the Sample Application 
+~~~~~~~~~~~~~~
+
+ After you have installed and setup the Imixs Sample Application start the application with the following url:
+
++----------------------------------+ 
+ http://localhost:8080/workflow
++----------------------------------+ 
+
+ How the application works is explained in the following section:
+ 
+ {{{./install_app.html}Run the Imixs Sample Application}} 
+  
+   
+   
+[images/sample-app-01.png] 
+

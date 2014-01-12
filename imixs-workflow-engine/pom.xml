@@ -1,0 +1,91 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>imixs-workflow</artifactId>
+		<groupId>org.imixs.workflow</groupId>
+		<version>3.1.6-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>imixs-workflow-engine</artifactId>
+	<name>Engine</name>
+	
+
+
+	<description>
+		The Imixs Workflow engine is a full featured Workflow Management System (WFMS) based on the 
+ 		Java EE specification. The project extends the Imixs Workflow Core API
+ 		project to fulfill the requirements to a scalable, transactional, robust and simple deployable JEE Workflow 
+ 		System. The Project provides different service components (EJBs) to be used in any kind of Java EE based business application. 
+	</description> 
+
+	
+
+	<scm>
+		<connection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-engine/trunk</connection>
+		<developerConnection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-engine/trunk</developerConnection>
+		<url>
+			scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-engine/trunk
+		</url>
+	</scm>
+
+
+
+	<licenses>
+		<license>
+			<name>GNU General Public License</name>
+			<url>http://www.gnu.org/licenses/gpl-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>All the results of the imixs workflow project are subject to the GPL licensing model. </comments>
+		</license>
+	</licenses>
+
+	<build>
+		
+	</build>
+
+
+
+	<dependencies>
+		
+
+
+		<!-- Imixs Workflow core dependencies -->
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- Apache Lucene -->
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
+			<version>${lucene.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-analyzers-common</artifactId>
+			<version>${lucene.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-queryparser</artifactId>
+			<version>${lucene.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		
+
+		<!-- apache fop dependency -->
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>fop</artifactId>
+			<version>1.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+
+	</dependencies>
+
+
+</project>

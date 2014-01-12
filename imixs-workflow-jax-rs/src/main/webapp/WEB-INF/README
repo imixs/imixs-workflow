@@ -1,0 +1,10 @@
+Configuration
+=============
+
+The WEB-INF Folder contains a sample configuration for a web module using the 
+imixs-workflow-jax-rs implementation.
+Simply copy the web.xml or the servlet configuration contained in this folder into your
+web project to configure the imixs-workflow-jax-rs service.
+
+See details and documentation :
+http://www.imixs.org/
