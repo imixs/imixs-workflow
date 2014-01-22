@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -198,7 +199,8 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.LONG,
-					DateFormat.LONG);
+					DateFormat.LONG,new Locale("de","DE"));
+			
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
@@ -207,7 +209,7 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
-					DateFormat.MEDIUM);
+					DateFormat.MEDIUM,new Locale("de","DE"));
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
@@ -216,7 +218,7 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.SHORT,
-					DateFormat.SHORT);
+					DateFormat.SHORT,new Locale("de","DE"));
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
@@ -225,7 +227,7 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.LONG,
-					DateFormat.MEDIUM);
+					DateFormat.MEDIUM,new Locale("de","DE"));
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
@@ -234,7 +236,7 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
-					DateFormat.SHORT);
+					DateFormat.SHORT,new Locale("de","DE"));
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
@@ -243,7 +245,7 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.SHORT,
-					DateFormat.MEDIUM);
+					DateFormat.MEDIUM,new Locale("de","DE"));
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
@@ -252,7 +254,7 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
-					DateFormat.LONG);
+					DateFormat.LONG,new Locale("de","DE"));
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
