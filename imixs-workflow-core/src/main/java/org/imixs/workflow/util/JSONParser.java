@@ -1,4 +1,4 @@
-package org.imixs.workflow.jaxrs;
+package org.imixs.workflow.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;

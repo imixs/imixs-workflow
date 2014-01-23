@@ -1,4 +1,4 @@
-package org.imixs.workflow.jaxrs;
+package org.imixs.workflow.util;
 
 import java.io.InputStream;
 import java.text.ParseException;
@@ -34,7 +34,7 @@ public class TestJSONParser {
 	public void testSimple() throws ParseException {
 
 		InputStream inputStream = getClass()
-				.getResourceAsStream("/simple.json");
+				.getResourceAsStream("/json/simple.json");
 
 		ItemCollection itemCol = JSONParser.parseWorkitem(inputStream);
 
@@ -60,7 +60,7 @@ public class TestJSONParser {
 	public void testCorrupted() throws ParseException {
 
 		InputStream inputStream = getClass()
-				.getResourceAsStream("/corrupted.json");
+				.getResourceAsStream("/json/corrupted.json");
 
 		ItemCollection itemCol = JSONParser.parseWorkitem(inputStream);
 
@@ -77,7 +77,7 @@ public class TestJSONParser {
 	public void testComplexWorkitem() throws ParseException {
 
 		InputStream inputStream = getClass()
-				.getResourceAsStream("/workitem.json");
+				.getResourceAsStream("/json/workitem.json");
 
 		ItemCollection itemCol = JSONParser.parseWorkitem(inputStream);
 

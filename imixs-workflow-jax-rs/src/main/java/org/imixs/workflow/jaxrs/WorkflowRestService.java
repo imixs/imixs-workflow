@@ -67,6 +67,7 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.jee.ejb.WorkflowService;
+import org.imixs.workflow.util.JSONParser;
 import org.imixs.workflow.xml.EntityCollection;
 import org.imixs.workflow.xml.XMLItem;
 import org.imixs.workflow.xml.XMLItemCollection;
