@@ -36,9 +36,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.CookieManager;
+import java.net.HttpCookie;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -64,28 +70,69 @@ import org.imixs.workflow.xml.XMLItemCollection;
  */
 public class RestClient {
 
+	private CookieManager cookieManager = null;
+
 	// private String NAME_SPACE = "http://imixs.org/workflow/services";
 
 	private String serviceEndpoint;
 
-	private String sUser = null;
+	private String user = null;
 
-	private String sPassword = null;
+	private String password = null;
 
 	private String encoding = "UTF-8";
 
 	private int iLastHTTPResult = 0;
-	
-	private String content=null;
+
+	private String content = null;
+
+	private final static Logger logger = Logger.getLogger(RestClient.class
+			.getName());
 
 	// Sets credentials
 	public void setCredentials(String auser, String apw) {
-		sUser = auser;
-		sPassword = apw;
+		user = auser;
+		password = apw;
+	}
+
+	public String getEncoding() {
+		return encoding;
 	}
 
 	public void setEncoding(String aEncoding) {
 		encoding = aEncoding;
+	}
+
+	public CookieManager getCookieManager() {
+		return cookieManager;
+	}
+
+	public void setCookieManager(CookieManager cookieManager) {
+		this.cookieManager = cookieManager;
+	}
+
+	public String getServiceEndpoint() {
+		return serviceEndpoint;
+	}
+
+	public void setServiceEndpoint(String serviceEndpoint) {
+		this.serviceEndpoint = serviceEndpoint;
+	}
+
+	public String getUser() {
+		return user;
+	}
+
+	public void setUser(String user) {
+		this.user = user;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public String getContent() {
@@ -124,7 +171,7 @@ public class RestClient {
 			urlConnection.setAllowUserInteraction(false);
 
 			// Authorization
-			if (sUser != null) {
+			if (user != null) {
 				urlConnection.setRequestProperty("Authorization", "Basic "
 						+ this.getAccessByUser());
 			}
@@ -160,11 +207,10 @@ public class RestClient {
 				// eNumber.printStackTrace();
 				iLastHTTPResult = 500;
 			}
-			
-			
+
 			// get content of result
 			readResponse(urlConnection);
-						
+
 		} catch (Exception ioe) {
 			// ioe.printStackTrace();
 			throw ioe;
@@ -205,7 +251,7 @@ public class RestClient {
 			urlConnection.setAllowUserInteraction(false);
 
 			// Authorization
-			if (sUser != null) {
+			if (user != null) {
 				urlConnection.setRequestProperty("Authorization", "Basic "
 						+ this.getAccessByUser());
 			}
@@ -242,9 +288,9 @@ public class RestClient {
 				iLastHTTPResult = 500;
 			}
 
-			// get content of result						
+			// get content of result
 			readResponse(urlConnection);
-		
+
 		} catch (Exception ioe) {
 			// ioe.printStackTrace();
 			throw ioe;
@@ -285,7 +331,7 @@ public class RestClient {
 			urlConnection.setAllowUserInteraction(false);
 
 			// Authorization
-			if (sUser != null) {
+			if (user != null) {
 				urlConnection.setRequestProperty("Authorization", "Basic "
 						+ this.getAccessByUser());
 			}
@@ -333,17 +379,104 @@ public class RestClient {
 		return iLastHTTPResult;
 	}
 
-	
-	
+	/**
+	 * Returns all cookies set during the last request
+	 * 
+	 * @return
+	 */
+	public CookieManager getCookies() {
+		return cookieManager;
+	}
+
+	/**
+	 * Set the cookies to be used for the next request
+	 * 
+	 * @param cookieManager
+	 */
+	public void setCookies(CookieManager cookieManager) {
+		this.cookieManager = cookieManager;
+	}
+
+	/**
+	 * This method get the content of a GET request from a Rest Service URI
+	 * Endpoint.
+	 * 
+	 * 
+	 * @param uri
+	 *            - Rest Endpoint RUI
+	 * 
+	 * @return HTTPResult
+	 */
+	public int get(String uri) throws Exception {
+		URL obj = new URL(uri);
+		HttpURLConnection urlConnection = (HttpURLConnection) obj
+				.openConnection();
+
+		// optional default is GET
+		urlConnection.setRequestMethod("GET");
+
+		urlConnection.setDoOutput(true);
+		urlConnection.setDoInput(true);
+		urlConnection.setAllowUserInteraction(false);
+
+		// Authorization
+		if (user != null) {
+			urlConnection.setRequestProperty("Authorization",
+					"Basic " + this.getAccessByUser());
+		}
+
+		addCookies(urlConnection);
+
+		int responseCode = urlConnection.getResponseCode();
+		System.out.println("\nSending 'GET' request to URL : " + uri);
+		System.out.println("Response Code : " + responseCode);
+		readResponse(urlConnection);
+
+		return responseCode;
+	}
+
+	public void readCookies(HttpURLConnection connection)
+			throws URISyntaxException {
+		String COOKIES_HEADER = "Set-Cookie";
+		cookieManager = new java.net.CookieManager();
+
+		Map<String, List<String>> headerFields = connection.getHeaderFields();
+		List<String> cookiesHeader = headerFields.get(COOKIES_HEADER);
+
+		if (cookiesHeader != null) {
+			for (String cookie : cookiesHeader) {
+				HttpCookie ding = HttpCookie.parse(cookie).get(0);
+
+				cookieManager.getCookieStore().add(connection.getURL().toURI(),
+						ding);
+			}
+		}
+	}
+
+	public void addCookies(HttpURLConnection connection) {
+		if (cookieManager == null)
+			return;
+
+		String values = "";
+		for (HttpCookie acookie : cookieManager.getCookieStore().getCookies()) {
+			values = values + acookie + ",";
+		}
+
+		if (cookieManager.getCookieStore().getCookies().size() > 0) {
+			connection.setRequestProperty("Cookie", values);
+		}
+	}
+
 	/**
 	 * Put the resonse string into the content property
+	 * 
 	 * @param urlConnection
 	 * @throws IOException
 	 */
 	private void readResponse(URLConnection urlConnection) throws IOException {
 		// get content of result
 		StringWriter writer = new StringWriter();
-		BufferedReader in=null;
+		BufferedReader in = null;
 		try {
 			in = new BufferedReader(new InputStreamReader(
 					urlConnection.getInputStream()));
@@ -353,27 +486,25 @@ public class RestClient {
 				writer.write(inputLine);
 			}
 		} catch (IOException e) {
-			
+
 			e.printStackTrace();
 		} finally {
-			if (in!=null)
+			if (in != null)
 				in.close();
 		}
-		
-		
+
 		setContent(writer.toString());
 
 	}
-	
-	
+
 	/**
-	 * Diese Methode setzt für den Zugriff auf eine URL eine Definierte UserID +
-	 * Passwort
+	 * Diese Methode setzt fÃ¼r den Zugriff auf eine URL eine Definierte UserID
+	 * + Passwort
 	 */
 	private String getAccessByUser() {
 		String sURLAccess = "";
 		// UserID:Passwort
-		String sUserCode = sUser + ":" + sPassword;
+		String sUserCode = user + ":" + password;
 		// String convertieren
 		// sURLAccess = Base64.encodeBase64(sUserCode.getBytes()).toString();
 		char[] authcode = Base64.encode(sUserCode.getBytes());
