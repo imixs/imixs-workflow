@@ -4,9 +4,8 @@
 	<skin>
 		<groupId>org.imixs.workflow</groupId>
 		<artifactId>imixs-workflow-maven-skin</artifactId>
-		<version>0.0.4</version>
+		<version>1.0.0</version>
 	</skin>
-
 
 	<body>
 		<links>
