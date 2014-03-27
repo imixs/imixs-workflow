@@ -707,6 +707,7 @@ public class WorkflowRestService {
 			@QueryParam("action") String action,
 			@QueryParam("error") String error) {
 
+		logger.fine("[WorkflowRestService] @PUT /workitem  method:putWorkitem....");
 		// parse the workItem.
 		ItemCollection workitem = parseWorkitem(requestBodyStream);
 
@@ -714,6 +715,8 @@ public class WorkflowRestService {
 			// now test if an workItem with this $uniqueId still exits...
 			String unid = workitem.getItemValueString("$uniqueID");
 			if (!"".equals(unid)) {
+				logger.fine("[WorkflowRestService] putWorkitem $uniqueid="
+						+ unid);
 
 				ItemCollection oldWorkitem = workflowService.getWorkItem(unid);
 				if (oldWorkitem != null) {
@@ -813,6 +816,8 @@ public class WorkflowRestService {
 	public Response postWorkitem(InputStream requestBodyStream,
 			@QueryParam("action") String action,
 			@QueryParam("error") String error) {
+		logger.fine("[WorkflowRestService] @POST /workitem  method:putWorkitem....");
+
 		return putWorkitem(requestBodyStream, action, error);
 	}
 
@@ -833,6 +838,8 @@ public class WorkflowRestService {
 	@Consumes({ "application/xml", "text/xml" })
 	public Response putWorkitemXML(XMLItemCollection workitem,
 			@QueryParam("action") String action) {
+
+		logger.fine("[WorkflowRestService] @PUT /workitem  method:putWorkitemXML....");
 
 		ItemCollection itemCollection;
 		try {
@@ -865,6 +872,8 @@ public class WorkflowRestService {
 	@Consumes({ "application/xml", "text/xml" })
 	public Response postWorkitemXML(XMLItemCollection workitem,
 			@QueryParam("action") String action) {
+		logger.fine("[WorkflowRestService] @POST /workitem  method:putWorkitemXML....");
+
 		return putWorkitemXML(workitem, action);
 	}
 
@@ -894,6 +903,8 @@ public class WorkflowRestService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response postWorkitemJSON(XMLItemCollection workitem,
 			@QueryParam("action") String action) {
+		logger.fine("[WorkflowRestService] @POST /workitem  method:putWorkitemJSON....");
+
 		return putWorkitemXML(workitem, action);
 	}
 
@@ -917,6 +928,8 @@ public class WorkflowRestService {
 	public Response postWorkitemJSON(InputStream requestBodyStream,
 			@QueryParam("action") String action,
 			@QueryParam("error") String error) {
+
+		logger.fine("[WorkflowRestService] @PUT /workitem  method:putWorkitemJSON....");
 
 		ItemCollection workitem = null;
 		XMLItemCollection responseWorkitem = null;
@@ -1030,6 +1043,8 @@ public class WorkflowRestService {
 	@Consumes({ "application/xml", "text/xml" })
 	public Response putWorkitemsXML(EntityCollection worklist) {
 
+		logger.fine("[WorkflowRestService] @PUT /workitems  method:putWorkitemsXML....");
+
 		XMLItemCollection entity;
 		ItemCollection itemCollection;
 		try {
@@ -1052,6 +1067,8 @@ public class WorkflowRestService {
 	@Path("/workitems")
 	@Consumes({ "application/xml", "text/xml" })
 	public Response postWorkitemsXML(EntityCollection worklist) {
+		logger.fine("[WorkflowRestService] @POST /workitems  method:putWorkitemsXML....");
+
 		return putWorkitemsXML(worklist);
 	}
 
@@ -1063,6 +1080,18 @@ public class WorkflowRestService {
 	 * workItem (identified by the $unqiueid) and adds the values provided by
 	 * the put/post request into the existing instance.
 	 * 
+	 * The following kind of lines which can be included in the InputStream will
+	 * be skipped
+	 * 
+	 * <code>
+	 * 	------------------------------1a26f3661ff7
+		Content-Disposition: form-data; name="query"
+		Connection: keep-alive
+		Content-Type: multipart/form-data; boundary=---------------------------195571638125373
+		Content-Length: 5680
+
+		-----------------------------195571638125373
+	 * </code>
 	 * 
 	 * @param requestBodyStream
 	 * @return a workitem
@@ -1076,6 +1105,8 @@ public class WorkflowRestService {
 		String inputLine;
 		ItemCollection workitem = new ItemCollection();
 
+		logger.fine("[WorkflowRestService] parseWorkitem....");
+
 		try {
 			while ((inputLine = in.readLine()) != null) {
 				// System.out.println(inputLine);
@@ -1084,55 +1115,61 @@ public class WorkflowRestService {
 				StringTokenizer st = new StringTokenizer(inputLine, "&", false);
 				while (st.hasMoreTokens()) {
 					String fieldValue = st.nextToken();
-					logger.fine("WorkflowRestService parse line: <"
-							+ fieldValue + ">");
+					logger.fine("[WorkflowRestService] parse line:"
+							+ fieldValue + "");
 					try {
 						fieldValue = URLDecoder.decode(fieldValue, "UTF-8");
 
-						if (fieldValue.contains("=")) {
-							// get fieldname
-							String fieldName = fieldValue.substring(0,
-									fieldValue.indexOf('='));
-
-							// test for value...
-							if (fieldValue.indexOf('=') == fieldValue.length()) {
-								// no value
-								workitem.replaceItemValue(fieldName, "");
-								logger.fine("WorkflowRestService no value for '"
-										+ fieldName + "'");
-							} else {
-								fieldValue = fieldValue.substring(fieldValue
-										.indexOf('=') + 1);
-								// test for a multiValue field - did we know
-								// this
-								// field....?
-								fieldName = fieldName.toLowerCase();
-								if (vMultiValueFieldNames.indexOf(fieldName) > -1) {
-
-									List v = workitem.getItemValue(fieldName);
-									v.add(fieldValue);
-									logger.fine("WorkflowRestService multivalue for '"
-											+ fieldName
-											+ "' = '"
-											+ fieldValue
-											+ "'");
-									workitem.replaceItemValue(fieldName, v);
-								} else {
-									// first single value....
-									logger.fine("WorkflowRestService value for '"
-											+ fieldName
-											+ "' = '"
-											+ fieldValue
-											+ "'");
-									workitem.replaceItemValue(fieldName,
-											fieldValue);
-									vMultiValueFieldNames.add(fieldName);
-								}
-							}
-
-						} else {
-							logger.finest("WorkflowRestService Warning unexpected data - '=' expected! Skip value...");
+						if (!fieldValue.contains("=")) {
+							logger.finest("[WorkflowRestService] line will be skipped");
+							continue;
 						}
+
+						// get fieldname
+						String fieldName = fieldValue.substring(0,
+								fieldValue.indexOf('='));
+
+						// if fieldName contains blank or : or --- we skipp the
+						// line
+						if (fieldName.contains(":") || fieldName.contains(" ")
+								|| fieldName.contains(";")) {
+							logger.finest("[WorkflowRestService] line will be skipped");
+							continue;
+						}
+
+						// test for value...
+						if (fieldValue.indexOf('=') == fieldValue.length()) {
+							// no value
+							workitem.replaceItemValue(fieldName, "");
+							logger.fine("[WorkflowRestService] no value for '"
+									+ fieldName + "'");
+						} else {
+							fieldValue = fieldValue.substring(fieldValue
+									.indexOf('=') + 1);
+							// test for a multiValue field - did we know
+							// this
+							// field....?
+							fieldName = fieldName.toLowerCase();
+							if (vMultiValueFieldNames.indexOf(fieldName) > -1) {
+
+								List v = workitem.getItemValue(fieldName);
+								v.add(fieldValue);
+								logger.fine("[WorkflowRestService] multivalue for '"
+										+ fieldName
+										+ "' = '"
+										+ fieldValue
+										+ "'");
+								workitem.replaceItemValue(fieldName, v);
+							} else {
+								// first single value....
+								logger.fine("[WorkflowRestService] value for '"
+										+ fieldName + "' = '" + fieldValue
+										+ "'");
+								workitem.replaceItemValue(fieldName, fieldValue);
+								vMultiValueFieldNames.add(fieldName);
+							}
+						}
+
 					} catch (NumberFormatException e) {
 						e.printStackTrace();
 					} catch (Exception e) {
@@ -1142,7 +1179,7 @@ public class WorkflowRestService {
 
 			}
 		} catch (IOException e1) {
-			logger.severe("Unable to parse workitem data!");
+			logger.severe("[WorkflowRestService] Unable to parse workitem data!");
 			e1.printStackTrace();
 			return null;
 		} finally {
