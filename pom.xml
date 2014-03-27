@@ -155,10 +155,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<configuration>
-					<tagBase>xxxxxhttps://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-core/tags</tagBase>
-					<mavenExecutorId>forked-path</mavenExecutorId>
-				</configuration>
 			</plugin>
 
 		</plugins>
