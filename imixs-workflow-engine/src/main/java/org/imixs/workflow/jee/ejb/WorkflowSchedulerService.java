@@ -29,11 +29,13 @@ package org.imixs.workflow.jee.ejb;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -52,6 +54,8 @@ import javax.ejb.TransactionAttributeType;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.exceptions.ProcessingErrorException;
 
 /**
  * This EJB implements a TimerService which scans workitems for scheduled
@@ -64,6 +68,8 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
  * 'configuration' and the txtName = '"org.imixs.marty.workflow.scheduler'.
  * 
  * 
+ * The method processSingleWorkitem() is used to process a workitem in an
+ * isolated transaction. See: http://blog.imixs.org/?p=155
  * 
  * 
  * @author rsoika
@@ -97,7 +103,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	SessionContext ctx;
 
 	int iProcessWorkItems = 0;
-	int iScheduledWorkItems = 0;
+	List<String> unprocessedIDs = null;
 
 	/**
 	 * This method loads the current scheduler configuration. If no
@@ -162,6 +168,9 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 				"org.imixs.ACCESSLEVEL.MANAGERACCESS");
 		configItemCollection.replaceItemValue("$readAccess",
 				"org.imixs.ACCESSLEVEL.MANAGERACCESS");
+
+		// configItemCollection.replaceItemValue("$writeAccess", "");
+		// configItemCollection.replaceItemValue("$readAccess", "");
 
 		configItemCollection = updateTimerDetails(configItemCollection);
 		// save entity
@@ -370,7 +379,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 				if ("3".equals(sDelayUnit))
 					sDelayUnit = "days";
 
-				logger.fine("[WorkflowSchedulerService] " + suniqueid
+				logger.finest("[WorkflowSchedulerService] " + suniqueid
 						+ " delay =" + iActivityDelay + " " + sDelayUnit);
 
 			}
@@ -396,14 +405,14 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			switch (iCompareType) {
 			// last process -
 			case 1: {
-				logger.fine("[WorkflowSchedulerService] " + suniqueid
+				logger.finest("[WorkflowSchedulerService] " + suniqueid
 						+ ": CompareType = last process");
 
 				if (!doc.hasItem("timWorkflowLastAccess"))
 					return false;
 
 				dateTimeCompare = doc.getItemValueDate("timWorkflowLastAccess");
-				System.out.println("[WorkflowSchedulerService] " + suniqueid
+				logger.finest("[WorkflowSchedulerService] " + suniqueid
 						+ ": timWorkflowLastAccess=" + dateTimeCompare);
 
 				// scheduled time
@@ -415,12 +424,12 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			// last modification - es erfolgt kein Vergleich mit last
 			// Event, da dieses ja selbst der auslöser der Zeit ist
 			case 2: {
-				logger.fine("[WorkflowSchedulerService] " + suniqueid
+				logger.finest("[WorkflowSchedulerService] " + suniqueid
 						+ ": CompareType = last modify");
 
 				dateTimeCompare = doc.getItemValueDate("$modified");
 
-				logger.fine("[WorkflowSchedulerService] " + suniqueid
+				logger.finest("[WorkflowSchedulerService] " + suniqueid
 						+ ": modified=" + dateTimeCompare);
 
 				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
@@ -430,7 +439,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 			// creation
 			case 3: {
-				logger.fine("[WorkflowSchedulerService] " + suniqueid
+				logger.finest("[WorkflowSchedulerService] " + suniqueid
 						+ ": CompareType = creation");
 
 				dateTimeCompare = doc.getItemValueDate("$created");
@@ -447,11 +456,11 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			case 4: {
 				String sNameOfField = docActivity
 						.getItemValueString("keyTimeCompareField");
-				logger.fine("[WorkflowSchedulerService] " + suniqueid
+				logger.finest("[WorkflowSchedulerService] " + suniqueid
 						+ ": CompareType = field: '" + sNameOfField + "'");
 
 				if (!doc.hasItem(sNameOfField)) {
-					logger.fine("[WorkflowSchedulerService] " + suniqueid
+					logger.finest("[WorkflowSchedulerService] " + suniqueid
 							+ ": CompareType =" + sNameOfField
 							+ " no value found!");
 					return false;
@@ -459,17 +468,17 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 				dateTimeCompare = doc.getItemValueDate(sNameOfField);
 
-				logger.fine("[WorkflowSchedulerService] " + suniqueid + ": "
+				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": "
 						+ sNameOfField + "=" + dateTimeCompare);
 
 				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
 
-				logger.fine("[WorkflowSchedulerService] " + suniqueid
+				logger.finest("[WorkflowSchedulerService] " + suniqueid
 						+ ": Compare " + dateTimeCompare + " <-> "
 						+ dateTimeNow);
 
 				if (dateTimeCompare.before(dateTimeNow)) {
-					logger.fine("[WorkflowSchedulerService] " + suniqueid
+					logger.finest("[WorkflowSchedulerService] " + suniqueid
 							+ " isInDue!");
 				}
 				return dateTimeCompare.before(dateTimeNow);
@@ -500,8 +509,8 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	void runTimer(javax.ejb.Timer timer) throws AccessDeniedException {
 
 		ItemCollection configItemCollection = loadConfiguration();
-		logger.info("[WorkflowSchedulerService] runTimer started....");
-		
+		logger.info("[WorkflowSchedulerService] started....");
+
 		// test if imixsDayOfWeek is provided
 		// https://java.net/jira/browse/GLASSFISH-20673
 		if (!isImixsDayOfWeek(configItemCollection)) {
@@ -510,7 +519,51 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		}
 
 		configItemCollection.replaceItemValue("datLastRun", new Date());
-		processWorkItems();
+
+		/*
+		 * Now we process all scheduled worktitems for each model
+		 */
+		iProcessWorkItems = 0;
+		unprocessedIDs = new ArrayList<String>();
+		try {
+			// get all model versions...
+			List<String> modelVersions = modelService.getAllModelVersions();
+			for (String version : modelVersions) {
+				logger.info("[WorkflowSchedulerService] processing ModelVersion: "
+						+ version);
+				// find scheduled Activities
+				Collection<ItemCollection> colScheduledActivities = findScheduledActivities(version);
+				logger.info("[WorkflowSchedulerService] "
+						+ colScheduledActivities.size()
+						+ " scheduled activityEntities found in ModelVersion: "
+						+ version);
+				// process all workitems for coresponding activities
+				for (ItemCollection aactivityEntity : colScheduledActivities) {
+					processWorkListByActivityEntity(aactivityEntity);
+				}
+			}
+
+		} catch (Exception e) {
+			logger.severe("[WorkflowSchedulerService] error processing worklist: "
+					+ e.getMessage());
+			if (logger.isLoggable(Level.FINE)) {
+				e.printStackTrace();
+			}
+		}
+
+		logger.info("[WorkflowSchedulerService] finished successfull");
+
+		logger.info("[WorkflowSchedulerService] " + iProcessWorkItems
+				+ " workitems processed");
+
+		if (unprocessedIDs.size() > 0) {
+			logger.warning("[WorkflowSchedulerService] "
+					+ unprocessedIDs.size() + " workitems could be processed!");
+			for (String aid : unprocessedIDs) {
+				logger.warning("[WorkflowSchedulerService]          " + aid);
+			}
+
+		}
 
 		Date endDate = configItemCollection.getItemValueDate("datstop");
 		String sTimerID = configItemCollection.getItemValueString("$uniqueid");
@@ -519,8 +572,8 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 		configItemCollection.replaceItemValue("numWorkItemsProcessed",
 				iProcessWorkItems);
-		configItemCollection.replaceItemValue("numWorkItemsScheduled",
-				iScheduledWorkItems);
+		configItemCollection.replaceItemValue("numWorkItemsUnprocessed",
+				unprocessedIDs.size());
 
 		/*
 		 * Check if Timer should be canceld now? - only by interval
@@ -551,50 +604,6 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 		// save configuration
 		configItemCollection = saveConfiguration(configItemCollection);
-
-	}
-
-	/**
-	 * This is the method which processed scheuduled workitems when the timer is
-	 * called.
-	 * 
-	 * @param timer
-	 */
-	void processWorkItems() {
-
-		iProcessWorkItems = 0;
-		iScheduledWorkItems = 0;
-
-		logger.info("[WorkflowSchedulerService] processing workitems...");
-
-		try {
-
-			List<String> modelVersions = modelService.getAllModelVersions();
-
-			for (String version : modelVersions) {
-				logger.info("[WorkflowSchedulerService] ModelVersion="
-						+ version);
-				// find scheduled Activities
-
-				Collection<ItemCollection> colScheduledActivities = findScheduledActivities(version);
-				logger.info("[WorkflowSchedulerService] "
-						+ colScheduledActivities.size()
-						+ " scheduled activityEntities found");
-				// process all workitems for coresponding activities
-				for (ItemCollection aactivityEntity : colScheduledActivities) {
-					processWorkList(aactivityEntity);
-				}
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		logger.info("[WorkflowSchedulerService] finished successfull");
-		logger.info("[WorkflowSchedulerService] " + iScheduledWorkItems
-				+ " scheduled workitems ");
-		logger.info("[WorkflowSchedulerService] " + iProcessWorkItems
-				+ " workitems processed");
 
 	}
 
@@ -785,77 +794,90 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 	/**
 	 * This method processes all workitems for a specific processID. the
-	 * processID is idenfied by the activityEntity Object (numprocessid)
+	 * processID is identified by the activityEntity Object (numprocessid)
 	 * 
 	 * If the ActivityEntity has defined a EQL statement (attribute
 	 * txtscheduledview) then the method selects the workitems by this query.
 	 * Otherwise the method use the standard method getWorklistByProcessID()
 	 * 
+	 * 
+	 * @see http://blog.imixs.org/?p=155
+	 * 
 	 * @param aProcessID
 	 * @throws Exception
 	 */
-	void processWorkList(ItemCollection activityEntity) throws Exception {
+	void processWorkListByActivityEntity(ItemCollection activityEntity)
+			throws Exception {
+
 		// get processID
 		int iProcessID = activityEntity.getItemValueInteger("numprocessid");
+		int iActivityID = activityEntity.getItemValueInteger("numActivityID");
 		// get Modelversion
 		String sModelVersion = activityEntity
 				.getItemValueString("$modelversion");
 
-		// if a query is defined in the activityEntity then use the EQL
-		// statement
-		// to query the items. Otherwise use standard method
-		// getWorklistByProcessID()
-		String sQuery = activityEntity.getItemValueString("txtscheduledview");
+		logger.info("[WorkflowSchedulerService] processing " + iProcessID + "."
+				+ iActivityID + " (" + sModelVersion + ") ...");
 
-		// get all workitems...
-		Collection<ItemCollection> worklist = null;
-		if (sQuery != null && !"".equals(sQuery)) {
-			logger.fine("[WorkflowSchedulerService] Query=" + sQuery);
-			worklist = entityService.findAllEntities(sQuery, 0, -1);
-		} else {
-			logger.fine("[WorkflowSchedulerService] get WorkList for ProcessID:"
-					+ iProcessID);
-			worklist = workflowService.getWorkListByProcessID(iProcessID, 0,
-					-1, null, 0);
-		}
+		// now we need to select by type, $ProcessID and by $modelVersion!
+		String sQuery = "SELECT wi FROM Entity as wi "
+				+ " JOIN wi.integerItems AS i " + " JOIN wi.textItems as t "
+				+ " WHERE wi.type='workitem' ";
+		sQuery += " AND i.itemName = '$processid' AND i.itemValue = '"
+				+ iProcessID + "'"
+				+ " AND t.itemName = '$modelversion' AND t.itemValue = '"
+				+ sModelVersion + "'";
+
+		logger.fine("[WorkflowSchedulerService] select: " + sQuery);
+
+		Collection<ItemCollection> worklist = entityService.findAllEntities(
+				sQuery, 0, -1);
+
 		logger.fine("[WorkflowSchedulerService] " + worklist.size()
 				+ " workitems found");
-		iScheduledWorkItems += worklist.size();
 		for (ItemCollection workitem : worklist) {
-			// verify processID
-			if (iProcessID == workitem.getItemValueInteger("$processid")) {
-				// verify modelversion
-				if (sModelVersion.equals(workitem
-						.getItemValueString("$modelversion"))) {
-					// verify due date
-					if (workItemInDue(workitem, activityEntity)) {
-
-						int iActivityID = activityEntity
-								.getItemValueInteger("numActivityID");
-						workitem.replaceItemValue("$activityid", iActivityID);
-						processWorkitem(workitem);
-						iProcessWorkItems++;
-
+			// verify due date
+			if (workItemInDue(workitem, activityEntity)) {
+				String sID = workitem
+						.getItemValueString(EntityService.UNIQUEID);
+				logger.fine("[WorkflowSchedulerService] workitem " + sID
+						+ "is in due");
+				workitem.replaceItemValue("$activityid", iActivityID);
+				try {
+					logger.finest("[WorkflowSchedulerService] getBusinessObject.....");
+					// call from new instance because of transaction new...
+					// see: http://blog.imixs.org/?p=155
+					// see: https://www.java.net/node/705304
+					ctx.getBusinessObject(WorkflowSchedulerService.class)
+							.processSingleWorkitem(workitem);
+					iProcessWorkItems++;
+				} catch (Exception e) {
+					logger.warning("[WorkflowSchedulerService] error processing workitem: "
+							+ sID);
+					if (logger.isLoggable(Level.FINEST)) {
+						e.printStackTrace();
 					}
+					unprocessedIDs.add(sID);
 				}
 			}
+
 		}
 	}
 
 	/**
-	 * start new Transaction for each process step
+	 * This method process a single workIten in a new transaction. The method is
+	 * called by processWorklist()
 	 * 
 	 * @param aWorkitem
-	 * @param aID
+	 * @throws PluginException
+	 * @throws ProcessingErrorException
+	 * @throws AccessDeniedException
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-	void processWorkitem(ItemCollection aWorkitem) {
-		try {
-			workflowService.processWorkItem(aWorkitem);
-		} catch (Exception e) {
-
-			e.printStackTrace();
-		}
+	public void processSingleWorkitem(ItemCollection aWorkitem)
+			throws AccessDeniedException, ProcessingErrorException,
+			PluginException {
+		workflowService.processWorkItem(aWorkitem);
 	}
 
 	/**
