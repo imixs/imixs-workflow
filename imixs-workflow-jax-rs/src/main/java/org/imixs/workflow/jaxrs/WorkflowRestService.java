@@ -1115,7 +1115,7 @@ public class WorkflowRestService {
 				StringTokenizer st = new StringTokenizer(inputLine, "&", false);
 				while (st.hasMoreTokens()) {
 					String fieldValue = st.nextToken();
-					logger.fine("[WorkflowRestService] parse line:"
+					logger.finest("[WorkflowRestService] parse line:"
 							+ fieldValue + "");
 					try {
 						fieldValue = URLDecoder.decode(fieldValue, "UTF-8");
