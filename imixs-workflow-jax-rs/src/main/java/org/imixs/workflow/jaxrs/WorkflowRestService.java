@@ -801,79 +801,6 @@ public class WorkflowRestService {
 	}
 
 	/**
-	 * This method expects a form post. The method parses the input stream to
-	 * extract the provides field/value pairs. NOTE: The method did not(!)
-	 * assume that the put/post request contains a complete workItem. For this
-	 * reason the method loads the existing instance of the corresponding
-	 * workItem (identified by the $unqiueid) and adds the values provided by
-	 * the put/post request into the existing instance.
-	 * 
-	 * 
-	 * @param requestBodyStream
-	 * @return a workitem
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public final static ItemCollection parseWorkitem(
-			InputStream requestBodyStream) {
-		Vector<String> vMultiValueFieldNames = new Vector<String>();
-		BufferedReader in = new BufferedReader(new InputStreamReader(
-				requestBodyStream));
-		String inputLine;
-		ItemCollection workitem = new ItemCollection();
-
-		try {
-			while ((inputLine = in.readLine()) != null) {
-				// System.out.println(inputLine);
-
-				// split params separated by &
-				StringTokenizer st = new StringTokenizer(inputLine, "&", false);
-				while (st.hasMoreTokens()) {
-					String fieldValue = st.nextToken();
-					try {
-						fieldValue = URLDecoder.decode(fieldValue, "UTF-8");
-						// get fieldname
-						String fieldName = fieldValue.substring(0,
-								fieldValue.indexOf('='));
-						fieldValue = fieldValue.substring(fieldValue
-								.indexOf('=') + 1);
-						// test for a multiValue field - did we know this
-						// field....?
-						fieldName = fieldName.toLowerCase();
-						if (vMultiValueFieldNames.indexOf(fieldName) > -1) {
-
-							List v = workitem.getItemValue(fieldName);
-							v.add(fieldValue);
-							workitem.replaceItemValue(fieldName, v);
-						} else {
-							// first single value....
-							workitem.replaceItemValue(fieldName, fieldValue);
-							vMultiValueFieldNames.add(fieldName);
-						}
-					} catch (NumberFormatException e) {
-						e.printStackTrace();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-
-			}
-		} catch (IOException e1) {
-			logger.severe("Unable to parse workitem data!");
-			e1.printStackTrace();
-			return null;
-		} finally {
-			try {
-				in.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-		}
-
-		return workitem;
-	}
-
-	/**
 	 * This method expects a form post.
 	 * 
 	 * @see putWorkitemDefault
@@ -981,7 +908,7 @@ public class WorkflowRestService {
 	 * @param requestBodyStream
 	 *            - form content
 	 * @return JSON object
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	@POST
 	@Path("/workitem.json")
@@ -1033,7 +960,7 @@ public class WorkflowRestService {
 		try {
 			// now lets try to process the workitem...
 			workitem = workflowService.processWorkItem(workitem);
-			
+
 			try {
 				responseWorkitem = XMLItemCollectionAdapter
 						.putItemCollection(workitem);
@@ -1126,6 +1053,108 @@ public class WorkflowRestService {
 	@Consumes({ "application/xml", "text/xml" })
 	public Response postWorkitemsXML(EntityCollection worklist) {
 		return putWorkitemsXML(worklist);
+	}
+
+	/**
+	 * This method expects a form post. The method parses the input stream to
+	 * extract the provides field/value pairs. NOTE: The method did not(!)
+	 * assume that the put/post request contains a complete workItem. For this
+	 * reason the method loads the existing instance of the corresponding
+	 * workItem (identified by the $unqiueid) and adds the values provided by
+	 * the put/post request into the existing instance.
+	 * 
+	 * 
+	 * @param requestBodyStream
+	 * @return a workitem
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public final static ItemCollection parseWorkitem(
+			InputStream requestBodyStream) {
+		Vector<String> vMultiValueFieldNames = new Vector<String>();
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				requestBodyStream));
+		String inputLine;
+		ItemCollection workitem = new ItemCollection();
+
+		try {
+			while ((inputLine = in.readLine()) != null) {
+				// System.out.println(inputLine);
+
+				// split params separated by &
+				StringTokenizer st = new StringTokenizer(inputLine, "&", false);
+				while (st.hasMoreTokens()) {
+					String fieldValue = st.nextToken();
+					logger.fine("WorkflowRestService parse line: <"
+							+ fieldValue + ">");
+					try {
+						fieldValue = URLDecoder.decode(fieldValue, "UTF-8");
+
+						if (fieldValue.contains("=")) {
+							// get fieldname
+							String fieldName = fieldValue.substring(0,
+									fieldValue.indexOf('='));
+
+							// test for value...
+							if (fieldValue.indexOf('=') == fieldValue.length()) {
+								// no value
+								workitem.replaceItemValue(fieldName, "");
+								logger.fine("WorkflowRestService no value for '"
+										+ fieldName + "'");
+							} else {
+								fieldValue = fieldValue.substring(fieldValue
+										.indexOf('=') + 1);
+								// test for a multiValue field - did we know
+								// this
+								// field....?
+								fieldName = fieldName.toLowerCase();
+								if (vMultiValueFieldNames.indexOf(fieldName) > -1) {
+
+									List v = workitem.getItemValue(fieldName);
+									v.add(fieldValue);
+									logger.fine("WorkflowRestService multivalue for '"
+											+ fieldName
+											+ "' = '"
+											+ fieldValue
+											+ "'");
+									workitem.replaceItemValue(fieldName, v);
+								} else {
+									// first single value....
+									logger.fine("WorkflowRestService value for '"
+											+ fieldName
+											+ "' = '"
+											+ fieldValue
+											+ "'");
+									workitem.replaceItemValue(fieldName,
+											fieldValue);
+									vMultiValueFieldNames.add(fieldName);
+								}
+							}
+
+						} else {
+							logger.finest("WorkflowRestService Warning unexpected data - '=' expected! Skip value...");
+						}
+					} catch (NumberFormatException e) {
+						e.printStackTrace();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+			}
+		} catch (IOException e1) {
+			logger.severe("Unable to parse workitem data!");
+			e1.printStackTrace();
+			return null;
+		} finally {
+			try {
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+		return workitem;
 	}
 
 	/**
