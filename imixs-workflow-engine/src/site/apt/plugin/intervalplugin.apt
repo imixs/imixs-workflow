@@ -1,0 +1,33 @@
+Interval Plugin 
+~~~~~~~~~~~~~~
+ The Imixs Interval Plugin implements an mechanism to adjust a date field of a workitem
+ based on a interval description.
+ The interval description is stored in a field with the prafix 'keyinterval' followd by an 
+ existing date field. See the following example:
+ 
++-------------------------------+
+ keyItervalDatDate=monthly
+ datDate=01.01.2014 
++-------------------------------+
+ 
+ Depending on the keyInterval value the next due date will be computed if the current date
+ lies in the past.
+ 
+ The Plugin onyl runs on scheduled activities. So using the interval plugin in a workflow model
+ provides an easy way for scheduling periodical intervals. 
+ 
+ The following interval values are currently supported:
+ 
+ 
+*----------+-----------------------------------------------------------+ 
+||Value    || Description                                              |
+*----------+-----------------------------------------------------------+ 
+| weekly   | Adjust the date value for 7 days  |
+|          | Example: 15.01.2014 => 22.01.2014   |
+*----------+-----------------------------------------------------------+ 
+| monthly  | Adjust the date value for one month  |
+|          | Example: 15.01.2014 => 15.02.2014   |
+*----------+-----------------------------------------------------------+ 
+| yearly   | Adjust the date value for one year  |
+|          | Example: 15.01.2014 => 15.01.2015   |
+*----------+-----------------------------------------------------------+ 

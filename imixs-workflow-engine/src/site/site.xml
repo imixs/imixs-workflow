@@ -51,6 +51,7 @@
 				<item name="Version Plugin" href="plugin/versionplugin.html" />
 				<item name="Lucene Plugin" href="plugin/luceneplugin.html" />
 				<item name="Rule Plugin" href="plugin/ruleplugin.html" />
+				<item name="Interval Plugin" href="plugin/intervalplugin.html" />
 				<item name="Exception Handling" href="plugin/exception_handling.html" />
 			</item>
 
