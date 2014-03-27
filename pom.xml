@@ -64,8 +64,8 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:git://github.com/imixs/imixs-workflow</connection>
-		<developerConnection>scm:git:git://github.com/imixs/imixs-workflow</developerConnection>
+		<connection>scm:git:https://github.com/imixs/imixs-workflow.git</connection>
+		<developerConnection>scm:git:https://github.com/imixs/imixs-workflow.git</developerConnection>
 		<url>https://github.com/imixs/imixs-workflow/</url>
 	</scm>
 
