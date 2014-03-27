@@ -101,7 +101,7 @@ public class HistoryPlugin extends AbstractPlugin {
 		rtfItemLog = replaceDynamicValues(rtfItemLog, documentContext);
 
 		List<?> temp = documentContext.getItemValue("txtworkflowhistory");
-		historyList=new Vector();
+		historyList = new Vector();
 		// clear null and empty values
 		Iterator<?> i = temp.iterator();
 		while (i.hasNext()) {
@@ -168,15 +168,20 @@ public class HistoryPlugin extends AbstractPlugin {
 					.getItemValue("txtworkflowhistorylog");
 
 			for (String oldEntry : oldList) {
-				String sDate = oldEntry.substring(0, oldEntry.indexOf(" : "));
-				String sComment = oldEntry
-						.substring(oldEntry.indexOf(" : ") + 3);
-				String sUser = "";
-				List<Object> newEntry = new ArrayList<Object>();
-				newEntry.add(convertDate(sDate));
-				newEntry.add(sComment);
-				newEntry.add(sUser);
-				newList.add(newEntry);
+				if (oldEntry != null && !oldEntry.isEmpty()
+						&& oldEntry.indexOf(" : ") > -1) {
+					String sDate = oldEntry.substring(0,
+							oldEntry.indexOf(" : "));
+					String sComment = oldEntry.substring(oldEntry
+							.indexOf(" : ") + 3);
+					String sUser = "";
+					List<Object> newEntry = new ArrayList<Object>();
+					newEntry.add(convertDate(sDate));
+					newEntry.add(sComment);
+					newEntry.add(sUser);
+					newList.add(newEntry);
+				}
+
 			}
 
 		} catch (ClassCastException cce) {
@@ -199,8 +204,8 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.LONG,
-					DateFormat.LONG,new Locale("de","DE"));
-			
+					DateFormat.LONG, new Locale("de", "DE"));
+
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
@@ -209,7 +214,7 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
-					DateFormat.MEDIUM,new Locale("de","DE"));
+					DateFormat.MEDIUM, new Locale("de", "DE"));
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
@@ -218,7 +223,7 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.SHORT,
-					DateFormat.SHORT,new Locale("de","DE"));
+					DateFormat.SHORT, new Locale("de", "DE"));
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
@@ -227,7 +232,7 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.LONG,
-					DateFormat.MEDIUM,new Locale("de","DE"));
+					DateFormat.MEDIUM, new Locale("de", "DE"));
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
@@ -236,7 +241,7 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
-					DateFormat.SHORT,new Locale("de","DE"));
+					DateFormat.SHORT, new Locale("de", "DE"));
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
@@ -245,7 +250,7 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.SHORT,
-					DateFormat.MEDIUM,new Locale("de","DE"));
+					DateFormat.MEDIUM, new Locale("de", "DE"));
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
@@ -254,7 +259,7 @@ public class HistoryPlugin extends AbstractPlugin {
 
 		try {
 			df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
-					DateFormat.LONG,new Locale("de","DE"));
+					DateFormat.LONG, new Locale("de", "DE"));
 			result = df.parse(aDateString);
 			return result;
 		} catch (ParseException e) {
