@@ -27,19 +27,36 @@
 
 package org.imixs.workflow.plugins.jee;
 
+import java.util.logging.Logger;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.jee.util.PropertyService;
 
 /**
  * This abstract class implements a basic set of functions for implementing
  * plugins with Interfaces to JEE API
  * 
+ * The Plugin overwrites the replaceDynamicValue method and looks for xml tags
+ * '<propertyvalue>' This feature is optinal and only avilable if the
+ * PropertyService EJB can be lookuped!
+ * 
+ * 
  * @author Ralph Soika
  * 
  */
-public abstract class AbstractPlugin extends org.imixs.workflow.plugins.AbstractPlugin {
+public abstract class AbstractPlugin extends
+		org.imixs.workflow.plugins.AbstractPlugin {
 	javax.ejb.SessionContext jeeSessionContext;
+
+	PropertyService propertyService = null;
+	private static Logger logger = Logger.getLogger(AbstractPlugin.class
+			.getName());
 
 	/**
 	 * Initialize Plugin and get an instance of the EJB Session Context
@@ -48,24 +65,116 @@ public abstract class AbstractPlugin extends org.imixs.workflow.plugins.Abstract
 		super.init(actx);
 		// cast Workflow Session Context to EJB Session Context
 		jeeSessionContext = (javax.ejb.SessionContext) ctx.getSessionContext();
+
+		// try to lookup the propertyService for the method replaceDynamicValues
+		String jndiName = "ejb/PropertyService";
+		InitialContext ictx;
+		try {
+			ictx = new InitialContext();
+			Context ctx = (Context) ictx.lookup("java:comp/env");
+			propertyService = (PropertyService) ctx.lookup(jndiName);
+		} catch (NamingException e) {
+			// if we can not lookup the propertyService EJB we disable this
+			// feature
+			logger.fine("[AbstractPlugin] PropertyService not bound!");
+			propertyService = null;
+		}
+
 	}
 
-	
 	public abstract int run(ItemCollection documentContext,
 			ItemCollection documentActivity) throws PluginException;
 
-	
 	public abstract void close(int status) throws PluginException;
 
-	
-	
 	/**
 	 * determines the current username (callerPrincipal)
+	 * 
 	 * @return
 	 */
 	public String getUserName() {
 		return jeeSessionContext.getCallerPrincipal().getName();
 	}
-	
-	
+
+	/**
+	 * this method overrides the default behavior and parses a string for xml
+	 * tag <propertyvalue>. Those tags will be replaced with the corresponding
+	 * property value from the imixs.properties file.
+	 * 
+	 * <code>
+	 *   hello <propertyvalue>myCustomKey</propertyvalue>
+	 * </code>
+	 * 
+	 * 
+	 */
+	@Override
+	public String replaceDynamicValues(String aString,
+			ItemCollection documentContext) {
+
+		int iTagStartPos;
+		int iTagEndPos;
+		int iContentStartPos;
+		int iContentEndPos;
+		String sPropertyKey;
+
+		if (aString == null)
+			return "";
+
+		if (aString.toLowerCase().contains("<propertyvalue")
+				&& propertyService != null) {
+
+			// test if a <value> tag exists...
+			while ((iTagStartPos = aString.toLowerCase().indexOf(
+					"<propertyvalue")) != -1) {
+
+				iTagEndPos = aString.toLowerCase().indexOf("</propertyvalue>",
+						iTagStartPos);
+
+				// if no end tag found return string unchanged...
+				if (iTagEndPos == -1)
+					return aString;
+
+				// reset pos vars
+				iContentStartPos = 0;
+				iContentEndPos = 0;
+				sPropertyKey = "";
+
+				// so we now search the beginning of the tag content
+				iContentEndPos = iTagEndPos;
+				// start pos is the last > before the iContentEndPos
+				String sTestString = aString.substring(0, iContentEndPos);
+				iContentStartPos = sTestString.lastIndexOf('>') + 1;
+
+				// if no end tag found return string unchanged...
+				if (iContentStartPos >= iContentEndPos)
+					return aString;
+
+				iTagEndPos = iTagEndPos + "</propertyvalue>".length();
+
+				// now we have the start and end position of a tag and also the
+				// start and end pos of the value
+
+				// read the property Value
+				sPropertyKey = aString.substring(iContentStartPos,
+						iContentEndPos);
+
+				String vValue = propertyService.getProperties().getProperty(
+						sPropertyKey);
+				if (vValue == null) {
+					logger.warning("[AbstractPlugin] propertyvalue '"
+							+ sPropertyKey
+							+ "' is not defined in imixs.properties!");
+					vValue = "";
+				}
+				// now replace the tag with the result string
+				aString = aString.substring(0, iTagStartPos) + vValue
+						+ aString.substring(iTagEndPos);
+
+			}
+		}
+
+		// call default behavior
+		return super.replaceDynamicValues(aString, documentContext);
+	}
+
 }
