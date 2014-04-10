@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.List;
 import java.util.logging.Logger;
@@ -34,22 +35,23 @@ public class JSONParser {
 	 * </code>
 	 * 
 	 * @param requestBodyStream
+	 * @param encoding - default encoding use to parse the stream
 	 * @return a workitem
 	 * @throws ParseException 
+	 * @throws UnsupportedEncodingException 
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public final static ItemCollection parseWorkitem(
-			InputStream requestBodyStream) throws ParseException {
+			InputStream requestBodyStream,String encoding) throws ParseException, UnsupportedEncodingException {
 		
 		if (requestBodyStream==null) {
 			logger.severe("[JSONParser] inputStream is null!");
 			throw new java.text.ParseException("inputStream is null",-1);
-			
 		}
 		
 		//Vector<String> vMultiValueFieldNames = new Vector<String>();
 		BufferedReader in = new BufferedReader(new InputStreamReader(
-				requestBodyStream));
+				requestBodyStream,encoding));
+		
 		String inputLine;
 		ItemCollection workitem = new ItemCollection();
 

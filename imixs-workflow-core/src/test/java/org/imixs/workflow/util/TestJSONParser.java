@@ -1,6 +1,7 @@
 package org.imixs.workflow.util;
 
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.List;
 
@@ -36,7 +37,13 @@ public class TestJSONParser {
 		InputStream inputStream = getClass()
 				.getResourceAsStream("/json/simple.json");
 
-		ItemCollection itemCol = JSONParser.parseWorkitem(inputStream);
+		ItemCollection itemCol=null;
+		try {
+			itemCol = JSONParser.parseWorkitem(inputStream,"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
 
 		Assert.assertNotNull(itemCol);
 
@@ -62,8 +69,13 @@ public class TestJSONParser {
 		InputStream inputStream = getClass()
 				.getResourceAsStream("/json/corrupted.json");
 
-		ItemCollection itemCol = JSONParser.parseWorkitem(inputStream);
-
+		ItemCollection itemCol=null;
+		try {
+			itemCol = JSONParser.parseWorkitem(inputStream,"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
 	
 		Assert.assertNull(itemCol);
 	}
@@ -79,8 +91,14 @@ public class TestJSONParser {
 		InputStream inputStream = getClass()
 				.getResourceAsStream("/json/workitem.json");
 
-		ItemCollection itemCol = JSONParser.parseWorkitem(inputStream);
-
+		ItemCollection itemCol = null;
+		try {
+			itemCol = JSONParser.parseWorkitem(inputStream,"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		
 		Assert.assertNotNull(itemCol);
 
 		Assert.assertEquals("worklist", itemCol.getItemValueString("txtworkflowresultmessage"));

@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.text.ParseException;
@@ -927,16 +928,21 @@ public class WorkflowRestService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response postWorkitemJSON(InputStream requestBodyStream,
 			@QueryParam("action") String action,
-			@QueryParam("error") String error) {
+			@QueryParam("error") String error,
+			@DefaultValue("UTF-8") @QueryParam("encoding") String encoding) {
 
 		logger.fine("[WorkflowRestService] @PUT /workitem  method:putWorkitemJSON....");
 
 		ItemCollection workitem = null;
 		XMLItemCollection responseWorkitem = null;
 		try {
-			workitem = JSONParser.parseWorkitem(requestBodyStream);
+			workitem = JSONParser.parseWorkitem(requestBodyStream,encoding);
 
 		} catch (ParseException e) {
+			logger.severe("postWorkitemJSON wrong json format!");
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		} catch (UnsupportedEncodingException e) {
 			logger.severe("postWorkitemJSON wrong json format!");
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
