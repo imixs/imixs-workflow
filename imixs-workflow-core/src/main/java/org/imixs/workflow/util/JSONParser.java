@@ -44,7 +44,7 @@ public class JSONParser {
 			InputStream requestBodyStream,String encoding) throws ParseException, UnsupportedEncodingException {
 		
 		if (requestBodyStream==null) {
-			logger.severe("[JSONParser] inputStream is null!");
+			logger.severe("[JSONParser] parseWorkitem - inputStream is null!");
 			throw new java.text.ParseException("inputStream is null",-1);
 		}
 		
@@ -66,12 +66,14 @@ public class JSONParser {
 			// first we concat all lines
 			while ((inputLine = in.readLine()) != null) {
 				stringBuffer.append(inputLine);
+				logger.finest("[JSONParser] parseWorkitem - read line:"
+						+ inputLine + "");
 			}
 			content = stringBuffer.toString();
 
 			// find start ...."item":[...
 			content = content.substring(content.indexOf('[') + 0);
-
+			logger.finest("[JSONParser] parseWorkitem - start parsing...");
 			while (content != null) {
 
 				// find name => "name" : "$isauthor" ,
@@ -184,30 +186,36 @@ public class JSONParser {
 		// convert value to Object Type
 		if ("xs:boolean".equalsIgnoreCase(type)) {
 			value=Boolean.getBoolean(stringValue);
+			logger.fine("[JSONParser] storeValue - datatype=xs:boolean");
 		}
 		if ("xs:integer".equalsIgnoreCase(type)) {
 			value=Integer.getInteger(stringValue);
+			logger.fine("[JSONParser] storeValue - datatype=xs:integer");
 		}
 		if ("xs:long".equalsIgnoreCase(type)) {
 			value=Long.getLong(stringValue);
+			logger.fine("[JSONParser] storeValue - datatype=xs:long");
 		}
 		if ("xs:float".equalsIgnoreCase(type)) {
 			value=new Float(stringValue);
+			logger.fine("[JSONParser] storeValue - datatype=xs:float");
 		}
 		if ("xs:double".equalsIgnoreCase(type)) {
 			value=new Double(stringValue);
+			logger.fine("[JSONParser] storeValue - datatype=xs:double");
 		}
 
 		// store value
 		if (!workitem.hasItem(name)) {
 			// frist value
 			workitem.replaceItemValue(name, value);
-
+			logger.fine("[JSONParser] storeValue: '" + name + "' = '" + value + "'");
 		} else {
 			// add value
 			List valueList = workitem.getItemValue(name);
 			valueList.add(value);
 			workitem.replaceItemValue(name, valueList);
+			logger.fine("[JSONParser] store multivalue: '" + name + "' = '" + value + "'");
 		}
 
 	}

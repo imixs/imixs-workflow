@@ -972,17 +972,8 @@ public class WorkflowRestService {
 					// an instance of this WorkItem still exists! so we need
 					// to update the new values....
 					oldWorkitem.getAllItems().putAll(workitem.getAllItems());
-					/*
-					 * Map map=workitem.getAllItems();
-					 * 
-					 * map.p Set<String> set=map.keySet(); for (String key:set)
-					 * {
-					 * 
-					 * oldWorkitem.replaceItemValue(key, workitem.getItem()); }
-					 */
 					workitem = oldWorkitem;
 				}
-
 			}
 		}
 
@@ -1042,7 +1033,6 @@ public class WorkflowRestService {
 						.type(MediaType.APPLICATION_JSON)
 						.entity(responseWorkitem).build();
 			}
-
 		}
 
 		// success HTTP 200
