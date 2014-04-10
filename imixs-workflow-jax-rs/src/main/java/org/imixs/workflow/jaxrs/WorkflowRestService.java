@@ -929,10 +929,24 @@ public class WorkflowRestService {
 	public Response postWorkitemJSON(InputStream requestBodyStream,
 			@QueryParam("action") String action,
 			@QueryParam("error") String error,
-			@DefaultValue("UTF-8") @QueryParam("encoding") String encoding) {
+			@QueryParam("encoding") String encoding) {
 
 		logger.fine("[WorkflowRestService] @PUT /workitem  method:putWorkitemJSON....");
 
+		
+		// determine encoding from servlet request ....
+		if (encoding==null || encoding.isEmpty()) {
+			encoding=servletRequest.getCharacterEncoding();
+			logger.fine("[WorkflowRestService] postWorkitemJSON using request econding=" + encoding);
+		} else {
+			logger.fine("[WorkflowRestService] postWorkitemJSON set econding=" + encoding);
+		}
+		// set defautl encoding UTF-8
+		if (encoding==null || encoding.isEmpty()) {
+			encoding="UTF-8";
+			logger.fine("[WorkflowRestService] postWorkitemJSON no encoding defined, set default econding to" + encoding);
+		}
+		
 		ItemCollection workitem = null;
 		XMLItemCollection responseWorkitem = null;
 		try {
