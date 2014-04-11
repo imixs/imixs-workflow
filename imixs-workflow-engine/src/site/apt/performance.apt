@@ -44,10 +44,13 @@ SELECT DISTINCT environment FROM Entity AS environment
  So to add the necessary index manually you run call the following SQL commands: 
  
 +----------------------------------------+
- ALTER TABLE `mydatabase`.`ENTITY` ADD INDEX `index1`(`TYPE`);
- ALTER TABLE `mydatabase`.`TEXTITEM` ADD INDEX `index1`(`ITEMNAME`, `ITEMVALUE`);
- ALTER TABLE `mydatabase`.`INTEGERITEM` ADD INDEX `index1`(`ITEMNAME`, `ITEMVALUE`);
- ALTER TABLE `mydatabase`.`CALENDARITEM` ADD INDEX `index1`(`ITEMNAME`, `ITEMVALUE`);
+ALTER TABLE `ENTITY` ADD INDEX `index1`(`CREATED`,`MODIFIED`,`TYPE`,`VERSION`);
+ALTER TABLE `TEXTITEM` ADD INDEX `index1`(`ITEMNAME`, `ITEMVALUE`);
+ALTER TABLE `INTEGERITEM` ADD INDEX `index1`(`ITEMNAME`, `ITEMVALUE`);
+ALTER TABLE `CALENDARITEM` ADD INDEX `index1`(`ITEMNAME`, `ITEMVALUE`);
+ALTER TABLE `DOUBLEITEM` ADD INDEX `index1`(`ITEMNAME`, `ITEMVALUE`);
+ALTER TABLE `READACCESS` ADD INDEX `index1`(`VALUE`);
+ALTER TABLE `WRITEACCESS` ADD INDEX `index1`(`VALUE`);
 +----------------------------------------+
 
  After adding the index the response time should be nice again.
