@@ -26,12 +26,9 @@
  *******************************************************************************/
 package org.imixs.workflow.services.rest;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -186,8 +183,7 @@ public class RestClient {
 			Marshaller m = context.createMarshaller();
 			m.marshal(aItemCol, writer);
 
-			// System.out.println(writer.toString());
-
+		
 			// compute length
 			urlConnection.setRequestProperty("Content-Length",
 					"" + Integer.valueOf(writer.toString().getBytes().length));
@@ -267,8 +263,7 @@ public class RestClient {
 			Marshaller m = context.createMarshaller();
 			m.marshal(aEntityCol, writer);
 
-			// System.out.println(writer.toString());
-
+		
 			// compute length
 			urlConnection.setRequestProperty("Content-Length",
 					"" + Integer.valueOf(writer.toString().getBytes().length));
@@ -428,8 +423,10 @@ public class RestClient {
 		addCookies(urlConnection);
 
 		int responseCode = urlConnection.getResponseCode();
-		System.out.println("\nSending 'GET' request to URL : " + uri);
-		System.out.println("Response Code : " + responseCode);
+		logger.fine("[RestClient] Sending 'GET' request to URL : " + uri);
+		logger.fine("[RestClient] Response Code : " + responseCode);
+	
+	
 		readResponse(urlConnection);
 
 		return responseCode;
@@ -475,6 +472,7 @@ public class RestClient {
 	 */
 	private void readResponse(URLConnection urlConnection) throws IOException {
 		// get content of result
+		logger.fine("[RestClient] readResponse....");
 		StringWriter writer = new StringWriter();
 		BufferedReader in = null;
 		try {
@@ -482,7 +480,7 @@ public class RestClient {
 					urlConnection.getInputStream()));
 			String inputLine;
 			while ((inputLine = in.readLine()) != null) {
-				System.out.println(inputLine);
+				logger.fine(inputLine);
 				writer.write(inputLine);
 			}
 		} catch (IOException e) {
