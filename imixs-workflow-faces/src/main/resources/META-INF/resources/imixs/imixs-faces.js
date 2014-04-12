@@ -145,7 +145,7 @@ $.fn.layoutImixsTooltip = function(options) {
 			 content:  function() { 
 				var tooltip=$(this).next();
 				tooltip.hide();
-				return tooltip.text();  
+				return tooltip.html();  
 			} 
 			 
 
