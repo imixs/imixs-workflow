@@ -9,7 +9,7 @@
 
 <cc:interface>
 	<cc:attribute name="workflowController"></cc:attribute>
-	
+
 	<cc:attribute name="disabletooltip" default="false"
 		type="java.lang.Boolean"></cc:attribute>
 </cc:interface>
@@ -19,18 +19,19 @@
 	<ui:repeat value="#{cc.attrs.workflowController.activities}"
 		var="activity">
 		<h:commandButton action="#{cc.attrs.workflowController.process}"
-		 	class="imixs-workflow-action" title=""
+			class="imixs-workflow-action" title=""
 			value="#{activity.item['txtname']}">
 			<f:setPropertyActionListener
 				target="#{cc.attrs.workflowController.workitem.item['$ActivityID']}"
 				value="#{activity.item['numactivityid']}" />
-			<h:panelGroup rendered="#{!cc.attrs.disabletooltip}" 
-			class="imixs-tooltip">#{activity.item['rtfdescription']}</h:panelGroup>
+			<h:panelGroup rendered="#{!cc.attrs.disabletooltip}"
+				class="imixs-tooltip">
+				<h:outputText value="#{activity.item['rtfdescription']}"
+					escape="false" />
+			</h:panelGroup>
 		</h:commandButton>
-		
-		
 	</ui:repeat>
-	
+
 
 </cc:implementation>
 

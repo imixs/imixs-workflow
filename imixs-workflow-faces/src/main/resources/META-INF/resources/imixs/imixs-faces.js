@@ -142,6 +142,7 @@ $.fn.layoutImixsTooltip = function(options) {
 		$( this ).prev().tooltip({ 
 			 position: {  my: "left top", at: "left+10 bottom", collision: "flip" },
 			 show: { duration: 800 },
+			 tooltipClass: "imixs-tooltip-content",
 			 content:  function() { 
 				var tooltip=$(this).next();
 				tooltip.hide();
