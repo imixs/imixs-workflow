@@ -394,7 +394,11 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 					parentWorkitem.getItemValueString("$uniqueID"));
 			blobWorkitem.replaceItemValue("type", "workitemlob");
 			// Update BlobWorkitem
-			blobWorkitem = entityService.save(blobWorkitem);
+			//blobWorkitem = entityService.save(blobWorkitem);
+			// new transaction....
+			blobWorkitem= this.getEjbSessionContext().getBusinessObject(WorkflowService.class)
+						.getEntityService().saveByNewTransaction(blobWorkitem);
+
 
 		}
 	}

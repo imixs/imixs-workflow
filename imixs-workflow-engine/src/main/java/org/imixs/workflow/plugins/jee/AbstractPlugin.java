@@ -52,7 +52,7 @@ import org.imixs.workflow.jee.util.PropertyService;
  */
 public abstract class AbstractPlugin extends
 		org.imixs.workflow.plugins.AbstractPlugin {
-	javax.ejb.SessionContext jeeSessionContext;
+	javax.ejb.SessionContext ejbSessionContext;
 
 	PropertyService propertyService = null;
 	private static Logger logger = Logger.getLogger(AbstractPlugin.class
@@ -64,7 +64,7 @@ public abstract class AbstractPlugin extends
 	public void init(WorkflowContext actx) throws PluginException {
 		super.init(actx);
 		// cast Workflow Session Context to EJB Session Context
-		jeeSessionContext = (javax.ejb.SessionContext) ctx.getSessionContext();
+		ejbSessionContext = (javax.ejb.SessionContext) ctx.getSessionContext();
 
 		// try to lookup the propertyService for the method replaceDynamicValues
 		String jndiName = "ejb/PropertyService";
@@ -93,7 +93,20 @@ public abstract class AbstractPlugin extends
 	 * @return
 	 */
 	public String getUserName() {
-		return jeeSessionContext.getCallerPrincipal().getName();
+		return ejbSessionContext.getCallerPrincipal().getName();
+	}
+
+	
+	/**
+	 * Returns the EJB Session Context
+	 * @return SessionContext
+	 */
+	public javax.ejb.SessionContext getEjbSessionContext() {
+		return ejbSessionContext;
+	}
+
+	public void setEjbSessionContext(javax.ejb.SessionContext ejbSessionContext) {
+		this.ejbSessionContext = ejbSessionContext;
 	}
 
 	/**
