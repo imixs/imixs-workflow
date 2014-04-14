@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -47,6 +46,8 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
@@ -479,6 +480,27 @@ public class EntityService implements EntityServiceRemote {
 
 		// return imploded itemCollection
 		return itemcol;
+	}
+
+	/**
+	 * This method saves a workitem in a new transaction. The method can be used
+	 * by plugins to isolate a save request from the current transaction
+	 * context.
+	 * 
+	 * To call this method a EJB session context is necessary:
+	 * <code>
+	 * 		workitem= sessionContext.getBusinessObject(EntityService.class)
+						.saveNewTransaction(workitem);
+	 * </code>
+	 * 
+	 * @param itemcol
+	 * @return
+	 * @throws AccessDeniedException
+	 */
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
+	public ItemCollection saveByNewTransaction(ItemCollection itemcol)
+			throws AccessDeniedException {
+		return save(itemcol);
 	}
 
 	/**
