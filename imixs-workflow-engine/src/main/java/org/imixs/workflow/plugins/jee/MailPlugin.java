@@ -71,7 +71,8 @@ public class MailPlugin extends AbstractPlugin {
 	MimeMessage mailMessage = null;
 	Multipart mimeMultipart = null;
 	boolean isHTMLMail = false;
-	String charSet = "text/html; charset=ISO-8859-1";
+	String htmlCharSet = "text/html; charset=ISO-8859-1";
+	String textCharSet = "text/plain; charset=ISO-8859-1";
 
 	@Resource(name = "IMIXS_MAIL_SESSION")
 	private String sMailSession = "org.imixs.workflow.mail";
@@ -244,14 +245,14 @@ public class MailPlugin extends AbstractPlugin {
 					if (sTestHTML.startsWith("<!doctype")
 							|| sTestHTML.startsWith("<html")
 							|| sTestHTML.startsWith("<?xml")) {
-						logger.fine("[MailPlugin] creating html mail body ...");
+						logger.fine("[MailPlugin] creating html mail body using charset '"+this.getHtmlCharSet()+"'");
 						// create new html body part
-						messagePart= new MimeBodyPart();
-						messagePart.setContent(aBodyText, this.getCharSet());
+						messagePart.setContent(aBodyText, this.getHtmlCharSet());
 						isHTMLMail = true;
 					} else {
-						logger.fine("[MailPlugin] creating plaintext mail body ...");
-						messagePart.setText(aBodyText);
+						logger.fine("[MailPlugin] creating plaintext mail body using charset '" + this.getTextCharSet()  +"'");
+						messagePart.setContent(aBodyText, this.getTextCharSet());
+						isHTMLMail = false;
 					}
 					// append message part
 					mimeMultipart.addBodyPart(messagePart);
@@ -319,10 +320,12 @@ public class MailPlugin extends AbstractPlugin {
 				trans.connect(mailSession.getProperty("mail.smtp.user"),
 						mailSession.getProperty("mail.smtp.password"));
 
-				if (this.isHTMLMail())
-					mailMessage.setContent(mimeMultipart, this.getCharSet());
-				else
-					mailMessage.setContent(mimeMultipart);
+				if (this.isHTMLMail()) {
+					mailMessage.setContent(mimeMultipart, this.getHtmlCharSet());
+				}
+				else {
+					mailMessage.setContent(mimeMultipart,this.getTextCharSet());
+				}
 
 				mailMessage.saveChanges();
 				trans.sendMessage(mailMessage, mailMessage.getAllRecipients());
@@ -449,12 +452,22 @@ public class MailPlugin extends AbstractPlugin {
 		return isHTMLMail;
 	}
 
-	public String getCharSet() {
-		return charSet;
+	public String getHtmlCharSet() {
+		return htmlCharSet;
 	}
 
-	public void setCharSet(String charSet) {
-		this.charSet = charSet;
+	public void setHtmlCharSet(String htmlCharSet) {
+		this.htmlCharSet = htmlCharSet;
 	}
+
+	public String getTextCharSet() {
+		return textCharSet;
+	}
+
+	public void setTextCharSet(String textCharSet) {
+		this.textCharSet = textCharSet;
+	}
+
+
 
 }
