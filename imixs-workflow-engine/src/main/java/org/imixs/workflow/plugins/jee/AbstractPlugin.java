@@ -144,8 +144,10 @@ public abstract class AbstractPlugin extends
 						iTagStartPos);
 
 				// if no end tag found return string unchanged...
-				if (iTagEndPos == -1)
-					return aString;
+				if (iTagEndPos == -1) {
+					logger.warning("[AbstractPlugin] invalid text string format: "+aString);
+					break;
+				}
 
 				// reset pos vars
 				iContentStartPos = 0;
@@ -159,8 +161,10 @@ public abstract class AbstractPlugin extends
 				iContentStartPos = sTestString.lastIndexOf('>') + 1;
 
 				// if no end tag found return string unchanged...
-				if (iContentStartPos >= iContentEndPos)
-					return aString;
+				if (iContentStartPos >= iContentEndPos) {
+					logger.warning("[AbstractPlugin] invalid text string format: "+aString);
+					break;
+				}
 
 				iTagEndPos = iTagEndPos + "</propertyvalue>".length();
 

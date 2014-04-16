@@ -40,7 +40,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.plugins.jee.MailPlugin;
 
 /**
  * This abstract class implements different helper methods used by subclasses
@@ -54,6 +53,9 @@ import org.imixs.workflow.plugins.jee.MailPlugin;
 public abstract class AbstractPlugin implements Plugin {
 
 	public WorkflowContext ctx;
+
+	private static Logger logger = Logger.getLogger(AbstractPlugin.class
+			.getName());
 
 	public void init(WorkflowContext actx) throws PluginException {
 		ctx = actx;
@@ -118,8 +120,11 @@ public abstract class AbstractPlugin implements Plugin {
 					iTagStartPos);
 
 			// if no end tag found return string unchanged...
-			if (iTagEndPos == -1)
-				return aString;
+			if (iTagEndPos == -1) {
+				logger.warning("[AbstractPlugin] invalid text string format: "
+						+ aString);
+				break;
+			}
 
 			// reset pos vars
 			iContentStartPos = 0;
@@ -139,8 +144,11 @@ public abstract class AbstractPlugin implements Plugin {
 			iContentStartPos = sTestString.lastIndexOf('>') + 1;
 
 			// if no end tag found return string unchanged...
-			if (iContentStartPos >= iContentEndPos)
-				return aString;
+			if (iContentStartPos >= iContentEndPos) {
+				logger.warning("[AbstractPlugin] invalid text string format: "
+						+ aString);
+				break;
+			}
 
 			iTagEndPos = iTagEndPos + "</itemvalue>".length();
 
@@ -254,10 +262,13 @@ public abstract class AbstractPlugin implements Plugin {
 					SimpleDateFormat formatter = new SimpleDateFormat(format);
 					singleValue = formatter.format(dateValue);
 				} catch (Exception ef) {
-					Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
-					logger.warning("AbstractPlugin: Invalid format String '" + format+"'");
-					logger.warning("AbstractPlugin: Can not format value - error: " + ef.getMessage());
-					return ""+dateValue;
+					Logger logger = Logger.getLogger(AbstractPlugin.class
+							.getName());
+					logger.warning("AbstractPlugin: Invalid format String '"
+							+ format + "'");
+					logger.warning("AbstractPlugin: Can not format value - error: "
+							+ ef.getMessage());
+					return "" + dateValue;
 				}
 			} else
 				// use standard formate short/short
