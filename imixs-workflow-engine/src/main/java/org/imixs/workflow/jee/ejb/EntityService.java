@@ -773,8 +773,13 @@ public class EntityService implements EntityServiceRemote {
 	 */
 	public List<ItemCollection> findAllEntities(String query, int startpos,
 			int count) throws InvalidAccessException {
+		
+		long l=0;
+		
+		logger.fine("[EntityService] findAllEntities - Query=" + query);
+		logger.fine("[EntityService] findAllEntities - Startpos=" + startpos + " count=" +count);
 		List<ItemCollection> vectorResult = new ArrayList<ItemCollection>();
-
+		
 		// optimize query....
 		query = optimizeQuery(query);
 		try {
@@ -784,10 +789,15 @@ public class EntityService implements EntityServiceRemote {
 			if (count > 0)
 				q.setMaxResults(count);
 
+			l=System.currentTimeMillis();
 			Collection<Entity> entityList = q.getResultList();
+			logger.fine("[EntityService] findAllEntities - getResultList in " +( System.currentTimeMillis()-l) + " ms");
 
 			if (entityList == null)
 				return vectorResult;
+			
+			logger.fine("[EntityService] findAllEntities - ResultList size=" +  entityList.size());
+			l=System.currentTimeMillis();
 			for (Entity aEntity : entityList) {
 				/*
 				 * try { manager.refresh(aEntity); } catch
@@ -799,6 +809,11 @@ public class EntityService implements EntityServiceRemote {
 				// implode the ItemCollection object and add it to the resultset
 				vectorResult.add(implodeEntity(aEntity));
 			}
+			
+			logger.fine("[EntityService] implode ResultList in " +( System.currentTimeMillis()-l) + " ms");
+
+			
+			
 		} catch (RuntimeException nre) {
 			throw new InvalidAccessException(
 					"[EntityService] Error findAllEntities: '" + query + "' ",
