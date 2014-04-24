@@ -836,6 +836,7 @@ public class WorkflowRestService {
 	 */
 	@PUT
 	@Path("/workitem")
+	@Produces(MediaType.APPLICATION_XML)
 	@Consumes({ "application/xml", "text/xml" })
 	public Response putWorkitemXML(XMLItemCollection workitem,
 			@QueryParam("action") String action) {
@@ -861,7 +862,9 @@ public class WorkflowRestService {
 							.build();
 				}
 			}
-			return Response.status(Response.Status.OK).build();
+			
+			return Response.ok(XMLItemCollectionAdapter.putItemCollection(itemCollection), MediaType.APPLICATION_XML ).build();
+			//		return Response.status(Response.Status.OK).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -870,6 +873,7 @@ public class WorkflowRestService {
 
 	@POST
 	@Path("/workitem")
+	@Produces(MediaType.APPLICATION_XML)
 	@Consumes({ "application/xml", "text/xml" })
 	public Response postWorkitemXML(XMLItemCollection workitem,
 			@QueryParam("action") String action) {

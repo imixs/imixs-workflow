@@ -261,24 +261,46 @@ public class XMLItemCollectionAdapter {
 	 * ItemCollection objects. The method can import any kind of entity data
 	 * like model or configuration data an xml export of workitems.
 	 * 
-	 * @param inputStream xml input stream
+	 * @param inputStream
+	 *            xml input stream
 	 * @throws JAXBException
 	 * @throws IOException
 	 * @return List of ItemCollection objects
 	 */
 	public static List<ItemCollection> readCollectionFromInputStream(
 			InputStream inputStream) throws JAXBException, IOException {
-
-		List<ItemCollection> resultList = new ArrayList<ItemCollection>();
+		byte[] byteInput = null;
 
 		if (inputStream == null) {
 			return null;
 		}
-		byte[] byteInput = null;
 		byteInput = getBytesFromStream(inputStream);
+		return readCollection(byteInput);
+
+	}
+
+	/**
+	 * This method imports an xml entity data byte array and returns a List of
+	 * ItemCollection objects. The method can import any kind of entity data
+	 * like model or configuration data an xml export of workitems.
+	 * 
+	 * @param inputStream
+	 *            xml input stream
+	 * @throws JAXBException
+	 * @throws IOException
+	 * @return List of ItemCollection objects
+	 */
+	public static List<ItemCollection> readCollection(byte[] byteInput)
+			throws JAXBException, IOException {
+
+		List<ItemCollection> resultList = new ArrayList<ItemCollection>();
+
+		if (byteInput == null) {
+			return null;
+		}
 
 		EntityCollection ecol = null;
-		logger.fine("[XMLItemCollectionAdapter] importXmlEntityData - verifing file content....");
+		logger.fine("[XMLItemCollectionAdapter] importXmlEntityData - verifing  content....");
 		JAXBContext context = JAXBContext.newInstance(EntityCollection.class);
 		Unmarshaller m = context.createUnmarshaller();
 
@@ -286,7 +308,7 @@ public class XMLItemCollectionAdapter {
 		Object jaxbObject = m.unmarshal(input);
 		if (jaxbObject == null) {
 			throw new RuntimeException(
-					"[XMLItemCollectionAdapter] error - wrong xml file format - unable to import file!");
+					"[XMLItemCollectionAdapter] error - wrong xml file format - unable to read content!");
 		}
 
 		ecol = (EntityCollection) jaxbObject;
@@ -304,6 +326,50 @@ public class XMLItemCollectionAdapter {
 
 	}
 
+	
+	
+	/**
+	 * This method imports a single XMLItemCollection and returns the ItemCollection object. 
+	 * 
+	 * @param inputStream
+	 *            xml input stream
+	 * @throws JAXBException
+	 * @throws IOException
+	 * @return List of ItemCollection objects
+	 */
+	public static ItemCollection readItemCollection(byte[] byteInput)
+			throws JAXBException, IOException {
+
+	
+		if (byteInput == null) {
+			return null;
+		}
+
+		XMLItemCollection ecol = null;
+		logger.fine("[XMLItemCollectionAdapter] importXmlEntityData - verifing content....");
+		JAXBContext context = JAXBContext.newInstance(XMLItemCollection.class);
+		Unmarshaller m = context.createUnmarshaller();
+
+		ByteArrayInputStream input = new ByteArrayInputStream(byteInput);
+		Object jaxbObject = m.unmarshal(input);
+		if (jaxbObject == null) {
+			throw new RuntimeException(
+					"[XMLItemCollectionAdapter] error - wrong xml file format - unable to read content!");
+		}
+
+		ecol = (XMLItemCollection) jaxbObject;
+
+		// convert entity....
+		ItemCollection itemCol=XMLItemCollectionAdapter.getItemCollection(ecol);
+		
+		return itemCol;
+
+	}
+
+	
+	
+	
+	
 	/**
 	 * This method test if the values of an vector are basic types
 	 * 
