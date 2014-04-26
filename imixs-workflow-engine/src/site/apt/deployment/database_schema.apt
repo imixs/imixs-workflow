@@ -57,11 +57,11 @@ Database Schema
  To provide a data-source in the application server there are different ways how to configure the database connection.
  The following pictures shows how a database source to a MySQL database is defined in a Glassfish Application server.
  
-[images/glassfish-jdbc-01.png] 
+[../images/glassfish-jdbc-01.png] 
 
  Definition of a JDBC Connection pool to access a database
  
-[images/glassfish-jdbc-02.png] 
+[../images/glassfish-jdbc-02.png] 
 
  Definition of a JDBC Resource used by the Imixs Workflow Application
  
