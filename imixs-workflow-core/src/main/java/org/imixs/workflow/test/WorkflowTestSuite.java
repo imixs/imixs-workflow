@@ -107,20 +107,28 @@ public class WorkflowTestSuite {
 	}
 
 	/**
-	 * Get the worklist for a specific user
+	 * Get the worklist for a specific user with an optional param 
 	 * 
 	 * @param user
 	 * @param resource - resource string 
+	 * @param param - optional query param
 	 * @return
 	 * @see WorkflowSerice
 	 */
-	public List<ItemCollection> getWorklist(String user, String resource) {
+	public List<ItemCollection> getWorklist(String user, String resourceType, String param) {
 		List<ItemCollection> resultList = null;
 
 		RestClient client = clients.get(user);
 
 		try {
-			int result = client.get(getHost() + resource);
+			
+			String url=getHost() + "workflow/"+ resourceType;
+			if (param!=null && !param.isEmpty()) {
+				url+="/"+param;
+			}
+			url+=".xml";
+			
+			int result = client.get(url);
 			if (result >= 200 && result <= 299) {
 				String content = client.getContent();
 				resultList = XMLItemCollectionAdapter.readCollection(content
@@ -135,14 +143,17 @@ public class WorkflowTestSuite {
 	}
 
 	/**
-	 * Get the worklist for a specific user
+	 * Get the default worklist for a specific user
 	 * 
 	 * @param user
 	 * @return
 	 */
 	public List<ItemCollection> getWorklist(String user) {
-		return getWorklist(user, "workflow/worklist.xml");
+		return getWorklist(user, "worklist",null);
 	}
+	
+	
+
 
 	/**
 	 * post the workitem for a specific user
