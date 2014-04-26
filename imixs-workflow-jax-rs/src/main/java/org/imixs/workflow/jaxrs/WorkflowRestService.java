@@ -219,6 +219,10 @@ public class WorkflowRestService {
 			if ("null".equalsIgnoreCase(user))
 				user = null;
 
+			// decode URL param
+			if (user!=null)
+				user = URLDecoder.decode(user, "UTF-8");
+			
 			col = workflowService.getWorkListByAuthor(user, start, count, type,
 					sortorder);
 			return XMLItemCollectionAdapter.putCollection(col,
@@ -277,6 +281,11 @@ public class WorkflowRestService {
 		try {
 			if ("null".equalsIgnoreCase(creator))
 				creator = null;
+			
+			// decode URL param
+			if (creator!=null)
+				creator = URLDecoder.decode(creator, "UTF-8");
+
 
 			col = workflowService.getWorkListByCreator(creator, start, count,
 					type, sortorder);
@@ -377,6 +386,13 @@ public class WorkflowRestService {
 			@QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
+			
+			
+			// decode URL param
+			if (processgroup!=null)
+				processgroup = URLDecoder.decode(processgroup, "UTF-8");
+
+			
 			col = workflowService.getWorkListByGroup(processgroup, start,
 					count, type, sortorder);
 			return XMLItemCollectionAdapter.putCollection(col,
@@ -428,6 +444,10 @@ public class WorkflowRestService {
 		try {
 			if ("null".equalsIgnoreCase(owner))
 				owner = null;
+			
+			// decode URL param
+			if (owner!=null)
+				owner = URLDecoder.decode(owner, "UTF-8");
 
 			col = workflowService.getWorkListByOwner(owner, start, count, type,
 					sortorder);
@@ -558,6 +578,90 @@ public class WorkflowRestService {
 		return getWorkListByRef(uniqueid, start, count, type, sortorder, items);
 	}
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * Returns a result set by JPQL Query
+	 * @param query
+	 * @param start
+	 * @param count
+	 * @param type
+	 * @param sortorder
+	 * @param items
+	 * @return
+	 */
+	@GET
+	@Path("/worklistbyquery/{query}")
+	public EntityCollection getWorkListByQuery(
+			@PathParam("query") String query,
+			@DefaultValue("0") @QueryParam("start") int start,
+			@DefaultValue("10") @QueryParam("count") int count,
+			@QueryParam("items") String items) {
+		Collection<ItemCollection> col = null;
+		try {
+			
+			// decode query...
+			String decodedQuery = URLDecoder.decode(query, "UTF-8");
+			
+			col = workflowService.getEntityService().findAllEntities(decodedQuery, start, count);
+			return XMLItemCollectionAdapter.putCollection(col,
+					getItemList(items));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new EntityCollection();
+	}
+
+	@GET
+	@Path("/worklistbyquery/{query}.xml")
+	@Produces("application/xml")
+	public EntityCollection getWorkListByQueryXML(
+			@PathParam("query") String query,
+			@DefaultValue("0") @QueryParam("start") int start,
+			@DefaultValue("10") @QueryParam("count") int count,
+			@QueryParam("items") String items) {
+		return getWorkListByQuery(query, start, count,  items);
+	}
+
+	@GET
+	@Path("/worklistbyquery/{query}.json")
+	@Produces("application/json")
+	public EntityCollection getWorkListByQueryJSON(
+			@PathParam("query") String query,
+			@DefaultValue("0") @QueryParam("start") int start,
+			@DefaultValue("10") @QueryParam("count") int count,
+			@QueryParam("items") String items) {
+		return getWorkListByQuery(query, start, count,items);
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * returns a singel workitem defined by $uniqueid
 	 * 
