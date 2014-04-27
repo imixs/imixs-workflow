@@ -53,7 +53,10 @@ Plugin API - Overview
 
  The attribute 'format' can be used to format a date/time value.
  
- If a workitem value contains multivalues you can also use the attribute 'separator' to separate single values.
+**Format multi-value lists
+~~~~~~~~~~~~~~~~~~~~
+ 
+ If a workitem value contains multi-values list you can also use the attribute 'separator' to separate single values.
  
  
  For example the message text
@@ -67,6 +70,17 @@ Plugin API - Overview
 +------------------------+
  The following item has been ordered: pants, shirt, jacket
 +------------------------+
+
+**Format date values by locale
+~~~~~~~~~~~~~~~~~~~~
+
+ To format a date value in language specific format you can use the 'locale' attribute to define
+ the preferred locale. See the following example to format a date value in german format:
+ 
++------------------------+ 
+ The Date in german format is: <itemvalue format=\"EEEE, d. MMMM yyyy\" locale=\"de_DE\">datdate</itemvalue>.";
++------------------------+	
+
 	
 *Replacing static Strings with properties values
 ~~~~~~~~~~~~~~~~~~~~

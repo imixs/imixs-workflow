@@ -33,6 +33,8 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -96,15 +98,8 @@ public abstract class AbstractPlugin implements Plugin {
 			ItemCollection documentContext) {
 		int iTagStartPos;
 		int iTagEndPos;
-
 		int iContentStartPos;
 		int iContentEndPos;
-
-		int iFormatStartPos;
-		int iFormatEndPos;
-
-		int iSeparatorStartPos;
-		int iSeparatorEndPos;
 
 		String sFormat = "";
 		String sSeparator = " ";
@@ -129,10 +124,6 @@ public abstract class AbstractPlugin implements Plugin {
 			// reset pos vars
 			iContentStartPos = 0;
 			iContentEndPos = 0;
-			iFormatStartPos = 0;
-			iFormatEndPos = 0;
-			iSeparatorStartPos = 0;
-			iSeparatorEndPos = 0;
 			sFormat = "";
 			sSeparator = " ";
 			sItemValue = "";
@@ -156,36 +147,41 @@ public abstract class AbstractPlugin implements Plugin {
 			// start and end pos of the value
 
 			// next we check if the start tag contains a 'format' attribute
-			iFormatStartPos = aString.toLowerCase().indexOf("format=",
-					iTagStartPos);
-			// extract format string if available
-			if (iFormatStartPos > -1 && iFormatStartPos < iContentStartPos) {
-				iFormatStartPos = aString.indexOf("\"", iFormatStartPos) + 1;
-				iFormatEndPos = aString.indexOf("\"", iFormatStartPos + 1);
-				sFormat = aString.substring(iFormatStartPos, iFormatEndPos);
-			}
+			sFormat = extractAttribute(aString.substring(0, iContentEndPos),
+					"format");
 
-			// next we check if the start tag contains a 'separator'
-			// attribute
-			iSeparatorStartPos = aString.toLowerCase().indexOf("separator=",
-					iTagStartPos);
-			// extract format string if available
-			if (iSeparatorStartPos > -1
-					&& iSeparatorStartPos < iContentStartPos) {
-				iSeparatorStartPos = aString.indexOf("\"", iSeparatorStartPos) + 1;
-				iSeparatorEndPos = aString
-						.indexOf("\"", iSeparatorStartPos + 1);
-				sSeparator = aString.substring(iSeparatorStartPos,
-						iSeparatorEndPos);
+			// next we check if the start tag contains a 'separator' attribute
+			sSeparator = extractAttribute(aString.substring(0, iContentEndPos),
+					"separator");
+
+			// extract locale...
+			Locale locale = null;
+			String sLocale = extractAttribute(
+					aString.substring(0, iContentEndPos), "locale");
+			if (sLocale != null && !sLocale.isEmpty()) {
+				// split locale
+				StringTokenizer stLocale = new StringTokenizer(sLocale, "_");
+				if (stLocale.countTokens() == 1) {
+					// only language variant
+					String sLang = stLocale.nextToken();
+					String sCount = sLang.toUpperCase();
+					locale = new Locale(sLang, sCount);
+				} else {
+					// language and country
+					String sLang = stLocale.nextToken();
+					String sCount = stLocale.nextToken();
+					locale = new Locale(sLang, sCount);
+				}
 			}
 
 			// extract Item Value
 			sItemValue = aString.substring(iContentStartPos, iContentEndPos);
 
 			// format field value
-			List vValue = documentContext.getItemValue(sItemValue);
+			List<?> vValue = documentContext.getItemValue(sItemValue);
 
-			String sResult = formatItemValues(vValue, sSeparator, sFormat);
+			String sResult = formatItemValues(vValue, sSeparator, sFormat,
+					locale);
 
 			// now replace the tag with the result string
 			aString = aString.substring(0, iTagStartPos) + sResult
@@ -200,8 +196,8 @@ public abstract class AbstractPlugin implements Plugin {
 	 * this method formats a string object depending of an attribute type.
 	 * MultiValues will be separated by the provided separator
 	 */
-	public String formatItemValues(Collection aItem, String aSeparator,
-			String sFormat) {
+	public String formatItemValues(Collection<?> aItem, String aSeparator,
+			String sFormat, Locale locale) {
 
 		StringBuffer sBuffer = new StringBuffer();
 
@@ -209,16 +205,18 @@ public abstract class AbstractPlugin implements Plugin {
 			return "";
 
 		for (Object aSingleValue : aItem) {
-			String aValue = formatObjectValue(aSingleValue, sFormat);
+			String aValue = formatObjectValue(aSingleValue, sFormat, locale);
 			sBuffer.append(aValue);
 			// append delimiter
-			sBuffer.append(aSeparator);
+			if (aSeparator != null) {
+				sBuffer.append(aSeparator);
+			}
 		}
 
 		String sString = sBuffer.toString();
 
 		// cut last separator
-		if (sString.endsWith(aSeparator)) {
+		if (aSeparator != null && sString.endsWith(aSeparator)) {
 			sString = sString.substring(0, sString.lastIndexOf(aSeparator));
 		}
 
@@ -233,13 +231,13 @@ public abstract class AbstractPlugin implements Plugin {
 	 * Only Date Objects will be formated into a modified representation. other
 	 * objects will be returned using the toString() method.
 	 * 
-	 * if an optional format is provided this will be used to format date
+	 * If an optional format is provided this will be used to format date
 	 * objects.
 	 * 
 	 * @param o
 	 * @return
 	 */
-	private String formatObjectValue(Object o, String format) {
+	private String formatObjectValue(Object o, String format, Locale locale) {
 
 		Date dateValue = null;
 
@@ -259,7 +257,12 @@ public abstract class AbstractPlugin implements Plugin {
 			if (format != null && !"".equals(format)) {
 				// format date with provided formater
 				try {
-					SimpleDateFormat formatter = new SimpleDateFormat(format);
+					SimpleDateFormat formatter = null;
+					if (locale != null) {
+						formatter = new SimpleDateFormat(format, locale);
+					} else {
+						formatter = new SimpleDateFormat(format);
+					}
 					singleValue = formatter.format(dateValue);
 				} catch (Exception ef) {
 					Logger logger = Logger.getLogger(AbstractPlugin.class
@@ -281,6 +284,23 @@ public abstract class AbstractPlugin implements Plugin {
 		return o.toString();
 	}
 
+	private String extractAttribute(String aString, String attributeName) {
+		int iTagStartPos = -1;
+		String sAttributeValue = null;
+		// next we check if the start tag contains a 'format' attribute
+		int iAttributeStartPos = aString.toLowerCase().indexOf(
+				attributeName + "=", iTagStartPos);
+		// extract format string if available
+		if (iAttributeStartPos > -1) {
+			iAttributeStartPos = aString.indexOf("\"", iAttributeStartPos) + 1;
+			int iAttributEndPos = aString.indexOf("\"", iAttributeStartPos + 1);
+			sAttributeValue = aString.substring(iAttributeStartPos,
+					iAttributEndPos);
+		}
+
+		return sAttributeValue;
+	}
+
 	/**
 	 * This method merges the values from p_VectorSource into vectorDest and
 	 * removes duplicates
@@ -288,6 +308,7 @@ public abstract class AbstractPlugin implements Plugin {
 	 * @param p_VectorDestination
 	 * @param p_VectorSource
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void mergeVectors(List p_VectorDestination, List p_VectorSource) {
 		if ((p_VectorSource != null) && (p_VectorSource.size() > 0)) {
 			for (Object o : p_VectorSource) {
@@ -304,6 +325,7 @@ public abstract class AbstractPlugin implements Plugin {
 	 * @param p_VectorDestination
 	 * @param p_VectorFieldList
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void mergeMappedFieldValues(ItemCollection documentContext,
 			List p_VectorDestination, List<String> p_VectorFieldList) {
 		if (p_VectorDestination == null || p_VectorFieldList == null)
@@ -333,6 +355,7 @@ public abstract class AbstractPlugin implements Plugin {
 	 * 
 	 * @param p_Vector
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public List uniqueList(List p_Vector) {
 		int iVectorSize = p_Vector.size();
 		Vector cleanedVector = new Vector();
