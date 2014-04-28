@@ -223,7 +223,14 @@ public abstract class AbstractPlugin implements Plugin {
 		return sString;
 
 	}
-
+	/**
+	 * this method formats a string object depending of an attribute type.
+	 * MultiValues will be separated by the provided separator
+	 */
+	public String formatItemValues(Collection<?> aItem, String aSeparator,
+			String sFormat) {
+		return formatItemValues(aItem, aSeparator, sFormat,null);
+	}
 	/**
 	 * This helper method test the type of an object provided by a
 	 * itemcollection and formats the object into a string value.
