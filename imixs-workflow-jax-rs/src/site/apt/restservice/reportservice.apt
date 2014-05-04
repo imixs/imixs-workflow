@@ -1,0 +1,227 @@
+
+The Report Service
+~~~~~~~~~~~~~~~~~~~~
+ The main ressource /report provides a flexible rest service interface to create dynamic reports defined by through the
+ imixs Report Service. The report rest service can be used to create and update report definitions and to process
+ the result of a report providing a set of differnt params.
+
+* The /report resources GET
+~~~~~~~~~~~~~~
+
+ The /report GET resources are used to get business objects provided by the Imixs Report Manager:
+
+
+*-----------------------------------------------*-------------------------------------------* 
+| URI                                           | Description                               | 
+*-----------------------------------------------+-------------------------------------------+
+| /report/reports                               | a list of reports provided by the         |
+|                                               | workflow instance                         |
+*-----------------------------------------------+-------------------------------------------+
+| /report/reports/{name}                        | a report description for a specific report|
+|                                               |                                           |
+*-----------------------------------------------+-------------------------------------------+
+| /report/{name}.ixr                            | the result of a specific report           |
+|                                               |                                           |
+*-----------------------------------------------+-------------------------------------------+
+| /report/{name}.html                           | a html table of the result for a specific |
+|                                               | report                                    |
+*-----------------------------------------------+-------------------------------------------+
+| /report/{name}.xml                            | a xml representation of the result for    |
+|                                               | a specific report                         |
+*-----------------------------------------------+-------------------------------------------+
+
+ A report definition need to provide a set of informations to define the layout and content of a report
+ 
+     * JPQL Statement - selection of workitems to be selected in a report
+ 
+     * contentType / Encoding - defines the MIME-TYPE and encoding for a report (e.g. text/html for html output, application/pdf for pdf files)
+ 
+     * processing instructions - xsl template to format the xml output of an workitem collection
+
+
+ The following example shows a simple XSLT file to format a workitem collection into a html output:
+ 
++---------------------+
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsl:stylesheet 
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	version="1.0">
+	<xsl:output 
+		method="xhtml"
+		encoding="UTF-8" 
+		indent="yes"
+		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+		doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
+		omit-xml-declaration="no" />
+	<xsl:template match="/">
+	<html>
+	<body>
+  		<xsl:apply-templates select="/collection/entity" />
+			
+	</body>
+	</html>
+	</xsl:template>
+
+<!-- Template -->
+	<xsl:template match="/collection/entity">
+	  <div id="address">
+		<xsl:value-of select="item[name='name']/value" /><br />
+		<xsl:value-of select="item[name='address']/value" /><br />
+		<xsl:value-of select="item[name='street']/value" /><br />
+		<xsl:value-of select="item[name='zip']/value" /><xsl:text> </xsl:text>
+		<xsl:value-of select="item[name='city']/value" /><br />
+	</div>
+	</xsl:template>
+</xsl:stylesheet>
++---------------------+
+
+**Providing JPQL params
+~~~~~~~~~~~~~~
+
+ When requesting the result for a specific report you can provide the service interface with optional 
+ dynamic JPQL params. These params can be defined in the JPQL statement of the report.
+
+ Example for a JPQL Statement of a report:
+  
++---------------------+
+ SELECT workitem FROM Entity AS workitem
+ JOIN workitem.integerItems AS p
+  WHERE workitem.type = 'workitem' 
+  AND p.itemName = '$processid' 
+  AND p.itemValue = ?1
++---------------------+
+
+ To provide the Report with the expected param ?1 you simple add the param to the query string.
+ 
+ Example:
+ 
++---------------------+
+http://Host/WorkflowApp/report/reportfile.ixr&1=5130
++---------------------+
+ 
+ This request provices the REST Service with an JPQL param "?1" which will be replaced by the 
+ dynamic JPQL param '?1' used in the JPQL statement.
+ 
+ 
+**Apache FOP / PDF Reports
+~~~~~~~~~~~~~~
+
+ The Imixs Report rest service provides the option to generate PDF Reports based on the {{{http://xmlgraphics.apache.org/fop/}Apache FOP API}}. This 
+ is a flexible way to display workitems in PDF or other File formats supported by Apache FOP.
+ To use FOP API during report processing the apache FOP API need to be included into the Web Module of the rest service.
+ A report definition also need to define the coresponding content type. This is for example 'application/pdf' to create a 
+ pdf file. The XSL instructions need to be replaced with the XSL formatting objects (XSL-FO) instructions. 
+
+ The following example shows a simple FO template
+ 
++---------------------+
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.1" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format" exclude-result-prefixes="fo">
+  <xsl:output method="xml" version="1.0" omit-xml-declaration="no" indent="yes"/>
+  <xsl:template match="/">
+    <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+      <fo:layout-master-set>
+        <fo:simple-page-master master-name="simpleA4" page-height="29.7cm" page-width="21cm" margin-top="2cm" margin-bottom="2cm" margin-left="2cm" margin-right="2cm">
+          <fo:region-body/>
+        </fo:simple-page-master>
+      </fo:layout-master-set>
+      <fo:page-sequence master-reference="simpleA4">
+        <fo:flow flow-name="xsl-region-body">
+          <fo:block font-size="16pt" font-weight="bold" space-after="5mm">Project: <xsl:value-of select="projectname"/>
+          </fo:block>
+          <fo:block font-size="12pt" space-after="5mm">Version <xsl:value-of select="$versionParam"/>
+          </fo:block>
+          <fo:block font-size="10pt">
+            <xsl:for-each select="collection/entity">
+		Workitem ID:<xsl:value-of select="item[name='$uniqueid']/value" />
+	   </xsl:for-each>
+          </fo:block>
+        </fo:flow>
+      </fo:page-sequence>
+    </fo:root>
+  </xsl:template>
+</xsl:stylesheet>
++---------------------+
+
+**Apache FOP / PDF Report Plugin
+~~~~~~~~~~~~~~
+
+ Reports can also be computed during a workflow step. To generate a Report during workflprocessing ad the 
+ following Plugin into the Pluginlist of your model:
+
++---------------------+
+ org.imixs.workflow.jee.plugins.ReportPlugin
++---------------------+
+ 
+ The Report Plugin can compute dynamic collections of workitems based on a JPQL statement as explained before. 
+ As the Plugin runns in the phase of workflow processing the current workitem is typical not selectable with JPQL. 
+ Therefore the Report Plugin replaces the resultset with a new instance of the current workitem if the workitem 
+ is included in the resultset.
+ 
+
+* The /report resources DELETE
+~~~~~~~~~~~~~~
+
+ The /report DELETE resource URIs are used to delete business objects:
+
+
+*-----------------------------------------------*-------------------------------------------* 
+| URI                                           | Description                               | 
+*-----------------------------------------------+-------------------------------------------+
+| /report/reports/{name}                        | deletes a specified report                |
+*-----------------------------------------------+-------------------------------------------+
+
+
+
+
+
+* The /report resources PUT and POST
+~~~~~~~~~~~~~~
+
+ The /report PUT and POST resources URIs are used to write business objects:
+
+
+*-----------------------------------------------*-------------------------------------------* 
+| URI                                           | Description                               | 
+*-----------------------------------------------+-------------------------------------------+
+| /report                                       | creates or update a specified report      |
+*-----------------------------------------------+-------------------------------------------+
+
+
+ 
+* Resource Options
+~~~~~~~~~~~~~~~~~~~~ 
+ 
+ You can specify additional URI paramters to access only a subset of workitms by a collection 
+ method URI. This is useful to get only a subset of the whole worklist and to navigate through a 
+ list of workitems.
+
+ Append optional arguments to define the number of workitems returnd by a URL and the starting
+ point inside the list. Combine any of the following arguments for the desired result. 
+
+
+*-------------*-----------------------------------------------------*-----------------------*
+| option      | description                                         | example               |
+*-------------+-----------------------------------------------------+-----------------------+
+| count       | number of workitems returned by a collection        | ..?count=10           |
+*-------------+-----------------------------------------------------+-----------------------+  
+| start       | position to start  workitems returned by a          | ..?start=5&count=10   |
+|             | collection                                          |                       | 
+|             |                                                     |                       | 
+*-------------+-----------------------------------------------------+-----------------------+
+| type        | Optional type property workitems are filtered       | ..?type=workitem      | 
+|             |                                                     |                       | 
+*-------------+-----------------------------------------------------+-----------------------+
+| download    | Optional filename for a download request            |download=example.pdf   |
+|             | This generates the HTTP Header                      |                       |
+|             | Content-disposition,attachment;filename=example.pdf |                       |
+*-------------+-----------------------------------------------------+-----------------------+
+
+
+   [Note:] The Imixs JEE Workflow manages the access to workitems by individual access lists per each entity.
+        So the result of a collection of workitems will only contain entities where the current user has a 
+        read access right. Without that right the wokitem will not be returned by the workflowManager and so 
+        it will not be included in the list. 
+  
+   

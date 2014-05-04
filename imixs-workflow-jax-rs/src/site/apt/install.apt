@@ -6,8 +6,8 @@ Installation
   as a framework that consists of only a few Java libraries. Depending on your needs you can add 
   these libraries to your java application to use the api. 
  
- You can download the latest version of the Imixs Workflow API from the
-  {{{http://java.net/projects/imixs-workflow/downloads}dev.java.net download page}}.
+ You can download the latest version of the Imixs Workflow API from
+  {{{https://github.com/imixs/imixs-workflow/releases}GitHub}}.
   
       [Note:] The Imixs Workflow Project contains a great deal of technologies which helps you building your 
       own Workflow Application.

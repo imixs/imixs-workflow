@@ -33,7 +33,11 @@
       </item>
 
       <item name="XML" href="xml.html"/>            
-      <item name="REST Service" href="restservice.html"/>            
+      <item name="REST Service" href="restservice/overview.html" collapse="true">
+      	<item name="Workflow Service" href="restservice/workflowservice.html"/>   
+      	<item name="Model Service" href="restservice/modelservice.html"/>   
+      	<item name="Report Service" href="restservice/reportservice.html"/>   
+      </item>         
       <item name="JSON" href="json.html"/>            
       <item name="SOAP Service" href="soapservice.html"/>            
 
