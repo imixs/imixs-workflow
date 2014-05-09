@@ -39,10 +39,8 @@ function setDateFormat(javaDate) {
  * Update the date time string for the imixs-datetime-picker....
  */
 function getDateTimeInput(ainput) {
-
 	// find parent
 	datetimepicker = $(ainput).parent();
-
 	dateTimeInput = $(datetimepicker).children('[id$=imixsdatetimeinput]');
 	dateInput = $(datetimepicker).children('.imixs-date');
 	hourInput = $(datetimepicker).children('.imixs-time-hour');
@@ -62,18 +60,14 @@ function getDateTimeInput(ainput) {
  * Update the calender inputs for the imixs-datetime-picker
  */
 function setDateTimeInput(datetimepicker) {
-
 	dateTimeInput = $(datetimepicker).children('[id$=imixsdatetimeinput]');
 	dateInput = $(datetimepicker).children('.imixs-date');
 	hourInput = $(datetimepicker).children('.imixs-time-hour');
 	minuteInput = $(datetimepicker).children('.imixs-time-minute');
-
 	var timeString = $(dateTimeInput).val();
 	var timeValues = timeString.split(" ");
-
 	if (timeValues[0])
 		$(dateInput).val(timeValues[0]);
-
 	if (timeValues[1]) {
 		timeValues = timeValues[1].split(":");
 		if (timeValues[0] && hourInput.length)
@@ -82,6 +76,31 @@ function setDateTimeInput(datetimepicker) {
 			$(minuteInput).val(timeValues[1]);
 	}
 
+}
+
+/*
+ * adds the minute options to the time-picker minute combobox depending on the
+ * first two options. The second option indicates the interval
+ */
+function addDatetimePickerMinuteOptions(input) {
+	options = $(input).children('option');
+	if (options.length > 1) {
+		var interval = parseInt(options[1].value);
+		var minute = 0;
+		// clear options
+		$(input).find('option').remove();
+		// rebuild option list
+		while (minute < 60) {
+			if (minute < 10)
+				sminute = '0' + minute;
+			else
+				sminute = minute;
+			$(input).append(
+					'<option value=' + sminute + '>' + sminute + '</option>');
+			minute = minute + interval;
+		}
+
+	}
 }
 
 /* This method styles input elements an imixs page elements */
@@ -107,24 +126,25 @@ $.fn.imixsLayout = function(options) {
 		});
 
 		// initialize datetime picker widget
-		$(".imixs-datetime-picker").each(function(index) {
+		$(".imixs-datetime-picker").each(
+				function(index) {
+					// add minute options
+					addDatetimePickerMinuteOptions($(this).children(
+							'.imixs-time-minute'));
+					// set current date value
+					setDateTimeInput($(this));
+					// on change events
+					$(this).children('.imixs-date').change(function() {
+						getDateTimeInput($(this));
+					});
+					$(this).children('.imixs-time-hour').change(function() {
+						getDateTimeInput($(this));
+					});
+					$(this).children('.imixs-time-minute').change(function() {
+						getDateTimeInput($(this));
+					});
 
-			// set current date value
-			setDateTimeInput($(this));
-
-			// on change events
-			$(this).children('.imixs-date').change(function() {
-				getDateTimeInput($(this));
-			});
-
-			$(this).children('.imixs-time-hour').change(function() {
-				getDateTimeInput($(this));
-			});
-
-			$(this).children('.imixs-time-minute').change(function() {
-				getDateTimeInput($(this));
-			});
-		});
+				});
 
 	});
 };
