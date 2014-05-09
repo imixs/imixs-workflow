@@ -36,6 +36,7 @@ lucene.indexFieldListNoAnalyze=namCreator,$ProcessID,datDate
 # Matching Patterns to index a workitem
 lucene.matchingType=workitem
 lucene.matchingProcessID= 
+lucene.defaultOperator=
  
 +------------------------------------------------+ 
 
@@ -50,36 +51,46 @@ lucene.matchingProcessID=
 **FulltextFieldList
 ~~~~~~~~~~~~~~
 
- The property FulltextFieldList defines a comma separated list of fields which will be indexed by the LucenePlugin.
+ The property 'lucene.fulltextFieldList' defines a comma separated list of fields which will be indexed by the LucenePlugin.
  The content of these fields will be stored into the lucene field name 'content'. The values will be analyzed 
  with the lucene standard analyzer.
  
 **IndexFieldListAnalyze
 ~~~~~~~~~~~~~~
  
- The property IndexFieldListAnalyze defines a comma separated list of fields which will be added as keyword 
+ The property 'lucene.indexFieldListAnalyze' defines a comma separated list of fields which will be added as keyword 
  fields into the lucene index. The content of this fields will be analyzed by the  lucene standard analyzer. 
  
  
 **IndexFieldListNoAnalyze
 ~~~~~~~~~~~~~~
  
- The property IndexFieldListNoAnalyze defines a comma separated list of fields which will be added as keyword 
+ The property 'lucene.indexFieldListNoAnalyze' defines a comma separated list of fields which will be added as keyword 
  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here.
  
  
 **MatchingType
 ~~~~~~~~~~~~~~
  
- The property MatchingType defines a regular expression the type value of a workitem should match. 
+ The optional property 'lucene.matchingType' defines a regular expression the type value of a workitem should match. 
  It not the workitem will not be added into the index.
  
 **MatchingProcessID
 ~~~~~~~~~~~~~~
  
- The property MatchingProcessID defines a regular expression the $processID of a workitem should match. 
+ The optional property 'lucene.matchingProcessID' defines a regular expression the $processID of a workitem should match. 
  It not the workitem will not be added into the index.
 
+
+**DefaultOperator
+~~~~~~~~~~~~~~
+ 
+ The optional property defaultOperator can be used to change the default operator to 'AND'.
+ In default mode (OR_OPERATOR) terms without any modifiers are considered 
+ optional: for example capital of Hungary is equal to capital OR of OR Hungary.
+
+ 
+ 
 
 *Search
 ~~~~~~~~~~~~~~

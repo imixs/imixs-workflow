@@ -43,9 +43,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.CorruptIndexException;
@@ -55,6 +53,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser.Operator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
@@ -142,8 +141,9 @@ public class LucenePlugin extends AbstractPlugin {
 	 * that the workitem is indexed correctly on the $processid the workitem
 	 * will hold after the process step is completed.
 	 * 
-	 * Also the $modified and Created date will be set temporarily for the case that we
-	 * process a new WorkItem which was not yet saved by the entityService.
+	 * Also the $modified and Created date will be set temporarily for the case
+	 * that we process a new WorkItem which was not yet saved by the
+	 * entityService.
 	 * 
 	 * If and how the workitem will be added to the search index is fully
 	 * controlled by the method addWorkitem.
@@ -156,15 +156,15 @@ public class LucenePlugin extends AbstractPlugin {
 		int currentProcessID = documentContext
 				.getItemValueInteger("$processid");
 
-		// temporarily set a $Created and $Modified Date (used to search for $modified)
+		// temporarily set a $Created and $Modified Date (used to search for
+		// $modified)
 		if (!documentContext.hasItem("$Created")) {
 			documentContext.replaceItemValue("$Created", Calendar.getInstance()
 					.getTime());
 		}
 		documentContext.replaceItemValue("$modified", Calendar.getInstance()
 				.getTime());
-		
-		
+
 		// temporarily replace the $processid
 		documentContext.replaceItemValue("$processid", nextProcessID);
 		// update the search index for the current Worktitem
@@ -339,15 +339,12 @@ public class LucenePlugin extends AbstractPlugin {
 	 * 
 	 * @param sSearchTerm
 	 * @param workflowService
-	 * @param sortOrder
-	 *            - optional to sort the result
 	 * @return collection of search result
-	 * @throws Exception
 	 */
 	public static List<ItemCollection> search(String sSearchTerm,
 			WorkflowService workflowService) {
 		// no sort order
-		return search(sSearchTerm, workflowService, null);
+		return search(sSearchTerm, workflowService, null, null);
 	}
 
 	/**
@@ -364,10 +361,35 @@ public class LucenePlugin extends AbstractPlugin {
 	 * @param sortOrder
 	 *            - optional to sort the result
 	 * @return collection of search result
-	 * @throws Exception
 	 */
 	public static List<ItemCollection> search(String sSearchTerm,
 			WorkflowService workflowService, Sort sortOrder) {
+		// no default operator
+		return search(sSearchTerm, workflowService, sortOrder, null);
+	}
+
+	/**
+	 * Returns a ItemCollection List matching the provided search term. The
+	 * provided search team will we extended with a users roles to test the read
+	 * access level of each workitem matching the search term. The usernames and
+	 * user roles will be search lowercase!
+	 * 
+	 * The optional param 'searchOrder' can be set to force lucene to sort the
+	 * search result by any search order.
+	 * 
+	 * The optional param 'defaultOperator' can be set to Operator.AND
+	 * 
+	 * @param sSearchTerm
+	 * @param workflowService
+	 * @param sortOrder
+	 *            - optional to sort the result
+	 * @param defaultOperator
+	 *            - optional to change the default search operator
+	 * @return collection of search result
+	 */
+	public static List<ItemCollection> search(String sSearchTerm,
+			WorkflowService workflowService, Sort sortOrder,
+			Operator defaultOperator) {
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
@@ -398,11 +420,14 @@ public class LucenePlugin extends AbstractPlugin {
 				sAccessTerm += ") AND ";
 				sSearchTerm = sAccessTerm + sSearchTerm;
 			}
-			logger.info("  lucene search:" + sSearchTerm);
+			logger.fine("  lucene search:" + sSearchTerm);
 
 			if (!"".equals(sSearchTerm)) {
 				parser.setAllowLeadingWildcard(true);
-				// parser.setDefaultOperator(Operator.AND);
+
+				// set default operator?
+				if (defaultOperator != null)
+					parser.setDefaultOperator(defaultOperator);
 
 				TopDocs topDocs = null;
 				if (sortOrder != null) {
@@ -465,6 +490,7 @@ public class LucenePlugin extends AbstractPlugin {
 	 * @param aworkitem
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	static Document createDocument(Properties prop, ItemCollection aworkitem) {
 		String sValue = null;
 		Document doc = new Document();
@@ -649,7 +675,7 @@ public class LucenePlugin extends AbstractPlugin {
 		/**
 		 * Read configuration
 		 */
-		String sLuceneVersion = prop.getProperty("Version", "LUCENE_45");
+		//String sLuceneVersion = prop.getProperty("Version", "LUCENE_45");
 
 		String sIndexDir = prop.getProperty("lucence.indexDir");
 		String sFulltextFieldList = prop
@@ -793,10 +819,17 @@ public class LucenePlugin extends AbstractPlugin {
 	 * @return
 	 */
 	public static QueryParser createQueryParser(Properties prop) {
-		String sLuceneVersion = prop.getProperty("Version", "LUCENE_45");
+		//String sLuceneVersion = prop.getProperty("Version", "LUCENE_45");
 		Analyzer analyzer = new KeywordAnalyzer();
 		QueryParser parser = new QueryParser(Version.LUCENE_45, "content",
 				analyzer);
+
+		// check the default operator
+		String defaultOperator = prop.getProperty("lucene.defaultOperator");
+		if (defaultOperator != null
+				&& "AND".equals(defaultOperator.toUpperCase())) {
+			parser.setDefaultOperator(Operator.AND);
+		}
 
 		return parser;
 	}
