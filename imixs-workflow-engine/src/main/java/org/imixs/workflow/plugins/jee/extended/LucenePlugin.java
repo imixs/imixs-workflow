@@ -469,7 +469,7 @@ public class LucenePlugin extends AbstractPlugin {
 
 			searcher.getIndexReader().close();
 
-			logger.info(" lucene serach: "
+			logger.fine(" lucene serach: "
 					+ (System.currentTimeMillis() - ltime) + " ms");
 		} catch (Exception e) {
 			logger.warning("  lucene error!");
