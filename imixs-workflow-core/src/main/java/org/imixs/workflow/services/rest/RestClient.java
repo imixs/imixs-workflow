@@ -183,7 +183,6 @@ public class RestClient {
 			Marshaller m = context.createMarshaller();
 			m.marshal(aItemCol, writer);
 
-		
 			// compute length
 			urlConnection.setRequestProperty("Content-Length",
 					"" + Integer.valueOf(writer.toString().getBytes().length));
@@ -263,7 +262,6 @@ public class RestClient {
 			Marshaller m = context.createMarshaller();
 			m.marshal(aEntityCol, writer);
 
-		
 			// compute length
 			urlConnection.setRequestProperty("Content-Length",
 					"" + Integer.valueOf(writer.toString().getBytes().length));
@@ -425,8 +423,7 @@ public class RestClient {
 		int responseCode = urlConnection.getResponseCode();
 		logger.fine("[RestClient] Sending 'GET' request to URL : " + uri);
 		logger.fine("[RestClient] Response Code : " + responseCode);
-	
-	
+
 		readResponse(urlConnection);
 
 		return responseCode;
@@ -476,15 +473,21 @@ public class RestClient {
 		StringWriter writer = new StringWriter();
 		BufferedReader in = null;
 		try {
+			String sContentEncoding = urlConnection.getContentEncoding();
+			if (sContentEncoding == null || sContentEncoding.isEmpty()) {
+				if (encoding == null || encoding.isEmpty())
+					sContentEncoding = "UTF-8";
+				else
+					sContentEncoding = encoding;
+			}
 			in = new BufferedReader(new InputStreamReader(
-					urlConnection.getInputStream()));
+					urlConnection.getInputStream(), sContentEncoding));
 			String inputLine;
 			while ((inputLine = in.readLine()) != null) {
 				logger.fine(inputLine);
 				writer.write(inputLine);
 			}
 		} catch (IOException e) {
-
 			e.printStackTrace();
 		} finally {
 			if (in != null)
