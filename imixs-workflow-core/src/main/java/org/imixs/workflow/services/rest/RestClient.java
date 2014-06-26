@@ -473,15 +473,21 @@ public class RestClient {
 		StringWriter writer = new StringWriter();
 		BufferedReader in = null;
 		try {
+			// test if content encoding is provided
 			String sContentEncoding = urlConnection.getContentEncoding();
 			if (sContentEncoding == null || sContentEncoding.isEmpty()) {
-				if (encoding == null || encoding.isEmpty())
-					sContentEncoding = "UTF-8";
-				else
+				// no so lets see if the client has defined an encoding..
+				if (encoding != null && !encoding.isEmpty())
 					sContentEncoding = encoding;
 			}
-			in = new BufferedReader(new InputStreamReader(
-					urlConnection.getInputStream(), sContentEncoding));
+
+			// if an encoding is provided read stream with encoding.....
+			if (sContentEncoding != null && !sContentEncoding.isEmpty())
+				in = new BufferedReader(new InputStreamReader(
+						urlConnection.getInputStream(), sContentEncoding));
+			else
+				in = new BufferedReader(new InputStreamReader(
+						urlConnection.getInputStream()));
 			String inputLine;
 			while ((inputLine = in.readLine()) != null) {
 				logger.fine(inputLine);
