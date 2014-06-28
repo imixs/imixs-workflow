@@ -36,7 +36,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
-import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -227,11 +226,14 @@ public class MailPlugin extends AbstractPlugin {
 				mailMessage.setRecipients(Message.RecipientType.CC,
 						recipientsCC);
 
-				// set Subject
+				// set Subject with the defined text CharSet
 				mailMessage.setSubject(replaceDynamicValues(
 						documentActivity.getItemValueString("txtMailSubject"),
-						documentContext));
+						documentContext),this.getTextCharSet() );
 
+				
+				
+				
 				// build mail body...
 				String aBodyText = documentActivity
 						.getItemValueString("rtfMailBody");
