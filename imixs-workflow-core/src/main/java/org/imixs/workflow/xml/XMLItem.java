@@ -37,6 +37,9 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name="item")
 public class XMLItem implements java.io.Serializable {
+	
+	private static final long serialVersionUID = 1L;
+
 	private java.lang.String name;
 
 	private java.lang.Object[] value;
