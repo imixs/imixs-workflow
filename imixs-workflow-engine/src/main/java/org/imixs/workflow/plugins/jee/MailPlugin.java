@@ -108,6 +108,22 @@ public class MailPlugin extends AbstractPlugin {
 			logger.warning("[MailPlugin] ErrorMessage: " + e.getMessage());
 		}
 
+		// if property service is defined we can lookup the default charset
+		if (this.propertyService != null) {
+			// test for mail.htmlCharSet
+			String sTestCharSet = (String) propertyService.getProperties().get(
+					"mail.htmlCharSet");
+			if (sTestCharSet != null && !sTestCharSet.isEmpty())
+				setHtmlCharSet(sTestCharSet);
+
+			// test for mail.textCharSet
+			sTestCharSet = (String) propertyService.getProperties().get(
+					"mail.textCharSet");
+			if (sTestCharSet != null && !sTestCharSet.isEmpty())
+				setTextCharSet(sTestCharSet);
+
+		}
+
 	}
 
 	public int run(ItemCollection documentContext,
@@ -227,13 +243,11 @@ public class MailPlugin extends AbstractPlugin {
 						recipientsCC);
 
 				// set Subject with the defined text CharSet
-				mailMessage.setSubject(replaceDynamicValues(
-						documentActivity.getItemValueString("txtMailSubject"),
-						documentContext),this.getTextCharSet() );
+				mailMessage.setSubject(
+						replaceDynamicValues(documentActivity
+								.getItemValueString("txtMailSubject"),
+								documentContext), this.getTextCharSet());
 
-				
-				
-				
 				// build mail body...
 				String aBodyText = documentActivity
 						.getItemValueString("rtfMailBody");
@@ -247,13 +261,17 @@ public class MailPlugin extends AbstractPlugin {
 					if (sTestHTML.startsWith("<!doctype")
 							|| sTestHTML.startsWith("<html")
 							|| sTestHTML.startsWith("<?xml")) {
-						logger.fine("[MailPlugin] creating html mail body using charset '"+this.getHtmlCharSet()+"'");
+						logger.fine("[MailPlugin] creating html mail body using charset '"
+								+ this.getHtmlCharSet() + "'");
 						// create new html body part
-						messagePart.setContent(aBodyText, this.getHtmlCharSet());
+						messagePart
+								.setContent(aBodyText, this.getHtmlCharSet());
 						isHTMLMail = true;
 					} else {
-						logger.fine("[MailPlugin] creating plaintext mail body using charset '" + this.getTextCharSet()  +"'");
-						messagePart.setContent(aBodyText, this.getTextCharSet());
+						logger.fine("[MailPlugin] creating plaintext mail body using charset '"
+								+ this.getTextCharSet() + "'");
+						messagePart
+								.setContent(aBodyText, this.getTextCharSet());
 						isHTMLMail = false;
 					}
 					// append message part
@@ -323,10 +341,11 @@ public class MailPlugin extends AbstractPlugin {
 						mailSession.getProperty("mail.smtp.password"));
 
 				if (this.isHTMLMail()) {
-					mailMessage.setContent(mimeMultipart, this.getHtmlCharSet());
-				}
-				else {
-					mailMessage.setContent(mimeMultipart,this.getTextCharSet());
+					mailMessage
+							.setContent(mimeMultipart, this.getHtmlCharSet());
+				} else {
+					mailMessage
+							.setContent(mimeMultipart, this.getTextCharSet());
 				}
 
 				mailMessage.saveChanges();
@@ -469,7 +488,5 @@ public class MailPlugin extends AbstractPlugin {
 	public void setTextCharSet(String textCharSet) {
 		this.textCharSet = textCharSet;
 	}
-
-
 
 }

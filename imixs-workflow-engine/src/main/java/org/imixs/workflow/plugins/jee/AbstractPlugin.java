@@ -88,6 +88,20 @@ public abstract class AbstractPlugin extends
 	public abstract void close(int status) throws PluginException;
 
 	/**
+	 * Returns an instance of the imixs propertyService EJB. Returns null if not
+	 * bound to the current workflow context
+	 * 
+	 * @return the propertyService EJB (optional)
+	 */
+	public PropertyService getPropertyService() {
+		return propertyService;
+	}
+
+	public void setPropertyService(PropertyService propertyService) {
+		this.propertyService = propertyService;
+	}
+
+	/**
 	 * determines the current username (callerPrincipal)
 	 * 
 	 * @return
@@ -96,9 +110,9 @@ public abstract class AbstractPlugin extends
 		return ejbSessionContext.getCallerPrincipal().getName();
 	}
 
-	
 	/**
 	 * Returns the EJB Session Context
+	 * 
 	 * @return SessionContext
 	 */
 	public javax.ejb.SessionContext getEjbSessionContext() {
@@ -145,7 +159,8 @@ public abstract class AbstractPlugin extends
 
 				// if no end tag found return string unchanged...
 				if (iTagEndPos == -1) {
-					logger.warning("[AbstractPlugin] invalid text string format: "+aString);
+					logger.warning("[AbstractPlugin] invalid text string format: "
+							+ aString);
 					break;
 				}
 
@@ -162,7 +177,8 @@ public abstract class AbstractPlugin extends
 
 				// if no end tag found return string unchanged...
 				if (iContentStartPos >= iContentEndPos) {
-					logger.warning("[AbstractPlugin] invalid text string format: "+aString);
+					logger.warning("[AbstractPlugin] invalid text string format: "
+							+ aString);
 					break;
 				}
 
