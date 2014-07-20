@@ -72,6 +72,7 @@ public class MailPlugin extends AbstractPlugin {
 	boolean isHTMLMail = false;
 	String htmlCharSet = "text/html; charset=ISO-8859-1";
 	String textCharSet = "text/plain; charset=ISO-8859-1";
+	boolean noMailSessionBound = false;
 
 	@Resource(name = "IMIXS_MAIL_SESSION")
 	private String sMailSession = "org.imixs.workflow.mail";
@@ -79,53 +80,18 @@ public class MailPlugin extends AbstractPlugin {
 	private static Logger logger = Logger.getLogger(MailPlugin.class.getName());
 
 	/**
-	 * This method is responsible for initializing the mail session object
-	 * receifed from the jndi context
-	 * 
-	 * The Default name of the Mail Session is
-	 * 'org.imixs.workflow.jee.mailsession' The name can be overwritten by the
-	 * EJB Properties of the workflowmanager
-	 * 
-	 * @throws NamingException
+	
 	 */
 	public void init(WorkflowContext actx) throws PluginException {
 		super.init(actx);
-		// Initialize mail session
-		InitialContext ic;
-		try {
-			ic = new InitialContext();
-
-			String snName = "";
-			snName = "java:comp/env/mail/" + sMailSession;
-			mailSession = (Session) ic.lookup(snName);
-			logger.finest("[MailPlugin] MailSession '" + sMailSession
-					+ "' found");
-
-		} catch (NamingException e) {
-			logger.warning("[MailPlugin] Unable to send mails! Verify server resources -> mail session.");
-			logger.warning("[MailPlugin] Mail Session for jndi name:'mail/"
-					+ sMailSession + "' missing.");
-			logger.warning("[MailPlugin] ErrorMessage: " + e.getMessage());
-		}
-
-		// if property service is defined we can lookup the default charset
-		if (this.propertyService != null) {
-			// test for mail.htmlCharSet
-			String sTestCharSet = (String) propertyService.getProperties().get(
-					"mail.htmlCharSet");
-			if (sTestCharSet != null && !sTestCharSet.isEmpty())
-				setHtmlCharSet(sTestCharSet);
-
-			// test for mail.textCharSet
-			sTestCharSet = (String) propertyService.getProperties().get(
-					"mail.textCharSet");
-			if (sTestCharSet != null && !sTestCharSet.isEmpty())
-				setTextCharSet(sTestCharSet);
-
-		}
-
 	}
 
+	/**
+	 * The run method first verifies if a message should be send. If not the
+	 * method terminates immediately. Otherwise the method constructs a
+	 * mailMessage object.
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public int run(ItemCollection documentContext,
 			ItemCollection documentActivity) throws PluginException {
 
@@ -133,12 +99,7 @@ public class MailPlugin extends AbstractPlugin {
 		String sReplyTo = "";
 		InternetAddress[] recipientsTo, recipientsCC;
 
-		if (mailSession == null)
-			return Plugin.PLUGIN_WARNING;
-
 		try {
-			// reset mailMessage object
-			mailMessage = null;
 
 			// check if mail is active?
 			if ("1".equals(documentActivity
@@ -155,7 +116,7 @@ public class MailPlugin extends AbstractPlugin {
 			logger.finest("[MailPlugin] keyMailReceiverFields="
 					+ skeyMailReceiverFields);
 
-			InternetAddress inetAddr = null;
+			// check if recipients are defined....
 			if (((snamMailReceifer != null) && (!"".equals(documentActivity
 					.getItemValueString("namMailReceiver"))))
 					|| ((skeyMailReceiverFields != null) && (!""
@@ -170,7 +131,7 @@ public class MailPlugin extends AbstractPlugin {
 					return Plugin.PLUGIN_OK;
 
 				// first initialize mail message object
-				initializeMailMessage();
+				initMailMessage();
 
 				// check for ReplyTo...
 				if ("1".equals(documentActivity
@@ -318,6 +279,11 @@ public class MailPlugin extends AbstractPlugin {
 		return Plugin.PLUGIN_OK;
 	}
 
+	/**
+	 * Send the mail if the object 'mailMessage' is not null.
+	 * 
+	 * The method lookups the mail session from the session context.
+	 */
 	public void close(int status) throws PluginException {
 		if (status == Plugin.PLUGIN_OK && mailSession != null
 				&& mailMessage != null) {
@@ -365,28 +331,33 @@ public class MailPlugin extends AbstractPlugin {
 	 * @throws AddressException
 	 * @throws MessagingException
 	 */
-	public void initializeMailMessage() throws AddressException,
-			MessagingException {
+	public void initMailMessage() throws AddressException, MessagingException {
 		logger.finest("[MailPlugin] initializeMailMessage...");
-		// log mail Properties ....
-		if (logger.isLoggable(Level.FINE)) {
-			Properties props = mailSession.getProperties();
-			Enumeration enumer = props.keys();
-			while (enumer.hasMoreElements()) {
-				String aKey = enumer.nextElement().toString();
-				logger.fine("[MailPlugin]  ProperyName= " + aKey);
-				Object value = props.getProperty(aKey);
-				if (value == null)
-					logger.fine("[MailPlugin]  PropertyValue=null");
-				else
-					logger.fine("[MailPlugin]  PropertyValue= "
-							+ props.getProperty(aKey).toString());
+
+		// fetch mail session object....
+		initMailSession();
+
+		if (mailSession != null) {
+			// log mail Properties ....
+			if (logger.isLoggable(Level.FINE)) {
+				Properties props = mailSession.getProperties();
+				Enumeration<Object> enumer = props.keys();
+				while (enumer.hasMoreElements()) {
+					String aKey = enumer.nextElement().toString();
+					logger.fine("[MailPlugin]  ProperyName= " + aKey);
+					Object value = props.getProperty(aKey);
+					if (value == null)
+						logger.fine("[MailPlugin]  PropertyValue=null");
+					else
+						logger.fine("[MailPlugin]  PropertyValue= "
+								+ props.getProperty(aKey).toString());
+				}
 			}
+			mailMessage = new MimeMessage(mailSession);
+			mailMessage.setSentDate(new Date());
+			mailMessage.setFrom();
+			mimeMultipart = new MimeMultipart();
 		}
-		mailMessage = new MimeMessage(mailSession);
-		mailMessage.setSentDate(new Date());
-		mailMessage.setFrom();
-		mimeMultipart = new MimeMultipart();
 	}
 
 	/**
@@ -430,6 +401,7 @@ public class MailPlugin extends AbstractPlugin {
 	 * @param aList
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	private InternetAddress[] getInternetAddressArray(List aList) {
 		// set TO Recipient
 		// store valid addresses into atemp vector to avoid null values
@@ -437,7 +409,7 @@ public class MailPlugin extends AbstractPlugin {
 		if (aList == null)
 			return null;
 
-		Vector vReceipsTemp = new Vector();
+		Vector<InternetAddress> vReceipsTemp = new Vector<InternetAddress>();
 		for (int i = 0; i < aList.size(); i++) {
 			try {
 				inetAddr = getInternetAddress(aList.get(i).toString());
@@ -457,7 +429,68 @@ public class MailPlugin extends AbstractPlugin {
 		return receipsAdrs;
 	}
 
+	/**
+	 * This method initializes a new instance of a MailSession.
+	 * 
+	 * The MailSession is received from the current jndi context. The Default
+	 * name of the Mail Session is 'org.imixs.workflow.jee.mailsession' The name
+	 * can be overwritten by the EJB Properties of the workflowmanager
+	 * 
+	 * @return MailSession object or null if no MailSession is bound to the
+	 *         WorkflowContext.
+	 */
+	public void initMailSession() {
+
+		// check if yet initialized....
+		if (mailSession != null || noMailSessionBound) {
+			return;
+		}
+
+		// Initialize mail session
+		InitialContext ic;
+		try {
+			ic = new InitialContext();
+
+			String snName = "";
+			snName = "java:comp/env/mail/" + sMailSession;
+			mailSession = (Session) ic.lookup(snName);
+			logger.finest("[MailPlugin] MailSession '" + sMailSession
+					+ "' found");
+
+		} catch (NamingException e) {
+			logger.warning("[MailPlugin] Unable to send mails! Verify server resources -> mail session.");
+			logger.warning("[MailPlugin] Mail Session for jndi name:'mail/"
+					+ sMailSession + "' missing.");
+			logger.warning("[MailPlugin] ErrorMessage: " + e.getMessage());
+			noMailSessionBound = true;
+		}
+
+		// if property service is defined we can lookup the default charset
+		if (this.propertyService != null) {
+			// test for mail.htmlCharSet
+			String sTestCharSet = (String) propertyService.getProperties().get(
+					"mail.htmlCharSet");
+			if (sTestCharSet != null && !sTestCharSet.isEmpty())
+				setHtmlCharSet(sTestCharSet);
+
+			// test for mail.textCharSet
+			sTestCharSet = (String) propertyService.getProperties().get(
+					"mail.textCharSet");
+			if (sTestCharSet != null && !sTestCharSet.isEmpty())
+				setTextCharSet(sTestCharSet);
+
+		}
+	}
+
+	/**
+	 * This method returns the mail session object. If no mailSession exists the
+	 * method initializes a new instance of a MailSession.
+	 * 
+	 */
 	public Session getMailSession() {
+		if (mailSession == null && noMailSessionBound == false) {
+			initMailSession();
+		}
 		return mailSession;
 	}
 
