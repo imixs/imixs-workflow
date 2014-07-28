@@ -59,4 +59,8 @@ Mail Plugin
 +--------------------------------------------------------------------+
 
 
+*CharSet
+~~~~~~~~~~~~~~~~~~~~~~~~
 
+ It is possible to set the character set used for the mail subject and body parts. There for the imixs.property key 'mail.charSet' is used.
+ If this property is not defined the charset defaults to 'ISO-8859-1'!

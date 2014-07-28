@@ -70,8 +70,10 @@ public class MailPlugin extends AbstractPlugin {
 	MimeMessage mailMessage = null;
 	Multipart mimeMultipart = null;
 	boolean isHTMLMail = false;
-	String htmlCharSet = "text/html; charset=ISO-8859-1";
-	String textCharSet = "text/plain; charset=ISO-8859-1";
+
+	static final String CONTENTTYPE_TEXT_PLAIN = "text/plain";
+	static final String CONTENTTYPE_TEXT_HTML = "text/html";
+	String charSet = "ISO-8859-1";
 	boolean noMailSessionBound = false;
 
 	@Resource(name = "IMIXS_MAIL_SESSION")
@@ -207,7 +209,7 @@ public class MailPlugin extends AbstractPlugin {
 				mailMessage.setSubject(
 						replaceDynamicValues(documentActivity
 								.getItemValueString("txtMailSubject"),
-								documentContext), this.getTextCharSet());
+								documentContext), this.getCharSet());
 
 				// build mail body...
 				String aBodyText = documentActivity
@@ -222,19 +224,14 @@ public class MailPlugin extends AbstractPlugin {
 					if (sTestHTML.startsWith("<!doctype")
 							|| sTestHTML.startsWith("<html")
 							|| sTestHTML.startsWith("<?xml")) {
-						logger.fine("[MailPlugin] creating html mail body using charset '"
-								+ this.getHtmlCharSet() + "'");
-						// create new html body part
-						messagePart
-								.setContent(aBodyText, this.getHtmlCharSet());
 						isHTMLMail = true;
 					} else {
-						logger.fine("[MailPlugin] creating plaintext mail body using charset '"
-								+ this.getTextCharSet() + "'");
-						messagePart
-								.setContent(aBodyText, this.getTextCharSet());
 						isHTMLMail = false;
 					}
+					logger.fine("[MailPlugin] creating mail body type: '"
+							+ getContentType() + "'");
+					messagePart.setContent(aBodyText, getContentType());
+
 					// append message part
 					mimeMultipart.addBodyPart(messagePart);
 					// mimeMulitPart object can be extended from subclases
@@ -307,11 +304,9 @@ public class MailPlugin extends AbstractPlugin {
 						mailSession.getProperty("mail.smtp.password"));
 
 				if (this.isHTMLMail()) {
-					mailMessage
-							.setContent(mimeMultipart, this.getHtmlCharSet());
+					mailMessage.setContent(mimeMultipart, getContentType());
 				} else {
-					mailMessage
-							.setContent(mimeMultipart, this.getTextCharSet());
+					mailMessage.setContent(mimeMultipart, getContentType());
 				}
 
 				mailMessage.saveChanges();
@@ -467,17 +462,24 @@ public class MailPlugin extends AbstractPlugin {
 
 		// if property service is defined we can lookup the default charset
 		if (this.propertyService != null) {
-			// test for mail.htmlCharSet
-			String sTestCharSet = (String) propertyService.getProperties().get(
-					"mail.htmlCharSet");
-			if (sTestCharSet != null && !sTestCharSet.isEmpty())
-				setHtmlCharSet(sTestCharSet);
+			// // test for mail.htmlCharSet
+			// String sTestCharSet = (String)
+			// propertyService.getProperties().get(
+			// "mail.htmlCharSet");
+			// if (sTestCharSet != null && !sTestCharSet.isEmpty())
+			// setHtmlCharSet(sTestCharSet);
+			//
+			// // test for mail.textCharSet
+			// sTestCharSet = (String) propertyService.getProperties().get(
+			// "mail.textCharSet");
+			// if (sTestCharSet != null && !sTestCharSet.isEmpty())
+			// setTextCharSet(sTestCharSet);
 
-			// test for mail.textCharSet
-			sTestCharSet = (String) propertyService.getProperties().get(
-					"mail.textCharSet");
+			// test for mail.charSet
+			String sTestCharSet = (String) propertyService.getProperties().get(
+					"mail.charSet");
 			if (sTestCharSet != null && !sTestCharSet.isEmpty())
-				setTextCharSet(sTestCharSet);
+				setCharSet(sTestCharSet);
 
 		}
 	}
@@ -506,20 +508,33 @@ public class MailPlugin extends AbstractPlugin {
 		return isHTMLMail;
 	}
 
-	public String getHtmlCharSet() {
-		return htmlCharSet;
+	public String getCharSet() {
+		return charSet;
 	}
 
-	public void setHtmlCharSet(String htmlCharSet) {
-		this.htmlCharSet = htmlCharSet;
+	public void setCharSet(String charSet) {
+		this.charSet = charSet;
 	}
 
-	public String getTextCharSet() {
-		return textCharSet;
+	/**
+	 * This method returns a string representing the general mail content type.
+	 * The content type depends on the content of the mail body (html or
+	 * plaintext) and the character set.
+	 * 
+	 * @return
+	 */
+	public String getContentType() {
+		String sContentType = "";
+		if (isHTMLMail) {
+			sContentType = CONTENTTYPE_TEXT_HTML;
+		} else {
+			sContentType = CONTENTTYPE_TEXT_PLAIN;
+		}
+		if (this.getCharSet() != null && !this.getCharSet().isEmpty()) {
+			sContentType = sContentType + "; charset=" + this.getCharSet();
+		}
+		return sContentType;
 	}
 
-	public void setTextCharSet(String textCharSet) {
-		this.textCharSet = textCharSet;
-	}
 
 }
