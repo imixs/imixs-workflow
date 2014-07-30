@@ -62,6 +62,8 @@ public class WorkflowKernel {
 	public static final String PLUGIN_NOT_CREATEABLE = "PLUGIN_NOT_CREATEABLE";
 	public static final String PLUGIN_NOT_REGISTERED = "PLUGIN_NOT_REGISTERED";
 
+	// remove...
+	
 	/** Plugin objects **/
 	// private Vector vectorPluginsClassNames = null;
 	private Vector<Plugin> vectorPlugins = null;
