@@ -61,11 +61,9 @@ public class WorkflowKernel {
 	public static final String MODEL_ERROR="MODEL_ERROR";
 	public static final String PLUGIN_NOT_CREATEABLE = "PLUGIN_NOT_CREATEABLE";
 	public static final String PLUGIN_NOT_REGISTERED = "PLUGIN_NOT_REGISTERED";
-
-	// remove...
+	
 	
 	/** Plugin objects **/
-	// private Vector vectorPluginsClassNames = null;
 	private Vector<Plugin> vectorPlugins = null;
 	private WorkflowContext ctx = null;
 	private ItemCollection documentContext = null;
@@ -79,7 +77,6 @@ public class WorkflowKernel {
 	 */
 	public WorkflowKernel(WorkflowContext actx) {
 		ctx = actx;
-
 		vectorPlugins = new Vector<Plugin>();
 	}
 
@@ -483,9 +480,7 @@ public class WorkflowKernel {
 
 	/**
 	 * This method runs all registered plugins until the run method of a plugin
-	 * breaks with an error In this case the method stops The attribute
-	 * txtWorkflowPluginLog will store the list of process plugins with a
-	 * timestamp
+	 * breaks with an error In this case the method stops.
 	 * 
 	 * @throws PluginException
 	 */
@@ -494,12 +489,8 @@ public class WorkflowKernel {
 		int iStatus;
 		String sPluginName = null;
 		List<String> localPluginLog = new Vector<String>();
-		List<String> vectorPluginLog;
 
 		try {
-
-			vectorPluginLog = documentContext
-					.getItemValue("txtWorkflowPluginLog");
 			for (Plugin plugin : vectorPlugins) {
 
 				sPluginName = plugin.getClass().getName();
@@ -516,13 +507,9 @@ public class WorkflowKernel {
 				sLog = sLog + " " + plugin.getClass().getName() + "=" + iStatus;
 
 				localPluginLog.add(sLog);
-				vectorPluginLog.add(sLog);
+				
 
 				if (iStatus == Plugin.PLUGIN_ERROR) {
-					// write PluginLog into workitem
-					documentContext.replaceItemValue("txtWorkflowPluginLog",
-							vectorPluginLog);
-
 					// log error....
 					logger.severe("[WorkflowKernel] Error processing Plugin: "
 							+ sPluginName);
@@ -533,9 +520,6 @@ public class WorkflowKernel {
 					return Plugin.PLUGIN_ERROR;
 				}
 			}
-			// write PluginLog into workitem
-			documentContext.replaceItemValue("txtWorkflowPluginLog",
-					vectorPluginLog);
 			return Plugin.PLUGIN_OK;
 
 		} catch (PluginException e) {
