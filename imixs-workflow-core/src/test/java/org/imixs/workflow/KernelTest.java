@@ -1,6 +1,13 @@
 package org.imixs.workflow;
 
-import org.imixs.workflow.exceptions.ModelException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.logging.Logger;
+
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Assert;
@@ -17,6 +24,8 @@ import org.junit.experimental.categories.Category;
 public class KernelTest {
 
 	WorkflowKernel kernel = null;
+
+	private static Logger logger = Logger.getLogger(KernelTest.class.getName());
 
 	@Before
 	public void setup() throws PluginException {
@@ -121,7 +130,7 @@ public class KernelTest {
 		}
 
 		// unregister once again - exception expected
- 
+
 		try {
 			kernel.unregisterPlugin(MokPlugin.class.getName());
 			// exception expected!
@@ -141,4 +150,97 @@ public class KernelTest {
 
 	}
 
+	/**
+	 * This method tests the generation of the txtworkflowactivitylog entries.
+	 */
+	@SuppressWarnings("rawtypes")
+	@Test
+	@Category(org.imixs.workflow.WorkflowKernel.class)
+	public void testActivityLog() {
+		ItemCollection itemCollection = new ItemCollection();
+		itemCollection.replaceItemValue("$modelversion", "1.0.0");
+		itemCollection.replaceItemValue("txtTitel", "Hello");
+		itemCollection.replaceItemValue("$processid", 100);
+
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"),
+				"Hello");
+
+		try {
+			// simulate two steps
+			itemCollection.replaceItemValue("$activityid", 10);
+			kernel.process(itemCollection);
+
+			itemCollection.replaceItemValue("$activityid", 20);
+			// sumulate a Log Comment...
+			itemCollection.replaceItemValue("txtworkflowactivitylogComment",
+					"userid|comment");
+
+			kernel.process(itemCollection);
+
+		} catch (PluginException e) {
+			Assert.fail();
+			e.printStackTrace();
+		} catch (ProcessingErrorException e) {
+			Assert.fail();
+			e.printStackTrace();
+		}
+
+		Assert.assertEquals(2, itemCollection.getItemValueInteger("runs"));
+		// test next state
+		Assert.assertEquals(200,
+				itemCollection.getItemValueInteger("$processid"));
+
+		// test log
+		List log = itemCollection.getItemValue("txtworkflowactivitylog");
+
+		Assert.assertNotNull(log);
+		Assert.assertTrue(log.size() == 2);
+
+		logger.info("'txtworkflowactivitylog'=" + log);
+
+		// test log entries
+		// Format: timestamp|model-version|1000.10|1000|userid|
+		String logEntry = (String) log.get(0);
+		StringTokenizer st = new StringTokenizer(logEntry, "|");
+		st.nextToken();
+		Assert.assertEquals("1.0.0", st.nextToken());
+		Assert.assertEquals("100.10", st.nextToken());
+		Assert.assertEquals("100", st.nextToken());
+		Assert.assertFalse(st.hasMoreTokens());
+
+		logEntry = (String) log.get(1);
+		st = new StringTokenizer(logEntry, "|");
+		try {
+			// check date object
+			String sDate = st.nextToken();
+
+		    SimpleDateFormat formatter = new SimpleDateFormat(WorkflowKernel.ISO8601_FORMAT);
+			Date date = null;
+			date = formatter.parse(sDate);
+
+			Calendar cal = Calendar.getInstance();
+			Calendar calNow = Calendar.getInstance();
+			cal.setTime(date);
+
+			Assert.assertEquals(calNow.get(Calendar.YEAR),
+					cal.get(Calendar.YEAR));
+			Assert.assertEquals(calNow.get(Calendar.MONTH),
+					cal.get(Calendar.MONTH));
+
+		} catch (ParseException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		Assert.assertEquals("1.0.0", st.nextToken());
+		Assert.assertEquals("100.20", st.nextToken());
+		Assert.assertEquals("200", st.nextToken());
+		// test commment
+		Assert.assertTrue(st.hasMoreTokens());
+		Assert.assertEquals("userid", st.nextToken());
+		Assert.assertEquals("comment", st.nextToken());
+		Assert.assertFalse(st.hasMoreTokens());
+
+	}
 }

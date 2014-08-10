@@ -46,42 +46,25 @@ The Workflow-Kernel
 *The Workflow Log
 ~~~~~~~~~~~~~~~~~~~~
 
- The WorkflowKernel generates two Log Entries. 
-
-    * txtWorkflowPluginLog - holds the registred and processed plugin classes during a process step. If a Plugin breaks with an error during processing this plugin will not be logged. So the log can be used to analyze a process step in detail.
-    
-    * txtWorkflowActivityLog - holds the activity details for each process method. The entry holds the latest ProcessEntity, the processed ActivityEntity and the new ProcessEntity. 
-
-
- The following examples show how the values will be stored in the workitem:
-
-** txtWorkflowPluginLog
-~~~~~~~~~~~~~~~~~~~~
-
- Time - PluginClass - Result
+ The Imixs WorkflowKernel automatically generates a log entry for each transition 
+ with information about the modelversion, process and activity id.
+ The log is stored in the property 'txtWorkflowActivityLog'. 
+ 
+ The Log entries have the following format:
+ 
++-----------------------------------------+
+ ISO8601 Time | Model Version | Process.ActivityID |  NewProcessID | comment /optional)
++-----------------------------------------+
+ 
+ Example:
 
 +-----------------------------------------+
- June 23, 2008 1:58:25 PM org.imixs.workflow.plugins.AccessPlugin=0
- June 23, 2008 1:58:25 PM org.imixs.workflow.plugins.HistoryPlugin=0
- June 23, 2008 1:58:25 PM org.imixs.workflow.plugins.ResultPlugin=0
- June 30, 2008 1:37:10 PM org.imixs.workflow.plugins.AccessPlugin=0
- June 30, 2008 1:37:10 PM org.imixs.workflow.plugins.HistoryPlugin=0
- June 30, 2008 1:37:10 PM org.imixs.workflow.plugins.ResultPlugin=0
- June 30, 2008 1:37:26 PM org.imixs.workflow.plugins.AccessPlugin=0
- June 30, 2008 1:37:26 PM org.imixs.workflow.plugins.HistoryPlugin=0
- June 30, 2008 1:37:26 PM org.imixs.workflow.plugins.ResultPlugin=0 
+ 2014-08-10T16:44:32.025|1.0.0|100.10|100|
+ 2014-08-10T16:45:32.125|1.0.0|100.10|100|
+ 2014-08-10T16:47:12.332|1.0.0|100.20|200|userid|comment
 +-----------------------------------------+
 
-** txtWorkflowActivityLog
-~~~~~~~~~~~~~~~~~~~~
-
- Time - Process.ActivityID -  NewProcessID
-
-+-----------------------------------------+
- 28.12.2008 14:07:19|11040.10:=11042, 
- 24.01.2009 10:51:31|11042.20:=11043, 
- 24.01.2009 10:51:36|11043.30:=11041, 
- 24.01.2009 10:51:40|11041.10:=11042 
-+-----------------------------------------+
-
+ The comment is an optional value which can be provided by a plugin. The comment 
+ should be stored into the property 'txtworkflowactivitylogComment' of the current document context.
+ If no txtworkflowactivitylogComment is provided the comment section is empty.
     
