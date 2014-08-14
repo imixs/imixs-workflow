@@ -169,4 +169,39 @@ public class TestItemCollection {
 
 	}
 
+	
+	
+	/**
+	 * This test verifies the equals method for a ItemCollection
+	 */
+	@Test
+	public void testEquals() {
+		
+		ItemCollection itemCollection1 = new ItemCollection();
+		ItemCollection itemCollection2 = new ItemCollection();
+
+		
+		itemCollection1.replaceItemValue("txtName","Manfred");
+		itemCollection2.replaceItemValue("txtname","Manfred");
+		itemCollection1.replaceItemValue("numID",new Integer(20));
+		itemCollection2.replaceItemValue("numID",new Integer(20));
+		
+		Assert.assertEquals(itemCollection1, itemCollection2);
+		Assert.assertNotSame(itemCollection1, itemCollection2);
+
+		
+		// compare not equals
+		itemCollection1.replaceItemValue("txtName","Manfred");
+		itemCollection2.replaceItemValue("txtname","Manfred1");
+		
+		Assert.assertFalse(itemCollection1.equals(itemCollection2));
+		itemCollection2.replaceItemValue("txtname","Manfred");
+		itemCollection2.replaceItemValue("numID",new Integer(21));
+		Assert.assertFalse(itemCollection1.equals(itemCollection2));
+		Assert.assertNotSame(itemCollection1, itemCollection2);
+
+		
+	}
+	
+	
 }
