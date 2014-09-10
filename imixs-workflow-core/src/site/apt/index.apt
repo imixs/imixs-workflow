@@ -64,5 +64,23 @@ How does it work?
  The statuslist can be used by a customer to see the current processing status of his own orders.  
  
  
+Quick Installation Guide
+~~~~~~~~~~~~~~~~~~~~ 
+ To use Imixs-Workflow in your own business application you need to integrate and configure
+ the Workflow Engine. In short these are the necessary steps:
  
  
+  * Add the imixs-workflow-core.jar and imixs-workflow-engine.jar libraries to your project (see {{{http://www.imixs.org/jee/deployment/overview.html}deplyment guide}})
+  
+  * Add the imixs-jax-rs Rest Service to your business application (see {{{http://www.imixs.org/xml/deployment_rest_service.html}deplyment guide}})
+
+  * Create a workflow model using the {{{http://www.imixs.org/modeler/}Imixs Workflow Modeller}}  
+  
+ Take care about the configuration of your application concerning the persistence and the security configuration
+ 
+  * Create ore extend your persistence.xml to configure the database to be used by the workflow engine.
+  
+  * Configure a security realm/domain according to your application server. 
+ 
+ 
+ Also take a look at the web tutorial on the {{{http://blog.imixs.org/building-web-application-imixs-workflow-part/}Imixs Blog}}.

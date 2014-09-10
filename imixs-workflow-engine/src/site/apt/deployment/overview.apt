@@ -9,18 +9,18 @@
 
 Deployment
 ~~~~~~~~~~~~~~
- The following section gives an overview how to deploy the Imixs Workflow engine into a Web- or Enterprise application.
+ The following section gives an overview how to deploy the Imixs Workflow engine into a JEE Web- or Enterprise application.
  Imixs Workflow consists of different modules which simply can be bundled together with other components of your
  business application. As all Imixs Workflow components are based on the JEE6 component model it is quite easy to 
  bundle and configure the Imixs Workflow engine.
  
  The examples illustrates how to deploy the components on a Glassfish V3 
  application server which is an open source, production-ready, Java EE-compatible application server based
- on the JEE6 specification. But the deployment is similar to all other JEE6 application servers.
+ on the JEE6 specification. But the deployment is similar to all other JEE6 application servers (e.g. JBoss or WildFly).
  
  Either if you deploy the Imixs Workflow engine into a web application or an enterprise application the packaging 
  will differ in details. Both deployment concepts will be explained in the following section. 
- Please provide your experience or ask your questions in the {{{http://www.imixs.com/forum}Imixs Forum}}.
+ Please share your experiences and ask your questions on the {{{https://github.com/imixs/imixs-workflow/issues}GitHub Issue Tracker}}.
 
 *Imixs Workflow components
 ~~~~~~~~~~~~~~
@@ -38,7 +38,7 @@ Deployment
    
  
  You can download the Imixs Workflow components from the 
- {{{http://java.net/projects/imixs-workflow/downloads}Imixs Download page}}. If you are working with maven the 
+ {{{https://search.maven.org/}Maven central repository page}}. If you are working with maven the 
  components will be downloaded and bundled automatically during the maven build process.
  
 
@@ -269,38 +269,30 @@ Class-Path: imixs-workflow-core-3.0.0.jar imixs-workflow-engine-3.0.0.jar
  
   
  
-* The sun-ejb-jar.xml - optional
+* The glassfish-ejb-jar.xml - optional
 ~~~~~~~~~~~~~~~~~~~~
 
- The sun-ejb-jar.xml is an optional deployment descriptor used by the Glassfish application server. 
- This descriptor can be used to defin unique JNDI names for provided EJBs or define RunAs principals 
+ The glassfish-ejb-jar.xml is an optional deployment descriptor used by the Glassfish application server. 
+ This descriptor can be used to define unique JNDI names for provided EJBs or define RunAs principals 
  provided by the EJB container. 
- The following example shows an typical configuration of the sun-jar.xml file:
+ The following example shows an typical configuration of the glassfish-ejb-jar.xml file:
   
 +------------------------------------------------------------------------+
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE sun-ejb-jar PUBLIC "-//Sun Microsystems, Inc.//DTD Application Server 9.0 EJB 3.0//EN" "http://www.sun.com/software/appserver/dtds/sun-ejb-jar_3_0-0.dtd">
-<sun-ejb-jar>
-	<enterprise-beans>
-		<!-- Imixs Workflow Service EJBs - JNDI Definition -->
-		<ejb>
-			<ejb-name>EntityServiceBean</ejb-name>
-			<jndi-name> ejb/ImixsAppEntityServiceBean </jndi-name>
-		</ejb>
+<glassfish-ejb-jar>
+	<enterprise-beans>		
 		<!-- RunAs declaration -->
 		<ejb>
-			<ejb-name>WorkflowSchedulerBean</ejb-name>
+			<ejb-name>WorkflowSchedulerService</ejb-name>
 			<principal>
-				<name>WorkflowScheduler</name>
+				<name>IMIXS-WORKFLOW-Service</name>
 			</principal>
 		</ejb>
 	</enterprise-beans>
 </sun-ejb-jar>
 +------------------------------------------------------------------------+
 
- The descriptor defines a remote jndi name for the EntityService bean ( ejb/ImixsAppEntityServiceBean). 
- This name can be used by the {{{./adminclient.html}Imixs JEE Admin Client}} to access the Workflow engine remote,
- and the RunAs principal 'WorkflowScheduler' used by the {{{./scheduler.html}Imxis Workflow Scheduler EJB}}.
+ The descriptor defines the RunAs principal 'WorkflowScheduler' used by the {{{./scheduler.html}Imxis Workflow Scheduler EJB}}.
  
 Alternative deployment strategies
 ~~~~~~~~~~~~~~~~~~~~ 
@@ -308,7 +300,7 @@ Alternative deployment strategies
 * Maven
 ~~~~~~~~~~~~~~~~~~~~ 
  
- All Imixs JEE components are provided as maven artifacts. This makes it very easy to setup an 
+ All Imixs-Workflow components are provided as maven artifacts. This makes it very easy to setup an 
  Enterprise Application using the Imixs JEE components. Read the {{{./deployment_maven.html}maven deplyoment section}}
  to see how an EAR can be build with maven.
  
