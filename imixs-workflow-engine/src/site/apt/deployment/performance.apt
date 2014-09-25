@@ -59,3 +59,33 @@ ALTER TABLE `WRITEACCESS` ADD INDEX `index1`(`VALUE`);
          out useful indices contact your database administrator or use Query analyser tools provided
          by your database vendor.
          
+         
+Foreign key constraint failures  
+~~~~~~~~~~~~~~
+
+ In some situations a SQL Exception forced by a foreign key constraint failure can occur
+ during complex transactions. In this case the wrong a cascading type of the auto generated
+ foreign keys can be the reason. 
+ Use the following sql statements to alter the foreign key from 'ON DELETE RESTRICT' to 
+ 'ON DELETE CASCADE' to fix the problem. Make sure that you stop GlassFish before changing the keys.
+ 
++----------------------------------------+
+ALTER TABLE `ENTITY_WRITEACCESS` 
+DROP FOREIGN KEY `FK_ENTITY_WRITEACCESS_writeAccessList_ID`;
+ALTER TABLE `ENTITY_WRITEACCESS` 
+ADD CONSTRAINT `FK_ENTITY_WRITEACCESS_writeAccessList_ID`
+  FOREIGN KEY (`writeAccessList_ID`)
+  REFERENCES `WRITEACCESS` (`ID`)
+  ON DELETE CASCADE
+  ON UPDATE RESTRICT;
+
+
+ALTER TABLE `ENTITY_TEXTITEM` 
+DROP FOREIGN KEY `FK_ENTITY_TEXTITEM_textItems_ID`;
+ALTER TABLE `ENTITY_TEXTITEM` 
+ADD CONSTRAINT `FK_ENTITY_TEXTITEM_textItems_ID`
+  FOREIGN KEY (`textItems_ID`)
+  REFERENCES `TEXTITEM` (`ID`)
+  ON DELETE CASCADE
+  ON UPDATE RESTRICT; 
++----------------------------------------+
