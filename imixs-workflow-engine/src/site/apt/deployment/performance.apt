@@ -69,6 +69,9 @@ Foreign key constraint failures
  Use the following sql statements to alter the foreign key from 'ON DELETE RESTRICT' to 
  'ON DELETE CASCADE' to fix the problem. Make sure that you stop GlassFish before changing the keys.
  
+*MySQL
+~~~~~~~~~~~~~~
+ 
 +----------------------------------------+
 ALTER TABLE `ENTITY_WRITEACCESS` 
 DROP FOREIGN KEY `FK_ENTITY_WRITEACCESS_writeAccessList_ID`;
@@ -88,4 +91,51 @@ ADD CONSTRAINT `FK_ENTITY_TEXTITEM_textItems_ID`
   REFERENCES `TEXTITEM` (`ID`)
   ON DELETE CASCADE
   ON UPDATE RESTRICT; 
++----------------------------------------+
+
+*PostgreSQL
+~~~~~~~~~~~~~~
+ 
++----------------------------------------+
+ALTER TABLE ENTITY_TEXTITEM
+DROP constraint FK_ENTITY_TEXTITEM_textItems_ID,
+ADD CONSTRAINT FK_ENTITY_TEXTITEM_textItems_ID
+  FOREIGN KEY (textItems_ID)
+  REFERENCES TEXTITEM (ID)
+  ON DELETE CASCADE; 
+
+ALTER TABLE ENTITY_INTEGERITEM
+DROP constraint FK_ENTITY_INTEGERITEM_integerItems_ID,
+ADD CONSTRAINT FK_ENTITY_INTEGERITEM_integerItems_ID
+  FOREIGN KEY (integerItems_ID)
+  REFERENCES INTEGERITEM (ID)
+  ON DELETE CASCADE;
+
+ALTER TABLE ENTITY_DOUBLEITEM
+DROP constraint FK_ENTITY_DOUBLEITEM_doubleItems_ID,
+ADD CONSTRAINT FK_ENTITY_DOUBLEITEM_doubleItems_ID
+  FOREIGN KEY (doubleItems_ID)
+  REFERENCES DOUBLEITEM (ID)
+  ON DELETE CASCADE;
+
+ALTER TABLE ENTITY_CALENDARITEM
+DROP constraint FK_ENTITY_CALENDARITEM_calendarItems_ID,
+ADD CONSTRAINT FK_ENTITY_CALENDARITEM_calendarItems_ID
+  FOREIGN KEY (calendarItems_ID)
+  REFERENCES CALENDARITEM (ID)
+  ON DELETE CASCADE;
+
+ALTER TABLE ENTITY_WRITEACCESS
+DROP constraint FK_ENTITY_WRITEACCESS_writeAccessList_ID,
+ADD CONSTRAINT FK_ENTITY_WRITEACCESS_writeAccessList_ID
+  FOREIGN KEY (writeAccessList_ID)
+  REFERENCES WRITEACCESS (ID)
+  ON DELETE CASCADE;
+
+ALTER TABLE ENTITY_READACCESS
+DROP constraint FK_ENTITY_READACCESS_readAccessList_ID,
+ADD CONSTRAINT FK_ENTITY_READACCESS_readAccessList_ID
+  FOREIGN KEY (readAccessList_ID)
+  REFERENCES READACCESS (ID)
+  ON DELETE CASCADE;
 +----------------------------------------+
