@@ -37,7 +37,7 @@
 			<id>rsoika</id>
 			<name>Ralph Soika</name>
 			<email>ralph.soika@imixs.com</email>
-			<url>http://www-02.imixs.com/roller/ralphsjavablog/</url>
+			<url>http://blog.imixs.org/</url>
 			<organization>Imixs Software Solutions GmbH</organization>
 			<organizationUrl>http://www.imixs.com</organizationUrl>
 			<roles>
@@ -69,8 +69,8 @@
 	</scm>
 
 	<issueManagement>
-		<system>JIRA Issue Tracker</system>
-		<url>http://java.net/jira/browse/IMIXS_WORKFLOW</url>
+		<system>GitHub</system>
+		<url>https://github.com/imixs/imixs-workflow/issues</url>
 	</issueManagement>
 
 	<mailingLists>
