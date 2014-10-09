@@ -240,3 +240,28 @@ $.fn.layoutImixsTooltip = function(options) {
 		$(this).hide();
 	});
 };
+
+
+$.fn.layoutImixsEditor = function(rootContext,_with,_height) {
+
+	return this.each(function() {
+		$(this).tinymce(
+		{
+			// Location of TinyMCE script
+			script_url : rootContext+'/imixs/tinymce/jscripts/tiny_mce/tiny_mce.js',
+			width : _with,
+			height : _height,
+			// General options
+			theme : "advanced",
+			plugins : "inlinepopups,fullscreen",
+			// Theme options
+			theme_advanced_buttons1 : "cut,copy,paste,removeformat,cleanup,|,undo,redo,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,hr,bullist,numlist,",
+			theme_advanced_buttons2 : "formatselect,fontsizeselect,outdent,indent,blockquote,|,link,unlink,image,|,forecolor,backcolor,|,fullscreen,code",
+			theme_advanced_toolbar_location : "top",
+			theme_advanced_toolbar_align : "left",
+			theme_advanced_statusbar_location : "bottom",
+			theme_advanced_resizing : true,
+			content_css : rootContext+"/imixs/tinymce/content.css"
+		})
+	});
+};

@@ -30,9 +30,3 @@ Imixs Header
 |theme          | URL        | deletes an existing workitem by ID        |
 *---------------+------------+-------------------------------------------+
  
-* TinyMCE
-~~~~~~~~~~~~~~
-
- The jQuery TinyMCE Plugin will be automatically added to all textareas with the 
- style class 'imixs-editor'
- The feature can be disable with the option 'disabletinymce=true'
