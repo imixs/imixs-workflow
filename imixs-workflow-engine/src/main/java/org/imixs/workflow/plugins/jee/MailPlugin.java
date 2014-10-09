@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,7 +53,6 @@ import javax.naming.NamingException;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -71,6 +71,7 @@ public class MailPlugin extends AbstractPlugin {
 	Multipart mimeMultipart = null;
 	static final String CONTENTTYPE_TEXT_PLAIN = "text/plain";
 	static final String CONTENTTYPE_TEXT_HTML = "text/html";
+	public static final String INVALID_ADDRESS="INVALID_ADDRESS";
 	String charSet = "ISO-8859-1";
 
 	@Resource(name = "IMIXS_MAIL_SESSION")
@@ -167,8 +168,51 @@ public class MailPlugin extends AbstractPlugin {
 				&& mailMessage != null) {
 			// Send the message
 			try {
-				if (ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-					logger.info("[MailPlugin] SendMessage now...");
+
+				// Check if we are running in a Test MODE
+				if (propertyService != null) {
+					String sTestRecipients = (String) propertyService
+							.getProperties().get("mail.testRecipients");
+					// test if TestReceipiens are defined...
+					if (sTestRecipients != null && !"".equals(sTestRecipients)) {
+						List<String> vRecipients = new Vector<String>();
+						// split multivalues
+						StringTokenizer st = new StringTokenizer(sTestRecipients,
+								",", false);
+						while (st.hasMoreElements()) {
+							vRecipients.add(st.nextToken().trim());
+						}
+
+						logger.info("[MailPlugin] - TestMode - forward to:");
+						for (String adr : vRecipients) {
+							logger.info("[MailPlugin]    " + adr);
+						}
+						try {
+							getMailMessage().setRecipients(
+									Message.RecipientType.CC, null);
+							getMailMessage().setRecipients(
+									Message.RecipientType.BCC, null);
+							getMailMessage().setRecipients(
+									Message.RecipientType.TO,
+									getInternetAddressArray(vRecipients));
+							// change subject
+							String sSubject = getMailMessage().getSubject();
+							getMailMessage().setSubject("[TEST]: " + sSubject);
+
+						} catch (MessagingException e) {
+							throw new PluginException(
+									MailPlugin.class.getSimpleName(),
+									INVALID_ADDRESS,
+									"[MailPlugin] unable to set mail recipients: ",
+									e);
+						}
+					}
+
+				}
+				
+				
+				
+				logger.fine("[MailPlugin] SendMessage now...");
 
 				// if send message fails (e.g. for policy reasons) the process
 				// will
@@ -207,9 +251,17 @@ public class MailPlugin extends AbstractPlugin {
 	public String getFrom(ItemCollection documentContext,
 			ItemCollection documentActivity) {
 
-		String sFrom = getUserName();
+		String sFrom = null;
+		// test if default sender is defined
+		if (propertyService != null) {
+			sFrom = (String) propertyService.getProperties().get(
+					"mail.defaultSender");
+		}
+		// if no default sender take the current username
+		if (sFrom == null || sFrom.isEmpty())
+			sFrom = getUserName();
 
-		logger.fine("[MailPlugin]  Subject: " + sFrom);
+		logger.fine("[MailPlugin]  From: " + sFrom);
 
 		return sFrom;
 	}
@@ -268,13 +320,14 @@ public class MailPlugin extends AbstractPlugin {
 	@SuppressWarnings("unchecked")
 	public List<String> getRecipients(ItemCollection documentContext,
 			ItemCollection documentActivity) {
-		// build Recipient from Vector namMailReceiver
+
+		// build Recipient from Activity ...
 		List<String> vectorRecipients = documentActivity
 				.getItemValue("namMailReceiver");
 		if (vectorRecipients == null)
 			vectorRecipients = new Vector<String>();
 
-		// read keyMailReceiverFields (mulit value)
+		// read keyMailReceiverFields (multi value)
 		// here are the field names defined
 		mergeMappedFieldValues(documentContext, vectorRecipients,
 				documentActivity.getItemValue("keyMailReceiverFields"));
@@ -301,6 +354,7 @@ public class MailPlugin extends AbstractPlugin {
 	@SuppressWarnings("unchecked")
 	public List<String> getRecipientsCC(ItemCollection documentContext,
 			ItemCollection documentActivity) {
+
 		// build Recipient Vector from namMailReceiver
 		List<String> vectorRecipients = documentActivity
 				.getItemValue("namMailReceiverCC");
