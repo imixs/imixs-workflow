@@ -69,203 +69,84 @@ public class MailPlugin extends AbstractPlugin {
 	Session mailSession;
 	MimeMessage mailMessage = null;
 	Multipart mimeMultipart = null;
-	boolean isHTMLMail = false;
-
 	static final String CONTENTTYPE_TEXT_PLAIN = "text/plain";
 	static final String CONTENTTYPE_TEXT_HTML = "text/html";
 	String charSet = "ISO-8859-1";
-	boolean noMailSessionBound = false;
 
 	@Resource(name = "IMIXS_MAIL_SESSION")
 	private String sMailSession = "org.imixs.workflow.mail";
-
+	private boolean bHTMLMail = false;
+	private boolean noMailSessionBound = false;
 	private static Logger logger = Logger.getLogger(MailPlugin.class.getName());
 
-	/**
-	
-	 */
 	public void init(WorkflowContext actx) throws PluginException {
 		super.init(actx);
 	}
 
 	/**
-	 * The run method first verifies if a message should be send. If not the
-	 * method terminates immediately. Otherwise the method constructs a
-	 * mailMessage object.
+	 * The run method creates a mailMessage object if a mail was defined by the
+	 * current Activity. The mail will be send in the close method.
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes" })
 	public int run(ItemCollection documentContext,
 			ItemCollection documentActivity) throws PluginException {
 
-		String sFrom;
-		String sReplyTo = "";
-		InternetAddress[] recipientsTo, recipientsCC;
+		mailMessage = null;
+
+		// check if mail is active?
+		if ("1".equals(documentActivity.getItemValueString("keyMailInactive")))
+			return Plugin.PLUGIN_OK;
+
+		List vectorRecipients = getRecipients(documentContext, documentActivity);
+		if (vectorRecipients.isEmpty()) {
+			logger.fine("[MailPlugin] No Receipients defined for this Activity...");
+			return Plugin.PLUGIN_OK;
+		}
 
 		try {
 
-			// check if mail is active?
-			if ("1".equals(documentActivity
-					.getItemValueString("keyMailInactive")))
-				return Plugin.PLUGIN_OK;
+			// first initialize mail message object
+			initMailMessage();
 
-			// check if recipients are defined
-			String snamMailReceifer = documentActivity
-					.getItemValueString("namMailReceiver");
-			logger.finest("[MailPlugin] namMailReceiver=" + snamMailReceifer);
+			// set FROM
+			mailMessage.setFrom(getInternetAddress(getFrom(documentContext,
+					documentActivity)));
 
-			String skeyMailReceiverFields = documentActivity
-					.getItemValueString("keyMailReceiverFields");
-			logger.finest("[MailPlugin] keyMailReceiverFields="
-					+ skeyMailReceiverFields);
+			// set Recipient
+			mailMessage.setRecipients(Message.RecipientType.TO,
+					getInternetAddressArray(vectorRecipients));
 
-			// check if recipients are defined....
-			if (((snamMailReceifer != null) && (!"".equals(documentActivity
-					.getItemValueString("namMailReceiver"))))
-					|| ((skeyMailReceiverFields != null) && (!""
-							.equals(documentActivity
-									.getItemValueString("keyMailReceiverFields"))))) {
+			// build CC
+			mailMessage.setRecipients(
+					Message.RecipientType.CC,
+					getInternetAddressArray(getRecipientsCC(documentContext,
+							documentActivity)));
 
-				sFrom = getUserName();
-				logger.finest("[MailPlugin] userName (from) = " + sFrom);
-
-				// check if sender is defined....
-				if ((sFrom == null) || ("".equals(sFrom)))
-					return Plugin.PLUGIN_OK;
-
-				// first initialize mail message object
-				initMailMessage();
-
-				// check for ReplyTo...
-				if ("1".equals(documentActivity
-						.getItemValueString("keyMailReplyToCurrentUser")))
-					sReplyTo = getUserName();
-				else
-					sReplyTo = documentActivity
-							.getItemValueString("namMailReplyToUser");
-
-				logger.finest("[MailPlugin] ReplyTo=" + sReplyTo);
-
-				// sender = CurrentUser?
-				mailMessage.setFrom(getInternetAddress(sFrom));
-
-				// replay to?
-				if ((sReplyTo != null) && (!"".equals(sReplyTo))) {
-					InternetAddress[] resplysAdrs = new InternetAddress[1];
-					resplysAdrs[0] = getInternetAddress(sReplyTo);
-					mailMessage.setReplyTo(resplysAdrs);
-				}
-
-				// build Recipient from Vector namMailReceiver
-				List vectorRecipients = documentActivity
-						.getItemValue("namMailReceiver");
-				if (vectorRecipients == null)
-					vectorRecipients = new Vector();
-
-				// read keyMailReceiverFields (mulit value)
-				// here are the field names defined
-				mergeMappedFieldValues(documentContext, vectorRecipients,
-						documentActivity.getItemValue("keyMailReceiverFields"));
-
-				// cancel send mail if no receipiens defined
-				if (vectorRecipients.size() == 0) {
-					mailMessage = null;
-					return Plugin.PLUGIN_OK;
-				}
-
-				/*
-				 * In the following code the vector with email addresses will be
-				 * transformed into a InternetAddress array. Therefore the
-				 * helper getInternetAddress() method will be called which can
-				 * be over written by a subclass. The Method call
-				 * getInternetAddressArray ensures additional that no 'null'
-				 * values will be stored into the array as this would throw a
-				 * exception into the setReceipients call of the mailMessage
-				 * object
-				 */
-
-				// set TO Recipient
-				recipientsTo = getInternetAddressArray(vectorRecipients);
-				mailMessage.setRecipients(Message.RecipientType.TO,
-						recipientsTo);
-
-				// build Recipient Vector from namMailReceiver
-				vectorRecipients = documentActivity
-						.getItemValue("namMailReceiverCC");
-				if (vectorRecipients == null)
-					vectorRecipients = new Vector();
-
-				// now read keyMailReceiverFieldsCC (multi value)
-				mergeMappedFieldValues(documentContext, vectorRecipients,
-						documentActivity
-								.getItemValue("keyMailReceiverFieldsCC"));
-
-				// set CC Recipients
-				// build array...
-				recipientsCC = getInternetAddressArray(vectorRecipients);
-				mailMessage.setRecipients(Message.RecipientType.CC,
-						recipientsCC);
-
-				// set Subject with the defined text CharSet
-				mailMessage.setSubject(
-						replaceDynamicValues(documentActivity
-								.getItemValueString("txtMailSubject"),
-								documentContext), this.getCharSet());
-
-				// build mail body...
-				String aBodyText = documentActivity
-						.getItemValueString("rtfMailBody");
-				isHTMLMail = false;
-				if (aBodyText != null) {
-					// set mailbody
-					MimeBodyPart messagePart = new MimeBodyPart();
-					aBodyText = replaceDynamicValues(aBodyText, documentContext);
-					// test if content ist html mail...
-					String sTestHTML = aBodyText.trim().toLowerCase();
-					if (sTestHTML.startsWith("<!doctype")
-							|| sTestHTML.startsWith("<html")
-							|| sTestHTML.startsWith("<?xml")) {
-						isHTMLMail = true;
-					} else {
-						isHTMLMail = false;
-					}
-					logger.fine("[MailPlugin] creating mail body type: '"
-							+ getContentType() + "'");
-					messagePart.setContent(aBodyText, getContentType());
-
-					// append message part
-					mimeMultipart.addBodyPart(messagePart);
-					// mimeMulitPart object can be extended from subclases
-				}
-
-				// write debug Log
-				if ((recipientsTo.length > 0)
-						&& ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE) {
-					logger.info("[MailPlugin] Creating new PlainText mail....");
-					logger.info("[MailPlugin] From: " + sFrom);
-					logger.info("[MailPlugin] To (" + recipientsTo.length
-							+ " Receipients):");
-					if (recipientsTo.length > 0) {
-						for (int j = 0; j < recipientsTo.length; j++)
-							logger.info("[MailPlugin]     "
-									+ recipientsTo[j].getAddress());
-					} else
-						logger.info("[MailPlugin] no receipients defined");
-
-					if (recipientsCC.length > 0) {
-						logger.info("[MailPlugin] CopyTo ("
-								+ recipientsCC.length + " Receipients):");
-						for (int j = 0; j < recipientsCC.length; j++)
-							logger.info("[MailPlugin]     "
-									+ recipientsCC[j].getAddress());
-					} else
-						logger.info("[MailPlugin] no CC defined");
-				}
-
-			} else {
-				if (ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-					logger.info("[MailPlugin] No Receipients defined for this Activity...");
-
+			// replay to?
+			String sReplyTo = getReplyTo(documentContext, documentActivity);
+			if ((sReplyTo != null) && (!sReplyTo.isEmpty())) {
+				InternetAddress[] resplysAdrs = new InternetAddress[1];
+				resplysAdrs[0] = getInternetAddress(sReplyTo);
+				mailMessage.setReplyTo(resplysAdrs);
 			}
+
+			// set Subject
+			mailMessage.setSubject(
+					getSubject(documentContext, documentActivity),
+					this.getCharSet());
+
+			// set Body
+			String aBodyText = getBody(documentContext, documentActivity);
+			if (aBodyText == null) {
+				aBodyText = "";
+			}
+			// set mailbody
+			MimeBodyPart messagePart = new MimeBodyPart();
+			logger.fine("[MailPlugin] ContentType: '" + getContentType() + "'");
+			messagePart.setContent(aBodyText, getContentType());
+			// append message part
+			mimeMultipart.addBodyPart(messagePart);
+			// mimeMulitPart object can be extended from subclases
 
 		} catch (Exception e) {
 			logger.warning("[MailPlugin] run - Warning:" + e.toString());
@@ -303,11 +184,7 @@ public class MailPlugin extends AbstractPlugin {
 				trans.connect(mailSession.getProperty("mail.smtp.user"),
 						mailSession.getProperty("mail.smtp.password"));
 
-				if (this.isHTMLMail()) {
-					mailMessage.setContent(mimeMultipart, getContentType());
-				} else {
-					mailMessage.setContent(mimeMultipart, getContentType());
-				}
+				mailMessage.setContent(mimeMultipart, getContentType());
 
 				mailMessage.saveChanges();
 				trans.sendMessage(mailMessage, mailMessage.getAllRecipients());
@@ -318,6 +195,159 @@ public class MailPlugin extends AbstractPlugin {
 						+ esend.toString());
 			}
 		}
+	}
+
+	/**
+	 * Computes the sender name. This method can be overwritten by subclasses.
+	 * 
+	 * @param documentContext
+	 * @param documentActivity
+	 * @return String - mail subject
+	 */
+	public String getFrom(ItemCollection documentContext,
+			ItemCollection documentActivity) {
+
+		String sFrom = getUserName();
+
+		logger.fine("[MailPlugin]  Subject: " + sFrom);
+
+		return sFrom;
+	}
+
+	/**
+	 * Computes the repyyTo address from current workflow activity. This method
+	 * can be overwritten by subclasses.
+	 * 
+	 * @param documentContext
+	 * @param documentActivity
+	 * @return String - replyTo address
+	 */
+	public String getReplyTo(ItemCollection documentContext,
+			ItemCollection documentActivity) {
+		String sReplyTo = null;
+
+		// check for ReplyTo...
+		if ("1".equals(documentActivity
+				.getItemValueString("keyMailReplyToCurrentUser")))
+			sReplyTo = getUserName();
+		else
+			sReplyTo = documentActivity
+					.getItemValueString("namMailReplyToUser");
+
+		logger.fine("[MailPlugin] ReplyTo=" + sReplyTo);
+		return sReplyTo;
+	}
+
+	/**
+	 * Computes the mail subject from the current workflow activity. This method
+	 * can be overwritten by subclasses.
+	 * 
+	 * @param documentContext
+	 * @param documentActivity
+	 * @return String - mail subject
+	 */
+	public String getSubject(ItemCollection documentContext,
+			ItemCollection documentActivity) {
+
+		String subject = replaceDynamicValues(
+				documentActivity.getItemValueString("txtMailSubject"),
+				documentContext);
+		logger.fine("[MailPlugin]  Subject: " + subject);
+
+		return subject;
+	}
+
+	/**
+	 * Computes the mail Recipients from the current workflow activity. This
+	 * method can be overwritten by subclasses.
+	 * 
+	 * @param documentContext
+	 * @param documentActivity
+	 * @return String list of Recipients
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getRecipients(ItemCollection documentContext,
+			ItemCollection documentActivity) {
+		// build Recipient from Vector namMailReceiver
+		List<String> vectorRecipients = documentActivity
+				.getItemValue("namMailReceiver");
+		if (vectorRecipients == null)
+			vectorRecipients = new Vector<String>();
+
+		// read keyMailReceiverFields (mulit value)
+		// here are the field names defined
+		mergeMappedFieldValues(documentContext, vectorRecipients,
+				documentActivity.getItemValue("keyMailReceiverFields"));
+
+		// write debug Log
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("[MailPlugin]  " + vectorRecipients.size()
+					+ " Receipients: ");
+			for (String rez : vectorRecipients)
+				logger.fine("[MailPlugin]     " + rez);
+		}
+
+		return vectorRecipients;
+	}
+
+	/**
+	 * Computes the mail RecipientsCC from the current workflow activity. This
+	 * method can be overwritten by subclasses.
+	 * 
+	 * @param documentContext
+	 * @param documentActivity
+	 * @return String list of Recipients
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getRecipientsCC(ItemCollection documentContext,
+			ItemCollection documentActivity) {
+		// build Recipient Vector from namMailReceiver
+		List<String> vectorRecipients = documentActivity
+				.getItemValue("namMailReceiverCC");
+		if (vectorRecipients == null)
+			vectorRecipients = new Vector<String>();
+
+		// now read keyMailReceiverFieldsCC (multi value)
+		mergeMappedFieldValues(documentContext, vectorRecipients,
+				documentActivity.getItemValue("keyMailReceiverFieldsCC"));
+
+		// write debug Log
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("[MailPlugin]  " + vectorRecipients.size()
+					+ " ReceipientsCC: ");
+			for (String rez : vectorRecipients)
+				logger.fine("[MailPlugin]     " + rez);
+		}
+		return vectorRecipients;
+	}
+
+	/**
+	 * Computes the mail body from the current workflow activity. The method
+	 * also updates the internal flag HTMLMail to indicte if the mail is send al
+	 * HTML mail.
+	 * 
+	 * The method can be overwritten by subclasses.
+	 * 
+	 * @param documentContext
+	 * @param documentActivity
+	 * @return String - mail subject
+	 */
+	public String getBody(ItemCollection documentContext,
+			ItemCollection documentActivity) {
+		// build mail body...
+		String aBodyText = documentActivity.getItemValueString("rtfMailBody");
+
+		// Test if mail body contains HTML content and updates the flag
+		// 'isHTMLMail'.
+		String sTestHTML = aBodyText.trim().toLowerCase();
+		if (sTestHTML.startsWith("<!doctype") || sTestHTML.startsWith("<html")
+				|| sTestHTML.startsWith("<?xml")) {
+			bHTMLMail = true;
+		} else
+			bHTMLMail = false;
+
+		return aBodyText;
+
 	}
 
 	/**
@@ -356,14 +386,15 @@ public class MailPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * this helper method creates an internet address from a string if the
-	 * string has illegal characters like whitespace the string will be
-	 * surrounded with "". If you subclass this MailPlugin Class you can
-	 * overwrite this method to return a different mail-address name or lookup a
-	 * mail attribute in a directory like a ldap directory.
+	 * This method creates an InternetAddress from a string. If the string has
+	 * illegal characters like whitespace the string will be surrounded with "".
+	 * 
+	 * The method can be overwritten by subclasses to return a different
+	 * mail-address name or lookup a mail attribute in a directory.
 	 * 
 	 * @param aAddr
-	 * @return
+	 *            string
+	 * @return InternetAddress
 	 * @throws AddressException
 	 */
 	public InternetAddress getInternetAddress(String aAddr)
@@ -390,11 +421,12 @@ public class MailPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * this method transforms a vector of emails into a InternetAddress Array.
-	 * Null values will be removed from list
+	 * This method transforms a vector of E-Mail addresses into an
+	 * InternetAddress Array. Null values will be removed from list
 	 * 
-	 * @param aList
-	 * @return
+	 * @param String
+	 *            List of adresses
+	 * @return array of InternetAddresses
 	 */
 	@SuppressWarnings("rawtypes")
 	private InternetAddress[] getInternetAddressArray(List aList) {
@@ -504,8 +536,13 @@ public class MailPlugin extends AbstractPlugin {
 		return mimeMultipart;
 	}
 
+	/**
+	 * Return true if the mail body contains HTML content.
+	 * 
+	 * @return
+	 */
 	public boolean isHTMLMail() {
-		return isHTMLMail;
+		return bHTMLMail;
 	}
 
 	public String getCharSet() {
@@ -517,15 +554,20 @@ public class MailPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * This method returns a string representing the general mail content type.
-	 * The content type depends on the content of the mail body (html or
-	 * plaintext) and the character set.
+	 * This method returns a string representing the mail content type. The
+	 * content type depends on the content of the mail body (html or plaintext)
+	 * and contains optional the character set.
+	 * 
+	 * If the mail is a HTML mail then the returned string contains 'text/html'
+	 * otherwise it will contain 'text/plain'.
+	 * 
+	 * The content
 	 * 
 	 * @return
 	 */
 	public String getContentType() {
 		String sContentType = "";
-		if (isHTMLMail) {
+		if (bHTMLMail) {
 			sContentType = CONTENTTYPE_TEXT_HTML;
 		} else {
 			sContentType = CONTENTTYPE_TEXT_PLAIN;
@@ -535,6 +577,5 @@ public class MailPlugin extends AbstractPlugin {
 		}
 		return sContentType;
 	}
-
 
 }
