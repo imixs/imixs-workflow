@@ -59,6 +59,37 @@ Mail Plugin
 +--------------------------------------------------------------------+
 
 
+*Default Sender Address
+~~~~~~~~~~~~~~~~~~~~~~~~
+ The default sender address will be set with the current user name. 
+ To manipulate the sender address the Plugin checks if the imixs property 'mail.defaultSender'. 
+ If the property is defined, the plugin overwrites the 'From' attribute of every mail with the DefaultSender address.
+ The default sender address can be changed in the imixs.properties file. If no value is set the mail will be send from the 
+ current users mail address.
+ 
+ A subclass of the MailPlugin can change the behavior by overwriting the method 'getFrom()'
+ 
+ Example (imixs.properties):
+
++------------------------------+
+# Marty Mail Plugin
+mail.defaultSender=info@imixs.com
++------------------------------+
+
+
+*Test Mode
+~~~~~~~~~~~~~~~~~~~~~~~~
+ The Mailplugin can be configured to run in a Test-Mode when the property 'mail.testRecipients' is defined. 
+ The property value can contain one ore many (comma separated) Email addresses. If those email addresses are defined than 
+ a email will be send only to this recipients. The Subject will be prefixed with the text 'TEST: '.
+
++------------------------------+
+#Testmode
+mail.testRecipients=ralph.soika@imixs.com,info@imixs.com
++------------------------------+
+
+
+
 *CharSet
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
