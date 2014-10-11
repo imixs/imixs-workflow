@@ -139,7 +139,7 @@ public class TestRulePlugin {
 	 */
 	@Test
 	public void testComplexPluginException() throws ScriptException {
- 
+
 		ItemCollection adocumentContext = new ItemCollection();
 		ItemCollection adocumentActivity = new ItemCollection();
 
@@ -173,7 +173,7 @@ public class TestRulePlugin {
 			rulePlugin.run(adocumentContext, adocumentActivity);
 			Assert.fail();
 		} catch (PluginException e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			// test exception
 			Assert.assertEquals(RulePlugin.VALIDATION_ERROR, e.getErrorCode());
 			Object[] params = e.getErrorParameters();
@@ -241,15 +241,15 @@ public class TestRulePlugin {
 
 		ScriptEngine engine = rulePlugin.evaluateBusinessRule(adocumentContext,
 				adocumentActivity);
-		
-		Object[] result=rulePlugin.evaluateScriptObject(engine,"txtname");
-		if (result!=null) {
+
+		Object[] result = rulePlugin.evaluateScriptObject(engine, "txtname");
+		if (result != null) {
 			Assert.assertEquals("Manfred", result[0]);
 		} else
 			Assert.fail();
 
-		result=rulePlugin.evaluateScriptObject(engine,"someData");
-		if (result!=null) {
+		result = rulePlugin.evaluateScriptObject(engine, "someData");
+		if (result != null) {
 			Assert.assertEquals("Eddy", result[0]);
 		} else
 			Assert.fail();
@@ -312,9 +312,6 @@ public class TestRulePlugin {
 
 	}
 
-	
-	
-	
 	/**
 	 * This test verifies the BigDecimal support of the RulePlugin
 	 * 
@@ -325,12 +322,13 @@ public class TestRulePlugin {
 	public void bigDecimalTest() throws ScriptException, PluginException {
 
 		// set a business rule
-		String script = " var followUp=null;" + " if (_amount_brutto[0]>5000.50)"
-				+ "    followUp=90;";
+		String script = " var followUp=null;"
+				+ " if (_amount_brutto[0]>5000.50)" + "    followUp=90;";
 		System.out.println("Script=" + script);
 
 		ItemCollection adocumentContext = new ItemCollection();
-		adocumentContext.replaceItemValue("_amount_brutto", new BigDecimal(5000.51));
+		adocumentContext.replaceItemValue("_amount_brutto", new BigDecimal(
+				5000.51));
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -347,20 +345,8 @@ public class TestRulePlugin {
 
 		Assert.assertEquals(90, followUp);
 
-		
 	}
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	/**
 	 * See: http://www.rgagnon.com/javadetails/java-0640.html
 	 */
@@ -392,7 +378,7 @@ public class TestRulePlugin {
 		} catch (ScriptException se) {
 			se.printStackTrace();
 		}
-		
+
 		@SuppressWarnings("unchecked")
 		List<String> list2 = (List<String>) engine.get("list2");
 		System.out.println("*** Javascript object to Java");
@@ -402,5 +388,121 @@ public class TestRulePlugin {
 
 	}
 
+	/**
+	 * This test test if a the properties of an activity entity can be evaluated
+	 * by a script
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testSimpleActivityScript() throws ScriptException,
+			PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("txtName", "Anna");
+
+		// simulate an activity
+		ItemCollection adocumentActivity = new ItemCollection();
+		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
+
+		// set a business rule
+		String script = "var isValid =  '1'==activity.get('keymailenabled')[0];";
+
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
+				adocumentActivity));
+
+	}
+
+	/**
+	 * This test test if a the properties of an workitem entity can be evaluated
+	 * by a script
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testSimpleWorkitemScript() throws ScriptException,
+			PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("txtName", "Anna");
+		adocumentContext.replaceItemValue("$ProcessID", 1000);
+		// simulate an activity
+		ItemCollection adocumentActivity = new ItemCollection();
+		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
+
+		// set a business rule
+		String script = "var isValid =  1000==workitem.get('$processid')[0];";
+
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
+				adocumentActivity));
+
+	}
+
+	/**
+	 * This test test if a the properties of an workitem entity can be evaluated
+	 * by a script. In addition the test verifies if the workitem itself can be
+	 * manipulated by the script. This may not happen!
+	 * 
+	 * But manipulation for an Activity should be possible!
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testComplexWorkitemScript() throws ScriptException,
+			PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("txtName", "Anna");
+		adocumentContext.replaceItemValue("$ProcessID", 1000);
+		// simulate an activity
+		ItemCollection adocumentActivity = new ItemCollection();
+		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
+
+		// set a business rule
+		String script = "";
+		script += "var isValid =  1000==workitem.get('$processid')[0];";
+		// now add a manipulation!
+		script += " workitem.put('$processid',[99]);";
+		// add maniputlation to itemCollection
+		script += " activity.put('keymailenabled',['0']);";
+
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
+				adocumentActivity));
+
+		Assert.assertEquals(1000,
+				adocumentContext.getItemValueInteger("$ProcessID"));
+
+		// test manipulation of activity
+		Assert.assertEquals("0",
+				adocumentActivity.getItemValueString("keyMailEnabled"));
+		// test for integer value
+		Assert.assertEquals(0,
+				adocumentActivity.getItemValueInteger("keyMailEnabled"));
+
+	}
 
 }

@@ -29,6 +29,9 @@ package org.imixs.workflow.plugins;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -53,8 +56,23 @@ import org.imixs.workflow.exceptions.PluginException;
  * the current ActivityEntity. The script is defined by the property
  * 'txtBusinessRule'.
  * 
- * The Script can access all basic item values from the current workItem. But
- * the script may not update any of these itemValues.
+ * The Script can access all basic item values from the current workItem and
+ * also the activity entity by the provided map object 'workitem' and
+ * 'activity'. But the script may not update any of and workitem.
+ * 
+ * <code>
+ *  // test first value of the workitem attribute 'txtname'
+ *  var isValid = ('Anna'==workitem.get('txtname')[0]);
+ * </code>
+ * 
+ * A script may change values of the activity map object. These changes will be
+ * reflected back to the current ActivityEntity which can be used for further
+ * processing.
+ * 
+ * <code>
+ *  // set keymailenabled to 0
+ *   activity.put('keymailenabled',['0']);
+ * </code>
  * 
  * A script can set the variables 'isValid' and 'followUp' to validate a
  * workItem or set a new followUp activity.
@@ -103,6 +121,10 @@ public class RulePlugin extends AbstractPlugin {
 	 * 'followUp'. If a followUp value is defined by the script the method
 	 * update the model follow up definition.
 	 * 
+	 * If a script changes properties of the activity entity the method will
+	 * evaluate these changes and update the ItemCollection for further
+	 * processing.
+	 * 
 	 */
 	public int run(ItemCollection adocumentContext,
 			ItemCollection adocumentActivity) throws PluginException {
@@ -124,15 +146,16 @@ public class RulePlugin extends AbstractPlugin {
 
 				// next test for errorMessage (this can be a string or an array
 				// of strings
-
 				params = this.evaluateScriptObject(engine, "errorMessage");
 				// finally throw a Plugin Exception
 				throw new PluginException(RulePlugin.class.getSimpleName(),
 						sErrorCode,
 						"BusinessRule: validation failed - ErrorCode="
 								+ sErrorCode, params);
-
 			}
+
+			// Now update Activity Entity values from script..
+			updateActivityEntity(engine, adocumentActivity);
 
 			// now test the followup activity
 			Object o = engine.get("followUp");
@@ -216,6 +239,12 @@ public class RulePlugin extends AbstractPlugin {
 
 		ScriptEngine engine = manager.getEngineByName(sEngineType);
 
+		// set activity properties into engine
+		engine.put("activity", convertItemCollection(activity));
+		engine.put("workitem", convertItemCollection(documentContext));
+
+		// The following code is only for backward compatibility since version
+		// 3.1.9
 		// setup document data...
 		@SuppressWarnings("unchecked")
 		Map<String, Object> itemList = documentContext.getAllItems();
@@ -225,9 +254,8 @@ public class RulePlugin extends AbstractPlugin {
 			// do only put basic values and not values starting the $
 			if (!key.startsWith("$") && value.size() > 0) {
 				if (isBasicObjectType(value.get(0).getClass())) {
-					engine.put(key.toLowerCase(), value.toArray());
+					engine.put(key, value.toArray());
 				}
-
 			}
 		}
 
@@ -245,18 +273,17 @@ public class RulePlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * This method evaluates the errorMessage variable from the script engine.
-	 * The method returns a Object array with the messages. If the javaScript
-	 * var 'errorMessage' is a String a new Array will be created. If the
-	 * javaScript var 'errorMessage' is a NativeArray the method tries to create
-	 * a java List object.
+	 * This method evaluates script variable from the script engine. The method
+	 * returns a Object array with the variable value. If the javaScript var is
+	 * a String a new Array will be created. If the javaScript var is a
+	 * NativeArray the method tries to create a java List object.
 	 * 
 	 * See the following examples used by the Rhino JavaScript engine bundled
 	 * with Java 6. http://www.rgagnon.com/javadetails/java-0640.html
 	 * 
 	 * @return
 	 */
-	public Object[] evaluateScriptObject(ScriptEngine engine, String paramName) {
+	public Object[] evaluateScriptObject(ScriptEngine engine, String expression) {
 		Object[] params = null;
 
 		if (engine == null) {
@@ -264,29 +291,30 @@ public class RulePlugin extends AbstractPlugin {
 			return null;
 		}
 
-		Object o = engine.get(paramName);
-		if (o == null)
-			return null;
-		if (o instanceof String) {
+		// first test if expression is a basic string var
+		Object objectResult = engine.get(expression);
+		if (objectResult != null && objectResult instanceof String) {
 			// just return a simple array with one value
 			params = new String[1];
-			params[0] = o.toString();
+			params[0] = objectResult.toString();
 			return params;
 		}
 
 		// now try to pass the object to engine and convert it into a
 		// ArryList....
 		try {
-			String jsCode = "importPackage(java.util);" + "var " + paramName
-					+ " = Arrays.asList(" + paramName + "); ";
+			String jsCode = "importPackage(java.util);"
+					+ "var _evaluateScriptParam = Arrays.asList(" + expression
+					+ "); ";
 			// pass a collection from javascript to java;
 			engine.eval(jsCode);
 
 			@SuppressWarnings("unchecked")
-			List<Object> resultList = (List<Object>) engine.get(paramName);
+			List<Object> resultList = (List<Object>) engine
+					.get("_evaluateScriptParam");
 			// logging
 			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("evalueateScript bject to Java");
+				logger.fine("evalueateScript object to Java");
 				for (Object val : resultList) {
 					logger.fine(val.toString());
 				}
@@ -295,16 +323,75 @@ public class RulePlugin extends AbstractPlugin {
 			return resultList.toArray();
 		} catch (ScriptException se) {
 			// not convertable!
-			se.printStackTrace();
+			// se.printStackTrace();
+			logger.fine("[RulePlugin] error: " + se.getMessage());
+			return null;
+		}
 
-			o = engine.get("errorMessage");
-			// just return a simple array with one value
-			params = new String[1];
-			params[0] = o.toString();
-			return params;
+	}
+
+	/**
+	 * This method compares the properties of the script element 'activity' with
+	 * the values of the current ActivityEntity. If a value has changed, then
+	 * the method will update the Activity ItemCollection which can be used for
+	 * further processing.
+	 * 
+	 * @param engine
+	 * @param adocumentActivity
+	 * @throws ScriptException
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void updateActivityEntity(ScriptEngine engine,
+			ItemCollection adocumentActivity) {
+
+		Map<String, Object[]> orginalActivity = convertItemCollection(adocumentActivity);
+		// get activity from engine
+		Map<String, Object[]> scriptActivity = (Map) engine.get("activity");
+
+		// iterate over all entries
+		for (Map.Entry<String, Object[]> entry : scriptActivity.entrySet()) {
+
+			String expression = "activity.get('" + entry.getKey() + "')";
+
+			Object[] oScript = evaluateScriptObject(engine, expression);
+			Object[] oActivity = orginalActivity.get(entry.getKey());
+
+			// compare object arrays with deepEquals....
+			if (!Arrays.deepEquals(oScript, oActivity)) {
+
+				System.out.println("Werte nicht gleich! Value =");
+
+				List<?> list = new ArrayList(Arrays.asList(oScript));
+				adocumentActivity.replaceItemValue(entry.getKey(), list);
+			}
 
 		}
 
+	}
+
+	/**
+	 * This method converts the values of an ItemCollection into a Map Object
+	 * with Arrays of Objects for each value
+	 * 
+	 * @param itemCol
+	 * @return
+	 */
+	private Map<String, Object[]> convertItemCollection(ItemCollection itemCol) {
+		Map<String, Object[]> result = new HashMap<String, Object[]>();
+		@SuppressWarnings("unchecked")
+		Map<String, Object> itemList = itemCol.getAllItems();
+		for (Map.Entry<String, Object> entry : itemList.entrySet()) {
+			String key = entry.getKey().toLowerCase();
+			List<?> value = (List<?>) entry.getValue();
+			// do only put basic values
+			if (value.size() > 0) {
+				if (isBasicObjectType(value.get(0).getClass())) {
+					result.put(key, value.toArray());
+				}
+
+			}
+		}
+		return result;
 	}
 
 	private static final HashSet<Class<?>> BASIC_OBJECT_TYPES = getBasicObjectTypes();
