@@ -60,7 +60,8 @@ import java.util.logging.Logger;
  */
 
 public class ItemCollection implements java.io.Serializable {
-	private static Logger logger = Logger.getLogger(ItemCollection.class.getName());
+	private static Logger logger = Logger.getLogger(ItemCollection.class
+			.getName());
 
 	private Map hash = new Hashtable();
 
@@ -84,6 +85,16 @@ public class ItemCollection implements java.io.Serializable {
 			Map.Entry entry = (Map.Entry) it.next();
 			this.replaceItemValue(entry.getKey().toString(), entry.getValue());
 		}
+	}
+
+	/**
+	 * Creates a new ItemCollection by copy values from another ItemCollection
+	 * 
+	 * @param map
+	 */
+	public ItemCollection(ItemCollection aItemCol) {
+		super();
+		this.replaceAllItems(aItemCol.getAllItems());
 	}
 
 	public boolean equals(Object o) {
@@ -238,7 +249,7 @@ public class ItemCollection implements java.io.Serializable {
 
 				if (o instanceof Long)
 					return (Long) o;
-				
+
 				if (o instanceof Integer)
 					return (Integer) o;
 
@@ -284,7 +295,7 @@ public class ItemCollection implements java.io.Serializable {
 
 				if (o instanceof Long)
 					return (Long) o;
-				
+
 				if (o instanceof Integer)
 					return (Integer) o;
 
@@ -382,7 +393,7 @@ public class ItemCollection implements java.io.Serializable {
 			return (o instanceof Long);
 		}
 	}
-	
+
 	/**
 	 * Returns true if the value of an item with a single numeric value is from
 	 * type 'Double'
@@ -426,15 +437,14 @@ public class ItemCollection implements java.io.Serializable {
 	}
 
 	/**
-	 * Returns true if the value of an item is from
-	 * type 'Date'
+	 * Returns true if the value of an item is from type 'Date'
 	 * 
 	 * @param aName
 	 * @return boolean true if object is from type Double
 	 * 
 	 */
 	public boolean isItemValueDate(String aName) {
-	
+
 		aName = aName.toLowerCase();
 		Vector v = (Vector) getItemValue(aName);
 		if (v.size() == 0)
@@ -552,7 +562,9 @@ public class ItemCollection implements java.io.Serializable {
 			return;
 		}
 
-		// test if value is a list and remove null values
+
+		// test if value is a list and remove null values and clone instances of
+		// ItemCollections!
 		if (itemValue instanceof List) {
 			// scan List for null values and remove them
 			for (int i = 0; i < ((List<?>) itemValue).size(); i++) {
@@ -593,7 +605,13 @@ public class ItemCollection implements java.io.Serializable {
 			Map.Entry entry = (Map.Entry) it.next();
 			replaceItemValue(entry.getKey().toString(), entry.getValue());
 		}
+	}
 
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		ItemCollection itemColClone = new ItemCollection();
+		itemColClone.replaceAllItems(this.getAllItems());
+		return itemColClone;
 	}
 
 	/**
