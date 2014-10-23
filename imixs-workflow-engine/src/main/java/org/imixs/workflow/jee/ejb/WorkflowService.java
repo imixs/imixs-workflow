@@ -546,9 +546,19 @@ public class WorkflowService implements WorkflowManager,
 		// load current instance of this workitem
 		ItemCollection currentInstance = this.getWorkItem(workitem
 				.getItemValueString(EntityService.UNIQUEID));
-		// test if $ProcessID matches current instance
-		if (currentInstance != null
-				&& currentInstance.getItemValueInteger("$ProcessID") != workitem
+	
+		
+		
+		if (currentInstance != null) {
+			// test author access
+			if ( !currentInstance.getItemValueBoolean(ISAUTHOR))
+				throw new AccessDeniedException(AccessDeniedException.OPERATION_NOTALLOWED,
+						"WorkflowService: error - $UnqiueID ("
+								+ workitem.getItemValueInteger(EntityService.UNIQUEID)
+								+ ") no Author Access!");
+		
+			// test if $ProcessID matches current instance
+			if (currentInstance.getItemValueInteger("$ProcessID") != workitem
 						.getItemValueInteger("$ProcessID"))
 			throw new ProcessingErrorException(
 					WorkflowService.class.getSimpleName(),
@@ -558,6 +568,11 @@ public class WorkflowService implements WorkflowManager,
 							+ ") did not match expected $ProcesssID ("
 							+ currentInstance.getItemValueInteger("$ProcessID")
 							+ ")");
+		}
+		
+	
+		
+		
 
 		/*
 		 * Fetch the current Profile Entity for this version. The method will
