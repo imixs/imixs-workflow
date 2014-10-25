@@ -71,7 +71,7 @@ public class MailPlugin extends AbstractPlugin {
 	Multipart mimeMultipart = null;
 	static final String CONTENTTYPE_TEXT_PLAIN = "text/plain";
 	static final String CONTENTTYPE_TEXT_HTML = "text/html";
-	public static final String INVALID_ADDRESS="INVALID_ADDRESS";
+	public static final String INVALID_ADDRESS = "INVALID_ADDRESS";
 	String charSet = "ISO-8859-1";
 
 	@Resource(name = "IMIXS_MAIL_SESSION")
@@ -177,8 +177,8 @@ public class MailPlugin extends AbstractPlugin {
 					if (sTestRecipients != null && !"".equals(sTestRecipients)) {
 						List<String> vRecipients = new Vector<String>();
 						// split multivalues
-						StringTokenizer st = new StringTokenizer(sTestRecipients,
-								",", false);
+						StringTokenizer st = new StringTokenizer(
+								sTestRecipients, ",", false);
 						while (st.hasMoreElements()) {
 							vRecipients.add(st.nextToken().trim());
 						}
@@ -209,9 +209,7 @@ public class MailPlugin extends AbstractPlugin {
 					}
 
 				}
-				
-				
-				
+
 				logger.fine("[MailPlugin] SendMessage now...");
 
 				// if send message fails (e.g. for policy reasons) the process
@@ -529,38 +527,31 @@ public class MailPlugin extends AbstractPlugin {
 
 		// Initialize mail session
 		InitialContext ic;
+		String sJNDINName = "";
 		try {
 			ic = new InitialContext();
-
-			String snName = "";
-			snName = "java:comp/env/mail/" + sMailSession;
-			mailSession = (Session) ic.lookup(snName);
-			logger.finest("[MailPlugin] MailSession '" + sMailSession
-					+ "' found");
+			// add java: prafix if not defined in jndi ref
+			if (!sMailSession.startsWith("java:")) {
+				sJNDINName = "java:comp/env/mail/" + sMailSession;
+			} else {
+				sJNDINName=sMailSession;
+			}
+			logger.finest("[MailPlugin] Lookup MailSession '" + sJNDINName
+					+ "' ...");
+			mailSession = (Session) ic.lookup(sJNDINName);
+			logger.finest("[MailPlugin] Lookup MailSession '" + sJNDINName
+					+ "' successful");
 
 		} catch (NamingException e) {
+			logger.warning("[MailPlugin] Lookup MailSession '" + sJNDINName
+					+ "' FAILED!");
 			logger.warning("[MailPlugin] Unable to send mails! Verify server resources -> mail session.");
-			logger.warning("[MailPlugin] Mail Session for jndi name:'mail/"
-					+ sMailSession + "' missing.");
 			logger.warning("[MailPlugin] ErrorMessage: " + e.getMessage());
 			noMailSessionBound = true;
 		}
 
 		// if property service is defined we can lookup the default charset
 		if (this.propertyService != null) {
-			// // test for mail.htmlCharSet
-			// String sTestCharSet = (String)
-			// propertyService.getProperties().get(
-			// "mail.htmlCharSet");
-			// if (sTestCharSet != null && !sTestCharSet.isEmpty())
-			// setHtmlCharSet(sTestCharSet);
-			//
-			// // test for mail.textCharSet
-			// sTestCharSet = (String) propertyService.getProperties().get(
-			// "mail.textCharSet");
-			// if (sTestCharSet != null && !sTestCharSet.isEmpty())
-			// setTextCharSet(sTestCharSet);
-
 			// test for mail.charSet
 			String sTestCharSet = (String) propertyService.getProperties().get(
 					"mail.charSet");
