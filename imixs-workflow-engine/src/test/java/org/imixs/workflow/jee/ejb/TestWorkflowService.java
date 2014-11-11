@@ -140,7 +140,6 @@ public class TestWorkflowService {
 							ItemCollection result = database
 									.get("ENV0000-0000");
 							List<ItemCollection> resultList = new ArrayList<ItemCollection>();
-							;
 							resultList.add(result);
 							return resultList;
 						} else
@@ -211,7 +210,7 @@ public class TestWorkflowService {
 			entity.replaceItemValue("$ModelVersion", "1.0.0");
 			entity.replaceItemValue("$ProcessID", 100);
 			entity.replaceItemValue("$ActivityID", 10);
-
+			entity.replaceItemValue(WorkflowService.ISAUTHOR, true);
 			database.put(entity.getItemValueString(EntityService.UNIQUEID),
 					entity);
 		}

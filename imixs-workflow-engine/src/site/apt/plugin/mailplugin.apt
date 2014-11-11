@@ -2,7 +2,7 @@
 Mail Plugin 
 ~~~~~~~~~~~~~~
 
- The MailPlugin is a Java mail implementation for sending mails when processing a workItem.
+ The MailPlugin provides an implementation for sending mails via the Java mail api. 
  To use this plugin in a Workflow application you need to add the following PluginClass to the Model 
  Configuration:
 
@@ -10,25 +10,25 @@ Mail Plugin
  org.imixs.workflow.jee.plugins.MailPlugin
 +--------------------------------------------------------------------+
 
- See the Imixs Modeler Mail Documentation for details about mail activities.
+ See the Imixs Modeler Mail Documentation for details about modeling a mail activity.
 
- Running the Imixs Java EE plugin requires a JNDI mail session configured for the application server
- environment. 
- The expected JNDI name for the mail session is
+ Running the Imixs MailPlugin in a JEE container requires a valid JNDI mail resource. A mail resource
+ can be configured from the application server environment. 
+ The expected JNDI resource name to lookup the mail resource by the Imixs MailPlugin is
 
 +--------------------------------------------------------------------+
  org.imixs.workflow.mail
 +--------------------------------------------------------------------+
 
- The mail session object is used to send outgoing mails from the workflowManager EJB to Mailserver
- See Java EE spec for details about Java mail sessions.
+ The mail resource object is used to send outgoing mails to mail server.
+ See Java EE spec for details about Java managing mail sessions.
 
 * Deployment Descriptors
 ~~~~~~~~~~~~~~~~~~~~~~~~
- As the MailPlugin needs to lookup the Java mail session using a JNDI Lookup you need to provide a 
- valide Resource Reference to the WorkflowManager Session EJB. Therefore you need to customize the
-  ejb-jar.xml and also sun-ejb-jar.xml in GlassFish to provide the WorkflowManager with a valid JNDI
-   Object.
+ As the MailPlugin needs to lookup the Java mail resource using a JNDI Lookup you need to provide a 
+ valid resource reference to the WorkflowService. Therefore you need to add the mail resource into the
+ ejb-jar.xml to provide the WorkflowService EJB with a valid JNDI resource. 
+ See the following example for GlassFish V3
    
 **ejb-jar.xml
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,6 +58,8 @@ Mail Plugin
  </session>
 +--------------------------------------------------------------------+
 
+   [Note:] In other application servers the resource-ref can have a different jndi name.
+     E.g. for JBoss/WildFly need to be full specified: "java:/mail/org.imixs.workflow.mail"
 
 *Default Sender Address
 ~~~~~~~~~~~~~~~~~~~~~~~~
