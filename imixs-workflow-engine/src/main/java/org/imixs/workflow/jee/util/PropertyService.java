@@ -28,6 +28,7 @@
 package org.imixs.workflow.jee.util;
 
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -87,7 +88,9 @@ public class PropertyService {
 					.getResource("imixs.properties").openStream());
 		} catch (Exception e) {
 			logger.warning("PropertyService unable to find imixs.properties in current classpath");
-			e.printStackTrace();
+			if (logger.isLoggable(Level.FINE)){
+				e.printStackTrace();
+			}
 		}
 
 	}

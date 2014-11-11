@@ -23,7 +23,7 @@ import org.junit.Test;
  */
 public class TestHisotryPlugin extends HistoryPlugin {
 
-	private final static Logger logger = Logger.getLogger(EntityService.class
+	private final static Logger logger = Logger.getLogger(TestHisotryPlugin.class
 			.getName());
 
 	@Before

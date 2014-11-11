@@ -109,6 +109,11 @@ public class MailPlugin extends AbstractPlugin {
 			// first initialize mail message object
 			initMailMessage();
 
+			if (mailMessage == null) {
+				logger.warning("[MailPlugin] mailMessage = null");
+				return Plugin.PLUGIN_WARNING;
+			}
+
 			// set FROM
 			mailMessage.setFrom(getInternetAddress(getFrom(documentContext,
 					documentActivity)));
@@ -386,8 +391,10 @@ public class MailPlugin extends AbstractPlugin {
 	 */
 	public String getBody(ItemCollection documentContext,
 			ItemCollection documentActivity) {
-		// build mail body...
-		String aBodyText = documentActivity.getItemValueString("rtfMailBody");
+		// build mail body and replace dynamic values...
+		String aBodyText = replaceDynamicValues(
+				documentActivity.getItemValueString("rtfMailBody"),
+				documentContext);
 
 		// Test if mail body contains HTML content and updates the flag
 		// 'isHTMLMail'.
@@ -534,7 +541,7 @@ public class MailPlugin extends AbstractPlugin {
 			if (!sMailSession.startsWith("java:")) {
 				sJNDINName = "java:comp/env/mail/" + sMailSession;
 			} else {
-				sJNDINName=sMailSession;
+				sJNDINName = sMailSession;
 			}
 			logger.finest("[MailPlugin] Lookup MailSession '" + sJNDINName
 					+ "' ...");
