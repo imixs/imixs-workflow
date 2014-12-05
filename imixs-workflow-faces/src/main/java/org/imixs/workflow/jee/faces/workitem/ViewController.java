@@ -61,7 +61,6 @@ public class ViewController implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private String type = null;
-	private String title = null;
 	private int maxResult = 10;
 	private int row = 0;
 	private boolean endOfList = false;
@@ -138,19 +137,6 @@ public class ViewController implements Serializable {
 	 */
 	public void setType(String type) {
 		this.type = type;
-	}
-
-	/**
-	 * Returns a tile for the view result.
-	 * 
-	 * @return
-	 */
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
 	}
 
 	/**
