@@ -47,10 +47,11 @@ public class WorklistController extends ViewController {
 	private int sortOrder;
 
 	/* Worklist and Search */
-	public final String QUERY_WORKLIST_BY_OWNER = "worklist.owner";
-	public final String QUERY_WORKLIST_BY_CREATOR = "worklist.creator";
-	public final String QUERY_WORKLIST_BY_AUTHOR = "worklist.author";
-	public final String QUERY_WORKLIST_BY_WRITEACCESS = "worklist.writeaccess";
+	public static final String QUERY_WORKLIST_BY_OWNER = "worklist.owner";
+	public static final String QUERY_WORKLIST_BY_CREATOR = "worklist.creator";
+	public static final String QUERY_WORKLIST_BY_AUTHOR = "worklist.author";
+	public static final String QUERY_WORKLIST_BY_WRITEACCESS = "worklist.writeaccess";
+	public static final String QUERY_WORKLIST_ALL = "worklist";
 
 	@EJB
 	private org.imixs.workflow.jee.ejb.WorkflowService workflowService;
@@ -101,8 +102,7 @@ public class WorklistController extends ViewController {
 						controller.getRow(), controller.getMaxResult(),
 						controller.getType(), getSortOrder());
 
-			// default behaivor
-
+			// default behaivor - QUERY_WORKLIST_ALL
 			return super.getViewEntries(controller);
 
 		}
