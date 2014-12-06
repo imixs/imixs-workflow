@@ -95,7 +95,7 @@ The Imixs-Workflow-Faces Controller
 *The WorklistController
 ~~~~~~~~~~~~~~
  
-  The WorkflowController extends the ViewControler and provides a set of workflow specific
+  The WorklistController extends the ViewControler and provides a set of workflow specific
   sortable view types.
   
   * worklist.owner = returns all workitems where the current user is owner from
@@ -119,8 +119,24 @@ The Imixs-Workflow-Faces Controller
   * 3 = order by modified date ascending  
   
   
+ The general the worklistController can be controlled by a JSF page 
+ 
++-----------------------------+
+ <h:commandLink action="/pages/workitems/worklist" immediate="true"
+	actionListener="#{worklistController.doReset}">
+	<f:setPropertyActionListener
+		target="#{worklistController.view}" value="worklist.owner" />
+	<f:setPropertyActionListener
+		target="#{worklistController.sortOrder}" value="2" />
+ </h:commandLink>
++-----------------------------+
+
+
+**Customizing the WorklistController
+~~~~~~~~~~~~~~
+
  The following example shows how the WorklistController can be used in jsf application to display 
- the users task list. The controller bean is declared in the faces-config.xml or beans.xml file. 
+ the users task list. The controller bean is declared and confgured in the faces-config.xml or beans.xml file. 
 
  faces-config.xml:
  

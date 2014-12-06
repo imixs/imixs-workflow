@@ -35,8 +35,12 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.jee.ejb.WorkflowService;
 
 /**
- * The WorkflowController extends the ViewControler and provides a set of workflow specific
- * sortable view types.
+ * The WorkflowController extends the ViewControler and provides a set of
+ * workflow specific sortable view types. The sortorder can be defined by the
+ * property 'sortOrder'.
+ * 
+ * The default view type is 'worklist.all'. The default search order is
+ * 'SORT_ORDER_CREATED_DESC'
  * 
  * @author rsoika
  * @version 0.0.2
@@ -51,14 +55,18 @@ public class WorklistController extends ViewController {
 	public static final String QUERY_WORKLIST_BY_CREATOR = "worklist.creator";
 	public static final String QUERY_WORKLIST_BY_AUTHOR = "worklist.author";
 	public static final String QUERY_WORKLIST_BY_WRITEACCESS = "worklist.writeaccess";
-	public static final String QUERY_WORKLIST_ALL = "worklist";
+	public static final String QUERY_WORKLIST_ALL = "worklist.all";
 
 	@EJB
 	private org.imixs.workflow.jee.ejb.WorkflowService workflowService;
 
+	/**
+	 * Set default values for view type and sort order.
+	 */
 	public WorklistController() {
 		super();
 		setType("workitem");
+		setView("worklist.all");
 		setSortOrder(WorkflowService.SORT_ORDER_CREATED_DESC);
 		setViewAdapter(new WorkflowViewAdapter());
 	}
@@ -76,7 +84,9 @@ public class WorklistController extends ViewController {
 	}
 
 	/**
-	 * Custom implementation of a ViewAdapter to return workflow specific result lists.
+	 * Custom implementation of a ViewAdapter to return workflow specific result
+	 * lists.
+	 * 
 	 * @author rsoika
 	 *
 	 */
