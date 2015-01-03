@@ -28,6 +28,7 @@
 package org.imixs.workflow.jee.ejb;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -83,7 +84,6 @@ import org.imixs.workflow.jee.jpa.EntityIndex;
 public class WorkflowService implements WorkflowManager,
 		ExtendedWorkflowContext, WorkflowServiceRemote {
 
-	
 	// entity properties
 	public static final String UNIQUEID = "$uniqueid";
 	public static final String UNIQUEIDREF = "$uniqueidref";
@@ -93,10 +93,11 @@ public class WorkflowService implements WorkflowManager,
 
 	// workitem properties
 	public static final String WORKITEMID = "$workitemid";
+	public static final String WORKITEMLIST = "$workitemlist";
 	public static final String PROCESSID = "$processid";
 	public static final String MODELVERSION = "$modelversion";
 	public static final String ACTIVITYID = "$activityid";
-	
+
 	// view properties
 	public static final int SORT_ORDER_CREATED_DESC = 0;
 	public static final int SORT_ORDER_CREATED_ASC = 1;
@@ -140,10 +141,75 @@ public class WorkflowService implements WorkflowManager,
 	}
 
 	/**
-	 * This method loads a Workitem with the corresponding uniqueid
+	 * This method loads a Workitem with the corresponding uniqueid.
+	 * 
 	 */
 	public ItemCollection getWorkItem(String uniqueid) {
 		return entityService.load(uniqueid);
+	}
+
+	/**
+	 * This method loads a Workitem from the current DocumentContext. The
+	 * DocumentContext holds cached workitems in the property $WorkiteList. If
+	 * the DocumentContext did not contain the corresponding workitem the method
+	 * loads the workitem from the entiyService.
+	 * 
+	 */
+	@SuppressWarnings("unchecked")
+	public ItemCollection getWorkItem(ItemCollection documentcontext,
+			String uniqueid) {
+
+		// try to load workitem from documentcontext list
+		List<ItemCollection> list = documentcontext.getItemValue(WORKITEMLIST);
+		for (ItemCollection entity : list) {
+			if (uniqueid.equals(entity.getItemValueString(UNIQUEID)))
+				return entity;
+		}
+		// default behavior
+		return getWorkItem(uniqueid);
+	}
+
+	/**
+	 * This method can be called by a Plugin to store an entity into the
+	 * property $workitemlist of the current DocumentContext. Stored workitems
+	 * can be accessed by the method: getWorkItem(ItemCollection
+	 * documentcontext, String uniqueId).
+	 * 
+	 * The workitems stored in $WorkitemList are saved through the EntityService
+	 * after the DocumentContext was processed.
+	 */
+	@SuppressWarnings("unchecked")
+	public void saveWorkitem(ItemCollection documentcontext,
+			ItemCollection workitem) {
+		String uniqueid = workitem.getItemValueString(UNIQUEID);
+
+		// check if workitem equals document context!
+		if (!uniqueid.isEmpty()
+				&& uniqueid
+						.equals(documentcontext.getItemValueString(UNIQUEID))) {
+			throw new ProcessingErrorException(
+					ProcessingErrorException.INVALID_WORKITEM,
+					"Same workitem can not be stored into current document context ($workitmlist) - "
+							+ uniqueid);
+		}
+
+		// get current workitemList
+		List<ItemCollection> currentlist = documentcontext
+				.getItemValue(WORKITEMLIST);
+
+		// remove existing workitems with same uniqueid form the list
+		for (Iterator<ItemCollection> iterator = currentlist.iterator(); iterator
+				.hasNext();) {
+			ItemCollection entity = iterator.next();
+			if (uniqueid.equals(entity.getItemValueString(UNIQUEID))) {
+				// Remove the current element from the iterator and the list.
+				iterator.remove();
+			}
+		}
+
+		// now add the new workitem
+		currentlist.add(workitem);
+		documentcontext.replaceItemValue(WORKITEMLIST, currentlist);
 	}
 
 	/**
@@ -514,12 +580,19 @@ public class WorkflowService implements WorkflowManager,
 	}
 
 	/**
-	 * processes a workItem. The workitem have to provide the properties
-	 * '$modelversion', '$processid' and '$activityid'
+	 * This method processes a workItem by the WorkflowKernel and saves the
+	 * workitem after the processing was finished successful. The workitem have
+	 * to provide at least the properties '$modelversion', '$processid' and
+	 * '$activityid'
 	 * 
-	 * The method try to load the current instance of the given workitem and
-	 * compares the property $processID. If it is not equal the method throws an
+	 * Before the method starts processing the workitem, the method load the
+	 * current instance of the given workitem and compares the property
+	 * $processID. If it is not equal the method throws an
 	 * ProcessingErrorException.
+	 * 
+	 * After the workitem was processed successful, the method verifies the
+	 * property $workitemList. If this property holds a list of entities these
+	 * entities will be saved and the property will be removed automatically.
 	 * 
 	 * @param workitem
 	 *            - the workItem to be processed
@@ -533,6 +606,7 @@ public class WorkflowService implements WorkflowManager,
 	 * @throws PluginException
 	 *             - thrown if processing by a plugin fails
 	 */
+	@SuppressWarnings("unchecked")
 	public ItemCollection processWorkItem(ItemCollection workitem)
 			throws AccessDeniedException, ProcessingErrorException,
 			PluginException {
@@ -546,33 +620,30 @@ public class WorkflowService implements WorkflowManager,
 		// load current instance of this workitem
 		ItemCollection currentInstance = this.getWorkItem(workitem
 				.getItemValueString(EntityService.UNIQUEID));
-	
-		
-		
+
 		if (currentInstance != null) {
 			// test author access
-			if ( !currentInstance.getItemValueBoolean(ISAUTHOR))
-				throw new AccessDeniedException(AccessDeniedException.OPERATION_NOTALLOWED,
+			if (!currentInstance.getItemValueBoolean(ISAUTHOR))
+				throw new AccessDeniedException(
+						AccessDeniedException.OPERATION_NOTALLOWED,
 						"WorkflowService: error - $UnqiueID ("
-								+ workitem.getItemValueInteger(EntityService.UNIQUEID)
+								+ workitem
+										.getItemValueInteger(EntityService.UNIQUEID)
 								+ ") no Author Access!");
-		
+
 			// test if $ProcessID matches current instance
 			if (currentInstance.getItemValueInteger("$ProcessID") != workitem
-						.getItemValueInteger("$ProcessID"))
-			throw new ProcessingErrorException(
-					WorkflowService.class.getSimpleName(),
-					ProcessingErrorException.INVALID_PROCESSID,
-					"WorkflowService: error - $ProcesssID ("
-							+ workitem.getItemValueInteger("$ProcessID")
-							+ ") did not match expected $ProcesssID ("
-							+ currentInstance.getItemValueInteger("$ProcessID")
-							+ ")");
+					.getItemValueInteger("$ProcessID"))
+				throw new ProcessingErrorException(
+						WorkflowService.class.getSimpleName(),
+						ProcessingErrorException.INVALID_PROCESSID,
+						"WorkflowService: error - $ProcesssID ("
+								+ workitem.getItemValueInteger("$ProcessID")
+								+ ") did not match expected $ProcesssID ("
+								+ currentInstance
+										.getItemValueInteger("$ProcessID")
+								+ ")");
 		}
-		
-	
-		
-		
 
 		/*
 		 * Fetch the current Profile Entity for this version. The method will
@@ -585,7 +656,6 @@ public class WorkflowService implements WorkflowManager,
 		WorkflowKernel workflowkernel = new WorkflowKernel(this);
 
 		// register plugins defined in the environment.profile ....
-		@SuppressWarnings("unchecked")
 		List<String> vPlugins = profile.getItemValue("txtPlugins");
 		for (int i = 0; i < vPlugins.size(); i++) {
 			String aPluginClassName = vPlugins.get(i);
@@ -644,6 +714,19 @@ public class WorkflowService implements WorkflowManager,
 
 		if (this.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
 			logger.info("[WorkflowManager] workitem processed sucessfull");
+
+		// finally check the $worklist property and save contained workitems
+		// check if workitem equals document context!
+		String uniqueid = workitem.getItemValueString(EntityService.UNIQUEID);
+		// get current workitemList
+		List<ItemCollection> currentlist = workitem.getItemValue(WORKITEMLIST);
+		for (ItemCollection entity : currentlist) {
+			if (!uniqueid.equals(entity.getItemValueString(UNIQUEID))) {
+				entityService.save(entity);
+			}
+		}
+		// remove $workitemlist
+		workitem.removeItem(WORKITEMLIST);
 
 		return entityService.save(workitem);
 

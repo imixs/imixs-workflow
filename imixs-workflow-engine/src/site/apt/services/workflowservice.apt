@@ -60,7 +60,7 @@ The WorkflowService Interface
   Collection<ItemCollection> statuslist=workflowService.getWorkListByCreator(null,10,5);
 +------------------------------------------------------------------------+
 
-*Workflist methods
+*Worklist methods
 ~~~~~~~~~~~~~~~~~~~~
 
  The following list of getWorkList methods shows how workitems can be accessed by different categories.
@@ -180,3 +180,40 @@ The WorkflowService Interface
   //...
 +------------------------------------------------------------------------+
   
+  
+  
+*Save workitems during processing a workitem
+~~~~~~~~~~~~~~~~~~~~  
+
+ It can be necessary for a Plugin to save depending workitems from the current document context. In this case a Plugin should not call
+ the entityService.save() method. This can lead into a situation where depending workitems are stored even if the current processing
+ call was not completed, or a depended workitem is stored more then once during the process lifecycle. 
+ For that reason the WorkflowService provide the methods saveWorkitem() and getWorkitem().
+ 
++------------------------------------------------------------------------+
+	// Plugin implementation......
+	@Override
+	public void init(WorkflowContext actx) throws PluginException {
+		super.init(actx);
+		// check for an instance of WorkflowService
+		if (actx instanceof WorkflowService) {
+			workflowService= (WorkflowService) actx;
+		}
+
+	}
+	 
+	@Override
+	public int run(ItemCollection documentContext, ItemCollection documentActivity) {
+	  //....load a depending workitem
+	  
+	  workflowService.saveWorkitem(documentContext,dependingWorkitem);
+	  //... the dependingWorkitem will be now saved at the end of the process lifecycle.
+
+	  //... load a workitem form the workflowSerivice context
+	  ItemCollection anotherWorkitem=workflowService.getWorkitem(documentcontext, uniqueid);
+	  // .....
+	}
++------------------------------------------------------------------------+
+ 
+ 
+ 
