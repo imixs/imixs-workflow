@@ -81,7 +81,7 @@ public class ViewController implements Serializable {
 		super();
 		views = new HashMap<String, String>();
 		setType("workitem");
-		setView("worklist.all.created.desc");
+		setView("worklist.created.desc");
 
 	}
 
@@ -93,18 +93,18 @@ public class ViewController implements Serializable {
 	public void init() {
 
 		// setup the default view types
-		if (views.get("worklist.all.created.desc") == null)
-			views.put("worklist.all.created.desc", "SELECT wi FROM Entity AS wi "
+		if (views.get("worklist.created.desc") == null)
+			views.put("worklist.created.desc", "SELECT wi FROM Entity AS wi "
 					+ " WHERE wi.type= '" + getType()
 					+ "' ORDER BY wi.created desc");
 
-		if (views.get("worklist.all.modified.desc") == null)
-			views.put("worklist.all.modified.desc", "SELECT wi FROM Entity AS wi "
+		if (views.get("worklist.modified.desc") == null)
+			views.put("worklist.modified.desc", "SELECT wi FROM Entity AS wi "
 					+ " WHERE wi.type= '" + getType()
 					+ "'  ORDER BY wi.modified desc");
 
-		if (views.get("worklist.all.name.asc") == null)
-			views.put("worklist.all.name.asc", "SELECT"
+		if (views.get("worklist.name.asc") == null)
+			views.put("worklist.name.asc", "SELECT"
 					+ " wi FROM Entity as wi JOIN wi.textItems as t WHERE "
 					+ " wi.type='" + getType() + "' "
 					+ " AND t.itemName = 'txtname'	ORDER BY t.itemValue ");
