@@ -28,7 +28,6 @@
 package org.imixs.workflow.jee.ejb;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -93,7 +92,6 @@ public class WorkflowService implements WorkflowManager,
 
 	// workitem properties
 	public static final String WORKITEMID = "$workitemid";
-	public static final String WORKITEMLIST = "$workitemlist";
 	public static final String PROCESSID = "$processid";
 	public static final String MODELVERSION = "$modelversion";
 	public static final String ACTIVITYID = "$activityid";
@@ -148,69 +146,8 @@ public class WorkflowService implements WorkflowManager,
 		return entityService.load(uniqueid);
 	}
 
-	/**
-	 * This method loads a Workitem from the current DocumentContext. The
-	 * DocumentContext holds cached workitems in the property $WorkiteList. If
-	 * the DocumentContext did not contain the corresponding workitem the method
-	 * loads the workitem from the entiyService.
-	 * 
-	 */
-	@SuppressWarnings("unchecked")
-	public ItemCollection getWorkItem(ItemCollection documentcontext,
-			String uniqueid) {
+	
 
-		// try to load workitem from documentcontext list
-		List<ItemCollection> list = documentcontext.getItemValue(WORKITEMLIST);
-		for (ItemCollection entity : list) {
-			if (uniqueid.equals(entity.getItemValueString(UNIQUEID)))
-				return entity;
-		}
-		// default behavior
-		return getWorkItem(uniqueid);
-	}
-
-	/**
-	 * This method can be called by a Plugin to store an entity into the
-	 * property $workitemlist of the current DocumentContext. Stored workitems
-	 * can be accessed by the method: getWorkItem(ItemCollection
-	 * documentcontext, String uniqueId).
-	 * 
-	 * The workitems stored in $WorkitemList are saved through the EntityService
-	 * after the DocumentContext was processed.
-	 */
-	@SuppressWarnings("unchecked")
-	public void saveWorkitem(ItemCollection documentcontext,
-			ItemCollection workitem) {
-		String uniqueid = workitem.getItemValueString(UNIQUEID);
-
-		// check if workitem equals document context!
-		if (!uniqueid.isEmpty()
-				&& uniqueid
-						.equals(documentcontext.getItemValueString(UNIQUEID))) {
-			throw new ProcessingErrorException(
-					ProcessingErrorException.INVALID_WORKITEM,
-					"Same workitem can not be stored into current document context ($workitmlist) - "
-							+ uniqueid);
-		}
-
-		// get current workitemList
-		List<ItemCollection> currentlist = documentcontext
-				.getItemValue(WORKITEMLIST);
-
-		// remove existing workitems with same uniqueid form the list
-		for (Iterator<ItemCollection> iterator = currentlist.iterator(); iterator
-				.hasNext();) {
-			ItemCollection entity = iterator.next();
-			if (uniqueid.equals(entity.getItemValueString(UNIQUEID))) {
-				// Remove the current element from the iterator and the list.
-				iterator.remove();
-			}
-		}
-
-		// now add the new workitem
-		currentlist.add(workitem);
-		documentcontext.replaceItemValue(WORKITEMLIST, currentlist);
-	}
 
 	/**
 	 * Returns a collection of workItems belonging to current user. The method
@@ -714,19 +651,6 @@ public class WorkflowService implements WorkflowManager,
 
 		if (this.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
 			logger.info("[WorkflowManager] workitem processed sucessfull");
-
-		// finally check the $worklist property and save contained workitems
-		// check if workitem equals document context!
-		String uniqueid = workitem.getItemValueString(EntityService.UNIQUEID);
-		// get current workitemList
-		List<ItemCollection> currentlist = workitem.getItemValue(WORKITEMLIST);
-		for (ItemCollection entity : currentlist) {
-			if (!uniqueid.equals(entity.getItemValueString(UNIQUEID))) {
-				entityService.save(entity);
-			}
-		}
-		// remove $workitemlist
-		workitem.removeItem(WORKITEMLIST);
 
 		return entityService.save(workitem);
 

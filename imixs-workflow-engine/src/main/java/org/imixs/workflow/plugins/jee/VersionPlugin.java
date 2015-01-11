@@ -267,9 +267,6 @@ public class VersionPlugin extends AbstractPlugin {
 		// update $WorkItemIDRef to current worktiemID
 		itemColNewVersion.replaceItemValue("$WorkItemIDRef", id);
 		
-		// remove $workitemList
-		itemColNewVersion.removeItem(WorkflowService.WORKITEMLIST);
-		
 		return itemColNewVersion;
 
 	}
