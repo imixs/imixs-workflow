@@ -70,8 +70,8 @@ import org.imixs.workflow.exceptions.PluginException;
  * processing.
  * 
  * <code>
- *  // set keymailenabled to 0
- *   activity.put('keymailenabled',['0']);
+ *  // disable mail 
+ *   activity.put('keymailinactive',['0']);
  * </code>
  * 
  * A script can set the variables 'isValid' and 'followUp' to validate a
@@ -358,9 +358,7 @@ public class RulePlugin extends AbstractPlugin {
 
 			// compare object arrays with deepEquals....
 			if (!Arrays.deepEquals(oScript, oActivity)) {
-
-				System.out.println("Werte nicht gleich! Value =");
-
+				logger.fine("[RulePlugin] update activity proeperty " + entry.getKey());
 				List<?> list = new ArrayList(Arrays.asList(oScript));
 				adocumentActivity.replaceItemValue(entry.getKey(), list);
 			}
