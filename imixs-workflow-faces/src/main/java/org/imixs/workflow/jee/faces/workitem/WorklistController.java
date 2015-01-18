@@ -66,7 +66,7 @@ public class WorklistController extends ViewController {
 	public WorklistController() {
 		super();
 		setType("workitem");
-		setView("worklist.all");
+		setView(QUERY_WORKLIST_ALL);
 		setSortOrder(WorkflowService.SORT_ORDER_CREATED_DESC);
 		setViewAdapter(new WorkflowViewAdapter());
 	}
@@ -111,6 +111,12 @@ public class WorklistController extends ViewController {
 				return workflowService.getWorkListByWriteAccess(
 						controller.getRow(), controller.getMaxResult(),
 						controller.getType(), getSortOrder());
+			
+			if (QUERY_WORKLIST_ALL.equals(getView()))
+				return workflowService.getWorkList(
+						controller.getRow(), controller.getMaxResult(),
+						controller.getType(), getSortOrder());
+			
 
 			// default behaivor - QUERY_WORKLIST_ALL
 			return super.getViewEntries(controller);
