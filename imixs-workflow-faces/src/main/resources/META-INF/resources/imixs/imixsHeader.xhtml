@@ -18,6 +18,9 @@
 	<cc:attribute name="disabletinymce" default="false"
 		type="java.lang.Boolean"></cc:attribute>
 
+	<cc:attribute name="disablefileupload" default="false"
+		type="java.lang.Boolean"></cc:attribute>
+
 	<cc:attribute name="dateformat" default="yyyy-MM-dd"
 		type="java.lang.String"></cc:attribute>
 
@@ -46,8 +49,13 @@
 		</c:if>
 	</c:if>
 
-
-
+	<!-- Disable jquery fileupload plugin -->
+	<c:if test="#{!cc.attrs.disablefileupload}">
+		<script type="text/javascript"
+			src="#{facesContext.externalContext.requestContextPath}/imixs/jquery/jquery.iframe-transport.js"></script>
+		<script type="text/javascript"
+			src="#{facesContext.externalContext.requestContextPath}/imixs/jquery/jquery.fileupload.js"></script>
+	</c:if>
 
 
 	<script type="text/javascript"
@@ -67,6 +75,8 @@
 							if (!disablecss) {
 								setDateFormat('#{cc.attrs.dateformat}');
 	
+								$(this).imixsFileUpload();
+								
 								$(this).imixsLayout();
 	
 								$("span.imixs-tooltip").layoutImixsTooltip();

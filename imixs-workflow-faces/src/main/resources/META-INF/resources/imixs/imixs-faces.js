@@ -149,6 +149,45 @@ $.fn.imixsLayout = function(options) {
 	});
 };
 
+/* This method initializes the imixs fileupload component */
+$.fn.imixsFileUpload = function(options) {
+	return this.each(function() {
+		// hide fileupload and replace with imixsFile-Button
+		$('#imixsFileUpload_input').hide();			
+		$('#imixsFileUpload_button').button({
+		      icons: {primary: "ui-icon-folder-open"}
+		});
+		
+		$('body').on('click', '#imixsFileUpload_button', function() { 
+		    $('#imixsFileUpload_input').trigger('click');   
+		    return false;
+		});			
+		
+		// draganddrop fileupload
+		 $('#imixsFileUpload_input').fileupload({
+		        dataType: 'json',
+		        done: function (e, data) {
+		        	refreshFileList(data.result.files);
+		        	$('#imixsFileUpload_button').blur();
+		        },		
+		        fail: function (e, data) {
+		            alert("Unable to add file!");
+		        },
+		        progressall: function (e, data) {
+		            var progress = parseInt(data.loaded / data.total * 100, 10);
+		            if (progress==100)
+		            	progress=0;
+		            $('#imixsFileUpload_progress_bar').css(
+		                'width',
+		                progress + '%'
+		            );
+		        }
+		    });
+	}); 
+};
+
+
+
 $.fn.layoutImixsTable = function(options) {
 	var defaults = {
 		css : 'styleTable'
@@ -265,3 +304,43 @@ $.fn.layoutImixsEditor = function(rootContext,_with,_height) {
 		})
 	});
 };
+
+
+/** jquery fileupload methods **/
+function refreshFileList(files) {		
+	// remove uploded file info form table
+	$('.imixsFileUpload_uploaded_file').remove();
+	
+	
+	
+	
+	$.each(files, function (index, file) {
+		var fileLink='<a href="'+file.url+'" target="_blank" >'+file.name+'</a>';
+        var cancelButton='<button onclick="cancelFileUpload(\''+file.name + '\');return false;">Cancel</button>';
+        var row='<tr class="imixsFileUpload_uploaded_file"><td class="imixsFileUpload_uploadlist_name">'+fileLink+'</td><td class="imixsFileUpload_uploadlist_size">'+fileSizeToString(file.size)+'</td><td class="imixsFileUpload_uploadlist_cancel">'+cancelButton+'</td></tr>';
+        $('.imixsFileUpload_uploadlist').append(row);
+    });
+	$('button','.imixsFileUpload_uploadlist').button({
+	      icons: {primary: "ui-icon-close"}
+	});
+}
+
+function cancelFileUpload(file) {	
+	// upload url
+	var base_url=$('#imixsFileUpload_input').attr( 'data-url' );	
+	$.ajax({url:base_url+file,
+		type: 'DELETE',
+		dataType: "json",
+		success:function(data){
+			refreshFileList(data.files);
+		}			
+	});			
+}
+
+function fileSizeToString(bytes) {
+	if (bytes>=1000000000) {bytes=(bytes/1000000000).toFixed(2)+' GB';}
+        else if (bytes>=1000000)    {bytes=(bytes/1000000).toFixed(2)+' MB';}
+        else if (bytes>=1000)      {bytes=(bytes/1000).toFixed(2)+' KB';}
+        else {bytes=bytes+' bytes';}
+    return bytes;
+}

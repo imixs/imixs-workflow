@@ -8,64 +8,69 @@
 	xmlns:cc="http://java.sun.com/jsf/composite">
 
 <cc:interface>
-	<cc:attribute name="hideattachments" default="false"
-		type="java.lang.Boolean"></cc:attribute>
 	<cc:attribute name="hideuploads" default="false"
 		type="java.lang.Boolean"></cc:attribute>
+	<cc:attribute name="workitem"></cc:attribute>
+	<cc:attribute name="context_url"></cc:attribute>
 </cc:interface>
 <!-- 
 
-	This component includes the imixsFileUploadFrame using an iFrame component.
+	This component uses jquery fileupload plugin
 	
  -->
 <cc:implementation>
-	<script type="text/javascript">
-		/*<![CDATA[*/
-		   // provide environment vars to be asked by the imixsFileUploadPanel
-		   var imixsfileupload_hideattachments=#{cc.attrs.hideattachments};
-		   var imixsfileupload_hideuploads=#{cc.attrs.hideuploads};
-		
-		   
-		   // Adjust the frame height..
-		   function iframeLoaded() {
-			   
-			    // var testH=$("#imixs_file_upload").height();
-			    // alert("iframe h=" + testH);
-			    // $("#imixs_file_upload").height(50);
-			    var minHeight=140;
-			    var iFrameID = document.getElementById('imixs_file_upload');
-			    var testH=iFrameID.contentWindow.document.body.scrollHeight;
-			    if (testH<minHeight)
-			    	testH=minHeight;
-			    //alert("iframe h=" + testH);
-			    $("#imixs_file_upload").height(testH);
-			     
-			  
-			  }
-		/*]]>*/	
-	</script>
 
-	<style>
-iframe {
-	height: 40px;
-}
-</style>
+	<h:panelGroup class="imixsFileUpload">
 
 
-	<!-- Normal Browser -->
-	<ui:fragment rendered="#{!header['User-Agent'].contains('; MSIE ')}">
-		<iframe id="imixs_file_upload" onload="iframeLoaded()"
-			style="border: 0; width: 360px; height: 40px;"
-			src="#{facesContext.externalContext.requestContextPath}/imixs/imixsFileUploadFrame.jsf"></iframe>
-	</ui:fragment>
+		<ui:fragment rendered="#{!cc.attrs.hideuploads}">
 
-	<!-- Unnormal Browser MSIE -->
-	<ui:fragment rendered="#{header['User-Agent'].contains('; MSIE ')}">
-		<iframe id="imixs_file_upload" onload="iframeLoaded()"
-			style="border: 0; width: 380px; height: 140px;"
-			src="#{facesContext.externalContext.requestContextPath}/imixs/imixsFileUploadFrameIE.jsf"></iframe>
-	</ui:fragment>
+			<h:panelGroup id="imixsFileUpload_dataTable">
+				<!-- attached files -->
+				<h:dataTable value="#{cc.attrs.workitem.fileNames}" var="attachment"
+					styleClass="imixsFileUpload_uploadlist">
 
+					<ui:param name="fileData"
+						value="#{cc.attrs.workitem.files[attachemnt]}"></ui:param>
+
+					<h:column>
+						<h:outputText escape="false" value="&lt;a target='_balnk' href='" />
+						<h:outputText escape="false"
+							value="#{cc.attrs.context_url}/file/#{attachment}" />
+						<h:outputText escape="false" value="'&gt;#{attachment}&lt;/a&gt;" />
+					</h:column>
+
+					<h:column>
+					</h:column>
+					<!--  Loeschen  -->
+					<h:column>
+						<h:commandButton value="#{global.delete}"
+							action="#{fileUploadController.removeAttachedFile(cc.attrs.workitem,attachment)}">
+
+							<f:ajax render=":#{component.parent.parent.parent.clientId}"
+							 onevent="function(data) { $('.imixsFileUpload').imixsLayout(); }"
+							  />
+						</h:commandButton>
+						
+						
+					</h:column>
+
+				</h:dataTable>
+			</h:panelGroup>
+		</ui:fragment>
+
+
+
+		<button id="imixsFileUpload_button">File Upload</button>
+		<input id="imixsFileUpload_input" type="file" name="files[]"
+			data-url="#{facesContext.externalContext.requestContextPath}/fileupload/"
+			multiple="multiple" />
+
+
+		<div id="imixsFileUpload_progress_bar" />
+
+
+	</h:panelGroup>
 </cc:implementation>
 
 
