@@ -44,13 +44,13 @@
 					</h:column>
 					<!--  Loeschen  -->
 					<h:column>
-						<h:commandButton value="#{global.delete}"
+						<h:commandLink value="#{global.delete}" styleClass="imixsFileUpload_delete"
 							action="#{fileUploadController.removeAttachedFile(cc.attrs.workitem,attachment)}">
 
 							<f:ajax render=":#{component.parent.parent.parent.clientId}"
-							 onevent="function(data) { $('.imixsFileUpload').imixsLayout(); }"
+							 onevent="function(data) { $('.imixsFileUpload').imixsLayout();updateFileUpload(); }"
 							  />
-						</h:commandButton>
+						</h:commandLink>
 						
 						
 					</h:column>

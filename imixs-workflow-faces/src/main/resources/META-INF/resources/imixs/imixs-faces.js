@@ -145,47 +145,12 @@ $.fn.imixsLayout = function(options) {
 					});
 
 				});
+		
+		$('.imixsFileUpload').imixsLayoutFileUpload();
+
 
 	});
 };
-
-/* This method initializes the imixs fileupload component */
-$.fn.imixsFileUpload = function(options) {
-	return this.each(function() {
-		// hide fileupload and replace with imixsFile-Button
-		$('#imixsFileUpload_input').hide();			
-		$('#imixsFileUpload_button').button({
-		      icons: {primary: "ui-icon-folder-open"}
-		});
-		
-		$('body').on('click', '#imixsFileUpload_button', function() { 
-		    $('#imixsFileUpload_input').trigger('click');   
-		    return false;
-		});			
-		
-		// draganddrop fileupload
-		 $('#imixsFileUpload_input').fileupload({
-		        dataType: 'json',
-		        done: function (e, data) {
-		        	refreshFileList(data.result.files);
-		        	$('#imixsFileUpload_button').blur();
-		        },		
-		        fail: function (e, data) {
-		            alert("Unable to add file!");
-		        },
-		        progressall: function (e, data) {
-		            var progress = parseInt(data.loaded / data.total * 100, 10);
-		            if (progress==100)
-		            	progress=0;
-		            $('#imixsFileUpload_progress_bar').css(
-		                'width',
-		                progress + '%'
-		            );
-		        }
-		    });
-	}); 
-};
-
 
 
 $.fn.layoutImixsTable = function(options) {
@@ -306,23 +271,86 @@ $.fn.layoutImixsEditor = function(rootContext,_with,_height) {
 };
 
 
+
+
 /** jquery fileupload methods **/
+
+/* This method initializes the imixs fileupload component */
+$.fn.imixsInitFileUpload = function(options) {
+	return this.each(function() {
+		$('body').on('click', '#imixsFileUpload_button', function() { 
+		    $('#imixsFileUpload_input').trigger('click');   
+		    return false;
+		});			
+		
+		// draganddrop fileupload
+		 $('#imixsFileUpload_input').fileupload({
+		        dataType: 'json',
+		        done: function (e, data) {
+		        	refreshFileList(data.result.files);
+		        	$('#imixsFileUpload_button').blur();
+		        },		
+		        fail: function (e, data) {
+		            alert("Unable to add file!");
+		        },
+		        progressall: function (e, data) {
+		            var progress = parseInt(data.loaded / data.total * 100, 10);
+		            if (progress==100)
+		            	progress=0;
+		            $('#imixsFileUpload_progress_bar').css(
+		                'width',
+		                progress + '%'
+		            );
+		        }
+		    });
+	}); 
+};
+
+
+/* This method layouts the imixs fileupload component */
+$.fn.imixsLayoutFileUpload = function(options) {
+	return this.each(function() {
+		// hide fileupload and replace with imixsFile-Button
+		$('#imixsFileUpload_input').hide();			
+		$('#imixsFileUpload_button').button({
+		      icons: {primary: "ui-icon-folder-open"}
+		});
+		$('.imixsFileUpload_delete','.imixsFileUpload_uploadlist').button({
+		      icons: {primary: "ui-icon-close"}
+		});
+	}); 
+};
+
+
+
 function refreshFileList(files) {		
 	// remove uploded file info form table
 	$('.imixsFileUpload_uploaded_file').remove();
-	
-	
-	
-	
 	$.each(files, function (index, file) {
 		var fileLink='<a href="'+file.url+'" target="_blank" >'+file.name+'</a>';
-        var cancelButton='<button onclick="cancelFileUpload(\''+file.name + '\');return false;">Cancel</button>';
+        var cancelButton='<button class="imixsFileUpload_delete" onclick="cancelFileUpload(\''+file.name + '\');return false;">Delete</button>';
         var row='<tr class="imixsFileUpload_uploaded_file"><td class="imixsFileUpload_uploadlist_name">'+fileLink+'</td><td class="imixsFileUpload_uploadlist_size">'+fileSizeToString(file.size)+'</td><td class="imixsFileUpload_uploadlist_cancel">'+cancelButton+'</td></tr>';
         $('.imixsFileUpload_uploadlist').append(row);
     });
 	$('button','.imixsFileUpload_uploadlist').button({
 	      icons: {primary: "ui-icon-close"}
 	});
+}
+
+
+/**
+ * reloads the uploaded files and refresh the filelist
+ */
+function updateFileUpload() {	
+	// upload url
+	var base_url=$('#imixsFileUpload_input').attr( 'data-url' );	
+	$.ajax({url:base_url,
+		type: 'GET',
+		dataType: "json",
+		success:function(data){
+			refreshFileList(data.files);
+		}			
+	});			
 }
 
 function cancelFileUpload(file) {	

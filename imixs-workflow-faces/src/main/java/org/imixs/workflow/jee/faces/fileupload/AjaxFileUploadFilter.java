@@ -102,8 +102,10 @@ public class AjaxFileUploadFilter implements Filter {
 			// store file content into session
 			httpRequest.getSession().setAttribute(IMIXS_FILEDATA_LIST,
 					fileDataList);
+			
+			String contextURL=httpRequest.getRequestURI();
 
-			writeJsonContent(httpRequest, response);
+			writeJsonContent(contextURL, response);
 			return;
 
 		}
@@ -120,7 +122,12 @@ public class AjaxFileUploadFilter implements Filter {
 			httpRequest.getSession().setAttribute(IMIXS_FILEDATA_LIST,
 					fileDataList);
 
-			writeJsonContent(httpRequest, response);
+			// get context url from request uri
+			String contextURL=httpRequest.getRequestURI();
+			// cut last /....
+			contextURL=contextURL.substring(0,contextURL.lastIndexOf('/')+1);
+			
+			writeJsonContent(contextURL, response);
 			return;
 		}
 
@@ -137,6 +144,16 @@ public class AjaxFileUploadFilter implements Filter {
 			} else {
 				httpResponse.sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
+			return;
+		}
+		
+		
+		
+		// reques just the currently uploaded files in json format
+		if (isGetRefreshFileUploadRequest(httpRequest)) {
+			String contextURL=httpRequest.getRequestURI();
+
+			writeJsonContent(contextURL, response);
 			return;
 		}
 
@@ -175,13 +192,13 @@ public class AjaxFileUploadFilter implements Filter {
 
 	}
 
-	private void writeJsonContent(HttpServletRequest httpRequest,
+	private void writeJsonContent(String context_url,
 			ServletResponse response) throws IOException {
 		logger.fine("[MulitpartRequestFilter] return JSON content...");
 		// now return json string of uploaded files....
 		response.setContentType("application/json;charset=UTF-8");
 		PrintWriter out = response.getWriter();
-		out.write(getJson(httpRequest));
+		out.write(getJson(context_url));
 		out.close();
 
 	}
@@ -220,8 +237,27 @@ public class AjaxFileUploadFilter implements Filter {
 	 * @return
 	 */
 	private boolean isGetFileUploadRequest(HttpServletRequest httpRequest) {
+		String uri=httpRequest.getRequestURI();
+		
+		return (REQUEST_METHOD_GET.equalsIgnoreCase(httpRequest.getMethod())
+				&& !(uri.endsWith("/fileupload") || uri.endsWith("/fileupload/"))
+				);
 
-		return (REQUEST_METHOD_GET.equalsIgnoreCase(httpRequest.getMethod()));
+	}
+	
+	
+
+	/**
+	 * checks if the httpRequest is a fileupload get request...
+	 * 
+	 * @param httpRequest
+	 * @return
+	 */
+	private boolean isGetRefreshFileUploadRequest(HttpServletRequest httpRequest) {
+
+		String uri=httpRequest.getRequestURI();
+		return (REQUEST_METHOD_GET.equalsIgnoreCase(httpRequest.getMethod())
+				&& (uri.endsWith("/fileupload") || uri.endsWith("/fileupload/"))  );
 
 	}
 
@@ -343,14 +379,14 @@ public class AjaxFileUploadFilter implements Filter {
 	 *  </code>
 	 * @return
 	 */
-	private String getJson(HttpServletRequest httpRequest) {
+	private String getJson(String context_url) {
 
 		String result = "{ \"files\":[";
 		for (int i = 0; i < fileDataList.size(); i++) {
 
 			FileData fileData = fileDataList.get(i);
 
-			result += "{ \"url\": \"" + httpRequest.getRequestURI()
+			result += "{ \"url\": \"" + context_url
 					+ fileData.getName() + "\",";
 			result += "\"thumbnail_url\": \"\",";
 			result += "\"name\": \"" + fileData.getName() + "\",";
