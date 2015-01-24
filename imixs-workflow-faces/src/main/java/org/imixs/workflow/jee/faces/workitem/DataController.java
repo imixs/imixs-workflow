@@ -30,12 +30,10 @@ package org.imixs.workflow.jee.faces.workitem;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
@@ -43,9 +41,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.jee.ejb.EntityService;
 
 /**
  * The DataController can be used in JSF Applications to manage ItemCollections
@@ -289,108 +285,6 @@ public class DataController implements Serializable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-	}
-
-	/**
-	 * This method saves a BlobWorkitem. Therefore the method copies the read-
-	 * and write access list from the given parent workitem into the
-	 * BlobWorkitem before save.
-	 * 
-	 * So this method should be called after a WorkflowProcessing step to update
-	 * the read- and write access identically to the parentWorkitem
-	 * <p>
-	 * The method did not save the blobWorkitem if the parent workitem has no
-	 * $unqiueID!
-	 * <p>
-	 * 
-	 * @throws AccessDeniedException
-	 * 
-	 */
-	public ItemCollection saveBlobWorkitem(ItemCollection blobWorkitem,
-			ItemCollection parentWorkitem) throws AccessDeniedException {
-
-		if (blobWorkitem != null && parentWorkitem != null) {
-
-			// verifiy if a uniqueid is still defined. If not return without
-			// saving!
-			if ("".equals(parentWorkitem.getItemValueString("$uniqueID")))
-				return null;
-
-			// Update Read and write access list from parent workitem
-			List<?> vAccess = parentWorkitem.getItemValue("$ReadAccess");
-			blobWorkitem.replaceItemValue("$ReadAccess", vAccess);
-
-			vAccess = parentWorkitem.getItemValue("$WriteAccess");
-			blobWorkitem.replaceItemValue("$WriteAccess", vAccess);
-
-			blobWorkitem.replaceItemValue("$uniqueidRef",
-					parentWorkitem.getItemValueString("$uniqueID"));
-			blobWorkitem.replaceItemValue("type", "workitemlob");
-			// Update BlobWorkitem
-
-			// int sVersion=blobWorkitem.getItemValueInteger("$version");
-			// is there still a problem with the deprecated version id???
-			// blobWorkitem.removeItem("$Version");
-			blobWorkitem = entityService.save(blobWorkitem);
-			return blobWorkitem;
-
-		}
-		return null;
-	}
-
-	/**
-	 * Loads a BlobWorkitem for a given parent WorkItem. The BlobWorkitem is
-	 * identified by the $unqiueidRef. If no BlobWorkitem still exists the
-	 * method creates a new empty BlobWorkitem which can be saved later.
-	 * 
-	 * 
-	 * 
-	 */
-	public ItemCollection loadBlobWorkitem(ItemCollection parentWorkitem) {
-		ItemCollection blobWorkitem = null;
-
-		// is parentWorkitem defined?
-		if (parentWorkitem == null)
-			return null;
-
-		// try to load the blobWorkitem with the parentWorktiem reference....
-		String sUniqueID = parentWorkitem.getItemValueString("$uniqueid");
-		if (!"".equals(sUniqueID)) {
-			// search entity...
-			String sQuery = " SELECT lobitem FROM Entity as lobitem"
-					+ " join lobitem.textItems as t2"
-					+ " WHERE lobitem.type = 'workitemlob'"
-					+ " AND t2.itemName = '$uniqueidref'"
-					+ " AND t2.itemValue = '" + sUniqueID + "'";
-
-			Collection<ItemCollection> itemcol = entityService.findAllEntities(
-					sQuery, 0, 1);
-			// if blobWorkItem was found return...
-			if (itemcol != null && itemcol.size() > 0) {
-				blobWorkitem = itemcol.iterator().next();
-
-			}
-
-		} else {
-			// no $uniqueId set - create a UniqueID for the parentWorkitem
-			parentWorkitem.replaceItemValue(EntityService.UNIQUEID,
-					WorkflowKernel.generateUniqueID());
-
-		}
-		// if no blobWorkitem was found, create a empty itemCollection..
-		if (blobWorkitem == null) {
-			blobWorkitem = new ItemCollection();
-
-			blobWorkitem.replaceItemValue("type", "workitemlob");
-			// generate default uniqueid...
-			blobWorkitem.replaceItemValue(EntityService.UNIQUEID,
-					WorkflowKernel.generateUniqueID());
-			blobWorkitem.replaceItemValue("$UniqueidRef",
-					parentWorkitem.getItemValueString(EntityService.UNIQUEID));
-
-		}
-		return blobWorkitem;
 
 	}
 
