@@ -58,7 +58,8 @@ import javax.servlet.http.Part;
  * @see https://blueimp.github.io/jQuery-File-Upload/
  * 
  */
-@WebFilter(urlPatterns = "/fileupload/*")
+@Deprecated
+@WebFilter(urlPatterns = "/xxxfileupload/*")
 public class AjaxFileUploadFilter implements Filter {
 	private static final String REQUEST_METHOD_POST = "POST";
 	private static final String REQUEST_METHOD_DELETE = "DELETE";

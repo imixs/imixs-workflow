@@ -31,21 +31,14 @@ public class FileUploadController implements Serializable {
 	}
 
 	/**
-	 * Synchronize the file list stored in the current session with a WorkItem.
-	 * The method adds all new uploaded files into the WorkItem and deletes
-	 * files which where removed from the list. A client can call 'isDirty' to
-	 * ask if any changes where made. The parameter 'noContent' indicates if the
-	 * content should be stored. If 'true' only the fileNames will be added into
-	 * the given workItem. This is used for lazy loading implementations.
+	 * The method adds all new uploaded files into the WorkItem property
+	 * '$file'.
 	 * 
 	 * @param workitem
 	 *            - workItem to store the uploaded files
-	 * @param noContent
-	 *            - if true only file names will be stored.
-	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	public void updateWorkitem(ItemCollection workitem, boolean noContent) {
+	public void updateWorkitem(ItemCollection workitem) {
 		if (workitem == null)
 			return;
 		logger.fine("[MultiFileController] updateWorkitem '"
@@ -54,24 +47,17 @@ public class FileUploadController implements Serializable {
 				.getCurrentInstance().getExternalContext().getRequest());
 
 		List<FileData> fileDataList = (List<FileData>) httpRequest.getSession()
-				.getAttribute(AjaxFileUploadFilter.IMIXS_FILEDATA_LIST);
+				.getAttribute(AjaxFileUploadServlet.IMIXS_FILEDATA_LIST);
 		if (fileDataList == null) {
 			return;
 		}
- 
+
 		// add all new uploaded files into the workitem
 
 		for (FileData aFile : fileDataList) {
-			if (noContent) {
-				byte[] empty = { 0 };
-				// add the file name (with empty data) into the
-				// parentWorkitem.
-				workitem.addFile(empty, aFile.getName(), "");
-			} else {
-				// now add the file content into blobWorkitem
-				workitem.addFile(aFile.getData(), aFile.getName(),
-						aFile.getContentType());
-			}
+			// now add the file content into blobWorkitem
+			workitem.addFile(aFile.getData(), aFile.getName(),
+					aFile.getContentType());
 		}
 
 		// reset session IMIXS_FILEDATA_LIST
@@ -89,7 +75,21 @@ public class FileUploadController implements Serializable {
 		workitem.removeFile(aFilename);
 
 	}
- 
+
+	/**
+	 * returns the list of uploaded files
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<FileData> getUploades() {
+		HttpServletRequest httpRequest = (HttpServletRequest) (FacesContext
+				.getCurrentInstance().getExternalContext().getRequest());
+		List<FileData> fileDataList = (List<FileData>) httpRequest.getSession()
+				.getAttribute(AjaxFileUploadServlet.IMIXS_FILEDATA_LIST);
+		return fileDataList;
+	}
+
 	/**
 	 * clears the current uploaded files from the session param
 	 * IMIXS_FILEDATA_LIST
@@ -98,11 +98,8 @@ public class FileUploadController implements Serializable {
 		HttpServletRequest httpRequest = (HttpServletRequest) (FacesContext
 				.getCurrentInstance().getExternalContext().getRequest());
 		httpRequest.getSession().removeAttribute(
-				AjaxFileUploadFilter.IMIXS_FILEDATA_LIST);
+				AjaxFileUploadServlet.IMIXS_FILEDATA_LIST);
 
 	}
-	
-	
-	
-	
+
 }
