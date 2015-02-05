@@ -22,9 +22,9 @@ The Imixs Workflow Manager
  The {{{http://www.imixs.org/jee/}Imixs-Workflow Engine}} is a typical implementation of the WorkflowManager and extends the
  functionality in a platform specific way. 
  
-*Registeration of Plug-Ins
+*Workflow Plug-Ins
 ~~~~~~~~~~~~~~
- The general workflow functions and also application specific business logic is provided by plug-ins.
+ The general workflow functions and also application specific business logic is provided by {{{./plugin-api.html}plug-ins}}.
  The WorkflowManager can register a specific set of plug-ins to be called by the WorkflowKernel when 
  processing a Workitem.  
  A typical code example is structured as follows:

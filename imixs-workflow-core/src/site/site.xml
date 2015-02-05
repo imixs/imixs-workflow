@@ -42,7 +42,6 @@
 
  	<menu name="About the project">
  	  <item name="Goals" href="goals.html"/>
- 	   <item name="Forum" href="forum.html"/>
  	 <item name="Download &amp; Maven" href="maven_howto.html"/>
      <!--  <item name="Project Summary" href="project-summary.html"/>   -->    
       <item name="Project License" href="license.html"/>      
