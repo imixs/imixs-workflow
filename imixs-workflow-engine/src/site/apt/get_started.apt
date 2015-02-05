@@ -7,48 +7,51 @@
  
 
 
-Get Started
+Getting started...
 ~~~~~~~~~~~~~~
 
- The Imixs Workflow Engine can be used to build business applications in a fast 
- and flexible way. The project provides a persistence API to store business data 
- and a workflow service component to create and process workitems based on a workflow model.
+ The Imixs-Workflow Engine can be used to build business applications in a fast 
+ and flexible way. The Imixs-Workflow project provides a persistence API to store business data 
+ and a workflow engine to process and manage Workitems based on a Workflow Model.
 
- The following section helps you to decide how you can use and work with these components 
- in different scenarios in the software development process.
+ The following section helps you to decide how to use these components in your 
+ software development process.
  
-Using the Imixs Workflow Engine out of the Box
+*Using the Imixs-Workflow Engine out of the Box
 ~~~~~~~~~~~~~~
 
- Using the Imixs Workflow out of the Box is a good starting point to run the workflow engine 
+ Using Imixs-Workflow out of the Box is a good starting point to run the workflow engine 
  without modification or Java EE development.
 
- See the {{{./install.html}installation guide}} for informations how to install the Imixs Sample Application. 
- After the installation you can access the sample application through your web browser. 
- The Imixs Sample Application shows how Imixs Workflow works and you can see what happens if you 
- change the business model of the application or adding new workflows.
+ See the {{{./install.html}installation guide}} for information how to install the Imixs-Sample Application. 
+ After the installation you can access the sample application from your web browser. 
+ The Sample Application shows how Imixs-Workflow works and you can test your own 
+ business model in a simple way.
  If you check out the sample application from the {{{./source-repository.html}source code repository}}
- you will see more details and you can take the Imixs Sample Application as a source code template.
+ you will see more details and you can take the Imixs Sample Application as an example for your own
+ workflow project.
  
 
-Using Imixs Workflow in a Java EE Project 
+*Using Imixs-Workflow in a Java EE Project 
 ~~~~~~~~~~~~~~
 
- Using the Imixs Workflow Engine in a Java EE project is the typical way for developers building a 
- business application. 
+ If you want to use the Imixs-Workflow in a Java EE project this is the typical way to extend 
+ your own java project with a workflow engine. 
  In this kind of usage you develop your own Java EE project. Inside your application you integrate the 
- Imixs Workflow Engine to provide the typical functionality of a Workflow Management System. 
+ Imixs-Workflow Engine to provide the typical functionality of a Workflow Management System. 
  See the {{{./examples/examples.html} Examples section}} for further informations. 
 
- As the Imixs Workflow Engine is build up on the Java EE specification it consists of a set of standard Java EE components 
- like EJBs and JPA components. The {{{./deployment.html}Imixs Workflow deployment section}} describes
- how to deploy the Imixs Workflow engine int an enterprise application (EAR) in more detail.
+ As the Imixs Workflow Engine is build up on the Java EE specification and consists of a set of 
+ standardized Java EE components like EJBs and JPA components. 
+ The {{{./deployment.html}Imixs-Workflow deployment section}} describes
+ how to deploy the Imixs-Workflow engine in an enterprise application (EAR) in more detail.
  
    
-Using Imixs Workflow to implement new modules
+*Using Imixs-Workflow to implement new modules
 ~~~~~~~~~~~~~~
 
- You can also use the results of the Imixs Workflow project to implement your own workflow engine. 
+ You can also help in developing the Imixs-Workfow project or use the results of the project to 
+ implement new components. 
  In this case you extend the implementation with additional features or just add a different behavior. 
 
  So in different of the usage described before, you need more than a running instance of the Workflow 
@@ -59,6 +62,6 @@ Using Imixs Workflow to implement new modules
  The source code include also some JUnit tests which can help you to test different behaviors 
  of the engine in more detail.
 
- See the {{{http://java.net/projects/imixs-workflow/}Imixs Workflow community site}} for details and coding 
- concepts. Also take a look in the Forum to discuss features, requests or bugs. 
+ See the {{{https://github.com/imixs/imixs-workflow}Imixs Workflow community site on GitHub}} 
+ for further details or to ask questions or report bugs. 
 

@@ -9,27 +9,36 @@
 
 
 
-Installation and setup the Imixs Workflow Modeler
+Setup the Imixs-Workflow Modeler
 ~~~~~~~~~~~~~~
 
- This section will explain the installation steps needed to successfully 
- upload a workflow model to the Imixs JSF Sample Application. 
- 
-
+ This section will explain the steps needed to successfully 
+ upload a workflow model to the {{{./install.html}Imixs-Sample Application}}. 
 
  
 * Upload the Workflow Model
 ~~~~~~~~~~~~~~
  
- Before you can test the example you need further to upload a workflow model. The model can be managed with the 
- {{{http://www.imixs.org/modeler/}Imixs Workflow Modeler Plugin}} from the Eclipse IDE. If you don't have already installed the
- Imixs Workflow Modeler, see the {{{http://www.imixs.org/modeler/install.html}Installation Guide}}.
+ Before you can test the example you need to upload a workflow model. The model can be managed with the 
+ {{{http://www.imixs.org/modeler/}Imixs-Workflow Modeler Plugin}} from the Eclipse IDE. 
+ If you don't have already installed the
+ Imixs-Workflow Modeler, see the {{{http://www.imixs.org/modeler/install.html}Installation Guide}}.
  
- The Sample Application contains a valid model file of a "Trouble Ticket Workflow System". 
  
- A ticket is the "workitem" managed by your application which contains all necessary informations about the reported customer issue . 
+** The 'Ticket' Workflow
+~~~~~~~~~~~~~~
+ 
+ The Imixs-Sample Application contains a valid model file of a "Trouble Ticket Workflow System". 
+ A ticket is the "workitem" managed by your application which contains all necessary 
+ information about the reported customer issue. 
 
- In this example scenario I designed the workflow very simple to demonstrate the principle and basic concepts of the Imixs Workflow:
+ The Demo Model is part of the sources of the {{{./install.html}Imixs-Sample Application}}. 
+ Just import this model file (/src/workflow/ticket.ixm) into a project of your Eclipse Workspace. 
+ Then the ixm-File can be opened with the Imixs Workflow Modeler Plugin from the Eclipse IDE.
+
+[images/modeler-01.png] 
+
+ In this example the workflow is very simple to demonstrate the principle and basic concepts of a Workflow Model:
 
    [[1]] A customer service operator receives a telephone call, email, or other communication from a customer about a problem. The operator creates a new issue in the Trouble Ticket system. The status of our workitem is now "open"
    
@@ -39,27 +48,19 @@ Installation and setup the Imixs Workflow Modeler
    
    [[4]] After the issue has been fully addressed, it is marked as solved in the issue tracking system and the ticket will be closed. Status "closed" 
  
- 
- Download the Demo Model form the {{{http://java.net/projects/imixs-workflow/downloads}Imixs Download center}}. 
- Just import this model file (ticket.ixm) in a project of your Eclipse Workspace. Then the ixm-File can be opened with the 
- Imixs Workflow Modeler Plugin from the Eclipse IDE.
- 
-[images/modeler-01.png] 
- 
+
  You can synchronize this model file with your server using the {{{http://www.imixs.org/modeler/main_editor.html}Imixs Workflow Editor}}. 
- Switch to the "Synchronize" Tab to start the synchronization. 
+ Under 'Web Service Location' enter the WebService URL of your application:
  
-[http://www.imixs.org/modeler/images/screenshot_103.png]
+[images/modeler-02.png]
  
- Click the "Synchronize Model" link below the Service Selection to start the upload of a model definition to the Workflow Server. 
+ Click the "Upload Model" link to start the upload of a model definition to the Workflow Server. 
  You need to authenticate against the Workflow Server Instance with the user account member within the IMIXS-WORKFLOW-Manager group.
  
+ You can later also change or extend the workflow model using the different features of the Imixs Modeler. 
  
- You can added and extend the process model using the different features of the Imixs Modeler. 
  
- After you have setup the model you can run the application.
- 
- {{{./install_app.html}Next...}}
+ {{{./install_app.html}After you have setup the model you can run the application...}}
 
 
 

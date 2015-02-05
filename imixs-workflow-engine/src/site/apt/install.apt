@@ -12,53 +12,66 @@
 Installation
 ~~~~~~~~~~~~~~
 
- The Imixs Workflow project provides a Sample Application which demonstrates the behavior and the concepts
- of the Imixs Workflow Engine. You can download the Sample Application from the
- {{{http://java.net/projects/imixs-workflow/downloads}Imixs Download page}}.
- The following section gives a brief overview how to install the Imixs Sample Application 
- into a Java EE Application Server. The installation guide is also helpful to get a better understanding 
- what is necessary to integrate the Imixs Workflow engine into your own project.  		
+ The Imixs-Workflow project provides a Sample Application which demonstrates the behavior and the concepts
+ of the Imixs-Workflow Engine.
+ {{{https://github.com/imixs/imixs-jsf-example} You can download the Souce Code of the Imixs-Sample Application from GitHub}}.
+ The following section gives a brief overview how to build and deploy the Imixs-Sample Application 
+ on an Application Server. The installation guide is also helpful to get a better understanding 
+ what is necessary to integrate Imixs-Workflow into your own project.  		
  
- This introduction refers the basic steps needed to get the Sample Application up and 
+ This introduction refers the basic steps needed to get the Imixs-Sample Application up and 
  running on different platforms. If you need further informations about the deployment of the 
- Imixs Workflow components into an Java EE Application server see the {{{./deployment.html}deployment section}} 
- for more detailed informations.
- 
- 
-* Install and setup your Application Server 
+ Imixs-Workflow components see the {{{./deployment/overview.html}deployment section}} 
+ for more detailed information.
+
+
+* Build the Imixs-Sample Application 
 ~~~~~~~~~~~~~~
 
- To install the Imixs Sample Application you first need a Java EE application server like 
- {{{http://www.glassfish.org/}Glassfish}} (Oracle), {{{http://geronimo.apache.org}Geronimo}} (IBM) or 
- {{{http://www.jboss.org/jbossas}JBoss}}. 
- To run the Imixs Workflow on a Java EE Server you need at least the following resources:
+ First checkout the sources from {{{https://github.com/imixs/imixs-jsf-example} GitHub}} and build 
+ the Imixs-Sample Application in your workspace. 
+ All Imixs-Workflow projects are build on {{{http://maven.apache.org/}Maven}}. This makes it easy to build
+ the applicaition from the sources. After you have checked out the sources you can run the maven install
+ command to build the war file. 
  
-  	* a Database to store workitems processed by the Imixs Workflow engine
++---------------------+
+ ~/git/imixs-jsf-example$ mvn clean install
++---------------------+
+ 
+ You find the war file in the target folder of your working directory. 
+ 
+* Setup your Application Server 
+~~~~~~~~~~~~~~
+
+ Before you deploy the Imixs-Sample Application you first need a Java EE application server like 
+ {{{http://www.glassfish.org/}Glassfish}},  {{{http://www.wildfly.org}WildFly}} or {{{http://geronimo.apache.org}Geronimo}}. 
+ You need at least to configure the following resources:
+ 
+  	* a Database to store the Workitems and the Workflow Model
   	
-  	* a JPA based Database connection from your Application Server to your database
+  	* a JDBC Database connection from your Application Server to your database
   	
-  	* a Security Realm to authenticate users who should interact with the Workflow Management System
+  	* a JAAS Security Realm to allow users to authenticate against the Workflow Application.
+
   	
-  	
- After you have set up your server environment you can install the Imixs Sample Application. This setup is 
- equal also if you plan to deploy your own project using the Imixs Workflow eninge. 
+ After you have set up your server environment you can deploy the Imixs-Sample Application. This setup is 
+ equal also if you plan to deploy your own project using Imixs-Workflow. 
  
  
-    * {{{./install_glassfish.html}Install the Imixs Sample Application on Glassfish}}
+    * {{{./install_glassfish.html}Deploy the Imixs-Sample Application on Glassfish}}
     
-    * {{{./install_jboss.html}Install the Imixs Sample Application on JBoss}}
+    * {{{./install_jboss.html}Deploy the Imixs-Sample Application on WildFly}}
     
   
 
 * Setup a Workflow Model
 ~~~~~~~~~~~~~~
 
-
- Before you can start the sample application you need to provide a process model. The process model describes the
- behavior of the Workflow Management System. Things like the Read- or Write-Access, the Process History or 
+ To run the workflow you need to provide a workflow model. The workflow model describes the
+ behavior of the Workflow. Things like the different states, the Read- or Write-Access, the Process History or 
  Email notifications are declared in the Model.
  
- The Sample Application contains a valid model file of a "Trouble Ticket Workflow System". 
+ The Imixs-Sample Application contains a valid model file of a "Trouble Ticket Workflow System". 
  A trouble ticket system is based on a business process that manages and maintains lists of issues, 
  as needed by an organization. Trouble Ticket Systems are commonly used in an organization's customer support call center to create, 
  update, and resolve reported customer issues, or even issues reported by that organization's other employees.
@@ -71,20 +84,21 @@ Installation
 [images/modeler-01.png]
 
 
-* Run the Sample Application 
+* Run the Imixs-Sample Application 
 ~~~~~~~~~~~~~~
 
- After you have installed and setup the Imixs Sample Application start the application with the following url:
+ After you have installed and setup the Imixs-Sample Application start the application with the following url
+ from your browser:
 
 +----------------------------------+ 
  http://localhost:8080/workflow
 +----------------------------------+ 
 
- How the application works is explained in the following section:
- 
- {{{./install_app.html}Run the Imixs Sample Application}} 
-  
-   
-   
 [images/sample-app-01.png] 
 
+ 
+ 
+ How the application works is explained in the following section:
+ 
+ {{{./install_app.html}Run the Imixs-Sample Application}} 
+  

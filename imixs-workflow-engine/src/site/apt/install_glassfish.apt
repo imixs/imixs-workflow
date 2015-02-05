@@ -9,16 +9,17 @@
 
 
 
-Installation and setup the Glassfish Application Server
+Setup Glassfish Application Server
 ~~~~~~~~~~~~~~
 
  This sections will explain the configuration steps needed to successfully deploy the
- Imixs JSF Sample Application in conjunction with the Glassfish Java EE Server. 
+ Imixs-Sample Application on Glassfish. 
  
  You can download the Glassfish Server from the {{{http://www.glassfish.org}Glassfish project site}}.
  This side also includes an Installation guide for installing Glassfish on different platforms.
- Glassfish is provided in two versions. Version 2.1 is a Java EE5 Implementation. The newer Version Glassfish 3 is 
- based on the Java EE6 specification. The setup for these version is similar so you can choose both.
+ Glassfish is provided in two versions. Version 3.x is a Java EE6 Implementation. 
+ The newer Version Glassfish 4.x is 
+ based on the Java EE7 specification. The following setup explains the steps to install on GlassFish Version 3.
  
  After you have installed the Glassfish Server you can start the server by
  switching into the directory
@@ -29,29 +30,19 @@ Installation and setup the Glassfish Application Server
  
  and execute the startsrv script.
  
- After the server is started you can open the Glassfish web console with the following URL:
+ After the server is started you can access the Glassfish web console from your web browser with the following URL:
 
 +------------------------------------+  
   http://localhost:4848/
 +------------------------------------+  
   
- The default user name is 'admin' and the default password is 'adminadmin'
- 
- 
-* Download the Imixs Sample Application
-~~~~~~~~~~~~~~
-
- After you have successful installed and tested the Glassfish Server you can download the Imixs Sample Application
- for Glassfish from the
- {{{http://java.net/projects/imixs-workflow/downloads}Imixs Download page}}
- The Download Page provides different versions of the Sample Application for Glassfish 2.1 and Glassfish 3.
- So download the appropriate sample application for your server system.
     
-* Setting up a Imixs Workflow database pool
+* Setting up a Imixs-Workflow database pool
 ~~~~~~~~~~~~~~
 
- The Imixs Sample application uses a database resource with the name "jdbc/workflow-db". So you need first to 
- set up a Database Pool and a JDBC resource before you are able to deploy an Imixs JSF Sample application
+ The {{{./install.html}Imixs-Sample application}} expects a database resource with the name "jdbc/workflow-db". 
+ Thus you need first to set up a Database Pool and a JDBC resource before you can deploy 
+ the application
  successful. In this example we create a database pool for the build in derby database from glassfish. 
  You can also configure any other database like MySQL, Oracle, Informix, Microsoft SQL Server,....
 
@@ -98,7 +89,7 @@ Installation and setup the Glassfish Application Server
 *Setup Security
 ~~~~~~~~~~~~~~
 
- To work with the JSF Sample application you need also to configure a security realm. 
+ To login to the Imixs-Sample Application you need also to configure a security realm. 
  Follow the steps below:
  
    1. start admin console -> http://localhost:4848/asadmin   
@@ -140,10 +131,10 @@ Installation and setup the Glassfish Application Server
  It is also possible to configure other security bindings as the file based described here. 
  Only the realm name should match to "imixsrealm". 
 
-* Deploy the Imixs Sample Application
+* Deploy the Imixs-Sample Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- Now install the EAR file of the Imixs Sample Application by the following steps:
+ Now install the war file of the Imixs-Sample Application by the following steps:
 
    1. Be sure, that your database server is up and running. Start it with
       >asadmin start-database
@@ -161,4 +152,5 @@ Installation and setup the Glassfish Application Server
 
    7. press the button "ok" located in the upper right corner --> ear will be deployed
 
- {{{./install_model.html}Next...}}
+ 
+ {{{./install_model.html}The next section describes how to setup a workflow model...}}
