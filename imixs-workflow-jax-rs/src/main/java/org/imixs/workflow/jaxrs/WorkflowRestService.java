@@ -220,9 +220,9 @@ public class WorkflowRestService {
 				user = null;
 
 			// decode URL param
-			if (user!=null)
+			if (user != null)
 				user = URLDecoder.decode(user, "UTF-8");
-			
+
 			col = workflowService.getWorkListByAuthor(user, start, count, type,
 					sortorder);
 			return XMLItemCollectionAdapter.putCollection(col,
@@ -281,11 +281,10 @@ public class WorkflowRestService {
 		try {
 			if ("null".equalsIgnoreCase(creator))
 				creator = null;
-			
-			// decode URL param
-			if (creator!=null)
-				creator = URLDecoder.decode(creator, "UTF-8");
 
+			// decode URL param
+			if (creator != null)
+				creator = URLDecoder.decode(creator, "UTF-8");
 
 			col = workflowService.getWorkListByCreator(creator, start, count,
 					type, sortorder);
@@ -386,13 +385,11 @@ public class WorkflowRestService {
 			@QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
-			
-			
+
 			// decode URL param
-			if (processgroup!=null)
+			if (processgroup != null)
 				processgroup = URLDecoder.decode(processgroup, "UTF-8");
 
-			
 			col = workflowService.getWorkListByGroup(processgroup, start,
 					count, type, sortorder);
 			return XMLItemCollectionAdapter.putCollection(col,
@@ -444,9 +441,9 @@ public class WorkflowRestService {
 		try {
 			if ("null".equalsIgnoreCase(owner))
 				owner = null;
-			
+
 			// decode URL param
-			if (owner!=null)
+			if (owner != null)
 				owner = URLDecoder.decode(owner, "UTF-8");
 
 			col = workflowService.getWorkListByOwner(owner, start, count, type,
@@ -578,21 +575,9 @@ public class WorkflowRestService {
 		return getWorkListByRef(uniqueid, start, count, type, sortorder, items);
 	}
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	/**
 	 * Returns a result set by JPQL Query
+	 * 
 	 * @param query
 	 * @param start
 	 * @param count
@@ -610,11 +595,12 @@ public class WorkflowRestService {
 			@QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
-			
+
 			// decode query...
 			String decodedQuery = URLDecoder.decode(query, "UTF-8");
-			
-			col = workflowService.getEntityService().findAllEntities(decodedQuery, start, count);
+
+			col = workflowService.getEntityService().findAllEntities(
+					decodedQuery, start, count);
 			return XMLItemCollectionAdapter.putCollection(col,
 					getItemList(items));
 		} catch (Exception e) {
@@ -631,7 +617,7 @@ public class WorkflowRestService {
 			@DefaultValue("0") @QueryParam("start") int start,
 			@DefaultValue("10") @QueryParam("count") int count,
 			@QueryParam("items") String items) {
-		return getWorkListByQuery(query, start, count,  items);
+		return getWorkListByQuery(query, start, count, items);
 	}
 
 	@GET
@@ -642,26 +628,9 @@ public class WorkflowRestService {
 			@DefaultValue("0") @QueryParam("start") int start,
 			@DefaultValue("10") @QueryParam("count") int count,
 			@QueryParam("items") String items) {
-		return getWorkListByQuery(query, start, count,items);
+		return getWorkListByQuery(query, start, count, items);
 	}
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	/**
 	 * returns a singel workitem defined by $uniqueid
 	 * 
@@ -673,8 +642,22 @@ public class WorkflowRestService {
 	public XMLItemCollection getWorkItem(
 			@PathParam("uniqueid") String uniqueid,
 			@QueryParam("items") String items) {
+
 		ItemCollection workitem;
 		try {
+
+			// test uniqueid for .json (correct wrong routing happens in
+			// RestEasy / Wildfly)
+			if (uniqueid.endsWith(".json")) {
+				return this
+						.getWorkItemJSON(uniqueid.substring(0,
+								uniqueid.indexOf(".json")), items);
+			}
+			if (uniqueid.endsWith(".xml")) {
+				return this.getWorkItemXML(
+						uniqueid.substring(0, uniqueid.indexOf(".xml")), items);
+			}
+
 			workitem = workflowService.getWorkItem(uniqueid);
 			return XMLItemCollectionAdapter.putItemCollection(workitem,
 					getItemList(items));
@@ -686,17 +669,35 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/workitem/{uniqueid}.xml")
-	@Produces("application/xml")
+	@Produces(MediaType.APPLICATION_XML)
 	public XMLItemCollection getWorkItemXML(
 			@PathParam("uniqueid") String uniqueid,
 			@QueryParam("items") String items) {
 		return getWorkItem(uniqueid, items);
 	}
-
+	
 	@GET
+	@Path("/workitem/{uniqueid}/xml")
+	@Produces(MediaType.APPLICATION_XML)
+	public XMLItemCollection getWorkItemXMLPath(
+			@PathParam("uniqueid") String uniqueid,
+			@QueryParam("items") String items) {
+		return getWorkItem(uniqueid, items);
+	}
+
+	@GET 
 	@Path("/workitem/{uniqueid}.json")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public XMLItemCollection getWorkItemJSON(
+			@PathParam("uniqueid") String uniqueid,
+			@QueryParam("items") String items) {
+		return getWorkItem(uniqueid, items);
+	}
+	
+	@GET 
+	@Path("/workitem/{uniqueid}/json")
+	@Produces(MediaType.APPLICATION_JSON)
+	public XMLItemCollection getWorkItemJSONPath(
 			@PathParam("uniqueid") String uniqueid,
 			@QueryParam("items") String items) {
 		return getWorkItem(uniqueid, items);
@@ -966,9 +967,11 @@ public class WorkflowRestService {
 							.build();
 				}
 			}
-			
-			return Response.ok(XMLItemCollectionAdapter.putItemCollection(itemCollection), MediaType.APPLICATION_XML ).build();
-			//		return Response.status(Response.Status.OK).build();
+
+			return Response.ok(
+					XMLItemCollectionAdapter.putItemCollection(itemCollection),
+					MediaType.APPLICATION_XML).build();
+			// return Response.status(Response.Status.OK).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1041,24 +1044,26 @@ public class WorkflowRestService {
 
 		logger.fine("[WorkflowRestService] @PUT /workitem  method:putWorkitemJSON....");
 
-		
 		// determine encoding from servlet request ....
-		if (encoding==null || encoding.isEmpty()) {
-			encoding=servletRequest.getCharacterEncoding();
-			logger.fine("[WorkflowRestService] postWorkitemJSON using request econding=" + encoding);
+		if (encoding == null || encoding.isEmpty()) {
+			encoding = servletRequest.getCharacterEncoding();
+			logger.fine("[WorkflowRestService] postWorkitemJSON using request econding="
+					+ encoding);
 		} else {
-			logger.fine("[WorkflowRestService] postWorkitemJSON set econding=" + encoding);
+			logger.fine("[WorkflowRestService] postWorkitemJSON set econding="
+					+ encoding);
 		}
 		// set defautl encoding UTF-8
-		if (encoding==null || encoding.isEmpty()) {
-			encoding="UTF-8";
-			logger.fine("[WorkflowRestService] postWorkitemJSON no encoding defined, set default econding to" + encoding);
+		if (encoding == null || encoding.isEmpty()) {
+			encoding = "UTF-8";
+			logger.fine("[WorkflowRestService] postWorkitemJSON no encoding defined, set default econding to"
+					+ encoding);
 		}
-		
+
 		ItemCollection workitem = null;
 		XMLItemCollection responseWorkitem = null;
 		try {
-			workitem = JSONParser.parseWorkitem(requestBodyStream,encoding);
+			workitem = JSONParser.parseWorkitem(requestBodyStream, encoding);
 
 		} catch (ParseException e) {
 			logger.severe("postWorkitemJSON wrong json format!");
