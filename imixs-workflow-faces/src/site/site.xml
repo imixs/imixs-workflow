@@ -33,6 +33,7 @@
       <item name="Examples" href="examples/examples.html" collapse="true">         
       	<item name="Create a Workitem" href="examples/create.html"/>            
       	<item name="Process a Workitem" href="examples/process.html"/>            
+      	<item name="The WorkflowController" href="examples/workflowcontroller.html"/>            
       	<item name="BLOB Workitems" href="examples/lobworkitem.html"/>            
       </item>
       <item name="Deployment" href="deployment.html" />   

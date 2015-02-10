@@ -93,6 +93,5 @@ The Imixs-Workflow API
  Each Item of an ItemCollection 
  has a name and a value. The value of an Item can be any java based data object which is serializeable. 
  Thus the ItemCollection is a very flexible and easy to use generic value object.
- See the {{{./examples/itemcollection.html}Example page}} for more information about how to use the ItemCollection.
- 
+ Read more about the {{{./itemcollection.html}Imixs ItemCollection}}.
   

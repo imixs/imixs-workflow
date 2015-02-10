@@ -33,6 +33,7 @@
     
     <menu name="The Workflow API">
       <item name="Overview" href="api-overview.html"/>
+      <item name="ItemCollection" href="itemcollection.html"/>   
       <item name="WorkflowManager" href="workflowmanager.html"/>   
       <item name="Model" href="model.html"/>
       <item name="Plugin API" href="plugin-api.html"/>         

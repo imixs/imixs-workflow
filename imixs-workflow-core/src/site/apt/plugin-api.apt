@@ -8,18 +8,21 @@
  
 
 
-The Imixs Plugin API
+The Imixs Plug-in API
 ~~~~~~~~~~~~~~
 
- The Imixs Plugin API is a powerful concept to extend the Imixs Workflow Engine with the technical 
- aspects of a workflow management system.
- A plugin provides platform specific functionality to be executed during a workflow process.
- A plugin is a general building block inside a workflow management system and may be reused in 
- different phases of a business process.
+ The Imixs Plug-in API is a powerful concept to extend Imixs-Workflow with technical 
+ aspects of your workflow management system.
+ A plug-in can provide general business logic as also platform specific functionality 
+ to be executed during a workflow process. You can find an 
+ {{{http://www.imixs.org/jee/plugin/overview.html}overview about the plug-ins}} provided
+ by the Imxis-Workflow engine. 
  
- Plugins are bound to the workflow model and controlled by the Imixs Workflow Engine.
- Each plugin provides a set of call-back methods triggered by the WorkflowKernel. The WorkflowKernel
- also provides a plugin with detailed informations about the running process instance. This makes it easy
+ Each plug-in is a general building block inside a workflow management system and may be reused in 
+ different phases of a business process.
+ Plug-ins are bound to the workflow model and controlled by the Imixs Workflow Engine.
+ The Imixs plug-in API defines a set of call-back methods triggered by the WorkflowKernel. The WorkflowKernel
+ also provides a plug-in with detailed informations about the running process instance. This makes it easy
  to implement certain details of a business process. 
 
 

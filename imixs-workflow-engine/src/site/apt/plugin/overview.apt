@@ -5,7 +5,7 @@ Plugin API - Overview
  The Imixs Plugin API is a powerful concept to extend the Imixs Workflow Engine with the technical 
  aspects of a workflow management system.
  A plugin can provide platform specific functionality to be executed during a workflow process.
- You can find a general overview about the plugin concepts {{{/api/plugin-api.html}here}}. 
+ You can find a general overview about the plugin concepts {{{..//api/plugin-api.html}here}}. 
 
  The Imixs Workflow Engine provides a set of plugins with different workflow 
  functionality like email notification, access control, versioning or process documentation. 
@@ -96,7 +96,7 @@ Plugin API - Overview
 +------------------------+
  
  The values from the imixs.prperties file are accessed by the  
- {{{../propertyservice.html}PropertyService EJB}}. To activate this feature it is necessary
+ {{{../services/propertyservice.html}PropertyService}}. To activate this feature it is necessary
  that a 'ejb-ref' is defined for the Imixs WorkflowService EJB. See the following example 
  from the ejb-jar.xml file:
  

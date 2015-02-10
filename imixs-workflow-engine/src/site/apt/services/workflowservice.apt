@@ -1,12 +1,13 @@
 
 The WorkflowService Interface
 ~~~~~~~~~~~~~~~~~~~~
-  The WorkflowService is the Java EE Implementation if the Workflow Manager which can be used
+  The WorkflowService is the Java EE Implementation if the 
+  {{{http://www.imixs.org/api/workflowmanager.html}WorkflowManager}} which can be used
   in any Java enterprise application. The component allows you to process, update and find workItems. 
 
   Before a workitem can be processed by the WorkflowService a workflow model
   need to be available on the workflow server. To create a model and upload it to the workflow server
-  the {{{http://www.imixs.org/modeler/}Imixs Workflow Modeler}}
+  the {{{http://www.imixs.org/modeler/}Imixs-Workflow Modeler}}
   can be used. 
  
   The following example shows how a workitem can be processed using the WorkflowService.

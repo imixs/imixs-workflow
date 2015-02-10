@@ -62,4 +62,36 @@ The Imixs-Workflow Model
  Depending on the information of the assigned 'Activity Entity' the WorkflowKernel updates the 
  status of the Workitem ('$ProcessID') after the Workitem was processed.
 
+
+*Navigate the Model
+~~~~~~~~~~~~~~ 
+
+ You can use the Model interface to navigate through the Workflow Model.
+ See the following example:
+ 
++------------------------------------------------------------------------+
+  Model model;
+  //....
+  // lookup a ProcessEntiy 
+  model.getProcessEntity(100);
+  //...
+  // receive the processEntityList containing all Process Entities
+  Collection<ItemCollection> col1=model.getProcessEntityList();
+  // receive a collection of all Activities for a Process Entity
+  Collection<ItemCollection> col2=model.getActivityEntityList(processid)
+	
++------------------------------------------------------------------------+
+
+
+* The Imixs ModelService
+~~~~~~~~~~~~~~
+ 
+ The Imixs-Workflow engine provides the ModelService component which implements the Model Interface 
+ on the JEE component stack. This Service provides a rich functionallity to navigate and manage
+ a Workflow model.
+ Find more information about the Imixs-WorkflowService in the section {{{http://www.imixs.org/jee/services/overview.html}Imixs-Workflow engine Services}}.    
+ 
+  For more informations of how a Model Implementation works see the Imixs JEE Components
+  which provide a Workflow Model Component used by the Imixs JEE Workflow Manger.
+     
  

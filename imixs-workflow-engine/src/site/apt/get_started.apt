@@ -10,12 +10,14 @@
 Getting started...
 ~~~~~~~~~~~~~~
 
- The Imixs-Workflow Engine can be used to build business applications in a fast 
- and flexible way. The Imixs-Workflow project provides a persistence API to store business data 
- and a workflow engine to process and manage Workitems based on a Workflow Model.
+ The Imixs-Workflow Engine can used to build business applications in a fast 
+ and very flexible way. The Imixs-Workflow project provides a persistence API to store 
+ business data and a workflow engine to process and manage any kind of business objects 
+ based on a Workflow Model.
 
- The following section helps you to decide how to use these components in your 
- software development process.
+ There are several ways how you can benefit from Imixs-Workflow.
+ The following section gives you a short guideline how to find out the best way 
+ to use Imixs-Workflow in your software development project.
  
 *Using the Imixs-Workflow Engine out of the Box
 ~~~~~~~~~~~~~~
@@ -35,19 +37,19 @@ Getting started...
 *Using Imixs-Workflow in a Java EE Project 
 ~~~~~~~~~~~~~~
 
- If you want to use the Imixs-Workflow in a Java EE project this is the typical way to extend 
- your own java project with a workflow engine. 
+ Using Imixs-Workflow in a Java EE project is the typical way to extend 
+ your own java project with the functionality of a workflow engine. 
  In this kind of usage you develop your own Java EE project. Inside your application you integrate the 
  Imixs-Workflow Engine to provide the typical functionality of a Workflow Management System. 
- See the {{{./examples/examples.html} Examples section}} for further informations. 
+ See the {{{./examples/examples.html} Code Examples}} for further information. 
 
  As the Imixs Workflow Engine is build up on the Java EE specification and consists of a set of 
  standardized Java EE components like EJBs and JPA components. 
- The {{{./deployment.html}Imixs-Workflow deployment section}} describes
+ The {{{./deployment/overview.html}Imixs-Workflow deployment section}} describes
  how to deploy the Imixs-Workflow engine in an enterprise application (EAR) in more detail.
  
    
-*Using Imixs-Workflow to implement new modules
+*Contribute to the Imixs-Workflow project
 ~~~~~~~~~~~~~~
 
  You can also help in developing the Imixs-Workfow project or use the results of the project to 

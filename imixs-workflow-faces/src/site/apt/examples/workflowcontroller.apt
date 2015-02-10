@@ -1,0 +1,38 @@
+            ------
+            JSF Example
+            ------
+            Ralph Soika - Imixs Software Solutions GmbH
+            ------
+ 
+ 
+
+
+ 
+The WorkflowController
+~~~~~~~~~~~~~~~~~~~~
+ The Imixs Web-Tools Project provides a backing bean to be used as a workflow controller. 
+ The controller Bean provides several action methods to create, update and
+ delete workitems through the Imixs Workflow Manager. It also provides a simple way to 
+ add any kind of user input in dynamic properties controlled by the Imixs Workflow Manager.
+ 
+ The following example shows how to process an instance of an workitem with the 
+ workflow activity 100:
+
++---------------------------------------------+
+ <h:commandButton
+        value="start a new process"
+        actionListener="#{workflowController.process(100)}"
+        action="show_workitem">
+  </h:commandButton>
++---------------------------------------------+
+
+
+ The workflowController can also be used to bind input values to an JSF Input Field
+
++---------------------------------------------+
+ <h:inputText required="true"
+        value="#{workflowController.workitem.item['txtSubject']}" id="subject_id">
+ </h:inputText>
++---------------------------------------------+
+
+ 

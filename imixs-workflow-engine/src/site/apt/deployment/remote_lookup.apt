@@ -4,26 +4,21 @@ EJB Remote Lookup
  The following Example shows a remote Lookup for the Imixs EntityService Bean in a
  java client application
  
- 
 +------------------------------------------------------------------------+
-	EntityServiceRemote	entityService;
-	try {
-		
-		String ejbName="ejb/MyImixsEntityServiceBean";
-		
-		InitialContext ic = new InitialContext();
-		entityService = (EntityServiceRemote) ic.lookup(ejbName);
-
-	} catch (Exception e) {
-		e.printStackTrace();
-		entityService = null;
-	}
+EntityServiceRemote	entityService;
+try {
+	String ejbName="ejb/MyImixsEntityServiceBean";
+	InitialContext ic = new InitialContext();
+	entityService = (EntityServiceRemote) ic.lookup(ejbName);
+} catch (Exception e) {
+	e.printStackTrace();
+	entityService = null;
+}
 +------------------------------------------------------------------------+
 
  the Remote JNDI Name is defined by the remote application in the sun-ejb-jar.xml file.
  
  This is an example for a 
- 
  
 +------------------------------------------------------------------------+
 <?xml version="1.0" encoding="UTF-8"?>

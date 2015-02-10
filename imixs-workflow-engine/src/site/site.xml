@@ -29,25 +29,18 @@
 				<item name="Setup Model" href="install_model.html" />
 				<item name="Run Application" href="install_app.html" />
 			</item>
-			<item name="Examples" href="examples/examples.html" collapse="true">
-				<item name="ItemCollection" href="examples/itemcollection.html" />
-				<item name="WorkflowManager" href="examples/workflowmanager.html" />
-				<item name="Model" href="examples/model.html" />
 
-				<item name="JSF Example" href="examples/jsf_example.html" />
-				<item name="Remote Lookup" href="examples/remote_lookup.html" />
+
+			<item name="Services" href="services/overview.html" collapse="true">
+				<item name="EntityService" href="services/entityservice.html"
+					collapse="true">
+					<item name="Queries" href="services/queries.html" />
+				</item>
+				<item name="WorkflowService" href="services/workflowservice.html" />
+				<item name="Model Service" href="services/modelservice.html" />
+				<item name="Property Service" href="services/propertyservice.html" />
+				<item name="Workflow Scheduler" href="services/scheduler.html" />
 			</item>
-
-
-	<item name="Service EJBs" href="services/overview.html" collapse="true">
-			<item name="EntityService" href="services/entityservice.html" collapse="true">
-				<item name="Queries" href="services/queries.html" />
-			</item>
-			<item name="WorkflowService" href="services/workflowservice.html" />
-			<item name="Model Service" href="services/modelservice.html" />
-			<item name="Property Service" href="services/propertyservice.html" />
-			<item name="Workflow Scheduler" href="services/scheduler.html" />
-</item>
 			<item name="Security" href="acl.html" />
 
 			<item name="Plugin API" href="plugin/overview.html" collapse="true">
@@ -62,12 +55,14 @@
 			</item>
 
 			<item name="Admin Client" href="adminclient.html" />
-			
+
 			<item name="Test Suite" href="testsuite.html" />
-			
-			<item name="Deployment" href="deployment/overview.html" collapse="true">
+
+			<item name="Deployment" href="deployment/overview.html"
+				collapse="true">
 				<item name="Database Schema" href="deployment/database_schema.html" />
 				<item name="Security" href="deployment/acl_deployment.html" />
+				<item name="Remote Lookup" href="deployment/remote_lookup.html" />
 				<item name="Concurrency" href="deployment/concurrency.html" />
 				<item name="Performance" href="deployment/performance.html" />
 				<item name="Using Maven" href="deployment/deployment_maven.html" />
