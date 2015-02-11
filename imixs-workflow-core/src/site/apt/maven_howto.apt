@@ -1,65 +1,59 @@
   
-Download & Maven support
+Download & Maven 
 ~~~~~~~~~~~~~~~~~~~~
 
- The Imixs Workflow Project contains a great deal of technologies which helps you building your 
- own workflow application.
- If you want to start with an example of an Imixs Workflow business application you can download the 
- Imixs JSF Sample Application from the {{{http://java.net/projects/imixs-workflow/downloads}download center}}.
- You will find an installation guide {{{http://www.imixs.org/jee/install.html}here}}.
-     
- If you are working with maven you can also start with the {{{http://www.imixs.org/jee/archetype/usage.html}Imixs JSF Archetype}}
- which gives you an easy starting point for building a JEE business application.
-      
-  
+ The Imixs-Workflow project contains a great deal of technologies which helps you building your 
+ own workflow application. If you want to start with an example you can begin with the 
+ {{{http://www.imixs.org/jee/install.html}Imixs Sample Application}}.
+ 
+ If you want to integrate Imixs-Workflow to you own project we provide maven artifacts to be added in
+ your application.
+
   
 * Maven support
 ~~~~~~~~~~~~~~~~~~~~
  
- All results from the Imixs Workflow Project are provided as maven artifacts. 
- Working with maven makes it almost simple to build applications based on different libraries or 
- frameworks. Maven is a build and configuration tool which helps you to organize your project and finding
+ All results from the Imixs-Workflow project are provided as maven artifacts. 
+ Maven is a build and configuration tool which helps you to organize your project and finding
  necessary libraries and artifacts through the Internet. 
+ Working with maven makes it almost simple to build applications based on different libraries or 
+ frameworks.
  
- Imixs supports maven which allows you to access all Imixs Workflow libraries easily and build 
- your projects using Maven. General information about using maven in a project you will
+ Imixs-Workflow supports maven and allows you to access all libraries easily to build your own project
+ with workflow components. General information about using maven in a project you will
  find {{{http://maven.apache.org/}in the maven project site}}.
 
-*How to download an artifact from the maven repository 
+**How to download an artifact from the maven repository 
 ~~~~~~~~~~~~~~~~~~~~
 
- All binaries from the Imixs Workflow Project are provided as maven artifacts 
- through the {{{http://search.maven.org/#browse}maven central repository}}. 
- You can download each binary directly from the maven central repository.
- To browse the Imixs artifacts provided by this project go to 
- the {{{http://search.maven.org/#browse}maven central repository}} and search for the keyword 'imixs'.
- 
+ All binaries from the Imixs-Workflow project are provided in the {{{http://search.maven.org/#browse}maven-central-repository}}. 
+ You can download each binary directly from there if you 
+ browse the {{{http://search.maven.org/#browse}maven-central-repository}} and search for the keyword 'imixs'.
  
 
-*How to add a maven dependency to your project
+**How to add a maven dependency to your project
 ~~~~~~~~~~~~~~~~~~~~
 
- To add a dependency for a Imixs Workflow artifact into you own project add a dependency to your pom.xml like 
+ To add the dependency of Imixs-Workflow to your own maven proejct just add a new dependency to your pom.xml like 
  shown in the following example:
 
 +------------------------------------------------------------------------+
-	<dependency>
-		<groupId>org.imixs.workflow</groupId>
-		<artifactId>imixs-workflow-api</artifactId>
-		<version>2.1.1</version>
-		<type>jar</type>
-	</dependency>
+<dependency>
+	<groupId>org.imixs.workflow</groupId>
+	<artifactId>imixs-workflow-api</artifactId>
+	<version>3.x.x</version>
+	<type>jar</type>
+</dependency>
 +------------------------------------------------------------------------+
   
  Please take care about the version number. You will find the latest version number by browsing the
- Maven central repository.
+ {{{http://search.maven.org/#browse}maven-central-repository}}.
  You will find also more detailed informations about adding dependencies in the separate sections
- of the Imixs Workflow technologies.
-    
+ of the different Imixs-Workflow subprojects.
 
 
 
-*How to access Snapshot Releases 
+**Snapshot Releases 
 ~~~~~~~~~~~~~~~~~~~~
 
  Snapshot releases are newer releases of a component which are still under development. 

@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<artifactId>imixs-workflow</artifactId>
 		<groupId>org.imixs.workflow</groupId>
@@ -8,44 +9,13 @@
 	<artifactId>imixs-workflow-core</artifactId>
 	<name>Core API</name>
 
-	
+	<description>Imixs-Workflow Core provides the platform for an open and standardized workflow technology. 
+Imixs-Workflow Core provides various components in a Java framework that allow to create, control 
+		and monitor process-oriented business tasks.</description>
 
-	<description>
-		Imixs Workflow Core provides the platform for an open and standardized workflow technology. 
-		Imixs Workflow Core provides various components in a Java framework that allow to create, control 
-		and monitor process-oriented business tasks.
-	</description>
-
-
-<!--  
-	<scm>
-		<connection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-core/trunk</connection>
-		<developerConnection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-core/trunk</developerConnection>
-		<url>
-			scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-core/trunk</url>
-	</scm>
-
-
-	<licenses>
-		<license>
-			<name>GNU General Public License</name>
-			<url>http://www.gnu.org/licenses/gpl-2.0.txt</url>
-			<distribution>repo</distribution>
-			<comments>All the results of the imixs workflow project are subject to the GPL licensing model. </comments>
-		</license>
-	</licenses>
--->
 	<build>
-	
-
 	</build>
 
-
 	<dependencies>
-	
 	</dependencies>
-
-
-	
-
 </project>
