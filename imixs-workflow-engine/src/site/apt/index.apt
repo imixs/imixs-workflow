@@ -7,56 +7,71 @@
  
 
 
-About the Imixs Workflow Engine
+The Imixs-Workflow Engine
 ~~~~~~~~~~~~~~
- The Imixs Workflow Engine is a full featured Workflow Management System (WFMS) based on the 
+ The Imixs-Workflow Engine is a full featured Workflow Management System (WFMS) based on the 
  Java Enterprise Edition (Java EE). It provides an architecture to store business data and process
  workflows defined in a business process model. 
  This makes it easy to develop business applications in a fast and flexible way, since there is no 
  need to invest much time in the persistence and management of business objects.
- 
- The project extends the {{{/api/}Imixs Workflow API}} to fulfill the requirements to a scalable, 
+ The Imixs-Workflow Engine fulfills the requirements to a scalable, 
  transactional, robust and simple deployable java enterprise business application.
- The Imixs Workflow provides different service components which can be used in any kind of enterprise
- BPM application. 
   
 [images/imixs-architecture_jee.png] 
 
+
+*The Components 
+~~~~~~~~~~~~~~~~~~~~
+
+ The Imixs-Workflow Engine is based on the {{{/api/}Imxis Workfow API}} and provides a set of 
+ service components which can be used to implement enterprise business applications and workflow management solutions. 
+ The components are divided by the different building blocks of a workflow management system. 
+ 
+ 
+** The EntityService
+~~~~~~~~~~~~~~~~~~~~ 
+  The EntityService component is used to save and load a process instance (Workitem) into a
+  Database. A Workitem is represented by the  {{{/api/itemcollection.html}Imixs ItemCollection}} which is a 
+  value object containing all information about a process instance.
+  For example all workitems processed by the Imixs-Workflow Engine are stored by the EntityService into 
+  the database. But also Model entities or other business objects can be managed by the EntityService. 
+  The EnityService provides an access control list (ACL) for each entity to avoid unauthorized 
+  access to the values of an ItemCollection.
+  When the CallerPrincipal is not allowed to save or read a specific ItemCollection from
+  the database the EntityService throws an AccessDeniedException. 
+  The EntityService can be used to save business objects into a database with individual read- or 
+  writeAccess restrictions. The EntityService is the core service component used by the Imixs JEE Workflow.
   
-* General Goals
-~~~~~~~~~~~~~~~~~~~~
- The goal of this project is to provide an easy to use enterprise architecture for the development of
- business applications. 
- The Imixs Workflow is typical used for human-to-human workflows but it can also be used for complex 
- technical business process management (BPM) solutions. 
+  {{{./services/entityservice.html}Read more about the Imixs EntityService}}.
+  
  
- The project is based on the Java EE specification and the Java EE component model. It offers a set of enterprise
- java beans (EJBs) providing a reusable and robust workflow solution to be used in any kind of enterprise application. 
- The Imixs Workflow Engine enables software developers to reduce the time to implement BPM functionality inside 
- there own applications. Therefore the project provides business services and a JPA based 
- persistence architecture for the management and the persistence of business process data. 
+** The WorkflowService
+~~~~~~~~~~~~~~~~~~~~ 
+ The WorkflowService is the JEE implementation of the Imixs-Workflow Manager. This
+ component supports general methods to create, process and access workitems based on a workflow model. 
+ The component is easy to use and all the business logic can be 
+ controlled fully by a workflow model. The WorkflowService component provides also a set of methods to 
+ find and fetch collections of workitems processed by the WorkflowManager. The WorkflowService is the 
+ main component used by an application to manage business logic.  
  
-   [Note:] The Imixs Workflow Engine is based on the concepts of the Java EE component model. 
-    	This means also that it is not necessary to be a Java EE developer to use these components. 
-   		One goal of this project is to provide developers with functional components out of the box. 
-   		These components can be used without paying much attention about all the internal JPA and EJB stuff. 
-   		If you just want to use the Imixs Workflow Engine in your own Web Project you can use the {{{/jsf/}Imixs Web Tools}} 
-   		providing an easy to use JSF workflow framework. 
-   		On the other hand, if you are interested in Java EE and EJB technology and the implementation of the
-   		Imixs Workflow Engine you will find useful informations about building robust and scaleable enterprise BPM 
-   		applications.
-      
-      
- This project site gives an overview about the basic concepts behind the Imixs Workflow Engine  
- and you will find also examples about the usage and the deployment of the components. 
+ {{{./services/workflowservice.html}Read more about the Imixs WorkflowService}}.
  
- All components of the project are build using Maven to simplify the development process and usage of 
- the components in a Java project. 
+** The ModelService
+~~~~~~~~~~~~~~~~~~~~ 
+ The ModelService component is the JEE Implementation of the Model interface from the Imixs-Workflow API 
+ used by the WorkflowService.
+ The Service extends the standard interface with useful methods to load, store and navigate through 
+ workflow models. The  ModelService component can be used by an application to provide the user
+ with information about the workflow model for a specific business process. Models can be managed by the
+ {{{http://www.imixs.org/modeler/}Eclipse based Imixs-Workflow Modeller}}. 
  
-* License
-~~~~~~~~~~~~~~~~~~~~
- All results of the Imixs Workflow project and subprojects are subject to the GNU General Public License (GPL). 
- You are free to use the results of the project in you own software project. We also invite you to participate 
- as much as you wish. Every project obtains its strengths in virtue of the persons involved. The role and 
- responsibility of everybody involved in this project is based on merits.
- Every input counts!   
+ {{{./services/modelservice.html}Read more about the Imixs ModelService}}.
+ 
+** The ReportService
+~~~~~~~~~~~~~~~~~~~~ 
+ The ReportService component supports methods to create, find and execute Imixs-Workflow Reports.
+ A report can be used to generate aggregated information from workitems and processing data managed
+ by the WorkflowService. Reports are a very flexible technology and provide an easy to use interface
+ based on the {{{http://www.imixs.org/xml/}Imixs REST Service API}}. 
+ Reports can be managed with the {{{http://www.imixs.org/modeler/}Eclipse based Imixs-Workflow Modeller}}.
+  

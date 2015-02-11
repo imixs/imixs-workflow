@@ -1,40 +1,67 @@
  
-About Imixs Faces
+The Imixs Web Tools
 ~~~~~~~~~~~~~~
- Imixs Faces is a component library based on JSF and jQuery, which helps you to develop business 
+ Imixs Web Tools is a component library based on JSF and jQuery, which helps you to develop JEE business 
  applications much faster. This library contains a set of components to be used in a JSF 2.0 Web 
- Application and builds up on the capabilities of the Imixs Workflow Engine.
+ Application and builds up on the capabilities of the Imixs-Workflow Engine.
  
 [images/imixs-architecture_web.png]
  
  Since Java EE6 the lightweight Web Profiles simplifies the deployment of Java EE applications.
- This means that you can use Imixs Faces in your Web application without worry about the details of
+ This means that you can use Imixs Web Tools in your Web application without worry about the details of
  EJB and JPA deployment.
  
- Imixs Faces provides widgets to design modern user interfaces. These widgets are based on 
+ Imixs Web Tools providing widgets to design modern user interfaces. These widgets are based on 
  {{{http://jquery.com/}jQuery and jQuery UI}} which is a powerful JavaScript framework to design 
  Web 2.0 UIs. If you like to work with other JSF Web frameworks like RichFaces or Primefaces you can 
  also use only a subset of this component library.  
+
  
- This project site gives an overview about the basic concepts behind the Imixs Faces 
- and you will find also examples how to work with the components. Additional informations 
- about this project are also given on this site.
+*The JSF Components 
+~~~~~~~~~~~~~~~~~~~~
+
+ The Imixs Web Tools provides a set of components which can be used to implement workflow
+ management systems in a JSF based web application. 
+ 
+** The WorkflowController
+~~~~~~~~~~~~~~~~~~~~ 
+  The WorkflowController is the main component in the Web Tools. This component provides a
+  Backing Bean providing the workflow management functionality.
+  The Component provides methods to create, access and process workitems. 
+  One of the main concepts of the Imixs-Workflow API is a dynamic Document structure. This means that 
+  the component will automatically store and process any data provided by a web form. 
+  
++-------------------------------------------+
+<h:inputText value="#{workflowMB.item['txtSubject']}" id="subject_id" />
++-------------------------------------------+
+						  
+  In this case the attribute "txtSubject" will be managed by the WorkflowController.
+  The WorkflowController can be subclassed to implement a backing bean with application specific properties.
+  
+ 
+** SecurityHashMap and LoginMB
+~~~~~~~~~~~~~~~~~~~~ 
+ Imixs-Workflow provides a strong security management inside a single process. Imixs Web Tools provide some
+ components to be used to manage the User Login- and Logout mechanism and also an easy access to user specific 
+ roles. This simplifies in many cases the implementation of secured web applications. 
+ The following example shows how an input field is hidden for users without the access 
+ role 'org.imixs.ACCESSLEVEL.MANAGERACCESS' 
+ 
++-------------------------------------------+
+ <h:inputText value="#{workflowMB.item['txtSubject']}" id="subject_id"
+   rendered="#{IsUserInRole['org.imixs.ACCESSLEVEL.MANAGERACCESS']}" />
++-------------------------------------------+
  
   
-* General Goals
-~~~~~~~~~~~~~~~~~~~~
- The goal of this project is to simplify the development of JSF based BPM Applications and provide a
- flexible and powerful Web 2.0 UI.
- Developers using Imixs Faces should focus on the business process and not on technical aspects of 
- integrating a enterprise application. As Imixs Faces is build on top of the Imixs Workflow Engine the 
- result of using these components is a scaleable and robust workflow application.
- Imixs Faces is build on Maven and fits into the lightweight Web Profiles supported by Java EE 6.
-    
- 
-* License
-~~~~~~~~~~~~~~~~~~~~
- All results of the Imixs Workflow project and sub-projects are subject to the GNU General Public License (GPL). 
- You are free to use the results of the project in you own software project. We also invite you to participate 
- as much as you wish. Every project obtains its strengths in virtue of the persons involved. The role and 
- responsibility of everybody involved in this project is based on merits.
- Every input counts!   
+** BLOBWorkitemController
+~~~~~~~~~~~~~~~~~~~~ 
+  This BLOBWorkitemController is an additional BackingBean to be used to save large binary objects into 
+  separate workitem. This is an implementation for lazy loading large data objects attached to an existing
+  workitem. The advantage of using a BlobWorkitem is that an application can store large data into a separate
+  worktitem wich is attached to a parent workitem. So in this case the BlobWorkitem can be loaded just 
+  in the moment all details of a parent workitem need to be accessible by the user. For example during 
+  editing a form. So the BlobWorkitem needs not to be loaded by the workflow manager during each search method
+  which typical access a lot of workitems in the same time. Using a BLOBWorkitemController can optimize
+  the data management. The Bean supports also the management for file attachments. See the examples 
+  for more details.
+  

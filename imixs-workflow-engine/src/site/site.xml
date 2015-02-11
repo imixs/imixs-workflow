@@ -19,9 +19,8 @@
 		</links>
 
 
-		<menu name="General">
-			<item name="About" href="index.html" />
-			<item name="Overview" href="overview.html" />
+		<menu name="Workflow Engine">
+			<item name="Overview" href="index.html" />
 			<item name="Getting started" href="get_started.html" collapse="true">
 				<item name="Installation" href="install.html" />
 				<item name="Setup Glassfish" href="install_glassfish.html" />

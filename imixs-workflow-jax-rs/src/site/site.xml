@@ -22,9 +22,8 @@
     </links>
 
 
-    <menu name="General">
-      <item name="About" href="index.html"/>
-      <item name="Overview" href="overview.html"/>         
+    <menu name="XML &amp; WebServices">
+      <item name="Overview" href="index.html"/>
       <item name="Installation" href="install.html"/>
       <item name="Examples" href="examples/examples.html" collapse="true">         
       	<item name="Transform XML data" href="examples/transform_xml.html"/>            

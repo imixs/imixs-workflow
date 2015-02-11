@@ -21,8 +21,7 @@
 
 
     <menu name="General">
-      <item name="About" href="index.html"/>
-      <item name="Overview" href="overview.html"/>   
+      <item name="Overview" href="index.html"/>
       <item name="jQuery-UI" href="jquery-ui.html"/>               
       <item name="ImixsHeader" href="header.html"/>               
       <item name="ImixsWorkflowActions" href="workflowactions.html"/>  

@@ -1,44 +1,52 @@
 
-About Imixs Workflow Interfaces
+The Imixs XML & Web Service
 ~~~~~~~~~~~~~~
 
- The Imixs Workflow Interfaces defining an XML- and Web Service API to exchange data from the Imixs Workflow
- System to other technologies. 
+ Imixs-Workflow provides an XML- and Web Service Interface to access the Imixs-Workflow
+ System from different platforms with different technologies. 
  
 [images/imixs-architecture_interfaces.png] 
  
- The XML Subcomponents provide also Client Implementations to be used to interact
- with an existing Workflow System. The following documentation describes the most important concepts and fundamentals 
- of the Imixs Workflow XML & Web Services. The documentation does not cover each detail of the implementation.
-
-* General Goals
-~~~~~~~~~~~~~~~~~~~~
-
- The goal of this project is to provide an easy to use set of libraries to provide Web Service interfaces 
- as also to interact with an Workflow Implementation using the Web Service Client API.
- Therefore the XML & Web Service components simplify the way to interact with the JEE Workflow Components.
- Developers using these components should focus on the buisins process and not on technical aspects of integrating 
- a enterprise application. The components can be used from web designers as also of developers who are not focusing on 
- Java. 
- As the XML & Web Service components are build on top of the Imixs JEE Workflow the result of using these components is a 
- scaleable and flexible way to interact with an workflow application. 
  
+ The Imixs XML & Web Service Interface is divided into subcomponents which provide
+ the general XML API as also the Web Service implementations to provide and to consume Web Services using
+ different technologies.
+
+* The Components
+~~~~~~~~~~~~~~
+
+ The Imixs XML & Web Service components provide an XML api and XML schema to describe the Imixs business objects
+ in xml as also web services to provide business logic in a standardized open way.  
+ Web services are said to be "loosely coupled" because the client of a web service dosen't have to know its 
+ implementation details. This makes it mostly easy to use web services also from other technologies. 
+ The consumer is able to invoke a web service using a self-explanatory interface describing the available 
+ business methods. The underlying implementation can be done in any language (Java, C#, PHP etc.).
  
-  
-      [Note:] The Imixs JEE Workflow is based on the fundamental concepts of the JEE component model. This means 
-      that it is not necessary to be a JEE developer to used these components. Our goal is to provide java and 
-      web developers with functional components which can be used without knowing much about all the JEE stuff. 
-      On the other hand, if you are interested in this technology and the implementation of the Imixs JEE Workflow 
-      you are welcome to join our developer team and help to improve these components.
+ The Imixs XML & Web Service components can be included into an Imixs-Workflow Enterprise Application to provide
+ standardized Web Service Interfaces. 
+ 
+**The XML API  -  JAXB
+~~~~~~~~~~~~~~
 
- This project site gives an overview over the basic concepts behind the Imixs XML & Web Sevice components  
- and you will find also examples how to work with different interfaces and classes. 
- Additional informations about this project are also given on this site.
+ The Imixs XML API provides XML Dataobjects to exchange data between Imixs-Workflow and a 
+ service client. The API provides also a Client implementation to consume SOAP or REST Services provided
+ by a Workflow Application. 
+ 
+ The Imixs XML API is based on the JAXB specification (JSR-222). 
+ These means that you can integrate the library very easy in any java framework. 
 
-* License
-~~~~~~~~~~~~~~~~~~~~
- All results of the Imixs Workflow project and subprojects are subject to the GNU General Public License (GPL). 
- You are free to use the results of the project in you own software project. We also invite you to participate 
- as much as you wish. Every project obtains its strengths in virtue of the persons involved. The role and 
- responsibility of everybody involved in this project is based on merits.
- Every input counts!   
+** The REST Services  -  JAX-RS
+~~~~~~~~~~~~~~
+
+ The Imixs REST Service implementation is a full featured REST Service Provider based on the 
+ {{{http://jcp.org/en/jsr/detail?id=311}JAX-RS specification (JSR-311)}}. The library can be bundled with 
+ a Imixs-Workflow Application together with the Imixs-Workflow engine. 
+ 
+*The SOAP Services  -  JAX-WS
+~~~~~~~~~~~~~~
+
+ The Imixs SOAP Service implementation is a full featured Web Service Service Provider using SOAP based on the 
+ JAX-WS specification (JSR-224). The library can be bundled with a 
+ Imixs-Workflow Enterprise Application together with the Imixs-JEE components. 
+    
+ 
