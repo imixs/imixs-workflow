@@ -9,22 +9,21 @@
 
 The Imixs-Workflow Engine
 ~~~~~~~~~~~~~~
- The Imixs-Workflow Engine is a full featured Workflow Management System (WFMS) based on the 
- Java Enterprise Edition (Java EE). It provides an architecture to store business data and process
- workflows defined in a business process model. 
- This makes it easy to develop business applications in a fast and flexible way, since there is no 
- need to invest much time in the persistence and management of business objects.
- The Imixs-Workflow Engine fulfills the requirements to a scalable, 
- transactional, robust and simple deployable java enterprise business application.
-  
+ The Imixs-Workflow Engine provides JEE services to process and control business data based on 
+ a workflow model. This simplifies the way developing business applications in a very fast and flexible way.
+ There is no need to reinvent the wheel for managing the state of a business object or to control the flow 
+ of business data between several actors. 
+ The Imixs-Workflow Engine fulfills the requirements to a scalable, transactional, robust and simple 
+ deployable workflow management component.
+ 
 [images/imixs-architecture_jee.png] 
 
 
 *The Components 
 ~~~~~~~~~~~~~~~~~~~~
 
- The Imixs-Workflow Engine is based on the {{{/api/}Imxis Workfow API}} and provides a set of 
- service components which can be used to implement enterprise business applications and workflow management solutions. 
+ The Imixs-Workflow Engine is based on the {{{/api/}Imxis Workfow API}} and provides a set of service 
+ components which can be used to implement enterprise business applications and workflow management solutions. 
  The components are divided by the different building blocks of a workflow management system. 
  
  
