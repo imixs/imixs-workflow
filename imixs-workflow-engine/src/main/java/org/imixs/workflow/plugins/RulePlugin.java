@@ -148,7 +148,7 @@ public class RulePlugin extends AbstractPlugin {
 				// of strings
 				params = this.evaluateScriptObject(engine, "errorMessage");
 				// finally throw a Plugin Exception
-				throw new PluginException(RulePlugin.class.getSimpleName(),
+				throw new PluginException(RulePlugin.class.getName(),
 						sErrorCode,
 						"BusinessRule: validation failed - ErrorCode="
 								+ sErrorCode, params);
