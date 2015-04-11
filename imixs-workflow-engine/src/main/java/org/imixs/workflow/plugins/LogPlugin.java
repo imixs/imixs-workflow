@@ -53,7 +53,7 @@ import org.imixs.workflow.exceptions.PluginException;
 
 public class LogPlugin extends AbstractPlugin {
 	public ItemCollection documentContext;
-	List vPluginLog, vActivityLog;
+	List<?> vPluginLog, vActivityLog;
 
 	/**
 	 * the log entries generated form the kernel will be cut if the attribute

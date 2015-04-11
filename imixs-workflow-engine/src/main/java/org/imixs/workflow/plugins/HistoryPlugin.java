@@ -77,9 +77,11 @@ import org.imixs.workflow.exceptions.PluginException;
 public class HistoryPlugin extends AbstractPlugin {
 	public ItemCollection documentContext;
 	public ItemCollection documentActivity;
+	@SuppressWarnings("rawtypes")
 	List vOldProt, vOldProtRev;
 	private static Logger logger = Logger.getLogger("org.imixs.workflow");
 
+	@SuppressWarnings("unchecked")
 	public int run(ItemCollection adocumentContext,
 			ItemCollection adocumentActivity) throws PluginException {
 		String rtfItemResult;

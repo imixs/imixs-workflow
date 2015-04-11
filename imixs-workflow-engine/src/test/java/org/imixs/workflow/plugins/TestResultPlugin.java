@@ -9,8 +9,6 @@ import junit.framework.Assert;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.plugins.ResultPlugin;
-import org.imixs.workflow.plugins.RulePlugin;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -146,6 +144,7 @@ public class TestResultPlugin {
 	 * This test verifies if  a pluginException is thronw if the format was invalid
 	 * @throws PluginException
 	 */
+	@SuppressWarnings("unused")
 	@Test
 	public void testInvalidFormatException()  {
 

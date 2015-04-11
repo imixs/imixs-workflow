@@ -332,7 +332,7 @@ public class MailPlugin extends AbstractPlugin {
 
 		// read keyMailReceiverFields (multi value)
 		// here are the field names defined
-		mergeMappedFieldValues(documentContext, vectorRecipients,
+		mergeFieldList(documentContext, vectorRecipients,
 				documentActivity.getItemValue("keyMailReceiverFields"));
 
 		// write debug Log
@@ -365,7 +365,7 @@ public class MailPlugin extends AbstractPlugin {
 			vectorRecipients = new Vector<String>();
 
 		// now read keyMailReceiverFieldsCC (multi value)
-		mergeMappedFieldValues(documentContext, vectorRecipients,
+		mergeFieldList(documentContext, vectorRecipients,
 				documentActivity.getItemValue("keyMailReceiverFieldsCC"));
 
 		// write debug Log

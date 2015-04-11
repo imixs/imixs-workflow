@@ -30,7 +30,6 @@ package org.imixs.workflow.plugins;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
@@ -76,6 +75,7 @@ public class AnalysisPlugin extends AbstractPlugin {
 	private static Logger logger = Logger.getLogger(AnalysisPlugin.class
 			.getName());
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public int run(ItemCollection documentContext,
 			ItemCollection documentActivity) throws PluginException {

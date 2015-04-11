@@ -79,7 +79,7 @@ public class HistoryPlugin extends AbstractPlugin {
 	 * this case the old log format will be transformed into the new format see
 	 * method convertOldFormat
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public int run(ItemCollection adocumentContext,
 			ItemCollection adocumentActivity) throws PluginException {
 		String rtfItemLog;
@@ -160,6 +160,7 @@ public class HistoryPlugin extends AbstractPlugin {
 	 * </ul>
 	 * 
 	 */
+	@SuppressWarnings("unchecked")
 	protected void convertOldFormat() {
 		List<List<Object>> newList = new ArrayList<List<Object>>();
 

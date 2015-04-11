@@ -27,9 +27,9 @@
 
 package org.imixs.workflow.plugins;
 
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
@@ -38,18 +38,31 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * This Pluginmodul implements a Ownership Control for Workflowactivitys. The
- * Plugin manages the modifications of the field namOwner of a Workitem inside a
- * activity by setting this Attribute. A Workflowmanager can use this attributes
- * to reflect there settings to the ownership inside a certain databasesystem.
- * The Plugin checks a set of activity attributes to manage the new settings of
- * the ownership defined inside the activity entity These attributes are:
+ * This plugin implements a ownership control by evaluating the configuration of
+ * a Activity Entity. The Plugin updates the WorkItem attribute namOwner
+ * depending on the provided information.
  * 
- * o keyOwnershipMode (Vector): '1'=modify access '0'=renew access
+ * <p>
+ * These attributes defined in Activity Entity are evaluated by the plugin:
+ * <ul>
+ * <li>keyupdateacl (Boolean): if false no changes are necessary
+ * <li>keyOwnershipFields (Vector): Properties of the current WorkItem
+ * <li>namOwnershipNames (Vector): Names & Groups to be added /replaced
  * 
- * o namOwnershipNames (Vector): Names & Groups to add to the namOwner (Vector):
  * 
- * o keyaddwriteroles (Vector): Roles to add to the namOwner attribute
+ * 
+ * NOTE: Models generated with the first version of the Imixs-Workflow Modeler
+ * provide a different set of attributes. Therefore the plugin implements a
+ * fallback method to support deprecated models. The fallback method evaluate
+ * the following list of attributes defined in Activity Entity:
+ * <p>
+ * 
+ * <ul>
+ * <li>keyOwnershipMode (Vector): '1'=modify access '0'=renew access
+ * <li>keyOwnershipFields (Vector): Properties of the current WorkItem
+ * <li>namOwnershipNames (Vector): Names & Groups to be added /replaced
+ * 
+ * 
  * 
  * @author Ralph Soika
  * @version 1.0
@@ -59,8 +72,11 @@ import org.imixs.workflow.exceptions.PluginException;
 public class OwnerPlugin extends AbstractPlugin {
 	ItemCollection documentContext;
 	ItemCollection documentActivity;
-	Vector itemOwnerRollback;
+	Vector<?> itemOwnerRollback;
 	WorkflowContext workflowContext;
+
+	private static Logger logger = Logger.getLogger(AccessPlugin.class
+			.getName());
 
 	public void init(WorkflowContext actx) throws PluginException {
 		workflowContext = actx;
@@ -70,16 +86,85 @@ public class OwnerPlugin extends AbstractPlugin {
 	 * changes the namworkflowreadaccess and namworkflowwriteaccess attribues
 	 * depending to the activityentity
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public int run(ItemCollection adocumentContext,
 			ItemCollection adocumentActivity) throws PluginException {
-		List itemOwner;
 		List vectorAccess;
 
 		documentContext = adocumentContext;
 		documentActivity = adocumentActivity;
 
-		// Validate Activity and Workitem
-		validate();
+		// save Attributes for roleback
+		itemOwnerRollback = (Vector) documentContext.getItemValue("namowner");
+
+		// test if fallback mode?
+		if (isFallBackMode()) {
+			// run the deprecated model evaluation...
+			processFallBack();
+			return Plugin.PLUGIN_OK;
+		}
+
+		// test update mode..
+		if (documentActivity.getItemValueBoolean("keyupdateacl") == false) {
+			// no update!
+			return Plugin.PLUGIN_OK;
+		}
+
+		vectorAccess = new Vector();
+		// add names
+		mergeValueList(vectorAccess,
+				documentActivity.getItemValue("namOwnershipNames"));
+		// add Mapped Fields
+		mergeFieldList(documentContext, vectorAccess,
+				documentActivity.getItemValue("keyOwnershipFields"));
+		// clean Vector
+		vectorAccess = uniqueList(vectorAccess);
+
+		// update accesslist....
+		documentContext.replaceItemValue("namowner", vectorAccess);
+		if ((workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
+				&& (vectorAccess.size() > 0)) {
+			logger.info("[OwnerPlugin] Owners:");
+			for (int j = 0; j < vectorAccess.size(); j++)
+				logger.info("               '" + (String) vectorAccess.get(j)
+						+ "'");
+		}
+
+		return Plugin.PLUGIN_OK;
+	}
+
+	public void close(int status) {
+		// restore changes?
+		if (status == Plugin.PLUGIN_ERROR) {
+			documentContext.replaceItemValue("namOwner", itemOwnerRollback);
+		}
+	}
+
+	/**
+	 * Returns true if a old workflow model need to be evaluated
+	 * 
+	 * @return
+	 */
+	private boolean isFallBackMode() {
+		// if the new keyupdateacl exists no fallback mode!
+		if (documentActivity.hasItem("keyupdateacl")) {
+			return false;
+		}
+
+		// fallback mode if no keyupdateacl exists and keyaccessmode exits
+		if (documentActivity.hasItem("keyOwnershipMode")) {
+			return true;
+		}
+
+		return false;
+
+	}
+
+	@Deprecated
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void processFallBack() {
+		List itemOwner;
+		List vectorAccess;
 
 		itemOwner = (Vector) documentContext.getItemValue("namowner");
 
@@ -100,11 +185,11 @@ public class OwnerPlugin extends AbstractPlugin {
 			vectorAccess = new Vector();
 
 		// **1** AllowAccess add names
-		mergeVectors(vectorAccess,
+		mergeValueList(vectorAccess,
 				documentActivity.getItemValue("namOwnershipNames"));
 
 		// **3** AllowAccess add Mapped Fields
-		mergeMappedFieldValues(documentContext, vectorAccess,
+		mergeFieldList(documentContext, vectorAccess,
 				documentActivity.getItemValue("keyOwnershipFields"));
 
 		// clean Vector
@@ -120,36 +205,5 @@ public class OwnerPlugin extends AbstractPlugin {
 						+ (String) vectorAccess.get(j));
 		}
 
-		return Plugin.PLUGIN_OK;
 	}
-
-	public void close(int status) {
-		// restore changes?
-		if (status == Plugin.PLUGIN_ERROR) {
-			documentContext.replaceItemValue("namOwner", itemOwnerRollback);
-		}
-	}
-
-	/**
-	 * Ensures that the workitem and activityentity has a valid set of
-	 * attributes to be process by this plugin.
-	 */
-	private void validate() {
-
-		// validate activity
-		if (!documentActivity.hasItem("keyOwnershipMode"))
-			documentActivity.replaceItemValue("keyOwnershipMode", "");
-
-		if (!documentActivity.hasItem("namOwnershipNames"))
-			documentActivity.replaceItemValue("namOwnershipNames", "");
-
-		if (!documentActivity.hasItem("keyOwnershipFields"))
-			documentActivity.replaceItemValue("keyOwnershipFields", "");
-
-		// validate document
-		if (!documentContext.hasItem("namOwner"))
-			documentContext.replaceItemValue("namOwner", "");
-
-	}
-
 }

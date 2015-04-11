@@ -1,34 +1,44 @@
 package org.imixs.workflow.bpmn;
 
+import java.util.logging.Logger;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class BPMNDefaultHandler extends DefaultHandler {
-	boolean bfname = false;
-	boolean blname = false;
-	boolean bnname = false;
+	
+	private static Logger logger = Logger.getLogger(BPMNDefaultHandler.class.getName());
+
+	
+	boolean bDefinitions = false;
+	boolean bExtensionElements = false;
+	boolean bImixsProperty = false;
 	boolean bsalary = false;
 
 	@Override
 	public void startElement(String uri, String localName, String qName,
 			Attributes attributes) throws SAXException {
 
-		System.out.println("Start Element :" + qName);
+		logger.info("Start Element :" + qName);
 
-		if (qName.equalsIgnoreCase("FIRSTNAME")) {
-			bfname = true;
+		
+		// bpmn2:definitions
+		if (qName.equalsIgnoreCase("bpmn2:definitions")) {
+			bDefinitions = true;
 		}
 
-		if (qName.equalsIgnoreCase("LASTNAME")) {
-			blname = true;
+		if (qName.equalsIgnoreCase("bpmn2:extensionElements")) {
+			bExtensionElements = true;
 		}
 
-		if (qName.equalsIgnoreCase("NICKNAME")) {
-			bnname = true;
+		if (qName.equalsIgnoreCase("imixs:property")) {
+			bImixsProperty = true;
 		}
 
-		if (qName.equalsIgnoreCase("SALARY")) {
+		// if a task element is found verify if imixs:processid exists to identify a Imixs Workflow Taks element
+		if (qName.equalsIgnoreCase("bpmn2:task")) {
+			//attributes.g
 			bsalary = true;
 		}
 
@@ -46,19 +56,19 @@ public class BPMNDefaultHandler extends DefaultHandler {
 	public void characters(char ch[], int start, int length)
 			throws SAXException {
 
-		if (bfname) {
+		if (bDefinitions) {
 			System.out.println("First Name : " + new String(ch, start, length));
-			bfname = false;
+			bDefinitions = false;
 		}
 
-		if (blname) {
+		if (bExtensionElements) {
 			System.out.println("Last Name : " + new String(ch, start, length));
-			blname = false;
+			bExtensionElements = false;
 		}
 
-		if (bnname) {
+		if (bImixsProperty) {
 			System.out.println("Nick Name : " + new String(ch, start, length));
-			bnname = false;
+			bImixsProperty = false;
 		}
 
 		if (bsalary) {

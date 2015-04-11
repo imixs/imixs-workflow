@@ -38,134 +38,127 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * This Plugin module implements a generic Access management controled throught
- * the configuration in a Workflowactivity. The Plugin updates the attriubtes
- * $ReadAccess and $WriteAccess depending on the configuration in a
- * ActivityEntiy.
+ * This plugin implements a generic access management control (ACL) by
+ * evaluating the configuration of a Activity Entity. The Plugin updates the
+ * WorkItem attributes $ReadAccess and $WriteAccess depending on the provided
+ * information.
+ * 
+ * <p>
+ * These attributes defined in Activity Entity are evaluated by the plugin:
+ * <ul>
+ * <li>keyupdateacl (Boolean): if false no changes are necessary
+ * <li>keyaddreadfields (Vector): Properties of the current WorkItem
+ * <li>keyaddwritefields (Vector): Properties of the current WorkItem
+ * <li>namaddreadaccess (Vector): Names & Groups to be added /replaced
+ * <li>namaddwriteaccess (Vector): Names & Groups to be added/replaced
+ * 
+ * 
+ * NOTE: Models generated with the first version of the Imixs-Workflow Modeler
+ * provide a different set of attributes. Therefore the plugin implments a
+ * fallback method to support deprecated models. The fallback method evaluate
+ * the following list of attributes defined in Activity Entity:
  * <p>
  * These attributes are:
  * <ul>
  * <li>keyaccessmode (Vector): '1'=update '0'=renew
  * <li>namaddreadaccess (Vector): Names & Groups to be added /replaced
  * <li>namaddwriteaccess (Vector): Names & Groups to be added/replaced
- * <li>keyaddreadroles (Vector): Roles to be added/replaced
- * <li>keyaddwriteroles (Vector): Roles to added/replaced
  * <li>keyaddreadfields (Vector): Attributes of the processd workitem to add
  * there values
  * <li>keyaddwritefields (Vector): Attributes of the processd workitem to add
  * therevalues
  * 
  * @author Ralph Soika
- * @version 2.0
+ * @version 3.0
  * @see org.imixs.workflow.WorkflowManager
  */
 
 public class AccessPlugin extends AbstractPlugin {
 	ItemCollection documentContext;
 	ItemCollection documentActivity;
-	List itemReadRollback, itemWriteRollback;
+	List<?> itemReadRollback, itemWriteRollback;
 	WorkflowContext workflowContext;
 
-	private static Logger logger = Logger.getLogger("org.imixs.workflow");
+	private static Logger logger = Logger.getLogger(AccessPlugin.class
+			.getName());
 
 	public void init(WorkflowContext actx) throws PluginException {
 		workflowContext = actx;
 	}
 
 	/**
-	 * changes the $readAccess and $writeAccess attribues depending to the
-	 * activityentity
+	 * This method updates the $readAccess and $writeAccess attributes of a
+	 * WorkItem depending to the configuration of a Activity Entity.
+	 * 
+	 * The method evaluates the new model flag keyupdateacl. If 'false' then acl
+	 * will not be updated.
+	 * 
+	 * 
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public int run(ItemCollection adocumentContext,
 			ItemCollection adocumentActivity) throws PluginException {
-		List itemRead;
-		List itemWrite;
 		List vectorAccess;
 
 		documentContext = adocumentContext;
 		documentActivity = adocumentActivity;
 
-		// Validate Activity and Workitem
-		validate();
-
-		itemRead = (Vector) documentContext.getItemValue("$readAccess");
-
-		// save Attribute for roleback
+		// save Attributes for roleback
 		itemReadRollback = (Vector) documentContext.getItemValue("$readAccess");
+		itemWriteRollback = documentContext.getItemValue("$writeAccess");
 
-		// neuen ReadAccess hinzuf�gen
-		if ("1".equals(documentActivity.getItemValueString("keyaccessmode")))
-			vectorAccess = itemRead;
-		else
-			vectorAccess = new Vector();
-		if (workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-			logger.info("[AccessPlugin] AccessMode: '"
-					+ documentActivity.getItemValueString("keyaccessmode")
-					+ "'");
+		// test if fallback mode?
+		if (isFallBackMode()) {
+			// run the deprecated model evaluation...
+			processFallBack();
+			return Plugin.PLUGIN_OK;
+		}
 
-		if (vectorAccess == null)
-			vectorAccess = new Vector();
+		// test update mode..
+		if (documentActivity.getItemValueBoolean("keyupdateacl") == false) {
+			// no update!
+			return Plugin.PLUGIN_OK;
+		}
 
-		// **1** AllowAccess add names
-		mergeVectors(vectorAccess,
+		vectorAccess = new Vector();
+		// add names
+		mergeValueList(vectorAccess,
 				documentActivity.getItemValue("namaddreadaccess"));
-		// **2** AllowAccess add roles
-		mergeVectors(vectorAccess,
-				documentActivity.getItemValue("keyaddreadroles"));
-		// **3** AllowAccess add Mapped Fields
-		mergeMappedFieldValues(documentContext, vectorAccess,
+		// add Mapped Fields
+		mergeFieldList(documentContext, vectorAccess,
 				documentActivity.getItemValue("keyaddreadfields"));
-
 		// clean Vector
 		vectorAccess = uniqueList(vectorAccess);
 
-		// save Vector
+		// update accesslist....
 		documentContext.replaceItemValue("$readAccess", vectorAccess);
 		if ((workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
 				&& (vectorAccess.size() > 0)) {
 			logger.info("[AccessPlugin] ReadAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.info("               '" + (String) vectorAccess.get(j)+"'");
+				logger.info("               '" + (String) vectorAccess.get(j)
+						+ "'");
 		}
 
-		/**** now process write access ***/
-
-		// check for $writeAccess
-		itemWrite = documentContext.getItemValue("$writeAccess");
-
-		// save Attribute for roleback
-		itemWriteRollback = documentContext.getItemValue("$writeAccess");
-
 		// add new WriteAccess
-
-		if ("1".equals(documentActivity.getItemValueString("keyaccessmode")))
-			vectorAccess = itemWrite;
-		else
-			vectorAccess = new Vector();
-
-		if (vectorAccess == null)
-			vectorAccess = new Vector();
-
-		// **1** AllowAccess add Names
-		mergeVectors(vectorAccess,
+		vectorAccess = new Vector();
+		// add Names
+		mergeValueList(vectorAccess,
 				documentActivity.getItemValue("namaddwriteaccess"));
-		// **2** AllowAccess add Rolles
-		mergeVectors(vectorAccess,
-				documentActivity.getItemValue("keyaddwriteroles"));
-		// **3** AllowAccess add Mapped Fields �gen
-		mergeMappedFieldValues(documentContext, vectorAccess,
+		// add Mapped Fields
+		mergeFieldList(documentContext, vectorAccess,
 				documentActivity.getItemValue("keyaddwritefields"));
-
 		// clean Vector
 		vectorAccess = uniqueList(vectorAccess);
 
-		// save Vector
+		// update accesslist....
 		documentContext.replaceItemValue("$writeAccess", vectorAccess);
 		if ((workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
 				&& (vectorAccess.size() > 0)) {
 			logger.info("[AccessPlugin] WriteAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.info("               '" + (String) vectorAccess.get(j)+"'");
+				logger.info("               '" + (String) vectorAccess.get(j)
+						+ "'");
 		}
 
 		return Plugin.PLUGIN_OK;
@@ -180,39 +173,101 @@ public class AccessPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * Ensures that the workitem and activityentity has a valid set of
-	 * attributes to be process by this plugin.
+	 * Returns true if a old workflow model need to be evaluated
+	 * 
+	 * @return
 	 */
-	private void validate() {
+	private boolean isFallBackMode() {
+		// if the new keyupdateacl exists no fallback mode!
+		if (documentActivity.hasItem("keyupdateacl")) {
+			return false;
+		}
 
-		// validate activity
-		if (!documentActivity.hasItem("keyaccessmode"))
-			documentActivity.replaceItemValue("keyaccessmode", "");
+		// fallback mode if no keyupdateacl exists and keyaccessmode exits
+		if (documentActivity.hasItem("keyaccessmode")) {
+			return true;
+		}
 
-		if (!documentActivity.hasItem("namaddreadaccess"))
-			documentActivity.replaceItemValue("namaddreadaccess", "");
+		return false;
 
-		if (!documentActivity.hasItem("keyaddreadroles"))
-			documentActivity.replaceItemValue("keyaddreadroles", "");
+	}
 
-		if (!documentActivity.hasItem("keyaddreadfields"))
-			documentActivity.replaceItemValue("keyaddreadfields", "");
+	@Deprecated
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void processFallBack() {
+		List itemRead;
+		List itemWrite;
+		List vectorAccess;
 
-		if (!documentActivity.hasItem("namaddwriteaccess"))
-			documentActivity.replaceItemValue("namaddwriteaccess", "");
+		itemRead = (Vector) documentContext.getItemValue("$readAccess");
 
-		if (!documentActivity.hasItem("keyaddwriteroles"))
-			documentActivity.replaceItemValue("keyaddwriteroles", "");
+		// test mode (1=update)
+		if ("1".equals(documentActivity.getItemValueString("keyaccessmode")))
+			vectorAccess = itemRead;
+		else
+			vectorAccess = new Vector();
+		if (workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
+			logger.info("[AccessPlugin] AccessMode: '"
+					+ documentActivity.getItemValueString("keyaccessmode")
+					+ "'");
 
-		if (!documentActivity.hasItem("keyaddreadfields"))
-			documentActivity.replaceItemValue("keyaddreadfields", "");
+		if (vectorAccess == null)
+			vectorAccess = new Vector();
 
-		// validate document
-		if (!documentContext.hasItem("$readAccess"))
-			documentContext.replaceItemValue("$readAccess", "");
+		// **1** AllowAccess add names
+		mergeValueList(vectorAccess,
+				documentActivity.getItemValue("namaddreadaccess"));
+		// **3** AllowAccess add Mapped Fields
+		mergeFieldList(documentContext, vectorAccess,
+				documentActivity.getItemValue("keyaddreadfields"));
 
-		if (!documentContext.hasItem("$writeAccess"))
-			documentContext.replaceItemValue("$writeAccess", "");
+		// clean Vector
+		vectorAccess = uniqueList(vectorAccess);
+
+		// save Vector
+		documentContext.replaceItemValue("$readAccess", vectorAccess);
+		if ((workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
+				&& (vectorAccess.size() > 0)) {
+			logger.info("[AccessPlugin] ReadAccess:");
+			for (int j = 0; j < vectorAccess.size(); j++)
+				logger.info("               '" + (String) vectorAccess.get(j)
+						+ "'");
+		}
+
+		/**** now process write access ***/
+
+		// check for $writeAccess
+		itemWrite = documentContext.getItemValue("$writeAccess");
+
+		// add new WriteAccess
+
+		if ("1".equals(documentActivity.getItemValueString("keyaccessmode")))
+			vectorAccess = itemWrite;
+		else
+			vectorAccess = new Vector();
+
+		if (vectorAccess == null)
+			vectorAccess = new Vector();
+
+		// **1** AllowAccess add Names
+		mergeValueList(vectorAccess,
+				documentActivity.getItemValue("namaddwriteaccess"));
+		// **3** AllowAccess add Mapped Fields
+		mergeFieldList(documentContext, vectorAccess,
+				documentActivity.getItemValue("keyaddwritefields"));
+
+		// clean Vector
+		vectorAccess = uniqueList(vectorAccess);
+
+		// save Vector
+		documentContext.replaceItemValue("$writeAccess", vectorAccess);
+		if ((workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
+				&& (vectorAccess.size() > 0)) {
+			logger.info("[AccessPlugin] WriteAccess:");
+			for (int j = 0; j < vectorAccess.size(); j++)
+				logger.info("               '" + (String) vectorAccess.get(j)
+						+ "'");
+		}
 
 	}
 

@@ -223,14 +223,16 @@ public abstract class AbstractPlugin implements Plugin {
 		return sString;
 
 	}
+
 	/**
 	 * this method formats a string object depending of an attribute type.
 	 * MultiValues will be separated by the provided separator
 	 */
 	public String formatItemValues(Collection<?> aItem, String aSeparator,
 			String sFormat) {
-		return formatItemValues(aItem, aSeparator, sFormat,null);
+		return formatItemValues(aItem, aSeparator, sFormat, null);
 	}
+
 	/**
 	 * This helper method test the type of an object provided by a
 	 * itemcollection and formats the object into a string value.
@@ -309,45 +311,45 @@ public abstract class AbstractPlugin implements Plugin {
 	}
 
 	/**
-	 * This method merges the values from p_VectorSource into vectorDest and
-	 * removes duplicates
+	 * This method merges the values from a SourceList into a valueList and
+	 * removes duplicates.
 	 * 
-	 * @param p_VectorDestination
-	 * @param p_VectorSource
+	 * @param valueList
+	 * @param sourceList
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void mergeVectors(List p_VectorDestination, List p_VectorSource) {
-		if ((p_VectorSource != null) && (p_VectorSource.size() > 0)) {
-			for (Object o : p_VectorSource) {
-				if (p_VectorDestination.indexOf(o) == -1)
-					p_VectorDestination.add(o);
+	public void mergeValueList(List valueList, List sourceList) {
+		if ((sourceList != null) && (sourceList.size() > 0)) {
+			for (Object o : sourceList) {
+				if (valueList.indexOf(o) == -1)
+					valueList.add(o);
 			}
 		}
 	}
 
 	/**
-	 * this method merges the values of p_VectorFieldList into
-	 * p_VectorDestination and test for duplicates
+	 * This method merges the values of fieldList into
+	 * valueList and test for duplicates
 	 * 
-	 * @param p_VectorDestination
-	 * @param p_VectorFieldList
+	 * @param valueList
+	 * @param fieldList
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void mergeMappedFieldValues(ItemCollection documentContext,
-			List p_VectorDestination, List<String> p_VectorFieldList) {
-		if (p_VectorDestination == null || p_VectorFieldList == null)
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void mergeFieldList(ItemCollection documentContext,
+			List valueList, List<String> fieldList) {
+		if (valueList == null || fieldList == null)
 			return;
 
-		if (p_VectorFieldList.size() > 0) {
-			// iterate over fieldlist
-			for (String sFeldName : p_VectorFieldList) {
-				List vValues = documentContext.getItemValue(sFeldName);
+		if (fieldList.size() > 0) {
+			// iterate over the fieldList
+			for (String sFeldName : fieldList) {
+				List<Object> vValues = documentContext.getItemValue(sFeldName);
 				// now append the values into p_VectorDestination
 				if ((vValues != null) && (vValues.size() > 0)) {
 					for (Object o : vValues) {
 						// append only if not used
-						if (p_VectorDestination.indexOf(o) == -1)
-							p_VectorDestination.add(o);
+						if (valueList.indexOf(o) == -1)
+							valueList.add(o);
 					}
 				}
 			}
@@ -356,19 +358,16 @@ public abstract class AbstractPlugin implements Plugin {
 	}
 
 	/**
-	 * this method removes duplicate and null values from a vector object The
-	 * method is called by the run method after build new read and write access
-	 * elements.
+	 * This method removes duplicates and null values from a vector.
 	 * 
-	 * @param p_Vector
+	 * @param valueList - list of elements
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public List uniqueList(List p_Vector) {
-		int iVectorSize = p_Vector.size();
-		Vector cleanedVector = new Vector();
+	public List<?> uniqueList(List<Object> valueList) {
+		int iVectorSize = valueList.size();
+		Vector<Object> cleanedVector = new Vector<Object>();
 
 		for (int i = 0; i < iVectorSize; i++) {
-			Object o = p_Vector.get(i);
+			Object o = valueList.get(i);
 			if (o == null || cleanedVector.indexOf(o) > -1
 					|| "".equals(o.toString()))
 				continue;
@@ -376,11 +375,11 @@ public abstract class AbstractPlugin implements Plugin {
 			// add unique object
 			cleanedVector.add(o);
 		}
-		p_Vector = cleanedVector;
+		valueList = cleanedVector;
 		// do not work with empty vectors....
-		if (p_Vector.size() == 0)
-			p_Vector.add("");
+		if (valueList.size() == 0)
+			valueList.add("");
 
-		return p_Vector;
+		return valueList;
 	}
 }

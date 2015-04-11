@@ -2,15 +2,11 @@ package org.imixs.workflow.plugins;
 
 import java.util.logging.Logger;
 
-import javax.script.ScriptException;
-
 import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.plugins.ResultPlugin;
-import org.imixs.workflow.plugins.RulePlugin;
 import org.junit.Before;
 import org.junit.Test;
 

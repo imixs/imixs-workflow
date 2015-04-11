@@ -95,6 +95,7 @@ public class ADMailPlugin extends MailPlugin {
 	 * @return
 	 * @throws NamingException
 	 */
+	@SuppressWarnings("rawtypes")
 	private String fetchEmail(String aUsername) throws NamingException {
 		Context initCtx = new InitialContext();
 		DirContext ldapCtx = (DirContext) initCtx.lookup(LDAP_JNDI_NAME);

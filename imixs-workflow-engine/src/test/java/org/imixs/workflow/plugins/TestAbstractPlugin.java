@@ -7,8 +7,8 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.plugins.jee.HistoryPlugin;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,8 +18,9 @@ import org.junit.Test;
  * @author rsoika
  * 
  */
-public class TestAbstractPlugin extends HistoryPlugin {
-
+public class TestAbstractPlugin extends AbstractPlugin {
+	public ItemCollection documentContext;
+	public ItemCollection documentActivity;
 	private final static Logger logger = Logger
 			.getLogger(TestAbstractPlugin.class.getName());
 
@@ -46,7 +47,6 @@ public class TestAbstractPlugin extends HistoryPlugin {
 
 		ApplicationPlugin applicationPlugin = new ApplicationPlugin();
 
-	
 		// prepare data
 		documentContext = new ItemCollection();
 		logger.info("[TestHisotryPlugin] setup test data...");
@@ -62,11 +62,9 @@ public class TestAbstractPlugin extends HistoryPlugin {
 				testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
-		
-		
+
 	}
-	
-	
+
 	@Test
 	public void testDateFormatEN() {
 
@@ -90,13 +88,8 @@ public class TestAbstractPlugin extends HistoryPlugin {
 				testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
-		
-		
+
 	}
-	
-	
-	
-	
 
 	/**
 	 * Test format string:
@@ -111,32 +104,38 @@ public class TestAbstractPlugin extends HistoryPlugin {
 	@Test
 	public void testMultiValueFormat() {
 
-	
-		String testString="The Valuelist is: <itemvalue separator=\"/\">_numbers</itemvalue>.";
+		String testString = "The Valuelist is: <itemvalue separator=\"/\">_numbers</itemvalue>.";
 		String expectedString = "The Valuelist is: 1/20/300.";
 
 		ApplicationPlugin applicationPlugin = new ApplicationPlugin();
 
-	
 		// prepare data
 		documentContext = new ItemCollection();
 		logger.info("[TestHisotryPlugin] setup test data...");
 
-	
-		Vector<Integer> value=new Vector<Integer>();
+		Vector<Integer> value = new Vector<Integer>();
 		value.add(1);
 		value.add(20);
 		value.add(300);
-		documentContext.replaceItemValue("_numbers",value);
+		documentContext.replaceItemValue("_numbers", value);
 
 		String resultString = applicationPlugin.replaceDynamicValues(
 				testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
-		
-		
+
 	}
-	
-	
+
+	@Override
+	public int run(ItemCollection documentContext,
+			ItemCollection documentActivity) throws PluginException {
+
+		return Plugin.PLUGIN_OK;
+	}
+
+	@Override
+	public void close(int status) throws PluginException {
+
+	}
 
 }

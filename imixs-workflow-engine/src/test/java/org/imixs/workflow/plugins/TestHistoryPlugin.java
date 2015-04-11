@@ -5,13 +5,11 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.jee.ejb.EntityService;
-import org.imixs.workflow.plugins.jee.HistoryPlugin;
-
 import junit.framework.Assert;
 
+import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.plugins.jee.HistoryPlugin;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,9 +19,9 @@ import org.junit.Test;
  * @author rsoika
  * 
  */
-public class TestHisotryPlugin extends HistoryPlugin {
+public class TestHistoryPlugin extends HistoryPlugin {
 
-	private final static Logger logger = Logger.getLogger(TestHisotryPlugin.class
+	private final static Logger logger = Logger.getLogger(TestHistoryPlugin.class
 			.getName());
 
 	@Before
