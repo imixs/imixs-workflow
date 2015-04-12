@@ -3,15 +3,12 @@ package org.imixs.workflow.bpmn;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.imixs.workflow.ItemCollection;
 import org.xml.sax.SAXException;
 
 /**
@@ -46,11 +43,12 @@ public class BPMNParser {
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
-	public final static List<ItemCollection> parseModel(
+	public final static BPMNModel parseModel(
 			InputStream bpmnInputStream, String encoding)
 			throws ParseException, ParserConfigurationException, SAXException,
 			IOException {
 
+		long lTime=System.currentTimeMillis();
 		if (bpmnInputStream == null) {
 			logger.severe("[BPMNParser] parseModel - inputStream is null!");
 			throw new java.text.ParseException("inputStream is null", -1);
@@ -63,10 +61,9 @@ public class BPMNParser {
 
 		saxParser.parse(bpmnInputStream, bpmnHandler);
 
-		
-		List<ItemCollection> model = new ArrayList<ItemCollection>();
+		logger.info("BPMN Model parsed in " + (System.currentTimeMillis()-lTime) + "ms");
+		return  bpmnHandler.getModel();
 
-		return model;
 	}
 
 }

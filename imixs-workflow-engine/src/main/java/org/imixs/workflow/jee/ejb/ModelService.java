@@ -98,7 +98,8 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 	@Resource
 	SessionContext ctx;
 
-	private static Logger logger = Logger.getLogger("org.imixs.workflow");
+	private static Logger logger = Logger.getLogger(ModelService.class
+			.getName());
 
 	@PostConstruct
 	void initIndex() throws AccessDeniedException {
