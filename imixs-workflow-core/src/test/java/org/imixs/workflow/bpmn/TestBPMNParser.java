@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.Collection;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -42,7 +43,7 @@ public class TestBPMNParser {
 
 		InputStream inputStream = getClass().getResourceAsStream(
 				"/bpmn/ticket.bpmn");
-
+ 
 		BPMNModel model = null;
 		try {
 			model = BPMNParser.parseModel(inputStream, "UTF-8");
@@ -72,13 +73,33 @@ public class TestBPMNParser {
 		activities = model.getActivityEntityList(1100);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(3, activities.size());
-		
-		
+
 		// test activity for task 1200
 		activities = model.getActivityEntityList(1200);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(3, activities.size());
 
+		// test activity 1200.20
+		ItemCollection activity = model.getActivityEntity(1200, 20);
+		Assert.assertNotNull(activity);
+		Assert.assertEquals(1000,
+				activity.getItemValueInteger("numNextProcessID"));
+		Assert.assertEquals("reopen", activity.getItemValueString("txtName"));
+
+		// test activity 100.10
+		activity = model.getActivityEntity(1000, 10);
+		Assert.assertNotNull(activity);
+		Assert.assertEquals(1100,
+				activity.getItemValueInteger("numNextProcessID"));
+		Assert.assertEquals("submit", activity.getItemValueString("txtName"));
+		// Test Owner
+		Assert.assertTrue( activity.getItemValueBoolean("keyupdateacl"));
+		
+		List owners=activity.getItemValue("keyownershipfields");
+		Assert.assertNotNull(owners);
+		Assert.assertEquals(2,owners.size());
+		Assert.assertTrue(owners.contains("namTeam"));
+		Assert.assertTrue(owners.contains("namManager"));
 	}
 
 	@Ignore
