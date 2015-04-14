@@ -9,6 +9,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.imixs.workflow.exceptions.ModelException;
 import org.xml.sax.SAXException;
 
 /**
@@ -42,11 +43,12 @@ public class BPMNParser {
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 * @throws IOException
+	 * @throws ModelException 
 	 */
-	public final static BPMNModel parseModel(
+	public final static BPMNModel parseModel( 
 			InputStream bpmnInputStream, String encoding)
 			throws ParseException, ParserConfigurationException, SAXException,
-			IOException {
+			IOException, ModelException {
 
 		long lTime=System.currentTimeMillis();
 		if (bpmnInputStream == null) {
@@ -57,12 +59,12 @@ public class BPMNParser {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
 
-		BPMNDefaultHandler bpmnHandler = new BPMNDefaultHandler();
+		BPMNModelHandler bpmnHandler = new BPMNModelHandler();
 
 		saxParser.parse(bpmnInputStream, bpmnHandler);
 
 		logger.info("BPMN Model parsed in " + (System.currentTimeMillis()-lTime) + "ms");
-		return  bpmnHandler.getModel();
+		return  bpmnHandler.buildModel(); 
 
 	}
 
