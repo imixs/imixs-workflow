@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
  * @author rsoika
  *
  */
-public class BPMNParser {
+public class BPMNParser { 
 
 	private static Logger logger = Logger.getLogger(BPMNParser.class.getName());
 

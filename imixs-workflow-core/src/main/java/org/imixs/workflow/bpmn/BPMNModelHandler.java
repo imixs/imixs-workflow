@@ -43,7 +43,6 @@ public class BPMNModelHandler extends DefaultHandler {
 	Map<String, ItemCollection> activityCache = null;
 	// Map<String, ItemCollection> nodeCache = null;
 	Map<String, SequenceFlow> sequenceCache = null;
-	
 
 	public BPMNModelHandler() {
 		super();
@@ -250,35 +249,62 @@ public class BPMNModelHandler extends DefaultHandler {
 		for (String eventID : activityCache.keySet()) {
 			// get the event...
 			ItemCollection event = activityCache.get(eventID);
+
 			
 			// ...and look for all incoming connections (normally this would be
 			// only one!)
-			List<SequenceFlow> iFlows = findIncomingFlows(eventID);
+			List<SequenceFlow> inFlows = findIncomingFlows(eventID);
 
-			if (iFlows != null && iFlows.size() > 0) {
+			if (inFlows != null && inFlows.size() > 0) {
 				// next we search for the source Task element if one can be
 				// found
-				for (SequenceFlow aFlow : iFlows) {
-					
-					ItemCollection task = new TaskResolver().findImixsSourceTask(aFlow);
-					if (task != null) {
+				for (SequenceFlow aFlow : inFlows) {
 
-						// we found the task so we can add the event into the
-						// model
+					ItemCollection task = new TaskResolver()
+							.findImixsSourceTask(aFlow);
+					if (task != null) { 
+						
+						// happen if the event is not changing the state
+						List<SequenceFlow> outFlows = findOutgoingFlows(eventID);
+
+						if (outFlows != null && outFlows.size() > 1) {
+							// invalid model!!
+							throw new ModelException(ModelException.INVALID_MODEL,
+									"Imixs BPMN Event has more than one target Flows!");
+						}
+
+						if (outFlows.size() == 0) {
+							logger.warning("Imixs BPMN Event '" + eventID
+									+ "' has no target Flow!");
+							continue;
+						}
+						
+
+						// we found the task so we can add the event into
+						// the model
 						event.replaceItemValue("numProcessID",
 								task.getItemValue("numProcessID"));
 
-						// test if we can identify the target task
-						task = new TaskResolver().findImixsTargetTask(aFlow);
+						// is this Event is connected to a followUp Activity!!
+						task = new TaskResolver().findImixsTargetEvent(outFlows.get(0));
 						if (task != null) {
-							event.replaceItemValue("numNextProcessID",
-									task.getItemValue("numProcessID"));
+							event.replaceItemValue("keyFollowUp", "1");
+							event.replaceItemValue("numNextActivityID",
+									task.getItemValue("numactivityid"));
+						} else {
+							// test if we can identify the target task
+							task = new TaskResolver()
+									.findImixsTargetTask(outFlows.get(0));
+							if (task != null) {
+								event.removeItem("keyFollowUp");
+								event.replaceItemValue("numNextProcessID",
+										task.getItemValue("numProcessID"));
+							}
+
 						}
 
 						// it can happen that the numactivtyid is not unique for
 						// that task - we verify this first
-//						;
-//					d	activityCache.put(eventID, event);
 						model.addActivityEntity(verifyActiviytIdForEvent(event));
 
 						// now we need to copy the event because we need to
@@ -291,38 +317,48 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 
 			else {
-				// we have no incomming flows!
-				// check outgoing
-				iFlows = findOutgoingFlows(eventID);
+				// we have no incoming flows! check outgoing. This case can
+				// happen if the event is not changing the state
+				List<SequenceFlow> outFlows = findOutgoingFlows(eventID);
 
-				if (iFlows != null && iFlows.size() > 1) {
+				if (outFlows != null && outFlows.size() > 1) {
 					// invalid model!!
 					throw new ModelException(ModelException.INVALID_MODEL,
 							"Imixs BPMN Event has more than one target Flows!");
 				}
 
-				if (iFlows.size() == 0) {
+				if (outFlows.size() == 0) {
 					logger.warning("Imixs BPMN Event '" + eventID
 							+ "' has no target Flow!");
 					continue;
 				}
 
-				// this case can happen if the event is not changing the
-				// state
-				ItemCollection task = new TaskResolver().findImixsTargetTask(iFlows.get(0));
+				// is this Event is connected to a followUp Activity!!
+				ItemCollection task = new TaskResolver()
+						.findImixsTargetEvent(outFlows.get(0));
 				if (task != null) {
-					event.replaceItemValue("numProcessID",
-							task.getItemValue("numProcessID"));
-					event.replaceItemValue("numNextProcessID",
-							task.getItemValue("numProcessID"));
+					event.replaceItemValue("keyFollowUp", "1");
+					event.replaceItemValue("numNextActivityID",
+							task.getItemValue("numactivityid"));
+				} else {
+					// check for the target task..
 
-					// it can happen that the numactivtyid is not unique for
-					// that task - we verify this first
-//					verifyActiviytIdForEvent(eventID);
-//					activityCache.put(eventID, event);
+					task = new TaskResolver()
+							.findImixsTargetTask(outFlows.get(0));
+					if (task != null) {
 
-					model.addActivityEntity(verifyActiviytIdForEvent(event));
+						event.replaceItemValue("numProcessID",
+								task.getItemValue("numProcessID"));
+						event.replaceItemValue("numNextProcessID",
+								task.getItemValue("numProcessID"));
 
+						// it can happen that the numactivtyid is not unique for
+						// that task - we verify this first
+						model.addActivityEntity(verifyActiviytIdForEvent(event));
+					} else {
+						logger.warning("Inconsistant model state! - check BPMN event '"
+								+ eventID + "'");
+					}
 				}
 			}
 
@@ -342,7 +378,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	 * @return
 	 */
 	private ItemCollection verifyActiviytIdForEvent(ItemCollection event) {
-	//	ItemCollection event = activityCache.get(eventID);
+		// ItemCollection event = activityCache.get(eventID);
 		int processid = event.getItemValueInteger("numprocessid");
 		int activityid = event.getItemValueInteger("numactivityid");
 
@@ -356,8 +392,8 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 			if (aid == activityid) {
 				// problem!
-				String name=event.getItemValueString("txtname");
-				logger.warning("ActivityID "+name + " ID=" + activityid
+				String name = event.getItemValueString("txtname");
+				logger.warning("ActivityID " + name + " ID=" + activityid
 						+ " is not unique for task " + processid);
 				activityid = -1;
 			}
@@ -370,14 +406,13 @@ public class BPMNModelHandler extends DefaultHandler {
 					+ "=" + bestID);
 			event.replaceItemValue("numactivityid", bestID);
 
-			//processCache.put(eventID, event);
+			// processCache.put(eventID, event);
 		} else {
 			// no changes needed!
 		}
 
 		return event;
 	}
-
 
 	/**
 	 * This method returns all incoming sequence flows for a given element ID
@@ -427,11 +462,12 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 
 	}
-	
-	
+
 	/**
-	 * This helper class provides methods to resolve the conntect Imixs task elements to 
-	 * a flow element. The constructor is used to initialize a loopDetection cache
+	 * This helper class provides methods to resolve the conntect Imixs task
+	 * elements to a flow element. The constructor is used to initialize a
+	 * loopDetection cache
+	 * 
 	 * @author rsoika
 	 *
 	 */
@@ -445,8 +481,8 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		/**
 		 * This method searches a Imixs Task Element connected to the given
-		 * SequenceFlow element. If the Sequence Flow is not connected to a Imixs
-		 * Task element the method returns null.
+		 * SequenceFlow element. If the Sequence Flow is not connected to a
+		 * Imixs Task element the method returns null.
 		 * 
 		 * 
 		 * @return the Imixs Task element or null if no Task Element was found.
@@ -472,7 +508,8 @@ public class BPMNModelHandler extends DefaultHandler {
 				return imixstask;
 			}
 
-			// no Imixs task found so we are trying to look for the next incoming
+			// no Imixs task found so we are trying to look for the next
+			// incoming
 			// flow elements.
 			List<SequenceFlow> refList = findIncomingFlows(flow.source);
 			for (SequenceFlow aflow : refList) {
@@ -483,12 +520,10 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		/**
 		 * This method searches a Imixs Task Element targeted from the given
-		 * SequenceFlow element. If the Sequence Flow is not connected to a Imixs
-		 * Task element the method returns null.
-		 * 
+		 * SequenceFlow element. If the Sequence Flow is not connected to a
+		 * Imixs Task element the method returns null.
 		 * 
 		 * @return the Imixs Task element or null if no Task Element was found.
-		 * @return
 		 */
 		public ItemCollection findImixsTargetTask(SequenceFlow flow) {
 
@@ -503,21 +538,65 @@ public class BPMNModelHandler extends DefaultHandler {
 				loopFlowCache.add(flow.target);
 			}
 
-			// test if the source is a Imixs task
+			// test if the target is a Imixs task
 			ItemCollection imixstask = processCache.get(flow.target);
 			if (imixstask != null) {
 				return imixstask;
 			}
 
-			// no Imixs task found so we are trying to look for the next incoming
-			// flow elements.
+			// no Imixs task or event found so we are trying to look for the
+			// next incoming flow elements.
 			List<SequenceFlow> refList = findOutgoingFlows(flow.target);
 			for (SequenceFlow aflow : refList) {
 				return (findImixsTargetTask(aflow));
 			}
 			return null;
 		}
+
+		/**
+		 * This method searches a Imixs follow-Up activity. This is when the
+		 * target is another Imixs Event element. In this case we return the
+		 * event
+		 * 
+		 * @return the Imixs Event element or null if no Event Element was
+		 *         found.
+		 * @return
+		 */
+		public ItemCollection findImixsTargetEvent(SequenceFlow flow) {
+
+			if (flow.source == null) {
+				return null;
+			}
+			// detect loops...
+			if (loopFlowCache.contains(flow.target)) {
+				// loop!
+				return null;
+			} else {
+				loopFlowCache.add(flow.target);
+			}
+
+			// test if the target is a Imixs task
+			ItemCollection imixstask = processCache.get(flow.target);
+			if (imixstask != null) {
+				// stopp here!
+				return null;
+			}
+
+			// test if the target is a Imixs Event
+			imixstask = activityCache.get(flow.target);
+			if (imixstask != null) {
+				return imixstask;
+			}
+
+			// no Imixs task or event found so we are trying to look for the
+			// next incoming flow elements.
+			List<SequenceFlow> refList = findOutgoingFlows(flow.target);
+			for (SequenceFlow aflow : refList) {
+				return (findImixsTargetEvent(aflow));
+			}
+			return null;
+		}
+
 	}
-	
-	
+
 }

@@ -16,7 +16,7 @@ import org.imixs.workflow.exceptions.ModelException;
  * 
  * 
  * @author rsoika
- *
+ * 
  */
 public class BPMNModel implements Model {
 
