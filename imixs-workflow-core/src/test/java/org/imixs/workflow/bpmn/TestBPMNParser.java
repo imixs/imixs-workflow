@@ -57,6 +57,21 @@ public class TestBPMNParser {
 		}
 		Assert.assertNotNull(model);
 
+		// Test Environment
+		ItemCollection profile = model.getProfile();
+		Assert.assertNotNull(profile);
+		Assert.assertEquals("environment.profile",
+				profile.getItemValueString("txtname"));
+		Assert.assertEquals("WorkflowEnvironmentEntity",
+				profile.getItemValueString("type"));
+		List plugins = profile.getItemValue("txtplugins");
+		Assert.assertNotNull(plugins);
+		Assert.assertEquals(4, plugins.size());
+		Assert.assertEquals("org.imixs.workflow.plugins.AccessPlugin",plugins.get(0));
+		Assert.assertEquals("org.imixs.workflow.plugins.OwnerPlugin",plugins.get(1));
+		Assert.assertEquals("org.imixs.workflow.plugins.HistoryPlugin",plugins.get(2));
+		Assert.assertEquals("org.imixs.workflow.plugins.ResultPlugin",plugins.get(3));
+
 		// test count of elements
 		Assert.assertEquals(4, model.getProcessEntityList().size());
 
@@ -79,21 +94,22 @@ public class TestBPMNParser {
 		activities = model.getActivityEntityList(1200);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(4, activities.size());
- 
+
 		// test activity 1100.20 accept
 		ItemCollection activity = model.getActivityEntity(1100, 20);
-		Assert.assertNotNull(activity); 
+		Assert.assertNotNull(activity);
 		Assert.assertEquals(1200,
 				activity.getItemValueInteger("numNextProcessID"));
 		Assert.assertEquals("accept", activity.getItemValueString("txtName"));
 
 		// test activity 1200.20 - follow-up activity solve =>40
-		activity = model.getActivityEntity(1200, 20); 
+		activity = model.getActivityEntity(1200, 20);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals("reopen", activity.getItemValueString("txtName"));
 		Assert.assertEquals("1", activity.getItemValueString("keyFollowUp"));
-		Assert.assertEquals(40, activity.getItemValueInteger("numNextActivityID"));
-	
+		Assert.assertEquals(40,
+				activity.getItemValueInteger("numNextActivityID"));
+
 		// test activity 1200.40 - follow-up activity message
 		activity = model.getActivityEntity(1200, 40);
 		Assert.assertNotNull(activity);
@@ -101,8 +117,6 @@ public class TestBPMNParser {
 		Assert.assertEquals(1000,
 				activity.getItemValueInteger("numNextProcessID"));
 
-		
-		
 		// test activity 100.10
 		activity = model.getActivityEntity(1000, 10);
 		Assert.assertNotNull(activity);

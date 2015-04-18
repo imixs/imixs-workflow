@@ -22,12 +22,28 @@ public class BPMNModel implements Model {
 
 	Map<Integer, ItemCollection> processList = null;
 	Map<Integer, Collection<ItemCollection>> activityList = null;
+	ItemCollection profile=null;
 	private static Logger logger = Logger.getLogger(BPMNModel.class.getName());
 
 	public BPMNModel() {
 		processList = new HashMap<Integer, ItemCollection>();
 		activityList = new HashMap<Integer, Collection<ItemCollection>>();
 	}
+	
+
+	/**
+	 * Returns the model profile entity
+	 * @return
+	 */
+	public ItemCollection getProfile() {
+		return profile;
+	}
+
+	public void setProfile(ItemCollection profile) {
+		this.profile = profile;
+	}
+
+
 
 	/**
 	 * Adds a ProcessEntiy into the process list

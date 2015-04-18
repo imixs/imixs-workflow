@@ -41,9 +41,9 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	Map<String, ItemCollection> processCache = null;
 	Map<String, ItemCollection> activityCache = null;
-	// Map<String, ItemCollection> nodeCache = null;
 	Map<String, SequenceFlow> sequenceCache = null;
-
+	ItemCollection profileEnvironment=null;
+	
 	public BPMNModelHandler() {
 		super();
 		model = new BPMNModel();
@@ -65,23 +65,31 @@ public class BPMNModelHandler extends DefaultHandler {
 		if (qName.equalsIgnoreCase("bpmn2:definitions")) {
 			bDefinitions = true;
 			currentEntity = new ItemCollection();
+			// initialize profile entity...
+			currentEntity.replaceItemValue("type", "WorkflowEnvironmentEntity");
+			currentEntity.replaceItemValue("txtname", "environment.profile");
 
-			currentEntity.replaceItemValue("type", "environment.profile");
+		}
 
+		// bpmn2:process - close definitions?
+		if (qName.equalsIgnoreCase("bpmn2:process")) {
+			if (bDefinitions && currentEntity != null) {
+				profileEnvironment=currentEntity;
+				bDefinitions = false;
+			}
 		}
 
 		// bpmn2:task - identify a Imixs Workflow Taks element
 		if (qName.equalsIgnoreCase("bpmn2:task")) {
-
-			bTask = true;
 
 			// imixs Task element?
 			String value = attributes.getValue("imixs:processid");
 			if (value == null) {
 				return;
 			}
-			int currentID = Integer.parseInt(value);
 
+			bTask = true;
+			int currentID = Integer.parseInt(value);
 			currentEntity = new ItemCollection();
 			bpmnID = attributes.getValue("id");
 			String currentItemName = attributes.getValue("name");
@@ -94,15 +102,14 @@ public class BPMNModelHandler extends DefaultHandler {
 		// element
 		if (qName.equalsIgnoreCase("bpmn2:intermediateCatchEvent")) {
 
-			bEvent = true;
-
 			// imixs Task element?
 			String value = attributes.getValue("imixs:activityid");
 			if (value == null) {
 				return;
 			}
-			int currentID = Integer.parseInt(value);
 
+			bEvent = true;
+			int currentID = Integer.parseInt(value);
 			currentEntity = new ItemCollection();
 			bpmnID = attributes.getValue("id");
 			String currentItemName = attributes.getValue("name");
@@ -123,15 +130,10 @@ public class BPMNModelHandler extends DefaultHandler {
 		 * parse a imixs:item
 		 */
 		if (qName.equalsIgnoreCase("imixs:item")) {
-
 			bExtensionElements = true;
-
 			// check attributes
-
 			currentItemName = attributes.getValue("name");
 			currentItemType = attributes.getValue("type");
-
-			// currentEntity.replaceItemValue(currentItemName, "");
 		}
 
 		/*
@@ -142,7 +144,6 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 
 		if (qName.equalsIgnoreCase("bpmn2:extensionElements")) {
-
 			bExtensionElements = true;
 		}
 
@@ -180,14 +181,10 @@ public class BPMNModelHandler extends DefaultHandler {
 	public void characters(char ch[], int start, int length)
 			throws SAXException {
 
-		if (bDefinitions) {
-			bDefinitions = false;
-		}
-
 		/*
 		 * parse a imixs:value
 		 */
-		if (bItemValue) {
+		if (bItemValue && currentEntity != null) {
 			String svalue = new String(ch, start, length);
 
 			List valueList = currentEntity.getItemValue(currentItemName);
@@ -199,7 +196,6 @@ public class BPMNModelHandler extends DefaultHandler {
 			} else {
 				valueList.add(svalue);
 			}
-
 			currentEntity.replaceItemValue(currentItemName, valueList);
 		}
 
@@ -221,6 +217,8 @@ public class BPMNModelHandler extends DefaultHandler {
 	public BPMNModel buildModel() throws ModelException {
 
 		model = new BPMNModel();
+		
+		model.setProfile(profileEnvironment);
 
 		// add all Imixs tasks into the model and validate the processids
 		List<Integer> processIDList = new ArrayList<Integer>();
@@ -250,7 +248,6 @@ public class BPMNModelHandler extends DefaultHandler {
 			// get the event...
 			ItemCollection event = activityCache.get(eventID);
 
-			
 			// ...and look for all incoming connections (normally this would be
 			// only one!)
 			List<SequenceFlow> inFlows = findIncomingFlows(eventID);
@@ -262,14 +259,15 @@ public class BPMNModelHandler extends DefaultHandler {
 
 					ItemCollection task = new TaskResolver()
 							.findImixsSourceTask(aFlow);
-					if (task != null) { 
-						
+					if (task != null) {
+
 						// happen if the event is not changing the state
 						List<SequenceFlow> outFlows = findOutgoingFlows(eventID);
 
 						if (outFlows != null && outFlows.size() > 1) {
 							// invalid model!!
-							throw new ModelException(ModelException.INVALID_MODEL,
+							throw new ModelException(
+									ModelException.INVALID_MODEL,
 									"Imixs BPMN Event has more than one target Flows!");
 						}
 
@@ -278,7 +276,6 @@ public class BPMNModelHandler extends DefaultHandler {
 									+ "' has no target Flow!");
 							continue;
 						}
-						
 
 						// we found the task so we can add the event into
 						// the model
@@ -286,7 +283,8 @@ public class BPMNModelHandler extends DefaultHandler {
 								task.getItemValue("numProcessID"));
 
 						// is this Event is connected to a followUp Activity!!
-						task = new TaskResolver().findImixsTargetEvent(outFlows.get(0));
+						task = new TaskResolver().findImixsTargetEvent(outFlows
+								.get(0));
 						if (task != null) {
 							event.replaceItemValue("keyFollowUp", "1");
 							event.replaceItemValue("numNextActivityID",
@@ -343,8 +341,8 @@ public class BPMNModelHandler extends DefaultHandler {
 				} else {
 					// check for the target task..
 
-					task = new TaskResolver()
-							.findImixsTargetTask(outFlows.get(0));
+					task = new TaskResolver().findImixsTargetTask(outFlows
+							.get(0));
 					if (task != null) {
 
 						event.replaceItemValue("numProcessID",
