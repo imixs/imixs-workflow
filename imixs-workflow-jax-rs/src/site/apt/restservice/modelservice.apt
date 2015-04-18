@@ -18,40 +18,19 @@ The Model Service
 |                                               | workflow instance                         |
 *-----------------------------------------------+-------------------------------------------+
 | /model/{version}                              | a collection of processEntities for a spcific model    |
-|                                               | version                                   |
+|                                               | version (HTML, XML, JSON)                 |
 *-----------------------------------------------+-------------------------------------------+
-| /model/{version}.xml                          | a collection of processEntities for a spcific model    |
-|                                               | version in xml format                     |
-*-----------------------------------------------+-------------------------------------------+
-| /model/{version}.json                          | a collection of processEntities for a spcific model    |
-|                                               | version in json format                     |
-*-----------------------------------------------+-------------------------------------------+
-| /model/{version}/process/{processid}          | a specific processEntity           |
-|                                               |                      |
-*-----------------------------------------------+-------------------------------------------+
-| /model/{version}/process/{processid}.xml      |  a specific processEntity       |
-|                                               |   in xml format        |
-*-----------------------------------------------+-------------------------------------------+
-| /model/{version}/process/{processid}.json     | a specific processEntity       |
-|                                               | in json format        |
+| /model/{version}/process/{processid}          | a specific processEntity                  |
+|                                               |  (HTML, XML, JSON)                        |
 *-----------------------------------------------+-------------------------------------------+
 | /model/{version}/activities/{processid}       | a collection of workflow activities for   |
-|                                               | a specific processID                      |
+|                                               | a specific processID  (HTML, XML, JSON)   |
 *-----------------------------------------------+-------------------------------------------+
-| /model/{version}/activities/{processid}.xml    | a collection of workflow activities for   |
-|                                               | a specific processID in xml format        |
+| /model/{version}/groups                       | a collection of start process entity for  |
+|                                               | a specific model (HTML, XML, JSON)        |
 *-----------------------------------------------+-------------------------------------------+
-| /model/{version}/activities/{processid}.json   | a collection of workflow activities for   |
-|                                               | a specific processID in json format        |
-*-----------------------------------------------+-------------------------------------------+
-| /model/{version}/groups                       | a collection of start process entity for   |
-|                                               | a specific model        |
-*-----------------------------------------------+-------------------------------------------+
-| /model/{version}/groups.xml                       | a collection of start process entity for   |
-|                                               | a specific model in xml format       |
-*-----------------------------------------------+-------------------------------------------+
-| /model/{version}/groups.json                       | a collection of start process entity for   |
-|                                               | a specific model in json format       |
+| /model/{version}/groups/{group}               | a collection of process entity for        |
+|                                               | a specific group (HTML, XML, JSON)        |
 *-----------------------------------------------*-------------------------------------------+
 
 
@@ -73,12 +52,13 @@ The Model Service
 * The /model resources PUT and POST
 ~~~~~~~~~~~~~~
 
- The /model PUT and POST resources URIs are used to write business objects:
+ The /model PUT and POST resources URIs are used to write a model:
 
-
-*-----------------------------------------------*-------------------------------------------* 
-| URI                                           | Description                               | 
-*-----------------------------------------------+-------------------------------------------+
-| /model/{version}                              | creates or update a specified model version         |
-*-----------------------------------------------+-------------------------------------------+
+*----------------------------*------------------------------------------------------* 
+| URI                        | Description                                          | 
+*----------------------------+------------------------------------------------------+
+| /model/bpmn                | creates or update based on a BPMN 2.0 model definition |
+*----------------------------+------------------------------------------------------+
+| /model/                    | creates or update a model based on a Imixs EntityCollection  |
+*----------------------------+------------------------------------------------------+
    

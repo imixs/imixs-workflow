@@ -27,10 +27,16 @@
 
 package org.imixs.workflow.jaxrs;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -43,8 +49,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.bpmn.BPMNModel;
+import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.xml.EntityCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
@@ -57,9 +70,16 @@ import org.imixs.workflow.xml.XMLItemCollectionAdapter;
  * 
  */
 @Path("/model")
-@Produces({ "text/html", "application/xml", "application/json" })
+@Produces({  MediaType.TEXT_HTML,MediaType.APPLICATION_XHTML_XML,
+		MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON,
+		MediaType.TEXT_XML })
 @Stateless
 public class ModelRestService {
+	private static Logger logger = Logger.getLogger(ModelRestService.class
+			.getName());
+
+	static List<String> modelEntityTypes = Arrays.asList(
+			"WorkflowEnvironmentEntity", "processentity", "activityentity");
 
 	@EJB
 	org.imixs.workflow.jee.ejb.EntityService entityService;
@@ -68,8 +88,99 @@ public class ModelRestService {
 	org.imixs.workflow.jee.ejb.ModelService modelService;
 
 	@GET
-	@Produces("application/xml")
-	public String getAllVersions() {
+	@Produces({ MediaType.TEXT_HTML })
+	public StreamingOutput getModelOverview() {
+		return new StreamingOutput() {
+			public void write(OutputStream out) throws IOException,
+					WebApplicationException {
+
+				out.write("<html><head>".getBytes());
+				out.write("<style>".getBytes());
+				out.write("table {padding:0px;width: 75%;margin-left: -2px;margin-right: -2px;}"
+						.getBytes());
+				out.write("body,td,select,input,li {font-family: Verdana, Helvetica, Arial, sans-serif;font-size: 13px;}"
+						.getBytes());
+				out.write("table th {color: white;background-color: #bbb;text-align: left;font-weight: bold;}"
+						.getBytes());
+
+				out.write("table th,table td {font-size: 12px;}".getBytes());
+
+				out.write("table tr.a {background-color: #ddd;}".getBytes());
+
+				out.write("table tr.b {background-color: #eee;}".getBytes());
+
+				out.write("</style>".getBytes());
+				out.write("</head><body>".getBytes());
+
+				out.write("<h1>Imixs-Workflow REST Service</h1>".getBytes());
+				out.write("<p>".getBytes());
+				printVersionTable(out);
+				out.write("</p>".getBytes());
+				// footer
+				out.write("<p>See the <a href=\"http://www.imixs.org/xml/restservice/modelservice.html\" target=\"_bank\">Imixs REST Service API</a> for more information about this Service.</p>"
+						.getBytes());
+
+				// end
+				out.write("</body></html>".getBytes());
+			}
+		};
+
+	}
+
+	/**
+	 * This helper method prints the current model information in html format
+	 */
+	private void printVersionTable(OutputStream out) {
+		try {
+			StringBuffer buffer = new StringBuffer();
+			List<String> col = modelService.getAllModelVersions();
+
+			buffer.append("<table>");
+			buffer.append("<tr><th>Version</th><th>Workflow Group</th><th>Updated</th></tr>");
+			for (String aversion : col) {
+
+				// now check groups...
+				List<String> groupList = modelService.getAllWorkflowGroups();
+				for (String group : groupList) {
+					buffer.append("<tr>");
+					buffer.append("<td>" + aversion + "</td>");
+
+					buffer.append("<td><a href=\"./model/" + aversion
+							+ "/groups/" + group + "\">" + group + "</a></td>");
+					// get update date...
+					List<ItemCollection> processList = modelService
+							.getAllProcessEntitiesByGroupByVersion(group,
+									aversion);
+
+					if (processList.size() > 0) {
+						ItemCollection process = processList.get(0);
+						Date dat = process.getItemValueDate("$Modified");
+
+						SimpleDateFormat formater = new SimpleDateFormat(
+								"yyyy-MM-dd HH:mm:ss");
+						buffer.append("<td>" + formater.format(dat) + "</td>");
+					}
+					buffer.append("</tr>");
+				}
+
+			}
+
+			buffer.append("</table>");
+			out.write(buffer.toString().getBytes());
+		} catch (Exception e) {
+			// no opp!
+			try {
+				out.write("No model definition found.".getBytes());
+			} catch (IOException e1) {
+
+				e1.printStackTrace();
+			}
+		}
+	}
+
+	@GET
+	@Produces({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
+	public String getModelXML() {
 		List<String> col = null;
 		StringBuffer sb = new StringBuffer();
 		sb.append("<model>");
@@ -105,35 +216,16 @@ public class ModelRestService {
 	}
 
 	@GET
-	@Path("/{version}.xml")
-	@Produces("application/xml")
-	public EntityCollection getProcessListXML(
-			@PathParam("version") String version,
-			@QueryParam("items") String items) {
-		return getProcessList(version, items);
-	}
-
-	@GET
-	@Path("/{version}.json")
-	@Produces("application/json")
-	public EntityCollection getProcessListJSON(
-			@PathParam("version") String version,
-			@QueryParam("items") String items) {
-		return getProcessList(version, items);
-	}
-
-	
-	
-	@GET
 	@Path("/{version}/process/{processid}")
 	public XMLItemCollection getProcessEntity(
 			@PathParam("version") String version,
 			@PathParam("processid") int processid,
 			@QueryParam("items") String items) {
-		ItemCollection process= null;
+		ItemCollection process = null;
 		try {
 
-			process = modelService.getProcessEntityByVersion(processid,version);
+			process = modelService
+					.getProcessEntityByVersion(processid, version);
 			return XMLItemCollectionAdapter.putItemCollection(process,
 					getItemList(items));
 
@@ -143,32 +235,6 @@ public class ModelRestService {
 		return new XMLItemCollection();
 	}
 
-	
-	@GET
-	@Path("/{version}/process/{processid}.xml")
-	@Produces("application/xml")
-	public XMLItemCollection getProcessEntityXML(
-			@PathParam("version") String version,
-			@PathParam("processid") int processid,
-			@QueryParam("items") String items) {
-		
-		return  getProcessEntity(version,processid,items);
-	}
-
-	
-	@GET
-	@Path("/{version}/process/{processid}.json")
-	@Produces("application/json")
-	public XMLItemCollection getProcessEntityJSON(
-			@PathParam("version") String version,
-			@PathParam("processid") int processid,
-			@QueryParam("items") String items) {
-		
-		return  getProcessEntity(version,processid,items);
-	}
-
-	
-	
 	/**
 	 * Retuns a list of all Start Entities from each workflowgroup
 	 * 
@@ -176,7 +242,7 @@ public class ModelRestService {
 	 * @return
 	 */
 	@GET
-	@Path("/groups/{version}")
+	@Path("/{version}/groups")
 	public EntityCollection getStartProcessList(
 			@PathParam("version") String version,
 			@QueryParam("items") String items) {
@@ -193,22 +259,28 @@ public class ModelRestService {
 		return new EntityCollection();
 	}
 
+	/**
+	 * Retuns a list of all Start Entities from each workflowgroup
+	 * 
+	 * @param version
+	 * @return
+	 */
 	@GET
-	@Path("/groups/{version}.xml")
-	@Produces("application/xml")
-	public EntityCollection getStartProcessListXML(
+	@Path("/{version}/groups/{group}")
+	public EntityCollection getProcessListByGroup(
 			@PathParam("version") String version,
-			@QueryParam("items") String items) {
-		return getStartProcessList(version, items);
-	}
+			@PathParam("group") String group, @QueryParam("items") String items) {
+		Collection<ItemCollection> col = null;
+		try {
+			col = modelService.getAllProcessEntitiesByGroupByVersion(group,
+					version);
+			return XMLItemCollectionAdapter.putCollection(col,
+					getItemList(items));
 
-	@GET
-	@Path("/groups/{version}.json")
-	@Produces("application/json")
-	public EntityCollection getStartProcessListJSON(
-			@PathParam("version") String version,
-			@QueryParam("items") String items) {
-		return getStartProcessList(version, items);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new EntityCollection();
 	}
 
 	@GET
@@ -229,27 +301,6 @@ public class ModelRestService {
 		return new EntityCollection();
 	}
 
-	@GET
-	@Path("/{version}/activities/{processid}.xml")
-	@Produces("application/xml")
-	public EntityCollection getActivityListXML(
-			@PathParam("version") String version,
-			@PathParam("processid") int processid,
-			@QueryParam("items") String items) {
-		return getActivityList(version, processid,items);
-	}
-	
-	@GET
-	@Path("/{version}/activities/{processid}.json")
-	@Produces("application/json")
-	public EntityCollection getActivityListJSON(
-			@PathParam("version") String version,
-			@PathParam("processid") int processid,
-			@QueryParam("items") String items) {
-		return getActivityList(version, processid,items);
-	}
-	
-
 	@DELETE
 	@Path("/{version}")
 	public void deleteModel(@PathParam("version") String version) {
@@ -261,6 +312,87 @@ public class ModelRestService {
 
 	}
 
+
+
+	
+
+
+	/**
+	 * This method consumes a Imixs BPMN model file and updates the
+	 * corresponding model information.
+	 * 
+	 * @param model
+	 * @return
+	 */
+	@POST
+	@PUT
+	@Path("/bpmn")
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM,
+			MediaType.TEXT_PLAIN })
+	public Response putBPMNModel(BPMNModel model) {
+
+		if (model == null || model.getProfile() == null) {
+			logger.warning("Invalid Model file: No Imixs Definitions Extension found!");
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
+
+		// verify $modelversion
+		String modelVersion = model.getProfile().getItemValueString(
+				"$ModelVersion");
+		logger.fine("$ModelVersion=" + modelVersion);
+		if (modelVersion.isEmpty()) {
+			logger.warning("Invalid Model: Model Version not provided!");
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
+
+		// delete old model if a modelversion is available
+		try {
+			modelService.removeModelVersion(modelVersion);
+
+			// save model...
+			logger.fine("update profile...");
+			entityService.save(model.getProfile());
+
+			for (ItemCollection processEntity : model.getProcessEntityList()) {
+				int processID = processEntity
+						.getItemValueInteger("numprocessid");
+				logger.fine("update processEntity: " + processID);
+
+				entityService.save(processEntity);
+				for (ItemCollection acitivtyEntity : model
+						.getActivityEntityList(processID)) {
+
+					logger.fine("update activityEntity: "
+							+ processID
+							+ "."
+							+ acitivtyEntity
+									.getItemValueInteger("numactivityid"));
+
+					entityService.save(acitivtyEntity);
+				}
+			}
+
+		} catch (AccessDeniedException e) {
+			logger.warning("Unable to update model: " + e.getMessage());
+			return Response.status(Response.Status.FORBIDDEN).build();
+		} catch (ModelException e) {
+			logger.warning("Unable to update model: " + e.getMessage());
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
+
+		logger.fine("update finished! ");
+		return Response.status(Response.Status.OK).build();
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * This method updates a Model provided in a EntityCollection object for a
 	 * provided model version. The Method expects a subresource with a
@@ -274,8 +406,9 @@ public class ModelRestService {
 	 *            - model data
 	 */
 	@PUT
+	@POST
 	@Path("/{version}")
-	@Consumes({ "application/xml", "text/xml" })
+	@Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML})
 	public void putModelByVersion(@PathParam("version") String sModelVersion,
 			EntityCollection ecol) {
 
@@ -321,7 +454,8 @@ public class ModelRestService {
 	 * @param ecol
 	 */
 	@PUT
-	@Consumes({ "application/xml", "text/xml" })
+	@POST
+	@Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML})
 	public void putModel(EntityCollection ecol) {
 		String sModelVersion = null;
 		XMLItemCollection entity;
@@ -347,20 +481,9 @@ public class ModelRestService {
 
 	}
 
-	@POST
-	@Path("/{version}")
-	@Consumes({ "application/xml", "text/xml" })
-	public void postModelByVersion(@PathParam("version") String sModelVersion,
-			EntityCollection ecol) {
-		putModelByVersion(sModelVersion, ecol);
-	}
-
-	@POST
-	@Consumes({ "application/xml", "text/xml" })
-	public void postModel(EntityCollection ecol) {
-		putModel(ecol);
-	}
-
+	
+	
+	
 	/**
 	 * This method returns a List object from a given comma separated string.
 	 * The method returns null if no elements are found. The provided parameter

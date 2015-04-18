@@ -15,8 +15,11 @@
       <imixs:value><![CDATA[org.imixs.workflow.plugins.HistoryPlugin]]></imixs:value>
       <imixs:value><![CDATA[org.imixs.workflow.plugins.ResultPlugin]]></imixs:value>
     </imixs:item>
+    <imixs:item name="txtworkflowmodelversion" type="xs:string">
+      <imixs:value><![CDATA[1.0.0]]></imixs:value>
+    </imixs:item>
   </bpmn2:extensionElements>
-  <bpmn2:process id="ticket" name="Default Process" isExecutable="false">
+  <bpmn2:process id="ticket" name="Ticket" isExecutable="false">
     <bpmn2:startEvent id="StartEvent_1" name="Start">
       <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
     </bpmn2:startEvent>

@@ -64,6 +64,8 @@ public class TestBPMNParser {
 				profile.getItemValueString("txtname"));
 		Assert.assertEquals("WorkflowEnvironmentEntity",
 				profile.getItemValueString("type"));
+		Assert.assertEquals("1.0.0",
+				profile.getItemValueString("$ModelVersion"));
 		List plugins = profile.getItemValue("txtplugins");
 		Assert.assertNotNull(plugins);
 		Assert.assertEquals(4, plugins.size());
@@ -78,8 +80,13 @@ public class TestBPMNParser {
 		// test task 1000
 		ItemCollection task = model.getProcessEntity(1000);
 		Assert.assertNotNull(task);
+		Assert.assertEquals("1.0.0",
+				task.getItemValueString("$ModelVersion"));
+		Assert.assertEquals("Ticket",
+				task.getItemValueString("txtworkflowgroup"));
 
-		// test activity for task 1000
+
+		// test activity for task 1000 
 		Collection<ItemCollection> activities = model
 				.getActivityEntityList(1000);
 		Assert.assertNotNull(activities);
@@ -105,6 +112,9 @@ public class TestBPMNParser {
 		// test activity 1200.20 - follow-up activity solve =>40
 		activity = model.getActivityEntity(1200, 20);
 		Assert.assertNotNull(activity);
+		Assert.assertEquals("1.0.0",
+				activity.getItemValueString("$ModelVersion"));
+
 		Assert.assertEquals("reopen", activity.getItemValueString("txtName"));
 		Assert.assertEquals("1", activity.getItemValueString("keyFollowUp"));
 		Assert.assertEquals(40,

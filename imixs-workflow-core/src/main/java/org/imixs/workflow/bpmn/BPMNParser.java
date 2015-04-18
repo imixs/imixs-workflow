@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
  * @author rsoika
  *
  */
-public class BPMNParser { 
+public class BPMNParser {
 
 	private static Logger logger = Logger.getLogger(BPMNParser.class.getName());
 
@@ -43,14 +43,14 @@ public class BPMNParser {
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 * @throws IOException
-	 * @throws ModelException 
+	 * @throws ModelException
 	 */
-	public final static BPMNModel parseModel( 
-			InputStream bpmnInputStream, String encoding)
-			throws ParseException, ParserConfigurationException, SAXException,
-			IOException, ModelException {
+	public final static BPMNModel parseModel(InputStream bpmnInputStream,
+			String encoding) throws ParseException,
+			ParserConfigurationException, SAXException, IOException,
+			ModelException {
 
-		long lTime=System.currentTimeMillis();
+		long lTime = System.currentTimeMillis();
 		if (bpmnInputStream == null) {
 			logger.severe("[BPMNParser] parseModel - inputStream is null!");
 			throw new java.text.ParseException("inputStream is null", -1);
@@ -63,8 +63,10 @@ public class BPMNParser {
 
 		saxParser.parse(bpmnInputStream, bpmnHandler);
 
-		logger.info("BPMN Model parsed in " + (System.currentTimeMillis()-lTime) + "ms");
-		return  bpmnHandler.buildModel(); 
+		BPMNModel model = bpmnHandler.buildModel();
+		logger.info("BPMN Model parsed in "
+				+ (System.currentTimeMillis() - lTime) + "ms");
+		return model;
 
 	}
 

@@ -55,7 +55,7 @@ public class BPMNModel implements Model {
 		if (entity == null)
 			return;
 
-		if (!"processentity".equals(entity.getItemValueString("type"))) {
+		if (!"ProcessEntity".equals(entity.getItemValueString("type"))) {
 			logger.warning("Invalid Process Entity - wrong type '"
 					+ entity.getItemValueString("type") + "'");
 			throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
@@ -74,7 +74,7 @@ public class BPMNModel implements Model {
 		if (entity == null)
 			return;
 
-		if (!"activityentity".equals(entity.getItemValueString("type"))) {
+		if (!"ActivityEntity".equals(entity.getItemValueString("type"))) {
 			logger.warning("Invalid Activity Entity - wrong type '"
 					+ entity.getItemValueString("type") + "'");
 		}

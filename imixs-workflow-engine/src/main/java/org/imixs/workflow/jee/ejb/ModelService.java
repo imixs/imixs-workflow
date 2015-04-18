@@ -347,6 +347,8 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 	public void removeModelVersion(String modelversion) throws ModelException,
 			AccessDeniedException {
 		// remove all existing entities
+		logger.fine("remove modelVersion: " + modelversion);
+
 		String sQuery = null;
 		sQuery = "SELECT";
 		if (modelversion != null) {
@@ -363,6 +365,8 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 		}
 		Collection<ItemCollection> col = entityService.findAllEntities(sQuery,
 				0, -1);
+
+		logger.fine(col.size() + " model entities will be removed...");
 		Iterator<ItemCollection> it = col.iterator();
 		while (it.hasNext()) {
 			entityService.remove(it.next());

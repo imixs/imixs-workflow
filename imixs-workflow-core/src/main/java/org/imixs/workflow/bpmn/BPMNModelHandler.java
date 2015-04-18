@@ -35,6 +35,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	ItemCollection currentEntity = null;
 	String currentItemName = null;
 	String currentItemType = null;
+	String currentWorkflowGroup = null;
 	String bpmnID = null;
 
 	BPMNModel model = null;
@@ -42,8 +43,8 @@ public class BPMNModelHandler extends DefaultHandler {
 	Map<String, ItemCollection> processCache = null;
 	Map<String, ItemCollection> activityCache = null;
 	Map<String, SequenceFlow> sequenceCache = null;
-	ItemCollection profileEnvironment=null;
-	
+	ItemCollection profileEnvironment = null;
+
 	public BPMNModelHandler() {
 		super();
 		model = new BPMNModel();
@@ -74,7 +75,13 @@ public class BPMNModelHandler extends DefaultHandler {
 		// bpmn2:process - close definitions?
 		if (qName.equalsIgnoreCase("bpmn2:process")) {
 			if (bDefinitions && currentEntity != null) {
-				profileEnvironment=currentEntity;
+				profileEnvironment = currentEntity;
+				currentWorkflowGroup = attributes.getValue("name");
+				if (currentWorkflowGroup == null
+						|| currentWorkflowGroup.isEmpty()) {
+					logger.warning("No process name defined!");
+					currentWorkflowGroup = "Default";
+				}
 				bDefinitions = false;
 			}
 		}
@@ -93,8 +100,9 @@ public class BPMNModelHandler extends DefaultHandler {
 			currentEntity = new ItemCollection();
 			bpmnID = attributes.getValue("id");
 			String currentItemName = attributes.getValue("name");
-			currentEntity.replaceItemValue("type", "processentity");
+			currentEntity.replaceItemValue("type", "ProcessEntity");
 			currentEntity.replaceItemValue("txtname", currentItemName);
+			currentEntity.replaceItemValue("txtworkflowgroup", currentWorkflowGroup);
 			currentEntity.replaceItemValue("numprocessid", currentID);
 		}
 
@@ -113,7 +121,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			currentEntity = new ItemCollection();
 			bpmnID = attributes.getValue("id");
 			String currentItemName = attributes.getValue("name");
-			currentEntity.replaceItemValue("type", "activityentity");
+			currentEntity.replaceItemValue("type", "ActivityEntity");
 			currentEntity.replaceItemValue("txtname", currentItemName);
 			currentEntity.replaceItemValue("numactivityid", currentID);
 		}
@@ -216,8 +224,11 @@ public class BPMNModelHandler extends DefaultHandler {
 	 */
 	public BPMNModel buildModel() throws ModelException {
 
+		String modelVersion = profileEnvironment
+				.getItemValueString("txtworkflowmodelversion");
+		profileEnvironment.replaceItemValue("$modelversion", modelVersion);
 		model = new BPMNModel();
-		
+
 		model.setProfile(profileEnvironment);
 
 		// add all Imixs tasks into the model and validate the processids
@@ -235,6 +246,8 @@ public class BPMNModelHandler extends DefaultHandler {
 				processCache.put(key, task);
 			}
 
+			// update modelversion...
+			task.replaceItemValue("$modelVersion", modelVersion);
 			model.addProcessEntity(task);
 
 			// add id and resort
@@ -303,6 +316,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
 						// it can happen that the numactivtyid is not unique for
 						// that task - we verify this first
+						event.replaceItemValue("$modelVersion", modelVersion);
 						model.addActivityEntity(verifyActiviytIdForEvent(event));
 
 						// now we need to copy the event because we need to
@@ -352,6 +366,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
 						// it can happen that the numactivtyid is not unique for
 						// that task - we verify this first
+						event.replaceItemValue("$modelVersion", modelVersion);
 						model.addActivityEntity(verifyActiviytIdForEvent(event));
 					} else {
 						logger.warning("Inconsistant model state! - check BPMN event '"
