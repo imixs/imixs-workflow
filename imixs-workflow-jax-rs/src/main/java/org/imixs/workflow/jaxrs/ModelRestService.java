@@ -336,7 +336,6 @@ public class ModelRestService {
 	 * @param model
 	 * @return
 	 */ 
-	@POST
 	@PUT
 	@Path("/bpmn")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM,
@@ -352,8 +351,14 @@ public class ModelRestService {
 		logger.fine("update finished! ");
 		return Response.status(Response.Status.OK).build();
 	}
-
 	
+	@POST
+	@Path("/bpmn")
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM,
+			MediaType.TEXT_PLAIN })
+	public Response postBPMNModel(BPMNModel bpmnmodel) {
+		return putBPMNModel(bpmnmodel);
+	}
 	
 	
 	
@@ -375,7 +380,6 @@ public class ModelRestService {
 	 *            - model data
 	 */
 	@PUT
-	@POST
 	@Path("/{version}")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML})
 	public void putModelByVersion(@PathParam("version") String sModelVersion,
@@ -414,6 +418,14 @@ public class ModelRestService {
 
 	}
 
+	@POST
+	@Path("/{version}")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML})
+	public void postModelByVersion(@PathParam("version") String sModelVersion,
+			EntityCollection ecol) {
+		putModelByVersion(sModelVersion, ecol);
+	}
+	
 	/**
 	 * This method updates a Model provided in a EntityCollection object.
 	 * 
@@ -423,7 +435,6 @@ public class ModelRestService {
 	 * @param ecol
 	 */
 	@PUT
-	@POST
 	@Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML})
 	public void putModel(EntityCollection ecol) {
 		String sModelVersion = null;
@@ -450,7 +461,11 @@ public class ModelRestService {
 
 	}
 
-	
+	@POST
+	@Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML})
+	public void postModel(EntityCollection ecol) {
+		putModel(ecol);
+	}
 	
 	
 	/**

@@ -145,7 +145,14 @@ public interface ModelServiceRemote {
 	public abstract String getLatestVersion() throws ModelException;
 
 	/**
-	 * returns a String list of all accessible Modelversions
+	 * returns a String list of all model profile entities
+	 * 
+	 * @return
+	 */
+	public abstract List<ItemCollection> getAllModelProfiles();
+	
+	/**
+	 * returns a String list of all model versions
 	 * 
 	 * @return
 	 */

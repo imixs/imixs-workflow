@@ -315,8 +315,7 @@ public class ModelService implements Model, ModelServiceRemote {
 					+ " JOIN entity.integerItems as g"
 					+ " WHERE entity.type IN ('ActivityEntity')"
 					+ " AND v.itemName = '$modelversion' AND v.itemValue = '"
-					+ modelversion
-					+ "'"
+					+ modelversion + "'"
 					+ " AND g.itemName = 'numprocessid' AND g.itemValue = '"
 					+ processID + "'";
 
@@ -464,26 +463,38 @@ public class ModelService implements Model, ModelServiceRemote {
 	 * 
 	 * @return
 	 */
+	public List<ItemCollection> getAllModelProfiles() {
+		List<ItemCollection> result = new ArrayList<ItemCollection>();
+
+		String sQuery = "SELECT process FROM Entity AS process"
+				+ " JOIN process.textItems as v"
+				+ " JOIN process.textItems as n"
+				+ " WHERE process.type = 'WorkflowEnvironmentEntity'"
+				+ " AND n.itemName = 'txtname' AND n.itemValue = 'environment.profile'"
+				+ " AND v.itemName='$modelversion' "
+				+ " ORDER BY v.itemValue DESC";
+
+		Collection<ItemCollection> col = entityService.findAllEntities(sQuery,
+				0, -1);
+		for (ItemCollection ic : col) {
+			result.add(ic);
+		}
+
+		return result;
+	}
+
+	/**
+	 * returns a String list of all accessible Modelversions
+	 * 
+	 * @return
+	 */
 	public List<String> getAllModelVersions() {
 		ArrayList<String> result = new ArrayList<String>();
-		try {
-			String sQuery = null;
-			sQuery = "SELECT";
-			sQuery += " environment FROM Entity AS environment "
-					+ " WHERE environment.type = 'WorkflowEnvironmentEntity'";
-			Collection<ItemCollection> colEntities = entityService
-					.findAllEntities(sQuery, 0, -1);
-
-			for (ItemCollection aworkitem : colEntities) {
-				String sName = aworkitem.getItemValueString("txtName");
-				String sVersion = aworkitem.getItemValueString("$modelversion");
-				if ("environment.profile".equals(sName)) {
-					if (result.indexOf(sVersion) == -1)
-						result.add(sVersion);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		List<ItemCollection> pofileList = getAllModelProfiles();
+		for (ItemCollection profile : pofileList) {
+			String sVersion = profile.getItemValueString("$modelversion");
+			if (result.indexOf(sVersion) == -1)
+				result.add(sVersion);
 		}
 		return result;
 	}
