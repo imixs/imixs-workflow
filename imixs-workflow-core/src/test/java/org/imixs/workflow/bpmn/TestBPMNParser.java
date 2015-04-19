@@ -89,6 +89,12 @@ public class TestBPMNParser {
 				task.getItemValueString("$ModelVersion"));
 		Assert.assertEquals("Ticket",
 				task.getItemValueString("txtworkflowgroup"));
+		
+		Assert.assertEquals("<b>Create</b> a new ticket",
+				task.getItemValueString("rtfdescription"));
+		
+		
+		
 
 
 		// test activity for task 1000 
@@ -107,8 +113,19 @@ public class TestBPMNParser {
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(4, activities.size());
 
+		
+		
+		// test activity 1000.10 submit
+		ItemCollection activity = model.getActivityEntity(1000, 10,VERSION);
+		Assert.assertNotNull(activity);
+		Assert.assertEquals(1100,
+				activity.getItemValueInteger("numNextProcessID"));
+		Assert.assertEquals("<b>Submitt</b> new ticket",
+				activity.getItemValueString("rtfdescription"));
+		
+		
 		// test activity 1100.20 accept
-		ItemCollection activity = model.getActivityEntity(1100, 20,VERSION);
+		activity = model.getActivityEntity(1100, 20,VERSION);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(1200,
 				activity.getItemValueInteger("numNextProcessID"));

@@ -36,6 +36,7 @@
           <imixs:value><![CDATA[Create a new Ticket workflow]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
+      <bpmn2:documentation id="Documentation_5">&lt;b>Create&lt;/b> a new ticket</bpmn2:documentation>
       <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
       <bpmn2:incoming>SequenceFlow_20</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_11</bpmn2:outgoing>
@@ -69,6 +70,7 @@
           <imixs:value><![CDATA[namManager]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
+      <bpmn2:documentation id="Documentation_1">&lt;b>Submitt&lt;/b> new ticket</bpmn2:documentation>
       <bpmn2:incoming>SequenceFlow_11</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
     </bpmn2:intermediateCatchEvent>

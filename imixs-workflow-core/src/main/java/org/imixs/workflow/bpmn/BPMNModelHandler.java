@@ -32,11 +32,13 @@ public class BPMNModelHandler extends DefaultHandler {
 	boolean bTask = false;
 	boolean bEvent = false;
 	boolean bItemValue = false;
+	boolean bdcumentation = false;
 	ItemCollection currentEntity = null;
 	String currentItemName = null;
 	String currentItemType = null;
 	String currentWorkflowGroup = null;
 	String bpmnID = null;
+	StringBuilder characterStream = null;
 
 	BPMNModel model = null;
 
@@ -102,7 +104,8 @@ public class BPMNModelHandler extends DefaultHandler {
 			String currentItemName = attributes.getValue("name");
 			currentEntity.replaceItemValue("type", "ProcessEntity");
 			currentEntity.replaceItemValue("txtname", currentItemName);
-			currentEntity.replaceItemValue("txtworkflowgroup", currentWorkflowGroup);
+			currentEntity.replaceItemValue("txtworkflowgroup",
+					currentWorkflowGroup);
 			currentEntity.replaceItemValue("numprocessid", currentID);
 		}
 
@@ -138,7 +141,6 @@ public class BPMNModelHandler extends DefaultHandler {
 		 * parse a imixs:item
 		 */
 		if (qName.equalsIgnoreCase("imixs:item")) {
-			bExtensionElements = true;
 			// check attributes
 			currentItemName = attributes.getValue("name");
 			currentItemType = attributes.getValue("type");
@@ -149,14 +151,21 @@ public class BPMNModelHandler extends DefaultHandler {
 		 */
 		if (qName.equalsIgnoreCase("imixs:value")) {
 			bItemValue = true;
+			characterStream = new StringBuilder();
 		}
 
 		if (qName.equalsIgnoreCase("bpmn2:extensionElements")) {
 			bExtensionElements = true;
 		}
 
+		if (qName.equalsIgnoreCase("bpmn2:documentation")) {
+			bdcumentation = true;
+			characterStream = new StringBuilder();
+		}
+
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void endElement(String uri, String localName, String qName)
 			throws SAXException {
@@ -167,44 +176,66 @@ public class BPMNModelHandler extends DefaultHandler {
 			processCache.put(bpmnID, currentEntity);
 		}
 
+		if (qName.equalsIgnoreCase("bpmn2:extensionElements")) {
+			bExtensionElements = false;
+		}
+
 		// end of bpmn2:intermediateCatchEvent -
 		if (bEvent && qName.equalsIgnoreCase("bpmn2:intermediateCatchEvent")) {
 			bEvent = false;
-
 			// we need to cache the activities because the sequenceflows must be
 			// analysed later
 			activityCache.put(bpmnID, currentEntity);
 		}
 
 		/*
-		 * parse a imixs:value
+		 * End of a imixs:value
 		 */
 		if (qName.equalsIgnoreCase("imixs:value")) {
+			if (bExtensionElements && bItemValue && currentEntity != null && characterStream!=null) {
+
+				String svalue = characterStream.toString();
+				List valueList = currentEntity.getItemValue(currentItemName);
+
+				if ("xs:boolean".equals(currentItemType.toLowerCase())) {
+					valueList.add(new Boolean(svalue));
+				} else if ("xs:integer".equals(currentItemType.toLowerCase())) {
+					valueList.add(new Integer(svalue));
+				} else {
+					valueList.add(svalue);
+				}
+				currentEntity.replaceItemValue(currentItemName, valueList);
+			}
 			bItemValue = false;
+			characterStream=null;
+		}
+
+		if (qName.equalsIgnoreCase("bpmn2:documentation")) {
+			if (currentEntity != null) {
+				currentEntity.replaceItemValue("rtfdescription",
+						characterStream.toString());
+			}
+			characterStream=null;
+			bdcumentation = false;
 		}
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	//@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void characters(char ch[], int start, int length)
 			throws SAXException {
 
+		if (bdcumentation) {
+			characterStream = characterStream.append(new String(ch, start,
+					length));
+		}
+
 		/*
 		 * parse a imixs:value
 		 */
-		if (bItemValue && currentEntity != null) {
-			String svalue = new String(ch, start, length);
-
-			List valueList = currentEntity.getItemValue(currentItemName);
-
-			if ("xs:boolean".equals(currentItemType.toLowerCase())) {
-				valueList.add(new Boolean(svalue));
-			} else if ("xs:integer".equals(currentItemType.toLowerCase())) {
-				valueList.add(new Integer(svalue));
-			} else {
-				valueList.add(svalue);
-			}
-			currentEntity.replaceItemValue(currentItemName, valueList);
+		if (bExtensionElements && bItemValue && currentEntity != null) {
+			characterStream = characterStream.append(new String(ch, start,
+					length));
 		}
 
 	}
@@ -395,8 +426,9 @@ public class BPMNModelHandler extends DefaultHandler {
 		int processid = event.getItemValueInteger("numprocessid");
 		int activityid = event.getItemValueInteger("numactivityid");
 
-		List<ItemCollection> assignedActivities = model
-				.getActivityEntityList(processid,event.getItemValueString(WorkflowKernel.MODELVERSION));
+		List<ItemCollection> assignedActivities = model.getActivityEntityList(
+				processid,
+				event.getItemValueString(WorkflowKernel.MODELVERSION));
 		int bestID = -1;
 		for (ItemCollection aactivity : assignedActivities) {
 			int aid = aactivity.getItemValueInteger("numactivityid");
