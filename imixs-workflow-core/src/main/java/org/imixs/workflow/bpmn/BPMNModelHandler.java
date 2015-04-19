@@ -1,7 +1,6 @@
 package org.imixs.workflow.bpmn;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +8,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -395,8 +395,8 @@ public class BPMNModelHandler extends DefaultHandler {
 		int processid = event.getItemValueInteger("numprocessid");
 		int activityid = event.getItemValueInteger("numactivityid");
 
-		Collection<ItemCollection> assignedActivities = model
-				.getActivityEntityList(processid);
+		List<ItemCollection> assignedActivities = model
+				.getActivityEntityList(processid,event.getItemValueString(WorkflowKernel.MODELVERSION));
 		int bestID = -1;
 		for (ItemCollection aactivity : assignedActivities) {
 			int aid = aactivity.getItemValueInteger("numactivityid");

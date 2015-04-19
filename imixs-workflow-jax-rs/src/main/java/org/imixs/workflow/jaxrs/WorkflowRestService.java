@@ -70,7 +70,6 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.jee.ejb.WorkflowService;
 import org.imixs.workflow.util.JSONParser;
 import org.imixs.workflow.xml.EntityCollection;
-import org.imixs.workflow.xml.XMLItem;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
@@ -713,6 +712,7 @@ public class WorkflowRestService {
 	 * @param uniqueid
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@GET
 	@Path("/workitem/{uniqueid}/file/{file}")
 	public Response getWorkItemFile(@PathParam("uniqueid") String uniqueid,
@@ -805,6 +805,7 @@ public class WorkflowRestService {
 	 *            - return URI
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	@PUT
 	@Path("/workitem")
 	@Consumes({ "application/x-www-form-urlencoded" })
@@ -1032,6 +1033,7 @@ public class WorkflowRestService {
 	 * @return JSON object
 	 * @throws Exception
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@Path("/workitem.json")
 	@Produces(MediaType.APPLICATION_JSON)

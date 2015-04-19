@@ -56,7 +56,6 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.bpmn.BPMNModel;
-import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.xml.EntityCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
@@ -140,7 +139,7 @@ public class ModelRestService {
 			for (String aversion : col) {
 
 				// now check groups...
-				List<String> groupList = modelService.getAllWorkflowGroups();
+				List<String> groupList = modelService.getAllWorkflowGroups(aversion);
 				for (String group : groupList) {
 					buffer.append("<tr>");
 					buffer.append("<td>" + aversion + "</td>");
@@ -149,7 +148,7 @@ public class ModelRestService {
 							+ "/groups/" + group + "\">" + group + "</a></td>");
 					// get update date...
 					List<ItemCollection> processList = modelService
-							.getAllProcessEntitiesByGroupByVersion(group,
+							.getAllProcessEntitiesByGroup(group,
 									aversion);
 
 					if (processList.size() > 0) {
@@ -205,7 +204,7 @@ public class ModelRestService {
 		Collection<ItemCollection> col = null;
 		try {
 
-			col = modelService.getProcessEntityListByVersion(version);
+			col = modelService.getProcessEntityList(version);
 			return XMLItemCollectionAdapter.putCollection(col,
 					getItemList(items));
 
@@ -225,7 +224,7 @@ public class ModelRestService {
 		try {
 
 			process = modelService
-					.getProcessEntityByVersion(processid, version);
+					.getProcessEntity(processid, version);
 			return XMLItemCollectionAdapter.putItemCollection(process,
 					getItemList(items));
 
@@ -249,7 +248,7 @@ public class ModelRestService {
 		Collection<ItemCollection> col = null;
 		try {
 
-			col = modelService.getAllStartProcessEntitiesByVersion(version);
+			col = modelService.getAllStartProcessEntities(version);
 			return XMLItemCollectionAdapter.putCollection(col,
 					getItemList(items));
 
@@ -272,7 +271,7 @@ public class ModelRestService {
 			@PathParam("group") String group, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
-			col = modelService.getAllProcessEntitiesByGroupByVersion(group,
+			col = modelService.getAllProcessEntitiesByGroup(group,
 					version);
 			return XMLItemCollectionAdapter.putCollection(col,
 					getItemList(items));
@@ -291,7 +290,7 @@ public class ModelRestService {
 			@QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
-			col = modelService.getActivityEntityListByVersion(processid,
+			col = modelService.getActivityEntityList(processid,
 					version);
 			return XMLItemCollectionAdapter.putCollection(col,
 					getItemList(items));
@@ -301,11 +300,24 @@ public class ModelRestService {
 		return new EntityCollection();
 	}
 
+	
 	@DELETE
 	@Path("/{version}")
 	public void deleteModel(@PathParam("version") String version) {
 		try {
-			modelService.removeModelVersion(version);
+			modelService.removeModel(version);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	
+	@DELETE
+	@Path("/{version}/{group}")
+	public void deleteModelGroup(@PathParam("group") String group, @PathParam("version") String version) {
+		try {
+			modelService.removeModelGroup(group,version);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -323,63 +335,20 @@ public class ModelRestService {
 	 * 
 	 * @param model
 	 * @return
-	 */
+	 */ 
 	@POST
 	@PUT
 	@Path("/bpmn")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM,
 			MediaType.TEXT_PLAIN })
-	public Response putBPMNModel(BPMNModel model) {
-
-		if (model == null || model.getProfile() == null) {
-			logger.warning("Invalid Model file: No Imixs Definitions Extension found!");
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-		}
-
-		// verify $modelversion
-		String modelVersion = model.getProfile().getItemValueString(
-				"$ModelVersion");
-		logger.fine("$ModelVersion=" + modelVersion);
-		if (modelVersion.isEmpty()) {
-			logger.warning("Invalid Model: Model Version not provided!");
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-		}
-
-		// delete old model if a modelversion is available
+	public Response putBPMNModel(BPMNModel bpmnmodel) {
 		try {
-			modelService.removeModelVersion(modelVersion);
-
-			// save model...
-			logger.fine("update profile...");
-			entityService.save(model.getProfile());
-
-			for (ItemCollection processEntity : model.getProcessEntityList()) {
-				int processID = processEntity
-						.getItemValueInteger("numprocessid");
-				logger.fine("update processEntity: " + processID);
-
-				entityService.save(processEntity);
-				for (ItemCollection acitivtyEntity : model
-						.getActivityEntityList(processID)) {
-
-					logger.fine("update activityEntity: "
-							+ processID
-							+ "."
-							+ acitivtyEntity
-									.getItemValueInteger("numactivityid"));
-
-					entityService.save(acitivtyEntity);
-				}
-			}
-
-		} catch (AccessDeniedException e) {
-			logger.warning("Unable to update model: " + e.getMessage());
-			return Response.status(Response.Status.FORBIDDEN).build();
+			modelService.importBPMNModel(bpmnmodel);
 		} catch (ModelException e) {
 			logger.warning("Unable to update model: " + e.getMessage());
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
-
+		
 		logger.fine("update finished! ");
 		return Response.status(Response.Status.OK).build();
 	}
@@ -424,7 +393,7 @@ public class ModelRestService {
 
 				// delete old model if a modelversion is available
 				if (!"".equals(sModelVersion))
-					modelService.removeModelVersion(sModelVersion);
+					modelService.removeModel(sModelVersion);
 
 				// save new entities into database and update modelversion.....
 				for (int i = 0; i < ecol.getEntity().length; i++) {

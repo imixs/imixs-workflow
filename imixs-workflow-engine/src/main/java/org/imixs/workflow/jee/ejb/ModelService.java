@@ -50,8 +50,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.imixs.workflow.ExtendedModel;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.Model;
+import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.jee.jpa.EntityIndex;
@@ -90,7 +91,7 @@ import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @LocalBean
-public class ModelService implements ExtendedModel, ModelServiceRemote {
+public class ModelService implements Model, ModelServiceRemote {
 
 	@EJB
 	EntityService entityService;
@@ -112,77 +113,24 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 		entityService.addIndex("txtworkflowgroup", EntityIndex.TYP_TEXT);
 	}
 
-	/**
-	 * This method returns the ActivityEntity with the highest Version number
-	 * ($modelversion)
-	 */
-	public ItemCollection getActivityEntity(int processid, int activityid) {
-
-		try {
-			return findActivityEntity(processid, activityid,
-					this.getLatestVersion());
-		} catch (ModelException e) {
-			logger.warning("[ModelService] activity " + processid + "."
-					+ activityid + " not found");
-			return null;
-		}
-
-	}
-
-	public ItemCollection getActivityEntityByVersion(int processid,
-			int activityid, String modelVersion) {
+	public ItemCollection getActivityEntity(int processid, int activityid,
+			String modelVersion) {
 		return findActivityEntity(processid, activityid, modelVersion);
 	}
 
-	public ItemCollection getProcessEntity(int processid) {
-		try {
-			return findProcessEntity(processid, this.getLatestVersion());
-		} catch (ModelException e) {
-			logger.warning("[ModelService] process " + processid + " not found");
-			return null;
-		}
-	}
-
-	/**
-	 * returns a process entity by version
-	 */
-	public ItemCollection getProcessEntityByVersion(int processid,
-			String modelversion) {
+	public ItemCollection getProcessEntity(int processid, String modelversion) {
 
 		return findProcessEntity(processid, modelversion);
 	}
 
 	/**
 	 * returns a collection of ItemCollections representing the model activity
-	 * Entities for the coresponding processid
+	 * Entities for the corresponding processId
 	 * 
 	 * @throws ModelException
 	 * 
 	 */
-	public List<ItemCollection> getActivityEntityList(int processid) {
-
-		String sQuery = null;
-		sQuery = "SELECT ";
-		try {
-			sQuery += " wi FROM Entity AS wi" + " JOIN wi.integerItems as i1 "
-					+ " JOIN wi.integerItems as i2 "
-					+ " JOIN wi.textItems AS v"
-					+ " WHERE wi.type= 'ActivityEntity' "
-					+ " AND i1.itemName = 'numprocessid' AND i1.itemValue = '"
-					+ processid + "' " + " AND i2.itemName = 'numactivityid' "
-					+ " AND v.itemName = '$modelversion' AND v.itemValue = '"
-					+ this.getLatestVersion() + "'"
-					+ " ORDER BY i2.itemValue ASC";
-			return entityService.findAllEntities(sQuery, 0, -1);
-		} catch (ModelException e) {
-			logger.warning("[ModelService] activitylist for process "
-					+ processid + " not found");
-			return null;
-		}
-
-	}
-
-	public List<ItemCollection> getActivityEntityListByVersion(int processid,
+	public List<ItemCollection> getActivityEntityList(int processid,
 			String aModelVersion) {
 
 		String sQuery = null;
@@ -203,31 +151,7 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 	 * Entities
 	 * 
 	 */
-	public List<ItemCollection> getProcessEntityList() {
-		String sQuery = null;
-		sQuery = "SELECT";
-		try {
-			sQuery += " wi FROM Entity AS wi " + " JOIN wi.integerItems as i  "
-					+ " JOIN wi.textItems AS v"
-					+ " WHERE wi.type= 'ProcessEntity' "
-					+ " AND i.itemName = 'numprocessid' "
-					+ " AND v.itemName = '$modelversion' AND v.itemValue = '"
-					+ getLatestVersion() + "'" + " ORDER BY i.itemValue ASC";
-			return entityService.findAllEntities(sQuery, 0, -1);
-		} catch (ModelException e) {
-			logger.warning("[ModelService] processlist not found");
-			return null;
-		}
-
-	}
-
-	/**
-	 * returns a collection of ItemCollections representing the model process
-	 * Entities
-	 * 
-	 */
-	public List<ItemCollection> getProcessEntityListByVersion(
-			String aModelVersion) {
+	public List<ItemCollection> getProcessEntityList(String aModelVersion) {
 
 		String sQuery = null;
 		sQuery = "SELECT";
@@ -238,31 +162,6 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 				+ " AND v.itemName = '$modelversion' AND v.itemValue = '"
 				+ aModelVersion + "'" + " ORDER BY i.itemValue ASC";
 
-		return entityService.findAllEntities(sQuery, 0, -1);
-
-	}
-
-	public List<ItemCollection> getEnvironmentEntityList() {
-
-		String sQuery = null;
-		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi "
-				+ " WHERE wi.type= 'WorkflowEnvironmentEntity'";
-
-		return entityService.findAllEntities(sQuery, 0, -1);
-
-	}
-
-	public List<ItemCollection> getEnvironmentEntityListByVersion(
-			String modelversion) {
-
-		String sQuery = null;
-		sQuery = "SELECT";
-		sQuery += " environment FROM Entity AS environment "
-				+ " JOIN environment.textItems as v"
-				+ " WHERE environment.type = 'WorkflowEnvironmentEntity'"
-				+ " AND v.itemName = '$modelversion' AND v.itemValue = '"
-				+ modelversion + "'";
 		return entityService.findAllEntities(sQuery, 0, -1);
 
 	}
@@ -339,28 +238,28 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 	}
 
 	/**
-	 * This method removes a spcific ModelVersion defined by param
-	 * 'modelversion'. If modelVersion is null the method will remove all models
+	 * This method removes a specific ModelVersion. If modelVersion is null the
+	 * method will remove all models
 	 * 
 	 * @throws AccessDeniedException
 	 */
-	public void removeModelVersion(String modelversion) throws ModelException,
+	public void removeModel(String modelversion) throws ModelException,
 			AccessDeniedException {
 		// remove all existing entities
 		logger.fine("remove modelVersion: " + modelversion);
 
 		String sQuery = null;
-		sQuery = "SELECT";
+		sQuery = "";
 		if (modelversion != null) {
 			// select model entities for this specific version
-			sQuery += " entity FROM Entity AS entity "
+			sQuery = "SELECT entity FROM Entity AS entity "
 					+ " JOIN entity.textItems as v"
 					+ " WHERE entity.type IN ('ProcessEntity', 'ActivityEntity', 'WorkflowEnvironmentEntity')"
 					+ " AND v.itemName = '$modelversion' AND v.itemValue = '"
 					+ modelversion + "'";
 		} else {
 			// select all model entities
-			sQuery += " entity FROM Entity AS entity "
+			sQuery = "SELECT entity FROM Entity AS entity "
 					+ " WHERE entity.type IN ('ProcessEntity', 'ActivityEntity', 'WorkflowEnvironmentEntity')";
 		}
 		Collection<ItemCollection> col = entityService.findAllEntities(sQuery,
@@ -370,6 +269,68 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 		Iterator<ItemCollection> it = col.iterator();
 		while (it.hasNext()) {
 			entityService.remove(it.next());
+		}
+
+	}
+
+	/**
+	 * This method removes a specific WorkflowGroup for the defined
+	 * modelVersion.
+	 * 
+	 * @throws AccessDeniedException
+	 */
+	public void removeModelGroup(String workflowgroup, String modelversion)
+			throws ModelException, AccessDeniedException {
+		// remove all existing entities
+		logger.fine("remove modelGroup: " + workflowgroup + " Version: "
+				+ modelversion);
+
+		String sQuery = null;
+		sQuery = "";
+		if (modelversion == null) {
+			throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
+					"modelversion not defined!");
+		}
+
+		// select all model processEntities for this specific group and version
+		sQuery = "SELECT entity FROM Entity AS entity "
+				+ " JOIN entity.textItems as v" + " JOIN entity.textItems as g"
+				+ " WHERE entity.type IN ('ProcessEntity')"
+				+ " AND v.itemName = '$modelversion' AND v.itemValue = '"
+				+ modelversion + "'"
+				+ " AND g.itemName = 'txtworkflowgroup' AND g.itemValue = '"
+				+ workflowgroup + "'";
+
+		Collection<ItemCollection> col = entityService.findAllEntities(sQuery,
+				0, -1);
+
+		logger.fine(col.size() + " ProcessEntities will be removed...");
+
+		for (ItemCollection processEntity : col) {
+
+			// search all activities for that process entity...
+			int processID = processEntity.getItemValueInteger("numprocessid");
+			sQuery = "SELECT entity FROM Entity AS entity "
+					+ " JOIN entity.textItems as v"
+					+ " JOIN entity.integerItems as g"
+					+ " WHERE entity.type IN ('ActivityEntity')"
+					+ " AND v.itemName = '$modelversion' AND v.itemValue = '"
+					+ modelversion
+					+ "'"
+					+ " AND g.itemName = 'numprocessid' AND g.itemValue = '"
+					+ processID + "'";
+
+			Collection<ItemCollection> colactivities = entityService
+					.findAllEntities(sQuery, 0, -1);
+
+			logger.fine(colactivities.size()
+					+ " ActivityEntities will be removed...");
+			Iterator<ItemCollection> it = colactivities.iterator();
+			while (it.hasNext()) {
+				entityService.remove(it.next());
+			}
+			// remove processEntity
+			entityService.remove(processEntity);
 		}
 
 	}
@@ -504,58 +465,44 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 	 * @return
 	 */
 	public List<String> getAllModelVersions() {
-		ArrayList<String> colVersions = new ArrayList<String>();
-
+		ArrayList<String> result = new ArrayList<String>();
 		try {
-			Collection<ItemCollection> colEntities = getEnvironmentEntityList();
+			String sQuery = null;
+			sQuery = "SELECT";
+			sQuery += " environment FROM Entity AS environment "
+					+ " WHERE environment.type = 'WorkflowEnvironmentEntity'";
+			Collection<ItemCollection> colEntities = entityService
+					.findAllEntities(sQuery, 0, -1);
+
 			for (ItemCollection aworkitem : colEntities) {
 				String sName = aworkitem.getItemValueString("txtName");
 				String sVersion = aworkitem.getItemValueString("$modelversion");
 				if ("environment.profile".equals(sName)) {
-					if (colVersions.indexOf(sVersion) == -1)
-						colVersions.add(sVersion);
+					if (result.indexOf(sVersion) == -1)
+						result.add(sVersion);
 				}
-
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return colVersions;
+		return result;
 	}
 
 	/**
-	 * returns all the activities in a list for a corresponding process entity
+	 * Returns all the activities in a list for a corresponding process entity
 	 * The method returns only Activities where keypublicresult != "0"
 	 * 
 	 * @return List<ItemCollection> of activity Entities
 	 */
-	public List<ItemCollection> getPublicActivities(int aprocessid) {
-
-		return getPublicActivitiesByVersion(aprocessid, null);
-	}
-
-	/**
-	 * returns all the activities in a list for a corresponding process entity
-	 * The method returns only Activities where keypublicresult != "0"
-	 * 
-	 * @return List<ItemCollection> of activity Entities
-	 */
-	public List<ItemCollection> getPublicActivitiesByVersion(int aprocessid,
+	public List<ItemCollection> getPublicActivities(int aprocessid,
 			String version) {
 		ArrayList<ItemCollection> colActivities = null;
 		try {
-			// read activites from workflowmanager
 			Collection<ItemCollection> colEntities;
-
-			if (version != null)
-				colEntities = getActivityEntityListByVersion(aprocessid,
-						version);
-			else
-				colEntities = getActivityEntityList(aprocessid);
-
+			colEntities = getActivityEntityList(aprocessid, version);
 			colActivities = new ArrayList<ItemCollection>();
 			for (ItemCollection aworkitem : colEntities) {
-				// ad only activities with usercontrolled != No
+				// ad only activities with userControlled != No
 				if (!"0".equals(aworkitem.getItemValueString("keypublicresult")))
 					colActivities.add(aworkitem);
 			}
@@ -570,11 +517,11 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 	 * 
 	 * @return
 	 */
-	public List<String> getAllWorkflowGroups() {
+	public List<String> getAllWorkflowGroups(String modelVersion) {
 		ArrayList<String> colGroups = new ArrayList<String>();
 
 		try {
-			Collection<ItemCollection> colEntities = getProcessEntityList();
+			List<ItemCollection> colEntities = getProcessEntityList(modelVersion);
 
 			for (ItemCollection aworkitem : colEntities) {
 				String sGroup = aworkitem
@@ -592,7 +539,7 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 		ArrayList<String> colGroups = new ArrayList<String>();
 
 		try {
-			Collection<ItemCollection> colEntities = getProcessEntityListByVersion(version);
+			Collection<ItemCollection> colEntities = getProcessEntityList(version);
 
 			for (ItemCollection aworkitem : colEntities) {
 				String sGroup = aworkitem
@@ -608,18 +555,6 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 
 	/**
 	 * returns a list of all ProcessEntities which are the first one in each
-	 * ProcessGroup. So for each ProcessGroup the ProcessEntity with the lowest
-	 * processID will be returned. The method builds a cash with the best
-	 * (lowest) ProcessID for each process group.
-	 * 
-	 * @return
-	 */
-	public List<ItemCollection> getAllStartProcessEntities() {
-		return getAllStartProcessEntitiesByVersion(null);
-	}
-
-	/**
-	 * returns a list of all ProcessEntities which are the first one in each
 	 * ProcessGroup. The ModelVersion specifies the Model to be analiezed.
 	 * 
 	 * So for each ProcessGroup the ProcessEntity with the lowest processID will
@@ -630,19 +565,15 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 	 * 
 	 * @return
 	 */
-	public List<ItemCollection> getAllStartProcessEntitiesByVersion(
-			String version) {
+	public List<ItemCollection> getAllStartProcessEntities(String version) {
 		HashMap<String, ItemCollection> cashBestProcessID = new HashMap<String, ItemCollection>();
 		ArrayList<ItemCollection> colStartProcessEntities = new ArrayList<ItemCollection>();
 
 		try {
 			// As the process Entity List can be unordered each processEntity
 			// will be checked for the lowest ProcessID
-			Collection<ItemCollection> colEntities;
-			if (version == null)
-				colEntities = getProcessEntityList();
-			else
-				colEntities = getProcessEntityListByVersion(version);
+			List<ItemCollection> colEntities;
+			colEntities = getProcessEntityList(version);
 
 			for (ItemCollection processEntity : colEntities) {
 				String sGroup = processEntity
@@ -680,26 +611,15 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 	}
 
 	/**
-	 * returns a list of all ProcessEntities for a specific ProcessGroup
-	 * independent from the modelversion. The same workflowGroup contained in to
-	 * different model versions will be returned twice.
-	 * 
-	 * @return
-	 */
-	public List<ItemCollection> getAllProcessEntitiesByGroup(String aGroup) {
-		return getAllProcessEntitiesByGroupByVersion(aGroup, null);
-	}
-
-	/**
-	 * returns a list of all ProcessEntities for a specific ProcessGroup and
+	 * Returns a list of all ProcessEntities for a specific ProcessGroup and
 	 * modelversion.
 	 * 
 	 * @param aGroup
 	 * @param aversion
 	 * @return
 	 */
-	public List<ItemCollection> getAllProcessEntitiesByGroupByVersion(
-			String aGroup, String aversion) {
+	public List<ItemCollection> getAllProcessEntitiesByGroup(String aGroup,
+			String aversion) {
 		ArrayList<ItemCollection> processList = new ArrayList<ItemCollection>();
 
 		String sQuery = "SELECT DISTINCT process FROM Entity AS process "
@@ -813,7 +733,7 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 			// now remove old model entries....
 			logger.info("[ModelService] removing existing configuration for model version '"
 					+ sModelVersion + "'");
-			removeModelVersion(sModelVersion);
+			removeModel(sModelVersion);
 
 			// save new entities into database and update modelversion for all
 			// entities.....
@@ -839,6 +759,52 @@ public class ModelService implements ExtendedModel, ModelServiceRemote {
 			logger.info("[ModelService] " + ecol.getEntity().length
 					+ " model entries sucessfull imported");
 		}
+	}
+
+	public void importBPMNModel(BPMNModel bpmnmodel) throws ModelException {
+
+		if (bpmnmodel == null || bpmnmodel.getProfile() == null) {
+			throw new ModelException(ModelException.INVALID_MODEL,
+					"Invalid Model file: No Imixs Definitions Extension found! ");
+
+		}
+
+		// verify $modelversion
+		String modelVersion = bpmnmodel.getProfile().getItemValueString(
+				"$ModelVersion");
+		logger.fine("$ModelVersion=" + modelVersion);
+		if (modelVersion.isEmpty()) {
+			throw new ModelException(ModelException.INVALID_MODEL,
+					"Invalid Model: Model Version not provided! ");
+		}
+
+		// delete old model if a modelversion is available
+
+		for (String group : bpmnmodel.getWorkflowGroups()) {
+			removeModelGroup(group, modelVersion);
+		}
+		// save model...
+		logger.fine("update profile...");
+		entityService.save(bpmnmodel.getProfile());
+
+		for (ItemCollection processEntity : bpmnmodel
+				.getProcessEntityList(modelVersion)) {
+			int processID = processEntity.getItemValueInteger("numprocessid");
+			logger.fine("update processEntity: " + processID);
+
+			entityService.save(processEntity);
+			for (ItemCollection acitivtyEntity : bpmnmodel
+					.getActivityEntityList(processID, modelVersion)) {
+
+				logger.fine("update activityEntity: " + processID + "."
+						+ acitivtyEntity.getItemValueInteger("numactivityid"));
+
+				entityService.save(acitivtyEntity);
+			}
+		}
+
+		logger.fine("update finished! ");
+
 	}
 
 	/**

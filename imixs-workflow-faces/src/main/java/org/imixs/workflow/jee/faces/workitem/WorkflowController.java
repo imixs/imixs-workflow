@@ -33,6 +33,7 @@ import java.util.List;
 import javax.ejb.EJB;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -120,7 +121,8 @@ public class WorkflowController extends DataController {
 			try {
 				modelVersion = modelService.getLatestVersion();
 			} catch (ModelException e) {
-				throw new InvalidAccessException(e.getErrorContext(),e.getErrorCode(),e.getMessage(),e);
+				throw new InvalidAccessException(e.getErrorContext(),
+						e.getErrorCode(), e.getMessage(), e);
 			}
 			getWorkitem().replaceItemValue("$ModelVersion", modelVersion);
 		}
@@ -129,9 +131,8 @@ public class WorkflowController extends DataController {
 		if (getWorkitem().getItemValueInteger("$ProcessID") <= 0) {
 			// get ProcessEntities by version
 			List<ItemCollection> col;
-			col = modelService
-					.getAllStartProcessEntitiesByVersion(getWorkitem()
-							.getItemValueString("$ModelVersion"));
+			col = modelService.getAllStartProcessEntities(getWorkitem()
+					.getItemValueString(WorkflowKernel.MODELVERSION));
 			if (!col.isEmpty()) {
 				startProcessEntity = col.iterator().next();
 				getWorkitem().replaceItemValue("$ProcessID",
@@ -140,17 +141,20 @@ public class WorkflowController extends DataController {
 		}
 
 		// find the ProcessEntity
-		startProcessEntity = modelService.getProcessEntityByVersion(
-				getWorkitem().getItemValueInteger("$ProcessID"), getWorkitem()
-						.getItemValueString("$ModelVersion"));
+		startProcessEntity = modelService.getProcessEntity(getWorkitem()
+				.getItemValueInteger(WorkflowKernel.PROCESSID), getWorkitem()
+				.getItemValueString(WorkflowKernel.MODELVERSION));
 
 		// ProcessEntity found?
 		if (startProcessEntity == null)
-			throw new InvalidAccessException(ModelException.INVALID_MODEL_ENTRY,
+			throw new InvalidAccessException(
+					ModelException.INVALID_MODEL_ENTRY,
 					"unable to find ProcessEntity in model version "
-							+ getWorkitem().getItemValueString("$ModelVersion")
+							+ getWorkitem().getItemValueString(
+									WorkflowKernel.MODELVERSION)
 							+ " for ID="
-							+ getWorkitem().getItemValueInteger("$ProcessID"));
+							+ getWorkitem().getItemValueInteger(
+									WorkflowKernel.PROCESSID));
 
 		// update processId and WriteAccess
 		getWorkitem().replaceItemValue("$WriteAccess",
@@ -217,7 +221,7 @@ public class WorkflowController extends DataController {
 	 * 
 	 * @param id
 	 *            - activityID to be processed
-	 * @throws PluginException 
+	 * @throws PluginException
 	 * 
 	 * @see process()
 	 * @see process(id,resetWorkitem)
@@ -311,8 +315,8 @@ public class WorkflowController extends DataController {
 		// get Workflow-Activities by version if provided by the workitem
 		List<ItemCollection> col = null;
 		if (sversion != null && !"".equals(sversion))
-			col = this.getModelService().getPublicActivitiesByVersion(
-					processId, sversion);
+			col = this.getModelService().getPublicActivities(processId,
+					sversion);
 
 		for (ItemCollection aworkitem : col) {
 			activityList.add(aworkitem);

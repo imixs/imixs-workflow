@@ -64,6 +64,14 @@ public class WorkflowKernel {
 	
 	public static final String ISO8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
+	public static final String UNIQUEID = "$uniqueid";
+	public static final String MODELVERSION = "$modelversion";
+	public static final String PROCESSID = "$processid";
+	public static final String ACTIVITYID = "$activityid";
+	public static final String ACTIVITYIDLIST = "$activityidlist";
+	
+
+	
 	/** Plugin objects **/
 	private Vector<Plugin> vectorPlugins = null;
 	private WorkflowContext ctx = null;
@@ -171,7 +179,7 @@ public class WorkflowKernel {
 
 	/**
 	 * Processes a workitem. The Workitem have at least provide the properties
-	 * "$processid" and "$activityid"
+	 * PROCESSID and ACTIVITYID
 	 * 
 	 * @param workitem
 	 * @throws PluginException
@@ -189,34 +197,34 @@ public class WorkflowKernel {
 					"[WorkflowKernel] processing error: workitem is null");
 
 		// check processID
-		if (workitem.getItemValueInteger("$processid") <= 0)
+		if (workitem.getItemValueInteger(PROCESSID) <= 0)
 			throw new ProcessingErrorException(
 					WorkflowKernel.class.getSimpleName(), UNDEFINED_PROCESSID,
 					"[WorkflowKernel] processing error: $processid undefined ("
-							+ workitem.getItemValueInteger("$processid") + ")");
+							+ workitem.getItemValueInteger(PROCESSID) + ")");
 
 		// check activityid
 
-		if (workitem.getItemValueInteger("$activityid") <= 0)
+		if (workitem.getItemValueInteger(ACTIVITYID) <= 0)
 			throw new ProcessingErrorException(
 					WorkflowKernel.class.getSimpleName(), UNDEFINED_ACTIVITYID,
 					"[WorkflowKernel] processing error: $activityid undefined ("
-							+ workitem.getItemValueInteger("$activityid") + ")");
+							+ workitem.getItemValueInteger(ACTIVITYID) + ")");
 
 		// Check if $UniqueID is available
-		if ("".equals(documentContext.getItemValueString("$UniqueID"))) {
+		if ("".equals(documentContext.getItemValueString(UNIQUEID))) {
 			// generating a new one
-			documentContext.replaceItemValue("$UniqueID", generateUniqueID());
+			documentContext.replaceItemValue(UNIQUEID, generateUniqueID());
 		}
 
 		// log the general processing message
 		String msg = "[WorkflowKernel] processing="
-				+ documentContext.getItemValueString("$UniqueID")
-				+ ", $modelversion="
-				+ workitem.getItemValueString("$modelversion")
-				+ ", $processid=" + workitem.getItemValueInteger("$processid")
+				+ documentContext.getItemValueString(UNIQUEID)
+				+ ", MODELVERSION="
+				+ workitem.getItemValueString(MODELVERSION)
+				+ ", $processid=" + workitem.getItemValueInteger(PROCESSID)
 				+ ", $activityid="
-				+ workitem.getItemValueInteger("$activityid");
+				+ workitem.getItemValueInteger(ACTIVITYID);
 
 		if (ctx != null) {
 			if (ctx.getLogLevel() == LOG_LEVEL_FINE)
@@ -251,14 +259,14 @@ public class WorkflowKernel {
 		int integerID;
 
 		// is $activityid provided?
-		integerID = documentContext.getItemValueInteger("$activityid");
+		integerID = documentContext.getItemValueInteger(ACTIVITYID);
 
 		if ((integerID > 0))
 			return true;
 		else {
 			// no - test for property $ActivityIDList
 			List<?> vActivityList = documentContext
-					.getItemValue("$activityidlist");
+					.getItemValue(ACTIVITYIDLIST);
 
 			// remove 0 values if contained!
 			while (vActivityList.indexOf(Integer.valueOf(0)) > -1) {
@@ -282,9 +290,9 @@ public class WorkflowKernel {
 								+ iNextID);
 					vActivityList.remove(0);
 					// update document context
-					documentContext.replaceItemValue("$activityid",
+					documentContext.replaceItemValue(ACTIVITYID,
 							Integer.valueOf(iNextID));
-					documentContext.replaceItemValue("$activityidlist",
+					documentContext.replaceItemValue(ACTIVITYIDLIST,
 							vActivityList);
 					return true;
 				}
@@ -355,12 +363,12 @@ public class WorkflowKernel {
 
 		// NextProcessID will only be set if NextTask>0
 		if (iNewProcessID > 0) {
-			documentContext.replaceItemValue("$processid",
+			documentContext.replaceItemValue(PROCESSID,
 					Integer.valueOf(iNewProcessID));
 		}
 
 		// clear ActivityID and create new workflowActivity Instance
-		documentContext.replaceItemValue("$activityid", Integer.valueOf(0));
+		documentContext.replaceItemValue(ACTIVITYID, Integer.valueOf(0));
 
 		// FollowUp Activity ?
 		String sFollowUp = documentActivity.getItemValueString("keyFollowUp");
@@ -382,7 +390,7 @@ public class WorkflowKernel {
 
 		// check if activityidlist is available
 		List<Integer> vActivityList = documentContext
-				.getItemValue("$ActivityIDList");
+				.getItemValue(ACTIVITYIDLIST);
 		if (vActivityList == null)
 			vActivityList = new Vector<Integer>();
 		// clear list?
@@ -397,7 +405,7 @@ public class WorkflowKernel {
 			vActivityList.remove(vActivityList.indexOf(Integer.valueOf(0)));
 		}
 
-		documentContext.replaceItemValue("$ActivityIDList", vActivityList);
+		documentContext.replaceItemValue(ACTIVITYIDLIST, vActivityList);
 		if (ctx.getLogLevel() == LOG_LEVEL_FINE)
 			logger.info("[WorkflowKernel]  append new Activity ID=" + aID);
 
@@ -428,7 +436,7 @@ public class WorkflowKernel {
 		sLogEntry.append(new SimpleDateFormat(ISO8601_FORMAT).format(new Date()));
 
 		sLogEntry.append("|");
-		sLogEntry.append(documentContext.getItemValueString("$modelversion"));
+		sLogEntry.append(documentContext.getItemValueString(MODELVERSION));
 
 		sLogEntry.append("|");
 		sLogEntry.append(documentActivity.getItemValueInteger("numprocessid")
@@ -469,21 +477,16 @@ public class WorkflowKernel {
 	 */
 	private void loadActivity() {
 
-		int aProcessID = documentContext.getItemValueInteger("$processid");
-		int aActivityID = documentContext.getItemValueInteger("$activityid");
+		int aProcessID = documentContext.getItemValueInteger(PROCESSID);
+		int aActivityID = documentContext.getItemValueInteger(ACTIVITYID);
 
 		// determine model version
 		String sModelVersion = documentContext
-				.getItemValueString("$modelversion");
+				.getItemValueString(MODELVERSION);
 
-		// depending of the provided Workflow Context call different methods
-		if (ctx instanceof ExtendedWorkflowContext)
-			documentActivity = ((ExtendedWorkflowContext) ctx)
-					.getExtendedModel().getActivityEntityByVersion(aProcessID,
+		documentActivity = ctx.getModel().getActivityEntity(aProcessID,
 							aActivityID, sModelVersion);
-		else
-			documentActivity = ctx.getModel().getActivityEntity(aProcessID,
-					aActivityID);
+		
 
 		if (documentActivity == null)
 			throw new ProcessingErrorException(

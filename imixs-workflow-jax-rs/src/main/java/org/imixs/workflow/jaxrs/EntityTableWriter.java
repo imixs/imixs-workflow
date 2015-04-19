@@ -63,6 +63,7 @@ public class EntityTableWriter implements MessageBodyWriter<EntityTable> {
 		return EntityTable.class.isAssignableFrom(type);
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void writeTo(EntityTable entityCollection, Class<?> type,
 			Type genericType, Annotation[] annotations, MediaType mediaType,
 			MultivaluedMap<String, Object> httpHeaders,

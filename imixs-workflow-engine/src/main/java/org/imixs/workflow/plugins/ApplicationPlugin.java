@@ -29,7 +29,6 @@ package org.imixs.workflow.plugins;
 
 import java.util.logging.Logger;
 
-import org.imixs.workflow.ExtendedModel;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
@@ -105,17 +104,12 @@ public class ApplicationPlugin extends AbstractPlugin {
 
 			// now get the next ProcessEntity from ctx
 			ItemCollection itemColNextProcess = null;
-			// try to get from model version
-			// check if model implements the ExtendedModel Interface
-			if (ctx.getModel() instanceof ExtendedModel) {
-				String aModelVersion = adocumentActivity
-						.getItemValueString("$modelVersion");
-				itemColNextProcess = ((ExtendedModel) ctx.getModel())
-						.getProcessEntityByVersion(iNextProcessID,
-								aModelVersion);
-			} else
-				itemColNextProcess = ctx.getModel().getProcessEntity(
-						iNextProcessID);
+			// get from model version
+			String aModelVersion = adocumentActivity
+					.getItemValueString("$modelVersion");
+			itemColNextProcess = ctx.getModel().getProcessEntity(
+					iNextProcessID, aModelVersion);
+
 			// if the processEntity was not found cancel processing now!
 			if (itemColNextProcess == null) {
 				logger.warning("[ApplicationPlugin] Warning - processEntity '"

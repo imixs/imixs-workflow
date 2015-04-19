@@ -37,7 +37,8 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 
 /**
- * The Remote interface for the ModelService EJB. Can be used by standalone java clients.
+ * The Remote interface for the ModelService EJB. Can be used by standalone java
+ * clients.
  * 
  * @see org.imixs.workflow.jee.ejb.ModelService
  * @author rsoika
@@ -50,16 +51,11 @@ public interface ModelServiceRemote {
 	 * This method returns the ActivityEntity with the highest Version number
 	 * ($modelversion)
 	 */
-	public abstract ItemCollection getActivityEntity(int processid,
-			int activityid);
 
-	public abstract ItemCollection getActivityEntityByVersion(int processid,
+	public abstract ItemCollection getActivityEntity(int processid,
 			int activityid, String modelVersion);
 
-	public abstract ItemCollection getProcessEntity(int processid)
-			throws ModelException;
-
-	public abstract ItemCollection getProcessEntityByVersion(int processid,
+	public abstract ItemCollection getProcessEntity(int processid,
 			String modelversion);
 
 	/**
@@ -69,31 +65,17 @@ public interface ModelServiceRemote {
 	 * @throws ModelException
 	 * 
 	 */
-	public abstract List<ItemCollection> getActivityEntityList(
-			int processid);
 
-	public abstract List<ItemCollection> getActivityEntityListByVersion(
-			int processid, String aModelVersion) ;
-
-	/**
-	 * returns a collection of ItemCollections representing the model process
-	 * Entities
-	 * 
-	 */
-	public abstract List<ItemCollection> getProcessEntityList();
-
-	/**
-	 * returns a collection of ItemCollections representing the model process
-	 * Entities
-	 * 
-	 */
-	public abstract List<ItemCollection> getProcessEntityListByVersion(
+	public abstract List<ItemCollection> getActivityEntityList(int processid,
 			String aModelVersion);
 
-	public abstract List<ItemCollection> getEnvironmentEntityList();
-
-	public abstract List<ItemCollection> getEnvironmentEntityListByVersion(
-			String modelversion);
+	/**
+	 * returns a collection of ItemCollections representing the model process
+	 * Entities
+	 * 
+	 */
+	public abstract List<ItemCollection> getProcessEntityList(
+			String aModelVersion);
 
 	/**
 	 * Saves or updates an ActivityEntity represented by an ItemCollection. The
@@ -137,13 +119,22 @@ public interface ModelServiceRemote {
 			throws ModelException, AccessDeniedException;
 
 	/**
-	 * This method removes a spcific ModelVersion defined by param
-	 * 'modelversion'. If modelVersion is null the method will remove all models
+	 * This method removes a specific ModelVersion. If modelVersion is null the
+	 * method will remove all models
 	 * 
 	 * @throws AccessDeniedException
 	 */
-	public abstract void removeModelVersion(String modelversion)
+	public abstract void removeModel(String modelversion)
 			throws ModelException, AccessDeniedException;
+
+	/**
+	 * This method removes a specific WorkflowGroup for the defined
+	 * modelVersion. If modelVersion is null the method will remove all models
+	 * 
+	 * @throws AccessDeniedException
+	 */
+	public abstract void removeModelGroup(String workflowgroup,
+			String modelversion) throws ModelException, AccessDeniedException;
 
 	/**
 	 * This helper method finds the highest Model Version available in the
@@ -166,35 +157,15 @@ public interface ModelServiceRemote {
 	 * 
 	 * @return List<ItemCollection> of activity Entities
 	 */
-	public abstract List<ItemCollection> getPublicActivities(int aprocessid);
-
-	/**
-	 * returns all the activities in a list for a corresponding process entity
-	 * The method returns only Activities where keypublicresult != "0"
-	 * 
-	 * @return List<ItemCollection> of activity Entities
-	 */
-	public abstract List<ItemCollection> getPublicActivitiesByVersion(
-			int aprocessid, String version);
+	public abstract List<ItemCollection> getPublicActivities(int aprocessid,
+			String version);
 
 	/**
 	 * returns a String list of all existing ProcessGroup Names
 	 * 
 	 * @return
 	 */
-	public abstract List<String> getAllWorkflowGroups();
-
-	public abstract List<String> getAllWorkflowGroupsByVersion(String version);
-
-	/**
-	 * returns a list of all ProcessEntities which are the first one in each
-	 * ProcessGroup. So for each ProcessGroup the ProcessEntity with the lowest
-	 * processID will be returned. The method builds a cash with the best
-	 * (lowest) ProcessID for each process group.
-	 * 
-	 * @return
-	 */
-	public abstract List<ItemCollection> getAllStartProcessEntities();
+	public abstract List<String> getAllWorkflowGroups(String version);
 
 	/**
 	 * returns a list of all ProcessEntities which are the first one in each
@@ -208,18 +179,8 @@ public interface ModelServiceRemote {
 	 * 
 	 * @return
 	 */
-	public abstract List<ItemCollection> getAllStartProcessEntitiesByVersion(
+	public abstract List<ItemCollection> getAllStartProcessEntities(
 			String version);
-
-	/**
-	 * returns a list of all ProcessEntities for a specific ProcessGroup
-	 * independent from the modelversion. The same workflowGroup contained in to
-	 * different model versions will be returned twice.
-	 * 
-	 * @return
-	 */
-	public abstract List<ItemCollection> getAllProcessEntitiesByGroup(
-			String aGroup);
 
 	/**
 	 * returns a list of all ProcessEntities for a specific ProcessGroup and
@@ -229,11 +190,11 @@ public interface ModelServiceRemote {
 	 * @param aversion
 	 * @return
 	 */
-	public abstract List<ItemCollection> getAllProcessEntitiesByGroupByVersion(
+	public abstract List<ItemCollection> getAllProcessEntitiesByGroup(
 			String aGroup, String aversion);
 
 	/**
-	 * This method imports a workflow model file 
+	 * This method imports a workflow model file
 	 */
 	public abstract void importModel(InputStream input) throws ModelException,
 			AccessDeniedException;

@@ -44,11 +44,10 @@ import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import org.imixs.workflow.ExtendedModel;
-import org.imixs.workflow.ExtendedWorkflowContext;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.Plugin;
+import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.WorkflowManager;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -81,7 +80,7 @@ import org.imixs.workflow.jee.jpa.EntityIndex;
 @Stateless
 @LocalBean
 public class WorkflowService implements WorkflowManager,
-		ExtendedWorkflowContext, WorkflowServiceRemote {
+		WorkflowContext, WorkflowServiceRemote {
 
 	// entity properties
 	public static final String UNIQUEID = "$uniqueid";
@@ -705,10 +704,7 @@ public class WorkflowService implements WorkflowManager,
 		return modelService;
 	}
 
-	public ExtendedModel getExtendedModel() {
-		return modelService;
-	}
-
+	
 	public Object getSessionContext() {
 		return ctx;
 	}

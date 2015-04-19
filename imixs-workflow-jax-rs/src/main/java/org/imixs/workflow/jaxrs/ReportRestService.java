@@ -202,6 +202,7 @@ public class ReportRestService {
 	 * @return a collection of entiteis
 	 * 
 	 */
+	@SuppressWarnings("unchecked")
 	@GET
 	@Path("/{name}.ixr")
 	public Response getExcecuteReport(@PathParam("name") String name,
@@ -330,6 +331,7 @@ public class ReportRestService {
 	 * @param count
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	@Path("/{name}.html")
@@ -389,6 +391,7 @@ public class ReportRestService {
 	 * @return
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
 	// @Produces("application/xml")

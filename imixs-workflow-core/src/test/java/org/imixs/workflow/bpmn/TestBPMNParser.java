@@ -26,6 +26,7 @@ import org.xml.sax.SAXException;
  */
 public class TestBPMNParser {
 
+	
 	@Before
 	public void setup() {
 
@@ -42,11 +43,13 @@ public class TestBPMNParser {
 	public void testSimple() throws ParseException,
 			ParserConfigurationException, SAXException, IOException {
 
+		String VERSION="1.0.0";
+		
 		InputStream inputStream = getClass().getResourceAsStream(
 				"/bpmn/ticket.bpmn");
 
 		BPMNModel model = null;
-		try {
+		try { 
 			model = BPMNParser.parseModel(inputStream, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
@@ -64,7 +67,7 @@ public class TestBPMNParser {
 				profile.getItemValueString("txtname"));
 		Assert.assertEquals("WorkflowEnvironmentEntity",
 				profile.getItemValueString("type"));
-		Assert.assertEquals("1.0.0",
+		Assert.assertEquals(VERSION,
 				profile.getItemValueString("$ModelVersion"));
 		List plugins = profile.getItemValue("txtplugins");
 		Assert.assertNotNull(plugins);
@@ -74,11 +77,13 @@ public class TestBPMNParser {
 		Assert.assertEquals("org.imixs.workflow.plugins.HistoryPlugin",plugins.get(2));
 		Assert.assertEquals("org.imixs.workflow.plugins.ResultPlugin",plugins.get(3));
 
+		Assert.assertTrue(model.workflowGroups.contains("Ticket"));
+		
 		// test count of elements
-		Assert.assertEquals(4, model.getProcessEntityList().size());
+		Assert.assertEquals(4, model.getProcessEntityList(VERSION).size());
 
 		// test task 1000
-		ItemCollection task = model.getProcessEntity(1000);
+		ItemCollection task = model.getProcessEntity(1000,VERSION);
 		Assert.assertNotNull(task);
 		Assert.assertEquals("1.0.0",
 				task.getItemValueString("$ModelVersion"));
@@ -88,29 +93,29 @@ public class TestBPMNParser {
 
 		// test activity for task 1000 
 		Collection<ItemCollection> activities = model
-				.getActivityEntityList(1000);
+				.getActivityEntityList(1000,VERSION);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(1, activities.size());
 
 		// test activity for task 1100
-		activities = model.getActivityEntityList(1100);
+		activities = model.getActivityEntityList(1100,VERSION);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(3, activities.size());
 
 		// test activity for task 1200
-		activities = model.getActivityEntityList(1200);
+		activities = model.getActivityEntityList(1200,VERSION);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(4, activities.size());
 
 		// test activity 1100.20 accept
-		ItemCollection activity = model.getActivityEntity(1100, 20);
+		ItemCollection activity = model.getActivityEntity(1100, 20,VERSION);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(1200,
 				activity.getItemValueInteger("numNextProcessID"));
 		Assert.assertEquals("accept", activity.getItemValueString("txtName"));
 
 		// test activity 1200.20 - follow-up activity solve =>40
-		activity = model.getActivityEntity(1200, 20);
+		activity = model.getActivityEntity(1200, 20,VERSION);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals("1.0.0",
 				activity.getItemValueString("$ModelVersion"));
@@ -121,14 +126,14 @@ public class TestBPMNParser {
 				activity.getItemValueInteger("numNextActivityID"));
 
 		// test activity 1200.40 - follow-up activity message
-		activity = model.getActivityEntity(1200, 40);
+		activity = model.getActivityEntity(1200, 40,VERSION);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals("message", activity.getItemValueString("txtName"));
 		Assert.assertEquals(1000,
 				activity.getItemValueInteger("numNextProcessID"));
 
 		// test activity 100.10
-		activity = model.getActivityEntity(1000, 10);
+		activity = model.getActivityEntity(1000, 10,VERSION);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(1100,
 				activity.getItemValueInteger("numNextProcessID"));

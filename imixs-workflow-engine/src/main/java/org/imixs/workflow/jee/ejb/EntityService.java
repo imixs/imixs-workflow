@@ -330,6 +330,7 @@ public class EntityService implements EntityServiceRemote {
 	 *            to be saved
 	 * @return updated ItemCollection
 	 */
+	@SuppressWarnings("unchecked")
 	public ItemCollection save(ItemCollection itemcol)
 			throws AccessDeniedException {
 
@@ -619,6 +620,7 @@ public class EntityService implements EntityServiceRemote {
 	 *            - Type of EntityIndex
 	 * @throws AccessDeniedException
 	 */
+	@SuppressWarnings("unchecked")
 	public void addIndex(String stitel, int ityp) throws AccessDeniedException {
 		// lower case title
 		stitel = stitel.toLowerCase();
@@ -670,6 +672,7 @@ public class EntityService implements EntityServiceRemote {
 	 * @throws AccessDeniedException
 	 * 
 	 */
+	@SuppressWarnings("unchecked")
 	public void removeIndex(String stitel) throws AccessDeniedException {
 		int indexType = 0;
 		// lower case title
@@ -748,6 +751,7 @@ public class EntityService implements EntityServiceRemote {
 	 * 
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	private List<EntityIndex> readIndices() {
 		logger.finer("readIndices....");
 		Query q = manager
@@ -771,6 +775,7 @@ public class EntityService implements EntityServiceRemote {
 	 * 
 	 * @see org.imixs.workfow.jee.jpa.Entity
 	 */
+	@SuppressWarnings("unchecked")
 	public List<ItemCollection> findAllEntities(String query, int startpos,
 			int count) throws InvalidAccessException {
 		
@@ -1012,6 +1017,7 @@ public class EntityService implements EntityServiceRemote {
 	 * 
 	 * @return the new itemCollection without writeaccess properties
 	 */
+	@SuppressWarnings("rawtypes")
 	private void updateWriteAccessList(ItemCollection itemCol, Entity aEntity) {
 		List<String> vAccessFieldList = new ArrayList<String>();
 
@@ -1060,6 +1066,7 @@ public class EntityService implements EntityServiceRemote {
 	 * 
 	 * @return the new itemCollection without writeaccess properties
 	 */
+	@SuppressWarnings("rawtypes")
 	private void updateReadAccessList(ItemCollection itemCol, Entity aEntity) {
 		List<String> vAccessFieldList = new ArrayList<String>();
 
@@ -1124,6 +1131,7 @@ public class EntityService implements EntityServiceRemote {
 	 * match the data model
 	 * 
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void explodeEntity(ItemCollection itemCol, Entity aEntity,
 			Collection<EntityIndex> entityIndexCache) {
 
@@ -1638,6 +1646,7 @@ public class EntityService implements EntityServiceRemote {
 	 * 
 	 * @see issue #62
 	 */
+	@SuppressWarnings("unchecked")
 	private void updateAllEntityIndexFields(Collection<Entity> entityList,
 			String newIndexField) {
 		long count = 0;

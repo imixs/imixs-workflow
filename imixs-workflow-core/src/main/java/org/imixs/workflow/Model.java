@@ -27,6 +27,7 @@
 
 package org.imixs.workflow;
 
+import java.util.List;
 
 /**
  * A Model defines the instructions for processing a workitem. The Model is used
@@ -60,38 +61,44 @@ package org.imixs.workflow;
 public interface Model {
 
 	/**
-	 * Finds and returns the ProcessEntity for a processid inside the Model.
+	 * Returns the ProcessEntity by its processId for a specific model version.
 	 * 
 	 * @param processid
+	 * @param modelVersion
 	 * @return ItemCollection
-	 * @throws Exception
 	 */
-	public ItemCollection getProcessEntity(int processid);
+	public ItemCollection getProcessEntity(int processid, String modelVersion);
 
 	/**
-	 * Finds and returns the ActivityEntity for a processid and a activityid
-	 * inside the Model.
+	 * Returns the ActivityEntity defined by its processId and activityID for a
+	 * specific model version.
 	 * 
 	 * @param processid
 	 * @param activityid
+	 * @param modelVersion
 	 * @return ItemCollection
 	 */
-	public ItemCollection getActivityEntity(int processid, int activityid);
+	public ItemCollection getActivityEntity(int processid, int activityid,
+			String modelVersion);
 
 	/**
-	 * retruns a collection of ProcessEntities
+	 * Returns all ProcessEntities defined in a specific model version.
 	 * 
+	 * @param modelVersion
 	 * @return Collection org.imixs.workflow.ItemCollection
 	 */
-	public java.util.Collection<ItemCollection> getProcessEntityList();
+	public List<ItemCollection> getProcessEntityList(String modelVersion);
 
 	/**
-	 * retruns a collection of ActivityEntities for a specivic ProcessID. If the
-	 * process ID did not exists an empty collection should be returned
+	 * Returns all ActivityEntities defined by its processId for a specific
+	 * model version. If the process ID did not exists an empty list should be
+	 * returned.
 	 * 
+	 * @param processid
+	 * @param modelVersion
 	 * @return Collection org.imixs.workflow.ItemCollection
 	 */
-	public java.util.Collection<ItemCollection> getActivityEntityList(
-			int processid);
+	public List<ItemCollection> getActivityEntityList(int processid,
+			String modelVersion);
 
 }

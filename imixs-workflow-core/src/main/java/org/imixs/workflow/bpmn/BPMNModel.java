@@ -1,13 +1,14 @@
 package org.imixs.workflow.bpmn;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
 
 /**
@@ -21,18 +22,20 @@ import org.imixs.workflow.exceptions.ModelException;
 public class BPMNModel implements Model {
 
 	Map<Integer, ItemCollection> processList = null;
-	Map<Integer, Collection<ItemCollection>> activityList = null;
-	ItemCollection profile=null;
+	Map<Integer, List<ItemCollection>> activityList = null;
+	List<String> workflowGroups=null;
+	ItemCollection profile = null;
 	private static Logger logger = Logger.getLogger(BPMNModel.class.getName());
 
 	public BPMNModel() {
 		processList = new HashMap<Integer, ItemCollection>();
-		activityList = new HashMap<Integer, Collection<ItemCollection>>();
+		activityList = new HashMap<Integer, List<ItemCollection>>();
+		workflowGroups=new ArrayList<String>();
 	}
-	
 
 	/**
 	 * Returns the model profile entity
+	 * 
 	 * @return
 	 */
 	public ItemCollection getProfile() {
@@ -43,7 +46,9 @@ public class BPMNModel implements Model {
 		this.profile = profile;
 	}
 
-
+	public List<String> getWorkflowGroups() {
+		return workflowGroups;
+	}
 
 	/**
 	 * Adds a ProcessEntiy into the process list
@@ -61,6 +66,12 @@ public class BPMNModel implements Model {
 			throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
 					"Invalid Process Entity - wrong type '"
 							+ entity.getItemValueString("type") + "'");
+		}
+		
+		// add group?
+		String group=entity.getItemValueString("txtworkflowgroup");
+		if (!workflowGroups.contains(group)){
+			workflowGroups.add(group);
 		}
 		processList.put(entity.getItemValueInteger("numprocessid"), entity);
 	}
@@ -85,22 +96,46 @@ public class BPMNModel implements Model {
 			throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
 					"Invalid Activiyt Entity - no numprocessid defined!");
 		}
-		Collection<ItemCollection> activities = getActivityEntityList(pID);
+
+		// test version
+		String activitymodelversion = entity
+				.getItemValueString(WorkflowKernel.MODELVERSION);
+		ItemCollection process = this.getProcessEntity(pID,
+				activitymodelversion);
+		if (process == null) {
+			logger.warning("Invalid Activiyt Entity - no numprocessid defined in model version '"
+					+ activitymodelversion + "' ");
+			throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
+					"Invalid Activiyt Entity - no numprocessid defined!");
+		}
+
+		List<ItemCollection> activities = getActivityEntityList(pID,
+				activitymodelversion);
 
 		activities.add(entity);
 		activityList.put(pID, activities);
 	}
 
 	@Override
-	public ItemCollection getProcessEntity(int processid) {
-		return processList.get(processid);
+	public ItemCollection getProcessEntity(int processid, String modelVersion) {
+		ItemCollection process = processList.get(processid);
+		if (process != null
+				&& modelVersion.equals(process
+						.getItemValueString(WorkflowKernel.MODELVERSION)))
+			return process;
+		else
+			return null;
 	}
 
 	@Override
-	public ItemCollection getActivityEntity(int processid, int activityid) {
-		Collection<ItemCollection> activities = getActivityEntityList(processid);
+	public ItemCollection getActivityEntity(int processid, int activityid,
+			String modelVersion) {
+		List<ItemCollection> activities = getActivityEntityList(processid,
+				modelVersion);
 		for (ItemCollection aactivity : activities) {
-			if (activityid == aactivity.getItemValueInteger("numactivityid")) {
+			if (activityid == aactivity.getItemValueInteger("numactivityid")
+					&& modelVersion.equals(aactivity
+							.getItemValueString(WorkflowKernel.MODELVERSION))) {
 				return aactivity;
 			}
 		}
@@ -109,13 +144,14 @@ public class BPMNModel implements Model {
 	}
 
 	@Override
-	public Collection<ItemCollection> getProcessEntityList() {
-		return processList.values();
+	public List<ItemCollection> getProcessEntityList(String modelVersion) {
+		return new ArrayList<ItemCollection>(processList.values());
 	}
 
 	@Override
-	public Collection<ItemCollection> getActivityEntityList(int processid) {
-		Collection<ItemCollection> result = activityList.get(processid);
+	public List<ItemCollection> getActivityEntityList(int processid,
+			String modelVersion) {
+		List<ItemCollection> result = activityList.get(processid);
 		if (result == null)
 			result = new ArrayList<ItemCollection>();
 		return result;

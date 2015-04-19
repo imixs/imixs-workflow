@@ -740,17 +740,13 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		Collection<ItemCollection> colProcessList = null;
 
 		// get a complete list of process entities...
-		if (aModelVersion != null)
-			colProcessList = modelService
-					.getProcessEntityListByVersion(aModelVersion);
-		else
-			colProcessList = modelService.getProcessEntityList();
+		colProcessList = modelService.getProcessEntityList(aModelVersion);
 		for (ItemCollection aprocessentity : colProcessList) {
 			// select all activities for this process entity...
 			int processid = aprocessentity.getItemValueInteger("numprocessid");
 			// System.out.println("Analyse processentity '" + processid+ "'");
 			Collection<ItemCollection> aActivityList = modelService
-					.getActivityEntityListByVersion(processid, aModelVersion);
+					.getActivityEntityList(processid, aModelVersion);
 
 			for (ItemCollection aactivityEntity : aActivityList) {
 				// System.out.println("Analyse acitity '" + aactivityEntity

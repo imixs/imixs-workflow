@@ -39,7 +39,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -113,6 +112,7 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollect
 	 * @param workItem
 	 * @throws IOException 
 	 */
+	@SuppressWarnings("rawtypes")
 	public static void printXMLItemCollectionHTML(BufferedWriter bw, XMLItemCollection xmlworkItem) throws IOException {
 		boolean trClass = false;
 
@@ -168,6 +168,7 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollect
 	 * @param values
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public static String convertValuesToString(List values) {
 		String convertedValue = "";
 

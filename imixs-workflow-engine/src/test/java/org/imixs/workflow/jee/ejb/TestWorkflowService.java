@@ -93,7 +93,7 @@ public class TestWorkflowService {
 
 		// simulate  getActivityEntityByVersion
 		when(
-				modelService.getActivityEntityByVersion(Mockito.anyInt(),
+				modelService.getActivityEntity(Mockito.anyInt(),
 						Mockito.anyInt(), Mockito.anyString())).thenAnswer(
 				new Answer<ItemCollection>() {
 					@Override

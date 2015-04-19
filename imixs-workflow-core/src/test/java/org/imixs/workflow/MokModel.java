@@ -1,7 +1,7 @@
 package org.imixs.workflow;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -87,28 +87,28 @@ public class MokModel implements Model {
 	}
 
 	@Override
-	public ItemCollection getProcessEntity(int processid) throws InvalidAccessException {
+	public ItemCollection getProcessEntity(int processid,String modelVersion) throws InvalidAccessException {
 		return entities.get(processid + "");
 	}
 
 	@Override
-	public ItemCollection getActivityEntity(int processid, int activityid)
+	public ItemCollection getActivityEntity(int processid, int activityid,String modelVersion)
 			throws InvalidAccessException {
 
 		return entities.get( processid + "." + activityid);
 	}
 
 	@Override
-	public Collection<ItemCollection> getProcessEntityList()
+	public List<ItemCollection> getProcessEntityList(String modelVersion)
 			throws InvalidAccessException {
 		Vector<ItemCollection> list = new Vector<ItemCollection>();
-		list.add(getProcessEntity(100));
-		list.add(getProcessEntity(200));
+		list.add(getProcessEntity(100, modelVersion));
+		list.add(getProcessEntity(200, modelVersion));
 		return list;
 	}
 
 	@Override
-	public Collection<ItemCollection> getActivityEntityList(int processid)
+	public List<ItemCollection> getActivityEntityList(int processid,String modelVersion)
 			throws InvalidAccessException {
 		// not implemented
 		return null;
