@@ -1,5 +1,6 @@
 package org.imixs.workflow.bpmn;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -31,9 +32,7 @@ public class BPMNParser {
 	private static Logger logger = Logger.getLogger(BPMNParser.class.getName());
 
 	/**
-	 * This method parses a BPMN model from a input stream
-	 * 
-	 * 
+	 * This method parses a BPMN model from a input stream.
 	 * 
 	 * @param requestBodyStream
 	 * @param encoding
@@ -70,4 +69,26 @@ public class BPMNParser {
 
 	}
 
+	/**
+	 * This method parses a BPMN model from a byte array.
+	 * 
+	 * @param requestBodyStream
+	 * @param encoding
+	 *            - default encoding use to parse the stream
+	 * @return List<ItemCollection> a model definition
+	 * @throws ParseException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
+	 * @throws ModelException
+	 */
+	public final static BPMNModel parseModel(byte[] bpmnByteArray,
+			String encoding) throws ParseException,
+			ParserConfigurationException, SAXException, IOException,
+			ModelException {
+
+		ByteArrayInputStream input = new ByteArrayInputStream(bpmnByteArray);
+		return parseModel(input, encoding);
+
+	}
 }
