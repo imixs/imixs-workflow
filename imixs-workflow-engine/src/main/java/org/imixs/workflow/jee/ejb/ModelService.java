@@ -343,7 +343,6 @@ public class ModelService implements Model, ModelServiceRemote {
 	 * @return returns null if no entity was found
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unused")
 	private ItemCollection findEnvironmentEntity(String name,
 			String modelversion) {
 		String sQuery = null;
@@ -796,8 +795,16 @@ public class ModelService implements Model, ModelServiceRemote {
 		}
 		// save model...
 		logger.fine("update profile...");
-		entityService.save(bpmnmodel.getProfile());
+		if (bpmnmodel.getProfile() != null) {
+			// remove old profile
+			ItemCollection oldProfile = findEnvironmentEntity(
+					"environment.profile", modelVersion);
+			if (oldProfile != null) {
+				entityService.remove(oldProfile);
+			}
 
+			entityService.save(bpmnmodel.getProfile());
+		}
 		for (ItemCollection processEntity : bpmnmodel
 				.getProcessEntityList(modelVersion)) {
 			int processID = processEntity.getItemValueInteger("numprocessid");

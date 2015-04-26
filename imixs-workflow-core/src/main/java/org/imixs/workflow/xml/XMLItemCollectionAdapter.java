@@ -67,7 +67,7 @@ public class XMLItemCollectionAdapter {
 	 * @param ItemArray
 	 * @return ItemCollection
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static ItemCollection getItemCollection(XMLItemCollection entity) {
 		ItemCollection itemCol = new ItemCollection();
 		if (entity == null)
@@ -115,7 +115,7 @@ public class XMLItemCollectionAdapter {
 	 *            - optional list of item names to be converted. If null all
 	 *            items will be converted
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static XMLItemCollection putItemCollection(
 			ItemCollection aItemCollection, List<String> itemNames)
 			throws Exception {
@@ -377,6 +377,7 @@ public class XMLItemCollectionAdapter {
 	 * 
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	private static boolean isBasicType(Vector v, String fieldname) {
 		for (Object o : v) {
 			// Package p=o.getClass().getPackage();

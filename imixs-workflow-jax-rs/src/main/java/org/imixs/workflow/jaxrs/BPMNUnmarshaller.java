@@ -38,7 +38,10 @@ public class BPMNUnmarshaller implements MessageBodyReader<BPMNModel> {
 	@Override
 	public boolean isReadable(Class aClass, Type type,
 			Annotation[] annotations, MediaType mediaType) {
-		return true;
+		if (aClass==BPMNModel.class)
+			return true;
+		
+		return false;
 	}
 
 	@SuppressWarnings("rawtypes")
