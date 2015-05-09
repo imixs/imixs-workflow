@@ -84,6 +84,9 @@ The Workflow Service
 | /workflow/worklistbyquery/{query}.json        | a collection of workitems specified by a  |
 |                                               | JPQL phrase in json format                |
 *-----------------------------------------------+-------------------------------------------+
+| /workflow/worklistcountbyquery/{query}        | the count of workitems returned by a      |
+|                                               | JPQL phrase                               |
+*-----------------------------------------------+-------------------------------------------+
 | /workflow/workitem/{uniqueid}                 |a single workitem represented by the       |
 |                                               | provided uniqueid                         |
 *-----------------------------------------------+-------------------------------------------+

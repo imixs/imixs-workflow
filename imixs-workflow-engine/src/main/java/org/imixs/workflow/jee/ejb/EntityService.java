@@ -488,8 +488,7 @@ public class EntityService implements EntityServiceRemote {
 	 * by plugins to isolate a save request from the current transaction
 	 * context.
 	 * 
-	 * To call this method a EJB session context is necessary:
-	 * <code>
+	 * To call this method a EJB session context is necessary: <code>
 	 * 		workitem= sessionContext.getBusinessObject(EntityService.class)
 						.saveNewTransaction(workitem);
 	 * </code>
@@ -768,41 +767,47 @@ public class EntityService implements EntityServiceRemote {
 	 * the conditions of the JPA Object Class Entity
 	 * 
 	 * @param query
+	 *            - JQPL statement
 	 * @param startpos
-	 * @param count
-	 * @return
+	 *            - optional start position
+	 * @param maxcount
+	 *            - maximum count of elements to be returned
+	 * @return list of ItemCollection elements
 	 * @throws InvalidAccessException
 	 * 
 	 * @see org.imixs.workfow.jee.jpa.Entity
 	 */
 	@SuppressWarnings("unchecked")
 	public List<ItemCollection> findAllEntities(String query, int startpos,
-			int count) throws InvalidAccessException {
-		
-		long l=0;
-		
+			int maxcount) throws InvalidAccessException {
+
+		long l = 0;
+
 		logger.fine("[EntityService] findAllEntities - Query=" + query);
-		logger.fine("[EntityService] findAllEntities - Startpos=" + startpos + " count=" +count);
+		logger.fine("[EntityService] findAllEntities - Startpos=" + startpos
+				+ " maxcount=" + maxcount);
 		List<ItemCollection> vectorResult = new ArrayList<ItemCollection>();
-		
+
 		// optimize query....
 		query = optimizeQuery(query);
 		try {
 			Query q = manager.createQuery(query);
 			if (startpos >= 0)
 				q.setFirstResult(startpos);
-			if (count > 0)
-				q.setMaxResults(count);
+			if (maxcount > 0)
+				q.setMaxResults(maxcount);
 
-			l=System.currentTimeMillis();
+			l = System.currentTimeMillis();
 			Collection<Entity> entityList = q.getResultList();
-			logger.fine("[EntityService] findAllEntities - getResultList in " +( System.currentTimeMillis()-l) + " ms");
+			logger.fine("[EntityService] findAllEntities - getResultList in "
+					+ (System.currentTimeMillis() - l) + " ms");
 
 			if (entityList == null)
 				return vectorResult;
-			
-			logger.fine("[EntityService] findAllEntities - ResultList size=" +  entityList.size());
-			l=System.currentTimeMillis();
+
+			logger.fine("[EntityService] findAllEntities - ResultList size="
+					+ entityList.size());
+			l = System.currentTimeMillis();
 			for (Entity aEntity : entityList) {
 				/*
 				 * try { manager.refresh(aEntity); } catch
@@ -814,17 +819,70 @@ public class EntityService implements EntityServiceRemote {
 				// implode the ItemCollection object and add it to the resultset
 				vectorResult.add(implodeEntity(aEntity));
 			}
-			
-			logger.fine("[EntityService] implode ResultList in " +( System.currentTimeMillis()-l) + " ms");
 
-			
-			
+			logger.fine("[EntityService] findAllEntities in "
+					+ (System.currentTimeMillis() - l) + " ms");
+
 		} catch (RuntimeException nre) {
 			throw new InvalidAccessException(
 					"[EntityService] Error findAllEntities: '" + query + "' ",
 					nre);
 		}
 		return vectorResult;
+
+	}
+
+	/**
+	 * The method returns only the count of entities for an an valid jPQL
+	 * statement. The method counts only ItemCollections which are readable by
+	 * the CallerPrincipal. With the startpos and count parameters it is
+	 * possible to read chunks of entities. The jPQL Statement must match the
+	 * conditions of the JPA Object Class Entity.
+	 * 
+	 * The method replaces "SELECT DISTINCT entity" into
+	 * "SELECT COUNT (entity.id)"
+	 * 
+	 * @param query
+	 *            - JQPL statement
+	 * @param startpos
+	 *            - optional start position
+	 * @param maxcount
+	 *            - maximum count of elements to be returned
+	 * @return count of elements to returned by this query
+	 * @throws InvalidAccessException
+	 * 
+	 * @see org.imixs.workfow.jee.jpa.Entity
+	 */
+	public int countAllEntities(String query)
+			throws InvalidAccessException {
+
+		long l = 0;
+
+		logger.fine("[EntityService] countAllEntities - Query=" + query);
+		
+		// optimize query....
+		query = optimizeQuery(query);
+
+		// replace DISTINCT into COUNT
+		StringTokenizer st = new StringTokenizer(query);
+		st.nextToken();
+		String chunk1 = st.nextToken();
+		String chunk2 = st.nextToken();
+
+		int pos = query.indexOf(chunk1);
+		query = query.substring(0, pos) + "COUNT" + query.substring(pos + 8);
+
+		pos = query.indexOf(chunk2);
+		query = query.substring(0, pos) + "(" + chunk2 + ".id)"
+				+ query.substring(pos + chunk2.length());
+
+		Query q = manager.createQuery(query);
+		
+		Number cResults = (Number) q.getSingleResult();
+
+		logger.fine("[EntityService] countAllEntities in "
+				+ (System.currentTimeMillis() - l) + " ms");
+		return cResults.intValue();
 
 	}
 

@@ -70,6 +70,7 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.jee.ejb.WorkflowService;
 import org.imixs.workflow.util.JSONParser;
 import org.imixs.workflow.xml.EntityCollection;
+import org.imixs.workflow.xml.XMLCount;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
@@ -81,7 +82,8 @@ import org.imixs.workflow.xml.XMLItemCollectionAdapter;
  * 
  */
 @Path("/workflow")
-@Produces({ "text/html", "application/xml", "application/json" })
+@Produces({ MediaType.TEXT_HTML, MediaType.APPLICATION_XML,
+		MediaType.APPLICATION_JSON, MediaType.TEXT_XML })
 @Stateless
 public class WorkflowRestService {
 
@@ -125,7 +127,6 @@ public class WorkflowRestService {
 				out.write("<h1>Imixs-Workflow REST Service</h1>".getBytes());
 				out.write("<p>See the <a href=\"http://www.imixs.org/xml/restservice/workflowservice.html\" target=\"_blank\">Imixs REST Service API</a> for more information about this Service.</p>"
 						.getBytes());
-
 
 				// end
 				out.write("</body></html>".getBytes());
@@ -173,7 +174,7 @@ public class WorkflowRestService {
 	 */
 	@GET
 	@Path("/worklist.xml")
-	@Produces("application/xml")
+	@Produces(MediaType.APPLICATION_XML)
 	public EntityCollection getWorkListXML(
 			@DefaultValue("0") @QueryParam("start") int start,
 			@DefaultValue("10") @QueryParam("count") int count,
@@ -185,7 +186,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklist.json")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public EntityCollection getWorkListJSON(
 			@DefaultValue("0") @QueryParam("start") int start,
 			@DefaultValue("10") @QueryParam("count") int count,
@@ -242,7 +243,7 @@ public class WorkflowRestService {
 	 */
 	@GET
 	@Path("/worklistbyauthor/{user}.xml")
-	@Produces("application/xml")
+	@Produces(MediaType.APPLICATION_XML)
 	public EntityCollection getWorkListByAuthorXML(
 			@PathParam("user") String user,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -255,7 +256,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbyauthor/{user}.json")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public EntityCollection getWorkListByAuthorJSON(
 			@PathParam("user") String user,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -297,7 +298,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbycreator/{creator}.xml")
-	@Produces("application/xml")
+	@Produces(MediaType.APPLICATION_XML)
 	public EntityCollection getWorkListByCreatorXML(
 			@PathParam("creator") String creator,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -311,7 +312,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbycreator/{creator}.json")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public EntityCollection getWorkListByCreatorJSON(
 			@PathParam("creator") String creator,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -346,7 +347,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbyprocessid/{processid}.xml")
-	@Produces("application/xml")
+	@Produces(MediaType.APPLICATION_XML)
 	public EntityCollection getWorkListByProcessIDXML(
 			@PathParam("processid") int processid,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -360,7 +361,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbyprocessid/{processid}.json")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public EntityCollection getWorkListByProcessIDJSON(
 			@PathParam("processid") int processid,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -400,7 +401,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbygroup/{processgroup}.xml")
-	@Produces("application/xml")
+	@Produces(MediaType.APPLICATION_XML)
 	public EntityCollection getWorkListByGroupXML(
 			@PathParam("processgroup") String processgroup,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -414,7 +415,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbygroup/{processgroup}.json")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public EntityCollection getWorkListByGroupJSON(
 			@PathParam("processgroup") String processgroup,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -456,7 +457,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbyowner/{owner}.xml")
-	@Produces("application/xml")
+	@Produces(MediaType.APPLICATION_XML)
 	public EntityCollection getWorkListByOwnerXML(
 			@PathParam("owner") String owner,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -469,7 +470,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbyowner/{owner}.json")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public EntityCollection getWorkListByOwnerJSON(
 			@PathParam("owner") String owner,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -502,7 +503,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbywriteaccess.xml")
-	@Produces("application/xml")
+	@Produces(MediaType.APPLICATION_XML)
 	public EntityCollection getWorkListByWriteAccessXML(
 			@DefaultValue("0") @QueryParam("start") int start,
 			@DefaultValue("10") @QueryParam("count") int count,
@@ -515,7 +516,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbywriteaccess.json")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public EntityCollection getWorkListByWriteAccessJSON(
 			@DefaultValue("0") @QueryParam("start") int start,
 			@DefaultValue("10") @QueryParam("count") int count,
@@ -549,7 +550,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbyref/{uniqueid}.xml")
-	@Produces("application/xml")
+	@Produces(MediaType.APPLICATION_XML)
 	public EntityCollection getWorkListByRefXML(
 			@PathParam("uniqueid") String uniqueid,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -562,7 +563,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbyref/{uniqueid}.json")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public EntityCollection getWorkListByRefJSON(
 			@PathParam("uniqueid") String uniqueid,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -609,7 +610,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbyquery/{query}.xml")
-	@Produces("application/xml")
+	@Produces(MediaType.APPLICATION_XML)
 	public EntityCollection getWorkListByQueryXML(
 			@PathParam("query") String query,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -620,13 +621,39 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/worklistbyquery/{query}.json")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public EntityCollection getWorkListByQueryJSON(
 			@PathParam("query") String query,
 			@DefaultValue("0") @QueryParam("start") int start,
 			@DefaultValue("10") @QueryParam("count") int count,
 			@QueryParam("items") String items) {
 		return getWorkListByQuery(query, start, count, items);
+	}
+
+	/**
+	 * Returns the size of a result set by JPQL Query
+	 * 
+	 * @param query
+	 * @return
+	 */
+	@GET
+	@Path("/worklistcountbyquery/{query}")
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public XMLCount getWorkListCountByQuery(@PathParam("query") String query) {
+
+		XMLCount result = new XMLCount();
+		result.count = (long) -1;
+		try {
+			// decode query...
+			String decodedQuery = URLDecoder.decode(query, "UTF-8");
+
+			int size = workflowService.getEntityService().countAllEntities(
+					decodedQuery);
+			result.count = (long) size;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 	/**
@@ -673,7 +700,7 @@ public class WorkflowRestService {
 			@QueryParam("items") String items) {
 		return getWorkItem(uniqueid, items);
 	}
-	
+
 	@GET
 	@Path("/workitem/{uniqueid}/xml")
 	@Produces(MediaType.APPLICATION_XML)
@@ -683,7 +710,7 @@ public class WorkflowRestService {
 		return getWorkItem(uniqueid, items);
 	}
 
-	@GET 
+	@GET
 	@Path("/workitem/{uniqueid}.json")
 	@Produces(MediaType.APPLICATION_JSON)
 	public XMLItemCollection getWorkItemJSON(
@@ -691,8 +718,8 @@ public class WorkflowRestService {
 			@QueryParam("items") String items) {
 		return getWorkItem(uniqueid, items);
 	}
-	
-	@GET 
+
+	@GET
 	@Path("/workitem/{uniqueid}/json")
 	@Produces(MediaType.APPLICATION_JSON)
 	public XMLItemCollection getWorkItemJSONPath(
@@ -942,7 +969,7 @@ public class WorkflowRestService {
 	@PUT
 	@Path("/workitem")
 	@Produces(MediaType.APPLICATION_XML)
-	@Consumes({ "application/xml", "text/xml" })
+	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
 	public Response putWorkitemXML(XMLItemCollection workitem,
 			@QueryParam("action") String action) {
 
@@ -981,7 +1008,7 @@ public class WorkflowRestService {
 	@POST
 	@Path("/workitem")
 	@Produces(MediaType.APPLICATION_XML)
-	@Consumes({ "application/xml", "text/xml" })
+	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
 	public Response postWorkitemXML(XMLItemCollection workitem,
 			@QueryParam("action") String action) {
 		logger.fine("[WorkflowRestService] @POST /workitem  method:putWorkitemXML....");
@@ -1164,7 +1191,7 @@ public class WorkflowRestService {
 	 */
 	@PUT
 	@Path("/workitems")
-	@Consumes({ "application/xml", "text/xml" })
+	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
 	public Response putWorkitemsXML(EntityCollection worklist) {
 
 		logger.fine("[WorkflowRestService] @PUT /workitems  method:putWorkitemsXML....");
@@ -1189,7 +1216,7 @@ public class WorkflowRestService {
 
 	@POST
 	@Path("/workitems")
-	@Consumes({ "application/xml", "text/xml" })
+	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
 	public Response postWorkitemsXML(EntityCollection worklist) {
 		logger.fine("[WorkflowRestService] @POST /workitems  method:putWorkitemsXML....");
 
@@ -1337,4 +1364,5 @@ public class WorkflowRestService {
 			v.add(st.nextToken());
 		return v;
 	}
+
 }
