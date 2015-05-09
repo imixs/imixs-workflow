@@ -18,6 +18,12 @@ import org.xml.sax.helpers.DefaultHandler;
  * The Imixs BPMNDefaultHandler is used to extract the Imixs Task and Event
  * Elements of a Imixs BPMN model.
  * 
+ * A BPMN file can either be a simple diagram with one process or a
+ * collaboration diagram with a bpmn2:collaboration definition. For
+ * collaboration diagrams the currentWorkflowGroup is read from the
+ * bpmn2:collaboration element. For a simple BPMN diagram type the
+ * currentWorkflowGroup is read from the bpmn2:process element.
+ * 
  * @author rsoika
  *
  */
@@ -74,9 +80,25 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		}
 
-		// bpmn2:process - close definitions?
-		if (qName.equalsIgnoreCase("bpmn2:process")) {
+		// bpmn2:collaboration
+		if (qName.equalsIgnoreCase("bpmn2:collaboration")) {
 			if (bDefinitions && currentEntity != null) {
+				profileEnvironment = currentEntity;
+				currentWorkflowGroup = attributes.getValue("name");
+				if (currentWorkflowGroup == null
+						|| currentWorkflowGroup.isEmpty()) {
+					logger.warning("No process name defined!");
+					currentWorkflowGroup = "Default";
+				}
+				bDefinitions = false;
+			}
+		}
+
+		// bpmn2:process - start definitions? parse workflowGroup is not a
+		// collaboration diagram
+		if (qName.equalsIgnoreCase("bpmn2:process")) {
+			if (bDefinitions && currentEntity != null
+					&& currentWorkflowGroup == null) {
 				profileEnvironment = currentEntity;
 				currentWorkflowGroup = attributes.getValue("name");
 				if (currentWorkflowGroup == null
@@ -111,9 +133,10 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		// bpmn2:intermediateCatchEvent - identify a Imixs Workflow Event
 		// element
-		if (qName.equalsIgnoreCase("bpmn2:intermediateCatchEvent")) {
+		if (qName.equalsIgnoreCase("bpmn2:intermediateCatchEvent")
+				|| qName.equalsIgnoreCase("bpmn2:intermediateThrowEvent")) {
 
-			// imixs Task element?
+			// imixs Event element?
 			String value = attributes.getValue("imixs:activityid");
 			if (value == null) {
 				return;
@@ -131,6 +154,14 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		// bpmn2:sequenceFlow - cache all sequenceFlows...
 		if (qName.equalsIgnoreCase("bpmn2:sequenceFlow")) {
+			bpmnID = attributes.getValue("id");
+			String source = attributes.getValue("sourceRef");
+			String target = attributes.getValue("targetRef");
+			sequenceCache.put(bpmnID, new SequenceFlow(source, target));
+		}
+
+		// bpmn2:messageFlow - cache all messageFlow...
+		if (qName.equalsIgnoreCase("bpmn2:messageFlow")) {
 			bpmnID = attributes.getValue("id");
 			String source = attributes.getValue("sourceRef");
 			String target = attributes.getValue("targetRef");
@@ -181,7 +212,9 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 
 		// end of bpmn2:intermediateCatchEvent -
-		if (bEvent && qName.equalsIgnoreCase("bpmn2:intermediateCatchEvent")) {
+		if (bEvent
+				&& (qName.equalsIgnoreCase("bpmn2:intermediateCatchEvent") || qName
+						.equalsIgnoreCase("bpmn2:intermediateThrowEvent"))) {
 			bEvent = false;
 			// we need to cache the activities because the sequenceflows must be
 			// analysed later
@@ -192,7 +225,8 @@ public class BPMNModelHandler extends DefaultHandler {
 		 * End of a imixs:value
 		 */
 		if (qName.equalsIgnoreCase("imixs:value")) {
-			if (bExtensionElements && bItemValue && currentEntity != null && characterStream!=null) {
+			if (bExtensionElements && bItemValue && currentEntity != null
+					&& characterStream != null) {
 
 				String svalue = characterStream.toString();
 				List valueList = currentEntity.getItemValue(currentItemName);
@@ -207,7 +241,7 @@ public class BPMNModelHandler extends DefaultHandler {
 				currentEntity.replaceItemValue(currentItemName, valueList);
 			}
 			bItemValue = false;
-			characterStream=null;
+			characterStream = null;
 		}
 
 		if (qName.equalsIgnoreCase("bpmn2:documentation")) {
@@ -215,12 +249,12 @@ public class BPMNModelHandler extends DefaultHandler {
 				currentEntity.replaceItemValue("rtfdescription",
 						characterStream.toString());
 			}
-			characterStream=null;
+			characterStream = null;
 			bdcumentation = false;
 		}
 	}
 
-	//@SuppressWarnings({ "rawtypes", "unchecked" })
+	// @SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void characters(char ch[], int start, int length)
 			throws SAXException {
@@ -286,7 +320,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			Collections.sort(processIDList);
 		}
 
-		// first of all we find all Source Imxis Task Elements for each
+		// first of all we find all Source Imixs Task Elements for each
 		// collected Imixs Event
 		for (String eventID : activityCache.keySet()) {
 			// get the event...
@@ -305,7 +339,12 @@ public class BPMNModelHandler extends DefaultHandler {
 							.findImixsSourceTask(aFlow);
 					if (task != null) {
 
-						// happen if the event is not changing the state
+						// we found the task so we can add the event into
+						// the model
+						event.replaceItemValue("numProcessID",
+								task.getItemValue("numProcessID"));
+
+						// check outgoing flows
 						List<SequenceFlow> outFlows = findOutgoingFlows(eventID);
 
 						if (outFlows != null && outFlows.size() > 1) {
@@ -315,34 +354,34 @@ public class BPMNModelHandler extends DefaultHandler {
 									"Imixs BPMN Event has more than one target Flows!");
 						}
 
-						if (outFlows.size() == 0) {
-							logger.warning("Imixs BPMN Event '" + eventID
-									+ "' has no target Flow!");
-							continue;
-						}
+						// test target element....
+						if (outFlows.size() > 0) {
 
-						// we found the task so we can add the event into
-						// the model
-						event.replaceItemValue("numProcessID",
-								task.getItemValue("numProcessID"));
-
-						// is this Event is connected to a followUp Activity!!
-						task = new TaskResolver().findImixsTargetEvent(outFlows
-								.get(0));
-						if (task != null) {
-							event.replaceItemValue("keyFollowUp", "1");
-							event.replaceItemValue("numNextActivityID",
-									task.getItemValue("numactivityid"));
-						} else {
-							// test if we can identify the target task
+							// is this Event is connected to a followUp
+							// Activity!!
 							task = new TaskResolver()
-									.findImixsTargetTask(outFlows.get(0));
+									.findImixsTargetEvent(outFlows.get(0));
 							if (task != null) {
-								event.removeItem("keyFollowUp");
-								event.replaceItemValue("numNextProcessID",
-										task.getItemValue("numProcessID"));
-							}
+								event.replaceItemValue("keyFollowUp", "1");
+								event.replaceItemValue("numNextActivityID",
+										task.getItemValue("numactivityid"));
+							} else {
+								// test if we can identify the target task
+								task = new TaskResolver()
+										.findImixsTargetTask(outFlows.get(0));
+								if (task != null) {
+									event.removeItem("keyFollowUp");
+									event.replaceItemValue("numNextProcessID",
+											task.getItemValue("numProcessID"));
+								}
 
+							}
+						} else {
+							// no target - so the source task is the target
+							// task!
+							event.removeItem("keyFollowUp");
+							event.replaceItemValue("numNextProcessID",
+									task.getItemValue("numProcessID"));
 						}
 
 						// it can happen that the numactivtyid is not unique for

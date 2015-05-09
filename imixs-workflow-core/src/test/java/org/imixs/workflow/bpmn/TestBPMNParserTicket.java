@@ -24,7 +24,7 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNParser {
+public class TestBPMNParserTicket {
 
 	
 	@Before
