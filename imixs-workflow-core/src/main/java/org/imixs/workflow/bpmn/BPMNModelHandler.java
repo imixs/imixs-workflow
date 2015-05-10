@@ -33,16 +33,18 @@ public class BPMNModelHandler extends DefaultHandler {
 			.getName());
 
 	boolean bDefinitions = false;
+	boolean bMessage = false;
 	boolean bExtensionElements = false;
 	boolean bImixsProperty = false;
 	boolean bTask = false;
 	boolean bEvent = false;
 	boolean bItemValue = false;
-	boolean bdcumentation = false;
+	boolean bdocumentation = false;
 	ItemCollection currentEntity = null;
 	String currentItemName = null;
 	String currentItemType = null;
 	String currentWorkflowGroup = null;
+	String currentMessageName = null;
 	String bpmnID = null;
 	StringBuilder characterStream = null;
 
@@ -51,6 +53,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	Map<String, ItemCollection> processCache = null;
 	Map<String, ItemCollection> activityCache = null;
 	Map<String, SequenceFlow> sequenceCache = null;
+	Map<String, String> messageCache = null;
 	ItemCollection profileEnvironment = null;
 
 	public BPMNModelHandler() {
@@ -59,6 +62,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		// initalize cache objects
 		processCache = new HashMap<String, ItemCollection>();
 		activityCache = new HashMap<String, ItemCollection>();
+		messageCache = new HashMap<String, String>();
 
 		// nodeCache = new HashMap<String, ItemCollection>();
 		sequenceCache = new HashMap<String, SequenceFlow>();
@@ -190,8 +194,13 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 
 		if (qName.equalsIgnoreCase("bpmn2:documentation")) {
-			bdcumentation = true;
+			bdocumentation = true;
 			characterStream = new StringBuilder();
+		}
+
+		if (qName.equalsIgnoreCase("bpmn2:message")) {
+			bMessage = true;
+			currentMessageName = attributes.getValue("name");
 		}
 
 	}
@@ -249,9 +258,17 @@ public class BPMNModelHandler extends DefaultHandler {
 				currentEntity.replaceItemValue("rtfdescription",
 						characterStream.toString());
 			}
+
+			// bpmn2:message?
+			if (bMessage) {
+				messageCache
+						.put(currentMessageName, characterStream.toString());
+				bMessage = false;
+			}
 			characterStream = null;
-			bdcumentation = false;
+			bdocumentation = false;
 		}
+
 	}
 
 	// @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -259,7 +276,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	public void characters(char ch[], int start, int length)
 			throws SAXException {
 
-		if (bdcumentation) {
+		if (bdocumentation) {
 			characterStream = characterStream.append(new String(ch, start,
 					length));
 		}
@@ -280,10 +297,14 @@ public class BPMNModelHandler extends DefaultHandler {
 	 * the second step the method adds the Activity elements to the assigned
 	 * Task.
 	 * 
-	 * Finally we look for activities with no incoming SequenceFlow.
+	 * We look for activities with no incoming SequenceFlow.
 	 * 
-	 * In addition the builder verifies the ProcessIDs for each task element to
-	 * guaranty that the numProcessID is unique
+	 * The builder verifies the ProcessIDs for each task element to guaranty
+	 * that the numProcessID is unique
+	 * 
+	 * 
+	 * The method tests the model for bpmn2:message elements and replace links
+	 * in Activity elements attribute 'rtfMailBody'
 	 * 
 	 * @throws ModelException
 	 */
@@ -387,6 +408,8 @@ public class BPMNModelHandler extends DefaultHandler {
 						// it can happen that the numactivtyid is not unique for
 						// that task - we verify this first
 						event.replaceItemValue("$modelVersion", modelVersion);
+
+						replaceMessageTags(event);
 						model.addActivityEntity(verifyActiviytIdForEvent(event));
 
 						// now we need to copy the event because we need to
@@ -534,6 +557,46 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 
 		return result;
+	}
+
+	/**
+	 * This method parses an event for the text fragment
+	 * <bpmn2:message>...</bpmn2:message> and replaces the tag with the
+	 * corresponding message if available
+	 * 
+	 * @param itemcol
+	 */
+	private void replaceMessageTags(ItemCollection itemcol) {
+
+		String[] fieldList = { "rtfmailbody", "txtmailsubject" };
+		for (String field : fieldList) {
+
+			String value = itemcol.getItemValueString(field);
+			int parsingPos = 0;
+			boolean bNewValue = false;
+			while (value.indexOf("<bpmn2:message>", parsingPos) > -1) {
+
+				int istart = value.indexOf("<bpmn2:message>", parsingPos);
+				int iend = value.indexOf("</bpmn2:message>", parsingPos);
+				if (istart > -1 && iend > -1 && iend > istart) {
+					String messageName = value.substring(istart + 15, iend);
+					String message = messageCache.get(messageName);
+					if (message != null) {
+						value = value.substring(0, istart) + message
+								+ value.substring(iend + 16);
+						bNewValue = true;
+					}
+				}
+
+				parsingPos = parsingPos + 15;
+			}
+
+			if (bNewValue) {
+				itemcol.replaceItemValue(field, value);
+			}
+
+		}
+
 	}
 
 	class SequenceFlow {

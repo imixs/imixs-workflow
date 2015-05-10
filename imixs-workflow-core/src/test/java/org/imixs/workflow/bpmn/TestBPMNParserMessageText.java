@@ -22,9 +22,8 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNParserSimple {
+public class TestBPMNParserMessageText {
 
-	
 	@Before
 	public void setup() {
 
@@ -39,13 +38,13 @@ public class TestBPMNParserSimple {
 	public void testSimple() throws ParseException,
 			ParserConfigurationException, SAXException, IOException {
 
-		String VERSION="1.0.0";
-		
+		String VERSION = "1.0.0";
+
 		InputStream inputStream = getClass().getResourceAsStream(
-				"/bpmn/simple.bpmn");
+				"/bpmn/message_example.bpmn");
 
 		BPMNModel model = null;
-		try { 
+		try {
 			model = BPMNParser.parseModel(inputStream, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
@@ -65,34 +64,38 @@ public class TestBPMNParserSimple {
 				profile.getItemValueString("type"));
 		Assert.assertEquals(VERSION,
 				profile.getItemValueString("$ModelVersion"));
-		
-		Assert.assertTrue(model.workflowGroups.contains("Simple"));
-		
+
+		Assert.assertTrue(model.workflowGroups.contains("Message Example"));
+
 		// test count of elements
-		Assert.assertEquals(2, model.getProcessEntityList(VERSION).size());
+		Assert.assertEquals(1, model.getProcessEntityList(VERSION).size());
 
 		// test task 1000
-		ItemCollection task = model.getProcessEntity(1000,VERSION);
+		ItemCollection task = model.getProcessEntity(1000, VERSION);
 		Assert.assertNotNull(task);
-		Assert.assertEquals("1.0.0",
-				task.getItemValueString("$ModelVersion"));
-		Assert.assertEquals("Simple",
+		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
+		Assert.assertEquals("Message Example",
 				task.getItemValueString("txtworkflowgroup"));
-		
-		
-		
-		
-		// test activity 1000.10 submit
-		ItemCollection activity = model.getActivityEntity(1000, 10,VERSION);
-		Assert.assertNotNull(activity);
-	
-		
-		// test activity for task 1100
-		List<ItemCollection> activities = model.getActivityEntityList(1000,VERSION);
+
+		// test activity for task 1000
+		List<ItemCollection> activities = model.getActivityEntityList(1000,
+				VERSION);
 		Assert.assertNotNull(activities);
-		Assert.assertEquals(2, activities.size());
-	
-	
+		Assert.assertEquals(1, activities.size());
+
+		// test activity 1000.10 submit
+		ItemCollection activity = model.getActivityEntity(1000, 10, VERSION);
+		Assert.assertNotNull(activity);
+
+		Assert.assertEquals("Some MessageMessage-Text",
+				activity.getItemValueString("txtmailsubject"));
+
+		String message = activity.getItemValueString("rtfMailBody");
+
+		Assert.assertEquals(
+				"<h1>Some Message Text</h1>\nThis is some message\nMessage-Text",
+				message);
+
 	}
 
 }
