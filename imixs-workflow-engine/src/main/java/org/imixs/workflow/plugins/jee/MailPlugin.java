@@ -128,6 +128,13 @@ public class MailPlugin extends AbstractPlugin {
 					getInternetAddressArray(getRecipientsCC(documentContext,
 							documentActivity)));
 
+			// build BCC
+			mailMessage.setRecipients(
+					Message.RecipientType.BCC,
+					getInternetAddressArray(getRecipientsBCC(documentContext,
+							documentActivity)));
+
+			
 			// replay to?
 			String sReplyTo = getReplyTo(documentContext, documentActivity);
 			if ((sReplyTo != null) && (!sReplyTo.isEmpty())) {
@@ -364,7 +371,7 @@ public class MailPlugin extends AbstractPlugin {
 		if (vectorRecipients == null)
 			vectorRecipients = new Vector<String>();
 
-		// now read keyMailReceiverFieldsCC (multi value)
+		// now read keyMailReceiverFieldsCC (multiValue)
 		mergeFieldList(documentContext, vectorRecipients,
 				documentActivity.getItemValue("keyMailReceiverFieldsCC"));
 
@@ -378,6 +385,49 @@ public class MailPlugin extends AbstractPlugin {
 		return vectorRecipients;
 	}
 
+	
+	
+	
+	/**
+	 * Computes the mail RecipientsBCC from the current workflow activity. This
+	 * method can be overwritten by subclasses.
+	 * 
+	 * @param documentContext
+	 * @param documentActivity
+	 * @return String list of Recipients
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getRecipientsBCC(ItemCollection documentContext,
+			ItemCollection documentActivity) {
+
+		// build Recipient Vector from namMailReceiver
+		List<String> vectorRecipients = documentActivity
+				.getItemValue("namMailReceiverBCC");
+		if (vectorRecipients == null)
+			vectorRecipients = new Vector<String>();
+
+		// now read keyMailReceiverFieldsCC (multiValue)
+		mergeFieldList(documentContext, vectorRecipients,
+				documentActivity.getItemValue("keyMailReceiverFieldsBCC"));
+
+		// write debug Log
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("[MailPlugin]  " + vectorRecipients.size()
+					+ " ReceipientsBCC: ");
+			for (String rez : vectorRecipients)
+				logger.fine("[MailPlugin]     " + rez);
+		}
+		return vectorRecipients;
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * Computes the mail body from the current workflow activity. The method
 	 * also updates the internal flag HTMLMail to indicte if the mail is send al
