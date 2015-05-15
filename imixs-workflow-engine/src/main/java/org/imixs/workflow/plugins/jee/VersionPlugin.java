@@ -258,9 +258,8 @@ public class VersionPlugin extends AbstractPlugin {
 	 * @param documentActivity
 	 * @return
 	 */
-	public static boolean isProcssingVersion(ItemCollection documentContext,
-			ItemCollection documentActivity) {
-		return documentContext.getItemValueBoolean(PROCESSING_VERSION_ATTRIBUTE);
+	public static boolean isProcssingVersion(ItemCollection adocumentContext) {
+		return adocumentContext.getItemValueBoolean(PROCESSING_VERSION_ATTRIBUTE);
 	}
 
 	/**
