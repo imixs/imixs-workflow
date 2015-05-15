@@ -81,14 +81,16 @@ import org.imixs.workflow.jee.ejb.WorkflowService;
 
 public class VersionPlugin extends AbstractPlugin {
 
-	public  static final String INVALID_CONTEXT = "INVALID_CONTEXT";
+	public static final String INVALID_CONTEXT = "INVALID_CONTEXT";
 	public static final String INVALID_WORKITEM = "INVALID_WORKITEM";
+	private static final String PROCESSING_VERSION_ATTRIBUTE = "$processingversion";
 	private EntityService entityService = null;
 	private WorkflowService workflowService = null;
 	private String versionMode = "";
 	private int versionActivityID = -1;
 	private ItemCollection version = null;
-
+	private ItemCollection documentContext=null;
+	
 	/**
 	 * the init method throws an exception if the plugin is not run in a
 	 * instance of org.imixs.workflow.jee.ejb.WorkflowManager. This is necessary
@@ -106,7 +108,8 @@ public class VersionPlugin extends AbstractPlugin {
 		}
 
 		if (workflowService == null)
-			throw new PluginException(VersionPlugin.class.getSimpleName(),INVALID_CONTEXT,
+			throw new PluginException(VersionPlugin.class.getSimpleName(),
+					INVALID_CONTEXT,
 					"VersionPlugin unable to access WorkflowSerive");
 
 	}
@@ -128,105 +131,116 @@ public class VersionPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * creates an version depending to the version mode and the version activity
-	 * ID provided by the workflow model.
+	 * creates a new version or converts a version into the MasterVersion
+	 * depending to the activity attribute "keyVersion" provided by the workflow
+	 * model.
 	 * 
-	 * @throws InvalidItemValueException
+	 * If a new version is created and be processed the plugin adds the
+	 * attribute '_versionprocessing' = true to indicate this situation for
+	 * other plugins. Other plugins can determine the $processingversion mode by
+	 * calling the method isProcssingVersion(). The attribute will be removed
+	 * after a version was processed.
 	 * 
+	 * @throws PluginException
 	 */
 	public int run(ItemCollection adocumentContext,
 			ItemCollection adocumentActivity) throws PluginException {
 
-		// determine mode and ActivityID to manage version
+		documentContext = adocumentContext;
+		
+		// determine mode to manage version
 		versionMode = adocumentActivity.getItemValueString("keyVersion");
 		versionActivityID = adocumentActivity
 				.getItemValueInteger("numVersionActivityID");
 		try {
-			// lookup ejbs ?
-			if ("1".equals(versionMode) || "2".equals(versionMode)) {
 
-				// handle different version modes
-				// 1 = create a new Version from current workitem
-				if ("1".equals(versionMode)) {
+			// handle different version modes
+			// 1 = create a new Version from current workitem
+			if ("1".equals(versionMode)) {
 
-					// copy workitem
+				// copy workitem
 
-					version = createVersion(adocumentContext);
+				version = createVersion(documentContext);
 
-					if (this.ctx.getLogLevel() > 0)
-						System.out
-								.println("[VersionPlugin] new version created");
-					// check if workitem should be processed
-					if (versionActivityID > 0) {
-						version.replaceItemValue("$ActivityID",
-								versionActivityID);
-						version = workflowService.processWorkItem(version);
-					} else {
-						// no processing - simply save workitem
-						version = entityService.save(version);
-					}
-					return Plugin.PLUGIN_OK;
-
+				if (this.ctx.getLogLevel() > 0)
+					System.out.println("[VersionPlugin] new version created");
+				// check if workitem should be processed
+				if (versionActivityID > 0) {
+					version.replaceItemValue("$ActivityID", versionActivityID);
+					version.replaceItemValue(PROCESSING_VERSION_ATTRIBUTE, true);
+					version = workflowService.processWorkItem(version);
+				} else {
+					// no processing - simply save workitem
+					version = entityService.save(version);
 				}
+				return Plugin.PLUGIN_OK;
 
-				// convert to Master Version
-				if ("2".equals(adocumentActivity
-						.getItemValueString("keyVersion"))) {
+			}
 
-					/*
-					 * this code iterates over all existing workitems with the
-					 * same $workitemid and fixes lost parent workitemRefIDs.
-					 */
-					String sworkitemID = adocumentContext
-							.getItemValueString("$WorkItemID");
+			// convert to Master Version
+			if ("2".equals(adocumentActivity.getItemValueString("keyVersion"))) {
 
-					// get current master version
-					String query = " SELECT workitem FROM Entity AS workitem "
-							+ " JOIN workitem.textItems AS t1"
-							+ " WHERE t1.itemName = '$workitemid'"
-							+ " AND t1.itemValue ='" + sworkitemID + "'";
+				/*
+				 * this code iterates over all existing workitems with the same
+				 * $workitemid and fixes lost parent workitemRefIDs.
+				 */
+				String sworkitemID = documentContext
+						.getItemValueString("$WorkItemID");
 
-					Collection<ItemCollection> col = entityService
-							.findAllEntities(query, 0, -1);
-					// now search master version...
-					for (ItemCollection aVersion : col) {
-						String sWorkitemRef = aVersion
-								.getItemValueString("$workitemIDRef");
-						if ("".equals(sWorkitemRef)) {
-							// Master version found!
-							// convert now this workitem into a Version from the
-							// current workitem
-							String id = adocumentContext
-									.getItemValueString("$uniqueID");
-							aVersion.replaceItemValue("$WorkItemIDRef", id);
-							// process version?
-							// check if worktiem should be processed
-							if (versionActivityID > 0) {
-								aVersion.replaceItemValue("$ActivityID",
-										versionActivityID);
-								aVersion = workflowService
-										.processWorkItem(aVersion);
-							} else {
-								// no processing - simply save workitem
-								aVersion = entityService.save(aVersion);
-							}
-							version = aVersion;
+				// get current master version
+				String query = " SELECT workitem FROM Entity AS workitem "
+						+ " JOIN workitem.textItems AS t1"
+						+ " WHERE t1.itemName = '$workitemid'"
+						+ " AND t1.itemValue ='" + sworkitemID + "'";
+
+				Collection<ItemCollection> col = entityService.findAllEntities(
+						query, 0, -1);
+				// now search master version...
+				for (ItemCollection aVersion : col) {
+					String sWorkitemRef = aVersion
+							.getItemValueString("$workitemIDRef");
+					if ("".equals(sWorkitemRef)) {
+						// Master version found!
+						// convert now this workitem into a Version from the
+						// current workitem
+						String id = documentContext
+								.getItemValueString("$uniqueID");
+						aVersion.replaceItemValue("$WorkItemIDRef", id);
+						// process version?
+						// check if worktiem should be processed
+						if (versionActivityID > 0) {
+							aVersion.replaceItemValue("$ActivityID",
+									versionActivityID);
+							aVersion = workflowService
+									.processWorkItem(aVersion);
+						} else {
+							// no processing - simply save workitem
+							aVersion = entityService.save(aVersion);
 						}
+						version = aVersion;
 					}
-					// now remove workitemIDRef from current version
-					adocumentContext.removeItem("$WorkItemIDRef");
 				}
+				// now remove workitemIDRef from current version
+				documentContext.removeItem("$WorkItemIDRef");
 			}
 
 		} catch (AccessDeniedException e) {
-			throw new PluginException(e.getErrorContext(),e.getErrorCode(), e.getMessage(), e);
+			throw new PluginException(e.getErrorContext(), e.getErrorCode(),
+					e.getMessage(), e);
 		} catch (ProcessingErrorException e) {
-			throw new PluginException(e.getErrorContext(),e.getErrorCode(),e.getMessage(), e);
+			throw new PluginException(e.getErrorContext(), e.getErrorCode(),
+					e.getMessage(), e);
 		}
 		return Plugin.PLUGIN_OK;
 	}
 
+	/**
+	 * This method removes the attribute $processingversion which is set to
+	 * 'true' during the processing of a new version
+	 */
 	public void close(int status) throws PluginException {
+		documentContext.removeItem(PROCESSING_VERSION_ATTRIBUTE);
+
 		// if an error has occurred during processing take back new created
 		// versions
 		if (status == Plugin.PLUGIN_ERROR) {
@@ -234,6 +248,19 @@ public class VersionPlugin extends AbstractPlugin {
 			// this will avoid changes back into the database
 			throw new EJBTransactionRolledbackException();
 		}
+	}
+
+	/**
+	 * returns true in case a new version is created based on the
+	 * currentWorkitem
+	 * 
+	 * @param documentContext
+	 * @param documentActivity
+	 * @return
+	 */
+	public static boolean isProcssingVersion(ItemCollection documentContext,
+			ItemCollection documentActivity) {
+		return documentContext.getItemValueBoolean(PROCESSING_VERSION_ATTRIBUTE);
 	}
 
 	/**
@@ -259,14 +286,15 @@ public class VersionPlugin extends AbstractPlugin {
 
 		String id = sourceItemCollection.getItemValueString("$uniqueid");
 		if ("".equals(id))
-			throw new PluginException(VersionPlugin.class.getSimpleName(),INVALID_WORKITEM,
+			throw new PluginException(VersionPlugin.class.getSimpleName(),
+					INVALID_WORKITEM,
 					"Error - unable to create a version from a new workitem!");
 		// remove $Uniqueid to force the generation of a new Entity Instance.
 		itemColNewVersion.getAllItems().remove("$uniqueid");
 
 		// update $WorkItemIDRef to current worktiemID
 		itemColNewVersion.replaceItemValue("$WorkItemIDRef", id);
-		
+
 		return itemColNewVersion;
 
 	}
