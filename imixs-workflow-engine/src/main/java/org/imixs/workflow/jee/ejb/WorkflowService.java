@@ -616,7 +616,7 @@ public class WorkflowService implements WorkflowManager,
 			int idebug = Integer.parseInt(sDebug);
 			logLevel = idebug;
 		} catch (NumberFormatException e) {
-			logLevel = WorkflowKernel.LOG_LEVEL_FINE;
+			logLevel = WorkflowKernel.LOG_LEVEL_SEVERE;
 		}
 
 		// test if expected modelVersion matches the profile modelVersion
