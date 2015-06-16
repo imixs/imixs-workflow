@@ -351,6 +351,8 @@ public class BPMNModelHandler extends DefaultHandler {
 			// only one!)
 			List<SequenceFlow> inFlows = findIncomingFlows(eventID);
 
+			boolean taskFound = false;
+
 			if (inFlows != null && inFlows.size() > 0) {
 				// next we search for the source Task element if one can be
 				// found
@@ -412,18 +414,22 @@ public class BPMNModelHandler extends DefaultHandler {
 						replaceMessageTags(event);
 						model.addActivityEntity(verifyActiviytIdForEvent(event));
 
+						taskFound = true;
+
 						// now we need to copy the event because we need to
-						// reuse it
-						// for another task...
-						event = new ItemCollection(event);
+						// reuse it for another task...
+						// event = new ItemCollection(event);
 					}
 
 				}
 			}
 
-			else {
+			// if we found still not task element continue with outgoing
+			// flows....
+			if (taskFound == false) {
 				// we have no incoming flows! check outgoing. This case can
-				// happen if the event is not changing the state
+				// happen if the event is not changing the state or the event is
+				// connected with a start event
 				List<SequenceFlow> outFlows = findOutgoingFlows(eventID);
 
 				if (outFlows != null && outFlows.size() > 1) {

@@ -133,7 +133,7 @@ public class TestBPMNParserTicket {
 
 		// test activity 1200.20 - follow-up activity solve =>40
 		activity = model.getActivityEntity(1200, 20,VERSION);
-		Assert.assertNotNull(activity);
+		Assert.assertNotNull(activity); 
 		Assert.assertEquals("1.0.0",
 				activity.getItemValueString("$ModelVersion"));
 
