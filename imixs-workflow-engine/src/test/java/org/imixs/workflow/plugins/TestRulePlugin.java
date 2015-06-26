@@ -2,6 +2,7 @@ package org.imixs.workflow.plugins;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import javax.script.ScriptEngine;
@@ -502,6 +503,68 @@ public class TestRulePlugin {
 		// test for integer value
 		Assert.assertEquals(0,
 				adocumentActivity.getItemValueInteger("keyMailEnabled"));
+
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * This test verifies the isValid case for date fields
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testIsValidDate() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("datDate", new Date());
+		ItemCollection adocumentActivity = new ItemCollection();
+
+	
+		// 2) test true case
+		String script = " var refField1=\"_contact\";"
+				+ " var refField2=\"datdate\";"
+				+ " var isValid=true;"
+				+ " if (   ( workitem.get(refField2) == null)   ) {"
+				+ "     isValid=false;"
+				+ "     var errorMessage='Bitte geben Sie die E-Mail-Adresse und das Zahlungsziel an!';"
+				+ " }  ";
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
+				adocumentActivity));
+
+		
+		
+		
+		
+		// 2) test false case
+		 adocumentContext = new ItemCollection();
+		 adocumentActivity = new ItemCollection();
+		 script = " var refField1=\"_contact\";"
+				+ " var refField2=\"datdate\";"
+				+ " var isValid=true;"
+				+ " if (   ( workitem.get(refField2) == null)   ) {"
+				+ "     isValid=false;"
+				+ "     var errorMessage='Bitte geben Sie die E-Mail-Adresse und das Zahlungsziel an!';"
+				+ " }  ";
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+		Assert.assertFalse(rulePlugin.isValid(adocumentContext,
+				adocumentActivity));
+
 
 	}
 

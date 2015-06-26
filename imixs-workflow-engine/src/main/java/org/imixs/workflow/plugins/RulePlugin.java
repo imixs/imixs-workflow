@@ -31,6 +31,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -415,6 +417,8 @@ public class RulePlugin extends AbstractPlugin {
 
 		ret.add(String.class);
 		ret.add(Object.class);
+		ret.add(Date.class);
+		ret.add(Calendar.class);
 		return ret;
 	}
 }
