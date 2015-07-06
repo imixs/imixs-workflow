@@ -101,4 +101,16 @@ The EntityService Interface
      or a lists of workitems. See the {{{./workflowservice.html}WorkflowService example}}
  
  
+  
+* Count elements of a JPCL Query 
+~~~~~~~~~~~~~~~~~~~~   
+  
+  As the Imixs EntityService provides the method countAllEntities() to compute the max count of a 
+  specific JPQL query. 
+  The method expects the same JPQL query as for the findAllEntities() method but  
+  returns only the count of entities.
+  The method counts only ItemCollections which are readable by the CallerPrincipal. 
+  With the startpos and count parameters it is possible to read chunks of entities. 
+  The jPQL Statement must match the  conditions of the JPA Object Class Entity.
+	
  
