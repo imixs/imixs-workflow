@@ -23,6 +23,9 @@
 
 	<cc:attribute name="dateformat" default="yyyy-MM-dd"
 		type="java.lang.String"></cc:attribute>
+		
+	<cc:attribute name="build" default=""
+		type="java.lang.String"></cc:attribute>
 
 	<cc:attribute name="theme"
 		default="#{facesContext.externalContext.requestContextPath}/imixs/jquery/themes/imixs/jquery-ui-1.10.0.custom.css" />
@@ -59,7 +62,7 @@
 
 
 	<script type="text/javascript"
-		src="#{facesContext.externalContext.requestContextPath}/imixs/imixs-faces.js"></script>
+		src="#{facesContext.externalContext.requestContextPath}/imixs/imixs-faces.js?build=#{cc.attrs.build}"></script>
 
 	<!--  Init script -->
 	<script type="text/javascript">
