@@ -2,6 +2,7 @@ package org.imixs.workflow.plugins;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -539,7 +540,7 @@ public class TestRulePlugin {
 				+ " var isValid=true;"
 				+ " if (   ( workitem.get(refField2) == null)   ) {"
 				+ "     isValid=false;"
-				+ "     var errorMessage='Bitte geben Sie die E-Mail-Adresse und das Zahlungsziel an!';"
+				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';"
 				+ " }  ";
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -558,7 +559,7 @@ public class TestRulePlugin {
 				+ " var isValid=true;"
 				+ " if (   ( workitem.get(refField2) == null)   ) {"
 				+ "     isValid=false;"
-				+ "     var errorMessage='Bitte geben Sie die E-Mail-Adresse und das Zahlungsziel an!';"
+				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';"
 				+ " }  ";
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -566,6 +567,31 @@ public class TestRulePlugin {
 				adocumentActivity));
 
 
+		
+		
+		// calendar test
+		adocumentContext = new ItemCollection();
+		Calendar cal=Calendar.getInstance();
+		cal.setTime(new Date());
+		adocumentContext.replaceItemValue("datDate",cal);
+		 adocumentActivity = new ItemCollection();
+
+	
+		// 2a) test true case
+		 script = " var refField1=\"_contact\";"
+				+ " var refField2=\"datdate\";"
+				+ " var isValid=true;"
+				+ " if (   ( workitem.get(refField2) == null)   ) {"
+				+ "     isValid=false;"
+				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';"
+				+ " }  ";
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
+				adocumentActivity));
+
+		
+		
 	}
 
 	

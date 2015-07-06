@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -233,7 +234,7 @@ public class RulePlugin extends AbstractPlugin {
 
 		// initialize the script engine...
 		ScriptEngineManager manager = new ScriptEngineManager();
-		String sEngineType = activity
+		String sEngineType = activity 
 				.getItemValueString("txtBusinessRuleEngine");
 		// set default engine to javascript if no engine is specified
 		if ("".equals(sEngineType))
@@ -419,6 +420,8 @@ public class RulePlugin extends AbstractPlugin {
 		ret.add(Object.class);
 		ret.add(Date.class);
 		ret.add(Calendar.class);
+		ret.add(GregorianCalendar.class);
+		
 		return ret;
 	}
 }
