@@ -645,5 +645,23 @@ public class TestRulePlugin {
 							Assert.assertFalse(rulePlugin.isValid(adocumentContext,
 									adocumentActivity));
 
+
+	
+	
+	
+				 adocumentContext = new ItemCollection();
+					adocumentContext.replaceItemValue("txtbetrag", "1,5");
+					adocumentContext.replaceItemValue("txtgutschift", "4");
+					 adocumentActivity = new ItemCollection();
+
+				
+					 adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+						Assert.assertTrue(rulePlugin.isValid(adocumentContext,
+								adocumentActivity));
+
+	
+	
+	
+	
 	}
 }
