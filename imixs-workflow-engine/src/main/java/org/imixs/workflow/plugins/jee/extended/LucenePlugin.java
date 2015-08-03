@@ -107,7 +107,8 @@ public class LucenePlugin extends AbstractPlugin {
 	static List<String> searchFieldList = null;
 	static List<String> indexFieldListAnalyse = null;
 	static List<String> indexFieldListNoAnalyse = null;
-	private static Logger logger = Logger.getLogger("org.imixs.workflow");
+	private static Logger logger = Logger.getLogger(LucenePlugin.class
+			.getName());
 
 	private static int maxResult = 100;
 
@@ -234,11 +235,19 @@ public class LucenePlugin extends AbstractPlugin {
 				Term term = new Term("$uniqueid",
 						workitem.getItemValueString("$uniqueid"));
 				// test if document should be indexed or not
-				if (matchConditions(prop, workitem))
-					awriter.updateDocument(term, createDocument(prop, workitem));
-				else
+				if (matchConditions(prop, workitem)) {
+					logger.fine("add workitem '"
+							+ workitem
+									.getItemValueString(EntityService.UNIQUEID)
+							+ "' into index");
+					awriter.updateDocument(term, createDocument(workitem));
+				} else {
+					logger.fine("remove workitem '"
+							+ workitem
+									.getItemValueString(EntityService.UNIQUEID)
+							+ "' into index");
 					awriter.deleteDocuments(term);
-
+				}
 			}
 		} catch (IOException luceneEx) {
 			// close writer!
@@ -252,7 +261,7 @@ public class LucenePlugin extends AbstractPlugin {
 			if (awriter != null) {
 				logger.fine(" close writer");
 				try {
-					awriter.close();
+					awriter.close();					
 				} catch (CorruptIndexException e) {
 					throw new PluginException(
 							LucenePlugin.class.getSimpleName(), INVALID_INDEX,
@@ -320,14 +329,20 @@ public class LucenePlugin extends AbstractPlugin {
 
 		// test type pattern
 		if (typePattern != null && !"".equals(typePattern)
-				&& !type.matches(typePattern))
+				&& !type.matches(typePattern)) {
+			logger.fine("Lucene type '" + type + "' did not match pattern '"
+					+ typePattern + "'");
 			return false;
+		}
 
 		// test $processid pattern
 		if (processIDPattern != null && !"".equals(processIDPattern)
-				&& !sPid.matches(processIDPattern))
-			return false;
+				&& !sPid.matches(processIDPattern)) {
+			logger.fine("Lucene $processid '" + sPid
+					+ "' did not match pattern '" + processIDPattern + "'");
 
+			return false;
+		}
 		return true;
 	}
 
@@ -431,6 +446,8 @@ public class LucenePlugin extends AbstractPlugin {
 
 				TopDocs topDocs = null;
 				if (sortOrder != null) {
+					logger.fine(" sortOrder= '" + sortOrder+"' ");
+
 					topDocs = searcher.search(parser.parse(sSearchTerm),
 							maxResult, sortOrder);
 				} else {
@@ -447,13 +464,13 @@ public class LucenePlugin extends AbstractPlugin {
 					Document doc = searcher.doc(scoredoc.doc);
 
 					String sID = doc.get("$uniqueid");
-					logger.fine("  lucene $uniqueid=" + sID);
+					logger.fine("  lucene lookup $uniqueid=" + sID);
 					ItemCollection itemCol = workflowService.getEntityService()
 							.load(sID);
 					if (itemCol != null) {
 						workitems.add(itemCol);
 					} else {
-						logger.warning("[LucenePlugin] index returned unreadable workitem : "
+						logger.warning("[LucenePlugin] index returned un unreadable workitem : "
 								+ sID);
 						// this situation happens if the search index returned
 						// documents
@@ -491,7 +508,7 @@ public class LucenePlugin extends AbstractPlugin {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	static Document createDocument(Properties prop, ItemCollection aworkitem) {
+	static Document createDocument(ItemCollection aworkitem) {
 		String sValue = null;
 		Document doc = new Document();
 
@@ -675,7 +692,7 @@ public class LucenePlugin extends AbstractPlugin {
 		/**
 		 * Read configuration
 		 */
-		//String sLuceneVersion = prop.getProperty("Version", "LUCENE_45");
+		// String sLuceneVersion = prop.getProperty("Version", "LUCENE_45");
 
 		String sIndexDir = prop.getProperty("lucence.indexDir");
 		String sFulltextFieldList = prop
@@ -819,7 +836,7 @@ public class LucenePlugin extends AbstractPlugin {
 	 * @return
 	 */
 	public static QueryParser createQueryParser(Properties prop) {
-		//String sLuceneVersion = prop.getProperty("Version", "LUCENE_45");
+		// String sLuceneVersion = prop.getProperty("Version", "LUCENE_45");
 		Analyzer analyzer = new KeywordAnalyzer();
 		QueryParser parser = new QueryParser(Version.LUCENE_45, "content",
 				analyzer);
