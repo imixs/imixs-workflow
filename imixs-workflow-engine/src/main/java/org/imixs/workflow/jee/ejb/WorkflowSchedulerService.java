@@ -418,7 +418,10 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 				// scheduled time
 				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
 
-				return dateTimeCompare.before(dateTimeNow);
+				if (dateTimeCompare != null)
+					return dateTimeCompare.before(dateTimeNow);
+				else
+					return false;
 			}
 
 			// last modification - es erfolgt kein Vergleich mit last
@@ -434,7 +437,10 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
 
-				return dateTimeCompare.before(dateTimeNow);
+				if (dateTimeCompare != null)
+					return dateTimeCompare.before(dateTimeNow);
+				else
+					return false;
 			}
 
 			// creation
@@ -449,7 +455,10 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 				// Nein -> Creation date ist masstab
 				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
 
-				return dateTimeCompare.before(dateTimeNow);
+				if (dateTimeCompare != null)
+					return dateTimeCompare.before(dateTimeNow);
+				else
+					return false;
 			}
 
 			// field
@@ -472,16 +481,18 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 						+ sNameOfField + "=" + dateTimeCompare);
 
 				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
-
-				logger.finest("[WorkflowSchedulerService] " + suniqueid
-						+ ": Compare " + dateTimeCompare + " <-> "
-						+ dateTimeNow);
-
-				if (dateTimeCompare.before(dateTimeNow)) {
+				if (dateTimeCompare != null) {
 					logger.finest("[WorkflowSchedulerService] " + suniqueid
-							+ " isInDue!");
-				}
-				return dateTimeCompare.before(dateTimeNow);
+							+ ": Compare " + dateTimeCompare + " <-> "
+							+ dateTimeNow);
+
+					if (dateTimeCompare.before(dateTimeNow)) {
+						logger.finest("[WorkflowSchedulerService] " + suniqueid
+								+ " isInDue!");
+					}
+					return dateTimeCompare.before(dateTimeNow);
+				} else
+					return false;
 			}
 			default:
 				return false;
@@ -983,10 +994,13 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	 * @return new date object
 	 */
 	private static Date adjustSecond(Date adate, int seconds) {
-		Calendar calTimeCompare = Calendar.getInstance();
-		calTimeCompare.setTime(adate);
-		calTimeCompare.add(Calendar.SECOND, seconds);
-		return calTimeCompare.getTime();
+		if (adate != null) {
+			Calendar calTimeCompare = Calendar.getInstance();
+			calTimeCompare.setTime(adate);
+			calTimeCompare.add(Calendar.SECOND, seconds);
+			return calTimeCompare.getTime();
+		} else
+			return null;
 	}
 
 }
