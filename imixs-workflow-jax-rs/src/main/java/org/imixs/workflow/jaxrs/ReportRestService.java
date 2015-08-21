@@ -221,7 +221,7 @@ public class ReportRestService {
 			reportName = name + ".ixr";
 
 			ItemCollection itemCol = reportService.getReport(reportName);
-			List<String> vAttributList = itemCol
+			List<String> vAttributList = (List<String>) itemCol
 					.getItemValue("txtAttributeList");
 
 			// get Query and output format
@@ -350,7 +350,7 @@ public class ReportRestService {
 			String sEQL = itemCol.getItemValueString("txtquery");
 			sEQL = computeEQLParams(sEQL, uriInfo);
 
-			List<String> vAttributList = itemCol
+			List<String> vAttributList = (List<String>) itemCol
 					.getItemValue("txtAttributeList");
 			col = entityService.findAllEntities(sEQL, start, count);
 
@@ -417,7 +417,7 @@ public class ReportRestService {
 			vAttributList = getItemList(items);
 			if (vAttributList == null) {
 				// get list from report definition
-				vAttributList = itemCol.getItemValue("txtAttributeList");
+				vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
 			}
 
 			String sEQL = itemCol.getItemValueString("txtquery");

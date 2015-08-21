@@ -35,6 +35,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -60,10 +61,11 @@ import java.util.logging.Logger;
  */
 
 public class ItemCollection implements java.io.Serializable {
-	private static Logger logger = Logger.getLogger(ItemCollection.class
-			.getName());
+	private static final long serialVersionUID = 1L;
 
-	private Map hash = new Hashtable();
+	private static Logger logger = Logger.getLogger(ItemCollection.class.getName());
+
+	private Map<String, List<Object>> hash = new Hashtable<String, List<Object>>();
 
 	/**
 	 * Creates a empty ItemCollection
@@ -79,10 +81,11 @@ public class ItemCollection implements java.io.Serializable {
 	 * 
 	 * @param map
 	 */
-	public ItemCollection(Map map) {
-		Iterator it = map.entrySet().iterator();
+	public ItemCollection(Map<String, List<Object>> map) {
+		Iterator<?> it = map.entrySet().iterator();
 		while (it.hasNext()) {
-			Map.Entry entry = (Map.Entry) it.next();
+			@SuppressWarnings("unchecked")
+			Map.Entry<String, List<Object>> entry =  (Entry<String, List<Object>>) it.next();
 			this.replaceItemValue(entry.getKey().toString(), entry.getValue());
 		}
 	}
@@ -116,13 +119,13 @@ public class ItemCollection implements java.io.Serializable {
 	 *         value depends on the data type of the item.
 	 * 
 	 */
-	public List getItemValue(String aName) {
+	public List<?> getItemValue(String aName) {
 		aName = aName.toLowerCase();
-		Object o = hash.get(aName);
+		List<Object> o = hash.get(aName);
 		if (o == null)
-			return new Vector();
+			return new Vector<Object>();
 		else {
-			List v = (List) o;
+			List<Object> v =  o;
 			// scan vector for null values
 			for (int i = 0; i < v.size(); i++) {
 				if (v.get(i) == null)
@@ -178,11 +181,11 @@ public class ItemCollection implements java.io.Serializable {
 	public int getItemValueInteger(String aName) {
 		try {
 			aName = aName.toLowerCase();
-			Vector v = (Vector) getItemValue(aName);
+			List<?> v = getItemValue(aName);
 			if (v.size() == 0)
 				return 0;
 
-			String sValue = v.firstElement().toString();
+			String sValue = v.get(0).toString();
 			return new Double(sValue).intValue();
 		} catch (NumberFormatException e) {
 			return 0;
@@ -206,11 +209,11 @@ public class ItemCollection implements java.io.Serializable {
 	public Date getItemValueDate(String aName) {
 		try {
 			aName = aName.toLowerCase();
-			Vector v = (Vector) getItemValue(aName);
+			List<?> v = getItemValue(aName);
 			if (v.size() == 0)
 				return null;
 
-			Object o = v.firstElement();
+			Object o = v.get(0);
 			if (!(o instanceof Date))
 				return null;
 
@@ -235,12 +238,12 @@ public class ItemCollection implements java.io.Serializable {
 	public double getItemValueDouble(String aName) {
 		try {
 			aName = aName.toLowerCase();
-			Vector v = (Vector) getItemValue(aName);
+			List<?> v = getItemValue(aName);
 			if (v.size() == 0)
 				return 0.0;
 			else {
 				// test for object type...
-				Object o = v.firstElement();
+				Object o = v.get(0);
 				if (o instanceof Double)
 					return (Double) o;
 
@@ -255,7 +258,7 @@ public class ItemCollection implements java.io.Serializable {
 
 				// try to parse string.....
 				try {
-					return Double.valueOf(v.firstElement().toString());
+					return Double.valueOf(v.get(0).toString());
 				} catch (ClassCastException e) {
 					return 0;
 				}
@@ -280,12 +283,12 @@ public class ItemCollection implements java.io.Serializable {
 	public float getItemValueFloat(String aName) {
 		try {
 			aName = aName.toLowerCase();
-			Vector v = (Vector) getItemValue(aName);
+			List<?> v = getItemValue(aName);
 			if (v.size() == 0)
 				return (float) 0.0;
 			else {
 				// test for object type...
-				Object o = v.firstElement();
+				Object o = v.get(0);
 
 				if (o instanceof Float)
 					return (Float) o;
@@ -301,7 +304,7 @@ public class ItemCollection implements java.io.Serializable {
 
 				// try to parse string.....
 				try {
-					return Float.valueOf(v.firstElement().toString());
+					return Float.valueOf(v.get(0).toString());
 				} catch (ClassCastException e) {
 					return 0;
 				}
@@ -327,12 +330,12 @@ public class ItemCollection implements java.io.Serializable {
 	public boolean getItemValueBoolean(String aName) {
 		try {
 			aName = aName.toLowerCase();
-			Vector v = (Vector) getItemValue(aName);
+			List<?> v = getItemValue(aName);
 			if (v.size() == 0)
 				return false;
-			String sValue = v.firstElement().toString();
+			Object sValue = v.get(0);//.firstElement().toString();
 			// return new Boolean(sValue).booleanValue();
-			return Boolean.valueOf(sValue);
+			return Boolean.valueOf(sValue.toString());
 		} catch (ClassCastException e) {
 			return false;
 		}
@@ -363,12 +366,12 @@ public class ItemCollection implements java.io.Serializable {
 	public boolean isItemValueInteger(String aName) {
 
 		aName = aName.toLowerCase();
-		Vector v = (Vector) getItemValue(aName);
+		 List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
 		else {
 			// test for object type...
-			Object o = v.firstElement();
+			Object o = v.get(0);
 			return (o instanceof Integer);
 		}
 	}
@@ -384,12 +387,12 @@ public class ItemCollection implements java.io.Serializable {
 	public boolean isItemValueLong(String aName) {
 
 		aName = aName.toLowerCase();
-		Vector v = (Vector) getItemValue(aName);
+		 List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
 		else {
 			// test for object type...
-			Object o = v.firstElement();
+			Object o = v.get(0);
 			return (o instanceof Long);
 		}
 	}
@@ -405,12 +408,12 @@ public class ItemCollection implements java.io.Serializable {
 	public boolean isItemValueDouble(String aName) {
 
 		aName = aName.toLowerCase();
-		Vector v = (Vector) getItemValue(aName);
+		 List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
 		else {
 			// test for object type...
-			Object o = v.firstElement();
+			Object o = v.get(0);
 			return (o instanceof Double);
 		}
 	}
@@ -426,12 +429,12 @@ public class ItemCollection implements java.io.Serializable {
 	public boolean isItemValueFloat(String aName) {
 
 		aName = aName.toLowerCase();
-		Vector v = (Vector) getItemValue(aName);
+		 List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
 		else {
 			// test for object type...
-			Object o = v.firstElement();
+			Object o = v.get(0);
 			return (o instanceof Float);
 		}
 	}
@@ -446,12 +449,12 @@ public class ItemCollection implements java.io.Serializable {
 	public boolean isItemValueDate(String aName) {
 
 		aName = aName.toLowerCase();
-		Vector v = (Vector) getItemValue(aName);
+		List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
 		else {
 			// test for object type...
-			Object o = v.firstElement();
+			Object o = v.get(0);
 			return (o instanceof Date);
 		}
 	}
@@ -461,7 +464,7 @@ public class ItemCollection implements java.io.Serializable {
 	 * 
 	 * @return Map with all Items
 	 */
-	public Map getAllItems() {
+	public Map<String,List<Object>> getAllItems() {
 		return hash;
 
 	}
@@ -473,7 +476,7 @@ public class ItemCollection implements java.io.Serializable {
 	 * 
 	 * @param aHash
 	 */
-	public void setAllItems(Map aHash) {
+	public void setAllItems(Map<String,List<Object>> aHash) {
 		hash = aHash;
 
 	}
@@ -541,7 +544,10 @@ public class ItemCollection implements java.io.Serializable {
 	 * @param append
 	 *            - true if the value should be appended to an existing list
 	 */
+	@SuppressWarnings("unchecked")
 	private void setItemValue(String itemName, Object itemValue, boolean append) {
+		List<Object> itemValueList = null;
+
 		if (itemName == null)
 			return;
 		// lower case itemname
@@ -556,26 +562,24 @@ public class ItemCollection implements java.io.Serializable {
 
 		// test if value is serializable
 		if (!(itemValue instanceof java.io.Serializable)) {
-			logger.warning("[ItemCollection] replaceItemValue '" + itemName
-					+ "': Object no Serializable!");
+			logger.warning("[ItemCollection] replaceItemValue '" + itemName + "': Object no Serializable!");
 			this.removeItem(itemName);
 			return;
 		}
 
-
 		// test if value is a list and remove null values and clone instances of
 		// ItemCollections!
 		if (itemValue instanceof List) {
+			itemValueList = (List<Object>) itemValue;
 			// scan List for null values and remove them
-			for (int i = 0; i < ((List<?>) itemValue).size(); i++) {
-				if (((List<?>) itemValue).get(i) == null)
-					((List<?>) itemValue).remove(i);
+			for (int i = 0; i < itemValueList.size(); i++) {
+				if (((List<?>) itemValueList).get(i) == null)
+					((List<?>) itemValueList).remove(i);
 			}
 		} else {
 			// create an instance of Vector
-			Vector v = new Vector();
-			v.addElement(itemValue);
-			itemValue = v;
+			itemValueList = new Vector<Object>();
+			itemValueList.add(itemValue);
 		}
 
 		// now itemValue is of instance List
@@ -583,13 +587,16 @@ public class ItemCollection implements java.io.Serializable {
 		// replace item value?
 		if (append) {
 			// append item value
-			List newValueList = getItemValue(itemName);
-			for (Object o : (List) itemValue) {
-				newValueList.add(o);
-			}
-			hash.put(itemName, newValueList);
+			List<Object> oldValueList = (List<Object>) getItemValue(itemName);
+			
+			oldValueList.addAll(itemValueList);
+			
+//			for (Object o : itemValueList) {
+//				oldValueList.add(o);
+//			}
+			hash.put(itemName, (List<Object>) oldValueList);
 		} else
-			hash.put(itemName, itemValue);
+			hash.put(itemName, itemValueList);
 
 	}
 
@@ -599,10 +606,11 @@ public class ItemCollection implements java.io.Serializable {
 	 * 
 	 * @param map
 	 */
-	public void replaceAllItems(Map map) {
-		Iterator it = map.entrySet().iterator();
+	public void replaceAllItems(Map<String, List<Object>> map) {
+		Iterator<?> it = map.entrySet().iterator();
 		while (it.hasNext()) {
-			Map.Entry entry = (Map.Entry) it.next();
+			@SuppressWarnings("unchecked")
+			Map.Entry<String, List<Object>> entry = (Map.Entry<String, List<Object>>) it.next();
 			replaceItemValue(entry.getKey().toString(), entry.getValue());
 		}
 	}
@@ -636,6 +644,7 @@ public class ItemCollection implements java.io.Serializable {
 	 *            - the contenttype (e.g. 'Text/HTML')
 	 * 
 	 */
+	@SuppressWarnings("unchecked")
 	public void addFile(byte[] data, String fileName, String contentType) {
 		if (data != null) {
 			Vector<Object> vectorFileInfo = null;
@@ -649,16 +658,16 @@ public class ItemCollection implements java.io.Serializable {
 			if (contentType == null || "".equals(contentType))
 				contentType = "application/unknown";
 
-			// Store files using a hashmap....
-			HashMap mapFiles = null;
-			List vFiles = getItemValue("$file");
+			// Store files using a map....
+			HashMap<String,List<Object>> mapFiles = null;
+			List<?> vFiles = getItemValue("$file");
 			if (vFiles != null && vFiles.size() > 0)
-				mapFiles = (HashMap) vFiles.get(0);
+				mapFiles = (HashMap<String,List<Object>>) vFiles.get(0);
 			else
-				mapFiles = new HashMap();
+				mapFiles = new HashMap<String,List<Object>>();
 
 			// existing file will be overridden!
-			vectorFileInfo = (Vector) mapFiles.get(fileName);
+			vectorFileInfo = (Vector<Object>) mapFiles.get(fileName);
 			vectorFileInfo = new Vector<Object>();
 			// put file in a vector containing the byte array and also the
 			// content type
@@ -673,12 +682,13 @@ public class ItemCollection implements java.io.Serializable {
 	 * This method removes a single file attachment from the BlobWorkitem
 	 * 
 	 */
+	@SuppressWarnings("unchecked")
 	public void removeFile(String aFilename) {
 		/* delete attachment */
-		HashMap mapFiles = null;
-		List vFiles = getItemValue("$file");
+		Map<String,List<Object>> mapFiles = null;
+		List<?> vFiles = getItemValue("$file");
 		if (vFiles != null && vFiles.size() > 0) {
-			mapFiles = (HashMap) vFiles.get(0);
+			mapFiles =  (Map<String, List<Object>>) vFiles.get(0);
 			mapFiles.remove(aFilename);
 			replaceItemValue("$file", mapFiles);
 		}
@@ -691,10 +701,11 @@ public class ItemCollection implements java.io.Serializable {
 	 * 
 	 * @return
 	 */
-	public Map getFiles() {
-		List vFiles = getItemValue("$file");
+	public Map<String,List<Object>> getFiles() {
+		List<?> vFiles = getItemValue("$file");
 		if (vFiles != null && vFiles.size() > 0) {
-			Map mapFiles = (Map) vFiles.get(0);
+			@SuppressWarnings("unchecked")
+			Map<String,List<Object>> mapFiles = (Map<String,List<Object>>) vFiles.get(0);
 			return mapFiles;
 		}
 
@@ -707,38 +718,40 @@ public class ItemCollection implements java.io.Serializable {
 	 * 
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public List<String> getFileNames() {
 		// File attachments...
 		List<String> files = new Vector<String>();
 
-		HashMap mapFiles = null;
-		List vFiles = getItemValue("$file");
+		HashMap<String,List<Object>> mapFiles = null;
+		List<?> vFiles = getItemValue("$file");
 		if (vFiles != null && vFiles.size() > 0) {
-			mapFiles = (HashMap) vFiles.get(0);
+			mapFiles = (HashMap<String,List<Object>>) vFiles.get(0);
 			// files = new String[mapFiles.entrySet().size()];
-			Iterator iter = mapFiles.entrySet().iterator();
-			int iFileCount = 0;
+			Iterator<?> iter = mapFiles.entrySet().iterator();
 			while (iter.hasNext()) {
-				Map.Entry mapEntry = (Map.Entry) iter.next();
+				Map.Entry<String,List<Object>> mapEntry = (Map.Entry<String,List<Object>>) iter.next();
 				String aFileName = mapEntry.getKey().toString();
 				// files[iFileCount] = aFileName;
 				files.add(aFileName);
-				iFileCount++;
 			}
 		}
 
 		return files;
 	}
 
-	public Map getItem() {
+	//@SuppressWarnings("unchecked")
+	public Map<String,?> getItem() {
 		return new ItemAdapter(this);
 	}
 
-	public Map getItemList() {
+	//@SuppressWarnings("unchecked")
+	public Map<String,?> getItemList() {
 		return new ItemListAdapter(this);
 	}
 
-	public Map getItemListArray() {
+	//@SuppressWarnings("unchecked")
+	public Map<String,?> getItemListArray() {
 		return new ItemListArrayAdapter(this);
 	}
 
@@ -752,7 +765,18 @@ public class ItemCollection implements java.io.Serializable {
 	 * @author rsoika
 	 * 
 	 */
-	class ItemAdapter implements Map {
+	/**
+	 * This class helps to addapt the behavior of a singel value item to be used
+	 * in a jsf page using a expression language like this:
+	 * 
+	 * #{mybean.item['txtMyItem']}
+	 * 
+	 * 
+	 * @author rsoika
+	 * 
+	 */
+	//@SuppressWarnings("rawtypes")
+	class ItemAdapter implements Map<String,Object> {
 		ItemCollection itemCollection;
 
 		public ItemAdapter() {
@@ -771,7 +795,6 @@ public class ItemCollection implements java.io.Serializable {
 		 * returns a single value out of the ItemCollection if the key does not
 		 * exist the method will create a value automatically
 		 */
-		@SuppressWarnings("unchecked")
 		public Object get(Object key) {
 			// check if a value for this key is available...
 			// if not create a new empty value
@@ -779,7 +802,7 @@ public class ItemCollection implements java.io.Serializable {
 				itemCollection.replaceItemValue(key.toString(), "");
 
 			// return first value from vector if size >0
-			List v = itemCollection.getItemValue(key.toString());
+			List<?> v = itemCollection.getItemValue(key.toString());
 			if (v.size() > 0)
 				return v.get(0);
 			else
@@ -790,7 +813,7 @@ public class ItemCollection implements java.io.Serializable {
 		/**
 		 * puts a single value into the ItemCollection
 		 */
-		public Object put(Object key, Object value) {
+		public Object put(String key, Object value) {
 			if (key == null)
 				return null;
 			itemCollection.replaceItemValue(key.toString(), value);
@@ -811,6 +834,7 @@ public class ItemCollection implements java.io.Serializable {
 			return itemCollection.getAllItems().containsValue(value);
 		}
 
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public Set entrySet() {
 			return itemCollection.getAllItems().entrySet();
 		}
@@ -819,10 +843,12 @@ public class ItemCollection implements java.io.Serializable {
 			return itemCollection.getAllItems().isEmpty();
 		}
 
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public Set keySet() {
 			return itemCollection.getAllItems().keySet();
 		}
 
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public void putAll(Map m) {
 			itemCollection.getAllItems().putAll(m);
 
@@ -836,6 +862,7 @@ public class ItemCollection implements java.io.Serializable {
 			return itemCollection.getAllItems().size();
 		}
 
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public Collection values() {
 			return itemCollection.getAllItems().values();
 		}
@@ -883,6 +910,7 @@ public class ItemCollection implements java.io.Serializable {
 		 * returns a multi value out of the ItemCollection if the key dos not
 		 * exist the method will create a value automatical
 		 */
+		@SuppressWarnings("rawtypes")
 		public Object get(Object key) {
 			// check if a value for this key is available...
 			// if not create a new empty value
@@ -901,7 +929,8 @@ public class ItemCollection implements java.io.Serializable {
 		/**
 		 * puts a arraylist value into the ItemCollection
 		 */
-		public Object put(Object key, Object value) {
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public Object put(String key, Object value) {
 			if (key == null)
 				return null;
 

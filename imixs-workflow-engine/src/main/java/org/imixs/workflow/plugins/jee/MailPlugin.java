@@ -332,7 +332,7 @@ public class MailPlugin extends AbstractPlugin {
 			ItemCollection documentActivity) {
 
 		// build Recipient from Activity ...
-		List<String> vectorRecipients = documentActivity
+		List<String> vectorRecipients = (List<String>) documentActivity
 				.getItemValue("namMailReceiver");
 		if (vectorRecipients == null)
 			vectorRecipients = new Vector<String>();
@@ -366,7 +366,7 @@ public class MailPlugin extends AbstractPlugin {
 			ItemCollection documentActivity) {
 
 		// build Recipient Vector from namMailReceiver
-		List<String> vectorRecipients = documentActivity
+		List<String> vectorRecipients = (List<String>) documentActivity
 				.getItemValue("namMailReceiverCC");
 		if (vectorRecipients == null)
 			vectorRecipients = new Vector<String>();
@@ -401,7 +401,7 @@ public class MailPlugin extends AbstractPlugin {
 			ItemCollection documentActivity) {
 
 		// build Recipient Vector from namMailReceiver
-		List<String> vectorRecipients = documentActivity
+		List<String> vectorRecipients = (List<String>) documentActivity
 				.getItemValue("namMailReceiverBCC");
 		if (vectorRecipients == null)
 			vectorRecipients = new Vector<String>();

@@ -389,7 +389,7 @@ public class WorkflowKernel {
 	private void appendActivityID(int aID) {
 
 		// check if activityidlist is available
-		List<Integer> vActivityList = documentContext
+		List<Integer> vActivityList = (List<Integer>) documentContext
 				.getItemValue(ACTIVITYIDLIST);
 		if (vActivityList == null)
 			vActivityList = new Vector<Integer>();
@@ -454,7 +454,7 @@ public class WorkflowKernel {
 			sLogEntry.append(sLogComment);
 
 		@SuppressWarnings("unchecked")
-		List<String> vLog = documentContext
+		List<String> vLog = (List<String>) documentContext
 				.getItemValue("txtworkflowactivitylog");
 		if (vLog == null)
 			vLog = new Vector<String>();

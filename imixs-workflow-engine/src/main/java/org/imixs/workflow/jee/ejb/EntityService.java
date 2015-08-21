@@ -330,7 +330,6 @@ public class EntityService implements EntityServiceRemote {
 	 *            to be saved
 	 * @return updated ItemCollection
 	 */
-	@SuppressWarnings("unchecked")
 	public ItemCollection save(ItemCollection itemcol)
 			throws AccessDeniedException {
 
@@ -1704,7 +1703,6 @@ public class EntityService implements EntityServiceRemote {
 	 * 
 	 * @see issue #62
 	 */
-	@SuppressWarnings("unchecked")
 	private void updateAllEntityIndexFields(Collection<Entity> entityList,
 			String newIndexField) {
 		long count = 0;

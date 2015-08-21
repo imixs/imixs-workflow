@@ -34,12 +34,10 @@ import java.util.Map;
 import java.util.Vector;
 
 import javax.persistence.Basic;
-import javax.persistence.ElementCollection;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
@@ -129,7 +127,7 @@ public class Entity implements java.io.Serializable {
 	private String type;
 	private Calendar created;
 	private Calendar modified;
-	private Map<String,Object> data;
+	private Map<String,List<Object>> data;
 	private List<ReadAccess> readAccessList;
 	private List<WriteAccess> writeAccessList;
 
@@ -247,7 +245,6 @@ public class Entity implements java.io.Serializable {
 	 * updates the modification time before a update by a persistence manager is
 	 * performed.
 	 */
-	@SuppressWarnings("unused")
 	@PrePersist
 	@PreUpdate
 	private void updateModified() {
@@ -263,7 +260,7 @@ public class Entity implements java.io.Serializable {
 	 */
 	@Lob
 	@Basic(fetch = FetchType.LAZY)
-	public Map<String,Object> getData() {
+	public Map<String, List<Object>> getData() {
 		return data;
 	}
 
@@ -272,7 +269,7 @@ public class Entity implements java.io.Serializable {
 	 * 
 	 * @param data
 	 */
-	public void setData(Map<String,Object> itemCol) {
+	public void setData(Map<String,List<Object>> itemCol) {
 		this.data = itemCol;
 	}
 

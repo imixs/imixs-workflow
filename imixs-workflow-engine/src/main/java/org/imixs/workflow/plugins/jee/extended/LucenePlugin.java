@@ -584,7 +584,7 @@ public class LucenePlugin extends AbstractPlugin {
 				.getItemValueString("$uniqueid"), Store.YES));
 
 		// add default values $readAccess
-		List<String> vReadAccess = aworkitem.getItemValue("$readAccess");
+		List<String> vReadAccess = (List<String>) aworkitem.getItemValue("$readAccess");
 		if (vReadAccess.size() == 0
 				|| (vReadAccess.size() == 1 && "".equals(vReadAccess.get(0)
 						.toString()))) {

@@ -165,7 +165,7 @@ public class HistoryPlugin extends AbstractPlugin {
 		List<List<Object>> newList = new ArrayList<List<Object>>();
 
 		try {
-			List<String> oldList = documentContext
+			List<String> oldList = (List<String>) documentContext
 					.getItemValue("txtworkflowhistorylog");
 
 			for (String oldEntry : oldList) {

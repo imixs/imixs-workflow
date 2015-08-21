@@ -249,9 +249,8 @@ public class RulePlugin extends AbstractPlugin {
 		// The following code is only for backward compatibility since version
 		// 3.1.9
 		// setup document data...
-		@SuppressWarnings("unchecked")
-		Map<String, Object> itemList = documentContext.getAllItems();
-		for (Map.Entry<String, Object> entry : itemList.entrySet()) {
+		Map<String, List<Object>> itemList = documentContext.getAllItems();
+		for (Map.Entry<String, List<Object>> entry : itemList.entrySet()) {
 			String key = entry.getKey().toLowerCase();
 			List<?> value = (List<?>) entry.getValue();
 			// do only put basic values and not values starting the $
@@ -379,9 +378,8 @@ public class RulePlugin extends AbstractPlugin {
 	 */
 	private Map<String, Object[]> convertItemCollection(ItemCollection itemCol) {
 		Map<String, Object[]> result = new HashMap<String, Object[]>();
-		@SuppressWarnings("unchecked")
-		Map<String, Object> itemList = itemCol.getAllItems();
-		for (Map.Entry<String, Object> entry : itemList.entrySet()) {
+		Map<String, List<Object>> itemList = itemCol.getAllItems();
+		for (Map.Entry<String, List<Object>> entry : itemList.entrySet()) {
 			String key = entry.getKey().toLowerCase();
 			List<?> value = (List<?>) entry.getValue();
 			// do only put basic values

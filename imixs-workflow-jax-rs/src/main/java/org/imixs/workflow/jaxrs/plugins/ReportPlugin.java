@@ -186,7 +186,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 		if ("".equals(sContentType))
 			sContentType = "text/html";
 
-		List<String> vAttributList = itemCol.getItemValue("txtAttributeList");
+		List<String> vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
 		if (vAttributList.size() == 0) {
 			vAttributList = null;
 		}

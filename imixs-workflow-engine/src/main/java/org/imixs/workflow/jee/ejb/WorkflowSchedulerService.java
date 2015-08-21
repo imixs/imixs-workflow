@@ -675,7 +675,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		ScheduleExpression scheduerExpression = new ScheduleExpression();
 
 		@SuppressWarnings("unchecked")
-		List<String> calendarConfiguation = configItemCollection
+		List<String> calendarConfiguation = (List<String>) configItemCollection
 				.getItemValue("txtConfiguration");
 		// try to parse the configuration list....
 		for (String confgEntry : calendarConfiguation) {
@@ -934,7 +934,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	@SuppressWarnings("unchecked")
 	private boolean isImixsDayOfWeek(ItemCollection configItemCollection) {
 
-		List<String> calendarConfiguation = configItemCollection
+		List<String> calendarConfiguation = (List<String>) configItemCollection
 				.getItemValue("txtConfiguration");
 		// try to parse the configuration list....
 		for (String confgEntry : calendarConfiguation) {

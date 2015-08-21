@@ -336,14 +336,14 @@ public abstract class AbstractPlugin implements Plugin {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void mergeFieldList(ItemCollection documentContext,
-			List valueList, List<String> fieldList) {
+			List valueList, List<?> fieldList) {
 		if (valueList == null || fieldList == null)
 			return;
 
 		if (fieldList.size() > 0) {
 			// iterate over the fieldList
-			for (String sFeldName : fieldList) {
-				List<Object> vValues = documentContext.getItemValue(sFeldName);
+			for (Object sFeldName : fieldList) {
+				List<?> vValues = documentContext.getItemValue(sFeldName.toString());
 				// now append the values into p_VectorDestination
 				if ((vValues != null) && (vValues.size() > 0)) {
 					for (Object o : vValues) {
