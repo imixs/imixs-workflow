@@ -119,7 +119,8 @@ public class ItemCollection implements java.io.Serializable {
 	 *         value depends on the data type of the item.
 	 * 
 	 */
-	public List<?> getItemValue(String aName) {
+	@SuppressWarnings("rawtypes")
+	public List getItemValue(String aName) {
 		aName = aName.toLowerCase();
 		List<Object> o = hash.get(aName);
 		if (o == null)
