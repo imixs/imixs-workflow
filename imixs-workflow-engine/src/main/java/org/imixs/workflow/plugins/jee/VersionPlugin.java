@@ -89,8 +89,8 @@ public class VersionPlugin extends AbstractPlugin {
 	private String versionMode = "";
 	private int versionActivityID = -1;
 	private ItemCollection version = null;
-	private ItemCollection documentContext=null;
-	
+	private ItemCollection documentContext = null;
+
 	/**
 	 * the init method throws an exception if the plugin is not run in a
 	 * instance of org.imixs.workflow.jee.ejb.WorkflowManager. This is necessary
@@ -147,7 +147,7 @@ public class VersionPlugin extends AbstractPlugin {
 			ItemCollection adocumentActivity) throws PluginException {
 
 		documentContext = adocumentContext;
-		
+
 		// determine mode to manage version
 		versionMode = adocumentActivity.getItemValueString("keyVersion");
 		versionActivityID = adocumentActivity
@@ -239,14 +239,17 @@ public class VersionPlugin extends AbstractPlugin {
 	 * 'true' during the processing of a new version
 	 */
 	public void close(int status) throws PluginException {
-		documentContext.removeItem(PROCESSING_VERSION_ATTRIBUTE);
 
-		// if an error has occurred during processing take back new created
-		// versions
-		if (status == Plugin.PLUGIN_ERROR) {
-			// throw a ejb exception to cancel a running transaction
-			// this will avoid changes back into the database
-			throw new EJBTransactionRolledbackException();
+		if (documentContext != null) {
+			documentContext.removeItem(PROCESSING_VERSION_ATTRIBUTE);
+
+			// if an error has occurred during processing take back new created
+			// versions
+			if (status == Plugin.PLUGIN_ERROR) {
+				// throw a ejb exception to cancel a running transaction
+				// this will avoid changes back into the database
+				throw new EJBTransactionRolledbackException();
+			}
 		}
 	}
 
@@ -259,7 +262,8 @@ public class VersionPlugin extends AbstractPlugin {
 	 * @return
 	 */
 	public static boolean isProcssingVersion(ItemCollection adocumentContext) {
-		return adocumentContext.getItemValueBoolean(PROCESSING_VERSION_ATTRIBUTE);
+		return adocumentContext
+				.getItemValueBoolean(PROCESSING_VERSION_ATTRIBUTE);
 	}
 
 	/**
