@@ -41,22 +41,23 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 /**
- * This Class defines a ValueObject to be used to exchange Datastructures used
- * by the org.imixs.workflow Framework. Every component of this framework should
- * use this wrapper class to easy transport workflowrelevant data between the
- * different workflow modules. ValueObjects, particular in J2EE Applications,
- * have the advantage to improve perfomance of remote methode calls and also
- * enables a flexibly datastructure. A ItemCollection contains various Items
- * (attributes). Every Item exist of a Name and a Value. Internal every Value is
- * stored inside a Vector Class. So it is also possible to store
- * multivalueobjects. The ItemCollection wraps the
- * <code>java.util.Hashtable</code> Class and implements the
- * <code>java.io.Serializable</code> Interface, so the ValeOject can also be
- * serialised inside a remote methode call.
+ * This Class defines a ValueObject to be used to exchange data structures used
+ * by the org.imixs.workflow Framework. Most components of this framework use
+ * this wrapper class to easy transport workflow data between the different
+ * workflow modules. ValueObjects, particular in J2EE Applications, have the
+ * advantage to improve performance of remote method calls. The Imixs
+ * ItemCcollection enables a very flexibly and easy to use data structure.
+ * 
+ * A ItemCollection contains various Items (attributes). Every Item exist of a
+ * Name (String) and a list of values (List of Object). Internal every Value is
+ * stored inside a Vector Class. All values are stored internally in a Map
+ * containing key values pairs.
+ * 
+ * The ItemCollection can be serialized.
  * 
  * 
  * @author Ralph Soika
- * @version 2.0
+ * @version 2.1
  * @see org.imixs.workflow.WorkflowManager
  */
 
@@ -85,7 +86,7 @@ public class ItemCollection implements java.io.Serializable {
 		Iterator<?> it = map.entrySet().iterator();
 		while (it.hasNext()) {
 			@SuppressWarnings("unchecked")
-			Map.Entry<String, List<Object>> entry =  (Entry<String, List<Object>>) it.next();
+			Map.Entry<String, List<Object>> entry = (Entry<String, List<Object>>) it.next();
 			this.replaceItemValue(entry.getKey().toString(), entry.getValue());
 		}
 	}
@@ -126,7 +127,7 @@ public class ItemCollection implements java.io.Serializable {
 		if (o == null)
 			return new Vector<Object>();
 		else {
-			List<Object> v =  o;
+			List<Object> v = o;
 			// scan vector for null values
 			for (int i = 0; i < v.size(); i++) {
 				if (v.get(i) == null)
@@ -334,7 +335,7 @@ public class ItemCollection implements java.io.Serializable {
 			List<?> v = getItemValue(aName);
 			if (v.size() == 0)
 				return false;
-			Object sValue = v.get(0);//.firstElement().toString();
+			Object sValue = v.get(0);// .firstElement().toString();
 			// return new Boolean(sValue).booleanValue();
 			return Boolean.valueOf(sValue.toString());
 		} catch (ClassCastException e) {
@@ -367,7 +368,7 @@ public class ItemCollection implements java.io.Serializable {
 	public boolean isItemValueInteger(String aName) {
 
 		aName = aName.toLowerCase();
-		 List<?> v = getItemValue(aName);
+		List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
 		else {
@@ -388,7 +389,7 @@ public class ItemCollection implements java.io.Serializable {
 	public boolean isItemValueLong(String aName) {
 
 		aName = aName.toLowerCase();
-		 List<?> v = getItemValue(aName);
+		List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
 		else {
@@ -409,7 +410,7 @@ public class ItemCollection implements java.io.Serializable {
 	public boolean isItemValueDouble(String aName) {
 
 		aName = aName.toLowerCase();
-		 List<?> v = getItemValue(aName);
+		List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
 		else {
@@ -430,7 +431,7 @@ public class ItemCollection implements java.io.Serializable {
 	public boolean isItemValueFloat(String aName) {
 
 		aName = aName.toLowerCase();
-		 List<?> v = getItemValue(aName);
+		List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
 		else {
@@ -465,7 +466,7 @@ public class ItemCollection implements java.io.Serializable {
 	 * 
 	 * @return Map with all Items
 	 */
-	public Map<String,List<Object>> getAllItems() {
+	public Map<String, List<Object>> getAllItems() {
 		return hash;
 
 	}
@@ -477,7 +478,7 @@ public class ItemCollection implements java.io.Serializable {
 	 * 
 	 * @param aHash
 	 */
-	public void setAllItems(Map<String,List<Object>> aHash) {
+	public void setAllItems(Map<String, List<Object>> aHash) {
 		hash = aHash;
 
 	}
@@ -589,12 +590,12 @@ public class ItemCollection implements java.io.Serializable {
 		if (append) {
 			// append item value
 			List<Object> oldValueList = (List<Object>) getItemValue(itemName);
-			
+
 			oldValueList.addAll(itemValueList);
-			
-//			for (Object o : itemValueList) {
-//				oldValueList.add(o);
-//			}
+
+			// for (Object o : itemValueList) {
+			// oldValueList.add(o);
+			// }
 			hash.put(itemName, (List<Object>) oldValueList);
 		} else
 			hash.put(itemName, itemValueList);
@@ -660,12 +661,12 @@ public class ItemCollection implements java.io.Serializable {
 				contentType = "application/unknown";
 
 			// Store files using a map....
-			HashMap<String,List<Object>> mapFiles = null;
+			HashMap<String, List<Object>> mapFiles = null;
 			List<?> vFiles = getItemValue("$file");
 			if (vFiles != null && vFiles.size() > 0)
-				mapFiles = (HashMap<String,List<Object>>) vFiles.get(0);
+				mapFiles = (HashMap<String, List<Object>>) vFiles.get(0);
 			else
-				mapFiles = new HashMap<String,List<Object>>();
+				mapFiles = new HashMap<String, List<Object>>();
 
 			// existing file will be overridden!
 			vectorFileInfo = (Vector<Object>) mapFiles.get(fileName);
@@ -686,10 +687,10 @@ public class ItemCollection implements java.io.Serializable {
 	@SuppressWarnings("unchecked")
 	public void removeFile(String aFilename) {
 		/* delete attachment */
-		Map<String,List<Object>> mapFiles = null;
+		Map<String, List<Object>> mapFiles = null;
 		List<?> vFiles = getItemValue("$file");
 		if (vFiles != null && vFiles.size() > 0) {
-			mapFiles =  (Map<String, List<Object>>) vFiles.get(0);
+			mapFiles = (Map<String, List<Object>>) vFiles.get(0);
 			mapFiles.remove(aFilename);
 			replaceItemValue("$file", mapFiles);
 		}
@@ -702,11 +703,11 @@ public class ItemCollection implements java.io.Serializable {
 	 * 
 	 * @return
 	 */
-	public Map<String,List<Object>> getFiles() {
+	public Map<String, List<Object>> getFiles() {
 		List<?> vFiles = getItemValue("$file");
 		if (vFiles != null && vFiles.size() > 0) {
 			@SuppressWarnings("unchecked")
-			Map<String,List<Object>> mapFiles = (Map<String,List<Object>>) vFiles.get(0);
+			Map<String, List<Object>> mapFiles = (Map<String, List<Object>>) vFiles.get(0);
 			return mapFiles;
 		}
 
@@ -724,14 +725,14 @@ public class ItemCollection implements java.io.Serializable {
 		// File attachments...
 		List<String> files = new Vector<String>();
 
-		HashMap<String,List<Object>> mapFiles = null;
+		HashMap<String, List<Object>> mapFiles = null;
 		List<?> vFiles = getItemValue("$file");
 		if (vFiles != null && vFiles.size() > 0) {
-			mapFiles = (HashMap<String,List<Object>>) vFiles.get(0);
+			mapFiles = (HashMap<String, List<Object>>) vFiles.get(0);
 			// files = new String[mapFiles.entrySet().size()];
 			Iterator<?> iter = mapFiles.entrySet().iterator();
 			while (iter.hasNext()) {
-				Map.Entry<String,List<Object>> mapEntry = (Map.Entry<String,List<Object>>) iter.next();
+				Map.Entry<String, List<Object>> mapEntry = (Map.Entry<String, List<Object>>) iter.next();
 				String aFileName = mapEntry.getKey().toString();
 				// files[iFileCount] = aFileName;
 				files.add(aFileName);
@@ -741,18 +742,18 @@ public class ItemCollection implements java.io.Serializable {
 		return files;
 	}
 
-	//@SuppressWarnings("unchecked")
-	public Map<String,?> getItem() {
+	// @SuppressWarnings("unchecked")
+	public Map<String, ?> getItem() {
 		return new ItemAdapter(this);
 	}
 
-	//@SuppressWarnings("unchecked")
-	public Map<String,?> getItemList() {
+	// @SuppressWarnings("unchecked")
+	public Map<String, ?> getItemList() {
 		return new ItemListAdapter(this);
 	}
 
-	//@SuppressWarnings("unchecked")
-	public Map<String,?> getItemListArray() {
+	// @SuppressWarnings("unchecked")
+	public Map<String, ?> getItemListArray() {
 		return new ItemListArrayAdapter(this);
 	}
 
@@ -776,8 +777,8 @@ public class ItemCollection implements java.io.Serializable {
 	 * @author rsoika
 	 * 
 	 */
-	//@SuppressWarnings("rawtypes")
-	class ItemAdapter implements Map<String,Object> {
+	// @SuppressWarnings("rawtypes")
+	class ItemAdapter implements Map<String, Object> {
 		ItemCollection itemCollection;
 
 		public ItemAdapter() {
