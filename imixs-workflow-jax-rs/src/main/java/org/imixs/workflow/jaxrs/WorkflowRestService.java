@@ -832,7 +832,6 @@ public class WorkflowRestService {
 	 *            - return URI
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	@PUT
 	@Path("/workitem")
 	@Consumes({ "application/x-www-form-urlencoded" })
@@ -843,33 +842,6 @@ public class WorkflowRestService {
 		logger.fine("[WorkflowRestService] @PUT /workitem  method:putWorkitem....");
 		// parse the workItem.
 		ItemCollection workitem = parseWorkitem(requestBodyStream);
-
-		if (workitem != null) {
-			// now test if an workItem with this $uniqueId still exits...
-			String unid = workitem.getItemValueString("$uniqueID");
-			if (!"".equals(unid)) {
-				logger.fine("[WorkflowRestService] putWorkitem $uniqueid="
-						+ unid);
-
-				ItemCollection oldWorkitem = workflowService.getWorkItem(unid);
-				if (oldWorkitem != null) {
-					// an instance of this WorkItem still exists! so we need
-					// to update the new values....
-					oldWorkitem.getAllItems().putAll(workitem.getAllItems());
-					/*
-					 * Map map=workitem.getAllItems();
-					 * 
-					 * map.p Set<String> set=map.keySet(); for (String key:set)
-					 * {
-					 * 
-					 * oldWorkitem.replaceItemValue(key, workitem.getItem()); }
-					 */
-					workitem = oldWorkitem;
-
-				}
-
-			}
-		}
 
 		if (workitem == null) {
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -1101,21 +1073,6 @@ public class WorkflowRestService {
 			logger.severe("postWorkitemJSON wrong json format!");
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-		}
-
-		if (workitem != null) {
-			// now test if an workItem with this $uniqueId still exits...
-			String unid = workitem.getItemValueString("$uniqueID");
-			if (!"".equals(unid)) {
-
-				ItemCollection oldWorkitem = workflowService.getWorkItem(unid);
-				if (oldWorkitem != null) {
-					// an instance of this WorkItem still exists! so we need
-					// to update the new values....
-					oldWorkitem.getAllItems().putAll(workitem.getAllItems());
-					workitem = oldWorkitem;
-				}
-			}
 		}
 
 		if (workitem == null) {
