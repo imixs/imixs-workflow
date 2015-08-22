@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -115,7 +116,7 @@ public class XMLItemCollectionAdapter {
 	 *            - optional list of item names to be converted. If null all
 	 *            items will be converted
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked" })
 	public static XMLItemCollection putItemCollection(
 			ItemCollection aItemCollection, List<String> itemNames)
 			throws Exception {
@@ -134,12 +135,11 @@ public class XMLItemCollectionAdapter {
 						sName = aField;
 						XMLItem item = new XMLItem();
 						// test the ItemValue
-						Vector vOrg = (Vector) aItemCollection
-								.getItemValue(aField);
+						List<?> vOrg = aItemCollection.getItemValue(aField);
 						if (!isBasicType(vOrg, sName)) {
 							// set dummy value
 							item.setName(sName);
-							vOrg = new Vector();
+							vOrg = new Vector<Object>();
 							vOrg.add(null);
 							item.setValue(vOrg.toArray());
 						} else {
@@ -155,18 +155,19 @@ public class XMLItemCollectionAdapter {
 
 				} else {
 					// convert all items (no itemname list is provided)
-					Iterator it = aItemCollection.getAllItems().entrySet()
+					Iterator<?> it = aItemCollection.getAllItems().entrySet()
 							.iterator();
 					int max = aItemCollection.getAllItems().entrySet().size();
 					items = new XMLItem[max];
 
 					// iterate over all items if no itemNames are provided
 					while (it.hasNext()) {
-						Map.Entry entry = (Map.Entry) it.next();
+						Map.Entry<String, List<?>> entry = (Entry<String, List<?>>) it
+								.next();
 						sName = (String) entry.getKey();
 
 						// test ItemValue
-						Vector vOrg = (Vector) entry.getValue();
+						List<?> vOrg = entry.getValue();
 
 						if (!isBasicType(vOrg, sName))
 							continue;
@@ -326,10 +327,9 @@ public class XMLItemCollectionAdapter {
 
 	}
 
-	
-	
 	/**
-	 * This method imports a single XMLItemCollection and returns the ItemCollection object. 
+	 * This method imports a single XMLItemCollection and returns the
+	 * ItemCollection object.
 	 * 
 	 * @param inputStream
 	 *            xml input stream
@@ -340,7 +340,6 @@ public class XMLItemCollectionAdapter {
 	public static ItemCollection readItemCollection(byte[] byteInput)
 			throws JAXBException, IOException {
 
-	
 		if (byteInput == null) {
 			return null;
 		}
@@ -360,16 +359,13 @@ public class XMLItemCollectionAdapter {
 		ecol = (XMLItemCollection) jaxbObject;
 
 		// convert entity....
-		ItemCollection itemCol=XMLItemCollectionAdapter.getItemCollection(ecol);
-		
+		ItemCollection itemCol = XMLItemCollectionAdapter
+				.getItemCollection(ecol);
+
 		return itemCol;
 
 	}
 
-	
-	
-	
-	
 	/**
 	 * This method test if the values of an vector are basic types
 	 * 
@@ -378,7 +374,7 @@ public class XMLItemCollectionAdapter {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	private static boolean isBasicType(Vector v, String fieldname) {
+	private static boolean isBasicType(List v, String fieldname) {
 		for (Object o : v) {
 			// Package p=o.getClass().getPackage();
 			Class c = o.getClass();
