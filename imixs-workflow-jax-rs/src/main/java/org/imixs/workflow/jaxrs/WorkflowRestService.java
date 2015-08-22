@@ -33,7 +33,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.text.ParseException;
 import java.util.Collection;
@@ -67,6 +66,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.imixs.workflow.exceptions.WorkflowException;
 import org.imixs.workflow.jee.ejb.WorkflowService;
 import org.imixs.workflow.util.JSONParser;
 import org.imixs.workflow.xml.EntityCollection;
@@ -832,14 +832,13 @@ public class WorkflowRestService {
 	 *            - return URI
 	 * @return
 	 */
-	@PUT
+	@POST
 	@Path("/workitem")
 	@Consumes({ "application/x-www-form-urlencoded" })
-	public Response putWorkitem(InputStream requestBodyStream,
-			@QueryParam("action") String action,
-			@QueryParam("error") String error) {
+	@Produces(MediaType.APPLICATION_XML)
+	public Response putWorkitem(InputStream requestBodyStream) {
 
-		logger.fine("[WorkflowRestService] @PUT /workitem  method:putWorkitem....");
+		logger.fine("[WorkflowRestService] @POST /workitem  method:postWorkitem....");
 		// parse the workItem.
 		ItemCollection workitem = parseWorkitem(requestBodyStream);
 
@@ -848,63 +847,38 @@ public class WorkflowRestService {
 		}
 
 		try {
+			workitem.removeItem("$error_code");
+			workitem.removeItem("$error_message");
 			// now lets try to process the workitem...
 			workitem = workflowService.processWorkItem(workitem);
 
 		} catch (AccessDeniedException e) {
 			e.printStackTrace();
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+			workitem = this.addErrorMessage(e, workitem);
 		} catch (ProcessingErrorException e) {
 			e.printStackTrace();
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+			workitem = this.addErrorMessage(e, workitem);
 		} catch (PluginException e) {
 			e.printStackTrace();
-			if (error != null && !"".equals(error)) {
-				try {
-					// add exception context to URL
-					if (error.indexOf('?') == -1)
-						error += "?";
-					else
-						error += "&";
-
-					error += "error_context=" + e.getErrorContext()
-							+ "&error_code=" + e.getErrorCode();
-
-					// add params
-					java.lang.Object[] params = ((PluginException) e)
-							.getErrorParameters();
-					if (params != null)
-						for (int j = 0; j < params.length; j++) {
-							error += "&error_param" + j + "="
-									+ params[j].toString();
-						}
-
-					return Response.seeOther(new java.net.URI(error)).build();
-				} catch (URISyntaxException errorEx) {
-					errorEx.printStackTrace();
-					return Response.status(Response.Status.NOT_ACCEPTABLE)
-							.build();
-				}
-			} else {
-				return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-			}
-
+			workitem = this.addErrorMessage(e, workitem);
 		}
 
-		// try to get action from workItem if not provided by queryString...
-		if (action == null || "".equals(action))
-			action = workitem.getItemValueString("action");
-
-		// now redirect if action is available...
-		if (action != null && !"".equals(action)) {
-			try {
-				return Response.seeOther(new java.net.URI(action)).build();
-			} catch (URISyntaxException e) {
-				e.printStackTrace();
-				return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-			}
+		// return workitem
+		try {
+			if (workitem.hasItem("$error_code"))
+				return Response
+						.ok(XMLItemCollectionAdapter
+								.putItemCollection(workitem),
+								MediaType.APPLICATION_XML)
+						.status(Response.Status.NOT_ACCEPTABLE).build();
+			else
+				return Response.ok(
+						XMLItemCollectionAdapter.putItemCollection(workitem),
+						MediaType.APPLICATION_XML).build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
-		return Response.status(Response.Status.OK).build();
 
 	}
 
@@ -915,20 +889,19 @@ public class WorkflowRestService {
 	 * @param requestBodyStream
 	 * @return
 	 */
-	@POST
+	@PUT
 	@Path("/workitem")
 	@Consumes({ "application/x-www-form-urlencoded" })
-	public Response postWorkitem(InputStream requestBodyStream,
-			@QueryParam("action") String action,
-			@QueryParam("error") String error) {
-		logger.fine("[WorkflowRestService] @POST /workitem  method:putWorkitem....");
+	@Produces(MediaType.APPLICATION_XML)
+	public Response postWorkitem(InputStream requestBodyStream) {
+		logger.fine("[WorkflowRestService] @POST /workitem  delegate to POST....");
 
-		return putWorkitem(requestBodyStream, action, error);
+		return putWorkitem(requestBodyStream);
 	}
 
 	/**
 	 * This method post a ItemCollection object to be processed by the
-	 * WorkflowManager. The method test for the propertys $processid and
+	 * WorkflowManager. The method test for the properties $processid and
 	 * $activityid
 	 * 
 	 * NOTE!! - this method did not update an existing instance of a workItem.
@@ -938,85 +911,64 @@ public class WorkflowRestService {
 	 * @param workitem
 	 *            - new workItem data
 	 */
+	@POST
+	@Path("/workitem")
+	@Produces(MediaType.APPLICATION_XML)
+	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
+	public Response postWorkitemXML(XMLItemCollection xmlworkitem) {
+
+		logger.fine("[WorkflowRestService] @POST /workitem  method:postWorkitemXML....");
+
+		ItemCollection workitem;
+		workitem = XMLItemCollectionAdapter.getItemCollection(xmlworkitem);
+
+		if (workitem == null) {
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
+
+		try {
+			workitem.removeItem("$error_code");
+			workitem.removeItem("$error_message");
+			// now lets try to process the workitem...
+			workitem = workflowService.processWorkItem(workitem);
+
+		} catch (AccessDeniedException e) {
+			e.printStackTrace();
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (ProcessingErrorException e) {
+			e.printStackTrace();
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (PluginException e) {
+			e.printStackTrace();
+			workitem = this.addErrorMessage(e, workitem);
+		}
+
+		// return workitem
+		try {
+			if (workitem.hasItem("$error_code"))
+				return Response
+						.ok(XMLItemCollectionAdapter
+								.putItemCollection(workitem),
+								MediaType.APPLICATION_XML)
+						.status(Response.Status.NOT_ACCEPTABLE).build();
+			else
+				return Response.ok(
+						XMLItemCollectionAdapter.putItemCollection(workitem),
+						MediaType.APPLICATION_XML).build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
+
+	}
+
 	@PUT
 	@Path("/workitem")
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
-	public Response putWorkitemXML(XMLItemCollection workitem,
-			@QueryParam("action") String action) {
-
-		logger.fine("[WorkflowRestService] @PUT /workitem  method:putWorkitemXML....");
-
-		ItemCollection itemCollection;
-		try {
-			itemCollection = XMLItemCollectionAdapter
-					.getItemCollection(workitem);
-			itemCollection = workflowService.processWorkItem(itemCollection);
-
-			// try to get action from workItem if not provided by queryString...
-			if (action == null || "".equals(action))
-				action = itemCollection.getItemValueString("action");
-			// now redirect if action is available...
-			if (action != null && !"".equals(action)) {
-				try {
-					return Response.seeOther(new java.net.URI(action)).build();
-				} catch (URISyntaxException e) {
-					e.printStackTrace();
-					return Response.status(Response.Status.NOT_ACCEPTABLE)
-							.build();
-				}
-			}
-
-			return Response.ok(
-					XMLItemCollectionAdapter.putItemCollection(itemCollection),
-					MediaType.APPLICATION_XML).build();
-			// return Response.status(Response.Status.OK).build();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-	}
-
-	@POST
-	@Path("/workitem")
-	@Produces(MediaType.APPLICATION_XML)
-	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
-	public Response postWorkitemXML(XMLItemCollection workitem,
-			@QueryParam("action") String action) {
-		logger.fine("[WorkflowRestService] @POST /workitem  method:putWorkitemXML....");
-
-		return putWorkitemXML(workitem, action);
-	}
-
-	/**
-	 * NOTE!
-	 * 
-	 * This method did not work because the json format produced by
-	 * getWorkitemJSOON it non consumable. The reason is @type attribute:
-	 * 
-	 * <code>
-	 * ... value":{"@type":"xs:int","$":"10"}
-	 * </code>
-	 * 
-	 * Seems to be a problem of jaxb jax-rs. Mybe GlassFish 4 solves this
-	 * problem.
-	 * 
-	 * For now we can not use this method.
-	 * 
-	 * @see postWorkitemJSON(InputStream requestBodyStream)
-	 * 
-	 * @param workitem
-	 * @param action
-	 * @return
-	 */
-	@POST
-	@Path("/workitem.json2")
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response postWorkitemJSON(XMLItemCollection workitem,
-			@QueryParam("action") String action) {
-		logger.fine("[WorkflowRestService] @POST /workitem  method:putWorkitemJSON....");
-
-		return putWorkitemXML(workitem, action);
+	public Response putWorkitemXML(XMLItemCollection workitem) {
+		logger.fine("[WorkflowRestService] @PUT /workitem  delegate to POST....");
+		return postWorkitemXML(workitem);
 	}
 
 	/**
@@ -1026,23 +978,29 @@ public class WorkflowRestService {
 	 * The Method returns a JSON object with the new data. If a processException
 	 * Occurs the method returns a JSON object with the error code
 	 * 
+	 * The JSON result is computed by the service because JSON is not
+	 * standardized and differs between different jax-rs implementations. For
+	 * that reason it can not be directly re-converted XMLItemCollection
+	 * 
+	 * generated by this method Output format: <code>
+	 * ... value":{"@type":"xs:int","$":"10"}
+	 * </code>
+	 * 
 	 * 
 	 * @param requestBodyStream
 	 *            - form content
 	 * @return JSON object
 	 * @throws Exception
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@Path("/workitem.json")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response postWorkitemJSON(InputStream requestBodyStream,
-			@QueryParam("action") String action,
 			@QueryParam("error") String error,
 			@QueryParam("encoding") String encoding) {
 
-		logger.fine("[WorkflowRestService] @PUT /workitem  method:putWorkitemJSON....");
+		logger.fine("[WorkflowRestService] @POST workitem  postWorkitemJSON....");
 
 		// determine encoding from servlet request ....
 		if (encoding == null || encoding.isEmpty()) {
@@ -1061,7 +1019,6 @@ public class WorkflowRestService {
 		}
 
 		ItemCollection workitem = null;
-		XMLItemCollection responseWorkitem = null;
 		try {
 			workitem = JSONParser.parseWorkitem(requestBodyStream, encoding);
 
@@ -1080,62 +1037,38 @@ public class WorkflowRestService {
 		}
 
 		try {
+			workitem.removeItem("$error_code");
+			workitem.removeItem("$error_message");
 			// now lets try to process the workitem...
 			workitem = workflowService.processWorkItem(workitem);
 
-			try {
-				responseWorkitem = XMLItemCollectionAdapter
-						.putItemCollection(workitem);
-			} catch (Exception e1) {
-				e1.printStackTrace();
-				logger.warning("[WorkflowRestService] PostWorkitem failed: "
-						+ e1.getMessage());
-				return Response.status(Response.Status.NOT_ACCEPTABLE)
-						.type(MediaType.APPLICATION_JSON).build();
-
-			}
 		} catch (AccessDeniedException e) {
-			logger.warning("[WorkflowRestService] PostWorkitem failed: "
-					+ e.getMessage());
-			return Response.status(Response.Status.NOT_ACCEPTABLE)
-					.type(MediaType.APPLICATION_JSON).entity(responseWorkitem)
-					.build();
+			e.printStackTrace();
+			workitem = this.addErrorMessage(e, workitem);
 		} catch (ProcessingErrorException e) {
-			logger.warning("[WorkflowRestService] PostWorkitem failed: "
-					+ e.getMessage());
-			return Response.status(Response.Status.NOT_ACCEPTABLE)
-					.type(MediaType.APPLICATION_JSON).entity(responseWorkitem)
-					.build();
+			e.printStackTrace();
+			workitem = this.addErrorMessage(e, workitem);
 		} catch (PluginException e) {
-			// test for error code
-			logger.warning("[WorkflowRestService] PostWorkitem failed: "
-					+ e.getMessage());
-			if (error != null && !"".equals(error)) {
-				workitem.replaceItemValue("error_context", e.getErrorContext());
-				workitem.replaceItemValue("error_code", e.getErrorCode());
-				// add error params
-				java.lang.Object[] params = ((PluginException) e)
-						.getErrorParameters();
-				if (params != null) {
-					Vector vParams = new Vector();
-					for (int j = 0; j < params.length; j++) {
-						vParams.add(params[j].toString());
-					}
-					workitem.replaceItemValue("error_params", vParams);
-				}
-				return Response.status(Response.Status.NOT_ACCEPTABLE)
-						.type(MediaType.APPLICATION_JSON)
-						.entity(responseWorkitem).build();
-			} else {
-				return Response.status(Response.Status.NOT_ACCEPTABLE)
-						.type(MediaType.APPLICATION_JSON)
-						.entity(responseWorkitem).build();
-			}
+			e.printStackTrace();
+			workitem = this.addErrorMessage(e, workitem);
 		}
 
-		// success HTTP 200
-		return Response.ok(responseWorkitem, MediaType.APPLICATION_JSON)
-				.build();
+		// return workitem
+		try {
+			if (workitem.hasItem("$error_code"))
+				return Response
+						.ok(XMLItemCollectionAdapter
+								.putItemCollection(workitem),
+								MediaType.APPLICATION_JSON)
+						.status(Response.Status.NOT_ACCEPTABLE).build();
+			else
+				return Response.ok(
+						XMLItemCollectionAdapter.putItemCollection(workitem),
+						MediaType.APPLICATION_JSON).build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
 
 	}
 
@@ -1146,12 +1079,12 @@ public class WorkflowRestService {
 	 * @param worklist
 	 *            - workitem list data
 	 */
-	@PUT
+	@POST
 	@Path("/workitems")
 	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
 	public Response putWorkitemsXML(EntityCollection worklist) {
 
-		logger.fine("[WorkflowRestService] @PUT /workitems  method:putWorkitemsXML....");
+		logger.fine("[WorkflowRestService] @POST /workitems  method:postWorkitemsXML....");
 
 		XMLItemCollection entity;
 		ItemCollection itemCollection;
@@ -1171,12 +1104,11 @@ public class WorkflowRestService {
 		return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 	}
 
-	@POST
+	@PUT
 	@Path("/workitems")
 	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
 	public Response postWorkitemsXML(EntityCollection worklist) {
-		logger.fine("[WorkflowRestService] @POST /workitems  method:putWorkitemsXML....");
-
+		logger.fine("[WorkflowRestService] @PUT /workitems  delegate to @POST....");
 		return putWorkitemsXML(worklist);
 	}
 
@@ -1320,6 +1252,54 @@ public class WorkflowRestService {
 		while (st.hasMoreTokens())
 			v.add(st.nextToken());
 		return v;
+	}
+
+	/**
+	 * This helper method adds a error message to the given workItem, based on
+	 * the data in a WorkflowException. This kind of error message can be
+	 * displayed in a page evaluating the properties '$error_code' and
+	 * '$error_message'. These attributes will not be stored.
+	 * 
+	 * 
+	 * If a PluginException or ValidationException contains an optional object
+	 * array the message is parsed for params to be replaced
+	 * 
+	 * Example:
+	 * 
+	 * <code>
+	 * $error_message=Value should not be greater than {0} or lower as {1}.
+	 * </code>
+	 * 
+	 * @param pe
+	 */
+	private ItemCollection addErrorMessage(Exception pe,
+			ItemCollection aworkitem) {
+
+		if (pe instanceof WorkflowException) {
+			String message = ((WorkflowException) pe).getErrorCode();
+
+			// parse message for params
+			if (pe instanceof PluginException) {
+				PluginException p = (PluginException) pe;
+				if (p.getErrorParameters() != null
+						&& p.getErrorParameters().length > 0) {
+					for (int i = 0; i < p.getErrorParameters().length; i++) {
+						message = message.replace("{" + i + "}",
+								p.getErrorParameters()[i].toString());
+					}
+				}
+			}
+			aworkitem.replaceItemValue("$error_code",
+					((WorkflowException) pe).getErrorCode());
+			aworkitem.replaceItemValue("$error_message", message);
+		} else if (pe instanceof AccessDeniedException
+				|| pe instanceof ProcessingErrorException) {
+			aworkitem.replaceItemValue("$error_code",
+					((AccessDeniedException) pe).getErrorCode());
+			aworkitem.replaceItemValue("$error_message", pe.getMessage());
+		}
+
+		return aworkitem;
 	}
 
 }
