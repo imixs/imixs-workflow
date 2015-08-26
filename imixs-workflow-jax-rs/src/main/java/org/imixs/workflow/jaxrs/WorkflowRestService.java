@@ -853,13 +853,10 @@ public class WorkflowRestService {
 			workitem = workflowService.processWorkItem(workitem);
 
 		} catch (AccessDeniedException e) {
-			e.printStackTrace();
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (ProcessingErrorException e) {
-			e.printStackTrace();
 			workitem = this.addErrorMessage(e, workitem);
 		} catch (PluginException e) {
-			e.printStackTrace();
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (RuntimeException e) {
 			workitem = this.addErrorMessage(e, workitem);
 		}
 
@@ -933,13 +930,13 @@ public class WorkflowRestService {
 			workitem = workflowService.processWorkItem(workitem);
 
 		} catch (AccessDeniedException e) {
-			e.printStackTrace();
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (ProcessingErrorException e) {
-			e.printStackTrace();
+			logger.severe(e.getMessage());
 			workitem = this.addErrorMessage(e, workitem);
 		} catch (PluginException e) {
-			e.printStackTrace();
+			logger.severe(e.getMessage());
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (RuntimeException e) {
+			logger.severe(e.getMessage());
 			workitem = this.addErrorMessage(e, workitem);
 		}
 
@@ -1043,13 +1040,10 @@ public class WorkflowRestService {
 			workitem = workflowService.processWorkItem(workitem);
 
 		} catch (AccessDeniedException e) {
-			e.printStackTrace();
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (ProcessingErrorException e) {
-			e.printStackTrace();
 			workitem = this.addErrorMessage(e, workitem);
 		} catch (PluginException e) {
-			e.printStackTrace();
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (RuntimeException e) {
 			workitem = this.addErrorMessage(e, workitem);
 		}
 
@@ -1275,6 +1269,10 @@ public class WorkflowRestService {
 	private ItemCollection addErrorMessage(Exception pe,
 			ItemCollection aworkitem) {
 
+		if (pe instanceof RuntimeException && pe.getCause() != null) {
+			pe = (RuntimeException) pe.getCause();
+		}
+
 		if (pe instanceof WorkflowException) {
 			String message = ((WorkflowException) pe).getErrorCode();
 
@@ -1292,10 +1290,14 @@ public class WorkflowRestService {
 			aworkitem.replaceItemValue("$error_code",
 					((WorkflowException) pe).getErrorCode());
 			aworkitem.replaceItemValue("$error_message", message);
-		} else if (pe instanceof AccessDeniedException
-				|| pe instanceof ProcessingErrorException) {
+		} else if (pe instanceof AccessDeniedException) {
 			aworkitem.replaceItemValue("$error_code",
 					((AccessDeniedException) pe).getErrorCode());
+			aworkitem.replaceItemValue("$error_message", pe.getMessage());
+		}
+		else if (pe instanceof ProcessingErrorException) {
+			aworkitem.replaceItemValue("$error_code",
+					((ProcessingErrorException) pe).getErrorCode());
 			aworkitem.replaceItemValue("$error_message", pe.getMessage());
 		}
 
