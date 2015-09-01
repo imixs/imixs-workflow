@@ -190,7 +190,7 @@ public class AbstractWorkflowServiceTest {
 
 	/**
 	 * Update an process entity in the test database
-	 * 
+	 *  
 	 * @param activityEntity
 	 */
 	protected void setProcessEntity(ItemCollection entity) {

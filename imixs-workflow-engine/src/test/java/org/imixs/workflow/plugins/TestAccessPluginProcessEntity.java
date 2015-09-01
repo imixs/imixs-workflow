@@ -72,6 +72,36 @@ public class TestAccessPluginProcessEntity extends AbstractWorkflowServiceTest {
 	}
 
 	/**
+	 * Test if the ACL settings will not be changed if no ACL is set be process
+	 * or activity
+	 ***/
+	@Test
+	public void testACLNoUpdate() {
+		Vector<String> list = new Vector<String>();
+		list.add("Kevin");
+		list.add("Julian");
+		documentContext.replaceItemValue("$writeaccess", list);
+
+		documentActivity = this.getActivityEntity(100, 10);
+
+		try {
+			accessPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		@SuppressWarnings("unchecked")
+		List<String> writeAccess = documentContext.getItemValue("$WriteAccess");
+
+		Assert.assertEquals(2, writeAccess.size());
+		Assert.assertTrue(writeAccess.contains("Kevin"));
+		Assert.assertTrue(writeAccess.contains("Julian"));
+
+	}
+
+	/**
 	 * Test if the ACL settings from the next processEntity are injected into
 	 * the workitem
 	 **/
@@ -98,16 +128,109 @@ public class TestAccessPluginProcessEntity extends AbstractWorkflowServiceTest {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		
+
 		@SuppressWarnings("unchecked")
 		List<String> writeAccess = documentContext.getItemValue("$WriteAccess");
 
 		Assert.assertEquals(2, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
 		Assert.assertTrue(writeAccess.contains("sam"));
+
+	}
+
+	/**
+	 * Test if the ACL settings from the activityEntity are injected into the
+	 * workitem
+	 **/
+	@Test
+	public void testACLfromActivityEntity() {
+
+		documentActivity = this.getActivityEntity(100, 10);
+
+		documentActivity.replaceItemValue("keyupdateAcl", true);
+		Vector<String> list = new Vector<String>();
+		list.add("samy");
+		list.add("joe");
+		documentActivity.replaceItemValue("namaddwriteaccess", list);
+		this.setActivityEntity(documentActivity);
+
+		try {
+			accessPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		@SuppressWarnings("unchecked")
+		List<String> writeAccess = documentContext.getItemValue("$WriteAccess");
+
+		Assert.assertEquals(2, writeAccess.size());
+		Assert.assertTrue(writeAccess.contains("joe"));
+		Assert.assertTrue(writeAccess.contains("samy"));
+
+	}
+
+	/**
+	 * Test if the ACL settings from the next processEntity and ActivityEnttiy
+	 * are injected into the workitem. read access is overlapped
+	 **/
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testACLfromProcessEntityAndActivityEntity() {
+
+		// set some old values
+		Vector<String> list = new Vector<String>();
+		list.add("Kevin");
+		list.add("Julian");
+		documentContext.replaceItemValue("$writeaccess", list);
+
 		
-		
-	
+		documentActivity = this.getActivityEntity(100, 10);
+		documentActivity.replaceItemValue("keyupdateAcl", true);
+		documentActivity.replaceItemValue("numnextprocessid", 200);
+		list = new Vector<String>();
+		list.add("anna");
+		list.add("manfred");
+		list.add("joe"); // overlapped!
+		documentActivity.replaceItemValue("namaddwriteaccess", list);
+		// read access
+		list = new Vector<String>();
+		list.add("manfred");
+		list.add("tom"); // overlapped!
+		documentActivity.replaceItemValue("namaddreadaccess", list);
+		this.setActivityEntity(documentActivity);
+
+		// prepare ACL setting for process entity 200
+		documentProcess = this.getProcessEntity(200);
+		documentProcess.replaceItemValue("keyupdateAcl", true);
+		list = new Vector<String>();
+		list.add("sam");
+		list.add("joe"); // overlapped!
+		documentProcess.replaceItemValue("namaddwriteaccess", list);
+		this.setProcessEntity(documentProcess);
+
+		try {
+			accessPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// $writeAccess= anna , manfred, joe, sam
+		List<String> writeAccess = documentContext.getItemValue("$WriteAccess");
+		Assert.assertEquals(4, writeAccess.size());
+		Assert.assertTrue(writeAccess.contains("joe"));
+		Assert.assertTrue(writeAccess.contains("sam"));
+		Assert.assertTrue(writeAccess.contains("manfred"));
+		Assert.assertTrue(writeAccess.contains("anna"));
+
+		// $readAccess= anna , manfred, joe, sam
+		writeAccess = documentContext.getItemValue("$readAccess");
+		Assert.assertEquals(2, writeAccess.size());
+		Assert.assertTrue(writeAccess.contains("tom"));
+		Assert.assertTrue(writeAccess.contains("manfred"));
 
 	}
 
