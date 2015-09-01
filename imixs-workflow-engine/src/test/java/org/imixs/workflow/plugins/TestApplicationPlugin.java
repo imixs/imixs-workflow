@@ -16,7 +16,7 @@ import org.junit.Test;
  * 
  * The plug-in evaluates the next process entity
  * 
- * @author rsoika
+ * @author rsoika 
  * 
  */
 public class TestApplicationPlugin extends AbstractWorkflowServiceTest {

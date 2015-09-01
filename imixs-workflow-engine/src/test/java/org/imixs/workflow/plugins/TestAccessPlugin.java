@@ -7,11 +7,10 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.jee.ejb.AbstractWorkflowServiceTest;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * Test the ACL plugin.
@@ -21,7 +20,7 @@ import org.mockito.Mockito;
  * @author rsoika
  * 
  */
-public class TestAccessPlugin {
+public class TestAccessPlugin  extends AbstractWorkflowServiceTest {
 
 	private final static Logger logger = Logger
 			.getLogger(TestAccessPlugin.class.getName());
@@ -29,12 +28,11 @@ public class TestAccessPlugin {
 	AccessPlugin accessPlugin = null;
 	ItemCollection documentContext;
 	ItemCollection documentActivity;
-	WorkflowContext workflowContext;
 
 	@Before
-	public void setup() {
+	public void setup() throws PluginException {
 
-		workflowContext = Mockito.mock(WorkflowContext.class);
+		super.setup();
 
 		accessPlugin = new AccessPlugin();
 		try {
@@ -46,6 +44,7 @@ public class TestAccessPlugin {
 
 		// prepare data
 		documentContext = new ItemCollection();
+		documentContext.replaceItemValue("$processid",100);
 		logger.info("[TestAccessPlugin] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
@@ -59,13 +58,14 @@ public class TestAccessPlugin {
 	@Test
 	public void simpleTest() {
 
-		documentActivity = new ItemCollection();
+		documentActivity =this.getActivityEntity(100, 10);
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
 		list.add("joe");
 		documentActivity.replaceItemValue("namaddwriteaccess", list);
+		this.setActivityEntity(documentActivity);
 
 		try {
 			accessPlugin.run(documentContext, documentActivity);
@@ -87,7 +87,7 @@ public class TestAccessPlugin {
 	@Test
 	public void fieldMappingTest() {
 
-		documentActivity = new ItemCollection();
+		documentActivity =this.getActivityEntity(100, 10);
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 
 		Vector<String> list = new Vector<String>();
@@ -95,7 +95,7 @@ public class TestAccessPlugin {
 		list.add("joe");
 		documentActivity.replaceItemValue("namaddwriteaccess", list);
 		documentActivity.replaceItemValue("keyaddwritefields", "namTeaM");
-
+		this.setActivityEntity(documentActivity);
 		try {
 			accessPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {

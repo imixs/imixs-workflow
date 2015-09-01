@@ -33,13 +33,12 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
-import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * This plugin implements a generic access management control (ACL) by
- * evaluating the configuration of a Activity Entity. The Plugin updates the
+ * This plug-in implements a generic access management control (ACL) by
+ * evaluating the configuration of a Activity Entity. The plug-in updates the
  * WorkItem attributes $ReadAccess and $WriteAccess depending on the provided
  * information.
  * 
@@ -53,8 +52,21 @@ import org.imixs.workflow.exceptions.PluginException;
  * <li>namaddwriteaccess (Vector): Names & Groups to be added/replaced
  * 
  * 
+ * 
+ * #Issue 90: Extend access plugin to resolve ACL settings in process entity
+ * 
+ * The AccessPlugin also evaluates the ACL settings in the next ProcessEntity
+ * which is supported by newer versions of the imixs-bpmn modeler.
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * Fallback Mode:
+ * 
  * NOTE: Models generated with the first version of the Imixs-Workflow Modeler
- * provide a different set of attributes. Therefore the plugin implments a
+ * provide a different set of attributes. Therefore the plugin implements a
  * fallback method to support deprecated models. The fallback method evaluate
  * the following list of attributes defined in Activity Entity:
  * <p>
@@ -68,6 +80,8 @@ import org.imixs.workflow.exceptions.PluginException;
  * <li>keyaddwritefields (Vector): Attributes of the processd workitem to add
  * therevalues
  * 
+ * 
+ * 
  * @author Ralph Soika
  * @version 3.0
  * @see org.imixs.workflow.WorkflowManager
@@ -75,16 +89,16 @@ import org.imixs.workflow.exceptions.PluginException;
 
 public class AccessPlugin extends AbstractPlugin {
 	ItemCollection documentContext;
-	ItemCollection documentActivity;
+	ItemCollection documentActivity, documentNextProcessEntity;
 	List<?> itemReadRollback, itemWriteRollback;
-	WorkflowContext workflowContext;
+//	WorkflowContext workflowContext;
 
 	private static Logger logger = Logger.getLogger(AccessPlugin.class
 			.getName());
 
-	public void init(WorkflowContext actx) throws PluginException {
-		workflowContext = actx;
-	}
+//	public void init(WorkflowContext actx) throws PluginException {
+//		workflowContext = actx;
+//	}
 
 	/**
 	 * This method updates the $readAccess and $writeAccess attributes of a
@@ -95,11 +109,9 @@ public class AccessPlugin extends AbstractPlugin {
 	 * 
 	 * 
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes" })
 	public int run(ItemCollection adocumentContext,
 			ItemCollection adocumentActivity) throws PluginException {
-		List vectorAccess;
-
 		documentContext = adocumentContext;
 		documentActivity = adocumentActivity;
 
@@ -114,25 +126,72 @@ public class AccessPlugin extends AbstractPlugin {
 			return Plugin.PLUGIN_OK;
 		}
 
-		// test update mode..
-		if (documentActivity.getItemValueBoolean("keyupdateacl") == false) {
-			// no update!
-			return Plugin.PLUGIN_OK;
+		// get next process entity
+		int iNextProcessID = adocumentActivity
+				.getItemValueInteger("numNextProcessID");
+		String aModelVersion = adocumentActivity
+				.getItemValueString("$modelVersion");
+		documentNextProcessEntity = ctx.getModel().getProcessEntity(
+				iNextProcessID, aModelVersion);
+		if (documentNextProcessEntity == null) {
+			logger.warning("[ApplicationPlugin] Warning - processEntity '"
+					+ iNextProcessID + "' was not found in the model! ");
+			return Plugin.PLUGIN_WARNING;
 		}
 
-		vectorAccess = new Vector();
+		// test update mode of activity and process entity - if true clear the
+		// existing values.
+		if (documentActivity.getItemValueBoolean("keyupdateacl") == false
+				&& documentNextProcessEntity
+						.getItemValueBoolean("keyupdateacl") == false) {
+			// no update!
+			return Plugin.PLUGIN_OK;
+		} else {
+			// clear existing settings!
+			documentContext.replaceItemValue("$readAccess", new Vector());
+			documentContext.replaceItemValue("$writeAccess", new Vector());
+
+			updateACLByItemCollection(documentActivity);
+			updateACLByItemCollection(documentNextProcessEntity);
+		}
+
+		return Plugin.PLUGIN_OK;
+	}
+
+	/**
+	 * This method updates the read/write access of a workitem depending on a
+	 * given model entity The model entity should provide the following
+	 * attributes:
+	 * 
+	 * keyupdateacl,
+	 * namaddreadaccess,keyaddreadfields,keyaddwritefields,namaddwriteaccess
+	 * 
+	 * 
+	 * The method did not clear the exiting values of $writeAccess and
+	 * $readAccess
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void updateACLByItemCollection(ItemCollection modelEntity) {
+
+		if (modelEntity.getItemValueBoolean("keyupdateacl") == false) {
+			// no update necessary
+			return;
+		}
+
+		List vectorAccess;
+		vectorAccess = documentContext.getItemValue("$readAccess");
 		// add names
 		mergeValueList(vectorAccess,
-				documentActivity.getItemValue("namaddreadaccess"));
+				modelEntity.getItemValue("namaddreadaccess"));
 		// add Mapped Fields
 		mergeFieldList(documentContext, vectorAccess,
-				documentActivity.getItemValue("keyaddreadfields"));
+				modelEntity.getItemValue("keyaddreadfields"));
 		// clean Vector
 		vectorAccess = uniqueList(vectorAccess);
 
 		// update accesslist....
 		documentContext.replaceItemValue("$readAccess", vectorAccess);
-		if ((workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
+		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
 				&& (vectorAccess.size() > 0)) {
 			logger.info("[AccessPlugin] ReadAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
@@ -140,20 +199,20 @@ public class AccessPlugin extends AbstractPlugin {
 						+ "'");
 		}
 
-		// add new WriteAccess
-		vectorAccess = new Vector();
+		// update WriteAccess
+		vectorAccess = documentContext.getItemValue("$writeAccess");
 		// add Names
 		mergeValueList(vectorAccess,
-				documentActivity.getItemValue("namaddwriteaccess"));
+				modelEntity.getItemValue("namaddwriteaccess"));
 		// add Mapped Fields
 		mergeFieldList(documentContext, vectorAccess,
-				documentActivity.getItemValue("keyaddwritefields"));
+				modelEntity.getItemValue("keyaddwritefields"));
 		// clean Vector
 		vectorAccess = uniqueList(vectorAccess);
 
 		// update accesslist....
 		documentContext.replaceItemValue("$writeAccess", vectorAccess);
-		if ((workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
+		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
 				&& (vectorAccess.size() > 0)) {
 			logger.info("[AccessPlugin] WriteAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
@@ -161,7 +220,6 @@ public class AccessPlugin extends AbstractPlugin {
 						+ "'");
 		}
 
-		return Plugin.PLUGIN_OK;
 	}
 
 	public void close(int status) {
@@ -177,6 +235,7 @@ public class AccessPlugin extends AbstractPlugin {
 	 * 
 	 * @return
 	 */
+	@Deprecated
 	private boolean isFallBackMode() {
 		// if the new keyupdateacl exists no fallback mode!
 		if (documentActivity.hasItem("keyupdateacl")) {
@@ -206,7 +265,7 @@ public class AccessPlugin extends AbstractPlugin {
 			vectorAccess = itemRead;
 		else
 			vectorAccess = new Vector();
-		if (workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
+		if (ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
 			logger.info("[AccessPlugin] AccessMode: '"
 					+ documentActivity.getItemValueString("keyaccessmode")
 					+ "'");
@@ -226,7 +285,7 @@ public class AccessPlugin extends AbstractPlugin {
 
 		// save Vector
 		documentContext.replaceItemValue("$readAccess", vectorAccess);
-		if ((workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
+		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
 				&& (vectorAccess.size() > 0)) {
 			logger.info("[AccessPlugin] ReadAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
@@ -261,7 +320,7 @@ public class AccessPlugin extends AbstractPlugin {
 
 		// save Vector
 		documentContext.replaceItemValue("$writeAccess", vectorAccess);
-		if ((workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
+		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
 				&& (vectorAccess.size() > 0)) {
 			logger.info("[AccessPlugin] WriteAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)

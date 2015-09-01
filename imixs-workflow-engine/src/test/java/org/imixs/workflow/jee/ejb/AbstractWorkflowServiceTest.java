@@ -26,7 +26,7 @@ import org.mockito.stubbing.Answer;
  * entities which can be accessed from a plug-in or the workflowKernel.
  * 
  * JUnit tests can manipulate the model by changing entities through calling the
- * methods:
+ * methods: 
  * 
  * getActivityEntity,setActivityEntity,getProcessEntity,setProcessEntity
  * 
@@ -169,7 +169,7 @@ public class AbstractWorkflowServiceTest {
 		String uniqueid = "A" + p + "-" + a;
 		entity.replaceItemValue(EntityService.UNIQUEID, uniqueid);
 		database.put(entity.getItemValueString(EntityService.UNIQUEID), entity);
-		logger.info("add activityEntity: " + uniqueid);
+		logger.fine("add activityEntity: " + uniqueid);
 	}
 
 	/**
@@ -199,7 +199,7 @@ public class AbstractWorkflowServiceTest {
 		String uniqueid = "P" + p;
 		entity.replaceItemValue(EntityService.UNIQUEID, uniqueid);
 		database.put(entity.getItemValueString(EntityService.UNIQUEID), entity);
-		logger.info("add processEntity: " + uniqueid);
+		logger.fine("add processEntity: " + uniqueid);
 	}
 
 	/**
@@ -226,6 +226,8 @@ public class AbstractWorkflowServiceTest {
 			entity.replaceItemValue("txtName", "Process " + 100 * i);
 			entity.replaceItemValue("$ModelVersion", "1.0.0");
 			entity.replaceItemValue("numProcessID", 100 * i);
+			
+			
 
 			this.setProcessEntity(entity);
 
