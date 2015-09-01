@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBException;
@@ -25,9 +26,13 @@ public class MigrateImixsModelToBPMN {
 
 	private static String sourceModelFile = null;
 	private static List<ItemCollection> modelItemCollection = null;
+	private static List<SequenceFlow> sequenceFlows=null;
+	
 	private final static Logger logger = Logger
 			.getLogger(MigrateImixsModelToBPMN.class.getName());
 
+	
+	
 	public static void main(String[] args) {
 		logger.info("Start migration of Imixs Model to BPMN....");
 		sourceModelFile = args[0];
@@ -83,22 +88,40 @@ public class MigrateImixsModelToBPMN {
 					// write profile
 					writer.println("<bpmn2:extensionElements>");
 					writer.println(" <imixs:item name=\"txtworkflowmodelversion\" type=\"xs:string\">");
-						writer.println(" <imixs:value><![CDATA["+sModelVersion+ "]]></imixs:value>");
+					writer.println(" <imixs:value><![CDATA[" + sModelVersion
+							+ "]]></imixs:value>");
 					writer.println(" </imixs:item>");
 					writer.println("</bpmn2:extensionElements>");
 
-					
 					// write process
-					writer.println(" <bpmn2:process id=\""+ group.toLowerCase()+"\" name=\"" + group + "\" isExecutable=\"false\">");
+					writer.println(" <bpmn2:process id=\""
+							+ group.toLowerCase() + "\" name=\"" + group
+							+ "\" isExecutable=\"false\">");
+
+					// first we analyze all existing sequence flows
+					// and bild a map of sequence flows
+					// connection is stored in a map
+					sequenceFlows=new ArrayList<SequenceFlow>();
+					List<ItemCollection> activities = findActivityEntitiesByGroup(group);
+					for (ItemCollection activity : activities) {
+						int from=activity.getItemValueInteger("numprocessid");
+						int to=activity.getItemValueInteger("numnextprocessid");
+						int id=activity.getItemValueInteger("numactivityid");
+						//  <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="StartEvent_1" targetRef="Task_1"/>
+						SequenceFlow sqf =new SequenceFlow(from, to, id); //new SequenceFlow(from,to,id);
+						sequenceFlows.add(sqf);
+					}
+				
 					
 					
+					
+
 					// write tasks.....
 					List<ItemCollection> tasks = findProcessEntitiesByGroup(group);
-					for (ItemCollection task: tasks) {
-						writeTask(writer,task);
+					for (ItemCollection task : tasks) {
+						writeTask(writer, task);
 					}
-					
-					
+
 					writer.println("</bpmn2:process>");
 					writer.println("</bpmn2:definitions>");
 					writer.close();
@@ -153,11 +176,7 @@ public class MigrateImixsModelToBPMN {
 			writer.println(" </imixs:item>");
 		}
 	}
-	
-	
-	
-	
-	
+
 	/**
 	 * Writes a task element...a singel item into the file
 	 * 
@@ -175,14 +194,60 @@ public class MigrateImixsModelToBPMN {
 	 * </code>
 	 */
 	private static void writeTask(PrintWriter writer, ItemCollection task) {
-			int processID=task.getItemValueInteger("numprocessid");
-			String taskID="Task_"+processID;
+		int processID = task.getItemValueInteger("numprocessid");
+		String taskID = "Task_" + processID;
+
+		writer.println(" <bpmn2:task id=\"" + taskID + "\" imixs:processid=\""
+				+ processID + "\" name=\"" + task.getItemValueString("txtName")
+				+ "\">");
+
+		// now write all elements .....
+
+		writer.println(" <bpmn2:extensionElements>");
+		Set<String> keys = task.getAllItems().keySet();
+		for (String key : keys) {
+			// skip some fields
+			if ("numprocessid".equals(key))
+				continue;
+			if ("$modelversion".equals(key))
+				continue;
+			if ("$uniqueid".equals(key))
+				continue;
+			if ("txtworkflowgroup".equals(key))
+				continue;
+			if ("type".equals(key))
+				continue;
+			if ("rtfdescription".equals(key))
+				continue;
+
+			writeItem(writer, task, key);
+
+		}
+
+		// wirte rtfdescription
+		if (task.hasItem("rtfdescription")) {
+			writer.println("  <bpmn2:documentation id=\"Documentation_"
+					+ processID + "\">"
+					+ task.getItemValueString("rtfdescription")
+					+ "</bpmn2:documentation>");
+		}
+		writer.println(" </bpmn2:extensionElements>");
 		
-			writer.println(" <bpmn2:task id=\""+ taskID + "\" imixs:processid=\""+processID + "\" name=\"" + task.getItemValueString("txtName") + "\">");
+		
+		// finally we need to construct all incomming and outgoing sequenceflows....
+		for (SequenceFlow flow: sequenceFlows) {
+			// incomming flow?
+			if (flow.to==processID) {
+				writer.println(" <bpmn2:incoming>SequenceFlow_"+flow.id+"</bpmn2:incoming>");
+			}
+			if (flow.from==processID) {
+				writer.println(" <bpmn2:outgoing>SequenceFlow_"+flow.id+"</bpmn2:outgoing>");
+			}
+		}
 		
 
-			writer.println(" </bpmn2:task>");
-		
+		writer.println(" </bpmn2:task>");
+
 	}
 
 	private static ItemCollection findProfile() {
@@ -223,11 +288,8 @@ public class MigrateImixsModelToBPMN {
 		return groups;
 	}
 
-	
-	
-	
 	/**
-	 * returns a list with all group names
+	 * returns a list with all tasks
 	 * 
 	 * @return
 	 */
@@ -237,7 +299,7 @@ public class MigrateImixsModelToBPMN {
 
 			if ("ProcessEntity".equals(entity.getItemValueString("type"))) {
 
-				if (group.equals( entity.getItemValueString("txtWorkflowGroup"))) {
+				if (group.equals(entity.getItemValueString("txtWorkflowGroup"))) {
 					result.add(entity);
 				}
 			}
@@ -245,7 +307,60 @@ public class MigrateImixsModelToBPMN {
 		}
 		return result;
 	}
+	
+	
+	/**
+	 * returns a specifiy process entity
+	 * @param processid
+	 * @param group
+	 * @return
+	 */
+	private static ItemCollection findProcessEntityById(int processid) {
+		for (ItemCollection entity : modelItemCollection) {
 
-	
-	
+			if ("ProcessEntity".equals(entity.getItemValueString("type"))) {
+
+				if (processid==entity.getItemValueInteger("numprocessid")) {
+					return entity;
+				}
+			}
+
+		}
+		return null;
+	}
+
+	/**
+	 * returns a list with all events
+	 * 
+	 * @return
+	 */
+	private static List<ItemCollection> findActivityEntitiesByGroup(String group) {
+		List<ItemCollection> result = new ArrayList<ItemCollection>();
+		for (ItemCollection entity : modelItemCollection) {
+
+			if ("ActivityEntity".equals(entity.getItemValueString("type"))) {
+
+				int processid=entity.getItemValueInteger("numprocessid");
+				
+				ItemCollection processEntity=findProcessEntityById(processid);
+				
+				if (group.equals(processEntity.getItemValueString("txtWorkflowGroup"))) {
+					result.add(entity);
+				}
+			}
+
+		}
+		
+		return result;
+	}
+}
+
+class SequenceFlow {
+	int from,to;
+	String id;
+	public SequenceFlow(int from,int to,int id) {
+		this.from=from;
+		this.to=to;
+		this.id=""+from + "_"+id;
+	}
 }
