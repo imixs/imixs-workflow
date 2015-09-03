@@ -26,13 +26,12 @@ public class MigrateImixsModelToBPMN {
 
 	private static String sourceModelFile = null;
 	private static List<ItemCollection> modelItemCollection = null;
-	private static List<SequenceFlow> sequenceFlows=null;
-	
+	private static List<SequenceFlow> sequenceFlows = null;
+	// private static boolean bStartTask;
+	private static ItemCollection startTask = null;
 	private final static Logger logger = Logger
 			.getLogger(MigrateImixsModelToBPMN.class.getName());
 
-	
-	
 	public static void main(String[] args) {
 		logger.info("Start migration of Imixs Model to BPMN....");
 		sourceModelFile = args[0];
@@ -67,19 +66,23 @@ public class MigrateImixsModelToBPMN {
 		ItemCollection profile = findProfile();
 		if (profile != null) {
 
-			String sModelVersion = profile
-					.getItemValueString("txtworkflowmodelid");
-			logger.info("Profile found - $modelversion=" + sModelVersion);
-
 			List<String> groups = findGroups();
 			for (String group : groups) {
 				logger.info("Profile migrate workflow group: " + group);
 
+				// find model version
+				List<ItemCollection> tasks = findProcessEntitiesByGroup(group);
+				startTask = tasks.get(0);
+				String sModelVersion = startTask
+						.getItemValueString("$modelversion");
+
+				sModelVersion = group.toLowerCase() + "-" + sModelVersion;
+				logger.info(" - $modelversion=" + sModelVersion);
+
 				// now create a new bpmn file...
 				PrintWriter writer;
 				try {
-					String sFileName = "target/" + group + sModelVersion
-							+ ".bpmn";
+					String sFileName = "target/" + sModelVersion + ".bpmn";
 					writer = new PrintWriter(sFileName, "UTF-8");
 
 					writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
@@ -91,6 +94,11 @@ public class MigrateImixsModelToBPMN {
 					writer.println(" <imixs:value><![CDATA[" + sModelVersion
 							+ "]]></imixs:value>");
 					writer.println(" </imixs:item>");
+
+					writeItem(writer, profile, "txtfieldmapping");
+					writeItem(writer, profile, "txttimefieldmapping");
+					writeItem(writer, profile, "txtplugins");
+
 					writer.println("</bpmn2:extensionElements>");
 
 					// write process
@@ -98,44 +106,113 @@ public class MigrateImixsModelToBPMN {
 							+ group.toLowerCase() + "\" name=\"" + group
 							+ "\" isExecutable=\"false\">");
 
+					// create start event
+					writer.println("<bpmn2:startEvent id=\"StartEvent_1\" name=\"Start\">");
+					writer.println("<bpmn2:outgoing>SequenceFlow_0</bpmn2:outgoing>");
+					writer.println("</bpmn2:startEvent>");
+					writer.println("<bpmn2:sequenceFlow id=\"SequenceFlow_0\" sourceRef=\"StartEvent_1\" targetRef=\"Task_"
+							+ startTask.getItemValueInteger("numProcessID")
+							+ "\"/>");
+
 					// first we analyze all existing sequence flows
-					// and bild a map of sequence flows
-					// connection is stored in a map
-					sequenceFlows=new ArrayList<SequenceFlow>();
+					// and build a map of sequence flows. Each activity has two
+					// flow elements
+					sequenceFlows = new ArrayList<SequenceFlow>();
+					List<String> followUpIds = new ArrayList<String>();
 					List<ItemCollection> activities = findActivityEntitiesByGroup(group);
+					int flowCount = 1;
 					for (ItemCollection activity : activities) {
-						int from=activity.getItemValueInteger("numprocessid");
-						int to=activity.getItemValueInteger("numnextprocessid");
-						int id=activity.getItemValueInteger("numactivityid");
-						//  <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="StartEvent_1" targetRef="Task_1"/>
-						SequenceFlow sqf =new SequenceFlow(from, to, id); //new SequenceFlow(from,to,id);
-						sequenceFlows.add(sqf);
+						boolean isFollowUp = "1".equals(activity
+								.getItemValueString("keyfollowup"));
+
+						int processID = activity
+								.getItemValueInteger("numprocessid");
+						int activityID = activity
+								.getItemValueInteger("numactivityid");
+						int nextprocessID = activity
+								.getItemValueInteger("numnextprocessid");
+
+						// test if follow up.....
+
+						logger.info("TEST Followup " + processID + "_"
+								+ activityID);
+						if (!followUpIds.contains(processID + "_" + activityID)) {
+							// outgoing...
+							String from = "Task_" + processID;
+							String to = "IntermediateCatchEvent_" + processID
+									+ "-" + activityID;
+							String id = "SequenceFlow_" + flowCount;
+							sequenceFlows.add(new SequenceFlow(from, to, id));
+							// print
+							writer.println(" <bpmn2:sequenceFlow id=\"" + id
+									+ "\" sourceRef=\"" + from
+									+ "\" targetRef=\"" + to + "\"/>");
+							flowCount++;
+						}
+						// incomming only if not the same process and not
+						// followup!
+
+						if (processID != nextprocessID || isFollowUp) {
+
+							if (isFollowUp) {
+								int nextID = activity
+										.getItemValueInteger("numnextid");
+								// followup sequence flow
+								// normal sequence flow
+								String from = "IntermediateCatchEvent_"
+										+ processID + "-" + activityID;
+								String to = "IntermediateCatchEvent_"
+										+ processID + "-" + nextID;
+								String id = "SequenceFlow_" + flowCount;
+								sequenceFlows
+										.add(new SequenceFlow(from, to, id));
+								// print
+								writer.println(" <bpmn2:sequenceFlow id=\""
+										+ id + "\" sourceRef=\"" + from
+										+ "\" targetRef=\"" + to + "\"/>");
+
+								followUpIds.add(processID + "_" + nextID);
+								logger.info("ADD follow up " + processID + "_"
+										+ nextID);
+								flowCount++;
+
+							} else {
+								// normal sequence flow
+								String from = "IntermediateCatchEvent_"
+										+ processID + "-" + activityID;
+								String to = "Task_" + nextprocessID;
+								String id = "SequenceFlow_" + flowCount;
+								sequenceFlows
+										.add(new SequenceFlow(from, to, id));
+								// print
+								writer.println(" <bpmn2:sequenceFlow id=\""
+										+ id + "\" sourceRef=\"" + from
+										+ "\" targetRef=\"" + to + "\"/>");
+								flowCount++;
+							}
+						}
+
 					}
-				
-					
-					
-					
 
 					// write tasks.....
-					List<ItemCollection> tasks = findProcessEntitiesByGroup(group);
+					tasks = findProcessEntitiesByGroup(group);
 					for (ItemCollection task : tasks) {
 						writeTask(writer, task);
+					}
+
+					// write events.....
+					List<ItemCollection> events = findActivityEntitiesByGroup(group);
+					for (ItemCollection event : events) {
+						writeEvent(writer, event);
 					}
 
 					writer.println("</bpmn2:process>");
 					writer.println("</bpmn2:definitions>");
 					writer.close();
 				} catch (FileNotFoundException | UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-			//
-
-			// Set<String> keys = profile.getAllItems().keySet();
-			// for (String key: keys) {
-			// logger.info(key);
-			// }
 
 		} else {
 			logger.info("No Profile found");
@@ -154,7 +231,7 @@ public class MigrateImixsModelToBPMN {
 	 */
 	private static void writeItem(PrintWriter writer, ItemCollection entity,
 			String fieldName) {
-		List item = entity.getItemValue(fieldName);
+		List<?> item = entity.getItemValue(fieldName);
 		if (item.size() > 0) {
 			// test type
 			Object otest = item.get(0);
@@ -224,29 +301,127 @@ public class MigrateImixsModelToBPMN {
 
 		}
 
-		// wirte rtfdescription
+		writer.println(" </bpmn2:extensionElements>");
+
+		// write rtfdescription
 		if (task.hasItem("rtfdescription")) {
 			writer.println("  <bpmn2:documentation id=\"Documentation_"
 					+ processID + "\">"
-					+ task.getItemValueString("rtfdescription")
+					+ encodeString(task.getItemValueString("rtfdescription"))
 					+ "</bpmn2:documentation>");
 		}
-		writer.println(" </bpmn2:extensionElements>");
-		
-		
-		// finally we need to construct all incomming and outgoing sequenceflows....
-		for (SequenceFlow flow: sequenceFlows) {
+		// finally we need to construct all incomming and outgoing
+		// sequenceflows....
+		for (SequenceFlow flow : sequenceFlows) {
 			// incomming flow?
-			if (flow.to==processID) {
-				writer.println(" <bpmn2:incoming>SequenceFlow_"+flow.id+"</bpmn2:incoming>");
+			String sid = "Task_" + processID;
+			if (sid.equals(flow.to)) {
+				writer.println(" <bpmn2:incoming>" + flow.id
+						+ "</bpmn2:incoming>");
 			}
-			if (flow.from==processID) {
-				writer.println(" <bpmn2:outgoing>SequenceFlow_"+flow.id+"</bpmn2:outgoing>");
+			if (sid.equals(flow.from)) {
+				writer.println(" <bpmn2:outgoing>" + flow.id
+						+ "</bpmn2:outgoing>");
 			}
 		}
-		
+
+		// if start Task connect start event....
+		if (startTask.getItemValueInteger("numProcessid")== task.getItemValueInteger("numProcessID")) {
+			writer.println("<bpmn2:incoming>SequenceFlow_0</bpmn2:incoming>");
+		}
 
 		writer.println(" </bpmn2:task>");
+
+	}
+
+	/**
+	 * Writes a task element...a singel item into the file
+	 * 
+	 * <code>
+	 *        <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_1" imixs:activityid="10" name="submit">
+			      <bpmn2:extensionElements>
+			        <imixs:item name="keyupdateacl" type="xs:boolean">
+			          <imixs:value>true</imixs:value>
+			        </imixs:item>
+			        <imixs:item name="keyownershipfields" type="xs:string">
+			          <imixs:value><![CDATA[namTeam]]></imixs:value>
+			          <imixs:value><![CDATA[namManager]]></imixs:value>
+			        </imixs:item>
+			      </bpmn2:extensionElements>
+			      <bpmn2:documentation id="Documentation_1">&lt;b>Submitt&lt;/b> new ticket</bpmn2:documentation>
+			      <bpmn2:incoming>SequenceFlow_11</bpmn2:incoming>
+			      <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
+			    </bpmn2:intermediateCatchEvent>
+	 * </code>
+	 */
+	private static void writeEvent(PrintWriter writer, ItemCollection activity) {
+		int processID = activity.getItemValueInteger("numprocessid");
+		int activityID = activity.getItemValueInteger("numactivityid");
+		String eventID = "IntermediateCatchEvent_" + processID + "-"
+				+ activityID;
+
+		writer.println(" <bpmn2:intermediateCatchEvent id=\"" + eventID
+				+ "\" imixs:activityid=\"" + activityID + "\" name=\""
+				+ activity.getItemValueString("txtName") + "\">");
+
+		// now write all elements .....
+
+		writer.println(" <bpmn2:extensionElements>");
+		Set<String> keys = activity.getAllItems().keySet();
+		for (String key : keys) {
+			// skip some fields
+			if ("numprocessid".equals(key))
+				continue;
+			if ("numactivityid".equals(key))
+				continue;
+			if ("numnextprocessid".equals(key))
+				continue;
+			if ("$modelversion".equals(key))
+				continue;
+			if ("$uniqueid".equals(key))
+				continue;
+			if ("txtworkflowgroup".equals(key))
+				continue;
+			if ("type".equals(key))
+				continue;
+			if ("rtfdescription".equals(key))
+				continue;
+
+			writeItem(writer, activity, key);
+
+		}
+
+		writer.println(" </bpmn2:extensionElements>");
+
+		// write rtfdescription
+		if (activity.hasItem("rtfdescription")) {
+			writer.println("  <bpmn2:documentation id=\"Documentation_"
+					+ processID
+					+ "-"
+					+ activityID
+					+ "\">"
+					+ encodeString(activity
+							.getItemValueString("rtfdescription"))
+					+ "</bpmn2:documentation>");
+		}
+
+		// finally we need to construct all incomming and outgoing
+		// sequenceflows....
+		for (SequenceFlow flow : sequenceFlows) {
+			// incomming flow?
+			String sid = "IntermediateCatchEvent_" + processID + "-"
+					+ activityID;
+			if (sid.equals(flow.to)) {
+				writer.println(" <bpmn2:incoming>" + flow.id
+						+ "</bpmn2:incoming>");
+			}
+			if (sid.equals(flow.from)) {
+				writer.println(" <bpmn2:outgoing>" + flow.id
+						+ "</bpmn2:outgoing>");
+			}
+		}
+
+		writer.println(" </bpmn2:intermediateCatchEvent>");
 
 	}
 
@@ -307,10 +482,10 @@ public class MigrateImixsModelToBPMN {
 		}
 		return result;
 	}
-	
-	
+
 	/**
 	 * returns a specifiy process entity
+	 * 
 	 * @param processid
 	 * @param group
 	 * @return
@@ -320,7 +495,7 @@ public class MigrateImixsModelToBPMN {
 
 			if ("ProcessEntity".equals(entity.getItemValueString("type"))) {
 
-				if (processid==entity.getItemValueInteger("numprocessid")) {
+				if (processid == entity.getItemValueInteger("numprocessid")) {
 					return entity;
 				}
 			}
@@ -340,27 +515,43 @@ public class MigrateImixsModelToBPMN {
 
 			if ("ActivityEntity".equals(entity.getItemValueString("type"))) {
 
-				int processid=entity.getItemValueInteger("numprocessid");
-				
-				ItemCollection processEntity=findProcessEntityById(processid);
-				
-				if (group.equals(processEntity.getItemValueString("txtWorkflowGroup"))) {
+				int processid = entity.getItemValueInteger("numprocessid");
+
+				ItemCollection processEntity = findProcessEntityById(processid);
+
+				if (group.equals(processEntity
+						.getItemValueString("txtWorkflowGroup"))) {
 					result.add(entity);
 				}
 			}
 
 		}
-		
+
 		return result;
+	}
+
+	/**
+	 * replaces < with &lt;
+	 * 
+	 * @param text
+	 */
+	private static String encodeString(String text) {
+		text = text.replace("<", "&lt;");
+
+		text = text.replace(" & ", " &amp; ");
+
+		return text;
+
 	}
 }
 
 class SequenceFlow {
-	int from,to;
+	String from, to;
 	String id;
-	public SequenceFlow(int from,int to,int id) {
-		this.from=from;
-		this.to=to;
-		this.id=""+from + "_"+id;
+
+	public SequenceFlow(String from, String to, String id) {
+		this.from = from;
+		this.to = to;
+		this.id = id;
 	}
 }
