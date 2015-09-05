@@ -91,14 +91,9 @@ public class AccessPlugin extends AbstractPlugin {
 	ItemCollection documentContext;
 	ItemCollection documentActivity, documentNextProcessEntity;
 	List<?> itemReadRollback, itemWriteRollback;
-//	WorkflowContext workflowContext;
 
 	private static Logger logger = Logger.getLogger(AccessPlugin.class
 			.getName());
-
-//	public void init(WorkflowContext actx) throws PluginException {
-//		workflowContext = actx;
-//	}
 
 	/**
 	 * This method updates the $readAccess and $writeAccess attributes of a

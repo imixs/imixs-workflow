@@ -134,7 +134,7 @@ public class MigrateImixsModelToBPMN {
 
 						// test if follow up.....
 
-						logger.info("TEST Followup " + processID + "_"
+						logger.fine("TEST Followup " + processID + "_"
 								+ activityID);
 						if (!followUpIds.contains(processID + "_" + activityID)) {
 							// outgoing...
@@ -172,7 +172,7 @@ public class MigrateImixsModelToBPMN {
 										+ "\" targetRef=\"" + to + "\"/>");
 
 								followUpIds.add(processID + "_" + nextID);
-								logger.info("ADD follow up " + processID + "_"
+								logger.fine("ADD follow up " + processID + "_"
 										+ nextID);
 								flowCount++;
 
@@ -391,6 +391,14 @@ public class MigrateImixsModelToBPMN {
 
 		}
 
+		
+		// migrate update mode
+		if (isACLUpdateMode(activity)) {
+			writer.println(" <imixs:item name=\"keyupdateacl\" type=\"xs:boolean\">");
+			writer.println(" <imixs:value>true</imixs:value>");
+			writer.println("</imixs:item>");
+		}
+		
 		writer.println(" </bpmn2:extensionElements>");
 
 		// write rtfdescription
@@ -541,6 +549,28 @@ public class MigrateImixsModelToBPMN {
 		text = text.replace(" & ", " &amp; ");
 
 		return text;
+
+	}
+	
+	
+	/**
+	 * Returns true if a old workflow model need to be evaluated
+	 * 
+	 * @return
+	 */
+	private static boolean isACLUpdateMode(ItemCollection entity) {
+		if (entity.hasItem("keyownershipmode") && "0".equals(entity.getItemValueString("keyownershipmode"))) {
+			return true;
+		}
+
+
+		if (entity.hasItem("keyaccessmode") && "0".equals(entity.getItemValueString("keyaccessmode"))) {
+			return true;
+		}
+
+		
+
+		return false;
 
 	}
 }
