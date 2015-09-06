@@ -1,5 +1,6 @@
 package org.imixs.workflow.plugins;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.script.ScriptException;
@@ -19,7 +20,8 @@ import org.junit.Test;
  */
 public class TestResultPlugin {
 	ResultPlugin resultPlugin = null;
-	private static Logger logger = Logger.getLogger(TestResultPlugin.class.getName());
+	private static Logger logger = Logger.getLogger(TestResultPlugin.class
+			.getName());
 
 	@Before
 	public void setup() throws PluginException {
@@ -88,9 +90,6 @@ public class TestResultPlugin {
 
 	}
 
-
-
-
 	@Test
 	public void testBasicWithTypeInteger() throws PluginException {
 
@@ -106,16 +105,14 @@ public class TestResultPlugin {
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
-		Assert.assertEquals(47,adocumentContext.getItemValueInteger("numValue"));
+		Assert.assertEquals(47,
+				adocumentContext.getItemValueInteger("numValue"));
 
 	}
 
-
-	
-	
-
 	/**
 	 * This test verifies if the 'type' property can be changed...
+	 * 
 	 * @throws PluginException
 	 */
 	@Test
@@ -133,20 +130,20 @@ public class TestResultPlugin {
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
-		Assert.assertEquals("workitemdeleted",adocumentContext.getItemValueString("Type"));
+		Assert.assertEquals("workitemdeleted",
+				adocumentContext.getItemValueString("Type"));
 
 	}
 
-	
-	
-
 	/**
-	 * This test verifies if  a pluginException is thronw if the format was invalid
+	 * This test verifies if a pluginException is thronw if the format was
+	 * invalid
+	 * 
 	 * @throws PluginException
 	 */
 	@SuppressWarnings("unused")
 	@Test
-	public void testInvalidFormatException()  {
+	public void testInvalidFormatException() {
 
 		ItemCollection adocumentContext = new ItemCollection();
 		ItemCollection adocumentActivity = new ItemCollection();
@@ -161,18 +158,15 @@ public class TestResultPlugin {
 		try {
 			// exception expected
 			result = resultPlugin.run(adocumentContext, adocumentActivity);
-			
+
 			Assert.fail();
 
 		} catch (PluginException e) {
 			logger.info(e.getMessage());
 		}
 
-
-		
-		
 		// wrong format missing "
-		 sResult = "<item name=\"txtName >Anna</item>";
+		sResult = "<item name=\"txtName >Anna</item>";
 
 		logger.info("txtActivityResult=" + sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
@@ -180,16 +174,47 @@ public class TestResultPlugin {
 		try {
 			// exception expected
 			result = resultPlugin.run(adocumentContext, adocumentActivity);
-			
+
 			Assert.fail();
 
 		} catch (PluginException e) {
 			logger.info(e.getMessage());
 		}
 
-
 	}
 
+	/**
+	 * This test verifies if multiple item tags with the same name will be added
+	 * into one single property
+	 * 
+	 * @throws PluginException
+	 */
+	@Test
+	public void testMultiValueEvaluation() throws PluginException {
+		String sResult = "<item name=\"txtName\">Manfred</item>";
+		sResult += "\n<item name=\"txtName\">Anna</item>";
+		sResult += "\n<item name=\"test\">XXX</item>";
+		sResult += "\n<item name=\"txtname\">Sam</item>";
 
+		
+		// expeced txtname= Manfred,Anna,Sam
+		ItemCollection evalItemCollection = new ItemCollection();
+		ResultPlugin.evaluate(sResult, evalItemCollection);
+		
+		
+		Assert.assertTrue(
+				evalItemCollection.hasItem("txtName"));
+
+		List<?> result = evalItemCollection.getItemValue("txtname");
+		
+		Assert.assertEquals(3, result.size());
+
+		Assert.assertTrue(result.contains("Manfred"));
+		Assert.assertTrue(result.contains("Sam"));
+		Assert.assertTrue(result.contains("Anna"));
+		
+		// test test item
+		Assert.assertEquals("XXX", evalItemCollection.getItemValueString("test"));
+	}
 
 }

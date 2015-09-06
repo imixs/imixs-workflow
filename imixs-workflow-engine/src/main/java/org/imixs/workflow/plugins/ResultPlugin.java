@@ -27,6 +27,8 @@
 
 package org.imixs.workflow.plugins;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
@@ -68,7 +70,6 @@ public class ResultPlugin extends AbstractPlugin {
 	String sActivityResult;
 	private static Logger logger = Logger.getLogger(ResultPlugin.class
 			.getName());
-	
 
 	public int run(ItemCollection adocumentContext,
 			ItemCollection adocumentActivity) throws PluginException {
@@ -110,24 +111,29 @@ public class ResultPlugin extends AbstractPlugin {
 	 * new workitem properties.
 	 * 
 	 * <code>
-	 *   
 	 *   <item name="txtTitle">new Title</item>
-	 *   
-	 *   
 	 * </code>
+	 * 
+	 * If an item with the same name exits multiple times the method creates a
+	 * multivalue item
 	 * 
 	 * Additional the attribute 'type' can be provided to specify a field type
 	 * 'boolean', 'string', 'integer'
 	 * 
-	 * The item will be added into the workitem documentContext.
+	 * The item will be added into the given documentContext.
 	 * 
 	 * If the item name starts with $ it will be ignored!
 	 * 
 	 * Also ' will be replaced with " in attribute name
-	 * @throws PluginException 
+	 * 
+	 * @throws PluginException
 	 * 
 	 */
-	public static void evaluate(String aString, ItemCollection documentContext) throws PluginException {
+	@SuppressWarnings("unchecked")
+	public static void evaluate(String aString, ItemCollection documentContext)
+			throws PluginException {
+
+		List<String> mulitValueItemNames = new ArrayList<String>();
 		int iTagStartPos;
 		int iTagEndPos;
 
@@ -156,7 +162,6 @@ public class ResultPlugin extends AbstractPlugin {
 			if (iTagEndPos == -1)
 				throw new PluginException(ResultPlugin.class.getSimpleName(),
 						INVALID_FORMAT, "</item>  expected!");
-
 
 			// reset pos vars
 			iContentStartPos = 0;
@@ -218,21 +223,36 @@ public class ResultPlugin extends AbstractPlugin {
 
 			// replace the item value
 			if (sName != null && !"".equals(sName)) {
-
+				// ignore case sensetive names
+				sName = sName.toLowerCase();
+				
 				// if itemname starts with $ it will be ignored
 				if (sName.startsWith("$")) {
 					logger.warning("ResultPlugin - item '" + sName
-							+ "' can not be updated!");
+							+ "' update not allowed!");
 				} else {
 					// convert to type...
 					Object oValue = sItemValue;
-					if ("boolean".equalsIgnoreCase(sType))
-						// oValue=new Boolean(sItemValue);
+					if ("boolean".equalsIgnoreCase(sType)) {
 						oValue = Boolean.valueOf(sItemValue);
-
-					if ("integer".equalsIgnoreCase(sType))
+					}
+					if ("integer".equalsIgnoreCase(sType)) {
 						oValue = new Integer(sItemValue);
-					documentContext.replaceItemValue(sName, oValue);
+					}
+
+					// test if item was already computed before
+
+					if (!mulitValueItemNames.contains(sName)) {
+						documentContext.replaceItemValue(sName, oValue);
+						mulitValueItemNames.add(sName);
+					} else {
+						// item was processed before so we add the value into a
+						// multivalue list
+						List<Object> values = documentContext
+								.getItemValue(sName);
+						values.add(oValue);
+						documentContext.replaceItemValue(sName, values);
+					}
 				}
 			}
 
