@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
 
 /**
- * Represents a basic objec type Long
+ * Represents a basic object type Long
  * 
  * @author rsoika
  * 

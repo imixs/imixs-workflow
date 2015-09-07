@@ -1,13 +1,13 @@
 
 The Workflow Service
 ~~~~~~~~~~~~~~~~~~~~
- The main ressource /workflow is uses to read Workitems and Workitem collections throught the Imixs Rest Service Interface.
+ The main resource /workflow is uses to read Workitems and Workitem collections through the Imixs Rest Service Interface.
  
  
 * The /workflow GET resources
 ~~~~~~~~~~~~~~
 
- The /workflow resources are used to get the busines objects provided by the Imixs Workflow Manager:
+ The /workflow resources are used to get the business objects provided by the Imixs Workflow Manager:
 
 *-----------------------------------------------*-------------------------------------------* 
 | URI                                           | Description                               | 
@@ -130,7 +130,7 @@ The Workflow Service
  You can specify additional URI paramters to filter the resultset 
  or to navigate through a sub list of workitems.
 
- Append optional arguments to define the number of workitems returnd by a URL, the starting
+ Append optional arguments to define the number of workitems returned by a URL, the starting
  point inside the list or the sort order. Combine any of the following arguments for the desired result. 
 
 

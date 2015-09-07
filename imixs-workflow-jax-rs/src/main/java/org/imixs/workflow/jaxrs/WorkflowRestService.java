@@ -156,7 +156,7 @@ public class WorkflowRestService {
 		try {
 			col = workflowService.getWorkList(start, count, type, sortorder);
 			return XMLItemCollectionAdapter.putCollection(col,
-					getItemList(items));
+					EntityRestService.getItemList(items));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -225,7 +225,7 @@ public class WorkflowRestService {
 			col = workflowService.getWorkListByAuthor(user, start, count, type,
 					sortorder);
 			return XMLItemCollectionAdapter.putCollection(col,
-					getItemList(items));
+					EntityRestService.getItemList(items));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -288,7 +288,7 @@ public class WorkflowRestService {
 			col = workflowService.getWorkListByCreator(creator, start, count,
 					type, sortorder);
 			return XMLItemCollectionAdapter.putCollection(col,
-					getItemList(items));
+					EntityRestService.getItemList(items));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -338,7 +338,7 @@ public class WorkflowRestService {
 			col = workflowService.getWorkListByProcessID(processid, start,
 					count, type, sortorder);
 			return XMLItemCollectionAdapter.putCollection(col,
-					getItemList(items));
+					EntityRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -392,7 +392,7 @@ public class WorkflowRestService {
 			col = workflowService.getWorkListByGroup(processgroup, start,
 					count, type, sortorder);
 			return XMLItemCollectionAdapter.putCollection(col,
-					getItemList(items));
+					EntityRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -448,7 +448,7 @@ public class WorkflowRestService {
 			col = workflowService.getWorkListByOwner(owner, start, count, type,
 					sortorder);
 			return XMLItemCollectionAdapter.putCollection(col,
-					getItemList(items));
+					EntityRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -494,7 +494,7 @@ public class WorkflowRestService {
 			col = workflowService.getWorkListByWriteAccess(start, count, type,
 					sortorder);
 			return XMLItemCollectionAdapter.putCollection(col,
-					getItemList(items));
+					EntityRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -541,7 +541,7 @@ public class WorkflowRestService {
 			col = workflowService.getWorkListByRef(uniqueid, start, count,
 					type, sortorder);
 			return XMLItemCollectionAdapter.putCollection(col,
-					getItemList(items));
+					EntityRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -572,62 +572,6 @@ public class WorkflowRestService {
 			@DefaultValue("0") @QueryParam("sortorder") int sortorder,
 			@QueryParam("items") String items) {
 		return getWorkListByRef(uniqueid, start, count, type, sortorder, items);
-	}
-
-	/**
-	 * Returns a result set by JPQL Query
-	 * 
-	 * @param query
-	 * @param start
-	 * @param count
-	 * @param type
-	 * @param sortorder
-	 * @param items
-	 * @return
-	 */
-	@GET
-	@Path("/worklistbyquery/{query}")
-	public EntityCollection getWorkListByQuery(
-			@PathParam("query") String query,
-			@DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("10") @QueryParam("count") int count,
-			@QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
-		try {
-
-			// decode query...
-			String decodedQuery = URLDecoder.decode(query, "UTF-8");
-
-			col = workflowService.getEntityService().findAllEntities(
-					decodedQuery, start, count);
-			return XMLItemCollectionAdapter.putCollection(col,
-					getItemList(items));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return new EntityCollection();
-	}
-
-	@GET
-	@Path("/worklistbyquery/{query}.xml")
-	@Produces(MediaType.APPLICATION_XML)
-	public EntityCollection getWorkListByQueryXML(
-			@PathParam("query") String query,
-			@DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("10") @QueryParam("count") int count,
-			@QueryParam("items") String items) {
-		return getWorkListByQuery(query, start, count, items);
-	}
-
-	@GET
-	@Path("/worklistbyquery/{query}.json")
-	@Produces(MediaType.APPLICATION_JSON)
-	public EntityCollection getWorkListByQueryJSON(
-			@PathParam("query") String query,
-			@DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("10") @QueryParam("count") int count,
-			@QueryParam("items") String items) {
-		return getWorkListByQuery(query, start, count, items);
 	}
 
 	/**
@@ -685,7 +629,7 @@ public class WorkflowRestService {
 
 			workitem = workflowService.getWorkItem(uniqueid);
 			return XMLItemCollectionAdapter.putItemCollection(workitem,
-					getItemList(items));
+					EntityRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -1226,26 +1170,6 @@ public class WorkflowRestService {
 		}
 
 		return workitem;
-	}
-
-	/**
-	 * This method returns a List object from a given comma separated string.
-	 * The method returns null if no elements are found. The provided parameter
-	 * looks typical like this: <code>
-	 *   txtWorkflowStatus,numProcessID,txtName
-	 * </code>
-	 * 
-	 * @param items
-	 * @return
-	 */
-	private List<String> getItemList(String items) {
-		if (items == null || "".equals(items))
-			return null;
-		Vector<String> v = new Vector<String>();
-		StringTokenizer st = new StringTokenizer(items, ",");
-		while (st.hasMoreTokens())
-			v.add(st.nextToken());
-		return v;
 	}
 
 	/**

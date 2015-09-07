@@ -36,6 +36,7 @@
       	<item name="Workflow Service" href="restservice/workflowservice.html"/>   
       	<item name="Model Service" href="restservice/modelservice.html"/>   
       	<item name="Report Service" href="restservice/reportservice.html"/>   
+      	<item name="Entity Service" href="restservice/entityservice.html"/>   
       </item>         
       <item name="JSON" href="json.html"/>            
       <item name="SOAP Service" href="soapservice.html"/>            

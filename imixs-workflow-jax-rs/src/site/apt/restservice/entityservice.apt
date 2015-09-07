@@ -1,0 +1,76 @@
+
+The Entity Service
+~~~~~~~~~~~~~~~~~~~~
+ The main resource /entity is uses to read entities and collections through 
+ the Imixs Rest Service Interface.
+ 
+ 
+* The /entity GET resources
+~~~~~~~~~~~~~~
+
+ The /entity resources are used to get direct access to the entity service EJB:
+
+*-----------------------------------------------*-------------------------------------------* 
+| URI                                           | Description                               | 
+*-----------------------------------------------+-------------------------------------------+
+| /entity/entitiesbyquery/{query}             | a collection of entities specified by a  |
+|                                               | JPQL phrase                               |
+*-----------------------------------------------+-------------------------------------------+
+| /entity/entitiesbyquery/{query}.xml         | a collection of entities specified by a  |
+|                                               | JPQL phrase in xml format                 |
+*-----------------------------------------------+-------------------------------------------+
+| /entity/entitiesbyquery/{query}.json        | a collection of entities specified by a  |
+|                                               | JPQL phrase in json format                |
+*-----------------------------------------------+-------------------------------------------+
+| /entity/countentitiesbyquery/{query}                | the count of entities returned by a      |
+|                                               | JPQL phrase                               |
+*-----------------------------------------------+-------------------------------------------+
+
+
+
+* The /entity resources PUT and DELETE
+~~~~~~~~~~~~~~
+
+ The /entity PUT resource is used to add or remove an Imixs-Entity-Index. The caller 
+ must at least be in role "org.imixs.ACCESSLEVEL.MANAGERACCESS".  
+
+*--------*------------------------------*-------------------------------------------* 
+| METHOD |URI                           | Description                               | 
+*--------+------------------------------+-------------------------------------------+
+| PUT    | /entity/{name}/{type}        | Adds an Imixs-Entity-Index for a property provided by ItemCollection objects. 
+|        |                              | An Imixs-Entity-Index can be used to select ItemCollections
+|        |                              | using a JPQL statement. @see findEntitesByQuery   |
+*--------+------------------------------+-------------------------------------------+
+| DELETE | /entity/{name}               | Removes an existing Imixs-Entity-Index for a property provided by ItemCollection objects. 
+*--------+------------------------------+-------------------------------------------+
+
+
+
+ 
+* Resource Options
+~~~~~~~~~~~~~~~~~~~~ 
+ 
+ You can specify additional URI paramters to filter the resultset 
+ or to navigate through a sub list of entities.
+
+ Append optional arguments to define the number of entities returned by a URL, the starting
+ point inside the list or the sort order. Combine any of the following arguments for the desired result. 
+
+
+*-------------*-----------------------------------------------------*-----------------------*
+| option      | description                                         | example               |
+*-------------+-----------------------------------------------------+-----------------------+
+| count       | number of workitems returned by a collection        | ..?count=10           |
+*-------------+-----------------------------------------------------+-----------------------+  
+| start       | position to start  workitems returned by a          | ..?start=5&count=10   |
+|             | collection                                          |                       | 
+|             |                                                     |                       | 
+*-------------+-----------------------------------------------------+-----------------------+
+		
+
+   [Note:] The Imixs JEE Workflow manages the access to workitems by individual access lists per each entity.
+        So the result of a collection of workitems will only contain entities where the current user has a 
+        read access right. Without access the wokitem will not be returned by the workflowManager and so 
+        it will not be included in the list. 
+  
+   

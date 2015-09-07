@@ -34,6 +34,9 @@ The Imixs REST Service
 | /report                   | The Report resource provides resources and methods|
 |                           | to get the result of a report definition          |
 *---------------------------+---------------------------------------------------+
+| /entity                   | The Entity resource provides resources and methods|
+|                           | to query entities and the indexList from the EntityService EJB |
+*---------------------------+---------------------------------------------------+
  
     [Note:] The root context of the REST Service is defined by the web application (web.xml) 
     where the REST Service is deployed.
@@ -66,4 +69,5 @@ The Imixs REST Service
  
   * {{{./reportservice.html}Report Service}} 
 
+  * {{{./entityservice.html}Entity Service}} 
     
