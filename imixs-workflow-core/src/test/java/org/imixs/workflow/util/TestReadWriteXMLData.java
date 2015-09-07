@@ -53,7 +53,7 @@ public class TestReadWriteXMLData {
 			Assert.fail();
 		}
 
-		Assert.assertEquals(14, col.size());
+		Assert.assertEquals(15, col.size());
 	}
 
 	/**
