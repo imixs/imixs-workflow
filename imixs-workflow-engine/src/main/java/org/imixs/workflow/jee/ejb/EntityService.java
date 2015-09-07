@@ -605,9 +605,9 @@ public class EntityService implements EntityServiceRemote {
 	}
 
 	/**
-	 * Adds an Index for a property provided by ItemCollection objects. An
-	 * existing Index can be used to select ItemCollections using a JPQL
-	 * statement. @see findEntitesByQuery
+	 * Adds an Imixs-Entity-Index for a property provided by ItemCollection
+	 * objects. An Imixs-Entity-Index can be used to select ItemCollections
+	 * using a JPQL statement. @see findEntitesByQuery
 	 * 
 	 * The method throws an AccessDeniedException if the CallerPrinciapal is not
 	 * in the role org.imixs.ACCESSLEVEL.MANAGERACCESS.
@@ -618,7 +618,6 @@ public class EntityService implements EntityServiceRemote {
 	 *            - Type of EntityIndex
 	 * @throws AccessDeniedException
 	 */
-	@SuppressWarnings("unchecked")
 	public void addIndex(String stitel, int ityp) throws AccessDeniedException {
 		// lower case title
 		stitel = stitel.toLowerCase();
@@ -640,37 +639,31 @@ public class EntityService implements EntityServiceRemote {
 		activeEntityIndex = new EntityIndex(stitel, ityp);
 		manager.persist(activeEntityIndex);
 
-		// 1.) find all existing entities
+		// we do no longer update existing entities. Need to be implemented by
+		// the client!
+		// see issue #94
 
-		Collection<Entity> entityList = null;
-		Query q = manager.createQuery("SELECT entity FROM Entity entity");
-		entityList = q.getResultList();
-		logger.info("[EntityServiceBean] found " + entityList.size()
-				+ " existing entities. Starting update...");
-		updateAllEntityIndexFields(entityList, stitel);
-		logger.info("[EntityServiceBean] index update completed");
+		// Collection<Entity> entityList = null;
+		// Query q = manager.createQuery("SELECT entity FROM Entity entity");
+		// entityList = q.getResultList();
+		// updateAllEntityIndexFields(entityList, stitel);
 
 	}
 
 	/**
-	 * This method removes an existing index from the current indexlist and
-	 * updates existing entities. Notice that the index field name will be
-	 * lowercased! Each EQL statement should use lower cased fieldnames!
+	 * This method removes an existing Imixs-Entity-Index from the current
+	 * indexlist. Notice that the index field name will be lowercased! Each EQL
+	 * statement should use lower cased fieldnames!
 	 * 
 	 * The method checks if the Caller is in Role
-	 * "org.imixs.ACCESSLEVEL.MANAGERACCESS". Since the caller is no Manager
-	 * there is no guarantee that the caller can update all existing Entities as
-	 * maybe he can not read all entities.
+	 * "org.imixs.ACCESSLEVEL.MANAGERACCESS". 
 	 * 
-	 * All existing Entities will be reorderd by this method call. So the method
-	 * can take a long time to proceed
 	 * 
 	 * @param stitel
 	 *            - will be automatical lowercased!
 	 * @throws AccessDeniedException
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
 	public void removeIndex(String stitel) throws AccessDeniedException {
 		int indexType = 0;
 		// lower case title
@@ -692,40 +685,39 @@ public class EntityService implements EntityServiceRemote {
 
 		// remove index
 		manager.remove(activeEntityIndex);
+		
+		// we do no longer update existing entities. Need to be implemented by
+		// the client!
+		// see issue #94
 
-		// now update all entity index fields
-		// 1.) find all existing entities
-		Collection<Entity> entityList = null;
-		// preselect worktiems which are really affected
-		String query = "SELECT wi FROM Entity wi ";
-		switch (indexType) {
-		case EntityIndex.TYP_CALENDAR:
-			query += " JOIN wi.calendarItems AS i1 WHERE i1.itemName='"
-					+ stitel + "'";
-			break;
-		case EntityIndex.TYP_DOUBLE:
-			query += " JOIN wi.doubleItems AS i1 WHERE i1.itemName='" + stitel
-					+ "'";
-			break;
-		case EntityIndex.TYP_INT:
-			query += " JOIN wi.integerItems AS i1 WHERE i1.itemName='" + stitel
-					+ "'";
-			break;
-
-		default:
-			query += " JOIN wi.textItems AS i1 WHERE i1.itemName='" + stitel
-					+ "'";
-			break;
-		}
-
-		logger.info("[EntityServiceBean] remove Index - update query=" + query);
-		Query q = manager.createQuery(query);
-
-		entityList = q.getResultList();
-		logger.info("[EntityServiceBean] found " + entityList.size()
-				+ " affected entities. Starting update...");
-		updateAllEntityIndexFields(entityList, null);
-		logger.info("[EntityServiceBean] index update completed");
+		// Collection<Entity> entityList = null;
+		// String query = "SELECT wi FROM Entity wi ";
+		// switch (indexType) {
+		// case EntityIndex.TYP_CALENDAR:
+		// query += " JOIN wi.calendarItems AS i1 WHERE i1.itemName='"
+		// + stitel + "'";
+		// break;
+		// case EntityIndex.TYP_DOUBLE:
+		// query += " JOIN wi.doubleItems AS i1 WHERE i1.itemName='" + stitel
+		// + "'";
+		// break;
+		// case EntityIndex.TYP_INT:
+		// query += " JOIN wi.integerItems AS i1 WHERE i1.itemName='" + stitel
+		// + "'";
+		// break;
+		//
+		// default:
+		// query += " JOIN wi.textItems AS i1 WHERE i1.itemName='" + stitel
+		// + "'";
+		// break;
+		// }
+		//
+		// logger.info("[EntityServiceBean] remove Index - update query=" +
+		// query);
+		// Query q = manager.createQuery(query);
+		//
+		// entityList = q.getResultList();
+		// updateAllEntityIndexFields(entityList, null);
 
 	}
 
@@ -852,13 +844,12 @@ public class EntityService implements EntityServiceRemote {
 	 * 
 	 * @see org.imixs.workfow.jee.jpa.Entity
 	 */
-	public int countAllEntities(String query)
-			throws InvalidAccessException {
+	public int countAllEntities(String query) throws InvalidAccessException {
 
 		long l = 0;
 
 		logger.fine("[EntityService] countAllEntities - Query=" + query);
-		
+
 		// optimize query....
 		query = optimizeQuery(query);
 
@@ -876,7 +867,7 @@ public class EntityService implements EntityServiceRemote {
 				+ query.substring(pos + chunk2.length());
 
 		Query q = manager.createQuery(query);
-		
+
 		Number cResults = (Number) q.getSingleResult();
 
 		logger.fine("[EntityService] countAllEntities in "
@@ -1698,15 +1689,18 @@ public class EntityService implements EntityServiceRemote {
 	 * than calls an explode to recreate the index properties.
 	 * 
 	 * 
-	 * Method can be optimized
+	 * Method no longer used
 	 * 
 	 * 
-	 * @see issue #62
+	 * @see issue #94
 	 */
+	@SuppressWarnings("unused")
+	@Deprecated
 	private void updateAllEntityIndexFields(Collection<Entity> entityList,
 			String newIndexField) {
 		long count = 0;
-
+		logger.info("[EntityServiceBean] found " + entityList.size()
+				+ " existing entities. Starting update...");
 		// get a List of all existing Indices
 		Collection<EntityIndex> entityIndexCache = readIndices();
 
@@ -1752,6 +1746,8 @@ public class EntityService implements EntityServiceRemote {
 			}
 		}
 		logger.info("[EntityServiceBean] " + count + " effective updates");
+		logger.info("[EntityServiceBean] index update completed");
+
 	}
 
 }
