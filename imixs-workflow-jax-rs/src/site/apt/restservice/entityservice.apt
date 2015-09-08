@@ -26,26 +26,6 @@ The Entity Service
 |                                               | JPQL phrase                               |
 *-----------------------------------------------+-------------------------------------------+
 
-
-
-* The /entity resources PUT and DELETE
-~~~~~~~~~~~~~~
-
- The /entity PUT resource is used to add or remove an Imixs-Entity-Index. The caller 
- must at least be in role "org.imixs.ACCESSLEVEL.MANAGERACCESS".  
-
-*--------*------------------------------*-------------------------------------------* 
-| METHOD |URI                           | Description                               | 
-*--------+------------------------------+-------------------------------------------+
-| PUT    | /entity/{name}/{type}        | Adds an Imixs-Entity-Index for a property provided by ItemCollection objects. 
-|        |                              | An Imixs-Entity-Index can be used to select ItemCollections
-|        |                              | using a JPQL statement. @see findEntitesByQuery   |
-*--------+------------------------------+-------------------------------------------+
-| DELETE | /entity/{name}               | Removes an existing Imixs-Entity-Index for a property provided by ItemCollection objects. 
-*--------+------------------------------+-------------------------------------------+
-
-
-
  
 * Resource Options
 ~~~~~~~~~~~~~~~~~~~~ 
@@ -66,11 +46,42 @@ The Entity Service
 |             | collection                                          |                       | 
 |             |                                                     |                       | 
 *-------------+-----------------------------------------------------+-----------------------+
-		
 
-   [Note:] The Imixs JEE Workflow manages the access to workitems by individual access lists per each entity.
-        So the result of a collection of workitems will only contain entities where the current user has a 
-        read access right. Without access the wokitem will not be returned by the workflowManager and so 
-        it will not be included in the list. 
+\ 		
+ 
+   [Note:] Imixs-Workflow controls the access for each entity by individual access lists.
+        The result of a collection of entities contains only entities which are not read protected 
+        or the current user has sufficien read access. 
+        
+
+* Administrative resource URIs
+~~~~~~~~~~~~~~
+
+ The Entity Rest Service provides resource URIs for administrative purpose. To access these resources, the caller 
+ must at least be in role "org.imixs.ACCESSLEVEL.MANAGERACCESS". These administrative URIs should not be used in 
+ general business logic.  For more information about the Entity Service see the 
+ {{{http://www.imixs.org/jee/services/entityservice.html}EntityService interface description}}.
+ 
+ 
+*--------*------------------------------*-------------------------------------------------------------------------------------------* 
+| METHOD |URI                           | Description                                                                               | 
+*--------+------------------------------+-------------------------------------------------------------------------------------------+
+| GET    | /entity/indexlist            | Returns the list of existing Imixs-Entity-Index entries in XML or JSON format             |
+*--------+------------------------------+-------------------------------------------------------------------------------------------+
+| PUT    | /entity/index/{name}/{type}  | Adds an Imixs-Entity-Index for properties provided by ItemCollection objects. 
+|        |                              | An Imixs-Entity-Index can be used to select ItemCollections
+|        |                              | using a JPQL statement. @see findEntitesByQuery                                           |
+*--------+------------------------------+-------------------------------------------------------------------------------------------+
+| DELETE | /entity/index/{name}         | Removes an existing Imixs-Entity-Index for a property provided by ItemCollection objects. | 
+*--------+------------------------------+-------------------------------------------------------------------------------------------+
+| POST   | /entity                      | Post an entity to be stored by the EntityService in the database. NOTE: The content of the|
+|        |                              | entity will be merged into an existing instance.                                          | 
+*--------+------------------------------+-------------------------------------------------------------------------------------------+
+| DELETE | /entity/{name}               | Removes an existing Imixs-Entity-Index for a property provided by ItemCollection objects. | 
+*--------+------------------------------+-------------------------------------------------------------------------------------------+
+
+
+
+
   
    

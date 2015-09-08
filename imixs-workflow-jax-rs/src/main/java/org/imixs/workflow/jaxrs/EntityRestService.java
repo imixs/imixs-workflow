@@ -40,9 +40,11 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -50,13 +52,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.jee.ejb.EntityService;
 import org.imixs.workflow.xml.EntityCollection;
 import org.imixs.workflow.xml.XMLCount;
 import org.imixs.workflow.xml.XMLIndexList;
+import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
 /**
@@ -207,14 +212,12 @@ public class EntityRestService {
 	 */
 	@GET
 	@Path("/indexlist")
-	public XMLIndexList getIndexList() {
-		try {
-			Map<String, Integer> result = entityService.getIndices();
-			return new XMLIndexList(result);
-		} catch (Exception e) {
-			e.printStackTrace();
+	public Response getIndexList() {
+		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
-		return null;
+		Map<String, Integer> result = entityService.getIndices();
+		return Response.ok(new XMLIndexList(result)).build();
 	}
 
 	/**
@@ -227,10 +230,14 @@ public class EntityRestService {
 	 * @return
 	 */
 	@PUT
-	@Path("/{name}/{type}")
-	public void addIndex(@PathParam("name") String name,
+	@Path("/index/{name}/{type}")
+	public Response addIndex(@PathParam("name") String name,
 			@PathParam("type") int type) {
+		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+			return Response.status(Response.Status.UNAUTHORIZED).build();
+		}
 		entityService.addIndex(name, type);
+		return Response.status(Response.Status.OK).build();
 	}
 
 	/**
@@ -240,9 +247,104 @@ public class EntityRestService {
 	 *            - name of index field
 	 */
 	@DELETE
-	@Path("/{name}")
-	public void deleteIndex(@PathParam("name") String name) {
+	@Path("/index/{name}")
+	public Response deleteIndex(@PathParam("name") String name) {
+		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+			return Response.status(Response.Status.UNAUTHORIZED).build();
+		}
 		entityService.removeIndex(name);
+		return Response.status(Response.Status.OK).build();
+	}
+
+	/**
+	 * This method saves a entity provided in xml format
+	 * 
+	 * Note: the method merges the content of the given entity into an existing
+	 * one because the EntityService method save() did not merge an entity. But
+	 * the rest service typically consumes only a subset of attributes. So this
+	 * is the reason why we merge the entity here. In different to the behavior
+	 * of the EntityService the WorkflowService method process() did this merge
+	 * automatically.
+	 * 
+	 * @param xmlworkitem
+	 *            - entity to be saved
+	 * @return
+	 */
+	@POST
+	@Path("/")
+	@Produces(MediaType.APPLICATION_XML)
+	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
+	public Response putEntity(XMLItemCollection xmlworkitem) {
+		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+			return Response.status(Response.Status.UNAUTHORIZED).build();
+		}
+		ItemCollection workitem;
+		workitem = XMLItemCollectionAdapter.getItemCollection(xmlworkitem);
+
+		if (workitem == null) {
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
+
+		try {
+
+			// try to load current instance of this entity
+			ItemCollection currentInstance = entityService.load(workitem
+					.getItemValueString(EntityService.UNIQUEID));
+			if (currentInstance != null) {
+				// merge entity into current instance
+				// an instance of this Entity still exists! so we update the
+				// new values here....
+				currentInstance.replaceAllItems(workitem.getAllItems());
+				workitem = currentInstance;
+			}
+
+			workitem.removeItem("$error_code");
+			workitem.removeItem("$error_message");
+			// now lets try to process the workitem...
+			workitem = entityService.save(workitem);
+
+		} catch (AccessDeniedException e) {
+			logger.severe(e.getMessage());
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (RuntimeException e) {
+			logger.severe(e.getMessage());
+			workitem = this.addErrorMessage(e, workitem);
+		}
+
+		// return workitem
+		try {
+			if (workitem.hasItem("$error_code"))
+				return Response
+						.ok(XMLItemCollectionAdapter
+								.putItemCollection(workitem),
+								MediaType.APPLICATION_XML)
+						.status(Response.Status.NOT_ACCEPTABLE).build();
+			else
+				return Response.ok(
+						XMLItemCollectionAdapter.putItemCollection(workitem),
+						MediaType.APPLICATION_XML).build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
+	}
+
+	/**
+	 * This method deletes an entity
+	 * 
+	 */
+	@DELETE
+	@Path("/{uniqueid}")
+	public Response deleteEntity(@PathParam("uniqueid") String uniqueid) {
+		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+			return Response.status(Response.Status.UNAUTHORIZED).build();
+		}
+		ItemCollection entity = entityService.load(uniqueid);
+		if (entity != null) {
+			entityService.remove(entity);
+		}
+
+		return Response.status(Response.Status.OK).build();
 	}
 
 	/**
@@ -265,4 +367,27 @@ public class EntityRestService {
 		return v;
 	}
 
+	/**
+	 * This helper method adds a error message to the given entity, based on the
+	 * data in a Exception. This kind of error message can be displayed in a
+	 * page evaluating the properties '$error_code' and '$error_message'. These
+	 * attributes will not be stored.
+	 * 
+	 * @param pe
+	 */
+	private ItemCollection addErrorMessage(Exception pe,
+			ItemCollection aworkitem) {
+
+		if (pe instanceof RuntimeException && pe.getCause() != null) {
+			pe = (RuntimeException) pe.getCause();
+		}
+
+		if (pe instanceof AccessDeniedException) {
+			aworkitem.replaceItemValue("$error_code",
+					((AccessDeniedException) pe).getErrorCode());
+			aworkitem.replaceItemValue("$error_message", pe.getMessage());
+		}
+
+		return aworkitem;
+	}
 }
