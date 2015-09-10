@@ -348,6 +348,67 @@ public class EntityRestService {
 	}
 
 	/**
+	 * This method creates a backup of the result set form a JQPL query. The
+	 * entity list will be stored into the file system. The backup can be restored 
+	 * by calling the restore method
+	 * 
+	 * 
+	 * @param query
+	 * @param start
+	 * @param count
+	 * @param filepath
+	 *            - path in server filesystem
+	 * @return
+	 */
+	@PUT
+	@Path("/backup/{query}")
+	public Response backup(@PathParam("query") String query,
+			@QueryParam("filepath") String filepath) {
+
+		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+			return Response.status(Response.Status.UNAUTHORIZED).build();
+		}
+		try {
+			entityService.backup(query, filepath);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.build();
+		}
+
+		return Response.status(Response.Status.OK).build();
+
+	}
+
+	/**
+	 * This method restores a backup from the fileSystem
+	 * 
+	 * @param filepath
+	 *            - path in server fileSystem
+	 * @return
+	 */
+	@GET
+	@Path("/backup")
+	public Response restore(@QueryParam("filepath") String filepath) {
+
+		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+			return Response.status(Response.Status.UNAUTHORIZED).build();
+		}
+		try {
+			entityService.restore( filepath);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.build();
+		}
+
+		return Response.status(Response.Status.OK).build();
+
+	}
+
+	
+	
+	/**
 	 * This method returns a List object from a given comma separated string.
 	 * The method returns null if no elements are found. The provided parameter
 	 * looks typical like this: <code>

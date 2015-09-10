@@ -27,6 +27,11 @@
 
 package org.imixs.workflow.jee.ejb;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -656,7 +661,7 @@ public class EntityService implements EntityServiceRemote {
 	 * statement should use lower cased fieldnames!
 	 * 
 	 * The method checks if the Caller is in Role
-	 * "org.imixs.ACCESSLEVEL.MANAGERACCESS". 
+	 * "org.imixs.ACCESSLEVEL.MANAGERACCESS".
 	 * 
 	 * 
 	 * @param stitel
@@ -685,7 +690,7 @@ public class EntityService implements EntityServiceRemote {
 
 		// remove index
 		manager.remove(activeEntityIndex);
-		
+
 		// we do no longer update existing entities. Need to be implemented by
 		// the client!
 		// see issue #94
@@ -918,6 +923,119 @@ public class EntityService implements EntityServiceRemote {
 				+ parentUniqueID + "' ";
 
 		return this.findAllEntities(sQuery, start, count);
+	}
+
+	/**
+	 * This method creates a backup of the result set form a JQPL query. The
+	 * entity list will be stored into the file system. The method stores the
+	 * Map from the ItemCollection to be independent from version upgrades. To
+	 * manage large dataSets the method reads the entities in smaller blocks
+	 * 
+	 * @param entities
+	 * @throws IOException
+	 */
+	public void backup(String query, String filePath) throws IOException {
+		boolean hasMoreData = true;
+		int JUNK_SIZE = 100;
+		long totalcount = 0;
+		int startpos = 0;
+		int icount = 0;
+		
+		
+
+		logger.info("[EntityService] Starting backup....");
+		logger.info("[EntityService] Query=" + query);
+		logger.info("[EntityService] Target=" + filePath);
+
+		if (filePath==null || filePath.isEmpty()) {
+			logger.severe("[EntityService] Invalid FilePath!");
+			return;
+		}
+		
+		FileOutputStream fos = new FileOutputStream(filePath);
+		ObjectOutputStream out = new ObjectOutputStream(fos);
+		while (hasMoreData) {
+			// read a junk....
+			Collection<ItemCollection> col = findAllEntities(query, startpos,
+					JUNK_SIZE);
+			if (col.size() < JUNK_SIZE)
+				hasMoreData = false;
+			startpos = startpos + col.size();
+			totalcount = totalcount + col.size();
+
+			for (ItemCollection aworkitem : col) {
+				// get serialized data
+				Map<?, ?> hmap = aworkitem.getAllItems();
+				// write object
+				out.writeObject(hmap);
+				icount++;
+			}
+			logger.fine("[EntityService] " + totalcount
+					+ " entries backuped....");
+		}
+		out.close();
+		logger.info("[EntityService] Backup finished - " + icount
+				+ " entities read totaly.");
+	}
+
+	/**
+	 * This method restores a backup from the file system and imports the
+	 * entities into the database.
+	 * 
+	 * @param filepath
+	 * @throws IOException
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void restore(String filePath) throws IOException {
+		int JUNK_SIZE = 100;
+		long totalcount = 0;
+		long errorCount = 0;
+		int icount = 0;
+
+		FileInputStream fis = new FileInputStream(filePath);
+		ObjectInputStream in = new ObjectInputStream(fis);
+
+		while (true) {
+			try {
+				// read one more object
+				Map hmap = (Map) in.readObject();
+				ItemCollection itemCol = new ItemCollection(hmap);
+				// remove the $version property!
+				itemCol.removeItem("$Version");
+				// now save imported data
+				save(itemCol);
+				totalcount++;
+				icount++;
+				if (icount >= JUNK_SIZE) {
+					icount = 0;
+					logger.info("[EntityService] Restored " + totalcount
+							+ " entities....");
+
+				}
+
+			} catch (java.io.EOFException eofe) {
+				break;
+			} catch (ClassNotFoundException e) {
+				errorCount++;
+				logger.warning("[EntityService] error importing workitem at position "
+						+ (totalcount + errorCount)
+						+ " Error: "
+						+ e.getMessage());
+			} catch (AccessDeniedException e) {
+				errorCount++;
+				logger.warning("[EntityService] error importing workitem at position "
+						+ (totalcount + errorCount)
+						+ " Error: "
+						+ e.getMessage());
+			}
+		}
+		in.close();
+
+		String loginfo = "Import successfull! " + totalcount
+				+ " Entities imported. " + errorCount
+				+ " Errors.  Import FileName:" + filePath;
+
+		logger.info(loginfo);
 	}
 
 	/**
