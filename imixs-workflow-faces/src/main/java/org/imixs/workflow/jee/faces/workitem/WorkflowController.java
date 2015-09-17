@@ -29,6 +29,7 @@ package org.imixs.workflow.jee.faces.workitem;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 
@@ -67,6 +68,9 @@ public class WorkflowController extends DataController {
 
 	@EJB
 	private org.imixs.workflow.jee.ejb.WorkflowService workflowService;
+
+	private static Logger logger = Logger.getLogger(WorkflowController.class
+			.getName());
 
 	public WorkflowController() {
 		super();
@@ -310,13 +314,33 @@ public class WorkflowController extends DataController {
 		if (processId == 0)
 			return activityList;
 
+		// verify if modelversion is defined by workitem
 		String sversion = getWorkitem().getItemValueString("$modelversion");
-
-		// get Workflow-Activities by version if provided by the workitem
+		if (sversion == null || "".equals(sversion)) {
+			try {
+				// try to get latest version...
+				sversion = this.getModelService().getLatestVersionByWorkitem(
+						getWorkitem());
+			} catch (ModelException e) {
+				logger.warning("[WorkflwoControler] unable to getactivitylist: "
+						+ e.getMessage());
+			}
+		}
+		// get Workflow-Activities by version 
 		List<ItemCollection> col = null;
-		if (sversion != null && !"".equals(sversion))
-			col = this.getModelService().getPublicActivities(processId,
-					sversion);
+		col = this.getModelService().getPublicActivities(processId, sversion);
+		if (col == null || col.size() == 0) {
+			// try to upgrade model version
+			try {
+				sversion = this.getModelService().getLatestVersionByWorkitem(
+						getWorkitem());
+				col = this.getModelService().getPublicActivities(processId,
+						sversion);
+			} catch (ModelException e) {
+				logger.warning("[WorkflwoControler] unable to getactivitylist: "
+						+ e.getMessage());
+			}
+		}
 
 		for (ItemCollection aworkitem : col) {
 			activityList.add(aworkitem);

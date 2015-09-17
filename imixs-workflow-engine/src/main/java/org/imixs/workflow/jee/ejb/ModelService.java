@@ -51,6 +51,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ItemCollectionComparator;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -455,6 +456,49 @@ public class ModelService implements Model, ModelServiceRemote {
 		} else
 			throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
 					"[ModelService] no model definition found!");
+	}
+
+	/**
+	 * This helper method finds the highest Model Version available in the
+	 * system corresponding a given workitem. The method compares the
+	 * txtWorkflowGroup and $ProcessID. The method returns an empty String if no
+	 * matching version was found!
+	 * 
+	 * @return String with the latest model version for the given workitem
+	 */
+	public String getLatestVersionByWorkitem(ItemCollection workitem)
+			throws ModelException {
+
+		// fist select all versions for matching processid and workflowgroup
+		String workflowGroup = workitem.getItemValueString("txtWorkflowGroup");
+		int processId = workitem.getItemValueInteger(WorkflowService.PROCESSID);
+
+		// find all process entities
+		String sQuery = "SELECT process FROM Entity AS process"
+				+ " JOIN process.textItems as g"
+				+ " JOIN process.integerItems as n"
+				+ " WHERE process.type = 'ProcessEntity'"
+				+ " AND n.itemName = 'numprocessid' AND n.itemValue = "
+				+ processId
+				+ " AND g.itemName='txtworkflowgroup' AND g.itemValue= '"
+				+ workflowGroup + "'";
+
+		List<ItemCollection> col = entityService.findAllEntities(sQuery, 0, -1);
+
+		// now sort the result by $modelversion
+		Collections.sort(col, new ItemCollectionComparator(
+				WorkflowService.MODELVERSION, true));
+
+		if (col.size() > 0) {
+			Iterator<ItemCollection> iter = col.iterator();
+			String sModelVersion = iter.next().getItemValueString(
+					"$modelversion");
+			return sModelVersion;
+		} else
+			throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
+					"[ModelService] no matching model definition found for $processid="
+							+ processId + " workflowgroup='" + workflowGroup
+							+ "'!");
 	}
 
 	/**
