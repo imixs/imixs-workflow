@@ -19,6 +19,13 @@ import org.imixs.workflow.xml.XMLItemCollectionAdapter;
  * bpmn file. The migration tool separates each workflow group into a single
  * bpmn file.
  * 
+ * Arguments:
+ * 
+ * <code>
+ *        # Note: leading slash
+ *        /modelfile.ixm
+ * </code>
+ * 
  * @author rsoika
  *
  */
@@ -35,7 +42,7 @@ public class MigrateImixsModelToBPMN {
 	public static void main(String[] args) {
 		logger.info("Start migration of Imixs Model to BPMN....");
 		sourceModelFile = args[0];
-
+ 
 		readModel();
 
 		buildBPMN();
@@ -45,7 +52,7 @@ public class MigrateImixsModelToBPMN {
 		logger.info("read Model file " + sourceModelFile + "...");
 
 		try {
-
+ 
 			modelItemCollection = XMLItemCollectionAdapter
 					.readCollectionFromInputStream(MigrateImixsModelToBPMN.class
 							.getClass().getResourceAsStream(sourceModelFile));
