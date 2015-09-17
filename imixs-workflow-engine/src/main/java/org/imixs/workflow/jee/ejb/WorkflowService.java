@@ -588,37 +588,30 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		}
 
 		/*
-		 * Fetch the current Profile Entity for this version. The method will
-		 * automatically default to the next Version number if the provided
-		 * version is no longer provided by the ModelManager
+		 * Lookup current processEntity. If not available update model to latest
+		 * matching model version
 		 */
 		String modelversion = workitem
 				.getItemValueString(WorkflowService.MODELVERSION);
-		ItemCollection profile = findModelProfile(modelversion);
-
-		// if model did not exist we try to look for newer versions...
-		if (profile == null) {
+		int processID = workitem.getItemValueInteger(WorkflowService.PROCESSID);
+		ItemCollection processEntity = modelService.getProcessEntity(processID,
+				modelversion);
+		if (processEntity == null) {
+			// look for latest model version....
 			try {
-				modelversion = modelService
+				String newModelVersion = modelService
 						.getLatestVersionByWorkitem(workitem);
-				profile = findModelProfile(modelversion);
-				if (profile == null) {
-					throw new ProcessingErrorException(
-							WorkflowService.class.getSimpleName(),
-							ProcessingErrorException.INVALID_MODELVERSION,
-							"WorkflowService: fatal error - no valid model version '"
-									+ modelversion
-									+ "' found! Verify WorkflowModels.");
+				if (newModelVersion != null && !newModelVersion.isEmpty()) {
+					modelversion = newModelVersion;
+					// update Model Version for the WorkItem - this is the
+					// version the workItem will be processed now
+					logger.info("WorkflowService: $modelversion '"
+							+ workitem
+									.getItemValueString(WorkflowService.MODELVERSION)
+							+ "' no longer provided, updating to $modelversion '"
+							+ modelversion + "'");
+					workitem.replaceItemValue("$modelversion", modelversion);
 				}
-				// update Model Version for the WorkItem - this is the version
-				// the workItem will be processed now
-				logger.info("WorkflowService: $modelversion '"
-						+ workitem
-								.getItemValueString(WorkflowService.MODELVERSION)
-						+ "' no longer provided, updating to $modelversion '"
-						+ modelversion + "'");
-				workitem.replaceItemValue("$modelversion", modelversion);
-
 			} catch (ModelException e) {
 				throw new ProcessingErrorException(
 						WorkflowService.class.getSimpleName(),
@@ -628,7 +621,17 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 								+ "' found! Verify WorkflowModels: "
 								+ e.getMessage());
 			}
+		}
 
+		// Fetch the current Profile Entity for this version.
+		ItemCollection profile = findModelProfile(modelversion);
+		if (profile == null) {
+			// model profile not defined!
+			throw new ProcessingErrorException(
+					WorkflowService.class.getSimpleName(),
+					ProcessingErrorException.INVALID_MODELVERSION,
+					"WorkflowService: fatal error - no valid model version '"
+							+ modelversion + "' found! Verify WorkflowModels.");
 		}
 
 		WorkflowKernel workflowkernel = new WorkflowKernel(this);
