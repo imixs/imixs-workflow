@@ -322,7 +322,7 @@ public class WorkflowController extends DataController {
 				sversion = this.getModelService().getLatestVersionByWorkitem(
 						getWorkitem());
 			} catch (ModelException e) {
-				logger.warning("[WorkflwoControler] unable to getactivitylist: "
+				logger.warning("[WorkflowController] unable to getactivitylist: "
 						+ e.getMessage());
 			}
 		}
@@ -337,7 +337,7 @@ public class WorkflowController extends DataController {
 				col = this.getModelService().getPublicActivities(processId,
 						sversion);
 			} catch (ModelException e) {
-				logger.warning("[WorkflwoControler] unable to getactivitylist: "
+				logger.warning("[WorkflowController] unable to getactivitylist: "
 						+ e.getMessage());
 			}
 		}

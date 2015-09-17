@@ -28,11 +28,9 @@
 package org.imixs.workflow.jee.ejb;
 
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -247,7 +245,7 @@ public class ModelService implements Model, ModelServiceRemote {
 	public void removeModel(String modelversion) throws ModelException,
 			AccessDeniedException {
 		// remove all existing entities
-		logger.fine("remove modelVersion: " + modelversion);
+		logger.fine("remove $modelversion: " + modelversion + "...");
 
 		String sQuery = null;
 		sQuery = "";
@@ -272,6 +270,8 @@ public class ModelService implements Model, ModelServiceRemote {
 			entityService.remove(it.next());
 		}
 
+		logger.info("removed $modelversion: " + modelversion );
+
 	}
 
 	/**
@@ -283,8 +283,8 @@ public class ModelService implements Model, ModelServiceRemote {
 	public void removeModelGroup(String workflowgroup, String modelversion)
 			throws ModelException, AccessDeniedException {
 		// remove all existing entities
-		logger.fine("remove modelGroup: " + workflowgroup + " Version: "
-				+ modelversion);
+		logger.fine("remove ModelGroup: " + workflowgroup + " $modelversion: "
+				+ modelversion+" ...");
 
 		String sQuery = null;
 		sQuery = "";
@@ -332,6 +332,11 @@ public class ModelService implements Model, ModelServiceRemote {
 			// remove processEntity
 			entityService.remove(processEntity);
 		}
+		
+		
+		logger.info("removed ModelGroup: " + workflowgroup + " $modelversion: "
+				+ modelversion);
+
 
 	}
 
@@ -487,7 +492,7 @@ public class ModelService implements Model, ModelServiceRemote {
 
 		// now sort the result by $modelversion
 		Collections.sort(col, new ItemCollectionComparator(
-				WorkflowService.MODELVERSION, true));
+				WorkflowService.MODELVERSION));
 
 		if (col.size() > 0) {
 			Iterator<ItemCollection> iter = col.iterator();
@@ -659,7 +664,7 @@ public class ModelService implements Model, ModelServiceRemote {
 
 		// sort processEntites by numProcessID
 		Collections
-				.sort(colStartProcessEntities, new ProcessEntityComparator());
+				.sort(colStartProcessEntities, new ItemCollectionComparator("numProcessID"));
 
 		return colStartProcessEntities;
 	}
@@ -817,6 +822,7 @@ public class ModelService implements Model, ModelServiceRemote {
 
 	public void importBPMNModel(BPMNModel bpmnmodel) throws ModelException {
 
+		
 		if (bpmnmodel == null || bpmnmodel.getProfile() == null) {
 			throw new ModelException(ModelException.INVALID_MODEL,
 					"Invalid Model file: No Imixs Definitions Extension found! ");
@@ -826,7 +832,8 @@ public class ModelService implements Model, ModelServiceRemote {
 		// verify $modelversion
 		String modelVersion = bpmnmodel.getProfile().getItemValueString(
 				"$ModelVersion");
-		logger.fine("$ModelVersion=" + modelVersion);
+		
+		logger.fine("import BPMN model $modelversion=" + modelVersion + "....");
 		if (modelVersion.isEmpty()) {
 			throw new ModelException(ModelException.INVALID_MODEL,
 					"Invalid Model: Model Version not provided! ");
@@ -866,25 +873,10 @@ public class ModelService implements Model, ModelServiceRemote {
 		}
 
 		logger.fine("update finished! ");
+		logger.info("imported BPMN model $modelversion=" + modelVersion);
 
 	}
 
-	/**
-	 * compares two processEntities by its numProcessID
-	 * 
-	 * @author rsoika
-	 * 
-	 */
-	static class ProcessEntityComparator implements Comparator<ItemCollection>,
-			Serializable {
-		private static final long serialVersionUID = 1L;
-
-		public int compare(ItemCollection o1, ItemCollection o2) {
-			return (o1.getItemValueInteger("numProcessID") - o2
-					.getItemValueInteger("numProcessID"));
-
-		}
-
-	}
+	
 
 }

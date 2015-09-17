@@ -342,6 +342,7 @@ public class ModelRestService {
 			MediaType.TEXT_PLAIN })
 	public Response putBPMNModel(BPMNModel bpmnmodel) {
 		try {
+			logger.info("updating BPMN model... ");
 			modelService.importBPMNModel(bpmnmodel);
 		} catch (ModelException e) {
 			logger.warning("Unable to update model: " + e.getMessage());
