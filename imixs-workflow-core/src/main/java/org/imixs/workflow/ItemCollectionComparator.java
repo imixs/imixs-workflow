@@ -5,10 +5,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 
-import javax.faces.context.FacesContext;
-
-import org.imixs.workflow.ItemCollection;
-
 /**
  * The ItemCollectionComparator provides a Comparator for ItemColections. The item to
  * be compared can be provided in the constructor.
@@ -24,28 +20,32 @@ public class ItemCollectionComparator implements Comparator<ItemCollection> {
 	public ItemCollectionComparator(String aItemName, boolean ascending, Locale locale) {
 		this.collator = Collator.getInstance(locale);
 		this.ascending = ascending;
-		itemName = aItemName;
+		this.itemName = aItemName;
 	}
 
 	/**
-	 * This method tries to get the locale form the current Faces Context. If no
-	 * faces Context exists, then the method get the default locale form the JVM.
+	 * This method sorts by the default locale
 	 * 
 	 * @param aItemName
 	 * @param ascending
 	 */
 	public ItemCollectionComparator(String aItemName, boolean ascending) {
-		Locale locale = null;
-		// try to get user locale...
-		if (FacesContext.getCurrentInstance() != null) {
-			locale = FacesContext.getCurrentInstance().getViewRoot()
-					.getLocale();
-		} else {
-			locale = Locale.getDefault();
-		}
-		this.collator = Collator.getInstance(locale);
+		this.collator = Collator.getInstance( Locale.getDefault());
 		this.ascending = ascending;
-		itemName = aItemName;
+		this.itemName = aItemName;
+
+	}
+	
+	/**
+	 * This method sorts by the default locale ascending
+	 * 
+	 * @param aItemName
+	 * @param ascending
+	 */
+	public ItemCollectionComparator(String aItemName) {
+		this.collator = Collator.getInstance( Locale.getDefault());
+		this.ascending = true;
+		this.itemName = aItemName;
 
 	}
 
