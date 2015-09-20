@@ -56,6 +56,8 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.imixs.workflow.xml.XMLItemCollection;
+import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
 /**
  * This EJB implements a TimerService which scans workitems for scheduled
@@ -642,9 +644,17 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 			endDate = startDate;
 		}
-		Timer timer = timerService.createTimer(startDate, interval,
-				configItemCollection);
-
+		Timer timer = null;
+		XMLItemCollection xmlConfigItem = null;
+		try {
+			xmlConfigItem = XMLItemCollectionAdapter
+					.putItemCollection(configItemCollection);
+		} catch (Exception e) {
+			logger.severe("Unable to serialize confitItemCollection into a XML object");
+			e.printStackTrace();
+			return null;
+		}
+		timer = timerService.createTimer(startDate, interval, xmlConfigItem);
 		return timer;
 
 	}
@@ -671,7 +681,17 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			throws ParseException {
 
 		TimerConfig timerConfig = new TimerConfig();
-		timerConfig.setInfo(configItemCollection);
+		
+		XMLItemCollection xmlConfigItem = null;
+		try {
+			xmlConfigItem = XMLItemCollectionAdapter
+					.putItemCollection(configItemCollection);
+		} catch (Exception e) {
+			logger.severe("Unable to serialize confitItemCollection into a XML object");
+			e.printStackTrace();
+			return null;
+		}
+		timerConfig.setInfo(xmlConfigItem);
 		ScheduleExpression scheduerExpression = new ScheduleExpression();
 
 		@SuppressWarnings("unchecked")
@@ -786,8 +806,9 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 		for (Object obj : timerService.getTimers()) {
 			Timer atimer = (javax.ejb.Timer) obj;
-			if (atimer.getInfo() instanceof ItemCollection) {
-				ItemCollection adescription = (ItemCollection) atimer.getInfo();
+			if (atimer.getInfo() instanceof XMLItemCollection) {
+				XMLItemCollection xmlItemCollection = (XMLItemCollection) atimer.getInfo();
+				ItemCollection adescription = XMLItemCollectionAdapter.getItemCollection(xmlItemCollection);
 				if (id.equals(adescription.getItemValueString("$uniqueid"))) {
 					if (timer != null)
 						logger.severe("[WorkflowScheduelrService] - more then one timer with id "

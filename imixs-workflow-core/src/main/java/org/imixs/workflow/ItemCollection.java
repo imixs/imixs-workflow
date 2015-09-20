@@ -61,8 +61,8 @@ import java.util.logging.Logger;
  * @see org.imixs.workflow.WorkflowManager
  */
 
-public class ItemCollection implements java.io.Serializable {
-	private static final long serialVersionUID = 1L;
+public class ItemCollection {
+	//private static final long serialVersionUID = 1L;
 
 	private static Logger logger = Logger.getLogger(ItemCollection.class.getName());
 
