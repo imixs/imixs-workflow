@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import org.imixs.workflow.xml.XMLItemCollection;
+import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -228,10 +230,7 @@ public class TestItemCollection {
 		Assert.assertNotSame(itemCollection1, itemCollection2);
 
 	}
-	
-	
-	
-	
+
 	/**
 	 * This test verifies the behavior when copy the elements of another
 	 * ItemCollection with embedded collections!
@@ -244,12 +243,11 @@ public class TestItemCollection {
 		itemCollection1.replaceItemValue("txtName", "Manfred");
 		itemCollection1.replaceItemValue("numID", new Integer(20));
 
-		
 		ItemCollection itemCollection2 = new ItemCollection(itemCollection1);
-	
+
 		Assert.assertEquals(itemCollection1, itemCollection2);
 		Assert.assertNotSame(itemCollection1, itemCollection2);
-		
+
 		// change valud of itemcol2
 		itemCollection2.replaceItemValue("txtName", "Anna");
 		Assert.assertEquals("Manfred",
@@ -257,18 +255,7 @@ public class TestItemCollection {
 		Assert.assertEquals("Anna",
 				itemCollection2.getItemValueString("txtName"));
 
-		
 	}
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
 
 	/**
 	 * This test verifies the behavior when copy the elements of another
@@ -290,14 +277,24 @@ public class TestItemCollection {
 		child1.replaceItemValue("txtName", "Thor");
 		child1.replaceItemValue("numID", new Integer(2));
 
-		itemCollection1.replaceItemValue("child", child1);
+		try {
+			itemCollection1.replaceItemValue("child",
+					XMLItemCollectionAdapter.putItemCollection(child1));
+		} catch (Exception e) {
+
+			Assert.fail();
+		}
 
 		// copy values
 		itemCollection2.replaceAllItems(itemCollection1.getAllItems());
 		Assert.assertEquals(itemCollection1, itemCollection2);
 		Assert.assertNotSame(itemCollection1, itemCollection2);
-		ItemCollection testChild = (ItemCollection) itemCollection1
+
+		XMLItemCollection xmlChild = (XMLItemCollection) itemCollection1
 				.getItemValue("child").get(0);
+
+		ItemCollection testChild = XMLItemCollectionAdapter
+				.getItemCollection(xmlChild);
 		Assert.assertEquals(2, testChild.getItemValueInteger("numID"));
 
 		// manipulate child1 and repeat the test!
@@ -305,14 +302,18 @@ public class TestItemCollection {
 		Assert.assertEquals(itemCollection1, itemCollection2);
 		Assert.assertNotSame(itemCollection1, itemCollection2);
 
-		// Now its  the same object !
-		Assert.assertSame(child1, testChild);
+		// Now its the same object !
+		Assert.assertNotSame(child1, testChild);
 
 		// test child1 form itemcol1
-		testChild = (ItemCollection) itemCollection1.getItemValue("child").get(
-				0);
-		// expected id is not 2!
-		Assert.assertEquals(3, testChild.getItemValueInteger("numID"));
+		 xmlChild = (XMLItemCollection) itemCollection1
+				.getItemValue("child").get(0);
+
+		 testChild = XMLItemCollectionAdapter
+				.getItemCollection(xmlChild);
+		
+		// expected id is not 3!
+		Assert.assertEquals(2, testChild.getItemValueInteger("numID"));
 
 		// change value of itemcol2
 		itemCollection2.replaceItemValue("txtName", "Anna");
@@ -409,8 +410,7 @@ public class TestItemCollection {
 		itemCollection2.replaceAllItems(itemCollection1.getAllItems());
 		Assert.assertEquals(itemCollection1, itemCollection2);
 		Assert.assertNotSame(itemCollection1, itemCollection2);
-		Map testChild = (Map) itemCollection1
-				.getItemValue("child").get(0);
+		Map testChild = (Map) itemCollection1.getItemValue("child").get(0);
 		Assert.assertEquals(2, testChild.get("numID"));
 
 		// manipulate child1 and repeat the test!
@@ -418,10 +418,9 @@ public class TestItemCollection {
 		Assert.assertEquals(itemCollection1, itemCollection2);
 		Assert.assertNotSame(itemCollection1, itemCollection2);
 
-		// its  the same object !
+		// its the same object !
 		Assert.assertSame(child1, testChild);
 
-		
 	}
 
 }
