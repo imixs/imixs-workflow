@@ -53,7 +53,8 @@ import java.util.logging.Logger;
  * stored inside a Vector Class. All values are stored internally in a Map
  * containing key values pairs.
  * 
- * The ItemCollection can be serialized.
+ * NOTE: The ItemCollection can not be serialized. To serialize a ItemCollection
+ * use the XMLItemCollection. @see XMLItemCollectionAdapter.
  * 
  * 
  * @author Ralph Soika
@@ -62,9 +63,10 @@ import java.util.logging.Logger;
  */
 
 public class ItemCollection {
-	//private static final long serialVersionUID = 1L;
+	// NOTE: The ItemCollection should NOT be serialized!
 
-	private static Logger logger = Logger.getLogger(ItemCollection.class.getName());
+	private static Logger logger = Logger.getLogger(ItemCollection.class
+			.getName());
 
 	private Map<String, List<Object>> hash = new Hashtable<String, List<Object>>();
 
@@ -86,7 +88,8 @@ public class ItemCollection {
 		Iterator<?> it = map.entrySet().iterator();
 		while (it.hasNext()) {
 			@SuppressWarnings("unchecked")
-			Map.Entry<String, List<Object>> entry = (Entry<String, List<Object>>) it.next();
+			Map.Entry<String, List<Object>> entry = (Entry<String, List<Object>>) it
+					.next();
 			this.replaceItemValue(entry.getKey().toString(), entry.getValue());
 		}
 	}
@@ -564,7 +567,8 @@ public class ItemCollection {
 
 		// test if value is serializable
 		if (!(itemValue instanceof java.io.Serializable)) {
-			logger.warning("[ItemCollection] replaceItemValue '" + itemName + "': Object no Serializable!");
+			logger.warning("[ItemCollection] replaceItemValue '" + itemName
+					+ "': Object no Serializable!");
 			this.removeItem(itemName);
 			return;
 		}
@@ -612,7 +616,8 @@ public class ItemCollection {
 		Iterator<?> it = map.entrySet().iterator();
 		while (it.hasNext()) {
 			@SuppressWarnings("unchecked")
-			Map.Entry<String, List<Object>> entry = (Map.Entry<String, List<Object>>) it.next();
+			Map.Entry<String, List<Object>> entry = (Map.Entry<String, List<Object>>) it
+					.next();
 			replaceItemValue(entry.getKey().toString(), entry.getValue());
 		}
 	}
@@ -707,7 +712,8 @@ public class ItemCollection {
 		List<?> vFiles = getItemValue("$file");
 		if (vFiles != null && vFiles.size() > 0) {
 			@SuppressWarnings("unchecked")
-			Map<String, List<Object>> mapFiles = (Map<String, List<Object>>) vFiles.get(0);
+			Map<String, List<Object>> mapFiles = (Map<String, List<Object>>) vFiles
+					.get(0);
 			return mapFiles;
 		}
 
@@ -732,7 +738,8 @@ public class ItemCollection {
 			// files = new String[mapFiles.entrySet().size()];
 			Iterator<?> iter = mapFiles.entrySet().iterator();
 			while (iter.hasNext()) {
-				Map.Entry<String, List<Object>> mapEntry = (Map.Entry<String, List<Object>>) iter.next();
+				Map.Entry<String, List<Object>> mapEntry = (Map.Entry<String, List<Object>>) iter
+						.next();
 				String aFileName = mapEntry.getKey().toString();
 				// files[iFileCount] = aFileName;
 				files.add(aFileName);
