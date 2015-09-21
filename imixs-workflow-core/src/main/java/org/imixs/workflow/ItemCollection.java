@@ -53,8 +53,9 @@ import java.util.logging.Logger;
  * stored inside a Vector Class. All values are stored internally in a Map
  * containing key values pairs.
  * 
- * NOTE: The ItemCollection can not be serialized. To serialize a ItemCollection
- * use the XMLItemCollection. @see XMLItemCollectionAdapter.
+ * NOTE: An ItemCollection is not serializable and can not be stored into
+ * another ItemCollection. To serialize a ItemCollection use the
+ * XMLItemCollection. @see XMLItemCollectionAdapter.
  * 
  * 
  * @author Ralph Soika
@@ -62,8 +63,8 @@ import java.util.logging.Logger;
  * @see org.imixs.workflow.WorkflowManager
  */
 
-public class ItemCollection {
-	// NOTE: The ItemCollection should NOT be serialized!
+public class ItemCollection  {
+	// NOTE: ItemCollection is not serializable
 
 	private static Logger logger = Logger.getLogger(ItemCollection.class
 			.getName());
@@ -564,7 +565,15 @@ public class ItemCollection {
 			this.removeItem(itemName);
 			return;
 		}
-
+		
+		// test if value is ItemCollection
+		if (itemValue instanceof ItemCollection) {
+			// just warn - do not remove
+			logger.warning("[ItemCollection] replaceItemValue '"
+					+ itemName
+					+ "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
+		}
+		
 		// test if value is serializable
 		if (!(itemValue instanceof java.io.Serializable)) {
 			logger.warning("[ItemCollection] replaceItemValue '" + itemName
@@ -573,14 +582,24 @@ public class ItemCollection {
 			return;
 		}
 
+	
+
 		// test if value is a list and remove null values and clone instances of
 		// ItemCollections!
 		if (itemValue instanceof List) {
 			itemValueList = (List<Object>) itemValue;
 			// scan List for null values and remove them
 			for (int i = 0; i < itemValueList.size(); i++) {
-				if (((List<?>) itemValueList).get(i) == null)
+				if (((List<?>) itemValueList).get(i) == null) {
 					((List<?>) itemValueList).remove(i);
+				}
+				// test if ItemCollection
+				if (((List<?>) itemValueList).get(i) instanceof ItemCollection) {
+					// just warn - do not remove
+					logger.warning("[ItemCollection] replaceItemValue '"
+							+ itemName
+							+ "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
+				}
 			}
 		} else {
 			// create an instance of Vector
