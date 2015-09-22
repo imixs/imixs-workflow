@@ -63,7 +63,7 @@ import java.util.logging.Logger;
  * @see org.imixs.workflow.WorkflowManager
  */
 
-public class ItemCollection  {
+public class ItemCollection {
 	// NOTE: ItemCollection is not serializable
 
 	private static Logger logger = Logger.getLogger(ItemCollection.class
@@ -565,7 +565,7 @@ public class ItemCollection  {
 			this.removeItem(itemName);
 			return;
 		}
-		
+
 		// test if value is ItemCollection
 		if (itemValue instanceof ItemCollection) {
 			// just warn - do not remove
@@ -573,7 +573,7 @@ public class ItemCollection  {
 					+ itemName
 					+ "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
 		}
-		
+
 		// test if value is serializable
 		if (!(itemValue instanceof java.io.Serializable)) {
 			logger.warning("[ItemCollection] replaceItemValue '" + itemName
@@ -581,8 +581,6 @@ public class ItemCollection  {
 			this.removeItem(itemName);
 			return;
 		}
-
-	
 
 		// test if value is a list and remove null values and clone instances of
 		// ItemCollections!
@@ -773,18 +771,64 @@ public class ItemCollection  {
 		return new ItemAdapter(this);
 	}
 
-	// @SuppressWarnings("unchecked")
 	public Map<String, ?> getItemList() {
 		return new ItemListAdapter(this);
 	}
 
-	// @SuppressWarnings("unchecked")
 	public Map<String, ?> getItemListArray() {
 		return new ItemListArrayAdapter(this);
 	}
 
+	/*
+	 * convenience methods
+	 */
+
 	/**
-	 * This class helps to addapt the behavior of a singel value item to be used
+	 * @return current type
+	 */
+	public String getType() {
+		return getItemValueString(WorkflowKernel.TYPE);
+	}
+
+	/**
+	 * @return current $processID
+	 */
+	public int getProcessID() {
+		return getItemValueInteger(WorkflowKernel.PROCESSID);
+	}
+
+	/**
+	 * @return current $ActivityID
+	 */
+	public int getActivityID() {
+		return getItemValueInteger(WorkflowKernel.ACTIVITYID);
+	}
+
+	/**
+	 * set $ActivityID
+	 * 
+	 * @param activityID
+	 */
+	public void setActivityID(int activityID) {
+		replaceItemValue(WorkflowKernel.ACTIVITYID, activityID);
+	}
+
+	/**
+	 * @return current $ModelVersion
+	 */
+	public int getModelVersion() {
+		return getItemValueInteger(WorkflowKernel.MODELVERSION);
+	}
+
+	/**
+	 * @return $UniqueID
+	 */
+	public String getUniqueID() {
+		return getItemValueString("$UniqueID");
+	}
+
+	/**
+	 * This class helps to adapt the behavior of a single value item to be used
 	 * in a jsf page using a expression language like this:
 	 * 
 	 * #{mybean.item['txtMyItem']}
@@ -793,17 +837,6 @@ public class ItemCollection  {
 	 * @author rsoika
 	 * 
 	 */
-	/**
-	 * This class helps to addapt the behavior of a singel value item to be used
-	 * in a jsf page using a expression language like this:
-	 * 
-	 * #{mybean.item['txtMyItem']}
-	 * 
-	 * 
-	 * @author rsoika
-	 * 
-	 */
-	// @SuppressWarnings("rawtypes")
 	class ItemAdapter implements Map<String, Object> {
 		ItemCollection itemCollection;
 

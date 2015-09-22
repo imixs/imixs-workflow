@@ -69,7 +69,7 @@ public class WorkflowKernel {
 	public static final String PROCESSID = "$processid";
 	public static final String ACTIVITYID = "$activityid";
 	public static final String ACTIVITYIDLIST = "$activityidlist";
-	
+	public static final String TYPE = "type";
 
 	
 	/** Plugin objects **/
