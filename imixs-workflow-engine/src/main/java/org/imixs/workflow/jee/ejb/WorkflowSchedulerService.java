@@ -53,11 +53,10 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
-import org.imixs.workflow.xml.XMLItemCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
 /**
  * This EJB implements a TimerService which scans workitems for scheduled
@@ -110,8 +109,9 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	/**
 	 * This method loads the current scheduler configuration. If no
 	 * configuration entity yet exists the method returns an empty
-	 * ItemCollection. The method updates the timer details netxtTimeout and
-	 * timeRemaining of a running timer service.
+	 * ItemCollection.
+	 * 
+	 * The method updates the timer details for a running timer.
 	 * 
 	 * @return configuration ItemCollection
 	 */
@@ -127,22 +127,15 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 		if (col.size() > 0) {
 			configItemCollection = col.iterator().next();
-
 		} else {
 			// create default values
 			configItemCollection = new ItemCollection();
-			try {
-				configItemCollection.replaceItemValue("type", TYPE);
-				configItemCollection.replaceItemValue("txtname", NAME);
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
+			configItemCollection.replaceItemValue("type", TYPE);
+			configItemCollection.replaceItemValue("txtname", NAME);
+			configItemCollection.replaceItemValue(WorkflowKernel.UNIQUEID,
+					WorkflowKernel.generateUniqueID());
 		}
-
 		configItemCollection = updateTimerDetails(configItemCollection);
-
 		return configItemCollection;
 	}
 
@@ -221,9 +214,9 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		if (configItemCollection == null)
 			return null;
 
-		String id = configItemCollection.getItemValueString("$uniqueid");
+		String id = configItemCollection.getUniqueID();
 
-		// try to cancel an existing timer for this workflowinstance
+		// try to cancel an existing timer for this workflowInstance
 		while (this.findTimer(id) != null) {
 			this.findTimer(id).cancel();
 		}
@@ -282,30 +275,25 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	public ItemCollection stop() throws AccessDeniedException {
 		ItemCollection configItemCollection = loadConfiguration();
 
-		String id = configItemCollection.getItemValueString("$uniqueid");
+		String id = configItemCollection.getUniqueID();
 		boolean found = false;
 		while (this.findTimer(id) != null) {
 			this.findTimer(id).cancel();
 			found = true;
 		}
 		if (found) {
-
 			Calendar calNow = Calendar.getInstance();
 			SimpleDateFormat dateFormatDE = new SimpleDateFormat(
 					"dd.MM.yy hh:mm:ss");
-
 			String msg = "stopped at " + dateFormatDE.format(calNow.getTime())
 					+ " by " + ctx.getCallerPrincipal().getName();
 			configItemCollection.replaceItemValue("statusmessage", msg);
-
 			logger.info("[WorkflowSchedulerService] "
 					+ configItemCollection.getItemValueString("txtName")
 					+ " stopped: " + id);
 		} else {
 			configItemCollection.replaceItemValue("statusmessage", "");
-
 		}
-
 		configItemCollection = saveConfiguration(configItemCollection);
 
 		return configItemCollection;
@@ -320,10 +308,8 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			if (configItemCollection == null)
 				return false;
 
-			return (findTimer(configItemCollection
-					.getItemValueString("$uniqueid")) != null);
+			return (findTimer(configItemCollection.getUniqueID()) != null);
 		} catch (Exception e) {
-
 			e.printStackTrace();
 			return false;
 		}
@@ -582,7 +568,6 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		String sTimerID = configItemCollection.getItemValueString("$uniqueid");
 
 		// update statistic of last run
-
 		configItemCollection.replaceItemValue("numWorkItemsProcessed",
 				iProcessWorkItems);
 		configItemCollection.replaceItemValue("numWorkItemsUnprocessed",
@@ -645,16 +630,9 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			endDate = startDate;
 		}
 		Timer timer = null;
-		XMLItemCollection xmlConfigItem = null;
-		try {
-			xmlConfigItem = XMLItemCollectionAdapter
-					.putItemCollection(configItemCollection);
-		} catch (Exception e) {
-			logger.severe("Unable to serialize confitItemCollection into a XML object");
-			e.printStackTrace();
-			return null;
-		}
-		timer = timerService.createTimer(startDate, interval, xmlConfigItem);
+		// create timer object ($uniqueid)
+		timer = timerService.createTimer(startDate, interval,
+				configItemCollection.getUniqueID());
 		return timer;
 
 	}
@@ -681,17 +659,8 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			throws ParseException {
 
 		TimerConfig timerConfig = new TimerConfig();
-		
-		XMLItemCollection xmlConfigItem = null;
-		try {
-			xmlConfigItem = XMLItemCollectionAdapter
-					.putItemCollection(configItemCollection);
-		} catch (Exception e) {
-			logger.severe("Unable to serialize confitItemCollection into a XML object");
-			e.printStackTrace();
-			return null;
-		}
-		timerConfig.setInfo(xmlConfigItem);
+
+		timerConfig.setInfo(configItemCollection.getUniqueID());
 		ScheduleExpression scheduerExpression = new ScheduleExpression();
 
 		@SuppressWarnings("unchecked")
@@ -775,13 +744,13 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		for (ItemCollection aprocessentity : colProcessList) {
 			// select all activities for this process entity...
 			int processid = aprocessentity.getItemValueInteger("numprocessid");
-			// System.out.println("Analyse processentity '" + processid+ "'");
+			logger.fine("Analyse processentity '" + processid + "'");
 			Collection<ItemCollection> aActivityList = modelService
 					.getActivityEntityList(processid, aModelVersion);
 
 			for (ItemCollection aactivityEntity : aActivityList) {
-				// System.out.println("Analyse acitity '" + aactivityEntity
-				// .getItemValueString("txtname") + "'");
+				logger.fine("Analyse acitity '"
+						+ aactivityEntity.getItemValueString("txtname") + "'");
 
 				// check if activity is scheduled
 				if ("1".equals(aactivityEntity
@@ -801,20 +770,15 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	 * @throws Exception
 	 */
 	Timer findTimer(String id) {
-
 		Timer timer = null;
-
 		for (Object obj : timerService.getTimers()) {
 			Timer atimer = (javax.ejb.Timer) obj;
-			if (atimer.getInfo() instanceof XMLItemCollection) {
-				XMLItemCollection xmlItemCollection = (XMLItemCollection) atimer.getInfo();
-				ItemCollection adescription = XMLItemCollectionAdapter.getItemCollection(xmlItemCollection);
-				if (id.equals(adescription.getItemValueString("$uniqueid"))) {
-					if (timer != null)
-						logger.severe("[WorkflowScheduelrService] - more then one timer with id "
-								+ id + " was found!");
-					timer = atimer;
-				}
+			String timerID = atimer.getInfo().toString();
+			if (id.equals(timerID)) {
+				if (timer != null)
+					logger.severe("[WorkflowScheduelrService] - more then one timer with id "
+							+ id + " was found!");
+				timer = atimer;
 			}
 		}
 		return timer;
@@ -918,7 +882,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	private ItemCollection updateTimerDetails(ItemCollection configuration) {
 		if (configuration == null)
 			return configuration;
-		String id = configuration.getItemValueString("$uniqueid");
+		String id = configuration.getUniqueID();
 		Timer timer;
 		try {
 			timer = this.findTimer(id);
@@ -932,14 +896,12 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			} else {
 				configuration.removeItem("nextTimeout");
 				configuration.removeItem("timeRemaining");
-
 			}
 		} catch (Exception e) {
 			logger.warning("[WorkflowSchedulerService] unable to updateTimerDetails: "
 					+ e.getMessage());
 			configuration.removeItem("nextTimeout");
 			configuration.removeItem("timeRemaining");
-
 		}
 		return configuration;
 	}
