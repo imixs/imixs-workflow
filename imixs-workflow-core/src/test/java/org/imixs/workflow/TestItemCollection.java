@@ -389,7 +389,7 @@ public class TestItemCollection {
 	 * here we can see that a map is copied by reference!
 	 * 
 	 */
-	@SuppressWarnings("unused")
+	@SuppressWarnings({ "unused", "unchecked", "rawtypes" })
 	@Test
 	public void testCopyValuesWithEmbeddedMap() {
 
@@ -422,5 +422,34 @@ public class TestItemCollection {
 		Assert.assertSame(child1, testChild);
 
 	}
+	
+	
+	
+	
+	
+	/**
+	 * This test verifies the imixs workflow basic attributes
+	 * 
+	 */
+	@Test
+	public void testBasicAttributes() {
+
+		ItemCollection itemCollection1 = new ItemCollection();
+	
+		itemCollection1.replaceItemValue(WorkflowKernel.MODELVERSION, "1.0.0");
+		itemCollection1.replaceItemValue(WorkflowKernel.PROCESSID, 100);
+		itemCollection1.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
+		itemCollection1.replaceItemValue(WorkflowKernel.TYPE,"workitem_test");
+		itemCollection1.replaceItemValue(WorkflowKernel.UNIQUEID, "ABC-123");
+
+		
+		Assert.assertEquals("1.0.0",itemCollection1.getModelVersion());
+		Assert.assertEquals(10,itemCollection1.getActivityID());
+		Assert.assertEquals(100,itemCollection1.getProcessID());
+		Assert.assertEquals("workitem_test",itemCollection1.getType());
+		Assert.assertEquals("ABC-123",itemCollection1.getUniqueID());
+
+	}
+
 
 }
