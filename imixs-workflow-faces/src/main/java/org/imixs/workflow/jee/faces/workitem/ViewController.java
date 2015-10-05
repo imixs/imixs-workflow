@@ -186,7 +186,7 @@ public class ViewController implements Serializable {
 	}
 
 	/**
-	 * resets the current project list and projectMB
+	 * resets the current result and set the page pointer to 0.
 	 * 
 	 * @return
 	 */
