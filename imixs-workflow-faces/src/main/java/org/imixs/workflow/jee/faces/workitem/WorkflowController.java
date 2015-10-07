@@ -202,7 +202,7 @@ public class WorkflowController extends DataController {
 	public String process() throws AccessDeniedException,
 			ProcessingErrorException, PluginException {
 		// clear last action
-		workitem.removeItem("action");
+		workitem.replaceItemValue("action","");
 
 		// process workItem now...
 		workitem = this.getWorkflowService().processWorkItem(workitem);
