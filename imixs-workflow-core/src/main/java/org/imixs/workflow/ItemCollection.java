@@ -816,8 +816,8 @@ public class ItemCollection {
 	/**
 	 * @return current $ModelVersion
 	 */
-	public int getModelVersion() {
-		return getItemValueInteger(WorkflowKernel.MODELVERSION);
+	public String getModelVersion() {
+		return getItemValueString(WorkflowKernel.MODELVERSION);
 	}
 
 	/**
