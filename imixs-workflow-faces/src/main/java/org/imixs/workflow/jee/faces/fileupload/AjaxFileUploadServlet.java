@@ -40,13 +40,13 @@ public class AjaxFileUploadServlet extends HttpServlet {
 			HttpServletResponse response) throws ServletException, IOException {
 
 		if (isPostFileUploadRequest(httpRequest)) {
-			
+
 			fileDataList = (List<FileData>) httpRequest.getSession()
 					.getAttribute(IMIXS_FILEDATA_LIST);
 			if (fileDataList == null) {
 				fileDataList = new ArrayList<FileData>();
 			}
-			
+
 			logger.fine("[MultipartRequestFilter] add files...");
 			addFiles(httpRequest);
 
@@ -64,14 +64,13 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	@Override
 	protected void doDelete(HttpServletRequest httpRequest,
 			HttpServletResponse response) throws ServletException, IOException {
-		
-		
-		fileDataList = (List<FileData>) httpRequest.getSession()
-				.getAttribute(IMIXS_FILEDATA_LIST);
+
+		fileDataList = (List<FileData>) httpRequest.getSession().getAttribute(
+				IMIXS_FILEDATA_LIST);
 		if (fileDataList == null) {
 			fileDataList = new ArrayList<FileData>();
 		}
-		
+
 		int iCancel = httpRequest.getRequestURI().indexOf("/fileupload/");
 		String filename = httpRequest.getRequestURI().substring(iCancel + 12);
 
@@ -94,13 +93,13 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest httpRequest,
 			HttpServletResponse httpResponse) throws ServletException,
 			IOException {
-		
-		fileDataList = (List<FileData>) httpRequest.getSession()
-				.getAttribute(IMIXS_FILEDATA_LIST);
+
+		fileDataList = (List<FileData>) httpRequest.getSession().getAttribute(
+				IMIXS_FILEDATA_LIST);
 		if (fileDataList == null) {
 			fileDataList = new ArrayList<FileData>();
 		}
-		
+
 		// check cancel upload...
 		if (isGetFileUploadRequest(httpRequest)) {
 			int iCancel = httpRequest.getRequestURI().indexOf("/fileupload/");
@@ -260,6 +259,23 @@ public class AjaxFileUploadServlet extends HttpServlet {
 				// test if part contains a file
 				String fileName = getFilename(p);
 				if (fileName != null) {
+
+					/*
+					 * issue #106
+					 * 
+					 * https://developer.jboss.org/message/941661#941661
+					 * 
+					 * Here we test of the encoding and try to convert to utf-8.
+					 */
+					byte fileNameISOBytes[] = fileName.getBytes("iso-8859-1");
+					String fileNameUTF8 = new String(fileNameISOBytes, "UTF-8");
+					if (fileName.length() != fileNameUTF8.length()) {
+						// convert to utf-8
+						logger.fine("filename seems to be ISO-8859-1 encoded");
+						fileName = new String(fileName.getBytes("iso-8859-1"),
+								"utf-8");
+					}
+
 					// extract the file content...
 					FileData fileData = null;
 					logger.fine("Filename : " + fileName + ", contentType "
