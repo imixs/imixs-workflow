@@ -2,6 +2,7 @@ package org.imixs.workflow.jee.faces.fileupload;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -105,6 +106,9 @@ public class AjaxFileUploadServlet extends HttpServlet {
 			int iCancel = httpRequest.getRequestURI().indexOf("/fileupload/");
 			String filename = httpRequest.getRequestURI().substring(
 					iCancel + 12);
+			
+			// urldecoding...
+			filename=URLDecoder.decode(filename,"UTF-8");
 
 			FileData fileData = getFile(filename);
 			// write contenremoveFile(filename);
