@@ -269,8 +269,6 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = " var followUp=null;" + " if (_amount_brutto[0]>5000)"
 				+ "    followUp=90;";
-		// " else " +
-		// "    followUp=80;";
 		System.out.println("Script=" + script);
 
 		ItemCollection adocumentContext = new ItemCollection();
@@ -506,20 +504,7 @@ public class TestRulePlugin {
 				adocumentActivity.getItemValueInteger("keyMailEnabled"));
 
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	/**
 	 * This test verifies the isValid case for date fields
 	 * 
@@ -533,7 +518,6 @@ public class TestRulePlugin {
 		adocumentContext.replaceItemValue("datDate", new Date());
 		ItemCollection adocumentActivity = new ItemCollection();
 
-	
 		// 2) test true case
 		String script = " var refField1=\"_contact\";"
 				+ " var refField2=\"datdate\";"
@@ -547,14 +531,10 @@ public class TestRulePlugin {
 		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
 				adocumentActivity));
 
-		
-		
-		
-		
 		// 2) test false case
-		 adocumentContext = new ItemCollection();
-		 adocumentActivity = new ItemCollection();
-		 script = " var refField1=\"_contact\";"
+		adocumentContext = new ItemCollection();
+		adocumentActivity = new ItemCollection();
+		script = " var refField1=\"_contact\";"
 				+ " var refField2=\"datdate\";"
 				+ " var isValid=true;"
 				+ " if (   ( workitem.get(refField2) == null)   ) {"
@@ -566,19 +546,15 @@ public class TestRulePlugin {
 		Assert.assertFalse(rulePlugin.isValid(adocumentContext,
 				adocumentActivity));
 
-
-		
-		
 		// calendar test
 		adocumentContext = new ItemCollection();
-		Calendar cal=Calendar.getInstance();
+		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
-		adocumentContext.replaceItemValue("datDate",cal);
-		 adocumentActivity = new ItemCollection();
+		adocumentContext.replaceItemValue("datDate", cal);
+		adocumentActivity = new ItemCollection();
 
-	
 		// 2a) test true case
-		 script = " var refField1=\"_contact\";"
+		script = " var refField1=\"_contact\";"
 				+ " var refField2=\"datdate\";"
 				+ " var isValid=true;"
 				+ " if (   ( workitem.get(refField2) == null)   ) {"
@@ -590,12 +566,8 @@ public class TestRulePlugin {
 		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
 				adocumentActivity));
 
-		
-		
 	}
 
-	
-	
 	/**
 	 * 
 	 * <code>
@@ -615,7 +587,6 @@ public class TestRulePlugin {
 		adocumentContext.replaceItemValue("txtgutschift", "5,55");
 		ItemCollection adocumentActivity = new ItemCollection();
 
-	
 		// 2) test true case
 		String script = " var refField1=\"txtbetrag\";"
 				+ "		 var refField2=\"txtgutschift\";"
@@ -624,70 +595,112 @@ public class TestRulePlugin {
 				+ "		     isValid=false;"
 				+ "		     var errorMessage='Bitte geben Sie den Betrag an! ';"
 				+ "		  } ";
-		
+
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
 				adocumentActivity));
 
-		
-		
-		
-		 adocumentContext = new ItemCollection();
+		adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtbetrag", "");
 		adocumentContext.replaceItemValue("txtgutschift", "5,55");
-		 adocumentActivity = new ItemCollection();
+		adocumentActivity = new ItemCollection();
 
-	
-		 adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-			Assert.assertFalse(rulePlugin.isValid(adocumentContext,
-					adocumentActivity));
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+		Assert.assertFalse(rulePlugin.isValid(adocumentContext,
+				adocumentActivity));
 
-			
-			
-			
-			
-			
-			
-			 adocumentContext = new ItemCollection();
-				adocumentContext.replaceItemValue("txtbetrag", "55");
-				adocumentContext.replaceItemValue("txtgutschift", "");
-				 adocumentActivity = new ItemCollection();
+		adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("txtbetrag", "55");
+		adocumentContext.replaceItemValue("txtgutschift", "");
+		adocumentActivity = new ItemCollection();
 
-			
-				 adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-					Assert.assertFalse(rulePlugin.isValid(adocumentContext,
-							adocumentActivity));
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+		Assert.assertFalse(rulePlugin.isValid(adocumentContext,
+				adocumentActivity));
 
-					
-					
-					
-					 adocumentContext = new ItemCollection();
-						adocumentContext.replaceItemValue("txtbetrag", "");
-						adocumentContext.replaceItemValue("txtgutschift", "");
-						 adocumentActivity = new ItemCollection();
+		adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("txtbetrag", "");
+		adocumentContext.replaceItemValue("txtgutschift", "");
+		adocumentActivity = new ItemCollection();
 
-					
-						 adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-							Assert.assertFalse(rulePlugin.isValid(adocumentContext,
-									adocumentActivity));
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+		Assert.assertFalse(rulePlugin.isValid(adocumentContext,
+				adocumentActivity));
 
+		adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("txtbetrag", "1,5");
+		adocumentContext.replaceItemValue("txtgutschift", "4");
+		adocumentActivity = new ItemCollection();
 
-	
-	
-	
-				 adocumentContext = new ItemCollection();
-					adocumentContext.replaceItemValue("txtbetrag", "1,5");
-					adocumentContext.replaceItemValue("txtgutschift", "4");
-					 adocumentActivity = new ItemCollection();
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
+				adocumentActivity));
 
-				
-					 adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-						Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-								adocumentActivity));
-
-	
-	
-	
-	
 	}
+
+	/**
+	 * following script should not throw an exception because of the fact that
+	 * the errorCode is undefined.
+	 * 
+	 * @see issue #108
+	 * 
+	 */
+	@Test
+	public void testUndefinedErrorCode() throws ScriptException,
+			PluginException {
+		ItemCollection adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("_subject", "test");
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		// 2) test undefined case
+		String script = " var isValid=true;"
+				+ " var errorCode,errorMessage;"
+				+ "refField='_contact';"
+				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {"
+				+ "     isValid=false;"
+				+ "     errorMessage='Please enter subject';" + " }";
+
+		adocumentActivity.replaceItemValue("txtBusinessRule", script);
+
+		try {
+			rulePlugin.run(adocumentContext, adocumentActivity);
+
+			Assert.fail();
+		} catch (PluginException pe) {
+			// PluginException expected
+			System.out.println(pe.getMessage());
+			Assert.assertEquals(pe.getErrorCode(), RulePlugin.VALIDATION_ERROR);
+
+			Object[] errorParams = pe.getErrorParameters();
+
+			Assert.assertEquals(1, errorParams.length);
+			Assert.assertEquals("Please enter subject", errorParams[0]);
+
+		}
+
+		// test the same case if errorCode is defined
+		// 2) test true case
+		script = " var isValid=true;"
+				+ " var errorCode,errorMessage;"
+				+ "refField='_contact';"
+				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {"
+				+ "     isValid=false;" + "     errorCode='SOME_ERROR';" + " }";
+
+		adocumentActivity.replaceItemValue("txtBusinessRule", script);
+
+		try {
+			rulePlugin.run(adocumentContext, adocumentActivity);
+
+			Assert.fail();
+		} catch (PluginException pe) {
+			// PluginException expected
+			System.out.println(pe.getMessage());
+			Assert.assertEquals(pe.getErrorCode(), "SOME_ERROR");
+			Object[] errorParams = pe.getErrorParameters();
+			Assert.assertTrue(errorParams==null);
+
+		}
+
+	}
+
 }

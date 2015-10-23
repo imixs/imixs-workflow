@@ -141,14 +141,14 @@ public class RulePlugin extends AbstractPlugin {
 			if (isValidActivity != null && !isValidActivity) {
 				// test if a error code is provided!
 				String sErrorCode = VALIDATION_ERROR;
-				Object[] params = null;
-				Object o = engine.get("errorCode");
-				if (o != null) {
-					sErrorCode = o.toString();
+				Object oErrorCode = engine.get("errorCode");
+				if (oErrorCode != null && oErrorCode instanceof String) {
+					sErrorCode = oErrorCode.toString();
 				}
 
 				// next test for errorMessage (this can be a string or an array
 				// of strings
+				Object[] params = null;
 				params = this.evaluateScriptObject(engine, "errorMessage");
 				// finally throw a Plugin Exception
 				throw new PluginException(RulePlugin.class.getName(),
@@ -234,7 +234,7 @@ public class RulePlugin extends AbstractPlugin {
 
 		// initialize the script engine...
 		ScriptEngineManager manager = new ScriptEngineManager();
-		String sEngineType = activity 
+		String sEngineType = activity
 				.getItemValueString("txtBusinessRuleEngine");
 		// set default engine to javascript if no engine is specified
 		if ("".equals(sEngineType))
@@ -326,7 +326,8 @@ public class RulePlugin extends AbstractPlugin {
 		} catch (ScriptException se) {
 			// not convertable!
 			// se.printStackTrace();
-			logger.fine("[RulePlugin] error: " + se.getMessage());
+			logger.fine("[RulePlugin] error evaluating " + expression + " - "
+					+ se.getMessage());
 			return null;
 		}
 
@@ -360,7 +361,8 @@ public class RulePlugin extends AbstractPlugin {
 
 			// compare object arrays with deepEquals....
 			if (!Arrays.deepEquals(oScript, oActivity)) {
-				logger.fine("[RulePlugin] update activity proeperty " + entry.getKey());
+				logger.fine("[RulePlugin] update activity proeperty "
+						+ entry.getKey());
 				List<?> list = new ArrayList(Arrays.asList(oScript));
 				adocumentActivity.replaceItemValue(entry.getKey(), list);
 			}
@@ -419,7 +421,7 @@ public class RulePlugin extends AbstractPlugin {
 		ret.add(Date.class);
 		ret.add(Calendar.class);
 		ret.add(GregorianCalendar.class);
-		
+
 		return ret;
 	}
 }
