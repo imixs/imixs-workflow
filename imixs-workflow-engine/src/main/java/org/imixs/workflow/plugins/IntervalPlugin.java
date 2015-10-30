@@ -40,8 +40,8 @@ import org.imixs.workflow.jee.ejb.WorkflowService;
 /**
  * The Imixs Interval Plugin implements an mechanism to adjust a date field of a
  * workitem based on a interval description. The interval description is stored
- * in a field with the prafix 'keyinterval' followed by an existing date field.
- * See the following example:
+ * in a field with the prafix 'keyinterval' followed by the name of an existing
+ * date field. See the following example:
  * 
  * <code>
  *  keyItervalDatDate=monthly
@@ -59,20 +59,16 @@ public class IntervalPlugin extends AbstractPlugin {
 
 	ItemCollection documentContext;
 	String sActivityResult;
-	private static Logger logger = Logger.getLogger(IntervalPlugin.class
-			.getName());
+	private static Logger logger = Logger.getLogger(IntervalPlugin.class.getName());
 
 	/**
 	 * The method paresed for a fields with the prafix 'keyitnerval'
 	 */
-	@SuppressWarnings("unchecked")
-	public int run(ItemCollection adocumentContext,
-			ItemCollection adocumentActivity) throws PluginException {
+	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 
 		// test if activity is a schedule activity...
 		// check if activity is scheduled
-		if (!"1".equals(adocumentActivity
-				.getItemValueString("keyScheduledActivity"))) {
+		if (!"1".equals(adocumentActivity.getItemValueString("keyScheduledActivity"))) {
 			return Plugin.PLUGIN_OK;
 		}
 
@@ -85,16 +81,15 @@ public class IntervalPlugin extends AbstractPlugin {
 		Set<String> fieldNames = documentContext.getAllItems().keySet();
 		for (String fieldName : fieldNames) {
 			if (fieldName.toLowerCase().startsWith("keyinterval")) {
-				String sInterval=documentContext.getItemValueString(fieldName);
-				
+				String sInterval = documentContext.getItemValueString(fieldName);
+
 				if (sInterval.isEmpty())
 					continue;
-				
-				sInterval=sInterval.toLowerCase();
+
+				sInterval = sInterval.toLowerCase();
 				// lookup for a date value
 				String sDateField = fieldName.substring(11);
-				if (!sDateField.isEmpty()
-						&& documentContext.hasItem(sDateField)) {
+				if (!sDateField.isEmpty() && documentContext.hasItem(sDateField)) {
 					Date date = documentContext.getItemValueDate(sDateField);
 					if (date != null) {
 
@@ -102,22 +97,35 @@ public class IntervalPlugin extends AbstractPlugin {
 						Calendar calDate = Calendar.getInstance();
 						calDate.setTime(date);
 						if (calNow.after(calDate)) {
-							logger.fine("[IntervalPlugin] compute next interval for "
-									+ sDateField);
-							if (sInterval.contains("weekly")) {
-								calDate.add(Calendar.DAY_OF_MONTH, 7);
+							logger.fine("[IntervalPlugin] compute next interval for " + sDateField);
+
+							// test if interval is a number. In this case
+							// increase the date of the number of days
+							try {
+								int iDays = Integer.parseInt(sInterval);
+								calDate.add(Calendar.DAY_OF_MONTH, iDays);
+							} catch (NumberFormatException nfe) {
+								// check for daily, monthly, yerarliy
+
+								if (sInterval.contains("daily")) {
+									calDate.add(Calendar.DAY_OF_MONTH, 1);
+								}
+
+								if (sInterval.contains("weekly")) {
+									calDate.add(Calendar.DAY_OF_MONTH, 7);
+								}
+
+								if (sInterval.contains("monthly")) {
+									calDate.add(Calendar.MONTH, 1);
+								}
+
+								if (sInterval.contains("yearly")) {
+									calDate.add(Calendar.YEAR, 1);
+								}
 							}
-							
-							if (sInterval.contains("monthly")) {
-								calDate.add(Calendar.MONTH, 1);
-							}
-							
-							if (sInterval.contains("yearly")) {
-								calDate.add(Calendar.YEAR, 1);
-							}
-							
-							documentContext.replaceItemValue(sDateField,calDate.getTime());
-							
+
+							documentContext.replaceItemValue(sDateField, calDate.getTime());
+
 						}
 					}
 				}
@@ -131,8 +139,7 @@ public class IntervalPlugin extends AbstractPlugin {
 	@Override
 	public void close(int status) throws PluginException {
 		// no op
-		
-	}
 
+	}
 
 }

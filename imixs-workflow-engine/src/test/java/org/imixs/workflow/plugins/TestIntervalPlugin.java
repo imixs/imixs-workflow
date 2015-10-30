@@ -20,8 +20,7 @@ import org.junit.Test;
  */
 public class TestIntervalPlugin {
 	IntervalPlugin intervalPlugin = null;
-	private static Logger logger = Logger.getLogger(TestIntervalPlugin.class
-			.getName());
+	private static Logger logger = Logger.getLogger(TestIntervalPlugin.class.getName());
 
 	@SuppressWarnings("static-access")
 	@Before
@@ -63,8 +62,7 @@ public class TestIntervalPlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 		adocumentActivity.replaceItemValue("keyScheduledActivity", "1");
 
-		String sOldDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDate"));
+		String sOldDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 		String sExpectedDate = dateFormater.format(calExptectedDate.getTime());
 
 		logger.info("TestDate=" + sOldDate);
@@ -74,8 +72,7 @@ public class TestIntervalPlugin {
 		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
 
 		// test new values
-		String sNewDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDate"));
+		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
@@ -110,8 +107,7 @@ public class TestIntervalPlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 		adocumentActivity.replaceItemValue("keyScheduledActivity", "1");
 
-		String sOldDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDate"));
+		String sOldDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 		String sExpectedDate = dateFormater.format(calExptectedDate.getTime());
 
 		logger.info("TestDate=" + sOldDate);
@@ -121,8 +117,7 @@ public class TestIntervalPlugin {
 		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
 
 		// test new values
-		String sNewDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDate"));
+		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
@@ -157,8 +152,7 @@ public class TestIntervalPlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 		adocumentActivity.replaceItemValue("keyScheduledActivity", "1");
 
-		String sOldDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDate"));
+		String sOldDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 		String sExpectedDate = dateFormater.format(calExptectedDate.getTime());
 
 		logger.info("TestDate=" + sOldDate);
@@ -168,8 +162,160 @@ public class TestIntervalPlugin {
 		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
 
 		// test new values
-		String sNewDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDate"));
+		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
+
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		Assert.assertEquals(sExpectedDate, sNewDate);
+
+	}
+
+	/**
+	 * This test verifies the daily interval
+	 * 
+	 * @throws PluginException
+	 */
+	@Test
+	public void testDaily() throws PluginException {
+
+		SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd");
+
+		ItemCollection adocumentContext = new ItemCollection();
+
+		// Calendar calNow = Calendar.getInstance();
+		Calendar calTestDate = Calendar.getInstance();
+		Calendar calExptectedDate = Calendar.getInstance();
+
+		// move to past one day...
+		calTestDate.add(Calendar.DATE, -1);
+		calExptectedDate.add(Calendar.DATE, +0);
+
+		adocumentContext.replaceItemValue("keyIntervalDatDate", "daily");
+		adocumentContext.replaceItemValue("datDate", calTestDate.getTime());
+
+		ItemCollection adocumentActivity = new ItemCollection();
+		adocumentActivity.replaceItemValue("keyScheduledActivity", "1");
+
+		String sOldDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
+		String sExpectedDate = dateFormater.format(calExptectedDate.getTime());
+
+		logger.info("TestDate=" + sOldDate);
+		logger.info("Expected=" + sExpectedDate);
+
+		// run plugin
+		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
+
+		// test new values
+		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
+
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		Assert.assertEquals(sExpectedDate, sNewDate);
+
+	}
+
+	/**
+	 * This test verifies fixed number of days interval
+	 * 
+	 * @throws PluginException
+	 */
+	@Test
+	public void testNumberOfDays() throws PluginException {
+
+		SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd");
+
+		ItemCollection adocumentContext = new ItemCollection();
+
+		// Calendar calNow = Calendar.getInstance();
+		Calendar calTestDate = Calendar.getInstance();
+		Calendar calExptectedDate = Calendar.getInstance();
+
+		// move to past one day...
+		calTestDate.add(Calendar.DATE, -1);
+		calExptectedDate.add(Calendar.DATE, +0);
+
+		// first we test a string for 1 day
+		adocumentContext.replaceItemValue("keyIntervalDatDate", "1");
+		adocumentContext.replaceItemValue("datDate", calTestDate.getTime());
+
+		ItemCollection adocumentActivity = new ItemCollection();
+		adocumentActivity.replaceItemValue("keyScheduledActivity", "1");
+
+		String sOldDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
+		String sExpectedDate = dateFormater.format(calExptectedDate.getTime());
+
+		logger.info("TestDate=" + sOldDate);
+		logger.info("Expected=" + sExpectedDate);
+
+		// run plugin
+		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
+
+		// test new values
+		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
+
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		Assert.assertEquals(sExpectedDate, sNewDate);
+
+		/*
+		 * test string with 10 days
+		 * 
+		 */
+		calTestDate = Calendar.getInstance();
+		calExptectedDate = Calendar.getInstance();
+
+		// move to past one day...
+		calTestDate.add(Calendar.DATE, -1);
+		calExptectedDate.add(Calendar.DATE, +9);
+
+		// first we test a string for 1 day
+		adocumentContext.replaceItemValue("keyIntervalDatDate", "10");
+		adocumentContext.replaceItemValue("datDate", calTestDate.getTime());
+
+		adocumentActivity = new ItemCollection();
+		adocumentActivity.replaceItemValue("keyScheduledActivity", "1");
+
+		sOldDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
+		sExpectedDate = dateFormater.format(calExptectedDate.getTime());
+
+		logger.info("TestDate=" + sOldDate);
+		logger.info("Expected=" + sExpectedDate);
+
+		// run plugin
+		result = intervalPlugin.run(adocumentContext, adocumentActivity);
+
+		// test new values
+		sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
+
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		Assert.assertEquals(sExpectedDate, sNewDate);
+
+		/*
+		 * test integer with 5 days
+		 * 
+		 */
+		calTestDate = Calendar.getInstance();
+		calExptectedDate = Calendar.getInstance();
+
+		// move to past one day...
+		calTestDate.add(Calendar.DATE, -1);
+		calExptectedDate.add(Calendar.DATE, +4);
+
+		// first we test a string for 1 day
+		adocumentContext.replaceItemValue("keyIntervalDatDate", new Integer(5));
+		adocumentContext.replaceItemValue("datDate", calTestDate.getTime());
+
+		adocumentActivity = new ItemCollection();
+		adocumentActivity.replaceItemValue("keyScheduledActivity", "1");
+
+		sOldDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
+		sExpectedDate = dateFormater.format(calExptectedDate.getTime());
+
+		logger.info("TestDate=" + sOldDate);
+		logger.info("Expected=" + sExpectedDate);
+
+		// run plugin
+		result = intervalPlugin.run(adocumentContext, adocumentActivity);
+
+		// test new values
+		sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
@@ -199,15 +345,13 @@ public class TestIntervalPlugin {
 		calExptectedDate.add(Calendar.MONTH, +1);
 		calExptectedDate.add(Calendar.YEAR, +1);
 
-		adocumentContext.replaceItemValue("keyIntervalDatDate",
-				"monthly yearly");
+		adocumentContext.replaceItemValue("keyIntervalDatDate", "monthly yearly");
 		adocumentContext.replaceItemValue("datDate", calTestDate.getTime());
 
 		ItemCollection adocumentActivity = new ItemCollection();
 		adocumentActivity.replaceItemValue("keyScheduledActivity", "1");
 
-		String sOldDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDate"));
+		String sOldDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 		String sExpectedDate = dateFormater.format(calExptectedDate.getTime());
 
 		logger.info("TestDate=" + sOldDate);
@@ -217,8 +361,7 @@ public class TestIntervalPlugin {
 		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
 
 		// test new values
-		String sNewDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDate"));
+		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
@@ -252,8 +395,7 @@ public class TestIntervalPlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 		adocumentActivity.replaceItemValue("keyScheduledActivity", "1");
 
-		String sOldDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDate"));
+		String sOldDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 		String sExpectedDate = dateFormater.format(calExptectedDate.getTime());
 
 		logger.info("TestDate=" + sOldDate);
@@ -263,8 +405,7 @@ public class TestIntervalPlugin {
 		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
 
 		// test new values
-		String sNewDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDate"));
+		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
@@ -299,8 +440,7 @@ public class TestIntervalPlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 		// adocumentActivity.replaceItemValue("keyScheduledActivity", "1");
 
-		String sOldDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDate"));
+		String sOldDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 		String sExpectedDate = dateFormater.format(calExptectedDate.getTime());
 
 		logger.info("TestDate=" + sOldDate);
@@ -310,8 +450,7 @@ public class TestIntervalPlugin {
 		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
 
 		// test new values
-		String sNewDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDate"));
+		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
@@ -341,14 +480,12 @@ public class TestIntervalPlugin {
 		// calExptectedDate.add(Calendar.MONTH, +1);
 
 		adocumentContext.replaceItemValue("keyIntervalDatDate", "monthly");
-		adocumentContext
-				.replaceItemValue("datDateWrong", calTestDate.getTime());
+		adocumentContext.replaceItemValue("datDateWrong", calTestDate.getTime());
 
 		ItemCollection adocumentActivity = new ItemCollection();
 		adocumentActivity.replaceItemValue("keyScheduledActivity", "1");
 
-		String sOldDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDateWrong"));
+		String sOldDate = dateFormater.format(adocumentContext.getItemValueDate("datDateWrong"));
 		String sExpectedDate = dateFormater.format(calExptectedDate.getTime());
 
 		logger.info("TestDate=" + sOldDate);
@@ -358,8 +495,7 @@ public class TestIntervalPlugin {
 		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
 
 		// test new values
-		String sNewDate = dateFormater.format(adocumentContext
-				.getItemValueDate("datDateWrong"));
+		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDateWrong"));
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);

@@ -1,19 +1,27 @@
 Interval Plugin 
 ~~~~~~~~~~~~~~
  The Imixs Interval Plugin implements an mechanism to adjust a date field of a workitem
- based on a interval description.
- The interval description is stored in a field with the prafix 'keyinterval' followd by an 
- existing date field. See the following example:
+ based on a interval definition.
+ The interval description is stored in a field with the prafix 'keyinterval' followed by the name of an 
+ existing DateTime field. See the following example:
  
 +-------------------------------+
  keyItervalDatDate=monthly
  datDate=01.01.2014 
 +-------------------------------+
  
- Depending on the keyInterval value the next due date will be computed if the current date
- lies in the past.
+ Depending on the keyInterval value the next due date will be computed in case the current date
+ lies in the past. The intervall description can be a number of days or one of the following literals
  
- The Plugin onyl runs on scheduled activities. So using the interval plugin in a workflow model
+    * daily - increment one day
+ 
+    * weekly - increment 7 days
+ 
+    * monthly - increment one month
+ 
+    * yearly - increment one year
+
+ The Plugin only runs on scheduled activities. So using the interval plugin in a workflow model
  provides an easy way for scheduling periodical intervals. 
  
  The following interval values are currently supported:
@@ -21,6 +29,9 @@ Interval Plugin
  
 *----------+-----------------------------------------------------------+ 
 ||Value    || Description                                              |
+*----------+-----------------------------------------------------------+ 
+| daily    | Adjust the date value for 1 day  |
+|          | Example: 15.01.2014 => 16.01.2014   |
 *----------+-----------------------------------------------------------+ 
 | weekly   | Adjust the date value for 7 days  |
 |          | Example: 15.01.2014 => 22.01.2014   |
@@ -30,4 +41,7 @@ Interval Plugin
 *----------+-----------------------------------------------------------+ 
 | yearly   | Adjust the date value for one year  |
 |          | Example: 15.01.2014 => 15.01.2015   |
+*----------+-----------------------------------------------------------+ 
+| [NUMBER] | Adjust the date value by a number of days  |
+|          | Example '5': 15.01.2014 => 20.01.2015   |
 *----------+-----------------------------------------------------------+ 
