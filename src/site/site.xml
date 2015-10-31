@@ -29,18 +29,33 @@
 			</item>
 
 			<item name="Modelling" href="modelling/index.html" collapse="true">
-			      <item name="Overview" href="modelling/overview.html"/>         
-			      <item name="Installation" href="modelling/install.html"/>
-			      <item name="Eclipse Workbench" href="modelling/eclipse_workbench.html"/>
-			      <item name="Creating a Model" href="modelling/create_model.html"/>
-			      <item name="Process Properties" href="modelling/main_editor.html"/>
-			      <item name="Task Properties" href="modelling/process.html" />
-			      <item name="Event Properties" href="modelling/activities.html"/>
-			      <item name="Text Replacement" href="modelling/textreplacement.html" />
-			      <item name="Reports" href="modelling/report_plugin.html"/>
-			      <item name="Deployment" href="modelling/deployment.html"/>
-     
+				<item name="Overview" href="modelling/overview.html" />
+				<item name="Installation" href="modelling/install.html" />
+				<item name="Eclipse Workbench" href="modelling/eclipse_workbench.html" />
+				<item name="Creating a Model" href="modelling/create_model.html" />
+				<item name="Process Properties" href="modelling/main_editor.html" />
+				<item name="Task Properties" href="modelling/process.html" />
+				<item name="Event Properties" href="modelling/activities.html" />
+				<item name="Text Replacement" href="modelling/textreplacement.html" />
+				<item name="Reports" href="modelling/report_plugin.html" />
+				<item name="Deployment" href="modelling/deployment.html" />
+
 			</item>
+
+
+			<item name="Core API" href="core/index.html" collapse="true">
+				<item name="ItemCollection" href="core/itemcollection.html" />
+				<item name="WorkflowManager" href="core/workflowmanager.html" />
+				<item name="Model" href="core/model.html" />
+				<item name="Plugin API" href="core/plugin-api.html" />
+				<item name="Workflowkernel" href="core/workflowkernel.html" />
+				<item name="XML" href="core/xml/index.html"  collapse="true">
+					<item name="Transform data" href="core/xml/transform_xml.html" />
+					<item name="Post data" href="core/xml/post_xml.html" />
+					<item name="Marshaling" href="core/xml/marshal.html" />
+				</item>
+			</item>
+
 
 			<item name="REST API" href="api-overview.html" collapse="true">
 				<item name="ItemCollection" href="itemcollection.html" />
