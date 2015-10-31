@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="Imixs Open Source Workflow">
 
-
-
 	<skin>
 		<groupId>org.imixs.workflow</groupId>
 		<artifactId>imixs-workflow-maven-skin</artifactId>
@@ -17,26 +15,31 @@
 			<item name="Workflow Engine" href="http://www.imixs.org/jee/" />
 			<item name="XML &amp; WebServices" href="http://www.imixs.org/xml/" />
 			<item name="Web Tools" href="http://www.imixs.org/jsf/" />
-			<item name="Modelling" href="http://www.imixs.org/modeler/" />
+			<item name="Modelling" href="modelling/index.html" />
 			<item name="Script!" href="http://www.imixs.org/script/" />
 		</links>
 
 
 		<menu name="Documenation">
-			<item name="Qick Start" href="index.html">
-
-				<item name="Business Data" href="quickstart_workitem.html" />
-				<item name="Business Process" href="quickstart_businessprocess.html" />
-				<item name="Workflow Engine" href="quickstart_workflowengine.html" />
+			<item name="Quick Start" href="index.html" collapse="true">
+				<item name="Business Data" href="quickstart/workitem.html" />
+				<item name="Business Process" href="quickstart/businessprocess.html" />
+				<item name="Workflow Engine" href="quickstart/workflowengine.html" />
 
 			</item>
 
-			<item name="Modelling" href="api-overview.html" collapse="true">
-				<item name="ItemCollection" href="itemcollection.html" />
-				<item name="WorkflowManager" href="workflowmanager.html" />
-				<item name="Model" href="model.html" />
-				<item name="Plugin API" href="plugin-api.html" />
-				<item name="Workflowkernel" href="workflowkernel.html" />
+			<item name="Modelling" href="modelling/index.html" collapse="true">
+			      <item name="Overview" href="modelling/overview.html"/>         
+			      <item name="Installation" href="modelling/install.html"/>
+			      <item name="Eclipse Workbench" href="modelling/eclipse_workbench.html"/>
+			      <item name="Creating a Model" href="modelling/create_model.html"/>
+			      <item name="Process Properties" href="modelling/main_editor.html"/>
+			      <item name="Task Properties" href="modelling/process.html" />
+			      <item name="Event Properties" href="modelling/activities.html"/>
+			      <item name="Text Replacement" href="modelling/textreplacement.html" />
+			      <item name="Reports" href="modelling/report_plugin.html"/>
+			      <item name="Deployment" href="modelling/deployment.html"/>
+     
 			</item>
 
 			<item name="REST API" href="api-overview.html" collapse="true">
@@ -54,6 +57,10 @@
 				<item name="Plugin API" href="plugin-api.html" />
 				<item name="Workflowkernel" href="workflowkernel.html" />
 			</item>
+
+			<item name="JavaScript" href="itemcollection.html" />
+
+			<item name="Deployment" href="itemcollection.html" />
 
 		</menu>
 
