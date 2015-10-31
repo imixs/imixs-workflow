@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="Imixs Open Source Workflow">
+  
+  
+  
+	<skin>
+		<groupId>org.imixs.workflow</groupId>
+		<artifactId>imixs-workflow-maven-skin</artifactId>
+		<version>1.0.0</version>
+	</skin>
+  
+ 
+  <body>
+    <links>
+      <item name="Home" href="http://www.imixs.org/" />
+      <item name="Quick Start" href="index.html" />
+      <item name="Workflow Engine" href="http://www.imixs.org/jee/" />
+      <item name="XML &amp; WebServices" href="http://www.imixs.org/xml/" />
+      <item name="Web Tools" href="http://www.imixs.org/jsf/" />
+      <item name="Modelling" href="http://www.imixs.org/modeler/" />
+      <item name="Script!" href="http://www.imixs.org/script/" />
+    </links>
+
+
+    <menu name="Introduction">
+      <item name="How does it work?" href="index.html"/>
+     
+      <item name="Business Data" href="quickstart_workitem.html"/>
+      <item name="Business Process" href="quickstart_businessprocess.html"/>
+      <item name="Workflow Engine" href="quickstart_workflowengine.html"/>
+     
+    </menu>
+    
+    <menu name="The Workflow API">
+      <item name="Overview" href="api-overview.html"/>
+      <item name="ItemCollection" href="itemcollection.html"/>   
+      <item name="WorkflowManager" href="workflowmanager.html"/>   
+      <item name="Model" href="model.html"/>
+      <item name="Plugin API" href="plugin-api.html"/>         
+      <item name="Workflowkernel" href="workflowkernel.html"/>
+    
+    </menu>
+
+ 	<menu name="About the project">
+ 	  <item name="Goals" href="goals.html"/>
+ 	 <item name="Download &amp; Maven" href="maven_howto.html"/>
+     <!--  <item name="Project Summary" href="project-summary.html"/>   -->    
+      <item name="Project License" href="license.html"/>      
+      <item name="Project Team" href="team-list.html"/>    
+      <item name="Issue Tracking" href="issue-tracking.html"/>      
+      <item name="Mailing Lists" href="mail-lists.html"/>      
+	</menu>
+
+ 	
+
+
+  </body>
+ 
+</project>
