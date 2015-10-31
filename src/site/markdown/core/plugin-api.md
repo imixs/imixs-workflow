@@ -1,4 +1,4 @@
-#The Imixs Plug-in API
+#The Plug-in API
 
 The Imixs Plug-in API is a powerful concept to extend Imixs-Workflow with technical 
 aspects of your workflow management system.

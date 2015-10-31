@@ -55,5 +55,5 @@ Also you can fetch a list of all workitems assigned to the current user. This li
     ....
 
 The Imixs WorkflowServce provides a lot of methods to manage workitems processed by the 
-workflow engine.  See the {{{http://www.imixs.org/jee/}workflow engine section}} for more details.
+workflow engine.  See the [workflow engine section](../../jee/index.html) for more details.
 

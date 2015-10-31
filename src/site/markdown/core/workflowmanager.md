@@ -1,4 +1,4 @@
-#The Imixs Workflow Manager
+#The WorkflowManager
 
 The WorkflowManager is the central interface to implement a Workflow Engine. 
 This interface provides the general functionality to create, process and search Workitems. 

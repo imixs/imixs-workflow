@@ -40,13 +40,13 @@ To use Imixs-Workflow in your own business application you need to configure and
  
   * Provide a Database where the Workflow Model and the Workitems can be stored
   * Configure a Security Realm to grant access for Actors
-  * Define a Workflow Model using the {{{http://www.imixs.org/modeler/}Imixs-Workflow-Modeler}} 
+  * Define a Workflow Model using the [Imixs-Workflow-Modeler](./modelling/index.html) 
   
 To integrate Imixs-Worflow in your JEE Application follow the next steps: 
  
-  * Add the Imixs-Workflow jar files into your application (see the {{{http://www.imixs.org/jee/deployment/overview.html}deployment guide}})
-  * Add the Imixs-RestService into your application (see the {{{http://www.imixs.org/xml/deployment_rest_service.html}RestService-deployment guide}})
+  * Add the Imixs-Workflow jar files into your application. Read more on the [deployment guide](/jee/deployment/overview.html)
+  * Add the Imixs-RestService into your application. Read more on [RestService-deployment guide](http://www.imixs.org/xml/deployment_rest_service.html])
   * Deploy your application together with the Imixs-Workflow on you Application Server
 
-Before your deploy your application take care about the persistence and the security configuration.  You can find a {{{https://github.com/imixs/imixs-jsf-example}JSF Sample Application on GitHub}} which can be used to start. Also take a look at the web tutorial on the {{{http://blog.imixs.org/building-web-application-imixs-workflow-part/}Imixs Blog}}.
+Before your deploy your application take care about the persistence and the security configuration.  You can find a [Sample Application on GitHub](https://github.com/imixs/imixs-jsf-example) which can be used to start. Also take a look at the web tutorial on the [Imixs Blog](http://blog.imixs.org/building-web-application-imixs-workflow-part/).
 

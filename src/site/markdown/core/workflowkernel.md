@@ -1,4 +1,4 @@
-#The Workflow-Kernel
+#The WorkflowKernel
 
 The Workflowkernel is the core component of this Imixs Workflow API to control the processing of a workitem. A Workflowmanager implementation (like the Imixs JEE Workflow) loads an instance of the Workflowkernel, hand over a Model Instance and register a list of workflow plugins. To process a single Workitem you typical call the method 'process' of the WorkflowManager  interface.
  
