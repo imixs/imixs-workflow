@@ -22,54 +22,28 @@ or update the current workflow scheduler configuration entity.  The methods "sta
 The Imixs WorkflowSchedulerService uses a calendar-based syntax for scheduling based on  the EJB 3.1 Timer Service specification. The syntax takes its roots from the Unix cron utility.
 The following attributes can be stored in the txtConfiguration property of the workflowScheulderSercice  configuration:
   
-*------------+---------------------+---------------------------------------------+--------------+ 
-||Attriubte  ||Description         || Possible Values                            ||Default Value|       
-*------------+---------------------+---------------------------------------------+--------------+ 
-|second      | One or more seconds | [0,59]                                      |0             |
-|            | within a minute     |                                             |              |
-*------------+---------------------+---------------------------------------------+--------------+ 
-|minute      | One or more minutes | [0,59]                                      |0             |
-|            | within a hour       |                                             |              |
-*------------+---------------------+---------------------------------------------+--------------+ 
-|hour        | One or more hours   | [0,23]                                      |0             |
-|            | within a day        |                                             |              |
-*------------+---------------------+---------------------------------------------+--------------+ 
-|dayOfMonth  | One or more days    | [1,31] or "1st","2nd","3rd",....            |*             |
-|            | within a month      | or "Sun","Mon","Tue","Wed","Thu","Fri","Sat"|              |
-|            |                     | or "Last" (the last day in month)           |              |
-|            |                     | or -x (means x day(s) before the last day of|              |
-|            |                     | or the month                                |              |
-*------------+---------------------+---------------------------------------------+--------------+ 
-|month       | One or more month   | [1,12] or "Jan","Feb","Mar","Apr","May",    |*             |
-|            | within a year       | "Jun","Jul","Aug","Sep","Oct","Nov","Dec"   |              |
-*------------+---------------------+---------------------------------------------+--------------+ 
-|dayOfWeek   | One or more days    | [1,7] or "Sun",Mon","Thu","Wed","Thu","Fri",|*             |
-|            | within a week       | "Sat"  "0" and "7" refer to Sunday!         |              |
-*------------+---------------------+---------------------------------------------+--------------+ 
-|year        | A paticular year    | 4 digit calendar year                       |*             |
-*------------+---------------------+---------------------------------------------+--------------+ 
+|Attriubte   |Description          | Possible Values                             |Default Value |       
+|------------|---------------------|---------------------------------------------|--------------| 
+|second      | One or more seconds  within a minute  | [0,59]                    |0             |
+|minute      | One or more minutes  within a hour | [0,59]                       |0             |
+|hour        | One or more hours  within a day  | [0,23]                         |0             |
+|dayOfMonth  | One or more days <br />within a month  | [1,31] or "1st","2nd","3rd",.... <br />or "Sun","Mon","Tue","Wed","Thu","Fri","Sat" <br />or "Last" (the last day in month) <br />or -x (means x day(s) before the last day of <br /> or the month                                        |*  |
+|month       | One or more month  within a year  | [1,12] or "Jan","Feb","Mar","Apr","May",<br /> "Jun","Jul","Aug","Sep","Oct","Nov","Dec"  | * |
+|dayOfWeek   | One or more days within a week    | [1,7] or "Sun",Mon","Thu","Wed","Thu","Fri","Sat"  "0" and "7" refer to Sunday!           |*  |
+|year        | A paticular year    | 4 digit calendar year                                                                                   |*   |
 |timezone    | A specific time zone| see time zoneinof (or tz) database          |*             |
-*------------+---------------------+---------------------------------------------+--------------+ 
 |start       | Start date          | yyyy/mm/dd                                  |              |
-*------------+---------------------+---------------------------------------------+--------------+ 
 |end         | End date            | yyyy/mm/dd                                  |              |
-*------------+---------------------+---------------------------------------------+--------------+ 
 
 Each attribute of an expression supports values in different formats. For example you can define a list of days or a range of years. The the following table with suported value formats: 
 
-*------------+------------------------+-------------------------------------+ 
-||Format    ||Description             || Example                             |       
-*------------+------------------------+-------------------------------------+ 
+|Format      |Description             | Example                             |       
+|------------|------------------------|-------------------------------------| 
 |Single Value|only one possible value | year="2009"  or month="May"         |
-*------------+------------------------+-------------------------------------+ 
 |Wildcard    |all possible values     | year="*"  or dayOfWeek="*"           |
-*------------+------------------------+-------------------------------------+ 
 |List        |two or more values      | year="2014,2015"  or dayOfWeek="Sat,Sun"  |
-*------------+------------------------+-------------------------------------+ 
 |Range       |range of values         | second="1-10" or dayOfWeek="Mon-Fri"  |
-*------------+------------------------+-------------------------------------+ 
 |Increments  |startignpoint and increment| minute="*/15" or second="30/10"  |
-*------------+------------------------+-------------------------------------+ 
 
 So you can configure the scheduler is several ways. Here a some typical exampls for possible configuration:
  
@@ -100,29 +74,18 @@ So you can configure the scheduler is several ways. Here a some typical exampls 
 The scheudler information is stored in the property 'txtConfiguration' as a String List.
 The configuration entity for the WorkflowSchedulerService holds the following additional information. 
  
-*------------+----------+---------------------------------------------------------------+ 
-|| property  ||type     || description                                                  |       
-*------------+----------+---------------------------------------------------------------+ 
+| property   |type      | description                                                  |       
+|------------|----------|--------------------------------------------------------------| 
 |$uniqueid   | String   | defines the unique ID the for the corresponding TimerService  |
-*------------+----------+---------------------------------------------------------------+ 
 |txtConfiguration| String List   | Holds information about the calendar based scheduling|
-*------------+----------+---------------------------------------------------------------+ 
 |statusmessage|String   | last status message (read only)                               |
-*------------+----------+---------------------------------------------------------------+ 
 |Schedule    | String   | scheduling information (read only)                            |
-*------------+----------+---------------------------------------------------------------+ 
 |nextTimeout | Date     | Timestamp for next timeout                                    |
-*------------+----------+---------------------------------------------------------------+ 
 |timeRemaining | Long   | milisecnds until next timeout                                 |
-*------------+----------+---------------------------------------------------------------+ 
 |datLastRun  | Date     | Timestamp of last sucessfull run (read only)                  |
-*------------+----------+---------------------------------------------------------------+ 
 |numInterval | int      | optional- timer interval if no txtConfiguration is defined    |
-*------------+----------+---------------------------------------------------------------+ 
 |datStart    | Date      | optional- start date for timer  if no txtConfiguration is defined    |
-*------------+----------+---------------------------------------------------------------+ 
 |datStop     | Date      | optional- stop date for timer  if no txtConfiguration is defined    |
-*------------+----------+---------------------------------------------------------------+ 
 
 <strong>Note:</strong> The properties "statusmessage", "schedule", "nextTimeout" and "timeRemaining" are read only and will be updated computed if the method findConfiguration() was called.
  

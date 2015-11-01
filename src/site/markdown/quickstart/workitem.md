@@ -55,64 +55,32 @@ The following table provides an overview about the data of a process instance ma
  Imixs Workflow Engine.  The column 'read/write' indicates if the property can be controlled by an application:
  
  
-*--------------+--------+------+-----------------------------------------------+ 
-|| Core        || Type   ||read/\ || Description                               |
-|| Properties  ||        ||write  ||                                           |
-*--------------+--------+------*-----------------------------------------------+
-|$ModelVersion |String  |yes   | The Version of the model the workitem belongs to  |
-*--------------+--------+------*-----------------------------------------------+
-|$ProcessID    |Integer |yes   | The current ProcessID of the workItem         |
-*--------------+--------+------*-----------------------------------------------+
-|$ActivityID   |Integer |yes   | The next activity to be processed by the workflow engine    |
-*--------------+--------+------*-----------------------------------------------+
-|$Created      |Date    |no    | Date of creation                              |
-*--------------+--------+------*-----------------------------------------------+
-|$Modified     |Date    |no    | Date of last modification                     |
-*--------------+--------+------*-----------------------------------------------+
-|$IsAuthor     |Boolean |no    | Indicates if the current user has write access|
-*--------------+--------+------*-----------------------------------------------+
-|$ReadAccess   |List    |no    | String list of User/Roles with read access    |
-*--------------+--------+------*-----------------------------------------------+
-|$WriteAccess  |List    |no    | String list of User/Roles with write access   |
-*--------------+--------+------*-----------------------------------------------+
-|$uniqueId     |String  |no    | The unique ID of this workItem                |
-*--------------+--------+------*-----------------------------------------------+
-|$uniqueIdRef  |String  |yes   | A reference to a connected workItem (child process) |
-*--------------+--------+------*-----------------------------------------------+
-|$workitemid   |String  |no    | The process instance id of this workitem      |
-*--------------+--------+------*-----------------------------------------------+
-|| Status Information   ||     ||    ||                                        |
-*--------------+--------+------*-----------------------------------------------+
-|namcreator    |String  |no    |The user who created the workItem.             |
-*--------------+--------+------*-----------------------------------------------+
-|namCurrentEditor|String|no    |The user who invoked the processWorkitem() method.       |
-*--------------+--------+------*-----------------------------------------------+
-|namOwner      |List    |no    |String list of User/Roles, that are owners of that WorkItem. |
-*--------------+--------+------*-----------------------------------------------+
+| Property        | Type   |read/write | Description                               |
+|-----------------|--------|-----------|-------------------------------------------|
+|$ModelVersion    |String  |yes   | The Version of the model the workitem belongs to  |
+|$ProcessID       |Integer |yes   | The current ProcessID of the workItem         |
+|$ActivityID      |Integer |yes   | The next activity to be processed by the workflow engine    |
+|$Created         |Date    |no    | Date of creation                              |
+|$Modified        |Date    |no    | Date of last modification                     |
+|$IsAuthor        |Boolean |no    | Indicates if the current user has write access|
+|$ReadAccess      |List    |no    | String list of User/Roles with read access    |
+|$WriteAccess     |List    |no    | String list of User/Roles with write access   |
+|$uniqueId        |String  |no    | The unique ID of this workItem                |
+|$uniqueIdRef     |String  |yes   | A reference to a connected workItem (child process) |
+|$workitemid      |String  |no    | The process instance id of this workitem      |
+|namcreator       |String  |no    |The user who created the workItem.             |
+|namCurrentEditor |String|no    |The user who invoked the processWorkitem() method.       |
+|namOwner         |List    |no    |String list of User/Roles, that are owners of that WorkItem. |
 |txtworkflowgroup |String|no   |The name of the current process group          |
-*--------------+--------+------*-----------------------------------------------+
 |txtworkflowstatus|String|no   |The name of the current workflow status            |
-*--------------+--------+------*-----------------------------------------------+
 |txtworkflowsummary |String|no |A short description of the current status      |
-*--------------+--------+------*-----------------------------------------------+
 |txtworkflowabstract|String|no |A long description of the current status       |
-*--------------+--------+------*-----------------------------------------------+
 |txtworkflowimageurl|String|no |A link to an image which displays the current status |
-*--------------+--------+------*-----------------------------------------------+
 |txtworkflowhistorylog|List |no|History of all processed activities            |
-*--------------+--------+------*-----------------------------------------------+
 |txtworkflowresultmessage |String  |no    |The result message of last process step |
-*--------------+--------+------*-----------------------------------------------+
-|| Logging Information  ||     ||    ||                                        |
-*--------------+--------+------*-----------------------------------------------+
 |txtworkflowactivitylog |List  |no    |Log of processed workflow activities    |
-*--------------+--------+------*-----------------------------------------------+
 |txtworkflowpluginlog |List|no |The plugin execution log                       |
-*--------------+--------+------*-----------------------------------------------+
 |timworkflowlastaccess |Date|no|The timestamp of the last processing action    |
-*--------------+--------+------*-----------------------------------------------+
 |numlastactivityid|Integer|no  |The last processed workflow activity ID        |
-*--------------+--------+------*-----------------------------------------------+
-|namlasteditor |String  |no    |The last user, that invoked the process method |
-*--------------+--------+------*-----------------------------------------------+
+|namlasteditor    |String  |no    |The last user, that invoked the process method |
  

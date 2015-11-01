@@ -101,30 +101,20 @@ This datatype is typical used in service methods returning a collection of worki
 ## Datatype mapping 
 The data types can be mapped on different platforms.  The following section will give a short overview about the usage of  datatypes in the Java and the .NET platform.
  
+
+
  
-*--------------------+-------------------+-------------------+ 
 | XML Schema Type    | Java type         |.NET type          | 
-*--------------------*-------------------+-------------------+
+|--------------------|----------------|------------------|
 | xsd:byte           | Byte,byte         |                   | 
-*--------------------*-------------------+-------------------+
 | xsd:boolean        | Boolean,boolean   | boolean           | 
-*--------------------*-------------------+-------------------+
 | xsd:short          | Short,short       |                   | 
-*--------------------*-------------------+-------------------+
 | xsd:int            | Integer,int       |                   | 
-*--------------------*-------------------+-------------------+
 | xsd:long           | Long,long         |                   | 
-*--------------------*-------------------+-------------------+
 | xsd:float          | Float, float      | float             | 
-*--------------------*-------------------+-------------------+
 | xsd:double         | Double, double    | double            | 
-*--------------------*-------------------+-------------------+
 | xsd:string         | java.lang.String  | string            | 
-*--------------------*-------------------+-------------------+
 | xsd:dateTime       | java.util.Calendar| dateTime          | 
-*--------------------*-------------------+-------------------+
 | xsd:integer        | java.math.BigInteger|                 | 
-*--------------------*-------------------+-------------------+
 | xsd:decimal        | java.math.BigDecimal| decimal         | 
-*--------------------*-------------------+-------------------+
  

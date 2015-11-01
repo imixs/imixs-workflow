@@ -39,21 +39,13 @@ It is important to take care about that a user must have at least read access to
 
  ACL Table:
 
-*--------------+---------+---------+---------+---------+---------+---------+ 
-| AccessLevel  |read     |read     |read     |write    |write    |write    |       
-|              |public   |personal |protected|public   |personal |protected|   
-|              |workitems|workitems|workitems|workitems|workitems|workitems|  
-*--------------*---------*---------*---------*---------*---------*---------+
+|AccessLevel  |read<br/>public <br/>workitems    |read <br/>protected<br/>workitems    |read <br /> personal<br/>workitems    |write<br/>public <br/>workitems    |write <br/>protected<br/>workitems    |write <br /> personal<br/>workitems    |       
+|--------------|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|
 |NOACCESS      | no      | no      | no      | no      |  no     | no      |
-*--------------*---------*---------*---------*---------*---------*---------+
 |READACCESS    | yes     | yes     | no      | no      |  no     | no      |
-*--------------*---------*---------*---------*---------*---------*---------+
-|AUTHORACCESS  | yes     | yes     | no      | no      |  yes     | no     |
-*--------------*---------*---------*---------*---------*---------*---------+
+|AUTHORACCESS  | yes     | yes     | no      | no      |  yes    | no      |
 |EDITORACCESS  | yes     | yes     | no      | yes     |  yes    | yes     |
-*--------------*---------*---------*---------*---------*---------*---------+
 |MANAGERACCESS | yes     | yes     | yes     | yes     |  yes    | yes     |
-*--------------*---------*---------*---------*---------*---------*---------+
 
 
  
@@ -78,7 +70,6 @@ Read access privileges assigned to a workitem define all users who have read pri
   * The workitem does not contain restrictions in the reader access nor the write access. 
 
 ## How to Restrict Write Access   
-~~~~~~~~~~~~~~~~~~~~
 Write access privileges assigned to a workitem define the write access for all users who  have author privileges (AUTHORACCESS) inside the workflow system. Those users can process  and remove a workitem through the methods provided by the workflow service. Even workitems the user has created can not be modified if the user is not explicit listed in the access  privileges. Users who are not authorized to read a workitem  will never be able to edit a workitem. This even applies if you specify write access privileges for  these users.   Access by users who have at least editor access privileges for the workflow system is not  restricted by an author field. The write access provided for a workitem only affects users  with author access privileges for the hole workflow system. 
 
 Users who have author access privileges can edit a workitem if the following conditions are  met:
