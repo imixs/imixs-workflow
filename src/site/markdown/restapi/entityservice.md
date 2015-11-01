@@ -1,14 +1,9 @@
-
-The Entity Service
-~~~~~~~~~~~~~~~~~~~~
- The main resource /entity is uses to read entities and collections through 
- the Imixs Rest Service Interface.
+#The Entity Service
+ The main resource /entity is uses to read entities and collections through  the Imixs Rest Service Interface.
  
  
-* The /entity GET resources
-~~~~~~~~~~~~~~
-
- The /entity resources are used to get direct access to the entity service EJB:
+## The /entity GET resources
+The /entity resources are used to get direct access to the entity service EJB:
 
 *-----------------------------------------------*-------------------------------------------* 
 | URI                                           | Description                               | 
@@ -27,14 +22,8 @@ The Entity Service
 *-----------------------------------------------+-------------------------------------------+
 
  
-* Resource Options
-~~~~~~~~~~~~~~~~~~~~ 
- 
- You can specify additional URI paramters to filter the resultset 
- or to navigate through a sub list of entities.
-
- Append optional arguments to define the number of entities returned by a URL, the starting
- point inside the list or the sort order. Combine any of the following arguments for the desired result. 
+## Resource Options
+You can specify additional URI paramters to filter the resultset  or to navigate through a sub list of entities. Append optional arguments to define the number of entities returned by a URL, the starting point inside the list or the sort order. Combine any of the following arguments for the desired result. 
 
 
 *-------------*-----------------------------------------------------*-----------------------*
@@ -54,11 +43,9 @@ The Entity Service
         or the current user has sufficien read access. 
         
 
-* Administrative resource URIs
-~~~~~~~~~~~~~~
+##Administrative resource URIs
 
- The Entity Rest Service provides resource URIs for administrative purpose. To access these resources, the caller 
- must at least be in role "org.imixs.ACCESSLEVEL.MANAGERACCESS". These administrative URIs should not be used in 
+The Entity Rest Service provides resource URIs for administrative purpose. To access these resources, the caller  must at least be in role "org.imixs.ACCESSLEVEL.MANAGERACCESS". These administrative URIs should not be used in 
  general business logic.  For more information about the Entity Service see the 
  {{{http://www.imixs.org/jee/services/entityservice.html}EntityService interface description}}.
  

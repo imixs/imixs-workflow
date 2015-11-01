@@ -1,13 +1,9 @@
-
-The Workflow Service
-~~~~~~~~~~~~~~~~~~~~
- The main resource /workflow is uses to read Workitems and Workitem collections through the Imixs Rest Service Interface.
+#The Workflow Service
+The main resource /workflow is uses to read Workitems and Workitem collections through the Imixs Rest Service Interface.
  
  
-* The /workflow GET resources
-~~~~~~~~~~~~~~
-
- The /workflow resources are used to get the business objects provided by the Imixs Workflow Manager:
+## The /workflow GET resources
+The /workflow resources are used to get the business objects provided by the Imixs Workflow Manager:
 
 *-----------------------------------------------*-------------------------------------------* 
 | URI                                           | Description                               | 
@@ -100,11 +96,8 @@ The Workflow Service
 |                                               | $file of the spcified workitem            |
 *-----------------------------------------------+-------------------------------------------+
 
-
-* The /worflow resources PUT and POST
-~~~~~~~~~~~~~~
-
- The /workflow/xxxx PUT and POST resources URIs are used to write business objects:
+## The /worflow resources PUT and POST
+The /workflow/xxxx PUT and POST resources URIs are used to write business objects:
 
 
 *------------------------------*-------------------------------------------* 
@@ -122,16 +115,8 @@ The Workflow Service
 
 
 
-
- 
-* Resource Options
-~~~~~~~~~~~~~~~~~~~~ 
- 
- You can specify additional URI paramters to filter the resultset 
- or to navigate through a sub list of workitems.
-
- Append optional arguments to define the number of workitems returned by a URL, the starting
- point inside the list or the sort order. Combine any of the following arguments for the desired result. 
+## Resource Options
+You can specify additional URI paramters to filter the resultset  or to navigate through a sub list of workitems. Append optional arguments to define the number of workitems returned by a URL, the starting point inside the list or the sort order. Combine any of the following arguments for the desired result. 
 
 
 *-------------*-----------------------------------------------------*-----------------------*
@@ -154,9 +139,6 @@ The Workflow Service
 *-------------+-----------------------------------------------------+-----------------------+
 		
 
-   [Note:] The Imixs JEE Workflow manages the access to workitems by individual access lists per each entity.
-        So the result of a collection of workitems will only contain entities where the current user has a 
-        read access right. Without access the wokitem will not be returned by the workflowManager and so 
-        it will not be included in the list. 
+<strong>Note:</strong> The Imixs JEE Workflow manages the access to workitems by individual access lists per each entity. So the result of a collection of workitems will only contain entities where the current user has a read access right. Without access the wokitem will not be returned by the workflowManager and so it will not be included in the list. 
   
    

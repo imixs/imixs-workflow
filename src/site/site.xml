@@ -25,7 +25,6 @@
 				<item name="Business Data" href="quickstart/workitem.html" />
 				<item name="Business Process" href="quickstart/businessprocess.html" />
 				<item name="Workflow Engine" href="quickstart/workflowengine.html" />
-
 			</item>
 
 			<item name="Modelling" href="modelling/index.html" collapse="true">
@@ -57,12 +56,12 @@
 			</item>
 
 
-			<item name="REST API" href="api-overview.html" collapse="true">
-				<item name="ItemCollection" href="itemcollection.html" />
-				<item name="WorkflowManager" href="workflowmanager.html" />
-				<item name="Model" href="model.html" />
-				<item name="Plugin API" href="plugin-api.html" />
-				<item name="Workflowkernel" href="workflowkernel.html" />
+			<item name="REST API" href="./restapi/index.html" collapse="true">
+				<item name="Workflow Service" href="./restapi/workflowservice.html" />
+				<item name="Model Service" href="./restapi/modelservice.html" />
+				<item name="Report Service" href="./restapi/reportservice.html" />
+				<item name="Entity Service" href="./restapi/entityservice.html" />
+				<item name="JSON" href="./restapi/json.html" />
 			</item>
 
 			<item name="Workflow Engine" href="./engine/index.html"
@@ -73,17 +72,20 @@
 				</item>
 				<item name="ModelSerice" href="./engine/modelservice.html" />
 				<item name="WorkflowSerice" href="./engine/workflowservice.html" />
-
-				<item name="Plugins" href="./engine/plugins/index.html" collapse="true">
-				<item name="Core Plugins" href="./engine/plugins/coreplugins.html" />
-				<item name="Analysis Plugin" href="./engine/plugins/analysisplugin.html" />
-				<item name="Rule Plugin" href="./engine/plugins/ruleplugin.html" />
-				<item name="Mail Plugin" href="./engine/plugins/mailplugin.html" />
-				<item name="Intervall Plugin" href="./engine/plugins/intervallplugin.html" />
-				<item name="Version Plugin" href="./engine/plugins/versionplugin.html" />
-				<item name="Lucene Plugin" href="./engine/plugins/luceneplugin.html" />
-				<item name="Exception handling" href="./engine/plugins/exception_handling.html" />
-				
+				<item name="Access Control" href="./engine/acl.html" />
+				<item name="Plugins" href="./engine/plugins/index.html"
+					collapse="true">
+					<item name="Appliation Plugin" href="./engine/plugins/applicationplugin.html" />
+					<item name="Result Plugin" href="./engine/plugins/resultplugin.html" />
+					<item name="History Plugin" href="./engine/plugins/historyplugin.html" />
+					<item name="Access Plugin" href="./engine/plugins/accessplugins.html" />
+					<item name="Analysis Plugin" href="./engine/plugins/analysisplugin.html" />
+					<item name="Rule Plugin" href="./engine/plugins/ruleplugin.html" />
+					<item name="Mail Plugin" href="./engine/plugins/mailplugin.html" />
+					<item name="Intervall Plugin" href="./engine/plugins/intervallplugin.html" />
+					<item name="Version Plugin" href="./engine/plugins/versionplugin.html" />
+					<item name="Lucene Plugin" href="./engine/plugins/luceneplugin.html" />
+					<item name="Exception handling" href="./engine/plugins/exception_handling.html" />
 				</item>
 
 
@@ -96,7 +98,7 @@
 			<item name="JavaScript" href="itemcollection.html" />
 
 			<item name="Deployment" href="./deployment/index.html" collapse="true">
-				<item name="Deployment Guide" href="./deployment/overview.html" />
+				<item name="Deployment Guide" href="./deployment/deployment_guide.html" />
 				<item name="Database Schema" href="./deployment/database_schema.html" />
 				<item name="Security" href="./deployment/security.html" />
 				<item name="Concurrency" href="./deployment/concurrency/security.html" />
@@ -116,14 +118,11 @@
 			<!-- <item name="Project Summary" href="project-summary.html"/> -->
 			<item name="Project License" href="license.html" />
 			<item name="Issue Tracking" href="issue-tracking.html" />
-		</menu>
-
-
-		<menu name="Maven">
-			<item name="How to use" href="maven_howto.html" />
 			<item name="Dependencies" href="dependencies.html" />
 			<item name="Plugin Management" href="plugin-management.html" />
 		</menu>
+
+
 
 		<menu name="Source Code">
 			<item name="Core" href="source-repository.html" collapse="true">

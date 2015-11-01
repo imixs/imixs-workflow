@@ -35,18 +35,39 @@ The Workflow Engine controls each process instance depending on the model defini
 A Workflow Management System provides views of all running process instances. A 'tasklist' contains all open tasks from the view of an individual actor. The statuslist provides the user with the latest status information about running process instances.
  
  
-##How to get started...
-To use Imixs-Workflow in your own business application you need to configure and integrate  the Imixs-Workflow Engine. Before you begin, consider the following:
+ 
+ 
+ 
+##Getting started...
+There are several ways how you can benefit from Imixs-Workflow. The following section gives you a short guideline how to find out the best way  to use Imixs-Workflow in your software development project.
+ 
+###Using the Imixs-Workflow Engine out of the Box
+Using Imixs-Workflow out of the Box is a good starting point to run the workflow engine  without modification or Java EE development. You can start with the [Imixs-Workflow Sample Application](https://github.com/imixs/imixs-jsf-example) if you don't want to develop a new project from scratch. 
+
+Before you begin, consider the following:
  
   * Provide a Database where the Workflow Model and the Workitems can be stored
   * Configure a Security Realm to grant access for Actors
   * Define a Workflow Model using the [Imixs-Workflow-Modeler](./modelling/index.html) 
+  * Deploy the Workflow Application
   
-To integrate Imixs-Worflow in your JEE Application follow the next steps: 
+
+
+###Using Imixs-Workflow in a Java EE Project 
+Using Imixs-Workflow in a Java EE project is the typical way to extend  your own java project with the functionality of a workflow engine.  In this kind of usage you develop your own Java EE project. Inside your application you integrate the Imixs-Workflow Engine to provide the typical functionality of a Workflow Management System. 
+
+The {{{./deployment/overview.html}Imixs-Workflow deployment section}} describes how to deploy the Imixs-Workflow engine in an enterprise application (EAR) in more detail. To integrate Imixs-Worflow in your JEE Application consider the following steps: 
  
   * Add the Imixs-Workflow jar files into your application. Read more on the [deployment guide](/jee/deployment/overview.html)
   * Add the Imixs-RestService into your application. Read more on [RestService-deployment guide](http://www.imixs.org/xml/deployment_rest_service.html])
   * Deploy your application together with the Imixs-Workflow on you Application Server
 
-Before your deploy your application take care about the persistence and the security configuration.  You can find a [Sample Application on GitHub](https://github.com/imixs/imixs-jsf-example) which can be used to start. Also take a look at the web tutorial on the [Imixs Blog](http://blog.imixs.org/building-web-application-imixs-workflow-part/).
+  
+   
+###Contribute to the Imixs-Workflow project
+You can also help in developing the Imixs-Workflow project or use the results of the project to  implement new components.  In this case you extend the implementation with additional features or just add a different behavior. So in different of the usage described before, you need more than a running instance of the Workflow  Engine or the Java EE libraries. In this kind of usage you should check out the source  code packages from the {{{./source-repository.html}Source Code repository}} and set up a Java EE Project like  the Imixs Java EE Sample Application.  You can test the different parts of the implementation and extend the existing components. The source code include also some JUnit tests which can help you to test different behaviors of the engine in more detail.
 
+See the [Imixs Workflow community site on GitHub](https://github.com/imixs/imixs-workflow) for further details or to ask questions or report bugs. 
+
+ 
+ 

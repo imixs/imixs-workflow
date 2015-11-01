@@ -1,14 +1,9 @@
-
-
-The Model Service
-~~~~~~~~~~~~~~~~~~~~
- The main ressource /model is used to read and update workflow models through the Rest Service Interface.
+#The Model Service
+The main ressource /model is used to read and update workflow models through the Rest Service Interface.
  
 
-* The /model resources GET
-~~~~~~~~~~~~~~
-
- The /model GET resources are used to get business objects provided by the Imixs Model Manager:
+## The /model resources GET
+The /model GET resources are used to get business objects provided by the Imixs Model Manager:
 
 
 *-----------------------------------------------*-------------------------------------------* 
@@ -35,10 +30,8 @@ The Model Service
 
 
 
-* The /model resources DELETE
-~~~~~~~~~~~~~~
-
- The /model DELETE resources URIs are used to delete business objects:
+##The /model resources DELETE
+The /model DELETE resources URIs are used to delete business objects:
 
 
 *-----------------------------------------------*-------------------------------------------*
@@ -49,10 +42,8 @@ The Model Service
 
 
 
-* The /model resources PUT and POST
-~~~~~~~~~~~~~~
-
- The /model PUT and POST resources URIs are used to write a model:
+##The /model resources PUT and POST
+The /model PUT and POST resources URIs are used to write a model:
 
 *----------------------------*------------------------------------------------------* 
 | URI                        | Description                                          | 

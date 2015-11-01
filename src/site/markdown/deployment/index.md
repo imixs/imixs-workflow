@@ -35,7 +35,7 @@ The Imixs-Workflow Engine stores the workflow model and its process instances in
 		</persistence-unit>
 	</persistence> 
 
-In this example eclipselink is used and a JDBC Pool 'jdbc/workflow-db' is expected. The jar-file entry need to match the deployed version of the Imixs-Workflow Engine.
+See the section [Deployment Guide](./deployment_guide.html) for further details.
 
 
 ## Security

@@ -109,7 +109,7 @@ Using the maven-ejb-plugin you can add a declaration for additional manifest ent
  
 Be careful that the jar versions defined by the Class-Path entry are matching the versions provided by  the EAR module!
  
-##Packaging the Imixs JEE Component into an EAR using maven
+###Packaging the Imixs JEE Component into an EAR using maven
 To package the Imixs JEE components into your EAR you can extend the pom.xml of your ear module. The following example shows how you define the structure of your EAR using maven:
  
 	<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
