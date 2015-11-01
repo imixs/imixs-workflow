@@ -3,7 +3,7 @@ The Imixs-BPMN Modeler is a graphical tool for authoring workflow models that ar
 its applications. There a several online tutorials about the details of the BPMN 2.0 and the 
 specification.
  
-Imixs-BPMN is based on the  {{{https://www.eclipse.org/bpmn2-modeler/}Eclipse BPMN2 Modeler}} and the Eclipse BPMN2 Metamodel, which was developed by contributing members of the OMG BPMN 2.0 working group and is fully compliant with the spec. The Eclipse BPMN2 Modeler UI surfaces the most commonly used BPMN elements.  Imixs-BPMN extends the BPMN2 metamodel in the manner prescribed by the specification.
+Imixs-BPMN is based on the [Eclipse BPMN2 Modeler](https://www.eclipse.org/bpmn2-modeler/) and the Eclipse BPMN2 Metamodel, which was developed by contributing members of the OMG BPMN 2.0 working group and is fully compliant with the spec. The Eclipse BPMN2 Modeler UI surfaces the most commonly used BPMN elements.  Imixs-BPMN extends the BPMN2 metamodel in the manner prescribed by the specification.
  
 ##General concepts 
 As shown in the screenshot below, Imixs-BPMN provides all of the BPBMN features in a Tool Palette at  the right side of the editor panel. The Drawing Canvas in the main area of the editor window is used to place the BPMN elements into the model.

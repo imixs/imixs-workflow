@@ -56,18 +56,18 @@ Before you begin, consider the following:
 ###Using Imixs-Workflow in a Java EE Project 
 Using Imixs-Workflow in a Java EE project is the typical way to extend  your own java project with the functionality of a workflow engine.  In this kind of usage you develop your own Java EE project. Inside your application you integrate the Imixs-Workflow Engine to provide the typical functionality of a Workflow Management System. 
 
-The {{{./deployment/overview.html}Imixs-Workflow deployment section}} describes how to deploy the Imixs-Workflow engine in an enterprise application (EAR) in more detail. To integrate Imixs-Worflow in your JEE Application consider the following steps: 
+ To integrate Imixs-Worflow Engine in an JEE Application consider the following steps: 
  
-  * Add the Imixs-Workflow jar files into your application. Read more on the [deployment guide](/jee/deployment/overview.html)
-  * Add the Imixs-RestService into your application. Read more on [RestService-deployment guide](http://www.imixs.org/xml/deployment_rest_service.html])
+  * Add the Imixs-Workflow jar files into your application. 
+  * Add the Imixs-RestService into your application. 
   * Deploy your application together with the Imixs-Workflow on you Application Server
 
-  
+Read the [Deployment Guide](./deployment/deployment_guide.html) about how to deploy the Imixs-Workflow engine into an enterprise application (EAR).  
    
 ###Contribute to the Imixs-Workflow project
-You can also help in developing the Imixs-Workflow project or use the results of the project to  implement new components.  In this case you extend the implementation with additional features or just add a different behavior. So in different of the usage described before, you need more than a running instance of the Workflow  Engine or the Java EE libraries. In this kind of usage you should check out the source  code packages from the {{{./source-repository.html}Source Code repository}} and set up a Java EE Project like  the Imixs Java EE Sample Application.  You can test the different parts of the implementation and extend the existing components. The source code include also some JUnit tests which can help you to test different behaviors of the engine in more detail.
+You can also help in developing the Imixs-Workflow project or use the results of the project to  implement new components.  In this case you extend the implementation with additional features or just add a different behavior. So in different of the usage described before, you need more than a running instance of the Workflow  Engine or the Java EE libraries. In this kind of usage you should check out the source code packages from [GitHub](https://github.com/imixs/imixs-workflow) and set up a Java EE Project. The source code include also some JUnit tests which can help to test different behaviors of the engine.
 
-See the [Imixs Workflow community site on GitHub](https://github.com/imixs/imixs-workflow) for further details or to ask questions or report bugs. 
+See the [Imixs Workflow community site on GitHub](https://github.com/imixs/imixs-workflow) for source code or ask questions in the issue tracker. 
 
  
  

@@ -13,7 +13,7 @@ can be triggered.
 <img src="../images/modelling/bpmn_screen_00.png"/>
  
 The Imixs Workflow provides an eclipse based graphical editor to manage workflow models.  
-You can create a model from the eclipse IDE and synchronize your model with the Imixs Workflow engine.  Read the {{{http://www.imixs.org/modeler/}modelling section}} for more details about how to create a  workflow model with the Imixs Modeler. 
+You can create a model from the eclipse IDE and synchronize your model with the Imixs Workflow engine. For more details about how to create a workflow mode Read the [Modelling Section](../modelling/index.html). 
  
  
 ##Creating a process instance
@@ -29,10 +29,7 @@ process entity and assigned to a valid activity entity form the model.
     workitem.replaceItemValue("$activityID",20);
  
  
-In this moment the workitem is called a 'process instance' as it is an instance of the process  entity with the id=20.
- 
-After the workflow engine has processed the wokitem the next process entity will be automatically 
-assigned to the workitem. In this example the workitem which is assigned to the process-id=20 and the activity-id=20 will be assigned to the process-id=30 when the process-step is completed.
+In this moment the workitem is called a 'process instance' as it is an instance of the process  entity with the id=20. After the workflow engine has processed the wokitem the next process entity will be automatically assigned to the workitem. In this example the workitem which is assigned to the process-id=20 and the activity-id=20 will be assigned to the process-id=30 when the process-step is completed.
  
  
  
