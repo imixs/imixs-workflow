@@ -6,7 +6,7 @@ The Imixs-Workflow Engine provides JEE services to process and control business 
 
 ##The Components 
 
-The Imixs-Workflow Engine is based on the [Imxis Workfow Core-API](../../core/index.html) and provides a set of service components which can be used to implement enterprise business applications and workflow management solutions.  The components are divided by the different building blocks of a workflow management system. 
+The Imixs-Workflow Engine is based on the [Imixs-Workflow Core-API](../../core/index.html) and provides a set of service components which can be used to implement enterprise business applications and workflow management solutions.  The components are divided by the different building blocks of a workflow management system. 
  
  
 ###The EntityService
@@ -17,7 +17,7 @@ The EntityService component is used to save and load a process instance (Workite
  
 ### The WorkflowService
 The WorkflowService is the JEE implementation of the Imixs-Workflow Manager. This component supports general methods to create, process and access workitems based on a workflow model. The component is easy to use and all the business logic can be controlled fully by a workflow model. The WorkflowService component provides also a set of methods to find and fetch collections of workitems processed by the WorkflowManager. The WorkflowService is the main component used by an application to manage business logic.  
- 
+  
  {{{./services/workflowservice.html}Read more about the Imixs WorkflowService}}.
  
 ###The ModelService

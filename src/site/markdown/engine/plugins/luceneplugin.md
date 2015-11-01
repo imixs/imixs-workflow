@@ -1,0 +1,79 @@
+#Lucene Plugin 
+This plugin add workitems to a lucene search index. The Plugin provides a set of static methods which can be used also outside the workflowManager to index single workitems or collections of workitems. With the method addWorkitem() a ItemCollection can be added to a lucene search index. The Plugin reads the property file 'imixs.properties' from the current classpath to determine the configuration.
+ 
+<strong>Note:</strong> The Lucene Plugin depends on the Apache Lucene Search Engine. Therefore the lucene libraries need to be bundled with the plugin.
+
+##Configuration
+The configuration of the plugin is provided in a property file named 'imixs-search.properties'.  Typical the file can bee bundled with the EJB module.  This is an example for a plugin configuration file:
+ 
+	##############################
+	# Imixs Lucene Plugin 
+	##############################
+	
+	# Search Index Direcotry 
+	lucene.indexDir=my-index
+	# Fields to be added into the searchindex
+	lucene.fulltextFieldList=txtsearchstring,txtSubject,namCreator,txtWorkflowAbstract
+	lucene.indexFieldListAnalyze=txtSupplier
+	lucene.indexFieldListNoAnalyze=namCreator,$ProcessID,datDate
+	# Matching Patterns to index a workitem
+	lucene.matchingType=workitem
+	lucene.matchingProcessID= 
+	lucene.defaultOperator=
+ 
+
+
+###IndexDir
+ 
+This is the directory on the servers file system the lucene index will be created. Make sure that 
+the server has sufficient write access for this location. Using Glassfish Server the example above will  create a directory named 'my-index' into the location GLASSFISH_INSTALL/domains/domain1/config/
+ 
+###FulltextFieldList
+The property 'lucene.fulltextFieldList' defines a comma separated list of fields which will be indexed by the LucenePlugin. The content of these fields will be stored into the lucene field name 'content'. The values will be analyzed  with the lucene standard analyzer.
+ 
+###IndexFieldListAnalyze
+The property 'lucene.indexFieldListAnalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will be analyzed by the  lucene standard analyzer. 
+ 
+###IndexFieldListNoAnalyze
+The property 'lucene.indexFieldListNoAnalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here.
+ 
+ 
+###MatchingType
+The optional property 'lucene.matchingType' defines a regular expression the type value of a workitem should match.  It not the workitem will not be added into the index.
+ 
+###MatchingProcessID
+The optional property 'lucene.matchingProcessID' defines a regular expression the $processID of a workitem should match.  It not the workitem will not be added into the index.
+
+###DefaultOperator
+The optional property defaultOperator can be used to change the default operator to 'AND'. In default mode (OR_OPERATOR) terms without any modifiers are considered  optional: for example capital of Hungary is equal to capital OR of OR Hungary.
+
+##Search
+To search workitems the method search() can be called. The method returns a collection of workitems matching the search term. 
+ 
+	 .... 
+	 String sSearchTerm="*test*";
+	 List<ItemCollection> searchResult = LucenePlugin.search(sSearchTerm, workflowService);
+ 
+The LucenePlugin provides all kinds of search terms.  Here are some examples of search therms.  The first example searches all workitems with the ProcessID=2010 and a field containing the 
+ search phrase 'aaa'
+
+    ($processid:"2010") AND (*aaa*)
+
+This next example searches all workitems with a $ProcessID &gt;=2000 and &lt;=2999   and a field containing the search phrase 'aaa'
+
+    ($processid:[2000 TO 2999]) AND (*aaa*)
+
+You can also search for dateTime value. The following example searches all 
+workitems with a $modified date from 17.Aug.2011 12:00am and a field containing the search phrase 'aaa' 
+
+    ($modified:"201108171200") AND (*aaa*)
+ 
+##Sort Order
+It is also possible to sort the result list be the Lucene SortField feature. There for a sort object can be provided as an optional param to the search method. See the following example which sort the result by $modified date. 
+ 
+    Sort sortOrder = new Sort(new SortField("$modified", SortField.LONG,true)); 
+    List<ItemCollection> searchResult = LucenePlugin.search(sSearchTerm, workflowService,sort);
+ 
+ 
+Please note! To sort the result by a field the field must be added to the IndexFieldListNoAnalyze field list!
+  

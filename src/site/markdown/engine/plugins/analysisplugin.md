@@ -1,0 +1,20 @@
+#Analysis Plugin 
+The org.imixs.workflow.plugins.AnalysisPlugin can be used to measure the time  different phases of any workflow task.  The plugin can be configured by the activity result :
+
+
+    <item name='measurepoint' type='start'>p1</item> 
+
+defines a start point named 'p1'
+
+    <item name='measurepoint' type='stop'>p1</item> 
+
+definens a end point named 'p1'. The results will be stored into the txtWorkflowActivityLog (comments). In additio the AnalysisPlugin will create the following fields:
+
+  * datMeasurePointStart_[NAME] : contains the start time points (list latest entry on top!)
+  * datMeasurePointEnd_[NAME] : contains the end time points (list)
+  * numMeasurePoint_[NAME]: contains the total time in milis.
+
+The [NAME] sufix will be replaced with the name of teh measurepoint. So it is possible  
+ to define several mesaurepoints in one workflow.
+  
+  
