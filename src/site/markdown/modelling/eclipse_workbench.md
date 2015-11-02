@@ -3,7 +3,7 @@
 
 The following section gives an overview of the Eclipse Workbench provided by the BPMN2 Modeler.
 The concepts provided by Imixs-BPMN are the same as provided by the 
-[Eclipse BPMN2 Modeler](https://www.eclipse.org/bpmn2-modeler/.
+[Eclipse BPMN2 Modeler](https://www.eclipse.org/bpmn2-modeler/).
 
 As shown in the screenshot below, the "workbench" provided by the BPMN2 Modeler splits into separate section like  the Drawing Canvas in the main area of the editor window, collapsible Tool Palette on the right, tabbed Property sheets, and an Outline Viewer with both 
 tree and thumbnail views.

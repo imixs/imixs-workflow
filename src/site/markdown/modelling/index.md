@@ -1,15 +1,19 @@
 
 #Imixs-BPMN Modeler - User Guide
 
-Imixs-BPMN is a free modelling tool which takes the full advantage of all the capabilities from the BPMN standard and complements them with the requirements to a workflow management system. Imixs-BPMN enhances the Eclipse BPMN2 Modelling Framework with the aspects of a human based
-workflow model executable on the Imixs-Workflow Engine. Imixs-BPMN provides the maximum in  flexibility to describe, model and executing human based business processes.
+Imixs-BPMN is a free modelling tool to create process models for the Imixs-Workflow framework. Imixs-BPMN takes the full advantage of all the capabilities from the BPMN standard and complements them with the requirements to a workflow management system. Imixs-BPMN enhances the Eclipse BPMN2 Modelling Framework with the aspects of a human-centric workflow model executable on the Imixs-Workflow Engine. 
 
+The section [Overview](./overview.html) provides general information about the Imixs-BPMN modelling tool. For a installation read the [Installation Guide](./install.html).
+ 
   
 <img src="../images/modelling/bpmn_screen_00.png"/>
  
-##Support
 
-Further information about Imixs-BPMN can also be found on [GitHub](https://github.com/imixs/imixs-bpmn).
+ 
+ 
+##Support & Community
+
+Imixs-BPMN is a open source project. Further information about the project can be found on [GitHub](https://github.com/imixs/imixs-bpmn).
  
 Information about the Eclipse BPMN2 Modelling Framework can be found here:
  
