@@ -199,6 +199,37 @@ public class ItemCollection {
 			return 0;
 		}
 	}
+	
+	
+	
+
+	/**
+	 * Returns the value of an item with a long value. If the item has
+	 * no value or the value is no number, or empty, this method returns 0. If
+	 * no item with the specified name exists, this method returns 0. It does
+	 * not throw an exception. If the item has multiple values, this method
+	 * returns the first value. The ItemName is not case sensitive. Use hasItem
+	 * to verify the existence of an item.
+	 * 
+	 * @param aName
+	 * @return integer value
+	 * 
+	 */
+	public long getItemValueLong(String aName) {
+		try {
+			aName = aName.toLowerCase();
+			List<?> v = getItemValue(aName);
+			if (v.size() == 0)
+				return 0;
+
+			String sValue = v.get(0).toString();
+			return new Long(sValue).longValue();
+		} catch (NumberFormatException e) {
+			return 0;
+		} catch (ClassCastException e) {
+			return 0;
+		}
+	}
 
 	/**
 	 * Returns the value of an item with a single Date value. If the item has no

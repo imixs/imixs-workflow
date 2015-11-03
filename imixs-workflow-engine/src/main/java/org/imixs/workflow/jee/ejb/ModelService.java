@@ -594,6 +594,7 @@ public class ModelService implements Model, ModelServiceRemote {
 		return colGroups;
 	}
 
+	@Deprecated
 	public List<String> getAllWorkflowGroupsByVersion(String version) {
 		ArrayList<String> colGroups = new ArrayList<String>();
 

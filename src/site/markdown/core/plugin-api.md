@@ -1,49 +1,32 @@
 #The Plug-in API
 
-The Imixs Plug-in API is a powerful concept to extend Imixs-Workflow with technical 
-aspects of your workflow management system.
-A plug-in can provide general business logic as also platform specific functionality 
-to be executed during a workflow process. You can find an 
-{{{http://www.imixs.org/jee/plugin/overview.html}overview about the plug-ins}} provided
-by the Imxis-Workflow engine. 
+The Imixs Plug-in API is a powerful concept to extend the technical functionality of the Imixs-Workflow engine. A plug-in can provide general business logic as also platform specific technical functionality. Plug-Ins are the building blocks inside a workflow management system implementing different aspects of a business solution. For example a plug-in can send a E-Mail notification, apply business rules or import or export workflow data into a external database. There are a lot of plug-ins provided by the Imixs-Workflow engine which can be used out of the box or used to extend individual functionality on the business layer of a workflow management system. See the section [Engine->Plug-Ins](../engine/plugins/index.html) for further details about existing plug-ins. 
  
-Each plug-in is a general building block inside a workflow management system and may be reused in  different phases of a business process.
-Plug-ins are bound to the workflow model and controlled by the Imixs Workflow Engine. The Imixs plug-in API defines a set of call-back methods triggered by the WorkflowKernel. The WorkflowKernel also provides a plug-in with detailed informations about the running process instance. This makes it easy to implement certain details of a business process. 
-
-
-## Business logic and business rules
-
-Plugins can be used in various situations. They are triggered through the WorkflowKernel and are provided  with informations about the process activity as also the workitem processed 
-by the workflow engine. This means that a plugin typically provides business logic by implementing a business rule. A plugin can analyze and validate the structure of a process instance and may also manipulate the data. Through the information provided by the WorkflowKernel a plugin can determine the context of a process step. A plugin can also navigate through the workflow model to evaluate details about the full business process.
+##Plug-In Architecture
+Each plug-in is a individual building block inside a workflow management system and may be reused in  different phases of a business process.
+Plug-ins are bound to the workflow model and controlled by the [Imixs-Workflow Kernel](./workflowkernel.html). The Workflow Kernel calls the plug-in during processing and provides the plug-in with detailed informations about the running process instance. This concept makes it easy to implement certain details of a business process. 
+A plugin can analyze and validate the structure of a process instance and may also manipulate the data. Through the information provided by the WorkflowKernel a plugin can determine the context of a process step. A plugin can also navigate through the workflow model to evaluate details about the business process or interrupt the processing phase by throwing a [PluginException](../engine/plugins/exception_handling.html).
  
  
 ##Transaction and Two-Phase Commit
-
-The Imixs Plugin API provides three call-back methods to be implemented by a plugin.
+The Imixs Plug-in API defines three call-back methods which need to be implemented by a plug-in.
  
   * init()
-  
   * run()
-  
   * close()
   
-The workflowKernel calls these methods of all all registered plugins in a single transaction.
-A plugin can terminate this transaction by providing the WorkflowKernel with a specific error code. The WorkflowKernel will finish the transaction in an ordered procedure informing each plugin about the termination. On the other hand the WorkflowKernel will inform each plugin about a successful transaction to finalize its execution.   
-
-In the concept of a two-phase commit (2PC) the WorkflowKernel assumes the role of the central coordinator. Before the WorkflowKernel starts the transaction the init() method of each
-plugin will be called to initialize the transaction. Next the WorkflowKernel executes the two phases that are mapped through CallBack methods "run()" and "close()":
+The workflowKernel calls these methods for each registered plug-in inside a single transaction to provide the concept of a two-phase commit (2PC). Before the WorkflowKernel starts the transaction the init() method of each plugin will be called to initialize the transaction. In the second phase the WorkflowKernel executes the plug-in by calling the call-back method run().
+A plug-in can terminate this transaction by providing the WorkflowKernel with a specific error code or throwing a PluginException. The WorkflowKernel will finish the transaction by calling the call-back method close() for each plug-in providing a final status code. This allows a plug-in to roll-back internal transactions in case an error code is given, or finalize its execution the internal transaction in case the successful transaction was confirmed by all plug-ins. So in a concept of a two-phase commit the WorkflowKernal takes the role of the central coordinator.  
  
 
-###matching phase
-
+###1) The Matching Phase
 During execution of the run() method (matching phase), the WorkflowKernel requests all 
-plugins to check and prepare their actions. A plugin must finish the run() method with the status  PLUGIN_OK signaling the WorkflowKernel that execution is possible. 
-If the plugin returns the status PLUGIN_ERROR, the plugin indicates that the action cannot be executed without errors. In this way, the WorkflowKernel gets all votes from the plugins and decides how the transaction should be completed. If there was at least one error, the entire transaction will be undone. Otherwise, the WorkflowKernel decides that the transaction can be executed successfully.
+plug-ins to check and prepare their actions. A plugin must finish the run() method with the status  PLUGIN_OK signaling the WorkflowKernel that execution is possible. 
+If the plugin returns the status PLUGIN_ERROR, the plugin indicates that the action was not successfully. In this way, the WorkflowKernel gets all votes from the plug-ins and decides how the transaction should be completed. If there was at least one error, the entire transaction will be undone. Otherwise, the WorkflowKernel decides that the transaction can be executed successfully.
 
-###commit phase
+###2) The Commit Phase
 During execution of the close() method (commit phase), the WorkflowKernel informs the 
-plugins about its decision. Each plugin must then ensure that the action results in a commit 
-and is actually completed, or execute a rollback if a PLUGIN_ERROR occurs.
+plug-ins about its decision. Each plugin must then ensure that the action results in a commit and is actually completed, or execute a roll-back if a PLUGIN_ERROR occurs.
     
 The following example shows the general structure of a Imixs Workflow Plugin:
  
@@ -84,46 +67,16 @@ The following example shows the general structure of a Imixs Workflow Plugin:
     }
  
 
-#How to access the workflow model
- 
-Each plugin is provided with an instance of the WorkflowContext during the method call init().  The WorkflowContext enables a plugin to access information from the workflow model through an instance of the Model class.
-
-The following example illustrates how an instance of a model can be fetched during the initialization of a plugin:
+###How to Access the Workflow Model
+During the init() phase the WorkflowKernel provides the plug-in with an instance of the WorkflowContext. The WorkflowContext is an abstraction of the workflow environment and provides access to an instance of the [Model interface](./model). The following example illustrates how an instance of a model can be fetched during the initialization of a plugin:
 
      public void init(WorkflowContext actx) throws Exception {
       ctx=actx;
       Model model=ctx.getModel();
       // your code goes here....
     } 
- 
-The Model interface provids a set of methods to  manage different versions of the same model.
 
-  * getProcessListByVersion
-    
-  * getActivityListByVersion
-  
-  * getEnvironmentListByVerson
-    
-  * removeModelVersion
-    
 
-Different model versions are typical used in log running business processes  which need to take care of consistent models during the runtime of a process instance. So  if the model will be improved, running processes can benefit form new behavior. The ExtendedModel is provided also by the ExtendedWorkflowContext which subclasses the  Interface WorkflowContext.
-The following code example shows how an implementation can verify if a Model or ExtendedModel  is provided by the current WorkflowManager Instance
-
-    public void init(WorkflowContext actx) throws Exception {
-      ctx=actx;
- 
-	    if (ctx.getModel() instanceof ExtendedModel) {
-	       // use extended Model
-	       // try to get from model version
-	       ExtendedModel extendedModel= (ExtendedModel) ctx.getModel();
-	       // your code goes here
-	    } else {
-	       // use standard Model
-	       Model model= ctx.getModel();
-	       // your code goes here
-	    }
-	 } 
 
 
   

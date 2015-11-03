@@ -9,13 +9,47 @@ Each Workitem processed by the Imixs-Workflow engine is represented by an instan
     myItemCollection.replaceItemValue("FirstName","Anna");
     myItemCollection.replaceItemValue("CostCenter",new Integer(4010));
 
-This code example demonstrates the usage of an ItemCollection. The code creates a new empty ItemCollection and adds two new items. The first Item with the name "FirstName" contains a String value and the second item "CostCenter" contains an Integer value. There are also methods to access items values of an ItemCollection. Some of the  methods are type-save and allow to access a value of a specific type. See the following example:
+The method 'replaceItemValue()' adds a new Item or replaces the value of an existing item. This code example demonstrates the usage of the replaceItemValue method. The code creates a new empty ItemCollection and adds two new items. The first Item with the name "FirstName" contains a String value and the second item "CostCenter" contains an Integer value. 
+
+###Getter Methods
+The ItemCollection provides different methods to access items values. Some of the  methods are type-save and allow to access a value of a specific type. See the following example:
   
     String name=myItemCollection.getItemValueString("FirstName");
     int costcenter=myItemCollection.getItemValueInteger("CostCenter");
-  
 
-## Multivalue Attributes
+The following table gives an overview about the getter methods:
+
+
+|Method						| Return Type  		|
+|---------------------------|-------------------|
+|getItemValueString(name)	| String			|
+|getItemValueInteger(name)	| Integer			|
+|getItemValueDouble(name)	| Double			|
+|getItemValueFloat(name)	| Float				|
+|getItemValueLong(name)		| Long				|
+|getItemValueBoolean(name)	| Boolean (true/false)|
+|getItemValueDate(name)		| Date Object		|
+    
+### Remove Attributes
+With the method removeItem an existing Item can be removed from a ItemCollection:
+
+    myItemCollection.removeItem("FirstName");
+
+### Test Attributes
+The ItemCollection provides also methods to test the existence of an Item. See the following table:
+
+|Method						| Return 	  		|
+|---------------------------|-------------------|
+|hasItem(name)				| returns true if an Item with the name exists		|
+|isItemValueInteger(name)	| returns true if the item contains an Integer value|
+|isItemValueDouble(name)	| returns true if the item contains a Double value	|
+|isItemValueFloat(name)  	| returns true if the item contains a Float	value	|
+|isItemValueLong(name)		| returns true if the item contains an Long	value	|
+
+
+
+
+### Multivalue Attributes
 The value of an Item can also be a value list (multi-value). Multi-values can be added to an ItemCollection in a List object:
 
     List<String> multiValue=new ArrayList<String>();
@@ -57,4 +91,29 @@ As an ItemCollection is not serializable it is not recommanded to store a ItemCo
 In this code example the values of the ItemCollection "teamMemer" are stored as a HashMap into the ItemCollection "project" with is mapped to the item "projectManager".
    
   
-  
+###Get and Set all Items
+With the methods setAllItems() and getAllItems() it is possible to set and get the internal Map ValueObject. See the following example:
+
+    // create a Java HashMap
+    HashMap hashMap = new HashMap();
+    hashMap.put( "FirstName", "Anna" ); 
+    hashMap.put( "CostCenter", new Integer(2222) );
+    // put data object into ItemCollection
+    myItemCollection = new ItemCollection();
+    myItemCollection.setAllItems(hashMap);
+    // read value
+    String firstname=myItemCollection.getItemValueString("firstname");
+
+### Accessing Workflow Data   
+The ItemCollection provides convenience methods to access typical attributes of a process iInstance. See the following table:
+
+|Method				| Return 	  										|
+|-------------------|---------------------------------------------------|
+|getType()			| returns the type attribute of a workitem 			|
+|getProcessID()		| returns the $processID attribute of a workitem 	|
+|getActivityID()	| returns the $activityID attribute of an workitem 	|
+|setActivityID(id)	| set the $activityID attribute of a workitem 		|
+|getModelVersion()	| returns the $modelversion attribute of a workitem |
+|getUniqueID()		| returns the $uniqueid attribute of a workitem 	|
+
+For more information see the javaDoc.

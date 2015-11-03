@@ -22,27 +22,6 @@ The general workflow functions and also application specific business logic is p
     ....
 
  
-##The WorkflowContext
-To separate a concrete implementation of a WorkflowManager from the core API, the 
-interface 'org.imixs.workflow.WorkflowContext' is used to provide the Model definition and
-to describe the environment in which the WorkflowManager runs. The environment can be platform specific, for example a surrounding EJB Context or a Spring Context. 
-Thus the WorkflowContext separates the Workflow Engine from the the WorkflowKernel and application or platform specific plug-ins.
- 
-The Model can be stored in an xml file (provided by the Imixs-Workflow-Modeler) or in a database. The WorkflowContext need to provide the Model as an abstract Interface definition.
-
-
-    public class WorkflowEngine implements WorkflowManager, WorkflowContext { 
-    ....
-    public Model getModel() {
-      // load model definition from XML or Database...
-      
-      // create instance of Model
-      Model model=new ......
-	  return model;
-    }
-    ....
- 
- 
  
 ##Processing a Workitem
 
