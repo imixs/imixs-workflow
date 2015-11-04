@@ -1,10 +1,5 @@
-
 #Marshalling an Imixs Data object
-The JAXB runtime framework provides marshall and unmarshall operations.
-Marshalling is the process of converting instances of JAXB-annotated classes to 
- XML representations. Likewise, unmarshalling is the process of converting an XML representation   to a tree of objects.
-  
-The following example shows how to marshal an Imixs XMLItemCollection into a XML Stream.
+The JAXB runtime framework provides marshall and unmarshall operations. Marshalling is the process of converting instances of JAXB-annotated classes to XML representations. Likewise, unmarshalling is the process of converting an XML representation to a tree of objects. The following example shows how to marshal an Imixs XMLItemCollection into a XML Stream.
   
 	   .....
 		// create an simple ItemCollection with some data....
@@ -24,7 +19,7 @@ The following example shows how to marshal an Imixs XMLItemCollection into a XML
 	System.out.println(writer.toString());
     .....
 
-It is alos possible to unmarshal a XML Stream into a Imixs XML Data Object. The following example shows a java method which transforms an InputStream with  XML of a EntityCollection data into a EntityCollection XML Data Object
+The next example shows how to unmarshal a XML Stream into a Imixs XML Data Object:
   
   
     	public void readStream(InputStream isXML) throws Exception {
@@ -36,6 +31,7 @@ It is alos possible to unmarshal a XML Stream into a Imixs XML Data Object. The 
 			Unmarshaller u = context.createUnmarshaller();
 			EntityCollection ecol = (EntityCollection) u.unmarshal(isXML);
 			......
-  
-The JAXBContext must always match the XMLRoot Class to be marshaled or unmarshalled.
+ 
+   
+ <strong>Note: </strong> The JAXBContext must always match the XMLRoot Class to be marshaled or unmarshalled.
     

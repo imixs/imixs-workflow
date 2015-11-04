@@ -1,15 +1,10 @@
 #The WorkflowManager
-
-The WorkflowManager is the central interface to implement a Workflow Engine. 
-This interface provides the general functionality to create, process and search Workitems. 
- 
-The WorkflowManager serves as the central interface between the business application and the 
- {{{./workflowkernel.html}WorkflowKernel}}.  For this purpose, the WorkflowManager provides the functionality to process and  search {{{./quickstart_workitem.html}Workitems}}, retrieve the {{{./model.html}Workflow Model}}, and manage {{{./plugin-api.html}plug-ins}} for custom implementations.
-
-The {{{http://www.imixs.org/jee/}Imixs-Workflow Engine}} is a typical implementation of the WorkflowManager and extends the functionality in a platform specific way. 
+The WorkflowManager is the central interface for each implementation of an Imixs-Workflow Engine. This interface provides the general functionality to create, process and search Workitems. 
+The WorkflowManager instantiates the [WorkflowKernel](./workflowkernel.html) to process a WorkItem and provides the implementation of a Model. The WorkflowManager can be used by an application to process and search Workitems and provide the environment for the business logic implemented by the plug-ins.
+The [WorkflowManager Service](../engine/workflowservice.html) implements the WorkflowManager based on the JEE architecture.
  
 ##Workflow Plug-Ins
-The general workflow functions and also application specific business logic is provided by {{{./plugin-api.html}plug-ins}}. The WorkflowManager can register a specific set of plug-ins to be called by the WorkflowKernel when processing a Workitem.  A typical code example is structured as follows:
+The general workflow functions and also application specific business logic is provided by [plug-in api](./plugin-api.html). The WorkflowManager can register a specific set of plug-ins to be called by the WorkflowKernel when processing a Workitem.  A typical code example is structured as follows:
 
     ....
     // init WorkflowKernel 
@@ -24,10 +19,7 @@ The general workflow functions and also application specific business logic is p
  
  
 ##Processing a Workitem
-
-The method 'processWorkItem' is to create or update a process instance for a Workitem.
-The WorkflowManager implementation is responsible to load the Model, call the WorkflowKernel 
-and persist the Workitem so it can be retrieved later by the application. 
+The method 'processWorkItem()' is used to create or update a Workitem. The WorkflowManager implementation is responsible to load the Model, call the WorkflowKernel and persist the Workitem so it can be retrieved later by the application. 
  
     public void processWorkItem(ItemCollection aWorkItem)throws Exception {
        // ...instantiate workflowKernel...
@@ -40,7 +32,7 @@ and persist the Workitem so it can be retrieved later by the application.
     ....
     }
 
-The WorkflowKernel can throw a ProcessingErrorException if the Workitem did not match the model status.  There for the WorkflowManager implementation have to verify if the Workitem provides valid values for the properties '$processID' and '$ActivityID'.  For further information see the section {{{http://www.imixs.org/jee/}Imixs-Workflow Engine}} which is a concrete implementation based on the JEE platform. 
+The WorkflowKernel can throw a ProcessingErrorException if the Workitem did not match the model status.  Therefore the WorkflowManager implementation have to verify if the Workitem provides valid values for the properties '$processID' and '$ActivityID'.  
  
 ##Find Workitems
 
@@ -48,7 +40,7 @@ The property "$uniqueid" identifies the workitem controlled by the workflowManag
   
     workitem=wfm.getWorkItem(uniqueid);
 
-You can also receive a list of workitems for the current user by calling the method  getWorkList(). 
+It is also possible to receive a list of workitems for the current user by calling the method  getWorkList(). 
   
     List<ItemCollection> worklist=wfm.getWorkList();
   
@@ -56,10 +48,7 @@ The method returns a list of all workItems assigned to the current user.  A work
   
     wfm.removeWorkItem(workitem);
  
-This method removes an instance of a workitem form the WorkflowManger.  
- 
- 
 ##The Imixs WorkflowService
  
-The Imixs-Workflow engine provides the WorkflowService component which implements the WorkflowManager  on the JEE component stack. This Service provides a full features WorkflowManager.  Find more information about the Imixs-WorkflowService in the section {{{http://www.imixs.org/jee/services/overview.html}Imixs-Workflow engine Services}}.    
+The Imixs-Workflow engine provides the WorkflowService component which implements the WorkflowManager  on the JEE component stack.   Find more information about the Imixs-WorkflowService in the section [WorkflowService](../engine/workflowservice.html).    
 

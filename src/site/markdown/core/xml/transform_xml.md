@@ -1,12 +1,11 @@
-#Transform a XML file using XSL transformation 
-Based on a XSL template you can transform external XML data into the Imixs XML format.
-The result of thus a transformation can be posted to the Imixs Workflow REST service. 
+#XSL Transformation 
+Based on a XSL template external XML data sources can be transformed into the Imixs XML schema.
+The result of thus a transformation can be posted to the Imixs-Workflow REST service API. 
 This is how a interface between an external system and the Imixs Workflow engine can be realized.
- 
-The following example shows how to transform xml data and post the result to a Imixs Workfow server.
+The following example shows how to transform xml data:
  
 ## The XML Data 
-This is a sample of a xml data structure provided by an external system. The structure contains  several 'Documents' containing detail information and DocumentLevelFields
+This is a sample of a xml data structure provided by an external system. The structure contains several 'Documents' containing detail information and DocumentLevelFields
  
 	<?xml version="1.0" encoding="UTF-8"?>
 		<Documents>
@@ -48,8 +47,7 @@ This is a sample of a xml data structure provided by an external system. The str
   
 
 ##Transforming the XML Data with XSLT 
-With a XSL template you can now transform the given XML data into the Imixs EntityCollection
- xml format. This xml format of an Imixs EntityCollection has the following structure:
+With a XSL template it is possible to transform the given XML data into the Imixs XML schema. This XML format of an Imixs EntityCollection has the following structure:
 
 	<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 	<collection>
@@ -101,8 +99,7 @@ With a XSL template you can now transform the given XML data into the Imixs Enti
 		</entity>
 	</collection>
 
-See details about the xml format in the {{{../xml.html}XML Section}}.
-To transform the external xml a simple xsl template can be used like shown in the following example:
+See details about the xml format in the section [XML](../index.html). To transform the external data source a simple XSL template can be used like shown in the following example:
  
 	<?xml version="1.0"?>
 	<xsl:stylesheet version="1.0"
@@ -161,7 +158,5 @@ To transform the external xml a simple xsl template can be used like shown in th
 		</xsl:template>
 	</xsl:stylesheet>  
 
-This xsl template selects all Document nodes with the type='Imixs-RG'. For each document node  the condition xsl:apply-templates creates a new entity tag with different item nodes.
- The template creates the entity tag and provides some workitem fields with fixed values. 
- In the last section of the xsl:template a value from the provided DocumentLevelField tag is extracted and transformed into an item with the name "\_ordernumer" and the corresponding value. The result of such a transformation can be used to be posted to the Imixs Rest Service interface. See the section: {{{./post_xml.html}Post XML Data}}.
+This XSL template selects all Document nodes with the type='Imixs-RG'. For each document node  the condition xsl:apply-templates creates a new entity tag with different item nodes. The template creates the entity tag and provides some workitem fields with fixed values.  In the last section of the xsl:template a value from the provided DocumentLevelField tag is extracted and transformed into an item with the name "\_ordernumer" and the corresponding value. The result of such a transformation can be used to be posted to the Imixs Rest Service interface. See the section [Post XML Data](./post_xml.html).
  

@@ -1,22 +1,40 @@
 #The WorkflowKernel
 
-The Workflowkernel is the core component of this Imixs Workflow API to control the processing of a workitem. A Workflowmanager implementation (like the Imixs JEE Workflow) loads an instance of the Workflowkernel, hand over a Model Instance and register a list of workflow plugins. To process a single Workitem you typical call the method 'process' of the WorkflowManager  interface.
+The WorkflowKernel is the core component of the Imixs-Workflow API. The WorkflowKernel controls the flow of a process instance according to the process model definition. The WorkflowKernel is initialized by the [Workflowmanager](./workflowmanager.html) which provides the Model definition and also the plug-ins applied to the process model. To process a single Workitem the WorkflowKernel provides the public method process().
  
     process(ItemCollection workitem) 
 
-##Registration of a Workflow Plugin
-The WorkflowManager over hands the workitem to the WorkflowKernel to process the workitem by a predefined set of workflow plugins. Therefore the WorkflowKernel provides the method :
+## Registration of Workflow Plug-ins
+In the processing phase of a WorkItem the WorkflowKernel calls the plugins registered by teh WorkflowManager. To register a plug-in class the WorkflowKernel provides the method :
 
     registerPlugin(String) 
 
-This method enables the WorkflowManager to register different PluginClasses to be loaded by 
-the Kernel during the Process method.
+Plug-ins registered by the WorkflowManager will be called during the processing phase of a workitem. See the section [plug-in api](./plugin-api.html) for further details about the plug-in concept. 
  
-The internal method processActivity() process an activity instance by loading and running all  registered plugins. Then the method computes the next processId which will be stored in the  property $ProcessID. The method processActivity will run as long as the property $ActivtyList holds additional ActivityIds to be processed. So a WorkflowManger can also run through a process queue on a single Workitem.
+The registration of a plug-in can be done ba instance of a plug-in class or by the class name. 
+
+    kernel = new WorkflowKernel(ctx);
+    // register plug-in by name
+    kernel.registerPlugin(MyPlugin.class.getName());
+    // register plug-in by instance
+    kernel.registerPlugin(new MyPlugin());
+    // process workitem
+    kernel.process(workitem);
+    
+A plug-in can also be injected by a CDI mechanism. 
+Registered plug-ins are always each processing phase of a workitem. To unregister a single workItem the method unregisterPlugin can be called
+ 
+    // unregister plug-in by name
+    kernel.unregisterPlugin(MyPlugin.class.getName());
+
+
+## The Processing Phase
+By calling the method process() from the WorkflowKernel the processing phase or a WorkItem can be started. During the processing phase the WorkflowKernel loads all activity entities assigned to the current process status and performs a call-back life-cycle for all registered plug-ins. A plug-in can extend the the processing phase by adding additional activities on the activity stack which is defined by the property '$activityidlist' of the process instance. 
+After the processing phase is finished the WorkflowKernel applies the new process status to the WorkItem depending on the process definition.
+
  
 
-##The WorkflowContext
-
+## The WorkflowContext
 The Interface _org.imixs.workflow.WorkflowContext_ defines an abstraction of the workflow management system. The WorkflowContext is used by the WorkflowKernel to provide the runtime-environment information to registered Plug-ins.
 
 The WorkflowContext provides the following methods:
@@ -27,16 +45,13 @@ The WorkflowContext provides the following methods:
 |getModel()			| returns an instance of the current model implementation	| 
 |getLogLevel()		| returns the current log level			|
 
-The environment can be platform specific, for example a surrounding EJB Context, a Web Module or a Spring Context. The WorkflowContext separates the Workflow Engine from the WorkflowKernel and application or platform specific plug-ins.
+The session context is platform specific, for example a surrounding EJB Context, a Web Module or a Spring Context. As the WorkflowKernel is part of the Imixs-Workflow core API it is a platform independent building block. There fore the WorkflowContext builds the bridge between the Workflow System and the processing engine. For details about the concrete implementation see the [WorkflowService implementation](../engine/workflowservice.html). 
  
  
 ##The Workflow Log
 
-The Imixs WorkflowKernel automatically generates a log entry for each transition 
-with information about the modelversion, process and activity id.
-The log is stored in the property 'txtWorkflowActivityLog'. 
- 
-The Log entries have the following format:
+The Imixs WorkflowKernel generates a log entry during each processing life-cycle with information about the current modelversion, the process entity and the processed workflow activity. The log is stored in the property 'txtWorkflowActivityLog'. 
+The log entry has the following format:
  
     ISO8601 Time | Model Version | Process.ActivityID |  NewProcessID | comment /optional)
  

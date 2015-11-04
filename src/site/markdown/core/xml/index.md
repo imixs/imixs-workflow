@@ -1,42 +1,25 @@
 #XML
 
-The Imixs XML API provides XML Dataobjects to exchanged data between an Imixs Workflow Implementation and a 
-service client. The API provides also Client implementations for consuming SOAP or REST Services provided
-by an  Workflow Enterprise Application. 
+The Imixs-Workflow core API provides a XML interface to exchanged data between the Imixs-Workflow engine and a client. The API provides also methods to transform the generic value object ItemCollection into a XML representation. The API is used by the Imixs-Workflow REST API. The Imixs XML API is based on the [JAXB specification (JSR-222)](http://java.sun.com/developer/technicalArticles/WebServices/jaxb/) and can be integrated very easy in any common java framework. 
  
-The Imixs XML API is based on the 
-{{{http://java.sun.com/developer/technicalArticles/WebServices/jaxb/}JAXB specification (JSR-222)}}. 
-These means that you can integrate the library very easy in any java framework. 
- 
-This XML API is used in different components of the Imixs Workflow 
-Framework. If you plan to develop a XML interface to the Imixs Workflow
-like the JEE Rest Service or JEE Web Service this XML API helps you developing such interfaces.
  
 ##Dataobjects
-
-The Imixs XML API make use of the Java Architecture for XML Binding (JAXB) to provide the Imixs data objects in XML. JAXB defines a standard to bind java representation to XML and vice versa. It manages XML dcouments and XML Schema Defintions (XSD) in a transparent, object-oriented way that hides the complexity of the XSD Language.
+The Imixs XML API make use of the Java Architecture for XML Binding (JAXB) to provide the Imixs data objects in XML. JAXB defines a standard to bind java representation to XML and vice versa. It manages XML documents and XML schema definitions (XSD) in a transparent, object-oriented way that hides the complexity of the XSD Language. The Imixs XML API defines the following XML Root Elements:
  
-The Imixs XML API defines the following XML Root Elements:
- 
-  * XMLItem - Represents a single item inside a XMLItemCollection. An XMLItem has a name and a
+  * <strong>XMLItem</strong> - Represents a single item inside a XMLItemCollection. An XMLItem has a name and a
        value. The value can be any serializable collection of objects.
-       
-  * XMLItemCollection - The XMLitemCollection is the basic serializable representation of a pojo to map
+  * <strong>XMLItemCollection</strong> - The XMLitemCollection is the basic serializable representation of a pojo to map
       the org.imixs.workflow.ItemCollection into a xml
-      
-  * EntityCollection - An EntityCollection represents a list of XMLItemCollections 
-    
-  * EntityTable -  An EntityTabe represents a list of XMLItemCollections to be used by JAXB api.
+  * <strong>EntityCollection</strong> - An EntityCollection represents a list of XMLItemCollections 
+  * <strong>EntityTable</strong> -  An EntityTabe represents a list of XMLItemCollections to be used by JAXB api.
       Each XMLItemCollection in the list represents the same properties. So the 
       EntityTable can be used to generate a table representation of XMLItemCollections
   
-    
 
 
 ##XML Schema
 
-The purpose of a XML Schema is to define the legal building blocks of an XML document. XML Schemas are used in Web Services to define data objects but also in other components working with XML files.The Imixs XML provides a XML Schema describing the XML Dataobjects provided by the Imixs XML API. This schema can be used for different requirements but the 
-Imixs Web Services are the main purpose for this schema. The following code shows the XML schmea which can be saved in a .xsd file.
+The purpose of a XML Schema is to define the legal building blocks of an XML document. XML Schemas are used in Web Services to define data objects but also in other components working with XML files.The Imixs XML API provides a XML Schema describing the XML Dataobjects. This schema can be used for different requirements, e.g. the Imixs REST Services API. The following code shows the XML schema:
 
 
        	<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -77,7 +60,6 @@ The Item  is a complex data type containing a key value pair to a set of differe
     org.imixs.workflow.xml.XMLItem
 
 
-
 ### XMLItemCollection
 
 The XMLItemCollection data type holds a collection of XMLItem objects. 
@@ -101,7 +83,6 @@ This datatype is typical used in service methods returning a collection of worki
 ## Datatype mapping 
 The data types can be mapped on different platforms.  The following section will give a short overview about the usage of  datatypes in the Java and the .NET platform.
  
-
 
  
 | XML Schema Type    | Java type         |.NET type          | 

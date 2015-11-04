@@ -1,6 +1,5 @@
-#How to post XML data to the RESTful service interface
-
-The following code example shows how you can transform external xml data with a xsl
+#Post XML Data to the Imixs REST Service 
+The following code example shows how to transform external xml data with a xsl
 template provided in a file:
 
 	private EntityCollection transform(Document xmldoc) throws TransformerException {
@@ -31,8 +30,8 @@ template provided in a file:
 	}
   
 
-To see how the transformation between an external XML data format an the Imixs EntityCollection  format works in detail, see the section {{{./transform_xml.html}Transform a XML file using XSL transformation }}.
-Now as you have created an Imixs EntityCollection object you can post the result data  via the RESTful service interface. The imixs-core api provides a RestClient which is easy to use.   The the following code example:
+To see how the transformation between an external XML data format an the Imixs EntityCollection  format works in detail, see the section [XSL Transformation](./transform_xml.html).
+The result of the transformation can be posted via the Imixs REST API into the Imixs-Workflow engine. The Imixs-Workflow core API provides a RestClient which is easy to use. See the following code example:
   
   
 	....
