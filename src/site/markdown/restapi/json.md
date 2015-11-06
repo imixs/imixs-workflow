@@ -29,11 +29,12 @@ To create a new process instance the POST method of the Imixs Workflow REST API 
 
  To create a valid workitem the following attributes are mandatory: 
 
- * $modelversion
- * $processid
- * $activityid
+  * $modelversion
+  * $processid
+  * $activityid
 
-	 {"item":[
+
+	  {"item":[
 	     {"name":"$modelversion","value":{"@type":"xs:string","$":"bestandspflege-de-0.0.2"}},
 	     {"name":"$processid","value":{"@type":"xs:int","$":"2000"}}, 
 	     {"name":"$activityid","value":{"@type":"xs:int","$":"1"}}, 

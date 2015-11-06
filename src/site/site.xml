@@ -78,11 +78,11 @@
 					<item name="Appliation Plugin" href="./engine/plugins/applicationplugin.html" />
 					<item name="Result Plugin" href="./engine/plugins/resultplugin.html" />
 					<item name="History Plugin" href="./engine/plugins/historyplugin.html" />
-					<item name="Access Plugin" href="./engine/plugins/accessplugins.html" />
+					<item name="Access Plugin" href="./engine/plugins/accessplugin.html" />
 					<item name="Analysis Plugin" href="./engine/plugins/analysisplugin.html" />
 					<item name="Rule Plugin" href="./engine/plugins/ruleplugin.html" />
 					<item name="Mail Plugin" href="./engine/plugins/mailplugin.html" />
-					<item name="Intervall Plugin" href="./engine/plugins/intervallplugin.html" />
+					<item name="Interval Plugin" href="./engine/plugins/intervalplugin.html" />
 					<item name="Version Plugin" href="./engine/plugins/versionplugin.html" />
 					<item name="Lucene Plugin" href="./engine/plugins/luceneplugin.html" />
 					<item name="Exception handling" href="./engine/plugins/exception_handling.html" />
@@ -90,23 +90,24 @@
 
 
 				<item name="Scheduler" href="./engine/scheduler.html" />
-				<item name="PropertySerice" href="./engine/propertyservice.html" />
+				<item name="PropertyService" href="./engine/propertyservice.html" />
 				<item name="Remote EJB Lookup" href="./engine/remote_lookup.html" />
 
 			</item>
 
-			<item name="JavaScript" href="itemcollection.html" />
+			<item name="JavaScript" href="./javascript/index.html" />
 
 			<item name="Deployment" href="./deployment/index.html" collapse="true">
 				<item name="Deployment Guide" href="./deployment/deployment_guide.html" />
 				<item name="Database Schema" href="./deployment/database_schema.html" />
 				<item name="Security" href="./deployment/security.html" />
-				<item name="Concurrency" href="./deployment/concurrency/security.html" />
+				<item name="Concurrency" href="./deployment/concurrency.html" />
 				<item name="GlassFish" href="./deployment/glassfish.html" />
 				<item name="WildFly" href="./deployment/wildfly.html" />
 
 			</item>
 
+			<item name="Sample Application" href="./sampleapplication.html" />
 			<item name="Administration" href="./administration.html" />
 			<item name="Testing" href="./testing.html" />
 			<item name="Maven" href="./maven.html" />

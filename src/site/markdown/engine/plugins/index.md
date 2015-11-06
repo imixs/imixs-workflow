@@ -1,11 +1,11 @@
 #Plugin API - Overview
 
-The Imixs Plugin API is a powerful concept to extend the Imixs Workflow Engine with the technical  aspects of a workflow management system.A plugin can provide platform specific functionality to be executed during a workflow process. You can find a general overview about the plugin concepts {{{..//api/plugin-api.html}here}}. 
+The Imixs Plugin API is a powerful concept to extend the Imixs Workflow Engine with the technical  aspects of a workflow management system.A plugin can provide platform specific functionality to be executed during a workflow process. Read more about plug-in concept in the [section core API](../../core/plugin-api.html). 
 
-The Imixs Workflow Engine provides a set of plugins with different workflow  functionality like email notification, access control, versioning or process documentation.  You can extend plugin classes to implement additional behavior for your own project. 
+The Imixs Workflow Engine provides a set of plug-ins with different workflow  functionality like email notification, access control, versioning or process documentation.  You can extend plugin classes to implement additional behavior for your own project. 
   
 ##The Abstract JEE Workflow Plugin
-Most Imixs Plugins extend from the AbstractPlugin class. This class provides a set  of methods to be used by a plugin. If you like to implement your own Imixs Plugin  it is a good starting point to subclass the class:
+Most Imixs plug-ins extend from the AbstractPlugin class. This class provides a set  of methods to be used by a plugin. If you like to implement your own Imixs Plugin  it is a good starting point to subclass the class:
   
     org.imixs.workflow.jee.plugins.AbstractPlugin
    
@@ -54,8 +54,7 @@ A static message text will be automatically  replaced with the values ​​from
     Please use the following Link to open the Application: 
     <propertyValue>dbRootURL</propertyvalue>
  
-The values from the imixs.prperties file are accessed by the  {{{../services/propertyservice.html}PropertyService}}. To activate this feature it is necessary
-that a 'ejb-ref' is defined for the Imixs WorkflowService EJB. See the following example  from the ejb-jar.xml file:
+The values from the imixs.prperties file are accessed by the [PropertyService](../propertyservice.html). To activate this feature it is necessary that a 'ejb-ref' is defined for the Imixs WorkflowService EJB. See the following example  from the ejb-jar.xml file:
  
 	... 
 	 	<session>
@@ -73,11 +72,9 @@ that a 'ejb-ref' is defined for the Imixs WorkflowService EJB. See the following
  
  
 ##How to access the WorkflowService EJB from a Plugin
-Implementing a Imixs Workflow Plugin is an easy way to extend the behavior of the Workflow Management System. A plugin is a simple Java Class (POJO) which makes it easy to implement.
- The WorkflowKernel provides a plugin with informations about the environment the plugin runs in.   Each plugin class gets an instance of the interface WorkflowContext during the 
- initialization of the plugin. This interface represents the context the plugin currently runs in.  The context depends on the concrete WorkflowManager implementation which is calling a plugin to process a workitem. 
+Implementing a Imixs Workflow Plugin is an easy way to extend the behavior of the Workflow Management System. A plugin is a simple Java Class (POJO) which makes it easy to implement. The WorkflowKernel provides a plugin with informations about the environment the plugin runs in. Each plugin class gets an instance of the interface WorkflowContext during the initialization of the plug-in. This interface represents the context the plugin currently runs in.  The context depends on the concrete WorkflowManager implementation which is calling a plugin to process a workitem. 
  
-If a plugin runs in the Imixs JEE Workflow Engine, the WorkflowContext is an instance of the  WorkflowService EJB. This behavior makes it easy to access the functionality provided by the WorkflowEngine  directly through a plugin. The following example shows how to access the WorkflowService and ModelService EJBs to determine the latest model version used in the WorkflowInstance: 
+If a plug-in runs in the Imixs JEE Workflow Engine, the WorkflowContext is an instance of the  WorkflowService EJB. This behavior makes it easy to access the functionality provided by the WorkflowEngine  directly through a plugin. The following example shows how to access the WorkflowService and ModelService EJBs to determine the latest model version used in the WorkflowInstance: 
 
 	public void init(WorkflowContext actx) throws Exception {
 		super.init(actx);
@@ -100,13 +97,13 @@ This can be done with a simple test:
 
 
 ## How to lookup a EJB from a Plugin
-Because of the fact that a Imixs Workflow plugin is independend from the Workflow implementation you can not  directly make use of the injection Feature from EJB 3.0 even if you plugin runs in the Imixs JEE Workflow. This is because the Plugin Class is typical not part of the Servlet Context nor it is implemented as a Session EJB.  For that reason it is not possible to inject an Session EJB with an annotation like it is typical  done in EJB 3.0:
+Because of the fact that a Imixs Workflow plugin is independent from the Workflow implementation you can not  directly make use of the injection Feature from EJB 3.0 even if you plugin runs in the Imixs JEE Workflow. This is because the Plugin Class is typical not part of the servlet context nor it is implemented as a Session EJB.  For that reason it is not possible to inject an Session EJB with an annotation like it is typical  done in EJB 3.0:
 
 	@EJB
 	org.imixs.workflow.jee.ejb.EntityService entityService;
 
 To get a reference to a existing EJB in your Plugin Class, you can do a JNDI Lookup. The JNDI
-Lookup fetches the EJB from the EJB Container provided by the JEE Appliction Server. So this is the  typical way to get an EJB Instance inside a POJO Class. The following example shows how you can lookup an EJB during the init() method of a plugin:
+Lookup fetches the EJB from the EJB Container provided by the JEE Application Server. So this is the  typical way to get an EJB Instance inside a POJO Class. The following example shows how you can lookup an EJB during the init() method of a plugin:
 
 	public void init(WorkflowContext actx) throws Exception {
 		super.init(actx);
@@ -132,10 +129,8 @@ In this case a reference to the MyService Interface was created by JNDI Lookup. 
 		</session>
 
 
-##How to lookup a JDBC Ressource from a Plugin
-Similar to a EJB JNDI Lookup a Plugin class can also lookup an existing JDBC Ressource  to query a database using SQL statements. The same principle explaind in this section is applicable 
- to all resources (such as JMS destinations, JavaMail sessions, and so on). The resource-ref element in the sun-ejb-jar.xml deployment descriptor file maps the JNDI name 
- of a resource reference to the resource-ref element in the ejb-jar.xml J2EE deployment descriptor file. This is similar to a EJB lookup explained before. The resource lookup in the Plugin code looks like this:
+##How to lookup a JDBC Resource from a Plugin
+Similar to a EJB JNDI Lookup a Plugin class can also lookup an existing JDBC Resource  to query a database using SQL statements. The same principle explained in this section is applicable to all resources (such as JMS destinations, JavaMail sessions, and so on). The resource-ref element in the sun-ejb-jar.xml deployment descriptor file maps the JNDI name of a resource reference to the resource-ref element in the ejb-jar.xml J2EE deployment descriptor file. This is similar to a EJB lookup explained before. The resource lookup in the Plugin code looks like this:
 
 		public void init(WorkflowContext actx) throws Exception {
 			super.init(actx);
@@ -165,8 +160,7 @@ The resource being queried is listed in the res-ref-name element of the ejb-jar.
 		</session>
 		....
 
-The resource-ref section in a Sun Java System specific deployment descriptor, for example sun-ejb-jar.xml, maps the res-ref-name (the name being queried in the application code) 
- to the JNDI name of the JDBC resource. The JNDI name is the same as the name of the JDBC resource  as defined in the resource file when the resource is created.
+The resource-ref section in a Sun Java System specific deployment descriptor, for example sun-ejb-jar.xml, maps the res-ref-name (the name being queried in the application code) to the JNDI name of the JDBC resource. The JNDI name is the same as the name of the JDBC resource  as defined in the resource file when the resource is created.
 
 	   ....
 		<ejb>

@@ -8,6 +8,6 @@ The Plugin adds or removes read and write access entries into a WorkItem:
    * $ReadAccess
    * $WriteAccess
    
-Which entries are added can be defined in the workflow model using the [Imixs-BPMN Modeler](../../modelling/index.html). See also the section {{{http://www.imixs.org/jee/acl.html}security settings}} for further details. 
+Which entries are added can be defined in the workflow model using the [Imixs-BPMN Modeler](../../modelling/index.html). See also the [section security](../acl.html) for more details. 
  
   

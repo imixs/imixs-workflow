@@ -1,8 +1,13 @@
 #The WorkflowService Interface
-The WorkflowService is the Java EE Implementation if the   {{{http://www.imixs.org/api/workflowmanager.html}WorkflowManager}} which can be used  in any Java enterprise application. The component allows you to process, update and find workItems. 
+The WorkflowService is the Java EE implementation of the [WorkflowManager interface](../core/workflowmanager.html) of the core API. This service component allows to process, update and lookup workItems in the Imixs-Workflow engine. 
 
-Before a workitem can be processed by the WorkflowService a workflow model  need to be available on the workflow server. To create a model and upload it to the workflow server
-  the {{{http://www.imixs.org/modeler/}Imixs-Workflow Modeler}}  can be used. The following example shows how a workitem can be processed using the WorkflowService.  A workitem must provide at least the properties "$ProcessID" and "$ActivityID" to indicate which  workflow activity should be processed by the workflowManager. So the $ProcessID and the $ActivityID must point to an existing model entry provided by the workflow model. 
+Before a workitem can be processed by the WorkflowService a process model need to be defined and deployed into the workflow engine. See the section [Imixs-BPMN Modeler](../modelling/index.html) for details about  how to create a model and upload it into the workflow server. The following example shows how a workitem can be processed using the WorkflowService component. A workitem must provide at least the following properties:
+
+   * $ModelVersion
+   * $ProcessID 
+   * $ActivityID 
+   
+These properties are defining the workflow activity which should be processed by the workflowManager.
 
 	  @EJB
 	  org.imixs.workflow.jee.ejb.WorkflowService workflowService;
@@ -14,31 +19,32 @@ Before a workitem can be processed by the WorkflowService a workflow model  need
 	  workitem.replaceItemValue("txtTitel", "My first workflow example");
 			
 	  // set workflow status based on a supported model
+	  workitem.replaceItemValue("$modelVersion", "1.0.0");
 	  workitem.replaceItemValue("$processID", 10);
 	  workitem.replaceItemValue("$ActivityID", 10);
-	  // process the worktiem
+	  // process the workitem
 	  workitem=workflowService.processWorkItem(workitem);
 
-The workitem is now controlled by the workflow Manager. So depending on the Workflow Model definition there a different ways to access a worktiem processed by the WorkflowService. To get the current list of all workitems created by the current user, you can call the  method() getWorkListByCreator. 
+After a new workitem is process the first time, it is under the control of the WorkflowManager. To get the current list of all workitems created by the current user, the  method() getWorkListByCreator can be called: 
   
 	  @EJB
 	  org.imixs.workflow.jee.ejb.WorkflowService workflowService;
 	  //...
-	  Collection<ItemCollection> statuslist=workflowService.getWorkListByCreator(null,0,-1);
+	  Collection<ItemCollection> worklist=workflowService.getWorkListByCreator(null,0,-1);
 	  //...
 
   
-To call the list of all workitems created by a specific user, you need to provide the username/userid.
+To read the list of all workitems created by a specific user, the parameter username need to be specified:
   
-    Collection<ItemCollection> statuslist=workflowService.getWorkListByCreator('Manfred',0,-1);
+    Collection<ItemCollection> worklist=workflowService.getWorkListByCreator('manfred',0,-1);
   
-You can also use a paging mechanism to browse through long result sets. The following example
+The WorkflowManager provides a paging mechanism to browse through long result-sets. The following example
 shows how to get 5 workitems starting at the tenth record
   
-    Collection<ItemCollection> statuslist=workflowService.getWorkListByCreator(null,10,5);
+    Collection<ItemCollection> worklist=workflowService.getWorkListByCreator(null,10,5);
 
 ##Worklist methods
-The following list of getWorkList methods shows how workitems can be accessed by different categories. The workflowService returns only workitems in a worklist if the user has read access to the workitems. If a workitem is not access able for the user this workitem will be hidden from the list.  The result sets can be ordered by modified or creation date. 
+The following methods provide different ways to read a worklist by categories. The workflowService returns only workitems in a worklist if the user has read access. If a workitem is not access able for the user this workitem will not be included in the result-set.  All result-sets can be ordered by modified or creation date. 
 
 ###getWorkList
 Returns a collection of workitems for the current user. A Workitem belongs to a user or role if the  user has at least read write access to this workitem. 
@@ -47,7 +53,7 @@ Returns a collection of workitems for the current user. A Workitem belongs to a 
     //...
 
 You can specify the type, the start position, the count and sort order of workitems returned 
-by this method. The type of a workitem is defined by the workitem proprety 'type' which can be set before a workitem is processed.
+by this method. The type of a workitem is defined by the workitem property 'type' which can be set before a workitem is processed.
 
 	  String type="workitem";
 	  Collection<ItemCollection> list=workflowService.getWorkList(0,-1,
@@ -61,7 +67,7 @@ Returns a collection of workitems belonging to a specified user. This filter can
  processed by the user.  
 
 	  String type="workitem";
-	  String user="Manfred"
+	  String user="manfred"
 	  Collection<ItemCollection> list=workflowService.getWorkList(user,0,-1,
 	     type,WorkflowService.SORT_ORDER_CREATED_DESC);
 	  //...

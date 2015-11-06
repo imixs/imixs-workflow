@@ -1,5 +1,5 @@
 #The Report Service
-The main resource /report provides a flexible rest service interface to create dynamic reports defined by through the imixs Report Service. The report rest service can be used to create and update report definitions and to process the result of a report providing a set of different params.
+The main resource /report provides a flexible rest service interface to create dynamic reports defined by through the imixs Report Service. The report rest service can be used to create and update report definitions and to process the result of a report providing a set of different parameters.
 
 ##The /report resources GET
 The /report GET resources are used to get business objects provided by the Imixs Report Manager:
@@ -15,9 +15,9 @@ The /report GET resources are used to get business objects provided by the Imixs
 
 A report definition need to provide a set of informations to define the layout and content of a report
  
-  * JPQL Statement - selection of workitems to be selected in a report
-  * contentType / Encoding - defines the MIME-TYPE and encoding for a report (e.g. text/html for html output, application/pdf for pdf files)
-  * processing instructions - xsl template to format the xml output of an workitem collection
+  * <strong>JPQL Statement</strong> - selection of workitems to be selected in a report
+  * <strong>contentType / Encoding</strong> - defines the MIME-TYPE and encoding for a report (e.g. text/html for html output, application/pdf for pdf files)
+  * <strong>processing instructions</strong> - xsl template to format the xml output of an workitem collection
 
 
 The following example shows a simple XSLT file to format a workitem collection into a html output:
@@ -55,10 +55,8 @@ The following example shows a simple XSLT file to format a workitem collection i
 		</xsl:template>
 	</xsl:stylesheet>
 
-###Providing JPQL params
-When requesting the result for a specific report you can provide the service interface with optional  dynamic JPQL params. These params can be defined in the JPQL statement of the report.
-
-Example for a JPQL Statement of a report:
+###Providing JPQL parameters
+A report definition can also contain dynamic JPQL parameters. These parameters can be defined in the JPQL statement of the report. See the following example of JPQL statement:
   
 	 SELECT workitem FROM Entity AS workitem
 	 JOIN workitem.integerItems AS p
@@ -66,16 +64,15 @@ Example for a JPQL Statement of a report:
 	  AND p.itemName = '$processid' 
 	  AND p.itemValue = ?1
 
-To provide the Report with the expected param ?1 you simple add the param to the query string.
-
+To provide the Report with the expected parameter ?1 the parameter can be appended into the query string.
  
     http://Host/WorkflowApp/report/reportfile.ixr&1=5130
  
-This request provices the REST Service with an JPQL param "?1" which will be replaced by the  dynamic JPQL param '?1' used in the JPQL statement.
+In this example request the URL contains the parameter "?1=5130" which will be inserted into the JPQL statement during the report execution.
  
  
 ##Apache FOP / PDF Reports
-The Imixs Report rest service provides the option to generate PDF Reports based on the {{{http://xmlgraphics.apache.org/fop/}Apache FOP API}}. This  is a flexible way to display workitems in PDF or other File formats supported by Apache FOP. To use FOP API during report processing the apache FOP API need to be included into the Web Module of the rest service. A report definition also need to define the corresponding content type. This is for example 'application/pdf' to create a 
+The Imixs Report rest service provides the option to generate PDF Reports based on the [Apache FOP API](http://xmlgraphics.apache.org/fop/). This  is a flexible way to display workitems in PDF or other File formats supported by Apache FOP. To use FOP API during report processing the Apache FOP API need to be included into the Web Module of the rest service. A report definition also need to define the corresponding content type. This is for example 'application/pdf' to create a 
  pdf file. The XSL instructions need to be replaced with the XSL formatting objects (XSL-FO) instructions.  The following example shows a simple FO template
  
 	<?xml version="1.0" encoding="UTF-8"?>
@@ -107,11 +104,11 @@ The Imixs Report rest service provides the option to generate PDF Reports based 
 
 
 ###Apache FOP / PDF Report Plugin
-Reports can also be computed during a workflow step. To generate a Report during workflow processing ad the following Plugin into the Pluginlist of your model:
+Reports can also be computed during the processing life cycle by adding the following plug-in into the process model:
 
     org.imixs.workflow.jee.plugins.ReportPlugin
  
-The Report Plugin can compute dynamic collections of workitems based on a JPQL statement as explained before.  As the Plugin runs in the phase of workflow processing the current workitem is typical not selectable with JPQL. Therefore the Report Plugin replaces the resultset with a new instance of the current workitem if the workitem is included in the resultset.
+The Report Plugin can compute dynamic collections of workitems based on a JPQL statement as explained before.  As the Plugin runs in the phase of workflow processing the current workitem is typical not selectable with JPQL. Therefore the Report Plugin replaces the result-set with a new instance of the current workitem if the workitem is included in the result-set.
  
 
 ## The /report resources DELETE
@@ -134,7 +131,7 @@ The /report PUT and POST resources URIs are used to write business objects:
 
  
 ## Resource Options
-You can specify additional URI parameters to access only a subset of workitms by a collection  method URI. This is useful to get only a subset of the whole worklist and to navigate through a list of workitems. Append optional arguments to define the number of workitems returned by a URL and the starting point inside the list. Combine any of the following arguments for the desired result. 
+You can specify additional URI parameters to access only a subset of workitems by a collection  method URI. This is useful to get only a subset of the whole worklist and to navigate through a list of workitems. Append optional arguments to define the number of workitems returned by a URL and the starting point inside the list. Combine any of the following arguments for the desired result. 
 
 | option      | description                                         | example               |
 |-------------|-----------------------------------------------------|-----------------------|
@@ -144,6 +141,6 @@ You can specify additional URI parameters to access only a subset of workitms by
 | download    | Optional filename for a download request This generates the HTTP Header   Content-disposition,attachment;filename=example.pdf   |download=example.pdf   |
 
 
-<strong>Note:</strong> The Imixs JEE Workflow manages the access to workitems by individual access lists per each entity. So the result of a collection of workitems will only contain entities where the current user has a  read access right. Without that right the wokitem will not be returned by the workflowManager and so it will not be included in the list. 
+<strong>Note:</strong> The Imixs JEE Workflow manages the access to workitems by individual access lists per each entity. So the result of a collection of workitems will only contain entities where the current user has a  read access right. Without that right the workitem will not be returned by the workflowManager and so it will not be included in the list. 
   
    

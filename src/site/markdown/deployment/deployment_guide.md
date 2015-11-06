@@ -3,7 +3,7 @@ The following section gives an overview how to deploy the Imixs-Workflow engine 
  
 The examples illustrates how to deploy the components on a Glassfish V3  application server which is an open source, production-ready, Java EE-compatible application server based on the JEE6 specification. But the deployment is similar to all other JEE6 application servers (e.g. JBoss or WildFly).
  
-Either if you deploy the Imixs-Workflow engine into a web application or an enterprise application the packaging  will differ in details. Both deployment concepts will be explained in the following section.  Please share your experiences and ask your questions on the {{{https://github.com/imixs/imixs-workflow/issues}GitHub Issue Tracker}}.
+Either if you deploy the Imixs-Workflow engine into a web application or an enterprise application the packaging  will differ in details. Both deployment concepts will be explained in the following section.  Please share your experiences and ask your questions on the [GitHub Issue Tracker](https://github.com/imixs/imixs-workflow/issues).
 
 ##Imixs-Workflow components
 To bundle the Imixs-Workflow engine into your business application you need to add the following components into  your application:
@@ -13,7 +13,7 @@ To bundle the Imixs-Workflow engine into your business application you need to a
   * imixs-workflow-faces-3.x.x.jar - contains optional JSF components
   * imixs-workflow-jax-rs-3.x.x.jar - contains the Imixs RESTful Web Service
    
-You can download the Imixs-Workflow components from the [Maven central repository page]https://search.maven.org/). If you are working with maven the components will be downloaded and bundled automatically during the maven build process.
+You can download the Imixs-Workflow components from the [Maven central repository page](https://search.maven.org/). If you are working with maven the components will be downloaded and bundled automatically during the maven build process.
  
 ##Building an Web Application (WAR)
 To install and deploy the Imixs-Workflow engine into a web application it is sufficient to bundle the  Imixs-Workflow components into your WEB-INF/lib folder. This is called the "EJB Lightway Runtime Environment". If you need to customize the deployment you can also add the ejb-jar.xml file into to WEB-INF/ folder. The persitence.xml need to be placed into the /WEB-INF/classes folder
@@ -58,11 +58,11 @@ If you are using maven (which is recommended) you can simply add the following d
 		<version>3.00</version>
 	</dependency>
 	
-To check for the latest versions and download components provided by this project you can browse the  {{{http://search.maven.org/#browse}Maven repository}} and search for keyword 'imixs'. 
+To check for the latest versions and download components provided by this project you can browse the [Maven repository](http://search.maven.org/#browse) and search for keyword 'imixs'. 
  
  
 ##Building an Enterprise Archive (EAR)
-Deploying the Imixs-Workflow engine into a Enterprise Archive (EAR) differs in some details from the deployment  into a web application as explained before. An EAR splits the business logic (EJBs) and the users web frontend (WAR) into separate modules.  This gives you more flexiblilty in designing enterprise applications. Building an enterprise workflow application based on the Imixs-Workflow components you typical start with an enterprise archive (EAR).  Basically the structure of an EAR looks typical like this:
+Deploying the Imixs-Workflow engine into a Enterprise Archive (EAR) differs in some details from the deployment  into a web application as explained before. An EAR splits the business logic (EJBs) and the users web front-end (WAR) into separate modules.  This gives you more flexibility in designing enterprise applications. Building an enterprise workflow application based on the Imixs-Workflow components you typical start with an enterprise archive (EAR).  Basically the structure of an EAR looks typical like this:
  
 	  /
 	  +- META-INF/
@@ -106,10 +106,9 @@ This makes the Imixs-Workflow engine part of your EJB module. The ejb-jar.xml in
  
 
 ##Adding a Database connection 
-Finally you need to add a persistence.xml file into your ejb or web module. The persistence.xml file defines how the workitems managed by the Imixs-Workflow Engine will be persisted into a database.  To configure a database connection read the {{{/jee/install.html} Imixs-Workflow Engine install section}}.  Depending if you have bundled the Imixs-Workflow engine directly with your web application or configured it as a part of your EJB module you need to add a persistence.xml file into your module:
+Finally you need to add a persistence.xml file into your ejb or web module. The persistence.xml file defines how the workitems managed by the Imixs-Workflow Engine will be persisted into a database.  Depending if you have bundled the Imixs-Workflow engine directly with your web application or configured it as a part of your EJB module you need to add a persistence.xml file into your module:
  
 ###persistence.xml in a web module 
- 
 If you have bundled the imixs-workflow-engine.jar directly into your web module add the persistence.xml into the WEB-INF/classes/META-INF folder:
  
 	  /
@@ -158,14 +157,14 @@ The jta-data-source points to a JNDI Database resource located on the Applicatio
 The jar-file defines the java library containing the Entity EJBs to be stored in the Database.
 This tag should always point to the imixs-workflow-engine Jar File. Take care about the version number 	used by your application.
 	
-In the example the jta-data-source point to a JDBC Ressource with the JNDI Name 'jdbc/workflow-db'. The jar-file points to the imixs-workflow-engine.jar part of your application. Take care about the right location and version number of this file!
+In the example the jta-data-source point to a JDBC Resource with the JNDI Name 'jdbc/workflow-db'. The jar-file points to the imixs-workflow-engine.jar part of your application. Take care about the right location and version number of this file!
  
-The jndi database resource with the name "jdbc/workflow-db" have to be provided in your application server as explained in the {{{/jee/install.html} Imixs-Workflow Engine install section}}. 
+The jndi database resource with the name "jdbc/workflow-db" have to be provided in your application server. 
  
  
   
 ##Using shared libraries
-In difference to the deplyoment example shown above you can deploy part of the Imixs JEE components as shared libraries into a EAR. In this case you put the jars into the /lib/ folder of your EAR. Jars deployed into the /lib folder of an ear are visible to all other modules and components. Exept for the imixs-jee-impl.jar you can place all Imixs jars into the lib. So in this case the EAR structure will look like this:
+In difference to the deployment example shown above you can deploy part of the Imixs JEE components as shared libraries into a EAR. In this case you put the jars into the /lib/ folder of your EAR. Jars deployed into the /lib folder of an ear are visible to all other modules and components. Except for the imixs-jee-impl.jar you can place all Imixs jars into the lib. So in this case the EAR structure will look like this:
   
 	  /
 	  +- META-INF/
