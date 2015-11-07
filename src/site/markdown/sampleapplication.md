@@ -1,7 +1,7 @@
 #Installation
 The Imixs-Workflow project provides a Sample Application which demonstrates the behavior and the concepts of the Imixs-Workflow Engine. You can download the Source Code of the Imixs-Sample Application from [GitHub](https://github.com/imixs/imixs-jsf-example). The following section gives a brief overview how to build and deploy the Imixs-Sample Application on an Application Server. The installation guide is also helpful to get a better understanding what is necessary to integrate Imixs-Workflow into your own project.  		
  
-This introduction refers the basic steps needed to get the Imixs-Sample Application up and running on different platforms. If you need further informations about the deployment of the Imixs-Workflow components see the [section deployment](./deployment/index.html}deployment section) for more detailed information.
+This introduction refers the basic steps needed to get the Imixs-Sample Application up and running on different platforms. If you need further informations about the deployment of the Imixs-Workflow components see the [section deployment](./deployment/index.html) for more detailed information.
 
 
 ##How to Build the Imixs-Sample Application 
@@ -19,8 +19,11 @@ Before you deploy the Imixs-Sample Application you first need a Java EE applicat
  * a JDBC Database connection from your Application Server to your database
  * a JAAS Security Realm to allow users to authenticate against the Workflow Application.
 
-After you have set up your server environment you can deploy the Imixs-Sample Application. This setup is  equal also if you plan to deploy your own project using Imixs-Workflow.    
-  
+In the following deployment sections you will find more information how to setup a server environment:
+
+  * [GlassFish](./deployment/glassfish.html) 
+  * [WildFly](./deployment/wildfly.html)
+
 
 ##How to Setup a Workflow Model
 To run the workflow you need to provide a workflow model. The workflow model describes the behavior of the Workflow. Things like the different states, the Read- or Write-Access, the Process History or Email notifications are declared in the Model. The Imixs-Sample Application contains a valid model file of a "Trouble Ticket Workflow System".  A trouble ticket system is based on a business process that manages and maintains lists of issues,  as needed by an organization. Trouble Ticket Systems are commonly used in an organization's customer support call center to create, update, and resolve reported customer issues, or even issues reported by that organization's other employees.

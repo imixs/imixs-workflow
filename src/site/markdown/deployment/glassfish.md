@@ -1,81 +1,76 @@
-# GlassFish
-The following section holds deployment strategies for the GlassFish platform.
+#GlassFish Deployment Guide
+This section will explain the configuration steps needed to successfully deploy the [Imixs-Sample Application](../sampleapplication.html) on GlassFish. The deployment is similar for other custom projects.
 
-## Security 
-The security roles defined by the Imixs-Workflow Engine need to be mapped in an application to corresponding groups defined by a authentication realm.
-
-The following example shows the glassfish-web.xml deployment descriptor for GlassFish Server which maps these roles to corresponding groups:
+## Install GlassFish
+You can download the GlassFish Server from the [GlassFish project site](http://www.glassfish.org). This side also includes an Installation guide for installing GlassFish on different platforms. GlassFish is provided in two versions. Version 3.x is a Java EE6 Implementation. The newer Version GlassFish 4.x is  based on the Java EE7 specification. After you have installed the GlassFish Server you can start the server by switching into the directory and execute the startup script:
  
-	<?xml version="1.0" encoding="UTF-8"?>
-	<!DOCTYPE glassfish-web-app PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Servlet 3.0//EN" "http://glassfish.org/dtds/glassfish-web-app_3_0-1.dtd">
-	<glassfish-web-app>
-		<context-root>/imixs-workflow</context-root>
-		<security-role-mapping>
-			<role-name>org.imixs.ACCESSLEVEL.NOACCESS</role-name>
-			<group-name>Noaccess</group-name>
-			<group-name>IMIXS-WORKFLOW-Noaccess</group-name>
-		</security-role-mapping>
-		<security-role-mapping>
-			<role-name>org.imixs.ACCESSLEVEL.READERACCESS</role-name>
-			<group-name>Reader</group-name>
-			<group-name>IMIXS-WORKFLOW-Reader</group-name>
-		</security-role-mapping>
-		<security-role-mapping>
-			<role-name>org.imixs.ACCESSLEVEL.AUTHORACCESS</role-name>
-			<group-name>Author</group-name>
-			<group-name>IMIXS-WORKFLOW-Author</group-name>
-		</security-role-mapping>
-		<security-role-mapping>
-			<role-name>org.imixs.ACCESSLEVEL.EDITORACCESS</role-name>
-			<group-name>Editor</group-name>
-			<group-name>IMIXS-WORKFLOW-Editor</group-name>
-		</security-role-mapping>
-		<security-role-mapping>
-			<role-name>org.imixs.ACCESSLEVEL.MANAGERACCESS</role-name>
-			<group-name>Manager</group-name>
-			<group-name>IMIXS-WORKFLOW-Manager</group-name>
-		</security-role-mapping>
-	</glassfish-web-app>
+    GLASSFISH_DIST/domains/domain1/bin
+ 
+After the server is started you can access the GlassFish web console from your web browser with the following URL:
 
+    http://localhost:4848/
+      
+##Setting up a Imixs-Workflow database pool
+The [Imixs-Sample Application](../sampleapplication.html) expects a database resource with the name "jdbc/workflow-db". Thus you need first to set up a Database Pool and a JDBC resource before you can deploy the application successful. In this example we create a database pool for the build in derby database from GlassFish.  You can also configure any other database like MySQL, Oracle, Informix, Microsoft SQL Server,....
 
-This mapping can also be done in the glassfish-ejb-jar.xml inside an EJB module or the glassfish-application.xml for a EAR deployment. See the following example shows an glassfish-application.xml with a corresponding roles mapping for the realm 'imixsrealm':
+To create a new database pool in GlassFish follow these steps:
 
-	 <?xml version="1.0" encoding="UTF-8"?>
-	<!DOCTYPE glassfish-application PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Java EE Application 6.0//EN" "http://glassfish.org/dtds/glassfish-application_6_0-1.dtd">
-	<glassfish-application>
-		<security-role-mapping>
-			<role-name>org.imixs.ACCESSLEVEL.NOACCESS</role-name>
-			<group-name>IMIXS-WORKFLOW-Noaccess</group-name>
-		</security-role-mapping>
-		<security-role-mapping>
-			<role-name>org.imixs.ACCESSLEVEL.READERACCESS</role-name>
-			<group-name>IMIXS-WORKFLOW-Reader</group-name>
-		</security-role-mapping>
-		<security-role-mapping>
-			<role-name>org.imixs.ACCESSLEVEL.AUTHORACCESS</role-name>
-			<group-name>IMIXS-WORKFLOW-Author</group-name>
-		</security-role-mapping>
-		<security-role-mapping>
-			<role-name>org.imixs.ACCESSLEVEL.EDITORACCESS</role-name>
-			<group-name>IMIXS-WORKFLOW-Editor</group-name>
-		</security-role-mapping>
-		<security-role-mapping>
-			<role-name>org.imixs.ACCESSLEVEL.MANAGERACCESS</role-name>
-			<group-name>IMIXS-WORKFLOW-Manager</group-name>
-			<principal-name>IMIXS-WORKFLOW-Service</principal-name>
-		</security-role-mapping>	
-		<realm>imixsrealm</realm>
-	</glassfish-application>
+   1. make sure the derby database is started   
+       
+    GLASSFISH_DIST/bin/asadmin start-database
 
+   2. start admin console -> http://localhost:4848/   
+   3. navigate to   Application Server  >>  Resources  >>  JDBC  >>  Connection Pools
+   4. click "new" to create a new database source
+      * name: your database name (e.g. "imixs_db_pool")
+      * resource type : javax.sql.DataSource
+      * Database Vendor : Derby
+   5. click "next". Now only the following property settings are necessary:
+      * ConnectionAttributes: ;create=true
+      * DatabaseName: "imixs_db_pool"
+      * Password: "APP"
+      * User: "APP"
+      * ServerName : "loacalhost"
+      * portnumber: 1527
+   6. Now create a JDBC Resource - Navigate to "Application Server  >>  Resources  >>  JDBC  >>  JDBC Resources"
+   7. click "new" to create a new resource
+       - jndiName: jdbc/workflow-db
+       - PoolName: imixs_db_pool 
 
-### security-role-ref 
-To map these roles in a web application directly without the deployment descriptors above use  the security-role-ref in the web.xml and ejb-jar.xml as defined in the JEE specification.
+##Setup a Security Realm
+To login to the Imixs-Sample Application you need also to configure a security realm.  Follow the steps below:
+ 
+   1. start admin console -> http://localhost:4848/   
+   2. navigate to  Configuration->Security->realms
+   3. add a new file realm named "imixsrealm"
+   4. choose the class Name "com.sun.enterprese.security.auth.realm.file.FileRealm"
+   5. Set the JAAS Context to "fileRealm"
+   6. Set the Key File to a new File name. e.g. "keyfile"
+   7. open the newly created realm configuration and click on button "manage users"
+   8. Add the following test accounts:
 
-	  ...  
-	   <security-role-ref>
-	    <role-name>author</role-name>
-	    <role-link>org.imixs.ACCESSLEVEL.AUTHORACCESS</role-link>
-	  </security-role-ref>
-	...
+| UserID       |GroupName                |Description                         | 
+|--------------|-------------------------|------------------------------------|
+|Manfred       |IMIXS-WORKFLOW-Manager   | This user will have maximum access |
+|Eddy          |IMIXS-WORKFLOW-Editor    | User can edit all workitems         |
+|Anna          |IMIXS-WORKFLOW-Author    | User will be allowed to create workitems and edit his own     |
+|Ronny         |IMIXS-WORKFLOW-Reader    | This user will be only allowed to read workitems   |
+|Guest         |                         | This user will have no access (just to be sure security works well) 
+  
+It is also possible to configure other security bindings as the file based described here.  Only the realm name should match to "imixsrealm". 
 
-In this example the name in the tag "role-link" must match the name of the imixs security role and the role-name to a group or role in your security context.
+## Deploy the Imixs-Sample Application
+Now install the war file of the Imixs-Sample Application by the following steps:
+
+   1. Be sure, that your database server is up and running. Start it with
+      >asadmin start-database
+   2. Be sure, that the domain, which you will deploy the application on, is started and alive
+   3. Now you can start the Admin Console in the browser. The port is listed in the output while starting the domain, i.e. in the default domain domain1 it is
+      >http://localhost:4848
+   4. Choose Applications -> Enterprise Applications and click the button "deploy" in the main frame
+   5. Choose as type "Enterprise Application (.ear)"
+   6. at Location choose "Packaged file to be uploaded to the server" and browse to the location, where the ear file is stored
+   7. press the button "ok" located in the upper right corner --> ear will be deployed
+
+ 
+

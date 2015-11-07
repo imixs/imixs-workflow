@@ -37,25 +37,25 @@ If you are using maven (which is recommended) you can simply add the following d
 		<groupId>org.imixs.workflow</groupId>
 		<artifactId>imixs-workflow-core</artifactId>
 		<type>jar</type>
-		<version>3.0.0</version>
+		<version>RELEASE</version>
 	</dependency>
 	<dependency>
 		<groupId>org.imixs.workflow</groupId>
 		<artifactId>imixs-workflow-engine</artifactId>
 		<type>jar</type>
-		<version>3.0.0</version>
+		<version>RELEASE</version>
 	</dependency>
 	<dependency>
 		<groupId>org.imixs.workflow</groupId>
 		<artifactId>imixs-workflow-faces</artifactId>
 		<type>war</type>
-		<version>3.0.0</version>
+		<version>RELEASE</version>
 	</dependency>
 	<dependency>
 		<groupId>org.imixs.workflow</groupId>
 		<artifactId>imixs-workflow-jax-rs</artifactId>
 		<type>jar</type>
-		<version>3.00</version>
+		<version>RELEASE</version>
 	</dependency>
 	
 To check for the latest versions and download components provided by this project you can browse the [Maven repository](http://search.maven.org/#browse) and search for keyword 'imixs'. 

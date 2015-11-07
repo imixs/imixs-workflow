@@ -20,7 +20,7 @@
 		</links>
 
 
-		<menu name="Documenation">
+		<menu name="Documentation">
 			<item name="Quick Start" href="index.html" collapse="true">
 				<item name="Business Data" href="quickstart/workitem.html" />
 				<item name="Business Process" href="quickstart/businessprocess.html" />

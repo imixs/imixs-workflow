@@ -40,7 +40,7 @@ A Workflow Management System provides views of all running process instances. A 
 There are several ways how you can benefit from Imixs-Workflow. The following section gives you a short guideline how to find out the best way to use Imixs-Workflow in your own project.
  
 ### Using the Imixs-Workflow Engine out of the Box
-Using Imixs-Workflow out of the Box is a good starting point to run the workflow engine without modification or Java EE development. You can start with the [Imixs-Workflow Sample Application](https://github.com/imixs/imixs-jsf-example) if you don't want to develop a new project from scratch. 
+Using Imixs-Workflow out of the Box is a good starting point to run the workflow engine without modification or Java EE development. You can start with the [Imixs-Workflow Sample Application](sampleapplication.html) if you don't want to develop a new project from scratch. 
 
 Before you begin, consider the following:
  
