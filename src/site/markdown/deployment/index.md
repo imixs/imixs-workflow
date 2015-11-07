@@ -48,4 +48,4 @@ In the security concept of the Imixs-Workflow there are 5 roles defined:
   * org.imixs.ACCESSLEVEL.EDITORACCESS
   * org.imixs.ACCESSLEVEL.MANAGERACCESS
 
-Each user accessing the Imixs-Workflow Engine need to be assigned to one of these roles. The security configuration is typical configured by a security realm inside the application server. See the section [Security](./security.html) for further details.
+Each user accessing the Imixs-Workflow Engine need to be assigned to one of these roles. The security configuration is typical configured by a security realm inside the application server. See the [section Security](./security.html) for further details.
