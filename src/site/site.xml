@@ -124,7 +124,7 @@
 			<item name="Testing" href="./testing.html" />
 			<item name="Maven" href="./maven.html" />
 
-			<item name="JavaDocs" target="_blank" href="./doc/apidocs/index.html" />
+			<item name="JavaDocs" target="_blank" href="./apidocs/index.html" />
 		</menu>
 
 		<menu name="About the project">
