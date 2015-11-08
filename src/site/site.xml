@@ -124,6 +124,7 @@
 			<item name="Testing" href="./testing.html" />
 			<item name="Maven" href="./maven.html" />
 
+			<item name="JavaDocs" target="_blank" href="./doc/apidocs/index.html" />
 		</menu>
 
 		<menu name="About the project">
@@ -135,22 +136,6 @@
 			<item name="Plugin Management" href="plugin-management.html" />
 		</menu>
 
-
-
-		<menu name="Source Code">
-			<item name="Core" href="source-repository.html" collapse="true">
-				<item name="JavaDocs" href="../api/apidocs/index.html" />
-				<item name="Source Xref" href="../api/xref/index.html" />
-			</item>
-			<item name="Engine" href="source-repository.html" collapse="true">
-				<item name="Engine JavaDocs" href="apidocs/index.html" />
-				<item name="Engine Source Xref" href="xref/index.html" />
-			</item>
-			<item name="Jax-rs" href="source-repository.html" collapse="true">
-				<item name="Engine JavaDocs" href="apidocs/index.html" />
-				<item name="Engine Source Xref" href="xref/index.html" />
-			</item>
-		</menu>
 
 
 	</body>
