@@ -217,4 +217,29 @@ public class TestResultPlugin {
 		Assert.assertEquals("XXX", evalItemCollection.getItemValueString("test"));
 	}
 
+	
+	
+	
+	/**
+	 * Test the itemParser method or activity
+	 ***/
+	@Test
+	public void testItemXMLContent() {
+
+		// create test result.....
+		String activityResult = "<modelversion>1.0.0</modelversion>" + "<processid>1000</processid>"
+				+ "<activityid>10</activityid>" + "<items>namTeam</items>";
+
+		try {
+			ItemCollection result = ResultPlugin.parseItemStructure(activityResult);
+
+			Assert.assertEquals("1.0.0", result.getItemValueString("modelversion"));
+			Assert.assertEquals("1000", result.getItemValueString("processID"));
+			Assert.assertEquals("10", result.getItemValueString("activityID"));
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+	}
 }

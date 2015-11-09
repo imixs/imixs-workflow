@@ -27,13 +27,25 @@
 
 package org.imixs.workflow.plugins;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * This Plug-In evaluates the result message provided by the Activity property
@@ -192,7 +204,7 @@ public class ResultPlugin extends AbstractPlugin {
 			iContentEndPos = iTagEndPos;
 			// start pos is the last > before the iContentEndPos
 			String sTestString = aString.substring(0, iContentEndPos);
-			iContentStartPos = sTestString.indexOf('>')+1 ;
+			iContentStartPos = sTestString.indexOf('>') + 1;
 
 			// if no end tag found return string unchanged...
 			if (iContentStartPos >= iContentEndPos)
@@ -272,4 +284,71 @@ public class ResultPlugin extends AbstractPlugin {
 
 	}
 
+	/**
+	 * This method parses the xml content of a item element and returns a new
+	 * ItemCollection containing all item values. Each tag is evaluated as the
+	 * item name.
+	 * 
+	 * MultiValues are currently not supported
+	 * 
+	 * Example:
+	 * 
+	 * <code>
+	  
+				<modelversion>1.0.0</modelversion>
+				<processid>1000</processid>
+				<activityid>10</activityid>
+				<items>namTeam</items>
+	  
+	 * </code>
+	 * 
+	 * @param evalItemCollection
+	 * @throws PluginException
+	 */
+	public static ItemCollection parseItemStructure(String xmlContent) throws PluginException {
+		logger.info("Evaluate Subprocess Item...");
+
+		ItemCollection result = new ItemCollection();
+		if (xmlContent.length() > 0) {
+			// surround with root element
+			xmlContent = "<item>" + xmlContent + "</item>";
+			try {
+
+				// parse item list...
+				DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+				Document doc = documentBuilder.parse(new InputSource(new StringReader(xmlContent)));
+				Node node = doc.importNode(doc.getDocumentElement(), true);
+				DocumentFragment docfrag = doc.createDocumentFragment();
+				while (node.hasChildNodes()) {
+					docfrag.appendChild(node.removeChild(node.getFirstChild()));
+				}
+
+				// append all items into the evalItemCollection...
+				NodeList childs = docfrag.getChildNodes();
+				int itemCount = childs.getLength();
+				for (int i = 0; i < itemCount; i++) {
+					Node childNode = childs.item(i);
+					String name = childNode.getNodeName();
+					String value = childNode.getFirstChild().getNodeValue();
+					result.replaceItemValue(name, value);
+					logger.fine("[ResultPlugin] parsing item '" + name + "' value=" + value);
+				}
+
+			} catch (ParserConfigurationException e) {
+				throw new PluginException(RulePlugin.class.getName(), INVALID_FORMAT,
+						"Parsing item content failed: " + e.getMessage());
+
+			} catch (SAXException e) {
+				throw new PluginException(RulePlugin.class.getName(), INVALID_FORMAT,
+						"Parsing item content failed: " + e.getMessage());
+
+			} catch (IOException e) {
+				throw new PluginException(RulePlugin.class.getName(), INVALID_FORMAT,
+						"Parsing item content failed: " + e.getMessage());
+
+			}
+		}
+
+		return result;
+	}
 }

@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.jee.ejb.AbstractWorkflowServiceTest;
+import org.imixs.workflow.plugins.jee.SplitAndJoinPlugin;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -79,16 +80,13 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 	/**
 	 * Test if the plugin exception in case of wrong xml content for create
 	 * subprocess...
-	 ***/
+	 **/
 	@Test
 	public void testCreateSubProcessParsingError() {
 
-		// create test result.....
+		// create test result with a wrong end tag....
 		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
-				+ "<processid>1000</processid>" + "<activityid>10</acttyid>" // wrong
-																				// end
-																				// tag!
-				+ "<items>namTeam</items>" + "</item>";
+				+ "<processid>1000</processid>" + "<activityid>10</acttyid>" + "<items>namTeam</items>" + "</item>";
 
 		documentActivity = this.getActivityEntity(100, 10);
 
