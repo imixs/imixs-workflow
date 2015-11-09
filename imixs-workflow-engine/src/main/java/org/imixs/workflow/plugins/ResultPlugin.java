@@ -68,26 +68,21 @@ public class ResultPlugin extends AbstractPlugin {
 
 	ItemCollection documentContext;
 	String sActivityResult;
-	private static Logger logger = Logger.getLogger(ResultPlugin.class
-			.getName());
+	private static Logger logger = Logger.getLogger(ResultPlugin.class.getName());
 
-	public int run(ItemCollection adocumentContext,
-			ItemCollection adocumentActivity) throws PluginException {
+	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 		documentContext = adocumentContext;
 
 		// get ResultMessage
-		sActivityResult = adocumentActivity
-				.getItemValueString("txtActivityResult");
-		sActivityResult = replaceDynamicValues(sActivityResult,
-				adocumentContext);
+		sActivityResult = adocumentActivity.getItemValueString("txtActivityResult");
+		sActivityResult = replaceDynamicValues(sActivityResult, adocumentContext);
 
 		// evaluate new items....
 		try {
 			evaluate(sActivityResult, adocumentContext);
 		} catch (Exception e) {
-			throw new PluginException(ResultPlugin.class.getSimpleName(),
-					INVALID_FORMAT, "ResultPlguin: invalid format : "
-							+ sActivityResult + " Error: " + e.getMessage());
+			throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_FORMAT,
+					"ResultPlguin: invalid format : " + sActivityResult + " Error: " + e.getMessage());
 
 		}
 		return Plugin.PLUGIN_OK;
@@ -97,13 +92,34 @@ public class ResultPlugin extends AbstractPlugin {
 		try {
 			// restore changes?
 			if (status < Plugin.PLUGIN_ERROR) {
-				documentContext.replaceItemValue("txtworkflowresultmessage",
-						sActivityResult);
+				documentContext.replaceItemValue("txtworkflowresultmessage", sActivityResult);
 			}
 		} catch (Exception e) {
 			System.out.println("[ResultPlugin] Error close(): " + e.toString());
 
 		}
+	}
+
+	/**
+	 * This method evaluates the given activityEntiy and returns a new
+	 * ItemCollection containing all items defined by the activity property
+	 * 'txtActivityResult'.
+	 * 
+	 * @see method evaluate(String aString, ItemCollection documentContext)
+	 * @throws PluginException
+	 * 
+	 */
+	public static ItemCollection evaluate(ItemCollection activityEntity, ItemCollection documentContext)
+			throws PluginException {
+
+		String sResult = activityEntity.getItemValueString("txtActivityResult");
+		// replace dynamic values
+		sResult = new ResultPlugin().replaceDynamicValues(sResult, documentContext);
+
+		ItemCollection evalItemCollection = new ItemCollection();
+		ResultPlugin.evaluate(sResult, evalItemCollection);
+
+		return evalItemCollection;
 	}
 
 	/**
@@ -130,8 +146,7 @@ public class ResultPlugin extends AbstractPlugin {
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	public static void evaluate(String aString, ItemCollection documentContext)
-			throws PluginException {
+	public static void evaluate(String aString, ItemCollection documentContext) throws PluginException {
 
 		List<String> mulitValueItemNames = new ArrayList<String>();
 		int iTagStartPos;
@@ -160,8 +175,7 @@ public class ResultPlugin extends AbstractPlugin {
 
 			// if no end tag found return string unchanged...
 			if (iTagEndPos == -1)
-				throw new PluginException(ResultPlugin.class.getSimpleName(),
-						INVALID_FORMAT, "</item>  expected!");
+				throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_FORMAT, "</item>  expected!");
 
 			// reset pos vars
 			iContentStartPos = 0;
@@ -178,7 +192,7 @@ public class ResultPlugin extends AbstractPlugin {
 			iContentEndPos = iTagEndPos;
 			// start pos is the last > before the iContentEndPos
 			String sTestString = aString.substring(0, iContentEndPos);
-			iContentStartPos = sTestString.lastIndexOf('>') + 1;
+			iContentStartPos = sTestString.indexOf('>')+1 ;
 
 			// if no end tag found return string unchanged...
 			if (iContentStartPos >= iContentEndPos)
@@ -190,8 +204,7 @@ public class ResultPlugin extends AbstractPlugin {
 			// start and end pos of the value
 
 			// next we check if the start tag contains a 'name' attribute
-			iNameStartPos = aString.toLowerCase()
-					.indexOf("name=", iTagStartPos);
+			iNameStartPos = aString.toLowerCase().indexOf("name=", iTagStartPos);
 			// extract format string if available
 			// ' can be used instead of " chars!
 			// e.g.: name='txtName'> or name="txtName">
@@ -206,8 +219,7 @@ public class ResultPlugin extends AbstractPlugin {
 
 			// next we check if the start tag contains a 'type'
 			// attribute
-			iTypeStartPos = aString.toLowerCase()
-					.indexOf("type=", iTagStartPos);
+			iTypeStartPos = aString.toLowerCase().indexOf("type=", iTagStartPos);
 			// extract format string if available
 			if (iTypeStartPos > -1 && iTypeStartPos < iContentStartPos) {
 				String sTypePart = aString.substring(0, iContentStartPos);
@@ -225,11 +237,10 @@ public class ResultPlugin extends AbstractPlugin {
 			if (sName != null && !"".equals(sName)) {
 				// ignore case sensetive names
 				sName = sName.toLowerCase();
-				
+
 				// if itemname starts with $ it will be ignored
 				if (sName.startsWith("$")) {
-					logger.warning("ResultPlugin - item '" + sName
-							+ "' update not allowed!");
+					logger.warning("ResultPlugin - item '" + sName + "' update not allowed!");
 				} else {
 					// convert to type...
 					Object oValue = sItemValue;
@@ -248,8 +259,7 @@ public class ResultPlugin extends AbstractPlugin {
 					} else {
 						// item was processed before so we add the value into a
 						// multivalue list
-						List<Object> values = documentContext
-								.getItemValue(sName);
+						List<Object> values = documentContext.getItemValue(sName);
 						values.add(oValue);
 						documentContext.replaceItemValue(sName, values);
 					}
@@ -257,8 +267,7 @@ public class ResultPlugin extends AbstractPlugin {
 			}
 
 			// now cut the tag form the string
-			aString = aString.substring(0, iTagStartPos) + ""
-					+ aString.substring(iTagEndPos);
+			aString = aString.substring(0, iTagStartPos) + "" + aString.substring(iTagEndPos);
 		}
 
 	}

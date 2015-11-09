@@ -196,7 +196,7 @@ public abstract class AbstractPlugin implements Plugin {
 	 * this method formats a string object depending of an attribute type.
 	 * MultiValues will be separated by the provided separator
 	 */
-	public String formatItemValues(Collection<?> aItem, String aSeparator,
+	public static String formatItemValues(Collection<?> aItem, String aSeparator,
 			String sFormat, Locale locale) {
 
 		StringBuffer sBuffer = new StringBuffer();
@@ -228,7 +228,7 @@ public abstract class AbstractPlugin implements Plugin {
 	 * this method formats a string object depending of an attribute type.
 	 * MultiValues will be separated by the provided separator
 	 */
-	public String formatItemValues(Collection<?> aItem, String aSeparator,
+	public static String formatItemValues(Collection<?> aItem, String aSeparator,
 			String sFormat) {
 		return formatItemValues(aItem, aSeparator, sFormat, null);
 	}
@@ -246,7 +246,7 @@ public abstract class AbstractPlugin implements Plugin {
 	 * @param o
 	 * @return
 	 */
-	private String formatObjectValue(Object o, String format, Locale locale) {
+	private static String formatObjectValue(Object o, String format, Locale locale) {
 
 		Date dateValue = null;
 
