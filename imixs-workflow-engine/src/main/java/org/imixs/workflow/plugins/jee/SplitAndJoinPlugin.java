@@ -45,6 +45,16 @@ import org.imixs.workflow.plugins.ResultPlugin;
  * sub-process instances from a workflow event in an origin process. It is also
  * possible to update the origin process from the sub-process instance.
  * 
+ * The plugin evaluates the txtactivityResult and the items with the following
+ * names:
+ * 
+ * subprocess_create = create a new subprocess assigned to the current workitem
+ * 
+ * subprocess_update = update an existing subprocess assigned to the current workitem
+ * 
+ * origin_update = update the origin process assigned to the current workitem
+ * 
+ * 
  * @author Ralph Soika
  * @version 1.0
  * @see http://www.imixs.org/doc/engine/plugins/splitandjoinplugin.html
@@ -74,42 +84,59 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * The method evaluates the workflow activity result
+	 * The method evaluates the workflow activity result for items with name:
+	 * 
+	 * subprocess_create
+	 * 
+	 * subprocess_update
+	 * 
+	 * origin_update
+	 * 
+	 * For each item a corresponding processing cycle will be started.
+	 * 
 	 */
+	@SuppressWarnings("unchecked")
 	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
-		
+
 		ItemCollection evalItemCollection = ResultPlugin.evaluate(adocumentActivity, adocumentContext);
 
+		// first we test for items with name subprocess_create and create the
+		// defined suprocesses
 		if (evalItemCollection.hasItem(SUBPROCESS_CREATE)) {
-			logger.fine("Evaluate Subprocess Item...");
+			logger.fine("Evaluate a Subprocess for each Item...");
 
-			// evaluate the item content (XML format expected here!)
-			ItemCollection processData = ResultPlugin
-					.parseItemStructure(evalItemCollection.getItemValueString(SUBPROCESS_CREATE).trim());
+			List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_CREATE);
+			// we iterate over each declaration of a SUBPROCESS_CREATE item....
+			for (String processValue : processValueList) {
 
-			// create new process instance
-			ItemCollection workitemSubProcess = new ItemCollection();
-			workitemSubProcess.replaceItemValue(WorkflowKernel.MODELVERSION,
-					processData.getItemValueString("modelversion"));
-			workitemSubProcess.replaceItemValue(WorkflowKernel.PROCESSID,
-					new Integer(processData.getItemValueString("processid")));
-			workitemSubProcess.replaceItemValue(WorkflowKernel.ACTIVITYID,
-					processData.getItemValueString("activityid"));
+				// evaluate the item content (XML format expected here!)
+				ItemCollection processData = ResultPlugin.parseItemStructure(processValue);
 
-			// now clone the field list...
-			String items = processData.getItemValueString("items");
-			StringTokenizer st = new StringTokenizer(items, ",");
-			while (st.hasMoreTokens()) {
-				String field = st.nextToken().trim();
-				workitemSubProcess.replaceItemValue(field, adocumentContext.getItemValue(field));
+				// create new process instance
+				ItemCollection workitemSubProcess = new ItemCollection();
+				workitemSubProcess.replaceItemValue(WorkflowKernel.MODELVERSION,
+						processData.getItemValueString("modelversion"));
+				workitemSubProcess.replaceItemValue(WorkflowKernel.PROCESSID,
+						new Integer(processData.getItemValueString("processid")));
+				workitemSubProcess.replaceItemValue(WorkflowKernel.ACTIVITYID,
+						processData.getItemValueString("activityid"));
+
+				// now clone the field list...
+				String items = processData.getItemValueString("items");
+				StringTokenizer st = new StringTokenizer(items, ",");
+				while (st.hasMoreTokens()) {
+					String field = st.nextToken().trim();
+					workitemSubProcess.replaceItemValue(field, adocumentContext.getItemValue(field));
+				}
+
+				// finally we process the new subprocess...
+				workitemSubProcess = workflowService.processWorkItem(workitemSubProcess);
+
+				logger.fine("[SplitAndJoinPlugin] successful processed subprocess.");
+				// now add the new workitemRef into the documentContext
+				addWorkitemRef(workitemSubProcess.getUniqueID(), adocumentContext);
+
 			}
-			
-			// finally we process the new subprocess...
-			workitemSubProcess = workflowService.processWorkItem(workitemSubProcess);
-
-			logger.fine("[SplitAndJoinPlugin] successful processed subprocess.");
-			// now add the new workitemRef into the documentContext
-			addWorkitemRef(workitemSubProcess.getUniqueID(),adocumentContext);
 
 		}
 
@@ -122,9 +149,6 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 	}
 
-	
-	
-	
 	/**
 	 * This methods adds a new workItem reference into a workitem
 	 */
@@ -145,6 +169,5 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			workitem.replaceItemValue(LINK_PROPERTY, refList);
 		}
 
-	
 	}
 }

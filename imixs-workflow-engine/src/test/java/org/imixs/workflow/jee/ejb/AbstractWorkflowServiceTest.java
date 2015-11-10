@@ -100,7 +100,6 @@ public class AbstractWorkflowServiceTest {
 		when(workflowContext.getModel()).thenReturn(modelService);
 		when(workflowService.getModel()).thenReturn(modelService);
 
-
 		// simulate getActivityEntity
 		when(modelService.getActivityEntity(Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString()))
 				.thenAnswer(new Answer<ItemCollection>() {
@@ -141,8 +140,8 @@ public class AbstractWorkflowServiceTest {
 						// we do not register plugins....
 						workflowkernel.process(aWorkitem);
 
-						// add/update workitem in mock database
-						database.put(aWorkitem.getItemValueString(EntityService.UNIQUEID), aWorkitem);
+						// save workitem in mock database
+						entityService.save(aWorkitem);
 						return aWorkitem;
 
 					}
@@ -242,6 +241,8 @@ public class AbstractWorkflowServiceTest {
 			this.setProcessEntity(entity);
 
 			// activities
+			// 100.10, 100.20, 100.30, 200.10, 200.20 , .....
+			// nextProcessID is for each activity 100, 200, 300
 			for (int j = 1; j <= 3; j++) {
 				entity = new ItemCollection();
 				entity.replaceItemValue("type", "ActivityEntity");
@@ -250,7 +251,7 @@ public class AbstractWorkflowServiceTest {
 				entity.replaceItemValue("txtName", "Activity " + 100 * j + "." + 10 * j);
 				entity.replaceItemValue("$ModelVersion", "1.0.0");
 				entity.replaceItemValue("numProcessID", 100 * i);
-				entity.replaceItemValue("numnextprocessid", 100 * i);
+				entity.replaceItemValue("numnextprocessid", 100 * j);
 				entity.replaceItemValue("numActivityID", 10 * j);
 
 				this.setActivityEntity(entity);

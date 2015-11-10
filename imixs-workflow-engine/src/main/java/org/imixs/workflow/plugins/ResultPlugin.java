@@ -310,8 +310,8 @@ public class ResultPlugin extends AbstractPlugin {
 
 		ItemCollection result = new ItemCollection();
 		if (xmlContent.length() > 0) {
-			// surround with root element
-			xmlContent = "<item>" + xmlContent + "</item>";
+			// surround with a root element
+			xmlContent = "<item>" + xmlContent.trim() + "</item>";
 			try {
 
 				// parse item list...
