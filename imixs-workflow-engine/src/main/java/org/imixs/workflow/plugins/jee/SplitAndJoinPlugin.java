@@ -27,6 +27,7 @@
 
 package org.imixs.workflow.plugins.jee;
 
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
@@ -50,15 +51,13 @@ import org.imixs.workflow.plugins.ResultPlugin;
  * 
  */
 public class SplitAndJoinPlugin extends AbstractPlugin {
-
+	public static final String LINK_PROPERTY = "txtworkitemref";
 	public static final String INVALID_FORMAT = "INVALID_FORMAT";
 	public static final String SUBPROCESS_CREATE = "subprocess_create";
 	public static final String SUBPROCESS_UPDATE = "subprocess_update";
 	public static final String ORIGIN_UPDATE = "origin_update";
 
 	private WorkflowService workflowService = null;
-	ItemCollection documentContext;
-	String sActivityResult;
 	private static Logger logger = Logger.getLogger(SplitAndJoinPlugin.class.getName());
 
 	/**
@@ -78,7 +77,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * The method evaluates the workflow activity result
 	 */
 	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
-
+		
 		ItemCollection evalItemCollection = ResultPlugin.evaluate(adocumentActivity, adocumentContext);
 
 		if (evalItemCollection.hasItem(SUBPROCESS_CREATE)) {
@@ -104,10 +103,13 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				String field = st.nextToken().trim();
 				workitemSubProcess.replaceItemValue(field, adocumentContext.getItemValue(field));
 			}
-
-			// finally we try to process the new subprocess...
+			
+			// finally we process the new subprocess...
 			workitemSubProcess = workflowService.processWorkItem(workitemSubProcess);
-			logger.fine("[GeNesysPlugin] successful processed subprocess.");
+
+			logger.fine("[SplitAndJoinPlugin] successful processed subprocess.");
+			// now add the new workitemRef into the documentContext
+			addWorkitemRef(workitemSubProcess.getUniqueID(),adocumentContext);
 
 		}
 
@@ -120,4 +122,29 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 	}
 
+	
+	
+	
+	/**
+	 * This methods adds a new workItem reference into a workitem
+	 */
+	private void addWorkitemRef(String aUniqueID, ItemCollection workitem) {
+
+		logger.fine("LinkController add workitem reference: " + aUniqueID);
+
+		@SuppressWarnings("unchecked")
+		List<String> refList = workitem.getItemValue(LINK_PROPERTY);
+
+		// clear empty entry if set
+		if (refList.size() == 1 && "".equals(refList.get(0)))
+			refList.remove(0);
+
+		// test if not yet a member of
+		if (refList.indexOf(aUniqueID) == -1) {
+			refList.add(aUniqueID);
+			workitem.replaceItemValue(LINK_PROPERTY, refList);
+		}
+
+	
+	}
 }
