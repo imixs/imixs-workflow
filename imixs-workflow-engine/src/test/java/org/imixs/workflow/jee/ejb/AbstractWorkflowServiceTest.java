@@ -147,6 +147,17 @@ public class AbstractWorkflowServiceTest {
 					}
 				});
 
+		// simulate a workitemService.getWorkitem call
+		when(workflowService.getWorkItem(Mockito.anyString())).thenAnswer(new Answer<ItemCollection>() {
+			@Override
+			public ItemCollection answer(InvocationOnMock invocation) throws Throwable {
+
+				Object[] args = invocation.getArguments();
+				String id = (String) args[0];
+				return entityService.load(id);
+			}
+		});
+
 	}
 
 	/**

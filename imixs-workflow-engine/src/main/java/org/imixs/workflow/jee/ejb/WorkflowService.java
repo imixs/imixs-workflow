@@ -135,6 +135,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		entityService.addIndex("$uniqueidref", EntityIndex.TYP_TEXT);
 		entityService.addIndex("txtname", EntityIndex.TYP_TEXT);
 		entityService.addIndex("namowner", EntityIndex.TYP_TEXT);
+		entityService.addIndex("txtworkitemref", EntityIndex.TYP_TEXT);
 	}
 
 	/**

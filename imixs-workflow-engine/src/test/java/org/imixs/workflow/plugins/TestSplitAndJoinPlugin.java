@@ -5,6 +5,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.jee.ejb.AbstractWorkflowServiceTest;
 import org.imixs.workflow.plugins.jee.SplitAndJoinPlugin;
@@ -44,15 +45,17 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 			e.printStackTrace();
 		}
 
-		// prepare data
+		// prepare test workitem
 		documentContext = new ItemCollection();
 		logger.info("[TestAccessPlugin] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
 		list.add("anna");
 		documentContext.replaceItemValue("namTeam", list);
-
 		documentContext.replaceItemValue("namCreator", "ronny");
+		documentContext.replaceItemValue(WorkflowKernel.PROCESSID, 100);
+		documentContext.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
+		entityService.save(documentContext);
 
 	}
 
@@ -67,10 +70,9 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
 				+ "<processid>100</processid>" + "<activityid>10</activityid>" + "<items>namTeam</items>" + "</item>";
 
-		documentActivity = this.getActivityEntity(100, 10);
-
-		documentActivity.replaceItemValue("txtActivityResult", activityResult);
 		try {
+			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity.replaceItemValue("txtActivityResult", activityResult);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
 
@@ -95,7 +97,7 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 		Assert.assertEquals(100, subprocess.getProcessID());
 
 		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
-		
+
 		// test if the field namTeam is available
 		List<String> team = subprocess.getItemValue("namTeam");
 		Assert.assertEquals(2, team.size());
@@ -120,10 +122,9 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 		activityResult += "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
 				+ "<processid>100</processid>" + "<activityid>20</activityid>" + "<items>namTeam</items>" + "</item>";
 
-		documentActivity = this.getActivityEntity(100, 10);
-
-		documentActivity.replaceItemValue("txtActivityResult", activityResult);
 		try {
+			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity.replaceItemValue("txtActivityResult", activityResult);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
 
@@ -165,11 +166,9 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 		// create test result with a wrong end tag....
 		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
 				+ "<processid>1000</processid>" + "<activityid>10</acttyid>" + "<items>namTeam</items>" + "</item>";
-
-		documentActivity = this.getActivityEntity(100, 10);
-
-		documentActivity.replaceItemValue("txtActivityResult", activityResult);
 		try {
+			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity.replaceItemValue("txtActivityResult", activityResult);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 
 			Assert.fail();
@@ -180,6 +179,74 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 		}
 
 		Assert.assertNotNull(documentContext);
+
+	}
+
+	/**
+	 * Test update origin
+	 * 
+	 * First we create a subprocess and in a secon step we test if the
+	 * subprocess can update the origin workitem.
+	 * 
+	 **/
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testUpdateOriginProcess() {
+
+		String orignUniqueID=documentContext.getUniqueID();
+		
+		/*
+		 * 1.) create test result for new subprcoess.....
+		 */
+		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
+				+ "<processid>100</processid>" + "<activityid>10</activityid>" + "<items>namTeam</items>" + "</item>";
+		try {
+			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity.replaceItemValue("txtActivityResult", activityResult);
+
+			splitAndJoinPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertNotNull(documentContext);
+
+		// now load the subprocess
+		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+		String subprocessUniqueid = workitemRefList.get(0);
+		ItemCollection subprocess = this.entityService.load(subprocessUniqueid);
+
+		// test data in subprocess
+		Assert.assertNotNull(subprocess);
+		Assert.assertEquals(100, subprocess.getProcessID());
+
+		/*
+		 * 2.) process the subprocess to test if the origin process will be
+		 * updated correctly
+		 */
+		activityResult = "<item name=\"origin_update\"> " + "<modelversion>1.0.0</modelversion>"
+				+ "<processid>100</processid>" + "<activityid>20</activityid>" + "<items>namTeam,_sub_data</items>"
+				+ "</item>";
+
+		// add some custom data
+		subprocess.replaceItemValue("_sub_data", "some test data");
+		// now we process the subprocess
+		try {
+			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity.replaceItemValue("txtActivityResult", activityResult);
+			splitAndJoinPlugin.run(subprocess, documentActivity);
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		
+		// load origin document
+		documentContext=entityService.load(orignUniqueID);
+		Assert.assertNotNull(documentContext);
+		
+		// test data.... (new $processId=200 and _sub_data from subprocess
+		Assert.assertEquals(200, documentContext.getProcessID());
+		Assert.assertEquals("some test data", documentContext.getItemValueString("_sub_datat"));
 
 	}
 
