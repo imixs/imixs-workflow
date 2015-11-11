@@ -118,7 +118,16 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			createSubprocesses(processValueList, adocumentContext);
 		}
 
-		// 2.) test for items with name origin_update and update the
+		// 2.) test for items with name subprocess_update and create the
+		// defined suprocesses
+		if (evalItemCollection.hasItem(SUBPROCESS_UPDATE)) {
+			logger.fine("processing " + SUBPROCESS_UPDATE);
+			// extract the create subprocess definitions...
+			List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_UPDATE);
+			updateSubprocesses(processValueList, adocumentContext);
+		}
+
+		// 3.) test for items with name origin_update and update the
 		// origin workitem
 		if (evalItemCollection.hasItem(ORIGIN_UPDATE)) {
 			logger.fine("processing " + ORIGIN_UPDATE);
@@ -198,7 +207,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				workitemSubProcess.replaceItemValue(WorkflowKernel.PROCESSID,
 						new Integer(processData.getItemValueString("processid")));
 				workitemSubProcess.replaceItemValue(WorkflowKernel.ACTIVITYID,
-						processData.getItemValueString("activityid"));
+						new Integer(processData.getItemValueString("activityid")));
 
 				// add the origin reference
 				workitemSubProcess.replaceItemValue(WorkflowService.UNIQUEIDREF, originWorkitem.getUniqueID());
@@ -206,10 +215,89 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				// process the new subprocess...
 				workitemSubProcess = workflowService.processWorkItem(workitemSubProcess);
 
-				logger.fine("[SplitAndJoinPlugin] successful processed subprocess.");
+				logger.fine("[SplitAndJoinPlugin] successful created new subprocess.");
 				// finally add the new workitemRef into the origin
 				// documentContext
 				addWorkitemRef(workitemSubProcess.getUniqueID(), originWorkitem);
+			}
+
+		}
+	}
+
+	/**
+	 * This method expects a list of Subprocess definitions and updates each
+	 * matching existing subprocess.
+	 * 
+	 * The definition is expected in the following format (were regular
+	 * expressions are allowed)
+	 * 
+	 * <code>
+	 *    <modelversion>1.0.0</modelversion>
+	 *    <processid>100</processid>
+	 *    <activityid>20</activityid>
+	 *    <items>namTeam,_sub_data</items>
+	 * </code>
+	 * 
+	 * Subprocesses and the origin process are connected to each other. The
+	 * subprocess will contain the $UniqueID of the origin process stored in the
+	 * property $uniqueidRef. The origin process will contain a link to the
+	 * subprocess stored in the property txtworkitemRef.
+	 * 
+	 * @param subProcessDefinitions
+	 * @param originWorkitem
+	 * @throws AccessDeniedException
+	 * @throws ProcessingErrorException
+	 * @throws PluginException
+	 */
+	private void updateSubprocesses(final List<String> subProcessDefinitions, final ItemCollection originWorkitem)
+			throws AccessDeniedException, ProcessingErrorException, PluginException {
+
+		if (subProcessDefinitions == null || subProcessDefinitions.size() == 0) {
+			// no definition found
+			return;
+		}
+		// we iterate over each declaration of a SUBPROCESS_CREATE item....
+		for (String processValue : subProcessDefinitions) {
+
+			if (processValue.trim().isEmpty()) {
+				// no definition
+				continue;
+			}
+			// evaluate the item content (XML format expected here!)
+			ItemCollection processData = ResultPlugin.parseItemStructure(processValue);
+
+			if (processData != null) {
+				// we need to lookup all subprocess instances which are matching
+				// the process definition
+
+				String model = processData.getItemValueString("modelversion");
+				String processid = processData.getItemValueString("processid");
+
+				List<ItemCollection> subprocessList = workflowService.getWorkListByRef(originWorkitem.getUniqueID());
+				// process all subprcess matching...
+				for (ItemCollection workitemSubProcess : subprocessList) {
+
+					// test if process matches
+					String submodel = workitemSubProcess.getModelVersion();
+					String subprocess = "" + workitemSubProcess.getProcessID();
+
+					if (submodel.matches(model) && subprocess.matches(processid)) {
+						logger.fine("[SplitAndJoinPlugin] subprocess matches criteria.");
+						// now clone the field list...
+						String items = processData.getItemValueString("items");
+						StringTokenizer st = new StringTokenizer(items, ",");
+						while (st.hasMoreTokens()) {
+							String field = st.nextToken().trim();
+							workitemSubProcess.replaceItemValue(field, originWorkitem.getItemValue(field));
+						}
+						workitemSubProcess.replaceItemValue(WorkflowKernel.ACTIVITYID,
+								new Integer(processData.getItemValueString("activityid")));
+						// process the exisitng subprocess...
+						workitemSubProcess = workflowService.processWorkItem(workitemSubProcess);
+
+						logger.fine("[SplitAndJoinPlugin] successful updated subprocess.");
+					}
+				}
 			}
 
 		}
@@ -271,16 +359,16 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			// evaluate the item content (XML format expected here!)
 			ItemCollection processData = ResultPlugin.parseItemStructure(originProcessDefinition);
 
-			//  process the origin workitem
+			// process the origin workitem
 			originWorkitem.replaceItemValue(WorkflowKernel.ACTIVITYID,
-					processData.getItemValueString("activityid"));
+					new Integer(processData.getItemValueString("activityid")));
 
 			// now clone the field list...
 			String items = processData.getItemValueString("items");
 			StringTokenizer st = new StringTokenizer(items, ",");
 			while (st.hasMoreTokens()) {
 				String field = st.nextToken().trim();
-				originWorkitem.replaceItemValue(field, originWorkitem.getItemValue(field));
+				originWorkitem.replaceItemValue(field, subprocessWorkitem.getItemValue(field));
 			}
 			// finally we process the new subprocess...
 			originWorkitem = workflowService.processWorkItem(originWorkitem);

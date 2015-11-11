@@ -246,8 +246,97 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 		
 		// test data.... (new $processId=200 and _sub_data from subprocess
 		Assert.assertEquals(200, documentContext.getProcessID());
-		Assert.assertEquals("some test data", documentContext.getItemValueString("_sub_datat"));
+		Assert.assertEquals("some test data", documentContext.getItemValueString("_sub_data"));
 
 	}
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * Test update of an existing subprocess
+	 ***/
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testUpdateSubProcess() {
+
+		// 1.) create test subprocess.....
+		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
+				+ "<processid>100</processid>" + "<activityid>10</activityid>" + "<items>namTeam</items>" + "</item>";
+		try {
+			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity.replaceItemValue("txtActivityResult", activityResult);
+			splitAndJoinPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		Assert.assertNotNull(documentContext);
+
+		// load the new subprocess....
+		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+		Assert.assertEquals(1, workitemRefList.size());
+		String subprocessUniqueid = workitemRefList.get(0);
+		ItemCollection subprocess = this.entityService.load(subprocessUniqueid);
+		Assert.assertNotNull(subprocess);
+		Assert.assertEquals(100, subprocess.getProcessID());
+
+		
+		
+		
+		
+		// 2.) now update the subprocess
+		activityResult = "<item name=\"subprocess_update\"> " + "<modelversion>1.0.0</modelversion>"
+				+ "<processid>100</processid>" + "<activityid>30</activityid>" + "<items>namTeam</items>" + "</item>";
+		try {
+			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity.replaceItemValue("txtActivityResult", activityResult);
+			splitAndJoinPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// now we load the subprocess and test if it was updated (new processiD expected is 300)
+		
+		Assert.assertNotNull(documentContext);
+
+		subprocess = this.entityService.load(subprocessUniqueid);
+		Assert.assertNotNull(subprocess);
+		Assert.assertEquals(300, subprocess.getProcessID());
+
+
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }

@@ -3,7 +3,10 @@ package org.imixs.workflow.jee.ejb;
 import static org.mockito.Mockito.when;
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -155,6 +158,27 @@ public class AbstractWorkflowServiceTest {
 				Object[] args = invocation.getArguments();
 				String id = (String) args[0];
 				return entityService.load(id);
+			}
+		});
+
+		// simulate a workitemService.getWorkListByRef call
+		when(workflowService.getWorkListByRef(Mockito.anyString())).thenAnswer(new Answer<List<ItemCollection>>() {
+			@Override
+			public List<ItemCollection> answer(InvocationOnMock invocation) throws Throwable {
+
+				List<ItemCollection> result = new ArrayList<>();
+				Object[] args = invocation.getArguments();
+				String id = (String) args[0];
+
+				// iterate over all data and return matching workitems.
+				Collection<ItemCollection> allEntities = database.values();
+				for (ItemCollection aentity : allEntities) {
+					if (aentity.getItemValueString(WorkflowService.UNIQUEIDREF).equals(id)) {
+						result.add(aentity);
+					}
+				}
+
+				return result;
 			}
 		});
 
