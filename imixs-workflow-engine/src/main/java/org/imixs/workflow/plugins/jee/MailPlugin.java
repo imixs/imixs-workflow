@@ -277,7 +277,7 @@ public class MailPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * Computes the repyyTo address from current workflow activity. This method
+	 * Computes the replyTo address from current workflow activity. This method
 	 * can be overwritten by subclasses.
 	 * 
 	 * @param documentContext

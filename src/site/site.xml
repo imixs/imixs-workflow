@@ -83,6 +83,7 @@
 					<item name="Rule Plugin" href="./engine/plugins/ruleplugin.html" />
 					<item name="Mail Plugin" href="./engine/plugins/mailplugin.html" />
 					<item name="Interval Plugin" href="./engine/plugins/intervalplugin.html" />
+					<item name="Split &amp; Join" href="./engine/plugins/splitandjoinplugin.html" />
 					<item name="Version Plugin" href="./engine/plugins/versionplugin.html" />
 					<item name="Lucene Plugin" href="./engine/plugins/luceneplugin.html" />
 					<item name="Exception handling" href="./engine/plugins/exception_handling.html" />
