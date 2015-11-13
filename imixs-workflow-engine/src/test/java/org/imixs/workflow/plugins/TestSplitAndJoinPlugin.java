@@ -3,6 +3,7 @@ package org.imixs.workflow.plugins;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -193,8 +194,8 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 	@Test
 	public void testUpdateOriginProcess() {
 
-		String orignUniqueID=documentContext.getUniqueID();
-		
+		String orignUniqueID = documentContext.getUniqueID();
+
 		/*
 		 * 1.) create test result for new subprcoess.....
 		 */
@@ -239,31 +240,17 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		
+
 		// load origin document
-		documentContext=entityService.load(orignUniqueID);
+		documentContext = entityService.load(orignUniqueID);
 		Assert.assertNotNull(documentContext);
-		
+
 		// test data.... (new $processId=200 and _sub_data from subprocess
 		Assert.assertEquals(200, documentContext.getProcessID());
 		Assert.assertEquals("some test data", documentContext.getItemValueString("_sub_data"));
 
 	}
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	/**
 	 * Test update of an existing subprocess
 	 ***/
@@ -294,10 +281,6 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getProcessID());
 
-		
-		
-		
-		
 		// 2.) now update the subprocess
 		activityResult = "<item name=\"subprocess_update\"> " + "<modelversion>1.0.0</modelversion>"
 				+ "<processid>100</processid>" + "<activityid>30</activityid>" + "<items>namTeam</items>" + "</item>";
@@ -311,32 +294,63 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 			Assert.fail();
 		}
 
-		// now we load the subprocess and test if it was updated (new processiD expected is 300)
-		
+		// now we load the subprocess and test if it was updated (new processiD
+		// expected is 300)
+
 		Assert.assertNotNull(documentContext);
 
 		subprocess = this.entityService.load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(300, subprocess.getProcessID());
 
+	}
+
+	/**
+	 * Test the regex evuating the execution conditions
+	 ***/
+	@Test
+	public void testRegex() {
+
+		
+		
+		
+		Assert.assertTrue(Pattern.compile("(^1000$|^1020$|^1050$)").matcher("1050").find());
+		
+		
+		Assert.assertTrue(Pattern.compile("").matcher("1050").find());
+		
+		
+		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)").matcher("abc-rechnungsausgang-1.0.0").find());
+		
+		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)").matcher("abc-rechnungseingang-1.0.0").find());
+		
+		
+	
+		
+		
+		// model
+		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)").matcher("abc-rechnungseingang-1.0.0").find());
+		// processid
+		Assert.assertTrue(Pattern.compile("(^1000$|^1010$)").matcher("1000").find());
+
+		Assert.assertTrue(Pattern.compile("(1\\d{3})").matcher("1456").find());
+		Assert.assertFalse(Pattern.compile("(1\\d{3})").matcher("2456").find());
+		
+		Assert.assertTrue(Pattern.compile("(1\\d{3})").matcher("14566").find());
+
+		
+		
+		
+		
+		Assert.assertFalse(Pattern.compile("(^1\\d{3}$)").matcher("21123").find());
+		
+		Assert.assertTrue(Pattern.compile("(^1\\d{3}$)").matcher("1123").find());
+		Assert.assertFalse(Pattern.compile("(^1\\d{3}$)").matcher("11123").find());
+		
+		
+		
+		
 
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 }

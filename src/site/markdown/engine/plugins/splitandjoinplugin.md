@@ -40,10 +40,32 @@ To update an existing subprocess during the processing life cycle a item named '
 		<activityid>20</activityid>
 		<items>namTeam</items>
 	</item>
-	
-The definition accepts regular expressions to filter a subset of existing process instances. The activityid defines the workflow event to processed on the matching subprocess instance. The tag 'items' defines a list of attributes to be added from the origin process into the new subprocess.
 
+
+The activityid defines the workflow event to be processed on the matching subprocess instance. The tag 'items' defines a list of attributes to be added from the origin process into the new subprocess.
 Subprocesses and the origin process are connected to each other. The subprocess will contain the $UniqueID of the origin process stored in the property $uniqueidRef. The origin process will contain a link to the subprocess stored in the property txtworkitemRef.
+
+
+### Regular Expressions
+The definition accepts regular expressions to filter a subset of existing process instances. See the following example:
+
+	<item name="subprocess_update">
+		<modelversion>(^1.0)|(^2.0)</modelversion>
+		<processid>(^1000$|^1010$)</processid>
+		<activityid>20</activityid>
+		<items>namTeam</items>
+	</item>
+
+This example applies to all existing subprocess instances with model versions starting with '1.0' or '2.0' and the processId 1000 or 1010.
+To match all processIds between 1000 and 1999 the following regular expression can be applied:
+
+	<item name="subprocess_update">
+		<modelversion>(^1.0)|(^2.0)</modelversion>
+		<processid>(1\d{3}))</processid>
+		<activityid>20</activityid>
+		<items>namTeam</items>
+	</item>
+ 
 
 
 

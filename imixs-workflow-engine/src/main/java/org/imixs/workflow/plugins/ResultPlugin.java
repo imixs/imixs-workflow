@@ -42,6 +42,7 @@ import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -328,10 +329,12 @@ public class ResultPlugin extends AbstractPlugin {
 				int itemCount = childs.getLength();
 				for (int i = 0; i < itemCount; i++) {
 					Node childNode = childs.item(i);
-					String name = childNode.getNodeName();
-					String value = childNode.getFirstChild().getNodeValue();
-					result.replaceItemValue(name, value);
-					logger.fine("[ResultPlugin] parsing item '" + name + "' value=" + value);
+					if (childNode instanceof Element) {
+						String name = childNode.getNodeName();
+						String value = childNode.getFirstChild().getNodeValue();
+						result.replaceItemValue(name, value);
+						logger.fine("[ResultPlugin] parsing item '" + name + "' value=" + value);
+					}
 				}
 
 			} catch (ParserConfigurationException e) {

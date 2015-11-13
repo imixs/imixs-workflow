@@ -30,6 +30,7 @@ package org.imixs.workflow.plugins.jee;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
@@ -270,18 +271,20 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				// we need to lookup all subprocess instances which are matching
 				// the process definition
 
-				String model = processData.getItemValueString("modelversion");
-				String processid = processData.getItemValueString("processid");
+				String model_pattern = processData.getItemValueString("modelversion");
+				String process_pattern = processData.getItemValueString("processid");
 
 				List<ItemCollection> subprocessList = workflowService.getWorkListByRef(originWorkitem.getUniqueID());
 				// process all subprcess matching...
 				for (ItemCollection workitemSubProcess : subprocessList) {
 
 					// test if process matches
-					String submodel = workitemSubProcess.getModelVersion();
-					String subprocess = "" + workitemSubProcess.getProcessID();
+					String subModelVersion = workitemSubProcess.getModelVersion();
+					String subProcessID = "" + workitemSubProcess.getProcessID();
 
-					if (submodel.matches(model) && subprocess.matches(processid)) {
+					if (Pattern.compile(model_pattern).matcher(subModelVersion).find()
+							&& Pattern.compile(process_pattern).matcher(subProcessID).find()) {
+
 						logger.fine("[SplitAndJoinPlugin] subprocess matches criteria.");
 						// now clone the field list...
 						String items = processData.getItemValueString("items");
