@@ -349,6 +349,7 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 		
 		
 		
+		Assert.assertTrue(Pattern.compile("1000").matcher("11000").find());
 		
 
 	}
