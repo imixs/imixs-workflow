@@ -99,6 +99,12 @@ public class IntervalPlugin extends AbstractPlugin {
 						if (calNow.after(calDate)) {
 							logger.fine("[IntervalPlugin] compute next interval for " + sDateField);
 
+							// first set day month and year to now
+							calDate.set(Calendar.YEAR, calNow.get(Calendar.YEAR));
+							calDate.set(Calendar.MONTH, calNow.get(Calendar.MONTH));
+							calDate.set(Calendar.DAY_OF_MONTH, calNow.get(Calendar.DAY_OF_MONTH));
+							
+							
 							// test if interval is a number. In this case
 							// increase the date of the number of days
 							try {
