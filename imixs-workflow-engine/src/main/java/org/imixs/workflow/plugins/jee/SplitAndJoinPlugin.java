@@ -196,12 +196,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				ItemCollection workitemSubProcess = new ItemCollection();
 
 				// now clone the field list...
-				String items = processData.getItemValueString("items");
-				StringTokenizer st = new StringTokenizer(items, ",");
-				while (st.hasMoreTokens()) {
-					String field = st.nextToken().trim();
-					workitemSubProcess.replaceItemValue(field, originWorkitem.getItemValue(field));
-				}
+				copyItemList(processData.getItemValueString("items"), originWorkitem, workitemSubProcess);
 
 				workitemSubProcess.replaceItemValue(WorkflowKernel.MODELVERSION,
 						processData.getItemValueString("modelversion"));
@@ -287,12 +282,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 						logger.fine("[SplitAndJoinPlugin] subprocess matches criteria.");
 						// now clone the field list...
-						String items = processData.getItemValueString("items");
-						StringTokenizer st = new StringTokenizer(items, ",");
-						while (st.hasMoreTokens()) {
-							String field = st.nextToken().trim();
-							workitemSubProcess.replaceItemValue(field, originWorkitem.getItemValue(field));
-						}
+						copyItemList(processData.getItemValueString("items"), originWorkitem, workitemSubProcess);
+
 						workitemSubProcess.replaceItemValue(WorkflowKernel.ACTIVITYID,
 								new Integer(processData.getItemValueString("activityid")));
 						// process the exisitng subprocess...
@@ -367,17 +358,36 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 					new Integer(processData.getItemValueString("activityid")));
 
 			// now clone the field list...
-			String items = processData.getItemValueString("items");
-			StringTokenizer st = new StringTokenizer(items, ",");
-			while (st.hasMoreTokens()) {
-				String field = st.nextToken().trim();
-				originWorkitem.replaceItemValue(field, subprocessWorkitem.getItemValue(field));
-			}
+			copyItemList(processData.getItemValueString("items"), subprocessWorkitem, originWorkitem);
+
 			// finally we process the new subprocess...
 			originWorkitem = workflowService.processWorkItem(originWorkitem);
 			logger.fine("[SplitAndJoinPlugin] successful processed originprocess.");
 		}
 
+	}
+
+	/**
+	 * This Method copies the fields defined in 'items' into the targetWorkitem.
+	 * Multiple values are separated with comma ','.
+	 * 
+	 * In case a item name contains '|' the target field name will become the
+	 * right part of the item name.
+	 */
+	private void copyItemList(String items, ItemCollection source, ItemCollection target) {
+		// clone the field list...
+		StringTokenizer st = new StringTokenizer(items, ",");
+		while (st.hasMoreTokens()) {
+			String field = st.nextToken().trim();
+
+			int pos = field.indexOf('|');
+			if (pos > -1) {
+				target.replaceItemValue(field.substring(pos + 1).trim(),
+						source.getItemValue(field.substring(0, pos).trim()));
+			} else {
+				target.replaceItemValue(field, source.getItemValue(field));
+			}
+		}
 	}
 
 	/**

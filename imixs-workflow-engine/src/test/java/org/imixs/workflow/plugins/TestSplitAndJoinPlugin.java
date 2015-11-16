@@ -304,6 +304,58 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 		Assert.assertEquals(300, subprocess.getProcessID());
 
 	}
+	
+	
+	
+
+	/**
+	 * Test creation of subprocess
+	 ***/
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testCreateSubProcessTargetFieldName() {
+
+		// create test result.....
+		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
+				+ "<processid>100</processid>" + "<activityid>10</activityid>" + "<items>namTeam|_sub_team</items>" + "</item>";
+
+		try {
+			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity.replaceItemValue("txtActivityResult", activityResult);
+			splitAndJoinPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		Assert.assertNotNull(documentContext);
+
+		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+
+		Assert.assertEquals(1, workitemRefList.size());
+
+		String subprocessUniqueid = workitemRefList.get(0);
+
+		// get the subprocess...
+		ItemCollection subprocess = this.entityService.load(subprocessUniqueid);
+
+		// test data in subprocess
+		Assert.assertNotNull(subprocess);
+
+		Assert.assertEquals(100, subprocess.getProcessID());
+
+		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
+
+		// test if the field namTeam is available
+		List<String> team = subprocess.getItemValue("_sub_Team");
+		Assert.assertEquals(2, team.size());
+		Assert.assertTrue(team.contains("manfred"));
+		Assert.assertTrue(team.contains("anna"));
+
+	}
+
+	
 
 	/**
 	 * Test the regex evuating the execution conditions
@@ -354,4 +406,11 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 
 	}
 
+	
+	
+	
+	
+	
+	
+	
 }
