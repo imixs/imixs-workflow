@@ -10,6 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.xml.sax.SAXException;
 
@@ -63,7 +64,13 @@ public class BPMNParser {
 		saxParser.parse(bpmnInputStream, bpmnHandler);
 
 		BPMNModel model = bpmnHandler.buildModel();
-		logger.info("BPMN Model parsed in "
+		
+		ItemCollection profile=model.getProfile();
+		String version="";
+		if (profile!=null) {
+			version=profile.getModelVersion();
+		}
+		logger.info("BPMN Model ["+version+"] parsed in "
 				+ (System.currentTimeMillis() - lTime) + "ms");
 		return model;
 

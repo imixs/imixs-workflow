@@ -24,20 +24,27 @@ import org.xml.sax.helpers.DefaultHandler;
  * bpmn2:collaboration element. For a simple BPMN diagram type the
  * currentWorkflowGroup is read from the bpmn2:process element.
  * 
+ * #issue 113: The parser connects pairs of catch and throw link events with a
+ * virtual SequenceFlow to support the same behavior as if the link events were
+ * connected directly.
+ * 
  * @author rsoika
  *
  */
 public class BPMNModelHandler extends DefaultHandler {
 
-	private static Logger logger = Logger.getLogger(BPMNModelHandler.class
-			.getName());
+	private static Logger logger = Logger.getLogger(BPMNModelHandler.class.getName());
 
 	boolean bDefinitions = false;
 	boolean bMessage = false;
 	boolean bExtensionElements = false;
 	boolean bImixsProperty = false;
-	boolean bTask = false;
-	boolean bEvent = false;
+	boolean bImixsTask = false;
+	boolean bImixsEvent = false;
+	boolean bThrowEvent = false;
+	boolean bCatchEvent = false;
+	boolean bLinkThrowEvent = false;
+	boolean bLinkCatchEvent = false;
 	boolean bItemValue = false;
 	boolean bdocumentation = false;
 	ItemCollection currentEntity = null;
@@ -45,6 +52,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	String currentItemType = null;
 	String currentWorkflowGroup = null;
 	String currentMessageName = null;
+	String currentLinkName = null;
 	String bpmnID = null;
 	StringBuilder characterStream = null;
 
@@ -52,6 +60,10 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	Map<String, ItemCollection> processCache = null;
 	Map<String, ItemCollection> activityCache = null;
+
+	Map<String, String> linkThrowEventCache = null;
+	Map<String, String> linkCatchEventCache = null;
+
 	Map<String, SequenceFlow> sequenceCache = null;
 	Map<String, String> messageCache = null;
 	ItemCollection profileEnvironment = null;
@@ -64,13 +76,15 @@ public class BPMNModelHandler extends DefaultHandler {
 		activityCache = new HashMap<String, ItemCollection>();
 		messageCache = new HashMap<String, String>();
 
+		linkThrowEventCache = new HashMap<String, String>();
+		linkCatchEventCache = new HashMap<String, String>();
+
 		// nodeCache = new HashMap<String, ItemCollection>();
 		sequenceCache = new HashMap<String, SequenceFlow>();
 	}
 
 	@Override
-	public void startElement(String uri, String localName, String qName,
-			Attributes attributes) throws SAXException {
+	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 
 		logger.finest("Start Element :" + qName);
 
@@ -89,8 +103,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			if (bDefinitions && currentEntity != null) {
 				profileEnvironment = currentEntity;
 				currentWorkflowGroup = attributes.getValue("name");
-				if (currentWorkflowGroup == null
-						|| currentWorkflowGroup.isEmpty()) {
+				if (currentWorkflowGroup == null || currentWorkflowGroup.isEmpty()) {
 					logger.warning("No process name defined!");
 					currentWorkflowGroup = "Default";
 				}
@@ -101,12 +114,10 @@ public class BPMNModelHandler extends DefaultHandler {
 		// bpmn2:process - start definitions? parse workflowGroup is not a
 		// collaboration diagram
 		if (qName.equalsIgnoreCase("bpmn2:process")) {
-			if (bDefinitions && currentEntity != null
-					&& currentWorkflowGroup == null) {
+			if (bDefinitions && currentEntity != null && currentWorkflowGroup == null) {
 				profileEnvironment = currentEntity;
 				currentWorkflowGroup = attributes.getValue("name");
-				if (currentWorkflowGroup == null
-						|| currentWorkflowGroup.isEmpty()) {
+				if (currentWorkflowGroup == null || currentWorkflowGroup.isEmpty()) {
 					logger.warning("No process name defined!");
 					currentWorkflowGroup = "Default";
 				}
@@ -123,16 +134,40 @@ public class BPMNModelHandler extends DefaultHandler {
 				return;
 			}
 
-			bTask = true;
+			bImixsTask = true;
 			int currentID = Integer.parseInt(value);
 			currentEntity = new ItemCollection();
 			bpmnID = attributes.getValue("id");
 			String currentItemName = attributes.getValue("name");
 			currentEntity.replaceItemValue("type", "ProcessEntity");
 			currentEntity.replaceItemValue("txtname", currentItemName);
-			currentEntity.replaceItemValue("txtworkflowgroup",
-					currentWorkflowGroup);
+			currentEntity.replaceItemValue("txtworkflowgroup", currentWorkflowGroup);
 			currentEntity.replaceItemValue("numprocessid", currentID);
+		}
+
+		// bpmn2:intermediateCatchEvent - identify link events...
+		if (qName.equalsIgnoreCase("bpmn2:intermediateThrowEvent") && attributes.getValue("imixs:activityid") == null) {
+			bThrowEvent = true;
+			currentLinkName = attributes.getValue("name");
+			bpmnID = attributes.getValue("id");
+			return;
+		}
+		if (bThrowEvent && qName.equalsIgnoreCase("bpmn2:linkEventDefinition")) {
+			bLinkThrowEvent = true;
+			bThrowEvent = false;
+			return;
+		}
+		// bpmn2:intermediateCatchEvent - identify link events...
+		if (qName.equalsIgnoreCase("bpmn2:intermediateCatchEvent") && attributes.getValue("imixs:activityid") == null) {
+			bCatchEvent = true;
+			currentLinkName = attributes.getValue("name");
+			bpmnID = attributes.getValue("id");
+			return;
+		}
+		if (bCatchEvent && qName.equalsIgnoreCase("bpmn2:linkEventDefinition")) {
+			bLinkCatchEvent = true;
+			bCatchEvent = false;
+			return;
 		}
 
 		// bpmn2:intermediateCatchEvent - identify a Imixs Workflow Event
@@ -146,7 +181,7 @@ public class BPMNModelHandler extends DefaultHandler {
 				return;
 			}
 
-			bEvent = true;
+			bImixsEvent = true;
 			int currentID = Integer.parseInt(value);
 			currentEntity = new ItemCollection();
 			bpmnID = attributes.getValue("id");
@@ -207,12 +242,11 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public void endElement(String uri, String localName, String qName)
-			throws SAXException {
+	public void endElement(String uri, String localName, String qName) throws SAXException {
 
 		// end of bpmn2:task -
-		if (bTask && qName.equalsIgnoreCase("bpmn2:task")) {
-			bTask = false;
+		if (bImixsTask && qName.equalsIgnoreCase("bpmn2:task")) {
+			bImixsTask = false;
 			processCache.put(bpmnID, currentEntity);
 		}
 
@@ -221,10 +255,9 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 
 		// end of bpmn2:intermediateCatchEvent -
-		if (bEvent
-				&& (qName.equalsIgnoreCase("bpmn2:intermediateCatchEvent") || qName
-						.equalsIgnoreCase("bpmn2:intermediateThrowEvent"))) {
-			bEvent = false;
+		if (bImixsEvent && (qName.equalsIgnoreCase("bpmn2:intermediateCatchEvent")
+				|| qName.equalsIgnoreCase("bpmn2:intermediateThrowEvent"))) {
+			bImixsEvent = false;
 			// we need to cache the activities because the sequenceflows must be
 			// analysed later
 			activityCache.put(bpmnID, currentEntity);
@@ -234,8 +267,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		 * End of a imixs:value
 		 */
 		if (qName.equalsIgnoreCase("imixs:value")) {
-			if (bExtensionElements && bItemValue && currentEntity != null
-					&& characterStream != null) {
+			if (bExtensionElements && bItemValue && currentEntity != null && characterStream != null) {
 
 				String svalue = characterStream.toString();
 				List valueList = currentEntity.getItemValue(currentItemName);
@@ -255,38 +287,47 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		if (qName.equalsIgnoreCase("bpmn2:documentation")) {
 			if (currentEntity != null) {
-				currentEntity.replaceItemValue("rtfdescription",
-						characterStream.toString());
+				currentEntity.replaceItemValue("rtfdescription", characterStream.toString());
 			}
 
 			// bpmn2:message?
 			if (bMessage) {
-				messageCache
-						.put(currentMessageName, characterStream.toString());
+				messageCache.put(currentMessageName, characterStream.toString());
 				bMessage = false;
 			}
 			characterStream = null;
 			bdocumentation = false;
 		}
 
+		// end of bpmn2:intermediateThrowEvent -
+		if (bLinkThrowEvent && (qName.equalsIgnoreCase("bpmn2:linkEventDefinition"))) {
+			bLinkThrowEvent = false;
+			// we need to cache the link name
+			linkThrowEventCache.put(bpmnID, currentLinkName);
+		}
+
+		// end of bpmn2:intermediateCatchEvent -
+		if (bLinkCatchEvent && (qName.equalsIgnoreCase("bpmn2:linkEventDefinition"))) {
+			bLinkCatchEvent = false;
+			// we need to cache the link name
+			linkCatchEventCache.put(currentLinkName, bpmnID);
+		}
+
 	}
 
 	// @SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void characters(char ch[], int start, int length)
-			throws SAXException {
+	public void characters(char ch[], int start, int length) throws SAXException {
 
 		if (bdocumentation) {
-			characterStream = characterStream.append(new String(ch, start,
-					length));
+			characterStream = characterStream.append(new String(ch, start, length));
 		}
 
 		/*
 		 * parse a imixs:value
 		 */
 		if (bExtensionElements && bItemValue && currentEntity != null) {
-			characterStream = characterStream.append(new String(ch, start,
-					length));
+			characterStream = characterStream.append(new String(ch, start, length));
 		}
 
 	}
@@ -295,13 +336,14 @@ public class BPMNModelHandler extends DefaultHandler {
 	 * This method builds the model from the information parsed by the handler.
 	 * First all task elements were adds as process entities into the model. In
 	 * the second step the method adds the Activity elements to the assigned
-	 * Task.
-	 * 
-	 * We look for activities with no incoming SequenceFlow.
+	 * Task. We look also for activities with no incoming SequenceFlow.
 	 * 
 	 * The builder verifies the ProcessIDs for each task element to guaranty
 	 * that the numProcessID is unique
 	 * 
+	 * The build connects pairs of Catch and Throw LinkEvents with a virtual
+	 * SequenceFlow to support the same behavior as if those elements where
+	 * connected directly in the model.
 	 * 
 	 * The method tests the model for bpmn2:message elements and replace links
 	 * in Activity elements attribute 'rtfMailBody'
@@ -310,12 +352,23 @@ public class BPMNModelHandler extends DefaultHandler {
 	 */
 	public BPMNModel buildModel() throws ModelException {
 
-		String modelVersion = profileEnvironment
-				.getItemValueString("txtworkflowmodelversion");
+		String modelVersion = profileEnvironment.getItemValueString("txtworkflowmodelversion");
 		profileEnvironment.replaceItemValue("$modelversion", modelVersion);
 		model = new BPMNModel();
 
 		model.setProfile(profileEnvironment);
+		
+		
+		// create virtual sequence Flows for LinkEvents if available
+		for (String sourceID : linkThrowEventCache.keySet()) {
+			String linkName  = linkThrowEventCache.get(sourceID);
+			// test if we found a matching target CatchEvent
+			String targetID= linkCatchEventCache.get(linkName);
+			if (targetID!=null) {
+				// build a virtual sequenceFlow...
+				sequenceCache.put(WorkflowKernel.generateUniqueID(), new SequenceFlow(sourceID, targetID));
+			}
+		}
 
 		// add all Imixs tasks into the model and validate the processids
 		List<Integer> processIDList = new ArrayList<Integer>();
@@ -358,67 +411,66 @@ public class BPMNModelHandler extends DefaultHandler {
 				// found
 				for (SequenceFlow aFlow : inFlows) {
 
-					ItemCollection task = new TaskResolver()
-							.findImixsSourceTask(aFlow);
-					if (task != null) {
+					ItemCollection sourceTask = new ElementResolver().findImixsSourceTask(aFlow);
+					if (sourceTask != null) {
 
 						// we found the task so we can add the event into
 						// the model
-						event.replaceItemValue("numProcessID",
-								task.getItemValue("numProcessID"));
+						event.replaceItemValue("numProcessID", sourceTask.getItemValue("numProcessID"));
 
 						// check outgoing flows
 						List<SequenceFlow> outFlows = findOutgoingFlows(eventID);
 
 						if (outFlows != null && outFlows.size() > 1) {
 							// invalid model!!
-							throw new ModelException(
-									ModelException.INVALID_MODEL,
+							throw new ModelException(ModelException.INVALID_MODEL,
 									"Imixs BPMN Event has more than one target Flows!");
 						}
 
 						// test target element....
 						if (outFlows.size() > 0) {
-
+							SequenceFlow outgoingFlow = outFlows.get(0);
 							// is this Event is connected to a followUp
 							// Activity!!
-							task = new TaskResolver()
-									.findImixsTargetEvent(outFlows.get(0));
-							if (task != null) {
+							ItemCollection followUpEvent = new ElementResolver().findImixsTargetEvent(outgoingFlow);
+							if (followUpEvent != null) {
 								event.replaceItemValue("keyFollowUp", "1");
 								event.replaceItemValue("numNextActivityID",
-										task.getItemValue("numactivityid"));
+										followUpEvent.getItemValue("numactivityid"));
+								taskFound = true;
 							} else {
 								// test if we can identify the target task
-								task = new TaskResolver()
-										.findImixsTargetTask(outFlows.get(0));
-								if (task != null) {
+								ItemCollection targetTask = new ElementResolver().findImixsTargetTask(outgoingFlow);
+								if (targetTask != null) {
 									event.removeItem("keyFollowUp");
-									event.replaceItemValue("numNextProcessID",
-											task.getItemValue("numProcessID"));
+									event.replaceItemValue("numNextProcessID", targetTask.getItemValue("numProcessID"));
+									taskFound = true;
+								} else {
+									// event has no targets - so the source task is the
+									// target task!
+									event.removeItem("keyFollowUp");
+									event.replaceItemValue("numNextProcessID", sourceTask.getItemValue("numProcessID"));
+									taskFound = true;
 								}
 
 							}
 						} else {
-							// no target - so the source task is the target
-							// task!
+							// event has no targets - so the source task is the
+							// target task!
 							event.removeItem("keyFollowUp");
-							event.replaceItemValue("numNextProcessID",
-									task.getItemValue("numProcessID"));
+							event.replaceItemValue("numNextProcessID", sourceTask.getItemValue("numProcessID"));
+							taskFound = true;
 						}
 
 						// it can happen that the numactivtyid is not unique for
 						// that task - we verify this first
-						event.replaceItemValue("$modelVersion", modelVersion);
+						if (taskFound) {
+							event.replaceItemValue("$modelVersion", modelVersion);
 
-						replaceMessageTags(event);
-						model.addActivityEntity(verifyActiviytIdForEvent(event));
-
-						taskFound = true;
-
-						// now we need to copy the event because we need to
-						// reuse it for another task...
-						// event = new ItemCollection(event);
+							replaceMessageTags(event);
+							model.addActivityEntity(verifyActiviytIdForEvent(event));
+							// taskFound = true;
+						}
 					}
 
 				}
@@ -439,37 +491,31 @@ public class BPMNModelHandler extends DefaultHandler {
 				}
 
 				if (outFlows.size() == 0) {
-					logger.warning("Imixs BPMN Event '" + eventID
-							+ "' has no target Flow!");
+					logger.warning("Imixs BPMN Event '" + eventID + "' has no target Flow!");
 					continue;
 				}
 
+				SequenceFlow outgoingFlow = outFlows.get(0);
 				// is this Event is connected to a followUp Activity!!
-				ItemCollection task = new TaskResolver()
-						.findImixsTargetEvent(outFlows.get(0));
-				if (task != null) {
+				ItemCollection followUpEvent = new ElementResolver().findImixsTargetEvent(outgoingFlow);
+				if (followUpEvent != null) {
 					event.replaceItemValue("keyFollowUp", "1");
-					event.replaceItemValue("numNextActivityID",
-							task.getItemValue("numactivityid"));
+					event.replaceItemValue("numNextActivityID", followUpEvent.getItemValue("numactivityid"));
 				} else {
 					// check for the target task..
 
-					task = new TaskResolver().findImixsTargetTask(outFlows
-							.get(0));
-					if (task != null) {
+					ItemCollection targetTask = new ElementResolver().findImixsTargetTask(outgoingFlow);
+					if (targetTask != null) {
 
-						event.replaceItemValue("numProcessID",
-								task.getItemValue("numProcessID"));
-						event.replaceItemValue("numNextProcessID",
-								task.getItemValue("numProcessID"));
+						event.replaceItemValue("numProcessID", targetTask.getItemValue("numProcessID"));
+						event.replaceItemValue("numNextProcessID", targetTask.getItemValue("numProcessID"));
 
 						// it can happen that the numactivtyid is not unique for
 						// that task - we verify this first
 						event.replaceItemValue("$modelVersion", modelVersion);
 						model.addActivityEntity(verifyActiviytIdForEvent(event));
 					} else {
-						logger.warning("Inconsistant model state! - check BPMN event '"
-								+ eventID + "'");
+						logger.warning("Inconsistant model state! - check BPMN event '" + eventID + "'");
 					}
 				}
 			}
@@ -494,8 +540,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		int processid = event.getItemValueInteger("numprocessid");
 		int activityid = event.getItemValueInteger("numactivityid");
 
-		List<ItemCollection> assignedActivities = model.getActivityEntityList(
-				processid,
+		List<ItemCollection> assignedActivities = model.getActivityEntityList(processid,
 				event.getItemValueString(WorkflowKernel.MODELVERSION));
 		int bestID = -1;
 		for (ItemCollection aactivity : assignedActivities) {
@@ -506,8 +551,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			if (aid == activityid) {
 				// problem!
 				String name = event.getItemValueString("txtname");
-				logger.warning("ActivityID " + name + " ID=" + activityid
-						+ " is not unique for task " + processid);
+				logger.warning("ActivityID " + name + " ID=" + activityid + " is not unique for task " + processid);
 				activityid = -1;
 			}
 		}
@@ -515,8 +559,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		// suggest new activityid?
 		if (activityid <= 0) {
 			// replace id
-			logger.warning("new ActivityID suggested for task " + processid
-					+ "=" + bestID);
+			logger.warning("new ActivityID suggested for task " + processid + "=" + bestID);
 			event.replaceItemValue("numactivityid", bestID);
 
 			// processCache.put(eventID, event);
@@ -588,8 +631,7 @@ public class BPMNModelHandler extends DefaultHandler {
 					String messageName = value.substring(istart + 15, iend);
 					String message = messageCache.get(messageName);
 					if (message != null) {
-						value = value.substring(0, istart) + message
-								+ value.substring(iend + 16);
+						value = value.substring(0, istart) + message + value.substring(iend + 16);
 						bNewValue = true;
 					}
 				}
@@ -617,17 +659,17 @@ public class BPMNModelHandler extends DefaultHandler {
 	}
 
 	/**
-	 * This helper class provides methods to resolve the conntect Imixs task
+	 * This helper class provides methods to resolve the connected Imixs
 	 * elements to a flow element. The constructor is used to initialize a
 	 * loopDetection cache
 	 * 
 	 * @author rsoika
 	 *
 	 */
-	class TaskResolver {
+	class ElementResolver {
 		List<String> loopFlowCache = null;
 
-		public TaskResolver() {
+		public ElementResolver() {
 			// initalize loop dedection
 			loopFlowCache = new ArrayList<String>();
 		}
@@ -749,6 +791,8 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 			return null;
 		}
+
+		
 
 	}
 
