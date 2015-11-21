@@ -68,7 +68,7 @@ public class TestBPMNParserMessageText {
 		Assert.assertTrue(model.workflowGroups.contains("Message Example"));
 
 		// test count of elements
-		Assert.assertEquals(1, model.getProcessEntityList(VERSION).size());
+		Assert.assertEquals(2, model.getProcessEntityList(VERSION).size());
 
 		// test task 1000
 		ItemCollection task = model.getProcessEntity(1000, VERSION);
