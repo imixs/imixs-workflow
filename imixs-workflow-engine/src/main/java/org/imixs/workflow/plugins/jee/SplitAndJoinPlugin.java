@@ -322,48 +322,57 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			throws AccessDeniedException, ProcessingErrorException, PluginException {
 
 		ItemCollection originWorkitem = null;
-		String subprocessUniqueID = subprocessWorkitem.getUniqueID();
-
+		
 		if (originProcessDefinition == null || originProcessDefinition.isEmpty()) {
 			// no definition
 			return;
 		}
+		
+		
+		// evaluate the item content (XML format expected here!)
+		ItemCollection processData = ResultPlugin.parseItemStructure(originProcessDefinition);
 
+
+		String model_pattern = processData.getItemValueString("modelversion");
+		String process_pattern = processData.getItemValueString("processid");
+
+		
 		// first we need to lookup the corresponding origin process instance
 		List<String> refs = subprocessWorkitem.getItemValue(WorkflowService.UNIQUEIDREF);
 		// iterate over all refs and identify the origin workItem
 		for (String ref : refs) {
 			originWorkitem = workflowService.getWorkItem(ref);
 			if (originWorkitem != null) {
-				// if the workitem holds a txtworkitemLink to the current
-				// subprocess we have
-				List<String> workitemRefList = originWorkitem.getItemValue(LINK_PROPERTY);
-				if (workitemRefList.contains(subprocessUniqueID)) {
-					// found!
-					break;
+				
+				
+				// test if process matches
+				String subModelVersion = originWorkitem.getModelVersion();
+				String subProcessID = "" + originWorkitem.getProcessID();
+
+				if (Pattern.compile(model_pattern).matcher(subModelVersion).find()
+						&& Pattern.compile(process_pattern).matcher(subProcessID).find()) {
+
+					logger.fine("[SplitAndJoinPlugin] origin matches criteria.");
+					
+					// process the origin workitem
+					originWorkitem.replaceItemValue(WorkflowKernel.ACTIVITYID,
+							new Integer(processData.getItemValueString("activityid")));
+
+					// now clone the field list...
+					copyItemList(processData.getItemValueString("items"), subprocessWorkitem, originWorkitem);
+
+					// finally we process the new subprocess...
+					originWorkitem = workflowService.processWorkItem(originWorkitem);
+					logger.fine("[SplitAndJoinPlugin] successful processed originprocess.");
+
 				}
+				
+			
 			}
-			// workitem did not match
-			originWorkitem = null;
+		
 		}
 
-		// process the origin workitem
-		if (originWorkitem != null) {
-
-			// evaluate the item content (XML format expected here!)
-			ItemCollection processData = ResultPlugin.parseItemStructure(originProcessDefinition);
-
-			// process the origin workitem
-			originWorkitem.replaceItemValue(WorkflowKernel.ACTIVITYID,
-					new Integer(processData.getItemValueString("activityid")));
-
-			// now clone the field list...
-			copyItemList(processData.getItemValueString("items"), subprocessWorkitem, originWorkitem);
-
-			// finally we process the new subprocess...
-			originWorkitem = workflowService.processWorkItem(originWorkitem);
-			logger.fine("[SplitAndJoinPlugin] successful processed originprocess.");
-		}
+		
 
 	}
 

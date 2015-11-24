@@ -329,7 +329,7 @@ public class ResultPlugin extends AbstractPlugin {
 				int itemCount = childs.getLength();
 				for (int i = 0; i < itemCount; i++) {
 					Node childNode = childs.item(i);
-					if (childNode instanceof Element) {
+					if (childNode instanceof Element && childNode.getFirstChild()!=null) {
 						String name = childNode.getNodeName();
 						String value = childNode.getFirstChild().getNodeValue();
 						result.replaceItemValue(name, value);
