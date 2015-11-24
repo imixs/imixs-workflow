@@ -93,7 +93,7 @@ public class IntervalPlugin extends AbstractPlugin {
 					Date date = documentContext.getItemValueDate(sDateField);
 					if (date != null) {
 
-						// verify if date is in the past....s
+						// verify if date is in the past....
 						Calendar calDate = Calendar.getInstance();
 						calDate.setTime(date);
 						if (calNow.after(calDate)) {

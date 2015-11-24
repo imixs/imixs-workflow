@@ -53,7 +53,6 @@ public class TestIntervalPlugin {
 
 		// move to past one day...
 		calTestDate.add(Calendar.DATE, -1);
-		calExptectedDate.add(Calendar.DATE, -1);
 		calExptectedDate.add(Calendar.MONTH, +1);
 
 		adocumentContext.replaceItemValue("keyIntervalDatDate", "monthly");
@@ -98,7 +97,6 @@ public class TestIntervalPlugin {
 
 		// move to past one day...
 		calTestDate.add(Calendar.DATE, -1);
-		calExptectedDate.add(Calendar.DATE, -1);
 		calExptectedDate.add(Calendar.YEAR, +1);
 
 		adocumentContext.replaceItemValue("keyIntervalDatDate", "yearly");
@@ -143,7 +141,6 @@ public class TestIntervalPlugin {
 
 		// move to past one day...
 		calTestDate.add(Calendar.DATE, -1);
-		calExptectedDate.add(Calendar.DATE, -1);
 		calExptectedDate.add(Calendar.DATE, 7);
 
 		adocumentContext.replaceItemValue("keyIntervalDatDate", "weekly");
@@ -187,7 +184,7 @@ public class TestIntervalPlugin {
 
 		// move to past one day...
 		calTestDate.add(Calendar.DATE, -1);
-		calExptectedDate.add(Calendar.DATE, +0);
+		calExptectedDate.add(Calendar.DATE, +1);
 
 		adocumentContext.replaceItemValue("keyIntervalDatDate", "daily");
 		adocumentContext.replaceItemValue("datDate", calTestDate.getTime());
@@ -230,7 +227,7 @@ public class TestIntervalPlugin {
 
 		// move to past one day...
 		calTestDate.add(Calendar.DATE, -1);
-		calExptectedDate.add(Calendar.DATE, +0);
+		calExptectedDate.add(Calendar.DATE, +1);
 
 		// first we test a string for 1 day
 		adocumentContext.replaceItemValue("keyIntervalDatDate", "1");
@@ -263,7 +260,7 @@ public class TestIntervalPlugin {
 
 		// move to past one day...
 		calTestDate.add(Calendar.DATE, -1);
-		calExptectedDate.add(Calendar.DATE, +9);
+		calExptectedDate.add(Calendar.DATE, +10);
 
 		// first we test a string for 1 day
 		adocumentContext.replaceItemValue("keyIntervalDatDate", "10");
@@ -296,7 +293,7 @@ public class TestIntervalPlugin {
 
 		// move to past one day...
 		calTestDate.add(Calendar.DATE, -1);
-		calExptectedDate.add(Calendar.DATE, +4);
+		calExptectedDate.add(Calendar.DATE, +5);
 
 		// first we test a string for 1 day
 		adocumentContext.replaceItemValue("keyIntervalDatDate", new Integer(5));
@@ -341,7 +338,6 @@ public class TestIntervalPlugin {
 
 		// move to past one day...
 		calTestDate.add(Calendar.DATE, -1);
-		calExptectedDate.add(Calendar.DATE, -1);
 		calExptectedDate.add(Calendar.MONTH, +1);
 		calExptectedDate.add(Calendar.YEAR, +1);
 
