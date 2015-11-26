@@ -132,5 +132,25 @@ public class TestBPMNParserLinkEvent {
 	
 	
 	
+	
+	@Test
+	public void testComplexParserTest() throws ParseException,
+			ParserConfigurationException, SAXException, IOException {
+
+		InputStream inputStream = getClass().getResourceAsStream(
+				"/bpmn/link-event-complex.bpmn");
+
+		BPMNModel model = null;
+		try { 
+			model = BPMNParser.parseModel(inputStream, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			Assert.fail();
+		} catch (ModelException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertNotNull(model);
+	}
 
 }
