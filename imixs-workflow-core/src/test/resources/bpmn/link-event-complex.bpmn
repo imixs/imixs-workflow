@@ -77,15 +77,15 @@
     </bpmn2:intermediateThrowEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_11" sourceRef="IntermediateCatchEvent_7" targetRef="IntermediateThrowEvent_2"/>
     <bpmn2:sequenceFlow id="SequenceFlow_15" sourceRef="Task_3" targetRef="EventBasedGateway_1"/>
-    <bpmn2:eventBasedGateway id="EventBasedGateway_1" name="Event Based Gateway 1">
+    <bpmn2:eventBasedGateway id="EventBasedGateway_1" name="Event Based Gateway 1" gatewayDirection="Diverging">
       <bpmn2:incoming>SequenceFlow_15</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_6</bpmn2:outgoing>
     </bpmn2:eventBasedGateway>
-    <bpmn2:eventBasedGateway id="EventBasedGateway_2" name="Event Based Gateway 2">
+    <bpmn2:eventBasedGateway id="EventBasedGateway_2" name="Event Based Gateway 2" gatewayDirection="Diverging">
       <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-      <bpmn2:outgoing>SequenceFlow_13</bpmn2:outgoing>
-      <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
       <bpmn2:outgoing>SequenceFlow_14</bpmn2:outgoing>
+      <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
+      <bpmn2:outgoing>SequenceFlow_13</bpmn2:outgoing>
     </bpmn2:eventBasedGateway>
     <bpmn2:sequenceFlow id="SequenceFlow_6" sourceRef="EventBasedGateway_1" targetRef="IntermediateCatchEvent_7"/>
     <bpmn2:sequenceFlow id="SequenceFlow_13" sourceRef="EventBasedGateway_2" targetRef="IntermediateCatchEvent_5"/>
