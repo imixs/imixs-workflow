@@ -1,7 +1,7 @@
 #How to Create a Workflow Model?
-The Imixs-BPMN Plugin is based on the BPMN 2.0 standard. This means every BPMN 2.0 model can be used to be extended with workflow elements provided by the Imixs-BPMN Plugin. A BPMN model containing Imixs workflow elements can be executed within the Imixs-Worklfow Engine.
+The Imixs-BPMN Plugin is based on the BPMN 2.0 standard. This means every BPMN 2.0 model can be used to be extended with workflow elements provided by the Imixs-BPMN Plugin. A BPMN model containing Imixs-Workflow elements can be executed within the Imixs-Worklfow Engine.
 
-An Imixs-Workflow Model contains the Elements "Workflow Task" and "Workflow Event". The Workflow-Task element is used to describe a state in a process. The "Workflow Event" describes the  transition from one State to another.
+An Imixs-Workflow Model can contain the elements "Workflow Task" and "Workflow Event". The Workflow-Task element is used to describe a state in a process. The "Workflow Event" describes the  transition from one state to another.
 
 <img src="../images/modelling/example_01.png"/>
 
@@ -10,11 +10,11 @@ This example contains two workflow states: 'New Ticket' and 'Open'. The Workflow
 A 'Workflow Event' is an instance of a BPMN Intermediate Catch Event. A Catch Event should always have an outgoing sequence flow. The outgoing sequence flow of a Workflow Event point to the Workflow Task assigned to a process instance after the Event was processed. 
 
 ##Event Gateways
-If a Workflow Tak have more than one Workflow Event, a BPMN Event Gateway can be used to model alternative process flows: 
+If a Workflow Task have more than one Workflow Event, the BPMN element "Event Gateway" can be used to model alternative process flows: 
 
 <img src="../images/modelling/example_02.png"/>
 
-A BPMN Event Gateway is an exclusive gateway and should always have the gateway direction 'Diverging'. This means that the Gateway has only one incoming sequence flow but can have one ore many outgoing sequence flows. The Gateway direction can be changed in Eclipse-BPMN after the feature 'Show Advanced Property Tabs' is activated in the general workspace preferences. 
+A BPMN "Event Gateway" is an exclusive gateway and should always have the gateway direction 'Diverging'. This means that the Gateway has only one incoming sequence flow but can have one ore many outgoing sequence flows. The Gateway direction can be changed in Eclipse-BPMN after the feature 'Show Advanced Property Tabs' is activated in the general workspace preferences. 
 
 
 ##Loop Events
@@ -42,5 +42,17 @@ Follow-Up Events are typically used in more complex scenarios where additional b
 
 <img src="../images/modelling/example_06.png"/>
 
-In this example a business rule is applied after the new order was accepted. In case the amount is below 100,- EUR the order is processed by the Sales Team. In case the amount is greater than 100,- EUR the order will be forwarded to the management by the follow-up event 'forward'. The follow-up event can be used to change the properties of the workitem like ACL settings or additional notifications. A follow-up event is typically not visible. See the [section Event Properties](./activities.html) for further details. 
+In this example a business rule is applied after the new order was accepted. In case the amount is below 100,- EUR the order is processed by the sales team. In case the amount is greater than 100,- EUR the order will be forwarded to the management by the follow-up event 'forward'. The follow-up event can be used to change the properties of the workitem like ACL settings or additional notifications. A follow-up event is typically not visible. See the [section Event Properties](./activities.html) for further details. 
+ 
+
+##Link Events
+
+In a complex process model, it can be helpful to avoid too many overlapping sequence flows. Therefor the BPMN Link Events can be used. The link event describes a connection between two elements. 
+
+<img src="../images/modelling/example_07.png"/>
+
+In a Imixs-Workflow model a Link Event can be modeled using one intermediate "Throw Event" and one intermediate "Catch Event" from the event type 'Link'. Both link events should have the same name to indicate the connection between them.
+
+
+
  
