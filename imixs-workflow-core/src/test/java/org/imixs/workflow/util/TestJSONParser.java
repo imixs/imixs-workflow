@@ -34,12 +34,11 @@ public class TestJSONParser {
 	@Test
 	public void testSimple() throws ParseException {
 
-		InputStream inputStream = getClass()
-				.getResourceAsStream("/json/simple.json");
+		InputStream inputStream = getClass().getResourceAsStream("/json/simple.json");
 
-		ItemCollection itemCol=null;
+		ItemCollection itemCol = null;
 		try {
-			itemCol = JSONParser.parseWorkitem(inputStream,"UTF-8");
+			itemCol = JSONParser.parseWorkitem(inputStream, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -48,68 +47,81 @@ public class TestJSONParser {
 		Assert.assertNotNull(itemCol);
 
 		Assert.assertEquals("Anna", itemCol.getItemValueString("$readaccess"));
-		
-		List<?> list=itemCol.getItemValue("txtLog");
+
+		List<?> list = itemCol.getItemValue("txtLog");
 		Assert.assertEquals(3, list.size());
-		
+
 		Assert.assertEquals("C", list.get(2));
-		
-		
+
 		Assert.assertEquals(10, itemCol.getItemValueInteger("$ActivityID"));
 	}
-	
-	
-	
-	
-	
-	
-	@Test(expected = ParseException.class)  
-	public void testCorrupted() throws ParseException {
 
-		InputStream inputStream = getClass()
-				.getResourceAsStream("/json/corrupted.json");
-
-		ItemCollection itemCol=null;
-		try {
-			itemCol = JSONParser.parseWorkitem(inputStream,"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			Assert.fail();
-		}
-	
-		Assert.assertNull(itemCol);
-	}
-	
-	
-	
-	
-	
-	
+	/**
+	 * test parsing of json number fields
+	 * 
+	 * e.g. {"name":"$processid", "value":{"@type":"xs:int","$":1100}},
+	 * 
+	 * 
+	 * @throws ParseException
+	 */
 	@Test
-	public void testComplexWorkitem() throws ParseException {
+	public void testSimpleNumbers() throws ParseException {
 
-		InputStream inputStream = getClass()
-				.getResourceAsStream("/json/workitem.json");
+		InputStream inputStream = getClass().getResourceAsStream("/json/simple_numbers.json");
 
 		ItemCollection itemCol = null;
 		try {
-			itemCol = JSONParser.parseWorkitem(inputStream,"UTF-8");
+			itemCol = JSONParser.parseWorkitem(inputStream, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		
+
 		Assert.assertNotNull(itemCol);
 
+		Assert.assertEquals(10, itemCol.getActivityID());
+		Assert.assertEquals(100, itemCol.getProcessID());
+	}
+
+	@Test(expected = ParseException.class)
+	public void testCorrupted() throws ParseException {
+
+		InputStream inputStream = getClass().getResourceAsStream("/json/corrupted.json");
+
+		ItemCollection itemCol = null;
+		try {
+			itemCol = JSONParser.parseWorkitem(inputStream, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		Assert.assertNull(itemCol);
+	}
+
+	@Test
+	public void testComplexWorkitem() throws ParseException {
+
+		InputStream inputStream = getClass().getResourceAsStream("/json/workitem.json");
+
+		ItemCollection itemCol = null;
+		try {
+			itemCol = JSONParser.parseWorkitem(inputStream, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		Assert.assertNotNull(itemCol);
+
+		Assert.assertEquals(20, itemCol.getProcessID());
+
 		Assert.assertEquals("worklist", itemCol.getItemValueString("txtworkflowresultmessage"));
-		
+
 		Assert.assertEquals("14194929161-1003e42a", itemCol.getItemValueString("$UniqueID"));
-		
-		
-		
-		List<?> list=itemCol.getItemValue("txtworkflowpluginlog");
+
+		List<?> list = itemCol.getItemValue("txtworkflowpluginlog");
 		Assert.assertEquals(7, list.size());
-		
-		
+
 	}
 }

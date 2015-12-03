@@ -35,23 +35,23 @@ public class JSONParser {
 	 * </code>
 	 * 
 	 * @param requestBodyStream
-	 * @param encoding - default encoding use to parse the stream
+	 * @param encoding
+	 *            - default encoding use to parse the stream
 	 * @return a workitem
-	 * @throws ParseException 
-	 * @throws UnsupportedEncodingException 
+	 * @throws ParseException
+	 * @throws UnsupportedEncodingException
 	 */
-	public final static ItemCollection parseWorkitem(
-			InputStream requestBodyStream,String encoding) throws ParseException, UnsupportedEncodingException {
-		
-		if (requestBodyStream==null) {
+	public final static ItemCollection parseWorkitem(InputStream requestBodyStream, String encoding)
+			throws ParseException, UnsupportedEncodingException {
+
+		if (requestBodyStream == null) {
 			logger.severe("[JSONParser] parseWorkitem - inputStream is null!");
-			throw new java.text.ParseException("inputStream is null",-1);
+			throw new java.text.ParseException("inputStream is null", -1);
 		}
-		
-		//Vector<String> vMultiValueFieldNames = new Vector<String>();
-		BufferedReader in = new BufferedReader(new InputStreamReader(
-				requestBodyStream,encoding));
-		
+
+		// Vector<String> vMultiValueFieldNames = new Vector<String>();
+		BufferedReader in = new BufferedReader(new InputStreamReader(requestBodyStream, encoding));
+
 		String inputLine;
 		ItemCollection workitem = new ItemCollection();
 
@@ -66,8 +66,7 @@ public class JSONParser {
 			// first we concat all lines
 			while ((inputLine = in.readLine()) != null) {
 				stringBuffer.append(inputLine);
-				logger.finest("[JSONParser] parseWorkitem - read line:"
-						+ inputLine + "");
+				logger.finest("[JSONParser] parseWorkitem - read line:" + inputLine + "");
 			}
 			content = stringBuffer.toString();
 
@@ -83,9 +82,9 @@ public class JSONParser {
 				token = content.substring(0, content.indexOf(','));
 				iStart = token.indexOf('"') + 1;
 				iEnd = token.lastIndexOf('"');
-				if (iEnd<iStart)
-					throw new java.text.ParseException("Unexpected position of '}",iEnd);
-				
+				if (iEnd < iStart)
+					throw new java.text.ParseException("Unexpected position of '}", iEnd);
+
 				name = token.substring(iStart, iEnd);
 
 				content = content.substring(token.length());
@@ -94,8 +93,8 @@ public class JSONParser {
 					// "value":{"@type":"xs:boolean","$":"true"}},
 					iStart = findNextChar(content, '{') + 1;
 					iEnd = findNextChar(content, '}');
-					if (iEnd<iStart)
-						throw new java.text.ParseException("Unexpected position of '}",iEnd);
+					if (iEnd < iStart)
+						throw new java.text.ParseException("Unexpected position of '}", iEnd);
 					token = content.substring(iStart, iEnd);
 					content = content.substring(iEnd + 1);
 					storeValue(name, token, workitem);
@@ -103,9 +102,9 @@ public class JSONParser {
 					// get content of array
 					iStart = findNextChar(content, '[') + 1;
 					iEnd = findNextChar(content, ']');
-					if (iEnd<iStart)
-						throw new java.text.ParseException("Unexpected position of '}",iEnd);
-					
+					if (iEnd < iStart)
+						throw new java.text.ParseException("Unexpected position of '}", iEnd);
+
 					String arrayContent = content.substring(iStart, iEnd);
 					content = content.substring(iEnd + 1);
 					// parse array values....
@@ -114,9 +113,9 @@ public class JSONParser {
 						// "value":{"@type":"xs:boolean","$":"true"}},
 						iStart = findNextChar(arrayContent, '{') + 1;
 						iEnd = findNextChar(arrayContent, '}');
-						if (iEnd<iStart)
-							throw new java.text.ParseException("Unexpected position of '}",iEnd);
-						
+						if (iEnd < iStart)
+							throw new java.text.ParseException("Unexpected position of '}", iEnd);
+
 						token = arrayContent.substring(iStart, iEnd);
 						arrayContent = arrayContent.substring(iEnd + 1);
 						storeValue(name, token, workitem);
@@ -151,57 +150,69 @@ public class JSONParser {
 	 * This helper method extracts the type and value of a token and stores the
 	 * value into the workitem
 	 * 
+	 * e.g.
+	 * 
+	 * {"name":"$isauthor","value":{"@type":"xs:boolean","$":true}},
+	 * {"name":"$readaccess","value":{"@type":"xs:string","$":"Anna"}},
+	 * {"name":"txtmessage","value":{"@type":"xs:string","$":"worklist"}},
+	 * {"name":"$activityid","value":{"@type":"xs:int","$":10}},
+	 * {"name":"$processid","value":{"@type":"xs:int","$":100}}
+	 * 
 	 * @param token
-	 * @throws ParseException 
+	 * @throws ParseException
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	static void storeValue(String name, String token, ItemCollection workitem) throws ParseException {
 		int iPos, iStart, iEnd;
 		Object value;
-		String type=null;
+		String type = null;
 
 		// check if "@type" exists
 		iPos = token.indexOf("\"@type\"");
 		if (iPos > -1) {
 			iStart = token.indexOf('"', iPos + "\"@type\"".length() + 1) + 1;
 			iEnd = token.indexOf('"', iStart);
-			if (iEnd<iStart)
-				throw new java.text.ParseException("Unexpected position of '}",iEnd);
-			
+			if (iEnd < iStart)
+				throw new java.text.ParseException("Unexpected position of '}", iEnd);
+
 			type = token.substring(iStart, iEnd);
 			token = token.substring(iEnd + 1);
 		}
 
-		// strore value
-
+		// store value - the value can be surrounded by " or not
 		iPos = token.indexOf(":") + 1;
-		iStart = token.indexOf('"', iPos) + 1;
-		iEnd = token.indexOf('"', iStart);
-		if (iEnd<iStart)
-			throw new java.text.ParseException("Unexpected position of '}",iEnd);
-		
+		if (token.indexOf('"', iPos) > -1) {
+			iStart = token.indexOf('"', iPos) + 1;
+			iEnd = token.indexOf('"', iStart);
+		} else {
+			iStart = iPos;
+			iEnd = token.length();
+		}
+		if (iEnd < iStart)
+			throw new java.text.ParseException("Unexpected position of '}", iEnd);
+
 		String stringValue = token.substring(iStart, iEnd);
-		value=stringValue;
-		
+		value = stringValue;
+
 		// convert value to Object Type
 		if ("xs:boolean".equalsIgnoreCase(type)) {
-			value=Boolean.getBoolean(stringValue);
+			value = Boolean.getBoolean(stringValue);
 			logger.fine("[JSONParser] storeValue - datatype=xs:boolean");
 		}
 		if ("xs:integer".equalsIgnoreCase(type)) {
-			value=Integer.getInteger(stringValue);
+			value = Integer.getInteger(stringValue);
 			logger.fine("[JSONParser] storeValue - datatype=xs:integer");
 		}
 		if ("xs:long".equalsIgnoreCase(type)) {
-			value=Long.getLong(stringValue);
+			value = Long.getLong(stringValue);
 			logger.fine("[JSONParser] storeValue - datatype=xs:long");
 		}
 		if ("xs:float".equalsIgnoreCase(type)) {
-			value=new Float(stringValue);
+			value = new Float(stringValue);
 			logger.fine("[JSONParser] storeValue - datatype=xs:float");
 		}
 		if ("xs:double".equalsIgnoreCase(type)) {
-			value=new Double(stringValue);
+			value = new Double(stringValue);
 			logger.fine("[JSONParser] storeValue - datatype=xs:double");
 		}
 
