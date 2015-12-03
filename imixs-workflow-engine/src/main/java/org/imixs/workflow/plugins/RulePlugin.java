@@ -357,7 +357,13 @@ public class RulePlugin extends AbstractPlugin {
 			String expression = "activity.get('" + entry.getKey() + "')";
 
 			Object[] oScript = evaluateScriptObject(engine, expression);
+			if (oScript==null) {
+				continue;
+			}
 			Object[] oActivity = orginalActivity.get(entry.getKey());
+			if (oActivity==null) {
+				continue;
+			}
 
 			// compare object arrays with deepEquals....
 			if (!Arrays.deepEquals(oScript, oActivity)) {
