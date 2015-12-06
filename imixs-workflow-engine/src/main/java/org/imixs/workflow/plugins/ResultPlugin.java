@@ -307,7 +307,7 @@ public class ResultPlugin extends AbstractPlugin {
 	 * @throws PluginException
 	 */
 	public static ItemCollection parseItemStructure(String xmlContent) throws PluginException {
-		logger.info("Evaluate Subprocess Item...");
+		logger.fine("Evaluate Subprocess Item...");
 
 		ItemCollection result = new ItemCollection();
 		if (xmlContent.length() > 0) {
