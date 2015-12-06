@@ -133,6 +133,92 @@ public class TestBPMNParserLinkEvent {
 	
 	
 	
+	
+	
+
+	/**
+	 * This test test intermediate link events with a follow up activity
+	 * @throws ParseException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 */
+	@Test
+	public void testLinkEventFollowup() throws ParseException, ParserConfigurationException, SAXException, IOException {
+
+		String VERSION = "1.0.0";
+
+		InputStream inputStream = getClass().getResourceAsStream("/bpmn/link-event_followup.bpmn");
+
+		BPMNModel model = null;
+		try {
+			model = BPMNParser.parseModel(inputStream, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			Assert.fail();
+		} catch (ModelException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertNotNull(model);
+
+		// Test Environment
+		ItemCollection profile = model.getProfile();
+		Assert.assertNotNull(profile);
+		Assert.assertEquals("environment.profile", profile.getItemValueString("txtname"));
+		Assert.assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));
+		Assert.assertEquals(VERSION, profile.getItemValueString("$ModelVersion"));
+
+		Assert.assertTrue(model.workflowGroups.contains("Simple"));
+
+		// test count of elements
+		Assert.assertEquals(2, model.getProcessEntityList(VERSION).size());
+
+		// test task 1000
+		ItemCollection task = model.getProcessEntity(1000, VERSION);
+		Assert.assertNotNull(task);
+		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
+		Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
+
+		// test activity for task 1000
+		List<ItemCollection> activities = model.getActivityEntityList(1000, VERSION);
+		Assert.assertEquals(3, activities.size());
+ 
+		
+		/* Test confirm1 Event 1000.20 with follow up*/
+		ItemCollection activity = model.getActivityEntity(1000, 20, VERSION);
+		Assert.assertNotNull(activity);
+		Assert.assertEquals("1.0.0",
+				activity.getItemValueString("$ModelVersion"));
+
+		Assert.assertEquals("confirm2", activity.getItemValueString("txtName"));
+		Assert.assertEquals("1", activity.getItemValueString("keyFollowUp"));
+		Assert.assertEquals(99,
+				activity.getItemValueInteger("numNextActivityID"));
+
+		
+	
+
+		// test followup event
+		activity = model.getActivityEntity(1000, 99, VERSION);
+		Assert.assertNotNull(activity);
+		Assert.assertEquals("1.0.0",
+				activity.getItemValueString("$ModelVersion"));
+
+		Assert.assertEquals("followup1", activity.getItemValueString("txtName"));
+		Assert.assertEquals(1100,
+				activity.getItemValueInteger("numNextProcessID"));
+		
+		
+		
+		// cross-test followup event
+		activity = model.getActivityEntity(1100, 99, VERSION);
+		Assert.assertNull(activity);
+	}
+	
+	
+	
+	
 	@Test
 	public void testComplexParserTest() throws ParseException,
 			ParserConfigurationException, SAXException, IOException {

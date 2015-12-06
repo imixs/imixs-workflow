@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- origin at X=0.0 Y=0.0 -->
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:ext="http://org.eclipse.bpmn2/ext" xmlns:imixs="http://www.imixs.org/bpmn2" xmlns:xs="http://www.w3.org/2001/XMLSchema" id="Definitions_1" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.2.2.201511241736" targetNamespace="http://www.imixs.org/bpmn2">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:ext="http://org.eclipse.bpmn2/ext" xmlns:imixs="http://www.imixs.org/bpmn2" xmlns:xs="http://www.w3.org/2001/XMLSchema" id="Definitions_1" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.2.2.201512032052" targetNamespace="http://www.imixs.org/bpmn2">
   <bpmn2:extensionElements>
     <imixs:item name="txtworkflowmodelversion" type="xs:string">
       <imixs:value><![CDATA[1.0.0]]></imixs:value>
@@ -15,6 +15,7 @@
     </bpmn2:endEvent>
     <bpmn2:task id="Task_2" imixs:processid="1000" name="Task 2">
       <bpmn2:incoming>SequenceFlow_9</bpmn2:incoming>
+      <bpmn2:incoming>SequenceFlow_16</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
     </bpmn2:task>
     <bpmn2:sequenceFlow id="SequenceFlow_9" sourceRef="StartEvent_1" targetRef="Task_2"/>
@@ -44,14 +45,9 @@
     <bpmn2:sequenceFlow id="SequenceFlow_12" sourceRef="IntermediateCatchEvent_1" targetRef="IntermediateThrowEvent_1"/>
     <bpmn2:sequenceFlow id="SequenceFlow_14" sourceRef="EventBasedGateway_2" targetRef="IntermediateCatchEvent_1"/>
     <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_3" imixs:activityid="30" name="update1">
-      <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
-      <bpmn2:outgoing>SequenceFlow_7</bpmn2:outgoing>
+      <bpmn2:incoming>SequenceFlow_17</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_16</bpmn2:outgoing>
     </bpmn2:intermediateCatchEvent>
-    <bpmn2:sequenceFlow id="SequenceFlow_3" sourceRef="EventBasedGateway_2" targetRef="IntermediateCatchEvent_3"/>
-    <bpmn2:intermediateThrowEvent id="IntermediateThrowEvent_3" name="looptest">
-      <bpmn2:incoming>SequenceFlow_7</bpmn2:incoming>
-    </bpmn2:intermediateThrowEvent>
-    <bpmn2:sequenceFlow id="SequenceFlow_7" sourceRef="IntermediateCatchEvent_3" targetRef="IntermediateThrowEvent_3"/>
     <bpmn2:task id="Task_3" imixs:processid="1200" name="Task 3">
       <bpmn2:incoming>SequenceFlow_5</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_10</bpmn2:outgoing>
@@ -84,11 +80,15 @@
     <bpmn2:eventBasedGateway id="EventBasedGateway_2" name="Event Based Gateway 2" gatewayDirection="Diverging">
       <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_14</bpmn2:outgoing>
-      <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
       <bpmn2:outgoing>SequenceFlow_13</bpmn2:outgoing>
     </bpmn2:eventBasedGateway>
     <bpmn2:sequenceFlow id="SequenceFlow_6" sourceRef="EventBasedGateway_1" targetRef="IntermediateCatchEvent_7"/>
     <bpmn2:sequenceFlow id="SequenceFlow_13" sourceRef="EventBasedGateway_2" targetRef="IntermediateCatchEvent_5"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_16" sourceRef="IntermediateCatchEvent_3" targetRef="Task_2"/>
+    <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_2" name="looptest">
+      <bpmn2:outgoing>SequenceFlow_17</bpmn2:outgoing>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_17" sourceRef="IntermediateCatchEvent_2" targetRef="IntermediateCatchEvent_3"/>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1" name="Default Process Diagram">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="simple">
@@ -141,15 +141,9 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_IntermediateCatchEvent_3" bpmnElement="IntermediateCatchEvent_3">
-        <dc:Bounds height="36.0" width="36.0" x="337.0" y="20.0"/>
+        <dc:Bounds height="36.0" width="36.0" x="197.0" y="20.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_1">
-          <dc:Bounds height="14.0" width="45.0" x="333.0" y="56.0"/>
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_IntermediateThrowEvent_3" bpmnElement="IntermediateThrowEvent_3">
-        <dc:Bounds height="36.0" width="36.0" x="420.0" y="20.0"/>
-        <bpmndi:BPMNLabel id="BPMNLabel_14">
-          <dc:Bounds height="14.0" width="44.0" x="416.0" y="56.0"/>
+          <dc:Bounds height="14.0" width="45.0" x="193.0" y="56.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_Task_3" bpmnElement="Task_3">
@@ -194,6 +188,12 @@
           <dc:Bounds height="28.0" width="78.0" x="316.0" y="163.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_IntermediateCatchEvent_2" bpmnElement="IntermediateCatchEvent_2">
+        <dc:Bounds height="36.0" width="36.0" x="302.0" y="20.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_32">
+          <dc:Bounds height="14.0" width="44.0" x="298.0" y="56.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_9" bpmnElement="SequenceFlow_9" sourceElement="BPMNShape_1" targetElement="BPMNShape_Task_2">
         <di:waypoint xsi:type="dc:Point" x="86.0" y="138.0"/>
         <di:waypoint xsi:type="dc:Point" x="123.0" y="138.0"/>
@@ -230,19 +230,6 @@
         <di:waypoint xsi:type="dc:Point" x="355.0" y="181.0"/>
         <di:waypoint xsi:type="dc:Point" x="355.0" y="225.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_23"/>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_3" bpmnElement="SequenceFlow_3" sourceElement="BPMNShape_EventBasedGateway_2" targetElement="BPMNShape_IntermediateCatchEvent_3">
-        <di:waypoint xsi:type="dc:Point" x="355.0" y="113.0"/>
-        <di:waypoint xsi:type="dc:Point" x="355.0" y="94.0"/>
-        <di:waypoint xsi:type="dc:Point" x="355.0" y="94.0"/>
-        <di:waypoint xsi:type="dc:Point" x="355.0" y="56.0"/>
-        <bpmndi:BPMNLabel id="BPMNLabel_2"/>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_7" bpmnElement="SequenceFlow_7" sourceElement="BPMNShape_IntermediateCatchEvent_3" targetElement="BPMNShape_IntermediateThrowEvent_3">
-        <di:waypoint xsi:type="dc:Point" x="373.0" y="38.0"/>
-        <di:waypoint xsi:type="dc:Point" x="396.0" y="38.0"/>
-        <di:waypoint xsi:type="dc:Point" x="420.0" y="38.0"/>
-        <bpmndi:BPMNLabel id="BPMNLabel_15"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_1" bpmnElement="SequenceFlow_1" sourceElement="BPMNShape_Task_2" targetElement="BPMNShape_EventBasedGateway_2">
         <di:waypoint xsi:type="dc:Point" x="270.0" y="138.0"/>
@@ -285,6 +272,18 @@
         <di:waypoint xsi:type="dc:Point" x="410.0" y="138.0"/>
         <di:waypoint xsi:type="dc:Point" x="440.0" y="138.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_30"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_16" bpmnElement="SequenceFlow_16" sourceElement="BPMNShape_IntermediateCatchEvent_3" targetElement="BPMNShape_Task_2">
+        <di:waypoint xsi:type="dc:Point" x="215.0" y="56.0"/>
+        <di:waypoint xsi:type="dc:Point" x="215.0" y="84.0"/>
+        <di:waypoint xsi:type="dc:Point" x="215.0" y="113.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_31"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_17" bpmnElement="SequenceFlow_17" sourceElement="BPMNShape_IntermediateCatchEvent_2" targetElement="BPMNShape_IntermediateCatchEvent_3">
+        <di:waypoint xsi:type="dc:Point" x="302.0" y="38.0"/>
+        <di:waypoint xsi:type="dc:Point" x="268.0" y="38.0"/>
+        <di:waypoint xsi:type="dc:Point" x="233.0" y="38.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_33"/>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
     <bpmndi:BPMNLabelStyle id="BPMNLabelStyle_1">
