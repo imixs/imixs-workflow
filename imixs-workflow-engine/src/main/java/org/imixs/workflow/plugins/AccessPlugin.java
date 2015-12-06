@@ -128,17 +128,13 @@ public class AccessPlugin extends AbstractPlugin {
 				.getItemValueString("$modelVersion");
 		documentNextProcessEntity = ctx.getModel().getProcessEntity(
 				iNextProcessID, aModelVersion);
-		if (documentNextProcessEntity == null) {
-			logger.warning("[ApplicationPlugin] Warning - processEntity '"
-					+ iNextProcessID + "' was not found in the model! ");
-			return Plugin.PLUGIN_WARNING;
-		}
-
+		// in case the activity is connected to a followup activity the nextProcess can be null!
+		
 		// test update mode of activity and process entity - if true clear the
 		// existing values.
 		if (documentActivity.getItemValueBoolean("keyupdateacl") == false
-				&& documentNextProcessEntity
-						.getItemValueBoolean("keyupdateacl") == false) {
+				&& (documentNextProcessEntity== null || documentNextProcessEntity
+						.getItemValueBoolean("keyupdateacl") == false)) {
 			// no update!
 			return Plugin.PLUGIN_OK;
 		} else {
@@ -168,7 +164,7 @@ public class AccessPlugin extends AbstractPlugin {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void updateACLByItemCollection(ItemCollection modelEntity) {
 
-		if (modelEntity.getItemValueBoolean("keyupdateacl") == false) {
+		if (modelEntity==null || modelEntity.getItemValueBoolean("keyupdateacl") == false) {
 			// no update necessary
 			return;
 		}
