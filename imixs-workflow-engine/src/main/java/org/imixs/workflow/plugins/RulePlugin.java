@@ -160,7 +160,7 @@ public class RulePlugin extends AbstractPlugin {
 			// Now update Activity Entity values from script..
 			updateActivityEntity(engine, adocumentActivity);
 
-			// now test the followup activity
+			// now test the followUp variable
 			Object o = engine.get("followUp");
 			if (o != null) {
 				// try to get double value...
@@ -173,6 +173,21 @@ public class RulePlugin extends AbstractPlugin {
 
 				}
 			}
+			
+			
+			// now test the nextTask variable
+			o = engine.get("nextTask");
+			if (o != null) {
+				// try to get double value...
+				Double d = Double.valueOf(o.toString());
+				Long nextTask = d.longValue();
+				if (nextTask != null && nextTask > 0) {
+					adocumentActivity.replaceItemValue("numNextProcessID",
+							nextTask);
+
+				}
+			}
+			
 
 			return Plugin.PLUGIN_OK;
 
