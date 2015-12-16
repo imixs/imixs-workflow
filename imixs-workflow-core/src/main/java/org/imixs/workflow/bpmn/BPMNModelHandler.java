@@ -477,7 +477,12 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	/**
 	 * This method computes the target for an event and adds the event to a
-	 * source task. The method call recursive if the target is a followUp Event
+	 * source task. The method call recursive if the target is a followUp Event.
+	 * 
+	 * If a event has no target the method throws an exception
+	 * 
+	 * If a event has more than one targets (task or event elements) then the
+	 * event is handled as a loop event.
 	 * 
 	 * @param sourceTask
 	 * @param event
@@ -491,43 +496,69 @@ public class BPMNModelHandler extends DefaultHandler {
 		logger.finest("adding event '" + eventName + "'");
 
 		List<SequenceFlow> outFlows = findOutgoingFlows(eventID);
-		if (outFlows != null && outFlows.size() != 1) {
+		if (outFlows == null || outFlows.size() == 0) {
 			// invalid model!!
 			throw new ModelException(ModelException.INVALID_MODEL,
-					"Imixs BPMN Event '" + eventName + "' has none or more than one targets!");
+					"Imixs BPMN Event '" + eventName + "' has no target!");
 		}
 
-		// test target element....
-		SequenceFlow outgoingFlow = outFlows.get(0);
-		// is this Event connected to a followUp Activity?
-		String followUpEventID = new ElementResolver().findImixsTargetEventID(outgoingFlow);
+		// test if the element has multiple targets. In this case the event is
+		// handled as a loop event
+		List<String> targetList = new ArrayList<String>();
+		for (SequenceFlow outgoingFlow : outFlows) {
+			targetList = new ElementResolver().findAllImixsTargetIDs(outgoingFlow, targetList);
+		}
+		if (targetList.size() > 1) {
+			// we have a multi event which need to be handled like a loop event
+			event.removeItem("keyFollowUp");
+			event.replaceItemValue("numNextProcessID", sourceTask.getItemValue("numProcessID"));
 
-		if (followUpEventID != null) {
-
-			// recursive call!
-			addImixsEvent(followUpEventID, sourceTask);
-
-			ItemCollection followUpEvent = activityCache.get(followUpEventID);
-
-			event.replaceItemValue("keyFollowUp", "1");
-			event.replaceItemValue("numNextActivityID", followUpEvent.getItemValue("numactivityid"));
+			// here we need to check if one of the targets is an event - this
+			// need to be handled in a recursive call
+			for (String elementID: targetList) {				
+				// test if the target is a Imixs Event
+				ItemCollection imixsElement = activityCache.get(elementID);
+				if (imixsElement != null) {
+					// recursive call!
+					addImixsEvent(elementID, sourceTask);
+				}
+			}
 
 		} else {
-			// test if we found a target task.
-			ItemCollection targetTask = new ElementResolver().findImixsTargetTask(outgoingFlow);
-			if (targetTask != null) {
-				event.removeItem("keyFollowUp");
-				event.replaceItemValue("numNextProcessID", targetTask.getItemValue("numProcessID"));
+			// normal case - the event has one outgoing target and we test the
+			// target element now
+
+			// test target element....
+			SequenceFlow outgoingFlow = outFlows.get(0);
+			// is this Event connected to a followUp Activity?
+			String followUpEventID = new ElementResolver().findImixsTargetEventID(outgoingFlow);
+
+			if (followUpEventID != null) {
+
+				// recursive call!
+				addImixsEvent(followUpEventID, sourceTask);
+
+				ItemCollection followUpEvent = activityCache.get(followUpEventID);
+
+				event.replaceItemValue("keyFollowUp", "1");
+				event.replaceItemValue("numNextActivityID", followUpEvent.getItemValue("numactivityid"));
 
 			} else {
+				// test if we found a target task.
+				ItemCollection targetTask = new ElementResolver().findImixsTargetTask(outgoingFlow);
+				if (targetTask != null) {
+					event.removeItem("keyFollowUp");
+					event.replaceItemValue("numNextProcessID", targetTask.getItemValue("numProcessID"));
 
-				// invalid model!!
-				throw new ModelException(ModelException.INVALID_MODEL,
-						"Imixs BPMN Event '" + eventName + "' has no target task element!");
+				} else {
 
+					// invalid model!!
+					throw new ModelException(ModelException.INVALID_MODEL,
+							"Imixs BPMN Event '" + eventName + "' has no target task element!");
+
+				}
 			}
 		}
-
 		// source found
 		event.replaceItemValue("numProcessID", sourceTask.getItemValue("numProcessID"));
 		event.replaceItemValue("$modelVersion", sourceTask.getModelVersion());
@@ -848,7 +879,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			// test if the target is a Imixs task
 			ItemCollection imixsElement = processCache.get(flow.target);
 			if (imixsElement != null) {
-				// stopp here!
+				// stop here!
 				return null;
 			}
 
@@ -865,6 +896,57 @@ public class BPMNModelHandler extends DefaultHandler {
 				return (findImixsTargetEventID(aflow));
 			}
 			return null;
+		}
+
+		/**
+		 * This method searches for all target events or task for a outgoing
+		 * sequence flow. The method returns a List of possible target elemetns.
+		 * 
+		 * 
+		 * @return the ID of the Imixs Event element or null if no Event Element
+		 *         was found.
+		 * @return
+		 */
+		public List<String> findAllImixsTargetIDs(SequenceFlow flow, List<String> targetList) {
+
+			if (targetList == null) {
+				targetList = new ArrayList<String>();
+			}
+
+			if (flow.source == null) {
+				return targetList;
+			}
+			// detect loops...
+			if (loopFlowCache.contains(flow.target)) {
+				// loop!
+				return targetList;
+			} else {
+				loopFlowCache.add(flow.target);
+			}
+
+			// test if the target is a Imixs task
+			ItemCollection imixsElement = processCache.get(flow.target);
+			if (imixsElement != null) {
+				targetList.add(flow.target);
+				// stop here!
+				return targetList;
+			}
+
+			// test if the target is a Imixs Event
+			imixsElement = activityCache.get(flow.target);
+			if (imixsElement != null) {
+				targetList.add(flow.target);
+				// stop here!
+				return targetList;
+			}
+
+			// no Imixs task or event found so we are trying to look for the
+			// next outgoing flow elements.
+			List<SequenceFlow> refList = findOutgoingFlows(flow.target);
+			for (SequenceFlow aflow : refList) {
+				targetList = findAllImixsTargetIDs(aflow, targetList);
+			}
+			return targetList;
 		}
 
 	}
