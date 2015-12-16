@@ -62,7 +62,7 @@ public class TestBPMNParserRuleEvents {
 		Assert.assertNotNull(profile);
 
 		// test count of elements
-		Assert.assertEquals(6, model.getProcessEntityList(VERSION).size());
+		Assert.assertEquals(9, model.getProcessEntityList(VERSION).size());
 
 		// test task 1000
 		ItemCollection task = model.getProcessEntity(1000, VERSION);
@@ -138,6 +138,55 @@ public class TestBPMNParserRuleEvents {
 		Assert.assertEquals("followup", activity.getItemValueString("txtname"));
 		Assert.assertFalse("1".equals( activity.getItemValueString("keyFollowUp")));
 		Assert.assertEquals(0, activity.getItemValueInteger("numNextActivityID"));
+
+	}
+	
+	
+	
+	
+	
+	
+	
+	@Test
+	public void testSimpleNoGateway() throws ParseException, ParserConfigurationException, SAXException, IOException {
+
+		String VERSION = "1.0.0";
+
+		InputStream inputStream = getClass().getResourceAsStream("/bpmn/event_rules.bpmn");
+
+		BPMNModel model = null;
+		try {
+			model = BPMNParser.parseModel(inputStream, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			Assert.fail();
+		} catch (ModelException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertNotNull(model);
+
+		// Test Environment
+		ItemCollection profile = model.getProfile();
+		Assert.assertNotNull(profile);
+
+		// test count of elements
+		Assert.assertEquals(9, model.getProcessEntityList(VERSION).size());
+
+		// test task 1000
+		ItemCollection task = model.getProcessEntity(3000, VERSION);
+		Assert.assertNotNull(task);
+
+		// test activity for task 3000
+		List<ItemCollection> activities = model.getActivityEntityList(3000, VERSION);
+		Assert.assertNotNull(activities);
+		Assert.assertEquals(1, activities.size());
+
+		// test activity 3000.10 submit
+		ItemCollection activity = model.getActivityEntity(3000, 10, VERSION);
+		Assert.assertNotNull(activity);
+		Assert.assertEquals(3000, activity.getItemValueInteger("numNextProcessID"));
+		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
 
 	}
 }
