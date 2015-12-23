@@ -35,7 +35,7 @@ If a script can not be evaluated by the scriptEngin a PluginExcpetion with the e
  
 
 ###followUp 
-If the script set the variable 'followUp' the follow-up behavior of the current ActivityEntity will be updated. The value of the variable 'followUp' defines the next activity which will be processed by the WorkflowManager after the current activity is completed.  This is the recommended way to define a rule triggering different activities depending on the values of the current workitem. See the following example:
+If the script sets the variable 'followUp' an optional workflow event can be triggered. The value of the variable 'followUp' defines the next workflow event which will be processed by the WorkflowManager after the current activity is completed.  This is the recommended way to trigger different activities depending on a business rule. See the following example:
  
 	 var followUp=null;
 	 if (budget[0]>10000)
@@ -44,7 +44,15 @@ If the script set the variable 'followUp' the follow-up behavior of the current 
 	    followUp=30;
 
 This rule evaluates the property 'budget' from the current workItem. If the value is higher than 10.000 EUR the activity with the ID=20 will be processed in the next step.  If the budget is lower than 10.000 EUR the activity with the ID=30 will be processed.
+
+###nextTask
+Another way to influence the flow of the process is to set the variable 'nextTask'. This variable can be used to change the outgoing flow of a workflow event, which is normally defined by the workflow model. 
  
+	 var nextTask=null;
+	 if (budget[0]>10000)
+	    nextTask=2100;
+	 else
+	    nextTask=3100; 
 
 ###isValid 
 The variable 'isValid' can be used in a business rule to validate the data of a workitem. If the script set the variable 'isValid' to 'false' then the plugin throws a PluginExcpetion. The Plugin evaluates the optional variables 'errorCode' and errorMessage. If these variables are set by the Script then the Plugin 
