@@ -17,7 +17,6 @@ import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.plugins.RulePlugin;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -25,7 +24,6 @@ import org.junit.Test;
  * 
  * @author rsoika
  */
-@Ignore
 public class TestRulePlugin {
 	RulePlugin rulePlugin = null;
 
@@ -453,20 +451,28 @@ public class TestRulePlugin {
 		List<String> list1 = Arrays.asList("Homer", "Bart", "Marge", "Maggie",
 				"Lisa");
 		engine.put("list1", list1);
+		
+
+		// Nashorn: check for importClass function and then load if missing ...
+		String jsNashorn=" if (typeof importClass != 'function') { load('nashorn:mozilla_compat.js');}";
+	
+		
 		String jsCode = "var index; " + "var values =list1.toArray();"
-				+ "println('*** Java object to Javascript');"
-				+ "for(index in values) {" + "  println(values[index]);" + "}";
+				+ "print('*** Java object to Javascript');"
+				+ "for(index in values) {" + "  print(values[index]);" + "}";
 		try {
-			engine.eval(jsCode);
+			engine.eval(jsNashorn+jsCode);
 		} catch (ScriptException se) {
 			se.printStackTrace();
 		}
 
+		
+		
 		// pass a collection from javascript to java
-		jsCode = "importPackage(java.util);"
+		jsCode =  "importPackage(java.util);"
 				+ "var list2 = Arrays.asList(['Moe', 'Barney', 'Ned']); ";
 		try {
-			engine.eval(jsCode);
+			engine.eval(jsNashorn+jsCode);
 		} catch (ScriptException se) {
 			se.printStackTrace();
 		}
@@ -744,6 +750,7 @@ public class TestRulePlugin {
 		adocumentContext.replaceItemValue("_subject", "test");
 		ItemCollection adocumentActivity = new ItemCollection();
 
+		System.out.println("testUndefineErroCode - test case 1:");
 		// 2) test undefined case
 		String script = " var isValid=true;"
 				+ " var errorCode,errorMessage;"
@@ -770,6 +777,8 @@ public class TestRulePlugin {
 
 		}
 
+		System.out.println("testUndefineErroCode - test case 2:");
+		
 		// test the same case if errorCode is defined
 		// 2) test true case
 		script = " var isValid=true;"

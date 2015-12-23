@@ -129,11 +129,9 @@ public class RulePlugin extends AbstractPlugin {
 	 * processing.
 	 * 
 	 */
-	public int run(ItemCollection adocumentContext,
-			ItemCollection adocumentActivity) throws PluginException {
+	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 
-		ScriptEngine engine = evaluateBusinessRule(adocumentContext,
-				adocumentActivity);
+		ScriptEngine engine = evaluateBusinessRule(adocumentContext, adocumentActivity);
 		if (engine != null) {
 
 			Boolean isValidActivity = (Boolean) engine.get("isValid");
@@ -151,10 +149,8 @@ public class RulePlugin extends AbstractPlugin {
 				Object[] params = null;
 				params = this.evaluateScriptObject(engine, "errorMessage");
 				// finally throw a Plugin Exception
-				throw new PluginException(RulePlugin.class.getName(),
-						sErrorCode,
-						"BusinessRule: validation failed - ErrorCode="
-								+ sErrorCode, params);
+				throw new PluginException(RulePlugin.class.getName(), sErrorCode,
+						"BusinessRule: validation failed - ErrorCode=" + sErrorCode, params);
 			}
 
 			// Now update Activity Entity values from script..
@@ -168,13 +164,11 @@ public class RulePlugin extends AbstractPlugin {
 				Long followUpActivity = d.longValue();
 				if (followUpActivity != null && followUpActivity > 0) {
 					adocumentActivity.replaceItemValue("keyFollowUp", "1");
-					adocumentActivity.replaceItemValue("numNextActivityID",
-							followUpActivity);
+					adocumentActivity.replaceItemValue("numNextActivityID", followUpActivity);
 
 				}
 			}
-			
-			
+
 			// now test the nextTask variable
 			o = engine.get("nextTask");
 			if (o != null) {
@@ -182,12 +176,10 @@ public class RulePlugin extends AbstractPlugin {
 				Double d = Double.valueOf(o.toString());
 				Long nextTask = d.longValue();
 				if (nextTask != null && nextTask > 0) {
-					adocumentActivity.replaceItemValue("numNextProcessID",
-							nextTask);
+					adocumentActivity.replaceItemValue("numNextProcessID", nextTask);
 
 				}
 			}
-			
 
 			return Plugin.PLUGIN_OK;
 
@@ -214,8 +206,7 @@ public class RulePlugin extends AbstractPlugin {
 	 * @return
 	 * @throws PluginException
 	 */
-	public boolean isValid(ItemCollection documentContext,
-			ItemCollection activity) throws PluginException {
+	public boolean isValid(ItemCollection documentContext, ItemCollection activity) throws PluginException {
 
 		ScriptEngine engine = evaluateBusinessRule(documentContext, activity);
 		if (engine != null) {
@@ -239,8 +230,8 @@ public class RulePlugin extends AbstractPlugin {
 	 * @return ScriptEngine instance
 	 * @throws PluginException
 	 */
-	public ScriptEngine evaluateBusinessRule(ItemCollection documentContext,
-			ItemCollection activity) throws PluginException {
+	public ScriptEngine evaluateBusinessRule(ItemCollection documentContext, ItemCollection activity)
+			throws PluginException {
 
 		// test if a business rule is defined
 		String script = activity.getItemValueString("txtBusinessRule");
@@ -249,8 +240,7 @@ public class RulePlugin extends AbstractPlugin {
 
 		// initialize the script engine...
 		ScriptEngineManager manager = new ScriptEngineManager();
-		String sEngineType = activity
-				.getItemValueString("txtBusinessRuleEngine");
+		String sEngineType = activity.getItemValueString("txtBusinessRuleEngine");
 		// set default engine to javascript if no engine is specified
 		if ("".equals(sEngineType))
 			sEngineType = "javascript";
@@ -281,9 +271,8 @@ public class RulePlugin extends AbstractPlugin {
 			engine.eval(script);
 		} catch (ScriptException e) {
 			// script not valid
-			throw new PluginException(RulePlugin.class.getSimpleName(),
-					INVALID_SCRIPT, "BusinessRule contains invalid script:"
-							+ e.getMessage(), e);
+			throw new PluginException(RulePlugin.class.getSimpleName(), INVALID_SCRIPT,
+					"BusinessRule contains invalid script:" + e.getMessage(), e);
 		}
 
 		return engine;
@@ -320,15 +309,23 @@ public class RulePlugin extends AbstractPlugin {
 		// now try to pass the object to engine and convert it into a
 		// ArryList....
 		try {
-			String jsCode = "importPackage(java.util);"
-					+ "var _evaluateScriptParam = Arrays.asList(" + expression
+			// Nashorn: check for importClass function and then load if missing
+			// See: issue #124
+			String jsNashorn = " if (typeof importClass != 'function') { load('nashorn:mozilla_compat.js');}";
+
+			String jsCode = "importPackage(java.util);" + "var _evaluateScriptParam = Arrays.asList(" + expression
 					+ "); ";
 			// pass a collection from javascript to java;
-			engine.eval(jsCode);
+			engine.eval(jsNashorn + jsCode);
 
 			@SuppressWarnings("unchecked")
-			List<Object> resultList = (List<Object>) engine
-					.get("_evaluateScriptParam");
+			List<Object> resultList = (List<Object>) engine.get("_evaluateScriptParam");
+			if (resultList==null) {
+				return null;
+			}
+			if ("[undefined]".equals(resultList.toString())) {
+				return null;
+			}
 			// logging
 			if (logger.isLoggable(Level.FINE)) {
 				logger.fine("evalueateScript object to Java");
@@ -341,8 +338,7 @@ public class RulePlugin extends AbstractPlugin {
 		} catch (ScriptException se) {
 			// not convertable!
 			// se.printStackTrace();
-			logger.fine("[RulePlugin] error evaluating " + expression + " - "
-					+ se.getMessage());
+			logger.fine("[RulePlugin] error evaluating " + expression + " - " + se.getMessage());
 			return null;
 		}
 
@@ -359,8 +355,7 @@ public class RulePlugin extends AbstractPlugin {
 	 * @throws ScriptException
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void updateActivityEntity(ScriptEngine engine,
-			ItemCollection adocumentActivity) {
+	private void updateActivityEntity(ScriptEngine engine, ItemCollection adocumentActivity) {
 
 		Map<String, Object[]> orginalActivity = convertItemCollection(adocumentActivity);
 		// get activity from engine
@@ -372,18 +367,17 @@ public class RulePlugin extends AbstractPlugin {
 			String expression = "activity.get('" + entry.getKey() + "')";
 
 			Object[] oScript = evaluateScriptObject(engine, expression);
-			if (oScript==null) {
+			if (oScript == null) {
 				continue;
 			}
 			Object[] oActivity = orginalActivity.get(entry.getKey());
-			if (oActivity==null) {
+			if (oActivity == null) {
 				continue;
 			}
 
 			// compare object arrays with deepEquals....
 			if (!Arrays.deepEquals(oScript, oActivity)) {
-				logger.fine("[RulePlugin] update activity proeperty "
-						+ entry.getKey());
+				logger.fine("[RulePlugin] update activity proeperty " + entry.getKey());
 				List<?> list = new ArrayList(Arrays.asList(oScript));
 				adocumentActivity.replaceItemValue(entry.getKey(), list);
 			}
