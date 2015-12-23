@@ -17,6 +17,7 @@ import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.plugins.RulePlugin;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -24,6 +25,7 @@ import org.junit.Test;
  * 
  * @author rsoika
  */
+@Ignore
 public class TestRulePlugin {
 	RulePlugin rulePlugin = null;
 
