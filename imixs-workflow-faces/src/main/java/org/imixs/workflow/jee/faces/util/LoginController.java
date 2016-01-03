@@ -28,7 +28,6 @@
 package org.imixs.workflow.jee.faces.util;
 
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
