@@ -28,6 +28,7 @@
 package org.imixs.workflow.jee.faces.util;
 
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
@@ -50,18 +51,32 @@ import org.imixs.workflow.jee.ejb.EntityService;
 @Named("loginController")
 @RequestScoped
 public class LoginController {
-	
+
 	@EJB
 	private EntityService entityService;
 
-
 	/**
-	 * returns true if user is authenticated
+	 * returns true if user is authenticated and has at least on of the Imixs
+	 * Access Roles
 	 * 
 	 * @return
 	 */
 	public boolean isAuthenticated() {
-		return (getUserPrincipal() != null);
+		if (getUserPrincipal() == null)
+			return false;
+		else {
+			ExternalContext ectx = FacesContext.getCurrentInstance().getExternalContext();
+			// test if at least one of the Imixs Acces Roles are granted
+			if (ectx.isUserInRole("org.imixs.ACCESSLEVEL.AUTHORACCESS"))
+				return true;
+			if (ectx.isUserInRole("org.imixs.ACCESSLEVEL.EDITORACCESS"))
+				return true;
+			if (ectx.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS"))
+				return true;
+			if (ectx.isUserInRole("org.imixs.ACCESSLEVEL.READERACCESS"))
+				return true;
+		}
+		return false;
 	}
 
 	/**
@@ -71,8 +86,7 @@ public class LoginController {
 	 * @return
 	 */
 	public boolean isUserInRole(String aRoleName) {
-		ExternalContext ectx = FacesContext.getCurrentInstance()
-				.getExternalContext();
+		ExternalContext ectx = FacesContext.getCurrentInstance().getExternalContext();
 
 		if (aRoleName == null || aRoleName.isEmpty())
 			return false;
@@ -88,8 +102,7 @@ public class LoginController {
 	public String getUserPrincipal() {
 		FacesContext context = FacesContext.getCurrentInstance();
 		ExternalContext externalContext = context.getExternalContext();
-		return externalContext.getUserPrincipal() != null ? externalContext
-				.getUserPrincipal().toString() : null;
+		return externalContext.getUserPrincipal() != null ? externalContext.getUserPrincipal().toString() : null;
 	}
 
 	/**
@@ -103,9 +116,11 @@ public class LoginController {
 		String remoteUser = externalContext.getRemoteUser();
 		return remoteUser;
 	}
-	
+
 	/**
-	 * Returns the current user name list including userId, roles and context groups.
+	 * Returns the current user name list including userId, roles and context
+	 * groups.
+	 * 
 	 * @return
 	 */
 	public List<String> getUserNameList() {
@@ -118,8 +133,8 @@ public class LoginController {
 	 * @return
 	 */
 	public String getServerURI() {
-		HttpServletRequest servletRequest = (HttpServletRequest) FacesContext
-				.getCurrentInstance().getExternalContext().getRequest();
+		HttpServletRequest servletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext()
+				.getRequest();
 
 		String port = "" + servletRequest.getLocalPort();
 
