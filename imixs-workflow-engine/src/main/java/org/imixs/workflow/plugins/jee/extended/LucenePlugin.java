@@ -107,8 +107,7 @@ public class LucenePlugin extends AbstractPlugin {
 	static List<String> searchFieldList = null;
 	static List<String> indexFieldListAnalyse = null;
 	static List<String> indexFieldListNoAnalyse = null;
-	private static Logger logger = Logger.getLogger(LucenePlugin.class
-			.getName());
+	private static Logger logger = Logger.getLogger(LucenePlugin.class.getName());
 
 	private static int maxResult = 100;
 
@@ -149,23 +148,20 @@ public class LucenePlugin extends AbstractPlugin {
 	 * If and how the workitem will be added to the search index is fully
 	 * controlled by the method addWorkitem.
 	 */
-	public int run(ItemCollection documentContext, ItemCollection activity)
-			throws PluginException {
+	public int run(ItemCollection documentContext, ItemCollection activity) throws PluginException {
 
-		//logger.info("Lucene ImplementationVersion="+LucenePackage.get().getImplementationVersion());
+		// logger.info("Lucene
+		// ImplementationVersion="+LucenePackage.get().getImplementationVersion());
 		// compute next $processid to be added correctly into the search index
 		int nextProcessID = activity.getItemValueInteger("numnextprocessid");
-		int currentProcessID = documentContext
-				.getItemValueInteger("$processid");
+		int currentProcessID = documentContext.getItemValueInteger("$processid");
 
 		// temporarily set a $Created and $Modified Date (used to search for
 		// $modified)
 		if (!documentContext.hasItem("$Created")) {
-			documentContext.replaceItemValue("$Created", Calendar.getInstance()
-					.getTime());
+			documentContext.replaceItemValue("$Created", Calendar.getInstance().getTime());
 		}
-		documentContext.replaceItemValue("$modified", Calendar.getInstance()
-				.getTime());
+		documentContext.replaceItemValue("$modified", Calendar.getInstance().getTime());
 
 		// temporarily replace the $processid
 		documentContext.replaceItemValue("$processid", nextProcessID);
@@ -189,8 +185,7 @@ public class LucenePlugin extends AbstractPlugin {
 	 * @return
 	 * @throws Exception
 	 */
-	public static boolean updateWorkitem(ItemCollection documentContext)
-			throws PluginException {
+	public static boolean updateWorkitem(ItemCollection documentContext) throws PluginException {
 		List<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
 		workitems.add(documentContext);
@@ -217,8 +212,7 @@ public class LucenePlugin extends AbstractPlugin {
 	 * @return - true if the update was successfull
 	 * @throws Exception
 	 */
-	public static boolean updateWorklist(Collection<ItemCollection> worklist)
-			throws PluginException {
+	public synchronized static boolean updateWorklist(Collection<ItemCollection> worklist) throws PluginException {
 
 		IndexWriter awriter = null;
 		// try loading imixs-search properties
@@ -233,20 +227,15 @@ public class LucenePlugin extends AbstractPlugin {
 
 			for (ItemCollection workitem : worklist) {
 				// create term
-				Term term = new Term("$uniqueid",
-						workitem.getItemValueString("$uniqueid"));
+				Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
 				// test if document should be indexed or not
 				if (matchConditions(prop, workitem)) {
-					logger.fine("add workitem '"
-							+ workitem
-									.getItemValueString(EntityService.UNIQUEID)
-							+ "' into index");
+					logger.fine(
+							"add workitem '" + workitem.getItemValueString(EntityService.UNIQUEID) + "' into index");
 					awriter.updateDocument(term, createDocument(workitem));
 				} else {
-					logger.fine("remove workitem '"
-							+ workitem
-									.getItemValueString(EntityService.UNIQUEID)
-							+ "' into index");
+					logger.fine(
+							"remove workitem '" + workitem.getItemValueString(EntityService.UNIQUEID) + "' into index");
 					awriter.deleteDocuments(term);
 				}
 			}
@@ -254,22 +243,20 @@ public class LucenePlugin extends AbstractPlugin {
 			// close writer!
 			logger.warning(" Lucene Exception : " + luceneEx.getMessage());
 
-			throw new PluginException(LucenePlugin.class.getSimpleName(),
-					INVALID_INDEX, "Unable to update search index", luceneEx);
+			throw new PluginException(LucenePlugin.class.getSimpleName(), INVALID_INDEX,
+					"Unable to update search index", luceneEx);
 
 		} finally {
 
 			if (awriter != null) {
 				logger.fine(" close writer");
 				try {
-					awriter.close();					
+					awriter.close();
 				} catch (CorruptIndexException e) {
-					throw new PluginException(
-							LucenePlugin.class.getSimpleName(), INVALID_INDEX,
+					throw new PluginException(LucenePlugin.class.getSimpleName(), INVALID_INDEX,
 							"Unable to update search index", e);
 				} catch (IOException e) {
-					throw new PluginException(
-							LucenePlugin.class.getSimpleName(), INVALID_INDEX,
+					throw new PluginException(LucenePlugin.class.getSimpleName(), INVALID_INDEX,
 							"Unable to update search index", e);
 				}
 
@@ -296,17 +283,14 @@ public class LucenePlugin extends AbstractPlugin {
 				Term term = new Term("$uniqueid", uniqueID);
 				awriter.deleteDocuments(term);
 			} catch (CorruptIndexException e) {
-				throw new PluginException(LucenePlugin.class.getSimpleName(),
-						INVALID_INDEX, "Unable to remove workitem '" + uniqueID
-								+ "' from search index", e);
+				throw new PluginException(LucenePlugin.class.getSimpleName(), INVALID_INDEX,
+						"Unable to remove workitem '" + uniqueID + "' from search index", e);
 			} catch (LockObtainFailedException e) {
-				throw new PluginException(LucenePlugin.class.getSimpleName(),
-						INVALID_INDEX, "Unable to remove workitem '" + uniqueID
-								+ "' from search index", e);
+				throw new PluginException(LucenePlugin.class.getSimpleName(), INVALID_INDEX,
+						"Unable to remove workitem '" + uniqueID + "' from search index", e);
 			} catch (IOException e) {
-				throw new PluginException(LucenePlugin.class.getSimpleName(),
-						INVALID_INDEX, "Unable to remove workitem '" + uniqueID
-								+ "' from search index", e);
+				throw new PluginException(LucenePlugin.class.getSimpleName(), INVALID_INDEX,
+						"Unable to remove workitem '" + uniqueID + "' from search index", e);
 			}
 		}
 	}
@@ -319,8 +303,7 @@ public class LucenePlugin extends AbstractPlugin {
 	 * @param aworktiem
 	 * @return
 	 */
-	public static boolean matchConditions(Properties prop,
-			ItemCollection aworktiem) {
+	public static boolean matchConditions(Properties prop, ItemCollection aworktiem) {
 
 		String typePattern = prop.getProperty("lucence.matchingType");
 		String processIDPattern = prop.getProperty("lucence.matchingProcessID");
@@ -329,18 +312,14 @@ public class LucenePlugin extends AbstractPlugin {
 		String sPid = aworktiem.getItemValueInteger("$Processid") + "";
 
 		// test type pattern
-		if (typePattern != null && !"".equals(typePattern)
-				&& !type.matches(typePattern)) {
-			logger.fine("Lucene type '" + type + "' did not match pattern '"
-					+ typePattern + "'");
+		if (typePattern != null && !"".equals(typePattern) && !type.matches(typePattern)) {
+			logger.fine("Lucene type '" + type + "' did not match pattern '" + typePattern + "'");
 			return false;
 		}
 
 		// test $processid pattern
-		if (processIDPattern != null && !"".equals(processIDPattern)
-				&& !sPid.matches(processIDPattern)) {
-			logger.fine("Lucene $processid '" + sPid
-					+ "' did not match pattern '" + processIDPattern + "'");
+		if (processIDPattern != null && !"".equals(processIDPattern) && !sPid.matches(processIDPattern)) {
+			logger.fine("Lucene $processid '" + sPid + "' did not match pattern '" + processIDPattern + "'");
 
 			return false;
 		}
@@ -357,8 +336,7 @@ public class LucenePlugin extends AbstractPlugin {
 	 * @param workflowService
 	 * @return collection of search result
 	 */
-	public static List<ItemCollection> search(String sSearchTerm,
-			WorkflowService workflowService) {
+	public static List<ItemCollection> search(String sSearchTerm, WorkflowService workflowService) {
 		// no sort order
 		return search(sSearchTerm, workflowService, null, null);
 	}
@@ -378,8 +356,7 @@ public class LucenePlugin extends AbstractPlugin {
 	 *            - optional to sort the result
 	 * @return collection of search result
 	 */
-	public static List<ItemCollection> search(String sSearchTerm,
-			WorkflowService workflowService, Sort sortOrder) {
+	public static List<ItemCollection> search(String sSearchTerm, WorkflowService workflowService, Sort sortOrder) {
 		// no default operator
 		return search(sSearchTerm, workflowService, sortOrder, null);
 	}
@@ -403,8 +380,7 @@ public class LucenePlugin extends AbstractPlugin {
 	 *            - optional to change the default search operator
 	 * @return collection of search result
 	 */
-	public static List<ItemCollection> search(String sSearchTerm,
-			WorkflowService workflowService, Sort sortOrder,
+	public static List<ItemCollection> search(String sSearchTerm, WorkflowService workflowService, Sort sortOrder,
 			Operator defaultOperator) {
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
@@ -423,8 +399,7 @@ public class LucenePlugin extends AbstractPlugin {
 			QueryParser parser = createQueryParser(prop);
 
 			// extend the Search Term
-			if (!workflowService
-					.isUserInRole(EntityService.ACCESSLEVEL_MANAGERACCESS)) {
+			if (!workflowService.isUserInRole(EntityService.ACCESSLEVEL_MANAGERACCESS)) {
 				// get user names list
 				List<String> userNameList = workflowService.getUserNameList();
 				// create search term
@@ -447,13 +422,11 @@ public class LucenePlugin extends AbstractPlugin {
 
 				TopDocs topDocs = null;
 				if (sortOrder != null) {
-					logger.fine(" sortOrder= '" + sortOrder+"' ");
+					logger.fine(" sortOrder= '" + sortOrder + "' ");
 
-					topDocs = searcher.search(parser.parse(sSearchTerm),
-							maxResult, sortOrder);
+					topDocs = searcher.search(parser.parse(sSearchTerm), maxResult, sortOrder);
 				} else {
-					topDocs = searcher.search(parser.parse(sSearchTerm),
-							maxResult);
+					topDocs = searcher.search(parser.parse(sSearchTerm), maxResult);
 				}
 
 				logger.fine("  total hits=" + topDocs.totalHits);
@@ -466,20 +439,16 @@ public class LucenePlugin extends AbstractPlugin {
 
 					String sID = doc.get("$uniqueid");
 					logger.fine("  lucene lookup $uniqueid=" + sID);
-					ItemCollection itemCol = workflowService.getEntityService()
-							.load(sID);
+					ItemCollection itemCol = workflowService.getEntityService().load(sID);
 					if (itemCol != null) {
 						workitems.add(itemCol);
 					} else {
-						logger.warning("[LucenePlugin] index returned un unreadable workitem : "
-								+ sID);
+						logger.warning("[LucenePlugin] index returned un unreadable workitem : " + sID);
 						// this situation happens if the search index returned
-						// documents
-						// the current user has no read access.
+						// documents the current user has no read access.
 						// this should normally avoided with the $readaccess
-						// search phrase!
-						// So if this happens we need to check the
-						// createDocument method!
+						// search phrase! So if this happens we need to check
+						// the createDocument method!
 					}
 				}
 
@@ -487,8 +456,7 @@ public class LucenePlugin extends AbstractPlugin {
 
 			searcher.getIndexReader().close();
 
-			logger.fine(" lucene serach: "
-					+ (System.currentTimeMillis() - ltime) + " ms");
+			logger.fine(" lucene serach: " + (System.currentTimeMillis() - ltime) + " ms");
 		} catch (Exception e) {
 			logger.warning("  lucene error!");
 			e.printStackTrace();
@@ -530,13 +498,11 @@ public class LucenePlugin extends AbstractPlugin {
 					continue;
 
 				if (o instanceof Calendar || o instanceof Date) {
-					SimpleDateFormat dateformat = new SimpleDateFormat(
-							"yyyyMMddHHmm");
+					SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmm");
 					// convert calendar to string
 					String sDateValue;
 					if (o instanceof Calendar)
-						sDateValue = dateformat
-								.format(((Calendar) o).getTime());
+						sDateValue = dateformat.format(((Calendar) o).getTime());
 					else
 						sDateValue = dateformat.format((Date) o);
 					sValue += sDateValue + ",";
@@ -580,14 +546,11 @@ public class LucenePlugin extends AbstractPlugin {
 		// doc.add(new Field("$uniqueid",
 		// aworkitem.getItemValueString("$uniqueid"),
 		// Field.Store.YES,Field.Index.NOT_ANALYZED));
-		doc.add(new StringField("$uniqueid", aworkitem
-				.getItemValueString("$uniqueid"), Store.YES));
+		doc.add(new StringField("$uniqueid", aworkitem.getItemValueString("$uniqueid"), Store.YES));
 
 		// add default values $readAccess
 		List<String> vReadAccess = (List<String>) aworkitem.getItemValue("$readAccess");
-		if (vReadAccess.size() == 0
-				|| (vReadAccess.size() == 1 && "".equals(vReadAccess.get(0)
-						.toString()))) {
+		if (vReadAccess.size() == 0 || (vReadAccess.size() == 1 && "".equals(vReadAccess.get(0).toString()))) {
 			sValue = "ANONYMOUS";
 
 			// migration
@@ -624,8 +587,7 @@ public class LucenePlugin extends AbstractPlugin {
 	 * @param analyzeValue
 	 *            indicates if the value should be parsed by the analyzer
 	 */
-	static void addFieldValue(Document doc, ItemCollection aworkitem,
-			String aFieldname, boolean analyzeValue) {
+	static void addFieldValue(Document doc, ItemCollection aworkitem, String aFieldname, boolean analyzeValue) {
 		String sValue = null;
 		List<?> vValues = aworkitem.getItemValue(aFieldname);
 		if (vValues.size() == 0)
@@ -637,14 +599,12 @@ public class LucenePlugin extends AbstractPlugin {
 
 			// Object o = vValues.firstElement();
 			if (singleValue instanceof Calendar || singleValue instanceof Date) {
-				SimpleDateFormat dateformat = new SimpleDateFormat(
-						"yyyyMMddHHmm");
+				SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmm");
 
 				// convert calendar to string
 				String sDateValue;
 				if (singleValue instanceof Calendar)
-					sDateValue = dateformat.format(((Calendar) singleValue)
-							.getTime());
+					sDateValue = dateformat.format(((Calendar) singleValue).getTime());
 				else
 					sDateValue = dateformat.format((Date) singleValue);
 				sValue = sDateValue;
@@ -653,8 +613,7 @@ public class LucenePlugin extends AbstractPlugin {
 				// simple string representation
 				sValue = singleValue.toString();
 
-			logger.fine("  add IndexField (analyse=" + analyzeValue + "): "
-					+ aFieldname + " = " + sValue);
+			logger.fine("  add IndexField (analyse=" + analyzeValue + "): " + aFieldname + " = " + sValue);
 			if (analyzeValue) {
 				// If you did this before (value can be String or Reader):
 				// new Field("field", value, Field.Store.NO,
@@ -687,8 +646,7 @@ public class LucenePlugin extends AbstractPlugin {
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	public static IndexWriter createIndexWriter(Properties prop)
-			throws IOException {
+	public static IndexWriter createIndexWriter(Properties prop) throws IOException {
 
 		/**
 		 * Read configuration
@@ -696,12 +654,9 @@ public class LucenePlugin extends AbstractPlugin {
 		// String sLuceneVersion = prop.getProperty("Version", "LUCENE_45");
 
 		String sIndexDir = prop.getProperty("lucence.indexDir");
-		String sFulltextFieldList = prop
-				.getProperty("lucence.fulltextFieldList");
-		String sIndexFieldListAnalyse = prop
-				.getProperty("lucence.indexFieldListAnalyze");
-		String sIndexFieldListNoAnalyse = prop
-				.getProperty("lucence.indexFieldListNoAnalyze");
+		String sFulltextFieldList = prop.getProperty("lucence.fulltextFieldList");
+		String sIndexFieldListAnalyse = prop.getProperty("lucence.indexFieldListAnalyze");
+		String sIndexFieldListNoAnalyse = prop.getProperty("lucence.indexFieldListNoAnalyze");
 
 		logger.fine("IndexDir:" + sIndexDir);
 		logger.fine("FulltextFieldList:" + sFulltextFieldList);
@@ -743,22 +698,13 @@ public class LucenePlugin extends AbstractPlugin {
 		Directory indexDir = createIndexDirectory(prop);
 
 		Analyzer analyzer = new StandardAnalyzer();
-		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(
-				Version.LATEST, analyzer);
+		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LATEST, analyzer);
 
 		// set the WriteLockTimeout to wait for a write lock (in milliseconds)
-		// for this instance.
-		// 10 seconds!
+		// for this instance. 10 seconds!
 		indexWriterConfig.setWriteLockTimeout(10000);
 
-		// there is no need to unlock the index if we set the timeout to 10
-		// seconds
-		// if (IndexWriter.isLocked(indexDir)) {
-		// logger.warning("Lucene IndexWriter was locked! - try to unlock....");
-		// IndexWriter.unlock(indexDir);
-		// }
 		return new IndexWriter(indexDir, indexWriterConfig);
-
 	}
 
 	/**
@@ -767,9 +713,8 @@ public class LucenePlugin extends AbstractPlugin {
 	 * @param prop
 	 * @return
 	 * @throws Exception
-	 */
-	public static IndexSearcher createIndexSearcher(Properties prop)
-			throws Exception {
+	 */	
+	public static IndexSearcher createIndexSearcher(Properties prop) throws Exception {
 		logger.fine("[LucenePlugin] createIndexSearcher...");
 
 		Directory indexDir = createIndexDirectory(prop);
@@ -788,8 +733,7 @@ public class LucenePlugin extends AbstractPlugin {
 	 * @return
 	 * @throws IOException
 	 */
-	public static Directory createIndexDirectory(Properties prop)
-			throws IOException {
+	public static Directory createIndexDirectory(Properties prop) throws IOException {
 
 		logger.fine("[LucenePlugin] createIndexDirectory...");
 		/**
@@ -810,8 +754,7 @@ public class LucenePlugin extends AbstractPlugin {
 			try {
 				Class<?> fsFactoryClass;
 				fsFactoryClass = Class.forName(sLuceneLockFactory);
-				LockFactory factoryInstance = (LockFactory) fsFactoryClass
-						.newInstance();
+				LockFactory factoryInstance = (LockFactory) fsFactoryClass.newInstance();
 				indexDir.setLockFactory(factoryInstance);
 			} catch (ClassNotFoundException e) {
 				logger.severe("[LucenePlugin] unable to create Lucene LockFactory!");
@@ -839,13 +782,11 @@ public class LucenePlugin extends AbstractPlugin {
 	public static QueryParser createQueryParser(Properties prop) {
 		// String sLuceneVersion = prop.getProperty("Version", "LUCENE_45");
 		Analyzer analyzer = new KeywordAnalyzer();
-		QueryParser parser = new QueryParser("content",
-				analyzer);
+		QueryParser parser = new QueryParser("content", analyzer);
 
 		// check the default operator
 		String defaultOperator = prop.getProperty("lucene.defaultOperator");
-		if (defaultOperator != null
-				&& "AND".equals(defaultOperator.toUpperCase())) {
+		if (defaultOperator != null && "AND".equals(defaultOperator.toUpperCase())) {
 			parser.setDefaultOperator(Operator.AND);
 		}
 
@@ -862,8 +803,7 @@ public class LucenePlugin extends AbstractPlugin {
 		// try loading imixs-search properties
 		Properties prop = new Properties();
 		try {
-			prop.load(Thread.currentThread().getContextClassLoader()
-					.getResource("imixs.properties").openStream());
+			prop.load(Thread.currentThread().getContextClassLoader().getResource("imixs.properties").openStream());
 		} catch (Exception ep) {
 			// no properties found
 		}
