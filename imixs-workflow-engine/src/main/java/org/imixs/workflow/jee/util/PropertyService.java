@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 
-import org.imixs.workflow.plugins.jee.extended.LucenePlugin;
 
 /**
  * This singleton ejb provides a service to access the imxis.property file. This
