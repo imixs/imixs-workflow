@@ -34,6 +34,8 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 
+import org.imixs.workflow.plugins.jee.extended.LucenePlugin;
+
 /**
  * This singleton ejb provides a service to access the imxis.property file. This
  * file can be packaged together with an application in any ejb module.
@@ -46,7 +48,7 @@ public class PropertyService {
 
 	private Properties properties = null;
 
-	private static Logger logger = Logger.getLogger("org.imixs.workflow");
+	private static Logger logger = Logger.getLogger(PropertyService.class.getName());
 
 	/**
 	 * PostContruct event - loads the imixs.properties.
