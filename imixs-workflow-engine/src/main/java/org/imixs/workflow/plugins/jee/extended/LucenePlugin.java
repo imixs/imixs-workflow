@@ -41,31 +41,35 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.plugins.AbstractPlugin;
 
 /**
- * This Plugin add workitems to a lucene search index. 
+ * This Plugin add workitems to a lucene search index. The plug-in depends on
+ * the LucenUpdateService EJB which need to be bound as a reference to the
+ * WorkflowService EJB.
+ * 
+ * @see LuceneUpdateService
  * @author rsoika
  * @version 4.5.1 (Lucene)
  * 
  */
 public class LucenePlugin extends AbstractPlugin {
-	public static String LUCENE_SERVICE_NOT_FOUND = "LUCENE_SERVICE_NOT_FOUND";
+	public static String LUCENE_UPDATE_SERVICE_NOT_FOUND = "LUCENE_UPDATE_SERVICE_NOT_FOUND";
 
 	private static Logger logger = Logger.getLogger(LucenePlugin.class.getName());
-	private LuceneService luceneService = null;
+	private LuceneUpdateService luceneUpdateService = null;
 
 	@Override
 	public void init(WorkflowContext actx) throws PluginException {
 		super.init(actx);
 
 		// lookup profile service EJB
-		String jndiName = "ejb/LuceneService";
+		String jndiName = "ejb/LuceneUpdateService";
 		InitialContext ictx;
 		try {
 			ictx = new InitialContext();
 
 			Context ctx = (Context) ictx.lookup("java:comp/env");
-			luceneService = (LuceneService) ctx.lookup(jndiName);
+			luceneUpdateService = (LuceneUpdateService) ctx.lookup(jndiName);
 		} catch (NamingException e) {
-			throw new PluginException(LucenePlugin.class.getSimpleName(), LUCENE_SERVICE_NOT_FOUND,
+			throw new PluginException(LucenePlugin.class.getSimpleName(), LUCENE_UPDATE_SERVICE_NOT_FOUND,
 					"[LucenePlugin] unable to lookup LuceneService: ", e);
 		}
 
@@ -104,7 +108,7 @@ public class LucenePlugin extends AbstractPlugin {
 		// temporarily replace the $processid
 		documentContext.replaceItemValue("$processid", nextProcessID);
 		// update the search index for the current Worktitem
-		luceneService.updateWorkitem(documentContext);
+		luceneUpdateService.updateWorkitem(documentContext);
 		// restore $processid
 		documentContext.replaceItemValue("$processid", currentProcessID);
 

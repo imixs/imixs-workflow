@@ -44,24 +44,15 @@ import javax.ejb.EJB;
 import javax.ejb.Singleton;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.queryparser.classic.QueryParser.Operator;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
@@ -70,18 +61,18 @@ import org.apache.lucene.util.Version;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.jee.ejb.EntityService;
-import org.imixs.workflow.jee.ejb.WorkflowService;
 import org.imixs.workflow.jee.util.PropertyService;
 
 /**
- * This singleton ejb provides a service to search and update the lucene index.
+ * The LuceneUpdateService is a singleton EJB providing a service to update the
+ * lucene index.
  * 
  * 
- * The service provides a set of static methods which can be used also outside
- * the workflowManager to index single workitems or collections of workitems.
+ * The service provides a set of public methods which can be used to updated a
+ * lucen index.
  * 
  * With the method addWorkitem() a ItemCollection can be added to a lucene
- * search index. The Plugin reads the property file 'imixs.properties' from the
+ * search index. The service reads the property file 'imixs.properties' from the
  * current classpath to determine the configuration.
  * 
  * <ul>
@@ -91,9 +82,7 @@ import org.imixs.workflow.jee.util.PropertyService;
  * <li>The property "IndexFieldList" lists all fields which should be indexed as
  * keywords by the lucene search engine
  * 
- * If the plugin is used as worflow pugin in the model definition, the plugin
- * should be run last to be sure that newly computed values like the workflow
- * status or the wokflowSummary are indexed correctly
+ * If the service is used also by the LucenPlugin
  * 
  * 
  * Updated to version 4.5.1
@@ -104,25 +93,24 @@ import org.imixs.workflow.jee.util.PropertyService;
  * 
  * @see http://stackoverflow.com/questions/34880347/why-did-lucene-indexwriter-
  *      did-not-update-the-index-when-called-from-a-web-modul
+ * @see LucenePlugin
  * @version 1.0
  * @author rsoika
  */
 @Singleton
-public class LuceneService {
+public class LuceneUpdateService {
 
 	public static final String UNDEFINED_ERROR = "UNDEFINED_ERROR";
 	public static final String INVALID_INDEX = "INVALID_INDEX";
 
-
 	private List<String> searchFieldList = null;
 	private List<String> indexFieldListAnalyse = null;
 	private List<String> indexFieldListNoAnalyse = null;
-	private int maxResult = 100;
 
 	@EJB
 	PropertyService propertyService;
 
-	private static Logger logger = Logger.getLogger(LuceneService.class.getName());
+	private static Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
 
 	/**
 	 * PostContruct event - loads the imixs.properties.
@@ -131,23 +119,7 @@ public class LuceneService {
 	void init() {
 	}
 
-	/**
-	 * returns the maximum size of a search result
-	 * 
-	 * @return
-	 */
-	public int getMaxResult() {
-		return maxResult;
-	}
-
-	/**
-	 * set the maximum size of a search result
-	 * 
-	 * @param searchCount
-	 */
-	public void setMaxResult(int searchCount) {
-		maxResult = searchCount;
-	}
+	
 
 	/**
 	 * This method adds a single workitem into the search index. The adds the
@@ -265,145 +237,6 @@ public class LuceneService {
 						"Unable to remove workitem '" + uniqueID + "' from search index", e);
 			}
 		}
-	}
-
-	/**
-	 * Returns a ItemCollection List matching the provided search term. The
-	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term. The usernames and
-	 * user roles will be search lowercase!
-	 * 
-	 * @param sSearchTerm
-	 * @param workflowService
-	 * @return collection of search result
-	 */
-	public List<ItemCollection> search(String sSearchTerm, WorkflowService workflowService) {
-		// no sort order
-		return search(sSearchTerm, workflowService, null, null);
-	}
-
-	/**
-	 * Returns a ItemCollection List matching the provided search term. The
-	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term. The usernames and
-	 * user roles will be search lowercase!
-	 * 
-	 * The optional param 'searchOrder' can be set to force lucene to sort the
-	 * search result by any search order.
-	 * 
-	 * @param sSearchTerm
-	 * @param workflowService
-	 * @param sortOrder
-	 *            - optional to sort the result
-	 * @return collection of search result
-	 */
-	public List<ItemCollection> search(String sSearchTerm, WorkflowService workflowService, Sort sortOrder) {
-		// no default operator
-		return search(sSearchTerm, workflowService, sortOrder, null);
-	}
-
-	/**
-	 * Returns a ItemCollection List matching the provided search term. The
-	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term. The usernames and
-	 * user roles will be search lowercase!
-	 * 
-	 * The optional param 'searchOrder' can be set to force lucene to sort the
-	 * search result by any search order.
-	 * 
-	 * The optional param 'defaultOperator' can be set to Operator.AND
-	 * 
-	 * @param sSearchTerm
-	 * @param workflowService
-	 * @param sortOrder
-	 *            - optional to sort the result
-	 * @param defaultOperator
-	 *            - optional to change the default search operator
-	 * @return collection of search result
-	 */
-	public List<ItemCollection> search(String sSearchTerm, WorkflowService workflowService, Sort sortOrder,
-			Operator defaultOperator) {
-
-		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
-
-		// test if searchtem is provided
-		if (sSearchTerm == null || "".equals(sSearchTerm))
-			return workitems;
-
-		long ltime = System.currentTimeMillis();
-		Properties prop = propertyService.getProperties();
-		if (prop.isEmpty())
-			return workitems;
-
-		try {
-			IndexSearcher searcher = createIndexSearcher(prop);
-			QueryParser parser = createQueryParser(prop);
-
-			// extend the Search Term
-			if (!workflowService.isUserInRole(EntityService.ACCESSLEVEL_MANAGERACCESS)) {
-				// get user names list
-				List<String> userNameList = workflowService.getUserNameList();
-				// create search term
-				String sAccessTerm = "($readaccess:ANONYMOUS";
-				for (String aRole : userNameList) {
-					if (!"".equals(aRole))
-						sAccessTerm += " $readaccess:\"" + aRole + "\"";
-				}
-				sAccessTerm += ") AND ";
-				sSearchTerm = sAccessTerm + sSearchTerm;
-			}
-			logger.fine("  lucene search:" + sSearchTerm);
-
-			if (!"".equals(sSearchTerm)) {
-				parser.setAllowLeadingWildcard(true);
-
-				// set default operator?
-				if (defaultOperator != null)
-					parser.setDefaultOperator(defaultOperator);
-
-				TopDocs topDocs = null;
-				if (sortOrder != null) {
-					logger.fine(" sortOrder= '" + sortOrder + "' ");
-
-					topDocs = searcher.search(parser.parse(sSearchTerm), maxResult, sortOrder);
-				} else {
-					topDocs = searcher.search(parser.parse(sSearchTerm), maxResult);
-				}
-
-				logger.fine("  total hits=" + topDocs.totalHits);
-
-				// Get an array of references to matched documents
-				ScoreDoc[] scoreDosArray = topDocs.scoreDocs;
-				for (ScoreDoc scoredoc : scoreDosArray) {
-					// Retrieve the matched document and show relevant details
-					Document doc = searcher.doc(scoredoc.doc);
-
-					String sID = doc.get("$uniqueid");
-					logger.fine("  lucene lookup $uniqueid=" + sID);
-					ItemCollection itemCol = workflowService.getEntityService().load(sID);
-					if (itemCol != null) {
-						workitems.add(itemCol);
-					} else {
-						logger.warning("[LuceneService] index returned un unreadable workitem : " + sID);
-						// this situation happens if the search index returned
-						// documents the current user has no read access.
-						// this should normally avoided with the $readaccess
-						// search phrase! So if this happens we need to check
-						// the createDocument method!
-					}
-				}
-
-			}
-
-			searcher.getIndexReader().close();
-
-			logger.fine(" lucene serach: " + (System.currentTimeMillis() - ltime) + " ms");
-		} catch (Exception e) {
-			logger.warning("  lucene error!");
-			e.printStackTrace();
-		}
-
-		return workitems;
 	}
 
 	/**
@@ -536,7 +369,7 @@ public class LuceneService {
 		if (sLuceneLockFactory != null && !"".equals(sLuceneLockFactory)) {
 			// indexDir.setLockFactory(new SimpleFSLockFactory());
 			// set factory by class name
-			logger.fine("[LucenePlugin] set LockFactory=" + sLuceneLockFactory);
+			logger.fine("[LuceneUpdateService] set LockFactory=" + sLuceneLockFactory);
 			try {
 				Class<?> fsFactoryClass;
 				fsFactoryClass = Class.forName(sLuceneLockFactory);
@@ -667,43 +500,6 @@ public class LuceneService {
 
 		}
 		return doc;
-	}
-
-	/**
-	 * returns a IndexSearcher instance
-	 * 
-	 * @param prop
-	 * @return
-	 * @throws Exception
-	 */
-	IndexSearcher createIndexSearcher(Properties prop) throws Exception {
-		logger.fine("[LucenePlugin] createIndexSearcher...");
-
-		Directory indexDir = createIndexDirectory(prop);
-		IndexReader reader = DirectoryReader.open(indexDir);
-		IndexSearcher searcher = new IndexSearcher(reader);
-
-		return searcher;
-	}
-
-	/**
-	 * Returns in instance of a QueyParser based on a KeywordAnalyser
-	 * 
-	 * @param prop
-	 * @return
-	 */
-	QueryParser createQueryParser(Properties prop) {
-		// String sLuceneVersion = prop.getProperty("Version", "LUCENE_45");
-		Analyzer analyzer = new KeywordAnalyzer();
-		QueryParser parser = new QueryParser("content", analyzer);
-
-		// check the default operator
-		String defaultOperator = prop.getProperty("lucene.defaultOperator");
-		if (defaultOperator != null && "AND".equals(defaultOperator.toUpperCase())) {
-			parser.setDefaultOperator(Operator.AND);
-		}
-
-		return parser;
 	}
 
 	/**
