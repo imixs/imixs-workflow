@@ -1,6 +1,7 @@
 package org.imixs.workflow.bpmn;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -68,6 +69,8 @@ public class BPMNModelHandler extends DefaultHandler {
 	Map<String, String> messageCache = null;
 	ItemCollection profileEnvironment = null;
 
+	private List<String> ignoreItemList = null;
+
 	public BPMNModelHandler() {
 		super();
 		model = new BPMNModel();
@@ -81,6 +84,11 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		// nodeCache = new HashMap<String, ItemCollection>();
 		sequenceCache = new HashMap<String, SequenceFlow>();
+
+		// define items to be ignored for import
+		String[] array = { "txtname", "txtworkflowgroup", "numprocessid", "numactivityid", "type" };
+		ignoreItemList = new ArrayList<String>(Arrays.asList(array));
+
 	}
 
 	@Override
@@ -279,7 +287,12 @@ public class BPMNModelHandler extends DefaultHandler {
 				} else {
 					valueList.add(svalue);
 				}
-				currentEntity.replaceItemValue(currentItemName, valueList);
+
+				// item will only be added if it is not listed in the ignoreItem
+				// List!
+				if (!ignoreItemList.contains(currentItemName)) {
+					currentEntity.replaceItemValue(currentItemName, valueList);
+				}
 			}
 			bItemValue = false;
 			characterStream = null;
@@ -515,7 +528,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
 			// here we need to check if one of the targets is an event - this
 			// need to be handled in a recursive call
-			for (String elementID: targetList) {				
+			for (String elementID : targetList) {
 				// test if the target is a Imixs Event
 				ItemCollection imixsElement = activityCache.get(elementID);
 				if (imixsElement != null) {
