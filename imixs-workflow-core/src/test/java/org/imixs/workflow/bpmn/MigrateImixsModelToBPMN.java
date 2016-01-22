@@ -250,11 +250,13 @@ public class MigrateImixsModelToBPMN {
 			else
 				type = "xs:string";
 
-			writer.println(" <imixs:item name=\"" + fieldName.toLowerCase()
-					+ "\" type=\"" + type + "\">");
-			for (Object o : item) {
-				writer.println(" <imixs:value><![CDATA[" + o.toString()
-						+ "]]></imixs:value>");
+			if (!"txtname".equals( fieldName.toLowerCase())) {
+				writer.println(" <imixs:item name=\"" + fieldName.toLowerCase()
+						+ "\" type=\"" + type + "\">");
+				for (Object o : item) {
+					writer.println(" <imixs:value><![CDATA[" + o.toString()
+							+ "]]></imixs:value>");
+				}
 			}
 
 			writer.println(" </imixs:item>");
