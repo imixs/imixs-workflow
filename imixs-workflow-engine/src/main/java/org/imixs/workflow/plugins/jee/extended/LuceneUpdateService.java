@@ -106,6 +106,9 @@ public class LuceneUpdateService {
 	private List<String> searchFieldList = null;
 	private List<String> indexFieldListAnalyse = null;
 	private List<String> indexFieldListNoAnalyse = null;
+	private String indexDirectoryPath = null;
+	private String luceneLockFactory = null;
+	private Properties properties = null;
 
 	@EJB
 	PropertyService propertyService;
@@ -113,13 +116,63 @@ public class LuceneUpdateService {
 	private static Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
 
 	/**
-	 * PostContruct event - loads the imixs.properties.
+	 * PostContruct event - The method loads the lucene index properties from
+	 * the imixs.properties file from the classpath. If no properties are
+	 * defined the method terminates.
+	 * 
 	 */
 	@PostConstruct
 	void init() {
-	}
 
-	
+		// try loading imixs-search properties
+		properties = propertyService.getProperties();
+
+		/**
+		 * Read configuration
+		 */
+		// String sLuceneVersion = prop.getProperty("Version", "LUCENE_45");
+
+		indexDirectoryPath = properties.getProperty("lucence.indexDir");
+		luceneLockFactory = properties.getProperty("lucence.lockFactory");
+
+		String sFulltextFieldList = properties.getProperty("lucence.fulltextFieldList");
+		String sIndexFieldListAnalyse = properties.getProperty("lucence.indexFieldListAnalyze");
+		String sIndexFieldListNoAnalyse = properties.getProperty("lucence.indexFieldListNoAnalyze");
+
+		logger.fine("IndexDir:" + indexDirectoryPath);
+		logger.fine("FulltextFieldList:" + sFulltextFieldList);
+		logger.fine("IndexFieldListAnalyse:" + sIndexFieldListAnalyse);
+		logger.fine("IndexFieldListNoAnalyse:" + sIndexFieldListNoAnalyse);
+		// compute search field list
+		StringTokenizer st = new StringTokenizer(sFulltextFieldList, ",");
+		searchFieldList = new ArrayList<String>();
+		while (st.hasMoreElements()) {
+			String sName = st.nextToken().toLowerCase();
+			// do not add internal fields
+			if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
+				searchFieldList.add(sName);
+		}
+
+		// compute Index field list (Analyze)
+		st = new StringTokenizer(sIndexFieldListAnalyse, ",");
+		indexFieldListAnalyse = new ArrayList<String>();
+		while (st.hasMoreElements()) {
+			String sName = st.nextToken().toLowerCase();
+			// do not add internal fields
+			if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
+				indexFieldListAnalyse.add(sName);
+		}
+
+		// compute Index field list (NoAnalyze)
+		st = new StringTokenizer(sIndexFieldListNoAnalyse, ",");
+		indexFieldListNoAnalyse = new ArrayList<String>();
+		while (st.hasMoreElements()) {
+			String sName = st.nextToken().toLowerCase();
+			// do not add internal fields
+			if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
+				indexFieldListNoAnalyse.add(sName);
+		}
+	}
 
 	/**
 	 * This method adds a single workitem into the search index. The adds the
@@ -146,10 +199,6 @@ public class LuceneUpdateService {
 	 * added into the search index. If the workitem did not match the conditions
 	 * the workitem will be removed from the index.
 	 * 
-	 * The method loads the lucene index properties from the imixs.properties
-	 * file from the classpath. If no properties are defined the method
-	 * terminates.
-	 * 
 	 * 
 	 * @param worklist
 	 *            of ItemCollections to be indexed
@@ -159,13 +208,9 @@ public class LuceneUpdateService {
 	public boolean updateWorklist(Collection<ItemCollection> worklist) throws PluginException {
 
 		IndexWriter awriter = null;
-		// try loading imixs-search properties
-		Properties prop = propertyService.getProperties();
-		if (prop.isEmpty())
-			return false;
 
 		try {
-			awriter = createIndexWriter(prop);
+			awriter = createIndexWriter();
 
 			// add workitem to search index....
 
@@ -173,7 +218,7 @@ public class LuceneUpdateService {
 				// create term
 				Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
 				// test if document should be indexed or not
-				if (matchConditions(prop, workitem)) {
+				if (matchConditions(workitem)) {
 					logger.fine(
 							"add workitem '" + workitem.getItemValueString(EntityService.UNIQUEID) + "' into index");
 					awriter.updateDocument(term, createDocument(workitem));
@@ -220,23 +265,22 @@ public class LuceneUpdateService {
 	 */
 	public void removeWorkitem(String uniqueID) throws PluginException {
 		IndexWriter awriter = null;
-		Properties prop = propertyService.getProperties();
-		if (!prop.isEmpty()) {
-			try {
-				awriter = createIndexWriter(prop);
-				Term term = new Term("$uniqueid", uniqueID);
-				awriter.deleteDocuments(term);
-			} catch (CorruptIndexException e) {
-				throw new PluginException(LucenePlugin.class.getSimpleName(), INVALID_INDEX,
-						"Unable to remove workitem '" + uniqueID + "' from search index", e);
-			} catch (LockObtainFailedException e) {
-				throw new PluginException(LucenePlugin.class.getSimpleName(), INVALID_INDEX,
-						"Unable to remove workitem '" + uniqueID + "' from search index", e);
-			} catch (IOException e) {
-				throw new PluginException(LucenePlugin.class.getSimpleName(), INVALID_INDEX,
-						"Unable to remove workitem '" + uniqueID + "' from search index", e);
-			}
+
+		try {
+			awriter = createIndexWriter();
+			Term term = new Term("$uniqueid", uniqueID);
+			awriter.deleteDocuments(term);
+		} catch (CorruptIndexException e) {
+			throw new PluginException(LucenePlugin.class.getSimpleName(), INVALID_INDEX,
+					"Unable to remove workitem '" + uniqueID + "' from search index", e);
+		} catch (LockObtainFailedException e) {
+			throw new PluginException(LucenePlugin.class.getSimpleName(), INVALID_INDEX,
+					"Unable to remove workitem '" + uniqueID + "' from search index", e);
+		} catch (IOException e) {
+			throw new PluginException(LucenePlugin.class.getSimpleName(), INVALID_INDEX,
+					"Unable to remove workitem '" + uniqueID + "' from search index", e);
 		}
+
 	}
 
 	/**
@@ -247,10 +291,10 @@ public class LuceneUpdateService {
 	 * @param aworktiem
 	 * @return
 	 */
-	public boolean matchConditions(Properties prop, ItemCollection aworktiem) {
+	public boolean matchConditions(ItemCollection aworktiem) {
 
-		String typePattern = prop.getProperty("lucence.matchingType");
-		String processIDPattern = prop.getProperty("lucence.matchingProcessID");
+		String typePattern = properties.getProperty("lucence.matchingType");
+		String processIDPattern = properties.getProperty("lucence.matchingProcessID");
 
 		String type = aworktiem.getItemValueString("Type");
 		String sPid = aworktiem.getItemValueInteger("$Processid") + "";
@@ -282,56 +326,12 @@ public class LuceneUpdateService {
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	IndexWriter createIndexWriter(Properties prop) throws IOException {
-
-		/**
-		 * Read configuration
-		 */
-		// String sLuceneVersion = prop.getProperty("Version", "LUCENE_45");
-
-		String sIndexDir = prop.getProperty("lucence.indexDir");
-		String sFulltextFieldList = prop.getProperty("lucence.fulltextFieldList");
-		String sIndexFieldListAnalyse = prop.getProperty("lucence.indexFieldListAnalyze");
-		String sIndexFieldListNoAnalyse = prop.getProperty("lucence.indexFieldListNoAnalyze");
-
-		logger.fine("IndexDir:" + sIndexDir);
-		logger.fine("FulltextFieldList:" + sFulltextFieldList);
-		logger.fine("IndexFieldListAnalyse:" + sIndexFieldListAnalyse);
-		logger.fine("IndexFieldListNoAnalyse:" + sIndexFieldListNoAnalyse);
-		// compute search field list
-		StringTokenizer st = new StringTokenizer(sFulltextFieldList, ",");
-		searchFieldList = new ArrayList<String>();
-		while (st.hasMoreElements()) {
-			String sName = st.nextToken().toLowerCase();
-			// do not add internal fields
-			if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
-				searchFieldList.add(sName);
-		}
-
-		// compute Index field list (Analyze)
-		st = new StringTokenizer(sIndexFieldListAnalyse, ",");
-		indexFieldListAnalyse = new ArrayList<String>();
-		while (st.hasMoreElements()) {
-			String sName = st.nextToken().toLowerCase();
-			// do not add internal fields
-			if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
-				indexFieldListAnalyse.add(sName);
-		}
-
-		// compute Index field list (Analyze)
-		st = new StringTokenizer(sIndexFieldListNoAnalyse, ",");
-		indexFieldListNoAnalyse = new ArrayList<String>();
-		while (st.hasMoreElements()) {
-			String sName = st.nextToken().toLowerCase();
-			// do not add internal fields
-			if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
-				indexFieldListNoAnalyse.add(sName);
-		}
+	IndexWriter createIndexWriter() throws IOException {
 
 		/**
 		 * Now create a IndexWriter Instance
 		 */
-		Directory indexDir = createIndexDirectory(prop);
+		Directory indexDir = createIndexDirectory();
 
 		Analyzer analyzer = new StandardAnalyzer();
 		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LATEST, analyzer);
@@ -352,27 +352,25 @@ public class LuceneUpdateService {
 	 * @return
 	 * @throws IOException
 	 */
-	Directory createIndexDirectory(Properties prop) throws IOException {
+	Directory createIndexDirectory() throws IOException {
 
 		logger.fine("[LucenePlugin] createIndexDirectory...");
 		/**
 		 * Read configuration
 		 */
-		String sLuceneLockFactory = prop.getProperty("lucence.lockFactory");
-		String sIndexDir = prop.getProperty("lucence.indexDir");
 
-		Directory indexDir = FSDirectory.open(new File(sIndexDir));
+		Directory indexDir = FSDirectory.open(new File(indexDirectoryPath));
 
 		// set lockFactory
 		// NativeFSLockFactory: using native OS file locks
 		// SimpleFSLockFactory: recommended for NFS based access to an index,
-		if (sLuceneLockFactory != null && !"".equals(sLuceneLockFactory)) {
+		if (luceneLockFactory != null && !"".equals(luceneLockFactory)) {
 			// indexDir.setLockFactory(new SimpleFSLockFactory());
 			// set factory by class name
-			logger.fine("[LuceneUpdateService] set LockFactory=" + sLuceneLockFactory);
+			logger.fine("[LuceneUpdateService] set LockFactory=" + luceneLockFactory);
 			try {
 				Class<?> fsFactoryClass;
-				fsFactoryClass = Class.forName(sLuceneLockFactory);
+				fsFactoryClass = Class.forName(luceneLockFactory);
 				LockFactory factoryInstance = (LockFactory) fsFactoryClass.newInstance();
 				indexDir.setLockFactory(factoryInstance);
 			} catch (ClassNotFoundException e) {
