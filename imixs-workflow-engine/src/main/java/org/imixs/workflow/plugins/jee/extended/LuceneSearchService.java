@@ -66,14 +66,10 @@ import org.imixs.workflow.jee.util.PropertyService;
  * multiple searches we can not share a single IndexSearcher instance. For that
  * reason the EJB is creating a new IndexSearch per-search.
  * 
- * 
- * 
  * The service provides a set of public methods which can be used to query
  * workitems or collections of workitems.
  * 
- * 
  * Updated to version 4.5.1
- * 
  * 
  * The singleton pattern is used to avoid conflicts within multi thread
  * szenarios.
@@ -83,16 +79,12 @@ import org.imixs.workflow.jee.util.PropertyService;
  * @version 1.0
  * @author rsoika
  */
-@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS",
-	"org.imixs.ACCESSLEVEL.READERACCESS",
-	"org.imixs.ACCESSLEVEL.AUTHORACCESS",
-	"org.imixs.ACCESSLEVEL.EDITORACCESS",
-	"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
-@RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS",
-	"org.imixs.ACCESSLEVEL.READERACCESS",
-	"org.imixs.ACCESSLEVEL.AUTHORACCESS",
-	"org.imixs.ACCESSLEVEL.EDITORACCESS",
-	"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
+@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
+		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
+@RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
+		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @LocalBean
 public class LuceneSearchService {
@@ -100,7 +92,7 @@ public class LuceneSearchService {
 	public static final String UNDEFINED_ERROR = "UNDEFINED_ERROR";
 	public static final String INVALID_INDEX = "INVALID_INDEX";
 
-	private int maxResult = 100;
+	private static final int MAX_SEARCH_RESULT = 100;
 
 	@EJB
 	PropertyService propertyService;
@@ -115,24 +107,6 @@ public class LuceneSearchService {
 	}
 
 	/**
-	 * returns the maximum size of a search result
-	 * 
-	 * @return
-	 */
-	public int getMaxResult() {
-		return maxResult;
-	}
-
-	/**
-	 * set the maximum size of a search result
-	 * 
-	 * @param searchCount
-	 */
-	public void setMaxResult(int searchCount) {
-		maxResult = searchCount;
-	}
-
-	/**
 	 * Returns a ItemCollection List matching the provided search term. The
 	 * provided search team will we extended with a users roles to test the read
 	 * access level of each workitem matching the search term. The usernames and
@@ -144,27 +118,12 @@ public class LuceneSearchService {
 	 */
 	public List<ItemCollection> search(String sSearchTerm, WorkflowService workflowService) {
 		// no sort order
-		return search(sSearchTerm, workflowService, null, null);
+		return search(sSearchTerm, workflowService, null, null, MAX_SEARCH_RESULT);
 	}
 
-	/**
-	 * Returns a ItemCollection List matching the provided search term. The
-	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term. The usernames and
-	 * user roles will be search lowercase!
-	 * 
-	 * The optional param 'searchOrder' can be set to force lucene to sort the
-	 * search result by any search order.
-	 * 
-	 * @param sSearchTerm
-	 * @param workflowService
-	 * @param sortOrder
-	 *            - optional to sort the result
-	 * @return collection of search result
-	 */
-	public List<ItemCollection> search(String sSearchTerm, WorkflowService workflowService, Sort sortOrder) {
-		// no default operator
-		return search(sSearchTerm, workflowService, sortOrder, null);
+	public List<ItemCollection> search(String sSearchTerm, WorkflowService workflowService, int maxResult) {
+		// no sort order
+		return search(sSearchTerm, workflowService, null, null, maxResult);
 	}
 
 	/**
@@ -187,7 +146,13 @@ public class LuceneSearchService {
 	 * @return collection of search result
 	 */
 	public List<ItemCollection> search(String sSearchTerm, WorkflowService workflowService, Sort sortOrder,
-			Operator defaultOperator) {
+			Operator defaultOperator, int maxResult) {
+
+		if (maxResult > MAX_SEARCH_RESULT) {
+			maxResult = MAX_SEARCH_RESULT;
+		}
+		logger.fine("  lucene search term=" + sSearchTerm);
+		logger.fine("  lucene search max_result=" + maxResult);
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 

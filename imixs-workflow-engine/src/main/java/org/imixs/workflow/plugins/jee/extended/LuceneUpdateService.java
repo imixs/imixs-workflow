@@ -67,12 +67,8 @@ import org.imixs.workflow.jee.util.PropertyService;
  * The LuceneUpdateService is a singleton EJB providing a service to update the
  * lucene index.
  * 
- * 
- * The service provides a set of public methods which can be used to updated a
- * lucen index.
- * 
  * With the method addWorkitem() a ItemCollection can be added to a lucene
- * search index. The service reads the property file 'imixs.properties' from the
+ * search index. The service init method reads the property file 'imixs.properties' from the
  * current classpath to determine the configuration.
  * 
  * <ul>
@@ -83,10 +79,6 @@ import org.imixs.workflow.jee.util.PropertyService;
  * keywords by the lucene search engine
  * 
  * If the service is used also by the LucenPlugin
- * 
- * 
- * Updated to version 4.5.1
- * 
  * 
  * The singleton pattern is used to avoid conflicts within multi thread
  * szenarios.
