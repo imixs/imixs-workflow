@@ -69,7 +69,7 @@
 				collapse="true">
 				<item name="EntitySerice" href="./engine/entityservice.html"
 					collapse="true">
-					<item name="JQPL" href="./engine/queries.html" />
+					<item name="JPQL" href="./engine/queries.html" />
 				</item>
 				<item name="ModelSerice" href="./engine/modelservice.html" />
 				<item name="WorkflowSerice" href="./engine/workflowservice.html" />
