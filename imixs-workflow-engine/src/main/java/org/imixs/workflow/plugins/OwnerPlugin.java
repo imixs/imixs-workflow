@@ -33,7 +33,6 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
-import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
 
@@ -64,6 +63,14 @@ import org.imixs.workflow.exceptions.PluginException;
  * 
  * 
  * 
+ * 
+ * #Issue 133: Extend access plug-in to resolve owner settings in process entity
+ * 
+ * The AccessPlugin also evaluates the ACL settings in the next ProcessEntity
+ * which is supported by newer versions of the imixs-bpmn modeler.
+ * 
+ * 
+ * 
  * @author Ralph Soika
  * @version 1.0
  * @see org.imixs.workflow.WorkflowManager
@@ -71,25 +78,17 @@ import org.imixs.workflow.exceptions.PluginException;
 
 public class OwnerPlugin extends AbstractPlugin {
 	ItemCollection documentContext;
-	ItemCollection documentActivity;
+	ItemCollection documentActivity, documentNextProcessEntity;
 	Vector<?> itemOwnerRollback;
-	WorkflowContext workflowContext;
 
-	private static Logger logger = Logger.getLogger(AccessPlugin.class
-			.getName());
-
-	public void init(WorkflowContext actx) throws PluginException {
-		workflowContext = actx;
-	}
+	private static Logger logger = Logger.getLogger(AccessPlugin.class.getName());
 
 	/**
 	 * changes the namworkflowreadaccess and namworkflowwriteaccess attribues
 	 * depending to the activityentity
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public int run(ItemCollection adocumentContext,
-			ItemCollection adocumentActivity) throws PluginException {
-		List vectorAccess;
+	@SuppressWarnings({ "rawtypes" })
+	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 
 		documentContext = adocumentContext;
 		documentActivity = adocumentActivity;
@@ -104,33 +103,68 @@ public class OwnerPlugin extends AbstractPlugin {
 			return Plugin.PLUGIN_OK;
 		}
 
-		// test update mode..
-		if (documentActivity.getItemValueBoolean("keyupdateacl") == false) {
+		// get next process entity
+		int iNextProcessID = adocumentActivity.getItemValueInteger("numNextProcessID");
+		String aModelVersion = adocumentActivity.getItemValueString("$modelVersion");
+		documentNextProcessEntity = ctx.getModel().getProcessEntity(iNextProcessID, aModelVersion);
+		// in case the activity is connected to a followup activity the
+		// nextProcess can be null!
+
+		// test update mode of activity and process entity - if true clear the
+		// existing values.
+		if (documentActivity.getItemValueBoolean("keyupdateacl") == false && (documentNextProcessEntity == null
+				|| documentNextProcessEntity.getItemValueBoolean("keyupdateacl") == false)) {
 			// no update!
 			return Plugin.PLUGIN_OK;
-		}
-
-		vectorAccess = new Vector();
-		// add names
-		mergeValueList(vectorAccess,
-				documentActivity.getItemValue("namOwnershipNames"));
-		// add Mapped Fields
-		mergeFieldList(documentContext, vectorAccess,
-				documentActivity.getItemValue("keyOwnershipFields"));
-		// clean Vector
-		vectorAccess = uniqueList(vectorAccess);
-
-		// update accesslist....
-		documentContext.replaceItemValue("namowner", vectorAccess);
-		if ((workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-				&& (vectorAccess.size() > 0)) {
-			logger.info("[OwnerPlugin] Owners:");
-			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.info("               '" + (String) vectorAccess.get(j)
-						+ "'");
+		} else {
+			// clear existing settings!
+			documentContext.replaceItemValue("namOwner", new Vector());
+			// activity settings will not be merged with process entity
+			// settings!
+			if (documentActivity.getItemValueBoolean("keyupdateacl") == true) {
+				updateOwnerByItemCollection(documentActivity);
+			} else {
+				updateOwnerByItemCollection(documentNextProcessEntity);
+			}
 		}
 
 		return Plugin.PLUGIN_OK;
+	}
+
+	/**
+	 * This method updates the owner of a workitem depending on a given model
+	 * entity The model entity should provide the following attributes:
+	 * 
+	 * keyupdateacl, namOwnershipNames,keyOwnershipFields
+	 * 
+	 * 
+	 * The method did not clear the exiting values of namowner
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void updateOwnerByItemCollection(ItemCollection modelEntity) {
+
+		if (modelEntity == null || modelEntity.getItemValueBoolean("keyupdateacl") == false) {
+			// no update necessary
+			return;
+		}
+
+		List vectorAccess;
+		vectorAccess = documentContext.getItemValue("namowner");
+		// add names
+		mergeValueList(vectorAccess, modelEntity.getItemValue("namOwnershipNames"));
+		// add Mapped Fields
+		mergeFieldList(documentContext, vectorAccess, modelEntity.getItemValue("keyOwnershipFields"));
+		// clean Vector
+		vectorAccess = uniqueList(vectorAccess);
+
+		// update ownerlist....
+		documentContext.replaceItemValue("namowner", vectorAccess);
+		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE) && (vectorAccess.size() > 0)) {
+			logger.info("[OwnerPlugin] Owners:");
+			for (int j = 0; j < vectorAccess.size(); j++)
+				logger.info("               '" + (String) vectorAccess.get(j) + "'");
+		}
+
 	}
 
 	public void close(int status) {
@@ -176,33 +210,28 @@ public class OwnerPlugin extends AbstractPlugin {
 			vectorAccess = itemOwner;
 		else
 			vectorAccess = new Vector();
-		if (workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-			System.out.println("[OwnerPlugin] AccessMode: '"
-					+ documentActivity.getItemValueString("keyOwnershipMode")
-					+ "'");
+		if (ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
+			System.out.println(
+					"[OwnerPlugin] AccessMode: '" + documentActivity.getItemValueString("keyOwnershipMode") + "'");
 
 		if (vectorAccess == null)
 			vectorAccess = new Vector();
 
 		// **1** AllowAccess add names
-		mergeValueList(vectorAccess,
-				documentActivity.getItemValue("namOwnershipNames"));
+		mergeValueList(vectorAccess, documentActivity.getItemValue("namOwnershipNames"));
 
 		// **3** AllowAccess add Mapped Fields
-		mergeFieldList(documentContext, vectorAccess,
-				documentActivity.getItemValue("keyOwnershipFields"));
+		mergeFieldList(documentContext, vectorAccess, documentActivity.getItemValue("keyOwnershipFields"));
 
 		// clean Vector
 		vectorAccess = uniqueList(vectorAccess);
 
 		// save Vector
 		documentContext.replaceItemValue("namOwner", vectorAccess);
-		if ((workflowContext.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-				&& (vectorAccess.size() > 0)) {
+		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE) && (vectorAccess.size() > 0)) {
 			System.out.println("[OwnerPlugin] Owner:");
 			for (int j = 0; j < vectorAccess.size(); j++)
-				System.out.println("              "
-						+ (String) vectorAccess.get(j));
+				System.out.println("              " + (String) vectorAccess.get(j));
 		}
 
 	}
