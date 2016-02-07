@@ -39,8 +39,7 @@ import org.junit.Test;
  */
 public class TestAccessPluginProcessEntity extends AbstractWorkflowServiceTest {
 
-	private final static Logger logger = Logger
-			.getLogger(TestAccessPluginProcessEntity.class.getName());
+	private final static Logger logger = Logger.getLogger(TestAccessPluginProcessEntity.class.getName());
 
 	AccessPlugin accessPlugin = null;
 	ItemCollection documentContext;
@@ -172,8 +171,8 @@ public class TestAccessPluginProcessEntity extends AbstractWorkflowServiceTest {
 	}
 
 	/**
-	 * Test if the ACL settings from the next processEntity and ActivityEnttiy
-	 * are injected into the workitem. read access is overlapped
+	 * Test if the ACL settings from the next processEntity are ignored in case
+	 * the ActivityEnttiy provides settings. Merge is not supported!
 	 **/
 	@SuppressWarnings("unchecked")
 	@Test
@@ -185,7 +184,6 @@ public class TestAccessPluginProcessEntity extends AbstractWorkflowServiceTest {
 		list.add("Julian");
 		documentContext.replaceItemValue("$writeaccess", list);
 
-		
 		documentActivity = this.getActivityEntity(100, 10);
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 		documentActivity.replaceItemValue("numnextprocessid", 200);
@@ -208,6 +206,7 @@ public class TestAccessPluginProcessEntity extends AbstractWorkflowServiceTest {
 		list.add("sam");
 		list.add("joe"); // overlapped!
 		documentProcess.replaceItemValue("namaddwriteaccess", list);
+		documentProcess.replaceItemValue("namaddreadaccess", "silvia");
 		this.setProcessEntity(documentProcess);
 
 		try {
@@ -220,9 +219,9 @@ public class TestAccessPluginProcessEntity extends AbstractWorkflowServiceTest {
 
 		// $writeAccess= anna , manfred, joe, sam
 		List<String> writeAccess = documentContext.getItemValue("$WriteAccess");
-		Assert.assertEquals(4, writeAccess.size());
+		Assert.assertEquals(3, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
-		Assert.assertTrue(writeAccess.contains("sam"));
+		//Assert.assertTrue(writeAccess.contains("sam"));
 		Assert.assertTrue(writeAccess.contains("manfred"));
 		Assert.assertTrue(writeAccess.contains("anna"));
 

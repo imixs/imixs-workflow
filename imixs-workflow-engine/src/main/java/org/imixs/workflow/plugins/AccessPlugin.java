@@ -92,8 +92,7 @@ public class AccessPlugin extends AbstractPlugin {
 	ItemCollection documentActivity, documentNextProcessEntity;
 	List<?> itemReadRollback, itemWriteRollback;
 
-	private static Logger logger = Logger.getLogger(AccessPlugin.class
-			.getName());
+	private static Logger logger = Logger.getLogger(AccessPlugin.class.getName());
 
 	/**
 	 * This method updates the $readAccess and $writeAccess attributes of a
@@ -105,8 +104,7 @@ public class AccessPlugin extends AbstractPlugin {
 	 * 
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public int run(ItemCollection adocumentContext,
-			ItemCollection adocumentActivity) throws PluginException {
+	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 		documentContext = adocumentContext;
 		documentActivity = adocumentActivity;
 
@@ -122,19 +120,16 @@ public class AccessPlugin extends AbstractPlugin {
 		}
 
 		// get next process entity
-		int iNextProcessID = adocumentActivity
-				.getItemValueInteger("numNextProcessID");
-		String aModelVersion = adocumentActivity
-				.getItemValueString("$modelVersion");
-		documentNextProcessEntity = ctx.getModel().getProcessEntity(
-				iNextProcessID, aModelVersion);
-		// in case the activity is connected to a followup activity the nextProcess can be null!
-		
+		int iNextProcessID = adocumentActivity.getItemValueInteger("numNextProcessID");
+		String aModelVersion = adocumentActivity.getItemValueString("$modelVersion");
+		documentNextProcessEntity = ctx.getModel().getProcessEntity(iNextProcessID, aModelVersion);
+		// in case the activity is connected to a followup activity the
+		// nextProcess can be null!
+
 		// test update mode of activity and process entity - if true clear the
 		// existing values.
-		if (documentActivity.getItemValueBoolean("keyupdateacl") == false
-				&& (documentNextProcessEntity== null || documentNextProcessEntity
-						.getItemValueBoolean("keyupdateacl") == false)) {
+		if (documentActivity.getItemValueBoolean("keyupdateacl") == false && (documentNextProcessEntity == null
+				|| documentNextProcessEntity.getItemValueBoolean("keyupdateacl") == false)) {
 			// no update!
 			return Plugin.PLUGIN_OK;
 		} else {
@@ -142,8 +137,12 @@ public class AccessPlugin extends AbstractPlugin {
 			documentContext.replaceItemValue("$readAccess", new Vector());
 			documentContext.replaceItemValue("$writeAccess", new Vector());
 
-			updateACLByItemCollection(documentActivity);
-			updateACLByItemCollection(documentNextProcessEntity);
+			// activity settings will not be merged with process entity settings!
+			if (documentActivity.getItemValueBoolean("keyupdateacl") == true) {
+				updateACLByItemCollection(documentActivity);
+			} else {
+				updateACLByItemCollection(documentNextProcessEntity);
+			}
 		}
 
 		return Plugin.PLUGIN_OK;
@@ -164,7 +163,7 @@ public class AccessPlugin extends AbstractPlugin {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void updateACLByItemCollection(ItemCollection modelEntity) {
 
-		if (modelEntity==null || modelEntity.getItemValueBoolean("keyupdateacl") == false) {
+		if (modelEntity == null || modelEntity.getItemValueBoolean("keyupdateacl") == false) {
 			// no update necessary
 			return;
 		}
@@ -172,43 +171,35 @@ public class AccessPlugin extends AbstractPlugin {
 		List vectorAccess;
 		vectorAccess = documentContext.getItemValue("$readAccess");
 		// add names
-		mergeValueList(vectorAccess,
-				modelEntity.getItemValue("namaddreadaccess"));
+		mergeValueList(vectorAccess, modelEntity.getItemValue("namaddreadaccess"));
 		// add Mapped Fields
-		mergeFieldList(documentContext, vectorAccess,
-				modelEntity.getItemValue("keyaddreadfields"));
+		mergeFieldList(documentContext, vectorAccess, modelEntity.getItemValue("keyaddreadfields"));
 		// clean Vector
 		vectorAccess = uniqueList(vectorAccess);
 
 		// update accesslist....
 		documentContext.replaceItemValue("$readAccess", vectorAccess);
-		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-				&& (vectorAccess.size() > 0)) {
+		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE) && (vectorAccess.size() > 0)) {
 			logger.info("[AccessPlugin] ReadAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.info("               '" + (String) vectorAccess.get(j)
-						+ "'");
+				logger.info("               '" + (String) vectorAccess.get(j) + "'");
 		}
 
 		// update WriteAccess
 		vectorAccess = documentContext.getItemValue("$writeAccess");
 		// add Names
-		mergeValueList(vectorAccess,
-				modelEntity.getItemValue("namaddwriteaccess"));
+		mergeValueList(vectorAccess, modelEntity.getItemValue("namaddwriteaccess"));
 		// add Mapped Fields
-		mergeFieldList(documentContext, vectorAccess,
-				modelEntity.getItemValue("keyaddwritefields"));
+		mergeFieldList(documentContext, vectorAccess, modelEntity.getItemValue("keyaddwritefields"));
 		// clean Vector
 		vectorAccess = uniqueList(vectorAccess);
 
 		// update accesslist....
 		documentContext.replaceItemValue("$writeAccess", vectorAccess);
-		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-				&& (vectorAccess.size() > 0)) {
+		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE) && (vectorAccess.size() > 0)) {
 			logger.info("[AccessPlugin] WriteAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.info("               '" + (String) vectorAccess.get(j)
-						+ "'");
+				logger.info("               '" + (String) vectorAccess.get(j) + "'");
 		}
 
 	}
@@ -257,31 +248,25 @@ public class AccessPlugin extends AbstractPlugin {
 		else
 			vectorAccess = new Vector();
 		if (ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-			logger.info("[AccessPlugin] AccessMode: '"
-					+ documentActivity.getItemValueString("keyaccessmode")
-					+ "'");
+			logger.info("[AccessPlugin] AccessMode: '" + documentActivity.getItemValueString("keyaccessmode") + "'");
 
 		if (vectorAccess == null)
 			vectorAccess = new Vector();
 
 		// **1** AllowAccess add names
-		mergeValueList(vectorAccess,
-				documentActivity.getItemValue("namaddreadaccess"));
+		mergeValueList(vectorAccess, documentActivity.getItemValue("namaddreadaccess"));
 		// **3** AllowAccess add Mapped Fields
-		mergeFieldList(documentContext, vectorAccess,
-				documentActivity.getItemValue("keyaddreadfields"));
+		mergeFieldList(documentContext, vectorAccess, documentActivity.getItemValue("keyaddreadfields"));
 
 		// clean Vector
 		vectorAccess = uniqueList(vectorAccess);
 
 		// save Vector
 		documentContext.replaceItemValue("$readAccess", vectorAccess);
-		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-				&& (vectorAccess.size() > 0)) {
+		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE) && (vectorAccess.size() > 0)) {
 			logger.info("[AccessPlugin] ReadAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.info("               '" + (String) vectorAccess.get(j)
-						+ "'");
+				logger.info("               '" + (String) vectorAccess.get(j) + "'");
 		}
 
 		/**** now process write access ***/
@@ -300,23 +285,19 @@ public class AccessPlugin extends AbstractPlugin {
 			vectorAccess = new Vector();
 
 		// **1** AllowAccess add Names
-		mergeValueList(vectorAccess,
-				documentActivity.getItemValue("namaddwriteaccess"));
+		mergeValueList(vectorAccess, documentActivity.getItemValue("namaddwriteaccess"));
 		// **3** AllowAccess add Mapped Fields
-		mergeFieldList(documentContext, vectorAccess,
-				documentActivity.getItemValue("keyaddwritefields"));
+		mergeFieldList(documentContext, vectorAccess, documentActivity.getItemValue("keyaddwritefields"));
 
 		// clean Vector
 		vectorAccess = uniqueList(vectorAccess);
 
 		// save Vector
 		documentContext.replaceItemValue("$writeAccess", vectorAccess);
-		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-				&& (vectorAccess.size() > 0)) {
+		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE) && (vectorAccess.size() > 0)) {
 			logger.info("[AccessPlugin] WriteAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.info("               '" + (String) vectorAccess.get(j)
-						+ "'");
+				logger.info("               '" + (String) vectorAccess.get(j) + "'");
 		}
 
 	}
