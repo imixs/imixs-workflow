@@ -4,14 +4,13 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import junit.framework.Assert;
-
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.jee.ejb.AbstractWorkflowServiceTest;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+
+import junit.framework.Assert;
 
 /**
  * Test the ACL plugin.
@@ -21,26 +20,23 @@ import org.mockito.Mockito;
  * @author rsoika
  * 
  */
-public class TestOwnerPlugin {
+public class TestOwnerPlugin extends AbstractWorkflowServiceTest {
 
-	private final static Logger logger = Logger
-			.getLogger(TestOwnerPlugin.class.getName());
+	private final static Logger logger = Logger.getLogger(TestOwnerPlugin.class.getName());
 
 	OwnerPlugin ownerPlugin = null;
 	ItemCollection documentContext;
 	ItemCollection documentActivity;
-	WorkflowContext workflowContext;
 	
 	@Before
-	public void setup() {
-		
-		workflowContext = Mockito.mock(WorkflowContext.class);
+	public void setup() throws PluginException {
+		super.setup();
 		
 		ownerPlugin = new OwnerPlugin();
 		try {
 			ownerPlugin.init(workflowContext);
 		} catch (PluginException e) {
-			
+
 			e.printStackTrace();
 		}
 
@@ -58,8 +54,8 @@ public class TestOwnerPlugin {
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void simpleTest() {
-
-		documentActivity=new ItemCollection();
+ 
+		documentActivity = new ItemCollection();
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 
 		Vector<String> list = new Vector<String>();
@@ -67,15 +63,14 @@ public class TestOwnerPlugin {
 		list.add("joe");
 		documentActivity.replaceItemValue("namOwnershipNames", list);
 
-		
 		try {
-			ownerPlugin.run( documentContext,documentActivity);
+			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
-			
+
 			e.printStackTrace();
 			Assert.fail();
 		}
-		
+
 		List writeAccess = documentContext.getItemValue("namOwner");
 
 		Assert.assertEquals(2, writeAccess.size());
@@ -83,61 +78,54 @@ public class TestOwnerPlugin {
 		Assert.assertTrue(writeAccess.contains("sam"));
 	}
 
-
-
-	@SuppressWarnings({  "rawtypes" })
+	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void testNoUpdate() {
 
-		documentActivity=new ItemCollection();
+		documentActivity = new ItemCollection();
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
 		list.add("joe");
 		documentActivity.replaceItemValue("namOwnershipNames", list);
 
-		
 		try {
-			ownerPlugin.run( documentContext,documentActivity);
+			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
-			
+
 			e.printStackTrace();
 			Assert.fail();
 		}
-		
+
 		List writeAccess = documentContext.getItemValue("namOwner");
 
 		Assert.assertEquals(0, writeAccess.size());
 	}
 
-	
-
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void fallbackTest() {
 
-		documentActivity=new ItemCollection();
+		documentActivity = new ItemCollection();
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
 		list.add("joe");
 		documentActivity.replaceItemValue("namOwnershipNames", list);
 
 		documentActivity.replaceItemValue("keyOwnershipMode", "0");
-		
-		
+
 		try {
-			ownerPlugin.run( documentContext,documentActivity);
+			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
-			
+
 			e.printStackTrace();
 			Assert.fail();
 		}
-		
+
 		List writeAccess = documentContext.getItemValue("namowner");
 
 		Assert.assertEquals(2, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
 		Assert.assertTrue(writeAccess.contains("sam"));
 	}
-
 
 }
