@@ -19,7 +19,7 @@ import junit.framework.Assert;
  * 
  * @author rsoika
  * 
- */
+ */ 
 public class TestOwnerPlugin extends AbstractWorkflowServiceTest {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPlugin.class.getName());
@@ -77,6 +77,50 @@ public class TestOwnerPlugin extends AbstractWorkflowServiceTest {
 		Assert.assertTrue(writeAccess.contains("joe"));
 		Assert.assertTrue(writeAccess.contains("sam"));
 	}
+	
+	
+	
+	
+	
+	/**
+	 * Test if the current value of namowner can be set as the new value
+	 */
+	@SuppressWarnings({ "rawtypes" })
+	@Test
+	public void testUpdateOfamOwner() {
+ 
+		documentActivity = new ItemCollection();
+		documentActivity.replaceItemValue("keyupdateAcl", true);
+
+		Vector<String> list = new Vector<String>();
+		list.add("sam");
+		list.add("joe");
+		documentActivity.replaceItemValue("namOwnershipNames", list);
+
+		// set a current owner
+		documentContext.replaceItemValue("namOwner", "ralph");
+		documentActivity.replaceItemValue("keyOwnershipFields", "namowner");
+		
+		
+		
+		try {
+			ownerPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		List writeAccess = documentContext.getItemValue("namOwner");
+
+		Assert.assertEquals(3, writeAccess.size());
+		Assert.assertTrue(writeAccess.contains("joe"));
+		Assert.assertTrue(writeAccess.contains("sam"));
+		Assert.assertTrue(writeAccess.contains("ralph"));
+	}
+	
+	
+	
 
 	@SuppressWarnings({ "rawtypes" })
 	@Test

@@ -27,6 +27,7 @@
 
 package org.imixs.workflow.plugins;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -84,8 +85,11 @@ public class OwnerPlugin extends AbstractPlugin {
 	private static Logger logger = Logger.getLogger(AccessPlugin.class.getName());
 
 	/**
-	 * changes the namworkflowreadaccess and namworkflowwriteaccess attribues
-	 * depending to the activityentity
+	 * changes the namOwner attribue
+	 * depending to the activityentity or processEntity
+	 * 
+	 * The method prevents the field 'namowner' of the documentcontext in case that 
+	 * namowner is part of the 
 	 */
 	@SuppressWarnings({ "rawtypes" })
 	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
@@ -117,8 +121,6 @@ public class OwnerPlugin extends AbstractPlugin {
 			// no update!
 			return Plugin.PLUGIN_OK;
 		} else {
-			// clear existing settings!
-			documentContext.replaceItemValue("namOwner", new Vector());
 			// activity settings will not be merged with process entity
 			// settings!
 			if (documentActivity.getItemValueBoolean("keyupdateacl") == true) {
@@ -148,21 +150,21 @@ public class OwnerPlugin extends AbstractPlugin {
 			return;
 		}
 
-		List vectorAccess;
-		vectorAccess = documentContext.getItemValue("namowner");
+		List newOwnerList;
+		newOwnerList =new ArrayList<String>();;
 		// add names
-		mergeValueList(vectorAccess, modelEntity.getItemValue("namOwnershipNames"));
+		mergeValueList(newOwnerList, modelEntity.getItemValue("namOwnershipNames"));
 		// add Mapped Fields
-		mergeFieldList(documentContext, vectorAccess, modelEntity.getItemValue("keyOwnershipFields"));
+		mergeFieldList(documentContext, newOwnerList, modelEntity.getItemValue("keyOwnershipFields"));
 		// clean Vector
-		vectorAccess = uniqueList(vectorAccess);
+		newOwnerList = uniqueList(newOwnerList);
 
 		// update ownerlist....
-		documentContext.replaceItemValue("namowner", vectorAccess);
-		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE) && (vectorAccess.size() > 0)) {
+		documentContext.replaceItemValue("namowner", newOwnerList);
+		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE) && (newOwnerList.size() > 0)) {
 			logger.info("[OwnerPlugin] Owners:");
-			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.info("               '" + (String) vectorAccess.get(j) + "'");
+			for (int j = 0; j < newOwnerList.size(); j++)
+				logger.info("               '" + (String) newOwnerList.get(j) + "'");
 		}
 
 	}
