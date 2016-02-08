@@ -257,9 +257,10 @@ public class MigrateImixsModelToBPMN {
 					writer.println(" <imixs:value><![CDATA[" + o.toString()
 							+ "]]></imixs:value>");
 				}
+				writer.println(" </imixs:item>");
 			}
 
-			writer.println(" </imixs:item>");
+			
 		}
 	}
 
