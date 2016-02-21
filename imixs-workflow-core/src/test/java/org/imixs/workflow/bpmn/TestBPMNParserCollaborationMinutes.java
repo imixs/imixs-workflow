@@ -21,11 +21,14 @@ import org.xml.sax.SAXException;
 /**
  * Test class test the Imixs BPMNParser
  * 
- * Special cases with collaboration diagrams
+ * Special cases with collaboration diagram containing two workflow groups
+ * (participants) with different workflow models.
+ * 
+ * 
  * 
  * @author rsoika
  */
-public class TestBPMNParserCollaboration {
+public class TestBPMNParserCollaborationMinutes {
 
 	@Before
 	public void setup() {
@@ -43,7 +46,7 @@ public class TestBPMNParserCollaboration {
 
 		String VERSION = "1.0.0";
 
-		InputStream inputStream = getClass().getResourceAsStream("/bpmn/collaboration.bpmn");
+		InputStream inputStream = getClass().getResourceAsStream("/bpmn/minutes.bpmn");
 
 		BPMNModel model = null;
 		try {
@@ -63,39 +66,33 @@ public class TestBPMNParserCollaboration {
 		Assert.assertEquals("environment.profile", profile.getItemValueString("txtname"));
 		Assert.assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));
 		Assert.assertEquals(VERSION, profile.getItemValueString("$ModelVersion"));
-
-		List<String> groups = model.workflowGroups;
+		
+		
+		List<String> groups = model.workflowGroups; 
 		// Test Groups
 		Assert.assertFalse(groups.contains("Collaboration"));
-		Assert.assertTrue(groups.contains("WorkflowGroup1"));
-		Assert.assertTrue(groups.contains("WorkflowGroup2"));
+		Assert.assertTrue(groups.contains("Protokoll"));
+		Assert.assertTrue(groups.contains("Protokollpunkt"));
 
+
+		
+		
 		// test count of elements
-		Assert.assertEquals(2, model.getProcessEntityList(VERSION).size());
+		Assert.assertEquals(8, model.getProcessEntityList(VERSION).size());
 
 		// test task 1000
 		ItemCollection task = model.getProcessEntity(1000, VERSION);
 		Assert.assertNotNull(task);
 		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
-		Assert.assertEquals("WorkflowGroup1", task.getItemValueString("txtworkflowgroup"));
+		Assert.assertEquals("Protokoll", task.getItemValueString("txtworkflowgroup"));
 
-		// test activity for task 1000
-		Collection<ItemCollection> activities = model.getActivityEntityList(1000, VERSION);
-		Assert.assertNotNull(activities);
-		Assert.assertEquals(1, activities.size());
-
-		// test activity 1000.10 submit
-		ItemCollection activity = model.getActivityEntity(1000, 10, VERSION);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
-		Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
-
-		// test task 1100
-		task = model.getProcessEntity(1100, VERSION);
+		// test task 2000
+		task = model.getProcessEntity(2000, VERSION);
 		Assert.assertNotNull(task);
 		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
-		Assert.assertEquals("WorkflowGroup2", task.getItemValueString("txtworkflowgroup"));
+		Assert.assertEquals("Protokollpunkt", task.getItemValueString("txtworkflowgroup"));
 
+		
 	}
 
 }

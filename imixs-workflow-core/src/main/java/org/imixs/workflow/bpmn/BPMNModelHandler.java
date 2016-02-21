@@ -107,7 +107,9 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 
 		// bpmn2:collaboration
-		if (qName.equalsIgnoreCase("bpmn2:collaboration")) {
+		// ignore collaboration
+
+		if (qName.equalsIgnoreCase("bpmn2:collaboration") && 1 == 2) {
 			if (bDefinitions && currentEntity != null) {
 				profileEnvironment = currentEntity;
 				currentWorkflowGroup = attributes.getValue("name");
@@ -119,17 +121,17 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 		}
 
-		// bpmn2:process - start definitions? parse workflowGroup is not a
-		// collaboration diagram
+		// bpmn2:process -  parse workflowGroup 
 		if (qName.equalsIgnoreCase("bpmn2:process")) {
-			if (bDefinitions && currentEntity != null && currentWorkflowGroup == null) {
+			if (bDefinitions && currentEntity != null) {
 				profileEnvironment = currentEntity;
-				currentWorkflowGroup = attributes.getValue("name");
-				if (currentWorkflowGroup == null || currentWorkflowGroup.isEmpty()) {
-					logger.warning("No process name defined!");
-					currentWorkflowGroup = "Default";
-				}
 				bDefinitions = false;
+
+			}	
+			currentWorkflowGroup = attributes.getValue("name");
+			if (currentWorkflowGroup == null || currentWorkflowGroup.isEmpty()) {
+				logger.warning("No process name defined!");
+				currentWorkflowGroup = "Default";
 			}
 		}
 
@@ -251,6 +253,13 @@ public class BPMNModelHandler extends DefaultHandler {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
+
+		// end of bpmn2:process
+		if (qName.equalsIgnoreCase("bpmn2:process")) {
+			if (currentWorkflowGroup != null) {
+				currentWorkflowGroup = null;
+			}
+		}
 
 		// end of bpmn2:task -
 		if (bImixsTask && qName.equalsIgnoreCase("bpmn2:task")) {
