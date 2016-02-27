@@ -15,9 +15,6 @@
 	<cc:attribute name="disablejquery" default="false"
 		type="java.lang.Boolean"></cc:attribute>
 
-	<cc:attribute name="disabletinymce" default="false"
-		type="java.lang.Boolean"></cc:attribute>
-
 	<cc:attribute name="disablefileupload" default="false"
 		type="java.lang.Boolean"></cc:attribute>
 
@@ -44,12 +41,6 @@
 		<link type="text/css" href="#{cc.attrs.theme}" rel="stylesheet" />
 		<script type="text/javascript"
 			src="#{facesContext.externalContext.requestContextPath}/imixs/jquery/jquery-ui-1.10.0.custom.min.js"></script>
-
-
-		<c:if test="#{!cc.attrs.disabletinymce}">
-			<script type="text/javascript"
-				src="#{facesContext.externalContext.requestContextPath}/imixs/tinymce/jscripts/tiny_mce/jquery.tinymce.js"></script>
-		</c:if>
 	</c:if>
 
 	<!-- Disable jquery fileupload plugin -->
@@ -69,7 +60,6 @@
 		/*<![CDATA[*/
 		           
 		var disablecss=#{cc.attrs.disablecss};
-		var disabletinymce= #{cc.attrs.disabletinymce};
 
 		$(document)
 				.ready(
@@ -82,10 +72,6 @@
 	
 								$("span.imixs-tooltip").layoutImixsTooltip();
 	
-								if (!disabletinymce) {
-									$('textarea.imixs-editor').
-										layoutImixsEditor('#{facesContext.externalContext.requestContextPath}');
-								}
 							}
 						});
 
