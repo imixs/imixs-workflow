@@ -22,6 +22,11 @@ An Actor definition is used within the property sections of an Imixs BPMN Event 
     Delegate | namDelegate
  
 The first part is the name of the actor displayed in the property sections of an Imixs BPMN Event element. The last part is the WorkItem property evaluated by the workflow engine.
+
+ 
+As an alternative Actors can also be defined by a static list of userIds. In this case the last part of the  definition has to be included into curled or squared rackets. The comma separated list of values will be  evaluated by the workflow engine.
+ 
+    Delegate | {user1,user2} 
  
 
 ###The Date Properties
