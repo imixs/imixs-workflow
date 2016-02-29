@@ -19,7 +19,7 @@ import junit.framework.Assert;
  * 
  * @author rsoika
  * 
- */ 
+ */
 public class TestOwnerPlugin extends AbstractWorkflowServiceTest {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPlugin.class.getName());
@@ -27,11 +27,11 @@ public class TestOwnerPlugin extends AbstractWorkflowServiceTest {
 	OwnerPlugin ownerPlugin = null;
 	ItemCollection documentContext;
 	ItemCollection documentActivity;
-	
+
 	@Before
 	public void setup() throws PluginException {
 		super.setup();
-		
+
 		ownerPlugin = new OwnerPlugin();
 		try {
 			ownerPlugin.init(workflowContext);
@@ -54,7 +54,7 @@ public class TestOwnerPlugin extends AbstractWorkflowServiceTest {
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void simpleTest() {
- 
+
 		documentActivity = new ItemCollection();
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 
@@ -77,18 +77,14 @@ public class TestOwnerPlugin extends AbstractWorkflowServiceTest {
 		Assert.assertTrue(writeAccess.contains("joe"));
 		Assert.assertTrue(writeAccess.contains("sam"));
 	}
-	
-	
-	
-	
-	
+
 	/**
 	 * Test if the current value of namowner can be set as the new value
 	 */
 	@SuppressWarnings({ "rawtypes" })
 	@Test
-	public void testUpdateOfamOwner() {
- 
+	public void testUpdateOfnamOwner() {
+
 		documentActivity = new ItemCollection();
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 
@@ -100,9 +96,7 @@ public class TestOwnerPlugin extends AbstractWorkflowServiceTest {
 		// set a current owner
 		documentContext.replaceItemValue("namOwner", "ralph");
 		documentActivity.replaceItemValue("keyOwnershipFields", "namowner");
-		
-		
-		
+
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -118,9 +112,36 @@ public class TestOwnerPlugin extends AbstractWorkflowServiceTest {
 		Assert.assertTrue(writeAccess.contains("sam"));
 		Assert.assertTrue(writeAccess.contains("ralph"));
 	}
-	
-	
-	
+
+	/**
+	 * This test verifies if a list of users provided by the fieldMapping is
+	 * mapped correctly into the workItem
+	 */
+	@SuppressWarnings({ "rawtypes" })
+	@Test
+	public void staticUserGroupMappingTest() {
+
+		documentActivity = this.getActivityEntity(100, 10);
+		documentActivity.replaceItemValue("keyupdateAcl", true);
+		documentActivity.replaceItemValue("keyOwnershipFields", "[sam, tom,  anna ,]"); // 3
+																						// values
+																						// expected!
+		this.setActivityEntity(documentActivity);
+		try {
+			ownerPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		List writeAccess = documentContext.getItemValue("namOwner");
+
+		Assert.assertEquals(3, writeAccess.size());
+		Assert.assertTrue(writeAccess.contains("tom"));
+		Assert.assertTrue(writeAccess.contains("sam"));
+		Assert.assertTrue(writeAccess.contains("anna"));
+	}
 
 	@SuppressWarnings({ "rawtypes" })
 	@Test

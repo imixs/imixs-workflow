@@ -20,10 +20,9 @@ import org.junit.Test;
  * @author rsoika
  * 
  */
-public class TestAccessPlugin  extends AbstractWorkflowServiceTest {
+public class TestAccessPlugin extends AbstractWorkflowServiceTest {
 
-	private final static Logger logger = Logger
-			.getLogger(TestAccessPlugin.class.getName());
+	private final static Logger logger = Logger.getLogger(TestAccessPlugin.class.getName());
 
 	AccessPlugin accessPlugin = null;
 	ItemCollection documentContext;
@@ -44,7 +43,7 @@ public class TestAccessPlugin  extends AbstractWorkflowServiceTest {
 
 		// prepare data
 		documentContext = new ItemCollection();
-		documentContext.replaceItemValue("$processid",100);
+		documentContext.replaceItemValue("$processid", 100);
 		logger.info("[TestAccessPlugin] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
@@ -58,7 +57,7 @@ public class TestAccessPlugin  extends AbstractWorkflowServiceTest {
 	@Test
 	public void simpleTest() {
 
-		documentActivity =this.getActivityEntity(100, 10);
+		documentActivity = this.getActivityEntity(100, 10);
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 
 		Vector<String> list = new Vector<String>();
@@ -82,12 +81,11 @@ public class TestAccessPlugin  extends AbstractWorkflowServiceTest {
 		Assert.assertTrue(writeAccess.contains("sam"));
 	}
 
-	
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void fieldMappingTest() {
 
-		documentActivity =this.getActivityEntity(100, 10);
+		documentActivity = this.getActivityEntity(100, 10);
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 
 		Vector<String> list = new Vector<String>();
@@ -113,8 +111,36 @@ public class TestAccessPlugin  extends AbstractWorkflowServiceTest {
 		Assert.assertTrue(writeAccess.contains("anna"));
 	}
 
-	
-	
+	/**
+	 * This test verifies if a list of users provided by the fieldMapping is
+	 * mapped correctly into the workItem
+	 */
+	@SuppressWarnings({ "rawtypes" })
+	@Test
+	public void staticUserGroupMappingTest() {
+
+		documentActivity = this.getActivityEntity(100, 10);
+		documentActivity.replaceItemValue("keyupdateAcl", true);
+
+		documentActivity.replaceItemValue("keyaddwritefields", "[sam, tom,  anna ,joe]");
+		this.setActivityEntity(documentActivity);
+		try {
+			accessPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		List writeAccess = documentContext.getItemValue("$WriteAccess");
+
+		Assert.assertEquals(4, writeAccess.size());
+		Assert.assertTrue(writeAccess.contains("tom"));
+		Assert.assertTrue(writeAccess.contains("sam"));
+		Assert.assertTrue(writeAccess.contains("anna"));
+		Assert.assertTrue(writeAccess.contains("joe"));
+	}
+
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void testNoUpdate() {
