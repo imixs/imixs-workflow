@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.plugins.jee.MailPlugin;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +46,13 @@ public class TestMailPlugin  {
 		documentActivity.replaceItemValue("rtfMailBody","Hello <itemValue>namcreator</itemValue>!");
 		documentContext.replaceItemValue("namcreator","Anna");
 
-		String sBody=mailPlugin.getBody(documentContext, documentActivity);
+		String sBody=null;
+		try {
+			sBody = mailPlugin.getBody(documentContext, documentActivity);
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
 		
 		Assert.assertEquals("Hello Anna!", sBody);
 	}

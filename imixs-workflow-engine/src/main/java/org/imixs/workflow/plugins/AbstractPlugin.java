@@ -57,8 +57,8 @@ public abstract class AbstractPlugin implements Plugin {
 
 	public WorkflowContext ctx;
 
-	private static Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
-
+	public static final String INVALID_ITEMVALUE_FORMAT = "INVALID_ITEMVALUE_FORMAT";
+	
 	public void init(WorkflowContext actx) throws PluginException {
 		ctx = actx;
 	}
@@ -94,7 +94,7 @@ public abstract class AbstractPlugin implements Plugin {
 	 * 
 	 * 
 	 */
-	public String replaceDynamicValues(String aString, ItemCollection documentContext) {
+	public String replaceDynamicValues(String aString, ItemCollection documentContext) throws PluginException {
 		int iTagStartPos;
 		int iTagEndPos;
 		int iContentStartPos;
@@ -114,8 +114,10 @@ public abstract class AbstractPlugin implements Plugin {
 
 			// if no end tag found return string unchanged...
 			if (iTagEndPos == -1) {
-				logger.warning("[AbstractPlugin] invalid text string format: " + aString);
-				break;
+				throw new PluginException(
+						this.getClass().getSimpleName(),
+						INVALID_ITEMVALUE_FORMAT,
+						"[AbstractPlugin] invalid itemvalue format: "+aString);
 			}
 
 			// reset pos vars
@@ -133,8 +135,10 @@ public abstract class AbstractPlugin implements Plugin {
 
 			// if no end tag found return string unchanged...
 			if (iContentStartPos >= iContentEndPos) {
-				logger.warning("[AbstractPlugin] invalid text string format: " + aString);
-				break;
+				throw new PluginException(
+						this.getClass().getSimpleName(),
+						INVALID_ITEMVALUE_FORMAT,
+						"[AbstractPlugin] invalid itemvalue format: "+aString);
 			}
 
 			iTagEndPos = iTagEndPos + "</itemvalue>".length();

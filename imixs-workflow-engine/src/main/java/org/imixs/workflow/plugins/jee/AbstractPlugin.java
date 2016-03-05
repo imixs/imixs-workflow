@@ -54,6 +54,8 @@ public abstract class AbstractPlugin extends
 		org.imixs.workflow.plugins.AbstractPlugin {
 	javax.ejb.SessionContext ejbSessionContext;
 
+	public static final String INVALID_PROPERTYVALUE_FORMAT = "INVALID_PROPERTYVALUE_FORMAT";
+	
 	PropertyService propertyService = null;
 	private static Logger logger = Logger.getLogger(AbstractPlugin.class
 			.getName());
@@ -131,12 +133,13 @@ public abstract class AbstractPlugin extends
 	 * <code>
 	 *   hello <propertyvalue>myCustomKey</propertyvalue>
 	 * </code>
+	 * @throws PluginException 
 	 * 
 	 * 
 	 */
 	@Override
 	public String replaceDynamicValues(String aString,
-			ItemCollection documentContext) {
+			ItemCollection documentContext) throws PluginException {
 
 		int iTagStartPos;
 		int iTagEndPos;
@@ -159,9 +162,10 @@ public abstract class AbstractPlugin extends
 
 				// if no end tag found return string unchanged...
 				if (iTagEndPos == -1) {
-					logger.warning("[AbstractPlugin] invalid text string format: "
-							+ aString);
-					break;
+					throw new PluginException(
+							this.getClass().getSimpleName(),
+							INVALID_PROPERTYVALUE_FORMAT,
+							"[AbstractPlugin] invalid propertyvalue format: "+aString);
 				}
 
 				// reset pos vars

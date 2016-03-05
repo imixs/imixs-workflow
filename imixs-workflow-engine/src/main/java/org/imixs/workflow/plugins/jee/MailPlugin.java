@@ -307,9 +307,10 @@ public class MailPlugin extends AbstractPlugin {
 	 * @param documentContext
 	 * @param documentActivity
 	 * @return String - mail subject
+	 * @throws PluginException 
 	 */
 	public String getSubject(ItemCollection documentContext,
-			ItemCollection documentActivity) {
+			ItemCollection documentActivity) throws PluginException {
 
 		String subject = replaceDynamicValues(
 				documentActivity.getItemValueString("txtMailSubject"),
@@ -438,9 +439,10 @@ public class MailPlugin extends AbstractPlugin {
 	 * @param documentContext
 	 * @param documentActivity
 	 * @return String - mail subject
+	 * @throws PluginException 
 	 */
 	public String getBody(ItemCollection documentContext,
-			ItemCollection documentActivity) {
+			ItemCollection documentActivity) throws PluginException {
 		// build mail body and replace dynamic values...
 		String aBodyText = replaceDynamicValues(
 				documentActivity.getItemValueString("rtfMailBody"),

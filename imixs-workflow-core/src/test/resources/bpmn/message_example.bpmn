@@ -23,7 +23,7 @@
       <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
     </bpmn2:task>
-    <bpmn2:intermediateThrowEvent id="IntermediateThrowEvent_1" imixs:activityid="10" name="submit">
+    <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_1" imixs:activityid="10" name="submit">
       <bpmn2:extensionElements>
         <imixs:item name="txtmailsubject" type="xs:string">
           <imixs:value><![CDATA[Some Message<bpmn2:message>Message-2</bpmn2:message>]]></imixs:value>
@@ -36,16 +36,16 @@ This is some message
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_4</bpmn2:outgoing>
-    </bpmn2:intermediateThrowEvent>
+    </bpmn2:intermediateCatchEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_2" sourceRef="StartEvent_1" targetRef="Task_1"/>
-    <bpmn2:sequenceFlow id="SequenceFlow_3" sourceRef="Task_1" targetRef="IntermediateThrowEvent_1"/>
-    <bpmn2:sequenceFlow id="SequenceFlow_4" sourceRef="IntermediateThrowEvent_1" targetRef="Task_3"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_3" sourceRef="Task_1" targetRef="IntermediateCatchEvent_1"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_4" sourceRef="IntermediateCatchEvent_1" targetRef="Task_3"/>
     <bpmn2:task id="Task_3" imixs:processid="1100" name="Task 2">
       <bpmn2:incoming>SequenceFlow_4</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
     </bpmn2:task>
     <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="Task_3" targetRef="EndEvent_1"/>
-    <bpmn2:association id="Association_1" sourceRef="Message_2" targetRef="IntermediateThrowEvent_1"/>
+    <bpmn2:association id="Association_1" sourceRef="Message_2" targetRef="IntermediateCatchEvent_1"/>
     <bpmn2:association id="Association_2" sourceRef="Message_1" targetRef="Message_2"/>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1" name="Default Process Diagram">
@@ -68,7 +68,7 @@ This is some message
           <dc:Bounds height="14.0" width="36.0" x="257.0" y="111.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_IntermediateThrowEvent_1" bpmnElement="IntermediateThrowEvent_1">
+      <bpmndi:BPMNShape id="BPMNShape_IntermediateCatchEvent_1" bpmnElement="IntermediateCatchEvent_1">
         <dc:Bounds height="36.0" width="36.0" x="392.0" y="100.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_7">
           <dc:Bounds height="14.0" width="38.0" x="391.0" y="136.0"/>
@@ -98,20 +98,20 @@ This is some message
         <di:waypoint xsi:type="dc:Point" x="220.0" y="118.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_8"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_3" bpmnElement="SequenceFlow_3" sourceElement="BPMNShape_Task_1" targetElement="BPMNShape_IntermediateThrowEvent_1">
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_3" bpmnElement="SequenceFlow_3" sourceElement="BPMNShape_Task_1" targetElement="BPMNShape_IntermediateCatchEvent_1">
         <di:waypoint xsi:type="dc:Point" x="330.0" y="118.0"/>
         <di:waypoint xsi:type="dc:Point" x="361.0" y="118.0"/>
         <di:waypoint xsi:type="dc:Point" x="361.0" y="118.0"/>
         <di:waypoint xsi:type="dc:Point" x="392.0" y="118.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_9"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_4" bpmnElement="SequenceFlow_4" sourceElement="BPMNShape_IntermediateThrowEvent_1" targetElement="BPMNShape_Task_2">
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_4" bpmnElement="SequenceFlow_4" sourceElement="BPMNShape_IntermediateCatchEvent_1" targetElement="BPMNShape_Task_2">
         <di:waypoint xsi:type="dc:Point" x="428.0" y="118.0"/>
         <di:waypoint xsi:type="dc:Point" x="445.0" y="118.0"/>
         <di:waypoint xsi:type="dc:Point" x="463.0" y="118.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_10"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Association_1" bpmnElement="Association_1" sourceElement="BPMNShape_Message_2" targetElement="BPMNShape_IntermediateThrowEvent_1">
+      <bpmndi:BPMNEdge id="BPMNEdge_Association_1" bpmnElement="Association_1" sourceElement="BPMNShape_Message_2" targetElement="BPMNShape_IntermediateCatchEvent_1">
         <di:waypoint xsi:type="dc:Point" x="410.0" y="31.0"/>
         <di:waypoint xsi:type="dc:Point" x="410.0" y="65.0"/>
         <di:waypoint xsi:type="dc:Point" x="410.0" y="100.0"/>
