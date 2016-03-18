@@ -326,15 +326,17 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 			String sDelayUnit = docActivity.getItemValueString("keyActivityDelayUnit");
 			try {
-				iDelayUnit = Integer.parseInt(sDelayUnit); // 1= min, 2= hours, 3=day, 4=workdays
+				iDelayUnit = Integer.parseInt(sDelayUnit); // 1= min, 2= hours,
+															// 3=day, 4=workdays
 
-				if (iDelayUnit<1 || iDelayUnit>4) {
+				if (iDelayUnit < 1 || iDelayUnit > 4) {
 					logger.warning("[WorkflowSchedulerService] error parsing delay in ActivityEntity "
 							+ docActivity.getItemValueInteger("numProcessID") + "."
-							+ docActivity.getItemValueInteger("numActivityID") + " : unsuported keyActivityDelayUnit=" + sDelayUnit);
+							+ docActivity.getItemValueInteger("numActivityID") + " : unsuported keyActivityDelayUnit="
+							+ sDelayUnit);
 					return false;
 				}
-				
+
 			} catch (NumberFormatException nfe) {
 				logger.warning("[WorkflowSchedulerService] error parsing delay in ActivityEntity "
 						+ docActivity.getItemValueInteger("numProcessID") + "."
@@ -345,8 +347,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			// iRepeatTime =
 			// docActivity.getItemValueInteger("numActivityMinOffset");
 			iActivityDelay = docActivity.getItemValueInteger("numActivityDelay");
-			
-		
+
 			if ("1".equals(sDelayUnit))
 				sDelayUnit = "minutes";
 			if ("2".equals(sDelayUnit))
@@ -371,15 +372,14 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 						// workdays
 						if (iDelayUnit == 4) {
 							iActivityDelay *= 3600 * 24; // day->sec
-							
-							// now we need to adjust the delay because we need to skip the non-workdays
+
+							// now we need to adjust the delay because we need
+							// to skip the non-workdays
 							Calendar nowCal = Calendar.getInstance();
-							
-							int dayOfWeek=nowCal.get(Calendar.DAY_OF_WEEK);
-							// SUNDAY=1  MONDAY=2 .... SATURDAY=7
-						
-							
-							
+
+							int dayOfWeek = nowCal.get(Calendar.DAY_OF_WEEK);
+							// SUNDAY=1 MONDAY=2 .... SATURDAY=7
+
 						}
 					}
 				}
@@ -480,6 +480,80 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			return false;
 		}
 
+	}
+
+	/**
+	 * This method adds workdays (MONDAY - FRIDAY) to a given calendar object.
+	 * If the number of days is negative than this method subtracts the working
+	 * days from the calendar object.
+	 * 
+	 * 
+	 * @param cal
+	 * @param days
+	 * @return
+	 */
+	public static Calendar addWorkDays(final Calendar baseDate, final int days) {
+		Calendar resultDate = null;
+		Calendar workCal = Calendar.getInstance();
+		workCal.setTime(baseDate.getTime());
+
+		int currentWorkDay = workCal.get(Calendar.DAY_OF_WEEK);
+
+		// test if SATURDAY ?
+		if (currentWorkDay == Calendar.SATURDAY) {
+			// move to next FRIDAY
+			workCal.add(Calendar.DAY_OF_MONTH, -1);
+			currentWorkDay = workCal.get(Calendar.DAY_OF_WEEK);
+		}
+		// test if SUNDAY ?
+		if (currentWorkDay == Calendar.SUNDAY) {
+			// move to next FRIDAY
+			workCal.add(Calendar.DAY_OF_MONTH, -2);
+			currentWorkDay = workCal.get(Calendar.DAY_OF_WEEK);
+		}
+
+		// test if we are in a working week (should be so!)
+		if (currentWorkDay >= Calendar.MONDAY && currentWorkDay <= Calendar.FRIDAY) {
+
+			boolean inCurrentWeek = false;
+			
+			if (days>0) 
+				inCurrentWeek = (currentWorkDay + days < 7);
+			else
+				inCurrentWeek = (currentWorkDay + days > 1);
+			
+			
+			if (inCurrentWeek) {
+				workCal.add(Calendar.DAY_OF_MONTH, days);
+				resultDate = workCal;
+			} else {
+				int totalDays = 0;
+				int daysInCurrentWeek=0;
+				
+				// fill up current week.
+				if (days>0) {
+					daysInCurrentWeek=Calendar.SATURDAY-currentWorkDay;
+					totalDays=daysInCurrentWeek+2;
+				} else {
+					daysInCurrentWeek=-(currentWorkDay - Calendar.SUNDAY);
+					totalDays=daysInCurrentWeek-2;
+				}
+				
+				int restTotalDays=days-daysInCurrentWeek;
+				// next working week......
+				// add 2 days...
+				int x =restTotalDays / 5;
+				totalDays += restTotalDays + (x * 2);
+
+				workCal.add(Calendar.DAY_OF_MONTH, totalDays);
+				resultDate = workCal;
+
+			}
+		}
+		if (resultDate != null) {
+			logger.info("addWorkDays (" + baseDate.getTime() + ") + " + days + " = (" + resultDate.getTime() + ")");
+		}
+		return resultDate;
 	}
 
 	/**

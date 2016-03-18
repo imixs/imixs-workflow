@@ -15,10 +15,7 @@ import junit.framework.Assert;
 /**
  * Test class for WorkflowSchedulerService
  * 
- * This test verifies if the inDue methods
- * 
- * - workItemInDue
- * 
+ * This test verifies if the inDue methods workItemInDue() and addWorkDays()
  * 
  * @author rsoika
  */
@@ -67,10 +64,7 @@ public class TestWorkflowScheduler {
 		Assert.assertFalse(WorkflowSchedulerService.workItemInDue(doc, activity));
 
 	}
-	
-	
-	
-	
+
 	/**
 	 * This test the date compare base on timWorkflowLastAccess in workdays
 	 * 
@@ -107,6 +101,162 @@ public class TestWorkflowScheduler {
 		// prepare doc
 		doc.replaceItemValue("timWorkflowLastAccess", workitemCal.getTime());
 		Assert.assertFalse(WorkflowSchedulerService.workItemInDue(doc, activity));
+
+	}
+	
+	
+	
+
+	/**
+	 * This method tests the addWorkDays function in a weekday movement from
+	 * Monday to Fiday
+	 */
+	@Test
+	public void testAddWorkdaysFromMonday() {
+
+		Calendar startDate = Calendar.getInstance();
+		// adjust to FRIDAY
+		startDate.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+		System.out.println("Startdate=" + startDate.getTime());
+
+		
+		Assert.assertEquals(Calendar.TUESDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 1).get(Calendar.DAY_OF_WEEK));
+		Assert.assertEquals(Calendar.WEDNESDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 2).get(Calendar.DAY_OF_WEEK));
+		Assert.assertEquals(Calendar.FRIDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 4).get(Calendar.DAY_OF_WEEK));
+	
+	
+		Assert.assertEquals(Calendar.MONDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 5).get(Calendar.DAY_OF_WEEK));
+		
+		
+		
+		
+		
+		Assert.assertEquals(Calendar.FRIDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 9).get(Calendar.DAY_OF_WEEK));
+		Assert.assertEquals(Calendar.MONDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 10).get(Calendar.DAY_OF_WEEK));
+
+	}
+
+
+	/**
+	 * This method tests the addWorkDays function in a weekday movement from
+	 * Friday back to Monday
+	 */
+	@Test
+	public void testAddWorkdaysFromFriday() {
+	
+		Calendar startDate = Calendar.getInstance();
+		// adjust to FRIDAY
+		startDate.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY);
+		System.out.println("Startdate=" + startDate.getTime());
+	
+		// adjust -3 Workdays -> THUSEDAY
+		Assert.assertEquals(Calendar.TUESDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 2).get(Calendar.DAY_OF_WEEK));
+	
+		Assert.assertEquals(Calendar.WEDNESDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 8).get(Calendar.DAY_OF_WEEK));
+	
+		Assert.assertEquals(Calendar.FRIDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 10).get(Calendar.DAY_OF_WEEK));
+	
+		Assert.assertEquals(Calendar.THURSDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 14).get(Calendar.DAY_OF_WEEK));
+	
+	}
+
+	/**
+	 * This method tests the addWorkDays function in a weekday movement from
+	 * Friday back to Monday
+	 */
+	@Test
+	public void testMinusWorkdaysFromFriday() {
+
+		Calendar startDate = Calendar.getInstance();
+		// adjust to FRIDAY
+		startDate.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY);
+		System.out.println("Startdate=" + startDate.getTime());
+
+		// adjust -3 Workdays -> THUSEDAY
+		Assert.assertEquals(Calendar.THURSDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, -1).get(Calendar.DAY_OF_WEEK));
+		Assert.assertEquals(Calendar.WEDNESDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, -2).get(Calendar.DAY_OF_WEEK));
+		Assert.assertEquals(Calendar.MONDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, -4).get(Calendar.DAY_OF_WEEK));
+		// friday - 5
+		Assert.assertEquals(Calendar.FRIDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, -5).get(Calendar.DAY_OF_WEEK));
+		Assert.assertEquals(Calendar.MONDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, -9).get(Calendar.DAY_OF_WEEK));
+		Assert.assertEquals(Calendar.FRIDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, -10).get(Calendar.DAY_OF_WEEK));
+
+	}
+	
+	
+	/**
+	 * This method tests the addWorkDays function in a weekday movement from
+	 * Friday back to Monday
+	 */
+	@Test
+	public void testMinusWorkdaysFromMonday() {
+
+		Calendar startDate = Calendar.getInstance();
+		// adjust to FRIDAY
+		startDate.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+		System.out.println("Startdate=" + startDate.getTime());
+
+		// adjust -3 Workdays -> THUSEDAY
+		Assert.assertEquals(Calendar.THURSDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, -2).get(Calendar.DAY_OF_WEEK));
+
+	}
+	
+	
+	
+	/**
+	 * This method tests the addWorkDays function in a weekday movement from
+	 * SATURDAY backwards
+	 */
+	@Test
+	public void testMinusWorkdaysFromSaturday() {
+
+		Calendar startDate = Calendar.getInstance();
+		// adjust to SATURDAY
+		startDate.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
+		System.out.println("Startdate=" + startDate.getTime());
+
+		// adjust -1 Workdays -> THURSDAY
+		Assert.assertEquals(Calendar.THURSDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, -1).get(Calendar.DAY_OF_WEEK));
+		Assert.assertEquals(Calendar.FRIDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, -5).get(Calendar.DAY_OF_WEEK));
+
+	}
+
+	/**
+	 * This method tests the addWorkDays function in a weekday movement from
+	 * SUNDAY backwards
+	 */
+	@Test
+	public void testMinusWorkdaysFromSunday() {
+
+		Calendar startDate = Calendar.getInstance();
+		// adjust to SATURDAY
+		startDate.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+		System.out.println("Startdate=" + startDate.getTime());
+
+		// adjust -1 Workdays -> THURSDAY
+		Assert.assertEquals(Calendar.THURSDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, -1).get(Calendar.DAY_OF_WEEK));
+		Assert.assertEquals(Calendar.FRIDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, -5).get(Calendar.DAY_OF_WEEK));
 
 	}
 
