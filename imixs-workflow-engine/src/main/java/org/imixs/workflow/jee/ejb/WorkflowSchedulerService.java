@@ -85,6 +85,12 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	final static public String TYPE = "configuration";
 	final static public String NAME = "org.imixs.workflow.scheduler";
 
+	final static public int OFFSET_SECONDS = 0;
+	final static public int OFFSET_MINUTES = 1;
+	final static public int OFFSET_HOURS = 2;
+	final static public int OFFSET_DAYS = 3;
+	final static public int OFFSET_WORKDAYS = 4;
+
 	private static Logger logger = Logger.getLogger(WorkflowSchedulerService.class.getName());
 
 	@EJB
@@ -316,20 +322,17 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	public static boolean workItemInDue(ItemCollection doc, ItemCollection docActivity) {
 		try {
 			int iCompareType = -1;
-			int iDelayUnit = -1;
-
+			int iOffsetUnit = -1;
+			int iOffset = 0;
 			Date dateTimeCompare = null;
-			// int iRepeatTime = 0,
-			int iActivityDelay = 0;
-
 			String suniqueid = doc.getItemValueString("$uniqueid");
-
 			String sDelayUnit = docActivity.getItemValueString("keyActivityDelayUnit");
+
 			try {
-				iDelayUnit = Integer.parseInt(sDelayUnit); // 1= min, 2= hours,
+				iOffsetUnit = Integer.parseInt(sDelayUnit); // 1= min, 2= hours,
 															// 3=day, 4=workdays
 
-				if (iDelayUnit < 1 || iDelayUnit > 4) {
+				if (iOffsetUnit < 1 || iOffsetUnit > 4) {
 					logger.warning("[WorkflowSchedulerService] error parsing delay in ActivityEntity "
 							+ docActivity.getItemValueInteger("numProcessID") + "."
 							+ docActivity.getItemValueInteger("numActivityID") + " : unsuported keyActivityDelayUnit="
@@ -343,10 +346,8 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 						+ docActivity.getItemValueInteger("numActivityID") + " :" + nfe.getMessage());
 				return false;
 			}
-			// days | 3
-			// iRepeatTime =
-			// docActivity.getItemValueInteger("numActivityMinOffset");
-			iActivityDelay = docActivity.getItemValueInteger("numActivityDelay");
+			// get activityDelay from Event
+			iOffset = docActivity.getItemValueInteger("numActivityDelay");
 
 			if ("1".equals(sDelayUnit))
 				sDelayUnit = "minutes";
@@ -357,33 +358,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			if ("4".equals(sDelayUnit))
 				sDelayUnit = "workdays";
 
-			logger.finest("[WorkflowSchedulerService] " + suniqueid + " delay =" + iActivityDelay + " " + sDelayUnit);
-
-			// compute delay in seconds...
-			if (iDelayUnit == 1) {
-				iActivityDelay *= 60; // min->sec
-			} else {
-				if (iDelayUnit == 2) {
-					iActivityDelay *= 3600; // hour->sec
-				} else {
-					if (iDelayUnit == 3) {
-						iActivityDelay *= 3600 * 24; // day->sec
-					} else {
-						// workdays
-						if (iDelayUnit == 4) {
-							iActivityDelay *= 3600 * 24; // day->sec
-
-							// now we need to adjust the delay because we need
-							// to skip the non-workdays
-							Calendar nowCal = Calendar.getInstance();
-
-							int dayOfWeek = nowCal.get(Calendar.DAY_OF_WEEK);
-							// SUNDAY=1 MONDAY=2 .... SATURDAY=7
-
-						}
-					}
-				}
-			}
+			logger.finest("[WorkflowSchedulerService] " + suniqueid + " offset =" + iOffset + " " + sDelayUnit);
 
 			iCompareType = Integer.parseInt(docActivity.getItemValueString("keyScheduledBaseObject"));
 
@@ -402,7 +377,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": timWorkflowLastAccess=" + dateTimeCompare);
 
 				// scheduled time
-				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
+				dateTimeCompare = adjustBaseDate(dateTimeCompare,iOffsetUnit, iOffset);
 
 				if (dateTimeCompare != null)
 					return dateTimeCompare.before(dateTimeNow);
@@ -418,8 +393,8 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": modified=" + dateTimeCompare);
 
-				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
-
+				dateTimeCompare = adjustBaseDate(dateTimeCompare,iOffsetUnit, iOffset);
+				
 				if (dateTimeCompare != null)
 					return dateTimeCompare.before(dateTimeNow);
 				else
@@ -434,8 +409,8 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 				logger.fine("[WorkflowSchedulerService] " + suniqueid + ": doc.getCreated() =" + dateTimeCompare);
 
 				// Nein -> Creation date ist masstab
-				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
-
+				dateTimeCompare =adjustBaseDate(dateTimeCompare,iOffsetUnit, iOffset);
+				
 				if (dateTimeCompare != null)
 					return dateTimeCompare.before(dateTimeNow);
 				else
@@ -458,7 +433,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": " + sNameOfField + "=" + dateTimeCompare);
 
-				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
+				dateTimeCompare =adjustBaseDate(dateTimeCompare,iOffsetUnit, iOffset);
 				if (dateTimeCompare != null) {
 					logger.finest("[WorkflowSchedulerService] " + suniqueid + ": Compare " + dateTimeCompare + " <-> "
 							+ dateTimeNow);
@@ -490,7 +465,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	 * 
 	 * @param cal
 	 * @param days
-	 * @return
+	 * @return new calendar instance
 	 */
 	public static Calendar addWorkDays(final Calendar baseDate, final int days) {
 		Calendar resultDate = null;
@@ -502,47 +477,43 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		// test if SATURDAY ?
 		if (currentWorkDay == Calendar.SATURDAY) {
 			// move to next FRIDAY
-			workCal.add(Calendar.DAY_OF_MONTH, -1);
+			workCal.add(Calendar.DAY_OF_MONTH, (days < 0 ? -1 : +2));
 			currentWorkDay = workCal.get(Calendar.DAY_OF_WEEK);
 		}
 		// test if SUNDAY ?
 		if (currentWorkDay == Calendar.SUNDAY) {
 			// move to next FRIDAY
-			workCal.add(Calendar.DAY_OF_MONTH, -2);
+			workCal.add(Calendar.DAY_OF_MONTH, (days < 0 ? -2 : +1));
 			currentWorkDay = workCal.get(Calendar.DAY_OF_WEEK);
 		}
 
 		// test if we are in a working week (should be so!)
 		if (currentWorkDay >= Calendar.MONDAY && currentWorkDay <= Calendar.FRIDAY) {
-
 			boolean inCurrentWeek = false;
-			
-			if (days>0) 
+			if (days > 0)
 				inCurrentWeek = (currentWorkDay + days < 7);
 			else
 				inCurrentWeek = (currentWorkDay + days > 1);
-			
-			
+
 			if (inCurrentWeek) {
 				workCal.add(Calendar.DAY_OF_MONTH, days);
 				resultDate = workCal;
 			} else {
 				int totalDays = 0;
-				int daysInCurrentWeek=0;
-				
+				int daysInCurrentWeek = 0;
+
 				// fill up current week.
-				if (days>0) {
-					daysInCurrentWeek=Calendar.SATURDAY-currentWorkDay;
-					totalDays=daysInCurrentWeek+2;
+				if (days > 0) {
+					daysInCurrentWeek = Calendar.SATURDAY - currentWorkDay;
+					totalDays = daysInCurrentWeek + 2;
 				} else {
-					daysInCurrentWeek=-(currentWorkDay - Calendar.SUNDAY);
-					totalDays=daysInCurrentWeek-2;
+					daysInCurrentWeek = -(currentWorkDay - Calendar.SUNDAY);
+					totalDays = daysInCurrentWeek - 2;
 				}
-				
-				int restTotalDays=days-daysInCurrentWeek;
-				// next working week......
-				// add 2 days...
-				int x =restTotalDays / 5;
+
+				int restTotalDays = days - daysInCurrentWeek;
+				// next working week... add 2 days for each week.
+				int x = restTotalDays / 5;
 				totalDays += restTotalDays + (x * 2);
 
 				workCal.add(Calendar.DAY_OF_MONTH, totalDays);
@@ -978,20 +949,46 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	}
 
 	/**
-	 * This method add seconds to a given date object
+	 * This method adjusts a given base date for a amount of delay
 	 * 
-	 * @param adate
-	 *            to be adjusted
-	 * @param seconds
-	 *            to be added (can be <0)
+	 * 
+	 * @param baseDate
+	 *            date object to be adjusted
+	 * 
+	 * @param offsetUnit
+	 *            - time unit (0=sec, 1=min, 2=hours, 3=days, 4=workdays)
+	 * @param offset
+	 *            offset for adjustment
 	 * @return new date object
 	 */
-	private static Date adjustSecond(Date adate, int seconds) {
-		if (adate != null) {
-			Calendar calTimeCompare = Calendar.getInstance();
-			calTimeCompare.setTime(adate);
-			calTimeCompare.add(Calendar.SECOND, seconds);
-			return calTimeCompare.getTime();
+	private static Date adjustBaseDate(Date baseDate, int offsetUnit, int offset) {
+		if (baseDate != null) {
+
+			// workdays?
+			if (offsetUnit == OFFSET_WORKDAYS) {
+				Calendar baseCal = Calendar.getInstance();
+				baseCal.setTime(baseDate);
+				return addWorkDays(baseCal, offset).getTime();
+
+			} else {
+
+				// compute offset in seconds...
+				if (offsetUnit == OFFSET_MINUTES) {
+					offset *= 60; // min->sec
+				} else {
+					if (offsetUnit == OFFSET_HOURS) {
+						offset *= 3600; // hour->sec
+					} else {
+						if (offsetUnit == OFFSET_DAYS) {
+							offset *= 3600 * 24; // day->sec
+						}
+					}
+				}
+				Calendar calTimeCompare = Calendar.getInstance();
+				calTimeCompare.setTime(baseDate);
+				calTimeCompare.add(Calendar.SECOND, offset);
+				return calTimeCompare.getTime();
+			}
 		} else
 			return null;
 	}

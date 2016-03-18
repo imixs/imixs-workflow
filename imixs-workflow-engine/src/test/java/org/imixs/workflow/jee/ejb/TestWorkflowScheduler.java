@@ -239,6 +239,32 @@ public class TestWorkflowScheduler {
 				WorkflowSchedulerService.addWorkDays(startDate, -5).get(Calendar.DAY_OF_WEEK));
 
 	}
+	
+	
+	/**
+	 * This method tests the addWorkDays function in a weekday movement from
+	 * SATURDAY forwards
+	 */
+	@Test
+	public void testAddWorkdaysFromSaturday() {
+
+		Calendar startDate = Calendar.getInstance();
+		// adjust to SATURDAY
+		startDate.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
+		System.out.println("Startdate=" + startDate.getTime());
+
+		// adjust -1 Workdays -> TUESDAY
+		Assert.assertEquals(Calendar.TUESDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 1).get(Calendar.DAY_OF_WEEK));
+
+		Assert.assertEquals(Calendar.FRIDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 4).get(Calendar.DAY_OF_WEEK));
+
+		
+		Assert.assertEquals(Calendar.MONDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 5).get(Calendar.DAY_OF_WEEK));
+
+	}
 
 	/**
 	 * This method tests the addWorkDays function in a weekday movement from
@@ -257,6 +283,31 @@ public class TestWorkflowScheduler {
 				WorkflowSchedulerService.addWorkDays(startDate, -1).get(Calendar.DAY_OF_WEEK));
 		Assert.assertEquals(Calendar.FRIDAY,
 				WorkflowSchedulerService.addWorkDays(startDate, -5).get(Calendar.DAY_OF_WEEK));
+
+	}
+	
+	/**
+	 * This method tests the addWorkDays function in a weekday movement from
+	 * SUNDAY forwards
+	 */
+	@Test
+	public void testAddWorkdaysFromSunday() {
+
+		Calendar startDate = Calendar.getInstance();
+		// adjust to SATURDAY
+		startDate.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+		System.out.println("Startdate=" + startDate.getTime());
+
+		// adjust -1 Workdays -> TUESDAY
+		Assert.assertEquals(Calendar.TUESDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 1).get(Calendar.DAY_OF_WEEK));
+	
+		Assert.assertEquals(Calendar.FRIDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 4).get(Calendar.DAY_OF_WEEK));
+
+		
+		Assert.assertEquals(Calendar.MONDAY,
+				WorkflowSchedulerService.addWorkDays(startDate, 5).get(Calendar.DAY_OF_WEEK));
 
 	}
 
