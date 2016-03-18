@@ -65,45 +65,6 @@ public class TestWorkflowScheduler {
 
 	}
 
-	/**
-	 * This test the date compare base on timWorkflowLastAccess in workdays
-	 * 
-	 * @throws ProcessingErrorException
-	 * @throws AccessDeniedException
-	 * 
-	 */
-	@Test
-	public void testWorkdaysOnLastProcess() throws AccessDeniedException, ProcessingErrorException, PluginException {
-
-		ItemCollection doc = new ItemCollection();
-		ItemCollection activity = new ItemCollection();
-
-		// delay unit = days
-		activity.replaceItemValue("keyActivityDelayUnit", "4");
-		// compare type = last process
-		activity.replaceItemValue("keyScheduledBaseObject", "1");
-		// delay
-		activity.replaceItemValue("numActivityDelay", 10);
-
-		Calendar workitemCal = Calendar.getInstance();
-		workitemCal.setTime(new Date());
-		// adjust -14
-		workitemCal.add(Calendar.DAY_OF_MONTH, -14);
-		// prepare doc
-		doc.replaceItemValue("timWorkflowLastAccess", workitemCal.getTime());
-		Assert.assertTrue(WorkflowSchedulerService.workItemInDue(doc, activity));
-
-		// delay
-		activity.replaceItemValue("numActivityDelay", 15);
-		workitemCal.setTime(new Date());
-		// adjust -14
-		workitemCal.add(Calendar.DAY_OF_MONTH, -14);
-		// prepare doc
-		doc.replaceItemValue("timWorkflowLastAccess", workitemCal.getTime());
-		Assert.assertFalse(WorkflowSchedulerService.workItemInDue(doc, activity));
-
-	}
-	
 	
 	
 
