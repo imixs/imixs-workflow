@@ -85,8 +85,13 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	final static public String TYPE = "configuration";
 	final static public String NAME = "org.imixs.workflow.scheduler";
 
-	private static Logger logger = Logger
-			.getLogger(WorkflowSchedulerService.class.getName());
+	final static public int OFFSET_SECONDS = 0;
+	final static public int OFFSET_MINUTES = 1;
+	final static public int OFFSET_HOURS = 2;
+	final static public int OFFSET_DAYS = 3;
+	final static public int OFFSET_WORKDAYS = 4;
+
+	private static Logger logger = Logger.getLogger(WorkflowSchedulerService.class.getName());
 
 	@EJB
 	WorkflowService workflowService;
@@ -117,13 +122,10 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	 */
 	public ItemCollection loadConfiguration() {
 		ItemCollection configItemCollection = null;
-		String sQuery = "SELECT config FROM Entity AS config "
-				+ " JOIN config.textItems AS t2" + " WHERE config.type = '"
-				+ TYPE + "'" + " AND t2.itemName = 'txtname'"
-				+ " AND t2.itemValue = '" + NAME + "'"
-				+ " ORDER BY t2.itemValue asc";
-		Collection<ItemCollection> col = entityService.findAllEntities(sQuery,
-				0, 1);
+		String sQuery = "SELECT config FROM Entity AS config " + " JOIN config.textItems AS t2"
+				+ " WHERE config.type = '" + TYPE + "'" + " AND t2.itemName = 'txtname'" + " AND t2.itemValue = '"
+				+ NAME + "'" + " ORDER BY t2.itemValue asc";
+		Collection<ItemCollection> col = entityService.findAllEntities(sQuery, 0, 1);
 
 		if (col.size() > 0) {
 			configItemCollection = col.iterator().next();
@@ -132,8 +134,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			configItemCollection = new ItemCollection();
 			configItemCollection.replaceItemValue("type", TYPE);
 			configItemCollection.replaceItemValue("txtname", NAME);
-			configItemCollection.replaceItemValue(WorkflowKernel.UNIQUEID,
-					WorkflowKernel.generateUniqueID());
+			configItemCollection.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
 		}
 		configItemCollection = updateTimerDetails(configItemCollection);
 		return configItemCollection;
@@ -154,15 +155,12 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	 * @return
 	 * @throws AccessDeniedException
 	 */
-	public ItemCollection saveConfiguration(ItemCollection configItemCollection)
-			throws AccessDeniedException {
+	public ItemCollection saveConfiguration(ItemCollection configItemCollection) throws AccessDeniedException {
 		// update write and read access
 		configItemCollection.replaceItemValue("type", TYPE);
 		configItemCollection.replaceItemValue("txtName", NAME);
-		configItemCollection.replaceItemValue("$writeAccess",
-				"org.imixs.ACCESSLEVEL.MANAGERACCESS");
-		configItemCollection.replaceItemValue("$readAccess",
-				"org.imixs.ACCESSLEVEL.MANAGERACCESS");
+		configItemCollection.replaceItemValue("$writeAccess", "org.imixs.ACCESSLEVEL.MANAGERACCESS");
+		configItemCollection.replaceItemValue("$readAccess", "org.imixs.ACCESSLEVEL.MANAGERACCESS");
 
 		// configItemCollection.replaceItemValue("$writeAccess", "");
 		// configItemCollection.replaceItemValue("$readAccess", "");
@@ -221,8 +219,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			this.findTimer(id).cancel();
 		}
 
-		String sConfiguation = configItemCollection
-				.getItemValueString("txtConfiguration");
+		String sConfiguation = configItemCollection.getItemValueString("txtConfiguration");
 
 		if (!sConfiguation.isEmpty()) {
 			// New timer will be started on calendar confiugration
@@ -232,8 +229,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			int hours = configItemCollection.getItemValueInteger("hours");
 			int minutes = configItemCollection.getItemValueInteger("minutes");
 			long interval = (hours * 60 + minutes) * 60 * 1000;
-			configItemCollection.replaceItemValue("numInterval", new Long(
-					interval));
+			configItemCollection.replaceItemValue("numInterval", new Long(interval));
 
 			timer = createTimerOnInterval(configItemCollection);
 		}
@@ -242,21 +238,18 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		if (timer != null) {
 
 			Calendar calNow = Calendar.getInstance();
-			SimpleDateFormat dateFormatDE = new SimpleDateFormat(
-					"dd.MM.yy hh:mm:ss");
-			String msg = "started at " + dateFormatDE.format(calNow.getTime())
-					+ " by " + ctx.getCallerPrincipal().getName();
+			SimpleDateFormat dateFormatDE = new SimpleDateFormat("dd.MM.yy hh:mm:ss");
+			String msg = "started at " + dateFormatDE.format(calNow.getTime()) + " by "
+					+ ctx.getCallerPrincipal().getName();
 			configItemCollection.replaceItemValue("statusmessage", msg);
 
 			if (timer.isCalendarTimer()) {
-				configItemCollection.replaceItemValue("Schedule", timer
-						.getSchedule().toString());
+				configItemCollection.replaceItemValue("Schedule", timer.getSchedule().toString());
 			} else {
 				configItemCollection.replaceItemValue("Schedule", "");
 
 			}
-			logger.info("[WorkflowSchedulerService] "
-					+ configItemCollection.getItemValueString("txtName")
+			logger.info("[WorkflowSchedulerService] " + configItemCollection.getItemValueString("txtName")
 					+ " started: " + id);
 		}
 
@@ -283,13 +276,11 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		}
 		if (found) {
 			Calendar calNow = Calendar.getInstance();
-			SimpleDateFormat dateFormatDE = new SimpleDateFormat(
-					"dd.MM.yy hh:mm:ss");
-			String msg = "stopped at " + dateFormatDE.format(calNow.getTime())
-					+ " by " + ctx.getCallerPrincipal().getName();
+			SimpleDateFormat dateFormatDE = new SimpleDateFormat("dd.MM.yy hh:mm:ss");
+			String msg = "stopped at " + dateFormatDE.format(calNow.getTime()) + " by "
+					+ ctx.getCallerPrincipal().getName();
 			configItemCollection.replaceItemValue("statusmessage", msg);
-			logger.info("[WorkflowSchedulerService] "
-					+ configItemCollection.getItemValueString("txtName")
+			logger.info("[WorkflowSchedulerService] " + configItemCollection.getItemValueString("txtName")
 					+ " stopped: " + id);
 		} else {
 			configItemCollection.replaceItemValue("statusmessage", "");
@@ -328,64 +319,48 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	 * 
 	 * @return true if workitem is is due
 	 */
-	public static boolean workItemInDue(ItemCollection doc,
-			ItemCollection docActivity) {
+	public static boolean workItemInDue(ItemCollection doc, ItemCollection docActivity) {
 		try {
 			int iCompareType = -1;
-			int iDelayUnit = -1;
-
+			int iOffsetUnit = -1;
+			int iOffset = 0;
 			Date dateTimeCompare = null;
-			// int iRepeatTime = 0,
-			int iActivityDelay = 0;
-
 			String suniqueid = doc.getItemValueString("$uniqueid");
+			String sDelayUnit = docActivity.getItemValueString("keyActivityDelayUnit");
 
-			String sDelayUnit = docActivity
-					.getItemValueString("keyActivityDelayUnit");
 			try {
-				iDelayUnit = Integer.parseInt(sDelayUnit); // min | 1; hours |
-															// 2;
+				iOffsetUnit = Integer.parseInt(sDelayUnit); // 1= min, 2= hours,
+															// 3=day, 4=workdays
+
+				if (iOffsetUnit < 1 || iOffsetUnit > 4) {
+					logger.warning("[WorkflowSchedulerService] error parsing delay in ActivityEntity "
+							+ docActivity.getItemValueInteger("numProcessID") + "."
+							+ docActivity.getItemValueInteger("numActivityID") + " : unsuported keyActivityDelayUnit="
+							+ sDelayUnit);
+					return false;
+				}
 
 			} catch (NumberFormatException nfe) {
 				logger.warning("[WorkflowSchedulerService] error parsing delay in ActivityEntity "
-						+ docActivity.getItemValueInteger("numProcessID")
-						+ "."
-						+ docActivity.getItemValueInteger("numActivityID")
-						+ " :" + nfe.getMessage());
+						+ docActivity.getItemValueInteger("numProcessID") + "."
+						+ docActivity.getItemValueInteger("numActivityID") + " :" + nfe.getMessage());
 				return false;
 			}
-			// days | 3
-			// iRepeatTime =
-			// docActivity.getItemValueInteger("numActivityMinOffset");
-			iActivityDelay = docActivity
-					.getItemValueInteger("numActivityDelay");
-			if (true) {
-				if ("1".equals(sDelayUnit))
-					sDelayUnit = "minutes";
-				if ("2".equals(sDelayUnit))
-					sDelayUnit = "hours";
-				if ("3".equals(sDelayUnit))
-					sDelayUnit = "days";
+			// get activityDelay from Event
+			iOffset = docActivity.getItemValueInteger("numActivityDelay");
 
-				logger.finest("[WorkflowSchedulerService] " + suniqueid
-						+ " delay =" + iActivityDelay + " " + sDelayUnit);
+			if ("1".equals(sDelayUnit))
+				sDelayUnit = "minutes";
+			if ("2".equals(sDelayUnit))
+				sDelayUnit = "hours";
+			if ("3".equals(sDelayUnit))
+				sDelayUnit = "days";
+			if ("4".equals(sDelayUnit))
+				sDelayUnit = "workdays";
 
-			}
-			// Delay in sekunden umrechnen
-			if (iDelayUnit == 1) {
-				iActivityDelay *= 60; // min->sec
-			} else {
-				if (iDelayUnit == 2) {
-					iActivityDelay *= 3600; // hour->sec
-				} else {
-					if (iDelayUnit == 3) {
-						iActivityDelay *= 3600 * 24; // day->sec
-					}
-				}
-			}
+			logger.finest("[WorkflowSchedulerService] " + suniqueid + " offset =" + iOffset + " " + sDelayUnit);
 
-			iCompareType = Integer.parseInt(docActivity
-					.getItemValueString("keyScheduledBaseObject"));
+			iCompareType = Integer.parseInt(docActivity.getItemValueString("keyScheduledBaseObject"));
 
 			// get current time for compare....
 			Date dateTimeNow = Calendar.getInstance().getTime();
@@ -393,18 +368,16 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			switch (iCompareType) {
 			// last process -
 			case 1: {
-				logger.finest("[WorkflowSchedulerService] " + suniqueid
-						+ ": CompareType = last process");
+				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": CompareType = last process");
 
 				if (!doc.hasItem("timWorkflowLastAccess"))
 					return false;
 
 				dateTimeCompare = doc.getItemValueDate("timWorkflowLastAccess");
-				logger.finest("[WorkflowSchedulerService] " + suniqueid
-						+ ": timWorkflowLastAccess=" + dateTimeCompare);
+				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": timWorkflowLastAccess=" + dateTimeCompare);
 
 				// scheduled time
-				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
+				dateTimeCompare = adjustBaseDate(dateTimeCompare,iOffsetUnit, iOffset);
 
 				if (dateTimeCompare != null)
 					return dateTimeCompare.before(dateTimeNow);
@@ -412,19 +385,16 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 					return false;
 			}
 
-			// last modification - es erfolgt kein Vergleich mit last
-			// Event, da dieses ja selbst der auslöser der Zeit ist
+			// last modification
 			case 2: {
-				logger.finest("[WorkflowSchedulerService] " + suniqueid
-						+ ": CompareType = last modify");
+				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": CompareType = last modify");
 
 				dateTimeCompare = doc.getItemValueDate("$modified");
 
-				logger.finest("[WorkflowSchedulerService] " + suniqueid
-						+ ": modified=" + dateTimeCompare);
+				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": modified=" + dateTimeCompare);
 
-				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
-
+				dateTimeCompare = adjustBaseDate(dateTimeCompare,iOffsetUnit, iOffset);
+				
 				if (dateTimeCompare != null)
 					return dateTimeCompare.before(dateTimeNow);
 				else
@@ -433,16 +403,14 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 			// creation
 			case 3: {
-				logger.finest("[WorkflowSchedulerService] " + suniqueid
-						+ ": CompareType = creation");
+				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": CompareType = creation");
 
 				dateTimeCompare = doc.getItemValueDate("$created");
-				logger.fine("[WorkflowSchedulerService] " + suniqueid
-						+ ": doc.getCreated() =" + dateTimeCompare);
+				logger.fine("[WorkflowSchedulerService] " + suniqueid + ": doc.getCreated() =" + dateTimeCompare);
 
 				// Nein -> Creation date ist masstab
-				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
-
+				dateTimeCompare =adjustBaseDate(dateTimeCompare,iOffsetUnit, iOffset);
+				
 				if (dateTimeCompare != null)
 					return dateTimeCompare.before(dateTimeNow);
 				else
@@ -451,32 +419,27 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 			// field
 			case 4: {
-				String sNameOfField = docActivity
-						.getItemValueString("keyTimeCompareField");
-				logger.finest("[WorkflowSchedulerService] " + suniqueid
-						+ ": CompareType = field: '" + sNameOfField + "'");
+				String sNameOfField = docActivity.getItemValueString("keyTimeCompareField");
+				logger.finest(
+						"[WorkflowSchedulerService] " + suniqueid + ": CompareType = field: '" + sNameOfField + "'");
 
 				if (!doc.hasItem(sNameOfField)) {
-					logger.finest("[WorkflowSchedulerService] " + suniqueid
-							+ ": CompareType =" + sNameOfField
+					logger.finest("[WorkflowSchedulerService] " + suniqueid + ": CompareType =" + sNameOfField
 							+ " no value found!");
 					return false;
 				}
 
 				dateTimeCompare = doc.getItemValueDate(sNameOfField);
 
-				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": "
-						+ sNameOfField + "=" + dateTimeCompare);
+				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": " + sNameOfField + "=" + dateTimeCompare);
 
-				dateTimeCompare = adjustSecond(dateTimeCompare, iActivityDelay);
+				dateTimeCompare =adjustBaseDate(dateTimeCompare,iOffsetUnit, iOffset);
 				if (dateTimeCompare != null) {
-					logger.finest("[WorkflowSchedulerService] " + suniqueid
-							+ ": Compare " + dateTimeCompare + " <-> "
+					logger.finest("[WorkflowSchedulerService] " + suniqueid + ": Compare " + dateTimeCompare + " <-> "
 							+ dateTimeNow);
 
 					if (dateTimeCompare.before(dateTimeNow)) {
-						logger.finest("[WorkflowSchedulerService] " + suniqueid
-								+ " isInDue!");
+						logger.finest("[WorkflowSchedulerService] " + suniqueid + " isInDue!");
 					}
 					return dateTimeCompare.before(dateTimeNow);
 				} else
@@ -492,6 +455,76 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			return false;
 		}
 
+	}
+
+	/**
+	 * This method adds workdays (MONDAY - FRIDAY) to a given calendar object.
+	 * If the number of days is negative than this method subtracts the working
+	 * days from the calendar object.
+	 * 
+	 * 
+	 * @param cal
+	 * @param days
+	 * @return new calendar instance
+	 */
+	public static Calendar addWorkDays(final Calendar baseDate, final int days) {
+		Calendar resultDate = null;
+		Calendar workCal = Calendar.getInstance();
+		workCal.setTime(baseDate.getTime());
+
+		int currentWorkDay = workCal.get(Calendar.DAY_OF_WEEK);
+
+		// test if SATURDAY ?
+		if (currentWorkDay == Calendar.SATURDAY) {
+			// move to next FRIDAY
+			workCal.add(Calendar.DAY_OF_MONTH, (days < 0 ? -1 : +2));
+			currentWorkDay = workCal.get(Calendar.DAY_OF_WEEK);
+		}
+		// test if SUNDAY ?
+		if (currentWorkDay == Calendar.SUNDAY) {
+			// move to next FRIDAY
+			workCal.add(Calendar.DAY_OF_MONTH, (days < 0 ? -2 : +1));
+			currentWorkDay = workCal.get(Calendar.DAY_OF_WEEK);
+		}
+
+		// test if we are in a working week (should be so!)
+		if (currentWorkDay >= Calendar.MONDAY && currentWorkDay <= Calendar.FRIDAY) {
+			boolean inCurrentWeek = false;
+			if (days > 0)
+				inCurrentWeek = (currentWorkDay + days < 7);
+			else
+				inCurrentWeek = (currentWorkDay + days > 1);
+
+			if (inCurrentWeek) {
+				workCal.add(Calendar.DAY_OF_MONTH, days);
+				resultDate = workCal;
+			} else {
+				int totalDays = 0;
+				int daysInCurrentWeek = 0;
+
+				// fill up current week.
+				if (days > 0) {
+					daysInCurrentWeek = Calendar.SATURDAY - currentWorkDay;
+					totalDays = daysInCurrentWeek + 2;
+				} else {
+					daysInCurrentWeek = -(currentWorkDay - Calendar.SUNDAY);
+					totalDays = daysInCurrentWeek - 2;
+				}
+
+				int restTotalDays = days - daysInCurrentWeek;
+				// next working week... add 2 days for each week.
+				int x = restTotalDays / 5;
+				totalDays += restTotalDays + (x * 2);
+
+				workCal.add(Calendar.DAY_OF_MONTH, totalDays);
+				resultDate = workCal;
+
+			}
+		}
+		if (resultDate != null) {
+			logger.info("addWorkDays (" + baseDate.getTime() + ") + " + days + " = (" + resultDate.getTime() + ")");
+		}
+		return resultDate;
 	}
 
 	/**
@@ -528,14 +561,11 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			// get all model versions...
 			List<String> modelVersions = modelService.getAllModelVersions();
 			for (String version : modelVersions) {
-				logger.info("[WorkflowSchedulerService] processing ModelVersion: "
-						+ version);
+				logger.info("[WorkflowSchedulerService] processing ModelVersion: " + version);
 				// find scheduled Activities
 				Collection<ItemCollection> colScheduledActivities = findScheduledActivities(version);
-				logger.info("[WorkflowSchedulerService] "
-						+ colScheduledActivities.size()
-						+ " scheduled activityEntities found in ModelVersion: "
-						+ version);
+				logger.info("[WorkflowSchedulerService] " + colScheduledActivities.size()
+						+ " scheduled activityEntities found in ModelVersion: " + version);
 				// process all workitems for coresponding activities
 				for (ItemCollection aactivityEntity : colScheduledActivities) {
 					processWorkListByActivityEntity(aactivityEntity);
@@ -543,8 +573,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			}
 
 		} catch (Exception e) {
-			logger.severe("[WorkflowSchedulerService] error processing worklist: "
-					+ e.getMessage());
+			logger.severe("[WorkflowSchedulerService] error processing worklist: " + e.getMessage());
 			if (logger.isLoggable(Level.FINE)) {
 				e.printStackTrace();
 			}
@@ -552,12 +581,10 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 		logger.info("[WorkflowSchedulerService] finished successfull");
 
-		logger.info("[WorkflowSchedulerService] " + iProcessWorkItems
-				+ " workitems processed");
+		logger.info("[WorkflowSchedulerService] " + iProcessWorkItems + " workitems processed");
 
 		if (unprocessedIDs.size() > 0) {
-			logger.warning("[WorkflowSchedulerService] "
-					+ unprocessedIDs.size() + " workitems could be processed!");
+			logger.warning("[WorkflowSchedulerService] " + unprocessedIDs.size() + " workitems could be processed!");
 			for (String aid : unprocessedIDs) {
 				logger.warning("[WorkflowSchedulerService]          " + aid);
 			}
@@ -568,33 +595,26 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		String sTimerID = configItemCollection.getItemValueString("$uniqueid");
 
 		// update statistic of last run
-		configItemCollection.replaceItemValue("numWorkItemsProcessed",
-				iProcessWorkItems);
-		configItemCollection.replaceItemValue("numWorkItemsUnprocessed",
-				unprocessedIDs.size());
+		configItemCollection.replaceItemValue("numWorkItemsProcessed", iProcessWorkItems);
+		configItemCollection.replaceItemValue("numWorkItemsUnprocessed", unprocessedIDs.size());
 
 		/*
 		 * Check if Timer should be canceld now? - only by interval
 		 * configuration. In case of calenderBasedTimer the timer will stop
 		 * automatically.
 		 */
-		String sConfiguation = configItemCollection
-				.getItemValueString("txtConfiguration");
+		String sConfiguation = configItemCollection.getItemValueString("txtConfiguration");
 
 		if (sConfiguation.isEmpty()) {
 
 			Calendar calNow = Calendar.getInstance();
 			if (endDate != null && calNow.getTime().after(endDate)) {
 				timer.cancel();
-				System.out
-						.println("[WorkflowSchedulerService] Timeout sevice stopped: "
-								+ sTimerID);
+				System.out.println("[WorkflowSchedulerService] Timeout sevice stopped: " + sTimerID);
 
-				SimpleDateFormat dateFormatDE = new SimpleDateFormat(
-						"dd.MM.yy hh:mm:ss");
-				String msg = "stopped at "
-						+ dateFormatDE.format(calNow.getTime())
-						+ " by datstop=" + dateFormatDE.format(endDate);
+				SimpleDateFormat dateFormatDE = new SimpleDateFormat("dd.MM.yy hh:mm:ss");
+				String msg = "stopped at " + dateFormatDE.format(calNow.getTime()) + " by datstop="
+						+ dateFormatDE.format(endDate);
 				configItemCollection.replaceItemValue("statusmessage", msg);
 
 			}
@@ -623,16 +643,14 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		if (endDate != null)
 			calEnd.setTime(endDate);
 		if (calNow.after(calEnd)) {
-			logger.warning("[WorkflowSchedulerService] "
-					+ configItemCollection.getItemValueString("txtName")
+			logger.warning("[WorkflowSchedulerService] " + configItemCollection.getItemValueString("txtName")
 					+ " stop-date is in the past");
 
 			endDate = startDate;
 		}
 		Timer timer = null;
 		// create timer object ($uniqueid)
-		timer = timerService.createTimer(startDate, interval,
-				configItemCollection.getUniqueID());
+		timer = timerService.createTimer(startDate, interval, configItemCollection.getUniqueID());
 		return timer;
 
 	}
@@ -655,8 +673,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	 * @return
 	 * @throws ParseException
 	 */
-	Timer createTimerOnCalendar(ItemCollection configItemCollection)
-			throws ParseException {
+	Timer createTimerOnCalendar(ItemCollection configItemCollection) throws ParseException {
 
 		TimerConfig timerConfig = new TimerConfig();
 
@@ -664,64 +681,52 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		ScheduleExpression scheduerExpression = new ScheduleExpression();
 
 		@SuppressWarnings("unchecked")
-		List<String> calendarConfiguation = (List<String>) configItemCollection
-				.getItemValue("txtConfiguration");
+		List<String> calendarConfiguation = (List<String>) configItemCollection.getItemValue("txtConfiguration");
 		// try to parse the configuration list....
 		for (String confgEntry : calendarConfiguation) {
 
 			if (confgEntry.startsWith("second=")) {
-				scheduerExpression.second(confgEntry.substring(confgEntry
-						.indexOf('=') + 1));
+				scheduerExpression.second(confgEntry.substring(confgEntry.indexOf('=') + 1));
 			}
 			if (confgEntry.startsWith("minute=")) {
-				scheduerExpression.minute(confgEntry.substring(confgEntry
-						.indexOf('=') + 1));
+				scheduerExpression.minute(confgEntry.substring(confgEntry.indexOf('=') + 1));
 			}
 			if (confgEntry.startsWith("hour=")) {
-				scheduerExpression.hour(confgEntry.substring(confgEntry
-						.indexOf('=') + 1));
+				scheduerExpression.hour(confgEntry.substring(confgEntry.indexOf('=') + 1));
 			}
 			if (confgEntry.startsWith("dayOfWeek=")) {
-				scheduerExpression.dayOfWeek(confgEntry.substring(confgEntry
-						.indexOf('=') + 1));
+				scheduerExpression.dayOfWeek(confgEntry.substring(confgEntry.indexOf('=') + 1));
 			}
 			if (confgEntry.startsWith("dayOfMonth=")) {
-				scheduerExpression.dayOfMonth(confgEntry.substring(confgEntry
-						.indexOf('=') + 1));
+				scheduerExpression.dayOfMonth(confgEntry.substring(confgEntry.indexOf('=') + 1));
 			}
 			if (confgEntry.startsWith("month=")) {
-				scheduerExpression.month(confgEntry.substring(confgEntry
-						.indexOf('=') + 1));
+				scheduerExpression.month(confgEntry.substring(confgEntry.indexOf('=') + 1));
 			}
 			if (confgEntry.startsWith("year=")) {
-				scheduerExpression.year(confgEntry.substring(confgEntry
-						.indexOf('=') + 1));
+				scheduerExpression.year(confgEntry.substring(confgEntry.indexOf('=') + 1));
 			}
 			if (confgEntry.startsWith("timezone=")) {
-				scheduerExpression.timezone(confgEntry.substring(confgEntry
-						.indexOf('=') + 1));
+				scheduerExpression.timezone(confgEntry.substring(confgEntry.indexOf('=') + 1));
 			}
 
 			/* Start date */
 			if (confgEntry.startsWith("start=")) {
 				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-				Date convertedDate = dateFormat.parse(confgEntry
-						.substring(confgEntry.indexOf('=') + 1));
+				Date convertedDate = dateFormat.parse(confgEntry.substring(confgEntry.indexOf('=') + 1));
 				scheduerExpression.start(convertedDate);
 			}
 
 			/* End date */
 			if (confgEntry.startsWith("end=")) {
 				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-				Date convertedDate = dateFormat.parse(confgEntry
-						.substring(confgEntry.indexOf('=') + 1));
+				Date convertedDate = dateFormat.parse(confgEntry.substring(confgEntry.indexOf('=') + 1));
 				scheduerExpression.end(convertedDate);
 			}
 
 		}
 
-		Timer timer = timerService.createCalendarTimer(scheduerExpression,
-				timerConfig);
+		Timer timer = timerService.createCalendarTimer(scheduerExpression, timerConfig);
 
 		return timer;
 
@@ -734,8 +739,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	 * The method goes through the latest or a specific Model Version
 	 * 
 	 */
-	Collection<ItemCollection> findScheduledActivities(String aModelVersion)
-			throws Exception {
+	Collection<ItemCollection> findScheduledActivities(String aModelVersion) throws Exception {
 		Vector<ItemCollection> vectorActivities = new Vector<ItemCollection>();
 		Collection<ItemCollection> colProcessList = null;
 
@@ -745,16 +749,13 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			// select all activities for this process entity...
 			int processid = aprocessentity.getItemValueInteger("numprocessid");
 			logger.fine("Analyse processentity '" + processid + "'");
-			Collection<ItemCollection> aActivityList = modelService
-					.getActivityEntityList(processid, aModelVersion);
+			Collection<ItemCollection> aActivityList = modelService.getActivityEntityList(processid, aModelVersion);
 
 			for (ItemCollection aactivityEntity : aActivityList) {
-				logger.fine("Analyse acitity '"
-						+ aactivityEntity.getItemValueString("txtname") + "'");
+				logger.fine("Analyse acitity '" + aactivityEntity.getItemValueString("txtname") + "'");
 
 				// check if activity is scheduled
-				if ("1".equals(aactivityEntity
-						.getItemValueString("keyScheduledActivity")))
+				if ("1".equals(aactivityEntity.getItemValueString("keyScheduledActivity")))
 					vectorActivities.add(aactivityEntity);
 			}
 		}
@@ -776,8 +777,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			String timerID = atimer.getInfo().toString();
 			if (id.equals(timerID)) {
 				if (timer != null)
-					logger.severe("[WorkflowScheduelrService] - more then one timer with id "
-							+ id + " was found!");
+					logger.severe("[WorkflowScheduelrService] - more then one timer with id " + id + " was found!");
 				timer = atimer;
 			}
 		}
@@ -798,54 +798,43 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	 * @param aProcessID
 	 * @throws Exception
 	 */
-	void processWorkListByActivityEntity(ItemCollection activityEntity)
-			throws Exception {
+	void processWorkListByActivityEntity(ItemCollection activityEntity) throws Exception {
 
 		// get processID
 		int iProcessID = activityEntity.getItemValueInteger("numprocessid");
 		int iActivityID = activityEntity.getItemValueInteger("numActivityID");
 		// get Modelversion
-		String sModelVersion = activityEntity
-				.getItemValueString("$modelversion");
+		String sModelVersion = activityEntity.getItemValueString("$modelversion");
 
-		logger.info("[WorkflowSchedulerService] processing " + iProcessID + "."
-				+ iActivityID + " (" + sModelVersion + ") ...");
+		logger.info("[WorkflowSchedulerService] processing " + iProcessID + "." + iActivityID + " (" + sModelVersion
+				+ ") ...");
 
 		// now we need to select by type, $ProcessID and by $modelVersion!
-		String sQuery = "SELECT wi FROM Entity as wi "
-				+ " JOIN wi.integerItems AS i " + " JOIN wi.textItems as t "
+		String sQuery = "SELECT wi FROM Entity as wi " + " JOIN wi.integerItems AS i " + " JOIN wi.textItems as t "
 				+ " WHERE wi.type='workitem' ";
-		sQuery += " AND i.itemName = '$processid' AND i.itemValue = '"
-				+ iProcessID + "'"
-				+ " AND t.itemName = '$modelversion' AND t.itemValue = '"
-				+ sModelVersion + "'";
+		sQuery += " AND i.itemName = '$processid' AND i.itemValue = '" + iProcessID + "'"
+				+ " AND t.itemName = '$modelversion' AND t.itemValue = '" + sModelVersion + "'";
 
 		logger.fine("[WorkflowSchedulerService] select: " + sQuery);
 
-		Collection<ItemCollection> worklist = entityService.findAllEntities(
-				sQuery, 0, -1);
+		Collection<ItemCollection> worklist = entityService.findAllEntities(sQuery, 0, -1);
 
-		logger.fine("[WorkflowSchedulerService] " + worklist.size()
-				+ " workitems found");
+		logger.fine("[WorkflowSchedulerService] " + worklist.size() + " workitems found");
 		for (ItemCollection workitem : worklist) {
 			// verify due date
 			if (workItemInDue(workitem, activityEntity)) {
-				String sID = workitem
-						.getItemValueString(EntityService.UNIQUEID);
-				logger.fine("[WorkflowSchedulerService] workitem " + sID
-						+ "is in due");
+				String sID = workitem.getItemValueString(EntityService.UNIQUEID);
+				logger.fine("[WorkflowSchedulerService] workitem " + sID + "is in due");
 				workitem.replaceItemValue("$activityid", iActivityID);
 				try {
 					logger.finest("[WorkflowSchedulerService] getBusinessObject.....");
 					// call from new instance because of transaction new...
 					// see: http://blog.imixs.org/?p=155
 					// see: https://www.java.net/node/705304
-					ctx.getBusinessObject(WorkflowSchedulerService.class)
-							.processSingleWorkitem(workitem);
+					ctx.getBusinessObject(WorkflowSchedulerService.class).processSingleWorkitem(workitem);
 					iProcessWorkItems++;
 				} catch (Exception e) {
-					logger.warning("[WorkflowSchedulerService] error processing workitem: "
-							+ sID);
+					logger.warning("[WorkflowSchedulerService] error processing workitem: " + sID);
 					if (logger.isLoggable(Level.FINEST)) {
 						e.printStackTrace();
 					}
@@ -867,8 +856,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public void processSingleWorkitem(ItemCollection aWorkitem)
-			throws AccessDeniedException, ProcessingErrorException,
-			PluginException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException {
 		workflowService.processWorkItem(aWorkitem);
 	}
 
@@ -889,17 +877,14 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 
 			if (timer != null) {
 				// load current timer details
-				configuration.replaceItemValue("nextTimeout",
-						timer.getNextTimeout());
-				configuration.replaceItemValue("timeRemaining",
-						timer.getTimeRemaining());
+				configuration.replaceItemValue("nextTimeout", timer.getNextTimeout());
+				configuration.replaceItemValue("timeRemaining", timer.getTimeRemaining());
 			} else {
 				configuration.removeItem("nextTimeout");
 				configuration.removeItem("timeRemaining");
 			}
 		} catch (Exception e) {
-			logger.warning("[WorkflowSchedulerService] unable to updateTimerDetails: "
-					+ e.getMessage());
+			logger.warning("[WorkflowSchedulerService] unable to updateTimerDetails: " + e.getMessage());
 			configuration.removeItem("nextTimeout");
 			configuration.removeItem("timeRemaining");
 		}
@@ -917,24 +902,20 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	@SuppressWarnings("unchecked")
 	private boolean isImixsDayOfWeek(ItemCollection configItemCollection) {
 
-		List<String> calendarConfiguation = (List<String>) configItemCollection
-				.getItemValue("txtConfiguration");
+		List<String> calendarConfiguation = (List<String>) configItemCollection.getItemValue("txtConfiguration");
 		// try to parse the configuration list....
 		for (String confgEntry : calendarConfiguation) {
 			if (confgEntry.startsWith("imixsDayOfWeek=")) {
 				logger.info("[WorkflowSchedulerService] " + confgEntry);
 				try {
-					String dayValue = confgEntry.substring(confgEntry
-							.indexOf('=') + 1);
+					String dayValue = confgEntry.substring(confgEntry.indexOf('=') + 1);
 
 					int iStartDay = 0;
 					int iEndDay = 0;
 					int iSeparator = dayValue.indexOf('-');
 					if (iSeparator > -1) {
-						iStartDay = Integer.valueOf(dayValue.substring(0,
-								iSeparator));
-						iEndDay = Integer.valueOf(dayValue
-								.substring(iSeparator + 1));
+						iStartDay = Integer.valueOf(dayValue.substring(0, iSeparator));
+						iEndDay = Integer.valueOf(dayValue.substring(iSeparator + 1));
 					} else {
 						iStartDay = Integer.valueOf(dayValue);
 						iEndDay = iStartDay;
@@ -968,20 +949,46 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	}
 
 	/**
-	 * This method add seconds to a given date object
+	 * This method adjusts a given base date for a amount of delay
 	 * 
-	 * @param adate
-	 *            to be adjusted
-	 * @param seconds
-	 *            to be added (can be <0)
+	 * 
+	 * @param baseDate
+	 *            date object to be adjusted
+	 * 
+	 * @param offsetUnit
+	 *            - time unit (0=sec, 1=min, 2=hours, 3=days, 4=workdays)
+	 * @param offset
+	 *            offset for adjustment
 	 * @return new date object
 	 */
-	private static Date adjustSecond(Date adate, int seconds) {
-		if (adate != null) {
-			Calendar calTimeCompare = Calendar.getInstance();
-			calTimeCompare.setTime(adate);
-			calTimeCompare.add(Calendar.SECOND, seconds);
-			return calTimeCompare.getTime();
+	private static Date adjustBaseDate(Date baseDate, int offsetUnit, int offset) {
+		if (baseDate != null) {
+
+			// workdays?
+			if (offsetUnit == OFFSET_WORKDAYS) {
+				Calendar baseCal = Calendar.getInstance();
+				baseCal.setTime(baseDate);
+				return addWorkDays(baseCal, offset).getTime();
+
+			} else {
+
+				// compute offset in seconds...
+				if (offsetUnit == OFFSET_MINUTES) {
+					offset *= 60; // min->sec
+				} else {
+					if (offsetUnit == OFFSET_HOURS) {
+						offset *= 3600; // hour->sec
+					} else {
+						if (offsetUnit == OFFSET_DAYS) {
+							offset *= 3600 * 24; // day->sec
+						}
+					}
+				}
+				Calendar calTimeCompare = Calendar.getInstance();
+				calTimeCompare.setTime(baseDate);
+				calTimeCompare.add(Calendar.SECOND, offset);
+				return calTimeCompare.getTime();
+			}
 		} else
 			return null;
 	}
