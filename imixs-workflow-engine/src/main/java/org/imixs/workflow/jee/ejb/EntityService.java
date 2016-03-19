@@ -158,15 +158,11 @@ import org.imixs.workflow.jee.jpa.WriteAccess;
  * 
  */
 
-@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS",
-		"org.imixs.ACCESSLEVEL.READERACCESS",
-		"org.imixs.ACCESSLEVEL.AUTHORACCESS",
-		"org.imixs.ACCESSLEVEL.EDITORACCESS",
+@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
-@RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS",
-		"org.imixs.ACCESSLEVEL.READERACCESS",
-		"org.imixs.ACCESSLEVEL.AUTHORACCESS",
-		"org.imixs.ACCESSLEVEL.EDITORACCESS",
+@RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @LocalBean
@@ -199,8 +195,7 @@ public class EntityService implements EntityServiceRemote {
 	public static final String USER_GROUP_LIST = "org.imixs.USER.GROUPLIST";
 
 	// private static Logger logger = Logger.getLogger("org.imixs.workflow");
-	private final static Logger logger = Logger.getLogger(EntityService.class
-			.getName());
+	private final static Logger logger = Logger.getLogger(EntityService.class.getName());
 
 	public static final String OPERATION_NOTALLOWED = "OPERATION_NOTALLOWED";
 
@@ -335,8 +330,7 @@ public class EntityService implements EntityServiceRemote {
 	 *            to be saved
 	 * @return updated ItemCollection
 	 */
-	public ItemCollection save(ItemCollection itemcol)
-			throws AccessDeniedException {
+	public ItemCollection save(ItemCollection itemcol) throws AccessDeniedException {
 
 		Entity activeEntity = null;
 		ItemCollection slimItemCollection = null;
@@ -367,7 +361,8 @@ public class EntityService implements EntityServiceRemote {
 				// manager.refresh(activeEntity);
 				// } catch (EntityNotFoundException ex) {
 				// logger.warning(
-				// "[EntityServiceBean] #issue 102 - refresh() EntityNotFoundException");
+				// "[EntityServiceBean] #issue 102 - refresh()
+				// EntityNotFoundException");
 				// activeEntity = null;
 				// }
 
@@ -380,9 +375,8 @@ public class EntityService implements EntityServiceRemote {
 			// entity no found in database create new instance using the
 			// provided id
 			// Test if user is allowed to create Entities....
-			if (!(ctx.isCallerInRole(ACCESSLEVEL_MANAGERACCESS)
-					|| ctx.isCallerInRole(ACCESSLEVEL_EDITORACCESS) || ctx
-						.isCallerInRole(ACCESSLEVEL_AUTHORACCESS))) {
+			if (!(ctx.isCallerInRole(ACCESSLEVEL_MANAGERACCESS) || ctx.isCallerInRole(ACCESSLEVEL_EDITORACCESS)
+					|| ctx.isCallerInRole(ACCESSLEVEL_AUTHORACCESS))) {
 				throw new AccessDeniedException(OPERATION_NOTALLOWED,
 						"[EntityService] You are not allowed to perform this operation");
 			}
@@ -426,8 +420,7 @@ public class EntityService implements EntityServiceRemote {
 
 		itemcol.replaceItemValue("$uniqueid", activeEntity.getId());
 		itemcol.replaceItemValue("$modified", cal.getTime());
-		itemcol.replaceItemValue("$created", activeEntity.getCreated()
-				.getTime());
+		itemcol.replaceItemValue("$created", activeEntity.getCreated().getTime());
 		// create a new Instance of this ItemCollection
 		slimItemCollection = new ItemCollection(itemcol.getAllItems());
 
@@ -502,8 +495,7 @@ public class EntityService implements EntityServiceRemote {
 	 * @throws AccessDeniedException
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-	public ItemCollection saveByNewTransaction(ItemCollection itemcol)
-			throws AccessDeniedException {
+	public ItemCollection saveByNewTransaction(ItemCollection itemcol) throws AccessDeniedException {
 		return save(itemcol);
 	}
 
@@ -605,8 +597,7 @@ public class EntityService implements EntityServiceRemote {
 			manager.remove(activeEntity);
 
 		} else
-			throw new AccessDeniedException(INVALID_UNIQUEID,
-					"[EntityService] invalid $uniqueid");
+			throw new AccessDeniedException(INVALID_UNIQUEID, "[EntityService] invalid $uniqueid");
 	}
 
 	/**
@@ -749,8 +740,7 @@ public class EntityService implements EntityServiceRemote {
 	@SuppressWarnings("unchecked")
 	private List<EntityIndex> readIndices() {
 		logger.finer("readIndices....");
-		Query q = manager
-				.createQuery("SELECT entityindex FROM EntityIndex entityindex");
+		Query q = manager.createQuery("SELECT entityindex FROM EntityIndex entityindex");
 
 		return q.getResultList();
 	}
@@ -774,14 +764,13 @@ public class EntityService implements EntityServiceRemote {
 	 * @see org.imixs.workfow.jee.jpa.Entity
 	 */
 	@SuppressWarnings("unchecked")
-	public List<ItemCollection> findAllEntities(String query, int startpos,
-			int maxcount) throws InvalidAccessException {
+	public List<ItemCollection> findAllEntities(String query, int startpos, int maxcount)
+			throws InvalidAccessException {
 
 		long l = 0;
 
 		logger.fine("[EntityService] findAllEntities - Query=" + query);
-		logger.fine("[EntityService] findAllEntities - Startpos=" + startpos
-				+ " maxcount=" + maxcount);
+		logger.fine("[EntityService] findAllEntities - Startpos=" + startpos + " maxcount=" + maxcount);
 		List<ItemCollection> vectorResult = new ArrayList<ItemCollection>();
 
 		// optimize query....
@@ -795,14 +784,13 @@ public class EntityService implements EntityServiceRemote {
 
 			l = System.currentTimeMillis();
 			Collection<Entity> entityList = q.getResultList();
-			logger.fine("[EntityService] findAllEntities - getResultList in "
-					+ (System.currentTimeMillis() - l) + " ms");
+			logger.fine(
+					"[EntityService] findAllEntities - getResultList in " + (System.currentTimeMillis() - l) + " ms");
 
 			if (entityList == null)
 				return vectorResult;
 
-			logger.fine("[EntityService] findAllEntities - ResultList size="
-					+ entityList.size());
+			logger.fine("[EntityService] findAllEntities - ResultList size=" + entityList.size());
 			l = System.currentTimeMillis();
 			for (Entity aEntity : entityList) {
 				/*
@@ -816,13 +804,10 @@ public class EntityService implements EntityServiceRemote {
 				vectorResult.add(implodeEntity(aEntity));
 			}
 
-			logger.fine("[EntityService] findAllEntities in "
-					+ (System.currentTimeMillis() - l) + " ms");
+			logger.fine("[EntityService] findAllEntities in " + (System.currentTimeMillis() - l) + " ms");
 
 		} catch (RuntimeException nre) {
-			throw new InvalidAccessException(
-					"[EntityService] Error findAllEntities: '" + query + "' ",
-					nre);
+			throw new InvalidAccessException("[EntityService] Error findAllEntities: '" + query + "' ", nre);
 		}
 		return vectorResult;
 
@@ -868,15 +853,13 @@ public class EntityService implements EntityServiceRemote {
 		query = query.substring(0, pos) + "COUNT" + query.substring(pos + 8);
 
 		pos = query.indexOf(chunk2);
-		query = query.substring(0, pos) + "(" + chunk2 + ".id)"
-				+ query.substring(pos + chunk2.length());
+		query = query.substring(0, pos) + "(" + chunk2 + ".id)" + query.substring(pos + chunk2.length());
 
 		Query q = manager.createQuery(query);
 
 		Number cResults = (Number) q.getSingleResult();
 
-		logger.fine("[EntityService] countAllEntities in "
-				+ (System.currentTimeMillis() - l) + " ms");
+		logger.fine("[EntityService] countAllEntities in " + (System.currentTimeMillis() - l) + " ms");
 		return cResults.intValue();
 
 	}
@@ -890,8 +873,7 @@ public class EntityService implements EntityServiceRemote {
 	 * @param childentity
 	 * @return parententity
 	 */
-	public ItemCollection findParentEntity(ItemCollection child)
-			throws InvalidAccessException {
+	public ItemCollection findParentEntity(ItemCollection child) throws InvalidAccessException {
 		String parentUniqueID = child.getItemValueString("$uniqueidref");
 		return this.load(parentUniqueID);
 	}
@@ -912,15 +894,14 @@ public class EntityService implements EntityServiceRemote {
 	 * @return
 	 * @throws InvalidAccessException
 	 */
-	public List<ItemCollection> findChildEntities(ItemCollection child,
-			int start, int count) throws InvalidAccessException {
+	public List<ItemCollection> findChildEntities(ItemCollection child, int start, int count)
+			throws InvalidAccessException {
 
 		String parentUniqueID = child.getItemValueString("$uniqueid");
 
 		String sQuery = "SELECT wi FROM Entity AS wi ";
 		sQuery += " JOIN wi.textItems as t2 ";
-		sQuery += " WHERE t2.itemName = '$uniqueidref' and t2.itemValue = '"
-				+ parentUniqueID + "' ";
+		sQuery += " WHERE t2.itemName = '$uniqueidref' and t2.itemValue = '" + parentUniqueID + "' ";
 
 		return this.findAllEntities(sQuery, start, count);
 	}
@@ -940,24 +921,21 @@ public class EntityService implements EntityServiceRemote {
 		long totalcount = 0;
 		int startpos = 0;
 		int icount = 0;
-		
-		
 
 		logger.info("[EntityService] Starting backup....");
 		logger.info("[EntityService] Query=" + query);
 		logger.info("[EntityService] Target=" + filePath);
 
-		if (filePath==null || filePath.isEmpty()) {
+		if (filePath == null || filePath.isEmpty()) {
 			logger.severe("[EntityService] Invalid FilePath!");
 			return;
 		}
-		
+
 		FileOutputStream fos = new FileOutputStream(filePath);
 		ObjectOutputStream out = new ObjectOutputStream(fos);
 		while (hasMoreData) {
 			// read a junk....
-			Collection<ItemCollection> col = findAllEntities(query, startpos,
-					JUNK_SIZE);
+			Collection<ItemCollection> col = findAllEntities(query, startpos, JUNK_SIZE);
 			if (col.size() < JUNK_SIZE)
 				hasMoreData = false;
 			startpos = startpos + col.size();
@@ -970,12 +948,10 @@ public class EntityService implements EntityServiceRemote {
 				out.writeObject(hmap);
 				icount++;
 			}
-			logger.fine("[EntityService] " + totalcount
-					+ " entries backuped....");
+			logger.fine("[EntityService] " + totalcount + " entries backuped....");
 		}
 		out.close();
-		logger.info("[EntityService] Backup finished - " + icount
-				+ " entities read totaly.");
+		logger.info("[EntityService] Backup finished - " + icount + " entities read totaly.");
 	}
 
 	/**
@@ -1008,8 +984,7 @@ public class EntityService implements EntityServiceRemote {
 				icount++;
 				if (icount >= JUNK_SIZE) {
 					icount = 0;
-					logger.info("[EntityService] Restored " + totalcount
-							+ " entities....");
+					logger.info("[EntityService] Restored " + totalcount + " entities....");
 
 				}
 
@@ -1017,22 +992,17 @@ public class EntityService implements EntityServiceRemote {
 				break;
 			} catch (ClassNotFoundException e) {
 				errorCount++;
-				logger.warning("[EntityService] error importing workitem at position "
-						+ (totalcount + errorCount)
-						+ " Error: "
-						+ e.getMessage());
+				logger.warning("[EntityService] error importing workitem at position " + (totalcount + errorCount)
+						+ " Error: " + e.getMessage());
 			} catch (AccessDeniedException e) {
 				errorCount++;
-				logger.warning("[EntityService] error importing workitem at position "
-						+ (totalcount + errorCount)
-						+ " Error: "
-						+ e.getMessage());
+				logger.warning("[EntityService] error importing workitem at position " + (totalcount + errorCount)
+						+ " Error: " + e.getMessage());
 			}
 		}
 		in.close();
 
-		String loginfo = "Import successfull! " + totalcount
-				+ " Entities imported. " + errorCount
+		String loginfo = "Import successfull! " + totalcount + " Entities imported. " + errorCount
 				+ " Errors.  Import FileName:" + filePath;
 
 		logger.info(loginfo);
@@ -1115,8 +1085,7 @@ public class EntityService implements EntityServiceRemote {
 		 * 2.) org.imixs.ACCESSLEVEL.MANAGERACCESS or
 		 * org.imixs.ACCESSLEVEL.EDITOR Always true - grant writeaccess.
 		 */
-		if (ctx.isCallerInRole(ACCESSLEVEL_MANAGERACCESS)
-				|| ctx.isCallerInRole(ACCESSLEVEL_EDITORACCESS))
+		if (ctx.isCallerInRole(ACCESSLEVEL_MANAGERACCESS) || ctx.isCallerInRole(ACCESSLEVEL_EDITORACCESS))
 			return true;
 
 		/**
@@ -1157,14 +1126,12 @@ public class EntityService implements EntityServiceRemote {
 	 */
 	private String[] getUserGroupList() {
 		// read dynamic user roles from the ContextData (if provided) ....
-		String[] applicationUserGroupList = (String[]) ctx.getContextData()
-				.get(USER_GROUP_LIST);
+		String[] applicationUserGroupList = (String[]) ctx.getContextData().get(USER_GROUP_LIST);
 
 		if (applicationUserGroupList != null)
 			// trim entries....
 			for (int i = 0; i < applicationUserGroupList.length; i++) {
-				applicationUserGroupList[i] = applicationUserGroupList[i]
-						.trim();
+			applicationUserGroupList[i] = applicationUserGroupList[i].trim();
 			}
 
 		return applicationUserGroupList;
@@ -1278,7 +1245,7 @@ public class EntityService implements EntityServiceRemote {
 	 * <p>
 	 * The ItemName will be transformed to lowercase!
 	 * <p>
-	 * If an instance of a Date Object is provided in the ItemCollection the
+	 * If an instance of a JavaDate Object is provided in the ItemCollection the
 	 * values will be converted from the Date object into a Calendar Object.
 	 * This is because the ItemCollection works typical with Date Objects
 	 * instead of Calendar Objects.
@@ -1295,24 +1262,29 @@ public class EntityService implements EntityServiceRemote {
 	 * value list. <br>
 	 * In this situation the entity exists in a invalid structure and did not
 	 * match the data model
+	 * <p>
+	 * issue #140: <br>
+	 * If the value list of the new entity is equals to the value list of the
+	 * existing, than the method did not remove and persist the values. This
+	 * will increase performance and avoids problems with duplicated index
+	 * values when a entity is saved several times in one transaction (see issue
+	 * #140).
+	 * 
 	 * 
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void explodeEntity(ItemCollection itemCol, Entity aEntity,
-			Collection<EntityIndex> entityIndexCache) {
+	private void explodeEntity(ItemCollection itemCol, Entity aEntity, Collection<EntityIndex> entityIndexCache) {
 
 		if (logger.isLoggable(Level.FINEST)) {
 			logger.finest("[EntityService] explodeEntity ID=" + aEntity.getId());
 		}
 
-		logger.finest("[EntityService] disableOptimisticLocking="
-				+ disableOptimisticLocking);
+		logger.finest("[EntityService] disableOptimisticLocking=" + disableOptimisticLocking);
 
 		// in case of optimistic locking is disabled we remove $version
 		if (disableOptimisticLocking) {
 			itemCol.removeItem("$Version");
-		} else if (itemCol.hasItem("$Version")
-				&& itemCol.getItemValueInteger("$Version") > 0) {
+		} else if (itemCol.hasItem("$Version") && itemCol.getItemValueInteger("$Version") > 0) {
 			// if $version is provided we update the version number of the
 			// entity!
 			int version = itemCol.getItemValueInteger("$Version");
@@ -1320,145 +1292,88 @@ public class EntityService implements EntityServiceRemote {
 			logger.finest("[EntityService] version=" + version);
 		}
 
-		// remove current TextItem List
-		for (TextItem aItem : aEntity.getTextItems())
-			manager.remove(aItem);
-		aEntity.getTextItems().clear();
-
-		// remove current CalendarItem List
-		for (CalendarItem aItem : aEntity.getCalendarItems())
-			manager.remove(aItem);
-		aEntity.getCalendarItems().clear();
-
-		// remove current IntegerItem List
-		for (IntegerItem aItem : aEntity.getIntegerItems())
-			manager.remove(aItem);
-		aEntity.getIntegerItems().clear();
-
-		// remove current IntegerItem List
-		for (DoubleItem aItem : aEntity.getDoubleItems())
-			manager.remove(aItem);
-		aEntity.getDoubleItems().clear();
-
-		// for each index update the relationships
+		// For each index we update the relationships only if the valueList
+		// changed
 		for (EntityIndex index : entityIndexCache) {
+
+			// TEXT_ITEM....
 			if (index.getTyp() == EntityIndex.TYP_TEXT) {
-				// get the value list fom the itemcolection
-				List valueList = itemCol.getItemValue(index.getName());
-				for (Object asingleValue : valueList) {
-					TextItem newItem = new TextItem(index.getName(),
-							asingleValue.toString());
-					manager.persist(newItem);
-					aEntity.getTextItems().add(newItem);
+				// get the value list from the itemCollection
+				List newValueList = itemCol.getItemValue(index.getName());
+				// get value list from existing entity
+				List<String> oldValueList = new ArrayList<String>();
+				List<TextItem> itemList = new ArrayList<TextItem>();
+				for (TextItem aItem : aEntity.getTextItems()) {
+					if (aItem.itemName.equals(index.getName())) {
+						itemList.add(aItem);
+						oldValueList.add(aItem.itemValue);
+					}
+				}
 
-					if (logger.isLoggable(Level.FINEST))
-						logger.finest("[EntityService] addTextItem: "
-								+ index.getName() + "="
-								+ asingleValue.toString());
+				// equals?
+				if (!newValueList.equals(oldValueList)) {
+					// no - remove old relationships....
+					for (TextItem aItem : itemList) {
+						manager.remove(aItem);
+						aEntity.getTextItems().remove(aItem);
+					}
 
+					// build new relationships
+					for (Object asingleValue : newValueList) {
+						TextItem newItem = new TextItem(index.getName(), asingleValue.toString());
+						manager.persist(newItem);
+						aEntity.getTextItems().add(newItem);
+
+						if (logger.isLoggable(Level.FINEST))
+							logger.finest(
+									"[EntityService] addTextItem: " + index.getName() + "=" + asingleValue.toString());
+					}
 				}
 				// now remove the attribute from ItemCollection
 				itemCol.removeItem(index.getName());
+				// finally continue....
 				continue;
 			}
+
+			// INTEGER_ITEM.....
 			if (index.getTyp() == EntityIndex.TYP_INT) {
-				// get the value list fom the itemcolection
-				List valueList = itemCol.getItemValue(index.getName());
-				// handle classCastExcpetions...
-				boolean bClassCastException = false;
-				Vector vInvalidValues = new Vector();
-				for (Object asingleValue : valueList) {
-					try {
-						IntegerItem newItem = new IntegerItem(index.getName(),
-								(Integer) asingleValue);
-						manager.persist(newItem);
-						aEntity.getIntegerItems().add(newItem);
-
-						if (logger.isLoggable(Level.FINEST))
-							logger.finest("[EntityService] addIntegerItem: "
-									+ index.getName() + "="
-									+ asingleValue.toString());
-
-					} catch (ClassCastException cce) {
-						bClassCastException = true;
-						logger.warning("explodeEntity - " + index.getName()
-								+ " TYP_INT: " + cce.getMessage() + " ID:"
-								+ aEntity.getId());
-						vInvalidValues.add(asingleValue);
-					}
-				}
-				// now remove the attribute from ItemCollection
-				if (!bClassCastException)
-					itemCol.removeItem(index.getName());
-				else
-					itemCol.replaceItemValue(index.getName(), vInvalidValues);
-				continue;
-			}
-
-			if (index.getTyp() == EntityIndex.TYP_DOUBLE) {
-				// get the value list fom the itemcolection
-				List valueList = itemCol.getItemValue(index.getName());
-				// handle classCastExcpetions...
 				boolean bClassCastException = false;
 				List vInvalidValues = new Vector();
-				for (Object asingleValue : valueList) {
-					try {
-						DoubleItem newItem = new DoubleItem(index.getName(),
-								(Double) asingleValue);
-						manager.persist(newItem);
-						aEntity.getDoubleItems().add(newItem);
-
-						if (logger.isLoggable(Level.FINEST))
-							logger.finest("[EntityService] addDoubleItem: "
-									+ index.getName() + "="
-									+ asingleValue.toString());
-
-					} catch (ClassCastException cce) {
-						bClassCastException = true;
-						logger.warning("explodeEntity - " + index.getName()
-								+ " TYP_DOUBLE: " + cce.getMessage() + " ID:"
-								+ aEntity.getId());
-						vInvalidValues.add(asingleValue);
+				// get the value list from the itemCollection
+				List newValueList = itemCol.getItemValue(index.getName());
+				// get value list from existing entity
+				List<Integer> oldValueList = new ArrayList<Integer>();
+				List<IntegerItem> itemList = new ArrayList<IntegerItem>();
+				for (IntegerItem aItem : aEntity.getIntegerItems()) {
+					if (aItem.itemName.equals(index.getName())) {
+						itemList.add(aItem);
+						oldValueList.add(aItem.itemValue);
 					}
 				}
-				// now remove the attribute from ItemCollection
-				if (!bClassCastException)
-					itemCol.removeItem(index.getName());
-				else
-					itemCol.replaceItemValue(index.getName(), vInvalidValues);
-				continue;
-			}
 
-			if (index.getTyp() == EntityIndex.TYP_CALENDAR) {
-				// get the value list fom the itemcolection
-				List valueList = itemCol.getItemValue(index.getName());
-				// handle classCastExcpetions...
-				boolean bClassCastException = false;
-				Vector vInvalidValues = new Vector();
-				for (Object asingleValue : valueList) {
-					try {
-						if (asingleValue instanceof java.util.Date) {
-							Calendar cal = Calendar.getInstance();
-							cal.setTime((java.util.Date) asingleValue);
-							asingleValue = cal;
+				// equals?
+				if (!newValueList.equals(oldValueList)) {
+					// no - remove old relationships....
+					for (IntegerItem aItem : itemList) {
+						manager.remove(aItem);
+						aEntity.getIntegerItems().remove(aItem);
+					}
+					// build new relationships
+					for (Object asingleValue : newValueList) {
+						try {
+							IntegerItem newItem = new IntegerItem(index.getName(), (Integer) asingleValue);
+							manager.persist(newItem);
+							aEntity.getIntegerItems().add(newItem);
+							if (logger.isLoggable(Level.FINEST))
+								logger.finest("[EntityService] addIntegerItem: " + index.getName() + "="
+										+ asingleValue.toString());
+						} catch (ClassCastException cce) {
+							bClassCastException = true;
+							logger.warning("explodeEntity - " + index.getName() + " TYP_INT: " + cce.getMessage()
+									+ " ID:" + aEntity.getId());
+							vInvalidValues.add(asingleValue);
 						}
 
-						CalendarItem newItem = new CalendarItem(
-								index.getName(), (Calendar) asingleValue);
-						manager.persist(newItem);
-						aEntity.getCalendarItems().add(newItem);
-
-						if (logger.isLoggable(Level.FINEST))
-							logger.finest("[EntityService] addCalendarItem: "
-									+ index.getName() + "="
-									+ asingleValue.toString());
-
-					} catch (ClassCastException cce) {
-						bClassCastException = true;
-						logger.warning("explodeEntity - " + index.getName()
-								+ " TYP_CALENDAR: " + cce.getMessage() + " ID:"
-								+ aEntity.getId());
-						vInvalidValues.add(asingleValue);
 					}
 				}
 				// now remove the attribute from ItemCollection
@@ -1469,8 +1384,114 @@ public class EntityService implements EntityServiceRemote {
 				continue;
 			}
 
-			logger.warning(" explodeEntity - " + index.getName()
-					+ " Indextype:" + index.getTyp() + " unknown!");
+			// DOUBLE_ITEM...
+			if (index.getTyp() == EntityIndex.TYP_DOUBLE) {
+				boolean bClassCastException = false;
+				List vInvalidValues = new Vector();
+				// get the value list from the itemCollection
+				List newValueList = itemCol.getItemValue(index.getName());
+				// get value list from existing entity
+				List<Double> oldValueList = new ArrayList<Double>();
+				List<DoubleItem> itemList = new ArrayList<DoubleItem>();
+				for (DoubleItem aItem : aEntity.getDoubleItems()) {
+					if (aItem.itemName.equals(index.getName())) {
+						itemList.add(aItem);
+						oldValueList.add(aItem.itemValue);
+					}
+				}
+
+				// equals?
+				if (!newValueList.equals(oldValueList)) {
+					// no - remove old relationships....
+					for (DoubleItem aItem : itemList) {
+						manager.remove(aItem);
+						aEntity.getDoubleItems().remove(aItem);
+					}
+
+					// build new relationships
+					for (Object asingleValue : newValueList) {
+						try {
+							DoubleItem newItem = new DoubleItem(index.getName(), (Double) asingleValue);
+							manager.persist(newItem);
+							aEntity.getDoubleItems().add(newItem);
+							if (logger.isLoggable(Level.FINEST))
+								logger.finest("[EntityService] addDoubleItem: " + index.getName() + "="
+										+ asingleValue.toString());
+						} catch (ClassCastException cce) {
+							bClassCastException = true;
+							logger.warning("explodeEntity - " + index.getName() + " TYP_DOUBLE: " + cce.getMessage()
+									+ " ID:" + aEntity.getId());
+							vInvalidValues.add(asingleValue);
+						}
+
+					}
+				}
+				// now remove the attribute from ItemCollection
+				if (!bClassCastException)
+					itemCol.removeItem(index.getName());
+				else
+					itemCol.replaceItemValue(index.getName(), vInvalidValues);
+				continue;
+
+			}
+
+			// CALENDAR_ITEM....
+			if (index.getTyp() == EntityIndex.TYP_CALENDAR) {
+				boolean bClassCastException = false;
+				List vInvalidValues = new Vector();
+				// get the value list from the itemCollection
+				List newValueList = itemCol.getItemValue(index.getName());
+				// get value list from existing entity
+				List<Calendar> oldValueList = new ArrayList<Calendar>();
+				List<CalendarItem> itemList = new ArrayList<CalendarItem>();
+				for (CalendarItem aItem : aEntity.getCalendarItems()) {
+					if (aItem.itemName.equals(index.getName())) {
+						itemList.add(aItem);
+						oldValueList.add(aItem.itemValue);
+					}
+				}
+
+				// equals?
+				if (!newValueList.equals(oldValueList)) {
+					// no - remove old relationships....
+					for (CalendarItem aItem : itemList) {
+						manager.remove(aItem);
+						aEntity.getCalendarItems().remove(aItem);
+					}
+
+					// build new relationships
+					for (Object asingleValue : newValueList) {
+						try {
+							if (asingleValue instanceof java.util.Date) {
+								Calendar cal = Calendar.getInstance();
+								cal.setTime((java.util.Date) asingleValue);
+								asingleValue = cal;
+							}
+							CalendarItem newItem = new CalendarItem(index.getName(), (Calendar) asingleValue);
+
+							manager.persist(newItem);
+							aEntity.getCalendarItems().add(newItem);
+							if (logger.isLoggable(Level.FINEST))
+								logger.finest("[EntityService] addCalendarItem: " + index.getName() + "="
+										+ asingleValue.toString());
+						} catch (ClassCastException cce) {
+							bClassCastException = true;
+							logger.warning("explodeEntity - " + index.getName() + " TYP_CALENDAR: " + cce.getMessage()
+									+ " ID:" + aEntity.getId());
+							vInvalidValues.add(asingleValue);
+						}
+
+					}
+				}
+				// now remove the attribute from ItemCollection
+				if (!bClassCastException)
+					itemCol.removeItem(index.getName());
+				else
+					itemCol.replaceItemValue(index.getName(), vInvalidValues);
+				continue;
+			}
+
+			logger.warning(" explodeEntity - " + index.getName() + " Indextype:" + index.getTyp() + " unknown!");
 
 		}
 
@@ -1535,12 +1556,10 @@ public class EntityService implements EntityServiceRemote {
 				vValue.add(textItem.itemValue);
 				itemCollection.replaceItemValue(textItem.itemName, vValue);
 				if (logger.isLoggable(Level.FINEST)) {
-					logger.finest("[EntityService] readTextItem: "
-							+ textItem.itemName + "=" + textItem.itemValue);
+					logger.finest("[EntityService] readTextItem: " + textItem.itemName + "=" + textItem.itemValue);
 				}
 			} catch (Exception e) {
-				logger.warning("[EntityService] could not implode ItemValue: "
-						+ textItem.itemName);
+				logger.warning("[EntityService] could not implode ItemValue: " + textItem.itemName);
 			}
 		}
 
@@ -1551,13 +1570,11 @@ public class EntityService implements EntityServiceRemote {
 				vValue.add(ii.itemValue);
 				itemCollection.replaceItemValue(ii.itemName, vValue);
 				if (logger.isLoggable(Level.FINEST)) {
-					logger.finest("[EntityService] readIntegerItem: "
-							+ ii.itemName + "=" + ii.itemValue);
+					logger.finest("[EntityService] readIntegerItem: " + ii.itemName + "=" + ii.itemValue);
 				}
 
 			} catch (Exception e) {
-				logger.warning("[EntityService] could not implode ItemValue: "
-						+ ii.itemName);
+				logger.warning("[EntityService] could not implode ItemValue: " + ii.itemName);
 			}
 		}
 
@@ -1568,13 +1585,11 @@ public class EntityService implements EntityServiceRemote {
 				vValue.add(di.itemValue);
 				itemCollection.replaceItemValue(di.itemName, vValue);
 				if (logger.isLoggable(Level.FINEST)) {
-					logger.finest("[EntityService] readDoubleItem: "
-							+ di.itemName + "=" + di.itemValue);
+					logger.finest("[EntityService] readDoubleItem: " + di.itemName + "=" + di.itemValue);
 				}
 
 			} catch (Exception e) {
-				logger.warning("[EntityService] could not implode ItemValue: "
-						+ di.itemName);
+				logger.warning("[EntityService] could not implode ItemValue: " + di.itemName);
 			}
 		}
 
@@ -1586,13 +1601,11 @@ public class EntityService implements EntityServiceRemote {
 				vValue.add(ci.itemValue.getTime());
 				itemCollection.replaceItemValue(ci.itemName, vValue);
 				if (logger.isLoggable(Level.FINEST)) {
-					logger.finest("[EntityService] readCalendarItem: "
-							+ ci.itemName + "=" + ci.itemValue);
+					logger.finest("[EntityService] readCalendarItem: " + ci.itemName + "=" + ci.itemValue);
 				}
 
 			} catch (Exception e) {
-				logger.warning("[EntityService] could not implode ItemValue: "
-						+ ci.itemName);
+				logger.warning("[EntityService] could not implode ItemValue: " + ci.itemName);
 			}
 		}
 
@@ -1632,11 +1645,9 @@ public class EntityService implements EntityServiceRemote {
 				List detachePropertyValue = null;
 				// check if this property was already created with index values
 				if (itemCollection.hasItem(activePropertyName)) {
-					logger.warning("implodeEntity - " + activePropertyName
-							+ " contains inconsistent entries - " + " ID:"
-							+ aEntity.getId());
-					detachePropertyValue = itemCollection
-							.getItemValue(activePropertyName);
+					logger.warning("implodeEntity - " + activePropertyName + " contains inconsistent entries - "
+							+ " ID:" + aEntity.getId());
+					detachePropertyValue = itemCollection.getItemValue(activePropertyName);
 				} else {
 					// we did not have yet created this property from the
 					// indexProperties before, so we add now a new property....
@@ -1648,8 +1659,7 @@ public class EntityService implements EntityServiceRemote {
 				detachePropertyValue.addAll(activePropertyValue);
 
 				// add property
-				itemCollection.replaceItemValue(activePropertyName,
-						detachePropertyValue);
+				itemCollection.replaceItemValue(activePropertyName, detachePropertyValue);
 
 				// now we are sure that we have a new instance of an vector
 				// for each property
@@ -1709,8 +1719,7 @@ public class EntityService implements EntityServiceRemote {
 		StringTokenizer st = new StringTokenizer(aQuery);
 		// find identifier for Entity
 		if (st.countTokens() < 5)
-			throw new InvalidAccessException(
-					"[EntityService] Invalid query format: " + aQuery);
+			throw new InvalidAccessException("[EntityService] Invalid query format: " + aQuery);
 
 		// test if DISTINCT clause is included
 		st.nextToken();
@@ -1718,8 +1727,7 @@ public class EntityService implements EntityServiceRemote {
 		if (!"distinct".equals(sDistinct.toLowerCase().trim())) {
 			// add distinct.
 			int iDisPos = aQuery.toLowerCase().indexOf("select") + 6;
-			aQuery = aQuery.substring(0, iDisPos) + " DISTINCT"
-					+ aQuery.substring(iDisPos);
+			aQuery = aQuery.substring(0, iDisPos) + " DISTINCT" + aQuery.substring(iDisPos);
 		}
 
 		// don't optimize for managers...
@@ -1777,8 +1785,7 @@ public class EntityService implements EntityServiceRemote {
 		int iWherePos = aQuery.toLowerCase().indexOf("where");
 		if (iWherePos > -1) {
 			// insert access check
-			aNewQuery = aQuery.substring(0, iWherePos + 5)
-					+ " (access807.value IS NULL OR access807.value IN ("
+			aNewQuery = aQuery.substring(0, iWherePos + 5) + " (access807.value IS NULL OR access807.value IN ("
 					+ nameList + ")) AND " + aQuery.substring(iWherePos + 6);
 			aQuery = aNewQuery;
 
@@ -1787,12 +1794,10 @@ public class EntityService implements EntityServiceRemote {
 			int iOrderPos = aQuery.toLowerCase().indexOf("order by");
 			if (iOrderPos > -1)
 				aNewQuery = aQuery.substring(0, iOrderPos - 1)
-						+ " WHERE (access807.value IS NULL OR access807.value IN ("
-						+ nameList + ")) " + aQuery.substring(iOrderPos);
+						+ " WHERE (access807.value IS NULL OR access807.value IN (" + nameList + ")) "
+						+ aQuery.substring(iOrderPos);
 			else
-				aNewQuery = aQuery
-						+ " WHERE (access807.value IS NULL OR access807.value IN("
-						+ nameList + ")) ";
+				aNewQuery = aQuery + " WHERE (access807.value IS NULL OR access807.value IN(" + nameList + ")) ";
 
 			aQuery = aNewQuery;
 		}
@@ -1814,19 +1819,16 @@ public class EntityService implements EntityServiceRemote {
 	 */
 	@SuppressWarnings("unused")
 	@Deprecated
-	private void updateAllEntityIndexFields(Collection<Entity> entityList,
-			String newIndexField) {
+	private void updateAllEntityIndexFields(Collection<Entity> entityList, String newIndexField) {
 		long count = 0;
-		logger.info("[EntityServiceBean] found " + entityList.size()
-				+ " existing entities. Starting update...");
+		logger.info("[EntityServiceBean] found " + entityList.size() + " existing entities. Starting update...");
 		// get a List of all existing Indices
 		Collection<EntityIndex> entityIndexCache = readIndices();
 
 		Iterator<Entity> iter = entityList.iterator();
 		while (iter.hasNext()) {
 			Entity activeEntity = iter.next();
-			ItemCollection slimItemcol = new ItemCollection(
-					activeEntity.getData());
+			ItemCollection slimItemcol = new ItemCollection(activeEntity.getData());
 			// test if activeEntity is affected from this index
 			if (newIndexField == null || slimItemcol.hasItem(newIndexField)) {
 
@@ -1841,15 +1843,13 @@ public class EntityService implements EntityServiceRemote {
 					// implode each Entity into its ItemCollection
 					ItemCollection itemcol = implodeEntity(activeEntity);
 
-					ItemCollection slimItemCollection = new ItemCollection(
-							itemcol.getAllItems());
+					ItemCollection slimItemCollection = new ItemCollection(itemcol.getAllItems());
 
 					// update read- and writeAccess List
 					updateReadAccessList(slimItemCollection, activeEntity);
 					updateWriteAccessList(slimItemCollection, activeEntity);
 
-					explodeEntity(slimItemCollection, activeEntity,
-							entityIndexCache);
+					explodeEntity(slimItemCollection, activeEntity, entityIndexCache);
 
 					// finally update the data field
 					activeEntity.setData(slimItemCollection.getAllItems());
