@@ -217,27 +217,7 @@ public class WorkflowKernel {
 			documentContext.replaceItemValue(UNIQUEID, generateUniqueID());
 		}
 
-		// log the general processing message
-		String msg = "[WorkflowKernel] processing="
-				+ documentContext.getItemValueString(UNIQUEID)
-				+ ", MODELVERSION="
-				+ workitem.getItemValueString(MODELVERSION)
-				+ ", $processid=" + workitem.getItemValueInteger(PROCESSID)
-				+ ", $activityid="
-				+ workitem.getItemValueInteger(ACTIVITYID);
-
-		if (ctx != null) {
-			if (ctx.getLogLevel() == LOG_LEVEL_FINE)
-				msg += ", Log-Level=FINE ";
-			else if (ctx.getLogLevel() == LOG_LEVEL_WARNING)
-				msg += ", Log-Level=WARNING ";
-			else
-				msg += ", Log-Level=SEVERE ";
-		} else {
-			logger.warning("[WorkflowKernel] no WorkflowContext defined!");
-		}
-		logger.info(msg);
-
+	
 		// Check if $WorkItemID is available
 		if ("".equals(documentContext.getItemValueString("$WorkItemID"))) {
 			documentContext.replaceItemValue("$WorkItemID", generateUniqueID());
@@ -285,9 +265,9 @@ public class WorkflowKernel {
 
 				if (iNextID > 0) {
 					// load activity
-					if (ctx.getLogLevel() == LOG_LEVEL_FINE)
-						logger.info("[WorkflowKernel] loading next activityID from $activityidlist="
-								+ iNextID);
+					logger.info("[WorkflowKernel] processing="
+								+ documentContext.getItemValueString(UNIQUEID) 
+								+ " -> loading next activityID = "	+ iNextID);
 					vActivityList.remove(0);
 					// update document context
 					documentContext.replaceItemValue(ACTIVITYID,
@@ -334,6 +314,29 @@ public class WorkflowKernel {
 	 */
 	private void processActivity() throws PluginException {
 
+		// log the general processing message
+		String msg = "[WorkflowKernel] processing="
+				+ documentContext.getItemValueString(UNIQUEID)
+				+ ", MODELVERSION="
+				+ documentContext.getItemValueString(MODELVERSION)
+				+ ", $processid=" + documentContext.getItemValueInteger(PROCESSID)
+				+ ", $activityid="
+				+ documentContext.getItemValueInteger(ACTIVITYID);
+
+		if (ctx != null) {
+			if (ctx.getLogLevel() == LOG_LEVEL_FINE)
+				msg += ", Log-Level=FINE ";
+			else if (ctx.getLogLevel() == LOG_LEVEL_WARNING)
+				msg += ", Log-Level=WARNING ";
+			else
+				msg += ", Log-Level=SEVERE ";
+		} else {
+			logger.warning("[WorkflowKernel] no WorkflowContext defined!");
+		}
+		logger.info(msg);
+
+		
+		// load activity...
 		loadActivity();
 
 		// run plugins - PluginExceptions will bubble up....
