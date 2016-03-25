@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--Imixs IX XML QueyObject  -  www.imixs.com--><query>
+  <itemcollection>
+    <itemcollection>
+      <item name="txtworkflowmanageruri">
+        <value>http://localhost:8080/workflow-rest/report</value>
+      </item>
+      <item name="txtattributelist">
+        <value>txtworkflowstatus</value>
+        <value>_supplier</value>
+        <value>_capacity</value>
+        <value>namteam</value>
+        <value>datDate&lt;format locale="DE_de" label="Leistung von"&gt;dd.MM.yyyy&lt;/format&gt;</value>
+        <value>datTo&lt;format locale="DE_de" label="Leistung bis"&gt;dd.MM.yyyy&lt;/format&gt;</value>
+        <value>$created&lt;format locale="DE_de" label="Erstellt"&gt;dd.MM.yyyy&lt;/format&gt;</value>
+        <value>$modified&lt;format locale="DE_de" label="Geändert"&gt;dd.MM.yyyy&lt;/format&gt;</value>
+      </item>
+      <item name="txtcontenttype">
+        <value>html</value>
+      </item>
+      <item name="txtquery">
+        <value>SELECT workitem FROM Entity AS workitem
+  JOIN workitem.textItems AS p
+  WHERE workitem.type IN( 'workitem' ,'workitemarchive')
+  AND p.itemName='txtworkflowgroup' AND p.itemValue='ticket'
+ORDER BY workitem.created DESC</value>
+      </item>
+      <item name="txtencoding">
+        <value>UTF-8</value>
+      </item>
+      <item name="txtname">
+        <value>demo.ixr</value>
+      </item>
+      <item name="txtxsl">
+        <value>&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+&lt;xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"&gt;
+	&lt;xsl:output method="xml" indent="yes"/&gt;
+	
+	&lt;xsl:template match="/"&gt;
+		&lt;collection&gt;
+			&lt;xsl:apply-templates select="/collection/entity" /&gt;
+		&lt;/collection&gt;
+	&lt;/xsl:template&gt;
+
+	&lt;!-- Template --&gt;
+	&lt;xsl:template match="/collection/entity"&gt;
+		&lt;entity&gt;
+			&lt;xsl:for-each select="item"&gt;
+
+				&lt;!-- prepare a param for the item name --&gt;
+				&lt;xsl:param name="item_name"&gt;
+					&lt;xsl:value-of select="translate(name,'$','_')" /&gt;
+				&lt;/xsl:param&gt;
+
+				&lt;!-- test if name ist empty --&gt;
+				&lt;xsl:if test="$item_name = not('')"&gt;
+					&lt;xsl:element name="{$item_name}"&gt;
+						
+						&lt;xsl:value-of select="value" /&gt;
+
+					&lt;/xsl:element&gt;
+
+				&lt;/xsl:if&gt;
+
+			&lt;/xsl:for-each&gt;
+		&lt;/entity&gt;
+	&lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</value>
+      </item>
+    </itemcollection>
+  </itemcollection>
+</query>
