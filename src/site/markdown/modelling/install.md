@@ -2,8 +2,13 @@
 #Installation
 
 For installation of the Imixs-BPMN Modeler, you will need an executable Eclipse installation (version 4.4 or higher) or any other Eclipse based IDE (e.g. Oracle, SAP, IBM). If you do not have an Eclipse installation yet, you can download Eclipse from the [Eclipse website](http://www.eclipse.org/).
+
+You can install Imixs-BPMN directly from the Eclipse Marketplace by dragging the install button to your running Eclipse workspace:
+
+<a href="http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=2309267" class="drag" title="Drag to your running Eclipse workspace to install Imixs-BPMN"><img class="img-responsive" src="https://marketplace.eclipse.org/sites/all/themes/solstice/public/images/marketplace/btn-install.png" alt="Drag to your running Eclipse workspace to install Imixs-BPMN" /></a>
  
-Imixs-BPMN is installed the same way as any other Eclipse plug-in.To install the Imixs-BPMN plug-in select from the Eclipse Workbench main menu:  Help -> Install New Software. 
+### Installation from the Updatesite 
+Imixs-BPMN is installed the same way as any other Eclipse plug-in.To install the Imixs-BPMN plug-in select from the Eclipse Workbench main menu:  *Help -> Install New Software*. 
  
 Enter the following update site URL:
  
