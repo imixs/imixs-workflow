@@ -58,8 +58,7 @@ import org.imixs.workflow.ItemCollection;
  */
 
 public class XMLItemCollectionAdapter {
-	private static Logger logger = Logger
-			.getLogger(XMLItemCollectionAdapter.class.getName());
+	private static Logger logger = Logger.getLogger(XMLItemCollectionAdapter.class.getName());
 
 	/**
 	 * This Methode converts a
@@ -75,8 +74,7 @@ public class XMLItemCollectionAdapter {
 	 * @return ItemCollection
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static ItemCollection getItemCollection(
-			final XMLItemCollection entity) {
+	public static ItemCollection getItemCollection(final XMLItemCollection entity) {
 		ItemCollection itemCol = new ItemCollection();
 		if (entity == null)
 			return itemCol;
@@ -95,15 +93,12 @@ public class XMLItemCollectionAdapter {
 						itemCol.replaceItemValue(key, new Vector());
 					} else {
 						// test the content for GregorianCalendar... (issue #52)
-						Object[] objectArray = convertXMLGregorianCalendar(it
-								.getValue());
-						itemCol.replaceItemValue(key,
-								new Vector(Arrays.asList(objectArray)));
+						Object[] objectArray = convertXMLGregorianCalendar(it.getValue());
+						itemCol.replaceItemValue(key, new Vector(Arrays.asList(objectArray)));
 					}
 				}
 		} catch (Exception e) {
-			System.out
-					.println("[XMLItemCollectionAdapter] getItemCollection error");
+			System.out.println("[XMLItemCollectionAdapter] getItemCollection error");
 			System.out.println(e.toString());
 			itemCol = null;
 		}
@@ -126,9 +121,8 @@ public class XMLItemCollectionAdapter {
 	 *            items will be converted
 	 */
 	@SuppressWarnings({ "unchecked" })
-	public static XMLItemCollection putItemCollection(
-			final ItemCollection aItemCollection, final List<String> itemNames)
-			throws Exception {
+	public static XMLItemCollection putItemCollection(final ItemCollection aItemCollection,
+			final List<String> itemNames) throws Exception {
 		String sName = null;
 		XMLItemCollection entity = new XMLItemCollection();
 		int i = 0;
@@ -145,47 +139,30 @@ public class XMLItemCollectionAdapter {
 						XMLItem item = new XMLItem();
 						// test the ItemValue
 						List<?> vOrg = aItemCollection.getItemValue(aField);
-						if (!isBasicType(vOrg, sName)) {
-							// set dummy value
-							item.setName(sName);
-							vOrg = new Vector<Object>();
-							vOrg.add(null);
-							item.setValue(vOrg.toArray());
-						} else {
-							item.setName(sName);
-							// if no value available, create a dummy entry
-							if (vOrg.size() == 0)
-								vOrg.add(null);
-							item.setValue(vOrg.toArray());
-						}
+						item.setName(sName);
+						item.setValue(vOrg.toArray());
+
 						items[i] = item;
 						i++;
 					}
 
 				} else {
 					// convert all items (no itemname list is provided)
-					Iterator<?> it = aItemCollection.getAllItems().entrySet()
-							.iterator();
+					Iterator<?> it = aItemCollection.getAllItems().entrySet().iterator();
 					int max = aItemCollection.getAllItems().entrySet().size();
 					items = new XMLItem[max];
 
 					// iterate over all items if no itemNames are provided
 					while (it.hasNext()) {
-						Map.Entry<String, List<?>> entry = (Entry<String, List<?>>) it
-								.next();
-						sName = (String) entry.getKey();
-
-						// test ItemValue
-						List<?> vOrg = entry.getValue();
-
-						if (!isBasicType(vOrg, sName))
-							continue;
-						XMLItem item = new XMLItem();
-						item.setName(sName);
-						item.setValue(vOrg.toArray());
-
-						items[i] = item;
-						i++;
+						Map.Entry<String, List<?>> entry = (Entry<String, List<?>>) it.next();
+						XMLItem item = null;
+						item = new XMLItem();
+						item.setName((String) entry.getKey());
+						item.setValue(entry.getValue().toArray());
+						if (item != null) {
+							items[i] = item;
+							i++;
+						}
 					}
 				}
 
@@ -193,9 +170,7 @@ public class XMLItemCollectionAdapter {
 			}
 
 		} catch (Exception e) {
-			System.out
-					.println("[XMLItemCollectionAdapter] Error putItemCollection ("
-							+ sName + ")");
+			System.out.println("[XMLItemCollectionAdapter] Error putItemCollection (" + sName + ")");
 			throw e;
 		}
 
@@ -213,8 +188,7 @@ public class XMLItemCollectionAdapter {
 	 * @param aItemCollection
 	 *            Collection Object to be converted
 	 */
-	public static XMLItemCollection putItemCollection(
-			final ItemCollection aItemCollection) throws Exception {
+	public static XMLItemCollection putItemCollection(final ItemCollection aItemCollection) throws Exception {
 		return putItemCollection(aItemCollection, null);
 	}
 
@@ -226,8 +200,7 @@ public class XMLItemCollectionAdapter {
 	 * @return
 	 * @throws Exception
 	 */
-	public static EntityCollection putCollection(
-			final Collection<ItemCollection> col) throws Exception {
+	public static EntityCollection putCollection(final Collection<ItemCollection> col) throws Exception {
 
 		return putCollection(col, null);
 	}
@@ -247,8 +220,7 @@ public class XMLItemCollectionAdapter {
 	 * @return
 	 * @throws Exception
 	 */
-	public static EntityCollection putCollection(
-			final Collection<ItemCollection> col, final List<String> itemNames)
+	public static EntityCollection putCollection(final Collection<ItemCollection> col, final List<String> itemNames)
 			throws Exception {
 		EntityCollection entiCol = new EntityCollection();
 		Iterator<ItemCollection> it = col.iterator();
@@ -277,8 +249,8 @@ public class XMLItemCollectionAdapter {
 	 * @throws IOException
 	 * @return List of ItemCollection objects
 	 */
-	public static List<ItemCollection> readCollectionFromInputStream(
-			InputStream inputStream) throws JAXBException, IOException {
+	public static List<ItemCollection> readCollectionFromInputStream(InputStream inputStream)
+			throws JAXBException, IOException {
 		byte[] byteInput = null;
 
 		if (inputStream == null) {
@@ -300,8 +272,7 @@ public class XMLItemCollectionAdapter {
 	 * @throws IOException
 	 * @return List of ItemCollection objects
 	 */
-	public static List<ItemCollection> readCollection(byte[] byteInput)
-			throws JAXBException, IOException {
+	public static List<ItemCollection> readCollection(byte[] byteInput) throws JAXBException, IOException {
 
 		List<ItemCollection> resultList = new ArrayList<ItemCollection>();
 
@@ -326,11 +297,9 @@ public class XMLItemCollectionAdapter {
 		// convert entities....
 		if (ecol.getEntity().length > 0) {
 			for (XMLItemCollection aentity : ecol.getEntity()) {
-				resultList.add(XMLItemCollectionAdapter
-						.getItemCollection(aentity));
+				resultList.add(XMLItemCollectionAdapter.getItemCollection(aentity));
 			}
-			logger.fine("[XMLItemCollectionAdapter] " + ecol.getEntity().length
-					+ " entries sucessfull imported");
+			logger.fine("[XMLItemCollectionAdapter] " + ecol.getEntity().length + " entries sucessfull imported");
 		}
 		return resultList;
 
@@ -346,8 +315,7 @@ public class XMLItemCollectionAdapter {
 	 * @throws IOException
 	 * @return List of ItemCollection objects
 	 */
-	public static ItemCollection readItemCollection(byte[] byteInput)
-			throws JAXBException, IOException {
+	public static ItemCollection readItemCollection(byte[] byteInput) throws JAXBException, IOException {
 
 		if (byteInput == null) {
 			return null;
@@ -368,36 +336,10 @@ public class XMLItemCollectionAdapter {
 		ecol = (XMLItemCollection) jaxbObject;
 
 		// convert entity....
-		ItemCollection itemCol = XMLItemCollectionAdapter
-				.getItemCollection(ecol);
+		ItemCollection itemCol = XMLItemCollectionAdapter.getItemCollection(ecol);
 
 		return itemCol;
 
-	}
-
-	/**
-	 * This method test if the values of an vector are basic types
-	 * 
-	 * check for java.lang.*, java.math.*
-	 * 
-	 * @return
-	 */
-	@SuppressWarnings("rawtypes")
-	private static boolean isBasicType(List v, String fieldname) {
-		for (Object o : v) {
-			// Package p=o.getClass().getPackage();
-			Class c = o.getClass();
-
-			String name = c.getName();
-			if (!name.startsWith("java.lang.")
-					&& !name.startsWith("java.math.")
-					&& !"java.util.Date".equals(name)) {
-				logger.fine("WARNING : XMLItemCollectionAdapter - unsupported java type for property '"
-						+ fieldname + "' = " + name);
-				return false;
-			}
-		}
-		return true;
 	}
 
 	private static byte[] getBytesFromStream(InputStream is) throws IOException {
@@ -417,8 +359,7 @@ public class XMLItemCollectionAdapter {
 	 * java.util.Date objects.
 	 *
 	 */
-	private static Object[] convertXMLGregorianCalendar(
-			final Object[] objectArray) {
+	private static Object[] convertXMLGregorianCalendar(final Object[] objectArray) {
 		// test the content for GregorianCalendar... (issue #52)
 		for (int j = 0; j < objectArray.length; j++) {
 			if (objectArray[j] instanceof XMLGregorianCalendar) {
