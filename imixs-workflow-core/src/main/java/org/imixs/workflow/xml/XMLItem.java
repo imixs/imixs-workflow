@@ -72,6 +72,7 @@ public class XMLItem implements java.io.Serializable {
 	 * 
 	 * @param values
 	 */
+	@SuppressWarnings("unchecked")
 	public void setValue(java.lang.Object[] values) {
 		// this.value = values;
 
@@ -87,13 +88,14 @@ public class XMLItem implements java.io.Serializable {
 		if (isBasicType(values)) {
 			this.value = values;
 		} else {
+
 			// now test if the values are from type Map?
 			logger.fine("[XMLItem] test values for map intefaces");
-			for (Object singleValue : values) {
-				if (singleValue instanceof Map) {
-					// map - convert to XMLItem
-					List<XMLItem> mapData = new ArrayList<XMLItem>();
-					@SuppressWarnings("unchecked")
+			if (isListOfMap(values)) {
+				// map - convert to XMLItem
+				List<XMLItem> mapData = new ArrayList<XMLItem>();
+				for (Object singleValue : values) {
+
 					Map<String, Object> map = (Map<String, Object>) singleValue;
 
 					for (Map.Entry<String, Object> mapentry : map.entrySet()) {
@@ -111,16 +113,64 @@ public class XMLItem implements java.io.Serializable {
 						}
 						mapData.add(mapValueItem);
 					}
-					this.value = mapData.toArray();
-
-				} else {
-					// unable to convert object!
-					logger.warning("WARNING : XMLItem - unsupported java type = " + singleValue.getClass().getName());
 
 				}
+				this.value = mapData.toArray();
+				// customValue.add(mapData.toArray());
+
+			} else
+
+			if (isListOfList(values)) {
+				logger.fine("[XMLItem] convert List intefaces into list of XMLItem elements");
+				List<XMLItem> mapData = new ArrayList<XMLItem>();
+				for (Object singleValue : values) {
+					XMLItem mapValueItem = new XMLItem();
+					mapValueItem.setValue(((List<Object>) singleValue).toArray());
+					mapData.add(mapValueItem);
+				}
+				this.value = mapData.toArray();
+
+			} else {
+				// unable to convert object!
+				String classNames = "";
+				for (Object singleValue : values) {
+					classNames = classNames + singleValue.getClass().getName() + "; ";
+				}
+				logger.warning("WARNING : XMLItem - property '" + this.name + "' contains unsupported java types: "
+						+ classNames);
+			}
+
+		}
+	}
+
+	/**
+	 * returns true if all elements of values are from type Map
+	 * 
+	 * @param values
+	 * @return
+	 */
+	private boolean isListOfMap(java.lang.Object[] values) {
+		for (Object singleValue : values) {
+			if (!(singleValue instanceof Map)) {
+				return false;
 			}
 		}
+		return true;
+	}
 
+	/**
+	 * returns true if all elements of values are from type List
+	 * 
+	 * @param values
+	 * @return
+	 */
+	private boolean isListOfList(java.lang.Object[] values) {
+		for (Object singleValue : values) {
+			if (!(singleValue instanceof List)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
