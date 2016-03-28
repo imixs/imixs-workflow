@@ -43,7 +43,6 @@ import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.imixs.workflow.ItemCollection;
 
@@ -66,14 +65,10 @@ public class XMLItemCollectionAdapter {
 	 * <code> org.imixs.workflow.ItemCollection</code> Returns null if entity ==
 	 * null
 	 * 
-	 * issue #52:
-	 * 
-	 * We convert XMLGregorianCalendar into java.util.Date objects
-	 * 
 	 * @param entity
 	 * @return ItemCollection
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "rawtypes" })
 	public static ItemCollection getItemCollection(final XMLItemCollection entity) {
 		ItemCollection itemCol = new ItemCollection();
 		if (entity == null)
@@ -92,9 +87,7 @@ public class XMLItemCollectionAdapter {
 						// no value found
 						itemCol.replaceItemValue(key, new Vector());
 					} else {
-						// test the content for GregorianCalendar... (issue #52)
-						Object[] objectArray = convertXMLGregorianCalendar(it.getValue());
-						itemCol.replaceItemValue(key, new Vector(Arrays.asList(objectArray)));
+						itemCol.replaceItemValue(key,Arrays.asList(it.getValue()));
 					}
 				}
 		} catch (Exception e) {
@@ -354,20 +347,5 @@ public class XMLItemCollectionAdapter {
 		return buffer.toByteArray();
 	}
 
-	/**
-	 * This helper method converts instances of XMLGregorianCalendar into
-	 * java.util.Date objects.
-	 *
-	 */
-	private static Object[] convertXMLGregorianCalendar(final Object[] objectArray) {
-		// test the content for GregorianCalendar... (issue #52)
-		for (int j = 0; j < objectArray.length; j++) {
-			if (objectArray[j] instanceof XMLGregorianCalendar) {
-				XMLGregorianCalendar xmlCal = (XMLGregorianCalendar) objectArray[j];
-				// convert into Date object
-				objectArray[j] = xmlCal.toGregorianCalendar().getTime();
-			}
-		}
-		return objectArray;
-	}
+	
 }

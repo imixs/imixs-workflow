@@ -33,6 +33,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * Represents a single item inside a XMLItemCollection. An XMLItem has a name
@@ -70,6 +71,11 @@ public class XMLItem implements java.io.Serializable {
 	 * 
 	 * Null values will be converted into an empty vector.
 	 * 
+	 * issue #52:
+	 * 
+	 * We convert XMLGregorianCalendar into java.util.Date objects
+	 * 
+	 * 
 	 * @param values
 	 */
 	@SuppressWarnings("unchecked")
@@ -83,6 +89,9 @@ public class XMLItem implements java.io.Serializable {
 			value = vOrg.toArray();
 			return;
 		}
+
+		// issue #52
+		values = convertXMLGregorianCalendar(values);
 
 		// convert basic types into array
 		if (isBasicType(values)) {
@@ -198,6 +207,25 @@ public class XMLItem implements java.io.Serializable {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * This helper method converts instances of XMLGregorianCalendar into
+	 * java.util.Date objects.
+	 * 
+	 * See issue #52
+	 *
+	 */
+	private static Object[] convertXMLGregorianCalendar(final Object[] objectArray) {
+		// test the content for GregorianCalendar... (issue #52)
+		for (int j = 0; j < objectArray.length; j++) {
+			if (objectArray[j] instanceof XMLGregorianCalendar) {
+				XMLGregorianCalendar xmlCal = (XMLGregorianCalendar) objectArray[j];
+				// convert into Date object
+				objectArray[j] = xmlCal.toGregorianCalendar().getTime();
+			}
+		}
+		return objectArray;
 	}
 
 }
