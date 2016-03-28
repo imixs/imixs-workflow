@@ -60,7 +60,7 @@ public class XMLItemCollectionAdapter {
 	private static Logger logger = Logger.getLogger(XMLItemCollectionAdapter.class.getName());
 
 	/**
-	 * This Methode converts a
+	 * This Method converts a
 	 * <code>org.imixs.workflow.xml.XMLItemCollection</code> into a
 	 * <code> org.imixs.workflow.ItemCollection</code> Returns null if entity ==
 	 * null
@@ -82,17 +82,17 @@ public class XMLItemCollectionAdapter {
 					if (it == null)
 						continue;
 					String key = it.getName();
-					Object[] it_value = it.getValue();
-					if (it_value == null) {
+					if (it.getValue() == null) {
 						// no value found
 						itemCol.replaceItemValue(key, new Vector());
 					} else {
-						itemCol.replaceItemValue(key,Arrays.asList(it.getValue()));
+						// force migration of embedded XMLItem elements!
+						itemCol.replaceItemValue(key, Arrays.asList(it.getValue(true)));
 					}
 				}
 		} catch (Exception e) {
-			System.out.println("[XMLItemCollectionAdapter] getItemCollection error");
-			System.out.println(e.toString());
+			logger.warning("[XMLItemCollectionAdapter] getItemCollection - can't convert XMLItem value - error: "
+					+ e.toString());
 			itemCol = null;
 		}
 
@@ -347,5 +347,4 @@ public class XMLItemCollectionAdapter {
 		return buffer.toByteArray();
 	}
 
-	
 }

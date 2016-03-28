@@ -2,7 +2,9 @@ package org.imixs.workflow.xml;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -19,6 +21,13 @@ import org.junit.Test;
  * 
  */
 public class TestXMLItemCollectionAdapter {
+
+	
+
+
+
+
+
 
 	@Test
 	public void testItemCollection() {
@@ -136,6 +145,48 @@ public class TestXMLItemCollectionAdapter {
 
 		Assert.assertEquals(itemCollection.getItemValueDate("datdate"), datTest);
 
+	}
+	
+	
+	
+	
+	
+	
+	
+	@Test
+	public void testItemCollectionContainingMap() {
+		ItemCollection itemCollection = new ItemCollection();
+		itemCollection.replaceItemValue("txtTitel", "Hello");
+		
+		Map map=new HashMap<>();
+		map.put("_name", "some data");
+		itemCollection.replaceItemValue("_mapdata", map);
+		
+		XMLItemCollection xmlItemCollection = null;
+		try {
+			xmlItemCollection = XMLItemCollectionAdapter
+					.putItemCollection(itemCollection);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		ItemCollection col2 = XMLItemCollectionAdapter
+				.getItemCollection(xmlItemCollection);
+
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"),
+				"Hello");
+
+		Assert.assertEquals(col2.getItemValueString("txttitel"), "Hello");
+		
+		
+		 List  listOfMap=col2.getItemValue("_mapdata");
+		 Assert.assertEquals(1,listOfMap.size());
+		 
+		 Object some = listOfMap.get(0);
+			
+		 Assert.assertTrue(some instanceof Map);
+		
 	}
 
 }

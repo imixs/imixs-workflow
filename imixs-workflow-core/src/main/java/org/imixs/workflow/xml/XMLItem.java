@@ -27,6 +27,7 @@
 package org.imixs.workflow.xml;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -60,14 +61,48 @@ public class XMLItem implements java.io.Serializable {
 		this.name = name;
 	}
 
+	/**
+	 * This method returns the value. 
+	 * @return
+	 */
 	public java.lang.Object[] getValue() {
 		return value;
 	}
 
 	/**
+	 * This method returns the value. In case forceConversion=true the value is
+	 * an array of XMLItem elements the method converts the elements into a Map
+	 * or List interface.
+	 * 
+	 * @see XMLItemCollectionAdapter.getItemCollection()
+	 * @return
+	 */
+	public java.lang.Object[] getValue(boolean forceConversion) {
+
+		if (forceConversion && isArrayOfXMLItem(value)) {
+			ArrayList<Object> convertedValue = new ArrayList<Object>();
+			for (Object ding : value) {
+				XMLItem singleValue = (XMLItem) ding;
+				String key = singleValue.getName();
+				if (key != null && !key.isEmpty()) {
+					// create map
+					HashMap<String,Object[]> map = new HashMap<String,Object[]>();
+					map.put(key, singleValue.getValue());
+					convertedValue.add(map);
+				} else {
+					convertedValue.add(singleValue.getValue());
+				}
+			}
+			return convertedValue.toArray();
+		} else {
+			return value;
+		}
+	}
+
+	/**
 	 * This method set the value list of the item. The method verifies if the
-	 * values are from basic type or implementing a Map interface. Otherwise the
-	 * method prints a warning into the log file.
+	 * values are from basic type or implementing a Map or List interface.
+	 * Otherwise the method prints a warning into the log file.
 	 * 
 	 * Null values will be converted into an empty vector.
 	 * 
@@ -176,6 +211,21 @@ public class XMLItem implements java.io.Serializable {
 	private boolean isListOfList(java.lang.Object[] values) {
 		for (Object singleValue : values) {
 			if (!(singleValue instanceof List)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * returns true if all elements of values are from type XMLItem
+	 * 
+	 * @param values
+	 * @return
+	 */
+	private boolean isArrayOfXMLItem(java.lang.Object[] values) {
+		for (Object singleValue : values) {
+			if (!(singleValue instanceof XMLItem)) {
 				return false;
 			}
 		}
