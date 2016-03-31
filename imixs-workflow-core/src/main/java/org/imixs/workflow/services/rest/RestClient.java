@@ -345,8 +345,100 @@ public class RestClient {
 					new OutputStreamWriter(urlConnection.getOutputStream(),
 							encoding)));
 
+			
 			printWriter.write(writer.toString());
 			printWriter.close();
+
+			String sHTTPResponse = urlConnection.getHeaderField(0);
+			try {
+				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9,
+						12));
+			} catch (Exception eNumber) {
+				// eNumber.printStackTrace();
+				iLastHTTPResult = 500;
+			}
+
+			// get content of result
+			readResponse(urlConnection);
+
+		} catch (Exception ioe) {
+			// ioe.printStackTrace();
+			throw ioe;
+		} finally {
+			// Release current connection
+			if (printWriter != null)
+				printWriter.close();
+		}
+
+		return iLastHTTPResult;
+	}
+	
+	
+	
+	
+	
+	/**
+	 * This method posts a String data object with a specific Content-Type to a
+	 * Rest Service URI Endpoint.
+	 * This method can be used to simulate different post scenarios.
+	 * 
+	 * 
+	 * 
+	 * @param uri
+	 *            - Rest Endpoint RUI
+	 * @param entityCol
+	 *            - an Entity Collection
+	 * @return HTTPResult
+	 */
+	public int postString(String uri, String dataString, String contentType)
+			throws Exception {
+		PrintWriter printWriter = null;
+		if (contentType==null || contentType.isEmpty()) {
+			contentType="application/xml";
+		}
+
+		HttpURLConnection urlConnection = null;
+		try {
+			serviceEndpoint = uri;
+			iLastHTTPResult = 500;
+
+			urlConnection = (HttpURLConnection) new URL(serviceEndpoint)
+					.openConnection();
+			urlConnection.setRequestMethod("POST");
+			urlConnection.setDoOutput(true);
+			urlConnection.setDoInput(true);
+			urlConnection.setAllowUserInteraction(false);
+
+			// Authorization
+			if (user != null) {
+				urlConnection.setRequestProperty("Authorization", "Basic "
+						+ this.getAccessByUser());
+			}
+			/** * HEADER ** */
+			urlConnection.setRequestProperty("Content-Type",
+					contentType + "; charset=" + encoding);
+
+			
+			
+			StringWriter writer = new StringWriter();
+
+			writer.write(dataString);
+			writer.flush();
+
+			// compute length
+			urlConnection.setRequestProperty("Content-Length",
+					"" + Integer.valueOf(writer.toString().getBytes().length));
+
+			printWriter = new PrintWriter(new BufferedWriter(
+					new OutputStreamWriter(urlConnection.getOutputStream(),
+							encoding)));
+
+			
+			printWriter.write(writer.toString());
+			printWriter.close();
+
+			
+
 
 			String sHTTPResponse = urlConnection.getHeaderField(0);
 			try {
