@@ -28,6 +28,7 @@
 package org.imixs.workflow;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -66,8 +67,7 @@ import java.util.logging.Logger;
 public class ItemCollection {
 	// NOTE: ItemCollection is not serializable
 
-	private static Logger logger = Logger.getLogger(ItemCollection.class
-			.getName());
+	private static Logger logger = Logger.getLogger(ItemCollection.class.getName());
 
 	private Map<String, List<Object>> hash = new Hashtable<String, List<Object>>();
 
@@ -89,8 +89,7 @@ public class ItemCollection {
 		Iterator<?> it = map.entrySet().iterator();
 		while (it.hasNext()) {
 			@SuppressWarnings("unchecked")
-			Map.Entry<String, List<Object>> entry = (Entry<String, List<Object>>) it
-					.next();
+			Map.Entry<String, List<Object>> entry = (Entry<String, List<Object>>) it.next();
 			this.replaceItemValue(entry.getKey().toString(), entry.getValue());
 		}
 	}
@@ -199,17 +198,14 @@ public class ItemCollection {
 			return 0;
 		}
 	}
-	
-	
-	
 
 	/**
-	 * Returns the value of an item with a long value. If the item has
-	 * no value or the value is no number, or empty, this method returns 0. If
-	 * no item with the specified name exists, this method returns 0. It does
-	 * not throw an exception. If the item has multiple values, this method
-	 * returns the first value. The ItemName is not case sensitive. Use hasItem
-	 * to verify the existence of an item.
+	 * Returns the value of an item with a long value. If the item has no value
+	 * or the value is no number, or empty, this method returns 0. If no item
+	 * with the specified name exists, this method returns 0. It does not throw
+	 * an exception. If the item has multiple values, this method returns the
+	 * first value. The ItemName is not case sensitive. Use hasItem to verify
+	 * the existence of an item.
 	 * 
 	 * @param aName
 	 * @return integer value
@@ -600,15 +596,13 @@ public class ItemCollection {
 		// test if value is ItemCollection
 		if (itemValue instanceof ItemCollection) {
 			// just warn - do not remove
-			logger.warning("[ItemCollection] replaceItemValue '"
-					+ itemName
+			logger.warning("[ItemCollection] replaceItemValue '" + itemName
 					+ "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
 		}
 
 		// test if value is serializable
 		if (!(itemValue instanceof java.io.Serializable)) {
-			logger.warning("[ItemCollection] replaceItemValue '" + itemName
-					+ "': Object no Serializable!");
+			logger.warning("[ItemCollection] replaceItemValue '" + itemName + "': Object no Serializable!");
 			this.removeItem(itemName);
 			return;
 		}
@@ -625,8 +619,7 @@ public class ItemCollection {
 				// test if ItemCollection
 				if (((List<?>) itemValueList).get(i) instanceof ItemCollection) {
 					// just warn - do not remove
-					logger.warning("[ItemCollection] replaceItemValue '"
-							+ itemName
+					logger.warning("[ItemCollection] replaceItemValue '" + itemName
 							+ "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
 				}
 			}
@@ -664,8 +657,7 @@ public class ItemCollection {
 		Iterator<?> it = map.entrySet().iterator();
 		while (it.hasNext()) {
 			@SuppressWarnings("unchecked")
-			Map.Entry<String, List<Object>> entry = (Map.Entry<String, List<Object>>) it
-					.next();
+			Map.Entry<String, List<Object>> entry = (Map.Entry<String, List<Object>>) it.next();
 			replaceItemValue(entry.getKey().toString(), entry.getValue());
 		}
 	}
@@ -722,7 +714,6 @@ public class ItemCollection {
 				mapFiles = new HashMap<String, List<Object>>();
 
 			// existing file will be overridden!
-			vectorFileInfo = (Vector<Object>) mapFiles.get(fileName);
 			vectorFileInfo = new Vector<Object>();
 			// put file in a vector containing the byte array and also the
 			// content type
@@ -751,18 +742,34 @@ public class ItemCollection {
 	}
 
 	/**
-	 * Returns a list of file names attached to the current BlobWorkitem. File
-	 * Attachments can be added using the method addFile().
+	 * Returns files stored in the property '$file'. The files are returned in a
+	 * Map interface where the key is the filename and the value is a list with
+	 * two elements - the ContenType and the file content (byte[]).
+	 * s
+	 * Files can be added into a ItemCollection using the method addFile().
 	 * 
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public Map<String, List<Object>> getFiles() {
 		List<?> vFiles = getItemValue("$file");
 		if (vFiles != null && vFiles.size() > 0) {
-			@SuppressWarnings("unchecked")
-			Map<String, List<Object>> mapFiles = (Map<String, List<Object>>) vFiles
-					.get(0);
-			return mapFiles;
+			// test if the value part is a List or an Object[]. In case its an
+			// Object[] we convert the array to a List
+			
+			Map<String, ?> testContent = (Map<String, ?>) vFiles.get(0);
+			Map<String, List<Object>> mapFiles = new HashMap<String, List<Object>>();
+			for (Entry<String, ?> entry : testContent.entrySet()) {
+				String sFileName = entry.getKey();
+				Object obj = entry.getValue();
+				if (obj instanceof List) {
+					mapFiles.put(sFileName, (List<Object>) obj);
+				} else {
+					// convert array to List
+					mapFiles.put(sFileName, Arrays.asList(obj));
+				}
+			}
+			return mapFiles;			
 		}
 
 		return null;
@@ -786,8 +793,7 @@ public class ItemCollection {
 			// files = new String[mapFiles.entrySet().size()];
 			Iterator<?> iter = mapFiles.entrySet().iterator();
 			while (iter.hasNext()) {
-				Map.Entry<String, List<Object>> mapEntry = (Map.Entry<String, List<Object>>) iter
-						.next();
+				Map.Entry<String, List<Object>> mapEntry = (Map.Entry<String, List<Object>>) iter.next();
 				String aFileName = mapEntry.getKey().toString();
 				// files[iFileCount] = aFileName;
 				files.add(aFileName);

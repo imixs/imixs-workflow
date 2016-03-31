@@ -27,6 +27,7 @@
 package org.imixs.workflow.xml;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +63,8 @@ public class XMLItem implements java.io.Serializable {
 	}
 
 	/**
-	 * This method returns the value. 
+	 * This method returns the value.
+	 * 
 	 * @return
 	 */
 	public java.lang.Object[] getValue() {
@@ -70,8 +72,8 @@ public class XMLItem implements java.io.Serializable {
 	}
 
 	/**
-	 * This method returns the value. In case forceConversion=true the value is
-	 * an array of XMLItem elements the method converts the elements into a Map
+	 * This method returns the value. In case forceConversion=true and the value is
+	 * an array of XMLItem elements, the method converts the elements into a Map
 	 * or List interface.
 	 * 
 	 * @see XMLItemCollectionAdapter.getItemCollection()
@@ -81,16 +83,20 @@ public class XMLItem implements java.io.Serializable {
 
 		if (forceConversion && isArrayOfXMLItem(value)) {
 			ArrayList<Object> convertedValue = new ArrayList<Object>();
-			for (Object ding : value) {
-				XMLItem singleValue = (XMLItem) ding;
+			for (Object object : value) {
+				XMLItem singleValue = (XMLItem) object;
 				String key = singleValue.getName();
 				if (key != null && !key.isEmpty()) {
 					// create map
-					HashMap<String,Object[]> map = new HashMap<String,Object[]>();
-					map.put(key, singleValue.getValue());
+					HashMap<String, List<Object>> map = new HashMap<String, List<Object>>();
+					// convert object array into list
+				//	List<Object> lili=Arrays.asList(singleValue.getValue());
+					
+					map.put(key, Arrays.asList(singleValue.getValue()));
 					convertedValue.add(map);
 				} else {
-					convertedValue.add(singleValue.getValue());
+					//convertedValue.add(singleValue.getValue());
+					convertedValue.add(Arrays.asList(singleValue.getValue()));
 				}
 			}
 			return convertedValue.toArray();
@@ -252,7 +258,8 @@ public class XMLItem implements java.io.Serializable {
 			// test package name
 			Class c = o.getClass();
 			String name = c.getName();
-			if (!name.startsWith("java.lang.") && !name.startsWith("java.math.") && !"java.util.Date".equals(name)) {
+			if (!name.startsWith("java.lang.") && !name.startsWith("java.math.") && !"java.util.Date".equals(name)
+					&& !"org.imixs.workflow.xml.XMLItem".equals(name)) {
 				return false;
 			}
 		}
