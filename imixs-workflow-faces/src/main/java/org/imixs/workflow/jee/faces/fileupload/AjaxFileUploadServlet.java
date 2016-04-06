@@ -20,7 +20,8 @@ import javax.servlet.http.Part;
 
 @WebServlet(urlPatterns = { "/fileupload/*" })
 // configure Servlet 3.0 multipart. Limit file size to 100MB, 500MB Request Size
-@MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 100, maxRequestSize = 1024 * 1024 * 100 * 5)
+@MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 100, maxRequestSize = 1024 * 1024 * 100
+		* 5)
 public class AjaxFileUploadServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
@@ -30,102 +31,110 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	private static final String CONTENT_DISPOSITION = "content-disposition";
 	private static final String CONTENT_DISPOSITION_FILENAME = "filename";
 	public static final String IMIXS_FILEDATA_LIST = "IMIXS_FILEDATA_LIST";
-	private List<FileData> fileDataList = null;
 
-	private static Logger logger = Logger.getLogger(AjaxFileUploadServlet.class
-			.getName());
+	private static Logger logger = Logger.getLogger(AjaxFileUploadServlet.class.getName());
 
+	/**
+	 * This method gets the current fileList form the current user session. In
+	 * case no fileList is yet stored, the method creates a new empty one.
+	 * 
+	 * @param httpRequest
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
-	@Override
-	protected void doPost(HttpServletRequest httpRequest,
-			HttpServletResponse response) throws ServletException, IOException {
-
-		if (isPostFileUploadRequest(httpRequest)) {
-
-			fileDataList = (List<FileData>) httpRequest.getSession()
-					.getAttribute(IMIXS_FILEDATA_LIST);
-			if (fileDataList == null) {
-				fileDataList = new ArrayList<FileData>();
-			}
-
-			logger.fine("[MultipartRequestFilter] add files...");
-			addFiles(httpRequest);
-
+	private List<FileData> getFileList(HttpServletRequest httpRequest) {
+		List<FileData> fileDataList = (List<FileData>) httpRequest.getSession().getAttribute(IMIXS_FILEDATA_LIST);
+		if (fileDataList == null) {
+			fileDataList = new ArrayList<FileData>();
 			// store file content into session
-			httpRequest.getSession().setAttribute(IMIXS_FILEDATA_LIST,
-					fileDataList);
-
-			String contextURL = httpRequest.getRequestURI();
-
-			writeJsonContent(contextURL, response);
+			httpRequest.getSession().setAttribute(IMIXS_FILEDATA_LIST, fileDataList);
 		}
+		return fileDataList;
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	protected void doDelete(HttpServletRequest httpRequest,
-			HttpServletResponse response) throws ServletException, IOException {
+	/**
+	 * Stores a fileDataList into the current user session
+	 * 
+	 * @param httpRequest
+	 * @param fileDataList
+	 */
+	private void setFileList(HttpServletRequest httpRequest, List<FileData> fileDataList) {
 
-		fileDataList = (List<FileData>) httpRequest.getSession().getAttribute(
-				IMIXS_FILEDATA_LIST);
 		if (fileDataList == null) {
 			fileDataList = new ArrayList<FileData>();
 		}
+		// store file content into session
+		httpRequest.getSession().setAttribute(IMIXS_FILEDATA_LIST, fileDataList);
+	}
 
+	/**
+	 * Upload files to stored in the current user session
+	 */
+	@Override
+	protected void doPost(HttpServletRequest httpRequest, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		if (isPostFileUploadRequest(httpRequest)) {
+			List<FileData> fileDataList = getFileList(httpRequest);
+			logger.fine("[MultipartRequestFilter] add files...");
+			addFiles(httpRequest);
+			// store file content into session
+			setFileList(httpRequest, fileDataList);
+			String contextURL = httpRequest.getRequestURI();
+			writeJsonContent(httpRequest, response, contextURL);
+		}
+	}
+
+	/**
+	 * Delete a existing file form the fileData list stored in the current user
+	 * session
+	 */
+	@Override
+	protected void doDelete(HttpServletRequest httpRequest, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		List<FileData> fileDataList = getFileList(httpRequest);
 		int iCancel = httpRequest.getRequestURI().indexOf("/fileupload/");
 		String filename = httpRequest.getRequestURI().substring(iCancel + 12);
-
-		removeFile(filename);
-
+		removeFile(httpRequest, filename);
 		// store file content into session
-		httpRequest.getSession()
-				.setAttribute(IMIXS_FILEDATA_LIST, fileDataList);
-
+		setFileList(httpRequest, fileDataList);
 		// get context url from request uri
 		String contextURL = httpRequest.getRequestURI();
 		// cut last /....
 		contextURL = contextURL.substring(0, contextURL.lastIndexOf('/') + 1);
-
-		writeJsonContent(contextURL, response);
+		writeJsonContent(httpRequest, response, contextURL);
 	}
 
-	@SuppressWarnings("unchecked")
+	/**
+	 * Getter method to return the file content from the fileData list stored in
+	 * the current user
+	 */
 	@Override
-	protected void doGet(HttpServletRequest httpRequest,
-			HttpServletResponse httpResponse) throws ServletException,
-			IOException {
-
-		fileDataList = (List<FileData>) httpRequest.getSession().getAttribute(
-				IMIXS_FILEDATA_LIST);
-		if (fileDataList == null) {
-			fileDataList = new ArrayList<FileData>();
-		}
+	protected void doGet(HttpServletRequest httpRequest, HttpServletResponse httpResponse)
+			throws ServletException, IOException {
 
 		// check cancel upload...
 		if (isGetFileUploadRequest(httpRequest)) {
 			int iCancel = httpRequest.getRequestURI().indexOf("/fileupload/");
-			String filename = httpRequest.getRequestURI().substring(
-					iCancel + 12);
-			
-			// urldecoding...
-			filename=URLDecoder.decode(filename,"UTF-8");
+			String filename = httpRequest.getRequestURI().substring(iCancel + 12);
 
-			FileData fileData = getFile(filename);
+			// urldecoding...
+			filename = URLDecoder.decode(filename, "UTF-8");
+
+			FileData fileData = getFile(httpRequest, filename);
 			// write contenremoveFile(filename);
 			if (fileData != null) {
 				writeFileContent(httpResponse, fileData);
 			} else {
 				httpResponse.sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
-
 		}
 
-		// reques just the currently uploaded files in json format
+		// request just the currently uploaded files in json format
 		if (isGetRefreshFileUploadRequest(httpRequest)) {
 			String contextURL = httpRequest.getRequestURI();
-
-			writeJsonContent(contextURL, httpResponse);
-
+			writeJsonContent(httpRequest, httpResponse, contextURL);
 		}
 	}
 
@@ -139,9 +148,8 @@ public class AjaxFileUploadServlet extends HttpServlet {
 		String sContentType = httpRequest.getContentType();
 		logger.fine("[MulitpartRequestFilter]  contentType=" + sContentType);
 
-		return (REQUEST_METHOD_POST.equalsIgnoreCase(httpRequest.getMethod())
-				&& httpRequest.getContentType() != null && sContentType
-				.toLowerCase().startsWith(CONTENT_TYPE_MULTIPART));
+		return (REQUEST_METHOD_POST.equalsIgnoreCase(httpRequest.getMethod()) && httpRequest.getContentType() != null
+				&& sContentType.toLowerCase().startsWith(CONTENT_TYPE_MULTIPART));
 	}
 
 	/**
@@ -153,8 +161,8 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	private boolean isGetFileUploadRequest(HttpServletRequest httpRequest) {
 		String uri = httpRequest.getRequestURI();
 
-		return (REQUEST_METHOD_GET.equalsIgnoreCase(httpRequest.getMethod()) && !(uri
-				.endsWith("/fileupload") || uri.endsWith("/fileupload/")));
+		return (REQUEST_METHOD_GET.equalsIgnoreCase(httpRequest.getMethod())
+				&& !(uri.endsWith("/fileupload") || uri.endsWith("/fileupload/")));
 
 	}
 
@@ -167,8 +175,8 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	private boolean isGetRefreshFileUploadRequest(HttpServletRequest httpRequest) {
 
 		String uri = httpRequest.getRequestURI();
-		return (REQUEST_METHOD_GET.equalsIgnoreCase(httpRequest.getMethod()) && (uri
-				.endsWith("/fileupload") || uri.endsWith("/fileupload/")));
+		return (REQUEST_METHOD_GET.equalsIgnoreCase(httpRequest.getMethod())
+				&& (uri.endsWith("/fileupload") || uri.endsWith("/fileupload/")));
 
 	}
 
@@ -184,28 +192,22 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	 * @return
 	 * @throws IOException
 	 */
-	private void writeFileContent(ServletResponse response, FileData fileData)
-			throws IOException {
-
+	private void writeFileContent(ServletResponse response, FileData fileData) throws IOException {
 		logger.fine("[MulitpartRequestFilter] write file content...");
-
 		ServletOutputStream output = response.getOutputStream();
 		output.write(fileData.getData());
-
 		// now return json string of uploaded files....
 		response.setContentType(fileData.getContentType());
-
 		output.close();
-
 	}
 
-	private void writeJsonContent(String context_url, ServletResponse response)
+	private void writeJsonContent(HttpServletRequest httpRequest, ServletResponse response, String context_url)
 			throws IOException {
 		logger.fine("[MulitpartRequestFilter] return JSON content...");
 		// now return json string of uploaded files....
 		response.setContentType("application/json;charset=UTF-8");
 		PrintWriter out = response.getWriter();
-		out.write(getJson(context_url));
+		out.write(getJson(httpRequest, context_url));
 		out.close();
 
 	}
@@ -220,8 +222,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	private String getFilename(Part part) {
 		for (String cd : part.getHeader(CONTENT_DISPOSITION).split(";")) {
 			if (cd.trim().startsWith(CONTENT_DISPOSITION_FILENAME)) {
-				return cd.substring(cd.indexOf('=') + 1).trim()
-						.replace("\"", "");
+				return cd.substring(cd.indexOf('=') + 1).trim().replace("\"", "");
 			}
 		}
 		return null;
@@ -233,10 +234,13 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	 * @param file
 	 *            - filename to be removed
 	 */
-	private void removeFile(String file) {
+	private List<FileData> removeFile(HttpServletRequest httpRequest, String file) {
 		int pos = -1;
+
+		List<FileData> fileDataList = getFileList(httpRequest);
 		if (file == null)
-			return;
+			return fileDataList;
+
 		for (int i = 0; i < fileDataList.size(); i++) {
 			FileData fileData = fileDataList.get(i);
 			if (file.equals(fileData.getName())) {
@@ -248,11 +252,23 @@ public class AjaxFileUploadServlet extends HttpServlet {
 		if (pos > -1) {
 			logger.fine("[MultipartRequestWrapper] remove file '" + file + "'");
 			fileDataList.remove(pos);
+
+			// store file content into session
+			setFileList(httpRequest, fileDataList);
 		}
+
+		return fileDataList;
 	}
 
+	/**
+	 * This method adds mulitple files into the FileDataList stored in the
+	 * current user session
+	 * 
+	 * @param httpRequest
+	 */
 	private void addFiles(HttpServletRequest httpRequest) {
 		logger.fine("[MultipartRequestWrapper] Looping parts");
+
 		try {
 			for (Part p : httpRequest.getParts()) {
 				byte[] b = new byte[(int) p.getSize()];
@@ -276,24 +292,25 @@ public class AjaxFileUploadServlet extends HttpServlet {
 					if (fileName.length() != fileNameUTF8.length()) {
 						// convert to utf-8
 						logger.fine("filename seems to be ISO-8859-1 encoded");
-						fileName = new String(fileName.getBytes("iso-8859-1"),
-								"utf-8");
+						fileName = new String(fileName.getBytes("iso-8859-1"), "utf-8");
 					}
 
 					// extract the file content...
 					FileData fileData = null;
-					logger.fine("Filename : " + fileName + ", contentType "
-							+ p.getContentType());
+					logger.fine("Filename : " + fileName + ", contentType " + p.getContentType());
 					fileData = new FileData(fileName, p.getContentType(), b);
 					if (fileData != null) {
 						// remove existing file
-						removeFile(fileData.getName());
-						// update filedataList...
+						List<FileData> fileDataList = removeFile(httpRequest, fileData.getName());
+						// add new fileData..
 						fileDataList.add(fileData);
+						// store file content into session
+						setFileList(httpRequest, fileDataList);
 					}
 
 				}
 			}
+
 		} catch (IOException ex) {
 			logger.log(Level.SEVERE, null, ex);
 		} catch (ServletException ex) {
@@ -303,12 +320,15 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	}
 
 	/**
-	 * gets an uploaded file from the fileDataList...
+	 * gets an uploaded fileData from the fileDataList stored in the crrent user
+	 * session...
 	 * 
 	 * @param file
-	 *            - filename to be removed
+	 *            - filename to be searched for
 	 */
-	private FileData getFile(String file) {
+	private FileData getFile(HttpServletRequest httpRequest, String file) {
+		List<FileData> fileDataList = getFileList(httpRequest);
+
 		FileData result = null;
 		if (file == null)
 			return null;
@@ -323,7 +343,8 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	}
 
 	/**
-	 * returns a json structure for uploaded files.
+	 * returns a JSON structure for uploaded files from the current user
+	 * session.
 	 * 
 	 * @see https://github.com/blueimp/jQuery-File-Upload/wiki/JSON-Response
 	 * 
@@ -344,15 +365,14 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	 *  </code>
 	 * @return
 	 */
-	private String getJson(String context_url) {
-
+	private String getJson(HttpServletRequest httpRequest, String context_url) {
+		List<FileData> fileDataList = getFileList(httpRequest);
 		String result = "{ \"files\":[";
 		for (int i = 0; i < fileDataList.size(); i++) {
 
 			FileData fileData = fileDataList.get(i);
 
-			result += "{ \"url\": \"" + context_url + fileData.getName()
-					+ "\",";
+			result += "{ \"url\": \"" + context_url + fileData.getName() + "\",";
 			result += "\"thumbnail_url\": \"\",";
 			result += "\"name\": \"" + fileData.getName() + "\",";
 			result += "\"type\": \"" + fileData.getContentType() + "\",";
