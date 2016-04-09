@@ -1,6 +1,7 @@
 package org.imixs.workflow;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -449,6 +450,41 @@ public class TestItemCollection {
 		Assert.assertEquals("workitem_test",itemCollection1.getType());
 		Assert.assertEquals("ABC-123",itemCollection1.getUniqueID());
 
+	}
+	
+	
+	/**
+	 * This method verifies if null values will be removed from lists.
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Test
+	public void testNullValues() {
+
+		Vector v1=new Vector();
+		v1.add(null);
+		v1.add("");
+		v1.add(null);
+		v1.add("anna");
+		
+
+		Vector v2=new Vector();
+		v1.add(null);
+
+		ItemCollection itemCol=new ItemCollection();
+		itemCol.replaceItemValue("a", v1);
+		itemCol.replaceItemValue("b", v2);
+		
+		List l1=itemCol.getItemValue("a");
+		List l2=itemCol.getItemValue("b");
+		
+		// test if the null values are removed...
+		Assert.assertEquals(2, l1.size());
+		Assert.assertEquals("", l1.get(0));
+		Assert.assertEquals("anna", l1.get(1));
+
+		
+		Assert.assertEquals(0, l2.size());
+		
 	}
 
 

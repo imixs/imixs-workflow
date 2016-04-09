@@ -30,6 +30,7 @@ package org.imixs.workflow;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -607,17 +608,15 @@ public class ItemCollection {
 			return;
 		}
 
-		// test if value is a list and remove null values and clone instances of
-		// ItemCollections!
+		
+		// test if value is a list and remove null values 
 		if (itemValue instanceof List) {
 			itemValueList = (List<Object>) itemValue;
+			itemValueList.removeAll(Collections.singleton(null));
 			// scan List for null values and remove them
 			for (int i = 0; i < itemValueList.size(); i++) {
-				if (((List<?>) itemValueList).get(i) == null) {
-					((List<?>) itemValueList).remove(i);
-				}
 				// test if ItemCollection
-				if (((List<?>) itemValueList).get(i) instanceof ItemCollection) {
+				if (itemValueList.get(i) instanceof ItemCollection) {
 					// just warn - do not remove
 					logger.warning("[ItemCollection] replaceItemValue '" + itemName
 							+ "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
@@ -744,9 +743,8 @@ public class ItemCollection {
 	/**
 	 * Returns files stored in the property '$file'. The files are returned in a
 	 * Map interface where the key is the filename and the value is a list with
-	 * two elements - the ContenType and the file content (byte[]).
-	 * s
-	 * Files can be added into a ItemCollection using the method addFile().
+	 * two elements - the ContenType and the file content (byte[]). s Files can
+	 * be added into a ItemCollection using the method addFile().
 	 * 
 	 * @return
 	 */
@@ -756,7 +754,7 @@ public class ItemCollection {
 		if (vFiles != null && vFiles.size() > 0) {
 			// test if the value part is a List or an Object[]. In case its an
 			// Object[] we convert the array to a List
-			
+
 			Map<String, ?> testContent = (Map<String, ?>) vFiles.get(0);
 			Map<String, List<Object>> mapFiles = new HashMap<String, List<Object>>();
 			for (Entry<String, ?> entry : testContent.entrySet()) {
@@ -769,7 +767,7 @@ public class ItemCollection {
 					mapFiles.put(sFileName, Arrays.asList(obj));
 				}
 			}
-			return mapFiles;			
+			return mapFiles;
 		}
 
 		return null;
