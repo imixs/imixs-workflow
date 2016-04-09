@@ -87,7 +87,11 @@ public class XMLItemCollectionAdapter {
 						itemCol.replaceItemValue(key, new Vector());
 					} else {
 						// force migration of embedded XMLItem elements!
-						itemCol.replaceItemValue(key, Arrays.asList(it.getValue(true)));
+						// create a mutable list
+						List valueList = new ArrayList<>(Arrays.asList(it.getValue(true)));
+						// we can not use Arrays.asList() in this content
+						// because list need to be modified
+						itemCol.replaceItemValue(key, valueList);
 					}
 				}
 		} catch (Exception e) {
