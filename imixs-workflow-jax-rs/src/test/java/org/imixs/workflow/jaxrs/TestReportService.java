@@ -137,5 +137,37 @@ public class TestReportService {
 		Assert.assertEquals(Calendar.THURSDAY, cal.get(Calendar.DAY_OF_WEEK));
 
 	}
+	
+	
+	
+	
+	
+	/**
+	 * Test the replace date function
+	 */
+	@Test
+	public void testReplaceDateString() {
+
+		String test = "SELECT entitiy FORM ENTITY"
+				+ " WHERE entity.modified > <date DAY_OF_MONTH=\"1\" MONT=\"4\" YEAR=\"2016\" />"
+				+ " ORDER BY entity.modified DESC";
+
+		// construct expected test date....
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		cal.set(Calendar.MONTH, 3);
+		cal.set(Calendar.YEAR, 2016);
+		
+		System.out.println("Test Date =" + cal.getTime());
+
+		// parse string and compute result
+		String result = ReportRestService.replaceDateString(test);
+
+		System.out.println("Result=" + result);
+
+		// compare result with test data
+		Assert.assertTrue(result.contains(" entity.modified > 2016-04-01"));
+
+	}
 
 }

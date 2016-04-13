@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
@@ -224,8 +226,7 @@ public class ReportRestService {
 			List<String> vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
 
 			// get Query and output format
-			sEQL = itemCol.getItemValueString("txtquery");
-			sEQL = computeEQLParams(sEQL, uriInfo);
+			sEQL = computeJPQL(itemCol.getItemValueString("txtquery"),uriInfo);
 			sXSL = itemCol.getItemValueString("txtXSL").trim();
 			sContentType = itemCol.getItemValueString("txtcontenttype");
 			if ("".equals(sContentType))
@@ -336,8 +337,7 @@ public class ReportRestService {
 		try {
 			reportName = name + ".ixr";
 			ItemCollection itemCol = reportService.getReport(reportName);
-			String sEQL = itemCol.getItemValueString("txtquery");
-			sEQL = computeEQLParams(sEQL, uriInfo);
+			String sEQL = computeJPQL(itemCol.getItemValueString("txtquery"),uriInfo);
 
 			List<String> vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
 			col = entityService.findAllEntities(sEQL, start, count);
@@ -403,8 +403,7 @@ public class ReportRestService {
 				vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
 			}
 
-			String sEQL = itemCol.getItemValueString("txtquery");
-			sEQL = computeEQLParams(sEQL, uriInfo);
+			String sEQL = computeJPQL(itemCol.getItemValueString("txtquery"),uriInfo);
 			col = entityService.findAllEntities(sEQL, start, count);
 
 			// set content type and character encoding
@@ -627,7 +626,7 @@ public class ReportRestService {
 	public static Calendar computeDynamicDate(String xmlDate) {
 		Calendar cal = Calendar.getInstance();
 
-		Map<String, String> attributes = XMLParser.parseAttributes(xmlDate);
+		Map<String, String> attributes = XMLParser.findAttributes(xmlDate);
 
 		// test MONTH
 		if (attributes.containsKey("MONTH")) {
@@ -686,14 +685,37 @@ public class ReportRestService {
 	}
 
 	/**
+	 * This method replaces all occurrences of <date> tags with the
+	 * corresponding dynamic date. See computeDynamicdate.
+	 * 
+	 * @param content
+	 * @return
+	 */
+	public static String replaceDateString(String content) {
+
+		List<String> dates = XMLParser.findTags(content, "date");
+		for (String dateString : dates) {
+			Calendar cal = computeDynamicDate(dateString);
+			// convert into ISO format
+			DateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+			// f.setTimeZone(tz);
+			String dateValue = f.format(cal.getTime());
+			content = content.replace(dateString, dateValue);
+		}
+
+		return content;
+	}
+
+	/**
 	 * This method parses the query Params of a Request URL and adds params to a
-	 * given EQL Query.
+	 * given JPQL Query. In addition the method replace dynamic date values in
+	 * the JPQLStatement
 	 * 
 	 * 
 	 * @param uriInfo
 	 * @return
 	 */
-	private String computeEQLParams(String aQuery, UriInfo uriInfo) {
+	private String computeJPQL(String aQuery, UriInfo uriInfo) {
 		// test each given QueryParam if it is contained in the EQL Query...
 		MultivaluedMap<String, String> mvm = uriInfo.getQueryParameters();
 
@@ -708,6 +730,10 @@ public class ReportRestService {
 				aQuery = aQuery.replace("?" + sKeyName, sParamValue);
 			}
 		}
+
+		// replace dynamic Date values
+		aQuery = ReportRestService.replaceDateString(aQuery);
+
 		return aQuery;
 	}
 

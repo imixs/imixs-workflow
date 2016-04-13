@@ -1,5 +1,6 @@
 package org.imixs.workflow.xml;
 
+import java.util.List;
 import java.util.Map;
 
 import org.imixs.workflow.util.XMLParser;
@@ -19,7 +20,7 @@ public class TestXMLParser {
 
 		String test = "<date field=\"a\"   number=1 />";
 
-		Map<String, String> result = XMLParser.parseAttributes(test);
+		Map<String, String> result = XMLParser.findAttributes(test);
 
 		System.out.println(result);
 
@@ -30,6 +31,67 @@ public class TestXMLParser {
 
 		Assert.assertEquals("a", result.get("field"));
 		Assert.assertEquals("1", result.get("number"));
+
+	}
+
+	@Test
+	public void testSingelTags() {
+
+		// test simple tag <date>..</date>
+		String test = "abc <date field=\"a\"   number=1 >def</date>ghi";
+		List<String> result = XMLParser.findTags(test,"date");
+		System.out.println(result);
+		Assert.assertNotNull(result);
+		Assert.assertEquals("<date field=\"a\"   number=1 >def</date>", result.get(0));
+
+		// test simple singel tag <date/>
+		test = "abc <date field=\"a\"   number=1 />def";
+		result = XMLParser.findTags(test,"date");
+		System.out.println(result);
+		Assert.assertNotNull(result);
+		Assert.assertEquals("<date field=\"a\"   number=1 />", result.get(0));
+
+		
+		
+		// test simple singel tag lowercase <DATE/>
+		test = "abc <DATE field=\"a\"   number=1 />def";
+		result = XMLParser.findTags(test,"date");
+		System.out.println(result);
+		Assert.assertNotNull(result);
+		Assert.assertEquals("<DATE field=\"a\"   number=1 />", result.get(0));
+
+		
+		// test simple tag <DATE>..</DATE>
+				 test = "abc <DATE field=\"a\"   number=1 >def</DATE>ghi";
+			 result = XMLParser.findTags(test,"date");
+				System.out.println(result);
+				Assert.assertNotNull(result);
+				Assert.assertEquals("<DATE field=\"a\"   number=1 >def</DATE>", result.get(0));
+
+	}
+
+	@Test
+	public void testMultiTags() {
+
+		// test simple tag <date>..</date> <date />
+		String test = "abc <date field=\"a\"   number=1 >def</date>ghi\n" + "<date>abc</date>";
+		List<String> result = XMLParser.findTags(test,"date");
+		System.out.println(result);
+		Assert.assertNotNull(result);
+		Assert.assertEquals(2, result.size());
+		Assert.assertEquals("<date field=\"a\"   number=1 >def</date>", result.get(0));
+		Assert.assertEquals("<date>abc</date>", result.get(1));
+
+		// test complex list of tags
+		test = "abc <date field=\"a\"   number=1 >def</date>ghi\n" + "<item name=\"test\">value</item>"
+				+ "<date>abc</date>" + "<date field=\"abc\">xyz</date>";
+		result = XMLParser.findTags(test,"date");
+		System.out.println(result);
+		Assert.assertNotNull(result);
+		Assert.assertEquals(3, result.size());
+		Assert.assertEquals("<date field=\"a\"   number=1 >def</date>", result.get(0));
+		Assert.assertEquals("<date>abc</date>", result.get(1));
+		Assert.assertEquals("<date field=\"abc\">xyz</date>", result.get(2));
 
 	}
 

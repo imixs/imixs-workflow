@@ -58,7 +58,7 @@ public abstract class AbstractPlugin implements Plugin {
 	public WorkflowContext ctx;
 
 	public static final String INVALID_ITEMVALUE_FORMAT = "INVALID_ITEMVALUE_FORMAT";
-	
+
 	public void init(WorkflowContext actx) throws PluginException {
 		ctx = actx;
 	}
@@ -107,6 +107,14 @@ public abstract class AbstractPlugin implements Plugin {
 		if (aString == null)
 			return "";
 
+		/*
+		 * 
+		 * TODO This code should be refactored using the new helper class
+		 * org.imixs.workflow.util.XMLParser
+		 * 
+		 * 
+		 */
+
 		// test if a <value> tag exists...
 		while ((iTagStartPos = aString.toLowerCase().indexOf("<itemvalue")) != -1) {
 
@@ -114,10 +122,8 @@ public abstract class AbstractPlugin implements Plugin {
 
 			// if no end tag found return string unchanged...
 			if (iTagEndPos == -1) {
-				throw new PluginException(
-						this.getClass().getSimpleName(),
-						INVALID_ITEMVALUE_FORMAT,
-						"[AbstractPlugin] invalid itemvalue format: "+aString);
+				throw new PluginException(this.getClass().getSimpleName(), INVALID_ITEMVALUE_FORMAT,
+						"[AbstractPlugin] invalid itemvalue format: " + aString);
 			}
 
 			// reset pos vars
@@ -135,10 +141,8 @@ public abstract class AbstractPlugin implements Plugin {
 
 			// if no end tag found return string unchanged...
 			if (iContentStartPos >= iContentEndPos) {
-				throw new PluginException(
-						this.getClass().getSimpleName(),
-						INVALID_ITEMVALUE_FORMAT,
-						"[AbstractPlugin] invalid itemvalue format: "+aString);
+				throw new PluginException(this.getClass().getSimpleName(), INVALID_ITEMVALUE_FORMAT,
+						"[AbstractPlugin] invalid itemvalue format: " + aString);
 			}
 
 			iTagEndPos = iTagEndPos + "</itemvalue>".length();
