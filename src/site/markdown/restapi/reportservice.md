@@ -55,7 +55,7 @@ The following example shows a simple XSLT file to format a workitem collection i
 		</xsl:template>
 	</xsl:stylesheet>
 
-###Providing JPQL parameters
+###Providing JPQL Parameters
 A report definition can also contain dynamic JPQL parameters. These parameters can be defined in the JPQL statement of the report. See the following example of JPQL statement:
   
 	 SELECT workitem FROM Entity AS workitem
@@ -69,6 +69,32 @@ To provide the Report with the expected parameter ?1 the parameter can be append
     http://Host/WorkflowApp/report/reportfile.ixr&1=5130
  
 In this example request the URL contains the parameter "?1=5130" which will be inserted into the JPQL statement during the report execution.
+
+
+###Dynamic Date Values
+The JPQL Statement executed by the ReportService may contain dynamic date values. These XML Tags can be used to compute a 
+date during execution time. A dynamic date value is embraced by the 'date' tag:
+
+    <DATE />
+ 
+ The date tag supports the following optional attributes:
+ 
+ 
+
+| Attribute      | Description                    | Example  |
+|----------------|--------------------------------|-----------
+| DAY_OF_MONTH   | set day of month               | <date DAY_OF_MONTH="1" /> (first day of month, use 'ACTUAL_MAXIMUM' to get last day of month
+| MONTH          | set month                      | <date MONTH="1" /> (January)
+| YEAR           | set year                       | <date YEAR="2016" />   
+| ADD            | add offset (see Calendar.class)| <date ADD="MONTH,-1" /> subracts one month from the current year
+ 
+See the following example to set the start and end date of the last month:
+
+
+     SELECT workitem FROM Entity AS workitem
+	  WHERE workitem.created BETWEEN '<date DAY_OF_MONTH="1" ADD="MONTH,-1 />' 
+	                            AND  '<date DAY_OF_MONTH="ACTUAL_MAXIMUM" ADD="MONTH,-1 />' 
+
  
  
 ##Apache FOP / PDF Reports
