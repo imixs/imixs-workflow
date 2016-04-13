@@ -33,10 +33,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +79,6 @@ import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.MimeConstants;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.util.XMLParser;
 import org.imixs.workflow.xml.EntityCollection;
 import org.imixs.workflow.xml.EntityTable;
 import org.imixs.workflow.xml.XMLItemCollection;
@@ -214,19 +211,14 @@ public class ReportRestService {
 			@DefaultValue("") @QueryParam("encoding") String encoding, @Context UriInfo uriInfo) {
 		Collection<ItemCollection> col = null;
 		String reportName = null;
-		String sEQL;
 		String sXSL;
 		String sContentType;
 
 		try {
-
 			reportName = name + ".ixr";
-
 			ItemCollection itemCol = reportService.getReport(reportName);
 			List<String> vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
-
-			// get Query and output format
-			sEQL = computeJPQL(itemCol.getItemValueString("txtquery"),uriInfo);
+			
 			sXSL = itemCol.getItemValueString("txtXSL").trim();
 			sContentType = itemCol.getItemValueString("txtcontenttype");
 			if ("".equals(sContentType))
@@ -241,8 +233,9 @@ public class ReportRestService {
 			if ("".equals(encoding))
 				encoding = "UTF-8";
 
-			// query result
-			col = entityService.findAllEntities(sEQL, start, count);
+			// execute report
+			Map<String, String> params = getQueryParams(uriInfo);
+			col = reportService.executeReport(name, start, count, params);
 
 			// if no XSL is provided return standard html format...?
 			if ("".equals(sXSL)) {
@@ -337,10 +330,12 @@ public class ReportRestService {
 		try {
 			reportName = name + ".ixr";
 			ItemCollection itemCol = reportService.getReport(reportName);
-			String sEQL = computeJPQL(itemCol.getItemValueString("txtquery"),uriInfo);
 
 			List<String> vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
-			col = entityService.findAllEntities(sEQL, start, count);
+			
+			// execute report
+			Map<String, String> params = getQueryParams(uriInfo);
+			col = reportService.executeReport(name, start, count, params);
 
 			EntityCollection entityCol = XMLItemCollectionAdapter.putCollection(col);
 			EntityTable entityTable = new EntityTable();
@@ -403,8 +398,9 @@ public class ReportRestService {
 				vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
 			}
 
-			String sEQL = computeJPQL(itemCol.getItemValueString("txtquery"),uriInfo);
-			col = entityService.findAllEntities(sEQL, start, count);
+			// execute report
+			Map<String, String> params = getQueryParams(uriInfo);
+			col = reportService.executeReport(name, start, count, params);
 
 			// set content type and character encoding
 			if (encoding == null || encoding.isEmpty()) {
@@ -596,115 +592,7 @@ public class ReportRestService {
 
 	}
 
-	/**
-	 * This method parses a <date /> xml tag and computes a dynamic date by
-	 * parsing the attributes:
-	 * 
-	 * DAY_OF_MONTH
-	 * 
-	 * DAY_OF_YEAR
-	 * 
-	 * MONTH
-	 * 
-	 * YEAR
-	 * 
-	 * ADD (FIELD,OFFSET)
-	 * 
-	 * e.g. <date DAY_OF_MONTH="1" MONTH="2" />
-	 * 
-	 * results in 1. February of the current year
-	 * 
-	 * 
-	 *
-	 * <date DAY_OF_MONTH="ACTUAL_MAXIMUM" MONTH="12" ADD="MONTH,-1" />
-	 * 
-	 * results in 30.November of current year
-	 * 
-	 * @param xmlDate
-	 * @return
-	 */
-	public static Calendar computeDynamicDate(String xmlDate) {
-		Calendar cal = Calendar.getInstance();
-
-		Map<String, String> attributes = XMLParser.findAttributes(xmlDate);
-
-		// test MONTH
-		if (attributes.containsKey("MONTH")) {
-			String value = attributes.get("MONTH");
-			if ("ACTUAL_MAXIMUM".equalsIgnoreCase(value)) {
-				// last month of year
-				cal.set(Calendar.MONTH, cal.getActualMaximum(Calendar.MONTH));
-			} else {
-				cal.set(Calendar.MONTH, Integer.parseInt(value) - 1);
-			}
-		}
-
-		// test YEAR
-		if (attributes.containsKey("YEAR")) {
-			String value = attributes.get("YEAR");
-			cal.set(Calendar.YEAR, Integer.parseInt(value));
-
-		}
-
-		// test DAY_OF_MONTH
-		if (attributes.containsKey("DAY_OF_MONTH")) {
-			String value = attributes.get("DAY_OF_MONTH");
-			if ("ACTUAL_MAXIMUM".equalsIgnoreCase(value)) {
-				// last day of month
-				cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
-			} else {
-				cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(value));
-			}
-		}
-
-		// test DAY_OF_YEAR
-		if (attributes.containsKey("DAY_OF_YEAR")) {
-			cal.set(Calendar.DAY_OF_YEAR, Integer.parseInt(attributes.get("DAY_OF_YEAR")));
-		}
-
-		// test ADD
-		if (attributes.containsKey("ADD")) {
-			String value = attributes.get("ADD");
-			String[] fieldOffset = value.split(",");
-
-			String field = fieldOffset[0];
-			int offset = Integer.parseInt(fieldOffset[1]);
-
-			if ("MONTH".equalsIgnoreCase(field)) {
-				cal.add(Calendar.MONTH, offset);
-			} else if ("DAY_OF_MONTH".equalsIgnoreCase(field)) {
-				cal.add(Calendar.DAY_OF_MONTH, offset);
-			} else if ("DAY_OF_YEAR".equalsIgnoreCase(field)) {
-				cal.add(Calendar.DAY_OF_YEAR, offset);
-			}
-
-		}
-
-		return cal;
-
-	}
-
-	/**
-	 * This method replaces all occurrences of <date> tags with the
-	 * corresponding dynamic date. See computeDynamicdate.
-	 * 
-	 * @param content
-	 * @return
-	 */
-	public static String replaceDateString(String content) {
-
-		List<String> dates = XMLParser.findTags(content, "date");
-		for (String dateString : dates) {
-			Calendar cal = computeDynamicDate(dateString);
-			// convert into ISO format
-			DateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-			// f.setTimeZone(tz);
-			String dateValue = f.format(cal.getTime());
-			content = content.replace(dateString, dateValue);
-		}
-
-		return content;
-	}
+	
 
 	/**
 	 * This method parses the query Params of a Request URL and adds params to a
@@ -715,27 +603,32 @@ public class ReportRestService {
 	 * @param uriInfo
 	 * @return
 	 */
-	private String computeJPQL(String aQuery, UriInfo uriInfo) {
+	
+	
+	
+	/**
+	 * Extracts the query parameters and returns a hashmap with key value pairs
+	 * 
+	 * @param aQuery
+	 * @param uriInfo
+	 * @return
+	 */
+	private Map<String,String> getQueryParams(UriInfo uriInfo) {
 		// test each given QueryParam if it is contained in the EQL Query...
 		MultivaluedMap<String, String> mvm = uriInfo.getQueryParameters();
-
+		Map<String,String> result=new HashMap<String,String>();
 		Set<String> keys = mvm.keySet();
 		Iterator<String> iter = keys.iterator();
 		while (iter.hasNext()) {
 			// read key
 			String sKeyName = iter.next().toString();
-			// test if key is contained in query
-			if (aQuery.indexOf("?" + sKeyName) > -1) {
-				String sParamValue = mvm.getFirst(sKeyName);
-				aQuery = aQuery.replace("?" + sKeyName, sParamValue);
-			}
+			result.put(sKeyName, mvm.getFirst(sKeyName));
 		}
 
-		// replace dynamic Date values
-		aQuery = ReportRestService.replaceDateString(aQuery);
 
-		return aQuery;
+		return result;
 	}
+	
 
 	/**
 	 * This method returns a List object from a given comma separated string.

@@ -2,6 +2,7 @@ package org.imixs.workflow.jaxrs;
 
 import java.util.Calendar;
 
+import org.imixs.workflow.jee.ejb.ReportService;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -29,7 +30,7 @@ public class TestReportService {
 		System.out.println("Test=" + cal.getTime());
 
 		// parse string and compute result
-		Calendar result = ReportRestService.computeDynamicDate(test);
+		Calendar result = ReportService.computeDynamicDate(test);
 
 		System.out.println("Result=" + result.getTime());
 
@@ -53,7 +54,7 @@ public class TestReportService {
 		System.out.println("Test=" + cal.getTime());
 
 		// parse string and compute result
-		Calendar result = ReportRestService.computeDynamicDate(test);
+		Calendar result = ReportService.computeDynamicDate(test);
 
 		System.out.println("Result=" + result.getTime());
 
@@ -78,7 +79,7 @@ public class TestReportService {
 		System.out.println("Test=" + cal.getTime());
 
 		// parse string and compute result
-		Calendar result = ReportRestService.computeDynamicDate(test);
+		Calendar result = ReportService.computeDynamicDate(test);
 
 		System.out.println("Result=" + result.getTime());
 
@@ -100,7 +101,7 @@ public class TestReportService {
 		System.out.println("Test=" + cal.getTime());
 
 		// parse string and compute result
-		result = ReportRestService.computeDynamicDate(test);
+		result = ReportService.computeDynamicDate(test);
 
 		System.out.println("Result=" + result.getTime());
 
@@ -125,7 +126,7 @@ public class TestReportService {
 		System.out.println("Test=" + cal.getTime());
 
 		// parse string and compute result
-		Calendar result = ReportRestService.computeDynamicDate(test);
+		Calendar result = ReportService.computeDynamicDate(test);
 
 		System.out.println("Result=" + result.getTime());
 
@@ -161,7 +162,7 @@ public class TestReportService {
 		System.out.println("Test Date =" + cal.getTime());
 
 		// parse string and compute result
-		String result = ReportRestService.replaceDateString(test);
+		String result = ReportService.replaceDateString(test);
 
 		System.out.println("Result=" + result);
 

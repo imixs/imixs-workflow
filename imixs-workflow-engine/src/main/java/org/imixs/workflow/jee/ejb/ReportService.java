@@ -27,10 +27,15 @@
 
 package org.imixs.workflow.jee.ejb;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
@@ -40,6 +45,7 @@ import javax.ejb.Stateless;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.util.XMLParser;
 
 /**
  * The ReportService supports methods to create, process and find report
@@ -58,20 +64,19 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
  * 
  */
 
-@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS",
-		"org.imixs.ACCESSLEVEL.READERACCESS",
-		"org.imixs.ACCESSLEVEL.AUTHORACCESS",
-		"org.imixs.ACCESSLEVEL.EDITORACCESS",
+@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
-@RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS",
-		"org.imixs.ACCESSLEVEL.READERACCESS",
-		"org.imixs.ACCESSLEVEL.AUTHORACCESS",
-		"org.imixs.ACCESSLEVEL.EDITORACCESS",
+@RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @LocalBean
 public class ReportService implements ReportServiceRemote {
 
+	private static Logger logger = Logger.getLogger(ReportService.class.getName());
+
+	
 	@EJB
 	EntityService entityService;
 
@@ -102,8 +107,7 @@ public class ReportService implements ReportServiceRemote {
 		sQuery = "SELECT";
 		sQuery += " wi FROM Entity as wi " + "WHERE wi.type = 'ReportEntity'";
 
-		List<ItemCollection> col = entityService.findAllEntities(sQuery,
-				startpos, count);
+		List<ItemCollection> col = entityService.findAllEntities(sQuery, startpos, count);
 
 		return col;
 	}
@@ -124,8 +128,7 @@ public class ReportService implements ReportServiceRemote {
 	 * @throws AccessDeniedException
 	 * 
 	 */
-	public void updateReport(ItemCollection aReport)
-			throws  AccessDeniedException {
+	public void updateReport(ItemCollection aReport) throws AccessDeniedException {
 
 		aReport.replaceItemValue("type", "ReportEntity");
 
@@ -146,28 +149,162 @@ public class ReportService implements ReportServiceRemote {
 	}
 
 	/**
-	 * Process a QueryEntity Object identified by the attribute txtname. All
-	 * informations about the Query are stored in the QueryObject these
-	 * attributes are: txtQuery, numMaxCount, numStartPost, txtName
+	 * This method executes the JQPL statement of a Report Entity.
 	 * 
 	 * 
-	 * @param aID
+	 * @param reportName
+	 *            - name of the report to be executed
 	 * @return
 	 * @throws Exception
 	 */
-	public List<ItemCollection> processReport(String aReportName) {
+	public List<ItemCollection> executeReport(String reportName, int istartPos, int imaxcount,
+			Map<String, String> params) {
+		
+		logger.fine("[ReportService] executeReport: "+reportName);
+		
 		// Load Query Object
-		ItemCollection itemCol = findReport(aReportName);
-		String sQuery = itemCol.getItemValueString("txtQuery");
-		int istartPos = itemCol.getItemValueInteger("numStartPos");
-		int imaxcount = itemCol.getItemValueInteger("numMaxCount");
+		ItemCollection itemCol = findReport(reportName);
+		String query = itemCol.getItemValueString("txtQuery");
 		if (imaxcount == 0)
 			imaxcount = -1;
 
-		List<ItemCollection> col = entityService.findAllEntities(sQuery,
-				istartPos, imaxcount);
+		// replace params in query statement
+		if (params != null) {
+			Set<String> keys = params.keySet();
+			Iterator<String> iter = keys.iterator();
+			while (iter.hasNext()) {
+				// read key
+				String sKeyName = iter.next().toString();
+				// test if key is contained in query
+				if (query.indexOf("?" + sKeyName) > -1) {
+					String sParamValue = params.get(sKeyName);
+					query = query.replace("?" + sKeyName, sParamValue);
+					logger.fine("[ReportService] executeReport set param "+sKeyName + "="+sParamValue);
+				}
+			}
+		}
+
+		// now we replace dynamic Date values
+		query =  replaceDateString(query);
+
+		// execute query
+		logger.fine("[ReportService] executeReport jpql="+query);
+		List<ItemCollection> col = entityService.findAllEntities(query, istartPos, imaxcount);
 		return col;
 	}
+	
+	
+	/**
+	 * This method parses a <date /> xml tag and computes a dynamic date by
+	 * parsing the attributes:
+	 * 
+	 * DAY_OF_MONTH
+	 * 
+	 * DAY_OF_YEAR
+	 * 
+	 * MONTH
+	 * 
+	 * YEAR
+	 * 
+	 * ADD (FIELD,OFFSET)
+	 * 
+	 * e.g. <date DAY_OF_MONTH="1" MONTH="2" />
+	 * 
+	 * results in 1. February of the current year
+	 * 
+	 * 
+	 *
+	 * <date DAY_OF_MONTH="ACTUAL_MAXIMUM" MONTH="12" ADD="MONTH,-1" />
+	 * 
+	 * results in 30.November of current year
+	 * 
+	 * @param xmlDate
+	 * @return
+	 */
+	public static Calendar computeDynamicDate(String xmlDate) {
+		Calendar cal = Calendar.getInstance();
+
+		Map<String, String> attributes = XMLParser.findAttributes(xmlDate);
+
+		// test MONTH
+		if (attributes.containsKey("MONTH")) {
+			String value = attributes.get("MONTH");
+			if ("ACTUAL_MAXIMUM".equalsIgnoreCase(value)) {
+				// last month of year
+				cal.set(Calendar.MONTH, cal.getActualMaximum(Calendar.MONTH));
+			} else {
+				cal.set(Calendar.MONTH, Integer.parseInt(value) - 1);
+			}
+		}
+
+		// test YEAR
+		if (attributes.containsKey("YEAR")) {
+			String value = attributes.get("YEAR");
+			cal.set(Calendar.YEAR, Integer.parseInt(value));
+
+		}
+
+		// test DAY_OF_MONTH
+		if (attributes.containsKey("DAY_OF_MONTH")) {
+			String value = attributes.get("DAY_OF_MONTH");
+			if ("ACTUAL_MAXIMUM".equalsIgnoreCase(value)) {
+				// last day of month
+				cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+			} else {
+				cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(value));
+			}
+		}
+
+		// test DAY_OF_YEAR
+		if (attributes.containsKey("DAY_OF_YEAR")) {
+			cal.set(Calendar.DAY_OF_YEAR, Integer.parseInt(attributes.get("DAY_OF_YEAR")));
+		}
+
+		// test ADD
+		if (attributes.containsKey("ADD")) {
+			String value = attributes.get("ADD");
+			String[] fieldOffset = value.split(",");
+
+			String field = fieldOffset[0];
+			int offset = Integer.parseInt(fieldOffset[1]);
+
+			if ("MONTH".equalsIgnoreCase(field)) {
+				cal.add(Calendar.MONTH, offset);
+			} else if ("DAY_OF_MONTH".equalsIgnoreCase(field)) {
+				cal.add(Calendar.DAY_OF_MONTH, offset);
+			} else if ("DAY_OF_YEAR".equalsIgnoreCase(field)) {
+				cal.add(Calendar.DAY_OF_YEAR, offset);
+			}
+
+		}
+
+		return cal;
+
+	}
+
+	/**
+	 * This method replaces all occurrences of <date> tags with the
+	 * corresponding dynamic date. See computeDynamicdate.
+	 * 
+	 * @param content
+	 * @return
+	 */
+	public static String replaceDateString(String content) {
+
+		List<String> dates = XMLParser.findTags(content, "date");
+		for (String dateString : dates) {
+			Calendar cal = computeDynamicDate(dateString);
+			// convert into ISO format
+			DateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+			// f.setTimeZone(tz);
+			String dateValue = f.format(cal.getTime());
+			content = content.replace(dateString, dateValue);
+		}
+
+		return content;
+	}
+
+	
 
 	/**
 	 * helper method returns a QueryEntity identified by its name or uniqueID
@@ -178,13 +315,10 @@ public class ReportService implements ReportServiceRemote {
 	private ItemCollection findReport(String aid) {
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + "JOIN wi.textItems as i "
-				+ "WHERE (wi.id='" + aid + "') OR "
-				+ "(i.itemName = 'txtname' " + "AND i.itemValue = '" + aid
-				+ "') " + " AND wi.type = 'ReportEntity'";
+		sQuery += " wi FROM Entity as wi " + "JOIN wi.textItems as i " + "WHERE (wi.id='" + aid + "') OR "
+				+ "(i.itemName = 'txtname' " + "AND i.itemValue = '" + aid + "') " + " AND wi.type = 'ReportEntity'";
 
-		Collection<ItemCollection> col = entityService.findAllEntities(sQuery,
-				0, 1);
+		Collection<ItemCollection> col = entityService.findAllEntities(sQuery, 0, 1);
 		if (col.size() > 0)
 			return col.iterator().next();
 		else
@@ -198,8 +332,8 @@ public class ReportService implements ReportServiceRemote {
 	 * @param aworkitem
 	 * 
 	 */
-	private ItemCollection updateReport(ItemCollection newReport,
-			ItemCollection oldReport)  {
+	@SuppressWarnings("rawtypes")
+	private ItemCollection updateReport(ItemCollection newReport, ItemCollection oldReport) {
 		Iterator iter = newReport.getAllItems().entrySet().iterator();
 		while (iter.hasNext()) {
 			Map.Entry mapEntry = (Map.Entry) iter.next();
