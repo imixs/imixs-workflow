@@ -235,7 +235,7 @@ public class ReportRestService {
 
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(name, start, count, params);
+			col = reportService.executeReport(reportName, start, count, params);
 
 			// if no XSL is provided return standard html format...?
 			if ("".equals(sXSL)) {
@@ -335,7 +335,7 @@ public class ReportRestService {
 			
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(name, start, count, params);
+			col = reportService.executeReport(reportName, start, count, params);
 
 			EntityCollection entityCol = XMLItemCollectionAdapter.putCollection(col);
 			EntityTable entityTable = new EntityTable();
@@ -400,7 +400,7 @@ public class ReportRestService {
 
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(name, start, count, params);
+			col = reportService.executeReport(reportName, start, count, params);
 
 			// set content type and character encoding
 			if (encoding == null || encoding.isEmpty()) {
@@ -432,7 +432,6 @@ public class ReportRestService {
 	 * @throws Exception
 	 */
 	@GET
-	// @Produces("application/json")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{name}.json")
 	public EntityCollection getExcecuteReportJSON(@PathParam("name") String name,
