@@ -60,7 +60,9 @@
 			<item name="REST API" href="./restapi/index.html" collapse="true">
 				<item name="Workflow Service" href="./restapi/workflowservice.html" />
 				<item name="Model Service" href="./restapi/modelservice.html" />
-				<item name="Report Service" href="./restapi/reportservice.html" />
+				<item name="Report Service" href="./restapi/reportservice.html" collapse="true">
+					<item name="JSON" href="./restapi/xslt.html" />
+				</item>
 				<item name="Entity Service" href="./restapi/entityservice.html" />
 				<item name="JSON" href="./restapi/json.html" />
 			</item>
