@@ -16,7 +16,7 @@ import org.junit.Test;
 public class TestXMLParser {
 
 	@Test
-	public void testAttributes() {
+	public void testAllAttributes() {
 
 		String test = "<date field=\"a\"   number=1 />";
 
@@ -31,9 +31,27 @@ public class TestXMLParser {
 
 		Assert.assertEquals("a", result.get("field"));
 		Assert.assertEquals("1", result.get("number"));
-
 	}
 
+	@Test
+	public void testSingleAttribute() {
+
+		String test = "<date field=\"a\"   number=1 />";
+
+		String result = XMLParser.findAttribute(test,"field");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("a", result);
+
+		result = XMLParser.findAttribute(test,"number");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("1", result);
+	}
+	
+	
+
+	
+	
+	
 	@Test
 	public void testSingelTags() {
 
@@ -95,4 +113,28 @@ public class TestXMLParser {
 
 	}
 
+	
+	
+	@Test
+	public void testFindTagValue() {
+
+		String test = "<date field=\"a\"   number=1 >2016-12-31</date>";
+
+		List<String> result = XMLParser.findTagValues(test, "date");
+		Assert.assertNotNull(result);
+		Assert.assertEquals(1, result.size());
+		Assert.assertEquals("2016-12-31", result.get(0));
+
+
+		
+		 test = "<date>2016-12-31</date>  <date>2016-11-30</date>";
+
+		result = XMLParser.findTagValues(test, "date");
+		Assert.assertNotNull(result);
+		Assert.assertEquals(2, result.size());
+		Assert.assertEquals("2016-12-31", result.get(0));
+		Assert.assertEquals("2016-11-30", result.get(1));
+
+	}
+	
 }

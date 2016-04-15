@@ -235,7 +235,7 @@ public class ReportRestService {
 
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(reportName, start, count, params);
+			col = reportService.executeReport(reportName, start, count, params,vAttributList);
 
 			// if no XSL is provided return standard html format...?
 			if ("".equals(sXSL)) {
@@ -331,11 +331,17 @@ public class ReportRestService {
 			reportName = name + ".ixr";
 			ItemCollection itemCol = reportService.getReport(reportName);
 
-			List<String> vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
+			List<String> vAttributList = null;
+			// test query item param
+			vAttributList = getItemList(items);
+			if (vAttributList == null) {
+				// get list from report definition
+				vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
+			}
 			
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(reportName, start, count, params);
+			col = reportService.executeReport(reportName, start, count, params,vAttributList);
 
 			EntityCollection entityCol = XMLItemCollectionAdapter.putCollection(col);
 			EntityTable entityTable = new EntityTable();
@@ -346,7 +352,7 @@ public class ReportRestService {
 			if (encoding == null || encoding.isEmpty()) {
 				encoding = "UTF-8";
 			}
-			logger.fine("[ReportRestService] set encoding :" + encoding);
+			logger.fine("set encoding :" + encoding);
 			servlerResponse.setContentType(MediaType.TEXT_HTML + "; charset=" + encoding);
 
 			return entityTable;
@@ -372,7 +378,6 @@ public class ReportRestService {
 	 * @return
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
 	// @Produces("application/xml")
@@ -385,31 +390,19 @@ public class ReportRestService {
 		Collection<ItemCollection> col = null;
 
 		try {
-
 			reportName = name + ".ixr";
-
-			ItemCollection itemCol = reportService.getReport(reportName);
-
-			List<String> vAttributList = null;
-			// test query item param
-			vAttributList = getItemList(items);
-			if (vAttributList == null) {
-				// get list from report definition
-				vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
-			}
-
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(reportName, start, count, params);
+			col = reportService.executeReport(reportName, start, count, params,getItemList(items));
 
 			// set content type and character encoding
 			if (encoding == null || encoding.isEmpty()) {
 				encoding = "UTF-8";
 			}
-			logger.fine("[ReportRestService] set encoding :" + encoding);
+			logger.fine("set encoding :" + encoding);
 			servlerResponse.setContentType(MediaType.APPLICATION_XML + "; charset=" + encoding);
 
-			return XMLItemCollectionAdapter.putCollection(col, vAttributList);
+			return XMLItemCollectionAdapter.putCollection(col);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -445,7 +438,7 @@ public class ReportRestService {
 		if (encoding == null || encoding.isEmpty()) {
 			encoding = "UTF-8";
 		}
-		logger.fine("[ReportRestService] set encoding :" + encoding);
+		logger.fine("set encoding :" + encoding);
 		servlerResponse.setContentType(MediaType.APPLICATION_JSON + "; charset=" + encoding);
 
 		return result;

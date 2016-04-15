@@ -29,12 +29,17 @@ package org.imixs.workflow.jee.ejb;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import javax.annotation.security.DeclareRoles;
@@ -45,6 +50,7 @@ import javax.ejb.Stateless;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.plugins.AbstractPlugin;
 import org.imixs.workflow.util.XMLParser;
 
 /**
@@ -76,7 +82,6 @@ public class ReportService implements ReportServiceRemote {
 
 	private static Logger logger = Logger.getLogger(ReportService.class.getName());
 
-	
 	@EJB
 	EntityService entityService;
 
@@ -149,24 +154,46 @@ public class ReportService implements ReportServiceRemote {
 	}
 
 	/**
-	 * This method executes the JQPL statement of a Report Entity.
+	 * This method executes the JQPL statement of a Report Entity. The values of
+	 * the returned entities will be cloned and formated in case a itemList is
+	 * provided.
+	 * 
+	 * issue #144
+	 * 
+	 * The method parses the attribute name for a formating expression to format
+	 * the item value. E.g.:
+	 * 
+	 * 
+	 * datDate<format locale="de" label="Date">yy-dd-mm</format>
+	 * 
 	 * 
 	 * 
 	 * @param reportName
 	 *            - name of the report to be executed
-	 * @return
-	 * @throws Exception
+	 * 
+	 * @param startPos
+	 *            - optional start position to query entities
+	 * @param maxcount
+	 *            - optional max count of entities to query
+	 * @param params
+	 *            - optional parameter list to be mapped to the JQPL statement
+	 * @param itemList
+	 *            - optional attribute list of items to be returned
+	 * @return collection of entities
+	 * 
 	 */
-	public List<ItemCollection> executeReport(String reportName, int istartPos, int imaxcount,
-			Map<String, String> params) {
-		
-		logger.fine("[ReportService] executeReport: "+reportName);
-		
+	@SuppressWarnings("unchecked")
+	public List<ItemCollection> executeReport(String reportName, int startPos, int maxcount, Map<String, String> params,
+			List<String> itemList) {
+
+		long l = System.currentTimeMillis();
+		logger.fine("executeReport: " + reportName);
+
 		// Load Query Object
-		ItemCollection itemCol = findReport(reportName);
-		String query = itemCol.getItemValueString("txtQuery");
-		if (imaxcount == 0)
-			imaxcount = -1;
+		ItemCollection reportEntity = findReport(reportName);
+		String query = reportEntity.getItemValueString("txtQuery");
+		if (maxcount == 0)
+			maxcount = -1;
 
 		// replace params in query statement
 		if (params != null) {
@@ -179,21 +206,76 @@ public class ReportService implements ReportServiceRemote {
 				if (query.indexOf("?" + sKeyName) > -1) {
 					String sParamValue = params.get(sKeyName);
 					query = query.replace("?" + sKeyName, sParamValue);
-					logger.fine("[ReportService] executeReport set param "+sKeyName + "="+sParamValue);
+					logger.fine("executeReport set param " + sKeyName + "=" + sParamValue);
 				}
 			}
 		}
 
 		// now we replace dynamic Date values
-		query =  replaceDateString(query);
+		query = replaceDateString(query);
 
 		// execute query
-		logger.fine("[ReportService] executeReport jpql="+query);
-		List<ItemCollection> col = entityService.findAllEntities(query, istartPos, imaxcount);
-		return col;
+		logger.fine("executeReport jpql=" + query);
+		List<ItemCollection> result = entityService.findAllEntities(query, startPos, maxcount);
+
+		// test if a itemList is provided or defined in the reportEntity...
+		if (itemList == null) {
+			// get list from report definition
+			itemList = (List<String>) reportEntity.getItemValue("txtAttributeList");
+		}
+
+		// if we have a itemList we clone each entity of the result set
+		if (itemList != null && itemList.size() > 0) {
+			List<ItemCollection> clonedResult = new ArrayList<ItemCollection>();
+
+			// first we build a formating map.....
+			Map<String, String> formatMap = new HashMap<String, String>();
+			for (String field : itemList) {
+				List<String> formatList = XMLParser.findTags(field, "format");
+				if (formatList != null && formatList.size() > 0) {
+					String fieldName = field.substring(0, field.indexOf("<"));
+					List<String> xmlValues = XMLParser.findTagValues(field, "format");
+					if (xmlValues.size() > 0) {
+						formatMap.put(fieldName, xmlValues.get(0));
+					}
+				} else {
+					formatMap.put(field, "");
+				}
+			}
+
+			// next we iterate over all entities from the result set and clone
+			// each entity with the given itemList
+			for (ItemCollection entity : result) {
+				ItemCollection clone = new ItemCollection();
+				Set<String> fieldNames = formatMap.keySet();
+				for (String field : fieldNames) {
+					String format = formatMap.get(field);
+					// did we have a format definition?
+					if (!format.isEmpty()) {
+						String sLocale = XMLParser.findAttribute(format, "locale");
+						// create string array of formated values
+						ArrayList<String> vValues = new ArrayList<String>();
+						List<?> rawValues = entity.getItemValue(field);
+						for (Object rawValue : rawValues) {
+							vValues.add(formatObjectValue(rawValue, format, sLocale));
+						}
+						clone.replaceItemValue(field, vValues);
+
+					} else {
+						// not format definition - clone value as is
+						clone.replaceItemValue(field, entity.getItemValue(field));
+					}
+				}
+				clonedResult.add(clone);
+			}
+			logger.fine("executed report '" + reportName + "' in " + (System.currentTimeMillis() - l) + "ms");
+			return clonedResult;
+		} else {
+			logger.fine("executed report '" + reportName + "' in " + (System.currentTimeMillis() - l) + "ms");
+			return result;
+		}
 	}
-	
-	
+
 	/**
 	 * This method parses a <date /> xml tag and computes a dynamic date by
 	 * parsing the attributes:
@@ -304,8 +386,6 @@ public class ReportService implements ReportServiceRemote {
 		return content;
 	}
 
-	
-
 	/**
 	 * helper method returns a QueryEntity identified by its name or uniqueID
 	 * 
@@ -367,5 +447,90 @@ public class ReportService implements ReportServiceRemote {
 
 		return true;
 
+	}
+
+	/**
+	 * This helper method test the type of an object provided by a
+	 * itemcollection and formats the object into a string value.
+	 * 
+	 * Only Date Objects will be formated into a modified representation. other
+	 * objects will be returned using the toString() method.
+	 * 
+	 * If an optional format is provided this will be used to format date
+	 * objects.
+	 * 
+	 * @param o
+	 * @return
+	 */
+	private String formatObjectValue(Object o, String format, String locale) {
+
+		Date dateValue = null;
+
+		// now test the objct type to date
+		if (o instanceof Date) {
+			dateValue = (Date) o;
+		}
+
+		if (o instanceof Calendar) {
+			Calendar cal = (Calendar) o;
+			dateValue = cal.getTime();
+		}
+
+		// format date string?
+		if (dateValue != null) {
+			String singleValue = "";
+			if (format != null && !"".equals(format)) {
+				// format date with provided formater
+				try {
+					SimpleDateFormat formatter = null;
+					if (locale != null && !locale.isEmpty()) {
+						formatter = new SimpleDateFormat(format, getLocaleFromString(locale));
+					} else {
+						formatter = new SimpleDateFormat(format);
+					}
+					singleValue = formatter.format(dateValue);
+				} catch (Exception ef) {
+					Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
+					logger.warning("ReportService: Invalid format String '" + format + "'");
+					logger.warning("ReportService: Can not format value - error: " + ef.getMessage());
+					return "" + dateValue;
+				}
+			} else
+				// use standard formate short/short
+				singleValue = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(dateValue);
+
+			return singleValue;
+		}
+
+		return o.toString();
+	}
+
+	/**
+	 * generates a Locale Object form a String
+	 * 
+	 * @param sLocale
+	 * @return
+	 */
+	private Locale getLocaleFromString(String sLocale) {
+		Locale locale = null;
+
+		// genreate locale?
+		if (sLocale != null && !sLocale.isEmpty()) {
+			// split locale
+			StringTokenizer stLocale = new StringTokenizer(sLocale, "_");
+			if (stLocale.countTokens() == 1) {
+				// only language variant
+				String sLang = stLocale.nextToken();
+				String sCount = sLang.toUpperCase();
+				locale = new Locale(sLang, sCount);
+			} else {
+				// language and country
+				String sLang = stLocale.nextToken();
+				String sCount = stLocale.nextToken();
+				locale = new Locale(sLang, sCount);
+			}
+		}
+
+		return locale;
 	}
 }

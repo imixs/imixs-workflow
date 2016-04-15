@@ -58,6 +58,6 @@ public interface ReportServiceRemote {
 	 * @return result set
 	 */
 	public abstract List<ItemCollection> executeReport(String aReportName, int istartPos, int imaxcount,
-			Map<String, String> params);
+			Map<String, String> params, List<String> itemList);
 
 }

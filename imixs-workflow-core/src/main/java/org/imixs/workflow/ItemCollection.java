@@ -105,6 +105,24 @@ public class ItemCollection {
 		this.replaceAllItems(aItemCol.getAllItems());
 	}
 
+	/**
+	 * This method clones the current ItemCollection with a minimum of
+	 * attributes.
+	 * 
+	 * @param itemNames
+	 *            - list of properties to be copied into the clone
+	 * @return new ItemCollection
+	 */
+	public ItemCollection clone(final List<String> itemNames) {
+		ItemCollection clone = new ItemCollection();
+		if (itemNames != null && itemNames.size() > 0) {
+			for (String aField : itemNames) {
+				clone.replaceItemValue(aField, this.getItemValue(aField));
+			}
+		}
+		return clone;
+	}
+
 	public boolean equals(Object o) {
 		if (!(o instanceof ItemCollection))
 			return false;
@@ -608,8 +626,7 @@ public class ItemCollection {
 			return;
 		}
 
-		
-		// test if value is a list and remove null values 
+		// test if value is a list and remove null values
 		if (itemValue instanceof List) {
 			itemValueList = (List<Object>) itemValue;
 			itemValueList.removeAll(Collections.singleton(null));

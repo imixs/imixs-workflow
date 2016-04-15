@@ -37,6 +37,22 @@ public class XMLParser {
 	}
 
 	/**
+	 * This method parses a xml tag for a singel named attribute. The method
+	 * returns the value of the attribute found in the content string
+	 * 
+	 * e.g. <item data="abc" />
+	 * 
+	 * returns "abc"
+	 * 
+	 * @param content
+	 * @return
+	 */
+	public static String findAttribute(String content, String name) {
+		Map<String, String> attriubtes = findAttributes(content);
+		return attriubtes.get(name);
+	}
+
+	/**
 	 * This method find specific tags inside a string and returns a list with
 	 * all tags.
 	 * 
@@ -61,6 +77,32 @@ public class XMLParser {
 		Matcher m = p.matcher(content);
 		while (m.find()) {
 			result.add(m.group());
+		}
+		return result;
+	}
+	
+	
+	/**
+	 * This method returns the tag values of a  specific xml tag
+	 * 
+	 * e.g. <date field="abc">2016-12-31</date>
+	 * 
+	 * returns 2016-12-31
+	 * 
+	 * @param content
+	 * @return
+	 */
+	public static List<String> findTagValues(String content, String tag) {
+		List<String> result = new ArrayList<String>();
+		List<String> tags = findTags(content,tag);
+		// opening tag can contain optional attributes
+		String regex="(<" + tag + ".+?>|<" + tag + ">)(.+?)(</"+tag+")";
+		for (String singleTag:tags) {
+			Pattern p = Pattern.compile(regex);
+			Matcher m = p.matcher(singleTag);
+			while (m.find()) {
+				result.add(m.group(2));	
+			}
 		}
 		return result;
 	}
