@@ -91,11 +91,19 @@ public class EntityTableWriter implements MessageBodyWriter<EntityTable> {
 		trClass = !trClass;
 
 		for (String attr : entityCollection.getAttributeList()) {
-
-			String sLabel = XMLParser.findAttribute(attr, "label");
-			if (sLabel != null) {
-				bw.write("<th>" + sLabel + "</th>");
-			} else {
+			String sLabel=null;
+			// test if the attribute name contains a formating definition
+			int fPos=attr.toLowerCase().indexOf("<format");
+			if (fPos>-1) {
+				// test if a label is defined
+				sLabel = XMLParser.findAttribute(attr, "label");
+				if (sLabel != null) {
+					bw.write("<th>" + sLabel + "</th>");
+				} else {
+					bw.write("<th>" + attr.substring(0,fPos) + "</th>");
+				}
+			}
+			else {
 				bw.write("<th>" + attr + "</th>");
 			}
 		}

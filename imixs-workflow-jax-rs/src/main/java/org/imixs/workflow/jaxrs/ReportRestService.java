@@ -203,7 +203,6 @@ public class ReportRestService {
 	 * @return a collection of entiteis
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
 	@GET
 	@Path("/{name}.ixr")
 	public Response getExcecuteReport(@PathParam("name") String name, @DefaultValue("0") @QueryParam("start") int start,
@@ -217,7 +216,6 @@ public class ReportRestService {
 		try {
 			reportName = name + ".ixr";
 			ItemCollection itemCol = reportService.getReport(reportName);
-			List<String> vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
 			
 			sXSL = itemCol.getItemValueString("txtXSL").trim();
 			sContentType = itemCol.getItemValueString("txtcontenttype");
@@ -235,17 +233,17 @@ public class ReportRestService {
 
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(reportName, start, count, params,vAttributList);
+			col = reportService.executeReport(reportName, start, count, params,null);
 
 			// if no XSL is provided return standard html format...?
 			if ("".equals(sXSL)) {
 				Response.ResponseBuilder builder = Response
-						.ok(XMLItemCollectionAdapter.putCollection(col, vAttributList), "text/html");
+						.ok(XMLItemCollectionAdapter.putCollection(col), "text/html");
 				return builder.build();
 			}
 
 			// Transform XML per XSL and generate output
-			EntityCollection xmlCol = XMLItemCollectionAdapter.putCollection(col, vAttributList);
+			EntityCollection xmlCol = XMLItemCollectionAdapter.putCollection(col);
 
 			StringWriter writer = new StringWriter();
 
@@ -507,6 +505,7 @@ public class ReportRestService {
 		try {
 			TransformerFactory transFact = TransformerFactory.newInstance();
 
+			logger.fine("xslTransformation: encoding=" +aEncoding);
 			// generate XML InputStream Reader with encoding
 			ByteArrayInputStream baisXML = new ByteArrayInputStream(xmlSource.getBytes());
 			InputStreamReader isreaderXML;
