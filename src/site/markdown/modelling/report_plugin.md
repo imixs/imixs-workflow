@@ -14,9 +14,7 @@ Opening a report shows the Imixs-Report Editor. The report editor is split into 
 
 <img src="../images/modelling/report-01.png"  width="700"/>
 
-The "Overview" section provides Input-Fields to define a JPQL statement and an optional Attribute List. 
-The JPQL Statement must be valid for the workflow instance the report will be executed. 
-You can find details about how to define a JPQL statement to query workitems in the [section Workflow Engine](../engine/queries.html)
+The "Overview" section provides Input-Fields to define a JPQL statement defining the result set of the report and an optional Attribute List. 
 
 The "XSL" section of the Imixs-Report Editor can be used to transform the result set of a report in any kind of output format using the "Extended Stylesheet Language".  
 
@@ -28,7 +26,7 @@ Each report is identified uniquely by its report name which is equals to the fil
 
 
 ##Executing a Report
-To execute a report the report can be accessed via the Imixs-Rest API given the report name:
+To execute a report the report can be triggered via the Imixs-Rest API given the report name:
 
     http://localhost:8080/workflow/rest-service/report/REPOTNAME.html
 
@@ -38,10 +36,60 @@ Find details about the Imixs-Report Rest Service API in the [section REST API](.
 
 To remove an existing report use the [Imixs-Admin Client](../administration.html). 
 
+## The JPQL Definition
+Each report defines at least a JQPL statement to query a set of WorkItems during execution of the report. 
+The JPQL Statement must be valid for the workflow instance the report will be executed. 
+You can find details about how to define a JPQL statement to query workitems in the [section Workflow Engine](../engine/queries.html)
+
+###Providing Parameters
+The JPQL statement of a report can contain dynamic JPQL parameters. These parameters can be provided through the [Imixs Report REST API](../restapi/reportservice.html). See the following example of JPQL statement defining a parameter named '1':
+  
+	 SELECT workitem FROM Entity AS workitem
+	 JOIN workitem.integerItems AS p
+	  WHERE workitem.type = 'workitem' 
+	  AND p.itemName = '$processid' 
+	  AND p.itemValue = ?1
+
+To provide the Report during execution with the expected parameter ?1 the parameter can be appended into the query string of a Rest API call:
+ 
+    http://Host/WorkflowApp/report/reportfile.ixr&1=5130
+ 
+In this example the URL contains the parameter "?1=5130" which will be inserted into the JPQL statement during the report execution.
+
+
+###Dynamic Date Values
+Another feature provided by the Imixs-Report API are *dynamic date values* added into a JPQL statement. A *dynamic date value* is an abstract description of date. The date is compute during execution time of the report. A dynamic date value is embraced by the 'date' tag:
+
+    <DATE />
+ 
+ The date tag supports the following optional attributes:
+ 
+ 
+
+| Attribute      | Description                    | Example  |
+|----------------|--------------------------------|-----------
+| DAY_OF_MONTH   | set day of month               | <date DAY_OF_MONTH="1" /> (first day of month, use 'ACTUAL_MAXIMUM' to get last day of month
+| MONTH          | set month                      | <date MONTH="1" /> (January)
+| YEAR           | set year                       | <date YEAR="2016" />   
+| ADD            | add offset (see Calendar.class)| <date ADD="MONTH,-1" /> subracts one month from the current year
+ 
+See the following example to set the start and end date of the last month:
+
+
+     SELECT workitem FROM Entity AS workitem
+	  WHERE workitem.created BETWEEN '<date DAY_OF_MONTH="1" ADD="MONTH,-1 />' 
+	                            AND  '<date DAY_OF_MONTH="ACTUAL_MAXIMUM" ADD="MONTH,-1 />' 
+
+ 
+
 
 ##Definition of an Attribute List
 
-Each report definition can provide an optional list of attributes. The attribute list defines items to be added into the result set during the report execution. The attribute list is a powerful feature to customize the result set of a report. Note, that WorkItems processed by the same workflow can consist of different property values. To make sure that all Workitems returned in the result set of a report provide the same set of properties the definition of a attribute list can be used.  
+Each report definition can provide an optional list of attributes. The attribute list defines items to be added into the result set during the report execution. 
+
+<img src="../images/modelling/report-03.png"  width="500"/>
+
+The attribute list is a powerful feature to customize the result set of a report. Note, that WorkItems processed by the same workflow can consist of different property values. To make sure that all Workitems returned in the result set of a report provide the same set of properties the definition of a attribute list can be used.  
 If no attribute list exists all item values of a workitem will be returned in the result set during the report execution. 
 
 ### Format Definition
