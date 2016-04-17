@@ -1,5 +1,5 @@
 #Workflow Reports
-The Imixs-Report plug-In allows the definition of business reports. A report aggregates and transforms a collection of WorkItems into a custom output format (e.g. XML, HTML, PDF, ...). A report created with the Imixs-Report Plug-In can be accessed and synchronized with a running Imixs-Workflow instance via the [REST Service interface](../restapi/reportservice.html).
+The Imixs-Report plug-In is a Eclipse Plug-In used to define business reports for the Imixs-Workflow system. A report aggregates and transforms a collection of WorkItems into a custom output format (e.g. XML, JSON, HTML, PDF, ...). Once a report was created with the Imixs-Report Plug-In, it can be uploaded to a Imixs-Workflow instance via the [REST Service API](../restapi/reportservice.html).
 
 ##Installation
 The Imixs-Report plug-In is installed the same way as any other Eclipse plug-in. To install the Imixs-Report plug-in select from the Eclipse Workbench main menu *Help -> Install New Software*. Enter the following update site URL:
@@ -8,53 +8,67 @@ The Imixs-Report plug-In is installed the same way as any other Eclipse plug-in.
 
 
 ##Creating a Report Definition 
-Reports are stored in a File with the extension ".ixr" and can be added to any existing Eclipse project. Each report consists of a JPQL Statement and an optional attribute list and xsl definition. The JPQL Statement must be valid for the workflow instance the report should be run in. 
+Reports are stored in a file with the extension ".ixr" and can be added to any existing Eclipse project. To create a new report definition add a new file with the extension ".ixr" into a project of your Eclipse Workspace. 
+
+Opening a report shows the Imixs-Report Editor. The report editor is split into a "Overview" section and a "XSL" section. 
 
 <img src="../images/modelling/report-01.png"  width="700"/>
 
-The Attribute list is optional and only used in case of a HTML output format.
-To synchronize a report the Report Rest Service endpoint can be added into the report definition:
-   
+The "Overview" section provides Input-Fields to define a JPQL statement and an optional Attribute List. 
+The JPQL Statement must be valid for the workflow instance the report will be executed. 
+You can find details about how to define a JPQL statement to query workitems in the [section Workflow Engine](../engine/queries.html)
+
+The "XSL" section of the Imixs-Report Editor can be used to transform the result set of a report in any kind of output format using the "Extended Stylesheet Language".  
+
+Once a report was created it can be uploaded form the Eclipse IDE into a running Imixs-Workflow instance. The Rest Service endpoint URI form the Imixs-Report Service can be entered into the section 'Web Service location': 
+
     http://localhost:8080/workflow/rest-service/report/
+    
+Each report is identified uniquely by its report name which is equals to the file resource name.  If a report of the same name already exists in a Imixs-Workflow instance the report will be updated.
 
-Each report is identified by its report name equals to the file resource name.  If a report of the same name still exists in the Imixs-Workflow instance the report will be replaced.
 
-To generate a report during runtime the report can be called by the Imixs REST Service:
+##Executing a Report
+To execute a report the report can be accessed via the Imixs-Rest API given the report name:
 
-    http://HOST/WEBMODULE/RestService/report/REPOTNAME.html
+    http://localhost:8080/workflow/rest-service/report/REPOTNAME.html
 
-See details on the Imixs [REST Service documentation](../restapi/reportservice.html).
+When a report is executed, a result set of WorkItems based on the JPQL statement defined by the report will be generated.  The result set of a report can be requested in different formats. To request a HTML representation of a report the report name can be extended with the sufix ".html". Optional the result set can be requested as XML (.xml) or JSON (.json) format. 
+
+Find details about the Imixs-Report Rest Service API in the [section REST API](../restapi/reportservice.html).
 
 To remove an existing report use the [Imixs-Admin Client](../administration.html). 
 
-### The Attribute Format Definition
-The section 'attributes' can also be used to define a subset of properties to be rendered into the result of the report. 
 
-The content of an attribute can be formated by adding a 'format' tag behind the property name. 
+##Definition of an Attribute List
+
+Each report definition can provide an optional list of attributes. The attribute list defines items to be added into the result set during the report execution. The attribute list is a powerful feature to customize the result set of a report. Note, that WorkItems processed by the same workflow can consist of different property values. To make sure that all Workitems returned in the result set of a report provide the same set of properties the definition of a attribute list can be used.  
+If no attribute list exists all item values of a workitem will be returned in the result set during the report execution. 
+
+### Format Definition
+Each value of an item defined in the attribute list can be formated in different ways. Therefor the tag 'format' can be appended behind the item name: 
 
     $created<format locale="de" label="Date">yy-dd-mm</format> 
 
-This example formats the creation date of a workitem into ISO Date format. The optional attribute 'locale' can be used to format dates in a country specific way. See the [Java Doc](http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html) for details.  
+This example formats the creation date of a workitem into ISO Date format. The optional attribute 'locale' can be used to format dates in a country specific way. See details about how to format a date value in the [Java Doc](http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).  
 
-You can also format currency and number value into a numer format. 
+The format definition can also be used to format the output of currency and number values: 
 
      _amount<format>#,##0.00</format>
 
- See the [Class DecimalFormat](http://docs.oracle.com/javase/7/docs/api/java/text/DecimalFormat.html) for details. 
+ See the [Class DecimalFormat](http://docs.oracle.com/javase/7/docs/api/java/text/DecimalFormat.html) for more details. 
 
-### The Attribute Converter Definition
+### Converter Definition
 Beside the option to format values it is also possible to convert the values into a specific object type. This can be useful in case
 the object values are not from the same type which can be necessary for XSL transformation. 
-Use the tag '<convert>' to convert the value to a specifc Java object type. 
-
+To convert the item value the tag 'convert'  can be appended behind the item name: 
 
      _amount<convert>xs:decimal</convert>
+     _number<convert>xs:int</convert>
 
-In case the value is from type 'String' the reportService will convert the value into double object. In case the value can not be converted
-the value will be reset to 0. 
+In case the value is not from the specified type (Double, Integer) the value will be converted into a double or integer object. In case the value can not be converted the value will be reset to 0. 
 
 
-### The XSL Definition
+## The XSL Transformation
 To transform the result of a report definition into various output formats a XSL template can be added into each report.  
 
 <img src="../images/modelling/report-02.png" width="700"/>
@@ -64,5 +78,9 @@ For each Report supporting a XSL Template additional parameters can be defined
  * Content Type 
  * Encoding
  
-These parameters a equals to the corresponding  parameters of the Imixs-REST Service interface. 
+These parameters are equals to the corresponding  parameters of the Imixs-REST Service interface. 
+
+To execute the transformation of a result set by the defined XSL template the report can be requested with the '.ixr' extension from the [Report REST API](../restapi/reportservice.html):
+
+    http://localhost:8080/workflow/rest-service/report/REPOTNAME.ixr
  
