@@ -92,8 +92,8 @@ See the following example to set the start and end date of the last month:
 
 
      SELECT workitem FROM Entity AS workitem
-	  WHERE workitem.created BETWEEN '<date DAY_OF_MONTH="1" ADD="MONTH,-1 />' 
-	                            AND  '<date DAY_OF_MONTH="ACTUAL_MAXIMUM" ADD="MONTH,-1 />' 
+	  WHERE workitem.created BETWEEN '<date DAY_OF_MONTH="1" ADD="MONTH,-1" />' 
+	                            AND  '<date DAY_OF_MONTH="ACTUAL_MAXIMUM" ADD="MONTH,-1" />' 
 
  
  
