@@ -28,6 +28,7 @@
 package org.imixs.workflow.jee.ejb;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -239,7 +240,23 @@ public class ReportService implements ReportServiceRemote {
 						formatMap.put(fieldName, xmlValues.get(0));
 					}
 				} else {
+					if (field.indexOf("<") > -1) {
+						field = field.substring(0, field.indexOf("<"));
+					}
 					formatMap.put(field, "");
+				}
+			}
+
+			// next we build a converter map.....
+			Map<String, String> converterMap = new HashMap<String, String>();
+			for (String field : itemList) {
+				List<String> formatList = XMLParser.findTags(field, "convert");
+				if (formatList != null && formatList.size() > 0) {
+					String fieldName = field.substring(0, field.indexOf("<"));
+					List<String> xmlValues = XMLParser.findTagValues(field, "convert");
+					if (xmlValues.size() > 0) {
+						converterMap.put(fieldName, xmlValues.get(0));
+					}
 				}
 			}
 
@@ -249,6 +266,14 @@ public class ReportService implements ReportServiceRemote {
 				ItemCollection clone = new ItemCollection();
 				Set<String> fieldNames = formatMap.keySet();
 				for (String field : fieldNames) {
+
+					// first look for converter
+					String converter = converterMap.get(field);
+					// did we have a format definition?
+					if (converter != null) {
+						entity = convertItemValue(entity, field, converter);
+					}
+
 					String format = formatMap.get(field);
 					// did we have a format definition?
 					if (!format.isEmpty()) {
@@ -450,20 +475,22 @@ public class ReportService implements ReportServiceRemote {
 	}
 
 	/**
-	 * This helper method test the type of an object provided by a
-	 * itemcollection and formats the object into a string value.
+	 * This helper method test the type of an object and formats the objects
+	 * value.
 	 * 
-	 * Only Date Objects will be formated into a modified representation. other
-	 * objects will be returned using the toString() method.
+	 * If the object if from type Date or Calendar it will be formated unsing
+	 * the Java SimpleDateFormat.
 	 * 
-	 * If an optional format is provided this will be used to format date
-	 * objects.
+	 * If the object is String, Integer or Double the method tries to format the
+	 * value into a number
+	 * 
+	 *
 	 * 
 	 * @param o
 	 * @return
 	 */
 	private String formatObjectValue(Object o, String format, String locale) {
-
+		String singleValue = "";
 		Date dateValue = null;
 
 		// now test the objct type to date
@@ -478,7 +505,6 @@ public class ReportService implements ReportServiceRemote {
 
 		// format date string?
 		if (dateValue != null) {
-			String singleValue = "";
 			if (format != null && !"".equals(format)) {
 				// format date with provided formater
 				try {
@@ -495,14 +521,85 @@ public class ReportService implements ReportServiceRemote {
 					logger.warning("ReportService: Can not format value - error: " + ef.getMessage());
 					return "" + dateValue;
 				}
-			} else
+			} else {
 				// use standard formate short/short
 				singleValue = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(dateValue);
+			}
 
-			return singleValue;
+		} else {
+			// test if number formater is provided....
+			if (format.contains("#")) {
+				try {
+					double d = Double.parseDouble(o.toString());
+					DecimalFormat numberFormatter = new DecimalFormat(format);
+					singleValue = numberFormatter.format(d);
+				} catch (NumberFormatException e) {
+					singleValue = "0";
+				}
+
+			} else {
+				// return object as string
+				singleValue = o.toString();
+			}
 		}
 
-		return o.toString();
+		return singleValue;
+
+	}
+
+	/**
+	 * This method converts a single item value into a specified type. If the
+	 * converter is not adaptable a default value will be set.
+	 *
+	 * 
+	 * @param o
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private ItemCollection convertItemValue(ItemCollection itemcol, String itemName, String converter) {
+
+		if (converter == null || converter.isEmpty()) {
+			return itemcol;
+		}
+
+		List values = itemcol.getItemValue(itemName);
+		// if vector is empty we add a dummy null value here!
+		if (values.size() == 0) {
+			values.add(null);
+		}
+
+		for (int i = 0; i < values.size(); i++) {
+			Object o = values.get(i);
+
+			if (converter.equalsIgnoreCase("double") || converter.equalsIgnoreCase("xs:decimal")) {
+				try {
+					double d = 0;
+					if (o != null) {
+						d = Double.parseDouble(o.toString());
+					}
+					values.set(i, d);
+				} catch (NumberFormatException e) {
+					values.set(i, new Double(0));
+				}
+			}
+
+			if (converter.equalsIgnoreCase("integer") || converter.equalsIgnoreCase("xs:int")) {
+				try {
+					int d = 0;
+					if (o != null) {
+						i = Integer.parseInt(o.toString());
+					}
+					values.set(i, d);
+				} catch (NumberFormatException e) {
+					values.set(i, new Integer(0));
+				}
+			}
+
+		}
+		itemcol.replaceItemValue(itemName, values);
+
+		return itemcol;
+
 	}
 
 	/**

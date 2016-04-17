@@ -27,14 +27,32 @@ See details on the Imixs [REST Service documentation](../restapi/reportservice.h
 
 To remove an existing report use the [Imixs-Admin Client](../administration.html). 
 
-### The Attribute Definition
-In case a report is used to be exported into a HTML table the section 'attributes' can be used to define a subset of properties to be rendered into the result table. 
+### The Attribute Format Definition
+The section 'attributes' can also be used to define a subset of properties to be rendered into the result of the report. 
 
 The content of an attribute can be formated by adding a 'format' tag behind the property name. 
 
     $created<format locale="de" label="Date">yy-dd-mm</format> 
 
 This example formats the creation date of a workitem into ISO Date format. The optional attribute 'locale' can be used to format dates in a country specific way. See the [Java Doc](http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html) for details.  
+
+You can also format currency and number value into a numer format. 
+
+     _amount<format>#,##0.00</format>
+
+ See the [Class DecimalFormat](http://docs.oracle.com/javase/7/docs/api/java/text/DecimalFormat.html) for details. 
+
+### The Attribute Converter Definition
+Beside the option to format values it is also possible to convert the values into a specific object type. This can be useful in case
+the object values are not from the same type which can be necessary for XSL transformation. 
+Use the tag '<convert>' to convert the value to a specifc Java object type. 
+
+
+     _amount<convert>xs:decimal</convert>
+
+In case the value is from type 'String' the reportService will convert the value into double object. In case the value can not be converted
+the value will be reset to 0. 
+
 
 ### The XSL Definition
 To transform the result of a report definition into various output formats a XSL template can be added into each report.  

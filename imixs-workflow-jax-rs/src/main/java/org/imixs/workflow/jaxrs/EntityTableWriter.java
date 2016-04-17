@@ -122,11 +122,16 @@ public class EntityTableWriter implements MessageBodyWriter<EntityTable> {
 
 				ItemCollection itemCol = XMLItemCollectionAdapter.getItemCollection(xmlworkItem);
 				for (String itemName : entityCollection.getAttributeList()) {
-					// test if item name contains format definition
+					// test if item name contains format or converter definition
 					int i=itemName.toLowerCase().indexOf("<format");
 					if (i>-1) {
 						itemName=itemName.substring(0,i);
 					}
+					i=itemName.toLowerCase().indexOf("<convert");
+					if (i>-1) {
+						itemName=itemName.substring(0,i);
+					}
+					
 					List vValues = itemCol.getItemValue(itemName);
 					bw.write("<td>" + XMLItemCollectionWriter.convertValuesToString(vValues) + "</td>");
 				}
