@@ -78,7 +78,7 @@
 				<item name="Access Control" href="./engine/acl.html" />
 				<item name="Plugins" href="./engine/plugins/index.html"
 					collapse="true">
-					<item name="Appliation Plugin" href="./engine/plugins/applicationplugin.html" />
+					<item name="Application Plugin" href="./engine/plugins/applicationplugin.html" />
 					<item name="Result Plugin" href="./engine/plugins/resultplugin.html" />
 					<item name="History Plugin" href="./engine/plugins/historyplugin.html" />
 					<item name="Access Plugin" href="./engine/plugins/accessplugin.html" />

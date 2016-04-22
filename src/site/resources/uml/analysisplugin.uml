@@ -1,0 +1,53 @@
+@startuml
+autonumber
+
+
+NewTicket -> Open: submit new ticket
+note left
+	Start of Measuring Point P1
+
+	datMeasurePointStart_P1 = timestamp
+	numMeasurePoint_P1 = duration in msec
+end note
+activate NewTicket
+Open->Accepted: assign ticket
+
+activate Accepted
+
+
+Accepted -> Solved: solve ticket
+note left
+	Start of Measuring Point P2
+
+	datMeasurePointStart_P2 = timestamp
+	numMeasurePoint_P2 = duration in msec
+end note
+
+
+Solved --> Accepted
+
+
+note right
+	End of Measuring Point P2
+	datMeasurePointStop_P2
+end note
+deactivate Accepted
+
+
+Solved  -> Closed: close ticket
+
+
+
+
+Closed --> NewTicket
+
+note right
+	End of Measuring Point P1
+	datMeasurePointStop_P1
+end note
+
+
+deactivate NewTicket
+
+ 
+@enduml

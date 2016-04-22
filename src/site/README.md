@@ -20,3 +20,9 @@ review workflowservice.md
 
 
 (review finished: plugin-api.md)
+
+
+
+## Plant UML
+
+    java -jar plantuml.jar -verbose analysisplugin.uml
