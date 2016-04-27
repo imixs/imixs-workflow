@@ -101,19 +101,21 @@ public class ReportService implements ReportServiceRemote {
 	}
 
 	/**
-	 * This method returns a collection of reports (ItemCollection). The method
-	 * should return a subset of a collection if the start and count parameters
-	 * differ form the value -1.
+	 * This method returns a all reports (ItemCollection) sorted by name.
 	 * 
 	 * The method returns only ItemCollections the call has sufficient read
 	 * access for.
 	 */
-	public List<ItemCollection> getReportList(int startpos, int count) {
+	public List<ItemCollection> getReportList() {
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + "WHERE wi.type = 'ReportEntity'";
+		sQuery += " wi FROM Entity as wi "
+				+ " JOIN wi.textItems t "
+				+ " WHERE wi.type = 'ReportEntity' "
+				+ " AND t.itemName='txtname' "
+				+ " ORDER BY t.itemValue ASC";
 
-		List<ItemCollection> col = entityService.findAllEntities(sQuery, startpos, count);
+		List<ItemCollection> col = entityService.findAllEntities(sQuery, 0, -1);
 
 		return col;
 	}

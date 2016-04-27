@@ -22,14 +22,12 @@ public interface ReportServiceRemote {
 	public abstract ItemCollection getReport(String aReportName);
 
 	/**
-	 * This method returns a collection of reports (ItemCollection). The method
-	 * should return a subset of a collection if the start and count parameters
-	 * differ form the value -1.
+	 * This method returns a all reports (ItemCollection) sorted by name.
 	 * 
 	 * The method returns only ItemCollections the call has sufficient read
 	 * access for.
 	 */
-	public abstract List<ItemCollection> getReportList(int startpos, int count);
+	public abstract List<ItemCollection> getReportList();
 
 	/**
 	 * updates a Entity Report Object. The Entity representing a report must

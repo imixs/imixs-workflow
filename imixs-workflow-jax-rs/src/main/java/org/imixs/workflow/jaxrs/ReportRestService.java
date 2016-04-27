@@ -151,18 +151,11 @@ public class ReportRestService {
 
 	@GET
 	@Path("/reports")
-	public EntityCollection getAllReports(@DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("10") @QueryParam("count") int count) {
+	public EntityCollection getAllReports() {
 		try {
 			Collection<ItemCollection> col = null;
-			try {
-				col = reportService.getReportList(start, count);
-				return XMLItemCollectionAdapter.putCollection(col);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return new EntityCollection();
-
+			col = reportService.getReportList();
+			return XMLItemCollectionAdapter.putCollection(col);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -216,7 +209,7 @@ public class ReportRestService {
 		try {
 			reportName = name + ".ixr";
 			ItemCollection itemCol = reportService.getReport(reportName);
-			
+
 			sXSL = itemCol.getItemValueString("txtXSL").trim();
 			sContentType = itemCol.getItemValueString("txtcontenttype");
 			if ("".equals(sContentType))
@@ -233,12 +226,12 @@ public class ReportRestService {
 
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(reportName, start, count, params,null);
+			col = reportService.executeReport(reportName, start, count, params, null);
 
 			// if no XSL is provided return standard html format...?
 			if ("".equals(sXSL)) {
-				Response.ResponseBuilder builder = Response
-						.ok(XMLItemCollectionAdapter.putCollection(col), "text/html");
+				Response.ResponseBuilder builder = Response.ok(XMLItemCollectionAdapter.putCollection(col),
+						"text/html");
 				return builder.build();
 			}
 
@@ -336,10 +329,10 @@ public class ReportRestService {
 				// get list from report definition
 				vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
 			}
-			
+
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(reportName, start, count, params,vAttributList);
+			col = reportService.executeReport(reportName, start, count, params, vAttributList);
 
 			EntityCollection entityCol = XMLItemCollectionAdapter.putCollection(col);
 			EntityTable entityTable = new EntityTable();
@@ -391,7 +384,7 @@ public class ReportRestService {
 			reportName = name + ".ixr";
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(reportName, start, count, params,getItemList(items));
+			col = reportService.executeReport(reportName, start, count, params, getItemList(items));
 
 			// set content type and character encoding
 			if (encoding == null || encoding.isEmpty()) {
@@ -505,7 +498,7 @@ public class ReportRestService {
 		try {
 			TransformerFactory transFact = TransformerFactory.newInstance();
 
-			logger.fine("xslTransformation: encoding=" +aEncoding);
+			logger.fine("xslTransformation: encoding=" + aEncoding);
 			// generate XML InputStream Reader with encoding
 			ByteArrayInputStream baisXML = new ByteArrayInputStream(xmlSource.getBytes());
 			InputStreamReader isreaderXML;
@@ -583,8 +576,6 @@ public class ReportRestService {
 
 	}
 
-	
-
 	/**
 	 * This method parses the query Params of a Request URL and adds params to a
 	 * given JPQL Query. In addition the method replace dynamic date values in
@@ -594,9 +585,7 @@ public class ReportRestService {
 	 * @param uriInfo
 	 * @return
 	 */
-	
-	
-	
+
 	/**
 	 * Extracts the query parameters and returns a hashmap with key value pairs
 	 * 
@@ -604,10 +593,10 @@ public class ReportRestService {
 	 * @param uriInfo
 	 * @return
 	 */
-	private Map<String,String> getQueryParams(UriInfo uriInfo) {
+	private Map<String, String> getQueryParams(UriInfo uriInfo) {
 		// test each given QueryParam if it is contained in the EQL Query...
 		MultivaluedMap<String, String> mvm = uriInfo.getQueryParameters();
-		Map<String,String> result=new HashMap<String,String>();
+		Map<String, String> result = new HashMap<String, String>();
 		Set<String> keys = mvm.keySet();
 		Iterator<String> iter = keys.iterator();
 		while (iter.hasNext()) {
@@ -616,10 +605,8 @@ public class ReportRestService {
 			result.put(sKeyName, mvm.getFirst(sKeyName));
 		}
 
-
 		return result;
 	}
-	
 
 	/**
 	 * This method returns a List object from a given comma separated string.
