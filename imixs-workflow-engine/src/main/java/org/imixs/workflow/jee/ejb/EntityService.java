@@ -1292,6 +1292,10 @@ public class EntityService implements EntityServiceRemote {
 			logger.finest("[EntityService] version=" + version);
 		}
 
+		// Issue #159
+		// verify if deprecated index values are attached to the entity.
+		removeDeprectedIndexValues(aEntity, entityIndexCache);
+
 		// For each index we update the relationships only if the valueList
 		// changed
 		for (EntityIndex index : entityIndexCache) {
@@ -1674,6 +1678,77 @@ public class EntityService implements EntityServiceRemote {
 			itemCollection.replaceItemValue("$Version", aEntity.getVersion());
 
 		return itemCollection;
+	}
+
+	/**
+	 * This method verify if deprecated index values are attached to the entity.
+	 * The method is only called from explodeEntity()!
+	 * 
+	 * See Issue #159
+	 * 
+	 * @param aEntity
+	 * @param entityIndexCache
+	 */
+	private void removeDeprectedIndexValues(Entity aEntity, Collection<EntityIndex> entityIndexCache) {
+
+		// build list of current indexNames....
+		List<String> indexNames = new ArrayList<String>();
+		for (EntityIndex index : entityIndexCache) {
+			indexNames.add(index.getName());
+		}
+
+		// test for deprecated textValues
+		List<TextItem> deprecatedTextItemList = new ArrayList<TextItem>();
+		for (TextItem aItem : aEntity.getTextItems()) {
+			if (!indexNames.contains(aItem.itemName)) {
+				deprecatedTextItemList.add(aItem);
+			}
+		}
+		for (TextItem aItem : deprecatedTextItemList) {
+			manager.remove(aItem);
+			aEntity.getTextItems().remove(aItem);
+			logger.warning("explodeEntity - fixed deprecated TextItem '" + aItem.itemName + "'");
+		}
+
+		// test for deprecated integerValues
+		List<IntegerItem> deprecatedIntegerItemList = new ArrayList<IntegerItem>();
+		for (IntegerItem aItem : aEntity.getIntegerItems()) {
+			if (!indexNames.contains(aItem.itemName)) {
+				deprecatedIntegerItemList.add(aItem);
+			}
+		}
+		for (IntegerItem aItem : deprecatedIntegerItemList) {
+			manager.remove(aItem);
+			aEntity.getIntegerItems().remove(aItem);
+			logger.warning("explodeEntity - fixed deprecated IntegerItem '" + aItem.itemName + "'");
+		}
+
+		// test for deprecated DoubleValues
+		List<DoubleItem> deprecatedDoubleItemList = new ArrayList<DoubleItem>();
+		for (DoubleItem aItem : aEntity.getDoubleItems()) {
+			if (!indexNames.contains(aItem.itemName)) {
+				deprecatedDoubleItemList.add(aItem);
+			}
+		}
+		for (DoubleItem aItem : deprecatedDoubleItemList) {
+			manager.remove(aItem);
+			aEntity.getDoubleItems().remove(aItem);
+			logger.warning("explodeEntity - fixed deprecated DoubleItem '" + aItem.itemName + "'");
+		}
+
+		// test for deprecated CalendarValues
+		List<CalendarItem> deprecatedCalendarItemList = new ArrayList<CalendarItem>();
+		for (CalendarItem aItem : aEntity.getCalendarItems()) {
+			if (!indexNames.contains(aItem.itemName)) {
+				deprecatedCalendarItemList.add(aItem);
+			}
+		}
+		for (CalendarItem aItem : deprecatedCalendarItemList) {
+			manager.remove(aItem);
+			aEntity.getCalendarItems().remove(aItem);
+			logger.warning("explodeEntity - fixed deprecated CalendarItem '" + aItem.itemName + "'");
+		}
+
 	}
 
 	/**
