@@ -522,7 +522,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 			}
 		}
 		if (resultDate != null) {
-			logger.info("addWorkDays (" + baseDate.getTime() + ") + " + days + " = (" + resultDate.getTime() + ")");
+			logger.finest("addWorkDays (" + baseDate.getTime() + ") + " + days + " = (" + resultDate.getTime() + ")");
 		}
 		return resultDate;
 	}
