@@ -78,7 +78,18 @@ The most important tables where an additional index should be added are the data
 	ALTER TABLE `WRITEACCESS` ADD INDEX `index1`(`VALUE`);
 
 After adding the index the response time should be nice again.
+
+For PostgreSQL use the following statement:
+
+	CREATE INDEX index_entity1 ON entity USING btree(created, modified, type , version);
+	CREATE INDEX index_textitem1 ON textitem USING btree(itemname,itemvalue);
+	CREATE INDEX index_integeritem1 ON integeritem USING btree(itemname,itemvalue);
+	CREATE INDEX index_calendaritem1 ON calendaritem USING btree(itemname,itemvalue);
+	CREATE INDEX index_doubleitem1 ON doubleitem USING btree(itemname,itemvalue);
+	CREATE INDEX index_read1 ON readaccess USING btree(value);
+	CREATE INDEX index_write1 ON writeaccess USING btree(value);
  
+  
 <strong>Note:</strong> It can be necessary to add also indices to other tables/columns created by the OR-Mapper. To find out useful indices contact your database administrator or use Query analyser tools provided by your database vendor.
          
          
