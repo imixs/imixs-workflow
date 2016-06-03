@@ -67,20 +67,15 @@ import org.imixs.workflow.jee.jpa.EntityIndex;
  * 
  */
 
-@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS",
-		"org.imixs.ACCESSLEVEL.READERACCESS",
-		"org.imixs.ACCESSLEVEL.AUTHORACCESS",
-		"org.imixs.ACCESSLEVEL.EDITORACCESS",
+@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
-@RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS",
-		"org.imixs.ACCESSLEVEL.READERACCESS",
-		"org.imixs.ACCESSLEVEL.AUTHORACCESS",
-		"org.imixs.ACCESSLEVEL.EDITORACCESS",
+@RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @LocalBean
-public class WorkflowService implements WorkflowManager, WorkflowContext,
-		WorkflowServiceRemote {
+public class WorkflowService implements WorkflowManager, WorkflowContext, WorkflowServiceRemote {
 
 	// entity properties
 	public static final String UNIQUEID = "$uniqueid";
@@ -164,19 +159,16 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkList(int startpos, int count,
-			String type, int sortorder) {
+	public List<ItemCollection> getWorkList(int startpos, int count, String type, int sortorder) {
 
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + " JOIN wi.textItems as s "
-				+ "WHERE ";
+		sQuery += " wi FROM Entity as wi " + " JOIN wi.textItems as s " + "WHERE ";
 
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
-		sQuery += " s.itemName = '$workitemid' "
-				+ createSortOrderClause(sortorder);
+		sQuery += " s.itemName = '$workitemid' " + createSortOrderClause(sortorder);
 		;
 		return entityService.findAllEntities(sQuery, startpos, count);
 	}
@@ -213,23 +205,19 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByAuthor(String name, int startpos,
-			int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByAuthor(String name, int startpos, int count, String type, int sortorder) {
 
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
 
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + " JOIN wi.writeAccessList as wa"
-				+ " JOIN wi.textItems as s " + "WHERE ";
+		sQuery += " wi FROM Entity as wi " + " JOIN wi.writeAccessList as wa" + " JOIN wi.textItems as s " + "WHERE ";
 
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
-		sQuery += " wa.value = '" + name + "'"
-				+ " AND s.itemName = '$workitemid' "
-				+ createSortOrderClause(sortorder);
+		sQuery += " wa.value = '" + name + "'" + " AND s.itemName = '$workitemid' " + createSortOrderClause(sortorder);
 		return entityService.findAllEntities(sQuery, startpos, count);
 	}
 
@@ -265,21 +253,18 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByCreator(String name, int startpos,
-			int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByCreator(String name, int startpos, int count, String type, int sortorder) {
 
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
 
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi"
-				+ " JOIN wi.textItems as t JOIN wi.textItems as s " + "WHERE ";
+		sQuery += " wi FROM Entity as wi" + " JOIN wi.textItems as t JOIN wi.textItems as s " + "WHERE ";
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
-		sQuery += " t.itemName = 'namcreator' and t.itemValue = '" + name + "'"
-				+ " AND s.itemName = '$workitemid' "
+		sQuery += " t.itemName = 'namcreator' and t.itemValue = '" + name + "'" + " AND s.itemName = '$workitemid' "
 				+ createSortOrderClause(sortorder);
 
 		return entityService.findAllEntities(sQuery, startpos, count);
@@ -307,21 +292,18 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByOwner(String name, int startpos,
-			int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByOwner(String name, int startpos, int count, String type, int sortorder) {
 
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
 
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi"
-				+ " JOIN wi.textItems as t JOIN wi.textItems as s " + "WHERE ";
+		sQuery += " wi FROM Entity as wi" + " JOIN wi.textItems as t JOIN wi.textItems as s " + "WHERE ";
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
-		sQuery += " t.itemName = 'namowner' and t.itemValue = '" + name + "'"
-				+ " AND s.itemName = '$workitemid' "
+		sQuery += " t.itemName = 'namowner' and t.itemValue = '" + name + "'" + " AND s.itemName = '$workitemid' "
 				+ createSortOrderClause(sortorder);
 
 		return entityService.findAllEntities(sQuery, startpos, count);
@@ -347,8 +329,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByWriteAccess(int startpos,
-			int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByWriteAccess(int startpos, int count, String type, int sortorder) {
 		StringBuffer nameListBuffer = new StringBuffer();
 
 		String name = ctx.getCallerPrincipal().getName();
@@ -369,31 +350,26 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 				nameListBuffer.append(",'" + testRole + "'");
 		}
 
-		String sQuery = "SELECT wi FROM Entity as wi "
-				+ " JOIN wi.writeAccessList wa " + " WHERE ";
+		String sQuery = "SELECT wi FROM Entity as wi " + " JOIN wi.writeAccessList wa " + " WHERE ";
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' ";
 
-		sQuery += " AND wa.value IN (" + nameListBuffer.toString() + ")"
-				+ createSortOrderClause(sortorder);
+		sQuery += " AND wa.value IN (" + nameListBuffer.toString() + ")" + createSortOrderClause(sortorder);
 
 		return entityService.findAllEntities(sQuery, startpos, count);
 	}
 
-	public List<ItemCollection> getWorkListByGroup(String name, int startpos,
-			int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByGroup(String name, int startpos, int count, String type, int sortorder) {
 
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + " JOIN wi.textItems as t "
-				+ " JOIN wi.textItems as s " + "WHERE ";
+		sQuery += " wi FROM Entity as wi " + " JOIN wi.textItems as t " + " JOIN wi.textItems as s " + "WHERE ";
 
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
-		sQuery += " t.itemName = 'txtworkflowgroup' and t.itemValue = '" + name
-				+ "'" + " AND s.itemName = '$workitemid' "
-				+ createSortOrderClause(sortorder);
+		sQuery += " t.itemName = 'txtworkflowgroup' and t.itemValue = '" + name + "'"
+				+ " AND s.itemName = '$workitemid' " + createSortOrderClause(sortorder);
 		return entityService.findAllEntities(sQuery, startpos, count);
 	}
 
@@ -418,20 +394,16 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByProcessID(int aid, int startpos,
-			int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByProcessID(int aid, int startpos, int count, String type, int sortorder) {
 
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi "
-				+ " JOIN wi.integerItems as t JOIN wi.textItems as s "
-				+ "WHERE ";
+		sQuery += " wi FROM Entity as wi " + " JOIN wi.integerItems as t JOIN wi.textItems as s " + "WHERE ";
 
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
-		sQuery += " t.itemName = '$processid' and t.itemValue = '" + aid + "'"
-				+ " AND s.itemName = '$workitemid' "
+		sQuery += " t.itemName = '$processid' and t.itemValue = '" + aid + "'" + " AND s.itemName = '$workitemid' "
 				+ createSortOrderClause(sortorder);
 
 		return entityService.findAllEntities(sQuery, startpos, count);
@@ -472,18 +444,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 	 *            SORT_ORDER_MODIFIED_ASC = 3)
 	 * @return List of workitems
 	 */
-	public List<ItemCollection> getWorkListByRef(String aref, int startpos,
-			int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByRef(String aref, int startpos, int count, String type, int sortorder) {
 
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi "
-				+ " JOIN wi.textItems as t JOIN wi.textItems as s " + "WHERE ";
+		sQuery += " wi FROM Entity as wi " + " JOIN wi.textItems as t JOIN wi.textItems as s " + "WHERE ";
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
-		sQuery += " t.itemName = '$uniqueidref' and t.itemValue = '" + aref
-				+ "'" + " and s.itemName = '$workitemid' "
+		sQuery += " t.itemName = '$uniqueidref' and t.itemValue = '" + aref + "'" + " and s.itemName = '$workitemid' "
 				+ createSortOrderClause(sortorder);
 
 		return entityService.findAllEntities(sQuery, startpos, count);
@@ -542,42 +511,30 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 	 */
 	@SuppressWarnings("unchecked")
 	public ItemCollection processWorkItem(ItemCollection workitem)
-			throws AccessDeniedException, ProcessingErrorException,
-			PluginException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException {
 
 		if (workitem == null)
-			throw new ProcessingErrorException(
-					WorkflowService.class.getSimpleName(),
-					ProcessingErrorException.INVALID_WORKITEM,
-					"WorkflowService: error - workitem is null");
+			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
+					ProcessingErrorException.INVALID_WORKITEM, "WorkflowService: error - workitem is null");
 
 		// load current instance of this workitem
-		ItemCollection currentInstance = this.getWorkItem(workitem
-				.getItemValueString(EntityService.UNIQUEID));
+		ItemCollection currentInstance = this.getWorkItem(workitem.getItemValueString(EntityService.UNIQUEID));
 
 		if (currentInstance != null) {
 			// test author access
 			if (!currentInstance.getItemValueBoolean(ISAUTHOR))
-				throw new AccessDeniedException(
-						AccessDeniedException.OPERATION_NOTALLOWED,
-						"WorkflowService: error - $UnqiueID ("
-								+ workitem
-										.getItemValueInteger(EntityService.UNIQUEID)
+				throw new AccessDeniedException(AccessDeniedException.OPERATION_NOTALLOWED,
+						"WorkflowService: error - $UnqiueID (" + workitem.getItemValueInteger(EntityService.UNIQUEID)
 								+ ") no Author Access!");
 
 			// test if $ProcessID matches current instance
 			if (workitem.getItemValueInteger("$ProcessID") > 0
-					&& currentInstance.getItemValueInteger("$ProcessID") != workitem
-							.getItemValueInteger("$ProcessID"))
-				throw new ProcessingErrorException(
-						WorkflowService.class.getSimpleName(),
+					&& currentInstance.getItemValueInteger("$ProcessID") != workitem.getItemValueInteger("$ProcessID"))
+				throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
 						ProcessingErrorException.INVALID_PROCESSID,
-						"WorkflowService: error - $ProcesssID ("
-								+ workitem.getItemValueInteger("$ProcessID")
+						"WorkflowService: error - $ProcesssID (" + workitem.getItemValueInteger("$ProcessID")
 								+ ") did not match expected $ProcesssID ("
-								+ currentInstance
-										.getItemValueInteger("$ProcessID")
-								+ ")");
+								+ currentInstance.getItemValueInteger("$ProcessID") + ")");
 
 			// merge workitem into current instance (issue #86)
 			// an instance of this WorkItem still exists! so we update the new
@@ -592,35 +549,27 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		 * Lookup current processEntity. If not available update model to latest
 		 * matching model version
 		 */
-		String modelversion = workitem
-				.getItemValueString(WorkflowService.MODELVERSION);
+		String modelversion = workitem.getItemValueString(WorkflowService.MODELVERSION);
 		int processID = workitem.getItemValueInteger(WorkflowService.PROCESSID);
-		ItemCollection processEntity = modelService.getProcessEntity(processID,
-				modelversion);
+		ItemCollection processEntity = modelService.getProcessEntity(processID, modelversion);
 		if (processEntity == null) {
 			// look for latest model version....
 			try {
-				String newModelVersion = modelService
-						.getLatestVersionByWorkitem(workitem);
+				String newModelVersion = modelService.getLatestVersionByWorkitem(workitem);
 				if (newModelVersion != null && !newModelVersion.isEmpty()) {
 					modelversion = newModelVersion;
 					// update Model Version for the WorkItem - this is the
 					// version the workItem will be processed now
 					logger.info("WorkflowService: $modelversion '"
-							+ workitem
-									.getItemValueString(WorkflowService.MODELVERSION)
-							+ "' no longer provided, updating to $modelversion '"
-							+ modelversion + "'");
+							+ workitem.getItemValueString(WorkflowService.MODELVERSION)
+							+ "' no longer provided, updating to $modelversion '" + modelversion + "'");
 					workitem.replaceItemValue("$modelversion", modelversion);
 				}
 			} catch (ModelException e) {
-				throw new ProcessingErrorException(
-						WorkflowService.class.getSimpleName(),
+				throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
 						ProcessingErrorException.INVALID_MODELVERSION,
-						"WorkflowService: fatal error - no valid model version '"
-								+ modelversion
-								+ "' found! Verify WorkflowModels: "
-								+ e.getMessage());
+						"WorkflowService: fatal error - no valid model version '" + modelversion
+								+ "' found! Verify WorkflowModels: " + e.getMessage());
 			}
 		}
 
@@ -628,18 +577,16 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		ItemCollection profile = findModelProfile(modelversion);
 		if (profile == null) {
 			// model profile not defined!
-			throw new ProcessingErrorException(
-					WorkflowService.class.getSimpleName(),
+			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
 					ProcessingErrorException.INVALID_MODELVERSION,
-					"WorkflowService: fatal error - no valid model version '"
-							+ modelversion + "' found! Verify WorkflowModels.");
+					"WorkflowService: fatal error - no valid model version '" + modelversion
+							+ "' found! Verify WorkflowModels.");
 		}
 
 		WorkflowKernel workflowkernel = new WorkflowKernel(this);
 
 		// register plugins defined in the environment.profile ....
-		List<String> vPlugins = (List<String>) profile
-				.getItemValue("txtPlugins");
+		List<String> vPlugins = (List<String>) profile.getItemValue("txtPlugins");
 		for (int i = 0; i < vPlugins.size(); i++) {
 			String aPluginClassName = vPlugins.get(i);
 
@@ -648,8 +595,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 			if (aPlugin != null) {
 				// register injected CDI Plugin
 				if (this.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-					logger.info("[WorkflowService] register CDI plugin class: "
-							+ aPluginClassName + "...");
+					logger.info("[WorkflowService] register CDI plugin class: " + aPluginClassName + "...");
 				workflowkernel.registerPlugin(aPlugin);
 			} else {
 				// register plugin by class name
@@ -667,17 +613,22 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		}
 
 		// identify Caller and update CurrentEditor
-		String name;
-		name = ctx.getCallerPrincipal().getName();
+		String nameEditor;
+		nameEditor = ctx.getCallerPrincipal().getName();
 
-		// add namCreator if new workitem
-		if ("".equals(workitem.getItemValueString("namCreator")))
-			workitem.replaceItemValue("namCreator", name);
+		// add namCreator if empty
+		if (workitem.getItemValueString("namCreator").isEmpty()) {
+			workitem.replaceItemValue("namCreator", nameEditor);
+		}
 
-		// update curreneditor
-		workitem.replaceItemValue("namlasteditor",
-				workitem.getItemValueString("namcurrenteditor"));
-		workitem.replaceItemValue("namcurrenteditor", name);
+		// update namLastEditor only if current editor has changed
+		if (!nameEditor.equals(workitem.getItemValueString("namcurrenteditor"))
+				&& !workitem.getItemValueString("namcurrenteditor").isEmpty()) {
+			workitem.replaceItemValue("namlasteditor", workitem.getItemValueString("namcurrenteditor"));
+		}
+
+		// update namCurrentEditor
+		workitem.replaceItemValue("namcurrenteditor", nameEditor);
 
 		// now process the workitem
 		workflowkernel.process(workitem);
@@ -707,8 +658,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		// iterate over all injected plugins....
 		for (Plugin plugin : this.plugins) {
 			if (plugin.getClass().getName().equals(pluginClassName)) {
-				logger.fine("[WorkflowService] CDI plugin '" + pluginClassName
-						+ "' successful injected");
+				logger.fine("[WorkflowService] CDI plugin '" + pluginClassName + "' successful injected");
 				return plugin;
 			}
 		}
@@ -716,8 +666,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		return null;
 	}
 
-	public void removeWorkItem(ItemCollection aworkitem)
-			throws AccessDeniedException {
+	public void removeWorkItem(ItemCollection aworkitem) throws AccessDeniedException {
 		entityService.remove(aworkitem);
 	}
 
@@ -753,13 +702,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 	 * @return WorkflowEnvironmentEntity
 	 * @throws ProcessingErrorException
 	 */
-	private ItemCollection findModelProfile(String modelversion)
-			throws ProcessingErrorException {
+	private ItemCollection findModelProfile(String modelversion) throws ProcessingErrorException {
 
 		// if no modelversion is provided default to newest version
 		if (modelversion == null || "".equals(modelversion)) {
-			throw new ProcessingErrorException(
-					WorkflowService.class.getSimpleName(),
+			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
 					ProcessingErrorException.INVALID_MODELVERSION,
 					"WorkflowService: fatal error - no valid model version provided");
 		}
@@ -768,13 +715,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		Collection<ItemCollection> col;
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " environment FROM Entity AS environment"
-				+ " JOIN environment.textItems as n "
-				+ " JOIN environment.textItems as v "
-				+ " WHERE environment.type = 'WorkflowEnvironmentEntity'"
+		sQuery += " environment FROM Entity AS environment" + " JOIN environment.textItems as n "
+				+ " JOIN environment.textItems as v " + " WHERE environment.type = 'WorkflowEnvironmentEntity'"
 				+ " AND n.itemName = 'txtname' AND n.itemValue = 'environment.profile'"
-				+ " AND v.itemName = '$modelversion' AND v.itemValue = '"
-				+ modelversion + "' ";
+				+ " AND v.itemName = '$modelversion' AND v.itemValue = '" + modelversion + "' ";
 		col = entityService.findAllEntities(sQuery, 0, 1);
 		// if no model for that ModelVersion is found - throw a exception
 
