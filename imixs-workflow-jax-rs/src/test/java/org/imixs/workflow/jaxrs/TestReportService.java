@@ -150,7 +150,7 @@ public class TestReportService {
 	public void testReplaceDateString() {
 
 		String test = "SELECT entitiy FORM ENTITY"
-				+ " WHERE entity.modified > <date DAY_OF_MONTH=\"1\" MONT=\"4\" YEAR=\"2016\" />"
+				+ " WHERE entity.modified > <date DAY_OF_MONTH=\"1\" MONTH=\"4\" YEAR=\"2016\" />"
 				+ " ORDER BY entity.modified DESC";
 
 		// construct expected test date....

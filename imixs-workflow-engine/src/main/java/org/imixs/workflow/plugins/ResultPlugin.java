@@ -30,7 +30,9 @@ package org.imixs.workflow.plugins;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -358,64 +360,101 @@ public class ResultPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * This method evaluates the attributes stored in a named item
-	 *
+	 * The method evaluates the WorkflowResult for a given activityEntity and
+	 * returns a ItemColleciton containing all item definitions. Each item
+	 * definition of a WorkflowResult contains a name and a optional list of
+	 * additional attributes. The method generates a item for each content
+	 * element and attribute value. <br>
+	 * e.g. <item name="comment" ignore="true">text</item> <br>
+	 * will result in the attributes 'comment' with value 'text' and
+	 * 'comment.ignore' with the value 'true'
 	 * 
-	 * e.g. <item name="comment" ignore="true" />
 	 * 
-	 * will return a itemCollection with item 'ignore' and value 'true'
-	 * 
-	 * @param field
-	 * @param sResult
+	 * @see http://ganeshtiwaridotcomdotnp.blogspot.de/2011/12/htmlxml-tag-
+	 *      parsing-using-regex-in-java.html
+	 * @param activityEntity
+	 * @param documentContext
 	 * @return
+	 * @throws PluginException
 	 */
-	public static ItemCollection evaluateItemAttributes(String resultString, String itemName) throws PluginException {
-		int iTagStartPos;
-		int iTagEndPos;
-		if (resultString == null)
+	public static ItemCollection evaluateWorkflowRestult(ItemCollection activityEntity, ItemCollection documentContext)
+			throws PluginException {
+
+		boolean invalidPattern=true;
+		
+		ItemCollection result = new ItemCollection();
+		String workflowResult = activityEntity.getItemValueString("txtActivityResult");
+		if (workflowResult.isEmpty()) {
 			return null;
+		}
+		// replace dynamic values
+		workflowResult = new ResultPlugin().replaceDynamicValues(workflowResult, documentContext);
 
-		// test if a <value> tag exists...
-		while ((iTagStartPos = resultString.toLowerCase().indexOf("<item")) != -1) {
+		// extract all <item> tags with attributes using regex (including empty
+		// item tags)
+		Pattern pattern = Pattern.compile("<item(.*?)>(.*?)</item>|<item(.*?)./>");
+		Matcher matcher = pattern.matcher(workflowResult);
+		while (matcher.find()) {
+			invalidPattern=false;
+			// we expect up to 3 different result groups
 
-			iTagEndPos = resultString.toLowerCase().indexOf("/>", iTagStartPos);
-			if (iTagEndPos == -1) {
-				iTagEndPos = resultString.toLowerCase().indexOf("</item>", iTagStartPos);
+			// group 0 contains complete item string
+			String attributes = matcher.group(1);
+			String content = matcher.group(2);
+
+			// test if empty tag (group 1 and 2 empty)
+			if (attributes == null || content == null) {
+				attributes = matcher.group(3);
 			}
-			// if no end tag found return string unchanged...
-			if (iTagEndPos == -1)
-				throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_FORMAT, "</item>  expected!");
 
-			
-			ItemCollection itemColAttributes=new ItemCollection();
-			String sItemTag=resultString.substring(iTagStartPos,iTagEndPos);
-			// now we check the attributes in this item tag
-			String spattern ="(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?";
-			// alternative
-			// (?:[^<]|<[^!]|<![^-\[]|<!\[(?!CDATA)|<!\[CDATA\[.*?\]\]>|<!--(?:[^-]|-[^-])*-->)
-			Pattern pattern = Pattern.compile(spattern);
-			Matcher matcher = pattern.matcher(sItemTag);
-			while (matcher.find()) {
-				String name=matcher.group(1);
-				String value=matcher.group(2);
-			    System.out.println(name);
-			    System.out.println(value);
-			    
-			    itemColAttributes.replaceItemValue(name, value);
-			    
-			    
-			    
+			if (content == null) {
+				content = "";
 			}
 			
-			// did we found the matching item tag?
-			if (itemColAttributes.getItemValueString("name").equals(itemName)) {
-				return itemColAttributes;
+			// now extract the attributes to verify the item name..
+			if (attributes != null && !attributes.isEmpty()) {
+				// parse attributes...
+				String spattern = "(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?";
+				Pattern attributePattern = Pattern.compile(spattern);
+				Matcher attributeMatcher = attributePattern.matcher(attributes);
+				Map<String, String> attrMap = new HashMap<String, String>();
+				while (attributeMatcher.find()) {
+					String attrName = attributeMatcher.group(1); // name
+					String attrValue = attributeMatcher.group(2); // value
+					attrMap.put(attrName, attrValue);
+				}
+
+				String itemName = attrMap.get("name");
+				if (itemName == null) {
+					throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_FORMAT,
+							"<item> tag contains no name attribute.");
+				}
+
+				result.replaceItemValue(itemName, content);
+				// now add optional attributes if available
+				for (String attrName : attrMap.keySet()) {
+					// we need to skip the 'name' attribute
+					if (!"name".equals(attrName)) {
+						result.replaceItemValue(itemName + "." + attrName, attrMap.get(attrName));
+					}
+				}
+
+			} else {
+				throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_FORMAT,
+						"<item> tag contains no name attribute.");
+
 			}
-			
-			
+
+		}
+		
+		
+		// test for general invalid format
+		if (invalidPattern) {
+			throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_FORMAT,
+					"invalid <item> tag format - expected <item name=\"...\" ...></item>");
 		}
 
-		return null;
+		return result;
 	}
 
 }

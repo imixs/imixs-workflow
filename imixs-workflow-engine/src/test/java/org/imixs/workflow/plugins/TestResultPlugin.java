@@ -235,18 +235,66 @@ public class TestResultPlugin {
 	}
 
 	@Test
-	public void testevaluateItemAttributes() {
-		String resultString = "<item ignore=\"true\" name=\"comment\" />";
-		;
+	public void testevaluateWorkflowRestult() {
+		ItemCollection activityEntity = new ItemCollection();
+
 		try {
-			ItemCollection result = ResultPlugin.evaluateItemAttributes(resultString, "comment");
+			activityEntity.replaceItemValue("txtActivityResult",
+					"<item ignore=\"true\" name=\"comment\" >some data</item>");
+			ItemCollection result = ResultPlugin.evaluateWorkflowRestult(activityEntity, new ItemCollection());
 			Assert.assertNotNull(result);
-			Assert.assertEquals("comment", result.getItemValueString("name"));
-			Assert.assertEquals("true", result.getItemValueString("ignore"));
+			Assert.assertTrue(result.hasItem("comment"));
+			Assert.assertEquals("some data", result.getItemValueString("comment"));
+			Assert.assertEquals("true", result.getItemValueString("comment.ignore"));
 		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
+
+		// test an empty item tag
+		try {
+			activityEntity.replaceItemValue("txtActivityResult", "<item ignore=\"true\" name=\"comment\" />");
+			ItemCollection result = ResultPlugin.evaluateWorkflowRestult(activityEntity, new ItemCollection());
+			Assert.assertNotNull(result);
+			Assert.assertTrue(result.hasItem("comment"));
+			Assert.assertEquals("", result.getItemValueString("comment"));
+			Assert.assertEquals("true", result.getItemValueString("comment.ignore"));
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+	}
+	
+	
+	
+	/**
+	 * testing invalid item tag formats
+	 */
+	@Test
+	public void testevaluateWorkflowRestultInvalidFormat() {
+		ItemCollection activityEntity = new ItemCollection();
+
+		try {
+			// test no name attribute
+			activityEntity.replaceItemValue("txtActivityResult",
+					"<item ignore=\"true\" noname=\"comment\" >some data</item>");
+			ResultPlugin.evaluateWorkflowRestult(activityEntity, new ItemCollection());
+			Assert.fail();
+		} catch (PluginException e) {
+			// ok
+		}
+		
+		try {
+			// test wrong closing tag
+			activityEntity.replaceItemValue("txtActivityResult",
+					"<item ignore=\"true\" name=\"comment\" >some data</xitem>");
+			ResultPlugin.evaluateWorkflowRestult(activityEntity, new ItemCollection());
+			Assert.fail();
+		} catch (PluginException e) {
+			// ok
+		}
+
+		
 	}
 
 	/*
@@ -255,21 +303,34 @@ public class TestResultPlugin {
 	@Ignore
 	@Test
 	public void manualTestRegex() {
-		String yourString = "<item ignore=\"true\" name=\"comment\" />";
-		String spattern = "(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?";
 
-		// alternative
-		// (?:[^<]|<[^!]|<![^-\[]|<!\[(?!CDATA)|<!\[CDATA\[.*?\]\]>|<!--(?:[^-]|-[^-])*-->)
+		// pattern = <(item)(.*?)>(.*?)</item>
+		Pattern pattern = Pattern.compile("<item(.*?)>(.*?)</item>|<item(.*?)./>");
 
-		Pattern pattern = Pattern.compile(spattern);
-		// or if you cant use group numbers use look-behind mechanism like
-		// Pattern.compile("(?<=<a\\shref=\")[^\"]+");
+		String yourString = "<dummy>nix</dummy> " + " <item ignore=\"true\" name=\"item1\" >content2</item> "
+				+ " <item name=\"item2\">content2</item> <item>dummy</item> "
+				+ " <item name=\"empty\" ignore=\"true\" />";
 		Matcher matcher = pattern.matcher(yourString);
 		while (matcher.find()) {
-			System.out.println(matcher.group(1));
-			System.out.println(matcher.group(2));
-
+			System.out.println("Tag Only   : " + matcher.group(0));
+			System.out.println("Attributes : " + matcher.group(1));
+			System.out.println("Content    : " + matcher.group(2));
+			System.out.println("Content2    : " + matcher.group(3));
 		}
+	}
+
+	@Ignore
+	@Test
+	public void manualTestAttributesRegex() {
+		String spattern = "(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?";
+		Pattern attributePattern = Pattern.compile(spattern);
+		Matcher attributeMatcher = attributePattern.matcher(" ignore=\"true\" name=\"comment\"");
+		while (attributeMatcher.find()) {
+			System.out.println(attributeMatcher.group(0));
+			System.out.println(attributeMatcher.group(1));
+			System.out.println(attributeMatcher.group(2));
+		}
+
 	}
 
 }
