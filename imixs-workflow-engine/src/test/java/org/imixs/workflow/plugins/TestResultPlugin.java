@@ -2,16 +2,19 @@ package org.imixs.workflow.plugins;
 
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.script.ScriptException;
-
-import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 /**
  * Test class for ResultPugin
@@ -20,8 +23,7 @@ import org.junit.Test;
  */
 public class TestResultPlugin {
 	ResultPlugin resultPlugin = null;
-	private static Logger logger = Logger.getLogger(TestResultPlugin.class
-			.getName());
+	private static Logger logger = Logger.getLogger(TestResultPlugin.class.getName());
 
 	@Before
 	public void setup() throws PluginException {
@@ -47,8 +49,7 @@ public class TestResultPlugin {
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 		int result = resultPlugin.run(adocumentContext, adocumentActivity);
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
-		Assert.assertEquals("Manfred",
-				adocumentContext.getItemValueString("txtName"));
+		Assert.assertEquals("Manfred", adocumentContext.getItemValueString("txtName"));
 
 		// test with ' instead of "
 		sResult = "<item name='txtName'>Manfred</item>";
@@ -56,8 +57,7 @@ public class TestResultPlugin {
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 		result = resultPlugin.run(adocumentContext, adocumentActivity);
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
-		Assert.assertEquals("Manfred",
-				adocumentContext.getItemValueString("txtName"));
+		Assert.assertEquals("Manfred", adocumentContext.getItemValueString("txtName"));
 
 		// test with ' instead of " and with spaces
 		sResult = "<item name= 'txtName'  >Manfred</item>";
@@ -65,8 +65,7 @@ public class TestResultPlugin {
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 		result = resultPlugin.run(adocumentContext, adocumentActivity);
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
-		Assert.assertEquals("Manfred",
-				adocumentContext.getItemValueString("txtName"));
+		Assert.assertEquals("Manfred", adocumentContext.getItemValueString("txtName"));
 
 	}
 
@@ -105,8 +104,7 @@ public class TestResultPlugin {
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
-		Assert.assertEquals(47,
-				adocumentContext.getItemValueInteger("numValue"));
+		Assert.assertEquals(47, adocumentContext.getItemValueInteger("numValue"));
 
 	}
 
@@ -130,8 +128,7 @@ public class TestResultPlugin {
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
-		Assert.assertEquals("workitemdeleted",
-				adocumentContext.getItemValueString("Type"));
+		Assert.assertEquals("workitemdeleted", adocumentContext.getItemValueString("Type"));
 
 	}
 
@@ -196,30 +193,24 @@ public class TestResultPlugin {
 		sResult += "\n<item name=\"test\">XXX</item>";
 		sResult += "\n<item name=\"txtname\">Sam</item>";
 
-		
 		// expeced txtname= Manfred,Anna,Sam
 		ItemCollection evalItemCollection = new ItemCollection();
 		ResultPlugin.evaluate(sResult, evalItemCollection);
-		
-		
-		Assert.assertTrue(
-				evalItemCollection.hasItem("txtName"));
+
+		Assert.assertTrue(evalItemCollection.hasItem("txtName"));
 
 		List<?> result = evalItemCollection.getItemValue("txtname");
-		
+
 		Assert.assertEquals(3, result.size());
 
 		Assert.assertTrue(result.contains("Manfred"));
 		Assert.assertTrue(result.contains("Sam"));
 		Assert.assertTrue(result.contains("Anna"));
-		
+
 		// test test item
 		Assert.assertEquals("XXX", evalItemCollection.getItemValueString("test"));
 	}
 
-	
-	
-	
 	/**
 	 * Test the itemParser method or activity
 	 ***/
@@ -242,4 +233,43 @@ public class TestResultPlugin {
 			Assert.fail();
 		}
 	}
+
+	@Test
+	public void testevaluateItemAttributes() {
+		String resultString = "<item ignore=\"true\" name=\"comment\" />";
+		;
+		try {
+			ItemCollection result = ResultPlugin.evaluateItemAttributes(resultString, "comment");
+			Assert.assertNotNull(result);
+			Assert.assertEquals("comment", result.getItemValueString("name"));
+			Assert.assertEquals("true", result.getItemValueString("ignore"));
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+	}
+
+	/*
+	 * Just for development
+	 */
+	@Ignore
+	@Test
+	public void manualTestRegex() {
+		String yourString = "<item ignore=\"true\" name=\"comment\" />";
+		String spattern = "(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?";
+
+		// alternative
+		// (?:[^<]|<[^!]|<![^-\[]|<!\[(?!CDATA)|<!\[CDATA\[.*?\]\]>|<!--(?:[^-]|-[^-])*-->)
+
+		Pattern pattern = Pattern.compile(spattern);
+		// or if you cant use group numbers use look-behind mechanism like
+		// Pattern.compile("(?<=<a\\shref=\")[^\"]+");
+		Matcher matcher = pattern.matcher(yourString);
+		while (matcher.find()) {
+			System.out.println(matcher.group(1));
+			System.out.println(matcher.group(2));
+
+		}
+	}
+
 }

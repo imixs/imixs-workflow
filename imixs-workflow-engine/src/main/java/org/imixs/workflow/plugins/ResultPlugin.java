@@ -32,6 +32,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -329,7 +331,7 @@ public class ResultPlugin extends AbstractPlugin {
 				int itemCount = childs.getLength();
 				for (int i = 0; i < itemCount; i++) {
 					Node childNode = childs.item(i);
-					if (childNode instanceof Element && childNode.getFirstChild()!=null) {
+					if (childNode instanceof Element && childNode.getFirstChild() != null) {
 						String name = childNode.getNodeName();
 						String value = childNode.getFirstChild().getNodeValue();
 						result.replaceItemValue(name, value);
@@ -354,4 +356,66 @@ public class ResultPlugin extends AbstractPlugin {
 
 		return result;
 	}
+
+	/**
+	 * This method evaluates the attributes stored in a named item
+	 *
+	 * 
+	 * e.g. <item name="comment" ignore="true" />
+	 * 
+	 * will return a itemCollection with item 'ignore' and value 'true'
+	 * 
+	 * @param field
+	 * @param sResult
+	 * @return
+	 */
+	public static ItemCollection evaluateItemAttributes(String resultString, String itemName) throws PluginException {
+		int iTagStartPos;
+		int iTagEndPos;
+		if (resultString == null)
+			return null;
+
+		// test if a <value> tag exists...
+		while ((iTagStartPos = resultString.toLowerCase().indexOf("<item")) != -1) {
+
+			iTagEndPos = resultString.toLowerCase().indexOf("/>", iTagStartPos);
+			if (iTagEndPos == -1) {
+				iTagEndPos = resultString.toLowerCase().indexOf("</item>", iTagStartPos);
+			}
+			// if no end tag found return string unchanged...
+			if (iTagEndPos == -1)
+				throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_FORMAT, "</item>  expected!");
+
+			
+			ItemCollection itemColAttributes=new ItemCollection();
+			String sItemTag=resultString.substring(iTagStartPos,iTagEndPos);
+			// now we check the attributes in this item tag
+			String spattern ="(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?";
+			// alternative
+			// (?:[^<]|<[^!]|<![^-\[]|<!\[(?!CDATA)|<!\[CDATA\[.*?\]\]>|<!--(?:[^-]|-[^-])*-->)
+			Pattern pattern = Pattern.compile(spattern);
+			Matcher matcher = pattern.matcher(sItemTag);
+			while (matcher.find()) {
+				String name=matcher.group(1);
+				String value=matcher.group(2);
+			    System.out.println(name);
+			    System.out.println(value);
+			    
+			    itemColAttributes.replaceItemValue(name, value);
+			    
+			    
+			    
+			}
+			
+			// did we found the matching item tag?
+			if (itemColAttributes.getItemValueString("name").equals(itemName)) {
+				return itemColAttributes;
+			}
+			
+			
+		}
+
+		return null;
+	}
+
 }
