@@ -108,7 +108,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	@SuppressWarnings("unchecked")
 	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 
-		ItemCollection evalItemCollection = ResultPlugin.evaluate(adocumentActivity, adocumentContext);
+		ItemCollection evalItemCollection = ResultPlugin.evaluateWorkflowResult(adocumentActivity, adocumentContext);
 
 		// 1.) test for items with name subprocess_create and create the
 		// defined suprocesses

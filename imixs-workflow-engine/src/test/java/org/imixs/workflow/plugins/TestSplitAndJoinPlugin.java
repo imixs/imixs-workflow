@@ -65,7 +65,7 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
 	 * Test creation of subprocess
 	 ***/
 	@SuppressWarnings("unchecked")
-	@Test
+	@Test 
 	public void testCreateSubProcess() {
 
 		// create test result.....

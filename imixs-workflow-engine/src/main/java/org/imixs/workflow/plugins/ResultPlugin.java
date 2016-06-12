@@ -89,19 +89,11 @@ public class ResultPlugin extends AbstractPlugin {
 
 	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 		documentContext = adocumentContext;
-
-		// get ResultMessage
-		sActivityResult = adocumentActivity.getItemValueString("txtActivityResult");
-		sActivityResult = replaceDynamicValues(sActivityResult, adocumentContext);
-
 		// evaluate new items....
-		try {
-			evaluate(sActivityResult, adocumentContext);
-		} catch (Exception e) {
-			throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_FORMAT,
-					"ResultPlguin: invalid format : " + sActivityResult + " Error: " + e.getMessage());
-
-		}
+		ItemCollection evalItemCollection = new ItemCollection();
+		evalItemCollection=adocumentContext=evaluateWorkflowResult(adocumentActivity,documentContext);
+		// copy values
+		documentContext.replaceAllItems(evalItemCollection.getAllItems());
 		return Plugin.PLUGIN_OK;
 	}
 
@@ -126,7 +118,8 @@ public class ResultPlugin extends AbstractPlugin {
 	 * @throws PluginException
 	 * 
 	 */
-	public static ItemCollection evaluate(ItemCollection activityEntity, ItemCollection documentContext)
+	@Deprecated
+	private static ItemCollection evaluate(ItemCollection activityEntity, ItemCollection documentContext)
 			throws PluginException {
 
 		String sResult = activityEntity.getItemValueString("txtActivityResult");
@@ -163,7 +156,8 @@ public class ResultPlugin extends AbstractPlugin {
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	public static void evaluate(String aString, ItemCollection documentContext) throws PluginException {
+	@Deprecated
+	private static void evaluate(String aString, ItemCollection documentContext) throws PluginException {
 
 		List<String> mulitValueItemNames = new ArrayList<String>();
 		int iTagStartPos;
@@ -377,11 +371,11 @@ public class ResultPlugin extends AbstractPlugin {
 	 * @return
 	 * @throws PluginException
 	 */
-	public static ItemCollection evaluateWorkflowRestult(ItemCollection activityEntity, ItemCollection documentContext)
+	public static ItemCollection evaluateWorkflowResult(ItemCollection activityEntity,ItemCollection documentContext)
 			throws PluginException {
 
-		boolean invalidPattern=true;
-		
+		boolean invalidPattern = true;
+
 		ItemCollection result = new ItemCollection();
 		String workflowResult = activityEntity.getItemValueString("txtActivityResult");
 		if (workflowResult.isEmpty()) {
@@ -395,7 +389,7 @@ public class ResultPlugin extends AbstractPlugin {
 		Pattern pattern = Pattern.compile("<item(.*?)>(.*?)</item>|<item(.*?)./>");
 		Matcher matcher = pattern.matcher(workflowResult);
 		while (matcher.find()) {
-			invalidPattern=false;
+			invalidPattern = false;
 			// we expect up to 3 different result groups
 
 			// group 0 contains complete item string
@@ -410,7 +404,7 @@ public class ResultPlugin extends AbstractPlugin {
 			if (content == null) {
 				content = "";
 			}
-			
+
 			// now extract the attributes to verify the item name..
 			if (attributes != null && !attributes.isEmpty()) {
 				// parse attributes...
@@ -430,13 +424,35 @@ public class ResultPlugin extends AbstractPlugin {
 							"<item> tag contains no name attribute.");
 				}
 
-				result.replaceItemValue(itemName, content);
+				if (itemName.startsWith("$")) {
+					throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_FORMAT,
+							"<item> tag contains invalid name attribute '" + itemName + "'.");
+				}
+
 				// now add optional attributes if available
 				for (String attrName : attrMap.keySet()) {
 					// we need to skip the 'name' attribute
 					if (!"name".equals(attrName)) {
-						result.replaceItemValue(itemName + "." + attrName, attrMap.get(attrName));
+						result.appendItemValue(itemName + "." + attrName, attrMap.get(attrName));
 					}
+				}
+
+				// test if the type attribute was provided to convert content?
+				String sType = result.getItemValueString(itemName + ".type");
+				if (!sType.isEmpty()) {
+					// convert content type
+					if ("boolean".equalsIgnoreCase(sType)) {
+						result.appendItemValue(itemName, Boolean.valueOf(content));
+					} else if ("integer".equalsIgnoreCase(sType)) {
+						result.appendItemValue(itemName, new Integer(content));
+					} else if ("double".equalsIgnoreCase(sType)) {
+						result.appendItemValue(itemName, new Double(content));
+					} else
+						// no type conversion
+						result.appendItemValue(itemName, content);
+				} else {
+					// no type definition
+					result.appendItemValue(itemName, content);
 				}
 
 			} else {
@@ -446,8 +462,7 @@ public class ResultPlugin extends AbstractPlugin {
 			}
 
 		}
-		
-		
+
 		// test for general invalid format
 		if (invalidPattern) {
 			throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_FORMAT,

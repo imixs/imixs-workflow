@@ -58,15 +58,6 @@ public class TestResultPlugin {
 		result = resultPlugin.run(adocumentContext, adocumentActivity);
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals("Manfred", adocumentContext.getItemValueString("txtName"));
-
-		// test with ' instead of " and with spaces
-		sResult = "<item name= 'txtName'  >Manfred</item>";
-		logger.info("txtActivityResult=" + sResult);
-		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
-		result = resultPlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
-		Assert.assertEquals("Manfred", adocumentContext.getItemValueString("txtName"));
-
 	}
 
 	@Test
@@ -154,7 +145,7 @@ public class TestResultPlugin {
 		int result;
 		try {
 			// exception expected
-			result = resultPlugin.run(adocumentContext, adocumentActivity);
+			result = resultPlugin.run(adocumentContext,adocumentActivity);
 
 			Assert.fail();
 
@@ -163,14 +154,14 @@ public class TestResultPlugin {
 		}
 
 		// wrong format missing "
-		sResult = "<item name=\"txtName >Anna</item>";
+		sResult = "<item name=\"txtName >Anna</itemxxxxx>";
 
 		logger.info("txtActivityResult=" + sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
 		try {
 			// exception expected
-			result = resultPlugin.run(adocumentContext, adocumentActivity);
+			result = resultPlugin.run(adocumentContext,adocumentActivity);
 
 			Assert.fail();
 
@@ -193,9 +184,12 @@ public class TestResultPlugin {
 		sResult += "\n<item name=\"test\">XXX</item>";
 		sResult += "\n<item name=\"txtname\">Sam</item>";
 
+		ItemCollection activityEntity = new ItemCollection();
+			activityEntity.replaceItemValue("txtActivityResult",sResult);
+			
 		// expeced txtname= Manfred,Anna,Sam
 		ItemCollection evalItemCollection = new ItemCollection();
-		ResultPlugin.evaluate(sResult, evalItemCollection);
+		evalItemCollection=ResultPlugin.evaluateWorkflowResult(activityEntity,new ItemCollection());
 
 		Assert.assertTrue(evalItemCollection.hasItem("txtName"));
 
@@ -241,7 +235,7 @@ public class TestResultPlugin {
 		try {
 			activityEntity.replaceItemValue("txtActivityResult",
 					"<item ignore=\"true\" name=\"comment\" >some data</item>");
-			ItemCollection result = ResultPlugin.evaluateWorkflowRestult(activityEntity, new ItemCollection());
+			ItemCollection result = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
 			Assert.assertNotNull(result);
 			Assert.assertTrue(result.hasItem("comment"));
 			Assert.assertEquals("some data", result.getItemValueString("comment"));
@@ -254,7 +248,7 @@ public class TestResultPlugin {
 		// test an empty item tag
 		try {
 			activityEntity.replaceItemValue("txtActivityResult", "<item ignore=\"true\" name=\"comment\" />");
-			ItemCollection result = ResultPlugin.evaluateWorkflowRestult(activityEntity, new ItemCollection());
+			ItemCollection result = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
 			Assert.assertNotNull(result);
 			Assert.assertTrue(result.hasItem("comment"));
 			Assert.assertEquals("", result.getItemValueString("comment"));
@@ -278,7 +272,7 @@ public class TestResultPlugin {
 			// test no name attribute
 			activityEntity.replaceItemValue("txtActivityResult",
 					"<item ignore=\"true\" noname=\"comment\" >some data</item>");
-			ResultPlugin.evaluateWorkflowRestult(activityEntity, new ItemCollection());
+			ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
 			Assert.fail();
 		} catch (PluginException e) {
 			// ok
@@ -288,7 +282,7 @@ public class TestResultPlugin {
 			// test wrong closing tag
 			activityEntity.replaceItemValue("txtActivityResult",
 					"<item ignore=\"true\" name=\"comment\" >some data</xitem>");
-			ResultPlugin.evaluateWorkflowRestult(activityEntity, new ItemCollection());
+			ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
 			Assert.fail();
 		} catch (PluginException e) {
 			// ok
