@@ -93,7 +93,9 @@ public class ResultPlugin extends AbstractPlugin {
 		ItemCollection evalItemCollection = new ItemCollection();
 		evalItemCollection=adocumentContext=evaluateWorkflowResult(adocumentActivity,documentContext);
 		// copy values
-		documentContext.replaceAllItems(evalItemCollection.getAllItems());
+		if (evalItemCollection!=null) {
+			documentContext.replaceAllItems(evalItemCollection.getAllItems());
+		}
 		return Plugin.PLUGIN_OK;
 	}
 
