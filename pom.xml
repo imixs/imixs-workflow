@@ -4,7 +4,7 @@
 	<artifactId>imixs-workflow</artifactId>
 	<name>Imixs Workflow</name>
 	<packaging>pom</packaging>
-	<version>3.7.0</version>
+	<version>3.7.1-SNAPSHOT</version>
 
 	<modules>
 		<module>imixs-workflow-core</module>
