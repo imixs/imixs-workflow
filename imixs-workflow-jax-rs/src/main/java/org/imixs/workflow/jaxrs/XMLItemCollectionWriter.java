@@ -71,7 +71,7 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollect
 				entityStream));
 		
 		
-		
+		 
 		bw.write("<html>");
 		printHead(bw);
 		bw.write("<body>");

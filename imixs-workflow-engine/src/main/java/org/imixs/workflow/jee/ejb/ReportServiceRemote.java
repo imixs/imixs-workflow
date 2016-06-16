@@ -1,6 +1,7 @@
 package org.imixs.workflow.jee.ejb;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.Remote;
 
@@ -21,15 +22,12 @@ public interface ReportServiceRemote {
 	public abstract ItemCollection getReport(String aReportName);
 
 	/**
-	 * This method returns a collection of reports (ItemCollection). The method
-	 * should return a subset of a collection if the start and count parameters
-	 * differ form the value -1.
+	 * This method returns a all reports (ItemCollection) sorted by name.
 	 * 
 	 * The method returns only ItemCollections the call has sufficient read
 	 * access for.
 	 */
-	public abstract List<ItemCollection> getReportList(int startpos,
-			int count);
+	public abstract List<ItemCollection> getReportList();
 
 	/**
 	 * updates a Entity Report Object. The Entity representing a report must
@@ -47,19 +45,17 @@ public interface ReportServiceRemote {
 	 * @throws AccessDeniedException
 	 * 
 	 */
-	public abstract void updateReport(ItemCollection aReport)
-			throws AccessDeniedException;
+	public abstract void updateReport(ItemCollection aReport) throws AccessDeniedException;
 
 	/**
-	 * Process a QueryEntity Object identified by the attribute txtname. All
-	 * informations about the Query are stored in the QueryObject these
-	 * attributes are: txtQuery, numMaxCount, numStartPost, txtName
+	 * This method executes the JQPL statement of a Report Entity.
 	 * 
 	 * 
-	 * @param aID
-	 * @return
-	 * @throws Exception
+	 * @param reportName
+	 *            - name of the report to be executed
+	 * @return result set
 	 */
-	public abstract List<ItemCollection> processReport(String aReportName);
+	public abstract List<ItemCollection> executeReport(String aReportName, int istartPos, int imaxcount,
+			Map<String, String> params, List<String> itemList);
 
 }

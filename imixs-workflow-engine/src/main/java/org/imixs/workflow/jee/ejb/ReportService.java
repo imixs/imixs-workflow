@@ -27,10 +27,21 @@
 
 package org.imixs.workflow.jee.ejb;
 
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
@@ -40,6 +51,8 @@ import javax.ejb.Stateless;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.plugins.AbstractPlugin;
+import org.imixs.workflow.util.XMLParser;
 
 /**
  * The ReportService supports methods to create, process and find report
@@ -58,19 +71,17 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
  * 
  */
 
-@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS",
-		"org.imixs.ACCESSLEVEL.READERACCESS",
-		"org.imixs.ACCESSLEVEL.AUTHORACCESS",
-		"org.imixs.ACCESSLEVEL.EDITORACCESS",
+@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
-@RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS",
-		"org.imixs.ACCESSLEVEL.READERACCESS",
-		"org.imixs.ACCESSLEVEL.AUTHORACCESS",
-		"org.imixs.ACCESSLEVEL.EDITORACCESS",
+@RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @LocalBean
 public class ReportService implements ReportServiceRemote {
+
+	private static Logger logger = Logger.getLogger(ReportService.class.getName());
 
 	@EJB
 	EntityService entityService;
@@ -90,20 +101,21 @@ public class ReportService implements ReportServiceRemote {
 	}
 
 	/**
-	 * This method returns a collection of reports (ItemCollection). The method
-	 * should return a subset of a collection if the start and count parameters
-	 * differ form the value -1.
+	 * This method returns a all reports (ItemCollection) sorted by name.
 	 * 
 	 * The method returns only ItemCollections the call has sufficient read
 	 * access for.
 	 */
-	public List<ItemCollection> getReportList(int startpos, int count) {
+	public List<ItemCollection> getReportList() {
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + "WHERE wi.type = 'ReportEntity'";
+		sQuery += " wi FROM Entity as wi "
+				+ " JOIN wi.textItems t "
+				+ " WHERE wi.type = 'ReportEntity' "
+				+ " AND t.itemName='txtname' "
+				+ " ORDER BY t.itemValue ASC";
 
-		List<ItemCollection> col = entityService.findAllEntities(sQuery,
-				startpos, count);
+		List<ItemCollection> col = entityService.findAllEntities(sQuery, 0, -1);
 
 		return col;
 	}
@@ -124,8 +136,7 @@ public class ReportService implements ReportServiceRemote {
 	 * @throws AccessDeniedException
 	 * 
 	 */
-	public void updateReport(ItemCollection aReport)
-			throws  AccessDeniedException {
+	public void updateReport(ItemCollection aReport) throws AccessDeniedException {
 
 		aReport.replaceItemValue("type", "ReportEntity");
 
@@ -146,27 +157,260 @@ public class ReportService implements ReportServiceRemote {
 	}
 
 	/**
-	 * Process a QueryEntity Object identified by the attribute txtname. All
-	 * informations about the Query are stored in the QueryObject these
-	 * attributes are: txtQuery, numMaxCount, numStartPost, txtName
+	 * This method executes the JQPL statement of a Report Entity. The values of
+	 * the returned entities will be cloned and formated in case a itemList is
+	 * provided.
+	 * 
+	 * issue #144
+	 * 
+	 * The method parses the attribute name for a formating expression to format
+	 * the item value. E.g.:
 	 * 
 	 * 
-	 * @param aID
-	 * @return
-	 * @throws Exception
+	 * datDate<format locale="de" label="Date">yy-dd-mm</format>
+	 * 
+	 * 
+	 * 
+	 * @param reportName
+	 *            - name of the report to be executed
+	 * 
+	 * @param startPos
+	 *            - optional start position to query entities
+	 * @param maxcount
+	 *            - optional max count of entities to query
+	 * @param params
+	 *            - optional parameter list to be mapped to the JQPL statement
+	 * @param itemList
+	 *            - optional attribute list of items to be returned
+	 * @return collection of entities
+	 * 
 	 */
-	public List<ItemCollection> processReport(String aReportName) {
-		// Load Query Object
-		ItemCollection itemCol = findReport(aReportName);
-		String sQuery = itemCol.getItemValueString("txtQuery");
-		int istartPos = itemCol.getItemValueInteger("numStartPos");
-		int imaxcount = itemCol.getItemValueInteger("numMaxCount");
-		if (imaxcount == 0)
-			imaxcount = -1;
+	@SuppressWarnings("unchecked")
+	public List<ItemCollection> executeReport(String reportName, int startPos, int maxcount, Map<String, String> params,
+			List<String> itemList) {
 
-		List<ItemCollection> col = entityService.findAllEntities(sQuery,
-				istartPos, imaxcount);
-		return col;
+		long l = System.currentTimeMillis();
+		logger.fine("executeReport: " + reportName);
+
+		// Load Query Object
+		ItemCollection reportEntity = findReport(reportName);
+		String query = reportEntity.getItemValueString("txtQuery");
+		if (maxcount == 0)
+			maxcount = -1;
+
+		// replace params in query statement
+		if (params != null) {
+			Set<String> keys = params.keySet();
+			Iterator<String> iter = keys.iterator();
+			while (iter.hasNext()) {
+				// read key
+				String sKeyName = iter.next().toString();
+				// test if key is contained in query
+				if (query.indexOf("?" + sKeyName) > -1) {
+					String sParamValue = params.get(sKeyName);
+					query = query.replace("?" + sKeyName, sParamValue);
+					logger.fine("executeReport set param " + sKeyName + "=" + sParamValue);
+				}
+			}
+		}
+
+		// now we replace dynamic Date values
+		query = replaceDateString(query);
+
+		// execute query
+		logger.fine("executeReport jpql=" + query);
+		List<ItemCollection> result = entityService.findAllEntities(query, startPos, maxcount);
+
+		// test if a itemList is provided or defined in the reportEntity...
+		if (itemList == null) {
+			// get list from report definition
+			itemList = (List<String>) reportEntity.getItemValue("txtAttributeList");
+		}
+
+		// if we have a itemList we clone each entity of the result set
+		if (itemList != null && itemList.size() > 0) {
+			List<ItemCollection> clonedResult = new ArrayList<ItemCollection>();
+
+			// first we build a formating map.....
+			Map<String, String> formatMap = new HashMap<String, String>();
+			for (String field : itemList) {
+				List<String> formatList = XMLParser.findTags(field, "format");
+				if (formatList != null && formatList.size() > 0) {
+					String fieldName = field.substring(0, field.indexOf("<"));
+					List<String> xmlValues = XMLParser.findTagValues(field, "format");
+					if (xmlValues.size() > 0) {
+						formatMap.put(fieldName, xmlValues.get(0));
+					}
+				} else {
+					if (field.indexOf("<") > -1) {
+						field = field.substring(0, field.indexOf("<"));
+					}
+					formatMap.put(field, "");
+				}
+			}
+
+			// next we build a converter map.....
+			Map<String, String> converterMap = new HashMap<String, String>();
+			for (String field : itemList) {
+				List<String> formatList = XMLParser.findTags(field, "convert");
+				if (formatList != null && formatList.size() > 0) {
+					String fieldName = field.substring(0, field.indexOf("<"));
+					List<String> xmlValues = XMLParser.findTagValues(field, "convert");
+					if (xmlValues.size() > 0) {
+						converterMap.put(fieldName, xmlValues.get(0));
+					}
+				}
+			}
+
+			// next we iterate over all entities from the result set and clone
+			// each entity with the given itemList
+			for (ItemCollection entity : result) {
+				ItemCollection clone = new ItemCollection();
+				Set<String> fieldNames = formatMap.keySet();
+				for (String field : fieldNames) {
+
+					// first look for converter
+					String converter = converterMap.get(field);
+					// did we have a format definition?
+					if (converter != null) {
+						entity = convertItemValue(entity, field, converter);
+					}
+
+					String format = formatMap.get(field);
+					// did we have a format definition?
+					if (!format.isEmpty()) {
+						String sLocale = XMLParser.findAttribute(format, "locale");
+						// create string array of formated values
+						ArrayList<String> vValues = new ArrayList<String>();
+						List<?> rawValues = entity.getItemValue(field);
+						for (Object rawValue : rawValues) {
+							vValues.add(formatObjectValue(rawValue, format, sLocale));
+						}
+						clone.replaceItemValue(field, vValues);
+
+					} else {
+						// not format definition - clone value as is
+						clone.replaceItemValue(field, entity.getItemValue(field));
+					}
+				}
+				clonedResult.add(clone);
+			}
+			logger.fine("executed report '" + reportName + "' in " + (System.currentTimeMillis() - l) + "ms");
+			return clonedResult;
+		} else {
+			logger.fine("executed report '" + reportName + "' in " + (System.currentTimeMillis() - l) + "ms");
+			return result;
+		}
+	}
+
+	/**
+	 * This method parses a <date /> xml tag and computes a dynamic date by
+	 * parsing the attributes:
+	 * 
+	 * DAY_OF_MONTH
+	 * 
+	 * DAY_OF_YEAR
+	 * 
+	 * MONTH
+	 * 
+	 * YEAR
+	 * 
+	 * ADD (FIELD,OFFSET)
+	 * 
+	 * e.g. <date DAY_OF_MONTH="1" MONTH="2" />
+	 * 
+	 * results in 1. February of the current year
+	 * 
+	 * 
+	 *
+	 * <date DAY_OF_MONTH="ACTUAL_MAXIMUM" MONTH="12" ADD="MONTH,-1" />
+	 * 
+	 * results in 30.November of current year
+	 * 
+	 * @param xmlDate
+	 * @return
+	 */
+	public static Calendar computeDynamicDate(String xmlDate) {
+		Calendar cal = Calendar.getInstance();
+
+		Map<String, String> attributes = XMLParser.findAttributes(xmlDate);
+
+		// test MONTH
+		if (attributes.containsKey("MONTH")) {
+			String value = attributes.get("MONTH");
+			if ("ACTUAL_MAXIMUM".equalsIgnoreCase(value)) {
+				// last month of year
+				cal.set(Calendar.MONTH, cal.getActualMaximum(Calendar.MONTH));
+			} else {
+				cal.set(Calendar.MONTH, Integer.parseInt(value) - 1);
+			}
+		}
+
+		// test YEAR
+		if (attributes.containsKey("YEAR")) {
+			String value = attributes.get("YEAR");
+			cal.set(Calendar.YEAR, Integer.parseInt(value));
+
+		}
+
+		// test DAY_OF_MONTH
+		if (attributes.containsKey("DAY_OF_MONTH")) {
+			String value = attributes.get("DAY_OF_MONTH");
+			if ("ACTUAL_MAXIMUM".equalsIgnoreCase(value)) {
+				// last day of month
+				cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+			} else {
+				cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(value));
+			}
+		}
+
+		// test DAY_OF_YEAR
+		if (attributes.containsKey("DAY_OF_YEAR")) {
+			cal.set(Calendar.DAY_OF_YEAR, Integer.parseInt(attributes.get("DAY_OF_YEAR")));
+		}
+
+		// test ADD
+		if (attributes.containsKey("ADD")) {
+			String value = attributes.get("ADD");
+			String[] fieldOffset = value.split(",");
+
+			String field = fieldOffset[0];
+			int offset = Integer.parseInt(fieldOffset[1]);
+
+			if ("MONTH".equalsIgnoreCase(field)) {
+				cal.add(Calendar.MONTH, offset);
+			} else if ("DAY_OF_MONTH".equalsIgnoreCase(field)) {
+				cal.add(Calendar.DAY_OF_MONTH, offset);
+			} else if ("DAY_OF_YEAR".equalsIgnoreCase(field)) {
+				cal.add(Calendar.DAY_OF_YEAR, offset);
+			}
+
+		}
+
+		return cal;
+
+	}
+
+	/**
+	 * This method replaces all occurrences of <date> tags with the
+	 * corresponding dynamic date. See computeDynamicdate.
+	 * 
+	 * @param content
+	 * @return
+	 */
+	public static String replaceDateString(String content) {
+
+		List<String> dates = XMLParser.findTags(content, "date");
+		for (String dateString : dates) {
+			Calendar cal = computeDynamicDate(dateString);
+			// convert into ISO format
+			DateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+			// f.setTimeZone(tz);
+			String dateValue = f.format(cal.getTime());
+			content = content.replace(dateString, dateValue);
+		}
+
+		return content;
 	}
 
 	/**
@@ -178,13 +422,10 @@ public class ReportService implements ReportServiceRemote {
 	private ItemCollection findReport(String aid) {
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + "JOIN wi.textItems as i "
-				+ "WHERE (wi.id='" + aid + "') OR "
-				+ "(i.itemName = 'txtname' " + "AND i.itemValue = '" + aid
-				+ "') " + " AND wi.type = 'ReportEntity'";
+		sQuery += " wi FROM Entity as wi " + "JOIN wi.textItems as i " + "WHERE (wi.id='" + aid + "') OR "
+				+ "(i.itemName = 'txtname' " + "AND i.itemValue = '" + aid + "') " + " AND wi.type = 'ReportEntity'";
 
-		Collection<ItemCollection> col = entityService.findAllEntities(sQuery,
-				0, 1);
+		Collection<ItemCollection> col = entityService.findAllEntities(sQuery, 0, 1);
 		if (col.size() > 0)
 			return col.iterator().next();
 		else
@@ -198,8 +439,8 @@ public class ReportService implements ReportServiceRemote {
 	 * @param aworkitem
 	 * 
 	 */
-	private ItemCollection updateReport(ItemCollection newReport,
-			ItemCollection oldReport)  {
+	@SuppressWarnings("rawtypes")
+	private ItemCollection updateReport(ItemCollection newReport, ItemCollection oldReport) {
 		Iterator iter = newReport.getAllItems().entrySet().iterator();
 		while (iter.hasNext()) {
 			Map.Entry mapEntry = (Map.Entry) iter.next();
@@ -233,5 +474,162 @@ public class ReportService implements ReportServiceRemote {
 
 		return true;
 
+	}
+
+	/**
+	 * This helper method test the type of an object and formats the objects
+	 * value.
+	 * 
+	 * If the object if from type Date or Calendar it will be formated unsing
+	 * the Java SimpleDateFormat.
+	 * 
+	 * If the object is String, Integer or Double the method tries to format the
+	 * value into a number
+	 * 
+	 *
+	 * 
+	 * @param o
+	 * @return
+	 */
+	private String formatObjectValue(Object o, String format, String locale) {
+		String singleValue = "";
+		Date dateValue = null;
+
+		// now test the objct type to date
+		if (o instanceof Date) {
+			dateValue = (Date) o;
+		}
+
+		if (o instanceof Calendar) {
+			Calendar cal = (Calendar) o;
+			dateValue = cal.getTime();
+		}
+
+		// format date string?
+		if (dateValue != null) {
+			if (format != null && !"".equals(format)) {
+				// format date with provided formater
+				try {
+					SimpleDateFormat formatter = null;
+					if (locale != null && !locale.isEmpty()) {
+						formatter = new SimpleDateFormat(format, getLocaleFromString(locale));
+					} else {
+						formatter = new SimpleDateFormat(format);
+					}
+					singleValue = formatter.format(dateValue);
+				} catch (Exception ef) {
+					Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
+					logger.warning("ReportService: Invalid format String '" + format + "'");
+					logger.warning("ReportService: Can not format value - error: " + ef.getMessage());
+					return "" + dateValue;
+				}
+			} else {
+				// use standard formate short/short
+				singleValue = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(dateValue);
+			}
+
+		} else {
+			// test if number formater is provided....
+			if (format.contains("#")) {
+				try {
+					double d = Double.parseDouble(o.toString());
+					DecimalFormat numberFormatter = new DecimalFormat(format);
+					singleValue = numberFormatter.format(d);
+				} catch (NumberFormatException e) {
+					singleValue = "0";
+				}
+
+			} else {
+				// return object as string
+				singleValue = o.toString();
+			}
+		}
+
+		return singleValue;
+
+	}
+
+	/**
+	 * This method converts a single item value into a specified type. If the
+	 * converter is not adaptable a default value will be set.
+	 *
+	 * 
+	 * @param o
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private ItemCollection convertItemValue(ItemCollection itemcol, String itemName, String converter) {
+
+		if (converter == null || converter.isEmpty()) {
+			return itemcol;
+		}
+
+		List values = itemcol.getItemValue(itemName);
+		// if vector is empty we add a dummy null value here!
+		if (values.size() == 0) {
+			values.add(null);
+		}
+
+		for (int i = 0; i < values.size(); i++) {
+			Object o = values.get(i);
+
+			if (converter.equalsIgnoreCase("double") || converter.equalsIgnoreCase("xs:decimal")) {
+				try {
+					double d = 0;
+					if (o != null) {
+						d = Double.parseDouble(o.toString());
+					}
+					values.set(i, d);
+				} catch (NumberFormatException e) {
+					values.set(i, new Double(0));
+				}
+			}
+
+			if (converter.equalsIgnoreCase("integer") || converter.equalsIgnoreCase("xs:int")) {
+				try {
+					int d = 0;
+					if (o != null) {
+						i = Integer.parseInt(o.toString());
+					}
+					values.set(i, d);
+				} catch (NumberFormatException e) {
+					values.set(i, new Integer(0));
+				}
+			}
+
+		}
+		itemcol.replaceItemValue(itemName, values);
+
+		return itemcol;
+
+	}
+
+	/**
+	 * generates a Locale Object form a String
+	 * 
+	 * @param sLocale
+	 * @return
+	 */
+	private Locale getLocaleFromString(String sLocale) {
+		Locale locale = null;
+
+		// genreate locale?
+		if (sLocale != null && !sLocale.isEmpty()) {
+			// split locale
+			StringTokenizer stLocale = new StringTokenizer(sLocale, "_");
+			if (stLocale.countTokens() == 1) {
+				// only language variant
+				String sLang = stLocale.nextToken();
+				String sCount = sLang.toUpperCase();
+				locale = new Locale(sLang, sCount);
+			} else {
+				// language and country
+				String sLang = stLocale.nextToken();
+				String sCount = stLocale.nextToken();
+				locale = new Locale(sLang, sCount);
+			}
+		}
+
+		return locale;
 	}
 }

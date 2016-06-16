@@ -34,8 +34,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -103,8 +105,7 @@ public class ReportRestService {
 	@javax.ws.rs.core.Context
 	private static HttpServletRequest servletRequest;
 
-	private static Logger logger = Logger.getLogger(ReportRestService.class
-			.getName());
+	private static Logger logger = Logger.getLogger(ReportRestService.class.getName());
 
 	@GET
 	@Produces("text/html")
@@ -112,15 +113,14 @@ public class ReportRestService {
 	public StreamingOutput getHelpHTML() {
 
 		return new StreamingOutput() {
-			public void write(OutputStream out) throws IOException,
-					WebApplicationException {
+			public void write(OutputStream out) throws IOException, WebApplicationException {
 
 				out.write("<html><head>".getBytes());
 				out.write("<style>".getBytes());
-				out.write("table {padding:0px;width: 100%;margin-left: -2px;margin-right: -2px;}"
-						.getBytes());
-				out.write("body,td,select,input,li {font-family: Verdana, Helvetica, Arial, sans-serif;font-size: 13px;}"
-						.getBytes());
+				out.write("table {padding:0px;width: 100%;margin-left: -2px;margin-right: -2px;}".getBytes());
+				out.write(
+						"body,td,select,input,li {font-family: Verdana, Helvetica, Arial, sans-serif;font-size: 13px;}"
+								.getBytes());
 				out.write("table th {color: white;background-color: #bbb;text-align: left;font-weight: bold;}"
 						.getBytes());
 
@@ -135,10 +135,12 @@ public class ReportRestService {
 
 				// body
 				out.write("<h1>Imixs Workflow REST Service</h1>".getBytes());
-				out.write("<p>Read the Imixs REST Service <a href=\"http://doc.imixs.org/xml/restservice.html\">Online Help</a> for a detailed description of this Service.</p>"
-						.getBytes());
-				out.write("<p>See the <a href=\"http://www.imixs.org\">Imixs Workflow Project Site</a> for general informations.</p>"
-						.getBytes());
+				out.write(
+						"<p>Read the Imixs REST Service <a href=\"http://doc.imixs.org/xml/restservice.html\">Online Help</a> for a detailed description of this Service.</p>"
+								.getBytes());
+				out.write(
+						"<p>See the <a href=\"http://www.imixs.org\">Imixs Workflow Project Site</a> for general informations.</p>"
+								.getBytes());
 
 				// end
 				out.write("</body></html>".getBytes());
@@ -149,19 +151,11 @@ public class ReportRestService {
 
 	@GET
 	@Path("/reports")
-	public EntityCollection getAllReports(
-			@DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("10") @QueryParam("count") int count) {
+	public EntityCollection getAllReports() {
 		try {
 			Collection<ItemCollection> col = null;
-			try {
-				col = reportService.getReportList(start, count);
-				return XMLItemCollectionAdapter.putCollection(col);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return new EntityCollection();
-
+			col = reportService.getReportList();
+			return XMLItemCollectionAdapter.putCollection(col);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -202,31 +196,20 @@ public class ReportRestService {
 	 * @return a collection of entiteis
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
 	@GET
 	@Path("/{name}.ixr")
-	public Response getExcecuteReport(@PathParam("name") String name,
-			@DefaultValue("0") @QueryParam("start") int start,
+	public Response getExcecuteReport(@PathParam("name") String name, @DefaultValue("0") @QueryParam("start") int start,
 			@DefaultValue("10") @QueryParam("count") int count,
-			@DefaultValue("") @QueryParam("encoding") String encoding,
-			@Context UriInfo uriInfo) {
+			@DefaultValue("") @QueryParam("encoding") String encoding, @Context UriInfo uriInfo) {
 		Collection<ItemCollection> col = null;
 		String reportName = null;
-		String sEQL;
 		String sXSL;
 		String sContentType;
 
 		try {
-
 			reportName = name + ".ixr";
-
 			ItemCollection itemCol = reportService.getReport(reportName);
-			List<String> vAttributList = (List<String>) itemCol
-					.getItemValue("txtAttributeList");
 
-			// get Query and output format
-			sEQL = itemCol.getItemValueString("txtquery");
-			sEQL = computeEQLParams(sEQL, uriInfo);
 			sXSL = itemCol.getItemValueString("txtXSL").trim();
 			sContentType = itemCol.getItemValueString("txtcontenttype");
 			if ("".equals(sContentType))
@@ -241,25 +224,23 @@ public class ReportRestService {
 			if ("".equals(encoding))
 				encoding = "UTF-8";
 
-			// query result
-			col = entityService.findAllEntities(sEQL, start, count);
+			// execute report
+			Map<String, String> params = getQueryParams(uriInfo);
+			col = reportService.executeReport(reportName, start, count, params, null);
 
 			// if no XSL is provided return standard html format...?
 			if ("".equals(sXSL)) {
-				Response.ResponseBuilder builder = Response.ok(
-						XMLItemCollectionAdapter.putCollection(col,
-								vAttributList), "text/html");
+				Response.ResponseBuilder builder = Response.ok(XMLItemCollectionAdapter.putCollection(col),
+						"text/html");
 				return builder.build();
 			}
 
 			// Transform XML per XSL and generate output
-			EntityCollection xmlCol = XMLItemCollectionAdapter.putCollection(
-					col, vAttributList);
+			EntityCollection xmlCol = XMLItemCollectionAdapter.putCollection(col);
 
 			StringWriter writer = new StringWriter();
 
-			JAXBContext context = JAXBContext
-					.newInstance(EntityCollection.class);
+			JAXBContext context = JAXBContext.newInstance(EntityCollection.class);
 
 			Marshaller m = context.createMarshaller();
 			m.setProperty("jaxb.encoding", encoding);
@@ -270,11 +251,9 @@ public class ReportRestService {
 			try {
 				// test if FOP Tranformation
 				if ("application/pdf".equals(sContentType.toLowerCase()))
-					ReportRestService.fopTranformation(writer.toString(), sXSL,
-							encoding, outputStream);
+					ReportRestService.fopTranformation(writer.toString(), sXSL, encoding, outputStream);
 				else
-					ReportRestService.xslTranformation(writer.toString(), sXSL,
-							encoding, outputStream);
+					ReportRestService.xslTranformation(writer.toString(), sXSL, encoding, outputStream);
 			} finally {
 				outputStream.close();
 			}
@@ -292,8 +271,7 @@ public class ReportRestService {
 			 * issue
 			 */
 
-			Response.ResponseBuilder builder = Response.ok(
-					outputStream.toByteArray(), sContentType);
+			Response.ResponseBuilder builder = Response.ok(outputStream.toByteArray(), sContentType);
 			// Response.ResponseBuilder builder = Response.ok(
 			// outputStream.toString(encoding), sContentType);
 			return builder.build();
@@ -314,11 +292,9 @@ public class ReportRestService {
 	 */
 	@GET
 	@Path("/{name}.pdf")
-	public Response getPdfReport(@PathParam("name") String name,
-			@DefaultValue("0") @QueryParam("start") int start,
+	public Response getPdfReport(@PathParam("name") String name, @DefaultValue("0") @QueryParam("start") int start,
 			@DefaultValue("10") @QueryParam("count") int count,
-			@DefaultValue("") @QueryParam("encoding") String encoding,
-			@Context UriInfo uriInfo) {
+			@DefaultValue("") @QueryParam("encoding") String encoding, @Context UriInfo uriInfo) {
 		return this.getExcecuteReport(name, start, count, encoding, uriInfo);
 	}
 
@@ -336,26 +312,29 @@ public class ReportRestService {
 	@Produces(MediaType.TEXT_HTML)
 	@Path("/{name}.html")
 	public EntityTable getExcecuteReportHTML(@PathParam("name") String name,
-			@DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("10") @QueryParam("count") int count,
-			@DefaultValue("") @QueryParam("encoding") String encoding,
-			@QueryParam("items") String items, @Context UriInfo uriInfo,
-			@Context HttpServletResponse servlerResponse) {
+			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
+			@DefaultValue("") @QueryParam("encoding") String encoding, @QueryParam("items") String items,
+			@Context UriInfo uriInfo, @Context HttpServletResponse servlerResponse) {
 		Collection<ItemCollection> col = null;
 		String reportName = null;
 
 		try {
 			reportName = name + ".ixr";
 			ItemCollection itemCol = reportService.getReport(reportName);
-			String sEQL = itemCol.getItemValueString("txtquery");
-			sEQL = computeEQLParams(sEQL, uriInfo);
 
-			List<String> vAttributList = (List<String>) itemCol
-					.getItemValue("txtAttributeList");
-			col = entityService.findAllEntities(sEQL, start, count);
+			List<String> vAttributList = null;
+			// test query item param
+			vAttributList = getItemList(items);
+			if (vAttributList == null) {
+				// get list from report definition
+				vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
+			}
 
-			EntityCollection entityCol = XMLItemCollectionAdapter
-					.putCollection(col);
+			// execute report
+			Map<String, String> params = getQueryParams(uriInfo);
+			col = reportService.executeReport(reportName, start, count, params, vAttributList);
+
+			EntityCollection entityCol = XMLItemCollectionAdapter.putCollection(col);
 			EntityTable entityTable = new EntityTable();
 			entityTable.setAttributeList(vAttributList);
 			entityTable.setEntity(entityCol.getEntity());
@@ -364,9 +343,8 @@ public class ReportRestService {
 			if (encoding == null || encoding.isEmpty()) {
 				encoding = "UTF-8";
 			}
-			logger.fine("[ReportRestService] set encoding :" + encoding);
-			servlerResponse.setContentType(MediaType.TEXT_HTML + "; charset="
-					+ encoding);
+			logger.fine("set encoding :" + encoding);
+			servlerResponse.setContentType(MediaType.TEXT_HTML + "; charset=" + encoding);
 
 			return entityTable;
 		} catch (Exception e) {
@@ -391,48 +369,31 @@ public class ReportRestService {
 	 * @return
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
 	// @Produces("application/xml")
 	@Path("/{name}.xml")
-	public EntityCollection getExcecuteReportXML(
-			@PathParam("name") String name,
-			@DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("10") @QueryParam("count") int count,
-			@DefaultValue("") @QueryParam("encoding") String encoding,
-			@QueryParam("items") String items, @Context UriInfo uriInfo,
-			@Context HttpServletResponse servlerResponse) throws Exception {
+	public EntityCollection getExcecuteReportXML(@PathParam("name") String name,
+			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
+			@DefaultValue("") @QueryParam("encoding") String encoding, @QueryParam("items") String items,
+			@Context UriInfo uriInfo, @Context HttpServletResponse servlerResponse) throws Exception {
 		String reportName = null;
 		Collection<ItemCollection> col = null;
 
 		try {
-
 			reportName = name + ".ixr";
-
-			ItemCollection itemCol = reportService.getReport(reportName);
-
-			List<String> vAttributList = null;
-			// test query item param
-			vAttributList = getItemList(items);
-			if (vAttributList == null) {
-				// get list from report definition
-				vAttributList = (List<String>) itemCol.getItemValue("txtAttributeList");
-			}
-
-			String sEQL = itemCol.getItemValueString("txtquery");
-			sEQL = computeEQLParams(sEQL, uriInfo);
-			col = entityService.findAllEntities(sEQL, start, count);
+			// execute report
+			Map<String, String> params = getQueryParams(uriInfo);
+			col = reportService.executeReport(reportName, start, count, params, getItemList(items));
 
 			// set content type and character encoding
 			if (encoding == null || encoding.isEmpty()) {
 				encoding = "UTF-8";
 			}
-			logger.fine("[ReportRestService] set encoding :" + encoding);
-			servlerResponse.setContentType(MediaType.APPLICATION_XML + "; charset="
-					+ encoding);
+			logger.fine("set encoding :" + encoding);
+			servlerResponse.setContentType(MediaType.APPLICATION_XML + "; charset=" + encoding);
 
-			return XMLItemCollectionAdapter.putCollection(col, vAttributList);
+			return XMLItemCollectionAdapter.putCollection(col);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -455,27 +416,21 @@ public class ReportRestService {
 	 * @throws Exception
 	 */
 	@GET
-	// @Produces("application/json")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{name}.json")
-	public EntityCollection getExcecuteReportJSON(
-			@PathParam("name") String name,
-			@DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("10") @QueryParam("count") int count,
-			@DefaultValue("") @QueryParam("encoding") String encoding,
-			@QueryParam("items") String items, @Context UriInfo uriInfo,
-			@Context HttpServletResponse servlerResponse) throws Exception {
+	public EntityCollection getExcecuteReportJSON(@PathParam("name") String name,
+			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
+			@DefaultValue("") @QueryParam("encoding") String encoding, @QueryParam("items") String items,
+			@Context UriInfo uriInfo, @Context HttpServletResponse servlerResponse) throws Exception {
 
-		EntityCollection result = getExcecuteReportXML(name, start, count,
-				encoding, items, uriInfo, servlerResponse);
+		EntityCollection result = getExcecuteReportXML(name, start, count, encoding, items, uriInfo, servlerResponse);
 
 		// set content type and character encoding
 		if (encoding == null || encoding.isEmpty()) {
 			encoding = "UTF-8";
 		}
-		logger.fine("[ReportRestService] set encoding :" + encoding);
-		servlerResponse.setContentType(MediaType.APPLICATION_JSON + "; charset="
-				+ encoding);
+		logger.fine("set encoding :" + encoding);
+		servlerResponse.setContentType(MediaType.APPLICATION_JSON + "; charset=" + encoding);
 
 		return result;
 
@@ -512,8 +467,7 @@ public class ReportRestService {
 	public void putReport(XMLItemCollection reportCol) {
 		ItemCollection itemCollection;
 		try {
-			itemCollection = XMLItemCollectionAdapter
-					.getItemCollection(reportCol);
+			itemCollection = XMLItemCollectionAdapter.getItemCollection(reportCol);
 			reportService.updateReport(itemCollection);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -539,14 +493,14 @@ public class ReportRestService {
 	 * @return
 	 */
 
-	public static void xslTranformation(String xmlSource, String xslSource,
-			String aEncoding, OutputStream output) throws Exception {
+	public static void xslTranformation(String xmlSource, String xslSource, String aEncoding, OutputStream output)
+			throws Exception {
 		try {
 			TransformerFactory transFact = TransformerFactory.newInstance();
 
+			logger.fine("xslTransformation: encoding=" + aEncoding);
 			// generate XML InputStream Reader with encoding
-			ByteArrayInputStream baisXML = new ByteArrayInputStream(
-					xmlSource.getBytes());
+			ByteArrayInputStream baisXML = new ByteArrayInputStream(xmlSource.getBytes());
 			InputStreamReader isreaderXML;
 
 			isreaderXML = new InputStreamReader(baisXML, aEncoding);
@@ -554,10 +508,8 @@ public class ReportRestService {
 			Source xmlSrc = new StreamSource(isreaderXML);
 
 			// generate XSL InputStream Reader with encoding
-			ByteArrayInputStream baisXSL = new ByteArrayInputStream(
-					xslSource.getBytes());
-			InputStreamReader isreaderXSL = new InputStreamReader(baisXSL,
-					aEncoding);
+			ByteArrayInputStream baisXSL = new ByteArrayInputStream(xslSource.getBytes());
+			InputStreamReader isreaderXSL = new InputStreamReader(baisXSL, aEncoding);
 			Source xslSrc = new StreamSource(isreaderXSL);
 
 			Transformer trans = transFact.newTransformer(xslSrc);
@@ -577,8 +529,8 @@ public class ReportRestService {
 	 * @param aEncoding
 	 * @param outputWriter
 	 */
-	public static void fopTranformation(String xmlSource, String xslSource,
-			String aEncoding, OutputStream output) throws Exception {
+	public static void fopTranformation(String xmlSource, String xslSource, String aEncoding, OutputStream output)
+			throws Exception {
 		// configure fopFactory as desired
 		FopFactory fopFactory = FopFactory.newInstance();
 
@@ -589,22 +541,18 @@ public class ReportRestService {
 		// OutputStream out =null;
 		try {
 			// Construct fop with desired output format
-			Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent,
-					output);
+			Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, output);
 
 			// Setup XSLT
 			TransformerFactory factory = TransformerFactory.newInstance();
-			ByteArrayInputStream baisXSL = new ByteArrayInputStream(
-					xslSource.getBytes());
-			InputStreamReader isreaderXSL = new InputStreamReader(baisXSL,
-					aEncoding);
+			ByteArrayInputStream baisXSL = new ByteArrayInputStream(xslSource.getBytes());
+			InputStreamReader isreaderXSL = new InputStreamReader(baisXSL, aEncoding);
 			Source xslSrc = new StreamSource(isreaderXSL);
 
 			Transformer transformer = factory.newTransformer(xslSrc);
 
 			// Setup input for XSLT transformation
-			ByteArrayInputStream baisXML = new ByteArrayInputStream(
-					xmlSource.getBytes());
+			ByteArrayInputStream baisXML = new ByteArrayInputStream(xmlSource.getBytes());
 			InputStreamReader isreaderXML;
 
 			isreaderXML = new InputStreamReader(baisXML, aEncoding);
@@ -630,28 +578,34 @@ public class ReportRestService {
 
 	/**
 	 * This method parses the query Params of a Request URL and adds params to a
-	 * given EQL Query.
+	 * given JPQL Query. In addition the method replace dynamic date values in
+	 * the JPQLStatement
 	 * 
 	 * 
 	 * @param uriInfo
 	 * @return
 	 */
-	private String computeEQLParams(String aQuery, UriInfo uriInfo) {
+
+	/**
+	 * Extracts the query parameters and returns a hashmap with key value pairs
+	 * 
+	 * @param aQuery
+	 * @param uriInfo
+	 * @return
+	 */
+	private Map<String, String> getQueryParams(UriInfo uriInfo) {
 		// test each given QueryParam if it is contained in the EQL Query...
 		MultivaluedMap<String, String> mvm = uriInfo.getQueryParameters();
-
+		Map<String, String> result = new HashMap<String, String>();
 		Set<String> keys = mvm.keySet();
 		Iterator<String> iter = keys.iterator();
 		while (iter.hasNext()) {
 			// read key
 			String sKeyName = iter.next().toString();
-			// test if key is contained in query
-			if (aQuery.indexOf("?" + sKeyName) > -1) {
-				String sParamValue = mvm.getFirst(sKeyName);
-				aQuery = aQuery.replace("?" + sKeyName, sParamValue);
-			}
+			result.put(sKeyName, mvm.getFirst(sKeyName));
 		}
-		return aQuery;
+
+		return result;
 	}
 
 	/**
