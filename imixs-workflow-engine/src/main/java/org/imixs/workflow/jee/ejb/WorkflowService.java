@@ -27,7 +27,9 @@
 
 package org.imixs.workflow.jee.ejb;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -479,6 +481,57 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		default:
 			return " ORDER BY wi.created desc";
 		}
+
+	}
+
+	/**
+	 * This returns a list of workflow events assigned to a given workitem. The
+	 * method evaluates the events for the current $modelversion and $processid.
+	 * The result list is filtered by the properties 'keypublicresult' and
+	 * 'keyRestrictedVisibility'.
+	 * 
+	 * If the property keyRestrictedVisibility exits the method test if the
+	 * current username is listed in one of the namefields.
+	 * 
+	 * @see imixs-bpmn
+	 * @param workitem
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ItemCollection> getEvents(ItemCollection workitem) {
+		List<ItemCollection> result = new ArrayList<ItemCollection>();
+		List<ItemCollection> eventList = this.modelService.getActivityEntityList(workitem.getProcessID(),
+				workitem.getModelVersion());
+
+		String username = getUserName();
+		// now filter events which are not public (keypublicresult==false) or
+		// restricted for current user (keyRestrictedVisibility).
+		for (ItemCollection event : eventList) {
+			// test keypublicresult==false
+			if ("false".equals(event.getItemValueString("keypublicresult"))) {
+				continue;
+			}
+			// test RestrictedVisibility
+			List<String> restrictedList = event.getItemValue("keyRestrictedVisibility");
+			if (!restrictedList.isEmpty()) {
+				// test each item for the current user name...
+				List<String> totalNameList = new ArrayList<String>();
+				for (String itemName : restrictedList) {
+					totalNameList.addAll(workitem.getItemValue(itemName));
+				}
+				// remove null and empty values....
+				totalNameList.removeAll(Collections.singleton(null));
+				totalNameList.removeAll(Collections.singleton(""));
+				if (!totalNameList.isEmpty() && !totalNameList.contains(username)) {
+					// event is not visible for current user!
+					continue;
+				}
+			}
+			result.add(event);
+		}
+
+		return result;
 
 	}
 

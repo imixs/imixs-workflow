@@ -36,8 +36,7 @@ public interface WorkflowServiceRemote {
 	 * @return List of workitems
 	 * 
 	 */
-	public abstract List<ItemCollection> getWorkList(int startpos, int count,
-			String type, int sortorder);
+	public abstract List<ItemCollection> getWorkList(int startpos, int count, String type, int sortorder);
 
 	public abstract List<ItemCollection> getWorkList();
 
@@ -66,8 +65,8 @@ public interface WorkflowServiceRemote {
 	 * @return List of workitems
 	 * 
 	 */
-	public abstract List<ItemCollection> getWorkListByAuthor(String name,
-			int startpos, int count, String type, int sortorder);
+	public abstract List<ItemCollection> getWorkListByAuthor(String name, int startpos, int count, String type,
+			int sortorder);
 
 	/**
 	 * Returns the worklist by author for the current user
@@ -99,8 +98,8 @@ public interface WorkflowServiceRemote {
 	 * @return List of workitems
 	 * 
 	 */
-	public abstract List<ItemCollection> getWorkListByCreator(String name,
-			int startpos, int count, String type, int sortorder);
+	public abstract List<ItemCollection> getWorkListByCreator(String name, int startpos, int count, String type,
+			int sortorder);
 
 	/**
 	 * Returns a collection of workitems containing a namOwner property
@@ -124,8 +123,8 @@ public interface WorkflowServiceRemote {
 	 * @return List of workitems
 	 * 
 	 */
-	public abstract List<ItemCollection> getWorkListByOwner(String name,
-			int startpos, int count, String type, int sortorder);
+	public abstract List<ItemCollection> getWorkListByOwner(String name, int startpos, int count, String type,
+			int sortorder);
 
 	/**
 	 * Returns a collection of workitems where the current user has a
@@ -147,11 +146,10 @@ public interface WorkflowServiceRemote {
 	 * @return List of workitems
 	 * 
 	 */
-	public abstract List<ItemCollection> getWorkListByWriteAccess(int startpos,
-			int count, String type, int sortorder);
+	public abstract List<ItemCollection> getWorkListByWriteAccess(int startpos, int count, String type, int sortorder);
 
-	public abstract List<ItemCollection> getWorkListByGroup(String name,
-			int startpos, int count, String type, int sortorder);
+	public abstract List<ItemCollection> getWorkListByGroup(String name, int startpos, int count, String type,
+			int sortorder);
 
 	/**
 	 * Returns a collection of workitems belonging to a specified $processID
@@ -174,8 +172,8 @@ public interface WorkflowServiceRemote {
 	 * @return List of workitems
 	 * 
 	 */
-	public abstract List<ItemCollection> getWorkListByProcessID(int aid,
-			int startpos, int count, String type, int sortorder);
+	public abstract List<ItemCollection> getWorkListByProcessID(int aid, int startpos, int count, String type,
+			int sortorder);
 
 	/**
 	 * Returns a collection of workitems belonging to a specified workitem
@@ -221,8 +219,20 @@ public interface WorkflowServiceRemote {
 	 *            SORT_ORDER_MODIFIED_ASC = 3)
 	 * @return List of workitems
 	 */
-	public abstract List<ItemCollection> getWorkListByRef(String aref,
-			int startpos, int count, String type, int sortorder);
+	public abstract List<ItemCollection> getWorkListByRef(String aref, int startpos, int count, String type,
+			int sortorder);
+
+	/**
+	 * This returns a list of workflow events assigned to a given workitem. The
+	 * method evaluates the events for the current $modelversion and $processid.
+	 * The result list is filtered by the properties 'keypublicresult' and
+	 * 'keyRestrictedVisibility'
+	 * 
+	 * @see imixs-bpmn
+	 * @param workitem
+	 * @return
+	 */
+	public abstract List<ItemCollection> getEvents(ItemCollection workitem);
 
 	/**
 	 * processes a workItem. The workitem have to provide the properties
@@ -245,11 +255,9 @@ public interface WorkflowServiceRemote {
 	 *             - thrown if processing by a plugin fails
 	 */
 	public abstract ItemCollection processWorkItem(ItemCollection workitem)
-			throws AccessDeniedException, ProcessingErrorException,
-			PluginException;
+			throws AccessDeniedException, ProcessingErrorException, PluginException;
 
-	public abstract void removeWorkItem(ItemCollection aworkitem)
-			throws AccessDeniedException;
+	public abstract void removeWorkItem(ItemCollection aworkitem) throws AccessDeniedException;
 
 	/***************************************************************************
 	 * Workflow Context
