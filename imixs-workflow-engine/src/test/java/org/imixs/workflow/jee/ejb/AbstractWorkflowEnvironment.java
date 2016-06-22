@@ -6,6 +6,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -25,10 +26,11 @@ import org.mockito.stubbing.Answer;
 /**
  * Abstract base class for jUnit tests using the WorkflowService.
  * 
- * This test class mocks the classes WorkflowContext, WorkflowService,
- * EntityService and ModelService. The test class generates a test database with
- * process entities and activity entities which can be accessed from a plug-in
- * or the workflowKernel.
+ * This test class mocks a complete workflow environment without the class
+ * WorkflowService
+ * 
+ * The test class generates a test database with process entities and activity
+ * entities which can be accessed from a plug-in or the workflowKernel.
  * 
  * A JUnit Test can save, load and process workitems.
  * 
@@ -39,17 +41,16 @@ import org.mockito.stubbing.Answer;
  * 
  * 
  * @version 2.0
- * @see TestApplicationPlugin
+ * @see AbstractPluginTest, TestWorkflowService
  * @author rsoika
  */
-public class AbstractWorkflowServiceTest {
-	private final static Logger logger = Logger.getLogger(AbstractWorkflowServiceTest.class.getName());
+public class AbstractWorkflowEnvironment {
+	private final static Logger logger = Logger.getLogger(AbstractWorkflowEnvironment.class.getName());
 
 	Map<String, ItemCollection> database = null;
 
 	protected EntityService entityService;
 	protected ModelService modelService;
-	protected WorkflowService workflowService = new WorkflowService();
 	protected SessionContext ctx;
 	protected WorkflowContext workflowContext;
 
@@ -57,11 +58,7 @@ public class AbstractWorkflowServiceTest {
 	public void setup() throws PluginException {
 
 		// setup db
-		database = new HashMap<String, ItemCollection>();
-		createSimpleDatabase();
-
-		// workflowService = new WorkflowService();
-		workflowService = Mockito.mock(WorkflowService.class);
+		createTestDatabase();
 
 		// mock EJBs and inject them into the workflowService EJB
 		entityService = Mockito.mock(EntityService.class);
@@ -70,9 +67,7 @@ public class AbstractWorkflowServiceTest {
 
 		workflowContext = Mockito.mock(WorkflowContext.class);
 
-		workflowService.entityService = entityService;
-		workflowService.ctx = ctx;
-
+	
 		// Simulate fineProfile("1.0.0") -> entityService.load()...
 		when(entityService.load(Mockito.anyString())).thenAnswer(new Answer<ItemCollection>() {
 			@Override
@@ -101,8 +96,7 @@ public class AbstractWorkflowServiceTest {
 		when(ctx.getCallerPrincipal()).thenReturn(principal);
 
 		when(workflowContext.getModel()).thenReturn(modelService);
-		when(workflowService.getModel()).thenReturn(modelService);
-
+		
 		// simulate getActivityEntity
 		when(modelService.getActivityEntity(Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString()))
 				.thenAnswer(new Answer<ItemCollection>() {
@@ -117,6 +111,28 @@ public class AbstractWorkflowServiceTest {
 					}
 				});
 
+		// simulate getActivityEntityList
+		when(modelService.getActivityEntityList(Mockito.anyInt(), Mockito.anyString()))
+				.thenAnswer(new Answer<List<ItemCollection>>() {
+					@SuppressWarnings({ "rawtypes", "unused" })
+					@Override
+					public List<ItemCollection> answer(InvocationOnMock invocation) throws Throwable {
+						ArrayList<ItemCollection> result = new ArrayList<ItemCollection>();
+						Object[] args = invocation.getArguments();
+						int p = (Integer) args[0];
+						String m = (String) args[1];
+						Iterator it = database.entrySet().iterator();
+						while (it.hasNext()) {
+							Map.Entry pair = (Map.Entry) it.next();
+							if (pair.getKey().toString().startsWith("A" + p + "-")) {
+								result.add((ItemCollection) pair.getValue());
+							}
+						}
+						return result;
+
+					}
+				});
+		
 		// simulate getProcessEntity
 		when(modelService.getProcessEntity(Mockito.anyInt(), Mockito.anyString()))
 				.thenAnswer(new Answer<ItemCollection>() {
@@ -130,57 +146,7 @@ public class AbstractWorkflowServiceTest {
 					}
 				});
 
-		// simulate a workitemService.process call
-		when(workflowService.processWorkItem(Mockito.any(ItemCollection.class)))
-				.thenAnswer(new Answer<ItemCollection>() {
-					@Override
-					public ItemCollection answer(InvocationOnMock invocation) throws Throwable {
-
-						Object[] args = invocation.getArguments();
-						ItemCollection aWorkitem = (ItemCollection) args[0];
-
-						WorkflowKernel workflowkernel = new WorkflowKernel(workflowService);
-						// we do not register plugins....
-						workflowkernel.process(aWorkitem);
-
-						// save workitem in mock database
-						entityService.save(aWorkitem);
-						return aWorkitem;
-
-					}
-				});
-
-		// simulate a workitemService.getWorkitem call
-		when(workflowService.getWorkItem(Mockito.anyString())).thenAnswer(new Answer<ItemCollection>() {
-			@Override
-			public ItemCollection answer(InvocationOnMock invocation) throws Throwable {
-
-				Object[] args = invocation.getArguments();
-				String id = (String) args[0];
-				return entityService.load(id);
-			}
-		});
-
-		// simulate a workitemService.getWorkListByRef call
-		when(workflowService.getWorkListByRef(Mockito.anyString())).thenAnswer(new Answer<List<ItemCollection>>() {
-			@Override
-			public List<ItemCollection> answer(InvocationOnMock invocation) throws Throwable {
-
-				List<ItemCollection> result = new ArrayList<>();
-				Object[] args = invocation.getArguments();
-				String id = (String) args[0];
-
-				// iterate over all data and return matching workitems.
-				Collection<ItemCollection> allEntities = database.values();
-				for (ItemCollection aentity : allEntities) {
-					if (aentity.getItemValueString(WorkflowService.UNIQUEIDREF).equals(id)) {
-						result.add(aentity);
-					}
-				}
-
-				return result;
-			}
-		});
+	
 
 	}
 
@@ -250,7 +216,10 @@ public class AbstractWorkflowServiceTest {
 	/**
 	 * Create a test database with some workItems and a simple model
 	 */
-	private void createSimpleDatabase() {
+	protected void createTestDatabase() {
+
+		database = new HashMap<String, ItemCollection>();
+
 		ItemCollection entity = null;
 		String modelVersion = "1.0.0";
 

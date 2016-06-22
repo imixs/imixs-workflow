@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.jee.ejb.AbstractWorkflowServiceTest;
+import org.imixs.workflow.jee.ejb.AbstractPluginTest;
 import org.imixs.workflow.plugins.jee.SplitAndJoinPlugin;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +21,7 @@ import junit.framework.Assert;
  * @author rsoika
  * 
  */
-public class TestSplitAndJoinPlugin extends AbstractWorkflowServiceTest {
+public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 
 	private final static Logger logger = Logger.getLogger(TestSplitAndJoinPlugin.class.getName());
 

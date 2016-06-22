@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.jee.ejb.AbstractWorkflowServiceTest;
+import org.imixs.workflow.jee.ejb.AbstractPluginTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,7 +20,7 @@ import junit.framework.Assert;
  * @author rsoika
  * 
  */
-public class TestOwnerPlugin extends AbstractWorkflowServiceTest {
+public class TestOwnerPlugin extends AbstractPluginTest {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPlugin.class.getName());
 
