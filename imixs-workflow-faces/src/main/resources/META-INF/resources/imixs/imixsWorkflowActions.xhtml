@@ -16,17 +16,17 @@
 
 <cc:implementation>
 
-	<ui:repeat value="#{cc.attrs.workflowController.activities}"
-		var="activity">
+	<ui:repeat value="#{cc.attrs.workflowController.events}"
+		var="event">
 		<h:commandButton action="#{cc.attrs.workflowController.process}"
 			class="imixs-workflow-action" title=""
-			value="#{activity.item['txtname']}">
+			value="#{event.item['txtname']}">
 			<f:setPropertyActionListener
 				target="#{cc.attrs.workflowController.workitem.item['$ActivityID']}"
-				value="#{activity.item['numactivityid']}" />
+				value="#{event.item['numactivityid']}" />
 			<h:panelGroup rendered="#{!cc.attrs.disabletooltip}"
 				class="imixs-tooltip">
-				<h:outputText value="#{activity.item['rtfdescription']}"
+				<h:outputText value="#{event.item['rtfdescription']}"
 					escape="false" />
 			</h:panelGroup>
 		</h:commandButton>

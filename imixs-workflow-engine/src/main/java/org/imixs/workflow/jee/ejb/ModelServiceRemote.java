@@ -164,9 +164,13 @@ public interface ModelServiceRemote {
 	 * 
 	 * @return List<ItemCollection> of activity Entities
 	 */
+	/*
 	public abstract List<ItemCollection> getPublicActivities(int aprocessid,
 			String version);
-
+	*/
+	
+	
+	
 	/**
 	 * returns a String list of all existing ProcessGroup Names
 	 * 

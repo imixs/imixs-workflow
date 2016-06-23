@@ -69,8 +69,7 @@ public class WorkflowController extends DataController {
 	@EJB
 	private org.imixs.workflow.jee.ejb.WorkflowService workflowService;
 
-	private static Logger logger = Logger.getLogger(WorkflowController.class
-			.getName());
+	private static Logger logger = Logger.getLogger(WorkflowController.class.getName());
 
 	public WorkflowController() {
 		super();
@@ -125,8 +124,7 @@ public class WorkflowController extends DataController {
 			try {
 				modelVersion = modelService.getLatestVersion();
 			} catch (ModelException e) {
-				throw new InvalidAccessException(e.getErrorContext(),
-						e.getErrorCode(), e.getMessage(), e);
+				throw new InvalidAccessException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
 			}
 			getWorkitem().replaceItemValue("$ModelVersion", modelVersion);
 		}
@@ -135,45 +133,34 @@ public class WorkflowController extends DataController {
 		if (getWorkitem().getItemValueInteger("$ProcessID") <= 0) {
 			// get ProcessEntities by version
 			List<ItemCollection> col;
-			col = modelService.getAllStartProcessEntities(getWorkitem()
-					.getItemValueString(WorkflowKernel.MODELVERSION));
+			col = modelService
+					.getAllStartProcessEntities(getWorkitem().getItemValueString(WorkflowKernel.MODELVERSION));
 			if (!col.isEmpty()) {
 				startProcessEntity = col.iterator().next();
-				getWorkitem().replaceItemValue("$ProcessID",
-						startProcessEntity.getItemValueInteger("numProcessID"));
+				getWorkitem().replaceItemValue("$ProcessID", startProcessEntity.getItemValueInteger("numProcessID"));
 			}
 		}
 
 		// find the ProcessEntity
-		startProcessEntity = modelService.getProcessEntity(getWorkitem()
-				.getItemValueInteger(WorkflowKernel.PROCESSID), getWorkitem()
-				.getItemValueString(WorkflowKernel.MODELVERSION));
+		startProcessEntity = modelService.getProcessEntity(getWorkitem().getItemValueInteger(WorkflowKernel.PROCESSID),
+				getWorkitem().getItemValueString(WorkflowKernel.MODELVERSION));
 
 		// ProcessEntity found?
 		if (startProcessEntity == null)
-			throw new InvalidAccessException(
-					ModelException.INVALID_MODEL_ENTRY,
+			throw new InvalidAccessException(ModelException.INVALID_MODEL_ENTRY,
 					"unable to find ProcessEntity in model version "
-							+ getWorkitem().getItemValueString(
-									WorkflowKernel.MODELVERSION)
-							+ " for ID="
-							+ getWorkitem().getItemValueInteger(
-									WorkflowKernel.PROCESSID));
+							+ getWorkitem().getItemValueString(WorkflowKernel.MODELVERSION) + " for ID="
+							+ getWorkitem().getItemValueInteger(WorkflowKernel.PROCESSID));
 
 		// update processId and WriteAccess
-		getWorkitem().replaceItemValue("$WriteAccess",
-				getWorkitem().getItemValue("namCreator"));
+		getWorkitem().replaceItemValue("$WriteAccess", getWorkitem().getItemValue("namCreator"));
 
 		// assign WorkflowGroup and editor
-		getWorkitem().replaceItemValue("txtworkflowgroup",
-				startProcessEntity.getItemValueString("txtworkflowgroup"));
-		getWorkitem().replaceItemValue("txtworkflowStatus",
-				startProcessEntity.getItemValueString("txtname"));
-		getWorkitem().replaceItemValue("txtWorkflowImageURL",
-				startProcessEntity.getItemValueString("txtimageurl"));
+		getWorkitem().replaceItemValue("txtworkflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
+		getWorkitem().replaceItemValue("txtworkflowStatus", startProcessEntity.getItemValueString("txtname"));
+		getWorkitem().replaceItemValue("txtWorkflowImageURL", startProcessEntity.getItemValueString("txtimageurl"));
 
-		getWorkitem().replaceItemValue("txtWorkflowEditorid",
-				startProcessEntity.getItemValueString("txteditorid"));
+		getWorkitem().replaceItemValue("txtWorkflowEditorid", startProcessEntity.getItemValueString("txteditorid"));
 
 		return action;
 	}
@@ -199,10 +186,9 @@ public class WorkflowController extends DataController {
 	 * @throws AccessDeniedException
 	 * @throws PluginException
 	 */
-	public String process() throws AccessDeniedException,
-			ProcessingErrorException, PluginException {
+	public String process() throws AccessDeniedException, ProcessingErrorException, PluginException {
 		// clear last action
-		workitem.replaceItemValue("action","");
+		workitem.replaceItemValue("action", "");
 
 		// process workItem now...
 		workitem = this.getWorkflowService().processWorkItem(workitem);
@@ -230,8 +216,7 @@ public class WorkflowController extends DataController {
 	 * @see process()
 	 * @see process(id,resetWorkitem)
 	 */
-	public String process(int id) throws AccessDeniedException,
-			ProcessingErrorException, PluginException {
+	public String process(int id) throws AccessDeniedException, ProcessingErrorException, PluginException {
 		return process(id, false);
 	}
 
@@ -248,8 +233,7 @@ public class WorkflowController extends DataController {
 	 * @see process()
 	 */
 	public String process(int id, boolean resetWorkitem)
-			throws AccessDeniedException, ProcessingErrorException,
-			PluginException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException {
 		// update the property $ActivityID
 		this.getWorkitem().replaceItemValue("$ActivityID", id);
 		String result = process();
@@ -270,11 +254,9 @@ public class WorkflowController extends DataController {
 		try {
 			return process();
 		} catch (ProcessingErrorException e) {
-			throw new InvalidAccessException(e.getErrorContext(),
-					e.getErrorCode(), e.getMessage(), e);
+			throw new InvalidAccessException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
 		} catch (PluginException e) {
-			throw new InvalidAccessException(e.getErrorContext(),
-					e.getErrorCode(), e.getMessage(), e);
+			throw new InvalidAccessException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
 		}
 	}
 
@@ -287,20 +269,18 @@ public class WorkflowController extends DataController {
 	 * @return - the action result
 	 */
 	public String getAction() {
-		String action = getWorkitem().getItemValueString(
-				"txtworkflowresultmessage");
+		String action = getWorkitem().getItemValueString("txtworkflowresultmessage");
 		return ("".equals(action) ? null : action);
 	}
 
 	/**
 	 * returns a arrayList of Activities to the corresponding processiD of the
 	 * current WorkItem. The Method returns the activities corresponding to the
-	 * workItems modelVersionID. The list of computed activities is cashed until
-	 * a new workItem was set or the current workItem was processed.
+	 * workItems modelVersionID.
 	 * 
 	 * @return
 	 */
-	public List<ItemCollection> getActivities() {
+	public List<ItemCollection> getEvents() {
 		if (activityList != null)
 			return activityList;
 
@@ -309,42 +289,13 @@ public class WorkflowController extends DataController {
 		if (getWorkitem() == null)
 			return activityList;
 
-		int processId = getWorkitem().getItemValueInteger("$processid");
-
-		if (processId == 0)
-			return activityList;
-
-		// verify if modelversion is defined by workitem
-		String sversion = getWorkitem().getItemValueString("$modelversion");
-		if (sversion == null || "".equals(sversion)) {
-			try {
-				// try to get latest version...
-				sversion = this.getModelService().getLatestVersionByWorkitem(
-						getWorkitem());
-			} catch (ModelException e) {
-				logger.warning("[WorkflowController] unable to getactivitylist: "
-						+ e.getMessage());
-			}
-		}
-		// get Workflow-Activities by version 
-		List<ItemCollection> col = null;
-		col = this.getModelService().getPublicActivities(processId, sversion);
-		if (col == null || col.size() == 0) {
-			// try to upgrade model version
-			try {
-				sversion = this.getModelService().getLatestVersionByWorkitem(
-						getWorkitem());
-				col = this.getModelService().getPublicActivities(processId,
-						sversion);
-			} catch (ModelException e) {
-				logger.warning("[WorkflowController] unable to getactivitylist: "
-						+ e.getMessage());
-			}
+		// get Events form workflowService
+		try {
+			activityList = this.getWorkflowService().getEvents(getWorkitem());
+		} catch (ModelException e) {
+			logger.warning("Unable to get workflow event list: " + e.getMessage());
 		}
 
-		for (ItemCollection aworkitem : col) {
-			activityList.add(aworkitem);
-		}
 		return activityList;
 	}
 

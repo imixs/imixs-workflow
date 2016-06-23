@@ -8,6 +8,7 @@ import java.util.Vector;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Before;
@@ -106,7 +107,14 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 		workitem.replaceItemValue(WorkflowService.ACTIVITYID, 10);
 		workitem.replaceItemValue("namteam", "manfred");
 
-		List<ItemCollection> eventList = workflowService.getEvents(workitem);
+		List<ItemCollection> eventList=null;
+		try {
+			eventList = workflowService.getEvents(workitem);
+		} catch (ModelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Assert.fail();
+		}
 		Assert.assertEquals(3, eventList.size());
 	}
 
@@ -142,7 +150,14 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 		workitem.replaceItemValue("nammanager", members);
 		workitem.replaceItemValue("namassist", "");
 
-		List<ItemCollection> eventList = workflowService.getEvents(workitem);
+		List<ItemCollection> eventList=null;
+		try {
+			eventList = workflowService.getEvents(workitem);
+		} catch (ModelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Assert.fail();
+		}
 		Assert.assertEquals(3, eventList.size());
 	}
 

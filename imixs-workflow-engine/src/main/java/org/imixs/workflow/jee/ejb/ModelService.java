@@ -481,6 +481,7 @@ public class ModelService implements Model, ModelServiceRemote {
 	 * 
 	 * @return List<ItemCollection> of activity Entities
 	 */
+	/*
 	public List<ItemCollection> getPublicActivities(int aprocessid, String version) {
 		ArrayList<ItemCollection> colActivities = null;
 		try {
@@ -497,6 +498,7 @@ public class ModelService implements Model, ModelServiceRemote {
 		}
 		return colActivities;
 	}
+	*/
 
 	/**
 	 * returns a String list of all existing ProcessGroup Names

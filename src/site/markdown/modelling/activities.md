@@ -7,51 +7,56 @@ When a Imixs BPMN Event Element is selected in the Drawing Canvas, different set
 The property settings are grouped into different sections.
  
 ##General Properties
-The property tab 'General' defines basic informations for an Imixs BPMN Event element. 
+The property tab 'General' defines basic informations for an Imixs-BPMN Event element. 
 
 <img src="../images/modelling/bpmn_screen_19.png"  />
 
-
 ###Name 
 
-The name of the Event element is used to identify the processing action. The name typical describes the activity triggered by the user to process a WorkItem. E.g. "submit", "approve" "close".
+The name of the Event element is used to identify the processing action. The name typical describes the activity triggered by the user to process a WorkItem. E.g. "submit", "approve" "close". The event name can be used by applications to display event based worflow actions. 
 
-###Description
-The description of the Event element is used by the Imixs Workflow System to provide the user
-with additional information about the event. Typically a description can provide information how the event will change the current status of the process instance.
+<center><img src="../images/modelling/bpmn_screen_30.png" width="200px" /></center>
+
+
+###Documentation
+
+The documentation of the Event element can be used to provide the user with additional information about the event. Typically the documentation provides information how the event will change the current status of the process instance. The documentation can be used  by applications to display event based information. 
  
  
  
-#Workflow Properties
-The Tab 'Workflow' contains Processing Information of a Event element. These information
-are evaluated by the Worklfow Engine while a WorkItem is processed .
+##Workflow Properties
+The Tab 'Workflow' contains Processing Information for an Event element. These information
+are evaluated by the Worklfow Engine while a WorkItem is processed 
  
-<img src="../images/modelling/bpmn_screen_20.png"/>  
+<img src="../images/modelling/bpmn_screen_20.png" width="600px" />  
   
  
 ###ID 
-Every Workflow Event assigned to a Workflow Task has an unambiguously ID. The Event ID is used 
- by the Workfow Engine to identify the Event triggered by the user.
+Every Workflow Event assigned to a Workflow Task has an unambiguously ID. The Event ID is used  by the Workfow Engine to identify the Event.
  
  
 ###Result
-The 'Result' defines application specific processing information evaluated by the Workflow Engine. These information can be used to display a message or a confirmation page to the user after a the event was triggered. The 'Result' can also be used to provide additional processing information to the workflow engine or a application specific plug-in.    
+The 'Result' defines application specific processing information evaluated by the Workflow Engine. These information are evaluated by plug-ins and applications. See the section [ResultPlugin](../engine/plugins/resultplugin.html) for further information.
 
  
 ###Visiblity
-The property 'visible' defines if a Imixs BPMN Event is an active trigger displayed as an action 
-command inside the application. Non-Visible Events are used to control the workflow programmatically. 
- 
- 
-###Roles
-Each Workflow Event can define a set of read permissions. This is used to control the access to an Event depending on the user permissions. If no roles are assigned to a Event the Event can 
- be triggered by any workflow user.
- 
+The section 'visibility' defines whether an event is visible to a workflow user or not. The visibility is separated into three levels of visibility. 
+
+**Public Event:** <br />
+Per default each Imixs-Event is public and visible to the workflow user. If the property 'Public Event' is set to 'No', the event will not be displayed to the workflow user.
+
+**Restrict to:**<br />
+A 'Public Event' can be restricted to a specific user group defined by the state of a workflow instance. The restriction is based on the 'Actor Properties' which can be defined by the [process properties](./main_editor.html) of a workflow model. If a restriction is set for a Imixs-Event element, the event is only visible to the workflow user if he is listed in one of the Actor Properties. With the restriction feature, the visibility of a workflow event can be configured on a very fine grained user level.    
+
+**Read Access:**<br />
+The 'Read Access' list can be used to define a general read permission for a Imixs-Event element. The list can contain any application specific role or userid. If a 'read access' is specified only workflow users with the corresponding access role or userid are able to trigger this event. 
+
+
   
-#ACL Properties
+##ACL Properties
 The ACL Tab defines the Access Control List for a workitem processed by the Imixs-Workflow engine.
 
-<img src="../images/modelling/bpmn_screen_21.png" />  
+<img src="../images/modelling/bpmn_screen_21.png"/>  
 
 The ACL defines the read- and write access a user will be granted for, after a WorkItem was successful  processed. This is one of the most important features of the Imixs Workflow System.
 The ACL can be defined in a dynamic or a static way. To activate the feature the option 'Update ACL' has to be checked.

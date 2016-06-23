@@ -493,28 +493,45 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 * If the property keyRestrictedVisibility exits the method test if the
 	 * current username is listed in one of the namefields.
 	 * 
+	 * If the current user is in the role 'org.imixs.ACCESSLEVEL.MANAGERACCESS'
+	 * the property keyRestrictedVisibility will be ignored.
+	 * 
 	 * @see imixs-bpmn
 	 * @param workitem
 	 * @return
+	 * @throws ModelException
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<ItemCollection> getEvents(ItemCollection workitem) {
+	public List<ItemCollection> getEvents(ItemCollection workitem) throws ModelException {
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
-		List<ItemCollection> eventList = this.modelService.getActivityEntityList(workitem.getProcessID(),
-				workitem.getModelVersion());
+
+		String modelVersion = workitem.getModelVersion();
+		int processID = workitem.getProcessID();
+		// verify if version is valid
+		if (modelService.getProcessEntity(processID, modelVersion) == null) {
+			// try to upgrade model version
+			logger.warning("Deprecated Modelversion: " + modelVersion);
+			modelVersion = this.getModelService().getLatestVersionByWorkitem(workitem);
+		}
+
+		List<ItemCollection> eventList = this.modelService.getActivityEntityList(processID, modelVersion);
 
 		String username = getUserName();
+		boolean bManagerAccess = ctx.isCallerInRole(EntityService.ACCESSLEVEL_MANAGERACCESS);
+
 		// now filter events which are not public (keypublicresult==false) or
 		// restricted for current user (keyRestrictedVisibility).
 		for (ItemCollection event : eventList) {
 			// test keypublicresult==false
-			if ("false".equals(event.getItemValueString("keypublicresult"))) {
+
+			// ad only activities with userControlled != No
+			if ("0".equals(event.getItemValueString("keypublicresult"))) {
 				continue;
 			}
 			// test RestrictedVisibility
 			List<String> restrictedList = event.getItemValue("keyRestrictedVisibility");
-			if (!restrictedList.isEmpty()) {
+			if (!bManagerAccess && !restrictedList.isEmpty()) {
 				// test each item for the current user name...
 				List<String> totalNameList = new ArrayList<String>();
 				for (String itemName : restrictedList) {
