@@ -4,7 +4,6 @@ import static org.mockito.Mockito.when;
 
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -15,9 +14,7 @@ import javax.ejb.SessionContext;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowContext;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.plugins.TestApplicationPlugin;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
