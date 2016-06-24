@@ -616,6 +616,7 @@ public class WorkflowRestService {
 		workitem = XMLItemCollectionAdapter.getItemCollection(xmlworkitem);
 
 		if (workitem != null && !uniqueid.equals(workitem.getUniqueID())) {
+			logger.warning("@POST /workitem/" + uniqueid+"  $UNIQUEID did not match!" );
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}		
 		return postWorkitemXML(xmlworkitem);
@@ -742,6 +743,7 @@ public class WorkflowRestService {
 		}
 		
 		if (workitem != null && !uniqueid.equals(workitem.getUniqueID())) {
+			logger.warning("@POST /workitem/" + uniqueid+"  $UNIQUEID did not match!" );
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}		
 		return postWorkitemJSON(requestBodyStream, error, encoding);
