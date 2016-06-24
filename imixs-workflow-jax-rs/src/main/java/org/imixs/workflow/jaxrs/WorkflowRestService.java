@@ -727,7 +727,7 @@ public class WorkflowRestService {
 	
 	
 	@POST
-	@Path("/workitem/{uniqueid}")
+	@Path("/workitem.json/{uniqueid}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes({ MediaType.APPLICATION_JSON })
 	public Response postWorkitemByUniqueIDJSON(@PathParam("uniqueid") String uniqueid,InputStream requestBodyStream

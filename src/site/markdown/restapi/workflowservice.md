@@ -8,33 +8,15 @@ The /workflow resources are used to get the business objects provided by the Imi
 | URI                                           | Description                               | 
 |-----------------------------------------------|-------------------------------------------|
 | /workflow/worklist/{user}                     | a collection of workitems representing the   worklist by a specific user (or value 'null' for the current user)|             
-| /workflow/worklist/{user}.xml                 | a collection of workitems representing the  worklist by a specific user (or value 'null' for the current user) in XML format|
-| /workflow/worklist/{user}.json                | a collection of workitems representing the worklist by a specific user (or value 'null' for the current user) in json format|
 | /workflow/worklistbycreator/{creator}         | a collection of workitems created by a specific user (or value 'null' for the current user)                           |
-| /workflow/worklistbycreator/{creator}.xml     | a collection of workitems created by a specific   user (or value 'null' for the current user) in xml format               |
-| /workflow/worklistbycreator/{creator}.json    | a collection of workitems created by a specific   user (or value 'null' for the current user) in json format               |
 | /workflow/worklistbyprocessid/{processid}     | a collection of workitems in a specific    process state             |
-| /workflow/worklistbyprocessid/{processid}.xml | a collection of workitems in a specific  process state  in XML format                |
-| /workflow/worklistbyprocessid/{processid}.json| a collection of workitems in a specific   process state  in json format              |
 | /workflow/worklistbygroup/{processgroup}      | a collection of workitems in a specific    process group                             |
-| /workflow/worklistbygroup/{processgroup}.xml  | a collection of workitems in a specific    process group  in XML format              |
-| /workflow/worklistbygroup/{processgroup}.json | a collection of workitems in a specific  process group  in json format              |
 | /workflow/worklistbyowner/{owner}             | a collection of workitems owned by a specific  user (or value 'null' for the current user)   |
-| /workflow/worklistbyowner/{owner}.xml         | a collection of workitems owned by a specific  user in XML format                    |
-| /workflow/worklistbyowner/{owner}.json        | a collection of workitems owned by a specific     user in json format                |
 | /workflow/worklistbywriteaccess               | a collection of workitems where the current    has a write access                    |
-| /workflow/worklistbywriteaccess.xml           | a collection of workitems where the current   has a write access in xml format       |
-| /workflow/worklistbywriteaccess.json          | a collection of workitems where the current    has a write access in json format     |
 | /workflow/worklistbyref/{uniqueid}            | a collection of workitems referenced to a  specific uniqueid (childs)                |
-| /workflow/worklistbyref/{uniqueid}.xml        | a collection of workitems referenced to a   specific uniqueid (childs) in xml format |
-| /workflow/worklistbyref/{uniqueid}.json       | a collection of workitems referenced to a  specific uniqueid (childs) in json format |
 | /workflow/worklistbyquery/{query}             | a collection of workitems specified by a  JPQL phrase                                |
-| /workflow/worklistbyquery/{query}.xml         | a collection of workitems specified by a   JPQL phrase in xml format                 |
-| /workflow/worklistbyquery/{query}.json        | a collection of workitems specified by a   JPQL phrase in json format                |
 | /workflow/worklistcountbyquery/{query}        | the count of workitems returned by a    JPQL phrase                                  |
 | /workflow/workitem/{uniqueid}                 |a single workitem represented by the   provided uniqueid                              |
-| /workflow/workitem/{uniqueid}.xml             |a single workitem represented by the  provided uniqueid in xml format                 |
-| /workflow/workitem/{uniqueid}.json            |a single workitem represented by the  provided uniqueid in json format                |
 | /workflow/workitem/{uniqueid}/file/{file}     | a file attachment located in the property   $file of the spcified workitem           |
 
 
@@ -45,8 +27,10 @@ The /workflow/xxxx PUT and POST resources URIs are used to write business object
 | URI                          | Description                               | 
 |------------------------------|-------------------------------------------|
 | /workflow/workitem           | posts a workitem to be processed by the  workflow manager. The post data can be x-www-form-urlencoded or in xml format   |
-| /workflow/worklist           | posts a worklist to be processed by the  workflow manager The post data can be x-www-form-urlencoded or in xml format  |
-| /workflow/workitem.json      | posts a workitem x-www-form-urlencoded and returns the result in json format     |
+| /workflow/workitem/{uniqueid}| posts a workitem to be processed by the  workflow manager. The post data can be x-www-form-urlencoded or in xml format   |
+| /workflow/worklist           | posts a worklist to be processed by the  workflow manager. The post data can be x-www-form-urlencoded or in xml format  |
+| /workflow/workitem.json      | posts a workitem to be processed by the  workflow manager. The post data is expected in json format. The result in json format     |
+| /workflow/workitem.json/{uniqueid}      | posts a workitem to be processed by the  workflow manager. The post data is expected in json format. The result in json format     |
 
 
 
