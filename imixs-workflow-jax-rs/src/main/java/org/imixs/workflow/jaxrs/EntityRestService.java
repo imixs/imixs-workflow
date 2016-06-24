@@ -158,27 +158,6 @@ public class EntityRestService {
 		return new EntityCollection();
 	}
 
-	@GET
-	@Path("/entitiesbyquery/{query}.xml")
-	@Produces(MediaType.APPLICATION_XML)
-	public EntityCollection getEntitiesByQueryXML(
-			@PathParam("query") String query,
-			@DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("10") @QueryParam("count") int count,
-			@QueryParam("items") String items) {
-		return getEntitiesByQuery(query, start, count, items);
-	}
-
-	@GET
-	@Path("/entitiesbyquery/{query}.json")
-	@Produces(MediaType.APPLICATION_JSON)
-	public EntityCollection getEntitiesByQueryJSON(
-			@PathParam("query") String query,
-			@DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("10") @QueryParam("count") int count,
-			@QueryParam("items") String items) {
-		return getEntitiesByQuery(query, start, count, items);
-	}
 
 	/**
 	 * Returns the size of a result set by JPQL Query

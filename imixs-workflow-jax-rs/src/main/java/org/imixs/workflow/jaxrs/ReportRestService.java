@@ -371,7 +371,6 @@ public class ReportRestService {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
-	// @Produces("application/xml")
 	@Path("/{name}.xml")
 	public EntityCollection getExcecuteReportXML(@PathParam("name") String name,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
