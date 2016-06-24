@@ -605,7 +605,25 @@ public class WorkflowRestService {
 		}
 
 	}
+	
+	@POST
+	@Path("/workitem/{uniqueid}")
+	@Produces(MediaType.APPLICATION_XML)
+	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
+	public Response postWorkitemByUniqueIDXML(@PathParam("uniqueid") String uniqueid,XMLItemCollection xmlworkitem) {
+		logger.fine("[WorkflowRestService] @POST /workitem/" + uniqueid+"  method:postWorkitemXML....");
+		ItemCollection workitem;
+		workitem = XMLItemCollectionAdapter.getItemCollection(xmlworkitem);
 
+		if (workitem != null && !uniqueid.equals(workitem.getUniqueID())) {
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}		
+		return postWorkitemXML(xmlworkitem);
+
+	}
+
+		
+		
 	@PUT
 	@Path("/workitem")
 	@Produces(MediaType.APPLICATION_XML)
@@ -705,6 +723,32 @@ public class WorkflowRestService {
 		}
 
 	}
+	
+	
+	
+	@POST
+	@Path("/workitem/{uniqueid}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes({ MediaType.APPLICATION_JSON })
+	public Response postWorkitemByUniqueIDJSON(@PathParam("uniqueid") String uniqueid,InputStream requestBodyStream
+			, @QueryParam("error") String error,
+			@QueryParam("encoding") String encoding) {
+		logger.fine("[WorkflowRestService] @POST /workitem/" + uniqueid+"  method:postWorkitemXML....");
+		ItemCollection workitem=null;
+		try {
+			workitem = JSONParser.parseWorkitem(requestBodyStream, encoding);
+		} catch (UnsupportedEncodingException | ParseException e) {
+			logger.warning(e.getMessage());
+		}
+		
+		if (workitem != null && !uniqueid.equals(workitem.getUniqueID())) {
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}		
+		return postWorkitemJSON(requestBodyStream, error, encoding);
+
+	}
+	
+	
 
 	/**
 	 * This method post a collection of ItemCollection objects to be processed
