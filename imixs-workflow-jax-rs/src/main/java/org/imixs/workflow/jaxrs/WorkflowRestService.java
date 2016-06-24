@@ -192,7 +192,7 @@ public class WorkflowRestService {
 	 * @param sortorder
 	 */
 	@GET
-	@Path("/worklistbyauthor/{user}")
+	@Path("/tasklist/author/{user}")
 	public EntityCollection getWorkListByAuthor(@PathParam("user") String user,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("sortorder") int sortorder,
@@ -217,7 +217,7 @@ public class WorkflowRestService {
 
 
 	@GET
-	@Path("/worklistbycreator/{creator}")
+	@Path("/tasklist/creator/{creator}")
 	public EntityCollection getWorkListByCreator(@PathParam("creator") String creator,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("sortorder") int sortorder,
@@ -243,7 +243,7 @@ public class WorkflowRestService {
 
 
 	@GET
-	@Path("/worklistbyprocessid/{processid}")
+	@Path("/tasklist/processid/{processid}")
 	public EntityCollection getWorkListByProcessID(@PathParam("processid") int processid,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("sortorder") int sortorder,
@@ -260,7 +260,7 @@ public class WorkflowRestService {
 
 
 	@GET
-	@Path("/worklistbygroup/{processgroup}")
+	@Path("/tasklist/group/{processgroup}")
 	public EntityCollection getWorkListByGroup(@PathParam("processgroup") String processgroup,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("sortorder") int sortorder,
@@ -282,7 +282,7 @@ public class WorkflowRestService {
 
 
 	@GET
-	@Path("/worklistbyowner/{owner}")
+	@Path("/tasklist/owner/{owner}")
 	public EntityCollection getWorkListByOwner(@PathParam("owner") String owner,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("sortorder") int sortorder,
@@ -306,20 +306,6 @@ public class WorkflowRestService {
 
 
 
-	@GET
-	@Path("/worklistbywriteaccess")
-	public EntityCollection getWorkListByWriteAccess(@DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("10") @QueryParam("count") int count, @QueryParam("type") String type,
-			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
-		try {
-			col = workflowService.getWorkListByWriteAccess(start, count, type, sortorder);
-			return XMLItemCollectionAdapter.putCollection(col, EntityRestService.getItemList(items));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return new EntityCollection();
-	}
 
 	@GET
 	@Path("/worklistbyref/{uniqueid}")
