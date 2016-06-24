@@ -1,4 +1,4 @@
-#The WorkflowScheduler
+#The Workflow Scheduler
 The Imixs WorkflowScheduler provides a JEE TimerService, which can schedule  workitems based on scheduled Workflow Activities.  A scheduled Workflow Activity can be defined using the [Imixs-BPM Modeler](../modelling/index.html) in the property tab 'Schedule'. If a workitem is in a stage with scheduled activities, the WorkflowScheduler will process  this workitem automatically in a defined interval. This is useful for automatic  workflow tasks like reminder or escalation tasks.
  
 ##The WorkflowSchedulerService EJB

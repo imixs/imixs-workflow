@@ -1,5 +1,9 @@
 #Rule Plugin 
-The Imixs Rule Plugin (org.imixs.workflow.plugins.RulePlugin) can be used to evaluate a business rule during the processing of an activity. A business rule can be configured which the help of the [Imixs-BPMN modeler](../../modelling/index.html). Business rules can be written in any script language supported by the JVM.
+The Imixs Rule Plugin can be used to evaluate a business rule during the processing of an activity. 
+
+    org.imixs.workflow.plugins.RulePlugin
+
+A business rule can be configured which the help of the [Imixs-BPMN modeler](../../modelling/activities.html). Business rules can be written in any script language supported by the JVM.
  For example 'JavaScript or 'Groovy'. A Script can access all basic item values from the current WorkItem and the ActivityEntity. A script may not update values of the WorkItem but can modify the values of the Activity Entity. To access the item values the RulePlugin provide the map objects 'workitem' and 'activity'. The item values of a property are provided in an object array. See the following example:
  
 	 // test the first value of the workitem attribute 'txtname'
