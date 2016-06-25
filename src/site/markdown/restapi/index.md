@@ -1,26 +1,77 @@
 #The REST Service API
-REST is an architectural style that can be used to guide the construction of web services  in a more easy kind as a service which uses the SOAP specification.  The Imixs XML & Web Services provide a REST Service Implementation which allows you to use the Imixs Workflow in a RESTful way.
- 
+
+The **representational state transfer (REST)** is an architectural style, to present a service interface in a Web-based way. The API and core functionality of Imixs-Workflow is published by an open and platform independent RESTful Web service interface. The Imixs-Workflow REST services can be adopted easily by any kind of Internet client component.
  
 ## Resources and URIs
-An URI is a unique resource identifier. In REST an URI represents a resource and is used to  get or modify a resource. In the meaning of the Imixs Workflow Technologies the URIs represent  WorkItems, Attachments, Reports or any other kind of Object provided by the Imixs Workflow. There are three main resources available where each represents one different aspect of the Imixs  Workflow components:
+An URI is a unique resource identifier which can be used to GET or PUT a unique resource through a RESTful service interface.
+The REST service interface of Imixs-Workflow publishes a set of resources which are representing  WorkItems, Attachments, Reports and Model information.
+The different resources provided by Imixs-Workflow are divided in the following groups, where each group represents a different aspect of the Imixs-Workflow engine:
 
 | URI                       | Resource Description                              | 
 |---------------------------|---------------------------------------------------| 
-| /workflow                 | The Workflow resource provides resources and <br /> methods to get, create or modify workitems       |
-| /model                    | The Model resource provides resources and methods<br /> to get, create or modify a workflow model entities|
-| /report                   | The Report resource provides resources and methods<br /> to get the result of a report definition|
-| /entity                   | The Entity resource provides resources and methods<br /> to query entities and the indexList from the EntityService EJB ||
+| [/workflow/](./workflowservice.html) | The Workflow resource provides resources and methods to get, create or modify workitems       |
+| [/model/](./modelservice.html)       | The Model resource provides resources and methods to get, create or modify a workflow model|
+| [/report/](./reportservice.html)     | The Report resource provides resources and methods to create or execute a report based on a report definition|
+| [/entity/](./entityservice.html)     | The Entity resource provides resources and methods to query entities and control the index used by the EntityService EJB |
  
-<strong>Note:</strong> The root context of the REST Service is defined by the web application (web.xml)   where the REST Service is deployed. If you are using the Imixs-workflow-rest war file the rest service is mapped per default to root context '/workflow-rest/'. You can change the root context by configuration in the application.xml file.
+<strong>Note:</strong> The root context of the REST Service is defined by the web application (web.xml) containing the REST Service. The default root context is "/rest-service/".
 
-Each of three main resources provides a set of sub resources which represent different  business objects managed by the Imixs Workflow components. Each business object can be provided in different formats depending on one of the following  request header
+## The Representation of Business Objects
+Each resource published by the Imixs-Workfow REST API is represented by common response and request object format. This format reflects a representation of the internal Business Object [ItemCollection](../core/itemcollection.html). Business objects can be represented in XML or JSON format. 
+
+### XML Business Object
+
+The following example shows a business object in XML representation used for request and response objects:
+
+	<entity xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+		<item>
+			<name>$modelversion</name>
+			<value xsi:type="xs:string">1.0.1</value>
+		</item>
+		<item>
+			<name>$processid</name>
+			<value xsi:type="xs:int">1000</value>
+		</item>
+		<item>
+			<name>$activityid</name>
+			<value xsi:type="xs:int">10</value>
+		</item>
+		<item>
+			<name>_subject</name>
+			<value xsi:type="xs:string"> Optionales Daten Feld</value>
+		</item>
+	</entity>
+
+### JSON Business Object
+
+The following example shows a business object in JSON representation used for request and response objects:
+
+
+    {"item":[
+     {"name":"$modelversion","value":{"@type":"xs:string","$":"1.0.1"}},
+     {"name":"$processid","value":{"@type":"xs:int","$":"1000"}}, 
+     {"name":"$activityid","value":{"@type":"xs:int","$":"10"}}, 
+     {"name":"_subject","value":{"@type":"xs:string","$":"Hello World"}}
+    ]}  
+
+Depending on the Rest Service Implementation the JSON format for response object can deviate in the following simplified presentation style (e.g. RESTeasy ):
+
+    {"item": [
+        {"name": "$modelversion", "value": ["1.0.1"] },
+        {"name": "$processid", "value": [2000] },
+        {"name": "$activityid", "value": [10] },
+        {"name": "_subject", "value": ["Hello World"] }
+     ]}
+
+
+
+The Imixs-Workflow REST API accepts the following media types:
  
  * text/html
  * application/xml
  * application/json
 	
-So if you typing in the URI into a Web Browser you will typical receive an HTML representation of the business Objects.  The following sections gives an overview of all URIs defined by the Imixs REST Service.
+The following sections gives an detailed description of all resource groups defined by the Imixs-Workflow REST Service API:
  
  
   * [Workflow Service](./workflowservice.html)
