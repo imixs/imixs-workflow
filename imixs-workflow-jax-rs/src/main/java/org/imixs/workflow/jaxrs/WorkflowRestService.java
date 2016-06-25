@@ -134,28 +134,111 @@ public class WorkflowRestService {
 	}
 
 	/**
-	 * Returns a collection of workitems representing the worklist by the
-	 * current user
+	 * returns a singel workitem defined by $uniqueid
 	 * 
-	 * @param start
-	 * @param count
-	 * @param type
-	 * @param sortorder
+	 * @param uniqueid
+	 * @return
 	 */
 	@GET
-	@Path("/worklist")
-	public EntityCollection getWorkList(@DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("10") @QueryParam("count") int count, @QueryParam("type") String type,
-			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
+	@Path("/workitem/{uniqueid}")
+	public XMLItemCollection getWorkItem(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
+	
+		ItemCollection workitem;
 		try {
-			col = workflowService.getWorkList(start, count, type, sortorder);
-			return XMLItemCollectionAdapter.putCollection(col, EntityRestService.getItemList(items));
-
+			workitem = workflowService.getWorkItem(uniqueid);
+			return XMLItemCollectionAdapter.putItemCollection(workitem, EntityRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
+			return null;
 		}
-		return new EntityCollection();
+	}
+
+	/**
+	 * Returns a file attachment located in the property $file of the specified
+	 * workitem
+	 * 
+	 * The file name will be encoded. With a URLDecode the filename is decoded
+	 * in different formats and searched in the file list. This is not a nice
+	 * solution.
+	 * 
+	 * @param uniqueid
+	 * @return
+	 */
+	@SuppressWarnings({ "rawtypes" })
+	@GET
+	@Path("/workitem/{uniqueid}/file/{file}")
+	public Response getWorkItemFile(@PathParam("uniqueid") String uniqueid, @PathParam("file") @Encoded String file,
+			@Context UriInfo uriInfo) {
+	
+		ItemCollection workItem;
+		try {
+			workItem = workflowService.getWorkItem(uniqueid);
+	
+			if (workItem != null) {
+	
+				String fileNameUTF8 = URLDecoder.decode(file, "UTF-8");
+				String fileNameISO = URLDecoder.decode(file, "ISO-8859-1");
+	
+				// fetch $file from hashmap....
+				Map mapFiles = workItem.getFiles();
+				if (mapFiles != null) {
+					Object fileInfoObject = null;
+					// try to guess encodings.....
+					fileInfoObject = mapFiles.get(fileNameUTF8);
+					if (fileInfoObject == null)
+						fileInfoObject = mapFiles.get(fileNameISO);
+					if (fileInfoObject == null)
+						fileInfoObject = mapFiles.get(file);
+	
+					if (fileInfoObject != null) {
+						String sContentType = null;
+						byte[] fileContent = null;
+						// fileInfoObject can be a List or a an Array
+						if (fileInfoObject instanceof List) {
+							sContentType = ((List) fileInfoObject).get(0).toString();
+							fileContent = (byte[]) ((List) fileInfoObject).get(1);
+						} else {
+							// seems to be an array...
+							sContentType = ((Object[]) fileInfoObject)[0].toString();
+							fileContent = (byte[]) ((Object[]) fileInfoObject)[1];
+						}
+	
+						// Set content type in order of the contentType stored
+						// in the $file attribute
+						Response.ResponseBuilder builder = Response.ok(fileContent, sContentType);
+	
+						return builder.build();
+	
+					} else {
+						logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '"
+								+ uniqueid + "' - error: Filename not found!");
+	
+						// workitem not found
+						return Response.status(Response.Status.NOT_FOUND).build();
+					}
+				} else {
+					logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
+							+ "' - error: No files available!");
+	
+					// workitem not found
+					return Response.status(Response.Status.NOT_FOUND).build();
+				}
+			} else {
+				logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
+						+ "' - error: Workitem not found!");
+				// workitem not found
+				return Response.status(Response.Status.NOT_FOUND).build();
+			}
+	
+		} catch (Exception e) {
+			logger.severe("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
+					+ "' - error: " + e.getMessage());
+			e.printStackTrace();
+		}
+	
+		logger.severe("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid + "'");
+		return Response.status(Response.Status.NOT_FOUND).build();
+	
 	}
 
 	/**
@@ -172,15 +255,37 @@ public class WorkflowRestService {
 		try {
 			eventList = workflowService.getEvents(this.workflowService.getEntityService().load(uniqueid));
 			return XMLItemCollectionAdapter.putCollection(eventList);
-
+	
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return new EntityCollection();
 	}
 
+	/**
+	 * Returns a collection of workitems representing the worklist by the
+	 * current user
+	 * 
+	 * @param start
+	 * @param count
+	 * @param type
+	 * @param sortorder
+	 */
+	@GET
+	@Path("/worklist")
+	public EntityCollection getWorkList(@DefaultValue("0") @QueryParam("start") int start,
+			@DefaultValue("10") @QueryParam("count") int count, @QueryParam("type") String type,
+			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
+		Collection<ItemCollection> col = null;
+		try {
+			col = workflowService.getWorkListByOwner(null,start, count, type, sortorder);
+			return XMLItemCollectionAdapter.putCollection(col, EntityRestService.getItemList(items));
 
-
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new EntityCollection();
+	}
 
 	/**
 	 * Returns a collection of workitems representing the worklist by the
@@ -348,117 +453,6 @@ public class WorkflowRestService {
 			e.printStackTrace();
 		}
 		return result;
-	}
-
-	/**
-	 * returns a singel workitem defined by $uniqueid
-	 * 
-	 * @param uniqueid
-	 * @return
-	 */
-	@GET
-	@Path("/workitem/{uniqueid}")
-	public XMLItemCollection getWorkItem(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
-
-		ItemCollection workitem;
-		try {
-			workitem = workflowService.getWorkItem(uniqueid);
-			return XMLItemCollectionAdapter.putItemCollection(workitem, EntityRestService.getItemList(items));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-
-
-
-	/**
-	 * Returns a file attachment located in the property $file of the specified
-	 * workitem
-	 * 
-	 * The file name will be encoded. With a URLDecode the filename is decoded
-	 * in different formats and searched in the file list. This is not a nice
-	 * solution.
-	 * 
-	 * @param uniqueid
-	 * @return
-	 */
-	@SuppressWarnings({ "rawtypes" })
-	@GET
-	@Path("/workitem/{uniqueid}/file/{file}")
-	public Response getWorkItemFile(@PathParam("uniqueid") String uniqueid, @PathParam("file") @Encoded String file,
-			@Context UriInfo uriInfo) {
-
-		ItemCollection workItem;
-		try {
-			workItem = workflowService.getWorkItem(uniqueid);
-
-			if (workItem != null) {
-
-				String fileNameUTF8 = URLDecoder.decode(file, "UTF-8");
-				String fileNameISO = URLDecoder.decode(file, "ISO-8859-1");
-
-				// fetch $file from hashmap....
-				Map mapFiles = workItem.getFiles();
-				if (mapFiles != null) {
-					Object fileInfoObject = null;
-					// try to guess encodings.....
-					fileInfoObject = mapFiles.get(fileNameUTF8);
-					if (fileInfoObject == null)
-						fileInfoObject = mapFiles.get(fileNameISO);
-					if (fileInfoObject == null)
-						fileInfoObject = mapFiles.get(file);
-
-					if (fileInfoObject != null) {
-						String sContentType = null;
-						byte[] fileContent = null;
-						// fileInfoObject can be a List or a an Array
-						if (fileInfoObject instanceof List) {
-							sContentType = ((List) fileInfoObject).get(0).toString();
-							fileContent = (byte[]) ((List) fileInfoObject).get(1);
-						} else {
-							// seems to be an array...
-							sContentType = ((Object[]) fileInfoObject)[0].toString();
-							fileContent = (byte[]) ((Object[]) fileInfoObject)[1];
-						}
-
-						// Set content type in order of the contentType stored
-						// in the $file attribute
-						Response.ResponseBuilder builder = Response.ok(fileContent, sContentType);
-
-						return builder.build();
-
-					} else {
-						logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '"
-								+ uniqueid + "' - error: Filename not found!");
-
-						// workitem not found
-						return Response.status(Response.Status.NOT_FOUND).build();
-					}
-				} else {
-					logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
-							+ "' - error: No files available!");
-
-					// workitem not found
-					return Response.status(Response.Status.NOT_FOUND).build();
-				}
-			} else {
-				logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
-						+ "' - error: Workitem not found!");
-				// workitem not found
-				return Response.status(Response.Status.NOT_FOUND).build();
-			}
-
-		} catch (Exception e) {
-			logger.severe("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
-					+ "' - error: " + e.getMessage());
-			e.printStackTrace();
-		}
-
-		logger.severe("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid + "'");
-		return Response.status(Response.Status.NOT_FOUND).build();
-
 	}
 
 	/**

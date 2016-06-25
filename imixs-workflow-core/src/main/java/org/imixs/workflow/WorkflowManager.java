@@ -27,10 +27,7 @@
 
 package org.imixs.workflow;
 
-import java.util.Collection;
-
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 
@@ -82,6 +79,15 @@ public interface WorkflowManager {
 			PluginException;
 
 	/**
+	 * returns a workItem by its uniuqeID ($uniqueID)
+	 * 
+	 * @param uniqueid
+	 * @return WorkItem
+	 * 
+	 */
+	public ItemCollection getWorkItem(String uniqueid);
+
+	/**
 	 * The method removes the provide Workitem form the persistence unit managed
 	 * by the WorkflowManager implementation.
 	 * 
@@ -95,21 +101,6 @@ public interface WorkflowManager {
 	public void removeWorkItem(ItemCollection workitem)
 			throws AccessDeniedException;
 
-	/**
-	 * returns a workItem by its uniuqeID ($uniqueID)
-	 * 
-	 * @param uniqueid
-	 * @return WorkItem
-	 * 
-	 */
-	public ItemCollection getWorkItem(String uniqueid);
-
-	/**
-	 * Returns a collection of workItems belonging to current user.
-	 * 
-	 * @return List of workitems
-	 * 
-	 */
-	public Collection<ItemCollection> getWorkList();
+	
 
 }

@@ -18,29 +18,7 @@ public interface WorkflowServiceRemote {
 	 * This method loads a Workitem with the corresponding uniqueid
 	 */
 	public abstract ItemCollection getWorkItem(String uniqueid);
-
-	/**
-	 * Returns a collection of workItems belonging to current user. The method
-	 * returns only workitems where the current user has read access.
-	 * 
-	 * @param startpos
-	 *            = optional start position
-	 * @param count
-	 *            = optional count - default = -1
-	 * @param type
-	 *            = defines the type property of the workitems to be returnd.
-	 *            can be null
-	 * @param sortorder
-	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
-	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
-	 *            SORT_ORDER_MODIFIED_ASC = 3)
-	 * @return List of workitems
-	 * 
-	 */
-	public abstract List<ItemCollection> getWorkList(int startpos, int count, String type, int sortorder);
-
-	public abstract List<ItemCollection> getWorkList();
-
+ 
 	/**
 	 * Returns a collection of workItems belonging to a specified username. The
 	 * name is a username or role contained in the $WriteAccess attribute of the
@@ -68,14 +46,6 @@ public interface WorkflowServiceRemote {
 	 */
 	public abstract List<ItemCollection> getWorkListByAuthor(String name, int startpos, int count, String type,
 			int sortorder);
-
-	/**
-	 * Returns the worklist by author for the current user
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public abstract List<ItemCollection> getWorkListByAuthor(String name);
 
 	/**
 	 * Returns a collection of workitems created by a specified user
@@ -197,31 +167,17 @@ public interface WorkflowServiceRemote {
 	 *            SORT_ORDER_MODIFIED_ASC = 3)
 	 * @return List of workitems
 	 */
-	public abstract List<ItemCollection> getWorkListByRef(String aref);
-
-	/**
-	 * Returns a collection of workitems belonging to a specified workitem
-	 * identified by the attribute $UniqueIDRef.
-	 * 
-	 * The behaivor of this Mehtod is simmilar to the method getWorkList.
-	 * 
-	 * @param aref
-	 *            A unique reference to another workitem inside a database *
-	 * @param startpos
-	 *            = optional start position
-	 * @param count
-	 *            = optional count - default = -1
-	 * @param type
-	 *            = defines the type property of the workitems to be returnd.
-	 *            can be null
-	 * @param sortorder
-	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
-	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
-	 *            SORT_ORDER_MODIFIED_ASC = 3)
-	 * @return List of workitems
-	 */
 	public abstract List<ItemCollection> getWorkListByRef(String aref, int startpos, int count, String type,
 			int sortorder);
+	
+
+	/**
+	 * Returns a collection of all workitems belonging to a specified workitem
+	 * identified by the attribute $UniqueIDRef.
+	 * 
+	 * @return List of workitems
+	 */
+	public abstract List<ItemCollection> getWorkListByRef(String aref);
 
 	/**
 	 * This returns a list of workflow events assigned to a given workitem. The

@@ -144,9 +144,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	}
 
 	/**
-	 * Returns a collection of workItems belonging to current user. The method
-	 * returns only workitems where the current user has read access.
+	 * Returns a collection of workitems containing a namOwner property
+	 * belonging to a specified username. The namOwner property can be
+	 * controlled by the plug-in {@code org.imixs.workflow.plugins.OwnerPlugin}
 	 * 
+	 * @param name
+	 *            = username for property namOwner - if null current username
+	 *            will be used
 	 * @param startpos
 	 *            = optional start position
 	 * @param count
@@ -161,25 +165,21 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkList(int startpos, int count, String type, int sortorder) {
-
+	public List<ItemCollection> getWorkListByOwner(String name, int startpos, int count, String type, int sortorder) {
+	
+		if (name == null || "".equals(name))
+			name = ctx.getCallerPrincipal().getName();
+	
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + " JOIN wi.textItems as s " + "WHERE ";
-
+		sQuery += " wi FROM Entity as wi" + " JOIN wi.textItems as t JOIN wi.textItems as s " + "WHERE ";
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
-
-		sQuery += " s.itemName = '$workitemid' " + createSortOrderClause(sortorder);
-		;
+	
+		sQuery += " t.itemName = 'namowner' and t.itemValue = '" + name + "'" + " AND s.itemName = '$workitemid' "
+				+ createSortOrderClause(sortorder);
+	
 		return entityService.findAllEntities(sQuery, startpos, count);
-	}
-
-	/**
-	 * Returns the Worklist for the current user
-	 */
-	public List<ItemCollection> getWorkList() {
-		return getWorkList(0, -1, null, 0);
 	}
 
 	/**
@@ -224,16 +224,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	}
 
 	/**
-	 * Returns the worklist by author for the current user
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public List<ItemCollection> getWorkListByAuthor(String name) {
-		return getWorkListByAuthor(name, 0, -1, null, 0);
-	}
-
-	/**
 	 * Returns a collection of workitems created by a specified user
 	 * (namCreator). The behaivor is simmilar to the method getWorkList.
 	 * 
@@ -267,45 +257,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 			sQuery += " wi.type='" + type + "' AND ";
 
 		sQuery += " t.itemName = 'namcreator' and t.itemValue = '" + name + "'" + " AND s.itemName = '$workitemid' "
-				+ createSortOrderClause(sortorder);
-
-		return entityService.findAllEntities(sQuery, startpos, count);
-	}
-
-	/**
-	 * Returns a collection of workitems containing a namOwner property
-	 * belonging to a specified username. The namOwner property is typical
-	 * controled by the OwnerPlugin
-	 * 
-	 * @param name
-	 *            = username for property namOwner - if null current username
-	 *            will be used
-	 * @param startpos
-	 *            = optional start position
-	 * @param count
-	 *            = optional count - default = -1
-	 * @param type
-	 *            = defines the type property of the workitems to be returnd.
-	 *            can be null
-	 * @param sortorder
-	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
-	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
-	 *            SORT_ORDER_MODIFIED_ASC = 3)
-	 * @return List of workitems
-	 * 
-	 */
-	public List<ItemCollection> getWorkListByOwner(String name, int startpos, int count, String type, int sortorder) {
-
-		if (name == null || "".equals(name))
-			name = ctx.getCallerPrincipal().getName();
-
-		String sQuery = null;
-		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi" + " JOIN wi.textItems as t JOIN wi.textItems as s " + "WHERE ";
-		if (type != null && !"".equals(type))
-			sQuery += " wi.type='" + type + "' AND ";
-
-		sQuery += " t.itemName = 'namowner' and t.itemValue = '" + name + "'" + " AND s.itemName = '$workitemid' "
 				+ createSortOrderClause(sortorder);
 
 		return entityService.findAllEntities(sQuery, startpos, count);
@@ -415,20 +366,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 * Returns a collection of workitems belonging to a specified workitem
 	 * identified by the attribute $UniqueIDRef.
 	 * 
-	 * The behavior of this method is similar to the method getWorkList.
-	 * 
-	 * @param aref
-	 *            A unique reference to another workitem inside a database *
-	 * @return List of workitems
-	 */
-	public List<ItemCollection> getWorkListByRef(String aref) {
-		return getWorkListByRef(aref, 0, -1, null, 0);
-	}
-
-	/**
-	 * Returns a collection of workitems belonging to a specified workitem
-	 * identified by the attribute $UniqueIDRef.
-	 * 
 	 * The behaivor of this Mehtod is simmilar to the method getWorkList.
 	 * 
 	 * @param aref
@@ -461,27 +398,14 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	}
 
 	/**
-	 * generates a sort order clause depending on a sororder id
+	 * Returns a collection of all workitems belonging to a specified workitem
+	 * identified by the attribute $UniqueIDRef.
 	 * 
-	 * @param asortorder
-	 * @return
+	 * @return List of workitems
 	 */
-	private String createSortOrderClause(int asortorder) {
-		switch (asortorder) {
-
-		case WorkflowService.SORT_ORDER_CREATED_ASC: {
-			return " ORDER BY wi.created asc";
-		}
-		case WorkflowService.SORT_ORDER_MODIFIED_ASC: {
-			return " ORDER BY wi.modified asc";
-		}
-		case WorkflowService.SORT_ORDER_MODIFIED_DESC: {
-			return " ORDER BY wi.modified desc";
-		}
-		default:
-			return " ORDER BY wi.created desc";
-		}
-
+	@Override
+	public List<ItemCollection> getWorkListByRef(String aref) {
+		return getWorkListByRef(aref,0,-1,null,0);
 	}
 
 	/**
@@ -710,32 +634,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 
 	}
 
-	/**
-	 * This method returns a n injected Plugin by name or null if not plugin
-	 * with the requested class name is injected.
-	 * 
-	 * @param pluginClassName
-	 * @return plugin class or null if not found
-	 */
-	private Plugin findPluginByName(String pluginClassName) {
-		if (pluginClassName == null || pluginClassName.isEmpty())
-			return null;
-
-		if (plugins == null || !plugins.iterator().hasNext()) {
-			logger.fine("[WorkflowService] no CDI plugins injected");
-			return null;
-		}
-		// iterate over all injected plugins....
-		for (Plugin plugin : this.plugins) {
-			if (plugin.getClass().getName().equals(pluginClassName)) {
-				logger.fine("[WorkflowService] CDI plugin '" + pluginClassName + "' successful injected");
-				return plugin;
-			}
-		}
-
-		return null;
-	}
-
 	public void removeWorkItem(ItemCollection aworkitem) throws AccessDeniedException {
 		entityService.remove(aworkitem);
 	}
@@ -759,45 +657,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 
 	public Object getSessionContext() {
 		return ctx;
-	}
-
-	/**
-	 * This method lookups the WorkflowEnvironmentEntity "environment.profile"
-	 * for a given $modelVersion. If no corresponding model exists the method
-	 * returns null.
-	 * 
-	 * 
-	 * @param modelversion
-	 *            - model version to find the profile
-	 * @return WorkflowEnvironmentEntity
-	 * @throws ProcessingErrorException
-	 */
-	private ItemCollection findModelProfile(String modelversion) throws ProcessingErrorException {
-
-		// if no modelversion is provided default to newest version
-		if (modelversion == null || "".equals(modelversion)) {
-			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
-					ProcessingErrorException.INVALID_MODELVERSION,
-					"WorkflowService: fatal error - no valid model version provided");
-		}
-
-		// try to get a Profile matching the provided modelversion
-		Collection<ItemCollection> col;
-		String sQuery = null;
-		sQuery = "SELECT";
-		sQuery += " environment FROM Entity AS environment" + " JOIN environment.textItems as n "
-				+ " JOIN environment.textItems as v " + " WHERE environment.type = 'WorkflowEnvironmentEntity'"
-				+ " AND n.itemName = 'txtname' AND n.itemValue = 'environment.profile'"
-				+ " AND v.itemName = '$modelversion' AND v.itemValue = '" + modelversion + "' ";
-		col = entityService.findAllEntities(sQuery, 0, 1);
-		// if no model for that ModelVersion is found - throw a exception
-
-		if (col.size() == 0) {
-			return null;
-		} else {
-			// return profile..
-			return col.iterator().next();
-		}
 	}
 
 	/**
@@ -861,5 +720,94 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 */
 	public List<String> getUserNameList() {
 		return entityService.getUserNameList();
+	}
+
+	/**
+	 * generates a sort order clause depending on a sororder id
+	 * 
+	 * @param asortorder
+	 * @return
+	 */
+	private String createSortOrderClause(int asortorder) {
+		switch (asortorder) {
+	
+		case WorkflowService.SORT_ORDER_CREATED_ASC: {
+			return " ORDER BY wi.created asc";
+		}
+		case WorkflowService.SORT_ORDER_MODIFIED_ASC: {
+			return " ORDER BY wi.modified asc";
+		}
+		case WorkflowService.SORT_ORDER_MODIFIED_DESC: {
+			return " ORDER BY wi.modified desc";
+		}
+		default:
+			return " ORDER BY wi.created desc";
+		}
+	
+	}
+
+	/**
+	 * This method returns a n injected Plugin by name or null if not plugin
+	 * with the requested class name is injected.
+	 * 
+	 * @param pluginClassName
+	 * @return plugin class or null if not found
+	 */
+	private Plugin findPluginByName(String pluginClassName) {
+		if (pluginClassName == null || pluginClassName.isEmpty())
+			return null;
+	
+		if (plugins == null || !plugins.iterator().hasNext()) {
+			logger.fine("[WorkflowService] no CDI plugins injected");
+			return null;
+		}
+		// iterate over all injected plugins....
+		for (Plugin plugin : this.plugins) {
+			if (plugin.getClass().getName().equals(pluginClassName)) {
+				logger.fine("[WorkflowService] CDI plugin '" + pluginClassName + "' successful injected");
+				return plugin;
+			}
+		}
+	
+		return null;
+	}
+
+	/**
+	 * This method lookups the WorkflowEnvironmentEntity "environment.profile"
+	 * for a given $modelVersion. If no corresponding model exists the method
+	 * returns null.
+	 * 
+	 * 
+	 * @param modelversion
+	 *            - model version to find the profile
+	 * @return WorkflowEnvironmentEntity
+	 * @throws ProcessingErrorException
+	 */
+	private ItemCollection findModelProfile(String modelversion) throws ProcessingErrorException {
+	
+		// if no modelversion is provided default to newest version
+		if (modelversion == null || "".equals(modelversion)) {
+			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
+					ProcessingErrorException.INVALID_MODELVERSION,
+					"WorkflowService: fatal error - no valid model version provided");
+		}
+	
+		// try to get a Profile matching the provided modelversion
+		Collection<ItemCollection> col;
+		String sQuery = null;
+		sQuery = "SELECT";
+		sQuery += " environment FROM Entity AS environment" + " JOIN environment.textItems as n "
+				+ " JOIN environment.textItems as v " + " WHERE environment.type = 'WorkflowEnvironmentEntity'"
+				+ " AND n.itemName = 'txtname' AND n.itemValue = 'environment.profile'"
+				+ " AND v.itemName = '$modelversion' AND v.itemValue = '" + modelversion + "' ";
+		col = entityService.findAllEntities(sQuery, 0, 1);
+		// if no model for that ModelVersion is found - throw a exception
+	
+		if (col.size() == 0) {
+			return null;
+		} else {
+			// return profile..
+			return col.iterator().next();
+		}
 	}
 }

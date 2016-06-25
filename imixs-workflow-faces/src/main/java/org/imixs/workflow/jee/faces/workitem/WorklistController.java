@@ -55,7 +55,6 @@ public class WorklistController extends ViewController {
 	public static final String QUERY_WORKLIST_BY_CREATOR = "worklist.creator";
 	public static final String QUERY_WORKLIST_BY_AUTHOR = "worklist.author";
 	public static final String QUERY_WORKLIST_BY_WRITEACCESS = "worklist.writeaccess";
-	public static final String QUERY_WORKLIST_ALL = "worklist.all";
 
 	@EJB
 	private org.imixs.workflow.jee.ejb.WorkflowService workflowService;
@@ -66,7 +65,7 @@ public class WorklistController extends ViewController {
 	public WorklistController() {
 		super();
 		setType("workitem");
-		setView(QUERY_WORKLIST_ALL);
+		setView(QUERY_WORKLIST_BY_OWNER);
 		setSortOrder(WorkflowService.SORT_ORDER_CREATED_DESC);
 		setViewAdapter(new WorkflowViewAdapter());
 	}
@@ -111,12 +110,6 @@ public class WorklistController extends ViewController {
 				return workflowService.getWorkListByWriteAccess(
 						controller.getRow(), controller.getMaxResult(),
 						controller.getType(), getSortOrder());
-			
-			if (QUERY_WORKLIST_ALL.equals(getView()))
-				return workflowService.getWorkList(
-						controller.getRow(), controller.getMaxResult(),
-						controller.getType(), getSortOrder());
-			
 
 			// default behaivor - QUERY_WORKLIST_ALL
 			return super.getViewEntries(controller);
