@@ -1,11 +1,11 @@
 #The JSON Imixs REST Service
-The Imixs REST API supports also the JSON format.  So a workitem can be read in JSON format or new data can be processed and updated when provided in JSON format. The following section gives an overview how to use the REST API with JSON.
+The Imixs-Workflow REST API supports also the JSON format.  So a workitem can be read in JSON format or new data can be processed and updated when provided in JSON format. The following section gives an overview how to use the REST API with JSON.
  
  
 ## The JSON Workitem Format
-The Imixs Workflow JSON format for a workitem is based on the  JAX-B representation of a ItemCollcation provided by the Imixs-Core-API.  A single workitem can contain a variable list of items. Each item has a name attribute and a value. The value can be assigend with a specific xsd data type which will be reflected to the backend.
+The Imixs Workflow JSON format for a workitem is based on the  JAX-B representation of a ItemCollcation provided by the Imixs-Core-API.  A single workitem contains a list of items. Each item has a name and a value attribute. The value can be assigned with a specific *xsd data type* which will be reflected to the backend. This format is called the *BadgerFish Convention*.
  
-See the follwing example:
+See the following example:
  
 	{"item":[
 	   {"name":"$uniqueid","value":{"@type":"xs:string","$":"141cb98aecc-18544f1b"}},
@@ -21,7 +21,7 @@ See the follwing example:
 
 ##Creating a new process instance
 
-To create a new process instance the POST method of the Imixs Workflow REST API can be used. 
+To create a new process instance with a JSON request object, the POST method of the Imixs-Workflow REST API can be used in the following way: 
  
   * URI= http://localhost/workflow/rest-service/workflow/workitem.json
   * METHOD=POST
@@ -44,7 +44,7 @@ To create a new process instance the POST method of the Imixs Workflow REST API 
 
 
 ##Java RestClient Example
-Using the RestClient provided by the Imixs Workflow Core API the creation of a new workitem can be tested. See the following example code:
+Using the RestClient provided by the Imixs-Workflow Core API the creation of a new workitem can be tested. See the following example code:
  
 	package org.imixs.workflow.jee.jaxrs;
 	
