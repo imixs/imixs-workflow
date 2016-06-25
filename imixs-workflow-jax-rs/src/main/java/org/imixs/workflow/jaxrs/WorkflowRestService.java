@@ -70,7 +70,6 @@ import org.imixs.workflow.exceptions.WorkflowException;
 import org.imixs.workflow.jee.ejb.WorkflowService;
 import org.imixs.workflow.util.JSONParser;
 import org.imixs.workflow.xml.EntityCollection;
-import org.imixs.workflow.xml.XMLCount;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
@@ -276,11 +275,27 @@ public class WorkflowRestService {
 	public EntityCollection getWorkList(@DefaultValue("0") @QueryParam("start") int start,
 			@DefaultValue("10") @QueryParam("count") int count, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
+		
+		return getTaskListByOwner(null, start, count, type, sortorder, items);
+	}
+
+	@GET
+	@Path("/tasklist/owner/{owner}")
+	public EntityCollection getTaskListByOwner(@PathParam("owner") String owner,
+			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
+			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("sortorder") int sortorder,
+			@QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
-			col = workflowService.getWorkListByOwner(null,start, count, type, sortorder);
+			if ("null".equalsIgnoreCase(owner))
+				owner = null;
+	
+			// decode URL param
+			if (owner != null)
+				owner = URLDecoder.decode(owner, "UTF-8");
+	
+			col = workflowService.getWorkListByOwner(owner, start, count, type, sortorder);
 			return XMLItemCollectionAdapter.putCollection(col, EntityRestService.getItemList(items));
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -298,7 +313,7 @@ public class WorkflowRestService {
 	 */
 	@GET
 	@Path("/tasklist/author/{user}")
-	public EntityCollection getWorkListByAuthor(@PathParam("user") String user,
+	public EntityCollection getTaskListByAuthor(@PathParam("user") String user,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("sortorder") int sortorder,
 			@QueryParam("items") String items) {
@@ -323,7 +338,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/tasklist/creator/{creator}")
-	public EntityCollection getWorkListByCreator(@PathParam("creator") String creator,
+	public EntityCollection getTaskListByCreator(@PathParam("creator") String creator,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("sortorder") int sortorder,
 			@QueryParam("items") String items) {
@@ -349,7 +364,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/tasklist/processid/{processid}")
-	public EntityCollection getWorkListByProcessID(@PathParam("processid") int processid,
+	public EntityCollection getTaskListByProcessID(@PathParam("processid") int processid,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("sortorder") int sortorder,
 			@QueryParam("items") String items) {
@@ -366,7 +381,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/tasklist/group/{processgroup}")
-	public EntityCollection getWorkListByGroup(@PathParam("processgroup") String processgroup,
+	public EntityCollection getTaskListByGroup(@PathParam("processgroup") String processgroup,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("sortorder") int sortorder,
 			@QueryParam("items") String items) {
@@ -387,34 +402,8 @@ public class WorkflowRestService {
 
 
 	@GET
-	@Path("/tasklist/owner/{owner}")
-	public EntityCollection getWorkListByOwner(@PathParam("owner") String owner,
-			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
-			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("sortorder") int sortorder,
-			@QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
-		try {
-			if ("null".equalsIgnoreCase(owner))
-				owner = null;
-
-			// decode URL param
-			if (owner != null)
-				owner = URLDecoder.decode(owner, "UTF-8");
-
-			col = workflowService.getWorkListByOwner(owner, start, count, type, sortorder);
-			return XMLItemCollectionAdapter.putCollection(col, EntityRestService.getItemList(items));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return new EntityCollection();
-	}
-
-
-
-
-	@GET
-	@Path("/worklistbyref/{uniqueid}")
-	public EntityCollection getWorkListByRef(@PathParam("uniqueid") String uniqueid,
+	@Path("/tasklist/ref/{uniqueid}")
+	public EntityCollection getTaskListByRef(@PathParam("uniqueid") String uniqueid,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("sortorder") int sortorder,
 			@QueryParam("items") String items) {
@@ -430,30 +419,7 @@ public class WorkflowRestService {
 
 	
 
-	/**
-	 * Returns the size of a result set by JPQL Query
-	 * 
-	 * @param query
-	 * @return
-	 */
-	@GET
-	@Path("/worklistcountbyquery/{query}")
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public XMLCount getWorkListCountByQuery(@PathParam("query") String query) {
-
-		XMLCount result = new XMLCount();
-		result.count = (long) -1;
-		try {
-			// decode query...
-			String decodedQuery = URLDecoder.decode(query, "UTF-8");
-
-			int size = workflowService.getEntityService().countAllEntities(decodedQuery);
-			result.count = (long) size;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return result;
-	}
+	
 
 	/**
 	 * This method expects a form post and processes the WorkItem by the

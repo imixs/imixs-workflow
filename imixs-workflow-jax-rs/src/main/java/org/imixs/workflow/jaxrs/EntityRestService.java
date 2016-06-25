@@ -136,7 +136,7 @@ public class EntityRestService {
 	 * @return
 	 */
 	@GET
-	@Path("/entitiesbyquery/{query}")
+	@Path("/query/{query}")
 	public EntityCollection getEntitiesByQuery(
 			@PathParam("query") String query,
 			@DefaultValue("0") @QueryParam("start") int start,
@@ -166,9 +166,9 @@ public class EntityRestService {
 	 * @return
 	 */
 	@GET
-	@Path("/countentitiesbyquery/{query}")
+	@Path("/count/query/{query}")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public XMLCount getWorkListCountByQuery(@PathParam("query") String query) {
+	public XMLCount countEntitiesByQuery(@PathParam("query") String query) {
 		logger.fine("Query=" + query);
 		XMLCount result = new XMLCount();
 		result.count = (long) -1;

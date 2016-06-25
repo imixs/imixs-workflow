@@ -7,10 +7,8 @@ The /entity resources are used to get direct access to the entity service EJB:
 
 | URI                                     | Description                               | 
 |-----------------------------------------|-------------------------------------------|
-| /entity/entitiesbyquery/{query}         | a collection of entities specified by a JPQL phrase    |
-| /entity/entitiesbyquery/{query}.xml     | a collection of entities specified by a  JPQL phrase in xml format  |
-| /entity/entitiesbyquery/{query}.json    | a collection of entities specified by a  JPQL phrase in json format |
-| /entity/countentitiesbyquery/{query}    | the count of entities returned by a JPQL phrase      |
+| /entity/query/{query}          | a collection of entities specified by a JPQL phrase    |
+| /entity/count/query/{query}    | the count of entities returned by a JPQL phrase      |
 
  
 ## Resource Options

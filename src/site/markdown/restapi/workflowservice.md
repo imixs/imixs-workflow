@@ -16,14 +16,13 @@ The resource /workflow/tasklist/ returns collections of workitems:
 
 | URI                                           | Description                               | 
 |-----------------------------------------------|-------------------------------------------|
-| /workflow/tasklist/{user}                     | a collection of workitems representing the worklist by a specific user (or value 'null' for the current user)|             
+| /workflow/worklist                            | a collection of workitems representing the worklist for the current user |             
+| /workflow/tasklist/owner/{owner}              | a collection of workitems owned by a specific  user (or value 'null' for the current user)   |
 | /workflow/tasklist/creator/{creator}          | a collection of workitems created by a specific user (or value 'null' for the current user)                           |
 | /workflow/tasklist/processid/{processid}      | a collection of workitems in a specific    process state             |
 | /workflow/tasklist/group/{processgroup}       | a collection of workitems in a specific    process group                             |
-| /workflow/tasklist/owner/{owner}              | a collection of workitems owned by a specific  user (or value 'null' for the current user)   |
 | /workflow/tasklist/ref/{uniqueid}             | a collection of workitems referenced to a  specific uniqueid (childs)                |
 | /workflow/tasklist/query/{query}              | a collection of workitems specified by a  JPQL phrase                                |
-| /workflow/tasklist/query/count/{query}        | the count of workitems returned by a    JPQL phrase                                  |
 
 
 
