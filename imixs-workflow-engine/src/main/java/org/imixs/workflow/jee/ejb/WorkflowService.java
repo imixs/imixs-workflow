@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -98,7 +99,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	public static final int SORT_ORDER_MODIFIED_DESC = 2;
 	public static final int SORT_ORDER_MODIFIED_ASC = 3;
 
-	private int logLevel = WorkflowKernel.LOG_LEVEL_SEVERE;
 
 	@Inject
 	@Any
@@ -588,22 +588,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 			// aPlugin=null;
 			if (aPlugin != null) {
 				// register injected CDI Plugin
-				if (this.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
+				if (logger.isLoggable(Level.FINE))
 					logger.info("[WorkflowService] register CDI plugin class: " + aPluginClassName + "...");
 				workflowkernel.registerPlugin(aPlugin);
 			} else {
 				// register plugin by class name
 				workflowkernel.registerPlugin(aPluginClassName);
 			}
-		}
-
-		// determine Debuglevel....
-		String sDebug = profile.getItemValueString("keyDebugLevel");
-		try {
-			int idebug = Integer.parseInt(sDebug);
-			logLevel = idebug;
-		} catch (NumberFormatException e) {
-			logLevel = WorkflowKernel.LOG_LEVEL_SEVERE;
 		}
 
 		// identify Caller and update CurrentEditor
@@ -627,7 +618,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		// now process the workitem
 		workflowkernel.process(workitem);
 
-		if (this.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
+		if (logger.isLoggable(Level.FINE))
 			logger.info("[WorkflowManager] workitem processed sucessfull");
 
 		return entityService.save(workitem);
@@ -636,13 +627,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 
 	public void removeWorkItem(ItemCollection aworkitem) throws AccessDeniedException {
 		entityService.remove(aworkitem);
-	}
-
-	/***************************************************************************
-	 * Workflow Context
-	 */
-	public int getLogLevel() {
-		return logLevel;
 	}
 
 	/**

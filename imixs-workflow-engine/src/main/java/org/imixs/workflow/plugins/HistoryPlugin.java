@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -103,10 +102,8 @@ public class HistoryPlugin extends AbstractPlugin {
 		if (sZeitFormat == null || "".equals(sZeitFormat))
 			sZeitFormat = "2";
 
-		if (ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-			logger.info("[HistoryPlugin] logtimeformat=" + sZeitFormat);
-		if (ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-			logger.info("[HistoryPlugin] logdateformat=" + sDatumsFormat);
+			logger.fine("[HistoryPlugin] logtimeformat=" + sZeitFormat);
+			logger.fine("[HistoryPlugin] logdateformat=" + sDatumsFormat);
 
 		// get Time Date format...
 		int iDatumsFormat = -1;
@@ -116,8 +113,7 @@ public class HistoryPlugin extends AbstractPlugin {
 			iZeitFormat = Integer.parseInt(sZeitFormat);
 		} catch (NumberFormatException nfe) {
 			// invalid DateTime format found
-			if (ctx.getLogLevel() >= WorkflowKernel.LOG_LEVEL_WARNING)
-				logger.severe("[HistoryPlugin] error logtimeformat "
+			logger.fine("[HistoryPlugin] undefined logtimeformat "
 						+ nfe.toString());
 		}
 

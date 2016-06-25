@@ -29,11 +29,11 @@ package org.imixs.workflow.plugins;
 
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -179,10 +179,10 @@ public class AccessPlugin extends AbstractPlugin {
 
 		// update accesslist....
 		documentContext.replaceItemValue("$readAccess", vectorAccess);
-		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE) && (vectorAccess.size() > 0)) {
-			logger.info("[AccessPlugin] ReadAccess:");
+		if ((logger.isLoggable(Level.FINE)) && (vectorAccess.size() > 0)) {
+			logger.fine("[AccessPlugin] ReadAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.info("               '" + (String) vectorAccess.get(j) + "'");
+				logger.fine("               '" + (String) vectorAccess.get(j) + "'");
 		}
 
 		// update WriteAccess
@@ -196,10 +196,10 @@ public class AccessPlugin extends AbstractPlugin {
 
 		// update accesslist....
 		documentContext.replaceItemValue("$writeAccess", vectorAccess);
-		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE) && (vectorAccess.size() > 0)) {
-			logger.info("[AccessPlugin] WriteAccess:");
+		if ((logger.isLoggable(Level.FINE)) && (vectorAccess.size() > 0)) {
+			logger.fine("[AccessPlugin] WriteAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.info("               '" + (String) vectorAccess.get(j) + "'");
+				logger.fine("               '" + (String) vectorAccess.get(j) + "'");
 		}
 
 	}
@@ -247,8 +247,8 @@ public class AccessPlugin extends AbstractPlugin {
 			vectorAccess = itemRead;
 		else
 			vectorAccess = new Vector();
-		if (ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE)
-			logger.info("[AccessPlugin] AccessMode: '" + documentActivity.getItemValueString("keyaccessmode") + "'");
+
+		logger.fine("[AccessPlugin] AccessMode: '" + documentActivity.getItemValueString("keyaccessmode") + "'");
 
 		if (vectorAccess == null)
 			vectorAccess = new Vector();
@@ -263,10 +263,10 @@ public class AccessPlugin extends AbstractPlugin {
 
 		// save Vector
 		documentContext.replaceItemValue("$readAccess", vectorAccess);
-		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE) && (vectorAccess.size() > 0)) {
-			logger.info("[AccessPlugin] ReadAccess:");
+		if ((logger.isLoggable(Level.FINE)) && (vectorAccess.size() > 0)) {
+			logger.fine("[AccessPlugin] ReadAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.info("               '" + (String) vectorAccess.get(j) + "'");
+				logger.fine("               '" + (String) vectorAccess.get(j) + "'");
 		}
 
 		/**** now process write access ***/
@@ -294,10 +294,10 @@ public class AccessPlugin extends AbstractPlugin {
 
 		// save Vector
 		documentContext.replaceItemValue("$writeAccess", vectorAccess);
-		if ((ctx.getLogLevel() == WorkflowKernel.LOG_LEVEL_FINE) && (vectorAccess.size() > 0)) {
-			logger.info("[AccessPlugin] WriteAccess:");
+		if ((logger.isLoggable(Level.FINE)) && (vectorAccess.size() > 0)) {
+			logger.fine("[AccessPlugin] WriteAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.info("               '" + (String) vectorAccess.get(j) + "'");
+				logger.fine("               '" + (String) vectorAccess.get(j) + "'");
 		}
 
 	}

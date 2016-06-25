@@ -55,10 +55,4 @@ public interface WorkflowContext {
 	 */
 	public Model getModel();
 
-	/**
-	 * This Methode returns the defined DebugLevel.
-	 * 
-	 * @return DebugLevel
-	 */
-	public int getLogLevel();
 }

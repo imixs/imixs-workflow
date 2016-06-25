@@ -6,7 +6,6 @@ public class MokWorkflowContext implements WorkflowContext {
 
 	@Override
 	public Object getSessionContext() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -15,12 +14,5 @@ public class MokWorkflowContext implements WorkflowContext {
 		return new MokModel();
 	}
 
-	@Override
-	public int getLogLevel() {
-		return WorkflowKernel.LOG_LEVEL_FINE;
-	}
-	
-	
-	
 
 }

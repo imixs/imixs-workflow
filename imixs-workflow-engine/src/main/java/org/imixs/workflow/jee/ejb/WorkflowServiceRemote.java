@@ -217,11 +217,6 @@ public interface WorkflowServiceRemote {
 
 	public abstract void removeWorkItem(ItemCollection aworkitem) throws AccessDeniedException;
 
-	/***************************************************************************
-	 * Workflow Context
-	 */
-	public abstract int getLogLevel();
-
 	/**
 	 * This Method returns the modelManager Instance. The current ModelVersion
 	 * is automatically updated during the Method updateProfileEntity which is

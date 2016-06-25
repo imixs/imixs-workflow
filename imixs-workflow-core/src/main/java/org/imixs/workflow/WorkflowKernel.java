@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.exceptions.PluginException;
@@ -49,10 +50,6 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 
 public class WorkflowKernel {
 
-	/** Log-Levels **/
-	public static final int LOG_LEVEL_SEVERE = 0;
-	public static final int LOG_LEVEL_WARNING = 1;
-	public static final int LOG_LEVEL_FINE = 2;
 	public static final String UNDEFINED_PROCESSID = "UNDEFINED_PROCESSID";
 	public static final String UNDEFINED_ACTIVITYID = "UNDEFINED_ACTIVITYID";
 	public static final String UNDEFINED_WORKITEM = "UNDEFINED_WORKITEM";
@@ -113,7 +110,7 @@ public class WorkflowKernel {
 	public void registerPlugin(String pluginClass) throws PluginException {
 
 		if ((pluginClass != null) && (!"".equals(pluginClass))) {
-			if (ctx.getLogLevel() == LOG_LEVEL_FINE)
+			if (logger.isLoggable(Level.FINE))
 				logger.info("[WorkflowKernel] register plugin class: "
 						+ pluginClass + "...");
 
@@ -323,14 +320,7 @@ public class WorkflowKernel {
 				+ ", $activityid="
 				+ documentContext.getItemValueInteger(ACTIVITYID);
 
-		if (ctx != null) {
-			if (ctx.getLogLevel() == LOG_LEVEL_FINE)
-				msg += ", Log-Level=FINE ";
-			else if (ctx.getLogLevel() == LOG_LEVEL_WARNING)
-				msg += ", Log-Level=WARNING ";
-			else
-				msg += ", Log-Level=SEVERE ";
-		} else {
+		if (ctx == null) {
 			logger.warning("[WorkflowKernel] no WorkflowContext defined!");
 		}
 		logger.info(msg);
@@ -360,7 +350,7 @@ public class WorkflowKernel {
 		/*** get Next Task **/
 		int iNewProcessID = documentActivity
 				.getItemValueInteger("numnextprocessid");
-		if (ctx.getLogLevel() == LOG_LEVEL_FINE)
+		if (logger.isLoggable(Level.FINE))
 			logger.info("[WorkflowKernel] next $processid=" + iNewProcessID
 					+ "");
 
@@ -409,7 +399,7 @@ public class WorkflowKernel {
 		}
 
 		documentContext.replaceItemValue(ACTIVITYIDLIST, vActivityList);
-		if (ctx.getLogLevel() == LOG_LEVEL_FINE)
+		if (logger.isLoggable(Level.FINE))
 			logger.info("[WorkflowKernel]  append new Activity ID=" + aID);
 
 	}
@@ -497,7 +487,7 @@ public class WorkflowKernel {
 					"[WorkflowKernel] model entry " + aProcessID + "."
 							+ aActivityID + " not found");
 
-		if (ctx.getLogLevel() == LOG_LEVEL_FINE)
+		if (logger.isLoggable(Level.FINE))
 			logger.info("[WorkflowKernel] WorkflowActivity: " + aProcessID
 					+ "." + aActivityID + " loaded successful");
 
@@ -528,7 +518,7 @@ public class WorkflowKernel {
 			for (Plugin plugin : vectorPlugins) {
 
 				sPluginName = plugin.getClass().getName();
-				if (ctx.getLogLevel() == LOG_LEVEL_FINE)
+				if (logger.isLoggable(Level.FINE))
 					logger.info("[WorkflowKernel] running Plugin: "
 							+ sPluginName + "...");
 
@@ -565,19 +555,13 @@ public class WorkflowKernel {
 	}
 
 	private void closePlugins(int astatus) throws PluginException {
-
 		for (int i = 0; i < vectorPlugins.size(); i++) {
 			Plugin plugin = (Plugin) vectorPlugins.elementAt(i);
-			if (ctx.getLogLevel() == LOG_LEVEL_FINE)
+			if (logger.isLoggable(Level.FINE))
 				logger.info("[WorkflowKernel] closing Plugin: "
 						+ plugin.getClass().getName() + "...");
 			plugin.close(astatus);
 		}
-		// reset registered Plugins
-
-		// bullshit
-		// vectorPlugins = new Vector<Plugin>();
-
 	}
 
 }

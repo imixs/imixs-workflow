@@ -28,6 +28,7 @@
 package org.imixs.workflow.plugins.jee;
 
 import java.util.Collection;
+import java.util.logging.Logger;
 
 import javax.ejb.EJBTransactionRolledbackException;
 
@@ -91,6 +92,8 @@ public class VersionPlugin extends AbstractPlugin {
 	private ItemCollection version = null;
 	private ItemCollection documentContext = null;
 
+	private static Logger logger = Logger.getLogger(VersionPlugin.class.getName());
+	
 	/**
 	 * the init method throws an exception if the plugin is not run in a
 	 * instance of org.imixs.workflow.jee.ejb.WorkflowManager. This is necessary
@@ -162,9 +165,9 @@ public class VersionPlugin extends AbstractPlugin {
 
 				version = createVersion(documentContext);
 
-				if (this.ctx.getLogLevel() > 0)
-					System.out.println("[VersionPlugin] new version created");
-				// check if workitem should be processed
+				logger.fine("[VersionPlugin] new version created");
+
+					// check if workitem should be processed
 				if (versionActivityID > 0) {
 					version.replaceItemValue("$ActivityID", versionActivityID);
 					version.replaceItemValue(PROCESSING_VERSION_ATTRIBUTE, true);
