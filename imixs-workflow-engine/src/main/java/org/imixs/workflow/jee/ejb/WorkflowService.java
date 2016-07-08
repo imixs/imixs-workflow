@@ -169,15 +169,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + " JOIN wi.textItems as s "
+		sQuery += " wi FROM Entity as wi "
 				+ "WHERE ";
 
 		if (type != null && !"".equals(type))
-			sQuery += " wi.type='" + type + "' AND ";
+			sQuery += " wi.type='" + type + "' ";
 
-		sQuery += " s.itemName = '$workitemid' "
-				+ createSortOrderClause(sortorder);
-		;
+		sQuery += createSortOrderClause(sortorder);
 		return entityService.findAllEntities(sQuery, startpos, count);
 	}
 
@@ -222,13 +220,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		String sQuery = null;
 		sQuery = "SELECT";
 		sQuery += " wi FROM Entity as wi " + " JOIN wi.writeAccessList as wa"
-				+ " JOIN wi.textItems as s " + "WHERE ";
+				+ " WHERE ";
 
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
 		sQuery += " wa.value = '" + name + "'"
-				+ " AND s.itemName = '$workitemid' "
 				+ createSortOrderClause(sortorder);
 		return entityService.findAllEntities(sQuery, startpos, count);
 	}
@@ -274,12 +271,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		String sQuery = null;
 		sQuery = "SELECT";
 		sQuery += " wi FROM Entity as wi"
-				+ " JOIN wi.textItems as t JOIN wi.textItems as s " + "WHERE ";
+				+ " JOIN wi.textItems as t " + "WHERE ";
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
 		sQuery += " t.itemName = 'namcreator' and t.itemValue = '" + name + "'"
-				+ " AND s.itemName = '$workitemid' "
 				+ createSortOrderClause(sortorder);
 
 		return entityService.findAllEntities(sQuery, startpos, count);
@@ -316,12 +312,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		String sQuery = null;
 		sQuery = "SELECT";
 		sQuery += " wi FROM Entity as wi"
-				+ " JOIN wi.textItems as t JOIN wi.textItems as s " + "WHERE ";
+				+ " JOIN wi.textItems as t " + "WHERE ";
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
 		sQuery += " t.itemName = 'namowner' and t.itemValue = '" + name + "'"
-				+ " AND s.itemName = '$workitemid' "
 				+ createSortOrderClause(sortorder);
 
 		return entityService.findAllEntities(sQuery, startpos, count);
@@ -386,13 +381,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		String sQuery = null;
 		sQuery = "SELECT";
 		sQuery += " wi FROM Entity as wi " + " JOIN wi.textItems as t "
-				+ " JOIN wi.textItems as s " + "WHERE ";
+				+ " WHERE ";
 
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
 		sQuery += " t.itemName = 'txtworkflowgroup' and t.itemValue = '" + name
-				+ "'" + " AND s.itemName = '$workitemid' "
+				+ "'"
 				+ createSortOrderClause(sortorder);
 		return entityService.findAllEntities(sQuery, startpos, count);
 	}
@@ -424,14 +419,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		String sQuery = null;
 		sQuery = "SELECT";
 		sQuery += " wi FROM Entity as wi "
-				+ " JOIN wi.integerItems as t JOIN wi.textItems as s "
+				+ " JOIN wi.integerItems as t "
 				+ "WHERE ";
 
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
 		sQuery += " t.itemName = '$processid' and t.itemValue = '" + aid + "'"
-				+ " AND s.itemName = '$workitemid' "
 				+ createSortOrderClause(sortorder);
 
 		return entityService.findAllEntities(sQuery, startpos, count);
@@ -478,12 +472,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext,
 		String sQuery = null;
 		sQuery = "SELECT";
 		sQuery += " wi FROM Entity as wi "
-				+ " JOIN wi.textItems as t JOIN wi.textItems as s " + "WHERE ";
+				+ " JOIN wi.textItems as t " + "WHERE ";
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
 		sQuery += " t.itemName = '$uniqueidref' and t.itemValue = '" + aref
-				+ "'" + " and s.itemName = '$workitemid' "
+				+ "'"
 				+ createSortOrderClause(sortorder);
 
 		return entityService.findAllEntities(sQuery, startpos, count);
