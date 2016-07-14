@@ -115,6 +115,12 @@ To convert the item value the tag 'convert'  can be appended behind the item nam
 
 In case the value is not from the specified type (Double, Integer) the value will be converted into a double or integer object. In case the value can not be converted the value will be reset to 0. 
 
+### Embedded Child Items
+A Workitem can optional contain embedded child items in a single item value. An embedded ChildItem can be named in the attribute list of a report by seperating the ChildItem name from the item name inside the child with a '~'. For example:
+
+    _childItems~amount
+
+This attribute definition will extend the JPQL result with all embedded Child Items stored in the attribute '_childItems' and containing the item 'amount'. 
 
 ## The XSL Transformation
 To transform the result of a report definition into various output formats a XSL template can be added into each report.  
