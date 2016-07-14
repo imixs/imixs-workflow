@@ -109,11 +109,8 @@ public class ReportService implements ReportServiceRemote {
 	public List<ItemCollection> getReportList() {
 		String sQuery = null;
 		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi "
-				+ " JOIN wi.textItems t "
-				+ " WHERE wi.type = 'ReportEntity' "
-				+ " AND t.itemName='txtname' "
-				+ " ORDER BY t.itemValue ASC";
+		sQuery += " wi FROM Entity as wi " + " JOIN wi.textItems t " + " WHERE wi.type = 'ReportEntity' "
+				+ " AND t.itemName='txtname' " + " ORDER BY t.itemValue ASC";
 
 		List<ItemCollection> col = entityService.findAllEntities(sQuery, 0, -1);
 
@@ -265,35 +262,21 @@ public class ReportService implements ReportServiceRemote {
 			// next we iterate over all entities from the result set and clone
 			// each entity with the given itemList
 			for (ItemCollection entity : result) {
-				ItemCollection clone = new ItemCollection();
-				Set<String> fieldNames = formatMap.keySet();
-				for (String field : fieldNames) {
 
-					// first look for converter
-					String converter = converterMap.get(field);
-					// did we have a format definition?
-					if (converter != null) {
-						entity = convertItemValue(entity, field, converter);
+				// in case _ChildItems are requested the entity will be
+				// duplicated for each child attribute.
+				// a child item is identified by the '~' char in the item name
+				List<ItemCollection> embeddedChildItems = getEmbeddedChildItems(entity, formatMap.keySet());
+				if (!embeddedChildItems.isEmpty()){
+					for (ItemCollection child: embeddedChildItems) {
+						ItemCollection clone = cloneEntity(child, formatMap, converterMap);
+						clonedResult.add(clone);
 					}
-
-					String format = formatMap.get(field);
-					// did we have a format definition?
-					if (!format.isEmpty()) {
-						String sLocale = XMLParser.findAttribute(format, "locale");
-						// create string array of formated values
-						ArrayList<String> vValues = new ArrayList<String>();
-						List<?> rawValues = entity.getItemValue(field);
-						for (Object rawValue : rawValues) {
-							vValues.add(formatObjectValue(rawValue, format, sLocale));
-						}
-						clone.replaceItemValue(field, vValues);
-
-					} else {
-						// not format definition - clone value as is
-						clone.replaceItemValue(field, entity.getItemValue(field));
-					}
+				} else {
+					// default - clone the entity
+					ItemCollection clone = cloneEntity(entity, formatMap, converterMap);
+					clonedResult.add(clone);
 				}
-				clonedResult.add(clone);
 			}
 			logger.fine("executed report '" + reportName + "' in " + (System.currentTimeMillis() - l) + "ms");
 			return clonedResult;
@@ -301,6 +284,91 @@ public class ReportService implements ReportServiceRemote {
 			logger.fine("executed report '" + reportName + "' in " + (System.currentTimeMillis() - l) + "ms");
 			return result;
 		}
+	}
+
+	/**
+	 * This method returns all embedded child items of a entity. The childItem
+	 * are identified by a fieldname containing a '~'. The left part is the
+	 * container item (List of Map), the right part is the attribute name in the
+	 * child itemcollection.
+	 * 
+	 * @param entity
+	 * @param keySet
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private List<ItemCollection> getEmbeddedChildItems(ItemCollection entity, Set<String> fieldNames) {
+		List<String> embeddedItemNames = new ArrayList<String>();
+		List<ItemCollection> result = new ArrayList<ItemCollection>();
+		// first find all items containing a child element
+		for (String field : fieldNames) {
+			field=field.toLowerCase();
+			if (field.contains("~")) {
+				field = field.substring(0,field.indexOf('~'));
+				if (!embeddedItemNames.contains(field)) {
+					embeddedItemNames.add(field);
+				}
+			}
+		}
+		if (!embeddedItemNames.isEmpty()) {
+			for (String field : embeddedItemNames) {
+				List<Object> mapChildItems = entity.getItemValue(field);
+				// try to convert
+				for (Object mapOderItem : mapChildItems) {
+					if (mapOderItem instanceof Map) {
+						ItemCollection child=new ItemCollection((Map)mapOderItem);
+						// clone entity and add all map entries
+						ItemCollection clone=new ItemCollection(entity);
+							Set<String> childFieldNameList = child.getAllItems().keySet();
+						for(String childFieldName : childFieldNameList) {
+							clone.replaceItemValue(field+"~"+childFieldName, child.getItemValue(childFieldName));
+						}
+						result.add(clone);
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * This helper method clones a entity with a given format and converter map.
+	 * 
+	 * @param formatMap
+	 * @param converterMap
+	 * @param entity
+	 * @return
+	 */
+	private ItemCollection cloneEntity(ItemCollection entity, Map<String, String> formatMap,
+			Map<String, String> converterMap) {
+		ItemCollection clone = new ItemCollection();
+		Set<String> fieldNames = formatMap.keySet();
+		for (String field : fieldNames) {
+			// first look for converter
+			String converter = converterMap.get(field);
+			// did we have a format definition?
+			if (converter != null) {
+				entity = convertItemValue(entity, field, converter);
+			}
+
+			String format = formatMap.get(field);
+			// did we have a format definition?
+			if (!format.isEmpty()) {
+				String sLocale = XMLParser.findAttribute(format, "locale");
+				// create string array of formated values
+				ArrayList<String> vValues = new ArrayList<String>();
+				List<?> rawValues = entity.getItemValue(field);
+				for (Object rawValue : rawValues) {
+					vValues.add(formatObjectValue(rawValue, format, sLocale));
+				}
+				clone.replaceItemValue(field, vValues);
+
+			} else {
+				// not format definition - clone value as is
+				clone.replaceItemValue(field, entity.getItemValue(field));
+			}
+		}
+		return clone;
 	}
 
 	/**
