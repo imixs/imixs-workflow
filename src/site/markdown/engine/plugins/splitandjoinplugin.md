@@ -1,23 +1,23 @@
 #Split & Joins 
-The Imixs Split & Join Plugin provides functionality to create and update sub-process instances from a workflow event (origin process),  or update the origin process from a sub-process instance.
+The Imixs Split & Join Plug-in provides the functionality to create and update sub-process instances from an existing process instance (origin process),  or to update the origin process instance based on the processing instruction of a subprocess instance. 
 
 	org.imixs.workflow.plugins.jee.SplitAndJoinPlugin
 
-A 'split' means that a new subprocess is started which is linked to the current process instance (origin process). A 'join' means that a subprocess can update the origin process or provide data from the subprocess instance. The Split & Join definition can be specified using the [Imixs-BPMN modelling tool](../../modelling/index.html).  
+A 'split' means that a new subprocess instance will be created and linked to the current process instance (origin process). A 'join' means that a subprocess instance will update the origin process instance. The Split & Join definition is defined in the workflow result of a Imixs-BPMN Event definition using the [Imixs-BPMN modelling tool](../../modelling/index.html).   
 
-The plugin evaluates the following items defined in the workflow result ("txtactivityResult"):
-
+The plug-in evaluates the following items definition of a workflow result ("txtactivityResult"):
  
  * <strong>subprocess_create</strong> = create a new subprocess assigned to the current workitem 
  * <strong>subprocess_update</strong> = update an existing subprocess assigned to the current workitem
  * <strong>origin_update</strong> = update the origin process assigned to the current workitem
  
-A subprocess will contain the $UniqueID of the origin process stored in the property $uniqueidRef. The origin process will contain a link to the subprocess stored in the property txtworkitemRef. So both workitems are linked together.
+A subprocess instance will contain the ID of the origin process instance stored in the property $uniqueidRef. The origin process will contain a link to the subprocess stored in the property txtworkitemRef. So both workitems are linked together.
  
+<img src="../../images/engine/split-and-join-ref.png"/> 
  
-## Create a Subprocess
+## Creating a new Subprocess
  
-To create a new subprocess during the processing life cycle a item named 'subprocess_create' need to be defined in the activity result. See the following example: 
+To create a new subprocess instance during the processing life cycle of an origin process, a item named 'subprocess_create' need to be defined in the corresponding activity result. See the following example: 
  
 	<item name="subprocess_create">
 		<modelversion>1.0.0</modelversion>
@@ -26,13 +26,29 @@ To create a new subprocess during the processing life cycle a item named 'subpro
 		<items>namTeam</items>
 	</item>
 
-In this example a new subprocess with the model version '1.0.0' and the intial processID 100 will be processed by the activityID 10. The tag 'items' defines a list of attributes to be added from the origin process into the new subprocess.
- It is possible to define multiple subprocess definitions. For each definition a new subprocess will be created. Both workitems are connected to each other. The subprocess will contain the $UniqueID of the origin process stored in the property $uniqueidRef. The origin process will contain a link to the subprocess stored in the property txtworkitemRef.
- 
- 
-## Update a Subprocess
+This example will create a new subprocess instance with the model version '1.0.0' and the intial processID 100, which will be processed by the activityID 10. The tag 'items' defines a list of attributes to be copied from the origin process into the new subprocess.
 
-To update an existing subprocess during the processing life cycle a item named 'subprocess_update' need to be defined in the activity result. See the following example: 
+Both workitems will be connected to each other. The subprocess will contain the $UniqueID of the origin process stored in the property $uniqueidRef. The origin process will contain a link to the subprocess stored in the property txtworkitemRef. So it is possible to navigate between the process instances.
+ 
+It is also possible to define multiple subprocess definitions in one workflow result. For each separate definition a new subprocess will be created.
+
+### Copy Attributes
+
+The tag 'items' specifies a list of items to be copied from the origin workitem into the subprocess workitem. The tag may contain a list of items separated by comma. 
+
+    <items>namTeam,txtName,_orderNumber</items>
+
+To avoid item name conflicts the item name in the target workitem can be changed by separating the new item name by a '|' char. 
+
+    <items>namTeam,txtName,_orderNumber|_origin_orderNumber</items>
+
+In this example the item '_ordernumber' will be copied into the target workitem with the new item name '_origin_ordernumber'.
+
+
+ 
+## Updating a Subprocess
+
+To update an existing subprocess instance during the processing life cycle of the origin process, a item named 'subprocess_update' can be defined in the corresponding activity result. See the following example: 
  
 	<item name="subprocess_update">
 		<modelversion>1.0.0</modelversion>
@@ -42,7 +58,7 @@ To update an existing subprocess during the processing life cycle a item named '
 	</item>
 
 
-The activityid defines the workflow event to be processed on the matching subprocess instance. The tag 'items' defines a list of attributes to be added from the origin process into the new subprocess.
+The activityid defines the workflow event to be processed on the matching subprocess instance. The tag 'items' defines the list of attributes to be added or updated from the origin process into the new subprocess.
 Subprocesses and the origin process are connected to each other. The subprocess will contain the $UniqueID of the origin process stored in the property $uniqueidRef. The origin process will contain a link to the subprocess stored in the property txtworkitemRef.
 
 
@@ -69,15 +85,15 @@ To match all processIds between 1000 and 1999 the following regular expression c
 
 
 
-## Update the Origin Process
+## Updating the Origin Process
 
-To join the data and status of a subprocess with the origin process a item named 'origin_update' can be defined in the txtactivityResult. 
-Only one definition to update the orgian process is allowed in a subprocess event. See the following example:
+To join the data and status of a subprocess instance with the origin process instance a item named 'origin_update' can be defined in the activity result of a subprocess definition. 
+Only one definition to update the origin process is allowed in a subprocess event. See the following example:
 
 	<item name="origin_update">
 		<activityid>20</activityid>
 		<items>namTeam</items>
 	</item>
 
-The definition will update the origin process instance linked to the current subprocess. 
-The tag 'items' defines a list of attributes to be updated from the subprocess into the origin process.
+The definition will update the origin process instance linked to the current subprocess. As the origin process instance is uniquely defined by the attribute $UniqueIDRef no further expression is needed in this case.   
+The tag 'items' defines the list of attributes to be updated from the subprocess into the origin process.
