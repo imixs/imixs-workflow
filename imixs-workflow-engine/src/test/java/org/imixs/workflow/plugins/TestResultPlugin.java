@@ -145,7 +145,7 @@ public class TestResultPlugin {
 		int result;
 		try {
 			// exception expected
-			result = resultPlugin.run(adocumentContext,adocumentActivity);
+			result = resultPlugin.run(adocumentContext, adocumentActivity);
 
 			Assert.fail();
 
@@ -161,7 +161,7 @@ public class TestResultPlugin {
 
 		try {
 			// exception expected
-			result = resultPlugin.run(adocumentContext,adocumentActivity);
+			result = resultPlugin.run(adocumentContext, adocumentActivity);
 
 			Assert.fail();
 
@@ -185,11 +185,11 @@ public class TestResultPlugin {
 		sResult += "\n<item name=\"txtname\">Sam</item>";
 
 		ItemCollection activityEntity = new ItemCollection();
-			activityEntity.replaceItemValue("txtActivityResult",sResult);
-			
+		activityEntity.replaceItemValue("txtActivityResult", sResult);
+
 		// expeced txtname= Manfred,Anna,Sam
 		ItemCollection evalItemCollection = new ItemCollection();
-		evalItemCollection=ResultPlugin.evaluateWorkflowResult(activityEntity,new ItemCollection());
+		evalItemCollection = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
 
 		Assert.assertTrue(evalItemCollection.hasItem("txtName"));
 
@@ -229,7 +229,7 @@ public class TestResultPlugin {
 	}
 
 	@Test
-	public void testevaluateWorkflowRestult() {
+	public void testevaluateWorkflowResult() {
 		ItemCollection activityEntity = new ItemCollection();
 
 		try {
@@ -258,9 +258,88 @@ public class TestResultPlugin {
 			Assert.fail();
 		}
 	}
-	
-	
-	
+
+	/**
+	 * This test evaluates an embedded xml content with newline chars used by
+	 * the split plugin
+	 * 
+	 * <code>
+	 * <item name="subprocess_create">
+		    <modelversion>controlling-analyse-de-1.0.0</modelversion>
+		    <processid>1000</processid>
+		    <activityid>100</activityid> 
+		    <items>_subject,_sender,_receipients,$file</items>
+		</item>
+	 * </code>
+	 * 
+	 * The test also test string variants with different newlines!
+	 */
+	@Test
+	public void testevaluateWorkflowResultEmbeddedXMLContent() {
+		ItemCollection activityEntity = new ItemCollection();
+		try {
+
+			// 1) create test result single line mode.....
+			String activityResult = "<item name=\"subprocess_create\">"
+					+ "    <modelversion>analyse-1.0.0</modelversion>" 
+					+ "	    <processid>1000</processid>"
+					+ "	    <activityid>100</activityid>" 
+					+ "	    <items>_subject,_sender,_receipients,$file</items>"
+					+ "	</item>";
+
+			activityEntity.replaceItemValue("txtActivityResult", activityResult);
+			ItemCollection result = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
+			Assert.assertNotNull(result);
+			Assert.assertTrue(result.hasItem("subprocess_create"));
+			String xmlContent = result.getItemValueString("subprocess_create");
+			Assert.assertFalse(xmlContent.isEmpty());
+			Assert.assertTrue(xmlContent.contains("<modelversion>analyse-1.0.0</modelversion>"));
+
+			
+			
+			
+			
+			// 2) create test result unix mode.....
+			activityResult = "<item name=\"subprocess_create\">\n" 
+					+ "    <modelversion>analyse-1.0.0</modelversion>\n"
+					+ "	    <processid>1000</processid>\n" + "	    <activityid>100</activityid>\n"
+					+ "	    <items>_subject,_sender,_receipients,$file</items>\n" 
+					+ "	</item>";
+
+			activityEntity.replaceItemValue("txtActivityResult", activityResult);
+			result = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
+			Assert.assertNotNull(result);
+			Assert.assertTrue(result.hasItem("subprocess_create"));
+			xmlContent = result.getItemValueString("subprocess_create");
+			Assert.assertFalse(xmlContent.isEmpty());
+			Assert.assertTrue(xmlContent.contains("<modelversion>analyse-1.0.0</modelversion>"));
+			
+			
+			
+			
+			
+			// 3) create test result windows mode.....
+			activityResult = "<item name=\"subprocess_create\">\r\n" 
+			+ "    <modelversion>analyse-1.0.0</modelversion>\r\n"
+			+ "	    <processid>1000</processid>\r\n" 
+			+ "	    <activityid>100</activityid>\r\n"
+			+ "	    <items>_subject,_sender,_receipients,$file</items>\r\n" 
+			+ "	</item>";
+
+			activityEntity.replaceItemValue("txtActivityResult", activityResult);
+			result = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
+			Assert.assertNotNull(result);
+			Assert.assertTrue(result.hasItem("subprocess_create"));
+			xmlContent = result.getItemValueString("subprocess_create");
+			Assert.assertFalse(xmlContent.isEmpty());
+			Assert.assertTrue(xmlContent.contains("<modelversion>analyse-1.0.0</modelversion>"));
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+	}
+
 	/**
 	 * testing invalid item tag formats
 	 */
@@ -277,7 +356,7 @@ public class TestResultPlugin {
 		} catch (PluginException e) {
 			// ok
 		}
-		
+
 		try {
 			// test wrong closing tag
 			activityEntity.replaceItemValue("txtActivityResult",
@@ -288,7 +367,6 @@ public class TestResultPlugin {
 			// ok
 		}
 
-		
 	}
 
 	/*

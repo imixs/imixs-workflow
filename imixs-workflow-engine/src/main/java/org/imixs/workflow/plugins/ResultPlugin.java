@@ -388,7 +388,7 @@ public class ResultPlugin extends AbstractPlugin {
 
 		// extract all <item> tags with attributes using regex (including empty
 		// item tags)
-		Pattern pattern = Pattern.compile("<item(.*?)>(.*?)</item>|<item(.*?)./>");
+		Pattern pattern = Pattern.compile("<item(.*?)>(.*?)</item>|<item(.*?)./>",Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(workflowResult);
 		while (matcher.find()) {
 			invalidPattern = false;
@@ -468,7 +468,7 @@ public class ResultPlugin extends AbstractPlugin {
 		// test for general invalid format
 		if (invalidPattern) {
 			throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_FORMAT,
-					"invalid <item> tag format - expected <item name=\"...\" ...></item>");
+					"invalid <item> tag format - expected <item name=\"...\" ...></item>  -> workflowResult="+workflowResult);
 		}
 
 		return result;
