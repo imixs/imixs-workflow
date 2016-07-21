@@ -51,31 +51,12 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class AbstractPluginTest extends AbstractWorkflowEnvironment {
-	protected WorkflowService workflowService = new WorkflowService();
-
-	public static final String DEFAULT_MODEL_VERSION="1.0.0";
-		@Before
+	
+	@Before
 	public void setup() throws PluginException {
 
 		super.setup();
-
-		// mock workflowService
-		workflowService = Mockito.mock(WorkflowService.class);
-		workflowContext = Mockito.mock(WorkflowContext.class);
-		workflowService.entityService = entityService;
-		workflowService.ctx = ctx;
-
-		ModelManager modelManager = Mockito.mock(ModelManager.class);
-		try {
-			when (modelManager.getModel(Mockito.anyString())).thenReturn(this.getModel());
-		} catch (ModelException e) {
-			e.printStackTrace();
-		}
-
-		
-		
-		when(workflowContext.getModelManager()).thenReturn(modelManager);
-
+/*
 		// simulate a workitemService.process call
 		when(workflowService.processWorkItem(Mockito.any(ItemCollection.class)))
 				.thenAnswer(new Answer<ItemCollection>() {
@@ -95,7 +76,7 @@ public class AbstractPluginTest extends AbstractWorkflowEnvironment {
 
 					}
 				});
-
+*/
 		// simulate a workitemService.getWorkitem call
 		when(workflowService.getWorkItem(Mockito.anyString())).thenAnswer(new Answer<ItemCollection>() {
 			@Override

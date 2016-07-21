@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -31,23 +32,11 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestWorkflowService extends AbstractWorkflowEnvironment {
-
-	@Spy
-	private WorkflowService workflowService;
+	public static final String DEFAULT_MODEL_VERSION="1.0.0";
 
 	@Before
 	public void setup() throws PluginException {
-		// initialize @Mock annotations....
-		MockitoAnnotations.initMocks(this);
-
 		super.setup();
-
-		workflowService.entityService = entityService;
-		workflowService.ctx = ctx;
-
-		workflowService.modelService = modelService;
-		when(workflowService.getModelManager()).thenReturn(modelService);
-
 	}
 
 	/**
@@ -64,24 +53,10 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 	public void testProcessSimple() throws AccessDeniedException, ProcessingErrorException, PluginException {
 		// load test workitem
 		ItemCollection workitem = database.get("W0000-00001");
-
-		// simulate findModelProfile(String modelversion)
-		when(entityService.findAllEntities(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
-				.thenAnswer(new Answer<List<ItemCollection>>() {
-					@Override
-					public List<ItemCollection> answer(InvocationOnMock invocation) throws Throwable {
-						Object[] args = invocation.getArguments();
-						String query = (String) args[0];
-						if (query.contains("1.0.0")) {
-							ItemCollection result = database.get("ENV0000-0000");
-							List<ItemCollection> resultList = new ArrayList<ItemCollection>();
-							resultList.add(result);
-							return resultList;
-						} else
-							return null;
-					}
-				});
-
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION,DEFAULT_MODEL_VERSION);
+		workitem.replaceItemValue(WorkflowKernel.PROCESSID,100);
+		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID,10);
+	
 		workitem = workflowService.processWorkItem(workitem);
 
 		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));

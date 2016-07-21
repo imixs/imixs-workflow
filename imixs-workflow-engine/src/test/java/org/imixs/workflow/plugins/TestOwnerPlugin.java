@@ -32,6 +32,9 @@ public class TestOwnerPlugin extends AbstractPluginTest {
 
 	@Before
 	public void setup() throws PluginException {
+		
+		this.setModelPath("/bpmn/TestOwnerPlugin.bpmn");
+		
 		super.setup();
 
 		ownerPlugin = new OwnerPlugin();
@@ -156,12 +159,8 @@ public class TestOwnerPlugin extends AbstractPluginTest {
 	@Test
 	public void testNoUpdate() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(100, 10);
-		Vector<String> list = new Vector<String>();
-		list.add("sam");
-		list.add("joe");
-		documentActivity.replaceItemValue("namOwnershipNames", list);
-
+		documentActivity = this.getModel().getEvent(100, 20);
+		
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {

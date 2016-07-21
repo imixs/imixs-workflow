@@ -31,7 +31,8 @@ public class TestAccessPlugin extends AbstractPluginTest {
 
 	@Before
 	public void setup() throws PluginException {
-
+		this.setModelPath("/bpmn/TestAccessPlugin.bpmn");
+		
 		super.setup();
 
 		accessPlugin = new AccessPlugin();
@@ -45,27 +46,14 @@ public class TestAccessPlugin extends AbstractPluginTest {
 		// prepare data
 		documentContext = new ItemCollection();
 		documentContext.replaceItemValue("$processid", 100);
-		logger.info("[TestAccessPlugin] setup test data...");
-		Vector<String> list = new Vector<String>();
-		list.add("manfred");
-		list.add("anna");
-		documentContext.replaceItemValue("namTeam", list);
-
-		documentContext.replaceItemValue("namCreator", "ronny");
+		
 	}
 
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void simpleTest() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(100, 10);
-		documentActivity.replaceItemValue("keyupdateAcl", true);
-
-		Vector<String> list = new Vector<String>();
-		list.add("sam");
-		list.add("joe");
-		documentActivity.replaceItemValue("namaddwriteaccess", list);
-		
+		documentActivity = this.getModel().getEvent(100, 10);	
 		try {
 			accessPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -83,16 +71,37 @@ public class TestAccessPlugin extends AbstractPluginTest {
 
 	@SuppressWarnings({ "rawtypes" })
 	@Test
+	public void testNoUpdate() throws ModelException {
+		documentActivity = this.getModel().getEvent(100, 20);
+		
+		
+		try {
+			accessPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+	
+			e.printStackTrace();
+			Assert.fail();
+		}
+	
+		List writeAccess = documentContext.getItemValue("$WriteAccess");
+	
+		Assert.assertEquals(0, writeAccess.size());
+	}
+
+	@SuppressWarnings({ "rawtypes" })
+	@Test
 	public void fieldMappingTest() throws ModelException {
 
 		documentActivity = this.getModel().getEvent(100, 10);
-		documentActivity.replaceItemValue("keyupdateAcl", true);
-
+		
+		logger.info("[TestAccessPlugin] setup test data...");
 		Vector<String> list = new Vector<String>();
-		list.add("sam");
-		list.add("joe");
-		documentActivity.replaceItemValue("namaddwriteaccess", list);
-		documentActivity.replaceItemValue("keyaddwritefields", "namTeaM");
+		list.add("manfred");
+		list.add("anna");
+		documentContext.replaceItemValue("namTeam", list);
+
+		documentContext.replaceItemValue("namCreator", "ronny");
+		
 		try {
 			accessPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -119,10 +128,7 @@ public class TestAccessPlugin extends AbstractPluginTest {
 	@Test
 	public void staticUserGroupMappingTest() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(100, 10);
-		documentActivity.replaceItemValue("keyupdateAcl", true);
-
-		documentActivity.replaceItemValue("keyaddwritefields", "[sam, tom,  anna ,joe]");
+		documentActivity = this.getModel().getEvent(100, 30);
 		try {
 			accessPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -142,37 +148,12 @@ public class TestAccessPlugin extends AbstractPluginTest {
 
 	@SuppressWarnings({ "rawtypes" })
 	@Test
-	public void testNoUpdate() {
+	public void fallbackTest() throws ModelException {
 
-		documentActivity = new ItemCollection();
-		Vector<String> list = new Vector<String>();
-		list.add("sam");
-		list.add("joe");
-		documentActivity.replaceItemValue("namaddwriteaccess", list);
-
-		try {
-			accessPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
-
-			e.printStackTrace();
-			Assert.fail();
-		}
-
-		List writeAccess = documentContext.getItemValue("$WriteAccess");
-
-		Assert.assertEquals(0, writeAccess.size());
-	}
-
-	@SuppressWarnings({ "rawtypes" })
-	@Test
-	public void fallbackTest() {
-
-		documentActivity = new ItemCollection();
-		Vector<String> list = new Vector<String>();
-		list.add("sam");
-		list.add("joe");
-		documentActivity.replaceItemValue("namaddwriteaccess", list);
-
+		documentActivity = this.getModel().getEvent(100, 10);
+		
+		
+		
 		documentActivity.replaceItemValue("keyaccessmode", "0");
 
 		try {

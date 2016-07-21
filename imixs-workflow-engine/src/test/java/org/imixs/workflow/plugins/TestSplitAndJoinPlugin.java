@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.jee.ejb.AbstractPluginTest;
 import org.imixs.workflow.plugins.jee.SplitAndJoinPlugin;
@@ -63,17 +64,18 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 
 	/**
 	 * Test creation of subprocess
+	 * @throws ModelException 
 	 ***/
 	@SuppressWarnings("unchecked")
 	@Test 
-	public void testCreateSubProcess() {
+	public void testCreateSubProcess() throws ModelException {
 
 		// create test result.....
 		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
 				+ "<processid>100</processid>" + "<activityid>10</activityid>" + "<items>namTeam</items>" + "</item>";
 
 		try {
-			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity = this.getModel().getEvent(100, 10);
 			documentActivity.replaceItemValue("txtActivityResult", activityResult);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -110,11 +112,12 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 
 	/**
 	 * Test multi creation of subprocesses
+	 * @throws ModelException 
 	 * 
 	 ***/
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testCreateMultiSubProcess() {
+	public void testCreateMultiSubProcess() throws ModelException {
 
 		// create test result with two subprocess creations.....
 		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
@@ -125,7 +128,7 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 				+ "<processid>100</processid>" + "<activityid>20</activityid>" + "<items>namTeam</items>" + "</item>";
 
 		try {
-			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity = this.getModel().getEvent(100, 10);
 			documentActivity.replaceItemValue("txtActivityResult", activityResult);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -160,16 +163,17 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 	/**
 	 * Test if the plugin exception in case of wrong xml content for create
 	 * subprocess...
+	 * @throws ModelException 
 	 **/
 	// @Ignore
 	@Test
-	public void testCreateSubProcessParsingError() {
+	public void testCreateSubProcessParsingError() throws ModelException {
 
 		// create test result with a wrong end tag....
 		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
 				+ "<processid>1000</processid>" + "<activityid>10</acttyid>" + "<items>namTeam</items>" + "</item>";
 		try {
-			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity = this.getModel().getEvent(100, 10);
 			documentActivity.replaceItemValue("txtActivityResult", activityResult);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 
@@ -189,11 +193,12 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 	 * 
 	 * First we create a subprocess and in a secon step we test if the
 	 * subprocess can update the origin workitem.
+	 * @throws ModelException 
 	 * 
 	 **/
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testUpdateOriginProcess() {
+	public void testUpdateOriginProcess() throws ModelException {
 
 		String orignUniqueID = documentContext.getUniqueID();
 
@@ -203,7 +208,7 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
 				+ "<processid>100</processid>" + "<activityid>10</activityid>" + "<items>namTeam</items>" + "</item>";
 		try {
-			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity = this.getModel().getEvent(100, 10);
 			documentActivity.replaceItemValue("txtActivityResult", activityResult);
 
 			splitAndJoinPlugin.run(documentContext, documentActivity);
@@ -234,7 +239,7 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 		subprocess.replaceItemValue("_sub_data", "some test data");
 		// now we process the subprocess
 		try {
-			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity = this.getModel().getEvent(100, 10);
 			documentActivity.replaceItemValue("txtActivityResult", activityResult);
 			splitAndJoinPlugin.run(subprocess, documentActivity);
 		} catch (PluginException e) {
@@ -254,16 +259,17 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 
 	/**
 	 * Test update of an existing subprocess
+	 * @throws ModelException 
 	 ***/
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testUpdateSubProcess() {
+	public void testUpdateSubProcess() throws ModelException {
 
 		// 1.) create test subprocess.....
 		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
 				+ "<processid>100</processid>" + "<activityid>10</activityid>" + "<items>namTeam</items>" + "</item>";
 		try {
-			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity = this.getModel().getEvent(100, 10);
 			documentActivity.replaceItemValue("txtActivityResult", activityResult);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -286,7 +292,7 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 		activityResult = "<item name=\"subprocess_update\"> " + "<modelversion>1.0.0</modelversion>"
 				+ "<processid>100</processid>" + "<activityid>30</activityid>" + "<items>namTeam</items>" + "</item>";
 		try {
-			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity = this.getModel().getEvent(100, 10);
 			documentActivity.replaceItemValue("txtActivityResult", activityResult);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -311,17 +317,18 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 
 	/**
 	 * Test creation of subprocess
+	 * @throws ModelException 
 	 ***/
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testCreateSubProcessTargetFieldName() {
+	public void testCreateSubProcessTargetFieldName() throws ModelException {
 
 		// create test result.....
 		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
 				+ "<processid>100</processid>" + "<activityid>10</activityid>" + "<items>namTeam|_sub_team</items>" + "</item>";
 
 		try {
-			documentActivity = this.getActivityEntity(100, 10);
+			documentActivity = this.getModel().getEvent(100, 10);
 			documentActivity.replaceItemValue("txtActivityResult", activityResult);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
