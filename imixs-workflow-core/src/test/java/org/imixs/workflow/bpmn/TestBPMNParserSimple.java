@@ -35,7 +35,7 @@ public class TestBPMNParserSimple {
 	}
 
 	@Test
-	public void testSimple() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void testSimple() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -63,7 +63,7 @@ public class TestBPMNParserSimple {
 		Assert.assertTrue(model.workflowGroups.contains("Simple"));
 
 		// test count of elements
-		Assert.assertEquals(2, model.findTasks().size());
+		Assert.assertEquals(2, model.findAllTasks().size());
 
 		// test task 1000
 		ItemCollection task = model.getTask(1000);
@@ -72,7 +72,7 @@ public class TestBPMNParserSimple {
 		Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
 
 		// test activity for task 1000
-		List<ItemCollection> activities = model.findEvents(1000);
+		List<ItemCollection> activities = model.findAllEventsByTask(1000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 
@@ -99,7 +99,7 @@ public class TestBPMNParserSimple {
 	
 	
 	@Test
-	public void testSimpleLoop() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void testSimpleLoop() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -127,7 +127,7 @@ public class TestBPMNParserSimple {
 		Assert.assertTrue(model.workflowGroups.contains("Simple"));
 
 		// test count of elements
-		Assert.assertEquals(2, model.findTasks().size());
+		Assert.assertEquals(2, model.findAllTasks().size());
 
 		// test task 1000
 		ItemCollection task = model.getTask(1000);
@@ -136,7 +136,7 @@ public class TestBPMNParserSimple {
 		Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
 
 		// test activity for task 1000
-		List<ItemCollection> activities = model.findEvents(1000);
+		List<ItemCollection> activities = model.findAllEventsByTask(1000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 
@@ -166,9 +166,10 @@ public class TestBPMNParserSimple {
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
+	 * @throws ModelException 
 	 */
 	@Test
-	public void testFollowUp() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void testFollowUp() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -193,7 +194,7 @@ public class TestBPMNParserSimple {
 		Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
 
 		// test activity for task 1000
-		List<ItemCollection> activities = model.findEvents(1000);
+		List<ItemCollection> activities = model.findAllEventsByTask(1000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 
@@ -223,7 +224,7 @@ public class TestBPMNParserSimple {
 		Assert.assertEquals("ActivityEntity",activity.getType());
 		
 		// test activity for task 1100
-		activities = model.findEvents(1100);
+		activities = model.findAllEventsByTask(1100);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(0, activities.size());
 	}

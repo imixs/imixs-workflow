@@ -5,6 +5,8 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.jee.ejb.AbstractPluginTest;
 import org.junit.Before;
@@ -49,6 +51,8 @@ public class TestOwnerPlugin extends AbstractPluginTest {
 		documentContext.replaceItemValue("namTeam", list);
 
 		documentContext.replaceItemValue("namCreator", "ronny");
+		
+		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -57,6 +61,9 @@ public class TestOwnerPlugin extends AbstractPluginTest {
 
 		documentActivity = new ItemCollection();
 		documentActivity.replaceItemValue("keyupdateAcl", true);
+		documentActivity.replaceItemValue("numNextProcessID", 100);
+		
+		
 
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
@@ -87,7 +94,8 @@ public class TestOwnerPlugin extends AbstractPluginTest {
 
 		documentActivity = new ItemCollection();
 		documentActivity.replaceItemValue("keyupdateAcl", true);
-
+		documentActivity.replaceItemValue("numNextProcessID", 100);
+		
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
 		list.add("joe");
@@ -116,17 +124,18 @@ public class TestOwnerPlugin extends AbstractPluginTest {
 	/**
 	 * This test verifies if a list of users provided by the fieldMapping is
 	 * mapped correctly into the workItem
+	 * @throws ModelException 
 	 */
 	@SuppressWarnings({ "rawtypes" })
 	@Test
-	public void staticUserGroupMappingTest() {
+	public void staticUserGroupMappingTest() throws ModelException {
 
-		documentActivity = this.getActivityEntity(100, 10);
+		documentActivity = this.getModel().getEvent(100, 10);
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 		documentActivity.replaceItemValue("keyOwnershipFields", "[sam, tom,  anna ,]"); // 3
 																						// values
 																						// expected!
-		this.setActivityEntity(documentActivity);
+		//this.setActivityEntity(documentActivity);
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -145,9 +154,9 @@ public class TestOwnerPlugin extends AbstractPluginTest {
 
 	@SuppressWarnings({ "rawtypes" })
 	@Test
-	public void testNoUpdate() {
+	public void testNoUpdate() throws ModelException {
 
-		documentActivity = new ItemCollection();
+		documentActivity = this.getModel().getEvent(100, 10);
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
 		list.add("joe");

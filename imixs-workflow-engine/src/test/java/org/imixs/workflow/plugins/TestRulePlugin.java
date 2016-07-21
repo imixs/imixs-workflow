@@ -27,7 +27,7 @@ import org.junit.Test;
 public class TestRulePlugin {
 	RulePlugin rulePlugin = null;
 
-	@Before
+	@Before 
 	public void setup() throws PluginException {
 		rulePlugin = new RulePlugin();
 		rulePlugin.init(null);

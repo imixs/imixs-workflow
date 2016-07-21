@@ -43,9 +43,10 @@ import org.imixs.workflow.exceptions.ModelException;
  * identified by its ID. A Event is unambiguously assigned to a Task and
  * uniquely identified by by an ID.
  * 
- * Task and Event elements are implemented as instances of the class ItemCollection. 
+ * Task and Event elements are implemented as instances of the class
+ * ItemCollection.
  * 
- * A Model holds a Definition which contains general model information. 
+ * A Model holds a Definition which contains general model information.
  * 
  * @author Ralph Soika
  * @version 1.0
@@ -55,13 +56,9 @@ import org.imixs.workflow.exceptions.ModelException;
 public interface Model {
 
 	/**
-	 * Returns the Model version identifier. 
-	 * @return
-	 */
-	//public String getVersion();
-	
-	/**
-	 * Returns the model definition containing general model information.
+	 * Returns the model definition containing general model information (e.g.
+	 * $ModelVersion).
+	 * 
 	 * @return
 	 */
 	public ItemCollection getDefinition();
@@ -76,7 +73,7 @@ public interface Model {
 	public ItemCollection getTask(int taskID) throws ModelException;
 
 	/**
-	 * Returns a Event by its Id and Task-ID for a specific model version.
+	 * Returns a Event by its Id and Task-ID.
 	 * 
 	 * @param taskid
 	 * @param eventid
@@ -86,18 +83,26 @@ public interface Model {
 	public ItemCollection getEvent(int taskID, int eventID) throws ModelException;
 
 	/**
-	 * Returns all Tasks defined in a specific model version.
+	 * Returns all Tasks defined in the model.
 	 * 
 	 * @param modelVersion
 	 * @return List org.imixs.workflow.ItemCollection
 	 */
-	public List<ItemCollection> findTasks();
+	public List<ItemCollection> findAllTasks();
 
 	/**
-	 * Returns all Events defined by its task-Id for a specific model version.
+	 * Returns a list of Tasks defined as initial Tasks.
+	 * 
+	 * @param modelVersion
+	 * @return List org.imixs.workflow.ItemCollection
+	 */
+	public List<ItemCollection> findInitialTasks();
+
+	/**
+	 * Returns all Events assigned to a task.
 	 * 
 	 * @param taskid
 	 * @return Collection org.imixs.workflow.ItemCollection
 	 */
-	public List<ItemCollection> findEvents(int taskID);
+	public List<ItemCollection> findAllEventsByTask(int taskID);
 }

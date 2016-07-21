@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.jee.ejb.AbstractPluginTest;
 import org.junit.Before;
@@ -103,23 +104,18 @@ public class TestOwnerPluginProcessEntity extends AbstractPluginTest {
 	/**
 	 * Test if the ACL settings from the next processEntity are injected into
 	 * the workitem
+	 * @throws ModelException 
 	 **/
 	@Test
-	public void testOwnerfromProcessEntity() {
+	public void testOwnerfromProcessEntity() throws ModelException {
 
-		documentActivity = this.getActivityEntity(100, 10);
+		documentActivity = this.getModel().getEvent(100, 10);
 		documentActivity.replaceItemValue("numnextprocessid", 200);
-		this.setActivityEntity(documentActivity);
-
-		// prepare ACL setting for process entity 200
-		documentProcess = this.getProcessEntity(200);
-		documentProcess.replaceItemValue("keyupdateAcl", true);
+	
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
 		list.add("joe");
-		documentProcess.replaceItemValue("namOwnershipNames", list);
-		this.setProcessEntity(documentProcess);
-
+	
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -140,11 +136,12 @@ public class TestOwnerPluginProcessEntity extends AbstractPluginTest {
 	/**
 	 * Test if the Owner settings from the activityEntity are injected into the
 	 * workitem
+	 * @throws ModelException 
 	 **/
 	@Test
-	public void testOwnerfromActivityEntity() {
+	public void testOwnerfromActivityEntity() throws ModelException {
 
-		documentActivity = this.getActivityEntity(100, 10);
+		documentActivity = this.getModel().getEvent(100, 10);
 
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 		Vector<String> list = new Vector<String>();
@@ -152,8 +149,7 @@ public class TestOwnerPluginProcessEntity extends AbstractPluginTest {
 		list.add(""); // test also for empty entry
 		list.add("joe");
 		documentActivity.replaceItemValue("namOwnershipNames", list);
-		this.setActivityEntity(documentActivity);
-
+	
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {

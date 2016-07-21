@@ -17,7 +17,7 @@ public class MokPlugin implements Plugin {
 		// TODO Auto-generated method stub
 
 	}
-
+ 
 	@Override
 	public int run(ItemCollection documentContext,
 			ItemCollection documentActivity) throws PluginException {

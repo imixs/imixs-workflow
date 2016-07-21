@@ -42,7 +42,7 @@ public class TestBPMNParserCollaborationMinutes {
 
 	// @Ignore
 	@Test
-	public void testSimple() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void testSimple() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -78,7 +78,7 @@ public class TestBPMNParserCollaborationMinutes {
 		
 		
 		// test count of elements
-		Assert.assertEquals(8, model.findTasks().size());
+		Assert.assertEquals(8, model.findAllTasks().size());
 
 		// test task 1000
 		ItemCollection task = model.getTask(1000);

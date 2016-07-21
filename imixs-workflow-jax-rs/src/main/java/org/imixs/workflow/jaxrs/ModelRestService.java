@@ -147,9 +147,11 @@ public class ModelRestService {
 					buffer.append("<td><a href=\"./model/" + aversion
 							+ "/groups/" + group + "\">" + group + "</a></td>");
 					// get update date...
-					List<ItemCollection> processList = modelService
-							.getAllProcessEntitiesByGroup(group,
-									aversion);
+					List<ItemCollection> processList = null;
+					logger.severe("NOT IMPLEMENTED");
+					//modelService.getAllModelVersions()
+					//		.getAllProcessEntitiesByGroup(group,
+					//				aversion);
 
 					if (processList.size() > 0) {
 						ItemCollection process = processList.get(0);
@@ -204,7 +206,7 @@ public class ModelRestService {
 		Collection<ItemCollection> col = null;
 		try {
 
-			col = modelService.getProcessEntityList(version);
+			col = modelService.getModel(version).findAllTasks();
 			return XMLItemCollectionAdapter.putCollection(col,
 					getItemList(items));
 
@@ -222,9 +224,7 @@ public class ModelRestService {
 			@QueryParam("items") String items) {
 		ItemCollection process = null;
 		try {
-
-			process = modelService
-					.getProcessEntity(processid, version);
+			process = modelService.getModel(version).getTask(processid);
 			return XMLItemCollectionAdapter.putItemCollection(process,
 					getItemList(items));
 
@@ -248,7 +248,7 @@ public class ModelRestService {
 		Collection<ItemCollection> col = null;
 		try {
 
-			col = modelService.getAllStartProcessEntities(version);
+			col = modelService.getModel(version).findInitialTasks();
 			return XMLItemCollectionAdapter.putCollection(col,
 					getItemList(items));
 
@@ -271,8 +271,8 @@ public class ModelRestService {
 			@PathParam("group") String group, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
-			col = modelService.getAllProcessEntitiesByGroup(group,
-					version);
+			col = null;
+			logger.severe("NOT IMPLEMENTED");
 			return XMLItemCollectionAdapter.putCollection(col,
 					getItemList(items));
 
@@ -290,8 +290,9 @@ public class ModelRestService {
 			@QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
-			col = modelService.getActivityEntityList(processid,
-					version);
+			col = null;
+			logger.severe("NOT IMPLEMENTED");
+			
 			return XMLItemCollectionAdapter.putCollection(col,
 					getItemList(items));
 		} catch (Exception e) {
@@ -313,18 +314,7 @@ public class ModelRestService {
 	}
 	
 	
-	@DELETE
-	@Path("/{version}/{group}")
-	public void deleteModelGroup(@PathParam("group") String group, @PathParam("version") String version) {
-		try {
-			modelService.removeModelGroup(group,version);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-
-
+	
 
 	
 

@@ -31,7 +31,7 @@ public class MokModel implements Model {
 	Map<String, ItemCollection> entities = null;
 	ItemCollection definition=null;
 
-	/**
+	/** 
 	 * 
 	 * prepare a mok model
 	 **/
@@ -105,8 +105,7 @@ public class MokModel implements Model {
 	}
 
 	@Override
-	public List<ItemCollection> findTasks()
-			throws InvalidAccessException {
+	public List<ItemCollection> findAllTasks() {
 		Vector<ItemCollection> list = new Vector<ItemCollection>();
 		list.add(getTask(100));
 		list.add(getTask(200));
@@ -114,8 +113,8 @@ public class MokModel implements Model {
 	}
 
 	@Override
-	public List<ItemCollection> findEvents(int processid)
-			throws InvalidAccessException {
+	public List<ItemCollection> findAllEventsByTask(int processid)
+		 {
 		// not implemented
 		return null;
 	}
@@ -124,5 +123,14 @@ public class MokModel implements Model {
 	public ItemCollection getDefinition() {
 		return definition;
 	}
+
+	
+	@Override
+	public List<ItemCollection> findInitialTasks() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
 
 }

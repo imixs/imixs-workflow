@@ -2,19 +2,33 @@ package org.imixs.workflow.jee.ejb;
 
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.Model;
+import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.bpmn.BPMNModel;
+import org.imixs.workflow.bpmn.BPMNParser;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.plugins.TestApplicationPlugin;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.xml.sax.SAXException;
+
+import junit.framework.Assert;
 
 /**
  * Abstract base class for jUnit tests using the WorkflowService.
@@ -39,7 +53,8 @@ import org.mockito.stubbing.Answer;
 public class AbstractPluginTest extends AbstractWorkflowEnvironment {
 	protected WorkflowService workflowService = new WorkflowService();
 
-	@Before
+	public static final String DEFAULT_MODEL_VERSION="1.0.0";
+		@Before
 	public void setup() throws PluginException {
 
 		super.setup();
@@ -49,10 +64,17 @@ public class AbstractPluginTest extends AbstractWorkflowEnvironment {
 		workflowContext = Mockito.mock(WorkflowContext.class);
 		workflowService.entityService = entityService;
 		workflowService.ctx = ctx;
-		
 
-		when(workflowContext.getModel()).thenReturn(modelService);
-		when(workflowService.getModel()).thenReturn(modelService);
+		ModelManager modelManager = Mockito.mock(ModelManager.class);
+		try {
+			when (modelManager.getModel(Mockito.anyString())).thenReturn(this.getModel());
+		} catch (ModelException e) {
+			e.printStackTrace();
+		}
+
+		
+		
+		when(workflowContext.getModelManager()).thenReturn(modelManager);
 
 		// simulate a workitemService.process call
 		when(workflowService.processWorkItem(Mockito.any(ItemCollection.class)))
@@ -108,8 +130,5 @@ public class AbstractPluginTest extends AbstractWorkflowEnvironment {
 
 	}
 
-	
-
-	
 	
 }

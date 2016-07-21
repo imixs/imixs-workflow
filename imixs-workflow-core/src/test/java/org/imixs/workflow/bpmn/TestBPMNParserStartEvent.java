@@ -37,7 +37,7 @@ public class TestBPMNParserStartEvent {
 
 	@Test
 	public void testSimple() throws ParseException,
-			ParserConfigurationException, SAXException, IOException {
+			ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION="1.0.0";
 		
@@ -69,7 +69,7 @@ public class TestBPMNParserStartEvent {
 		Assert.assertTrue(model.workflowGroups.contains("Simple"));
 		
 		// test count of elements
-		Assert.assertEquals(1, model.findTasks().size());
+		Assert.assertEquals(1, model.findAllTasks().size());
 
 		// test task 1000
 		ItemCollection task = model.getTask(1000);
@@ -91,7 +91,7 @@ public class TestBPMNParserStartEvent {
 				activity.getItemValueInteger("numNextProcessID"));
 		
 		// test activity for task 1000
-		List<ItemCollection> activities = model.findEvents(1000);
+		List<ItemCollection> activities = model.findAllEventsByTask(1000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 	

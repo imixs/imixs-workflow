@@ -46,7 +46,7 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 		workflowService.ctx = ctx;
 
 		workflowService.modelService = modelService;
-		when(workflowService.getModel()).thenReturn(modelService);
+		when(workflowService.getModelManager()).thenReturn(modelService);
 
 	}
 

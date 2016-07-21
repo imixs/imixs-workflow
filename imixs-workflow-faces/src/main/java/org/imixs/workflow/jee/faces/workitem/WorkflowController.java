@@ -113,28 +113,17 @@ public class WorkflowController extends DataController {
 	 * @return - action
 	 * @throws ModelException
 	 */
-	public String init(String action) {
+	public String init(String action) throws ModelException {
 
 		ItemCollection startProcessEntity = null;
 
 		activityList = null;
 
-		if (!getWorkitem().hasItem("$ModelVersion")) {
-			String modelVersion;
-			try {
-				modelVersion = modelService.getLatestVersion();
-			} catch (ModelException e) {
-				throw new InvalidAccessException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
-			}
-			getWorkitem().replaceItemValue("$ModelVersion", modelVersion);
-		}
-
 		// if not process id was set fetch the first start workitem
 		if (getWorkitem().getItemValueInteger("$ProcessID") <= 0) {
 			// get ProcessEntities by version
 			List<ItemCollection> col;
-			col = modelService
-					.getAllStartProcessEntities(getWorkitem().getItemValueString(WorkflowKernel.MODELVERSION));
+			col = modelService.getModelByWorkitem(getWorkitem()).findInitialTasks();
 			if (!col.isEmpty()) {
 				startProcessEntity = col.iterator().next();
 				getWorkitem().replaceItemValue("$ProcessID", startProcessEntity.getItemValueInteger("numProcessID"));
@@ -142,8 +131,7 @@ public class WorkflowController extends DataController {
 		}
 
 		// find the ProcessEntity
-		startProcessEntity = modelService.getProcessEntity(getWorkitem().getItemValueInteger(WorkflowKernel.PROCESSID),
-				getWorkitem().getItemValueString(WorkflowKernel.MODELVERSION));
+		startProcessEntity = modelService.getModelByWorkitem(getWorkitem()).getTask(getWorkitem().getItemValueInteger(WorkflowKernel.PROCESSID));
 
 		// ProcessEntity found?
 		if (startProcessEntity == null)

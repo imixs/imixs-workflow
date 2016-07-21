@@ -39,7 +39,7 @@ public class TestBPMNParserCollaboration {
 
 	// @Ignore
 	@Test
-	public void testSimple() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void testSimple() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -71,7 +71,7 @@ public class TestBPMNParserCollaboration {
 		Assert.assertTrue(groups.contains("WorkflowGroup2"));
 
 		// test count of elements
-		Assert.assertEquals(2, model.findTasks().size());
+		Assert.assertEquals(2, model.findAllTasks().size());
 
 		// test task 1000
 		ItemCollection task = model.getTask(1000);
@@ -80,7 +80,7 @@ public class TestBPMNParserCollaboration {
 		Assert.assertEquals("WorkflowGroup1", task.getItemValueString("txtworkflowgroup"));
 
 		// test activity for task 1000
-		Collection<ItemCollection> activities = model.findEvents(1000);
+		Collection<ItemCollection> activities = model.findAllEventsByTask(1000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(1, activities.size());
 

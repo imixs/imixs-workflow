@@ -2,7 +2,10 @@ package org.imixs.workflow.jee.ejb;
 
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.Principal;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,14 +14,20 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ejb.SessionContext;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.Model;
 import org.imixs.workflow.WorkflowContext;
+import org.imixs.workflow.bpmn.BPMNModel;
+import org.imixs.workflow.bpmn.BPMNParser;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.xml.sax.SAXException;
 
 /**
  * Abstract base class for jUnit tests using the WorkflowService.
@@ -43,13 +52,15 @@ import org.mockito.stubbing.Answer;
  */
 public class AbstractWorkflowEnvironment {
 	private final static Logger logger = Logger.getLogger(AbstractWorkflowEnvironment.class.getName());
-
+ 
 	Map<String, ItemCollection> database = null;
 
 	protected EntityService entityService;
 	protected ModelService modelService;
 	protected SessionContext ctx;
 	protected WorkflowContext workflowContext;
+	private Model model=null;
+
 
 	@Before
 	public void setup() throws PluginException {
@@ -63,6 +74,8 @@ public class AbstractWorkflowEnvironment {
 		ctx = Mockito.mock(SessionContext.class);
 
 		workflowContext = Mockito.mock(WorkflowContext.class);
+
+		 model=loadModel("/bpmn/plugin-test.bpmn");
 
 	
 		// Simulate fineProfile("1.0.0") -> entityService.load()...
@@ -92,8 +105,9 @@ public class AbstractWorkflowEnvironment {
 		when(principal.getName()).thenReturn("manfred");
 		when(ctx.getCallerPrincipal()).thenReturn(principal);
 
-		when(workflowContext.getModel()).thenReturn(modelService);
+		when(workflowContext.getModelManager()).thenReturn(modelService);
 		
+		/*+
 		// simulate getActivityEntity
 		when(modelService.getActivityEntity(Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString()))
 				.thenAnswer(new Answer<ItemCollection>() {
@@ -130,6 +144,8 @@ public class AbstractWorkflowEnvironment {
 					}
 				});
 		
+		
+		
 		// simulate getProcessEntity
 		when(modelService.getProcessEntity(Mockito.anyInt(), Mockito.anyString()))
 				.thenAnswer(new Answer<ItemCollection>() {
@@ -142,72 +158,9 @@ public class AbstractWorkflowEnvironment {
 
 					}
 				});
-
+		 */
 	
 
-	}
-
-	/**
-	 * returns a activity entity from the test database
-	 * 
-	 * @param processid
-	 * @param activityid
-	 * @return
-	 */
-	protected ItemCollection getActivityEntity(int processid, int activityid) {
-		ItemCollection entity = database.get("A" + processid
-
-				+ "-" + activityid);
-		if (entity == null) {
-			logger.warning("ActivityEntity " + processid + "." + activityid + " not defined!");
-		}
-
-		return entity;
-	}
-
-	/**
-	 * Update an activity entity in the test database
-	 * 
-	 * @param activityEntity
-	 */
-	protected void setActivityEntity(ItemCollection entity) {
-		int p = entity.getItemValueInteger("numProcessID");
-		int a = entity.getItemValueInteger("numActivityID");
-
-		String uniqueid = "A" + p + "-" + a;
-		entity.replaceItemValue(EntityService.UNIQUEID, uniqueid);
-		database.put(entity.getItemValueString(EntityService.UNIQUEID), entity);
-		logger.fine("add activityEntity: " + uniqueid);
-	}
-
-	/**
-	 * returns a activity entity from the test database
-	 * 
-	 * @param processid
-	 * @return
-	 */
-	protected ItemCollection getProcessEntity(int processid) {
-		ItemCollection entity = database.get("P" + processid);
-
-		if (entity == null) {
-			logger.warning("ProcessEntity " + processid + " not defined!");
-		}
-
-		return entity;
-	}
-
-	/**
-	 * Update an process entity in the test database
-	 * 
-	 * @param activityEntity
-	 */
-	protected void setProcessEntity(ItemCollection entity) {
-		int p = entity.getItemValueInteger("numProcessID");
-
-		String uniqueid = "P" + p;
-		entity.replaceItemValue(EntityService.UNIQUEID, uniqueid);
-		database.put(entity.getItemValueString(EntityService.UNIQUEID), entity);
-		logger.fine("add processEntity: " + uniqueid);
 	}
 
 	/**
@@ -218,48 +171,10 @@ public class AbstractWorkflowEnvironment {
 		database = new HashMap<String, ItemCollection>();
 
 		ItemCollection entity = null;
-		String modelVersion = "1.0.0";
-
+	
 		logger.info("createSimpleDatabase....");
-		// simulate profile entity
-		entity = new ItemCollection();
-		entity.replaceItemValue("type", "WorkflowEnvironmentEntity");
-		entity.replaceItemValue("$ModelVersion", modelVersion);
-		entity.replaceItemValue(EntityService.UNIQUEID, "ENV0000-0000");
-		entity.replaceItemValue("txtName", "WorkflowEnvironmentEntity ");
-		database.put(entity.getItemValueString(EntityService.UNIQUEID), entity);
-
-		// simulate process/activities
-		for (int i = 1; i <= 3; i++) {
-			// process entities 100-300
-			entity = new ItemCollection();
-			entity.replaceItemValue("type", "ProcessEntity");
-			entity.replaceItemValue("$ModelVersion", modelVersion);
-			entity.replaceItemValue("txtName", "Process " + 100 * i);
-			entity.replaceItemValue("$ModelVersion", "1.0.0");
-			entity.replaceItemValue("numProcessID", 100 * i);
-
-			this.setProcessEntity(entity);
-
-			// activities
-			// 100.10, 100.20, 100.30, 200.10, 200.20 , .....
-			// nextProcessID is for each activity 100, 200, 300
-			for (int j = 1; j <= 3; j++) {
-				entity = new ItemCollection();
-				entity.replaceItemValue("type", "ActivityEntity");
-				entity.replaceItemValue("$ModelVersion", modelVersion);
-
-				entity.replaceItemValue("txtName", "Activity " + 100 * j + "." + 10 * j);
-				entity.replaceItemValue("$ModelVersion", "1.0.0");
-				entity.replaceItemValue("numProcessID", 100 * i);
-				entity.replaceItemValue("numnextprocessid", 100 * j);
-				entity.replaceItemValue("numActivityID", 10 * j);
-
-				this.setActivityEntity(entity);
-			}
-
-		}
-
+	
+		
 		// create workitems
 		for (int i = 1; i < 6; i++) {
 			entity = new ItemCollection();
@@ -274,4 +189,25 @@ public class AbstractWorkflowEnvironment {
 		}
 
 	}
+	
+	
+	public Model getModel() {
+		return model;
+	}
+	
+	
+	private Model loadModel(String path) {
+		InputStream inputStream = getClass().getResourceAsStream(path);
+
+		BPMNModel model = null;
+		try {
+			model = BPMNParser.parseModel(inputStream, "UTF-8");
+		} catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return model;
+	}
+
 }

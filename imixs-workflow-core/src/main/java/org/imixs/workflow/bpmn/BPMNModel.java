@@ -107,44 +107,52 @@ public class BPMNModel implements Model {
 					"Invalid Activiyt Entity - no numprocessid defined!");
 		}
 
-		List<ItemCollection> activities = findEvents(pID);
+		List<ItemCollection> activities = findAllEventsByTask(pID);
 
 		activities.add(clonedEntity);
 		activityList.put(pID, activities);
 	}
 
 	@Override
-	public ItemCollection getTask(int processid) {
+	public ItemCollection getTask(int processid) throws ModelException {
 		ItemCollection process = processList.get(processid);
 		if (process != null)
 			return process;
 		else
-			return null;
+			throw new ModelException(BPMNModel.class.getSimpleName(), ModelException.UNDEFINED_MODEL_ENTRY);
 	}
 
 	@Override
-	public ItemCollection getEvent(int processid, int activityid) {
-		List<ItemCollection> activities = findEvents(processid);
+	public ItemCollection getEvent(int processid, int activityid) throws ModelException {
+		List<ItemCollection> activities = findAllEventsByTask(processid);
 		for (ItemCollection aactivity : activities) {
 			if (activityid == aactivity.getItemValueInteger("numactivityid")) {
 				return aactivity;
 			}
 		}
 		// not found!
-		return null;
+		throw new ModelException(BPMNModel.class.getSimpleName(), ModelException.UNDEFINED_MODEL_ENTRY);
 	}
 
 	@Override
-	public List<ItemCollection> findTasks() {
+	public List<ItemCollection> findAllTasks() {
 		return new ArrayList<ItemCollection>(processList.values());
 	}
 
 	@Override
-	public List<ItemCollection> findEvents(int processid) {
+	public List<ItemCollection> findAllEventsByTask(int processid) {
 		List<ItemCollection> result = activityList.get(processid);
 		if (result == null)
 			result = new ArrayList<ItemCollection>();
 		return result;
+	}
+
+	@Override
+	public List<ItemCollection> findInitialTasks() {
+
+		logger.severe("MISSING IMPLEMENTATION!");
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

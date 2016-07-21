@@ -39,7 +39,7 @@ public class TestBPMNParserRuleEvents {
 	}
 
 	@Test
-	public void testSimple() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void testSimple() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -62,14 +62,14 @@ public class TestBPMNParserRuleEvents {
 		Assert.assertNotNull(profile);
 
 		// test count of elements
-		Assert.assertEquals(9, model.findTasks().size());
+		Assert.assertEquals(9, model.findAllTasks().size());
 
 		// test task 1000
 		ItemCollection task = model.getTask(1000);
 		Assert.assertNotNull(task);
 
 		// test activity for task 1000
-		List<ItemCollection> activities = model.findEvents(1000);
+		List<ItemCollection> activities = model.findAllEventsByTask(1000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(1, activities.size());
 
@@ -86,7 +86,7 @@ public class TestBPMNParserRuleEvents {
 	
 
 	@Test
-	public void testFollowUp() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void testFollowUp() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -115,7 +115,7 @@ public class TestBPMNParserRuleEvents {
 		Assert.assertNotNull(task);
 
 		// test activity for task 2000
-		List<ItemCollection> activities = model.findEvents(2000);
+		List<ItemCollection> activities = model.findAllEventsByTask(2000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 
@@ -148,7 +148,7 @@ public class TestBPMNParserRuleEvents {
 	
 	
 	@Test
-	public void testSimpleNoGateway() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void testSimpleNoGateway() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -171,14 +171,14 @@ public class TestBPMNParserRuleEvents {
 		Assert.assertNotNull(profile);
 
 		// test count of elements
-		Assert.assertEquals(9, model.findTasks().size());
+		Assert.assertEquals(9, model.findAllTasks().size());
 
 		// test task 1000
 		ItemCollection task = model.getTask(3000);
 		Assert.assertNotNull(task);
 
 		// test activity for task 3000
-		List<ItemCollection> activities = model.findEvents(3000);
+		List<ItemCollection> activities = model.findAllEventsByTask(3000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(1, activities.size());
 

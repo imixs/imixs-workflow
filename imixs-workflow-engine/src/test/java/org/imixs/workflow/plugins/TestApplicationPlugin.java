@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.jee.ejb.AbstractPluginTest;
 import org.junit.Before;
@@ -56,21 +57,18 @@ public class TestApplicationPlugin extends AbstractPluginTest {
 	/**
 	 * Test if the txtEditorID form the next processEntity is associated to the
 	 * current workitem by the ApplicationPlugin
+	 * @throws ModelException 
 	 */
 	@Test
-	public void simpleTest() {
+	public void simpleTest() throws ModelException {
 
-		documentActivity = this.getActivityEntity(100, 10);
+		documentActivity = this.getModel().getEvent(100, 10);
 		documentActivity.replaceItemValue("numnextprocessid", 200);
-		this.setActivityEntity(documentActivity);
 
-		documentProcess = this.getProcessEntity(200);
-		documentProcess.replaceItemValue("txtEditorID", "test-data");
-		this.setProcessEntity(documentProcess);
 
 		try {
 			applicationPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
+		} catch (PluginException e) { 
 
 			e.printStackTrace();
 			Assert.fail();

@@ -49,17 +49,19 @@ public interface ModelManager {
 	 * the model version did not exits.
 	 * 
 	 * @param version
-	 * @return
+	 * @throws ModelException 
+	 * @return Model
 	 */
 	public Model getModel(String version) throws ModelException;;
 
+	
 	/**
 	 * Adds a new Model to the ModelManager.
 	 * 
 	 * @param model
-	 * @param version
+	 * @throws ModelException 
 	 */
-	public void addModel(Model model);
+	public void addModel(Model model)  throws ModelException;;
 
 
 	/**
@@ -67,6 +69,17 @@ public interface ModelManager {
 	 * @param version
 	 */
 	public void removeModel(String version);
+
+
+	/**
+	 * Returns a Model matching a given workitem. The method throws a ModelException in case
+	 * the model version did not exits.
+	 * 
+	 * @param version
+	 * @throws ModelException 
+	 * @return Model
+	 */
+	public Model getModelByWorkitem(ItemCollection workitem) throws ModelException;
 
 
 }

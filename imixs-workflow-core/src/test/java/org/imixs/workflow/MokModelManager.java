@@ -17,14 +17,14 @@ import org.imixs.workflow.exceptions.ModelException;
  * a string (e.g. '100', '100.10)
  * 
  * @author rsoika
- * 
+ *  
  */
 public class MokModelManager implements ModelManager {
 
 	Model model=null;
 
 	/**
-	 * 
+	 *  
 	 * prepare a mok model
 	 **/
 	public MokModelManager() {
@@ -54,6 +54,12 @@ public class MokModelManager implements ModelManager {
 	public void removeModel(String version) {
 		model=null;
 		
+	}
+
+
+	@Override
+	public Model getModelByWorkitem(ItemCollection workitem) throws ModelException {
+		return getModel(workitem.getModelVersion());
 	}
 
 }

@@ -28,7 +28,6 @@
 package org.imixs.workflow.jee.ejb;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -49,6 +48,7 @@ import javax.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
+import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
@@ -99,7 +99,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	public static final int SORT_ORDER_MODIFIED_DESC = 2;
 	public static final int SORT_ORDER_MODIFIED_ASC = 3;
 
-
 	@Inject
 	@Any
 	private Instance<Plugin> plugins;
@@ -116,7 +115,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	@Resource
 	SessionContext ctx;
 
-	private static Logger logger = Logger.getLogger("org.imixs.workflow");
+	private static Logger logger = Logger.getLogger(WorkflowService.class.getName());
 
 	/**
 	 * create default index properties
@@ -166,19 +165,18 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 * 
 	 */
 	public List<ItemCollection> getWorkListByOwner(String name, int startpos, int count, String type, int sortorder) {
-	
+
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
-	
+
 		String sQuery = null;
 		sQuery = "SELECT";
 		sQuery += " wi FROM Entity as wi" + " JOIN wi.textItems as t " + "WHERE ";
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
-	
-		sQuery += " t.itemName = 'namowner' and t.itemValue = '" + name + "'" 
-				+ createSortOrderClause(sortorder);
-	
+
+		sQuery += " t.itemName = 'namowner' and t.itemValue = '" + name + "'" + createSortOrderClause(sortorder);
+
 		return entityService.findAllEntities(sQuery, startpos, count);
 	}
 
@@ -256,8 +254,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
-		sQuery += " t.itemName = 'namcreator' and t.itemValue = '" + name + "'" 
-				+ createSortOrderClause(sortorder);
+		sQuery += " t.itemName = 'namcreator' and t.itemValue = '" + name + "'" + createSortOrderClause(sortorder);
 
 		return entityService.findAllEntities(sQuery, startpos, count);
 	}
@@ -356,8 +353,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
-		sQuery += " t.itemName = '$processid' and t.itemValue = '" + aid + "'" 
-				+ createSortOrderClause(sortorder);
+		sQuery += " t.itemName = '$processid' and t.itemValue = '" + aid + "'" + createSortOrderClause(sortorder);
 
 		return entityService.findAllEntities(sQuery, startpos, count);
 	}
@@ -391,8 +387,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		if (type != null && !"".equals(type))
 			sQuery += " wi.type='" + type + "' AND ";
 
-		sQuery += " t.itemName = '$uniqueidref' and t.itemValue = '" + aref + "'"
-				+ createSortOrderClause(sortorder);
+		sQuery += " t.itemName = '$uniqueidref' and t.itemValue = '" + aref + "'" + createSortOrderClause(sortorder);
 
 		return entityService.findAllEntities(sQuery, startpos, count);
 	}
@@ -405,7 +400,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 */
 	@Override
 	public List<ItemCollection> getWorkListByRef(String aref) {
-		return getWorkListByRef(aref,0,-1,null,0);
+		return getWorkListByRef(aref, 0, -1, null, 0);
 	}
 
 	/**
@@ -429,17 +424,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	@Override
 	public List<ItemCollection> getEvents(ItemCollection workitem) throws ModelException {
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
-
-		String modelVersion = workitem.getModelVersion();
 		int processID = workitem.getProcessID();
 		// verify if version is valid
-		if (modelService.getTask(processID, modelVersion) == null) {
-			// try to upgrade model version
-			logger.warning("Deprecated Modelversion: " + modelVersion);
-			modelVersion = this.getModelService().getLatestVersionByWorkitem(workitem);
-		}
+		Model model = modelService.getModelByWorkitem(workitem);
 
-		List<ItemCollection> eventList = this.modelService.findEvents(processID, modelVersion);
+		List<ItemCollection> eventList = model.findAllEventsByTask(processID);
 
 		String username = getUserName();
 		boolean bManagerAccess = ctx.isCallerInRole(EntityService.ACCESSLEVEL_MANAGERACCESS);
@@ -543,42 +532,17 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		 * Lookup current processEntity. If not available update model to latest
 		 * matching model version
 		 */
-		String modelversion = workitem.getItemValueString(WorkflowService.MODELVERSION);
-		int processID = workitem.getItemValueInteger(WorkflowService.PROCESSID);
-		ItemCollection task = modelService.getTask(processID, modelversion);
-		if (task == null) {
-			// look for latest model version....
-			try {
-				String newModelVersion = modelService.getLatestVersionByWorkitem(workitem);
-				if (newModelVersion != null && !newModelVersion.isEmpty()) {
-					modelversion = newModelVersion;
-					// update Model Version for the WorkItem - this is the
-					// version the workItem will be processed now
-					logger.info("WorkflowService: $modelversion '"
-							+ workitem.getItemValueString(WorkflowService.MODELVERSION)
-							+ "' no longer provided, updating to $modelversion '" + modelversion + "'");
-					workitem.replaceItemValue("$modelversion", modelversion);
-				}
-			} catch (ModelException e) {
-				throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
-						ProcessingErrorException.INVALID_MODELVERSION,
-						"WorkflowService: fatal error - no valid model version '" + modelversion
-								+ "' found! Verify WorkflowModels: " + e.getMessage());
-			}
+		Model model = null;
+		try {
+			model = this.getModelManager().getModelByWorkitem(workitem);
+		} catch (ModelException e) {
+			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
+					ProcessingErrorException.INVALID_PROCESSID, e.getMessage(), e);
 		}
 
 		// Fetch the current Profile Entity for this version.
-		ItemCollection profile = findModelProfile(modelversion);
-		if (profile == null) {
-			// model profile not defined!
-			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
-					ProcessingErrorException.INVALID_MODELVERSION,
-					"WorkflowService: fatal error - no valid model version '" + modelversion
-							+ "' found! Verify WorkflowModels.");
-		}
-
+		ItemCollection profile = model.getDefinition();
 		WorkflowKernel workflowkernel = new WorkflowKernel(this);
-
 		// register plugins defined in the environment.profile ....
 		List<String> vPlugins = (List<String>) profile.getItemValue("txtPlugins");
 		for (int i = 0; i < vPlugins.size(); i++) {
@@ -635,7 +599,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 * called from the processWorktiem method.
 	 * 
 	 */
-	public Model getModel() {
+	public ModelManager getModelManager() {
 		return modelService;
 	}
 
@@ -655,16 +619,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		return entityService;
 	}
 
-	/**
-	 * This method returns an instance of the Imixs JEE ModelService used by the
-	 * WorkflowManager Implementation. The method can be used to access the
-	 * ModelService during a Plugin call.
-	 * 
-	 * @return ModelService
-	 */
-	public ModelService getModelService() {
-		return modelService;
-	}
+	
 
 	public ReportService getReportService() {
 		return reportService;
@@ -714,7 +669,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 */
 	private String createSortOrderClause(int asortorder) {
 		switch (asortorder) {
-	
+
 		case WorkflowService.SORT_ORDER_CREATED_ASC: {
 			return " ORDER BY wi.created asc";
 		}
@@ -727,7 +682,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		default:
 			return " ORDER BY wi.created desc";
 		}
-	
+
 	}
 
 	/**
@@ -740,7 +695,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	private Plugin findPluginByName(String pluginClassName) {
 		if (pluginClassName == null || pluginClassName.isEmpty())
 			return null;
-	
+
 		if (plugins == null || !plugins.iterator().hasNext()) {
 			logger.fine("[WorkflowService] no CDI plugins injected");
 			return null;
@@ -752,46 +707,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 				return plugin;
 			}
 		}
-	
-		return null;
-	}
 
-	/**
-	 * This method lookups the WorkflowEnvironmentEntity "environment.profile"
-	 * for a given $modelVersion. If no corresponding model exists the method
-	 * returns null.
-	 * 
-	 * 
-	 * @param modelversion
-	 *            - model version to find the profile
-	 * @return WorkflowEnvironmentEntity
-	 * @throws ProcessingErrorException
-	 */
-	private ItemCollection findModelProfile(String modelversion) throws ProcessingErrorException {
-	
-		// if no modelversion is provided default to newest version
-		if (modelversion == null || "".equals(modelversion)) {
-			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
-					ProcessingErrorException.INVALID_MODELVERSION,
-					"WorkflowService: fatal error - no valid model version provided");
-		}
-	
-		// try to get a Profile matching the provided modelversion
-		Collection<ItemCollection> col;
-		String sQuery = null;
-		sQuery = "SELECT";
-		sQuery += " environment FROM Entity AS environment" + " JOIN environment.textItems as n "
-				+ " JOIN environment.textItems as v " + " WHERE environment.type = 'WorkflowEnvironmentEntity'"
-				+ " AND n.itemName = 'txtname' AND n.itemValue = 'environment.profile'"
-				+ " AND v.itemName = '$modelversion' AND v.itemValue = '" + modelversion + "' ";
-		col = entityService.findAllEntities(sQuery, 0, 1);
-		// if no model for that ModelVersion is found - throw a exception
-	
-		if (col.size() == 0) {
-			return null;
-		} else {
-			// return profile..
-			return col.iterator().next();
-		}
+		return null;
 	}
 }

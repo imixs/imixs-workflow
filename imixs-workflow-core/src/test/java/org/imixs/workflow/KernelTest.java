@@ -26,7 +26,7 @@ public class KernelTest {
 	WorkflowKernel kernel = null;
 
 	private static Logger logger = Logger.getLogger(KernelTest.class.getName());
-
+ 
 	@Before
 	public void setup() throws PluginException {
 		MokWorkflowContext ctx = new MokWorkflowContext();
@@ -35,7 +35,7 @@ public class KernelTest {
 		MokPlugin mokPlugin = new MokPlugin();
 		kernel.registerPlugin(mokPlugin);
 
-	}
+	} 
 
 	@Test
 	@Category(org.imixs.workflow.WorkflowKernel.class)

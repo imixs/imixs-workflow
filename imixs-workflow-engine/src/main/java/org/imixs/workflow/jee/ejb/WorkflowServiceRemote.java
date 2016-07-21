@@ -5,7 +5,7 @@ import java.util.List;
 import javax.ejb.Remote;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Model;
+import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -218,21 +218,11 @@ public interface WorkflowServiceRemote {
 	public abstract void removeWorkItem(ItemCollection aworkitem) throws AccessDeniedException;
 
 	/**
-	 * This Method returns the modelManager Instance. The current ModelVersion
-	 * is automatically updated during the Method updateProfileEntity which is
-	 * called from the processWorktiem method.
+	 * This Method returns the modelManager Instance. 
 	 * 
 	 */
-	public abstract Model getModel();
+	public abstract ModelManager getModelManager();
 
-	/**
-	 * This method returns an instance of the Imixs JEE ModelService used by the
-	 * WorkflowManager Implementation. The method can be used to access the
-	 * ModelService during a Plugin call.
-	 * 
-	 * @return EntityService
-	 */
-	public abstract ModelService getModelService();
 
 	/**
 	 * Obtain the java.security.Principal that identifies the caller and returns

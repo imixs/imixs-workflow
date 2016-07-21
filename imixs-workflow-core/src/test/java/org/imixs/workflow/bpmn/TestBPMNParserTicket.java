@@ -41,7 +41,7 @@ public class TestBPMNParserTicket {
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void testSimple() throws ParseException,
-			ParserConfigurationException, SAXException, IOException {
+			ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION="1.0.0";
 		
@@ -80,7 +80,7 @@ public class TestBPMNParserTicket {
 		Assert.assertTrue(model.workflowGroups.contains("Ticket"));
 		
 		// test count of elements
-		Assert.assertEquals(4, model.findTasks().size());
+		Assert.assertEquals(4, model.findAllTasks().size());
 
 		// test task 1000
 		ItemCollection task = model.getTask(1000);
@@ -99,17 +99,17 @@ public class TestBPMNParserTicket {
 
 		// test activity for task 1000 
 		Collection<ItemCollection> activities = model
-				.findEvents(1000);
+				.findAllEventsByTask(1000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(1, activities.size());
 
 		// test activity for task 1100
-		activities = model.findEvents(1100);
+		activities = model.findAllEventsByTask(1100);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(3, activities.size());
 
 		// test activity for task 1200
-		activities = model.findEvents(1200);
+		activities = model.findAllEventsByTask(1200);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(4, activities.size());
 

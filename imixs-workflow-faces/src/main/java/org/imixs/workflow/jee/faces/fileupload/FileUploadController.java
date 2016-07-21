@@ -40,7 +40,7 @@ public class FileUploadController implements Serializable {
 	@SuppressWarnings("unchecked")
 	public void updateWorkitem(ItemCollection workitem) {
 		if (workitem == null)
-			return;
+			return; 
 		logger.fine("[MultiFileController] updateWorkitem '"
 				+ workitem.getItemValueString(EntityService.UNIQUEID));
 		HttpServletRequest httpRequest = (HttpServletRequest) (FacesContext

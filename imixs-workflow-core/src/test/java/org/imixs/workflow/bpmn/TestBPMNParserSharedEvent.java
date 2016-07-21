@@ -42,9 +42,10 @@ public class TestBPMNParserSharedEvent {
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
+	 * @throws ModelException 
 	 */
 	@Test
-	public void testSharedEvent() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void testSharedEvent() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -67,12 +68,12 @@ public class TestBPMNParserSharedEvent {
 		Assert.assertNotNull(task);
 
 		// test activity for task 1000
-		List<ItemCollection> activities = model.findEvents(1000);
+		List<ItemCollection> activities = model.findAllEventsByTask(1000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 
 		// test activity for task 1100
-		activities = model.findEvents(1100);
+		activities = model.findAllEventsByTask(1100);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(1, activities.size());
 
@@ -104,10 +105,11 @@ public class TestBPMNParserSharedEvent {
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
+	 * @throws ModelException 
 	 */
 	@Test
 	public void testSharedEventWithFollowUp()
-			throws ParseException, ParserConfigurationException, SAXException, IOException {
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -128,12 +130,12 @@ public class TestBPMNParserSharedEvent {
 		// test task 2000
 		ItemCollection task = model.getTask(2000);
 		Assert.assertNotNull(task);
-		List<ItemCollection> activities = model.findEvents(2000);
+		List<ItemCollection> activities = model.findAllEventsByTask(2000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(3, activities.size());
 
 		// test activity for task 2100
-		activities = model.findEvents(2100);
+		activities = model.findAllEventsByTask(2100);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 
@@ -166,10 +168,11 @@ public class TestBPMNParserSharedEvent {
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
+	 * @throws ModelException 
 	 */
 	@Test
 	public void testSharedLinkedEventWithFollowUp()
-			throws ParseException, ParserConfigurationException, SAXException, IOException {
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -190,21 +193,21 @@ public class TestBPMNParserSharedEvent {
 		// test task 3000
 		ItemCollection task = model.getTask(3000);
 		Assert.assertNotNull(task);
-		List<ItemCollection> activities = model.findEvents(3000);
+		List<ItemCollection> activities = model.findAllEventsByTask(3000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(3, activities.size());
 
 		// test task 3100
 		task = model.getTask(3100);
 		Assert.assertNotNull(task);
-		activities = model.findEvents(3100);
+		activities = model.findAllEventsByTask(3100);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 
 		// test task 3200
 		task = model.getTask(3200);
 		Assert.assertNotNull(task);
-		activities = model.findEvents(3200);
+		activities = model.findAllEventsByTask(3200);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(0, activities.size());
 

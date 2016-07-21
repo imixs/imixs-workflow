@@ -602,7 +602,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		int processid = event.getItemValueInteger("numprocessid");
 		int activityid = event.getItemValueInteger("numactivityid");
 
-		List<ItemCollection> assignedActivities = model.findEvents(processid);
+		List<ItemCollection> assignedActivities = model.findAllEventsByTask(processid);
 		int bestID = -1;
 		for (ItemCollection aactivity : assignedActivities) {
 			int aid = aactivity.getItemValueInteger("numactivityid");

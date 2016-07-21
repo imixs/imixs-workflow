@@ -43,9 +43,10 @@ public class TestBPMNParserLinkEvent {
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
+	 * @throws ModelException 
 	 */
 	@Test
-	public void testLinkEventSimple() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void testLinkEventSimple() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -73,7 +74,7 @@ public class TestBPMNParserLinkEvent {
 		Assert.assertTrue(model.workflowGroups.contains("Simple"));
 
 		// test count of elements
-		Assert.assertEquals(2, model.findTasks().size());
+		Assert.assertEquals(2, model.findAllTasks().size());
 
 		// test task 1000
 		ItemCollection task = model.getTask(1000 );
@@ -82,13 +83,13 @@ public class TestBPMNParserLinkEvent {
 		Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
 
 		// test activity for task 1000
-		List<ItemCollection> activities = model.findEvents(1000 );
+		List<ItemCollection> activities = model.findAllEventsByTask(1000 );
 		Assert.assertEquals(3, activities.size());
 		ItemCollection activity = model.getEvent(1000, 10 );
 		Assert.assertNotNull(activity);
  
 		// test activity for task 1100
-		activities = model.findEvents(1100 );
+		activities = model.findAllEventsByTask(1100 );
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(1, activities.size());
 		
@@ -142,9 +143,10 @@ public class TestBPMNParserLinkEvent {
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
+	 * @throws ModelException 
 	 */
 	@Test
-	public void testLinkEventFollowup() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void testLinkEventFollowup() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -172,7 +174,7 @@ public class TestBPMNParserLinkEvent {
 		Assert.assertTrue(model.workflowGroups.contains("Simple"));
 
 		// test count of elements
-		Assert.assertEquals(2, model.findTasks().size());
+		Assert.assertEquals(2, model.findAllTasks().size());
 
 		// test task 1000
 		ItemCollection task = model.getTask(1000 );
@@ -181,7 +183,7 @@ public class TestBPMNParserLinkEvent {
 		Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
 
 		// test activity for task 1000
-		List<ItemCollection> activities = model.findEvents(1000 );
+		List<ItemCollection> activities = model.findAllEventsByTask(1000 );
 		Assert.assertEquals(3, activities.size());
  
 		

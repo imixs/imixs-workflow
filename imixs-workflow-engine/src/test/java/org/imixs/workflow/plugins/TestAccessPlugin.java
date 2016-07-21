@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.jee.ejb.AbstractPluginTest;
 import org.junit.Before;
@@ -55,17 +56,16 @@ public class TestAccessPlugin extends AbstractPluginTest {
 
 	@SuppressWarnings({ "rawtypes" })
 	@Test
-	public void simpleTest() {
+	public void simpleTest() throws ModelException {
 
-		documentActivity = this.getActivityEntity(100, 10);
+		documentActivity = this.getModel().getEvent(100, 10);
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
 		list.add("joe");
 		documentActivity.replaceItemValue("namaddwriteaccess", list);
-		this.setActivityEntity(documentActivity);
-
+		
 		try {
 			accessPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -83,9 +83,9 @@ public class TestAccessPlugin extends AbstractPluginTest {
 
 	@SuppressWarnings({ "rawtypes" })
 	@Test
-	public void fieldMappingTest() {
+	public void fieldMappingTest() throws ModelException {
 
-		documentActivity = this.getActivityEntity(100, 10);
+		documentActivity = this.getModel().getEvent(100, 10);
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 
 		Vector<String> list = new Vector<String>();
@@ -93,7 +93,6 @@ public class TestAccessPlugin extends AbstractPluginTest {
 		list.add("joe");
 		documentActivity.replaceItemValue("namaddwriteaccess", list);
 		documentActivity.replaceItemValue("keyaddwritefields", "namTeaM");
-		this.setActivityEntity(documentActivity);
 		try {
 			accessPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -114,16 +113,16 @@ public class TestAccessPlugin extends AbstractPluginTest {
 	/**
 	 * This test verifies if a list of users provided by the fieldMapping is
 	 * mapped correctly into the workItem
+	 * @throws ModelException 
 	 */
 	@SuppressWarnings({ "rawtypes" })
 	@Test
-	public void staticUserGroupMappingTest() {
+	public void staticUserGroupMappingTest() throws ModelException {
 
-		documentActivity = this.getActivityEntity(100, 10);
+		documentActivity = this.getModel().getEvent(100, 10);
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 
 		documentActivity.replaceItemValue("keyaddwritefields", "[sam, tom,  anna ,joe]");
-		this.setActivityEntity(documentActivity);
 		try {
 			accessPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
