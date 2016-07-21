@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -107,8 +108,13 @@ public class ApplicationPlugin extends AbstractPlugin {
 			// get from model version
 			String aModelVersion = adocumentActivity
 					.getItemValueString("$modelVersion");
-			itemColNextProcess = ctx.getModel().getProcessEntity(
-					iNextProcessID, aModelVersion);
+			try {
+				itemColNextProcess = ctx.getModelManager().getModel(aModelVersion).getTask(
+						iNextProcessID);
+			} catch (ModelException e) {
+				throw new PluginException(ApplicationPlugin.class.getSimpleName(), ModelException.UNDEFINED_MODEL_ENTRY, e.getMessage());
+
+			}
 
 			// if the processEntity was not found cancel processing now!
 			if (itemColNextProcess == null) {

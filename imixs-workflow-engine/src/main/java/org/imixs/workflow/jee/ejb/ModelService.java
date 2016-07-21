@@ -107,11 +107,11 @@ public class ModelService implements Model, ModelServiceRemote {
 		entityService.addIndex("txtworkflowgroup", EntityIndex.TYP_TEXT);
 	}
 
-	public ItemCollection getActivityEntity(int processid, int activityid, String modelVersion) {
+	public ItemCollection getEvent(int processid, int activityid, String modelVersion) {
 		return findActivityEntity(processid, activityid, modelVersion);
 	}
 
-	public ItemCollection getProcessEntity(int processid, String modelversion) {
+	public ItemCollection getTask(int processid, String modelversion) {
 
 		return findProcessEntity(processid, modelversion);
 	}
@@ -123,7 +123,7 @@ public class ModelService implements Model, ModelServiceRemote {
 	 * @throws ModelException
 	 * 
 	 */
-	public List<ItemCollection> getActivityEntityList(int processid, String aModelVersion) {
+	public List<ItemCollection> findEvents(int processid, String aModelVersion) {
 
 		String sQuery = null;
 		sQuery = "SELECT";
@@ -141,7 +141,7 @@ public class ModelService implements Model, ModelServiceRemote {
 	 * Entities
 	 * 
 	 */
-	public List<ItemCollection> getProcessEntityList(String aModelVersion) {
+	public List<ItemCollection> findTasks(String aModelVersion) {
 
 		String sQuery = null;
 		sQuery = "SELECT";
@@ -509,7 +509,7 @@ public class ModelService implements Model, ModelServiceRemote {
 		ArrayList<String> colGroups = new ArrayList<String>();
 
 		try {
-			List<ItemCollection> colEntities = getProcessEntityList(modelVersion);
+			List<ItemCollection> colEntities = findTasks(modelVersion);
 
 			for (ItemCollection aworkitem : colEntities) {
 				String sGroup = aworkitem.getItemValueString("txtworkflowgroup");
@@ -522,23 +522,7 @@ public class ModelService implements Model, ModelServiceRemote {
 		return colGroups;
 	}
 
-	@Deprecated
-	public List<String> getAllWorkflowGroupsByVersion(String version) {
-		ArrayList<String> colGroups = new ArrayList<String>();
-
-		try {
-			Collection<ItemCollection> colEntities = getProcessEntityList(version);
-
-			for (ItemCollection aworkitem : colEntities) {
-				String sGroup = aworkitem.getItemValueString("txtworkflowgroup");
-				if (colGroups.indexOf(sGroup) == -1)
-					colGroups.add(sGroup);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return colGroups;
-	}
+	
 
 	/**
 	 * returns a list of all ProcessEntities which are the first one in each
@@ -560,7 +544,7 @@ public class ModelService implements Model, ModelServiceRemote {
 			// As the process Entity List can be unordered each processEntity
 			// will be checked for the lowest ProcessID
 			List<ItemCollection> colEntities;
-			colEntities = getProcessEntityList(version);
+			colEntities = findTasks(version);
 
 			for (ItemCollection processEntity : colEntities) {
 				String sGroup = processEntity.getItemValueString("txtworkflowgroup");
@@ -760,12 +744,12 @@ public class ModelService implements Model, ModelServiceRemote {
 			// import new profile
 			entityService.save(bpmnmodel.getProfile());
 		}
-		for (ItemCollection processEntity : bpmnmodel.getProcessEntityList(modelVersion)) {
+		for (ItemCollection processEntity : bpmnmodel.findTasks(modelVersion)) {
 			int processID = processEntity.getItemValueInteger("numprocessid");
 			logger.fine("update processEntity: " + processID);
 
 			entityService.save(processEntity);
-			for (ItemCollection acitivtyEntity : bpmnmodel.getActivityEntityList(processID, modelVersion)) {
+			for (ItemCollection acitivtyEntity : bpmnmodel.findEvents(processID, modelVersion)) {
 
 				logger.fine("update activityEntity: " + processID + "."
 						+ acitivtyEntity.getItemValueInteger("numactivityid"));

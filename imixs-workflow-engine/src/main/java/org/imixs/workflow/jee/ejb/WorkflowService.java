@@ -433,13 +433,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		String modelVersion = workitem.getModelVersion();
 		int processID = workitem.getProcessID();
 		// verify if version is valid
-		if (modelService.getProcessEntity(processID, modelVersion) == null) {
+		if (modelService.getTask(processID, modelVersion) == null) {
 			// try to upgrade model version
 			logger.warning("Deprecated Modelversion: " + modelVersion);
 			modelVersion = this.getModelService().getLatestVersionByWorkitem(workitem);
 		}
 
-		List<ItemCollection> eventList = this.modelService.getActivityEntityList(processID, modelVersion);
+		List<ItemCollection> eventList = this.modelService.findEvents(processID, modelVersion);
 
 		String username = getUserName();
 		boolean bManagerAccess = ctx.isCallerInRole(EntityService.ACCESSLEVEL_MANAGERACCESS);
@@ -545,8 +545,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		 */
 		String modelversion = workitem.getItemValueString(WorkflowService.MODELVERSION);
 		int processID = workitem.getItemValueInteger(WorkflowService.PROCESSID);
-		ItemCollection processEntity = modelService.getProcessEntity(processID, modelversion);
-		if (processEntity == null) {
+		ItemCollection task = modelService.getTask(processID, modelversion);
+		if (task == null) {
 			// look for latest model version....
 			try {
 				String newModelVersion = modelService.getLatestVersionByWorkitem(workitem);

@@ -26,7 +26,10 @@ import org.imixs.workflow.exceptions.InvalidAccessException;
  */
 public class MokModel implements Model {
 
+	public final static String DEFAULT_MODEL_VERSION="1.0.0";
+
 	Map<String, ItemCollection> entities = null;
+	ItemCollection definition=null;
 
 	/**
 	 * 
@@ -84,34 +87,42 @@ public class MokModel implements Model {
 		entity.replaceItemValue("txtName", "SAVE");
 		entities.put("200.10", entity);
 
+		
+		definition=new ItemCollection();
+		definition.replaceItemValue(WorkflowKernel.MODELVERSION,DEFAULT_MODEL_VERSION);
 	}
 
 	@Override
-	public ItemCollection getProcessEntity(int processid,String modelVersion) throws InvalidAccessException {
+	public ItemCollection getTask(int processid) throws InvalidAccessException {
 		return entities.get(processid + "");
 	}
 
 	@Override
-	public ItemCollection getActivityEntity(int processid, int activityid,String modelVersion)
+	public ItemCollection getEvent(int processid, int activityid)
 			throws InvalidAccessException {
 
 		return entities.get( processid + "." + activityid);
 	}
 
 	@Override
-	public List<ItemCollection> getProcessEntityList(String modelVersion)
+	public List<ItemCollection> findTasks()
 			throws InvalidAccessException {
 		Vector<ItemCollection> list = new Vector<ItemCollection>();
-		list.add(getProcessEntity(100, modelVersion));
-		list.add(getProcessEntity(200, modelVersion));
+		list.add(getTask(100));
+		list.add(getTask(200));
 		return list;
 	}
 
 	@Override
-	public List<ItemCollection> getActivityEntityList(int processid,String modelVersion)
+	public List<ItemCollection> findEvents(int processid)
 			throws InvalidAccessException {
 		// not implemented
 		return null;
+	}
+
+	@Override
+	public ItemCollection getDefinition() {
+		return definition;
 	}
 
 }

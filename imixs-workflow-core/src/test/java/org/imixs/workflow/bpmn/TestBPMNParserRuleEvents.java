@@ -58,23 +58,23 @@ public class TestBPMNParserRuleEvents {
 		Assert.assertNotNull(model);
 
 		// Test Environment
-		ItemCollection profile = model.getProfile();
+		ItemCollection profile = model.getDefinition();
 		Assert.assertNotNull(profile);
 
 		// test count of elements
-		Assert.assertEquals(9, model.getProcessEntityList(VERSION).size());
+		Assert.assertEquals(9, model.findTasks().size());
 
 		// test task 1000
-		ItemCollection task = model.getProcessEntity(1000, VERSION);
+		ItemCollection task = model.getTask(1000);
 		Assert.assertNotNull(task);
 
 		// test activity for task 1000
-		List<ItemCollection> activities = model.getActivityEntityList(1000, VERSION);
+		List<ItemCollection> activities = model.findEvents(1000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(1, activities.size());
 
 		// test activity 1000.10 submit
-		ItemCollection activity = model.getActivityEntity(1000, 10, VERSION);
+		ItemCollection activity = model.getEvent(1000, 10);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
 		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
@@ -105,22 +105,22 @@ public class TestBPMNParserRuleEvents {
 		Assert.assertNotNull(model);
 
 		// Test Environment
-		ItemCollection profile = model.getProfile();
+		ItemCollection profile = model.getDefinition();
 		Assert.assertNotNull(profile);
 
 	
 		/* Test 2000 Task */
 
-		ItemCollection task = model.getProcessEntity(2000, VERSION);
+		ItemCollection task = model.getTask(2000);
 		Assert.assertNotNull(task);
 
 		// test activity for task 2000
-		List<ItemCollection> activities = model.getActivityEntityList(2000, VERSION);
+		List<ItemCollection> activities = model.findEvents(2000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 
 		// test activity 2000.10 submit
-		ItemCollection activity = model.getActivityEntity(2000, 10, VERSION);
+		ItemCollection activity = model.getEvent(2000, 10);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(2000, activity.getItemValueInteger("numProcessID"));
 		Assert.assertEquals(2000, activity.getItemValueInteger("numNextProcessID"));
@@ -131,7 +131,7 @@ public class TestBPMNParserRuleEvents {
 		
 		
 		// test activity 2000.20 followup
-		activity = model.getActivityEntity(2000, 20, VERSION);
+		activity = model.getEvent(2000, 20);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(2000, activity.getItemValueInteger("numProcessID"));
 		Assert.assertEquals(2100, activity.getItemValueInteger("numNextProcessID"));
@@ -167,23 +167,23 @@ public class TestBPMNParserRuleEvents {
 		Assert.assertNotNull(model);
 
 		// Test Environment
-		ItemCollection profile = model.getProfile();
+		ItemCollection profile = model.getDefinition();
 		Assert.assertNotNull(profile);
 
 		// test count of elements
-		Assert.assertEquals(9, model.getProcessEntityList(VERSION).size());
+		Assert.assertEquals(9, model.findTasks().size());
 
 		// test task 1000
-		ItemCollection task = model.getProcessEntity(3000, VERSION);
+		ItemCollection task = model.getTask(3000);
 		Assert.assertNotNull(task);
 
 		// test activity for task 3000
-		List<ItemCollection> activities = model.getActivityEntityList(3000, VERSION);
+		List<ItemCollection> activities = model.findEvents(3000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(1, activities.size());
 
 		// test activity 3000.10 submit
-		ItemCollection activity = model.getActivityEntity(3000, 10, VERSION);
+		ItemCollection activity = model.getEvent(3000, 10);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(3000, activity.getItemValueInteger("numNextProcessID"));
 		Assert.assertEquals("submit", activity.getItemValueString("txtname"));

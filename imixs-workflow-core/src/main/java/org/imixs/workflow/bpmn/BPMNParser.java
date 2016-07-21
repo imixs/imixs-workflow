@@ -65,10 +65,10 @@ public class BPMNParser {
 
 		BPMNModel model = bpmnHandler.buildModel();
 		
-		ItemCollection profile=model.getProfile();
+		ItemCollection definition=model.getDefinition();
 		String version="";
-		if (profile!=null) {
-			version=profile.getModelVersion();
+		if (definition!=null) {
+			version=definition.getModelVersion();
 		}
 		logger.info("BPMN Model ["+version+"] parsed in "
 				+ (System.currentTimeMillis() - lTime) + "ms");

@@ -24,7 +24,7 @@ public class BPMNModel implements Model {
 	Map<Integer, ItemCollection> processList = null;
 	Map<Integer, List<ItemCollection>> activityList = null;
 	List<String> workflowGroups = null;
-	ItemCollection profile = null;
+	ItemCollection definition = null;
 	private static Logger logger = Logger.getLogger(BPMNModel.class.getName());
 
 	public BPMNModel() {
@@ -38,12 +38,12 @@ public class BPMNModel implements Model {
 	 * 
 	 * @return
 	 */
-	public ItemCollection getProfile() {
-		return profile;
+	public ItemCollection getDefinition() {
+		return definition;
 	}
 
-	public void setProfile(ItemCollection profile) {
-		this.profile = profile;
+	public void setDefinition(ItemCollection profile) {
+		this.definition = profile;
 	}
 
 	public List<String> getWorkflowGroups() {
@@ -99,7 +99,7 @@ public class BPMNModel implements Model {
 
 		// test version
 		String activitymodelversion = clonedEntity.getItemValueString(WorkflowKernel.MODELVERSION);
-		ItemCollection process = this.getProcessEntity(pID, activitymodelversion);
+		ItemCollection process = this.getTask(pID);
 		if (process == null) {
 			logger.warning("Invalid Activiyt Entity - no numprocessid defined in model version '" + activitymodelversion
 					+ "' ");
@@ -107,27 +107,26 @@ public class BPMNModel implements Model {
 					"Invalid Activiyt Entity - no numprocessid defined!");
 		}
 
-		List<ItemCollection> activities = getActivityEntityList(pID, activitymodelversion);
+		List<ItemCollection> activities = findEvents(pID);
 
 		activities.add(clonedEntity);
 		activityList.put(pID, activities);
 	}
 
 	@Override
-	public ItemCollection getProcessEntity(int processid, String modelVersion) {
+	public ItemCollection getTask(int processid) {
 		ItemCollection process = processList.get(processid);
-		if (process != null && modelVersion.equals(process.getItemValueString(WorkflowKernel.MODELVERSION)))
+		if (process != null)
 			return process;
 		else
 			return null;
 	}
 
 	@Override
-	public ItemCollection getActivityEntity(int processid, int activityid, String modelVersion) {
-		List<ItemCollection> activities = getActivityEntityList(processid, modelVersion);
+	public ItemCollection getEvent(int processid, int activityid) {
+		List<ItemCollection> activities = findEvents(processid);
 		for (ItemCollection aactivity : activities) {
-			if (activityid == aactivity.getItemValueInteger("numactivityid")
-					&& modelVersion.equals(aactivity.getItemValueString(WorkflowKernel.MODELVERSION))) {
+			if (activityid == aactivity.getItemValueInteger("numactivityid")) {
 				return aactivity;
 			}
 		}
@@ -136,12 +135,12 @@ public class BPMNModel implements Model {
 	}
 
 	@Override
-	public List<ItemCollection> getProcessEntityList(String modelVersion) {
+	public List<ItemCollection> findTasks() {
 		return new ArrayList<ItemCollection>(processList.values());
 	}
 
 	@Override
-	public List<ItemCollection> getActivityEntityList(int processid, String modelVersion) {
+	public List<ItemCollection> findEvents(int processid) {
 		List<ItemCollection> result = activityList.get(processid);
 		if (result == null)
 			result = new ArrayList<ItemCollection>();

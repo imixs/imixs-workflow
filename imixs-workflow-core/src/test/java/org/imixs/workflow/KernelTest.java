@@ -39,11 +39,12 @@ public class KernelTest {
 
 	@Test
 	@Category(org.imixs.workflow.WorkflowKernel.class)
-	public void testSave() {
+	public void testProcess() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
 		itemCollection.replaceItemValue("$processid", 100);
 		itemCollection.replaceItemValue("$activityid", 10);
+		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"),
 				"Hello");
@@ -70,6 +71,7 @@ public class KernelTest {
 		itemCollection.replaceItemValue("txtTitel", "Hello");
 		itemCollection.replaceItemValue("$processid", 100);
 		itemCollection.replaceItemValue("$activityid", 20);
+		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"),
 				"Hello");
@@ -97,6 +99,7 @@ public class KernelTest {
 		itemCollection.replaceItemValue("txtTitel", "Hello");
 		itemCollection.replaceItemValue("$processid", 100);
 		itemCollection.replaceItemValue("$activityid", 11);
+		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"),
 				"Hello");

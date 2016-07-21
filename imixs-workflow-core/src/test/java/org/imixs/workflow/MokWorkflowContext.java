@@ -10,8 +10,8 @@ public class MokWorkflowContext implements WorkflowContext {
 	}
 
 	@Override
-	public Model getModel() {
-		return new MokModel();
+	public ModelManager getModelManager() {
+		return new MokModelManager();
 	}
 
 

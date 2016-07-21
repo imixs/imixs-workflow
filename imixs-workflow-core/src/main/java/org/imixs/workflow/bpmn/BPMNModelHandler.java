@@ -59,15 +59,15 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	BPMNModel model = null;
 
-	Map<String, ItemCollection> processCache = null;
-	Map<String, ItemCollection> activityCache = null;
+	Map<String, ItemCollection> taskCache = null;
+	Map<String, ItemCollection> eventCache = null;
 
 	Map<String, String> linkThrowEventCache = null;
 	Map<String, String> linkCatchEventCache = null;
 
 	Map<String, SequenceFlow> sequenceCache = null;
 	Map<String, String> messageCache = null;
-	ItemCollection profileEnvironment = null;
+	ItemCollection definition = null;
 
 	private List<String> ignoreItemList = null;
 
@@ -75,8 +75,8 @@ public class BPMNModelHandler extends DefaultHandler {
 		super();
 		model = new BPMNModel();
 		// initalize cache objects
-		processCache = new HashMap<String, ItemCollection>();
-		activityCache = new HashMap<String, ItemCollection>();
+		taskCache = new HashMap<String, ItemCollection>();
+		eventCache = new HashMap<String, ItemCollection>();
 		messageCache = new HashMap<String, String>();
 
 		linkThrowEventCache = new HashMap<String, String>();
@@ -111,7 +111,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		if (qName.equalsIgnoreCase("bpmn2:collaboration") && 1 == 2) {
 			if (bDefinitions && currentEntity != null) {
-				profileEnvironment = currentEntity;
+				definition = currentEntity;
 				currentWorkflowGroup = attributes.getValue("name");
 				if (currentWorkflowGroup == null || currentWorkflowGroup.isEmpty()) {
 					logger.warning("No process name defined!");
@@ -124,7 +124,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		// bpmn2:process -  parse workflowGroup 
 		if (qName.equalsIgnoreCase("bpmn2:process")) {
 			if (bDefinitions && currentEntity != null) {
-				profileEnvironment = currentEntity;
+				definition = currentEntity;
 				bDefinitions = false;
 
 			}	
@@ -264,7 +264,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		// end of bpmn2:task -
 		if (bImixsTask && qName.equalsIgnoreCase("bpmn2:task")) {
 			bImixsTask = false;
-			processCache.put(bpmnID, currentEntity);
+			taskCache.put(bpmnID, currentEntity);
 		}
 
 		if (qName.equalsIgnoreCase("bpmn2:extensionElements")) {
@@ -277,7 +277,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			bImixsEvent = false;
 			// we need to cache the activities because the sequenceflows must be
 			// analysed later
-			activityCache.put(bpmnID, currentEntity);
+			eventCache.put(bpmnID, currentEntity);
 		}
 
 		/*
@@ -374,11 +374,11 @@ public class BPMNModelHandler extends DefaultHandler {
 	 */
 	public BPMNModel buildModel() throws ModelException {
 
-		String modelVersion = profileEnvironment.getItemValueString("txtworkflowmodelversion");
-		profileEnvironment.replaceItemValue("$modelversion", modelVersion);
+		String modelVersion = definition.getItemValueString("txtworkflowmodelversion");
+		definition.replaceItemValue("$modelversion", modelVersion);
 		model = new BPMNModel();
 
-		model.setProfile(profileEnvironment);
+		model.setDefinition(definition);
 
 		// create virtual sequence Flows for LinkEvents if available
 		for (String sourceID : linkThrowEventCache.keySet()) {
@@ -393,8 +393,8 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		// add all Imixs tasks into the model and validate the processids
 		List<Integer> processIDList = new ArrayList<Integer>();
-		for (String key : processCache.keySet()) {
-			ItemCollection task = processCache.get(key);
+		for (String key : taskCache.keySet()) {
+			ItemCollection task = taskCache.get(key);
 			// check if numProcessID is unique...
 			int pId = task.getItemValueInteger("numProcessID");
 			if (processIDList.contains(pId)) {
@@ -403,7 +403,7 @@ public class BPMNModelHandler extends DefaultHandler {
 				pId = pId + 100;
 				task.replaceItemValue("numProcessID", pId);
 				// update task in cache
-				processCache.put(key, task);
+				taskCache.put(key, task);
 			}
 
 			// update modelversion...
@@ -417,7 +417,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		// Iterate over all Imixs Event IDs and add them to the corresponding
 		// Imixs Task Elements
-		for (String eventID : activityCache.keySet()) {
+		for (String eventID : eventCache.keySet()) {
 			List<ItemCollection> sourceTaskList = findSourceTasks(eventID);
 			for (ItemCollection sourceTask : sourceTaskList) {
 				addImixsEvent(eventID, sourceTask);
@@ -512,7 +512,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	 */
 	private void addImixsEvent(String eventID, ItemCollection sourceTask) throws ModelException {
 
-		ItemCollection event = activityCache.get(eventID);
+		ItemCollection event = eventCache.get(eventID);
 		String eventName = event.getItemValueString("txtname");
 
 		logger.finest("adding event '" + eventName + "'");
@@ -539,7 +539,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			// need to be handled in a recursive call
 			for (String elementID : targetList) {
 				// test if the target is a Imixs Event
-				ItemCollection imixsElement = activityCache.get(elementID);
+				ItemCollection imixsElement = eventCache.get(elementID);
 				if (imixsElement != null) {
 					// recursive call!
 					addImixsEvent(elementID, sourceTask);
@@ -560,7 +560,7 @@ public class BPMNModelHandler extends DefaultHandler {
 				// recursive call!
 				addImixsEvent(followUpEventID, sourceTask);
 
-				ItemCollection followUpEvent = activityCache.get(followUpEventID);
+				ItemCollection followUpEvent = eventCache.get(followUpEventID);
 
 				event.replaceItemValue("keyFollowUp", "1");
 				event.replaceItemValue("numNextActivityID", followUpEvent.getItemValue("numactivityid"));
@@ -602,8 +602,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		int processid = event.getItemValueInteger("numprocessid");
 		int activityid = event.getItemValueInteger("numactivityid");
 
-		List<ItemCollection> assignedActivities = model.getActivityEntityList(processid,
-				event.getItemValueString(WorkflowKernel.MODELVERSION));
+		List<ItemCollection> assignedActivities = model.findEvents(processid);
 		int bestID = -1;
 		for (ItemCollection aactivity : assignedActivities) {
 			int aid = aactivity.getItemValueInteger("numactivityid");
@@ -760,14 +759,14 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 
 			// test if the source is a Imixs task
-			ItemCollection imixstask = processCache.get(flow.source);
+			ItemCollection imixstask = taskCache.get(flow.source);
 			if (imixstask != null) {
 				return imixstask;
 			}
 
 			// test if the source is a Imixs Event - than we are in a follow up
 			// event!
-			ItemCollection imixsevent = activityCache.get(flow.source);
+			ItemCollection imixsevent = eventCache.get(flow.source);
 			if (imixsevent != null) {
 				// event is connected to a event - so we are in a follow up
 				// event!
@@ -810,13 +809,13 @@ public class BPMNModelHandler extends DefaultHandler {
 
 			// test if the source is a Imixs Event - than we are in a follow up
 			// event!
-			ItemCollection imixsevent = activityCache.get(flow.source);
+			ItemCollection imixsevent = eventCache.get(flow.source);
 			if (imixsevent != null) {
 				return imixsevent;
 			}
 
 			// test if the source is a Imixs task
-			ItemCollection imixstask = processCache.get(flow.source);
+			ItemCollection imixstask = taskCache.get(flow.source);
 			if (imixstask != null) {
 				// event is connected to a task - so we are not in a follow up
 				// event!
@@ -856,13 +855,13 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 
 			// test if the target is a Imixs task
-			ItemCollection imixstask = processCache.get(flow.target);
+			ItemCollection imixstask = taskCache.get(flow.target);
 			if (imixstask != null) {
 				return imixstask;
 			}
 
 			// test if the target is a Imixs event - return null if yes!
-			ItemCollection imixsevent = activityCache.get(flow.target);
+			ItemCollection imixsevent = eventCache.get(flow.target);
 			if (imixsevent != null) {
 				return null;
 			}
@@ -899,14 +898,14 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 
 			// test if the target is a Imixs task
-			ItemCollection imixsElement = processCache.get(flow.target);
+			ItemCollection imixsElement = taskCache.get(flow.target);
 			if (imixsElement != null) {
 				// stop here!
 				return null;
 			}
 
 			// test if the target is a Imixs Event
-			imixsElement = activityCache.get(flow.target);
+			imixsElement = eventCache.get(flow.target);
 			if (imixsElement != null) {
 				return flow.target;
 			}
@@ -947,7 +946,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 
 			// test if the target is a Imixs task
-			ItemCollection imixsElement = processCache.get(flow.target);
+			ItemCollection imixsElement = taskCache.get(flow.target);
 			if (imixsElement != null) {
 				targetList.add(flow.target);
 				// stop here!
@@ -955,7 +954,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 
 			// test if the target is a Imixs Event
-			imixsElement = activityCache.get(flow.target);
+			imixsElement = eventCache.get(flow.target);
 			if (imixsElement != null) {
 				targetList.add(flow.target);
 				// stop here!

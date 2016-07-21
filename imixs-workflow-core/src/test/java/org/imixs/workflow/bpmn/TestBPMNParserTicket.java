@@ -61,7 +61,7 @@ public class TestBPMNParserTicket {
 		Assert.assertNotNull(model);
 
 		// Test Environment
-		ItemCollection profile = model.getProfile();
+		ItemCollection profile = model.getDefinition();
 		Assert.assertNotNull(profile);
 		Assert.assertEquals("environment.profile",
 				profile.getItemValueString("txtname"));
@@ -80,10 +80,10 @@ public class TestBPMNParserTicket {
 		Assert.assertTrue(model.workflowGroups.contains("Ticket"));
 		
 		// test count of elements
-		Assert.assertEquals(4, model.getProcessEntityList(VERSION).size());
+		Assert.assertEquals(4, model.findTasks().size());
 
 		// test task 1000
-		ItemCollection task = model.getProcessEntity(1000,VERSION);
+		ItemCollection task = model.getTask(1000);
 		Assert.assertNotNull(task);
 		Assert.assertEquals("1.0.0",
 				task.getItemValueString("$ModelVersion"));
@@ -99,24 +99,24 @@ public class TestBPMNParserTicket {
 
 		// test activity for task 1000 
 		Collection<ItemCollection> activities = model
-				.getActivityEntityList(1000,VERSION);
+				.findEvents(1000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(1, activities.size());
 
 		// test activity for task 1100
-		activities = model.getActivityEntityList(1100,VERSION);
+		activities = model.findEvents(1100);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(3, activities.size());
 
 		// test activity for task 1200
-		activities = model.getActivityEntityList(1200,VERSION);
+		activities = model.findEvents(1200);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(4, activities.size());
 
 		
 		
 		// test activity 1000.10 submit
-		ItemCollection activity = model.getActivityEntity(1000, 10,VERSION);
+		ItemCollection activity = model.getEvent(1000, 10);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(1100,
 				activity.getItemValueInteger("numNextProcessID"));
@@ -125,14 +125,14 @@ public class TestBPMNParserTicket {
 		
 		
 		// test activity 1100.20 accept
-		activity = model.getActivityEntity(1100, 20,VERSION);
+		activity = model.getEvent(1100, 20);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(1200,
 				activity.getItemValueInteger("numNextProcessID"));
 		Assert.assertEquals("accept", activity.getItemValueString("txtName"));
 
 		// test activity 1200.20 - follow-up activity solve =>40
-		activity = model.getActivityEntity(1200, 20,VERSION);
+		activity = model.getEvent(1200, 20);
 		Assert.assertNotNull(activity); 
 		Assert.assertEquals("1.0.0",
 				activity.getItemValueString("$ModelVersion"));
@@ -143,14 +143,14 @@ public class TestBPMNParserTicket {
 				activity.getItemValueInteger("numNextActivityID"));
 
 		// test activity 1200.40 - follow-up activity message
-		activity = model.getActivityEntity(1200, 40,VERSION);
+		activity = model.getEvent(1200, 40);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals("message", activity.getItemValueString("txtName"));
 		Assert.assertEquals(1000,
 				activity.getItemValueInteger("numNextProcessID"));
 
 		// test activity 100.10
-		activity = model.getActivityEntity(1000, 10,VERSION);
+		activity = model.getEvent(1000, 10);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(1100,
 				activity.getItemValueInteger("numNextProcessID"));

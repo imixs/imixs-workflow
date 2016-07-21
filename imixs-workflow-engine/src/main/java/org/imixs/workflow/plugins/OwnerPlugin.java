@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -110,7 +111,11 @@ public class OwnerPlugin extends AbstractPlugin {
 		// get next process entity
 		int iNextProcessID = adocumentActivity.getItemValueInteger("numNextProcessID");
 		String aModelVersion = adocumentActivity.getItemValueString("$modelVersion");
-		documentNextProcessEntity = ctx.getModel().getProcessEntity(iNextProcessID, aModelVersion);
+		try {
+			documentNextProcessEntity = ctx.getModelManager().getModel(aModelVersion).getTask(iNextProcessID);
+		} catch (ModelException e) {
+			throw new PluginException(OwnerPlugin.class.getSimpleName(), ModelException.UNDEFINED_MODEL_ENTRY, e.getMessage());
+		}
 		// in case the activity is connected to a followup activity the
 		// nextProcess can be null!
 

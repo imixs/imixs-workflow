@@ -57,7 +57,7 @@ public class TestBPMNParserStartEvent {
 		Assert.assertNotNull(model);
 
 		// Test Environment
-		ItemCollection profile = model.getProfile();
+		ItemCollection profile = model.getDefinition();
 		Assert.assertNotNull(profile);
 		Assert.assertEquals("environment.profile",
 				profile.getItemValueString("txtname"));
@@ -69,10 +69,10 @@ public class TestBPMNParserStartEvent {
 		Assert.assertTrue(model.workflowGroups.contains("Simple"));
 		
 		// test count of elements
-		Assert.assertEquals(1, model.getProcessEntityList(VERSION).size());
+		Assert.assertEquals(1, model.findTasks().size());
 
 		// test task 1000
-		ItemCollection task = model.getProcessEntity(1000,VERSION);
+		ItemCollection task = model.getTask(1000);
 		Assert.assertNotNull(task);
 		Assert.assertEquals("1.0.0",
 				task.getItemValueString("$ModelVersion"));
@@ -83,7 +83,7 @@ public class TestBPMNParserStartEvent {
 		
 		
 		// test activity 1000.10 save
-		ItemCollection activity = model.getActivityEntity(1000, 10,VERSION);
+		ItemCollection activity = model.getEvent(1000, 10);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals("save",
 				activity.getItemValueString("txtname"));
@@ -91,13 +91,13 @@ public class TestBPMNParserStartEvent {
 				activity.getItemValueInteger("numNextProcessID"));
 		
 		// test activity for task 1000
-		List<ItemCollection> activities = model.getActivityEntityList(1000,VERSION);
+		List<ItemCollection> activities = model.findEvents(1000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 	
 		
 		// test import activity for task 1000.20
-		 activity = model.getActivityEntity(1000, 20,VERSION);
+		 activity = model.getEvent(1000, 20);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals("import",
 				activity.getItemValueString("txtname"));

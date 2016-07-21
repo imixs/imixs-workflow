@@ -61,7 +61,7 @@ public class TestBPMNParserCollaborationMinutes {
 		Assert.assertNotNull(model);
 
 		// Test Environment
-		ItemCollection profile = model.getProfile();
+		ItemCollection profile = model.getDefinition();
 		Assert.assertNotNull(profile);
 		Assert.assertEquals("environment.profile", profile.getItemValueString("txtname"));
 		Assert.assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));
@@ -78,16 +78,16 @@ public class TestBPMNParserCollaborationMinutes {
 		
 		
 		// test count of elements
-		Assert.assertEquals(8, model.getProcessEntityList(VERSION).size());
+		Assert.assertEquals(8, model.findTasks().size());
 
 		// test task 1000
-		ItemCollection task = model.getProcessEntity(1000, VERSION);
+		ItemCollection task = model.getTask(1000);
 		Assert.assertNotNull(task);
 		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
 		Assert.assertEquals("Protokoll", task.getItemValueString("txtworkflowgroup"));
 
 		// test task 2000
-		task = model.getProcessEntity(2000, VERSION);
+		task = model.getTask(2000);
 		Assert.assertNotNull(task);
 		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
 		Assert.assertEquals("Protokollpunkt", task.getItemValueString("txtworkflowgroup"));

@@ -29,7 +29,7 @@ package org.imixs.workflow.exceptions;
 
 /**
  * An ModelException should be thrown by a service component if a model entity
- * is invalid
+ * is invalid or does not exist
  * 
  * @author rsoika
  * 
@@ -39,6 +39,7 @@ public class ModelException extends WorkflowException {
 	public static final String INVALID_MODEL = "INVALID_MODEL";
 	public static final String INVALID_MODEL_ENTRY = "INVALID_MODEL_ENTRY";
 	public static final String UNDEFINED_MODEL_ENTRY = "UNDEFINED_MODEL_ENTRY";
+	public static final String UNDEFINED_MODEL_VERSION = "UNDEFINED_MODEL_VERSION";
 
 	private static final long serialVersionUID = 1L;
 

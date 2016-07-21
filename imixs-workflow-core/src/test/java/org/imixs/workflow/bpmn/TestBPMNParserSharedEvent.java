@@ -63,34 +63,34 @@ public class TestBPMNParserSharedEvent {
 		Assert.assertNotNull(model);
 
 		// test task 1000
-		ItemCollection task = model.getProcessEntity(1000, VERSION);
+		ItemCollection task = model.getTask(1000);
 		Assert.assertNotNull(task);
 
 		// test activity for task 1000
-		List<ItemCollection> activities = model.getActivityEntityList(1000, VERSION);
+		List<ItemCollection> activities = model.findEvents(1000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 
 		// test activity for task 1100
-		activities = model.getActivityEntityList(1100, VERSION);
+		activities = model.findEvents(1100);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(1, activities.size());
 
 		// test activity 1000.10 submit
-		ItemCollection activity = model.getActivityEntity(1000, 10, VERSION);
+		ItemCollection activity = model.getEvent(1000, 10);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
 
 		// now test shared activity...
 
 		// test activity 1100.90 archive
-		activity = model.getActivityEntity(1100, 90, VERSION);
+		activity = model.getEvent(1100, 90);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(1200, activity.getItemValueInteger("numNextProcessID"));
 		Assert.assertEquals("archive", activity.getItemValueString("txtname"));
 
 		// test activity 1000.90 archive
-		activity = model.getActivityEntity(1000, 90, VERSION);
+		activity = model.getEvent(1000, 90);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(1200, activity.getItemValueInteger("numNextProcessID"));
 		Assert.assertEquals("archive", activity.getItemValueString("txtname"));
@@ -126,33 +126,33 @@ public class TestBPMNParserSharedEvent {
 		Assert.assertNotNull(model);
 
 		// test task 2000
-		ItemCollection task = model.getProcessEntity(2000, VERSION);
+		ItemCollection task = model.getTask(2000);
 		Assert.assertNotNull(task);
-		List<ItemCollection> activities = model.getActivityEntityList(2000, VERSION);
+		List<ItemCollection> activities = model.findEvents(2000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(3, activities.size());
 
 		// test activity for task 2100
-		activities = model.getActivityEntityList(2100, VERSION);
+		activities = model.findEvents(2100);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 
 		// test activity 2000.10 submit
-		ItemCollection activity = model.getActivityEntity(2000, 10, VERSION);
+		ItemCollection activity = model.getEvent(2000, 10);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(2100, activity.getItemValueInteger("numNextProcessID"));
 
 		// now test shared activity...
 
 		// test activity 2000.80 archive
-		activity = model.getActivityEntity(2000, 80, VERSION);
+		activity = model.getEvent(2000, 80);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals("1", activity.getItemValueString("keyFollowUp"));
 		Assert.assertEquals(90, activity.getItemValueInteger("numNextActivityID"));
 		Assert.assertEquals("archive", activity.getItemValueString("txtname"));
 
 		// test activity 2000.90 archive
-		activity = model.getActivityEntity(2000, 90, VERSION);
+		activity = model.getEvent(2000, 90);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(2200, activity.getItemValueInteger("numNextProcessID"));
 		Assert.assertEquals("followup", activity.getItemValueString("txtname"));
@@ -188,42 +188,42 @@ public class TestBPMNParserSharedEvent {
 		Assert.assertNotNull(model);
 
 		// test task 3000
-		ItemCollection task = model.getProcessEntity(3000, VERSION);
+		ItemCollection task = model.getTask(3000);
 		Assert.assertNotNull(task);
-		List<ItemCollection> activities = model.getActivityEntityList(3000, VERSION);
+		List<ItemCollection> activities = model.findEvents(3000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(3, activities.size());
 
 		// test task 3100
-		task = model.getProcessEntity(3100, VERSION);
+		task = model.getTask(3100);
 		Assert.assertNotNull(task);
-		activities = model.getActivityEntityList(3100, VERSION);
+		activities = model.findEvents(3100);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 
 		// test task 3200
-		task = model.getProcessEntity(3200, VERSION);
+		task = model.getTask(3200);
 		Assert.assertNotNull(task);
-		activities = model.getActivityEntityList(3200, VERSION);
+		activities = model.findEvents(3200);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(0, activities.size());
 
 		// test follow up 3000.20
-		ItemCollection activity = model.getActivityEntity(3000, 20, VERSION);
+		ItemCollection activity = model.getEvent(3000, 20);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals("1", activity.getItemValueString("keyFollowUp"));
 		Assert.assertEquals(30, activity.getItemValueInteger("numNextActivityID"));
 		Assert.assertEquals("archive", activity.getItemValueString("txtname"));
 
 		// test follow up 3100.20
-		activity = model.getActivityEntity(3100, 20, VERSION);
+		activity = model.getEvent(3100, 20);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals("1", activity.getItemValueString("keyFollowUp"));
 		Assert.assertEquals(30, activity.getItemValueInteger("numNextActivityID"));
 		Assert.assertEquals("archive", activity.getItemValueString("txtname"));
 
 		// test follow up 3000.30
-		activity = model.getActivityEntity(3000, 30, VERSION);
+		activity = model.getEvent(3000, 30);
 		Assert.assertNotNull(activity);
 		Assert.assertFalse("1".equals(activity.getItemValueString("keyFollowUp")));
 		Assert.assertEquals(3200, activity.getItemValueInteger("numNextProcessID"));
@@ -231,7 +231,7 @@ public class TestBPMNParserSharedEvent {
 		Assert.assertEquals(3000, activity.getItemValueInteger("numProcessID"));
 
 		// test follow up 3100.30
-		activity = model.getActivityEntity(3100, 30, VERSION);
+		activity = model.getEvent(3100, 30);
 		Assert.assertNotNull(activity);
 		Assert.assertFalse("1".equals(activity.getItemValueString("keyFollowUp")));
 		Assert.assertEquals(3200, activity.getItemValueInteger("numNextProcessID"));

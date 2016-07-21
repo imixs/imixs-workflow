@@ -52,10 +52,10 @@ public interface ModelServiceRemote {
 	 * ($modelversion)
 	 */
 
-	public abstract ItemCollection getActivityEntity(int processid,
+	public abstract ItemCollection getEvent(int processid,
 			int activityid, String modelVersion);
 
-	public abstract ItemCollection getProcessEntity(int processid,
+	public abstract ItemCollection getTask(int processid,
 			String modelversion);
 
 	/**
@@ -66,7 +66,7 @@ public interface ModelServiceRemote {
 	 * 
 	 */
 
-	public abstract List<ItemCollection> getActivityEntityList(int processid,
+	public abstract List<ItemCollection> findEvents(int processid,
 			String aModelVersion);
 
 	/**
@@ -74,7 +74,7 @@ public interface ModelServiceRemote {
 	 * Entities
 	 * 
 	 */
-	public abstract List<ItemCollection> getProcessEntityList(
+	public abstract List<ItemCollection> findTasks(
 			String aModelVersion);
 
 	/**

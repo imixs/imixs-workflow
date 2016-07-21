@@ -49,10 +49,10 @@ public interface WorkflowContext {
 	public Object getSessionContext();
 
 	/**
-	 * This Methode returns a defined Model Implementation.
+	 * This method returns an instance of a IModelManager to access model information
 	 * 
-	 * @return Model
+	 * @return ModelManager
 	 */
-	public Model getModel();
+	public ModelManager getModelManager();
 
 }
