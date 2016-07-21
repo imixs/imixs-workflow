@@ -1,8 +1,5 @@
 package org.imixs.workflow.jee.ejb;
 
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -14,11 +11,6 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import junit.framework.Assert;
 
@@ -66,31 +58,30 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 	}
 
 	/**
-	 * test if the method getEvents returns correct lists of workflow events.
+	 * test if the method getEvents returns correct lists of public events.
 	 */
 	@Test
-	public void testGetEvents() {
+	public void testGetEventsSimple() {
 	
 		// get workitem
 		ItemCollection workitem = database.get("W0000-00001");
-		workitem.replaceItemValue(WorkflowService.PROCESSID, 100);
+		workitem.replaceItemValue(WorkflowService.PROCESSID, 200);
 		workitem.replaceItemValue(WorkflowService.ACTIVITYID, 10);
-		workitem.replaceItemValue("namteam", "manfred");
 
 		List<ItemCollection> eventList=null;
 		try {
 			eventList = workflowService.getEvents(workitem);
 		} catch (ModelException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Assert.fail();
 		}
-		Assert.assertEquals(3, eventList.size());
+		// only one event is public!
+		Assert.assertEquals(1, eventList.size());
 	}
 
 	/**
-	 * test if the method getEvents returns correct lists of workflow event,
-	 * with a more complex setup
+	 * test if the method getEvents returns correct lists of public and restricted events.
+	 * User "manfred" is listed in current workitem namTeam.
 	 */
 	@Test
 	public void testGetEventsComplex() {
@@ -114,7 +105,6 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 		try {
 			eventList = workflowService.getEvents(workitem);
 		} catch (ModelException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Assert.fail();
 		}
@@ -124,8 +114,8 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 	
 	
 	/**
-	 * test if the method getEvents returns correct lists of workflow event,
-	 * with a more complex setup
+	 * test if the method getEvents returns correct lists of workflow events,
+	 * with a more complex setup. User 'manfred' is not listed in namManger!
 	 */
 	@Test
 	public void testGetEventsComplexRestricted() {
@@ -147,7 +137,6 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 		try {
 			eventList = workflowService.getEvents(workitem);
 		} catch (ModelException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Assert.fail();
 		}

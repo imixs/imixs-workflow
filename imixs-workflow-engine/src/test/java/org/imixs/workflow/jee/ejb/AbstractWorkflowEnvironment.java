@@ -9,7 +9,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -28,7 +27,6 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.xml.sax.SAXException;
@@ -85,79 +83,19 @@ public class AbstractWorkflowEnvironment {
 		MockitoAnnotations.initMocks(this);
 		// setup db
 		createTestDatabase();
-
-		// mock EJBs and inject them into the workflowService EJB
-		entityService = Mockito.mock(EntityService.class);
-		modelService = Mockito.mock(ModelService.class);
-		workflowService= Mockito.mock(WorkflowService.class);
+		
+		// mock session context
 		ctx = Mockito.mock(SessionContext.class);
-
-		// load default model
-		loadModel();
-
-		// mock workflowService
-		workflowContext = Mockito.mock(WorkflowContext.class);
-		workflowService.entityService = entityService;
-		workflowService.ctx = ctx;
-
 		// simulate SessionContext ctx.getCallerPrincipal().getName()
-		Principal principal = Mockito.mock(Principal.class);
-		when(principal.getName()).thenReturn("manfred");
-		when(ctx.getCallerPrincipal()).thenReturn(principal);
+				Principal principal = Mockito.mock(Principal.class);
+				when(principal.getName()).thenReturn("manfred");
+				when(ctx.getCallerPrincipal()).thenReturn(principal);
 
-		// mock workflowService
-
-		ModelManager modelManager = Mockito.mock(ModelManager.class);
-		try {
-			when(modelManager.getModel(Mockito.anyString())).thenReturn(this.getModel());
-			when(modelManager.getModelByWorkitem(Mockito.any(ItemCollection.class))).thenReturn(this.getModel());
-		} catch (ModelException e) {
-			e.printStackTrace();
-		}
-		when(workflowContext.getModelManager()).thenReturn(modelManager);
-		workflowService.modelService = modelService;
-
-		try {
-			when(modelService.getModel(Mockito.anyString())).thenReturn(this.getModel());
-			when(modelService.getModelByWorkitem(Mockito.any(ItemCollection.class))).thenReturn(this.getModel());
-
-		} catch (ModelException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		when(workflowService.getModelManager()).thenReturn(modelService);
-
-		// simulate a workitemService.getWorkListByRef call
-		when(workflowService.getWorkListByRef(Mockito.anyString())).thenAnswer(new Answer<List<ItemCollection>>() {
-			@Override
-			public List<ItemCollection> answer(InvocationOnMock invocation) throws Throwable {
-
-				List<ItemCollection> result = new ArrayList<>();
-				Object[] args = invocation.getArguments();
-				String id = (String) args[0];
-
-				// iterate over all data and return matching workitems.
-				Collection<ItemCollection> allEntities = database.values();
-				for (ItemCollection aentity : allEntities) {
-					if (aentity.getItemValueString(WorkflowService.UNIQUEIDREF).equals(id)) {
-						result.add(aentity);
-					}
-				}
-
-				return result;
-			}
-		});
 		
-		when (workflowService.processWorkItem(Mockito.any(ItemCollection.class))).thenCallRealMethod();
 		
-		try {
-			when (workflowService.getEvents(Mockito.any(ItemCollection.class))).thenCallRealMethod();
-		} catch (ModelException e) {
-			
-			e.printStackTrace();
-		}
 
+		// mock Entity service
+		entityService = Mockito.mock(EntityService.class);
 		// Simulate fineProfile("1.0.0") -> entityService.load()...
 		when(entityService.load(Mockito.anyString())).thenAnswer(new Answer<ItemCollection>() {
 			@Override
@@ -183,6 +121,72 @@ public class AbstractWorkflowEnvironment {
 				return entity;
 			}
 		});
+		
+		
+		// Mock modelService
+		modelService = Mockito.mock(ModelService.class);
+		// load default model
+		loadModel();
+		
+		
+		
+		// Mock WorkflowService
+		workflowService= Mockito.mock(WorkflowService.class);
+		workflowContext = Mockito.mock(WorkflowContext.class);
+		workflowService.entityService = entityService;
+		workflowService.ctx = ctx;
+		ModelManager modelManager = Mockito.mock(ModelManager.class);
+		try {
+			when(modelManager.getModel(Mockito.anyString())).thenReturn(this.getModel());
+			when(modelManager.getModelByWorkitem(Mockito.any(ItemCollection.class))).thenReturn(this.getModel());
+		} catch (ModelException e) {
+			e.printStackTrace();
+		}
+		when(workflowContext.getModelManager()).thenReturn(modelManager);
+		workflowService.modelService = modelService;
+
+		try {
+			when(modelService.getModel(Mockito.anyString())).thenReturn(this.getModel());
+			when(modelService.getModelByWorkitem(Mockito.any(ItemCollection.class))).thenReturn(this.getModel());
+		} catch (ModelException e) {
+			e.printStackTrace();
+		}
+
+		when(workflowService.getModelManager()).thenReturn(modelService);
+		when (workflowService.getWorkItem(Mockito.anyString())).thenCallRealMethod();
+		
+		// simulate a workitemService.getWorkListByRef call
+		when(workflowService.getWorkListByRef(Mockito.anyString())).thenAnswer(new Answer<List<ItemCollection>>() {
+			@Override
+			public List<ItemCollection> answer(InvocationOnMock invocation) throws Throwable {
+
+				List<ItemCollection> result = new ArrayList<>();
+				Object[] args = invocation.getArguments();
+				String id = (String) args[0];
+
+				// iterate over all data and return matching workitems.
+				Collection<ItemCollection> allEntities = database.values();
+				for (ItemCollection aentity : allEntities) {
+					if (aentity.getItemValueString(WorkflowService.UNIQUEIDREF).equals(id)) {
+						result.add(aentity);
+					}
+				}
+
+				return result;
+			}
+		});
+		
+		when (workflowService.processWorkItem(Mockito.any(ItemCollection.class))).thenCallRealMethod();
+		when (workflowService.getUserName()).thenCallRealMethod();
+		
+		try {
+			when (workflowService.getEvents(Mockito.any(ItemCollection.class))).thenCallRealMethod();
+		} catch (ModelException e) {
+			
+			e.printStackTrace();
+		}
+
+	
 
 	}
 
@@ -218,11 +222,9 @@ public class AbstractWorkflowEnvironment {
 
 	public void loadModel() {
 		InputStream inputStream = getClass().getResourceAsStream(this.modelPath);
-
 		try {
 			model = BPMNParser.parseModel(inputStream, "UTF-8");
 		} catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

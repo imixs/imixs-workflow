@@ -59,7 +59,7 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 		list.add("anna");
 		documentContext.replaceItemValue("namTeam", list);
 		documentContext.replaceItemValue("namCreator", "ronny");
-		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, this.DEFAULT_MODEL_VERSION);
+		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);
 		documentContext.replaceItemValue(WorkflowKernel.PROCESSID, 100);
 		documentContext.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
 		entityService.save(documentContext);

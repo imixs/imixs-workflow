@@ -1,34 +1,8 @@
 package org.imixs.workflow.jee.ejb;
 
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Model;
-import org.imixs.workflow.ModelManager;
-import org.imixs.workflow.WorkflowContext;
-import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.bpmn.BPMNModel;
-import org.imixs.workflow.bpmn.BPMNParser;
-import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.plugins.TestApplicationPlugin;
 import org.junit.Before;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.xml.sax.SAXException;
-
-import junit.framework.Assert;
 
 /**
  * Abstract base class for jUnit tests using the WorkflowService.
