@@ -37,6 +37,10 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 	@Before
 	public void setup() throws PluginException {
 
+		this.setModelPath("/bpmn/TestSplitAndJoinPlugin.bpmn");
+		
+		
+		
 		super.setup();
 
 		splitAndJoinPlugin = new SplitAndJoinPlugin();
@@ -55,7 +59,7 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 		list.add("anna");
 		documentContext.replaceItemValue("namTeam", list);
 		documentContext.replaceItemValue("namCreator", "ronny");
-		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, "1.0.0");
+		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, this.DEFAULT_MODEL_VERSION);
 		documentContext.replaceItemValue(WorkflowKernel.PROCESSID, 100);
 		documentContext.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
 		entityService.save(documentContext);
@@ -70,13 +74,9 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 	@Test 
 	public void testCreateSubProcess() throws ModelException {
 
-		// create test result.....
-		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
-				+ "<processid>100</processid>" + "<activityid>10</activityid>" + "<items>namTeam</items>" + "</item>";
-
+	
 		try {
-			documentActivity = this.getModel().getEvent(100, 10);
-			documentActivity.replaceItemValue("txtActivityResult", activityResult);
+			documentActivity = this.getModel().getEvent(100, 20);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
 
@@ -111,6 +111,49 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 	}
 
 	/**
+	 * Test creation of subprocess
+	 * @throws ModelException 
+	 ***/
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testCreateSubProcessTargetFieldName() throws ModelException {
+	
+		try {
+			documentActivity = this.getModel().getEvent(100, 60);
+			splitAndJoinPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+	
+			e.printStackTrace();
+			Assert.fail();
+		}
+	
+		Assert.assertNotNull(documentContext);
+	
+		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+	
+		Assert.assertEquals(1, workitemRefList.size());
+	
+		String subprocessUniqueid = workitemRefList.get(0);
+	
+		// get the subprocess...
+		ItemCollection subprocess = this.entityService.load(subprocessUniqueid);
+	
+		// test data in subprocess
+		Assert.assertNotNull(subprocess);
+	
+		Assert.assertEquals(100, subprocess.getProcessID());
+	
+		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
+	
+		// test if the field namTeam is available
+		List<String> team = subprocess.getItemValue("_sub_Team");
+		Assert.assertEquals(2, team.size());
+		Assert.assertTrue(team.contains("manfred"));
+		Assert.assertTrue(team.contains("anna"));
+	
+	}
+
+	/**
 	 * Test multi creation of subprocesses
 	 * @throws ModelException 
 	 * 
@@ -118,18 +161,9 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testCreateMultiSubProcess() throws ModelException {
-
-		// create test result with two subprocess creations.....
-		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
-				+ "<processid>100</processid>" + "<activityid>10</activityid>" + "<items>namTeam</items>" + "</item>";
-
-		// second subprocess....
-		activityResult += "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
-				+ "<processid>100</processid>" + "<activityid>20</activityid>" + "<items>namTeam</items>" + "</item>";
-
+		
 		try {
-			documentActivity = this.getModel().getEvent(100, 10);
-			documentActivity.replaceItemValue("txtActivityResult", activityResult);
+			documentActivity = this.getModel().getEvent(100, 30);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
 
@@ -155,7 +189,7 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 		subprocessUniqueid = workitemRefList.get(1);
 		subprocess = this.entityService.load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(200, subprocess.getProcessID());
+		Assert.assertEquals(100, subprocess.getProcessID());
 		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
 
 	}
@@ -168,13 +202,8 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 	// @Ignore
 	@Test
 	public void testCreateSubProcessParsingError() throws ModelException {
-
-		// create test result with a wrong end tag....
-		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
-				+ "<processid>1000</processid>" + "<activityid>10</acttyid>" + "<items>namTeam</items>" + "</item>";
 		try {
-			documentActivity = this.getModel().getEvent(100, 10);
-			documentActivity.replaceItemValue("txtActivityResult", activityResult);
+			documentActivity = this.getModel().getEvent(100, 40);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 
 			Assert.fail();
@@ -205,12 +234,8 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 		/*
 		 * 1.) create test result for new subprcoess.....
 		 */
-		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
-				+ "<processid>100</processid>" + "<activityid>10</activityid>" + "<items>namTeam</items>" + "</item>";
 		try {
-			documentActivity = this.getModel().getEvent(100, 10);
-			documentActivity.replaceItemValue("txtActivityResult", activityResult);
-
+			documentActivity = this.getModel().getEvent(100, 20);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
 			e.printStackTrace();
@@ -231,16 +256,11 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 		 * 2.) process the subprocess to test if the origin process will be
 		 * updated correctly
 		 */
-		activityResult = "<item name=\"origin_update\"> " + "<modelversion>1.0.0</modelversion>"
-				+ "<processid>100</processid>" + "<activityid>20</activityid>" + "<items>namTeam,_sub_data</items>"
-				+ "</item>";
-
 		// add some custom data
 		subprocess.replaceItemValue("_sub_data", "some test data");
 		// now we process the subprocess
 		try {
-			documentActivity = this.getModel().getEvent(100, 10);
-			documentActivity.replaceItemValue("txtActivityResult", activityResult);
+			documentActivity = this.getModel().getEvent(100, 50);
 			splitAndJoinPlugin.run(subprocess, documentActivity);
 		} catch (PluginException e) {
 			e.printStackTrace();
@@ -252,7 +272,7 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 		Assert.assertNotNull(documentContext);
 
 		// test data.... (new $processId=200 and _sub_data from subprocess
-		Assert.assertEquals(200, documentContext.getProcessID());
+		Assert.assertEquals(100, documentContext.getProcessID());
 		Assert.assertEquals("some test data", documentContext.getItemValueString("_sub_data"));
 
 	}
@@ -266,11 +286,8 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 	public void testUpdateSubProcess() throws ModelException {
 
 		// 1.) create test subprocess.....
-		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
-				+ "<processid>100</processid>" + "<activityid>10</activityid>" + "<items>namTeam</items>" + "</item>";
 		try {
-			documentActivity = this.getModel().getEvent(100, 10);
-			documentActivity.replaceItemValue("txtActivityResult", activityResult);
+			documentActivity = this.getModel().getEvent(100, 20);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
 
@@ -289,11 +306,10 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 		Assert.assertEquals(100, subprocess.getProcessID());
 
 		// 2.) now update the subprocess
-		activityResult = "<item name=\"subprocess_update\"> " + "<modelversion>1.0.0</modelversion>"
-				+ "<processid>100</processid>" + "<activityid>30</activityid>" + "<items>namTeam</items>" + "</item>";
 		try {
-			documentActivity = this.getModel().getEvent(100, 10);
-			documentActivity.replaceItemValue("txtActivityResult", activityResult);
+			documentActivity = this.getModel().getEvent(200, 20);
+			// set new team member
+			documentContext.replaceItemValue("namTeam", "Walter");
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
 
@@ -308,61 +324,12 @@ public class TestSplitAndJoinPlugin extends AbstractPluginTest {
 
 		subprocess = this.entityService.load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(300, subprocess.getProcessID());
-
-	}
-	
-	
-	
-
-	/**
-	 * Test creation of subprocess
-	 * @throws ModelException 
-	 ***/
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testCreateSubProcessTargetFieldName() throws ModelException {
-
-		// create test result.....
-		String activityResult = "<item name=\"subprocess_create\"> " + "<modelversion>1.0.0</modelversion>"
-				+ "<processid>100</processid>" + "<activityid>10</activityid>" + "<items>namTeam|_sub_team</items>" + "</item>";
-
-		try {
-			documentActivity = this.getModel().getEvent(100, 10);
-			documentActivity.replaceItemValue("txtActivityResult", activityResult);
-			splitAndJoinPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
-
-			e.printStackTrace();
-			Assert.fail();
-		}
-
-		Assert.assertNotNull(documentContext);
-
-		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-
-		Assert.assertEquals(1, workitemRefList.size());
-
-		String subprocessUniqueid = workitemRefList.get(0);
-
-		// get the subprocess...
-		ItemCollection subprocess = this.entityService.load(subprocessUniqueid);
-
-		// test data in subprocess
-		Assert.assertNotNull(subprocess);
-
 		Assert.assertEquals(100, subprocess.getProcessID());
-
-		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
-
-		// test if the field namTeam is available
-		List<String> team = subprocess.getItemValue("_sub_Team");
-		Assert.assertEquals(2, team.size());
-		Assert.assertTrue(team.contains("manfred"));
-		Assert.assertTrue(team.contains("anna"));
+		Assert.assertEquals("Walter", subprocess.getItemValueString("namTEAM"));
 
 	}
-
+	
+	
 	
 
 	/**

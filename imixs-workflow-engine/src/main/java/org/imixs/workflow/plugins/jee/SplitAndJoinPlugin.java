@@ -110,6 +110,9 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 		ItemCollection evalItemCollection = ResultPlugin.evaluateWorkflowResult(adocumentActivity, adocumentContext);
 
+		if (evalItemCollection==null)
+			return Plugin.PLUGIN_OK;
+		
 		// 1.) test for items with name subprocess_create and create the
 		// defined suprocesses
 		if (evalItemCollection.hasItem(SUBPROCESS_CREATE)) {

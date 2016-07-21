@@ -36,6 +36,8 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 
 	@Before
 	public void setup() throws PluginException {
+		this.setModelPath("/bpmn/TestWorkflowService.bpmn");
+		
 		super.setup();
 	}
 
@@ -68,14 +70,7 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 	 */
 	@Test
 	public void testGetEvents() {
-
-		// set restricted to
-		ItemCollection event = database.get("A100-10");
-
-		// create keyRestrictedVisibility
-		event.replaceItemValue("keyRestrictedVisibility", "namteam");
-		database.put("A100-10", event);
-
+	
 		// get workitem
 		ItemCollection workitem = database.get("W0000-00001");
 		workitem.replaceItemValue(WorkflowService.PROCESSID, 100);
@@ -100,17 +95,7 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 	@Test
 	public void testGetEventsComplex() {
 
-		// set restricted to
-		ItemCollection event = database.get("A100-10");
-
-		// create keyRestrictedVisibility
-		Vector<String> keys = new Vector<String>();
-		keys.add("namteam");
-		keys.add("namManageR");
-		keys.add("namassist");
-		event.replaceItemValue("keyRestrictedVisibility", keys);
-		database.put("A100-10", event);
-
+	
 		// get workitem
 		ItemCollection workitem = database.get("W0000-00001");
 		workitem.replaceItemValue(WorkflowService.PROCESSID, 100);
@@ -136,4 +121,38 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 		Assert.assertEquals(3, eventList.size());
 	}
 
+	
+	
+	/**
+	 * test if the method getEvents returns correct lists of workflow event,
+	 * with a more complex setup
+	 */
+	@Test
+	public void testGetEventsComplexRestricted() {
+
+	
+		// get workitem
+		ItemCollection workitem = database.get("W0000-00001");
+		workitem.replaceItemValue(WorkflowService.PROCESSID, 100);
+		workitem.replaceItemValue(WorkflowService.ACTIVITYID, 10);
+
+		Vector<String> members = new Vector<String>();
+		members.add("jo");
+		members.add("alex");
+		workitem.replaceItemValue("nammteam", "tom");
+		workitem.replaceItemValue("nammanager", members);
+		workitem.replaceItemValue("namassist", "");
+
+		List<ItemCollection> eventList=null;
+		try {
+			eventList = workflowService.getEvents(workitem);
+		} catch (ModelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertEquals(2, eventList.size());
+	}
+
+	
 }
