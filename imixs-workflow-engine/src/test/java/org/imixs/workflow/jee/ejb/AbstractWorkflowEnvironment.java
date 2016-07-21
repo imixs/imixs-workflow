@@ -59,8 +59,17 @@ public class AbstractWorkflowEnvironment {
 	protected ModelService modelService;
 	protected SessionContext ctx;
 	protected WorkflowContext workflowContext;
-	private Model model=null;
+	private BPMNModel model=null;
 
+	private String modelPath="/bpmn/plugin-test.bpmn";
+
+	public String getModelPath() {
+		return modelPath;
+	}
+
+	public void setModelPath(String modelPath) {
+		this.modelPath = modelPath;
+	}
 
 	@Before
 	public void setup() throws PluginException {
@@ -75,7 +84,8 @@ public class AbstractWorkflowEnvironment {
 
 		workflowContext = Mockito.mock(WorkflowContext.class);
 
-		 model=loadModel("/bpmn/plugin-test.bpmn");
+		// load default model
+		 loadModel();
 
 	
 		// Simulate fineProfile("1.0.0") -> entityService.load()...
@@ -107,60 +117,7 @@ public class AbstractWorkflowEnvironment {
 
 		when(workflowContext.getModelManager()).thenReturn(modelService);
 		
-		/*+
-		// simulate getActivityEntity
-		when(modelService.getActivityEntity(Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString()))
-				.thenAnswer(new Answer<ItemCollection>() {
-					@Override
-					public ItemCollection answer(InvocationOnMock invocation) throws Throwable {
-						Object[] args = invocation.getArguments();
-						int p = (Integer) args[0];
-						int a = (Integer) args[1];
-						ItemCollection entity = database.get("A" + p + "-" + a);
-						return entity;
-
-					}
-				});
-
-		// simulate getActivityEntityList
-		when(modelService.getActivityEntityList(Mockito.anyInt(), Mockito.anyString()))
-				.thenAnswer(new Answer<List<ItemCollection>>() {
-					@SuppressWarnings({ "rawtypes", "unused" })
-					@Override
-					public List<ItemCollection> answer(InvocationOnMock invocation) throws Throwable {
-						ArrayList<ItemCollection> result = new ArrayList<ItemCollection>();
-						Object[] args = invocation.getArguments();
-						int p = (Integer) args[0];
-						String m = (String) args[1];
-						Iterator it = database.entrySet().iterator();
-						while (it.hasNext()) {
-							Map.Entry pair = (Map.Entry) it.next();
-							if (pair.getKey().toString().startsWith("A" + p + "-")) {
-								result.add((ItemCollection) pair.getValue());
-							}
-						}
-						return result;
-
-					}
-				});
-		
-		
-		
-		// simulate getProcessEntity
-		when(modelService.getProcessEntity(Mockito.anyInt(), Mockito.anyString()))
-				.thenAnswer(new Answer<ItemCollection>() {
-					@Override
-					public ItemCollection answer(InvocationOnMock invocation) throws Throwable {
-						Object[] args = invocation.getArguments();
-						int p = (Integer) args[0];
-						ItemCollection entity = database.get("P" + p);
-						return entity;
-
-					}
-				});
-		 */
 	
-
 	}
 
 	/**
@@ -196,10 +153,9 @@ public class AbstractWorkflowEnvironment {
 	}
 	
 	
-	private Model loadModel(String path) {
-		InputStream inputStream = getClass().getResourceAsStream(path);
+	public void loadModel() {
+		InputStream inputStream = getClass().getResourceAsStream(this.modelPath);
 
-		BPMNModel model = null;
 		try {
 			model = BPMNParser.parseModel(inputStream, "UTF-8");
 		} catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e) {
@@ -207,7 +163,6 @@ public class AbstractWorkflowEnvironment {
 			e.printStackTrace();
 		}
 
-		return model;
 	}
 
 }

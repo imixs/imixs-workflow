@@ -49,6 +49,7 @@ public class TestOwnerPluginProcessEntity extends AbstractPluginTest {
 	@Before
 	public void setup() throws PluginException {
 
+		this.setModelPath("/bpmn/acl-test.bpmn");
 		super.setup();
 
 		ownerPlugin = new OwnerPlugin();
@@ -74,16 +75,18 @@ public class TestOwnerPluginProcessEntity extends AbstractPluginTest {
 	/**
 	 * Test if the Owner settings will not be changed if no ACL is set be
 	 * process or activity
+	 * 
+	 * @throws ModelException
 	 ***/
 	@Test
-	public void testOwnerNoUpdate() {
+	public void testOwnerNoUpdate() throws ModelException {
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
 		documentContext.replaceItemValue("namowner", list);
+		documentContext.replaceItemValue("$processid", 100);
 
-		documentActivity = this.getActivityEntity(100, 10);
-
+		documentActivity = this.getModel().getEvent(100, 10);
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -102,20 +105,45 @@ public class TestOwnerPluginProcessEntity extends AbstractPluginTest {
 	}
 
 	/**
+	 * Test if the Owner settings from the activityEntity are injected into the
+	 * workitem
+	 * 
+	 * @throws ModelException
+	 **/
+	@Test
+	public void testOwnerfromActivityEntity() throws ModelException {
+
+		documentActivity = this.getModel().getEvent(100, 20);
+		try {
+			ownerPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		@SuppressWarnings("unchecked")
+		List<String> onwerList = documentContext.getItemValue("namOwner");
+
+		Assert.assertEquals(3, onwerList.size());
+		Assert.assertTrue(onwerList.contains("joe"));
+		Assert.assertTrue(onwerList.contains("manfred"));
+		Assert.assertTrue(onwerList.contains("anna"));
+
+	}
+
+	/**
 	 * Test if the ACL settings from the next processEntity are injected into
 	 * the workitem
-	 * @throws ModelException 
+	 * 
+	 * @throws ModelException
 	 **/
 	@Test
 	public void testOwnerfromProcessEntity() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(100, 10);
-		documentActivity.replaceItemValue("numnextprocessid", 200);
-	
-		Vector<String> list = new Vector<String>();
-		list.add("sam");
-		list.add("joe");
-	
+		documentActivity = this.getModel().getEvent(300, 10);
+		documentContext.replaceItemValue("$processid", 300);
+
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -134,71 +162,24 @@ public class TestOwnerPluginProcessEntity extends AbstractPluginTest {
 	}
 
 	/**
-	 * Test if the Owner settings from the activityEntity are injected into the
-	 * workitem
-	 * @throws ModelException 
-	 **/
-	@Test
-	public void testOwnerfromActivityEntity() throws ModelException {
-
-		documentActivity = this.getModel().getEvent(100, 10);
-
-		documentActivity.replaceItemValue("keyupdateAcl", true);
-		Vector<String> list = new Vector<String>();
-		list.add("samy");
-		list.add(""); // test also for empty entry
-		list.add("joe");
-		documentActivity.replaceItemValue("namOwnershipNames", list);
-	
-		try {
-			ownerPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
-
-			e.printStackTrace();
-			Assert.fail();
-		}
-
-		@SuppressWarnings("unchecked")
-		List<String> onwerList = documentContext.getItemValue("namOwner");
-
-		Assert.assertEquals(2, onwerList.size());
-		Assert.assertTrue(onwerList.contains("joe"));
-		Assert.assertTrue(onwerList.contains("samy"));
-
-	}
-
-	/**
 	 * Test if the Owner settings from the next processEntity are ignored in
 	 * case the ActivityEnttiy provides settings. Merge is not supported!
+	 * 
+	 * @throws ModelException
 	 * 
 	 **/
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testOwnerfromProcessEntityAndActivityEntity() {
+	public void testOwnerfromProcessEntityAndActivityEntity() throws ModelException {
 
 		// set some old values
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
 		documentContext.replaceItemValue("namOwner", list);
+		documentContext.replaceItemValue("$processid", 300);
 
-		documentActivity = this.getActivityEntity(100, 10);
-		documentActivity.replaceItemValue("keyupdateAcl", true);
-		documentActivity.replaceItemValue("numnextprocessid", 200);
-		list = new Vector<String>();
-		list.add("anna");
-		list.add("manfred");
-		list.add("joe"); // overlapped!
-		documentActivity.replaceItemValue("namOwnershipNames", list);
-
-		// prepare ACL setting for process entity 200
-		documentProcess = this.getProcessEntity(200);
-		documentProcess.replaceItemValue("keyupdateAcl", true);
-		list = new Vector<String>();
-		list.add("sam");
-		list.add("joe"); // overlapped!
-		documentProcess.replaceItemValue("namOwnershipNames", list);
-		this.setProcessEntity(documentProcess);
+		documentActivity = this.getModel().getEvent(300, 20);
 
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
@@ -212,7 +193,7 @@ public class TestOwnerPluginProcessEntity extends AbstractPluginTest {
 		List<String> onwerList = documentContext.getItemValue("namOwner");
 		Assert.assertEquals(3, onwerList.size());
 		Assert.assertTrue(onwerList.contains("joe"));
-		//Assert.assertTrue(onwerList.contains("sam"));
+		// Assert.assertTrue(onwerList.contains("sam"));
 		Assert.assertTrue(onwerList.contains("manfred"));
 		Assert.assertTrue(onwerList.contains("anna"));
 

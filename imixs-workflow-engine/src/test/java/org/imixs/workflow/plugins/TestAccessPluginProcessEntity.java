@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.jee.ejb.AbstractPluginTest;
 import org.junit.Before;
@@ -47,6 +48,7 @@ public class TestAccessPluginProcessEntity extends AbstractPluginTest {
 
 	@Before
 	public void setup() throws PluginException {
+		this.setModelPath("/bpmn/acl-test.bpmn");
 
 		super.setup();
 
@@ -73,15 +75,17 @@ public class TestAccessPluginProcessEntity extends AbstractPluginTest {
 	/**
 	 * Test if the ACL settings will not be changed if no ACL is set be process
 	 * or activity
+	 * 
+	 * @throws ModelException
 	 ***/
 	@Test
-	public void testACLNoUpdate() {
+	public void testACLNoUpdate() throws ModelException {
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
 		documentContext.replaceItemValue("$writeaccess", list);
 
-		documentActivity = this.getActivityEntity(100, 10);
+		documentActivity = this.getModel().getEvent(100, 10);
 
 		try {
 			accessPlugin.run(documentContext, documentActivity);
@@ -103,22 +107,14 @@ public class TestAccessPluginProcessEntity extends AbstractPluginTest {
 	/**
 	 * Test if the ACL settings from the next processEntity are injected into
 	 * the workitem
+	 * 
+	 * @throws ModelException
 	 **/
 	@Test
-	public void testACLfromProcessEntity() {
+	public void testACLfromProcessEntity() throws ModelException {
 
-		documentActivity = this.getActivityEntity(100, 10);
-		documentActivity.replaceItemValue("numnextprocessid", 200);
-		this.setActivityEntity(documentActivity);
-
-		// prepare ACL setting for process entity 200
-		documentProcess = this.getProcessEntity(200);
-		documentProcess.replaceItemValue("keyupdateAcl", true);
-		Vector<String> list = new Vector<String>();
-		list.add("sam");
-		list.add("joe");
-		documentProcess.replaceItemValue("namaddwriteaccess", list);
-		this.setProcessEntity(documentProcess);
+		documentActivity = this.getModel().getEvent(300, 10);
+		documentContext.replaceItemValue("$processid", 300);
 
 		try {
 			accessPlugin.run(documentContext, documentActivity);
@@ -140,18 +136,13 @@ public class TestAccessPluginProcessEntity extends AbstractPluginTest {
 	/**
 	 * Test if the ACL settings from the activityEntity are injected into the
 	 * workitem
+	 * 
+	 * @throws ModelException
 	 **/
 	@Test
-	public void testACLfromActivityEntity() {
+	public void testACLfromActivityEntity() throws ModelException {
 
-		documentActivity = this.getActivityEntity(100, 10);
-
-		documentActivity.replaceItemValue("keyupdateAcl", true);
-		Vector<String> list = new Vector<String>();
-		list.add("samy");
-		list.add("joe");
-		documentActivity.replaceItemValue("namaddwriteaccess", list);
-		this.setActivityEntity(documentActivity);
+		documentActivity = this.getModel().getEvent(100, 20);
 
 		try {
 			accessPlugin.run(documentContext, documentActivity);
@@ -164,51 +155,31 @@ public class TestAccessPluginProcessEntity extends AbstractPluginTest {
 		@SuppressWarnings("unchecked")
 		List<String> writeAccess = documentContext.getItemValue("$WriteAccess");
 
-		Assert.assertEquals(2, writeAccess.size());
+		Assert.assertEquals(3, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
 		Assert.assertTrue(writeAccess.contains("samy"));
+		Assert.assertTrue(writeAccess.contains("anna"));
 
 	}
 
 	/**
 	 * Test if the ACL settings from the next processEntity are ignored in case
 	 * the ActivityEnttiy provides settings. Merge is not supported!
+	 * 
+	 * @throws ModelException
 	 **/
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testACLfromProcessEntityAndActivityEntity() {
+	public void testACLfromProcessEntityAndActivityEntity() throws ModelException {
 
 		// set some old values
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
-		documentContext.replaceItemValue("$writeaccess", list);
+		documentContext.replaceItemValue("namOwner", list);
+		documentContext.replaceItemValue("$processid", 300);
 
-		documentActivity = this.getActivityEntity(100, 10);
-		documentActivity.replaceItemValue("keyupdateAcl", true);
-		documentActivity.replaceItemValue("numnextprocessid", 200);
-		list = new Vector<String>();
-		list.add("anna");
-		list.add("manfred");
-		list.add("joe"); // overlapped!
-		documentActivity.replaceItemValue("namaddwriteaccess", list);
-		// read access
-		list = new Vector<String>();
-		list.add("manfred");
-		list.add("tom"); // overlapped!
-		documentActivity.replaceItemValue("namaddreadaccess", list);
-		this.setActivityEntity(documentActivity);
-
-		// prepare ACL setting for process entity 200
-		documentProcess = this.getProcessEntity(200);
-		documentProcess.replaceItemValue("keyupdateAcl", true);
-		list = new Vector<String>();
-		list.add("sam");
-		list.add("joe"); // overlapped!
-		documentProcess.replaceItemValue("namaddwriteaccess", list);
-		documentProcess.replaceItemValue("namaddreadaccess", "silvia");
-		this.setProcessEntity(documentProcess);
-
+		documentActivity = this.getModel().getEvent(300, 20);
 		try {
 			accessPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -221,7 +192,7 @@ public class TestAccessPluginProcessEntity extends AbstractPluginTest {
 		List<String> writeAccess = documentContext.getItemValue("$WriteAccess");
 		Assert.assertEquals(3, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
-		//Assert.assertTrue(writeAccess.contains("sam"));
+		// Assert.assertTrue(writeAccess.contains("sam"));
 		Assert.assertTrue(writeAccess.contains("manfred"));
 		Assert.assertTrue(writeAccess.contains("anna"));
 
