@@ -44,6 +44,7 @@ import javax.ejb.Singleton;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.ModelManager;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -138,8 +139,9 @@ public class ModelService implements ModelManager {
 					}
 				}
 				if (!bestVersionMatch.isEmpty()) {
-					logger.warning("Deprecated model version: '" + modelVersion + "' -> migrating to version '"
-							+ bestVersionMatch + "'");
+					logger.warning("Deprecated model version: '" + modelVersion + "' -> migrating $uniqueID=" + workitem.getUniqueID() +", workflowgroup='" + workflowGroup+ "' to model version '"
+							+ bestVersionMatch + "' ");
+					workitem.replaceItemValue(WorkflowKernel.MODELVERSION, bestVersionMatch);
 					model = getModel(bestVersionMatch);
 				}
 			} else {

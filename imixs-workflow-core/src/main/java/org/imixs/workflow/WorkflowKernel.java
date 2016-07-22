@@ -443,11 +443,10 @@ public class WorkflowKernel {
 		String version = documentContext.getItemValueString(MODELVERSION);
 
 		try {
-			Model model = ctx.getModelManager().getModel(version);
+			Model model = ctx.getModelManager().getModelByWorkitem(documentContext);
 			documentActivity = model.getEvent(aProcessID, aActivityID);
 		} catch (ModelException e) {
-			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), ACTIVITY_NOT_FOUND,
-					"[WorkflowKernel] model entry " + aProcessID + "." + aActivityID + " not found for model version '"+version +"'");
+			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(),MODEL_ERROR,e.getMessage());
 		}
 
 		if (documentActivity == null)
