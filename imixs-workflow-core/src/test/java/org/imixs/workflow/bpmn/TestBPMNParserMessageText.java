@@ -65,7 +65,7 @@ public class TestBPMNParserMessageText {
 		Assert.assertEquals(VERSION,
 				profile.getItemValueString("$ModelVersion"));
 
-		Assert.assertTrue(model.workflowGroups.contains("Message Example"));
+		Assert.assertTrue(model.getGroups().contains("Message Example"));
 
 		// test count of elements
 		Assert.assertEquals(2, model.findAllTasks().size());

@@ -60,7 +60,7 @@ public class AbstractWorkflowEnvironment {
 
 	protected EntityService entityService;
 
-	//@Spy
+	// @Spy
 	protected WorkflowService workflowService;
 
 	protected ModelService modelService;
@@ -83,16 +83,13 @@ public class AbstractWorkflowEnvironment {
 		MockitoAnnotations.initMocks(this);
 		// setup db
 		createTestDatabase();
-		
+
 		// mock session context
 		ctx = Mockito.mock(SessionContext.class);
 		// simulate SessionContext ctx.getCallerPrincipal().getName()
-				Principal principal = Mockito.mock(Principal.class);
-				when(principal.getName()).thenReturn("manfred");
-				when(ctx.getCallerPrincipal()).thenReturn(principal);
-
-		
-		
+		Principal principal = Mockito.mock(Principal.class);
+		when(principal.getName()).thenReturn("manfred");
+		when(ctx.getCallerPrincipal()).thenReturn(principal);
 
 		// mock Entity service
 		entityService = Mockito.mock(EntityService.class);
@@ -121,17 +118,15 @@ public class AbstractWorkflowEnvironment {
 				return entity;
 			}
 		});
-		
-		
+
 		// Mock modelService
-		modelService = Mockito.mock(ModelService.class);
+		// modelService = Mockito.m.mock(new ModelService());
+		modelService = new ModelService();
 		// load default model
 		loadModel();
-		
-		
-		
+
 		// Mock WorkflowService
-		workflowService= Mockito.mock(WorkflowService.class);
+		workflowService = Mockito.mock(WorkflowService.class);
 		workflowContext = Mockito.mock(WorkflowContext.class);
 		workflowService.entityService = entityService;
 		workflowService.ctx = ctx;
@@ -144,17 +139,17 @@ public class AbstractWorkflowEnvironment {
 		}
 		when(workflowContext.getModelManager()).thenReturn(modelManager);
 		workflowService.modelService = modelService;
-
-		try {
-			when(modelService.getModel(Mockito.anyString())).thenReturn(this.getModel());
-			when(modelService.getModelByWorkitem(Mockito.any(ItemCollection.class))).thenReturn(this.getModel());
-		} catch (ModelException e) {
-			e.printStackTrace();
-		}
-
+		/*
+		 * try {
+		 * //when(modelService.getModel(Mockito.anyString())).thenCallRealMethod
+		 * (); //thenReturn(this.getModel());
+		 * //when(modelService.getModelByWorkitem(Mockito.any(ItemCollection.
+		 * class))).thenCallRealMethod();//.thenReturn(this.getModel()); } catch
+		 * (ModelException e) { e.printStackTrace(); }
+		 */
 		when(workflowService.getModelManager()).thenReturn(modelService);
-		when (workflowService.getWorkItem(Mockito.anyString())).thenCallRealMethod();
-		
+		when(workflowService.getWorkItem(Mockito.anyString())).thenCallRealMethod();
+
 		// simulate a workitemService.getWorkListByRef call
 		when(workflowService.getWorkListByRef(Mockito.anyString())).thenAnswer(new Answer<List<ItemCollection>>() {
 			@Override
@@ -175,18 +170,16 @@ public class AbstractWorkflowEnvironment {
 				return result;
 			}
 		});
-		
-		when (workflowService.processWorkItem(Mockito.any(ItemCollection.class))).thenCallRealMethod();
-		when (workflowService.getUserName()).thenCallRealMethod();
-		
+
+		when(workflowService.processWorkItem(Mockito.any(ItemCollection.class))).thenCallRealMethod();
+		when(workflowService.getUserName()).thenCallRealMethod();
+
 		try {
-			when (workflowService.getEvents(Mockito.any(ItemCollection.class))).thenCallRealMethod();
+			when(workflowService.getEvents(Mockito.any(ItemCollection.class))).thenCallRealMethod();
 		} catch (ModelException e) {
-			
+
 			e.printStackTrace();
 		}
-
-	
 
 	}
 
@@ -224,6 +217,8 @@ public class AbstractWorkflowEnvironment {
 		InputStream inputStream = getClass().getResourceAsStream(this.modelPath);
 		try {
 			model = BPMNParser.parseModel(inputStream, "UTF-8");
+
+			this.modelService.addModel(model);
 		} catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		}

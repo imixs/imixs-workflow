@@ -1,5 +1,8 @@
 package org.imixs.workflow;
 
+import static org.mockito.Mockito.when;
+
+import java.security.Principal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -8,12 +11,15 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
+import javax.ejb.SessionContext;
+
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
 /**
  * Test class for workflow kernel
@@ -24,18 +30,31 @@ import org.junit.experimental.categories.Category;
 public class KernelTest {
 
 	WorkflowKernel kernel = null;
-
+	protected SessionContext ctx;
+	protected WorkflowContext workflowContext;
 	private static Logger logger = Logger.getLogger(KernelTest.class.getName());
- 
+
 	@Before
 	public void setup() throws PluginException {
-		MokWorkflowContext ctx = new MokWorkflowContext();
-		kernel = new WorkflowKernel(ctx);
+
+		ctx = Mockito.mock(SessionContext.class);
+		// simulate SessionContext ctx.getCallerPrincipal().getName()
+		Principal principal = Mockito.mock(Principal.class);
+		when(principal.getName()).thenReturn("manfred");
+		when(ctx.getCallerPrincipal()).thenReturn(principal);
+
+		workflowContext = Mockito.mock(WorkflowContext.class);
+
+		// provide a mock modelManger class
+		when(workflowContext.getModelManager()).thenReturn(new MokModelManager());
+
+		// MokWorkflowContext ctx = new MokWorkflowContext();
+		kernel = new WorkflowKernel(workflowContext);
 
 		MokPlugin mokPlugin = new MokPlugin();
 		kernel.registerPlugin(mokPlugin);
 
-	} 
+	}
 
 	@Test
 	@Category(org.imixs.workflow.WorkflowKernel.class)
@@ -46,8 +65,7 @@ public class KernelTest {
 		itemCollection.replaceItemValue("$activityid", 10);
 		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
-		Assert.assertEquals(itemCollection.getItemValueString("txttitel"),
-				"Hello");
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
 		try {
 			kernel.process(itemCollection);
@@ -60,8 +78,7 @@ public class KernelTest {
 		}
 
 		Assert.assertEquals(1, itemCollection.getItemValueInteger("runs"));
-		Assert.assertEquals(100,
-				itemCollection.getItemValueInteger("$processid"));
+		Assert.assertEquals(100, itemCollection.getItemValueInteger("$processid"));
 	}
 
 	@Test
@@ -73,8 +90,7 @@ public class KernelTest {
 		itemCollection.replaceItemValue("$activityid", 20);
 		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
-		Assert.assertEquals(itemCollection.getItemValueString("txttitel"),
-				"Hello");
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
 		try {
 			kernel.process(itemCollection);
@@ -88,8 +104,7 @@ public class KernelTest {
 
 		Assert.assertEquals(1, itemCollection.getItemValueInteger("runs"));
 		// test next state
-		Assert.assertEquals(200,
-				itemCollection.getItemValueInteger("$processid"));
+		Assert.assertEquals(200, itemCollection.getItemValueInteger("$processid"));
 	}
 
 	@Test
@@ -101,8 +116,7 @@ public class KernelTest {
 		itemCollection.replaceItemValue("$activityid", 11);
 		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
-		Assert.assertEquals(itemCollection.getItemValueString("txttitel"),
-				"Hello");
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
 		try {
 			kernel.process(itemCollection);
@@ -117,8 +131,7 @@ public class KernelTest {
 		// runs should be 2
 		Assert.assertEquals(2, itemCollection.getItemValueInteger("runs"));
 		// test next state
-		Assert.assertEquals(200,
-				itemCollection.getItemValueInteger("$processid"));
+		Assert.assertEquals(200, itemCollection.getItemValueInteger("$processid"));
 	}
 
 	@Test
@@ -139,8 +152,7 @@ public class KernelTest {
 			// exception expected!
 			Assert.fail();
 		} catch (PluginException e1) {
-			Assert.assertEquals(WorkflowKernel.PLUGIN_NOT_REGISTERED,
-					e1.getErrorCode());
+			Assert.assertEquals(WorkflowKernel.PLUGIN_NOT_REGISTERED, e1.getErrorCode());
 		}
 
 		try {
@@ -165,8 +177,7 @@ public class KernelTest {
 		itemCollection.replaceItemValue("txtTitel", "Hello");
 		itemCollection.replaceItemValue("$processid", 100);
 
-		Assert.assertEquals(itemCollection.getItemValueString("txttitel"),
-				"Hello");
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
 		try {
 			// simulate two steps
@@ -175,8 +186,7 @@ public class KernelTest {
 
 			itemCollection.replaceItemValue("$activityid", 20);
 			// sumulate a Log Comment...
-			itemCollection.replaceItemValue("txtworkflowactivitylogComment",
-					"userid|comment");
+			itemCollection.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
 
 			kernel.process(itemCollection);
 
@@ -190,8 +200,7 @@ public class KernelTest {
 
 		Assert.assertEquals(2, itemCollection.getItemValueInteger("runs"));
 		// test next state
-		Assert.assertEquals(200,
-				itemCollection.getItemValueInteger("$processid"));
+		Assert.assertEquals(200, itemCollection.getItemValueInteger("$processid"));
 
 		// test log
 		List log = itemCollection.getItemValue("txtworkflowactivitylog");
@@ -217,7 +226,7 @@ public class KernelTest {
 			// check date object
 			String sDate = st.nextToken();
 
-		    SimpleDateFormat formatter = new SimpleDateFormat(WorkflowKernel.ISO8601_FORMAT);
+			SimpleDateFormat formatter = new SimpleDateFormat(WorkflowKernel.ISO8601_FORMAT);
 			Date date = null;
 			date = formatter.parse(sDate);
 
@@ -225,10 +234,8 @@ public class KernelTest {
 			Calendar calNow = Calendar.getInstance();
 			cal.setTime(date);
 
-			Assert.assertEquals(calNow.get(Calendar.YEAR),
-					cal.get(Calendar.YEAR));
-			Assert.assertEquals(calNow.get(Calendar.MONTH),
-					cal.get(Calendar.MONTH));
+			Assert.assertEquals(calNow.get(Calendar.YEAR), cal.get(Calendar.YEAR));
+			Assert.assertEquals(calNow.get(Calendar.MONTH), cal.get(Calendar.MONTH));
 
 		} catch (ParseException e) {
 

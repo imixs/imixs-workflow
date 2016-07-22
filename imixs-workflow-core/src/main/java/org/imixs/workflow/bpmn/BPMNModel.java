@@ -12,25 +12,33 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
 
 /**
- * The BPMNModel implements the Imixs Model Interface used by the Imixs
- * BPMNDefaultHandler.
+ * The BPMNModel implements the Imixs Model Interface. The class is used by the
+ * class BPMNModelHandler.
  * 
- * 
+ * @see BPMNModelHandler
  * @author rsoika
  * 
  */
 public class BPMNModel implements Model {
 
-	Map<Integer, ItemCollection> processList = null;
-	Map<Integer, List<ItemCollection>> activityList = null;
-	List<String> workflowGroups = null;
-	ItemCollection definition = null;
+	private Map<Integer, ItemCollection> taskList = null;
+	private Map<Integer, List<ItemCollection>> eventList = null;
+	private List<String> workflowGroups = null;
+	private ItemCollection definition = null;
 	private static Logger logger = Logger.getLogger(BPMNModel.class.getName());
 
 	public BPMNModel() {
-		processList = new HashMap<Integer, ItemCollection>();
-		activityList = new HashMap<Integer, List<ItemCollection>>();
+		taskList = new HashMap<Integer, ItemCollection>();
+		eventList = new HashMap<Integer, List<ItemCollection>>();
 		workflowGroups = new ArrayList<String>();
+	}
+
+	@Override
+	public String getVersion() {
+		if (definition!=null) {
+			return definition.getModelVersion();
+		}
+		return null;
 	}
 
 	/**
@@ -42,12 +50,71 @@ public class BPMNModel implements Model {
 		return definition;
 	}
 
-	public void setDefinition(ItemCollection profile) {
-		this.definition = profile;
+	@Override
+	public ItemCollection getTask(int processid) throws ModelException {
+		ItemCollection process = taskList.get(processid);
+		if (process != null)
+			return process;
+		else
+			throw new ModelException(BPMNModel.class.getSimpleName(), ModelException.UNDEFINED_MODEL_ENTRY);
 	}
 
-	public List<String> getWorkflowGroups() {
+	@Override
+	public ItemCollection getEvent(int processid, int activityid) throws ModelException {
+		List<ItemCollection> activities = findAllEventsByTask(processid);
+		for (ItemCollection aactivity : activities) {
+			if (activityid == aactivity.getItemValueInteger("numactivityid")) {
+				return aactivity;
+			}
+		}
+		// not found!
+		throw new ModelException(BPMNModel.class.getSimpleName(), ModelException.UNDEFINED_MODEL_ENTRY);
+	}
+
+	public List<String> getGroups() {
 		return workflowGroups;
+	}
+
+	@Override
+	public List<ItemCollection> findAllTasks() {
+		return new ArrayList<ItemCollection>(taskList.values());
+	}
+
+	@Override
+	public List<ItemCollection> findAllEventsByTask(int processid) {
+		List<ItemCollection> result = eventList.get(processid);
+		if (result == null)
+			result = new ArrayList<ItemCollection>();
+		return result;
+	}
+
+	@Override
+	public List<ItemCollection> findInitialTasks() {
+
+		logger.severe("MISSING IMPLEMENTATION!");
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/***
+	 * Returns a list of tasks filtert by txtworkflowgroup.
+	 */
+	@Override
+	public List<ItemCollection> findTasksByGroup(String group) {
+		List<ItemCollection> result = new ArrayList<ItemCollection>();
+		if (group != null && !group.isEmpty()) {
+			List<ItemCollection> allTasks = findAllTasks();
+			for (ItemCollection task : allTasks) {
+				if (group.equals(task.getItemValueString("txtworkflowgroup"))) {
+					result.add(task);
+				}
+			}
+		}
+		return result;
+	}
+
+	protected void setDefinition(ItemCollection profile) {
+		this.definition = profile;
 	}
 
 	/**
@@ -56,7 +123,7 @@ public class BPMNModel implements Model {
 	 * @param entity
 	 * @throws ModelException
 	 */
-	public void addProcessEntity(ItemCollection entity) throws ModelException {
+	protected void addProcessEntity(ItemCollection entity) throws ModelException {
 		if (entity == null)
 			return;
 
@@ -71,7 +138,7 @@ public class BPMNModel implements Model {
 		if (!workflowGroups.contains(group)) {
 			workflowGroups.add(group);
 		}
-		processList.put(entity.getItemValueInteger("numprocessid"), entity);
+		taskList.put(entity.getItemValueInteger("numprocessid"), entity);
 	}
 
 	/**
@@ -79,7 +146,7 @@ public class BPMNModel implements Model {
 	 * 
 	 * @param entity
 	 */
-	public void addActivityEntity(ItemCollection aentity) throws ModelException {
+	protected void addActivityEntity(ItemCollection aentity) throws ModelException {
 		if (aentity == null)
 			return;
 
@@ -110,49 +177,7 @@ public class BPMNModel implements Model {
 		List<ItemCollection> activities = findAllEventsByTask(pID);
 
 		activities.add(clonedEntity);
-		activityList.put(pID, activities);
-	}
-
-	@Override
-	public ItemCollection getTask(int processid) throws ModelException {
-		ItemCollection process = processList.get(processid);
-		if (process != null)
-			return process;
-		else
-			throw new ModelException(BPMNModel.class.getSimpleName(), ModelException.UNDEFINED_MODEL_ENTRY);
-	}
-
-	@Override
-	public ItemCollection getEvent(int processid, int activityid) throws ModelException {
-		List<ItemCollection> activities = findAllEventsByTask(processid);
-		for (ItemCollection aactivity : activities) {
-			if (activityid == aactivity.getItemValueInteger("numactivityid")) {
-				return aactivity;
-			}
-		}
-		// not found!
-		throw new ModelException(BPMNModel.class.getSimpleName(), ModelException.UNDEFINED_MODEL_ENTRY);
-	}
-
-	@Override
-	public List<ItemCollection> findAllTasks() {
-		return new ArrayList<ItemCollection>(processList.values());
-	}
-
-	@Override
-	public List<ItemCollection> findAllEventsByTask(int processid) {
-		List<ItemCollection> result = activityList.get(processid);
-		if (result == null)
-			result = new ArrayList<ItemCollection>();
-		return result;
-	}
-
-	@Override
-	public List<ItemCollection> findInitialTasks() {
-
-		logger.severe("MISSING IMPLEMENTATION!");
-		// TODO Auto-generated method stub
-		return null;
+		eventList.put(pID, activities);
 	}
 
 }

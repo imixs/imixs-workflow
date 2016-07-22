@@ -9,14 +9,15 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import junit.framework.Assert;
-
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.Model;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import junit.framework.Assert;
 
 /**
  * Test class test the Imixs BPMNParser
@@ -45,7 +46,7 @@ public class TestBPMNParserCollaboration {
 
 		InputStream inputStream = getClass().getResourceAsStream("/bpmn/collaboration.bpmn");
 
-		BPMNModel model = null;
+		Model model = null;
 		try {
 			model = BPMNParser.parseModel(inputStream, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
@@ -64,7 +65,7 @@ public class TestBPMNParserCollaboration {
 		Assert.assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));
 		Assert.assertEquals(VERSION, profile.getItemValueString("$ModelVersion"));
 
-		List<String> groups = model.workflowGroups;
+		List<String> groups = model.getGroups();
 		// Test Groups
 		Assert.assertFalse(groups.contains("Collaboration"));
 		Assert.assertTrue(groups.contains("WorkflowGroup1"));

@@ -56,6 +56,12 @@ import org.imixs.workflow.exceptions.ModelException;
 public interface Model {
 
 	/**
+	 * Returns the model version.
+	 * @return
+	 */
+	public String getVersion();
+	
+	/**
 	 * Returns the model definition containing general model information (e.g.
 	 * $ModelVersion).
 	 * 
@@ -83,6 +89,13 @@ public interface Model {
 	public ItemCollection getEvent(int taskID, int eventID) throws ModelException;
 
 	/**
+	 * Returns all Group definitions.
+	 * 
+	 * @return
+	 */
+	public List<String> getGroups();
+
+	/**
 	 * Returns all Tasks defined in the model.
 	 * 
 	 * @param modelVersion
@@ -105,4 +118,13 @@ public interface Model {
 	 * @return Collection org.imixs.workflow.ItemCollection
 	 */
 	public List<ItemCollection> findAllEventsByTask(int taskID);
+
+	/**
+	 * Returns a list of Tasks assigned to a specific workflow group.
+	 * 
+	 * @param group
+	 * @return
+	 */
+	public List<ItemCollection> findTasksByGroup(String group);
+
 }

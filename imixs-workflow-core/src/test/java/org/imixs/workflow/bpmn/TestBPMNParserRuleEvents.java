@@ -41,8 +41,7 @@ public class TestBPMNParserRuleEvents {
 	@Test
 	public void testSimple() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
-		String VERSION = "1.0.0";
-
+	
 		InputStream inputStream = getClass().getResourceAsStream("/bpmn/event_rules.bpmn");
 
 		BPMNModel model = null;
@@ -88,8 +87,7 @@ public class TestBPMNParserRuleEvents {
 	@Test
 	public void testFollowUp() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
-		String VERSION = "1.0.0";
-
+	
 		InputStream inputStream = getClass().getResourceAsStream("/bpmn/event_rules.bpmn");
 
 		BPMNModel model = null;
@@ -149,8 +147,6 @@ public class TestBPMNParserRuleEvents {
 	
 	@Test
 	public void testSimpleNoGateway() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
-
-		String VERSION = "1.0.0";
 
 		InputStream inputStream = getClass().getResourceAsStream("/bpmn/event_rules.bpmn");
 

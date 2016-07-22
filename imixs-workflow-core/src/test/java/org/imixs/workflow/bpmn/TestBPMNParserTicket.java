@@ -77,7 +77,7 @@ public class TestBPMNParserTicket {
 		Assert.assertEquals("org.imixs.workflow.plugins.HistoryPlugin",plugins.get(2));
 		Assert.assertEquals("org.imixs.workflow.plugins.ResultPlugin",plugins.get(3));
 
-		Assert.assertTrue(model.workflowGroups.contains("Ticket"));
+		Assert.assertTrue(model.getGroups().contains("Ticket"));
 		
 		// test count of elements
 		Assert.assertEquals(4, model.findAllTasks().size());

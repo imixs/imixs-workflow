@@ -28,30 +28,25 @@
 package org.imixs.workflow.jee.ejb;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
-import javax.ejb.SessionContext;
+import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.ItemCollectionComparator;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
-import org.imixs.workflow.jee.jpa.EntityIndex;
 
 /**
  * The ModelManager is independend form the IX JEE Entity EJBs and uses the
@@ -79,31 +74,23 @@ import org.imixs.workflow.jee.jpa.EntityIndex;
 		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Singleton
+@LocalBean
 public class ModelService implements ModelManager {
 
+	private Map<String, Model> modelStore = null;
+	private static Logger logger = Logger.getLogger(ModelService.class.getName());
 	@EJB
 	EntityService entityService;
 
-	@Resource
-	SessionContext ctx;
-
-	private Map<String, Model> modelStore = null;
-
-	private static Logger logger = Logger.getLogger(ModelService.class.getName());
+	public ModelService() {
+		super();
+		// create store
+		modelStore = new HashMap<String, Model>();
+	}
 
 	@PostConstruct
 	void initIndex() throws AccessDeniedException {
-		// create necessary index entities
-		entityService.addIndex("numProcessID", EntityIndex.TYP_INT);
-		entityService.addIndex("numActivityID", EntityIndex.TYP_INT);
-		entityService.addIndex("$modelversion", EntityIndex.TYP_TEXT);
-		entityService.addIndex("Type", EntityIndex.TYP_TEXT);
-		entityService.addIndex("txtname", EntityIndex.TYP_TEXT);
-		entityService.addIndex("txtworkflowgroup", EntityIndex.TYP_TEXT);
-
-		// create store
-
-		modelStore = new HashMap<String, Model>();
+		// load models....
 	}
 
 	/**
@@ -134,74 +121,39 @@ public class ModelService implements ModelManager {
 		String modelVersion = workitem.getModelVersion();
 		String workflowGroup = workitem.getItemValueString("txtWorkflowGroup");
 		String bestVersionMatch = "";
-		Model model = getModel(modelVersion);
-		if (model == null && !workflowGroup.isEmpty()) {
-			// try to find matching model version by group
-			for (Model amodel : modelStore.values()) {
-				ItemCollection definition = amodel.getDefinition();
-				if (definition != null) {
-					String group = definition.getItemValueString("txtworkflowgroup");
-					String version = definition.getModelVersion();
-
-					if (workflowGroup.equals(group)) {
+		Model model = null;
+		try {
+			model = getModel(modelVersion);
+		} catch (ModelException me) {
+			logger.fine(me.getMessage());
+			if (!workflowGroup.isEmpty()) {
+				logger.fine("searching latest model version for workflowgroup '" + workflowGroup + "'...");
+				// try to find matching model version by group
+				for (Model amodel : modelStore.values()) {
+					if (amodel.getGroups().contains(workflowGroup)) {
 						// higher version?
-						if (version.compareTo(bestVersionMatch) > 0) {
-							bestVersionMatch = version;
+						if (amodel.getVersion().compareTo(bestVersionMatch) > 0) {
+							bestVersionMatch = amodel.getVersion();
 						}
 					}
-
 				}
-			}
-
-			if (!bestVersionMatch.isEmpty()) {
-				logger.warning("Deprecated model version: '" + modelVersion + "' -> migrating to version '"
-						+ bestVersionMatch + "'");
-				model = getModel(bestVersionMatch);
-
+				if (!bestVersionMatch.isEmpty()) {
+					logger.warning("Deprecated model version: '" + modelVersion + "' -> migrating to version '"
+							+ bestVersionMatch + "'");
+					model = getModel(bestVersionMatch);
+				}
+			} else {
+				// model not found and no txtworkflowgroup defined!
+				throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION, "Modelversion '" + modelVersion
+						+ "' not found! No WorkflowGroup defind for workitem '" + workitem.getUniqueID() + "' ");
 			}
 		}
-
 		if (model == null) {
 			throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
 					"Modelversion '" + modelVersion + "' not found!");
 		}
 
 		return model;
-	}
-
-	/**
-	 * This helper method finds the highest Model Version available in the
-	 * system corresponding a given workitem. The method compares the
-	 * txtWorkflowGroup and $ProcessID. The method returns an empty String if no
-	 * matching version was found!
-	 * 
-	 * @return String with the latest model version for the given workitem
-	 */
-	public String xgetLatestVersionByWorkitem(ItemCollection workitem) throws ModelException {
-
-		// fist select all versions for matching processid and workflowgroup
-		String workflowGroup = workitem.getItemValueString("txtWorkflowGroup");
-		int processId = workitem.getItemValueInteger(WorkflowService.PROCESSID);
-
-		// find all process entities
-		String sQuery = "SELECT process FROM Entity AS process" + " JOIN process.textItems as g"
-				+ " JOIN process.integerItems as n" + " WHERE process.type = 'ProcessEntity'"
-				+ " AND n.itemName = 'numprocessid' AND n.itemValue = " + processId
-				+ " AND g.itemName='txtworkflowgroup' AND g.itemValue= '" + workflowGroup + "'";
-
-		List<ItemCollection> col = entityService.findAllEntities(sQuery, 0, -1);
-
-		// now sort the result by $modelversion
-		Collections.sort(col, new ItemCollectionComparator(WorkflowService.MODELVERSION));
-
-		if (col.size() > 0) {
-			Iterator<ItemCollection> iter = col.iterator();
-			String sModelVersion = iter.next().getItemValueString("$modelversion");
-			return sModelVersion;
-		} else
-			throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
-					"[ModelService] no matching model definition found for $processid=" + processId + " workflowgroup='"
-							+ workflowGroup + "'!");
 	}
 
 	@Override
@@ -261,8 +213,6 @@ public class ModelService implements ModelManager {
 		}
 		return colGroups;
 	}
-
-	
 
 	/**
 	 * Imports a BPMN model. Existing model with same model version will be

@@ -66,7 +66,7 @@ public class TestBPMNParserStartEvent {
 		Assert.assertEquals(VERSION,
 				profile.getItemValueString("$ModelVersion"));
 		
-		Assert.assertTrue(model.workflowGroups.contains("Simple"));
+		Assert.assertTrue(model.getGroups().contains("Simple"));
 		
 		// test count of elements
 		Assert.assertEquals(1, model.findAllTasks().size());

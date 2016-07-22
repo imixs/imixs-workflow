@@ -124,11 +124,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 */
 	@PostConstruct
 	private void initIndexProperties() throws AccessDeniedException {
-		entityService.addIndex("namCreator", EntityIndex.TYP_TEXT);
-		entityService.addIndex("txtWorkflowGroup", EntityIndex.TYP_TEXT);
+		entityService.addIndex("$modelversion", EntityIndex.TYP_TEXT);
 		entityService.addIndex("$ProcessID", EntityIndex.TYP_INT);
 		entityService.addIndex("$workitemid", EntityIndex.TYP_TEXT);
 		entityService.addIndex("$uniqueidref", EntityIndex.TYP_TEXT);
+		entityService.addIndex("Type", EntityIndex.TYP_TEXT);
+		entityService.addIndex("namCreator", EntityIndex.TYP_TEXT);
+		entityService.addIndex("txtWorkflowGroup", EntityIndex.TYP_TEXT);
 		entityService.addIndex("txtname", EntityIndex.TYP_TEXT);
 		entityService.addIndex("namowner", EntityIndex.TYP_TEXT);
 		entityService.addIndex("txtworkitemref", EntityIndex.TYP_TEXT);

@@ -71,7 +71,7 @@ public class TestBPMNParserLinkEvent {
 		Assert.assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));
 		Assert.assertEquals(VERSION, profile.getItemValueString("$ModelVersion"));
 
-		Assert.assertTrue(model.workflowGroups.contains("Simple"));
+		Assert.assertTrue(model.getGroups().contains("Simple"));
 
 		// test count of elements
 		Assert.assertEquals(2, model.findAllTasks().size());
@@ -171,7 +171,7 @@ public class TestBPMNParserLinkEvent {
 		Assert.assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));
 		Assert.assertEquals(VERSION, profile.getItemValueString("$ModelVersion"));
 
-		Assert.assertTrue(model.workflowGroups.contains("Simple"));
+		Assert.assertTrue(model.getGroups().contains("Simple"));
 
 		// test count of elements
 		Assert.assertEquals(2, model.findAllTasks().size());
@@ -213,9 +213,25 @@ public class TestBPMNParserLinkEvent {
 		
 		
 		
+		// test task 1100
+		task = model.getTask(1100 );
+		Assert.assertNotNull(task);
+		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
+		Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
+		Assert.assertEquals("Task 1", task.getItemValueString("txtname"));
+
+		
+		activity = model.getEvent(1100,10);
+		Assert.assertNotNull(activity);
+
+		Assert.assertEquals(1,model.findAllEventsByTask(1100).size());
 		// cross-test followup event
-		activity = model.getEvent(1100, 99);
-		Assert.assertNull(activity);
+		try {
+			activity=null;
+			activity = model.getEvent(1100, 99);
+		} catch (ModelException em) {
+			Assert.assertNull(activity);
+		}
 	}
 	
 	

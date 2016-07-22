@@ -4,12 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.util.Collection;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
@@ -17,6 +14,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import junit.framework.Assert;
 
 /**
  * Test class test the Imixs BPMNParser
@@ -68,7 +67,7 @@ public class TestBPMNParserCollaborationMinutes {
 		Assert.assertEquals(VERSION, profile.getItemValueString("$ModelVersion"));
 		
 		
-		List<String> groups = model.workflowGroups; 
+		List<String> groups = model.getGroups(); 
 		// Test Groups
 		Assert.assertFalse(groups.contains("Collaboration"));
 		Assert.assertTrue(groups.contains("Protokoll"));

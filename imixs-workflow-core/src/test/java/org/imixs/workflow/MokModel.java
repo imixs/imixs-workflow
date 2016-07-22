@@ -93,6 +93,11 @@ public class MokModel implements Model {
 	}
 
 	@Override
+	public String getVersion() {		
+		return DEFAULT_MODEL_VERSION;
+	}
+
+	@Override
 	public ItemCollection getTask(int processid) throws InvalidAccessException {
 		return entities.get(processid + "");
 	}
@@ -127,6 +132,18 @@ public class MokModel implements Model {
 	
 	@Override
 	public List<ItemCollection> findInitialTasks() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<String> getGroups() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ItemCollection> findTasksByGroup(String group) {
 		// TODO Auto-generated method stub
 		return null;
 	}

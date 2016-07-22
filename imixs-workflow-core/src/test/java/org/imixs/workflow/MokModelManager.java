@@ -28,7 +28,6 @@ public class MokModelManager implements ModelManager {
 	 * prepare a mok model
 	 **/
 	public MokModelManager() {
-		
 		model=new MokModel();
 	}
 

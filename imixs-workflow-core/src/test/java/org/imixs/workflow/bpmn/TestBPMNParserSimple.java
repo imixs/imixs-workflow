@@ -53,6 +53,9 @@ public class TestBPMNParserSimple {
 		}
 		Assert.assertNotNull(model);
 
+		// test version
+		Assert.assertEquals(VERSION, model.getVersion());
+
 		// Test Environment
 		ItemCollection profile = model.getDefinition();
 		Assert.assertNotNull(profile);
@@ -60,7 +63,7 @@ public class TestBPMNParserSimple {
 		Assert.assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));
 		Assert.assertEquals(VERSION, profile.getItemValueString("$ModelVersion"));
 
-		Assert.assertTrue(model.workflowGroups.contains("Simple"));
+		Assert.assertTrue(model.getGroups().contains("Simple"));
 
 		// test count of elements
 		Assert.assertEquals(2, model.findAllTasks().size());
@@ -124,7 +127,7 @@ public class TestBPMNParserSimple {
 		Assert.assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));
 		Assert.assertEquals(VERSION, profile.getItemValueString("$ModelVersion"));
 
-		Assert.assertTrue(model.workflowGroups.contains("Simple"));
+		Assert.assertTrue(model.getGroups().contains("Simple"));
 
 		// test count of elements
 		Assert.assertEquals(2, model.findAllTasks().size());

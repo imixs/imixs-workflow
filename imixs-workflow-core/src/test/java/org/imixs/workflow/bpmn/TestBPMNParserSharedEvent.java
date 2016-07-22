@@ -47,8 +47,6 @@ public class TestBPMNParserSharedEvent {
 	@Test
 	public void testSharedEvent() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
-		String VERSION = "1.0.0";
-
 		InputStream inputStream = getClass().getResourceAsStream("/bpmn/shared_event1.bpmn");
 
 		BPMNModel model = null;
@@ -111,8 +109,7 @@ public class TestBPMNParserSharedEvent {
 	public void testSharedEventWithFollowUp()
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
-		String VERSION = "1.0.0";
-
+		
 		InputStream inputStream = getClass().getResourceAsStream("/bpmn/shared_event2.bpmn");
 
 		BPMNModel model = null;
@@ -174,8 +171,7 @@ public class TestBPMNParserSharedEvent {
 	public void testSharedLinkedEventWithFollowUp()
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
-		String VERSION = "1.0.0";
-
+		
 		InputStream inputStream = getClass().getResourceAsStream("/bpmn/shared_event3.bpmn");
 
 		BPMNModel model = null;
