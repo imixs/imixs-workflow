@@ -1,5 +1,6 @@
 package org.imixs.workflow.bpmn;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -8,14 +9,14 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import junit.framework.Assert;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import junit.framework.Assert;
 
 /**
  * Test class test the Imixs BPMNParser
@@ -35,7 +36,8 @@ public class TestBPMNParserSimple {
 	}
 
 	@Test
-	public void testSimple() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testSimple()
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -52,6 +54,20 @@ public class TestBPMNParserSimple {
 			Assert.fail();
 		}
 		Assert.assertNotNull(model);
+
+		// ZWISCHENTEST
+
+		byte[] rawData = model.getRawData();
+		InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
+
+		try {
+			model = BPMNParser.parseModel(bpmnInputStream, "UTF-8");
+			Assert.assertNotNull(model);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// ZWISCHENTEST
 
 		// test version
 		Assert.assertEquals(VERSION, model.getVersion());
@@ -82,27 +98,20 @@ public class TestBPMNParserSimple {
 		// test activity 1000.10 submit
 		ItemCollection activity = model.getEvent(1000, 10);
 		Assert.assertNotNull(activity);
-		Assert.assertEquals(1100,
-				activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("submit",
-				activity.getItemValueString("txtname"));
-		
+		Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
+		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
 
 		// test activity 1000.20 submit
 		activity = model.getEvent(1000, 20);
 		Assert.assertNotNull(activity);
-		Assert.assertEquals(1000,
-				activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("update",
-				activity.getItemValueString("txtname"));
+		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
+		Assert.assertEquals("update", activity.getItemValueString("txtname"));
 
 	}
-	
-	
-	
-	
+
 	@Test
-	public void testSimpleLoop() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testSimpleLoop()
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -146,19 +155,14 @@ public class TestBPMNParserSimple {
 		// test activity 1000.10 submit
 		ItemCollection activity = model.getEvent(1000, 10);
 		Assert.assertNotNull(activity);
-		Assert.assertEquals(1100,
-				activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("submit",
-				activity.getItemValueString("txtname"));
-		
+		Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
+		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
 
 		// test activity 1000.20 update
 		activity = model.getEvent(1000, 20);
 		Assert.assertNotNull(activity);
-		Assert.assertEquals(1000,
-				activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("update",
-				activity.getItemValueString("txtname"));
+		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
+		Assert.assertEquals("update", activity.getItemValueString("txtname"));
 
 	}
 
@@ -169,10 +173,11 @@ public class TestBPMNParserSimple {
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
-	 * @throws ModelException 
+	 * @throws ModelException
 	 */
 	@Test
-	public void testFollowUp() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testFollowUp()
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
 
@@ -201,35 +206,77 @@ public class TestBPMNParserSimple {
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(2, activities.size());
 
-		
 		// test activity 1000.10 submit
 		ItemCollection activity = model.getEvent(1000, 10);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals("1", activity.getItemValueString("keyFollowUp"));
 		Assert.assertEquals(20, activity.getItemValueInteger("numNextActivityID"));
-		Assert.assertEquals("submit",
-				activity.getItemValueString("txtname"));
-		Assert.assertEquals(VERSION,activity.getModelVersion());
-		Assert.assertEquals(1000,activity.getItemValueInteger("numprocessid"));
+		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
+		Assert.assertEquals(VERSION, activity.getModelVersion());
+		Assert.assertEquals(1000, activity.getItemValueInteger("numprocessid"));
 
-		Assert.assertEquals("ActivityEntity",activity.getType());
-		
-		
+		Assert.assertEquals("ActivityEntity", activity.getType());
+
 		// test activity 1000.20 followup
 		activity = model.getEvent(1000, 20);
 		Assert.assertNotNull(activity);
 		Assert.assertFalse("1".equals(activity.getItemValueString("keyFollowUp")));
 		Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("followup",
-				activity.getItemValueString("txtname"));
-		Assert.assertEquals(VERSION,activity.getModelVersion());
-		Assert.assertEquals(1000,activity.getItemValueInteger("numprocessid"));
-		Assert.assertEquals("ActivityEntity",activity.getType());
-		
+		Assert.assertEquals("followup", activity.getItemValueString("txtname"));
+		Assert.assertEquals(VERSION, activity.getModelVersion());
+		Assert.assertEquals(1000, activity.getItemValueInteger("numprocessid"));
+		Assert.assertEquals("ActivityEntity", activity.getType());
+
 		// test activity for task 1100
 		activities = model.findAllEventsByTask(1100);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(0, activities.size());
+	}
+
+	/**
+	 * This test verifies if the stream data can be stored in a byte array to be
+	 * parsed again. rawData is used by the ModelService to store the file
+	 * content into a model Entity.
+	 * 
+	 * @throws ParseException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ModelException
+	 */
+	@Test
+	public void testRawData()
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+		InputStream inputStream = getClass().getResourceAsStream("/bpmn/simple.bpmn");
+
+		BPMNModel model1 = null;
+		BPMNModel model2 = null;
+		try {
+			model1 = BPMNParser.parseModel(inputStream, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			Assert.fail();
+		} catch (ModelException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertNotNull(model1);
+
+		// get the rawdata object
+		byte[] rawData = model1.getRawData();
+		Assert.assertNotNull(rawData);
+		// Test again to convert this data into a stream and parse again
+		InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
+
+		try {
+			model2 = BPMNParser.parseModel(bpmnInputStream, "UTF-8");
+			Assert.assertNotNull(model1);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// compare models
+		Assert.assertEquals(model1.findAllTasks(), model2.findAllTasks());
 	}
 
 }

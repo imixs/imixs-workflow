@@ -55,6 +55,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.Model;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.xml.EntityCollection;
@@ -132,34 +133,30 @@ public class ModelRestService {
 	private void printVersionTable(OutputStream out) {
 		try {
 			StringBuffer buffer = new StringBuffer();
-			List<String> col = modelService.getAllModelVersions();
+			List<String> modelVersionList = modelService.getAllModelVersions();
 
 			buffer.append("<table>");
-			buffer.append("<tr><th>Version</th><th>Workflow Group</th><th>Updated</th></tr>");
-			for (String aversion : col) {
+			buffer.append("<tr><th>Version</th><th>Workflow Group</th><th>Uploaded</th></tr>");
+			for (String modelVersion : modelVersionList) {
+				
+				Model model=modelService.getModel(modelVersion);
+				ItemCollection modelEntity=modelService.loadModelEntity(modelVersion);
 
 				// now check groups...
-				List<String> groupList = modelService.getAllWorkflowGroups(aversion);
+				List<String> groupList = model.getGroups();
 				for (String group : groupList) {
 					buffer.append("<tr>");
-					buffer.append("<td>" + aversion + "</td>");
-
-					buffer.append("<td><a href=\"./model/" + aversion
+					buffer.append("<td>" + modelVersion + "</td>");
+					buffer.append("<td><a href=\"./model/" + modelVersion
 							+ "/groups/" + group + "\">" + group + "</a></td>");
-					// get update date...
-					List<ItemCollection> processList = null;
-					logger.severe("NOT IMPLEMENTED");
-					//modelService.getAllModelVersions()
-					//		.getAllProcessEntitiesByGroup(group,
-					//				aversion);
-
-					if (processList.size() > 0) {
-						ItemCollection process = processList.get(0);
-						Date dat = process.getItemValueDate("$Modified");
-
+					// print upload date...
+					if (modelEntity!=null) {
+						Date dat = modelEntity.getItemValueDate("$Modified");
 						SimpleDateFormat formater = new SimpleDateFormat(
 								"yyyy-MM-dd HH:mm:ss");
 						buffer.append("<td>" + formater.format(dat) + "</td>");
+					} else {
+						buffer.append("<td> - </td>");
 					}
 					buffer.append("</tr>");
 				}
@@ -242,20 +239,19 @@ public class ModelRestService {
 	 */
 	@GET
 	@Path("/{version}/groups")
-	public EntityCollection getStartProcessList(
+	public List<String> getStartProcessList(
 			@PathParam("version") String version,
 			@QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
+		List<String> col = null;
 		try {
 
-			col = modelService.getModel(version).findInitialTasks();
-			return XMLItemCollectionAdapter.putCollection(col,
-					getItemList(items));
+			col = modelService.getModel(version).getGroups();
+			return col;
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return null;
 	}
 
 	/**
@@ -306,7 +302,7 @@ public class ModelRestService {
 	@Path("/{version}")
 	public void deleteModel(@PathParam("version") String version) {
 		try {
-			modelService.removeModel(version);
+			modelService.removeModelEntity(version);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -332,14 +328,13 @@ public class ModelRestService {
 			MediaType.TEXT_PLAIN })
 	public Response putBPMNModel(BPMNModel bpmnmodel) {
 		try {
-			logger.info("updating BPMN model... ");
-			modelService.importBPMNModel(bpmnmodel);
+			logger.fine("BPMN Model posted... ");
+			modelService.saveModelEntity(bpmnmodel);
 		} catch (ModelException e) {
 			logger.warning("Unable to update model: " + e.getMessage());
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
-		
-		logger.fine("update finished! ");
+		logger.fine("putBPMNModel finished! ");
 		return Response.status(Response.Status.OK).build();
 	}
 	

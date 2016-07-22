@@ -1,6 +1,7 @@
 package org.imixs.workflow.bpmn;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -10,7 +11,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.xml.sax.SAXException;
 
@@ -33,9 +33,13 @@ public class BPMNParser {
 	private static Logger logger = Logger.getLogger(BPMNParser.class.getName());
 
 	/**
-	 * This method parses a BPMN model from a input stream.
+	 * This method parses a BPMN model from a input stream and returns a
+	 * instance of BPMNModel class. The InputStream is converted into a byte
+	 * array to be stored into the BPMNModel as rawData. The rawData can be used
+	 * to persist the input stream.
 	 * 
-	 * @param requestBodyStream
+	 * 
+	 * @param bpmnInputStream
 	 * @param encoding
 	 *            - default encoding use to parse the stream
 	 * @return List<ItemCollection> a model definition
@@ -45,10 +49,8 @@ public class BPMNParser {
 	 * @throws IOException
 	 * @throws ModelException
 	 */
-	public final static BPMNModel parseModel(InputStream bpmnInputStream,
-			String encoding) throws ParseException,
-			ParserConfigurationException, SAXException, IOException,
-			ModelException {
+	public final static BPMNModel parseModel(InputStream bpmnInputStream, String encoding)
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		long lTime = System.currentTimeMillis();
 		if (bpmnInputStream == null) {
@@ -56,24 +58,36 @@ public class BPMNParser {
 			throw new java.text.ParseException("inputStream is null", -1);
 		}
 
+		// copy stream into byte array to store content later in BMPMModel object
+		byte[] rawData = streamToByteArray(bpmnInputStream);
+		// create new InputStream...
+		bpmnInputStream = new ByteArrayInputStream(rawData);
+
+		// Parse XML....
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
-
 		BPMNModelHandler bpmnHandler = new BPMNModelHandler();
-
-		saxParser.parse(bpmnInputStream, bpmnHandler);
-
+		saxParser.parse(new ByteArrayInputStream(rawData), bpmnHandler);
+		// build the model
 		BPMNModel model = bpmnHandler.buildModel();
-		
-		ItemCollection definition=model.getDefinition();
-		String version="";
-		if (definition!=null) {
-			version=definition.getModelVersion();
-		}
-		logger.info("BPMN Model ["+version+"] parsed in "
-				+ (System.currentTimeMillis() - lTime) + "ms");
+
+		// store file content from input stream into the BPMNmodel
+		model.setRawData(rawData);
+
+		logger.info("BPMN Model '" + model.getVersion() + "' parsed in " + (System.currentTimeMillis() - lTime) + "ms");
 		return model;
 
+	}
+
+	private static byte[] streamToByteArray(InputStream ins) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		byte[] byteBuffer = new byte[1024];
+		int len;
+		while ((len = ins.read(byteBuffer)) > -1) {
+			baos.write(byteBuffer, 0, len);
+		}
+		baos.flush();
+		return baos.toByteArray();
 	}
 
 	/**
@@ -89,10 +103,8 @@ public class BPMNParser {
 	 * @throws IOException
 	 * @throws ModelException
 	 */
-	public final static BPMNModel parseModel(byte[] bpmnByteArray,
-			String encoding) throws ParseException,
-			ParserConfigurationException, SAXException, IOException,
-			ModelException {
+	public final static BPMNModel parseModel(byte[] bpmnByteArray, String encoding)
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		ByteArrayInputStream input = new ByteArrayInputStream(bpmnByteArray);
 		return parseModel(input, encoding);

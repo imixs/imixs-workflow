@@ -27,8 +27,12 @@
 
 package org.imixs.workflow.jee.ejb;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,6 +50,7 @@ import org.imixs.workflow.Model;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNModel;
+import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 
@@ -89,9 +94,48 @@ public class ModelService implements ModelManager {
 		modelStore = new HashMap<String, Model>();
 	}
 
+	/**
+	 * This method initializes the modelManager and loads existing Models from
+	 * the database.
+	 * 
+	 * @throws AccessDeniedException
+	 */
 	@PostConstruct
-	void initIndex() throws AccessDeniedException {
-		// load models....
+	void init() throws AccessDeniedException {
+		// load existing models into the ModelManager....
+
+		logger.info("Initalizing ModelService...");
+		
+		// first remove existing model entities
+		String sQuery = "SELECT process FROM Entity AS process JOIN process.textItems AS t2"
+				+ " WHERE process.type = 'model'";
+		Collection<ItemCollection> col = entityService.findAllEntities(sQuery, 0, -1);
+		for (ItemCollection modelEntity : col) {
+
+			Map<String, List<Object>> files = modelEntity.getFiles();
+			if (files != null) {
+
+				Iterator<Map.Entry<String, List<Object>>> entries = files.entrySet().iterator();
+				while (entries.hasNext()) {
+					Map.Entry<String, List<Object>> entry = entries.next();
+					String fileName = entry.getKey();
+					logger.info("loading "+fileName);
+					List<Object> fileData = entry.getValue();
+					byte[] rawData = (byte[]) fileData.get(1);
+					InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
+					
+					try {
+						Model model = BPMNParser.parseModel(bpmnInputStream, "UTF-8");
+						addModel(model);
+					} catch (Exception e) {
+						logger.warning("Failed to load model '" + fileName + "' : " + e.getMessage());
+					}
+				}
+
+			}
+
+		}
+
 	}
 
 	/**
@@ -139,7 +183,8 @@ public class ModelService implements ModelManager {
 					}
 				}
 				if (!bestVersionMatch.isEmpty()) {
-					logger.warning("Deprecated model version: '" + modelVersion + "' -> migrating $uniqueID=" + workitem.getUniqueID() +", workflowgroup='" + workflowGroup+ "' to model version '"
+					logger.warning("Deprecated model version: '" + modelVersion + "' -> migrating $uniqueID="
+							+ workitem.getUniqueID() + ", workflowgroup='" + workflowGroup + "' to model version '"
 							+ bestVersionMatch + "' ");
 					workitem.replaceItemValue(WorkflowKernel.MODELVERSION, bestVersionMatch);
 					model = getModel(bestVersionMatch);
@@ -169,8 +214,8 @@ public class ModelService implements ModelManager {
 		if (modelVersion.isEmpty()) {
 			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Version not provided! ");
 		}
-
 		modelStore.put(modelVersion, model);
+		logger.info("added new model '" + modelVersion + "'");
 
 	}
 
@@ -182,7 +227,7 @@ public class ModelService implements ModelManager {
 	 */
 	public void removeModel(String modelversion) {
 		modelStore.remove(modelversion);
-		logger.info("removed modelversion: " + modelversion);
+		logger.fine("removed modelversion: " + modelversion);
 	}
 
 	/**
@@ -197,52 +242,73 @@ public class ModelService implements ModelManager {
 	}
 
 	/**
-	 * returns a String list of all existing ProcessGroup Names
+	 * This method saves a BPMNModel as an Entity and adds the model into the
+	 * ModelManager
 	 * 
-	 * @return
+	 * @param model
+	 * @throws ModelException
 	 */
-	public List<String> getAllWorkflowGroups(String modelVersion) {
-		ArrayList<String> colGroups = new ArrayList<String>();
-		// iterating over values only
-		for (Model model : modelStore.values()) {
-			ItemCollection definition = model.getDefinition();
-			if (definition != null) {
-				String group = definition.getItemValueString("txtworkflowgroup");
-				if (!group.isEmpty()) {
-					colGroups.add(group);
-				}
-			}
+	public void saveModelEntity(BPMNModel model) throws ModelException {
+		if (model != null) {
+			// first remove existing model entities
+			removeModelEntity(model.getVersion());
+			// store model into database
+			logger.fine("save BPMNModel Entity...");
+			BPMNModel bpmnModel = (BPMNModel) model;
+			addModel(model);
+			ItemCollection modelItemCol = new ItemCollection();
+			modelItemCol.replaceItemValue("type", "model");
+			modelItemCol.replaceItemValue("txtname", bpmnModel.getVersion());
+			modelItemCol.addFile(bpmnModel.getRawData(), bpmnModel.getVersion() + ".bpmn", "application/xml");
+			entityService.save(modelItemCol);
+			
+			logger.info("stored new model '" + model.getVersion() + "'");
 		}
-		return colGroups;
 	}
 
 	/**
-	 * Imports a BPMN model. Existing model with same model version will be
-	 * replaced by this method.
+	 * This method removes existing Model Entities from the database. A model
+	 * entity is identified by its name (model version). The model will also be
+	 * removed from the ModelManager
 	 * 
-	 * @param bpmnmodel
-	 * @throws ModelException
+	 * @param model
 	 */
-	public void importBPMNModel(BPMNModel bpmnmodel) throws ModelException {
+	public void removeModelEntity(String version) {
+		if (version != null) {
+			logger.fine("delete BPMNModel Entity '" + version + "'...");
 
-		if (bpmnmodel == null || bpmnmodel.getDefinition() == null) {
-			throw new ModelException(ModelException.INVALID_MODEL,
-					"Invalid Model file: No Imixs Definitions Extension found! ");
-
+			// first remove existing model entities
+			String sQuery = "SELECT process FROM Entity AS process JOIN process.textItems AS t2"
+					+ " WHERE process.type = 'model' AND t2.itemName = 'txtname' AND t2.itemValue = '" + version + "'";
+			Collection<ItemCollection> col = entityService.findAllEntities(sQuery, 0, -1);
+			// delete model entites
+			for (ItemCollection modelEntity : col) {
+				entityService.remove(modelEntity);
+			}
+			removeModel(version);
 		}
+	}
 
-		// verify $modelversion
-		String modelVersion = bpmnmodel.getDefinition().getItemValueString("$ModelVersion");
+	/**
+	 * This method loads an existing Model Entities from the database. A model
+	 * entity is identified by its name (model version).
+	 * 
+	 * @param model
+	 */
+	public ItemCollection loadModelEntity(String version) {
+		if (version != null) {
+			logger.fine("load BPMNModel Entity '" + version + "'...");
 
-		logger.fine("import BPMN model $modelversion=" + modelVersion + "....");
-		if (modelVersion.isEmpty()) {
-			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Version not provided! ");
+			// first remove existing model entities
+			String sQuery = "SELECT process FROM Entity AS process JOIN process.textItems AS t2"
+					+ " WHERE process.type = 'model' AND t2.itemName = 'txtname' AND t2.itemValue = '" + version + "'";
+			Collection<ItemCollection> col = entityService.findAllEntities(sQuery, 0, 1);
+			if (col != null && col.size() > 0) {
+				return col.iterator().next();
+			}
+			logger.fine("BPMNModel Entity '" + version + "' not found!");
 		}
-
-		addModel(bpmnmodel);
-
-		logger.info("imported BPMN model $modelversion=" + modelVersion);
-
+		return null;
 	}
 
 }

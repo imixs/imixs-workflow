@@ -25,6 +25,7 @@ public class BPMNModel implements Model {
 	private Map<Integer, List<ItemCollection>> eventList = null;
 	private List<String> workflowGroups = null;
 	private ItemCollection definition = null;
+	private byte[] rawData = null;
 	private static Logger logger = Logger.getLogger(BPMNModel.class.getName());
 
 	public BPMNModel() {
@@ -33,9 +34,29 @@ public class BPMNModel implements Model {
 		workflowGroups = new ArrayList<String>();
 	}
 
+	/**
+	 * Returns the raw data of the BPMN file
+	 * 
+	 * @return
+	 */
+	public byte[] getRawData() {
+		return rawData;
+	}
+
+	/**
+	 * Set the raw data of the bpmn source file
+	 * 
+	 * @param rawData
+	 */
+	public void setRawData(byte[] data) {
+		this.rawData = data;
+	}
+
+	
+
 	@Override
 	public String getVersion() {
-		if (definition!=null) {
+		if (definition != null) {
 			return definition.getModelVersion();
 		}
 		return null;
