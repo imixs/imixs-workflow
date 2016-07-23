@@ -60,7 +60,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.exceptions.ModelException;
-import org.imixs.workflow.jee.ejb.WorkflowService;
 import org.imixs.workflow.xml.EntityCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
