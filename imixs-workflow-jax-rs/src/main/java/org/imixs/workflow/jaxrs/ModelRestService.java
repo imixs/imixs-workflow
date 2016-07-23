@@ -50,14 +50,17 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.jee.ejb.WorkflowService;
 import org.imixs.workflow.xml.EntityCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
@@ -81,6 +84,9 @@ public class ModelRestService {
 
 	@EJB
 	org.imixs.workflow.jee.ejb.EntityService entityService;
+
+	@EJB
+	WorkflowRestService workflowRestService;
 
 	@EJB
 	org.imixs.workflow.jee.ejb.ModelService modelService;
@@ -146,8 +152,7 @@ public class ModelRestService {
 				buffer.append("<tr>");
 
 				if (modelEntity != null) {
-					buffer.append("<td><a href=\"./workflow/workitem/" + modelEntity.getUniqueID() + "/file/"
-							+ modelEntity.getFileNames().get(0) + "\">" + modelVersion + "</a></td>");
+					buffer.append("<td><a href=\"./model/" + modelVersion + "/bpmn\">" + modelVersion + "</a></td>");
 
 					// print upload date...
 					if (modelEntity != null) {
@@ -164,8 +169,9 @@ public class ModelRestService {
 				buffer.append("<td>");
 				for (String group : groupList) {
 					// build a link for each group to get the Tasks
-					
-					buffer.append("<a href=\"./model/" + modelVersion + "/groups/"+group + "\">" + group + "</a></br>");
+
+					buffer.append(
+							"<a href=\"./model/" + modelVersion + "/groups/" + group + "\">" + group + "</a></br>");
 				}
 				buffer.append("</td>");
 				buffer.append("</tr>");
@@ -220,9 +226,21 @@ public class ModelRestService {
 	}
 
 	@GET
+	@Path("/{version}/bpmn")
+	public Response getModelFile(@PathParam("version") String version, @Context UriInfo uriInfo) {
+		ItemCollection modelEntity = modelService.loadModelEntity(version);
+		if (modelEntity != null) {
+			return workflowRestService.getWorkItemFile(modelEntity.getUniqueID(), modelEntity.getFileNames().get(0),
+					uriInfo);
+		} else {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+	}
+
+	@GET
 	@Path("/{version}/tasks/{taskid}")
-	public XMLItemCollection getTask(@PathParam("version") String version,
-			@PathParam("taskid") int processid, @QueryParam("items") String items) {
+	public XMLItemCollection getTask(@PathParam("version") String version, @PathParam("taskid") int processid,
+			@QueryParam("items") String items) {
 		ItemCollection process = null;
 		try {
 			process = modelService.getModel(version).getTask(processid);
@@ -236,8 +254,8 @@ public class ModelRestService {
 
 	@GET
 	@Path("/{version}/tasks/{taskid}/events")
-	public EntityCollection findAllEventsByTask(@PathParam("version") String version, @PathParam("taskid") int processid,
-			@QueryParam("items") String items) {
+	public EntityCollection findAllEventsByTask(@PathParam("version") String version,
+			@PathParam("taskid") int processid, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
 			col = modelService.getModel(version).findAllEventsByTask(processid);
@@ -277,8 +295,8 @@ public class ModelRestService {
 	 */
 	@GET
 	@Path("/{version}/groups/{group}")
-	public EntityCollection findTasksByGroup(@PathParam("version") String version,
-			@PathParam("group") String group, @QueryParam("items") String items) {
+	public EntityCollection findTasksByGroup(@PathParam("version") String version, @PathParam("group") String group,
+			@QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
 			col = modelService.getModel(version).findTasksByGroup(group);

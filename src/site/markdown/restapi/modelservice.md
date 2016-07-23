@@ -3,7 +3,7 @@ The main resource /model is used to read and update workflow models through the 
  
 
 ## The /model resources GET
-The /model GET resources are used to get business objects provided by the Imixs Model Manager:
+The /model GET resources are used to get model objects provided by the Model Manager:
 
 
 | URI                                           | Description                                                           | 
@@ -14,11 +14,12 @@ The /model GET resources are used to get business objects provided by the Imixs 
 | /model/{version}/tasks/{taskid}/events        | all events assigned to a specific task identified by its eventID.     |
 | /model/{version}/groups                       | a collection of all workflow groups                                   |
 | /model/{version}/groups/{group}               | all tasks of a specific workflow group                                |
+| /model/{version}/bpmn                         | BPMN source file                                                      |
 
 
 
 ##The /model resources DELETE
-The /model DELETE resources URIs are used to delete business objects:
+The /model DELETE resources URIs are used to delete model objects:
 
 | URI                                           | Description                               | 
 |-----------------------------------------------|-------------------------------------------|
