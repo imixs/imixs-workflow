@@ -70,16 +70,14 @@ import org.imixs.workflow.xml.XMLItemCollectionAdapter;
  * 
  */
 @Path("/model")
-@Produces({  MediaType.TEXT_HTML,MediaType.APPLICATION_XHTML_XML,
-		MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON,
+@Produces({ MediaType.TEXT_HTML, MediaType.APPLICATION_XHTML_XML, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON,
 		MediaType.TEXT_XML })
 @Stateless
 public class ModelRestService {
-	private static Logger logger = Logger.getLogger(ModelRestService.class
-			.getName());
+	private static Logger logger = Logger.getLogger(ModelRestService.class.getName());
 
-	static List<String> modelEntityTypes = Arrays.asList(
-			"WorkflowEnvironmentEntity", "processentity", "activityentity");
+	static List<String> modelEntityTypes = Arrays.asList("WorkflowEnvironmentEntity", "processentity",
+			"activityentity");
 
 	@EJB
 	org.imixs.workflow.jee.ejb.EntityService entityService;
@@ -91,15 +89,14 @@ public class ModelRestService {
 	@Produces({ MediaType.TEXT_HTML })
 	public StreamingOutput getModelOverview() {
 		return new StreamingOutput() {
-			public void write(OutputStream out) throws IOException,
-					WebApplicationException {
+			public void write(OutputStream out) throws IOException, WebApplicationException {
 
 				out.write("<html><head>".getBytes());
 				out.write("<style>".getBytes());
-				out.write("table {padding:0px;width: 75%;margin-left: -2px;margin-right: -2px;}"
-						.getBytes());
-				out.write("body,td,select,input,li {font-family: Verdana, Helvetica, Arial, sans-serif;font-size: 13px;}"
-						.getBytes());
+				out.write("table {padding:0px;width: 75%;margin-left: -2px;margin-right: -2px;}".getBytes());
+				out.write(
+						"body,td,select,input,li {font-family: Verdana, Helvetica, Arial, sans-serif;font-size: 13px;}"
+								.getBytes());
 				out.write("table th {color: white;background-color: #bbb;text-align: left;font-weight: bold;}"
 						.getBytes());
 
@@ -117,8 +114,9 @@ public class ModelRestService {
 				printVersionTable(out);
 				out.write("</p>".getBytes());
 				// footer
-				out.write("<p>See the <a href=\"http://www.imixs.org/xml/restservice/modelservice.html\" target=\"_bank\">Imixs REST Service API</a> for more information about this Service.</p>"
-						.getBytes());
+				out.write(
+						"<p>See the <a href=\"http://www.imixs.org/xml/restservice/modelservice.html\" target=\"_bank\">Imixs-Workflow RestFull Service API</a> for more information.</p>"
+								.getBytes());
 
 				// end
 				out.write("</body></html>".getBytes());
@@ -136,30 +134,41 @@ public class ModelRestService {
 			List<String> modelVersionList = modelService.getAllModelVersions();
 
 			buffer.append("<table>");
-			buffer.append("<tr><th>Version</th><th>Workflow Group</th><th>Uploaded</th></tr>");
+			buffer.append("<tr><th>Version</th><th>Uploaded</th><th>Workflow Groups</th></tr>");
 			for (String modelVersion : modelVersionList) {
-				
-				Model model=modelService.getModel(modelVersion);
-				ItemCollection modelEntity=modelService.loadModelEntity(modelVersion);
+
+				Model model = modelService.getModel(modelVersion);
+				ItemCollection modelEntity = modelService.loadModelEntity(modelVersion);
 
 				// now check groups...
 				List<String> groupList = model.getGroups();
-				for (String group : groupList) {
-					buffer.append("<tr>");
-					buffer.append("<td>" + modelVersion + "</td>");
-					buffer.append("<td><a href=\"./model/" + modelVersion
-							+ "/groups/" + group + "\">" + group + "</a></td>");
+
+				buffer.append("<tr>");
+
+				if (modelEntity != null) {
+					buffer.append("<td><a href=\"./workflow/workitem/" + modelEntity.getUniqueID() + "/file/"
+							+ modelEntity.getFileNames().get(0) + "\">" + modelVersion + "</a></td>");
+
 					// print upload date...
-					if (modelEntity!=null) {
+					if (modelEntity != null) {
 						Date dat = modelEntity.getItemValueDate("$Modified");
-						SimpleDateFormat formater = new SimpleDateFormat(
-								"yyyy-MM-dd HH:mm:ss");
+						SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 						buffer.append("<td>" + formater.format(dat) + "</td>");
-					} else {
-						buffer.append("<td> - </td>");
 					}
-					buffer.append("</tr>");
+				} else {
+					buffer.append("<td>" + modelVersion + "</td>");
+					buffer.append("<td> - </td>");
 				}
+
+				// Groups
+				buffer.append("<td>");
+				for (String group : groupList) {
+					// build a link for each group to get the Tasks
+					
+					buffer.append("<a href=\"./model/" + modelVersion + "/groups/"+group + "\">" + group + "</a></br>");
+				}
+				buffer.append("</td>");
+				buffer.append("</tr>");
 
 			}
 
@@ -196,16 +205,13 @@ public class ModelRestService {
 	}
 
 	@GET
-	@Path("/{version}")
-	public EntityCollection getProcessList(
-			@PathParam("version") String version,
-			@QueryParam("items") String items) {
+	@Path("/{version}/tasks/")
+	public EntityCollection findAllTasks(@PathParam("version") String version, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
 
 			col = modelService.getModel(version).findAllTasks();
-			return XMLItemCollectionAdapter.putCollection(col,
-					getItemList(items));
+			return XMLItemCollectionAdapter.putCollection(col, getItemList(items));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -214,21 +220,32 @@ public class ModelRestService {
 	}
 
 	@GET
-	@Path("/{version}/process/{processid}")
-	public XMLItemCollection getProcessEntity(
-			@PathParam("version") String version,
-			@PathParam("processid") int processid,
-			@QueryParam("items") String items) {
+	@Path("/{version}/tasks/{taskid}")
+	public XMLItemCollection getTask(@PathParam("version") String version,
+			@PathParam("taskid") int processid, @QueryParam("items") String items) {
 		ItemCollection process = null;
 		try {
 			process = modelService.getModel(version).getTask(processid);
-			return XMLItemCollectionAdapter.putItemCollection(process,
-					getItemList(items));
+			return XMLItemCollectionAdapter.putItemCollection(process, getItemList(items));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return new XMLItemCollection();
+	}
+
+	@GET
+	@Path("/{version}/tasks/{taskid}/events")
+	public EntityCollection findAllEventsByTask(@PathParam("version") String version, @PathParam("taskid") int processid,
+			@QueryParam("items") String items) {
+		Collection<ItemCollection> col = null;
+		try {
+			col = modelService.getModel(version).findAllEventsByTask(processid);
+			return XMLItemCollectionAdapter.putCollection(col, getItemList(items));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new EntityCollection();
 	}
 
 	/**
@@ -239,9 +256,7 @@ public class ModelRestService {
 	 */
 	@GET
 	@Path("/{version}/groups")
-	public List<String> getStartProcessList(
-			@PathParam("version") String version,
-			@QueryParam("items") String items) {
+	public List<String> getGroups(@PathParam("version") String version, @QueryParam("items") String items) {
 		List<String> col = null;
 		try {
 
@@ -255,22 +270,19 @@ public class ModelRestService {
 	}
 
 	/**
-	 * Retuns a list of all Start Entities from each workflowgroup
+	 * Returns a list of all Tasks of a specific workflow group.
 	 * 
 	 * @param version
 	 * @return
 	 */
 	@GET
 	@Path("/{version}/groups/{group}")
-	public EntityCollection getProcessListByGroup(
-			@PathParam("version") String version,
+	public EntityCollection findTasksByGroup(@PathParam("version") String version,
 			@PathParam("group") String group, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
-			col = null;
-			logger.severe("NOT IMPLEMENTED");
-			return XMLItemCollectionAdapter.putCollection(col,
-					getItemList(items));
+			col = modelService.getModel(version).findTasksByGroup(group);
+			return XMLItemCollectionAdapter.putCollection(col, getItemList(items));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -278,26 +290,6 @@ public class ModelRestService {
 		return new EntityCollection();
 	}
 
-	@GET
-	@Path("/{version}/activities/{processid}")
-	public EntityCollection getActivityList(
-			@PathParam("version") String version,
-			@PathParam("processid") int processid,
-			@QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
-		try {
-			col = null;
-			logger.severe("NOT IMPLEMENTED");
-			
-			return XMLItemCollectionAdapter.putCollection(col,
-					getItemList(items));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return new EntityCollection();
-	}
-
-	
 	@DELETE
 	@Path("/{version}")
 	public void deleteModel(@PathParam("version") String version) {
@@ -308,12 +300,6 @@ public class ModelRestService {
 		}
 
 	}
-	
-	
-	
-
-	
-
 
 	/**
 	 * This method consumes a Imixs BPMN model file and updates the
@@ -321,11 +307,10 @@ public class ModelRestService {
 	 * 
 	 * @param model
 	 * @return
-	 */ 
+	 */
 	@PUT
 	@Path("/bpmn")
-	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM,
-			MediaType.TEXT_PLAIN })
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN })
 	public Response putBPMNModel(BPMNModel bpmnmodel) {
 		try {
 			logger.fine("BPMN Model posted... ");
@@ -337,22 +322,14 @@ public class ModelRestService {
 		logger.fine("putBPMNModel finished! ");
 		return Response.status(Response.Status.OK).build();
 	}
-	
+
 	@POST
 	@Path("/bpmn")
-	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM,
-			MediaType.TEXT_PLAIN })
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN })
 	public Response postBPMNModel(BPMNModel bpmnmodel) {
 		return putBPMNModel(bpmnmodel);
 	}
-	
-	
-	
-	
-	
-	
-	
-	
+
 	/**
 	 * This method updates a Model provided in a EntityCollection object for a
 	 * provided model version. The Method expects a subresource with a
@@ -367,9 +344,8 @@ public class ModelRestService {
 	 */
 	@PUT
 	@Path("/{version}")
-	@Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML})
-	public void putModelByVersion(@PathParam("version") String sModelVersion,
-			EntityCollection ecol) {
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
+	public void putModelByVersion(@PathParam("version") String sModelVersion, EntityCollection ecol) {
 
 		XMLItemCollection entity;
 		ItemCollection itemCollection;
@@ -388,11 +364,9 @@ public class ModelRestService {
 				// save new entities into database and update modelversion.....
 				for (int i = 0; i < ecol.getEntity().length; i++) {
 					entity = ecol.getEntity()[i];
-					itemCollection = XMLItemCollectionAdapter
-							.getItemCollection(entity);
+					itemCollection = XMLItemCollectionAdapter.getItemCollection(entity);
 					// update model version
-					itemCollection.replaceItemValue("$modelVersion",
-							sModelVersion);
+					itemCollection.replaceItemValue("$modelVersion", sModelVersion);
 					// save entity
 					entityService.save(itemCollection);
 				}
@@ -406,12 +380,11 @@ public class ModelRestService {
 
 	@POST
 	@Path("/{version}")
-	@Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML})
-	public void postModelByVersion(@PathParam("version") String sModelVersion,
-			EntityCollection ecol) {
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
+	public void postModelByVersion(@PathParam("version") String sModelVersion, EntityCollection ecol) {
 		putModelByVersion(sModelVersion, ecol);
 	}
-	
+
 	/**
 	 * This method updates a Model provided in a EntityCollection object.
 	 * 
@@ -421,7 +394,7 @@ public class ModelRestService {
 	 * @param ecol
 	 */
 	@PUT
-	@Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML})
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
 	public void putModel(EntityCollection ecol) {
 		String sModelVersion = null;
 		XMLItemCollection entity;
@@ -432,10 +405,8 @@ public class ModelRestService {
 				 * first we need get model version from first entity
 				 */
 				entity = ecol.getEntity()[0];
-				itemCollection = XMLItemCollectionAdapter
-						.getItemCollection(entity);
-				sModelVersion = itemCollection
-						.getItemValueString("$ModelVersion");
+				itemCollection = XMLItemCollectionAdapter.getItemCollection(entity);
+				sModelVersion = itemCollection.getItemValueString("$ModelVersion");
 
 				putModelByVersion(sModelVersion, ecol);
 
@@ -448,12 +419,11 @@ public class ModelRestService {
 	}
 
 	@POST
-	@Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML})
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
 	public void postModel(EntityCollection ecol) {
 		putModel(ecol);
 	}
-	
-	
+
 	/**
 	 * This method returns a List object from a given comma separated string.
 	 * The method returns null if no elements are found. The provided parameter
