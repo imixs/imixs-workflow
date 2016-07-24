@@ -130,11 +130,6 @@ public class MokModel implements Model {
 	}
 
 	
-	@Override
-	public List<ItemCollection> findInitialTasks() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public List<String> getGroups() {

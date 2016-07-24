@@ -31,6 +31,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +39,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
@@ -90,40 +90,34 @@ public class ModelService implements ModelManager {
 
 	public ModelService() {
 		super();
-		// create store
-		modelStore = new HashMap<String, Model>();
 	}
 
 	/**
 	 * This method initializes the modelManager and loads existing Models from
-	 * the database.
+	 * the database. The method can not be annotated with @PostConstruct because
+	 * in case a servlet with @RunAs annotation will not propagate the principal
+	 * in a PostConstruct. For that reason the method is called indirectly.
 	 * 
 	 * @throws AccessDeniedException
 	 */
-	@PostConstruct
 	void init() throws AccessDeniedException {
 		// load existing models into the ModelManager....
-
 		logger.info("Initalizing ModelService...");
-		
 		// first remove existing model entities
 		String sQuery = "SELECT process FROM Entity AS process JOIN process.textItems AS t2"
 				+ " WHERE process.type = 'model'";
 		Collection<ItemCollection> col = entityService.findAllEntities(sQuery, 0, -1);
 		for (ItemCollection modelEntity : col) {
-
 			Map<String, List<Object>> files = modelEntity.getFiles();
 			if (files != null) {
-
 				Iterator<Map.Entry<String, List<Object>>> entries = files.entrySet().iterator();
 				while (entries.hasNext()) {
 					Map.Entry<String, List<Object>> entry = entries.next();
 					String fileName = entry.getKey();
-					logger.info("loading "+fileName);
+					logger.info("loading " + fileName);
 					List<Object> fileData = entry.getValue();
 					byte[] rawData = (byte[]) fileData.get(1);
 					InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
-					
 					try {
 						Model model = BPMNParser.parseModel(bpmnInputStream, "UTF-8");
 						addModel(model);
@@ -131,11 +125,35 @@ public class ModelService implements ModelManager {
 						logger.warning("Failed to load model '" + fileName + "' : " + e.getMessage());
 					}
 				}
-
 			}
-
 		}
+	}
 
+	@Override
+	public void addModel(Model model) throws ModelException {
+	
+		ItemCollection definition = model.getDefinition();
+		if (definition == null) {
+			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Definition not provided! ");
+		}
+		String modelVersion = definition.getModelVersion();
+		if (modelVersion.isEmpty()) {
+			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Version not provided! ");
+		}
+		getModelStore().put(modelVersion, model);
+		logger.info("added new model '" + modelVersion + "'");
+	
+	}
+
+	/**
+	 * This method removes a specific ModelVersion. If modelVersion is null the
+	 * method will remove all models
+	 * 
+	 * @throws AccessDeniedException
+	 */
+	public void removeModel(String modelversion) {
+		getModelStore().remove(modelversion);
+		logger.fine("removed modelversion: " + modelversion);
 	}
 
 	/**
@@ -144,12 +162,11 @@ public class ModelService implements ModelManager {
 	 **/
 	@Override
 	public Model getModel(String version) throws ModelException {
-		Model model = modelStore.get(version);
+		Model model = getModelStore().get(version);
 		if (model == null) {
 			throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
 					"Modelversion '" + version + "' not found!");
 		}
-
 		return model;
 	}
 
@@ -165,29 +182,21 @@ public class ModelService implements ModelManager {
 	public Model getModelByWorkitem(ItemCollection workitem) throws ModelException {
 		String modelVersion = workitem.getModelVersion();
 		String workflowGroup = workitem.getItemValueString("txtWorkflowGroup");
-		String bestVersionMatch = "";
 		Model model = null;
 		try {
 			model = getModel(modelVersion);
 		} catch (ModelException me) {
 			logger.fine(me.getMessage());
 			if (!workflowGroup.isEmpty()) {
-				logger.fine("searching latest model version for workflowgroup '" + workflowGroup + "'...");
-				// try to find matching model version by group
-				for (Model amodel : modelStore.values()) {
-					if (amodel.getGroups().contains(workflowGroup)) {
-						// higher version?
-						if (amodel.getVersion().compareTo(bestVersionMatch) > 0) {
-							bestVersionMatch = amodel.getVersion();
-						}
-					}
-				}
-				if (!bestVersionMatch.isEmpty()) {
+				// find latest version
+				List<String> versions = findVersionsByGroup(workflowGroup);
+				if (!versions.isEmpty()) {
+					String newVersion = versions.get(0);
 					logger.warning("Deprecated model version: '" + modelVersion + "' -> migrating $uniqueID="
 							+ workitem.getUniqueID() + ", workflowgroup='" + workflowGroup + "' to model version '"
-							+ bestVersionMatch + "' ");
-					workitem.replaceItemValue(WorkflowKernel.MODELVERSION, bestVersionMatch);
-					model = getModel(bestVersionMatch);
+							+ newVersion + "' ");
+					workitem.replaceItemValue(WorkflowKernel.MODELVERSION, newVersion);
+					model = getModel(newVersion);
 				}
 			} else {
 				// model not found and no txtworkflowgroup defined!
@@ -203,42 +212,38 @@ public class ModelService implements ModelManager {
 		return model;
 	}
 
-	@Override
-	public void addModel(Model model) throws ModelException {
-
-		ItemCollection definition = model.getDefinition();
-		if (definition == null) {
-			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Definition not provided! ");
-		}
-		String modelVersion = definition.getModelVersion();
-		if (modelVersion.isEmpty()) {
-			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Version not provided! ");
-		}
-		modelStore.put(modelVersion, model);
-		logger.info("added new model '" + modelVersion + "'");
-
-	}
-
-	/**
-	 * This method removes a specific ModelVersion. If modelVersion is null the
-	 * method will remove all models
-	 * 
-	 * @throws AccessDeniedException
-	 */
-	public void removeModel(String modelversion) {
-		modelStore.remove(modelversion);
-		logger.fine("removed modelversion: " + modelversion);
-	}
-
 	/**
 	 * returns a String list of all accessible Modelversions
 	 * 
 	 * @return
 	 */
-	public List<String> getAllModelVersions() {
+	public List<String> getVersions() {
 		// convert Set to List
-		Set<String> set = modelStore.keySet();
+		Set<String> set = getModelStore().keySet();
 		return new ArrayList<String>(set);
+	}
+
+	/**
+	 * This method returns a sorted list of model versions containing the
+	 * requested workflow group. The result is sorted in reverse order, so the
+	 * highest version number is the first in the result list.
+	 * 
+	 * @param group
+	 * @return
+	 */
+	public List<String> findVersionsByGroup(String group) {
+		List<String> result = new ArrayList<String>();
+		logger.fine("searching model versions for workflowgroup '" + group + "'...");
+		// try to find matching model version by group
+		Collection<Model> models = getModelStore().values();
+		for (Model amodel : models) {
+			if (amodel.getGroups().contains(group)) {
+				result.add(amodel.getVersion());
+			}
+		}
+		// sort result
+		Collections.sort(result, Collections.reverseOrder());
+		return result;
 	}
 
 	/**
@@ -261,7 +266,7 @@ public class ModelService implements ModelManager {
 			modelItemCol.replaceItemValue("txtname", bpmnModel.getVersion());
 			modelItemCol.addFile(bpmnModel.getRawData(), bpmnModel.getVersion() + ".bpmn", "application/xml");
 			entityService.save(modelItemCol);
-			
+
 			logger.info("stored new model '" + model.getVersion() + "'");
 		}
 	}
@@ -309,6 +314,20 @@ public class ModelService implements ModelManager {
 			logger.fine("BPMNModel Entity '" + version + "' not found!");
 		}
 		return null;
+	}
+
+	/**
+	 * This method returns the modelStore or initialize it if not yet created.
+	 * 
+	 * @return
+	 */
+	private Map<String, Model> getModelStore() {
+		if (modelStore == null) {
+			// create store
+			modelStore = new HashMap<String, Model>();
+			init();
+		}
+		return modelStore;
 	}
 
 }

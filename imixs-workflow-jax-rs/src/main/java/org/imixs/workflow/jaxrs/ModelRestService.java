@@ -136,7 +136,7 @@ public class ModelRestService {
 	private void printVersionTable(OutputStream out) {
 		try {
 			StringBuffer buffer = new StringBuffer();
-			List<String> modelVersionList = modelService.getAllModelVersions();
+			List<String> modelVersionList = modelService.getVersions();
 
 			buffer.append("<table>");
 			buffer.append("<tr><th>Version</th><th>Uploaded</th><th>Workflow Groups</th></tr>");
@@ -197,7 +197,7 @@ public class ModelRestService {
 		StringBuffer sb = new StringBuffer();
 		sb.append("<model>");
 		try {
-			col = modelService.getAllModelVersions();
+			col = modelService.getVersions();
 
 			for (String aversion : col) {
 				sb.append("<version>" + aversion + "</version>");

@@ -109,13 +109,6 @@ public class BPMNModel implements Model {
 		return result;
 	}
 
-	@Override
-	public List<ItemCollection> findInitialTasks() {
-
-		logger.severe("MISSING IMPLEMENTATION!");
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	/***
 	 * Returns a list of tasks filtert by txtworkflowgroup.

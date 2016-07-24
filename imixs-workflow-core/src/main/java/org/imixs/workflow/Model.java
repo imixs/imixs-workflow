@@ -103,15 +103,7 @@ public interface Model {
 	 */
 	public List<ItemCollection> findAllTasks();
 
-	/**
-	 * Returns a list of Tasks defined as initial Tasks.
-	 * 
-	 * @param modelVersion
-	 * @return List org.imixs.workflow.ItemCollection
-	 */
-	public List<ItemCollection> findInitialTasks();
-
-	/**
+		/**
 	 * Returns all Events assigned to a task.
 	 * 
 	 * @param taskid

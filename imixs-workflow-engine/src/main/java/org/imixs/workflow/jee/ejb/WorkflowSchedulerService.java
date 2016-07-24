@@ -559,7 +559,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		unprocessedIDs = new ArrayList<String>();
 		try {
 			// get all model versions...
-			List<String> modelVersions = modelService.getAllModelVersions();
+			List<String> modelVersions = modelService.getVersions();
 			for (String version : modelVersions) {
 				logger.info("[WorkflowSchedulerService] processing ModelVersion: " + version);
 				// find scheduled Activities
