@@ -39,10 +39,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
+import javax.ejb.SessionContext;
 import javax.ejb.Singleton;
 
 import org.imixs.workflow.ItemCollection;
@@ -87,6 +89,8 @@ public class ModelService implements ModelManager {
 	private static Logger logger = Logger.getLogger(ModelService.class.getName());
 	@EJB
 	EntityService entityService;
+	@Resource
+	SessionContext ctx;
 
 	public ModelService() {
 		super();
@@ -131,7 +135,7 @@ public class ModelService implements ModelManager {
 
 	@Override
 	public void addModel(Model model) throws ModelException {
-	
+
 		ItemCollection definition = model.getDefinition();
 		if (definition == null) {
 			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Definition not provided! ");
@@ -142,7 +146,7 @@ public class ModelService implements ModelManager {
 		}
 		getModelStore().put(modelVersion, model);
 		logger.info("added new model '" + modelVersion + "'");
-	
+
 	}
 
 	/**
@@ -213,14 +217,17 @@ public class ModelService implements ModelManager {
 	}
 
 	/**
-	 * returns a String list of all accessible Modelversions
+	 * returns a sorted String list of all stored model versions
 	 * 
 	 * @return
 	 */
 	public List<String> getVersions() {
 		// convert Set to List
 		Set<String> set = getModelStore().keySet();
-		return new ArrayList<String>(set);
+
+		List<String> result = new ArrayList<String>(set);
+		Collections.sort(result);
+		return result;
 	}
 
 	/**
@@ -263,6 +270,7 @@ public class ModelService implements ModelManager {
 			addModel(model);
 			ItemCollection modelItemCol = new ItemCollection();
 			modelItemCol.replaceItemValue("type", "model");
+			modelItemCol.replaceItemValue("namcreator", ctx.getCallerPrincipal().getName());
 			modelItemCol.replaceItemValue("txtname", bpmnModel.getVersion());
 			modelItemCol.addFile(bpmnModel.getRawData(), bpmnModel.getVersion() + ".bpmn", "application/xml");
 			entityService.save(modelItemCol);

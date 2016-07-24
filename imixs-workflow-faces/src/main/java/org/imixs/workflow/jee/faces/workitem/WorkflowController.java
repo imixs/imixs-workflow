@@ -123,7 +123,7 @@ public class WorkflowController extends DataController {
 		if (getWorkitem().getItemValueInteger("$ProcessID") <= 0) {
 			// get ProcessEntities by version
 			List<ItemCollection> col;
-			col = modelService.getModelByWorkitem(getWorkitem()).findInitialTasks();
+			col = modelService.getModelByWorkitem(getWorkitem()).findAllTasks();
 			if (!col.isEmpty()) {
 				startProcessEntity = col.iterator().next();
 				getWorkitem().replaceItemValue("$ProcessID", startProcessEntity.getItemValueInteger("numProcessID"));
