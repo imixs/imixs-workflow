@@ -1,12 +1,14 @@
 package org.imixs.workflow.bpmn;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ItemCollectionComparator;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
@@ -52,8 +54,6 @@ public class BPMNModel implements Model {
 		this.rawData = data;
 	}
 
-	
-
 	@Override
 	public String getVersion() {
 		if (definition != null) {
@@ -96,22 +96,41 @@ public class BPMNModel implements Model {
 		return workflowGroups;
 	}
 
+	/**
+	 * Returns a list of all tasks. The result set is sorted by taskID
+	 * 
+	 * @return list of tasks
+	 */
 	@Override
 	public List<ItemCollection> findAllTasks() {
-		return new ArrayList<ItemCollection>(taskList.values());
+		List<ItemCollection> result = new ArrayList<ItemCollection>(taskList.values());
+
+		// sort list by taskid
+		Collections.sort(result, new ItemCollectionComparator("numprocessid", true));
+		return result;
 	}
 
+	/**
+	 * Returns a list of all events for a given taskID. The result set is sorted
+	 * by event id (numactivityID)
+	 * 
+	 * @return list of tasks
+	 */
 	@Override
 	public List<ItemCollection> findAllEventsByTask(int processid) {
 		List<ItemCollection> result = eventList.get(processid);
 		if (result == null)
 			result = new ArrayList<ItemCollection>();
+
+		// sort list by taskid
+		Collections.sort(result, new ItemCollectionComparator("numactivityid", true));
+
 		return result;
 	}
 
-
 	/***
-	 * Returns a list of tasks filtert by txtworkflowgroup.
+	 * Returns a list of tasks filtered by the workflow group
+	 * (txtWorkflowGroup). The result set is sorted by taskID.
 	 */
 	@Override
 	public List<ItemCollection> findTasksByGroup(String group) {
@@ -124,6 +143,10 @@ public class BPMNModel implements Model {
 				}
 			}
 		}
+
+		// sort list by taskid
+		Collections.sort(result, new ItemCollectionComparator("numprocessid", true));
+
 		return result;
 	}
 

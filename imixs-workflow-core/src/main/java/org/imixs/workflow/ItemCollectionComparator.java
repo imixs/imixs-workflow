@@ -8,6 +8,10 @@ import java.util.Locale;
 /**
  * The ItemCollectionComparator provides a Comparator for ItemColections. The item to
  * be compared can be provided in the constructor.
+ * <p>
+ * Usage:
+ * <p>
+ * <code>Collections.sort(collection, new ItemCollectionComparator("txtname", true));</code>
  * 
  * @author rsoika
  * 
