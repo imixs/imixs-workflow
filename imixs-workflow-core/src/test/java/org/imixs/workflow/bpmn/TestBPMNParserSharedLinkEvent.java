@@ -4,18 +4,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import junit.framework.Assert;
 
 /**
  * Test class test the Imixs BPMNParser.
@@ -46,6 +46,7 @@ public class TestBPMNParserSharedLinkEvent {
 	 * @throws ModelException 
 	 */
 	@Test
+	@Ignore
 	public void testLinkEventSimple() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		InputStream inputStream = getClass().getResourceAsStream("/bpmn/shared-link-event.bpmn");

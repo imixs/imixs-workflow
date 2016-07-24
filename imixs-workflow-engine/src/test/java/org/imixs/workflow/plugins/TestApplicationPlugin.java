@@ -3,14 +3,14 @@ package org.imixs.workflow.plugins;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import junit.framework.Assert;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.jee.ejb.AbstractPluginTest;
+import org.imixs.workflow.jee.ejb.AbstractWorkflowEnvironment;
 import org.junit.Before;
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 /**
  * Test the Application plug-in.
@@ -20,7 +20,7 @@ import org.junit.Test;
  * @author rsoika 
  * 
  */
-public class TestApplicationPlugin extends AbstractPluginTest {
+public class TestApplicationPlugin extends AbstractWorkflowEnvironment {
 
 	private final static Logger logger = Logger
 			.getLogger(TestApplicationPlugin.class.getName());
