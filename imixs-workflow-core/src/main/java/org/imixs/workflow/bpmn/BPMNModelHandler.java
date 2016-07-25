@@ -408,7 +408,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
 			// update modelversion...
 			task.replaceItemValue("$modelVersion", modelVersion);
-			model.addProcessEntity(task);
+			model.addTask(task);
 
 			// add id and resort
 			processIDList.add(pId);
@@ -585,7 +585,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		event.replaceItemValue("numProcessID", sourceTask.getItemValue("numProcessID"));
 		event.replaceItemValue("$modelVersion", sourceTask.getModelVersion());
 		replaceMessageTags(event);
-		model.addActivityEntity(verifyActiviytIdForEvent(event));
+		model.addEvent(verifyActiviytIdForEvent(event));
 	}
 
 	/**

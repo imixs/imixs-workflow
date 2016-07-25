@@ -2,9 +2,9 @@ package org.imixs.workflow.bpmn;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
@@ -31,8 +31,8 @@ public class BPMNModel implements Model {
 	private static Logger logger = Logger.getLogger(BPMNModel.class.getName());
 
 	public BPMNModel() {
-		taskList = new HashMap<Integer, ItemCollection>();
-		eventList = new HashMap<Integer, List<ItemCollection>>();
+		taskList = new TreeMap<Integer, ItemCollection>();
+		eventList = new TreeMap<Integer, List<ItemCollection>>();
 		workflowGroups = new ArrayList<String>();
 	}
 
@@ -104,9 +104,6 @@ public class BPMNModel implements Model {
 	@Override
 	public List<ItemCollection> findAllTasks() {
 		List<ItemCollection> result = new ArrayList<ItemCollection>(taskList.values());
-
-		// sort list by taskid
-		Collections.sort(result, new ItemCollectionComparator("numprocessid", true));
 		return result;
 	}
 
@@ -121,9 +118,6 @@ public class BPMNModel implements Model {
 		List<ItemCollection> result = eventList.get(processid);
 		if (result == null)
 			result = new ArrayList<ItemCollection>();
-
-		// sort list by taskid
-		Collections.sort(result, new ItemCollectionComparator("numactivityid", true));
 
 		return result;
 	}
@@ -143,10 +137,6 @@ public class BPMNModel implements Model {
 				}
 			}
 		}
-
-		// sort list by taskid
-		Collections.sort(result, new ItemCollectionComparator("numprocessid", true));
-
 		return result;
 	}
 
@@ -160,7 +150,7 @@ public class BPMNModel implements Model {
 	 * @param entity
 	 * @throws ModelException
 	 */
-	protected void addProcessEntity(ItemCollection entity) throws ModelException {
+	protected void addTask(ItemCollection entity) throws ModelException {
 		if (entity == null)
 			return;
 
@@ -183,7 +173,7 @@ public class BPMNModel implements Model {
 	 * 
 	 * @param entity
 	 */
-	protected void addActivityEntity(ItemCollection aentity) throws ModelException {
+	protected void addEvent(ItemCollection aentity) throws ModelException {
 		if (aentity == null)
 			return;
 
@@ -214,6 +204,11 @@ public class BPMNModel implements Model {
 		List<ItemCollection> activities = findAllEventsByTask(pID);
 
 		activities.add(clonedEntity);
+		
+		// sort event list
+		Collections.sort(activities,
+						new ItemCollectionComparator("numactivityid", true));
+		
 		eventList.put(pID, activities);
 	}
 

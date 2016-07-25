@@ -32,11 +32,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -145,6 +145,9 @@ public class ModelService implements ModelManager {
 			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Version not provided! ");
 		}
 		getModelStore().put(modelVersion, model);
+		
+		// sort model list
+		
 		logger.info("added new model '" + modelVersion + "'");
 
 	}
@@ -224,9 +227,7 @@ public class ModelService implements ModelManager {
 	public List<String> getVersions() {
 		// convert Set to List
 		Set<String> set = getModelStore().keySet();
-
 		List<String> result = new ArrayList<String>(set);
-		Collections.sort(result);
 		return result;
 	}
 
@@ -331,8 +332,8 @@ public class ModelService implements ModelManager {
 	 */
 	private Map<String, Model> getModelStore() {
 		if (modelStore == null) {
-			// create store
-			modelStore = new HashMap<String, Model>();
+			// create store (sorted map)
+			modelStore = new TreeMap<String, Model>();
 			init();
 		}
 		return modelStore;
