@@ -208,7 +208,7 @@ public class ModelService implements ModelManager {
 			} else {
 				// model not found and no txtworkflowgroup defined!
 				throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION, "Modelversion '" + modelVersion
-						+ "' not found! No WorkflowGroup defind for workitem '" + workitem.getUniqueID() + "' ");
+						+ "' not found! No matching version found for WorkflowGroup '" + workflowGroup + "' ($uniqueid=" + workitem.getUniqueID() + ")");
 			}
 		}
 		if (model == null) {
