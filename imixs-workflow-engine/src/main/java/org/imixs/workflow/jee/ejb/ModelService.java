@@ -206,14 +206,15 @@ public class ModelService implements ModelManager {
 					model = getModel(newVersion);
 				}
 			} else {
-				// model not found and no txtworkflowgroup defined!
-				throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION, "Modelversion '" + modelVersion
-						+ "' not found! No matching version found for WorkflowGroup '" + workflowGroup + "' ($uniqueid=" + workitem.getUniqueID() + ")");
+				// model not found and no match for current txtworkflowgroup defined!
+				model=null;
 			}
 		}
+		
+		// check if model was found....
 		if (model == null) {
-			throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
-					"Modelversion '" + modelVersion + "' not found!");
+			throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION, "Modelversion '" + modelVersion
+					+ "' not found! No matching version found for WorkflowGroup '" + workflowGroup + "' ($uniqueid=" + workitem.getUniqueID() + ")");
 		}
 
 		return model;
