@@ -127,6 +127,7 @@ public class AccessPlugin extends AbstractPlugin {
 			documentNextProcessEntity = ctx.getModelManager().getModel(aModelVersion).getTask(iNextProcessID);
 		} catch (ModelException e) {
 			// no next task defined (follow up)
+			return Plugin.PLUGIN_OK;
 		}
 		// in case the activity is connected to a followup activity the
 		// nextProcess can be null!

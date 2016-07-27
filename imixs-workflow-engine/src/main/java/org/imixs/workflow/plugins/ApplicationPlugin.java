@@ -112,14 +112,13 @@ public class ApplicationPlugin extends AbstractPlugin {
 				itemColNextProcess = ctx.getModelManager().getModel(aModelVersion).getTask(
 						iNextProcessID);
 			} catch (ModelException e) {
-				throw new PluginException(ApplicationPlugin.class.getSimpleName(), ModelException.UNDEFINED_MODEL_ENTRY, e.getMessage());
-
+				// no op - 
 			}
 
 			// if the processEntity was not found cancel processing now!
 			if (itemColNextProcess == null) {
-				logger.warning("[ApplicationPlugin] Warning - processEntity '"
-						+ iNextProcessID + "' was not found in the model! ");
+				logger.warning("[ApplicationPlugin] Warning - Task '"
+						+ iNextProcessID + "' was not found in the model '" + aModelVersion + "' ");
 				return Plugin.PLUGIN_WARNING;
 			}
 

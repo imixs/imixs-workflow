@@ -114,7 +114,8 @@ public class OwnerPlugin extends AbstractPlugin {
 		try {
 			documentNextProcessEntity = ctx.getModelManager().getModel(aModelVersion).getTask(iNextProcessID);
 		} catch (ModelException e) {
-			throw new PluginException(OwnerPlugin.class.getSimpleName(), ModelException.UNDEFINED_MODEL_ENTRY, e.getMessage());
+			// no next task defined (follow up)
+			return Plugin.PLUGIN_OK;
 		}
 		// in case the activity is connected to a followup activity the
 		// nextProcess can be null!
