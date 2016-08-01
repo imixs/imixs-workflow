@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Vector;
 import java.util.logging.Logger;
 
 import javax.ejb.SessionContext;
@@ -206,7 +207,7 @@ public class KernelTest {
 		List log = itemCollection.getItemValue("txtworkflowactivitylog");
 
 		Assert.assertNotNull(log);
-		Assert.assertTrue(log.size() == 2);
+		Assert.assertEquals(2,log.size());
 
 		logger.info("'txtworkflowactivitylog'=" + log);
 
@@ -221,6 +222,107 @@ public class KernelTest {
 		Assert.assertFalse(st.hasMoreTokens());
 
 		logEntry = (String) log.get(1);
+		st = new StringTokenizer(logEntry, "|");
+		try {
+			// check date object
+			String sDate = st.nextToken();
+
+			SimpleDateFormat formatter = new SimpleDateFormat(WorkflowKernel.ISO8601_FORMAT);
+			Date date = null;
+			date = formatter.parse(sDate);
+
+			Calendar cal = Calendar.getInstance();
+			Calendar calNow = Calendar.getInstance();
+			cal.setTime(date);
+
+			Assert.assertEquals(calNow.get(Calendar.YEAR), cal.get(Calendar.YEAR));
+			Assert.assertEquals(calNow.get(Calendar.MONTH), cal.get(Calendar.MONTH));
+
+		} catch (ParseException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		Assert.assertEquals("1.0.0", st.nextToken());
+		Assert.assertEquals("100.20", st.nextToken());
+		Assert.assertEquals("200", st.nextToken());
+		// test commment
+		Assert.assertTrue(st.hasMoreTokens());
+		Assert.assertEquals("userid", st.nextToken());
+		Assert.assertEquals("comment", st.nextToken());
+		Assert.assertFalse(st.hasMoreTokens());
+
+	}
+
+	/**
+	 * This method tests the generation of the txtworkflowactivitylog entries
+	 * and the restriction to a maximum length of 30 entries.
+	 * 
+	 * Issue https://github.com/imixs/imixs-workflow/issues/179
+	 * 
+	 */
+	@SuppressWarnings("rawtypes")
+	@Test
+	@Category(org.imixs.workflow.WorkflowKernel.class)
+	public void testActivityLogMaxLength() {
+		ItemCollection itemCollection = new ItemCollection();
+		itemCollection.replaceItemValue("$modelversion", "1.0.0");
+		itemCollection.replaceItemValue("txtTitel", "Hello");
+		itemCollection.replaceItemValue("$processid", 100);
+
+		
+		// we create 40 dummy entries
+		String dummyEntry=""+new Date() + "|1.0.0|100.10|100";
+		Vector<String> v=new Vector<String>();
+		for (int i=1;i<=40;i++) {
+			v.add(dummyEntry);
+		}
+		itemCollection.replaceItemValue("txtworkflowactivitylog",v);
+	
+		try {
+			// simulate two steps
+			itemCollection.replaceItemValue("$activityid", 10);
+			kernel.process(itemCollection);
+
+			itemCollection.replaceItemValue("$activityid", 20);
+			// sumulate a Log Comment...
+			itemCollection.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
+
+			kernel.process(itemCollection);
+
+		} catch (PluginException e) {
+			Assert.fail();
+			e.printStackTrace();
+		} catch (ProcessingErrorException e) {
+			Assert.fail();
+			e.printStackTrace();
+		}
+
+		Assert.assertEquals(2, itemCollection.getItemValueInteger("runs"));
+		// test next state
+		Assert.assertEquals(200, itemCollection.getItemValueInteger("$processid"));
+
+		// test log
+		List log = itemCollection.getItemValue("txtworkflowactivitylog");
+
+		Assert.assertNotNull(log);
+		Assert.assertEquals(30,log.size());
+
+		logger.info("'txtworkflowactivitylog'=" + log);
+
+		// test log entries
+		// Format: timestamp|model-version|1000.10|1000|userid|
+		String logEntry = (String) log.get(log.size()-2);
+		StringTokenizer st = new StringTokenizer(logEntry, "|");
+		st.nextToken();
+		Assert.assertEquals("1.0.0", st.nextToken());
+		Assert.assertEquals("100.10", st.nextToken());
+		Assert.assertEquals("100", st.nextToken());
+		Assert.assertFalse(st.hasMoreTokens());
+
+		// test last entry
+		logEntry = (String) log.get(log.size()-1);
 		st = new StringTokenizer(logEntry, "|");
 		try {
 			// check date object
