@@ -96,7 +96,7 @@ import org.imixs.workflow.exceptions.PluginException;
  * NOTE: all variable names are case sensitive!
  * 
  * @author Ralph Soika
- * @version 2.0
+ * @version 3.0
  * 
  */
 
@@ -134,12 +134,37 @@ public class RulePlugin extends AbstractPlugin {
 		ScriptEngine engine = evaluateBusinessRule(adocumentContext, adocumentActivity);
 		if (engine != null) {
 
-			Boolean isValidActivity = (Boolean) engine.get("isValid");
+			// get the optional result object
+			ItemCollection result = getResultObject(engine);
 
+			// first we test for the isValid variable
+			Boolean isValidActivity = true;
+			// first test result object
+			if (result.hasItem("isValid")) {
+				isValidActivity = result.getItemValueBoolean("isValid");
+				result.removeItem("isValid");
+			} else {
+				// if isValid is not provided by result then we look for a
+				// direct
+				// var definition (this is for backward compatibility of older
+				// scripts)
+				isValidActivity = (Boolean) engine.get("isValid");
+			}
+
+			// if isValid==false then throw a PluginException
 			if (isValidActivity != null && !isValidActivity) {
 				// test if a error code is provided!
 				String sErrorCode = VALIDATION_ERROR;
-				Object oErrorCode = engine.get("errorCode");
+				Object oErrorCode = null;
+				if (result.hasItem("errorCode")) {
+					oErrorCode = result.getItemValueString("errorCode");
+					result.removeItem("errorCode");
+				} else {
+					// if errorCode is not provided by result then we look for a
+					// direct var definition (this is for backward compatibility
+					// of older scripts)
+					oErrorCode = engine.get("errorCode");
+				}
 				if (oErrorCode != null && oErrorCode instanceof String) {
 					sErrorCode = oErrorCode.toString();
 				}
@@ -147,20 +172,33 @@ public class RulePlugin extends AbstractPlugin {
 				// next test for errorMessage (this can be a string or an array
 				// of strings
 				Object[] params = null;
-				params = this.evaluateScriptObject(engine, "errorMessage");
-				// finally throw a Plugin Exception
+				if (result.hasItem("errorMessage")) {
+					params = result.getItemValue("errorMessage").toArray();
+					result.removeItem("errorMessage");
+				} else {
+					params = this.evaluateScriptObject(engine, "errorMessage");
+				}
+
+				// finally we throw the Plugin Exception
 				throw new PluginException(RulePlugin.class.getName(), sErrorCode,
 						"BusinessRule: validation failed - ErrorCode=" + sErrorCode, params);
 			}
 
-			// Now update Activity Entity values from script..
-			updateActivityEntity(engine, adocumentActivity);
-
 			// now test the followUp variable
-			Object o = engine.get("followUp");
-			if (o != null) {
+			Object followUp = null;
+			// first test result object
+			if (result.hasItem("followUp")) {
+				followUp = result.getItemValueString("followUp");
+			}
+			// if followUp is not provided by result then we look for a direct
+			// var definition (this is for backward compatibility of older
+			// scripts)
+			if (followUp == null) {
+				followUp = engine.get("followUp");
+			}
+			if (followUp != null) {
 				// try to get double value...
-				Double d = Double.valueOf(o.toString());
+				Double d = Double.valueOf(followUp.toString());
 				Long followUpActivity = d.longValue();
 				if (followUpActivity != null && followUpActivity > 0) {
 					adocumentActivity.replaceItemValue("keyFollowUp", "1");
@@ -170,16 +208,38 @@ public class RulePlugin extends AbstractPlugin {
 			}
 
 			// now test the nextTask variable
-			o = engine.get("nextTask");
-			if (o != null) {
+			Object nextTask = null;
+			// first test result object
+			if (result.hasItem("nextTask")) {
+				nextTask = result.getItemValueString("nextTask");
+			}
+			// if nextTask is not provided by the result var, then we look for a
+			// direct var definition (this is for backward compatibility of
+			// older scripts)
+			if (nextTask == null) {
+				nextTask = engine.get("nextTask");
+			}
+			if (nextTask != null) {
 				// try to get double value...
-				Double d = Double.valueOf(o.toString());
-				Long nextTask = d.longValue();
-				if (nextTask != null && nextTask > 0) {
-					adocumentActivity.replaceItemValue("numNextProcessID", nextTask);
+				Double d = Double.valueOf(nextTask.toString());
+				Long lNextTask = d.longValue();
+				if (lNextTask != null && lNextTask > 0) {
+					adocumentActivity.replaceItemValue("numNextProcessID", lNextTask);
 
 				}
 			}
+
+			// if result has item values then we update now the current
+			// workitem iterate over all entries
+			for (Map.Entry<String, List<Object>> entry : result.getAllItems().entrySet()) {
+				String itemName = entry.getKey();
+				logger.fine("Update item '" + itemName + "'");
+				adocumentContext.replaceItemValue(itemName, entry.getValue());
+			}
+
+			// Finally update the Event object values optional provided from
+			// script variable activity...
+			updateActivityEntity(engine, adocumentActivity);
 
 			return Plugin.PLUGIN_OK;
 
@@ -320,7 +380,7 @@ public class RulePlugin extends AbstractPlugin {
 
 			@SuppressWarnings("unchecked")
 			List<Object> resultList = (List<Object>) engine.get("_evaluateScriptParam");
-			if (resultList==null) {
+			if (resultList == null) {
 				return null;
 			}
 			if ("[undefined]".equals(resultList.toString())) {
@@ -377,13 +437,49 @@ public class RulePlugin extends AbstractPlugin {
 
 			// compare object arrays with deepEquals....
 			if (!Arrays.deepEquals(oScript, oActivity)) {
-				logger.fine("[RulePlugin] update activity proeperty " + entry.getKey());
+				logger.fine("update event property " + entry.getKey());
 				List<?> list = new ArrayList(Arrays.asList(oScript));
 				adocumentActivity.replaceItemValue(entry.getKey(), list);
 			}
 
 		}
 
+	}
+
+	/**
+	 * This method evaluates the existence of a object variable named 'result'.
+	 * The object is expected as an Map interface. Each property of the object
+	 * will update the current workitem.
+	 * 
+	 * @param engine
+	 * @return ItemCollection holding the item values of the result or an empty
+	 *         ItemCollection, if no result object exists.
+	 * @throws ScriptException
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private ItemCollection getResultObject(ScriptEngine engine) {
+		ItemCollection result = new ItemCollection();
+		// get result object from engine
+		Map<String, Object[]> scriptResult = (Map) engine.get("result");
+
+		if (scriptResult != null && scriptResult.entrySet().size() > 0) {
+			// iterate over all entries
+			for (Map.Entry<String, Object[]> entry : scriptResult.entrySet()) {
+
+				String expression = "result['" + entry.getKey() + "']";
+
+				Object[] oScript = evaluateScriptObject(engine, expression);
+				if (oScript == null) {
+					continue;
+				}
+
+				logger.fine("adding result property " + entry.getKey());
+				List<?> list = new ArrayList(Arrays.asList(oScript));
+				result.replaceItemValue(entry.getKey(), list);
+
+			}
+		}
+		return result;
 	}
 
 	/**

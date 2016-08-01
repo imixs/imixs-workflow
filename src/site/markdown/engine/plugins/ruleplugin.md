@@ -1,13 +1,16 @@
 #Rule Plugin 
-The Imixs Rule Plugin can be used to evaluate a business rule during the processing of an activity. 
+The Imixs RulePlugin is used to evaluate a business rule during the processing life cycle of an event. 
+
+_Plugin Class Name:_
 
     org.imixs.workflow.plugins.RulePlugin
 
-A business rule can be configured which the help of the [Imixs-BPMN modeler](../../modelling/activities.html). Business rules can be written in any script language supported by the JVM.
- For example 'JavaScript or 'Groovy'. A Script can access all basic item values from the current WorkItem and the ActivityEntity. A script may not update values of the WorkItem but can modify the values of the Activity Entity. To access the item values the RulePlugin provide the map objects 'workitem' and 'activity'. The item values of a property are provided in an object array. See the following example:
+A business rule evaluated by the RulePlugin is configured using the [Imixs-BPMN modeler](../../modelling/activities.html). Business rules can be written in any script language supported by the JVM. E.g 'JavaScript or 'Groovy'. A Script has access to all basic item values from the current WorkItem as also from the Event definition holding the business rule.
+
+A script may not update values of the WorkItem but can modify the values of the Activity Entity. To access the item values from a script language, the RulePlugin provide the objects variables 'workitem' and 'activity'. The item values are stored in a map, holding the item name (key) and an object array of item values (value). See the following example showing how to get the item value of an item with the name 'txtname':
  
 	 // test the first value of the workitem attribute 'txtname'
-	 var isValid = ('Anna'==workitem.get('txtname')[0]);
+	 var isValid = ('Anna'==workitem['txtname'][0]);
 
  
 <strong>Note:</strong> It is not possible to manipulate the values from a workitem by script. But you can 
@@ -17,9 +20,9 @@ The next example shows how to change a single value of the ActivityEntity which 
 
 
 	// set keymailenabled to 0
-	activity.put('keymailenabled',['0']);
+	activity.keymailenabled=['0'];
  
-<strong>Note:</strong>All property names of the object WorkItem and activity are lower cased!
+<strong>Note:</strong>All item names of the WorkItem and activity map need to be lower cased!
  
  
 ##How to control the process flow 
@@ -83,12 +86,11 @@ If no errorCode is defined the default errorCode 'VALIDATION_ERROR' will be set.
   
 This script defines an array with two error messages. The error messages will be part of  the param[] property of the PluginException. See the [section exception handling](./exception_handling.html)
 
-##How to access the ActivityEntity 
+##Definition of a Business Rule 
 
-The Script Language and the script are defined in reserved properties of the current ActivityEntity:
+The business rule and the used script language are defined in the following event properties:
 
   * txtBusinessRule - defines the business rule to be evaluated by the Rule Plugin.
   * txtBusinessRuleEngine - defines the script language used by the Plugin.
  
-The rule plugin uses the Script Engine provided by the JDK. So business rule can be written in any script language supported by the runtime environment.  
-
+The rule plugin supports any Script Engine provided by the JVM. 

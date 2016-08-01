@@ -27,7 +27,7 @@ import org.junit.Test;
 public class TestRulePlugin {
 	RulePlugin rulePlugin = null;
 
-	@Before 
+	@Before
 	public void setup() throws PluginException {
 		rulePlugin = new RulePlugin();
 		rulePlugin.init(null);
@@ -56,8 +56,7 @@ public class TestRulePlugin {
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
-		Assert.assertEquals("Anna",
-				adocumentContext.getItemValueString("txtName"));
+		Assert.assertEquals("Anna", adocumentContext.getItemValueString("txtName"));
 
 	}
 
@@ -76,34 +75,29 @@ public class TestRulePlugin {
 
 		// 1) test without any script:
 		adocumentActivity.replaceItemValue("txtBusinessRUle", null);
-		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 		// 2) test with an empty script:
 		adocumentActivity.replaceItemValue("txtBusinessRUle", "");
-		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 		// 3) test script without isValid variable
 		String script = "var a=1;var b=2;";
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 		// 2) test true case
 		script = "var a=1;var b=2;var isValid = ((a<b) && 'Anna'==txtname[0]);";
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 		// 2) test false case
 		script = "var a=1;var b=2;var isValid = ((a>b) && 'Anna'==txtname[0]);";
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		Assert.assertFalse(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertFalse(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 	}
 
@@ -115,8 +109,7 @@ public class TestRulePlugin {
 	 * @throws PluginException
 	 */
 	@Test(expected = PluginException.class)
-	public void testSimplePluginException() throws ScriptException,
-			PluginException {
+	public void testSimplePluginException() throws ScriptException, PluginException {
 
 		ItemCollection adocumentContext = new ItemCollection();
 		ItemCollection adocumentActivity = new ItemCollection();
@@ -146,8 +139,7 @@ public class TestRulePlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// 1) invalid returning one messsage
-		String script = "var a=1;var b=2;var isValid = (a>b);"
-				+ " var errorCode='MY_ERROR';"
+		String script = "var a=1;var b=2;var isValid = (a>b);" + " var errorCode='MY_ERROR';"
 				+ " var errorMessage='Somehing go wrong!';";
 
 		System.out.println("Script=" + script);
@@ -164,10 +156,8 @@ public class TestRulePlugin {
 		}
 
 		// 2) invalid returning 2 messages in an array
-		script = "var a=1;var b=2;var isValid = (a>b);"
-				+ " var errorMessage = new Array();"
-				+ " errorMessage[0]='Somehing go wrong!';"
-				+ " errorMessage[1]='Somehingelse go wrong!';";
+		script = "var a=1;var b=2;var isValid = (a>b);" + " var errorMessage = new Array();"
+				+ " errorMessage[0]='Somehing go wrong!';" + " errorMessage[1]='Somehingelse go wrong!';";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -208,8 +198,7 @@ public class TestRulePlugin {
 		int result = rulePlugin.run(adocumentContext, adocumentActivity);
 
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
-		int followUp = adocumentActivity
-				.getItemValueInteger("numNextActivityID");
+		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
@@ -218,11 +207,7 @@ public class TestRulePlugin {
 		Assert.assertEquals(followUp, 3);
 
 	}
-	
-	
-	
-	
-	
+
 	/**
 	 * This test verifies the nextTask behavior. If set then keyFollowUp and
 	 * numnextprocessid should be overwritten by the RulePlugin
@@ -245,12 +230,9 @@ public class TestRulePlugin {
 		int result = rulePlugin.run(adocumentContext, adocumentActivity);
 
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
-		int followUp = adocumentActivity
-				.getItemValueInteger("numNextActivityID");
-		
-		
-		int nextTask = adocumentActivity
-				.getItemValueInteger("numNextprocessiD");
+		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
+
+		int nextTask = adocumentActivity.getItemValueInteger("numNextprocessiD");
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
@@ -261,8 +243,6 @@ public class TestRulePlugin {
 
 	}
 
-	
-	
 	/**
 	 * This test verifies a combination of nextActivity and nextTask behavior.
 	 * 
@@ -283,15 +263,10 @@ public class TestRulePlugin {
 
 		int result = rulePlugin.run(adocumentContext, adocumentActivity);
 
-	
-		
-		int nextTask = adocumentActivity
-				.getItemValueInteger("numNextprocessiD");
-		
-		
+		int nextTask = adocumentActivity.getItemValueInteger("numNextprocessiD");
+
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
-		int followUp = adocumentActivity
-				.getItemValueInteger("numNextActivityID");
+		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
@@ -303,12 +278,6 @@ public class TestRulePlugin {
 
 	}
 
-	
-	
-	
-	
-	
-	
 	/**
 	 * This Test tests if we can evaluate any value provided in the script
 	 * 
@@ -325,14 +294,12 @@ public class TestRulePlugin {
 		adocumentContext.replaceItemValue("type", "workitem");
 
 		// set a business rule
-		String script = "if ('Anna'==txtname[0]) txtname[0]='Manfred';"
-				+ "var someData='Eddy';";
+		String script = "if ('Anna'==txtname[0]) txtname[0]='Manfred';" + "var someData='Eddy';";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		ScriptEngine engine = rulePlugin.evaluateBusinessRule(adocumentContext,
-				adocumentActivity);
+		ScriptEngine engine = rulePlugin.evaluateBusinessRule(adocumentContext, adocumentActivity);
 
 		Object[] result = rulePlugin.evaluateScriptObject(engine, "txtname");
 		if (result != null) {
@@ -357,8 +324,7 @@ public class TestRulePlugin {
 	public void simpleApprovalTest() throws ScriptException, PluginException {
 
 		// set a business rule
-		String script = " var followUp=null;" + " if (_amount_brutto[0]>5000)"
-				+ "    followUp=90;";
+		String script = " var followUp=null;" + " if (_amount_brutto[0]>5000)" + "    followUp=90;";
 		System.out.println("Script=" + script);
 
 		ItemCollection adocumentContext = new ItemCollection();
@@ -370,8 +336,7 @@ public class TestRulePlugin {
 		int result = rulePlugin.run(adocumentContext, adocumentActivity);
 
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
-		int followUp = adocumentActivity
-				.getItemValueInteger("numNextActivityID");
+		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
@@ -412,13 +377,11 @@ public class TestRulePlugin {
 	public void bigDecimalTest() throws ScriptException, PluginException {
 
 		// set a business rule
-		String script = " var followUp=null;"
-				+ " if (_amount_brutto[0]>5000.50)" + "    followUp=90;";
+		String script = " var followUp=null;" + " if (_amount_brutto[0]>5000.50)" + "    followUp=90;";
 		System.out.println("Script=" + script);
 
 		ItemCollection adocumentContext = new ItemCollection();
-		adocumentContext.replaceItemValue("_amount_brutto", new BigDecimal(
-				5000.51));
+		adocumentContext.replaceItemValue("_amount_brutto", new BigDecimal(5000.51));
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -426,8 +389,7 @@ public class TestRulePlugin {
 		int result = rulePlugin.run(adocumentContext, adocumentActivity);
 
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
-		int followUp = adocumentActivity
-				.getItemValueInteger("numNextActivityID");
+		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
@@ -448,31 +410,24 @@ public class TestRulePlugin {
 		ScriptEngine engine = mgr.getEngineByName("javascript");
 
 		// pass a Java collection to javascript
-		List<String> list1 = Arrays.asList("Homer", "Bart", "Marge", "Maggie",
-				"Lisa");
+		List<String> list1 = Arrays.asList("Homer", "Bart", "Marge", "Maggie", "Lisa");
 		engine.put("list1", list1);
-		
 
 		// Nashorn: check for importClass function and then load if missing ...
-		String jsNashorn=" if (typeof importClass != 'function') { load('nashorn:mozilla_compat.js');}";
-	
-		
-		String jsCode = "var index; " + "var values =list1.toArray();"
-				+ "print('*** Java object to Javascript');"
+		String jsNashorn = " if (typeof importClass != 'function') { load('nashorn:mozilla_compat.js');}";
+
+		String jsCode = "var index; " + "var values =list1.toArray();" + "print('*** Java object to Javascript');"
 				+ "for(index in values) {" + "  print(values[index]);" + "}";
 		try {
-			engine.eval(jsNashorn+jsCode);
+			engine.eval(jsNashorn + jsCode);
 		} catch (ScriptException se) {
 			se.printStackTrace();
 		}
 
-		
-		
 		// pass a collection from javascript to java
-		jsCode =  "importPackage(java.util);"
-				+ "var list2 = Arrays.asList(['Moe', 'Barney', 'Ned']); ";
+		jsCode = "importPackage(java.util);" + "var list2 = Arrays.asList(['Moe', 'Barney', 'Ned']); ";
 		try {
-			engine.eval(jsNashorn+jsCode);
+			engine.eval(jsNashorn + jsCode);
 		} catch (ScriptException se) {
 			se.printStackTrace();
 		}
@@ -494,8 +449,7 @@ public class TestRulePlugin {
 	 * @throws PluginException
 	 */
 	@Test
-	public void testSimpleActivityScript() throws ScriptException,
-			PluginException {
+	public void testSimpleActivityScript() throws ScriptException, PluginException {
 
 		ItemCollection adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtName", "Anna");
@@ -514,8 +468,7 @@ public class TestRulePlugin {
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
-		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 	}
 
@@ -527,8 +480,7 @@ public class TestRulePlugin {
 	 * @throws PluginException
 	 */
 	@Test
-	public void testSimpleWorkitemScript() throws ScriptException,
-			PluginException {
+	public void testSimpleWorkitemScript() throws ScriptException, PluginException {
 
 		ItemCollection adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtName", "Anna");
@@ -538,7 +490,8 @@ public class TestRulePlugin {
 		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
 
 		// set a business rule
-		String script = "var isValid =  1000==workitem.get('$processid')[0];";
+		// String script = "var isValid = 1000==workitem.get('$processid')[0];";
+		String script = "var isValid =  1000==workitem['$processid'][0];";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -547,8 +500,7 @@ public class TestRulePlugin {
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
-		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 	}
 
@@ -563,8 +515,7 @@ public class TestRulePlugin {
 	 * @throws PluginException
 	 */
 	@Test
-	public void testComplexWorkitemScript() throws ScriptException,
-			PluginException {
+	public void testComplexWorkitemScript() throws ScriptException, PluginException {
 
 		ItemCollection adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtName", "Anna");
@@ -579,7 +530,8 @@ public class TestRulePlugin {
 		// now add a manipulation!
 		script += " workitem.put('$processid',[99]);";
 		// add maniputlation to itemCollection
-		script += " activity.put('keymailenabled',['0']);";
+		// script += " activity.put('keymailenabled',['0']);";
+		script += " activity.keymailenabled=['0'];";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -588,18 +540,14 @@ public class TestRulePlugin {
 
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
-		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
-		Assert.assertEquals(1000,
-				adocumentContext.getItemValueInteger("$ProcessID"));
+		Assert.assertEquals(1000, adocumentContext.getItemValueInteger("$ProcessID"));
 
 		// test manipulation of activity
-		Assert.assertEquals("0",
-				adocumentActivity.getItemValueString("keyMailEnabled"));
+		Assert.assertEquals("0", adocumentActivity.getItemValueString("keyMailEnabled"));
 		// test for integer value
-		Assert.assertEquals(0,
-				adocumentActivity.getItemValueInteger("keyMailEnabled"));
+		Assert.assertEquals(0, adocumentActivity.getItemValueInteger("keyMailEnabled"));
 
 	}
 
@@ -617,32 +565,22 @@ public class TestRulePlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// 2) test true case
-		String script = " var refField1=\"_contact\";"
-				+ " var refField2=\"datdate\";"
-				+ " var isValid=true;"
-				+ " if (   ( workitem.get(refField2) == null)   ) {"
-				+ "     isValid=false;"
-				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';"
-				+ " }  ";
+		String script = " var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " var isValid=true;"
+				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     isValid=false;"
+				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 		// 2) test false case
 		adocumentContext = new ItemCollection();
 		adocumentActivity = new ItemCollection();
-		script = " var refField1=\"_contact\";"
-				+ " var refField2=\"datdate\";"
-				+ " var isValid=true;"
-				+ " if (   ( workitem.get(refField2) == null)   ) {"
-				+ "     isValid=false;"
-				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';"
-				+ " }  ";
+		script = " var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " var isValid=true;"
+				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     isValid=false;"
+				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		Assert.assertFalse(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertFalse(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 		// calendar test
 		adocumentContext = new ItemCollection();
@@ -652,17 +590,12 @@ public class TestRulePlugin {
 		adocumentActivity = new ItemCollection();
 
 		// 2a) test true case
-		script = " var refField1=\"_contact\";"
-				+ " var refField2=\"datdate\";"
-				+ " var isValid=true;"
-				+ " if (   ( workitem.get(refField2) == null)   ) {"
-				+ "     isValid=false;"
-				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';"
-				+ " }  ";
+		script = " var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " var isValid=true;"
+				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     isValid=false;"
+				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 	}
 
@@ -686,17 +619,14 @@ public class TestRulePlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// 2) test true case
-		String script = " var refField1=\"txtbetrag\";"
-				+ "		 var refField2=\"txtgutschift\";"
+		String script = " var refField1=\"txtbetrag\";" + "		 var refField2=\"txtgutschift\";"
 				+ "		 var isValid=true;"
 				+ "		 if ( ( workitem.get(refField1) == null || ''==workitem.get(refField1)[0]) || ( workitem.get(refField2) == null || ''==workitem.get(refField2)[0])) {"
-				+ "		     isValid=false;"
-				+ "		     var errorMessage='Bitte geben Sie den Betrag an! ';"
+				+ "		     isValid=false;" + "		     var errorMessage='Bitte geben Sie den Betrag an! ';"
 				+ "		  } ";
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 		adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtbetrag", "");
@@ -704,8 +634,7 @@ public class TestRulePlugin {
 		adocumentActivity = new ItemCollection();
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		Assert.assertFalse(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertFalse(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 		adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtbetrag", "55");
@@ -713,8 +642,7 @@ public class TestRulePlugin {
 		adocumentActivity = new ItemCollection();
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		Assert.assertFalse(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertFalse(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 		adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtbetrag", "");
@@ -722,8 +650,7 @@ public class TestRulePlugin {
 		adocumentActivity = new ItemCollection();
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		Assert.assertFalse(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertFalse(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 		adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtbetrag", "1,5");
@@ -731,8 +658,7 @@ public class TestRulePlugin {
 		adocumentActivity = new ItemCollection();
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-				adocumentActivity));
+		Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 
 	}
 
@@ -744,19 +670,15 @@ public class TestRulePlugin {
 	 * 
 	 */
 	@Test
-	public void testUndefinedErrorCode() throws ScriptException,
-			PluginException {
+	public void testUndefinedErrorCode() throws ScriptException, PluginException {
 		ItemCollection adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("_subject", "test");
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		System.out.println("testUndefineErroCode - test case 1:");
 		// 2) test undefined case
-		String script = " var isValid=true;"
-				+ " var errorCode,errorMessage;"
-				+ "refField='_contact';"
-				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {"
-				+ "     isValid=false;"
+		String script = " var isValid=true;" + " var errorCode,errorMessage;" + "refField='_contact';"
+				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {" + "     isValid=false;"
 				+ "     errorMessage='Please enter subject';" + " }";
 
 		adocumentActivity.replaceItemValue("txtBusinessRule", script);
@@ -778,14 +700,12 @@ public class TestRulePlugin {
 		}
 
 		System.out.println("testUndefineErroCode - test case 2:");
-		
+
 		// test the same case if errorCode is defined
 		// 2) test true case
-		script = " var isValid=true;"
-				+ " var errorCode,errorMessage;"
-				+ "refField='_contact';"
-				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {"
-				+ "     isValid=false;" + "     errorCode='SOME_ERROR';" + " }";
+		script = " var isValid=true;" + " var errorCode,errorMessage;" + "refField='_contact';"
+				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {" + "     isValid=false;"
+				+ "     errorCode='SOME_ERROR';" + " }";
 
 		adocumentActivity.replaceItemValue("txtBusinessRule", script);
 
@@ -798,10 +718,213 @@ public class TestRulePlugin {
 			System.out.println(pe.getMessage());
 			Assert.assertEquals(pe.getErrorCode(), "SOME_ERROR");
 			Object[] errorParams = pe.getErrorParameters();
-			Assert.assertTrue(errorParams==null);
+			Assert.assertTrue(errorParams == null);
 
 		}
 
 	}
 
+	/*
+	 * 
+	 * New Version 3.0 supporting result object
+	 * 
+	 */
+
+	/**
+	 * This test verifies the nextTask behavior. If set then keyFollowUp and
+	 * numnextprocessid should be overwritten by the RulePlugin
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testResultObjectNextTask() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		// set a business rule
+		String script = "var a=1.0;var b=2;var result={}; result.nextTask =a+b;";
+
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+
+		int nextTask = adocumentActivity.getItemValueInteger("numNextprocessiD");
+
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+
+		Assert.assertEquals(3, nextTask);
+
+	}
+
+	/**
+	 * This test verifies the follUp behavior. If set then keyFollowUp and
+	 * numNextActivity should be overwritten by the RulePlugin
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testResultObjectFollowUpActivity() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		// set a business rule
+		String script = "var a=1.0;var b=2;var result={}; result.followUp =a+b;";
+
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+
+		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
+		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
+
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+
+		Assert.assertEquals("1", sFllowUp);
+
+		Assert.assertEquals(followUp, 3);
+
+	}
+
+	/**
+	 * This test verifies a combination of nextActivity and nextTask behavior.
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testResultObjectFollowUpAndNextTask() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		// set a business rule
+		String script = "var a=1.0;var b=2;var result={}; result.nextTask =a+b;result.followUp =a+b;";
+
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+
+		int nextTask = adocumentActivity.getItemValueInteger("numNextprocessiD");
+
+		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
+		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
+
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+
+		Assert.assertEquals("1", sFllowUp);
+
+		Assert.assertEquals(followUp, 3);
+
+		Assert.assertEquals(3, nextTask);
+
+	}
+
+	/**
+	 * This test verifies setting a new value via the result object
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testResultObjectNewValue() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		// set a business rule
+		String script = "var a=1.0;var b=2;var result={}; result.some_item='Hello World';";
+
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+
+		String newdata = adocumentContext.getItemValueString("some_item");
+
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+
+		Assert.assertEquals("Hello World", newdata);
+
+	}
+	
+	
+	
+	/**
+	 * This test verifies setting a new value list via the result object
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testResultObjectNewValueList() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		// set a business rule
+		String script = "var a=1.0;var b=2;var result={}; result.some_item=[]; result.some_item[0]='Hello World'; result.some_item[1]='Hello Imixs';";
+
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+
+		List<String> newdata = adocumentContext.getItemValue("some_item");
+
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+
+		Assert.assertEquals(2, newdata.size());
+		Assert.assertEquals("Hello World", newdata.get(0));
+		Assert.assertEquals("Hello Imixs", newdata.get(1));
+
+	}
+	
+	
+	
+	
+	/**
+	 * This test verifies setting a new value list via the result object as an JSON object
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testResultObjectNewValueListAsJSON() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		// set a business rule
+		String script = "var a=1.0;var b=2;var result={'single_item':'Hello World', 'multi_item':['Hello World','Hello Imixs']};";
+
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+
+		
+		// test single value
+		String singelItem = adocumentContext.getItemValueString("single_item");
+		Assert.assertEquals("Hello World", singelItem);
+
+		
+		// test multivalue
+		List<String> multiItem = adocumentContext.getItemValue("multi_item");
+		Assert.assertEquals(2, multiItem.size());
+		Assert.assertEquals("Hello World", multiItem.get(0));
+		Assert.assertEquals("Hello Imixs", multiItem.get(1));
+
+
+	}
 }
