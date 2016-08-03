@@ -1,28 +1,100 @@
 #Rule Plugin 
-The Imixs RulePlugin is used to evaluate a business rule during the processing life cycle of an event. 
+The Imixs RulePlugin is used to evaluate business rules during the processing life cycle of an event. 
 
 _Plugin Class Name:_
 
     org.imixs.workflow.plugins.RulePlugin
 
-A business rule evaluated by the RulePlugin is configured using the [Imixs-BPMN modeler](../../modelling/activities.html). Business rules can be written in any script language supported by the JVM. E.g 'JavaScript or 'Groovy'. A Script has access to all basic item values from the current WorkItem as also from the Event definition holding the business rule.
+A business rule can be written in any script language supported by the JVM. E.g 'JavaScript or 'Groovy'. 
+The [Imixs-BPMN modeler](../../modelling/activities.html) provides an easy way to enter business rules for an event. 
 
-A script may not update values of the WorkItem but can modify the values of the Activity Entity. To access the item values from a script language, the RulePlugin provide the objects variables 'workitem' and 'activity'. The item values are stored in a map, holding the item name (key) and an object array of item values (value). See the following example showing how to get the item value of an item with the name 'txtname':
+<img src="../images/modelling/bpmn_screen_24.png"/>
+
+From the script language any basic item value contained by the processed workitem or the event definition can be accessed by local variables. This offers many possibilities to develop various business rules.
+A script can update properties of the event and create a result object to provide custom processing information and update the current workitem.
+
+To access a single item value from a script, the RulePlugin provide the following objects variables 
+
+ * workitem - provides all item values of the process instance
+ * activity - provides item values of the event triggered in the processing life cycle
+ * result - a result object returned by the script containing updated or new item values. 
  
+The following section explains how the objects can be access from a script.
+
+## Variable 'workitem'
+
+The variable 'workitem' provides the item values form the process instance to be processed by the workflow engine. The item values are stored in a JSON object, holding the item name (key) and an object array of item values (value). See the following example showing how to get the item value of an item with the name 'txtname':
+
 	 // test the first value of the workitem attribute 'txtname'
-	 var isValid = ('Anna'==workitem['txtname'][0]);
+	 if (workitem.txtname == 'car') {
+	     ....
+	 }
 
- 
-<strong>Note:</strong> It is not possible to manipulate the values from a workitem by script. But you can 
- modify values of the activity map object. These changes will be reflected back to the current ActivityEntity which can be used for further processing.
- 
-The next example shows how to change a single value of the ActivityEntity which  can be used for further processing:
+<strong>Note: </strong>The item name must always be written in lower case.
+
+A item can hold a single value or a value list which is stored in an array. The following example shows how to access the value list of the item 'namteam'
+
+	 // test the number of item values stored in the attribute 'namteam'
+	 if (workitem.namteam && workitem.namteam.length>0) {
+	 	...
+	 }
+	 // iterate over all item values of the attribute 'namteam'
+	 for (int i=0;i<workitem.namteam.length; i++) {
+	 	value=workitem.namteam[i];
+	 	....
+	 }
+
+## Variable 'activity'
+
+The variable 'activity' provides the item values of the event object currently processed by the workflow engine. The item values can be accessed the same way as from the 'workitem' object:
+
+	 // test the email flag
+	 if (activity.keymailenabled == '0') {
+	     // email enabled....
+	 }
+
+It is possible to change an item value of the activity object to influence the behavior of the event.
 
 
-	// set keymailenabled to 0
-	activity.keymailenabled=['0'];
+	// set keymailenabled to 1
+	activity.keymailenabled='0';
+	....
+
+
+All changes made to the activity object will be reflected back to the current workflow event which can be used for further processing.
  
-<strong>Note:</strong>All item names of the WorkItem and activity map need to be lower cased!
+<strong>Note: </strong>The item name must always be written in lower case.
+ 
+
+## Variable 'result'
+
+A business rule may also provide a result object with new or updated item values to be applied to the current process instance.
+See the following example which creats a new single item name 'some_item' with the value 'Hello World'.
+
+
+	var result={}; 
+	result.some_item='Hello World';
+ 
+The result variable have to be defined as an JSON object.
+A property of the result object may also contain multi values which have to stored in an array. See the following example:
+
+
+	var result={}; 
+	result.some_item=[]; 
+	result.some_item[0]='Hello World'; 
+	result.some_item[1]='Hello Imixs';"
+
+The result object can also be constructed with a JSON string:
+
+
+	var result={
+				'single_item':'Hello World', 
+				'multi_item':[
+								'Hello World',
+								'Hello Imixs'
+							  ]
+				}; 
+ 
  
  
 ##How to control the process flow 

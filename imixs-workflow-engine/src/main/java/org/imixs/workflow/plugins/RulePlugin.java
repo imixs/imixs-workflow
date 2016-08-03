@@ -135,19 +135,18 @@ public class RulePlugin extends AbstractPlugin {
 		if (engine != null) {
 
 			// get the optional result object
-			ItemCollection result = getResultObject(engine);
+			ItemCollection result = convertScriptVariableToItemCollection(engine, "result");
 
 			// first we test for the isValid variable
 			Boolean isValidActivity = true;
 			// first test result object
-			if (result.hasItem("isValid")) {
+			if (result != null && result.hasItem("isValid")) {
 				isValidActivity = result.getItemValueBoolean("isValid");
 				result.removeItem("isValid");
 			} else {
 				// if isValid is not provided by result then we look for a
-				// direct
-				// var definition (this is for backward compatibility of older
-				// scripts)
+				// direct var definition (this is for backward compatibility of
+				// older scripts)
 				isValidActivity = (Boolean) engine.get("isValid");
 			}
 
@@ -156,7 +155,7 @@ public class RulePlugin extends AbstractPlugin {
 				// test if a error code is provided!
 				String sErrorCode = VALIDATION_ERROR;
 				Object oErrorCode = null;
-				if (result.hasItem("errorCode")) {
+				if (result != null && result.hasItem("errorCode")) {
 					oErrorCode = result.getItemValueString("errorCode");
 					result.removeItem("errorCode");
 				} else {
@@ -172,11 +171,11 @@ public class RulePlugin extends AbstractPlugin {
 				// next test for errorMessage (this can be a string or an array
 				// of strings
 				Object[] params = null;
-				if (result.hasItem("errorMessage")) {
+				if (result != null && result.hasItem("errorMessage")) {
 					params = result.getItemValue("errorMessage").toArray();
 					result.removeItem("errorMessage");
 				} else {
-					params = this.evaluateScriptObject(engine, "errorMessage");
+					params = this.evaluateNativeScriptArray(engine, "errorMessage");
 				}
 
 				// finally we throw the Plugin Exception
@@ -187,15 +186,17 @@ public class RulePlugin extends AbstractPlugin {
 			// now test the followUp variable
 			Object followUp = null;
 			// first test result object
-			if (result.hasItem("followUp")) {
+			if (result != null && result.hasItem("followUp")) {
 				followUp = result.getItemValueString("followUp");
-			}
-			// if followUp is not provided by result then we look for a direct
-			// var definition (this is for backward compatibility of older
-			// scripts)
-			if (followUp == null) {
+				result.removeItem("followUp");
+			} else {
+				// if followUp is not provided by result then we look for a
+				// direct
+				// var definition (this is for backward compatibility of older
+				// scripts)
 				followUp = engine.get("followUp");
 			}
+
 			if (followUp != null) {
 				// try to get double value...
 				Double d = Double.valueOf(followUp.toString());
@@ -210,13 +211,13 @@ public class RulePlugin extends AbstractPlugin {
 			// now test the nextTask variable
 			Object nextTask = null;
 			// first test result object
-			if (result.hasItem("nextTask")) {
+			if (result != null && result.hasItem("nextTask")) {
 				nextTask = result.getItemValueString("nextTask");
-			}
-			// if nextTask is not provided by the result var, then we look for a
-			// direct var definition (this is for backward compatibility of
-			// older scripts)
-			if (nextTask == null) {
+				result.removeItem("nextTask");
+			} else {
+				// if nextTask is not provided by the result var, then we look
+				// for a direct var definition (this is for backward
+				// compatibility of older scripts)
 				nextTask = engine.get("nextTask");
 			}
 			if (nextTask != null) {
@@ -231,10 +232,12 @@ public class RulePlugin extends AbstractPlugin {
 
 			// if result has item values then we update now the current
 			// workitem iterate over all entries
-			for (Map.Entry<String, List<Object>> entry : result.getAllItems().entrySet()) {
-				String itemName = entry.getKey();
-				logger.fine("Update item '" + itemName + "'");
-				adocumentContext.replaceItemValue(itemName, entry.getValue());
+			if (result != null) {
+				for (Map.Entry<String, List<Object>> entry : result.getAllItems().entrySet()) {
+					String itemName = entry.getKey();
+					logger.fine("Update item '" + itemName + "'");
+					adocumentContext.replaceItemValue(itemName, entry.getValue());
+				}
 			}
 
 			// Finally update the Event object values optional provided from
@@ -266,6 +269,7 @@ public class RulePlugin extends AbstractPlugin {
 	 * @return
 	 * @throws PluginException
 	 */
+	/*
 	public boolean isValid(ItemCollection documentContext, ItemCollection activity) throws PluginException {
 
 		ScriptEngine engine = evaluateBusinessRule(documentContext, activity);
@@ -278,6 +282,7 @@ public class RulePlugin extends AbstractPlugin {
 		// no rule defined
 		return true;
 	}
+	*/
 
 	/**
 	 * This method evaluates the business rule defined by the provided activity.
@@ -314,17 +319,15 @@ public class RulePlugin extends AbstractPlugin {
 		// The following code is only for backward compatibility since version
 		// 3.1.9
 		// setup document data...
-		Map<String, List<Object>> itemList = documentContext.getAllItems();
-		for (Map.Entry<String, List<Object>> entry : itemList.entrySet()) {
-			String key = entry.getKey().toLowerCase();
-			List<?> value = (List<?>) entry.getValue();
-			// do only put basic values and not values starting the $
-			if (!key.startsWith("$") && value.size() > 0) {
-				if (isBasicObjectType(value.get(0).getClass())) {
-					engine.put(key, value.toArray());
-				}
-			}
-		}
+		/*
+		 * Map<String, List<Object>> itemList = documentContext.getAllItems();
+		 * for (Map.Entry<String, List<Object>> entry : itemList.entrySet()) {
+		 * String key = entry.getKey().toLowerCase(); List<?> value = (List<?>)
+		 * entry.getValue(); // do only put basic values and not values starting
+		 * the $ if (!key.startsWith("$") && value.size() > 0) { if
+		 * (isBasicObjectType(value.get(0).getClass())) { engine.put(key,
+		 * value.toArray()); } } }
+		 */
 
 		logger.fine("SCRIPT:" + script);
 		try {
@@ -339,17 +342,18 @@ public class RulePlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * This method evaluates script variable from the script engine. The method
-	 * returns a Object array with the variable value. If the javaScript var is
-	 * a String a new Array will be created. If the javaScript var is a
-	 * NativeArray the method tries to create a java List object.
+	 * This method evaluates a script variable as an native Script array from
+	 * the script engine. The method returns a Object array with the variable
+	 * values. If the javaScript var is a String a new Array will be created. If
+	 * the javaScript var is a NativeArray the method tries to create a java
+	 * List object.
 	 * 
 	 * See the following examples used by the Rhino JavaScript engine bundled
 	 * with Java 6. http://www.rgagnon.com/javadetails/java-0640.html
 	 * 
 	 * @return
 	 */
-	public Object[] evaluateScriptObject(ScriptEngine engine, String expression) {
+	public Object[] evaluateNativeScriptArray(ScriptEngine engine, String expression) {
 		Object[] params = null;
 
 		if (engine == null) {
@@ -426,7 +430,7 @@ public class RulePlugin extends AbstractPlugin {
 
 			String expression = "activity.get('" + entry.getKey() + "')";
 
-			Object[] oScript = evaluateScriptObject(engine, expression);
+			Object[] oScript = evaluateNativeScriptArray(engine, expression);
 			if (oScript == null) {
 				continue;
 			}
@@ -447,36 +451,55 @@ public class RulePlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * This method evaluates the existence of a object variable named 'result'.
-	 * The object is expected as an Map interface. Each property of the object
-	 * will update the current workitem.
+	 * This method converts a JSON variable by name into a ItemCollection. The
+	 * variable is expected as a JSON object holding single values or arrays in
+	 * the following format
+	 * 
+	 * <code>
+	 * 
+	 * {'single_item':'Hello World', 'multi_item':[ 'Hello World', 'Hello Imixs'
+	 * ] };
+	 * 
+	 * <code>
+	 * 
+	 * The converted object is expected as an Map interface.
 	 * 
 	 * @param engine
-	 * @return ItemCollection holding the item values of the result or an empty
-	 *         ItemCollection, if no result object exists.
+	 * @return ItemCollection holding the item values of the variable or null if
+	 *         no variable with the given name exists or the variable has not
+	 *         properties.
 	 * @throws ScriptException
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private ItemCollection getResultObject(ScriptEngine engine) {
-		ItemCollection result = new ItemCollection();
+	private ItemCollection convertScriptVariableToItemCollection(ScriptEngine engine, String variable) {
+		ItemCollection result = null;
 		// get result object from engine
-		Map<String, Object[]> scriptResult = (Map) engine.get("result");
-
+		Map<String, Object> scriptResult = (Map) engine.get(variable);
+		// test if the json object exists and has child objects...
 		if (scriptResult != null && scriptResult.entrySet().size() > 0) {
+			result = new ItemCollection();
+
 			// iterate over all entries
-			for (Map.Entry<String, Object[]> entry : scriptResult.entrySet()) {
+			for (Map.Entry<String, Object> entry : scriptResult.entrySet()) {
 
-				String expression = "result['" + entry.getKey() + "']";
-
-				Object[] oScript = evaluateScriptObject(engine, expression);
-				if (oScript == null) {
-					continue;
+				// test if the entry value is a single object or an array....
+				if (isBasicObjectType(entry.getValue().getClass())) {
+					// single value - build array....
+					logger.fine("adding " + variable + " property " + entry.getKey());
+					List<Object> list = new ArrayList();
+					list.add(entry.getValue());
+					result.replaceItemValue(entry.getKey(), list);
+				} else {
+					// test if array...
+					String expression = "result['" + entry.getKey() + "']";
+					Object[] oScript = evaluateNativeScriptArray(engine, expression);
+					if (oScript == null) {
+						continue;
+					}
+					logger.fine("adding " + variable + " property " + entry.getKey());
+					List<?> list = new ArrayList(Arrays.asList(oScript));
+					result.replaceItemValue(entry.getKey(), list);
 				}
-
-				logger.fine("adding result property " + entry.getKey());
-				List<?> list = new ArrayList(Arrays.asList(oScript));
-				result.replaceItemValue(entry.getKey(), list);
-
 			}
 		}
 		return result;
