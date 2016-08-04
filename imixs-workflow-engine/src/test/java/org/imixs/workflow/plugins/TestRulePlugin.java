@@ -10,14 +10,14 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import junit.framework.Assert;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.plugins.RulePlugin;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 /**
  * Test class for RulePlugin
@@ -910,40 +910,79 @@ public class TestRulePlugin {
 	}
 
 	/**
-	 * This test tests if an activity ItemCollection can be updated by the script
+	 * This test tests if the workitem object can be used as an JSON object -
+	 * using the nahorn javascript engine
+	 * 
+	 * This test is only runable on JDK-8
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Ignore
+	@Test
+	public void testAccessWorkitembyJSON() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("txtName", "Anna");
+		adocumentContext.replaceItemValue("$ProcessID", 1000);
+		// simulate an activity
+		ItemCollection adocumentActivity = new ItemCollection();
+		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
+
+		// set a business rule
+		String script = "";
+		script += "var isValid =  'Anna'==workitem.txtname[0];";
+	
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		adocumentActivity.replaceItemValue("txtBusinessRuleEngine", "rhino");
+
+		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+ 
+		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+
+		
+	}
+
+	/**
+	 * This test tests if an activity ItemCollection can be updated by the
+	 * script
 	 * 
 	 * @throws ScriptException
 	 * @throws PluginException
 	 */
 	@Test
 	public void testUpdateActivityByScript() throws ScriptException, PluginException {
-	
+
 		ItemCollection adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtName", "Anna");
 		adocumentContext.replaceItemValue("$ProcessID", 1000);
-		// simulate an activity 
-		ItemCollection adocumentActivity = new ItemCollection(); 
+		// simulate an activity
+		ItemCollection adocumentActivity = new ItemCollection();
 		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
-	
+
 		// set a business rule
 		String script = "";
 		script += "var isValid =  1000==workitem['$processid'][0];";
 		// now add a manipulation!
 		script += " activity['keymailenabled']=['0'];";
-	
+
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-	
+
+		adocumentActivity.replaceItemValue("txtBusinessRuleEngine", "nashorn");
+
 		int result = rulePlugin.run(adocumentContext, adocumentActivity);
-	
+
 		Assert.assertTrue(result == Plugin.PLUGIN_OK);
-	
+
 		Assert.assertEquals(1000, adocumentContext.getItemValueInteger("$ProcessID"));
-	
+
 		// test manipulation of activity
 		Assert.assertEquals("0", adocumentActivity.getItemValueString("keyMailEnabled"));
 		// test for integer value
 		Assert.assertEquals(0, adocumentActivity.getItemValueInteger("keyMailEnabled"));
-	
+
 	}
 }
