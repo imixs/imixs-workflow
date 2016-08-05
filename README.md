@@ -54,6 +54,10 @@ The [Imixs-Workflow Sample Application](https://github.com/imixs/imixs-jsf-examp
 
 <img src="screen_002.png" alt="Imixs-BPMN"  width="640"/>
 
+##Docker
+
+The Imixs-Workflow engine is also available as a Docker Image running Imixs-Workflow as a microservice. Find out more on [Docker Hub](https://hub.docker.com/r/imixs/workflow/).
+
 
 ##Joining the Project
 
