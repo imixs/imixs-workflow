@@ -9,7 +9,7 @@ To join the project follow us on [GitHub](https://github.com/imixs/imixs-workflo
 ##Imixs-BPMN
 Imixs-BPMN is an Eclipse modeling tool to design a business process based on the BPMN 2.0 standard. These models can be executed by the Imixs-Workflow engine. 
 
-<img src="screen_001.png" alt="Imixs-BPMN" style="width: 640px;"/>
+<img src="screen_001.png" alt="Imixs-BPMN" width="640"/>
 
 Read more about Imixs-BPMN on the [project home](http://www.imixs.org/modeler/). 
 
@@ -19,7 +19,7 @@ Imixs-Workflow provides a RESTful API to integrate the Imixs-Workflow engine int
 
 
 
-#How to Build
+##How to Build
 Imixs-Workflow can be build with Maven. All artifacts are provided in the [maven central repository](http://search.maven.org/#browse).
 
 This is an example how to add a maven dependency of imixs-workflow into your own project:
@@ -52,13 +52,13 @@ This is an example how to add a maven dependency of imixs-workflow into your own
 
 The [Imixs-Workflow Sample Application](https://github.com/imixs/imixs-jsf-example) demonstrates the Imixs-Workflow engine embedded into a simple JSF Web Application. The Sample Application can be used as a scaffold for custom projects.
 
-<img src="screen_002.png" alt="Imixs-BPMN" style="width: 640px;"/>
+<img src="screen_002.png" alt="Imixs-BPMN"  width="640"/>
 
 
-#Joining the Project
+##Joining the Project
 
 If you have any questions post them on [issue tracker](https://github.com/imixs/imixs-workflow/issues)
 
-#License
+##License
 
 Imixs-Workflow is free software, because we believe that an open exchange of experiences is fundamental for the development of useful software. All results of this project are provided under the GNU General Public License. Since the Imixs-Workflow engine runs as a separate process embedded into an application which is probably a separate work we do not see any violation of the GPL. Feel free to ask for concreate use cases. 
