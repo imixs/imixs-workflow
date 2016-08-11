@@ -166,3 +166,23 @@ The business rule and the used script language are defined in the following even
   * txtBusinessRuleEngine - defines the script language used by the Plugin.
  
 The rule plugin supports any Script Engine provided by the JVM. 
+
+
+
+##JDK-7 Support 
+
+With JDK-8 the new Script Engine 'Nashorn' was introduced. 
+Nashorn treats java.util.Map objects as JSON objects which allows to tread the Map keys as "properties". 
+So an item value of the script variables 'workitem' and 'activity' can be accessed as properties by its item name. 
+
+	var name=workitem.txtname[0];
+
+So as long as business rule is evaluated by Nashorn, the script engine will specially link the Map properties provided by the Imixs-Workflow engine and you can access the values by properties.  
+
+In case of using JDK-7 you need to use the getter method to access values in an equal way. See the following example:
+
+	var name=workitem.get('txtname')[0];
+
+<strong>Note:</strong> In case you are running Imixs-Workflow in JDK-7 you need to use the get-method instead of direct access to properties by the item name.
+
+Find further details details about Nashorn [here](https://wiki.openjdk.java.net/display/Nashorn/Nashorn+extensions#Nashornextensions-SpecialtreatmentofobjectsofspecificJavaclasses). 
