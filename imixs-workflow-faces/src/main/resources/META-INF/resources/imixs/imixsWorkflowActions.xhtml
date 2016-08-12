@@ -14,6 +14,8 @@
 </cc:interface>
 
 <cc:implementation>
+
+	
 	<ui:repeat value="#{cc.attrs.workflowController.events}"
 		var="event">
 		<h:commandButton action="#{cc.attrs.workflowController.process}"
@@ -29,8 +31,7 @@
 			</h:panelGroup>
 		</h:commandButton>
 	</ui:repeat>
-	<h:inputHidden value="#{cc.attrs.workflowController.workitem.item['$uniqueID']}"/>
-	<h:inputHidden value="#{cc.attrs.workflowController.workitem.item['$version']}"/>
+	
 </cc:implementation>
 
 
