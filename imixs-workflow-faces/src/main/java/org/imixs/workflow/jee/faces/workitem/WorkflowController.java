@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
+import javax.faces.event.ActionEvent;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -55,13 +56,12 @@ import org.imixs.workflow.jee.ejb.ModelService;
  * The workflowController bean is typically used in session scope.
  * 
  * @author rsoika
- * @version 0.0.2
+ * @version 2.0.0
  */
 public class WorkflowController extends DataController {
 
 	private static final long serialVersionUID = 1L;
 
-	private List<ItemCollection> activityList;
 
 	@EJB
 	private org.imixs.workflow.jee.ejb.ModelService modelService;
@@ -74,7 +74,7 @@ public class WorkflowController extends DataController {
 	public WorkflowController() {
 		super();
 		// set default type
-		setType("workitem");
+		//setType("workitem");
 	}
 
 	/**
@@ -90,14 +90,6 @@ public class WorkflowController extends DataController {
 		return workflowService;
 	}
 
-	/**
-	 * Updates the current workItem and reset the activityList.
-	 */
-	@Override
-	public void setWorkitem(ItemCollection aworkitem) {
-		super.setWorkitem(aworkitem);
-		activityList = null;
-	}
 
 	/**
 	 * This action method is used to initialize a new workitem. There for the
@@ -115,12 +107,15 @@ public class WorkflowController extends DataController {
 	 */
 	public String init(String action) throws ModelException {
 
+		if (workitem==null) {
+			return action;
+		}
+		
 		ItemCollection startProcessEntity = null;
 
-		activityList = null;
-
+	
 		// if not process id was set fetch the first start workitem
-		if (getWorkitem().getItemValueInteger("$ProcessID") <= 0) {
+		if (workitem.getItemValueInteger("$ProcessID") <= 0) {
 			// get ProcessEntities by version
 			List<ItemCollection> col;
 			col = modelService.getModelByWorkitem(getWorkitem()).findAllTasks();
@@ -131,26 +126,31 @@ public class WorkflowController extends DataController {
 		}
 
 		// find the ProcessEntity
-		startProcessEntity = modelService.getModelByWorkitem(getWorkitem()).getTask(getWorkitem().getItemValueInteger(WorkflowKernel.PROCESSID));
+		startProcessEntity = modelService.getModelByWorkitem(workitem).getTask(workitem.getItemValueInteger(WorkflowKernel.PROCESSID));
 
 		// ProcessEntity found?
 		if (startProcessEntity == null)
 			throw new InvalidAccessException(ModelException.INVALID_MODEL_ENTRY,
 					"unable to find ProcessEntity in model version "
-							+ getWorkitem().getItemValueString(WorkflowKernel.MODELVERSION) + " for ID="
-							+ getWorkitem().getItemValueInteger(WorkflowKernel.PROCESSID));
+							+ workitem.getItemValueString(WorkflowKernel.MODELVERSION) + " for ID="
+							+ workitem.getItemValueInteger(WorkflowKernel.PROCESSID));
 
 		// update processId and WriteAccess
-		getWorkitem().replaceItemValue("$WriteAccess", getWorkitem().getItemValue("namCreator"));
+		workitem.replaceItemValue("$WriteAccess", workitem.getItemValue("namCreator"));
 
 		// assign WorkflowGroup and editor
-		getWorkitem().replaceItemValue("txtworkflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
-		getWorkitem().replaceItemValue("txtworkflowStatus", startProcessEntity.getItemValueString("txtname"));
-		getWorkitem().replaceItemValue("txtWorkflowImageURL", startProcessEntity.getItemValueString("txtimageurl"));
+		workitem.replaceItemValue("txtworkflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
+		workitem.replaceItemValue("txtworkflowStatus", startProcessEntity.getItemValueString("txtname"));
+		workitem.replaceItemValue("txtWorkflowImageURL", startProcessEntity.getItemValueString("txtimageurl"));
 
-		getWorkitem().replaceItemValue("txtWorkflowEditorid", startProcessEntity.getItemValueString("txteditorid"));
+		workitem.replaceItemValue("txtWorkflowEditorid", startProcessEntity.getItemValueString("txteditorid"));
 
 		return action;
+	}
+	
+	public void recoverWorkitemState(ActionEvent event) {
+	    // ...
+		logger.info("recover state...");
 	}
 
 	/**
@@ -175,22 +175,45 @@ public class WorkflowController extends DataController {
 	 * @throws PluginException
 	 */
 	public String process() throws AccessDeniedException, ProcessingErrorException, PluginException {
+		if (workitem==null) {
+			logger.warning("Unable to process workitem == null!");
+			return null;
+		}
+		
 		// clear last action
 		workitem.replaceItemValue("action", "");
 
 		// process workItem now...
 		workitem = this.getWorkflowService().processWorkItem(workitem);
 
-		// reset the activity list!
-		// Never call setWorkitem because this affects behavior of subclasses!
-		activityList = null;
-
+		
 		// test if the property 'action' is provided
 		String action = workitem.getItemValueString("action");
 		if ("".equals(action))
 			// get default workflowResult message
 			action = workitem.getItemValueString("txtworkflowresultmessage");
 		return ("".equals(action) ? null : action);
+	}
+
+	
+	/**
+	 * This method processes the current workItem with the provided activityID.
+	 * The method can be used as an actionListener. 
+	 * 
+	 * @param id
+	 *            - activityID to be processed
+	 * @param resetWorkitem
+	 *            - boolean indicates if the workitem should be reset
+	 * @throws PluginException
+	 * @see process()
+	 */
+	public String process(int id, boolean resetWorkitem)
+			throws AccessDeniedException, ProcessingErrorException, PluginException {
+		// update the property $ActivityID
+		this.getWorkitem().replaceItemValue("$ActivityID", id);
+		String result = process();
+
+		return result;
 	}
 
 	/**
@@ -208,59 +231,7 @@ public class WorkflowController extends DataController {
 		return process(id, false);
 	}
 
-	/**
-	 * This method processes the current workItem with the provided activityID.
-	 * The method can be used as an actionListener. If the Boolean 'reset' is
-	 * true then the controller will be reset after process.
-	 * 
-	 * @param id
-	 *            - activityID to be processed
-	 * @param resetWorkitem
-	 *            - boolean indicates if the workitem should be reset
-	 * @throws PluginException
-	 * @see process()
-	 */
-	public String process(int id, boolean resetWorkitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException {
-		// update the property $ActivityID
-		this.getWorkitem().replaceItemValue("$ActivityID", id);
-		String result = process();
-
-		if (resetWorkitem)
-			reset(null);
-
-		return result;
-	}
-
-	/**
-	 * This method overwrite the default behavior and processes the current
-	 * workItem.
-	 */
-	@Override
-	public String save(String action) throws AccessDeniedException {
-		// process workItem.
-		try {
-			return process();
-		} catch (ProcessingErrorException e) {
-			throw new InvalidAccessException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
-		} catch (PluginException e) {
-			throw new InvalidAccessException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
-		}
-	}
-
-	/**
-	 * returns the last computed workflow resultmessage. The property
-	 * 'txtworkflowresultmessage' is computed by the ResultPlugin.
-	 * 
-	 * If no txtworkflowresultmessage is found an empty string will be returned
-	 * 
-	 * @return - the action result
-	 */
-	public String getAction() {
-		String action = getWorkitem().getItemValueString("txtworkflowresultmessage");
-		return ("".equals(action) ? null : action);
-	}
-
+	
 	/**
 	 * returns a arrayList of Activities to the corresponding processiD of the
 	 * current WorkItem. The Method returns the activities corresponding to the
@@ -269,10 +240,7 @@ public class WorkflowController extends DataController {
 	 * @return
 	 */
 	public List<ItemCollection> getEvents() {
-		if (activityList != null)
-			return activityList;
-
-		activityList = new ArrayList<ItemCollection>();
+		List<ItemCollection> activityList = new ArrayList<ItemCollection>();
 
 		if (getWorkitem() == null)
 			return activityList;
@@ -286,6 +254,8 @@ public class WorkflowController extends DataController {
 
 		return activityList;
 	}
+	
+
 
 	/**
 	 * Returns true if the current workItem was processed before by the

@@ -29,7 +29,6 @@ package org.imixs.workflow.jee.faces.workitem;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -60,7 +59,7 @@ public class DataController implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	ItemCollection workitem = null;
-	private String type;
+	private String defaultType;
 
 	@EJB
 	org.imixs.workflow.jee.ejb.EntityService entityService;
@@ -68,7 +67,25 @@ public class DataController implements Serializable {
 
 	public DataController() {
 		super();
-		setType("workitem");
+		setDefaultType("workitem");
+	}
+
+	/**
+	 * This method returns the Default 'type' attribute of the local workitem.
+	 */
+	public String getDefaultType() {
+		return defaultType;
+	}
+
+	/**
+	 * This method set the default 'type' attribute of the local workitem.
+	 * 
+	 * Subclasses may overwrite the type
+	 * 
+	 * @param type
+	 */
+	public void setDefaultType(String type) {
+		this.defaultType = type;
 	}
 
 	/**
@@ -81,46 +98,22 @@ public class DataController implements Serializable {
 	}
 
 	/**
-	 * returns the $uniqueID of the current workitem
-	 * 
-	 * @return
-	 */
-	public String getID() {
-		return getWorkitem().getItemValueString("$uniqueid");
-	}
-
-	/**
-	 * set the value for the attribute 'type' of a workitem to be generated or
-	 * search by this controller
-	 */
-	public String getType() {
-		return type;
-	}
-
-	/**
-	 * defines the type attribute of a workitem to be generated or search by
-	 * this controller
-	 * 
-	 * Subclasses may overwrite the type
-	 * 
-	 * @param type
-	 */
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	/**
-	 * Returns the current workItem.
+	 * Returns the current workItem. If no workitem is defined the method
+	 * Instantiates a empty ItemCollection.
 	 * 
 	 * @return - current workItem or null if not set
 	 */
 	public ItemCollection getWorkitem() {
-		// do not initialize an empty workItem here if null!
+		// do initialize an empty workItem here if null
+		if (workitem == null) {
+			workitem = new ItemCollection();
+			workitem.replaceItemValue("type", getDefaultType());
+		}
 		return workitem;
 	}
 
 	/**
-	 * Updates the current worktItem
+	 * Set the current worktItem
 	 * 
 	 * @param workitem
 	 *            - new reference or null to clear the current workItem.
@@ -130,25 +123,36 @@ public class DataController implements Serializable {
 	}
 
 	/**
-	 * This actionListener method creates an empty workItem with the default
-	 * type. PropertyActionListener can be used to initialize the new workItem.
-	 * This method should be overwritten to add additional Business logic here.
+	 * This method creates an empty workItem with the default type property and
+	 * the property 'namCreator' holding the current RemoteUser This method
+	 * should be overwritten to add additional Business logic here.
 	 * 
 	 */
-	public void create(ActionEvent event) {
-		ItemCollection newWorkitem = new ItemCollection();
+	public void create() {
+		reset();
+		// initialize new ItemCollection
+		getWorkitem();
 		FacesContext context = FacesContext.getCurrentInstance();
 		ExternalContext externalContext = context.getExternalContext();
 		String sUser = externalContext.getRemoteUser();
-		newWorkitem.replaceItemValue("namCreator", sUser);
-		newWorkitem.replaceItemValue("type", getType());
-		setWorkitem(newWorkitem);
+		workitem.replaceItemValue("namCreator", sUser);
 		logger.fine("ItemCollection created");
 	}
 
 	/**
-	 * This actionListener method saves the current workItem. Method should be
-	 * overwritten to add additional Business logic here.
+	 * This actionListener method creates an empty workItem with the default
+	 * type property and the property 'namCreator' holding the current
+	 * RemoteUser This method should be overwritten to add additional Business
+	 * logic here.
+	 * 
+	 */
+	public void create(ActionEvent event) {
+		create();
+	}
+
+	/**
+	 * This method saves the current workItem. This method can be overwritten to
+	 * add additional Business logic.
 	 * 
 	 * @throws AccessDeniedException
 	 *             - if user has insufficient access rights.
@@ -178,34 +182,29 @@ public class DataController implements Serializable {
 	 * Reset current workItem to null
 	 */
 	public void reset() {
-		setWorkitem(null);
+		this.workitem = null;
 	}
 
 	/**
-	 * ActionListener to reset the current workItem to null
-	 * 
-	 * @return
-	 */
-	public void reset(ActionEvent event) {
-		reset();
-	}
-
-	/**
-	 * ActionListener method to load a workItem from the backend. The method can
-	 * be called by dataTables to load a workItem for editing
+	 * This method loads the current workItem from the EntityService.
 	 * 
 	 * @param uniqueID
 	 *            - $uniqueId of the workItem to be loaded
 	 */
 	public void load(String uniqueID) {
-		setWorkitem(getEntityService().load(uniqueID));
-		logger.fine("ItemCollection '" + uniqueID + "' loaded");
+		workitem = getEntityService().load(uniqueID);
+		if (workitem != null) {
+			logger.fine("workitem '" + uniqueID + "' loaded");
+		} else {
+			logger.fine("workitem '" + uniqueID + "' not found (null)");
+		}
 	}
 
 	/**
-	 * Action method to load a workItem from the backend and returns an action
-	 * result. The method expects the result action as a parameter. The method
-	 * can be called by dataTables to load a workItem for editing
+	 * This Action method loads the current workItem from the EntityService and
+	 * returns an action result. The method expects the result action as a
+	 * parameter. The method can be called by dataTables to load a workItem for
+	 * editing
 	 * 
 	 * @param uniqueID
 	 *            - $uniqueId of the workItem to be loaded
@@ -219,8 +218,27 @@ public class DataController implements Serializable {
 	}
 
 	/**
-	 * This action method removes the current selected workitem from a view. The
-	 * Method also deletes also all child workitems recursive
+	 * This action method deletes a workitem. The Method also deletes also all
+	 * child workitems recursive
+	 * 
+	 * @param currentSelection
+	 *            - workitem to be deleted
+	 * @throws AccessDeniedException
+	 */
+	public void delete(String uniqueID) throws AccessDeniedException {
+		ItemCollection _workitem = getEntityService().load(uniqueID);
+		if (_workitem != null) {
+			entityService.remove(_workitem);
+			setWorkitem(null);
+			logger.fine("workitem " + uniqueID + " deleted");
+		} else {
+			logger.fine("workitem '" + uniqueID + "' not found (null)");
+		}
+	}
+
+	/**
+	 * This action method deletes a workitem and returns an action result. The
+	 * method expects the result action as a parameter.
 	 * 
 	 * @param currentSelection
 	 *            - workitem to be deleted
@@ -229,62 +247,9 @@ public class DataController implements Serializable {
 	 * @return action - action event
 	 * @throws AccessDeniedException
 	 */
-	public String delete(String uniqueID, String action)
-			throws AccessDeniedException {
+	public String delete(String uniqueID, String action) throws AccessDeniedException {
 		delete(uniqueID);
 		return action;
-
-	}
-
-	/**
-	 * This actionListener method removes the current selected workitem from a
-	 * view. The Method also deletes also all child workitems recursive
-	 * 
-	 * @param currentSelection
-	 *            - workitem to be deleted
-	 * @throws AccessDeniedException
-	 */
-	public void delete(String uniqueID) throws AccessDeniedException {
-		// if nothing found - then try to cacth current workitem
-		ItemCollection currentSelection = getEntityService().load(uniqueID);
-		if (currentSelection != null) {
-			deleteChilds(currentSelection);
-			entityService.remove(currentSelection);
-		}
-		setWorkitem(null);
-		logger.fine("ItemCollection " + uniqueID + " delted");
-	}
-
-	/**
-	 * This actionListener method deletes all child workItems of a workItem -
-	 * also childs from child workItems will be deleted.
-	 * 
-	 * @param parent
-	 */
-	public void deleteChilds(ItemCollection parent) {
-		try {
-			String id = parent.getItemValueString("$uniqueid");
-
-			String sQuery = null;
-			sQuery = "SELECT";
-			sQuery += " wi FROM Entity as wi JOIN wi.textItems as t "
-					+ "WHERE ";
-			sQuery += " t.itemName = '$uniqueidref' and t.itemValue = '" + id
-					+ "'";
-
-			Collection<ItemCollection> col = entityService.findAllEntities(
-					sQuery, 0, -1);
-
-			for (ItemCollection aworkitem : col) {
-				// recursive method call
-				deleteChilds(aworkitem);
-				// remove workitem
-				entityService.remove(aworkitem);
-			}
-			logger.fine("childs for: " + id + " deleted");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 
 	}
 
@@ -312,21 +277,18 @@ public class DataController implements Serializable {
 	 * @param messageKey
 	 * @param param
 	 */
-	public void addMessage(String ressourceBundleName, String messageKey,
-			Object param) {
+	public void addMessage(String ressourceBundleName, String messageKey, Object param) {
 		FacesContext context = FacesContext.getCurrentInstance();
 		Locale locale = context.getViewRoot().getLocale();
 
-		ResourceBundle rb = ResourceBundle.getBundle(ressourceBundleName,
-				locale);
+		ResourceBundle rb = ResourceBundle.getBundle(ressourceBundleName, locale);
 		String msgPattern = rb.getString(messageKey);
 		String msg = msgPattern;
 		if (param != null) {
 			Object[] params = { param };
 			msg = MessageFormat.format(msgPattern, params);
 		}
-		FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-				msg, msg);
+		FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);
 		context.addMessage(null, facesMsg);
 	}
 
