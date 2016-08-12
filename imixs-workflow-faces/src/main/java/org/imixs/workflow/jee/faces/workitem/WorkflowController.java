@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
-import javax.faces.event.ActionEvent;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -62,7 +61,6 @@ public class WorkflowController extends DataController {
 
 	private static final long serialVersionUID = 1L;
 
-
 	@EJB
 	private org.imixs.workflow.jee.ejb.ModelService modelService;
 
@@ -73,8 +71,6 @@ public class WorkflowController extends DataController {
 
 	public WorkflowController() {
 		super();
-		// set default type
-		//setType("workitem");
 	}
 
 	/**
@@ -90,43 +86,40 @@ public class WorkflowController extends DataController {
 		return workflowService;
 	}
 
-
 	/**
-	 * This action method is used to initialize a new workitem. There for the
-	 * method loads the initial ProcessEntity and updates the Workflow
-	 * attributes WorfklowGroup and EditorId.
-	 * 
-	 * if the new workItem has no $modelversion the method set a default model
-	 * version (computed by the latest version and the first processEntiy).
-	 * 
+	 * This action method is used to initialize a new workitem with the inital
+	 * values of the assigend workflow task. The method updates the Workflow
+	 * attributes '$WriteAccess','txtworkflowgroup', 'txtworkflowStatus',
+	 * 'txtWorkflowImageURL' and 'txtWorkflowEditorid'.
 	 * 
 	 * @param action
 	 *            - the action returned by this method
 	 * @return - action
 	 * @throws ModelException
+	 *             is thrown in case not valid worklfow task if defined by the
+	 *             current model.
 	 */
 	public String init(String action) throws ModelException {
 
-		if (workitem==null) {
+		if (workitem == null) {
 			return action;
 		}
-		
 		ItemCollection startProcessEntity = null;
-
-	
 		// if not process id was set fetch the first start workitem
-		if (workitem.getItemValueInteger("$ProcessID") <= 0) {
+		if (workitem.getItemValueInteger(WorkflowKernel.PROCESSID) <= 0) {
 			// get ProcessEntities by version
 			List<ItemCollection> col;
 			col = modelService.getModelByWorkitem(getWorkitem()).findAllTasks();
 			if (!col.isEmpty()) {
 				startProcessEntity = col.iterator().next();
-				getWorkitem().replaceItemValue("$ProcessID", startProcessEntity.getItemValueInteger("numProcessID"));
+				getWorkitem().replaceItemValue(WorkflowKernel.PROCESSID,
+						startProcessEntity.getItemValueInteger("numProcessID"));
 			}
 		}
 
 		// find the ProcessEntity
-		startProcessEntity = modelService.getModelByWorkitem(workitem).getTask(workitem.getItemValueInteger(WorkflowKernel.PROCESSID));
+		startProcessEntity = modelService.getModelByWorkitem(workitem)
+				.getTask(workitem.getItemValueInteger(WorkflowKernel.PROCESSID));
 
 		// ProcessEntity found?
 		if (startProcessEntity == null)
@@ -142,15 +135,9 @@ public class WorkflowController extends DataController {
 		workitem.replaceItemValue("txtworkflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
 		workitem.replaceItemValue("txtworkflowStatus", startProcessEntity.getItemValueString("txtname"));
 		workitem.replaceItemValue("txtWorkflowImageURL", startProcessEntity.getItemValueString("txtimageurl"));
-
 		workitem.replaceItemValue("txtWorkflowEditorid", startProcessEntity.getItemValueString("txteditorid"));
 
 		return action;
-	}
-	
-	public void recoverWorkitemState(ActionEvent event) {
-	    // ...
-		logger.info("recover state...");
 	}
 
 	/**
@@ -175,18 +162,17 @@ public class WorkflowController extends DataController {
 	 * @throws PluginException
 	 */
 	public String process() throws AccessDeniedException, ProcessingErrorException, PluginException {
-		if (workitem==null) {
+		if (workitem == null) {
 			logger.warning("Unable to process workitem == null!");
 			return null;
 		}
-		
+
 		// clear last action
 		workitem.replaceItemValue("action", "");
 
 		// process workItem now...
 		workitem = this.getWorkflowService().processWorkItem(workitem);
 
-		
 		// test if the property 'action' is provided
 		String action = workitem.getItemValueString("action");
 		if ("".equals(action))
@@ -195,10 +181,9 @@ public class WorkflowController extends DataController {
 		return ("".equals(action) ? null : action);
 	}
 
-	
 	/**
 	 * This method processes the current workItem with the provided activityID.
-	 * The method can be used as an actionListener. 
+	 * The method can be used as an actionListener.
 	 * 
 	 * @param id
 	 *            - activityID to be processed
@@ -231,11 +216,9 @@ public class WorkflowController extends DataController {
 		return process(id, false);
 	}
 
-	
 	/**
-	 * returns a arrayList of Activities to the corresponding processiD of the
-	 * current WorkItem. The Method returns the activities corresponding to the
-	 * workItems modelVersionID.
+	 * This method returns a List of workflow events assigned to the
+	 * corresponding '$processid' and '$modelversion' of the current WorkItem.
 	 * 
 	 * @return
 	 */
@@ -254,11 +237,9 @@ public class WorkflowController extends DataController {
 
 		return activityList;
 	}
-	
-
 
 	/**
-	 * Returns true if the current workItem was processed before by the
+	 * Returns true if the current workItem was never processed before by the
 	 * workflowService. This is identified by the property 'numLastActivityID'
 	 * which is computed by the WorkflowKernel.
 	 * 

@@ -108,6 +108,7 @@ public class DataController implements Serializable {
 		if (workitem == null) {
 			workitem = new ItemCollection();
 			workitem.replaceItemValue("type", getDefaultType());
+			setWorkitem(workitem);
 		}
 		return workitem;
 	}
@@ -192,7 +193,8 @@ public class DataController implements Serializable {
 	 *            - $uniqueId of the workItem to be loaded
 	 */
 	public void load(String uniqueID) {
-		workitem = getEntityService().load(uniqueID);
+		reset();
+		setWorkitem(getEntityService().load(uniqueID));
 		if (workitem != null) {
 			logger.fine("workitem '" + uniqueID + "' loaded");
 		} else {
