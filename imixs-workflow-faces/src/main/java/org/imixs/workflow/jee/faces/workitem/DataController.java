@@ -256,16 +256,13 @@ public class DataController implements Serializable {
 	}
 
 	/**
-	 * indicates if a workitem was processed before by the workflowService
+	 * Returns true if the current workitem was never saved before by the
+	 * EntityService. This is indicated by the property '$uniqueid'.
 	 * 
 	 * @return
 	 */
 	public boolean isNewWorkitem() {
-		try {
-			return (!getWorkitem().hasItem("$unqiueid"));
-		} catch (Exception e) {
-			return true;
-		}
+		return (getWorkitem().getUniqueID().isEmpty());
 	}
 
 	/**

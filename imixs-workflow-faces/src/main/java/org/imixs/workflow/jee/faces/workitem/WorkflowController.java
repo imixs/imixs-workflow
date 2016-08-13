@@ -238,20 +238,5 @@ public class WorkflowController extends DataController {
 		return activityList;
 	}
 
-	/**
-	 * Returns true if the current workItem was never processed before by the
-	 * workflowService. This is identified by the property 'numLastActivityID'
-	 * which is computed by the WorkflowKernel.
-	 * 
-	 * @return true if the current workItem was already processed by the
-	 *         WorkflowKernel
-	 */
-	public boolean isNewWorkitem() {
-		try {
-			return (!getWorkitem().hasItem("numlastactivityid"));
-		} catch (Exception e) {
-			return true;
-		}
-	}
 
 }
