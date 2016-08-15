@@ -29,6 +29,7 @@ package org.imixs.workflow.jee.faces.workitem;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -256,13 +257,16 @@ public class DataController implements Serializable {
 	}
 
 	/**
-	 * Returns true if the current workitem was never saved before by the
-	 * EntityService. This is indicated by the property '$uniqueid'.
+	 * Returns true if the current entity was never saved before by the
+	 * EntityService. This is indicated by the time difference of $modified and
+	 * $created.
 	 * 
 	 * @return
 	 */
 	public boolean isNewWorkitem() {
-		return (getWorkitem().getUniqueID().isEmpty());
+		Date created = getWorkitem().getItemValueDate("$created");
+		Date modified = getWorkitem().getItemValueDate("$modified");
+		return (modified == null || created == null || modified.compareTo(created) == 0);
 	}
 
 	/**
