@@ -113,7 +113,7 @@ public class WorkflowKernel {
 
 		if ((pluginClass != null) && (!"".equals(pluginClass))) {
 			if (logger.isLoggable(Level.FINE))
-				logger.info("[WorkflowKernel] register plugin class: " + pluginClass + "...");
+				logger.info("register plugin class: " + pluginClass + "...");
 
 			Class<?> clazz = null;
 			try {
@@ -123,13 +123,13 @@ public class WorkflowKernel {
 
 			} catch (ClassNotFoundException e) {
 				throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_NOT_CREATEABLE,
-						"[WorkflowKernel] Could not register plugin: " + pluginClass + " reason: " + e.toString(), e);
+						"unable to register plugin: " + pluginClass + " - reason: " + e.toString(), e);
 			} catch (InstantiationException e) {
 				throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_NOT_CREATEABLE,
-						"[WorkflowKernel] Could not register plugin: " + pluginClass + " reason: " + e.toString(), e);
+						"unable to register plugin: " + pluginClass + " - reason: " + e.toString(), e);
 			} catch (IllegalAccessException e) {
 				throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_NOT_CREATEABLE,
-						"[WorkflowKernel] Could not register plugin: " + pluginClass + " reason: " + e.toString(), e);
+						"unable to register plugin: " + pluginClass + " - reason: " + e.toString(), e);
 			}
 
 		}
@@ -144,7 +144,7 @@ public class WorkflowKernel {
 	 *             if plugin not registered
 	 */
 	public void unregisterPlugin(String pluginClass) throws PluginException {
-		logger.fine("[WorkflowKernel] unregisterPlugin " + pluginClass);
+		logger.fine("unregisterPlugin " + pluginClass);
 		for (Plugin plugin : vectorPlugins) {
 			if (plugin.getClass().getName().equals(pluginClass)) {
 				vectorPlugins.remove(plugin);
@@ -154,7 +154,7 @@ public class WorkflowKernel {
 
 		// throw PluginExeption
 		throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_NOT_REGISTERED,
-				"[WorkflowKernel] Could not unregister plugin: " + pluginClass + " reason: ");
+				"unable to unregister plugin: " + pluginClass + " - reason: ");
 	}
 
 	/**
@@ -163,7 +163,7 @@ public class WorkflowKernel {
 	 * @param pluginClass
 	 */
 	public void unregisterAllPlugins() {
-		logger.fine("[WorkflowKernel] unregisterAllPlugins");
+		logger.fine("unregisterAllPlugins");
 		vectorPlugins = new Vector<Plugin>();
 	}
 
@@ -183,19 +183,19 @@ public class WorkflowKernel {
 		// check document context
 		if (workitem == null)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_WORKITEM,
-					"[WorkflowKernel] processing error: workitem is null");
+					"processing error: workitem is null");
 
 		// check processID
 		if (workitem.getItemValueInteger(PROCESSID) <= 0)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_PROCESSID,
-					"[WorkflowKernel] processing error: $processid undefined ("
+					"processing error: $processid undefined ("
 							+ workitem.getItemValueInteger(PROCESSID) + ")");
 
 		// check activityid
 
 		if (workitem.getItemValueInteger(ACTIVITYID) <= 0)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_ACTIVITYID,
-					"[WorkflowKernel] processing error: $activityid undefined ("
+					"processing error: $activityid undefined ("
 							+ workitem.getItemValueInteger(ACTIVITYID) + ")");
 
 		// Check if $UniqueID is available
@@ -250,7 +250,7 @@ public class WorkflowKernel {
 
 				if (iNextID > 0) {
 					// load activity
-					logger.info("[WorkflowKernel] processing=" + documentContext.getItemValueString(UNIQUEID)
+					logger.info("processing=" + documentContext.getItemValueString(UNIQUEID)
 							+ " -> loading next activityID = " + iNextID);
 					vActivityList.remove(0);
 					// update document context
@@ -297,13 +297,13 @@ public class WorkflowKernel {
 	private void processActivity() throws PluginException {
 
 		// log the general processing message
-		String msg = "[WorkflowKernel] processing=" + documentContext.getItemValueString(UNIQUEID) + ", MODELVERSION="
+		String msg = "processing=" + documentContext.getItemValueString(UNIQUEID) + ", MODELVERSION="
 				+ documentContext.getItemValueString(MODELVERSION) + ", $processid="
 				+ documentContext.getItemValueInteger(PROCESSID) + ", $activityid="
 				+ documentContext.getItemValueInteger(ACTIVITYID);
 
 		if (ctx == null) {
-			logger.warning("[WorkflowKernel] no WorkflowContext defined!");
+			logger.warning("no WorkflowContext defined!");
 		}
 		logger.info(msg);
 
@@ -316,7 +316,7 @@ public class WorkflowKernel {
 
 		if (iStatus == Plugin.PLUGIN_ERROR) {
 			throw new PluginException(WorkflowKernel.class.getSimpleName(), UNDEFINED_PLUGIN_ERROR,
-					"[WorkflowKernel] Error in Plugin detected.");
+					"PLUGIN_ERROR detected!");
 		}
 
 		writeLog();
@@ -328,7 +328,7 @@ public class WorkflowKernel {
 		/*** get Next Task **/
 		int iNewProcessID = documentActivity.getItemValueInteger("numnextprocessid");
 		if (logger.isLoggable(Level.FINE))
-			logger.info("[WorkflowKernel] next $processid=" + iNewProcessID + "");
+			logger.info("next $processid=" + iNewProcessID + "");
 
 		// NextProcessID will only be set if NextTask>0
 		if (iNewProcessID > 0) {
@@ -372,7 +372,7 @@ public class WorkflowKernel {
 
 		documentContext.replaceItemValue(ACTIVITYIDLIST, vActivityList);
 		if (logger.isLoggable(Level.FINE))
-			logger.info("[WorkflowKernel]  append new Activity ID=" + aID);
+			logger.info("  append new Activity ID=" + aID);
 
 	}
 
@@ -463,17 +463,17 @@ public class WorkflowKernel {
 
 		if (documentActivity == null)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), ACTIVITY_NOT_FOUND,
-					"[WorkflowKernel] model entry " + aProcessID + "." + aActivityID + " not found for model version '"
+					"[loadEvent] model entry " + aProcessID + "." + aActivityID + " not found for model version '"
 							+ version + "'");
 
 		if (logger.isLoggable(Level.FINE))
-			logger.info("[WorkflowKernel] WorkflowActivity: " + aProcessID + "." + aActivityID + " loaded successful");
+			logger.info("[loadEvent] WorkflowActivity: " + aProcessID + "." + aActivityID + " loaded successful");
 
 		// Check for loop in edge history
 		if (vectorEdgeHistory != null) {
 			if (vectorEdgeHistory.indexOf((aProcessID + "." + aActivityID)) != -1)
 				throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MODEL_ERROR,
-						"[WorkflowKernel] loop detected " + aProcessID + "." + aActivityID + ","
+						"[loadEvent] loop detected " + aProcessID + "." + aActivityID + ","
 								+ vectorEdgeHistory.toString());
 		}
 
@@ -495,7 +495,7 @@ public class WorkflowKernel {
 
 				sPluginName = plugin.getClass().getName();
 				if (logger.isLoggable(Level.FINE))
-					logger.info("[WorkflowKernel] running Plugin: " + sPluginName + "...");
+					logger.info("running Plugin: " + sPluginName + "...");
 
 				iStatus = plugin.run(documentContext, documentActivity);
 
@@ -507,10 +507,10 @@ public class WorkflowKernel {
 
 				if (iStatus == Plugin.PLUGIN_ERROR) {
 					// log error....
-					logger.severe("[WorkflowKernel] Error processing Plugin: " + sPluginName);
-					logger.severe("[WorkflowKernel] Plugin-Log: ");
+					logger.severe("[runPlugins] PLUGIN_ERROR: " + sPluginName);
+					logger.severe("[runPlugins] Plugin-Log: ");
 					for (String sLogEntry : localPluginLog)
-						logger.severe("[WorkflowKernel]   " + sLogEntry);
+						logger.severe("[runPlugins]   " + sLogEntry);
 
 					return Plugin.PLUGIN_ERROR;
 				}
@@ -519,9 +519,10 @@ public class WorkflowKernel {
 
 		} catch (PluginException e) {
 			// log plugin stack!....
-			logger.severe("[WorkflowKernel] Plugin-Stack: ");
+			logger.severe("Plugin-Error in Plugin - " + e.getErrorContext());
+			logger.severe("Last Plugins run successfull:");
 			for (String sLogEntry : localPluginLog)
-				logger.severe("[WorkflowKernel]   " + sLogEntry);
+				logger.severe("   ..." + sLogEntry);
 			// re throw the PluginException !
 			throw e;
 		}
@@ -532,7 +533,7 @@ public class WorkflowKernel {
 		for (int i = 0; i < vectorPlugins.size(); i++) {
 			Plugin plugin = (Plugin) vectorPlugins.elementAt(i);
 			if (logger.isLoggable(Level.FINE))
-				logger.info("[WorkflowKernel] closing Plugin: " + plugin.getClass().getName() + "...");
+				logger.info("closing Plugin: " + plugin.getClass().getName() + "...");
 			plugin.close(astatus);
 		}
 	}
