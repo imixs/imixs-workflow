@@ -39,6 +39,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -55,62 +57,46 @@ import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 @Produces("text/html")
 public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollection> {
 
-	
-	public boolean isWriteable(Class<?> type, Type genericType,
-			Annotation[] annotations, MediaType mediaType) {
-		
+	public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+
 		return XMLItemCollection.class.isAssignableFrom(type);
 	}
 
-	public void writeTo(XMLItemCollection xmlItemCollection, Class<?> type, Type genericType,
-			Annotation[] annotations, MediaType mediaType,
-			MultivaluedMap<String, Object> httpHeaders,
-			OutputStream entityStream) throws IOException,
-			WebApplicationException {
-		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-				entityStream));
-		
-		
-		
+	public void writeTo(XMLItemCollection xmlItemCollection, Class<?> type, Type genericType, Annotation[] annotations,
+			MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
+			throws IOException, WebApplicationException {
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(entityStream));
+
 		bw.write("<html>");
 		printHead(bw);
 		bw.write("<body>");
 		try {
 			bw.write("<h1>Entity</h1>");
-			
+
 			printXMLItemCollectionHTML(bw, xmlItemCollection);
 
-			
 		} catch (Exception e) {
 			bw.write("ERROR<br>");
-			//e.printStackTrace(bw.);
+			// e.printStackTrace(bw.);
 		}
-		
 
 		bw.write("</body>");
 		bw.write("</html>");
-		
+
 		bw.flush();
 	}
 
-	public long getSize(XMLItemCollection arg0, Class<?> arg1, Type arg2,
-			Annotation[] arg3, MediaType arg4) {
+	public long getSize(XMLItemCollection arg0, Class<?> arg1, Type arg2, Annotation[] arg3, MediaType arg4) {
 		return -1;
 	}
 
-	
-	
-	
-
-	
-	
-	
 	/**
-	 * This Method prints a single XMLItemCollection in html format
+	 * This Method prints a single XMLItemCollection in html format. The items
+	 * are sorted by name
 	 * 
 	 * @param out
 	 * @param workItem
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	@SuppressWarnings("rawtypes")
 	public static void printXMLItemCollectionHTML(BufferedWriter bw, XMLItemCollection xmlworkItem) throws IOException {
@@ -120,23 +106,15 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollect
 		bw.write("<table><tbody>");
 
 		bw.write("<tr class=\"a\">");
-
-		/*
-		bw.write("<th colspan=\"2\"><b>UniqueID: </b><a href=\""
-				+workItem.getItemValueString("$uniqueid") + 
-				"\">"
-				+ workItem.getItemValueString("$uniqueid") + "</a></th></tr>");
-		*/
-		bw.write("<th colspan=\"2\"><b>UniqueID: "
-				+ workItem.getItemValueString("$uniqueid") + "</b></th></tr>");
-
+		bw.write("<th colspan=\"2\"><b>UniqueID: " + workItem.getItemValueString("$uniqueid") + "</b></th></tr>");
 		bw.write("<tr class=\"a\">");
+		bw.write("<th>Name</th><th>Value</th></tr>");
 
-		bw.write("<th>Property</th><th>Value</th></tr>");
-
-		Iterator iter = workItem.getAllItems().entrySet().iterator();
+		// sort values by using a treemap.....
+		Map<String, Object> map = new TreeMap<String, Object>(workItem.getAllItems());
+		Set set2 = map.entrySet();
+		Iterator iter = set2.iterator();
 		while (iter.hasNext()) {
-
 			// WorkItemAttribute da = new WorkItemAttribute();
 			Map.Entry mapEntry = (Map.Entry) iter.next();
 			String sName = mapEntry.getKey().toString();
@@ -148,16 +126,12 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollect
 				bw.write("<tr class=\"b\">");
 			trClass = !trClass;
 
-			bw.write("<td>" + sName + "</td><td>"
-					+ convertValuesToString(value) + "</td></tr>");
-
+			bw.write("<td>" + sName + "</td><td>" + convertValuesToString(value) + "</td></tr>");
 		}
 		bw.write("</tbody></table>");
-
 		bw.write("<br/><br/>");
 	}
-	
-	
+
 	/**
 	 * This method converts the Values of a vector into a string representation.
 	 * 
@@ -198,8 +172,7 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollect
 			// if value is a date object format date into a string
 			// otherwise take the value as it is
 			if (dateValue != null) {
-				singleValue = DateFormat.getDateTimeInstance(DateFormat.SHORT,
-						DateFormat.SHORT).format(dateValue);
+				singleValue = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(dateValue);
 			} else {
 				// take value as it is
 				if (o != null)
@@ -213,13 +186,13 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollect
 		// return values as string
 		return convertedValue;
 	}
-	
+
 	/**
-	 * prints the generic HTML Head for HTML output.
-	 * The method genereates a default CSS definition for table output
+	 * prints the generic HTML Head for HTML output. The method genereates a
+	 * default CSS definition for table output
 	 * 
 	 * @param bw
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static void printHead(BufferedWriter bw) throws IOException {
 		bw.write("<head>");
@@ -237,5 +210,5 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollect
 		bw.write("</style>");
 		bw.write("</head>");
 	}
-	
+
 }

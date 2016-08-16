@@ -171,7 +171,25 @@ public class XMLItemCollectionAdapter {
 			throw e;
 		}
 
+		entity=sortItemsByName(entity);
+		
 		return entity;
+	}
+	
+	
+	/**
+	 * This method sorts all items of a XMLItemCollection by item name.
+	 * @param xmlItemCol
+	 * @return
+	 */
+	public static XMLItemCollection sortItemsByName(XMLItemCollection xmlItemCol) {
+		
+		XMLItem[] items = xmlItemCol.getItem();
+		Arrays.sort(items,new XMLItemComparator());
+		
+		xmlItemCol.setItem(items);
+		
+		return xmlItemCol;
 	}
 
 	/**
