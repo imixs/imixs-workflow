@@ -82,11 +82,9 @@ public class ApplicationPlugin extends AbstractPlugin {
 	private String sGroup;
 	private String sAbstract;
 	private String sSummary;
-	private static Logger logger = Logger.getLogger(ApplicationPlugin.class
-			.getName());
+	private static Logger logger = Logger.getLogger(ApplicationPlugin.class.getName());
 
-	public int run(ItemCollection adocumentContext,
-			ItemCollection adocumentActivity) throws PluginException {
+	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 
 		documentContext = adocumentContext;
 
@@ -96,84 +94,66 @@ public class ApplicationPlugin extends AbstractPlugin {
 		sSummary = null;
 
 		// try to get next ProcessEntity
-		// check if keyFollowUp <> '1'
-		if (!"1".equals(adocumentActivity.getItemValueString("keyFollowUp"))) {
 
-			// get numNextProcessID and modelVersion
-			int iNextProcessID = adocumentActivity
-					.getItemValueInteger("numNextProcessID");
+		// get numNextProcessID and modelVersion
+		int iNextProcessID = adocumentActivity.getItemValueInteger("numNextProcessID");
 
-			// now get the next ProcessEntity from ctx
-			ItemCollection itemColNextProcess = null;
-			// get from model version
-			String aModelVersion = adocumentActivity
-					.getItemValueString("$modelVersion");
-			try {
-				itemColNextProcess = ctx.getModelManager().getModel(aModelVersion).getTask(
-						iNextProcessID);
-			} catch (ModelException e) {
-				// no op - 
-			}
-
-			// if the processEntity was not found cancel processing now!
-			if (itemColNextProcess == null) {
-				logger.warning("[ApplicationPlugin] Warning - Task '"
-						+ iNextProcessID + "' was not found in the model '" + aModelVersion + "' ");
-				return Plugin.PLUGIN_WARNING;
-			}
-
-			// fetch Editor and Image
-			sEditorID = itemColNextProcess.getItemValueString("txtEditorID");
-			sImageURL = itemColNextProcess.getItemValueString("txtImageURL");
-
-			// fetch Status and Group
-			sStatus = itemColNextProcess.getItemValueString("txtname");
-			sGroup = itemColNextProcess.getItemValueString("txtworkflowgroup");
-			sType = itemColNextProcess.getItemValueString("txttype");
-
-			// fetch workflow Abstract
-			sAbstract = itemColNextProcess
-					.getItemValueString("txtworkflowabstract");
-			if (!"".equals(sAbstract))
-				sAbstract = this.replaceDynamicValues(sAbstract,
-						documentContext);
-
-			// fetch workflow Abstract
-			sSummary = itemColNextProcess
-					.getItemValueString("txtworkflowsummary");
-			if (!"".equals(sSummary))
-				sSummary = this.replaceDynamicValues(sSummary, documentContext);
-
-			// submit data now into documentcontext
-			// set Status and Group
-			documentContext.replaceItemValue("txtWorkflowStatus", sStatus);
-			documentContext.replaceItemValue("txtworkflowgroup", sGroup);
-
-			// set Editor if value is defined
-			if (sEditorID != null && !"".equals(sEditorID))
-				documentContext.replaceItemValue("txtWorkflowEditorID",
-						sEditorID);
-
-			// set ImageURl if one is defined
-			if (sImageURL != null && !"".equals(sImageURL))
-				documentContext.replaceItemValue("txtWorkflowImageURL",
-						sImageURL);
-
-			// set Type if one is defined
-			if (sType != null && !"".equals(sType))
-				documentContext.replaceItemValue("type", sType);
-
-			// set Abstract
-			if (sAbstract != null)
-				documentContext.replaceItemValue("txtworkflowabstract",
-						sAbstract);
-
-			// set Summary
-			if (sSummary != null)
-				documentContext
-						.replaceItemValue("txtworkflowsummary", sSummary);
-
+		// now get the next ProcessEntity from ctx
+		ItemCollection itemColNextProcess = null;
+		// get from model version
+		String aModelVersion = adocumentActivity.getItemValueString("$modelVersion");
+		try {
+			itemColNextProcess = ctx.getModelManager().getModel(aModelVersion).getTask(iNextProcessID);
+		} catch (ModelException e) {
+			logger.warning(
+					"Warning - Task '" + iNextProcessID + "' is not defined by model version '" + aModelVersion + "' : "+e.getMessage());
+			return Plugin.PLUGIN_WARNING;
 		}
+
+
+		// fetch Editor and Image
+		sEditorID = itemColNextProcess.getItemValueString("txtEditorID");
+		sImageURL = itemColNextProcess.getItemValueString("txtImageURL");
+
+		// fetch Status and Group
+		sStatus = itemColNextProcess.getItemValueString("txtname");
+		sGroup = itemColNextProcess.getItemValueString("txtworkflowgroup");
+		sType = itemColNextProcess.getItemValueString("txttype");
+
+		// fetch workflow Abstract
+		sAbstract = itemColNextProcess.getItemValueString("txtworkflowabstract");
+		if (!"".equals(sAbstract))
+			sAbstract = this.replaceDynamicValues(sAbstract, documentContext);
+
+		// fetch workflow Abstract
+		sSummary = itemColNextProcess.getItemValueString("txtworkflowsummary");
+		if (!"".equals(sSummary))
+			sSummary = this.replaceDynamicValues(sSummary, documentContext);
+
+		// submit data now into documentcontext
+		// set Status and Group
+		documentContext.replaceItemValue("txtWorkflowStatus", sStatus);
+		documentContext.replaceItemValue("txtworkflowgroup", sGroup);
+
+		// set Editor if value is defined
+		if (sEditorID != null && !"".equals(sEditorID))
+			documentContext.replaceItemValue("txtWorkflowEditorID", sEditorID);
+
+		// set ImageURl if one is defined
+		if (sImageURL != null && !"".equals(sImageURL))
+			documentContext.replaceItemValue("txtWorkflowImageURL", sImageURL);
+
+		// set Type if one is defined
+		if (sType != null && !"".equals(sType))
+			documentContext.replaceItemValue("type", sType);
+
+		// set Abstract
+		if (sAbstract != null)
+			documentContext.replaceItemValue("txtworkflowabstract", sAbstract);
+
+		// set Summary
+		if (sSummary != null)
+			documentContext.replaceItemValue("txtworkflowsummary", sSummary);
 
 		return Plugin.PLUGIN_OK;
 	}
