@@ -183,7 +183,11 @@ public class RulePlugin extends AbstractPlugin {
 						"BusinessRule: validation failed - ErrorCode=" + sErrorCode, params);
 			}
 
-			// now test the followUp variable
+			// Next update the Activity entity. Values can be provided optional
+			// by the script variable 'activity'...
+			updateActivityEntity(engine, adocumentActivity);
+
+			// now test the variable 'followUp'
 			Object followUp = null;
 			// first test result object
 			if (result != null && result.hasItem("followUp")) {
@@ -197,6 +201,7 @@ public class RulePlugin extends AbstractPlugin {
 				followUp = engine.get("followUp");
 			}
 
+			// If followUp is defined we update now the activityEntity....
 			if (followUp != null) {
 				// try to get double value...
 				Double d = Double.valueOf(followUp.toString());
@@ -208,7 +213,7 @@ public class RulePlugin extends AbstractPlugin {
 				}
 			}
 
-			// now test the nextTask variable
+			// now test the variable 'nextTask'
 			Object nextTask = null;
 			// first test result object
 			if (result != null && result.hasItem("nextTask")) {
@@ -235,21 +240,19 @@ public class RulePlugin extends AbstractPlugin {
 			if (result != null) {
 				for (Map.Entry<String, List<Object>> entry : result.getAllItems().entrySet()) {
 					String itemName = entry.getKey();
-					logger.fine("Update item '" + itemName + "'");
-					adocumentContext.replaceItemValue(itemName, entry.getValue());
+					// skip fieldnames starting with '$'
+					if (!itemName.startsWith("$")) {
+						logger.fine("Update item '" + itemName + "'");
+						adocumentContext.replaceItemValue(itemName, entry.getValue());
+					}
 				}
 			}
 
-			// Finally update the Event object values optional provided from
-			// script variable activity...
-			updateActivityEntity(engine, adocumentActivity);
-
 			return Plugin.PLUGIN_OK;
-
-		} else
+		} else {
 			// no business rule is defined
 			return Plugin.PLUGIN_OK; // nothing to do
-
+		}
 	}
 
 	/**
@@ -257,32 +260,8 @@ public class RulePlugin extends AbstractPlugin {
 	 */
 	@Override
 	public void close(int status) {
+		// no operation
 	}
-
-	/**
-	 * This method evaluates a script and test the object value 'isValid'. The
-	 * documentContext is valid for the current activity if 'isValid' is not
-	 * 'false'
-	 * 
-	 * @param adocumentContext
-	 * @param adocumentActivity
-	 * @return
-	 * @throws PluginException
-	 */
-	/*
-	public boolean isValid(ItemCollection documentContext, ItemCollection activity) throws PluginException {
-
-		ScriptEngine engine = evaluateBusinessRule(documentContext, activity);
-		if (engine != null) {
-			Boolean isValidActivity = (Boolean) engine.get("isValid");
-			if (isValidActivity != null)
-				return isValidActivity;
-
-		}
-		// no rule defined
-		return true;
-	}
-	*/
 
 	/**
 	 * This method evaluates the business rule defined by the provided activity.
@@ -315,19 +294,6 @@ public class RulePlugin extends AbstractPlugin {
 		// set activity properties into engine
 		engine.put("activity", convertItemCollection(activity));
 		engine.put("workitem", convertItemCollection(documentContext));
-
-		// The following code is only for backward compatibility since version
-		// 3.1.9
-		// setup document data...
-		/*
-		 * Map<String, List<Object>> itemList = documentContext.getAllItems();
-		 * for (Map.Entry<String, List<Object>> entry : itemList.entrySet()) {
-		 * String key = entry.getKey().toLowerCase(); List<?> value = (List<?>)
-		 * entry.getValue(); // do only put basic values and not values starting
-		 * the $ if (!key.startsWith("$") && value.size() > 0) { if
-		 * (isBasicObjectType(value.get(0).getClass())) { engine.put(key,
-		 * value.toArray()); } } }
-		 */
 
 		logger.fine("SCRIPT:" + script);
 		try {
@@ -415,13 +381,13 @@ public class RulePlugin extends AbstractPlugin {
 	 * further processing.
 	 * 
 	 * @param engine
-	 * @param adocumentActivity
+	 * @param event
 	 * @throws ScriptException
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void updateActivityEntity(ScriptEngine engine, ItemCollection adocumentActivity) {
+	private void updateActivityEntity(ScriptEngine engine, ItemCollection event) {
 
-		Map<String, Object[]> orginalActivity = convertItemCollection(adocumentActivity);
+		Map<String, Object[]> orginalActivity = convertItemCollection(event);
 		// get activity from engine
 		Map<String, Object[]> scriptActivity = (Map) engine.get("activity");
 
@@ -443,7 +409,7 @@ public class RulePlugin extends AbstractPlugin {
 			if (!Arrays.deepEquals(oScript, oActivity)) {
 				logger.fine("update event property " + entry.getKey());
 				List<?> list = new ArrayList(Arrays.asList(oScript));
-				adocumentActivity.replaceItemValue(entry.getKey(), list);
+				event.replaceItemValue(entry.getKey(), list);
 			}
 
 		}
