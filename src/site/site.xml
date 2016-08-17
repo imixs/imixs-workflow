@@ -9,6 +9,7 @@
 
 
 	<body>
+		<!-- 
 		<links>
 			<item name="Home" href="http://www.imixs.org/" />
 			<item name="Quick Start" href="index.html" />
@@ -18,6 +19,7 @@
 			<item name="Modelling" href="modelling/index.html" />
 			<item name="Script!" href="http://www.imixs.org/script/" />
 		</links>
+		 -->
 
 
 		<menu name="Documentation">
@@ -32,7 +34,7 @@
 				<item name="Installation" href="modelling/install.html" />
 				<item name="Eclipse Workbench" href="modelling/eclipse_workbench.html" />
 				<item name="Creating a Model" href="modelling/create_model.html" />
-				<item name="How to model a workflow" href="modelling/howto.html" />
+				<item name="How to Model a Workflow" href="modelling/howto.html" />
 				<item name="Process Properties" href="modelling/main_editor.html" />
 				<item name="Task Properties" href="modelling/process.html" />
 				<item name="Event Properties" href="modelling/activities.html" />
@@ -73,8 +75,8 @@
 					collapse="true">
 					<item name="JPQL" href="./engine/queries.html" />
 				</item>
-				<item name="ModelSerice" href="./engine/modelservice.html" />
-				<item name="WorkflowSerice" href="./engine/workflowservice.html" />
+				<item name="ModelSerivce" href="./engine/modelservice.html" />
+				<item name="WorkflowService" href="./engine/workflowservice.html" />
 				<item name="Access Control" href="./engine/acl.html" />
 				<item name="Plugins" href="./engine/plugins/index.html"
 					collapse="true">
@@ -132,7 +134,7 @@
 			<item name="JavaDocs" target="_blank" href="./apidocs/index.html" />
 		</menu>
 
-		<menu name="About the project">
+		<menu name="About the Project">
 			<item name="Goals" href="goals.html" />
 			<!-- <item name="Project Summary" href="project-summary.html"/> -->
 			<item name="Project License" href="license.html" />
