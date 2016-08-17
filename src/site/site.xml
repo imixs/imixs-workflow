@@ -71,11 +71,11 @@
 
 			<item name="Workflow Engine" href="./engine/index.html"
 				collapse="true">
-				<item name="EntitySerice" href="./engine/entityservice.html"
+				<item name="EntityService" href="./engine/entityservice.html"
 					collapse="true">
 					<item name="JPQL" href="./engine/queries.html" />
 				</item>
-				<item name="ModelSerivce" href="./engine/modelservice.html" />
+				<item name="ModelService" href="./engine/modelservice.html" />
 				<item name="WorkflowService" href="./engine/workflowservice.html" />
 				<item name="Access Control" href="./engine/acl.html" />
 				<item name="Plugins" href="./engine/plugins/index.html"
