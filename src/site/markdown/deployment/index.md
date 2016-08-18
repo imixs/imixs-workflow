@@ -1,18 +1,24 @@
 # Deployment
-Imixs-Workflow can be deployed in various ways depending on the kind of the application and the used server environment. As the Imixs-Workflow Engine is based on JEE, the components are typically deployed in a container. Deployment descriptors are used to configure the details of an environment giving a flexible way to setup a workflow application. 
+The Imixs-Workflow engine can be deployed in various ways depending on the kind of the application and server environment. As the Imixs-Workflow engine is based on Java EE, the components are typically deployed into a container (EJB or Web Container). The deployment descriptors are used to configure the details of an environment and giving the flexibility to setup the Imixs-Workflow for custom environments and infrastructure. 
 
 ## Maven
 All components of Imixs-Workflow are build with Maven which makes it easy to add them into a Maven based project. The following example adds the latest release of the Imixs-Workflow Engine and REST API to a project:
 
+	
+	<properties>
+		.....
+		<org.imixs.workflow.version>3.9.0</org.imixs.workflow.version>
+	</properties>
+	...
 	<dependency>
 		<groupId>org.imixs.workflow</groupId>
 		<artifactId>imixs-workflow-engine</artifactId>
-		<version>RELEASE</version>
+		<version>${org.imixs.workflow.version}</version>
 	</dependency>
 	<dependency>
 		<groupId>org.imixs.workflow</groupId>
 		<artifactId>imixs-workflow-jax-rs</artifactId>
-		<version>RELEASE</version>
+		<version>${org.imixs.workflow.version}</version>
 	</dependency>
 
 Read the section [Maven](../maven.html) for further details.
@@ -35,12 +41,12 @@ The Imixs-Workflow Engine stores the workflow model and its process instances in
 		</persistence-unit>
 	</persistence> 
 
-See the section [Deployment Guide](./deployment_guide.html) for further details.
+Note that the jar-file must match the deployed version of the Imixs-Workflow engine jar. See the section [Deployment Guide](./deployment_guide.html) for further details.
 
 
 ## Security
-Each method call to the Imixs Workflow System have to possess an applicable authentication process to grant the demands of the Imixs Workflow technology according security. 
-In the security concept of the Imixs-Workflow there are 5 roles defined:
+Each back-end call to the Imixs-Workflow engine have to propagate an applicable user principal and security role to be verified by the Imixs EntityService layer.  
+The security concept of Imixs-Workflow defines the following roles:
 
   * org.imixs.ACCESSLEVEL.NOACCESS  
   * org.imixs.ACCESSLEVEL.READACCESS
@@ -48,4 +54,4 @@ In the security concept of the Imixs-Workflow there are 5 roles defined:
   * org.imixs.ACCESSLEVEL.EDITORACCESS
   * org.imixs.ACCESSLEVEL.MANAGERACCESS
 
-Each user accessing the Imixs-Workflow Engine need to be assigned to one of these roles. The security configuration is typical configured by a security realm inside the application server. See the [section Security](./security.html) for further details.
+Each user accessing the Imixs-Workflow Engine need to be assigned at least to one of these roles. To deploy the Imixs-Workflow engine a corresponding security realm have to be configured inside the application server. See the [section Security](./security.html) for further details.
