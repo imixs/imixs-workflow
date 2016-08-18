@@ -1,5 +1,8 @@
 package org.imixs.workflow.jee.faces.workitem;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.junit.Assert;
@@ -28,9 +31,20 @@ public class DataControllerTest {
 		dataController.setWorkitem(workitem);
 		Assert.assertTrue(dataController.isNewWorkitem());
 
-		workitem.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
+		
+		Date someDate=new Date();
+		workitem.replaceItemValue("$Modified", someDate);
+		workitem.replaceItemValue("$Created", someDate);
+		Assert.assertTrue(dataController.isNewWorkitem());
+
+		someDate=new Date();
+		Calendar cal=Calendar.getInstance();
+		cal.setTime(someDate);
+		cal.add(Calendar.SECOND,+1);
+		workitem.replaceItemValue("$Modified", cal.getTime());
 		Assert.assertFalse(dataController.isNewWorkitem());
 
+	
 	}
 
 }
