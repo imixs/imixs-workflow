@@ -35,7 +35,7 @@ public class DataControllerTest {
 		Date someDate=new Date();
 		workitem.replaceItemValue("$Modified", someDate);
 		workitem.replaceItemValue("$Created", someDate);
-		Assert.assertTrue(dataController.isNewWorkitem());
+		Assert.assertFalse(dataController.isNewWorkitem());
 
 		someDate=new Date();
 		Calendar cal=Calendar.getInstance();

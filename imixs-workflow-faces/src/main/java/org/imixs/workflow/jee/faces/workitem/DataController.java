@@ -266,7 +266,8 @@ public class DataController implements Serializable {
 	public boolean isNewWorkitem() {
 		Date created = getWorkitem().getItemValueDate("$created");
 		Date modified = getWorkitem().getItemValueDate("$modified");
-		return (modified == null || created == null || modified.compareTo(created) == 0);
+		//return (modified == null || created == null || modified.compareTo(created) == 0);
+		return (modified == null || created == null);
 	}
 
 	/**
