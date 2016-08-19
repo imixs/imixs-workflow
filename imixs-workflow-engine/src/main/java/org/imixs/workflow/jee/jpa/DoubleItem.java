@@ -53,7 +53,6 @@ public class DoubleItem implements java.io.Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@SuppressWarnings("unused")
 	@Id
 	@GeneratedValue
 	private BigInteger id;

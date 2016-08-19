@@ -50,7 +50,6 @@ public class WriteAccess implements java.io.Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@SuppressWarnings("unused")
 	@Id
 	@GeneratedValue
 	private int id;

@@ -313,7 +313,7 @@ public class EntityService implements EntityServiceRemote {
 	 * This Method saves an ItemCollection into a database. If the
 	 * ItemCollection is saved the first time the method generates a uniqueID
 	 * ('$uniqueid') which can be used to identify the ItemCollection by its ID.
-	 * If the ItemCollection was saved before the method updates the
+	 * If the ItemCollection was saved before, the method updates the
 	 * ItemCollection stored in the database. The Method returns an updated
 	 * instance of the ItemCollection containing the attributes $modified,
 	 * $created, and $uniqueid
@@ -324,7 +324,7 @@ public class EntityService implements EntityServiceRemote {
 	 * org.imixs.ACCESSLEVEL.AUTHORACCESS
 	 * <p>
 	 * The method returns a the detached itemCollection with the current
-	 * VersionNumber from the perstited entity. (see issue #145)
+	 * VersionNumber from the persisted entity. (see issue #145)
 	 * 
 	 * @param ItemCollection
 	 *            to be saved
@@ -372,9 +372,8 @@ public class EntityService implements EntityServiceRemote {
 
 		// did entity exist?
 		if (activeEntity == null) {
-			// entity no found in database create new instance using the
-			// provided id
-			// Test if user is allowed to create Entities....
+			// entity not found in database, create a new instance using the
+			// provided id. Test if user is allowed to create Entities....
 			if (!(ctx.isCallerInRole(ACCESSLEVEL_MANAGERACCESS) || ctx.isCallerInRole(ACCESSLEVEL_EDITORACCESS)
 					|| ctx.isCallerInRole(ACCESSLEVEL_AUTHORACCESS))) {
 				throw new AccessDeniedException(OPERATION_NOTALLOWED,
@@ -404,10 +403,10 @@ public class EntityService implements EntityServiceRemote {
 			}
 		}
 
-		// after all activeEntity is now managed through the persistence
+		// after all the activeEntity is now managed through the persistence
 		// manager!
 
-		// remove property $isauthor
+		// remove the property $isauthor
 		itemcol.removeItem("$isauthor");
 
 		String aType = itemcol.getItemValueString("type");
