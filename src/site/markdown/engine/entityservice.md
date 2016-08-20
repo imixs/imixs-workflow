@@ -57,7 +57,7 @@ It is also possible to create complex queries to select a subset of ItemCollecti
 	  AND t.itemName = 'weight'
 	  AND t.itemValue = '500' 
   
-See the section {{{./queries.html}Query example}} for more details.
+See the section [JPQL](./queries.html) for more details.
 
  
   

@@ -1,31 +1,37 @@
 #The Imixs-Workflow Engine
-The Imixs-Workflow Engine provides JEE services to process and control business data based on  a workflow model. This simplifies the way developing business applications in a very fast and flexible way. There is no need to reinvent the wheel for managing the state of a business object or to control the flow of business data between several actors. The Imixs-Workflow Engine fulfills the requirements to a scalable, transactional, robust and simple deployable workflow management component.
- 
+The Imixs-Workflow Engine provides different Java EE services to access the model information and to control and process the data of a running workflow instance (_workitem_). The service EJBs can be used directly form a Java Enterprise application or can be accessed through the [RESTfull service API](../restapi/index.html). 
+
 <img src="../images/engine/imixs-architecture_jee.png"/>
 
 
-##The Components 
+##The Java EE Services 
 
-The Imixs-Workflow Engine is based on the [Imixs-Workflow Core-API](../core/index.html) and provides a set of service components which can be used to implement enterprise business applications and workflow management solutions.  The components are divided by the different building blocks of a workflow management system. 
+The Imixs-Workflow Engine is based on the [Imixs-Workflow Core-API](../core/index.html) and provides a set of services which can be used to access the Imixs-Workflow engine. The components are divided by the different building blocks of a workflow management system. 
  
+
+ * The Database Layer -> EntityService
+ * The Worklfow Engine -> WorkflowService
+ * The Model -> ModelService 
+ * The Analysis -> ReportService
  
-###The EntityService
-The EntityService component is used to save and load a process instance (Workitem) into a  Database. A Workitem is represented by the [Imixs temCollection](../core/itemcollection.html) which is a value object containing all information about a process instance. For example all workitems processed by the Imixs-Workflow Engine are stored by the EntityService into the database. But also Model entities or other business objects can be managed by the EntityService. The EnityService provides an access control list (ACL) for each entity to avoid unauthorized  access to the values of an ItemCollection. When the CallerPrincipal is not allowed to save or read a specific ItemCollection from the database the EntityService throws an AccessDeniedException.  The EntityService can be used to save business objects into a database with individual read- or   writeAccess restrictions. The EntityService is the core service component used by the Imixs JEE Workflow.
+### The EntityService
+The _EntityService_ component provides an interface to create, save and load data objects (_workitems_) which a  database. A _workitem_ is represented by the [ItemCollection](../core/itemcollection.html) which is a value object class. An _ItemCollection_ can contain any kind of information used by the workflow engine and the business application. The _EntityService_ is independent form the workflow engine and can also be used to store data objects which are not associated with a workflow model (e.g configuration data). 
+
+Each data object managed by the _EntityService_ is assigned to a access control list (ACL). The ACL protects a data object for unauthorized  access. In case the _CallerPrincipal_ has insufficient rights to save or read a specific data object, the _EntityService_ throws an _AccessDeniedException_. 
 
 [Read more about the Imixs EntityService](../engine/entityservice.html).
   
  
 ### The WorkflowService
-The WorkflowService is the JEE implementation of the Imixs-Workflow Manager. This component supports general methods to create, process and access workitems based on a workflow model. The component is easy to use and all the business logic can be controlled fully by a workflow model. The WorkflowService component provides also a set of methods to find and fetch collections of workitems processed by the WorkflowManager. The WorkflowService is the main component used by an application to manage business logic.  
-
+The _WorkflowService_ component provides the interface to the Imixs-Workflow kernel. This component supports methods to create, process and access workitems. A workitem managed by the _WorkflowService_ need to be assigned to a valid workflow model definition. 
+ 
 [Read more about the Imixs WorkflowService](../engine/workflowservice.html).
  
-###The ModelService
-The ModelService component is the JEE Implementation of the Model interface from the Imixs-Workflow API  used by the WorkflowService.
- The Service extends the standard interface with useful methods to load, store and navigate through  workflow models. The  ModelService component can be used by an application to provide the user with information about the workflow model for a specific business process. Models can be managed by the [Imixs-BPMN Modeler](../modelling/index.html). 
+### The ModelService
+The _ModelService_ component provides methods to write and read model information created with the Eclipse based modeling tool [Imixs-BPMN](../modelling/index.html). The _ModelService_ can also be used by the business application to read the model information.
 
 [Read more about the Imixs ModelService](../engine/modelservice.html).
  
-###The ReportService
-The ReportService component supports methods to create, find and execute Imixs-Workflow Reports. A report can be used to generate aggregated information from workitems and processing data managed by the WorkflowService. Reports are a very flexible technology and provide an easy to use interface based on the [Imixs REST Service API](../restapi/index.html). Reports can be managed with the Eclipse based [Imixs-Workflow Modeller](../modelling/index.html).
+### The ReportService
+The _ReportService_ component supports methods to create, find and execute business reports created with the Eclipse based [Imixs-Workflow Modeller](../modelling/index.html). A report is used to generate aggregated information from workitems and processing data managed by the _WorkflowService_. Reports can also be executed by the Imixs-Workflow engine. 
   

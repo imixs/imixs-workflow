@@ -1,4 +1,4 @@
-#Query ItemCollections
+#How to Query ItemCollections
 Using the EntityService gives you a powerful method to query ItemCollections from your database. To query a set of ItemCollections you can define an JPQL Statement and call the findAllEntities method of the EntityService.
  
 JPQL is similar to SQL in it's use of the select clause and the where clause. An JPQL statement in the Imixs JEE Workflow contains typically one view to the Entity Class and a optional set of where conditions.
