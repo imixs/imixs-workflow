@@ -1,4 +1,4 @@
-#The REST Service API
+#The Imixs-REST Service API
 
 The **representational state transfer (REST)** is an architectural style, to present a service interface in a Web-based way. The API and core functionality of Imixs-Workflow is published by an open and platform independent RESTful Web service interface. The Imixs-Workflow REST services can be adopted easily by any kind of Internet client component.
  

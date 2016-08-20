@@ -1,9 +1,9 @@
-#Database Schema
+# The Imixs-Workflow Database Schema
 
-The Imixs-Workflow Engine supports a generic database schema which allows to store all workflow data in a flexible way. The Imixs-Workflow Engine is based on the Java Persistence API (JPA) which makes it independent form a database vendor. For that reason any database system can be used for the deployment.
+The Imixs-Workflow engine persists all information about the model and the running workflow instances (_workitems_) using the Java Persistence API (JPA). Therefore the Imixs-Workflow engine is database vendor independent and can be run on any SQL database (e.g. MySQL, PostgreSQL, Oracle, MS SQL, ...).
  
-##Deployment
-To deploy the Imixs-Workflow Engine into a JEE Application server it is necessary to provide  a JEE datasource. A JEE datasource defines the connection form the application to a relational database on a database server. The only configuration file which is necessary to define the database connection is the persistence.xml. This is a standard descriptor which should be placed into your application.
+## The JNDI Database Source
+During the deployment of the Imixs-Workflow engine, the application server has to provide a JNDI datasource. The datasource defines the connection form the application to a database on a database server. The only configuration file which is necessary to define the database connection from Imixs-Workflow engine to the datasource to is the _persistence.xml_ deployment descriptor. This standard descriptor is part of the workflow application (war or ejb modue):
  
 	<?xml version="1.0" encoding="UTF-8"?>
 	<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence">
@@ -21,9 +21,8 @@ To deploy the Imixs-Workflow Engine into a JEE Application server it is necessar
  
 The section persistence-unit specifies the data objects to be stored into the database. The unit name is defined by the Imixs-Workflow Engine and should not be changed. The jta-data-source defines the name of the datasource to be used by the Imixs-Workflow Engine to store data into the database.
  
-##The JPA Classes and Tables
-The database schema used by the Imixs-Workflow Engine is defined by a set of JPA classes which are part of the package org.imixs.workflow.jee.jpa. During the deployment phase these classes are mapped automatically to a database schema from a database and the corresponding data tables will be created by the JPA implementation. For each of the following Entity classes a table is generated:
- 
+### The JPA Classes and Tables
+The database schema used by the Imixs-Workflow Engine is defined by a set of JPA classes which are part of the package _org.imixs.workflow.jee.jpa_. During the first deployment, JPA maps these classes automatically to the database and creates the corresponding data tables. For each of the following Entity classes a table is generated:
  
    * Entity
    * EntityData
@@ -35,39 +34,31 @@ The database schema used by the Imixs-Workflow Engine is defined by a set of JPA
    * ReadAccessEntity
    * WriteAccessEntity
  
-Each data object managed by the Imixs-Workflow Engine is mapped to an instance of the Entity Object which contains a unique ID to identify the Entity. The Entity holds also access informations which describes if the entity can be read or modified from individual users. So the schema provides a dynamic access control list (ACL) for each Entity Object.  
-The data of a process instance will be stored into the EntityData Object which is mapped to a binary large object (blob) inside a database. This enables an application to store any kind of data independent from the structure of the database. To access data using the JPQL select statements 4 additional data type specific objects are defined:
+Each data object which is managed by the Imixs-Workflow Engine (_workitem_) is mapped to a data recored located in the entity table. The Entity Object holds a unique ID to identify the Entity. The Entity also holds information about the read- and write access. This ACL information defines whether the entity can be read or modified from different users (_actors_).  
+
+A _workitem_ which is managed by the Imixs-Workflow engine is mapped to the class [ItemCollection](../core/itemcollection.html). The _ItemCollection_ stores any kind of data independent from the structure of the database. This enables Imixs-Workflow to manage _workitems_ is a document-orientated way. If a scecific item contained by the ItemCollection need to be accessed by using a JPQL select statements, the Imixs-Workflow engine defined 4 additional data type objects:
   
   * TextItem
   * IntegerItem
   * DoubleItem
   * CalendarItem
   
-The Imixs-Workflow Engine maps any data stored by the EntiyData Object to one of these specific data types if a corresponding IndexEntity is defined. As a result the data objects can be selected using a JPA query language. Read more about the usage of JPQL the section [JPQL](../engine/queries.html).
+The Imixs-Workflow Engine maps any data stored by the EntiyData Object to one of these specific data types if a corresponding IndexEntity is defined. As a result the data objects can be selected using a JPQL statement. Read more about the usage of JPQL in the [section JPQL](../engine/queries.html).
+
+To create a new IndexEntity, the EntityService provides the method add an index by specifying the name and object type:
+
+
+	entityService.addIndex("txtname", EntityIndex.TYP_TEXT);  
   
-  
 
-##Performance
-In large databases with a lot of workitems there can occur a performance issue which  slows down the response time of an application in some situations. The reason for this issue is the default database schema. This schema is generated by the application server the first time the Imixs Workflow engine where deployed. 
+## Performance
+In large databases with many workitems there can occur a performance issue which slows down the response time of an application in some situations. The reason for this issue is the default database schema generated by the OR-Mapper during the first deployment. The OR-Mapper did not create any indexes for newly created tables. 
  
-This is a typical example with more than one JOIN clauses that can result in a slow-down of the response time :
-
-	SELECT DISTINCT environment FROM Entity AS environment
-	 JOIN environment.textItems as n 
-	 JOIN environment.textItems as v
-	 JOIN environment.textItems as c
-	 AND environment.type = 'WorkflowEnvironmentEntity'
-	 AND n.itemName = 'txtname' AND n.itemValue = 'environment.profile'
-	 AND v.itemName = '$modelversion' AND v.itemValue = 'public-de-standard-0.0.1'
-	 AND c.itemName = 'case'
-	 ORDER BY c.itemValue 
-
-
-To fix this problem it is necessary to add additional indices to the database tables generated by the  application servers OR-Mapper. This can be done with the database tools provided by your database vendor. For MySQL use the "MySQL Administrator Tool".
+To fix this problem it is recommended to add additional indices to the database tables after the schema generation. This can be done with the database tools provided by database vendors.
  
-The most important tables where an additional index should be added are the database tables
- "ENTITY", "TEXTITEM", "INTEGERITEM" and "CALENDARITEM". This tables typical holds the most data rows. Useful default indices to the columns "TYPE", "ITEMVALUE" and "ITEMNAME"
- are not created per default.  So to add the necessary index manually you run call the following SQL commands: 
+### MySQL 
+
+The following statement adds the necessary indexes for a MySQL Database: 
  
 	ALTER TABLE `ENTITY` ADD INDEX `index1`(`CREATED`,`MODIFIED`,`TYPE`,`VERSION`);
 	ALTER TABLE `TEXTITEM` ADD INDEX `index1`(`ITEMNAME`, `ITEMVALUE`);
@@ -77,9 +68,9 @@ The most important tables where an additional index should be added are the data
 	ALTER TABLE `READACCESS` ADD INDEX `index1`(`VALUE`);
 	ALTER TABLE `WRITEACCESS` ADD INDEX `index1`(`VALUE`);
 
-After adding the index the response time should be nice again.
+### PostgreSQL
 
-For PostgreSQL use the following statement:
+The following statement adds the necessary indexes for a PostgreSQL Database: 
 
 	CREATE INDEX index_entity1 ON entity USING btree(created, modified, type , version);
 	CREATE INDEX index_textitem1 ON textitem USING btree(itemname,itemvalue);
@@ -90,15 +81,14 @@ For PostgreSQL use the following statement:
 	CREATE INDEX index_write1 ON writeaccess USING btree(value);
  
   
-<strong>Note:</strong> It can be necessary to add also indices to other tables/columns created by the OR-Mapper. To find out useful indices contact your database administrator or use Query analyser tools provided by your database vendor.
          
-         
-##Foreign key constraint failures  
-In some situations a SQL Exception forced by a foreign key constraint failure can occur
-during complex transactions. In this case the wrong a cascading type of the auto generated
- foreign keys can be the reason.  Use the following sql statements to alter the foreign key from 'ON DELETE RESTRICT' to  'ON DELETE CASCADE' to fix the problem. Make sure that you stop GlassFish before changing the keys.
+## Foreign key constraint failures  
+In some situations a SQL Exception forced by a foreign key constraint failure can occur during complex transactions. In this case the cascading type of the auto generated foreign keys need to be changed from 'ON DELETE RESTRICT' to  'ON DELETE CASCADE' 
  
-###MySQL
+### MySQL
+
+The following statement changes the cascading type for a MySQL Database: 
+
  
 	ALTER TABLE `ENTITY_WRITEACCESS` 
 	DROP FOREIGN KEY `FK_ENTITY_WRITEACCESS_writeAccessList_ID`;
@@ -154,7 +144,9 @@ during complex transactions. In this case the wrong a cascading type of the auto
 	  ON DELETE CASCADE
 	  ON UPDATE RESTRICT; 
 
-###PostgreSQL
+### PostgreSQL
+
+The following statement changes the cascading type for a Postgres Database:
  
 	ALTER TABLE ENTITY_TEXTITEM
 	DROP constraint FK_ENTITY_TEXTITEM_textItems_ID,

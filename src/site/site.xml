@@ -29,7 +29,7 @@
 				<item name="Workflow Engine" href="quickstart/workflowengine.html" />
 			</item>
 
-			<item name="Modelling" href="modelling/index.html" collapse="true">
+			<item name="BPMN Modelling" href="modelling/index.html" collapse="true">
 				<item name="Overview" href="modelling/overview.html" />
 				<item name="Installation" href="modelling/install.html" />
 				<item name="Eclipse Workbench" href="modelling/eclipse_workbench.html" />
@@ -63,7 +63,7 @@
 				<item name="Workflow Service" href="./restapi/workflowservice.html" />
 				<item name="Model Service" href="./restapi/modelservice.html" />
 				<item name="Report Service" href="./restapi/reportservice.html" collapse="true">
-					<item name="XSLT" href="./restapi/xslt.html" />
+				<item name="XSLT" href="./restapi/xslt.html" />
 				</item>
 				<item name="Entity Service" href="./restapi/entityservice.html" />
 				<item name="JSON" href="./restapi/json.html" />
@@ -101,10 +101,9 @@
 
 			</item>
 
-			<item name="Web Tools" href="./webtools/index.html"  collapse="true">
+			<item name="JSF Components" href="./webtools/index.html"  collapse="true">
 
-				<item name="jQuery-UI" href="./webtools/jquery-ui.html" />
-				<item name="ImixsHeader" href="./webtools/header.html" />
+				<item name="jQuery" href="./webtools/header.html" />
 				<item name="ImixsWorkflowActions" href="./webtools/workflowactions.html" />
 				<item name="DatePicker" href="./webtools/datepicker.html" />
 				<item name="Controller" href="./webtools/controller.html" />
