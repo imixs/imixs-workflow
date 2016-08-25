@@ -145,7 +145,7 @@ public class WorkflowRestService {
 		ItemCollection workitem;
 		try {
 			workitem = workflowService.getWorkItem(uniqueid);
-			return XMLItemCollectionAdapter.putItemCollection(workitem, EntityRestService.getItemList(items));
+			return XMLItemCollectionAdapter.putItemCollection(workitem, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

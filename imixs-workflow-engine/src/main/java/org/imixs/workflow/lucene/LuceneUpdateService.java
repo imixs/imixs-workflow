@@ -182,6 +182,30 @@ public class LuceneUpdateService {
 		}
 	}
 
+	
+	
+	/**
+	 * Returns the Lucene configuration 
+	 * @return
+	 */
+	public ItemCollection getConfiguration() {
+		ItemCollection config=new ItemCollection();
+		
+		config.replaceItemValue("lucence.indexDir", indexDirectoryPath);
+		config.replaceItemValue("lucence.lockFactory", luceneLockFactory);
+		config.replaceItemValue("lucence.analyzerClass", analyserClass);
+		config.replaceItemValue("lucence.fulltextFieldList", searchFieldList);
+		config.replaceItemValue("lucence.indexFieldListAnalyze", indexFieldListAnalyse);
+		config.replaceItemValue("lucence.indexFieldListNoAnalyze", indexFieldListNoAnalyse);
+		
+	
+		return config;
+	}
+
+
+
+
+
 	/**
 	 * This method adds a single document into the search index.
 	 * 

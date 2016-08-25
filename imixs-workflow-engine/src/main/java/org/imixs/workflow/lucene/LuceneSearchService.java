@@ -54,6 +54,9 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopDocsCollector;
+import org.apache.lucene.search.TopFieldCollector;
+import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
@@ -91,7 +94,9 @@ public class LuceneSearchService {
 	public static final String UNDEFINED_ERROR = "UNDEFINED_ERROR";
 	public static final String INVALID_INDEX = "INVALID_INDEX";
 
-	private static final int MAX_SEARCH_RESULT = 1000;
+	private static final int MAX_SEARCH_RESULT = 9999; // limiting the total
+														// number of hits
+	private static final int DEFAULT_PAGE_SIZE = 20; // default docs in one page
 
 	@EJB
 	PropertyService propertyService;
@@ -117,12 +122,12 @@ public class LuceneSearchService {
 	 */
 	public List<ItemCollection> search(String sSearchTerm, DocumentService documentService) {
 		// no sort order
-		return search(sSearchTerm, documentService, null, null, MAX_SEARCH_RESULT);
+		return search(sSearchTerm, documentService, null, null, MAX_SEARCH_RESULT, 0);
 	}
 
-	public List<ItemCollection> search(String sSearchTerm, DocumentService documentService, int maxResult) {
+	public List<ItemCollection> search(String sSearchTerm, DocumentService documentService, int maxResult, int page) {
 		// no sort order
-		return search(sSearchTerm, documentService, null, null, maxResult);
+		return search(sSearchTerm, documentService, null, null, maxResult, page);
 	}
 
 	/**
@@ -142,15 +147,22 @@ public class LuceneSearchService {
 	 *            - optional to sort the result
 	 * @param defaultOperator
 	 *            - optional to change the default search operator
+	 * 
+	 * @param pageSize
+	 *            - docs per page
+	 * @param pageNumber
+	 *            - page number
 	 * @return collection of search result
 	 */
 	public List<ItemCollection> search(String sSearchTerm, DocumentService documentService, Sort sortOrder,
-			Operator defaultOperator, int maxResult) {
+			Operator defaultOperator, int pageSize, int pageNumber) {
 
-		if (maxResult <= 0 || maxResult > MAX_SEARCH_RESULT) {
-			maxResult = MAX_SEARCH_RESULT;
+		long ltime = System.currentTimeMillis();
+		if (pageSize <= 0) {
+			pageSize = DEFAULT_PAGE_SIZE;
 		}
-		logger.fine("lucene search max_result=" + maxResult);
+
+		logger.fine("lucene search: pageNumber=" + pageNumber + " pageSize=" + pageSize);
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
@@ -158,7 +170,6 @@ public class LuceneSearchService {
 		if (sSearchTerm == null || "".equals(sSearchTerm))
 			return workitems;
 
-		long ltime = System.currentTimeMillis();
 		Properties prop = propertyService.getProperties();
 		if (prop.isEmpty())
 			return workitems;
@@ -180,7 +191,7 @@ public class LuceneSearchService {
 				sAccessTerm += ") AND ";
 				sSearchTerm = sAccessTerm + sSearchTerm;
 			}
-			logger.fine("lucene search query final:" + sSearchTerm);
+			logger.fine("lucene final searchTerm=" + sSearchTerm);
 
 			if (!"".equals(sSearchTerm)) {
 				parser.setAllowLeadingWildcard(true);
@@ -189,19 +200,35 @@ public class LuceneSearchService {
 				if (defaultOperator != null)
 					parser.setDefaultOperator(defaultOperator);
 
+				long lsearchtime = System.currentTimeMillis();
 				TopDocs topDocs = null;
-				if (sortOrder != null) {
-					logger.fine("lucene sortOrder= '" + sortOrder + "' ");
+				TopDocsCollector<?> collector = null;
+				int startIndex = pageNumber * pageSize;
 
-					topDocs = searcher.search(parser.parse(sSearchTerm), maxResult, sortOrder);
+				Query query = parser.parse(sSearchTerm);
+				if (sortOrder != null) {
+					// sorted by sortoder
+					logger.fine("lucene result sorted by sortOrder= '" + sortOrder + "' ");
+					// MAX_SEARCH_RESULT is limiting the total number of hits
+					collector = TopFieldCollector.create(sortOrder, MAX_SEARCH_RESULT, false, false, false, false);
 				} else {
-					topDocs = searcher.search(parser.parse(sSearchTerm), maxResult);
+					// sorted by score
+					logger.fine("lucene result sorted by score ");
+					// MAX_SEARCH_RESULT is limiting the total number of hits
+					collector = TopScoreDocCollector.create(MAX_SEARCH_RESULT, true);
 				}
 
-				logger.fine("lucene total hits=" + topDocs.totalHits);
+				// start search....
+				searcher.search(query, collector);
 
+				// get one page
+				topDocs = collector.topDocs(startIndex, pageSize);
 				// Get an array of references to matched documents
 				ScoreDoc[] scoreDosArray = topDocs.scoreDocs;
+
+				logger.fine("lucene returned " + scoreDosArray.length + " documents in "
+						+ (System.currentTimeMillis() - lsearchtime) + " ms - total hits=" + topDocs.totalHits);
+
 				for (ScoreDoc scoredoc : scoreDosArray) {
 					// Retrieve the matched document and show relevant details
 					Document doc = searcher.doc(scoredoc.doc);

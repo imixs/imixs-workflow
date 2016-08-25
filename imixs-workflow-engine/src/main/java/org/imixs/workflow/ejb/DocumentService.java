@@ -461,32 +461,25 @@ public class DocumentService {
 	/**
 	 * The method returns a collection of ItemCollections. The method expects an
 	 * valid Lucene search statement. The method returns only ItemCollections
-	 * which are readable by the CallerPrincipal. With the startpos and count
-	 * parameters it is possible to read chunks of entities. The jPQL Statement
-	 * must match the conditions of the JPA Object Class Entity
+	 * which are readable by the CallerPrincipal. With the pageSize and pageNumber
+	 * it is possible to paginate. 
 	 * 
 	 * @param searchTerm
-	 *            - Lucene search query
-	 * @param startpos
-	 *            - optional start position
-	 * @param maxcount
-	 *            - maximum count of elements to be returned
+	 *            - Lucene search term
+	 * @param pageSize
+	 *            - total docs per page
+	 * @param pageNumber
+	 *            - number of page to start (default =0)
 	 * @return list of ItemCollection elements
 	 * @throws InvalidAccessException
 	 * 
 	 * @see org.imixs.workflow.jpa.Document.jee.jpa.Entity
 	 */
-	public List<ItemCollection> find(String searchTerm, int startpos, int maxcount) throws InvalidAccessException {
+	public List<ItemCollection> find(String searchTerm, int pageSize, int pageNumber) throws InvalidAccessException {
 
-		long l = 0;
-		// TODO - implementation of startpos missing
-		logger.warning("find: startpos + " + startpos + " not implemented!");
+		logger.fine("find - SearchTerm=" + searchTerm  + "  , pageSize=" + pageSize + " pageNumber=" + pageNumber);
+		List<ItemCollection> result = luceneSearchService.search(searchTerm, this, pageSize,pageNumber);
 
-		logger.fine("find - SearchTerm=" + searchTerm);
-		logger.fine("find - Startpos=" + startpos + " maxcount=" + maxcount);
-		List<ItemCollection> result = luceneSearchService.search(searchTerm, this, maxcount);
-
-		logger.fine(" find in " + (System.currentTimeMillis() - l) + " ms");
 		return result;
 
 	}
@@ -510,12 +503,13 @@ public class DocumentService {
 	 * 
 	 * @see org.imixs.workflow.jpa.Document.jee.jpa.Entity
 	 */
-	public int countAllDocuments(String query) throws InvalidAccessException {
+	public int count(String query) throws InvalidAccessException {
 
 		long l = 0;
 
 		logger.fine("countAllDocuments - Query=" + query);
 
+		logger.warning("Count not implemented!");
 		// TODO - implementation missing
 
 		logger.fine("[EntityService] countAllEntities in " + (System.currentTimeMillis() - l) + " ms");
