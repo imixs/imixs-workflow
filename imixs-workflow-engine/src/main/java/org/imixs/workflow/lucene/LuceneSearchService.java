@@ -59,8 +59,8 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ejb.DocumentService;
+import org.imixs.workflow.ejb.PropertyService;
 import org.imixs.workflow.jee.ejb.EntityService;
-import org.imixs.workflow.jee.util.PropertyService;
 
 /**
  * This session ejb provides a service to search the lucene index. The EJB uses
@@ -91,7 +91,7 @@ public class LuceneSearchService {
 	public static final String UNDEFINED_ERROR = "UNDEFINED_ERROR";
 	public static final String INVALID_INDEX = "INVALID_INDEX";
 
-	private static final int MAX_SEARCH_RESULT = 100;
+	private static final int MAX_SEARCH_RESULT = 1000;
 
 	@EJB
 	PropertyService propertyService;
@@ -147,7 +147,7 @@ public class LuceneSearchService {
 	public List<ItemCollection> search(String sSearchTerm, DocumentService documentService, Sort sortOrder,
 			Operator defaultOperator, int maxResult) {
 
-		if (maxResult > MAX_SEARCH_RESULT) {
+		if (maxResult <= 0 || maxResult > MAX_SEARCH_RESULT) {
 			maxResult = MAX_SEARCH_RESULT;
 		}
 		logger.fine("lucene search max_result=" + maxResult);
@@ -226,9 +226,10 @@ public class LuceneSearchService {
 			searcher.getIndexReader().close();
 
 			logger.fine("lucene search result computed in " + (System.currentTimeMillis() - ltime) + " ms");
-		} catch (Exception e) {
-			logger.warning("ucene search error!");
-			e.printStackTrace();
+		} catch (IOException e) {
+			logger.warning("Lucene search error: " + e.getMessage());
+		} catch (ParseException e) {
+			logger.warning("Lucene search error: " + e.getMessage());
 		}
 
 		return workitems;
@@ -248,7 +249,7 @@ public class LuceneSearchService {
 		logger.fine("lucene createIndexDirectory...");
 		// read configuration
 		String sLuceneLockFactory = prop.getProperty("lucence.lockFactory");
-		String sIndexDir = prop.getProperty("lucence.indexDir");
+		String sIndexDir = prop.getProperty("lucence.indexDir", LuceneUpdateService.DEFAULT_INDEX_DIRECTORY);
 
 		Directory indexDir = FSDirectory.open(new File(sIndexDir));
 
@@ -286,9 +287,10 @@ public class LuceneSearchService {
 	 * 
 	 * @param prop
 	 * @return
+	 * @throws IOException
 	 * @throws Exception
 	 */
-	IndexSearcher createIndexSearcher(Properties prop) throws Exception {
+	IndexSearcher createIndexSearcher(Properties prop) throws IOException {
 		logger.fine("lucene createIndexSearcher...");
 
 		Directory indexDir = createIndexDirectory(prop);
@@ -330,12 +332,14 @@ public class LuceneSearchService {
 	 * The method rewrites the lucene <code>QueryParser.escape</code> method and
 	 * did not! escape '*' char.
 	 * 
-	 * Clients should use the method normalizeSearchTerm() instead of escapeSearchTerm() to prepare a user input for a lucene search.
+	 * Clients should use the method normalizeSearchTerm() instead of
+	 * escapeSearchTerm() to prepare a user input for a lucene search.
 	 * 
-	 *  
+	 * 
 	 * @see normalizeSearchTerm
 	 * @param searchTerm
-	 * @param ignoreBracket - if true brackes will not be escaped. 
+	 * @param ignoreBracket
+	 *            - if true brackes will not be escaped.
 	 * @return escaped search term
 	 */
 	public static String escapeSearchTerm(String searchTerm, boolean ignoreBracket) {
@@ -348,25 +352,26 @@ public class LuceneSearchService {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < searchTerm.length(); i++) {
 			char c = searchTerm.charAt(i);
-			// These characters are part of the query syntax and must be escaped (ignore brackets!)
-			if (c == '\\' || c == '+' || c == '-' || c == '!' || c == ':' || c == '^'
-					|| c == '[' || c == ']' || c == '\"' || c == '{' || c == '}' || c == '~' || c == '?' || c == '|'
-					|| c == '&' || c == '/') {
+			// These characters are part of the query syntax and must be escaped
+			// (ignore brackets!)
+			if (c == '\\' || c == '+' || c == '-' || c == '!' || c == ':' || c == '^' || c == '[' || c == ']'
+					|| c == '\"' || c == '{' || c == '}' || c == '~' || c == '?' || c == '|' || c == '&' || c == '/') {
 				sb.append('\\');
 			}
-			
+
 			// escape bracket?
-			if (!ignoreBracket && ( c == '(' || c == ')' ))  {
+			if (!ignoreBracket && (c == '(' || c == ')')) {
 				sb.append('\\');
 			}
-			
+
 			sb.append(c);
 		}
 		return sb.toString();
 
 	}
+
 	public static String escapeSearchTerm(String searchTerm) {
-		return escapeSearchTerm(searchTerm,false);
+		return escapeSearchTerm(searchTerm, false);
 	}
 
 	/**
@@ -375,8 +380,8 @@ public class LuceneSearchService {
 	 * 
 	 * The method also escapes the result search term.
 	 * 
-	 * e.g. 'europe/berlin' will be normalized to 'europe berlin'
-	 * e.g. 'r555/333' will be unmodified 'r555/333' 
+	 * e.g. 'europe/berlin' will be normalized to 'europe berlin' e.g.
+	 * 'r555/333' will be unmodified 'r555/333'
 	 * 
 	 * @param searchTerm
 	 * @return normalzed search term
@@ -386,13 +391,13 @@ public class LuceneSearchService {
 
 		QueryParser parser = new QueryParser("content", analyzer);
 		try {
-			Query result = parser.parse(escapeSearchTerm(searchTerm,false));
+			Query result = parser.parse(escapeSearchTerm(searchTerm, false));
 			searchTerm = result.toString("content");
 		} catch (ParseException e) {
 			logger.warning("Unable to normalze serchTerm '" + searchTerm + "'  -> " + e.getMessage());
 		}
 
-		return escapeSearchTerm(searchTerm,true);
+		return escapeSearchTerm(searchTerm, true);
 
 	}
 }

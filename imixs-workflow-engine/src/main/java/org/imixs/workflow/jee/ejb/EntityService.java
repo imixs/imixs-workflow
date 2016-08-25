@@ -213,7 +213,7 @@ public class EntityService implements EntityServiceRemote {
 	@Resource(name = "DISABLE_OPTIMISTIC_LOCKING")
 	private Boolean disableOptimisticLocking = false;
 
-	@PersistenceContext(unitName = "org.imixs.workflow.jee.jpa")
+	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
 
 	/**

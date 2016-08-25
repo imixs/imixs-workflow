@@ -61,9 +61,9 @@ import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.Version;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ejb.PropertyService;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.jee.ejb.EntityService;
-import org.imixs.workflow.jee.util.PropertyService;
 
 /**
  * The LuceneUpdateService provides methods to write Imixs Workitems into a
@@ -108,8 +108,8 @@ public class LuceneUpdateService {
 	private Properties properties = null;
 
 	private static List<String> NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$processid", "$workitemid",
-			"$uniqueidref", "type", "$writeaccess", "namcreator", "txtworkflowgroup", "txtname",
-			"namowner", "txtworkitemref");
+			"$uniqueidref", "type", "$writeaccess", "namcreator", "txtworkflowgroup", "txtname", "namowner",
+			"txtworkitemref");
 
 	@EJB
 	PropertyService propertyService;
@@ -127,7 +127,7 @@ public class LuceneUpdateService {
 
 		// read configuration
 		properties = propertyService.getProperties();
-		indexDirectoryPath = properties.getProperty("lucence.indexDir",DEFAULT_INDEX_DIRECTORY);
+		indexDirectoryPath = properties.getProperty("lucence.indexDir", DEFAULT_INDEX_DIRECTORY);
 		luceneLockFactory = properties.getProperty("lucence.lockFactory");
 		// get Analyzer Class -
 		// default=org.apache.lucene.analysis.standard.ClassicAnalyzer
@@ -141,38 +141,44 @@ public class LuceneUpdateService {
 		logger.fine("lucene FulltextFieldList=" + sFulltextFieldList);
 		logger.fine("lucene IndexFieldListAnalyse=" + sIndexFieldListAnalyse);
 		logger.fine("lucene IndexFieldListNoAnalyse=" + sIndexFieldListNoAnalyse);
+
 		// compute search field list
-		StringTokenizer st = new StringTokenizer(sFulltextFieldList, ",");
 		searchFieldList = new ArrayList<String>();
-		while (st.hasMoreElements()) {
-			String sName = st.nextToken().toLowerCase();
-			// do not add internal fields
-			if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
-				searchFieldList.add(sName);
+		if (sFulltextFieldList != null && !sFulltextFieldList.isEmpty()) {
+			StringTokenizer st = new StringTokenizer(sFulltextFieldList, ",");
+			while (st.hasMoreElements()) {
+				String sName = st.nextToken().toLowerCase();
+				// do not add internal fields
+				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
+					searchFieldList.add(sName);
+			}
 		}
 
 		// compute Index field list (Analyze)
-		st = new StringTokenizer(sIndexFieldListAnalyse, ",");
 		indexFieldListAnalyse = new ArrayList<String>();
-		while (st.hasMoreElements()) {
-			String sName = st.nextToken().toLowerCase();
-			// do not add internal fields
-			if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
-				indexFieldListAnalyse.add(sName);
+		if (sIndexFieldListAnalyse != null && !sIndexFieldListAnalyse.isEmpty()) {
+			StringTokenizer st = new StringTokenizer(sIndexFieldListAnalyse, ",");
+			while (st.hasMoreElements()) {
+				String sName = st.nextToken().toLowerCase();
+				// do not add internal fields
+				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
+					indexFieldListAnalyse.add(sName);
+			}
 		}
 
 		// compute Index field list (NoAnalyze)
-		st = new StringTokenizer(sIndexFieldListNoAnalyse, ",");
 
 		indexFieldListNoAnalyse = new ArrayList<String>();
-
 		// add all static fields from the WorkflowService
 		indexFieldListNoAnalyse.addAll(NOANALYSE_FIELD_LIST);
-		// add additional field list from imixs.properties
-		while (st.hasMoreElements()) {
-			String sName = st.nextToken().toLowerCase();
-			if (!indexFieldListNoAnalyse.contains(sName))
-				indexFieldListNoAnalyse.add(sName);
+		if (sIndexFieldListNoAnalyse != null && !sIndexFieldListNoAnalyse.isEmpty()) {
+			// add additional field list from imixs.properties
+			StringTokenizer st = new StringTokenizer(sIndexFieldListNoAnalyse, ",");
+			while (st.hasMoreElements()) {
+				String sName = st.nextToken().toLowerCase();
+				if (!indexFieldListNoAnalyse.contains(sName))
+					indexFieldListNoAnalyse.add(sName);
+			}
 		}
 	}
 
@@ -318,7 +324,7 @@ public class LuceneUpdateService {
 		/**
 		 * Read configuration
 		 */
-		
+
 		Directory indexDir = FSDirectory.open(new File(indexDirectoryPath));
 
 		// set lockFactory

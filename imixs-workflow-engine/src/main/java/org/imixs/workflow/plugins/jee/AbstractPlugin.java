@@ -35,8 +35,8 @@ import javax.naming.NamingException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowContext;
+import org.imixs.workflow.ejb.PropertyService;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.jee.util.PropertyService;
 
 /**
  * This abstract class implements a basic set of functions for implementing

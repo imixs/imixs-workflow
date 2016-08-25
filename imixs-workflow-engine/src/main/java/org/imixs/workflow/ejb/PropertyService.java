@@ -25,7 +25,7 @@
  *  	Ralph Soika - Software Developer
  *******************************************************************************/
 
-package org.imixs.workflow.jee.util;
+package org.imixs.workflow.ejb;
 
 import java.util.Properties;
 import java.util.logging.Level;

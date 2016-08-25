@@ -94,20 +94,13 @@ public class ViewController implements Serializable {
 
 		// setup the default view types
 		if (views.get("worklist.created.desc") == null)
-			views.put("worklist.created.desc", "SELECT wi FROM Entity AS wi "
-					+ " WHERE wi.type= '" + getType()
-					+ "' ORDER BY wi.created desc");
+			views.put("worklist.created.desc", "(type:\"" + getType() + "\")");
 
 		if (views.get("worklist.modified.desc") == null)
-			views.put("worklist.modified.desc", "SELECT wi FROM Entity AS wi "
-					+ " WHERE wi.type= '" + getType()
-					+ "'  ORDER BY wi.modified desc");
+			views.put("worklist.created.desc", "(type:\"" + getType() + "\")");
 
 		if (views.get("worklist.name.asc") == null)
-			views.put("worklist.name.asc", "SELECT"
-					+ " wi FROM Entity as wi JOIN wi.textItems as t WHERE "
-					+ " wi.type='" + getType() + "' "
-					+ " AND t.itemName = 'txtname'	ORDER BY t.itemValue ");
+			views.put("worklist.created.desc", "(type:\"" + getType() + "\")");
 	}
 
 	/**
