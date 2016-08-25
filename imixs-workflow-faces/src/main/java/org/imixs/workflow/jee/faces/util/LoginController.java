@@ -38,7 +38,7 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.imixs.workflow.jee.ejb.EntityService;
+import org.imixs.workflow.ejb.DocumentService;
 
 /**
  * This Backing Bean acts as a Login Helper Class. Can be used to identify the
@@ -52,7 +52,7 @@ import org.imixs.workflow.jee.ejb.EntityService;
 public class LoginController {
 
 	@EJB
-	private EntityService entityService;
+	private DocumentService documentService;
 
 	/**
 	 * returns true if user is authenticated and has at least on of the Imixs
@@ -123,7 +123,7 @@ public class LoginController {
 	 * @return
 	 */
 	public List<String> getUserNameList() {
-		return entityService.getUserNameList();
+		return documentService.getUserNameList();
 	}
 
 	/**

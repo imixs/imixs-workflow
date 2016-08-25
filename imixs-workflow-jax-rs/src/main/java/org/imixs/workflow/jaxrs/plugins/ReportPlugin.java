@@ -42,10 +42,10 @@ import javax.xml.bind.Marshaller;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
+import org.imixs.workflow.ejb.DocumentService;
+import org.imixs.workflow.ejb.ReportService;
+import org.imixs.workflow.ejb.WorkflowService;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.jee.ejb.EntityService;
-import org.imixs.workflow.jee.ejb.ReportService;
-import org.imixs.workflow.jee.ejb.WorkflowService;
 import org.imixs.workflow.plugins.jee.VersionPlugin;
 import org.imixs.workflow.xml.EntityCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
@@ -55,13 +55,10 @@ import org.imixs.workflow.xml.XMLItemCollectionAdapter;
  * activityEntity provide the following properties:
  * <p>
  * <ul>
- * <li>
- * txtReportName=Name of the Report to be processed
- * <li>
- * txtReportFilePath= filename or filepath the result will be saved
- * <li>
- * txtReportTarget = where the result is saved (0=workitem, 1=blobWorkitem, 2=
- * disk)
+ * <li>txtReportName=Name of the Report to be processed
+ * <li>txtReportFilePath= filename or filepath the result will be saved
+ * <li>txtReportTarget = where the result is saved (0=workitem, 1=blobWorkitem,
+ * 2= disk)
  * 
  * 
  * 
@@ -77,7 +74,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 	public static final String REPORT_UNDEFINED = "REPORT_UNDEFINED";
 	public static final String INVALID_REPORT_DEFINITION = "INVALID_REPORT_DEFINITION";
 
-	private EntityService entityService = null;
+	private DocumentService documentService = null;
 	private WorkflowService workflowService = null;
 	private ReportService reportService = null;
 
@@ -90,8 +87,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 	private String sEncoding;
 	private ItemCollection blobWorkitem = null;
 
-	private static Logger logger = Logger.getLogger(ReportPlugin.class
-			.getName());
+	private static Logger logger = Logger.getLogger(ReportPlugin.class.getName());
 
 	public void init(WorkflowContext actx) throws PluginException {
 		super.init(actx);
@@ -102,11 +98,10 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 			workflowService = (WorkflowService) actx;
 
 			if (workflowService == null)
-				throw new PluginException(VersionPlugin.class.getSimpleName(),
-						INVALID_CONTEXT,
+				throw new PluginException(VersionPlugin.class.getSimpleName(), INVALID_CONTEXT,
 						"VersionPlugin unable to access WorkflowSerive");
 
-			entityService = workflowService.getEntityService();
+			documentService = workflowService.getDocumentService();
 			reportService = workflowService.getReportService();
 		}
 
@@ -132,18 +127,15 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	public int run(ItemCollection adocumentContext,
-			ItemCollection adocumentActivity) throws PluginException {
+	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 
 		reportName = adocumentActivity.getItemValueString("txtReportName");
-		reportFilePath = adocumentActivity
-				.getItemValueString("txtReportFilePath");
+		reportFilePath = adocumentActivity.getItemValueString("txtReportFilePath");
 		if ("".equals(reportFilePath))
 			reportFilePath = reportName;
 
 		// replace dynamic field values
-		reportFilePath = this.replaceDynamicValues(reportFilePath,
-				adocumentContext);
+		reportFilePath = this.replaceDynamicValues(reportFilePath, adocumentContext);
 
 		reportTarget = adocumentActivity.getItemValueString("txtReportTarget");
 
@@ -157,10 +149,8 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 		ItemCollection itemCol = reportService.getReport(reportName);
 		if (itemCol == null) {
 			// report undefined
-			throw new PluginException(ReportPlugin.class.getSimpleName(),
-					REPORT_UNDEFINED,
-					"Report '" + reportName + " is undefined",
-					new Object[] { reportName });
+			throw new PluginException(ReportPlugin.class.getSimpleName(), REPORT_UNDEFINED,
+					"Report '" + reportName + " is undefined", new Object[] { reportName });
 
 		}
 
@@ -168,11 +158,9 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 		sEQL = itemCol.getItemValueString("txtquery");
 
 		// compute dynamical params
-		String sParamString = adocumentActivity
-				.getItemValueString("txtReportParams");
+		String sParamString = adocumentActivity.getItemValueString("txtReportParams");
 		// replace field values...
-		sParamString = this
-				.replaceDynamicValues(sParamString, adocumentContext);
+		sParamString = this.replaceDynamicValues(sParamString, adocumentContext);
 
 		// compute jpql statement
 		sEQL = computeEQLParams(sEQL, sParamString);
@@ -198,8 +186,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 			sEncoding = "UTF-8";
 
 		// query result ....
-		Collection<ItemCollection> col = entityService.findAllEntities(sEQL, 0,
-				-1);
+		Collection<ItemCollection> col = documentService.find(sEQL, 0, -1);
 		// now add the current Workitem into the collection if an older
 		// version is
 		// included in the result
@@ -209,8 +196,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 			for (ItemCollection aitemCol : col) {
 				if (sUnqiueID.equals(aitemCol.getItemValueString("$uniqueid"))) {
 
-					ItemCollection itemTemp = new ItemCollection(
-							adocumentContext.getAllItems());
+					ItemCollection itemTemp = new ItemCollection(adocumentContext.getAllItems());
 					itemTemp.replaceItemValue("$temp", "true");
 					colNew.add(itemTemp);
 					logger.info(" ReportPlugin - relaced deprecated workitem from collection");
@@ -221,8 +207,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 		} else {
 			// seems that we are currently processing a new workitem - so
 			// include it into the resultset
-			ItemCollection itemTemp = new ItemCollection(
-					adocumentContext.getAllItems());
+			ItemCollection itemTemp = new ItemCollection(adocumentContext.getAllItems());
 			itemTemp.replaceItemValue("$temp", "true");
 			col.add(itemTemp);
 			logger.info(" ReportPlugin - add current workitem into collection");
@@ -230,13 +215,11 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 		}
 		try {
 			// Transform XML per XSL and generate output
-			EntityCollection xmlCol = XMLItemCollectionAdapter.putCollection(
-					col, vAttributList);
+			EntityCollection xmlCol = XMLItemCollectionAdapter.putCollection(col, vAttributList);
 
 			StringWriter xmlWriter = new StringWriter();
 
-			JAXBContext context = JAXBContext
-					.newInstance(EntityCollection.class);
+			JAXBContext context = JAXBContext.newInstance(EntityCollection.class);
 
 			Marshaller m = context.createMarshaller();
 			m.setProperty("jaxb.encoding", sEncoding);
@@ -250,8 +233,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 			String xmlContent = xmlWriter.toString();
 
 			// unescape xml and html fields which were escaped by the Marshaller
-			String xmlContentExtended = unescapeXMLContent(xmlContent,
-					vAttributList, col);
+			String xmlContentExtended = unescapeXMLContent(xmlContent, vAttributList, col);
 
 			// String path = "~/input.xml";
 			// Files.write(Paths.get(path), xmlContentExtended.getBytes(),
@@ -259,13 +241,11 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 
 			try {
 				if ("application/pdf".equals(sContentType.toLowerCase()))
-					org.imixs.workflow.jaxrs.ReportRestService
-							.fopTranformation(xmlContentExtended, sXSL,
-									sEncoding, outputStream);
+					org.imixs.workflow.jaxrs.ReportRestService.fopTranformation(xmlContentExtended, sXSL, sEncoding,
+							outputStream);
 				else
-					org.imixs.workflow.jaxrs.ReportRestService
-							.xslTranformation(xmlContentExtended, sXSL,
-									sEncoding, outputStream);
+					org.imixs.workflow.jaxrs.ReportRestService.xslTranformation(xmlContentExtended, sXSL, sEncoding,
+							outputStream);
 			} finally {
 				outputStream.close();
 			}
@@ -273,15 +253,13 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 			// write to workitem
 			if ("0".equals(reportTarget)) {
 
-				adocumentContext.addFile(outputStream.toByteArray(),
-						reportFilePath, sContentType);
+				adocumentContext.addFile(outputStream.toByteArray(), reportFilePath, sContentType);
 			}
 			// write to blob
 			if ("1".equals(reportTarget)) {
 				loadBlobWorkItem(adocumentContext);
 
-				blobWorkitem.addFile(outputStream.toByteArray(),
-						reportFilePath, sContentType);
+				blobWorkitem.addFile(outputStream.toByteArray(), reportFilePath, sContentType);
 				saveBlobWorkitem(adocumentContext);
 				// add the file name (with empty data) into the
 				// parentWorkitem.
@@ -305,9 +283,8 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 			return Plugin.PLUGIN_OK;
 		} catch (Exception e) {
 			// report undefined
-			throw new PluginException(ReportPlugin.class.getSimpleName(),
-					INVALID_REPORT_DEFINITION, "Unable to process report '"
-							+ reportName + "' ", new Object[] { reportName });
+			throw new PluginException(ReportPlugin.class.getSimpleName(), INVALID_REPORT_DEFINITION,
+					"Unable to process report '" + reportName + "' ", new Object[] { reportName });
 		}
 	}
 
@@ -320,8 +297,8 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 	 * 
 	 * <code>
 	    <item><name>htmlanswer</name>
-              <value xsi:type="xs:string">&lt;p&gt;Some conent&lt;/p&gt;</value>
-        </item>
+	          <value xsi:type="xs:string">&lt;p&gt;Some conent&lt;/p&gt;</value>
+	    </item>
 	 * 
 	 * </code>
 	 * 
@@ -335,8 +312,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 	 * @param xmlCol
 	 *            - xml EntityCollection containing the original values
 	 */
-	private String unescapeXMLContent(String aContent,
-			List<String> vAttributList, Collection<ItemCollection> col) {
+	private String unescapeXMLContent(String aContent, List<String> vAttributList, Collection<ItemCollection> col) {
 
 		int entityPos = aContent.indexOf("<entity>");
 		// iterate over all entities ...
@@ -344,8 +320,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 
 			for (String fieldname : vAttributList) {
 
-				if (fieldname.toLowerCase().startsWith("html")
-						|| fieldname.toLowerCase().startsWith("xml")) {
+				if (fieldname.toLowerCase().startsWith("html") || fieldname.toLowerCase().startsWith("xml")) {
 
 					// find <name>field</name>
 					String tag = "<name>" + fieldname + "</name>";
@@ -355,8 +330,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 						int iPos = aContent.indexOf(tag, entityPos);
 						if (iPos > -1) {
 							// find value start pos and end pos
-							int start = aContent.indexOf('>',
-									iPos + tag.length());
+							int start = aContent.indexOf('>', iPos + tag.length());
 							if (start > -1) {
 								// if empty tag it ends with /> instead of
 								// </value>. But we skipt empty values before.
@@ -366,8 +340,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 								if (end > -1) {
 									// replace conent with origiaal value...
 
-									aContent = aContent.substring(0, start + 1)
-											+ sOriginValue
+									aContent = aContent.substring(0, start + 1) + sOriginValue
 											+ aContent.substring(end);
 								}
 
@@ -443,16 +416,8 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 		String sUniqueID = itemCol.getItemValueString("$uniqueid");
 
 		// search entity...
-		String sQuery = " SELECT lobitem FROM Entity as lobitem"
-				+ " join lobitem.textItems as t1"
-				+ " join lobitem.textItems as t2"
-				+ " WHERE t1.itemName = 'type'"
-				+ " AND t1.itemValue = 'workitemlob'"
-				+ " AND t2.itemName = '$uniqueidref'" + " AND t2.itemValue = '"
-				+ sUniqueID + "'";
-
-		Collection<ItemCollection> itemcol = entityService.findAllEntities(
-				sQuery, 0, 1);
+		String searchTerm = "(type:\"workitemlob\" AND $uniqueidref:\"" + sUniqueID + "\")";
+		Collection<ItemCollection> itemcol = documentService.find(searchTerm, 0, 1);
 		if (itemcol != null && itemcol.size() > 0) {
 
 			blobWorkitem = itemcol.iterator().next();
@@ -474,8 +439,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 	 * 
 	 * @throws Exception
 	 */
-	private void saveBlobWorkitem(ItemCollection parentWorkitem)
-			throws Exception {
+	private void saveBlobWorkitem(ItemCollection parentWorkitem) throws Exception {
 
 		if (blobWorkitem != null && parentWorkitem != null) {
 
@@ -486,15 +450,13 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 			vAccess = parentWorkitem.getItemValue("$WriteAccess");
 			blobWorkitem.replaceItemValue("$WriteAccess", vAccess);
 
-			blobWorkitem.replaceItemValue("$uniqueidRef",
-					parentWorkitem.getItemValueString("$uniqueID"));
+			blobWorkitem.replaceItemValue("$uniqueidRef", parentWorkitem.getItemValueString("$uniqueID"));
 			blobWorkitem.replaceItemValue("type", "workitemlob");
 			// Update BlobWorkitem
 			// blobWorkitem = entityService.save(blobWorkitem);
 			// new transaction....
-			blobWorkitem = this.getEjbSessionContext()
-					.getBusinessObject(WorkflowService.class)
-					.getEntityService().saveByNewTransaction(blobWorkitem);
+			blobWorkitem = this.getEjbSessionContext().getBusinessObject(WorkflowService.class).getDocumentService()
+					.saveByNewTransaction(blobWorkitem);
 
 		}
 	}

@@ -1,4 +1,4 @@
-package org.imixs.workflow.jee.ejb;
+package org.imixs.workflow.ejb;
 
 /*******************************************************************************
  *  Imixs Workflow 
@@ -57,6 +57,7 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.imixs.workflow.jee.ejb.EntityService;
 
 /**
  * This EJB implements a TimerService which scans workitems for scheduled
@@ -80,9 +81,9 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 @LocalBean
 @DeclareRoles({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @RunAs("org.imixs.ACCESSLEVEL.MANAGERACCESS")
-public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote {
+public class WorkflowSchedulerService {
 
-	final static public String TYPE = "configuration";
+	final static public String TYPE_CONFIGURATION = "configuration";
 	final static public String NAME = "org.imixs.workflow.scheduler";
 
 	final static public int OFFSET_SECONDS = 0;
@@ -97,7 +98,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	WorkflowService workflowService;
 
 	@EJB
-	EntityService entityService;
+	DocumentService entityService;
 
 	@EJB
 	ModelService modelService;
@@ -122,17 +123,16 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	 */
 	public ItemCollection loadConfiguration() {
 		ItemCollection configItemCollection = null;
-		String sQuery = "SELECT config FROM Entity AS config " + " JOIN config.textItems AS t2"
-				+ " WHERE config.type = '" + TYPE + "'" + " AND t2.itemName = 'txtname'" + " AND t2.itemValue = '"
-				+ NAME + "'" + " ORDER BY t2.itemValue asc";
-		Collection<ItemCollection> col = entityService.findAllEntities(sQuery, 0, 1);
+		String searchTerm="(type:\"" + TYPE_CONFIGURATION  +"\" AND txtname:\"" + NAME + "\")";
+		
+		Collection<ItemCollection> col = entityService.find(searchTerm, 0, 1);
 
 		if (col.size() > 0) {
 			configItemCollection = col.iterator().next();
 		} else {
 			// create default values
 			configItemCollection = new ItemCollection();
-			configItemCollection.replaceItemValue("type", TYPE);
+			configItemCollection.replaceItemValue("type", TYPE_CONFIGURATION);
 			configItemCollection.replaceItemValue("txtname", NAME);
 			configItemCollection.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
 		}
@@ -157,7 +157,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 	 */
 	public ItemCollection saveConfiguration(ItemCollection configItemCollection) throws AccessDeniedException {
 		// update write and read access
-		configItemCollection.replaceItemValue("type", TYPE);
+		configItemCollection.replaceItemValue("type", TYPE_CONFIGURATION);
 		configItemCollection.replaceItemValue("txtName", NAME);
 		configItemCollection.replaceItemValue("$writeAccess", "org.imixs.ACCESSLEVEL.MANAGERACCESS");
 		configItemCollection.replaceItemValue("$readAccess", "org.imixs.ACCESSLEVEL.MANAGERACCESS");
@@ -810,14 +810,12 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 				+ ") ...");
 
 		// now we need to select by type, $ProcessID and by $modelVersion!
-		String sQuery = "SELECT wi FROM Entity as wi " + " JOIN wi.integerItems AS i " + " JOIN wi.textItems as t "
-				+ " WHERE wi.type='workitem' ";
-		sQuery += " AND i.itemName = '$processid' AND i.itemValue = '" + iProcessID + "'"
-				+ " AND t.itemName = '$modelversion' AND t.itemValue = '" + sModelVersion + "'";
+		String searchTerm="(type:\"workitem\" AND $processid:\"" + iProcessID + "\" AND $modelversion:\"" + sModelVersion + "\")";
+		
 
-		logger.fine("[WorkflowSchedulerService] select: " + sQuery);
+		logger.fine("[WorkflowSchedulerService] select: " + searchTerm);
 
-		Collection<ItemCollection> worklist = entityService.findAllEntities(sQuery, 0, -1);
+		Collection<ItemCollection> worklist = entityService.find(searchTerm, 0, -1);
 
 		logger.fine("[WorkflowSchedulerService] " + worklist.size() + " workitems found");
 		for (ItemCollection workitem : worklist) {

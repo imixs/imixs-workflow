@@ -10,7 +10,7 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.jee.ejb.EntityService;
+import org.imixs.workflow.WorkflowKernel;
 
 /**
  * 
@@ -42,7 +42,7 @@ public class FileUploadController implements Serializable {
 		if (workitem == null)
 			return; 
 		logger.fine("[MultiFileController] updateWorkitem '"
-				+ workitem.getItemValueString(EntityService.UNIQUEID));
+				+ workitem.getItemValueString(WorkflowKernel.UNIQUEID));
 		HttpServletRequest httpRequest = (HttpServletRequest) (FacesContext
 				.getCurrentInstance().getExternalContext().getRequest());
 

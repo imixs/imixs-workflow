@@ -45,6 +45,7 @@ import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
+import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
@@ -53,22 +54,25 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.jpa.Document;
+import org.imixs.workflow.lucene.LuceneSearchService;
+import org.imixs.workflow.lucene.LuceneUpdateService;
 
 /**
- * The DocumentService is used to save and load instances of ItemCollections into
- * a Database. The DocumentService throws an AccessDeniedException if the
- * CallerPrincipal is not allowed to save or read a specific Document from
- * the database. So the DocumentService can be used to save business objects into
- * a database with individual read- or writeAccess restrictions.
+ * The DocumentService is used to save and load instances of ItemCollections
+ * into a Database. The DocumentService throws an AccessDeniedException if the
+ * CallerPrincipal is not allowed to save or read a specific Document from the
+ * database. So the DocumentService can be used to save business objects into a
+ * database with individual read- or writeAccess restrictions.
  * <p>
  * The Bean holds an instance of an EntityPersistenceManager for the persistence
- * unit 'org.imixs.workflow.jpa' to manage the Document entity bean class.
- * The Document entity bean is used to store the attributes of a ItemCollection into
+ * unit 'org.imixs.workflow.jpa' to manage the Document entity bean class. The
+ * Document entity bean is used to store the attributes of a ItemCollection into
  * the connected database.
  * <p>
  * The save() method persists any instance of an ItemCollection. If a
@@ -77,28 +81,27 @@ import org.imixs.workflow.jpa.Document;
  * this method. If a ItemCollection was saved before the method updates the
  * corresponding Document Object.
  * <p>
- * The load() and find() methods are used to read ItemCollections
- * from the database. The remove() method deletes a saved ItemCollection from
- * the database.
+ * The load() and find() methods are used to read ItemCollections from the
+ * database. The remove() method deletes a saved ItemCollection from the
+ * database.
  * <p>
  * All methods expect and return Instances of the object
  * org.imixs.workflow.ItemCollection which is no entity EJB. So these objects
  * are not managed by any instance of an EntityPersistenceManager.
  * <p>
- * A collection of ItemCollections can be read using the find() method
- * using EQL syntax.
+ * A collection of ItemCollections can be read using the find() method using EQL
+ * syntax.
  * <p>
  * 
  * Additional to the basic functionality to save and load instances of the
  * object org.imixs.workflow.ItemCollection the method also manages the read-
  * and writeAccess for each instance of an ItemCollection. Therefore the save()
  * method scans an ItemCollection for the attributes '$ReadAccess' and
- * '$WriteAccess'. The DocumentService verifies in each call of the
- * save() load(), remove() and find() methods if the current
- * callerPrincipal is granted to the affected entities. If an ItemCollection was
- * saved with read- or writeAccess the access to an Instance of a saved
- * ItemCollection will be protected for a callerPrincipal with missing read- or
- * writeAccess. 
+ * '$WriteAccess'. The DocumentService verifies in each call of the save()
+ * load(), remove() and find() methods if the current callerPrincipal is granted
+ * to the affected entities. If an ItemCollection was saved with read- or
+ * writeAccess the access to an Instance of a saved ItemCollection will be
+ * protected for a callerPrincipal with missing read- or writeAccess.
  * <p>
  * 
  * @see org.imixs.workflow.jpa.Document
@@ -116,8 +119,6 @@ import org.imixs.workflow.jpa.Document;
 @Stateless
 @LocalBean
 public class DocumentService {
-
-	
 
 	public static final String ACCESSLEVEL_NOACCESS = "org.imixs.ACCESSLEVEL.NOACCESS";
 
@@ -154,6 +155,12 @@ public class DocumentService {
 
 	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
+
+	@EJB
+	private LuceneUpdateService luceneUpdateService;
+
+	@EJB
+	private LuceneSearchService luceneSearchService;
 
 	/**
 	 * Returns additional AccessRoles defined for the EJB instance
@@ -221,6 +228,21 @@ public class DocumentService {
 	}
 
 	/**
+	 * Test if the caller has a given security role.
+	 * 
+	 * @param rolename
+	 * @return true if user is in role
+	 */
+	public boolean isUserInRole(String rolename) {
+		try {
+			return ctx.isCallerInRole(rolename);
+		} catch (Exception e) {
+			// avoid a exception for a role request which is not defined
+			return false;
+		}
+	}
+
+	/**
 	 * This Method saves an ItemCollection into a database. If the
 	 * ItemCollection is saved the first time the method generates a uniqueID
 	 * ('$uniqueid') which can be used to identify the ItemCollection by its ID.
@@ -237,24 +259,27 @@ public class DocumentService {
 	 * The method returns a the detached itemCollection with the current
 	 * VersionNumber from the persisted entity. (see issue #145)
 	 * 
+	 * <p>
+	 * The method adds/updates the document into the lucene index.
+	 * 
 	 * @param ItemCollection
 	 *            to be saved
 	 * @return updated ItemCollection
 	 */
-	public ItemCollection save(ItemCollection itemcol) throws AccessDeniedException {
+	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
 
 		Document persistedDocument = null;
 		// Now set flush Mode to COMMIT
 		manager.setFlushMode(FlushModeType.COMMIT);
 
 		// check if a $uniqueid is available
-		String sID = itemcol.getItemValueString(UNIQUEID);
+		String sID = document.getItemValueString(UNIQUEID);
 		if (!"".equals(sID)) {
 			// yes so we can try to find the Entity by its primary key
 			persistedDocument = manager.find(Document.class, sID);
 			if (persistedDocument == null) {
 				logger.fine("Document '" + sID + "' not found!");
-			} 
+			}
 		}
 
 		// did the document exist?
@@ -263,13 +288,12 @@ public class DocumentService {
 			// provided id. Test if user is allowed to create Entities....
 			if (!(ctx.isCallerInRole(ACCESSLEVEL_MANAGERACCESS) || ctx.isCallerInRole(ACCESSLEVEL_EDITORACCESS)
 					|| ctx.isCallerInRole(ACCESSLEVEL_AUTHORACCESS))) {
-				throw new AccessDeniedException(OPERATION_NOTALLOWED,
-						"You are not allowed to perform this operation");
+				throw new AccessDeniedException(OPERATION_NOTALLOWED, "You are not allowed to perform this operation");
 			}
 			// create new one with the provided id
 			persistedDocument = new Document(sID);
 			// if $Created is provided than overtake this information
-			Date datCreated = itemcol.getItemValueDate("$Created");
+			Date datCreated = document.getItemValueDate("$Created");
 			if (datCreated != null) {
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(datCreated);
@@ -285,8 +309,7 @@ public class DocumentService {
 			// activeEntity exists - verify if current user has write- and
 			// readaccess
 			if (!isCallerAuthor(persistedDocument) || !isCallerReader(persistedDocument)) {
-				throw new AccessDeniedException(OPERATION_NOTALLOWED,
-						"You are not allowed to perform this operation");
+				throw new AccessDeniedException(OPERATION_NOTALLOWED, "You are not allowed to perform this operation");
 			}
 		}
 
@@ -294,9 +317,9 @@ public class DocumentService {
 		// manager!
 
 		// remove the property $isauthor
-		itemcol.removeItem("$isauthor");
+		document.removeItem("$isauthor");
 
-		String aType = itemcol.getItemValueString("type");
+		String aType = document.getItemValueString("type");
 		if ("".equals(aType))
 			aType = "Entity";
 		persistedDocument.setType(aType);
@@ -304,22 +327,20 @@ public class DocumentService {
 		// update the standard attributes $modified $created and $uniqueid
 		Calendar cal = Calendar.getInstance();
 
-		itemcol.replaceItemValue("$uniqueid", persistedDocument.getId());
-		itemcol.replaceItemValue("$modified", cal.getTime());
-		itemcol.replaceItemValue("$created", persistedDocument.getCreated().getTime());
+		document.replaceItemValue("$uniqueid", persistedDocument.getId());
+		document.replaceItemValue("$modified", cal.getTime());
+		document.replaceItemValue("$created", persistedDocument.getCreated().getTime());
 
-		
 		// finally update the data field and store the item map object
-		persistedDocument.setData(itemcol.getAllItems());
+		persistedDocument.setData(document.getAllItems());
 
 		// verify and update the author access and add again the property
 		// '$isauthor'
-		itemcol.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
+		document.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
 
 		// we now increase the $Version number
 		// ! not necessary - version can be read after flush blow!
 
-		
 		/*
 		 * Issue #166,#145
 		 * 
@@ -330,7 +351,7 @@ public class DocumentService {
 		 */
 		manager.flush();
 		// update version number
-		itemcol.replaceItemValue("$Version", persistedDocument.getVersion());
+		document.replaceItemValue("$Version", persistedDocument.getVersion());
 
 		/*
 		 * Issue #189
@@ -343,8 +364,11 @@ public class DocumentService {
 		 */
 		manager.detach(persistedDocument);
 
-		// return imploded itemCollection
-		return itemcol;
+		// add/update document into index
+		luceneUpdateService.updateDocument(document);
+
+		// return itemCollection
+		return document;
 	}
 
 	/**
@@ -369,29 +393,29 @@ public class DocumentService {
 	/**
 	 * This method loads an ItemCollection from the Database. The method expects
 	 * a valid $unqiueID to identify the Document entity saved before into the
-	 * database. The method returns null if no Document with the
-	 * corresponding ID exists.
+	 * database. The method returns null if no Document with the corresponding
+	 * ID exists.
 	 * <p>
-	 * The method checks if the CallerPrincipal has read access to
-	 * Document stored in the database. If not, the method returns null.
-	 * The method dose not throw an AccessDeniedException if the user is not
-	 * allowed to read the entity to prevent a aggressor with informations about
-	 * the existence of that specific Document.
+	 * The method checks if the CallerPrincipal has read access to Document
+	 * stored in the database. If not, the method returns null. The method dose
+	 * not throw an AccessDeniedException if the user is not allowed to read the
+	 * entity to prevent a aggressor with informations about the existence of
+	 * that specific Document.
 	 * <p>
 	 * CallerPrincipial should have at least the access Role
 	 * org.imixs.ACCESSLEVEL.READACCESS
 	 * 
 	 * @param id
 	 *            - the $unqiueid of the ItemCollection to be loaded
-	 * @return ItemCollection object or null if the Document dose not
-	 *         exist or the CallerPrincipal hat insufficient read access.
+	 * @return ItemCollection object or null if the Document dose not exist or
+	 *         the CallerPrincipal hat insufficient read access.
 	 * 
 	 */
 	public ItemCollection load(String id) {
 		Document persistedDocument = null;
 		persistedDocument = manager.find(Document.class, id);
 
-		// create instance of ItemCollection 
+		// create instance of ItemCollection
 		if (persistedDocument != null && isCallerReader(persistedDocument)) {
 			return new ItemCollection(persistedDocument.getData());
 		} else
@@ -424,26 +448,24 @@ public class DocumentService {
 				throw new AccessDeniedException(OPERATION_NOTALLOWED,
 						"[EntityService] You are not allowed to perform this operation");
 
-
-			// remove entity...
+			// remove document...
 			manager.remove(persistedDocument);
+
+			// remove document form index
+			luceneUpdateService.removeDocument(itemcol.getUniqueID());
 
 		} else
 			throw new AccessDeniedException(INVALID_UNIQUEID, "[EntityService] invalid $uniqueid");
 	}
 
-	
-
-
-
 	/**
 	 * The method returns a collection of ItemCollections. The method expects an
-	 * valid Lucene search statement. The method returns only ItemCollections which are
-	 * readable by the CallerPrincipal. With the startpos and count parameters
-	 * it is possible to read chunks of entities. The jPQL Statement must match
-	 * the conditions of the JPA Object Class Entity
+	 * valid Lucene search statement. The method returns only ItemCollections
+	 * which are readable by the CallerPrincipal. With the startpos and count
+	 * parameters it is possible to read chunks of entities. The jPQL Statement
+	 * must match the conditions of the JPA Object Class Entity
 	 * 
-	 * @param query
+	 * @param searchTerm
 	 *            - Lucene search query
 	 * @param startpos
 	 *            - optional start position
@@ -454,19 +476,18 @@ public class DocumentService {
 	 * 
 	 * @see org.imixs.workflow.jpa.Document.jee.jpa.Entity
 	 */
-	public List<ItemCollection> find(String query, int startpos, int maxcount)
-			throws InvalidAccessException {
+	public List<ItemCollection> find(String searchTerm, int startpos, int maxcount) throws InvalidAccessException {
 
 		long l = 0;
-		// TODO - implementation missing
+		// TODO - implementation of startpos missing
+		logger.warning("find: startpos + " + startpos + " not implemented!");
 
-		logger.fine("findAllEntities - Query=" + query);
-		logger.fine("findAllEntities - Startpos=" + startpos + " maxcount=" + maxcount);
-		List<ItemCollection> vectorResult = new ArrayList<ItemCollection>();
+		logger.fine("find - SearchTerm=" + searchTerm);
+		logger.fine("find - Startpos=" + startpos + " maxcount=" + maxcount);
+		List<ItemCollection> result = luceneSearchService.search(searchTerm, this, maxcount);
 
-		
 		logger.fine(" find in " + (System.currentTimeMillis() - l) + " ms");
-		return vectorResult;
+		return result;
 
 	}
 
@@ -495,8 +516,7 @@ public class DocumentService {
 
 		logger.fine("countAllDocuments - Query=" + query);
 
-
-		// TODO - implementation missing 
+		// TODO - implementation missing
 
 		logger.fine("[EntityService] countAllEntities in " + (System.currentTimeMillis() - l) + " ms");
 		return 0;
@@ -536,23 +556,55 @@ public class DocumentService {
 	public List<ItemCollection> findChildEntities(ItemCollection child, int start, int count)
 			throws InvalidAccessException {
 
-		//String parentUniqueID = child.getItemValueString("$uniqueid");
+		String parentUniqueID = child.getItemValueString("$uniqueid");
 
-		// String sQuery = "SELECT wi FROM Entity AS wi ";
-		// sQuery += " JOIN wi.textItems as t2 ";
-		// sQuery += " WHERE t2.itemName = '$uniqueidref' and t2.itemValue = '"
-		// + parentUniqueID + "' ";
+		String searchTerm = "(" + "$uniqueidref:\"" + parentUniqueID + "\")";
 
-		// TODO - implementation missing
-		
-		return null;
+		return find(searchTerm, start, count);
 	}
 
 	/**
-	 * This method creates a backup of the result set form a Lucene search query. The
-	 * document list will be stored into the file system. The method stores the
-	 * Map from the ItemCollection to be independent from version upgrades. To
-	 * manage large dataSets the method reads the documents in smaller blocks
+	 * Returns all documents of a specific type
+	 * 
+	 * @param type
+	 * @return
+	 * @throws InvalidAccessException
+	 */
+
+	public List<ItemCollection> findAllDocumentsByType(String type) throws InvalidAccessException {
+		List<ItemCollection> result = new ArrayList<ItemCollection>();
+
+		String query = "SELECT document FROM Document AS document " + " WHERE document.type = '" + type + "'";
+
+		Query q = manager.createQuery(query);
+		q.setFirstResult(0);
+		// q.setMaxResults(maxcount);
+
+		long l = System.currentTimeMillis();
+		@SuppressWarnings("unchecked")
+		Collection<Document> entityList = q.getResultList();
+		logger.fine("findAllDocumentsByType - getResultList in " + (System.currentTimeMillis() - l) + " ms");
+
+		if (entityList == null)
+			return result;
+
+		logger.fine("findAllDocumentsByType - ResultList size=" + entityList.size());
+		l = System.currentTimeMillis();
+		// verify read access
+		for (Document doc : entityList) {
+			if (isCallerReader(doc)) {
+				result.add(new ItemCollection(doc.getData()));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * This method creates a backup of the result set form a Lucene search
+	 * query. The document list will be stored into the file system. The method
+	 * stores the Map from the ItemCollection to be independent from version
+	 * upgrades. To manage large dataSets the method reads the documents in
+	 * smaller blocks
 	 * 
 	 * @param entities
 	 * @throws IOException
@@ -564,9 +616,9 @@ public class DocumentService {
 		int startpos = 0;
 		int icount = 0;
 
-		logger.info("[EntityService] Starting backup....");
-		logger.info("[EntityService] Query=" + query);
-		logger.info("[EntityService] Target=" + filePath);
+		logger.info("backup - starting...");
+		logger.info("backup - query=" + query);
+		logger.info("backup - target=" + filePath);
 
 		if (filePath == null || filePath.isEmpty()) {
 			logger.severe("[EntityService] Invalid FilePath!");
@@ -577,12 +629,12 @@ public class DocumentService {
 		ObjectOutputStream out = new ObjectOutputStream(fos);
 		while (hasMoreData) {
 			// read a junk....
-			
-			
+
 			// TODO - implementation missing
-			// Collection<ItemCollection> col = findAllEntities(query, startpos, JUNK_SIZE);
+			// Collection<ItemCollection> col = findAllEntities(query, startpos,
+			// JUNK_SIZE);
 			Collection<ItemCollection> col = new Vector<ItemCollection>();
-			
+
 			if (col.size() < JUNK_SIZE)
 				hasMoreData = false;
 			startpos = startpos + col.size();
@@ -663,8 +715,8 @@ public class DocumentService {
 	 */
 	private boolean isCallerReader(Document document) {
 
-		ItemCollection itemcol=new ItemCollection(document.getData());
-		
+		ItemCollection itemcol = new ItemCollection(document.getData());
+
 		@SuppressWarnings("unchecked")
 		List<String> readAccessList = itemcol.getItemValue("$readaccess");
 
@@ -723,9 +775,9 @@ public class DocumentService {
 	 * @return
 	 */
 	private boolean isCallerAuthor(Document document) {
-		
-		ItemCollection itemcol=new ItemCollection(document.getData());
-		
+
+		ItemCollection itemcol = new ItemCollection(document.getData());
+
 		@SuppressWarnings("unchecked")
 		List<String> writeAccessList = itemcol.getItemValue("$writeaccess");
 
@@ -791,7 +843,4 @@ public class DocumentService {
 		return applicationUserGroupList;
 	}
 
-
-
-	
 }

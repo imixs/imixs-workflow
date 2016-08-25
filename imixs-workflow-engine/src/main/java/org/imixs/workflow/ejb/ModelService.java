@@ -25,7 +25,7 @@
  *  	Ralph Soika - Software Developer
  *******************************************************************************/
 
-package org.imixs.workflow.jee.ejb;
+package org.imixs.workflow.ejb;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -88,7 +88,7 @@ public class ModelService implements ModelManager {
 	private Map<String, Model> modelStore = null;
 	private static Logger logger = Logger.getLogger(ModelService.class.getName());
 	@EJB
-	EntityService entityService;
+	DocumentService documentService;
 	@Resource
 	SessionContext ctx;
 
@@ -108,9 +108,7 @@ public class ModelService implements ModelManager {
 		// load existing models into the ModelManager....
 		logger.info("Initalizing ModelService...");
 		// first remove existing model entities
-		String sQuery = "SELECT process FROM Entity AS process JOIN process.textItems AS t2"
-				+ " WHERE process.type = 'model'";
-		Collection<ItemCollection> col = entityService.findAllEntities(sQuery, 0, -1);
+		Collection<ItemCollection> col = documentService.findAllDocumentsByType("model");
 		for (ItemCollection modelEntity : col) {
 			Map<String, List<Object>> files = modelEntity.getFiles();
 			if (files != null) {
@@ -275,7 +273,7 @@ public class ModelService implements ModelManager {
 			modelItemCol.replaceItemValue("namcreator", ctx.getCallerPrincipal().getName());
 			modelItemCol.replaceItemValue("txtname", bpmnModel.getVersion());
 			modelItemCol.addFile(bpmnModel.getRawData(), bpmnModel.getVersion() + ".bpmn", "application/xml");
-			entityService.save(modelItemCol);
+			documentService.save(modelItemCol);
 
 			logger.info("stored new model '" + model.getVersion() + "'");
 		}
@@ -293,12 +291,11 @@ public class ModelService implements ModelManager {
 			logger.fine("delete BPMNModel Entity '" + version + "'...");
 
 			// first remove existing model entities
-			String sQuery = "SELECT process FROM Entity AS process JOIN process.textItems AS t2"
-					+ " WHERE process.type = 'model' AND t2.itemName = 'txtname' AND t2.itemValue = '" + version + "'";
-			Collection<ItemCollection> col = entityService.findAllEntities(sQuery, 0, -1);
+			String searchTerm="(type:\"model\" AND txtname:\"" + version + "\")";
+			Collection<ItemCollection> col = documentService.find(searchTerm, 0, -1);
 			// delete model entites
 			for (ItemCollection modelEntity : col) {
-				entityService.remove(modelEntity);
+				documentService.remove(modelEntity);
 			}
 			removeModel(version);
 		}
@@ -314,10 +311,9 @@ public class ModelService implements ModelManager {
 		if (version != null) {
 			logger.fine("load BPMNModel Entity '" + version + "'...");
 
-			// first remove existing model entities
-			String sQuery = "SELECT process FROM Entity AS process JOIN process.textItems AS t2"
-					+ " WHERE process.type = 'model' AND t2.itemName = 'txtname' AND t2.itemValue = '" + version + "'";
-			Collection<ItemCollection> col = entityService.findAllEntities(sQuery, 0, 1);
+			// find model by version
+			String searchTerm="(type:\"model\" AND txtname:\"" + version + "\")";
+			Collection<ItemCollection> col = documentService.find(searchTerm, 0, -1);
 			if (col != null && col.size() > 0) {
 				return col.iterator().next();
 			}

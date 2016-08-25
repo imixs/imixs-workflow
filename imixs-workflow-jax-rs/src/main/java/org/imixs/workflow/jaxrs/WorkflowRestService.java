@@ -63,11 +63,11 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ejb.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.WorkflowException;
-import org.imixs.workflow.jee.ejb.WorkflowService;
 import org.imixs.workflow.util.JSONParser;
 import org.imixs.workflow.xml.EntityCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
@@ -252,7 +252,7 @@ public class WorkflowRestService {
 	public EntityCollection getEvents(@PathParam("uniqueid") String uniqueid) {
 		Collection<ItemCollection> eventList = null;
 		try {
-			eventList = workflowService.getEvents(this.workflowService.getEntityService().load(uniqueid));
+			eventList = workflowService.getEvents(this.workflowService.getDocumentService().load(uniqueid));
 			return XMLItemCollectionAdapter.putCollection(eventList);
 	
 		} catch (Exception e) {

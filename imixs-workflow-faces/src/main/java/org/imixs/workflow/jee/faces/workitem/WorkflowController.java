@@ -35,12 +35,12 @@ import javax.ejb.EJB;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.ejb.ModelService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
-import org.imixs.workflow.jee.ejb.ModelService;
 
 /**
  * The WorkflowController can be used in JSF Applications to manage workflow
@@ -57,15 +57,15 @@ import org.imixs.workflow.jee.ejb.ModelService;
  * @author rsoika
  * @version 2.0.0
  */
-public class WorkflowController extends DataController {
+public class WorkflowController extends DocumentController {
 
 	private static final long serialVersionUID = 1L;
 
 	@EJB
-	private org.imixs.workflow.jee.ejb.ModelService modelService;
+	private org.imixs.workflow.ejb.ModelService modelService;
 
 	@EJB
-	private org.imixs.workflow.jee.ejb.WorkflowService workflowService;
+	private org.imixs.workflow.ejb.WorkflowService workflowService;
 
 	private static Logger logger = Logger.getLogger(WorkflowController.class.getName());
 
@@ -82,7 +82,7 @@ public class WorkflowController extends DataController {
 		return modelService;
 	}
 
-	public org.imixs.workflow.jee.ejb.WorkflowService getWorkflowService() {
+	public org.imixs.workflow.ejb.WorkflowService getWorkflowService() {
 		return workflowService;
 	}
 

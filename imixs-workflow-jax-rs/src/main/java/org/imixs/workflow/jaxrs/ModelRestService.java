@@ -88,7 +88,7 @@ public class ModelRestService {
 	WorkflowRestService workflowRestService;
 
 	@EJB
-	org.imixs.workflow.jee.ejb.ModelService modelService;
+	org.imixs.workflow.ejb.ModelService modelService;
 
 	@GET
 	@Produces({ MediaType.TEXT_HTML })

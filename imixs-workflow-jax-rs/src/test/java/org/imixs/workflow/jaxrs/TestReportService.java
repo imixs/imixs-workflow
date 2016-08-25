@@ -2,7 +2,7 @@ package org.imixs.workflow.jaxrs;
 
 import java.util.Calendar;
 
-import org.imixs.workflow.jee.ejb.ReportService;
+import org.imixs.workflow.ejb.ReportService;
 import org.junit.Assert;
 import org.junit.Test;
 

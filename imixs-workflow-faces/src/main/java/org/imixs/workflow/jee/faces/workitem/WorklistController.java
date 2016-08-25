@@ -32,7 +32,7 @@ import java.util.List;
 import javax.ejb.EJB;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.jee.ejb.WorkflowService;
+import org.imixs.workflow.ejb.WorkflowService;
 
 /**
  * The WorkflowController extends the ViewControler and provides a set of
@@ -57,7 +57,7 @@ public class WorklistController extends ViewController {
 	public static final String QUERY_WORKLIST_BY_WRITEACCESS = "worklist.writeaccess";
 
 	@EJB
-	private org.imixs.workflow.jee.ejb.WorkflowService workflowService;
+	private org.imixs.workflow.ejb.WorkflowService workflowService;
 
 	/**
 	 * Set default values for view type and sort order.
@@ -70,7 +70,7 @@ public class WorklistController extends ViewController {
 		setViewAdapter(new WorkflowViewAdapter());
 	}
 
-	public org.imixs.workflow.jee.ejb.WorkflowService getWorkflowService() {
+	public org.imixs.workflow.ejb.WorkflowService getWorkflowService() {
 		return workflowService;
 	}
 

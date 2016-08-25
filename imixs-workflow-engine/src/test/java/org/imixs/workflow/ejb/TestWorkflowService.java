@@ -1,10 +1,11 @@
-package org.imixs.workflow.jee.ejb;
+package org.imixs.workflow.ejb;
 
 import java.util.List;
 import java.util.Vector;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.ejb.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;

@@ -41,12 +41,13 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ejb.DocumentService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 
 /**
  * The DataController can be used in JSF Applications to manage ItemCollections
  * without any workflow functionality. This bean makes uses of the CRUD
- * operations provided by the Imixs EntityService.
+ * operations provided by the Imixs DocumentService.
  * 
  * The default type of a entity created with the DataController is 'workitem'.
  * This property can be changed from a client.
@@ -56,17 +57,17 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
  * @author rsoika
  * @version 0.0.1
  */
-public class DataController implements Serializable {
+public class DocumentController implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	ItemCollection workitem = null;
 	private String defaultType;
 
 	@EJB
-	org.imixs.workflow.jee.ejb.EntityService entityService;
+	DocumentService documentService;
 	private static Logger logger = Logger.getLogger("org.imixs.workflow");
 
-	public DataController() {
+	public DocumentController() {
 		super();
 		setDefaultType("workitem");
 	}
@@ -90,12 +91,12 @@ public class DataController implements Serializable {
 	}
 
 	/**
-	 * returns an instance of the EntityService EJB
+	 * returns an instance of the DocumentService EJB
 	 * 
 	 * @return
 	 */
-	public org.imixs.workflow.jee.ejb.EntityService getEntityService() {
-		return entityService;
+	public DocumentService getDocumentService() {
+		return documentService;
 	}
 
 	/**
@@ -161,7 +162,7 @@ public class DataController implements Serializable {
 	 */
 	public void save() throws AccessDeniedException {
 		// save workItem ...
-		workitem = getEntityService().save(workitem);
+		workitem = getDocumentService().save(workitem);
 		logger.fine("ItemCollection saved");
 	}
 
@@ -188,14 +189,14 @@ public class DataController implements Serializable {
 	}
 
 	/**
-	 * This method loads the current workItem from the EntityService.
+	 * This method loads the current workItem from the DocumentService.
 	 * 
 	 * @param uniqueID
 	 *            - $uniqueId of the workItem to be loaded
 	 */
 	public void load(String uniqueID) {
 		reset();
-		setWorkitem(getEntityService().load(uniqueID));
+		setWorkitem(getDocumentService().load(uniqueID));
 		if (workitem != null) {
 			logger.fine("workitem '" + uniqueID + "' loaded");
 		} else {
@@ -204,7 +205,7 @@ public class DataController implements Serializable {
 	}
 
 	/**
-	 * This Action method loads the current workItem from the EntityService and
+	 * This Action method loads the current workItem from the DocumentService and
 	 * returns an action result. The method expects the result action as a
 	 * parameter. The method can be called by dataTables to load a workItem for
 	 * editing
@@ -229,9 +230,9 @@ public class DataController implements Serializable {
 	 * @throws AccessDeniedException
 	 */
 	public void delete(String uniqueID) throws AccessDeniedException {
-		ItemCollection _workitem = getEntityService().load(uniqueID);
+		ItemCollection _workitem = getDocumentService().load(uniqueID);
 		if (_workitem != null) {
-			entityService.remove(_workitem);
+			documentService.remove(_workitem);
 			setWorkitem(null);
 			logger.fine("workitem " + uniqueID + " deleted");
 		} else {
@@ -258,7 +259,7 @@ public class DataController implements Serializable {
 
 	/**
 	 * Returns true if the current entity was never saved before by the
-	 * EntityService. This is indicated by the time difference of $modified and
+	 * DocumentService. This is indicated by the time difference of $modified and
 	 * $created.
 	 * 
 	 * @return

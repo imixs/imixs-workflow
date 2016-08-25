@@ -100,7 +100,7 @@ public class ReportRestService {
 	org.imixs.workflow.jee.ejb.EntityService entityService;
 
 	@EJB
-	org.imixs.workflow.jee.ejb.ReportService reportService;
+	org.imixs.workflow.ejb.ReportService reportService;
 
 	@javax.ws.rs.core.Context
 	private static HttpServletRequest servletRequest;

@@ -1,9 +1,10 @@
-package org.imixs.workflow.jee.ejb;
+package org.imixs.workflow.ejb;
 
 import java.util.Calendar;
 import java.util.Date;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ejb.WorkflowSchedulerService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;

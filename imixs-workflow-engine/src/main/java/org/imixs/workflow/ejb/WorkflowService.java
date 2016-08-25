@@ -25,7 +25,7 @@
  *  	Ralph Soika - Software Developer
  *******************************************************************************/
 
-package org.imixs.workflow.jee.ejb;
+package org.imixs.workflow.ejb;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +34,6 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
@@ -57,7 +56,7 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
-import org.imixs.workflow.jee.jpa.EntityIndex;
+import org.imixs.workflow.jee.ejb.EntityService;
 
 /**
  * The WorkflowService is the JEE Implementation for the Imixs Workflow Core
@@ -78,7 +77,7 @@ import org.imixs.workflow.jee.jpa.EntityIndex;
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @LocalBean
-public class WorkflowService implements WorkflowManager, WorkflowContext, WorkflowServiceRemote {
+public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 	// entity properties
 	public static final String UNIQUEID = "$uniqueid";
@@ -104,7 +103,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	private Instance<Plugin> plugins;
 
 	@EJB
-	EntityService entityService;
+	DocumentService documentService;
 
 	@EJB
 	ModelService modelService;
@@ -117,31 +116,14 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 
 	private static Logger logger = Logger.getLogger(WorkflowService.class.getName());
 
-	/**
-	 * create default index properties
-	 * 
-	 * @throws AccessDeniedException
-	 */
-	@PostConstruct
-	private void initIndexProperties() throws AccessDeniedException {
-		entityService.addIndex("$modelversion", EntityIndex.TYP_TEXT);
-		entityService.addIndex("$ProcessID", EntityIndex.TYP_INT);
-		entityService.addIndex("$workitemid", EntityIndex.TYP_TEXT);
-		entityService.addIndex("$uniqueidref", EntityIndex.TYP_TEXT);
-		entityService.addIndex("Type", EntityIndex.TYP_TEXT);
-		entityService.addIndex("namCreator", EntityIndex.TYP_TEXT);
-		entityService.addIndex("txtWorkflowGroup", EntityIndex.TYP_TEXT);
-		entityService.addIndex("txtname", EntityIndex.TYP_TEXT);
-		entityService.addIndex("namowner", EntityIndex.TYP_TEXT);
-		entityService.addIndex("txtworkitemref", EntityIndex.TYP_TEXT);
-	}
+	
 
 	/**
 	 * This method loads a Workitem with the corresponding uniqueid.
 	 * 
 	 */
 	public ItemCollection getWorkItem(String uniqueid) {
-		return entityService.load(uniqueid);
+		return documentService.load(uniqueid);
 	}
 
 	/**
@@ -171,15 +153,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
 
-		String sQuery = null;
-		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi" + " JOIN wi.textItems as t " + "WHERE ";
-		if (type != null && !"".equals(type))
-			sQuery += " wi.type='" + type + "' AND ";
+		
+		String searchTerm="(";
+		if (type != null && !"".equals(type)) {
+			searchTerm+=" type:\"" + type + "\" AND ";
+		}
+		searchTerm+=" namowner:\"" + name + "\" )";
+		logger.warning("Sortorder " + sortorder + " not implemented!");
 
-		sQuery += " t.itemName = 'namowner' and t.itemValue = '" + name + "'" + createSortOrderClause(sortorder);
-
-		return entityService.findAllEntities(sQuery, startpos, count);
+		return documentService.find(searchTerm, startpos, count);
 	}
 
 	/**
@@ -212,15 +194,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
 
-		String sQuery = null;
-		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + " JOIN wi.writeAccessList as wa WHERE ";
+		String searchTerm="(";
+		if (type != null && !"".equals(type)) {
+			searchTerm+=" type:\"" + type + "\" AND ";
+		}
+		searchTerm+=" $writeaccess:\"" + name + "\" )";
+		logger.warning("Sortorder " + sortorder + " not implemented!");
 
-		if (type != null && !"".equals(type))
-			sQuery += " wi.type='" + type + "' AND ";
-
-		sQuery += " wa.value = '" + name + "'" + createSortOrderClause(sortorder);
-		return entityService.findAllEntities(sQuery, startpos, count);
+		
+		return documentService.find(searchTerm, startpos, count);
 	}
 
 	/**
@@ -250,15 +232,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
 
-		String sQuery = null;
-		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi" + " JOIN wi.textItems as t WHERE ";
-		if (type != null && !"".equals(type))
-			sQuery += " wi.type='" + type + "' AND ";
+		String searchTerm="(";
+		if (type != null && !"".equals(type)) {
+			searchTerm+=" type:\"" + type + "\" AND ";
+		}
+		searchTerm+=" namcreator:\"" + name + "\" )";
+		logger.warning("Sortorder " + sortorder + " not implemented!");
 
-		sQuery += " t.itemName = 'namcreator' and t.itemValue = '" + name + "'" + createSortOrderClause(sortorder);
-
-		return entityService.findAllEntities(sQuery, startpos, count);
+		
+		return documentService.find(searchTerm, startpos, count);
 	}
 
 	/**
@@ -287,10 +269,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		String name = ctx.getCallerPrincipal().getName();
 
 		// construct nameList. Begin with empty string '' and username
-		nameListBuffer.append("'" + name + "'");
+		nameListBuffer.append("($writeaccess:\"" + name + "\"");
 		// now construct role list
 
-		String accessRoles = entityService.getAccessRoles();
+		String accessRoles = documentService.getAccessRoles();
 
 		String roleList = "org.imixs.ACCESSLEVEL.READERACCESS,org.imixs.ACCESSLEVEL.AUTHORACCESS,org.imixs.ACCESSLEVEL.EDITORACCESS,"
 				+ accessRoles;
@@ -299,30 +281,32 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		while (roleListTokens.hasMoreTokens()) {
 			String testRole = roleListTokens.nextToken().trim();
 			if (!"".equals(testRole) && ctx.isCallerInRole(testRole))
-				nameListBuffer.append(",'" + testRole + "'");
+				nameListBuffer.append(" OR $writeaccess:\"" + testRole + "\"");
 		}
+		nameListBuffer.append(")");
+		
+		String searchTerm="(";
+		if (type != null && !"".equals(type)) {
+			searchTerm+=" type:\"" + type + "\" AND " + nameListBuffer.toString() ;
+		}
+		searchTerm+=" $writeaccess:\"" + name + "\" )";
+		logger.warning("Sortorder " + sortorder + " not implemented!");
 
-		String sQuery = "SELECT wi FROM Entity as wi " + " JOIN wi.writeAccessList wa " + " WHERE ";
-		if (type != null && !"".equals(type))
-			sQuery += " wi.type='" + type + "' ";
 
-		sQuery += " AND wa.value IN (" + nameListBuffer.toString() + ")" + createSortOrderClause(sortorder);
-
-		return entityService.findAllEntities(sQuery, startpos, count);
+		return documentService.find(searchTerm, startpos, count);
 	}
 
 	public List<ItemCollection> getWorkListByGroup(String name, int startpos, int count, String type, int sortorder) {
 
-		String sQuery = null;
-		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + " JOIN wi.textItems as t WHERE ";
+		String searchTerm="(";
+		if (type != null && !"".equals(type)) {
+			searchTerm+=" type:\"" + type + "\" AND ";
+		}
+		searchTerm+=" txtworkflowgroup:\"" + name + "\" )";
+		logger.warning("Sortorder " + searchTerm + " not implemented!");
 
-		if (type != null && !"".equals(type))
-			sQuery += " wi.type='" + type + "' AND ";
-
-		sQuery += " t.itemName = 'txtworkflowgroup' and t.itemValue = '" + name + "'"
-				+ createSortOrderClause(sortorder);
-		return entityService.findAllEntities(sQuery, startpos, count);
+		
+		return documentService.find(searchTerm, startpos, count);
 	}
 
 	/**
@@ -348,16 +332,14 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 */
 	public List<ItemCollection> getWorkListByProcessID(int aid, int startpos, int count, String type, int sortorder) {
 
-		String sQuery = null;
-		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + " JOIN wi.integerItems as t JOIN WHERE ";
-
-		if (type != null && !"".equals(type))
-			sQuery += " wi.type='" + type + "' AND ";
-
-		sQuery += " t.itemName = '$processid' and t.itemValue = '" + aid + "'" + createSortOrderClause(sortorder);
-
-		return entityService.findAllEntities(sQuery, startpos, count);
+		String searchTerm="(";
+		if (type != null && !"".equals(type)) {
+			searchTerm+=" type:\"" + type + "\" AND ";
+		}
+		searchTerm+=" $processid:\"" + aid + "\" )";
+		logger.warning("Sortorder " + searchTerm + " not implemented!");
+		
+		return documentService.find(searchTerm, startpos, count);
 	}
 
 	/**
@@ -383,15 +365,16 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 */
 	public List<ItemCollection> getWorkListByRef(String aref, int startpos, int count, String type, int sortorder) {
 
-		String sQuery = null;
-		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + " JOIN wi.textItems as t WHERE ";
-		if (type != null && !"".equals(type))
-			sQuery += " wi.type='" + type + "' AND ";
-
-		sQuery += " t.itemName = '$uniqueidref' and t.itemValue = '" + aref + "'" + createSortOrderClause(sortorder);
-
-		return entityService.findAllEntities(sQuery, startpos, count);
+		String searchTerm="(";
+		if (type != null && !"".equals(type)) {
+			searchTerm+=" type:\"" + type + "\" AND ";
+		}
+		searchTerm+=" $uniqueidref:\"" + aref + "\" )";
+		logger.warning("Sortorder " + searchTerm + " not implemented!");
+		
+		
+		
+		return documentService.find(searchTerm, startpos, count);
 	}
 
 	/**
@@ -400,7 +383,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 * 
 	 * @return List of workitems
 	 */
-	@Override
 	public List<ItemCollection> getWorkListByRef(String aref) {
 		return getWorkListByRef(aref, 0, -1, null, 0);
 	}
@@ -423,7 +405,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 * @throws ModelException
 	 */
 	@SuppressWarnings("unchecked")
-	@Override
 	public List<ItemCollection> getEvents(ItemCollection workitem) throws ModelException {
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
 		int processID = workitem.getProcessID();
@@ -587,12 +568,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 		if (logger.isLoggable(Level.FINE))
 			logger.info("[WorkflowManager] workitem processed sucessfull");
 
-		return entityService.save(workitem);
+		return documentService.save(workitem);
 
 	}
 
 	public void removeWorkItem(ItemCollection aworkitem) throws AccessDeniedException {
-		entityService.remove(aworkitem);
+		documentService.remove(aworkitem);
 	}
 
 	/**
@@ -617,8 +598,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 * @return EntityService
 	 * @throws Exception
 	 */
-	public EntityService getEntityService() {
-		return entityService;
+	public DocumentService getDocumentService() {
+		return documentService;
 	}
 
 	
@@ -660,7 +641,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext, Workfl
 	 * @return
 	 */
 	public List<String> getUserNameList() {
-		return entityService.getUserNameList();
+		return documentService.getUserNameList();
 	}
 
 	/**

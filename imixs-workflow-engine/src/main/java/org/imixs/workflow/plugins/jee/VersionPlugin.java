@@ -35,11 +35,11 @@ import javax.ejb.EJBTransactionRolledbackException;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
+import org.imixs.workflow.ejb.DocumentService;
+import org.imixs.workflow.ejb.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
-import org.imixs.workflow.jee.ejb.EntityService;
-import org.imixs.workflow.jee.ejb.WorkflowService;
 
 /**
  * This plugin handles the creation and management of versions from an existing
@@ -85,7 +85,7 @@ public class VersionPlugin extends AbstractPlugin {
 	public static final String INVALID_CONTEXT = "INVALID_CONTEXT";
 	public static final String INVALID_WORKITEM = "INVALID_WORKITEM";
 	private static final String PROCESSING_VERSION_ATTRIBUTE = "$processingversion";
-	private EntityService entityService = null;
+	private DocumentService entityService = null;
 	private WorkflowService workflowService = null;
 	private String versionMode = "";
 	private int versionActivityID = -1;
@@ -107,7 +107,7 @@ public class VersionPlugin extends AbstractPlugin {
 			// yes we are running in a WorkflowService EJB
 			workflowService = (WorkflowService) actx;
 			// get latest model version....
-			entityService = workflowService.getEntityService();
+			entityService = workflowService.getDocumentService();
 		}
 
 		if (workflowService == null)
@@ -117,9 +117,7 @@ public class VersionPlugin extends AbstractPlugin {
 
 	}
 
-	public EntityService getEntityService() {
-		return entityService;
-	}
+	
 
 	public WorkflowService getWorkflowService() {
 		return workflowService;
@@ -190,14 +188,10 @@ public class VersionPlugin extends AbstractPlugin {
 				String sworkitemID = documentContext
 						.getItemValueString("$WorkItemID");
 
-				// get current master version
-				String query = " SELECT workitem FROM Entity AS workitem "
-						+ " JOIN workitem.textItems AS t1"
-						+ " WHERE t1.itemName = '$workitemid'"
-						+ " AND t1.itemValue ='" + sworkitemID + "'";
-
-				Collection<ItemCollection> col = entityService.findAllEntities(
-						query, 0, -1);
+				String searchTerm="($workitemid:\""+sworkitemID + "\")";
+				
+				Collection<ItemCollection> col = entityService.find(
+						searchTerm, 0, -1);
 				// now search master version...
 				for (ItemCollection aVersion : col) {
 					String sWorkitemRef = aVersion

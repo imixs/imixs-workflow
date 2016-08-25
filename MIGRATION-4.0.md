@@ -27,3 +27,20 @@ The package 'org.imxis.workflow.jee.jpa' is still available in version 4.0.x to 
 ## EJBs
 
 All Imxis Service EJBs are moved into the package 'org.imixs.workflow.ejb'. The EntityService EJB was replaced with the new DocumentService EJB.  
+
+## Migrate JPQL 
+
+JPQL Statements can be replaced with Lucene Search terms.
+
+		String sQuery = "SELECT config FROM Entity AS config " + " JOIN config.textItems AS t2"
+				+ " WHERE config.type = '" + TYPE_CONFIGURATION + "'" + " AND t2.itemName = 'txtname'" + " AND t2.itemValue = '"
+				+ NAME + "'" + " ORDER BY t2.itemValue asc";
+		Collection<ItemCollection> col = entityService.findAllEntities(sQuery, 0, 1);
+
+...to be replaced with....
+		
+		String searchTerm="(type:\"" + TYPE_CONFIGURATION  +"\" AND txtname:\"" + NAME + "\")";
+		Collection<ItemCollection> col = documentService.find(sQuery, 0, 1);
+
+		
+		

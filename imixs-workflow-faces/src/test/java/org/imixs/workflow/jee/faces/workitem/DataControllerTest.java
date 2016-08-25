@@ -17,11 +17,11 @@ import org.junit.Test;
  */
 public class DataControllerTest {
 
-	DataController dataController = null;
+	DocumentController dataController = null;
 
 	@Before
 	public void before() {
-		dataController = new DataController();
+		dataController = new DocumentController();
 	}
 
 	@Test

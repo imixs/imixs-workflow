@@ -40,7 +40,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.event.AjaxBehaviorEvent;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.jee.ejb.EntityService;
+import org.imixs.workflow.ejb.DocumentService;
 
 /**
  * The ViewController can be used in JSF Applications to manage lists of
@@ -74,7 +74,7 @@ public class ViewController implements Serializable {
 	private IViewAdapter viewAdapter = null;
 
 	@EJB
-	EntityService entityService;
+	DocumentService documentService;
 	private static Logger logger = Logger.getLogger("org.imixs.workflow");
 
 	public ViewController() {
@@ -111,12 +111,12 @@ public class ViewController implements Serializable {
 	}
 
 	/**
-	 * returns an instance of the EntityService EJB
+	 * returns an instance of the DocumentService EJB
 	 * 
 	 * @return
 	 */
-	public EntityService getEntityService() {
-		return entityService;
+	public DocumentService getDocumentService() {
+		return documentService;
 	}
 
 	/**
@@ -314,8 +314,8 @@ public class ViewController implements Serializable {
 		public List<ItemCollection> getViewEntries(
 				final ViewController controller) {
 
-			List<ItemCollection> result = controller.getEntityService()
-					.findAllEntities(controller.views.get(controller.view),
+			List<ItemCollection> result = controller.getDocumentService()
+					.find(controller.views.get(controller.view),
 							controller.row, controller.maxResult);
 
 			return result;

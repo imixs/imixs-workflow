@@ -25,7 +25,7 @@
  *  	Ralph Soika - Software Developer
  *******************************************************************************/
 
-package org.imixs.workflow.jee.ejb;
+package org.imixs.workflow.ejb;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -50,6 +51,7 @@ import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ItemCollectionComparator;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.plugins.AbstractPlugin;
 import org.imixs.workflow.util.XMLParser;
@@ -79,12 +81,12 @@ import org.imixs.workflow.util.XMLParser;
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @LocalBean
-public class ReportService implements ReportServiceRemote {
+public class ReportService {
 
 	private static Logger logger = Logger.getLogger(ReportService.class.getName());
 
 	@EJB
-	EntityService entityService;
+	DocumentService entityService;
 
 	/**
 	 * Returns a Report Entity identified by the attribute txtname
@@ -107,12 +109,10 @@ public class ReportService implements ReportServiceRemote {
 	 * access for.
 	 */
 	public List<ItemCollection> getReportList() {
-		String sQuery = null;
-		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + " JOIN wi.textItems t " + " WHERE wi.type = 'ReportEntity' "
-				+ " AND t.itemName='txtname' " + " ORDER BY t.itemValue ASC";
+		List<ItemCollection> col = entityService.findAllDocumentsByType("ReportEntity");
 
-		List<ItemCollection> col = entityService.findAllEntities(sQuery, 0, -1);
+		// sort resultset by name
+		Collections.sort(col, new ItemCollectionComparator("txtname", true));
 
 		return col;
 	}
@@ -216,7 +216,7 @@ public class ReportService implements ReportServiceRemote {
 
 		// execute query
 		logger.fine("executeReport jpql=" + query);
-		List<ItemCollection> result = entityService.findAllEntities(query, startPos, maxcount);
+		List<ItemCollection> result = entityService.find(query, startPos, maxcount);
 
 		// test if a itemList is provided or defined in the reportEntity...
 		if (itemList == null) {
@@ -267,8 +267,8 @@ public class ReportService implements ReportServiceRemote {
 				// duplicated for each child attribute.
 				// a child item is identified by the '~' char in the item name
 				List<ItemCollection> embeddedChildItems = getEmbeddedChildItems(entity, formatMap.keySet());
-				if (!embeddedChildItems.isEmpty()){
-					for (ItemCollection child: embeddedChildItems) {
+				if (!embeddedChildItems.isEmpty()) {
+					for (ItemCollection child : embeddedChildItems) {
 						ItemCollection clone = cloneEntity(child, formatMap, converterMap);
 						clonedResult.add(clone);
 					}
@@ -302,9 +302,9 @@ public class ReportService implements ReportServiceRemote {
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
 		// first find all items containing a child element
 		for (String field : fieldNames) {
-			field=field.toLowerCase();
+			field = field.toLowerCase();
 			if (field.contains("~")) {
-				field = field.substring(0,field.indexOf('~'));
+				field = field.substring(0, field.indexOf('~'));
 				if (!embeddedItemNames.contains(field)) {
 					embeddedItemNames.add(field);
 				}
@@ -316,12 +316,12 @@ public class ReportService implements ReportServiceRemote {
 				// try to convert
 				for (Object mapOderItem : mapChildItems) {
 					if (mapOderItem instanceof Map) {
-						ItemCollection child=new ItemCollection((Map)mapOderItem);
+						ItemCollection child = new ItemCollection((Map) mapOderItem);
 						// clone entity and add all map entries
-						ItemCollection clone=new ItemCollection(entity);
-							Set<String> childFieldNameList = child.getAllItems().keySet();
-						for(String childFieldName : childFieldNameList) {
-							clone.replaceItemValue(field+"~"+childFieldName, child.getItemValue(childFieldName));
+						ItemCollection clone = new ItemCollection(entity);
+						Set<String> childFieldNameList = child.getAllItems().keySet();
+						for (String childFieldName : childFieldNameList) {
+							clone.replaceItemValue(field + "~" + childFieldName, child.getItemValue(childFieldName));
 						}
 						result.add(clone);
 					}
@@ -488,16 +488,19 @@ public class ReportService implements ReportServiceRemote {
 	 * @return
 	 */
 	private ItemCollection findReport(String aid) {
-		String sQuery = null;
-		sQuery = "SELECT";
-		sQuery += " wi FROM Entity as wi " + "JOIN wi.textItems as i " + "WHERE (wi.id='" + aid + "') OR "
-				+ "(i.itemName = 'txtname' " + "AND i.itemValue = '" + aid + "') " + " AND wi.type = 'ReportEntity'";
+		ItemCollection result = null;
 
-		Collection<ItemCollection> col = entityService.findAllEntities(sQuery, 0, 1);
-		if (col.size() > 0)
-			return col.iterator().next();
-		else
-			return null;
+		result = entityService.load(aid);
+		if (result == null) {
+			// try to search for name
+			String searchTerm = "(type:\"ReportEntity\" AND txtname:\"" + aid + "\")";
+			Collection<ItemCollection> col = entityService.find(searchTerm, 0, 1);
+			if (col.size() > 0) {
+				result = col.iterator().next();
+			}
+		}
+
+		return result;
 	}
 
 	/**

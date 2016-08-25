@@ -34,8 +34,8 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
+import org.imixs.workflow.ejb.WorkflowService;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.jee.ejb.WorkflowService;
 
 /**
  * The Imixs Interval Plugin implements an mechanism to adjust a date field of a

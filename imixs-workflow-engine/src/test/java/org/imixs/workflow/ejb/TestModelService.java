@@ -1,4 +1,4 @@
-package org.imixs.workflow.jee.ejb;
+package org.imixs.workflow.ejb;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
