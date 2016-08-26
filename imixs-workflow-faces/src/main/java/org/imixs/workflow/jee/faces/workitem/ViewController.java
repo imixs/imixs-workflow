@@ -29,10 +29,7 @@ package org.imixs.workflow.jee.faces.workitem;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -61,46 +58,38 @@ public class ViewController implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private String type = null;
-	private int maxResult = 10;
-	private int row = 0;
+	private String query = null;
+	private String sortBy = null;
+	private boolean sortReverse = false;
+	private int pageSize = 10;
+	private int pageIndex = 0;
 	private boolean endOfList = false;
-
-	/* views */
-	private Map<String, String> views = null;
-	private String view = null;
 
 	/* result */
 	private List<ItemCollection> workitems = null;
-	private IViewAdapter viewAdapter = null;
 
 	@EJB
 	DocumentService documentService;
-	private static Logger logger = Logger.getLogger("org.imixs.workflow");
 
 	public ViewController() {
 		super();
-		views = new HashMap<String, String>();
-		setType("workitem");
-		setView("worklist.created.desc");
-
+		
 	}
 
 	/**
-	 * This method is preparing the JPQL statements. views can also be set in
-	 * the faces-config.xml
+	 * This method is preparing the query and sort order. Can also be set in the
+	 * faces-config.xml
 	 */
 	@PostConstruct
 	public void init() {
 
-		// setup the default view types
-		if (views.get("worklist.created.desc") == null)
-			views.put("worklist.created.desc", "(type:\"" + getType() + "\")");
+		if (type == null || type.isEmpty()) {
+			setType("workitem");
+		}
+		if (query == null || query.isEmpty()) {
+			setQuery("(type:\"" + getType() + "\")");
+		}
 
-		if (views.get("worklist.modified.desc") == null)
-			views.put("worklist.created.desc", "(type:\"" + getType() + "\")");
-
-		if (views.get("worklist.name.asc") == null)
-			views.put("worklist.created.desc", "(type:\"" + getType() + "\")");
 	}
 
 	/**
@@ -133,31 +122,37 @@ public class ViewController implements Serializable {
 	}
 
 	/**
-	 * A map with containing a list of JPQL definitions. The property 'view'
-	 * defines the actual view.
+	 * Returns the search Query
 	 * 
 	 * @return
 	 */
-	public Map<String, String> getViews() {
-		return views;
-	}
-
-	public void setViews(Map<String, String> views) {
-		this.views = views;
+	public String getQuery() {
+		return query;
 	}
 
 	/**
-	 * Current view
+	 * set the search query
 	 * 
-	 * @return
+	 * @param query
 	 */
-	public String getView() {
-		return view;
+	public void setQuery(String query) {
+		this.query = query;
 	}
 
-	public void setView(String view) {
-		this.view = view;
-		this.doReset();
+	public String getSortBy() {
+		return sortBy;
+	}
+
+	public void setSortBy(String sortBy) {
+		this.sortBy = sortBy;
+	}
+
+	public boolean isSortReverse() {
+		return sortReverse;
+	}
+
+	public void setSortReverse(boolean sortReverse) {
+		this.sortReverse = sortReverse;
 	}
 
 	/**
@@ -165,8 +160,8 @@ public class ViewController implements Serializable {
 	 * 
 	 * @return
 	 */
-	public int getMaxResult() {
-		return maxResult;
+	public int getPageSize() {
+		return pageSize;
 	}
 
 	/**
@@ -174,8 +169,8 @@ public class ViewController implements Serializable {
 	 * 
 	 * @param searchCount
 	 */
-	public void setMaxResult(int searchCount) {
-		this.maxResult = searchCount;
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
 	}
 
 	/**
@@ -185,15 +180,17 @@ public class ViewController implements Serializable {
 	 */
 	public void doReset() {
 		workitems = null;
-		row = 0;
+		pageIndex = 0;
 	}
+
 	public void doReset(ActionEvent event) {
 		doReset();
 	}
+
 	public void doReset(AjaxBehaviorEvent event) {
 		doReset();
 	}
-	
+
 	/**
 	 * refreshes the current workitem list. so the list will be loaded again.
 	 * but start pos will not be changed!
@@ -201,34 +198,38 @@ public class ViewController implements Serializable {
 	public void doRefresh() {
 		workitems = null;
 	}
+
 	public void doRefresh(ActionEvent event) {
 		doRefresh();
 	}
+
 	public void doRefresh(AjaxBehaviorEvent event) {
 		doRefresh();
 	}
 
 	public void doLoadNext() {
-		row = row + maxResult;
+		pageIndex++;
 		workitems = null;
 	}
+
 	public void doLoadNext(ActionEvent event) {
 		doLoadNext();
 	}
+
 	public void doLoadNext(AjaxBehaviorEvent event) {
 		doLoadNext();
 	}
 
 	public void doLoadPrev() {
-		row = row - maxResult;
-		if (row < 0)
-			row = 0;
+		pageIndex--;
+		pageIndex = 0;
 		workitems = null;
 	}
+
 	public void doLoadPrev(ActionEvent event) {
 		doLoadPrev();
 	}
-	
+
 	public void doLoadPrev(AjaxBehaviorEvent event) {
 		doLoadPrev();
 	}
@@ -253,21 +254,16 @@ public class ViewController implements Serializable {
 		// return a cached result set?
 		if (workitems != null)
 			return workitems;
-	
-		long lTime = System.currentTimeMillis();
-		// delegate the request to ViewAdapter...
-		workitems = getViewAdapter().getViewEntries(this);
+
+		workitems = getDocumentService().find(query, pageSize, pageIndex, sortBy, sortReverse);
 
 		// if no result is defined return an empty list.
 		if (workitems == null)
 			workitems = new ArrayList<ItemCollection>();
 
 		// compute end of file
-		endOfList = (workitems.size() < maxResult);
-	
-		// logging
-		lTime = System.currentTimeMillis() - lTime;
-		logger.finest("  getWorkitems (" + lTime + " ms)");
+		endOfList = (workitems.size() < pageSize);
+
 		return workitems;
 	}
 
@@ -279,8 +275,12 @@ public class ViewController implements Serializable {
 	 * Navigation
 	 */
 
-	public int getRow() {
-		return row;
+	public int getPageIndex() {
+		return pageIndex;
+	}
+
+	public void setPageIndex(int pageIndex) {
+		this.pageIndex = pageIndex;
 	}
 
 	public boolean isEndOfList() {
@@ -291,28 +291,4 @@ public class ViewController implements Serializable {
 		this.endOfList = endOfList;
 	}
 
-	public IViewAdapter getViewAdapter() {
-		if (viewAdapter == null)
-			viewAdapter = new ViewAdapter();
-
-		return viewAdapter;
-	}
-
-	public void setViewAdapter(IViewAdapter viewAdapter) {
-		this.viewAdapter = viewAdapter;
-	}
-
-	protected class ViewAdapter implements IViewAdapter {
-
-		public List<ItemCollection> getViewEntries(
-				final ViewController controller) {
-
-			List<ItemCollection> result = controller.getDocumentService()
-					.find(controller.views.get(controller.view),
-							controller.row, controller.maxResult);
-
-			return result;
-
-		}
-	}
 }

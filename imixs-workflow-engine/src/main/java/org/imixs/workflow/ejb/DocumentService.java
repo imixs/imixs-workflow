@@ -56,6 +56,9 @@ import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortField.Type;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
@@ -461,26 +464,59 @@ public class DocumentService {
 	/**
 	 * The method returns a collection of ItemCollections. The method expects an
 	 * valid Lucene search statement. The method returns only ItemCollections
-	 * which are readable by the CallerPrincipal. With the pageSize and pageNumber
-	 * it is possible to paginate. 
+	 * which are readable by the CallerPrincipal. With the pageSize and
+	 * pageNumber it is possible to paginate.
 	 * 
 	 * @param searchTerm
 	 *            - Lucene search term
 	 * @param pageSize
 	 *            - total docs per page
-	 * @param pageNumber
-	 *            - number of page to start (default =0)
+	 * @param pageIndex
+	 *            - number of page to start (default = 0)
 	 * @return list of ItemCollection elements
 	 * @throws InvalidAccessException
 	 * 
-	 * @see org.imixs.workflow.jpa.Document.jee.jpa.Entity
+	 * @see org.imixs.workflow.jpa.Document
 	 */
-	public List<ItemCollection> find(String searchTerm, int pageSize, int pageNumber) throws InvalidAccessException {
+	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex) throws InvalidAccessException {
+		return find(searchTerm, pageSize, pageIndex, null, false);
+	}
 
-		logger.fine("find - SearchTerm=" + searchTerm  + "  , pageSize=" + pageSize + " pageNumber=" + pageNumber);
-		List<ItemCollection> result = luceneSearchService.search(searchTerm, this, pageSize,pageNumber);
+	/**
+	 * The method returns a collection of ItemCollections sorted by a sortField.
+	 * The method expects an valid Lucene search statement. The method returns
+	 * only ItemCollections which are readable by the CallerPrincipal. With the
+	 * pageSize and pageNumber it is possible to paginate.
+	 * 
+	 * @param searchTerm
+	 *            - Lucene search term
+	 * @param pageSize
+	 *            - total docs per page
+	 * @param pageIndex
+	 *            - number of page to start (default = 0)
+	 * 
+	 * @param sortBy
+	 *            -optional field to sort the result
+	 * @param sortReverse
+	 *            - optional sort direction
+	 * 
+	 * @return list of ItemCollection elements
+	 * @throws InvalidAccessException
+	 * 
+	 * @see org.imixs.workflow.jpa.Document
+	 */
+	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy,
+			boolean sortReverse) throws InvalidAccessException {
+		logger.fine("find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber=" + pageIndex
+				+ " , sortBy=" + sortBy + " reverse=" + sortReverse);
 
-		return result;
+		// create sort object
+		Sort sortOrder = null;
+		if (sortBy != null && !sortBy.isEmpty()) {
+			sortOrder = new Sort(new SortField[] { new SortField(sortBy, Type.STRING, sortReverse) });
+		}
+
+		return luceneSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null);
 
 	}
 

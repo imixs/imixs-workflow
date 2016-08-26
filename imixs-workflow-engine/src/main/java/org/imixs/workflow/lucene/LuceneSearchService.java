@@ -94,12 +94,16 @@ public class LuceneSearchService {
 	public static final String UNDEFINED_ERROR = "UNDEFINED_ERROR";
 	public static final String INVALID_INDEX = "INVALID_INDEX";
 
-	private static final int MAX_SEARCH_RESULT = 9999; // limiting the total
-														// number of hits
+	private static final int DEFAULT_MAX_SEARCH_RESULT = 9999; // limiting the
+																// total
+	// number of hits
 	private static final int DEFAULT_PAGE_SIZE = 20; // default docs in one page
 
 	@EJB
 	PropertyService propertyService;
+
+	@EJB
+	DocumentService documentService;
 
 	private static Logger logger = Logger.getLogger(LuceneSearchService.class.getName());
 
@@ -111,30 +115,42 @@ public class LuceneSearchService {
 	}
 
 	/**
-	 * Returns a ItemCollection List matching the provided search term. The
+	 * Returns a collection of documents matching the provided search term. The
 	 * provided search team will we extended with a users roles to test the read
 	 * access level of each workitem matching the search term. The usernames and
 	 * user roles will be search lowercase!
 	 * 
 	 * @param sSearchTerm
-	 * @param workflowService
 	 * @return collection of search result
 	 */
-	public List<ItemCollection> search(String sSearchTerm, DocumentService documentService) {
+	public List<ItemCollection> search(String sSearchTerm) {
 		// no sort order
-		return search(sSearchTerm, documentService, null, null, MAX_SEARCH_RESULT, 0);
-	}
-
-	public List<ItemCollection> search(String sSearchTerm, DocumentService documentService, int maxResult, int page) {
-		// no sort order
-		return search(sSearchTerm, documentService, null, null, maxResult, page);
+		return search(sSearchTerm, DEFAULT_MAX_SEARCH_RESULT, 0, null, null);
 	}
 
 	/**
-	 * Returns a ItemCollection List matching the provided search term. The
+	 * Returns a collection of documents matching the provided search term. The
 	 * provided search team will we extended with a users roles to test the read
 	 * access level of each workitem matching the search term. The usernames and
 	 * user roles will be search lowercase!
+	 * 
+	 * @param pageSize
+	 *            - docs per page
+	 * @param pageIndex
+	 *            - page number
+	 * 
+	 * @return collection of search result
+	 */
+	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) {
+		// no sort order
+		return search(sSearchTerm, pageSize, pageIndex, null, null);
+	}
+
+	/**
+	 * Returns a collection of documents matching matching the provided search
+	 * term. The provided search team will we extended with a users roles to
+	 * test the read access level of each workitem matching the search term. The
+	 * usernames and user roles will be search lowercase!
 	 * 
 	 * The optional param 'searchOrder' can be set to force lucene to sort the
 	 * search result by any search order.
@@ -142,27 +158,26 @@ public class LuceneSearchService {
 	 * The optional param 'defaultOperator' can be set to Operator.AND
 	 * 
 	 * @param sSearchTerm
-	 * @param documentService
+	 * @param pageSize
+	 *            - docs per page
+	 * @param pageIndex
+	 *            - page number
 	 * @param sortOrder
 	 *            - optional to sort the result
 	 * @param defaultOperator
 	 *            - optional to change the default search operator
 	 * 
-	 * @param pageSize
-	 *            - docs per page
-	 * @param pageNumber
-	 *            - page number
 	 * @return collection of search result
 	 */
-	public List<ItemCollection> search(String sSearchTerm, DocumentService documentService, Sort sortOrder,
-			Operator defaultOperator, int pageSize, int pageNumber) {
+	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex, Sort sortOrder,
+			Operator defaultOperator) {
 
 		long ltime = System.currentTimeMillis();
 		if (pageSize <= 0) {
 			pageSize = DEFAULT_PAGE_SIZE;
 		}
 
-		logger.fine("lucene search: pageNumber=" + pageNumber + " pageSize=" + pageSize);
+		logger.fine("lucene search: pageNumber=" + pageIndex + " pageSize=" + pageSize);
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
@@ -203,20 +218,34 @@ public class LuceneSearchService {
 				long lsearchtime = System.currentTimeMillis();
 				TopDocs topDocs = null;
 				TopDocsCollector<?> collector = null;
-				int startIndex = pageNumber * pageSize;
+				int startIndex = pageIndex * pageSize;
+
+				// test it pageindex is above th DEFAULT_MAX_SEARCH_RESULT
+				int maxSerachresult = DEFAULT_MAX_SEARCH_RESULT;
+				if ((startIndex + pageSize) > DEFAULT_MAX_SEARCH_RESULT) {
+					maxSerachresult = startIndex + (3 * pageSize);
+					logger.warning("PageIndex (" + pageSize + "x" + pageIndex + ") exeeded DEFAULT_MAX_SEARCH_RESULT("
+							+ DEFAULT_MAX_SEARCH_RESULT + ") -> new MAX_SEARCH_RESULT set to " + maxSerachresult);
+				}
 
 				Query query = parser.parse(sSearchTerm);
 				if (sortOrder != null) {
 					// sorted by sortoder
 					logger.fine("lucene result sorted by sortOrder= '" + sortOrder + "' ");
 					// MAX_SEARCH_RESULT is limiting the total number of hits
-					collector = TopFieldCollector.create(sortOrder, MAX_SEARCH_RESULT, false, false, false, false);
+					collector = TopFieldCollector.create(sortOrder, maxSerachresult, false, false, false, false);
+
 				} else {
 					// sorted by score
 					logger.fine("lucene result sorted by score ");
 					// MAX_SEARCH_RESULT is limiting the total number of hits
-					collector = TopScoreDocCollector.create(MAX_SEARCH_RESULT, true);
+					collector = TopScoreDocCollector.create(maxSerachresult, true);
 				}
+
+				// - ignore time limiting for now
+				// Counter clock = Counter.newCounter(true);
+				// TimeLimitingCollector timeLimitingCollector = new
+				// TimeLimitingCollector(collector, clock, 10);
 
 				// start search....
 				searcher.search(query, collector);

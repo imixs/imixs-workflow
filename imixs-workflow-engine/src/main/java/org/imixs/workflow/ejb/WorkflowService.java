@@ -148,7 +148,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByOwner(String name, int startpos, int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByOwner(String name,  String type, int pageSize, int pageIndex, int sortorder) {
 
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
@@ -161,7 +161,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		searchTerm+=" namowner:\"" + name + "\" )";
 		logger.warning("Sortorder " + sortorder + " not implemented!");
 
-		return documentService.find(searchTerm, startpos, count);
+		return documentService.find(searchTerm, pageSize, pageIndex);
 	}
 
 	/**
@@ -189,7 +189,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByAuthor(String name, int startpos, int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByAuthor(String name,  String type, int pageSize, int pageIndex, int sortorder) {
 
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
@@ -202,7 +202,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		logger.warning("Sortorder " + sortorder + " not implemented!");
 
 		
-		return documentService.find(searchTerm, startpos, count);
+		return documentService.find(searchTerm, pageSize, pageIndex);
 	}
 
 	/**
@@ -227,7 +227,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByCreator(String name, int startpos, int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByCreator(String name,  String type, int pageSize, int pageIndex, int sortorder) {
 
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
@@ -240,7 +240,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		logger.warning("Sortorder " + sortorder + " not implemented!");
 
 		
-		return documentService.find(searchTerm, startpos, count);
+		return documentService.find(searchTerm, pageSize, pageIndex);
 	}
 
 	/**
@@ -263,7 +263,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByWriteAccess(int startpos, int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByWriteAccess( String type, int pageSize, int pageIndex, int sortorder) {
 		StringBuffer nameListBuffer = new StringBuffer();
 
 		String name = ctx.getCallerPrincipal().getName();
@@ -293,10 +293,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		logger.warning("Sortorder " + sortorder + " not implemented!");
 
 
-		return documentService.find(searchTerm, startpos, count);
+		return documentService.find(searchTerm, pageSize, pageIndex);
 	}
 
-	public List<ItemCollection> getWorkListByGroup(String name, int startpos, int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByGroup(String name,  String type, int pageSize, int pageIndex, int sortorder) {
 
 		String searchTerm="(";
 		if (type != null && !"".equals(type)) {
@@ -306,7 +306,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		logger.warning("Sortorder " + searchTerm + " not implemented!");
 
 		
-		return documentService.find(searchTerm, startpos, count);
+		return documentService.find(searchTerm, pageSize, pageIndex);
 	}
 
 	/**
@@ -330,7 +330,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByProcessID(int aid, int startpos, int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByProcessID(int aid,  String type, int pageSize, int pageIndex, int sortorder) {
 
 		String searchTerm="(";
 		if (type != null && !"".equals(type)) {
@@ -339,7 +339,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		searchTerm+=" $processid:\"" + aid + "\" )";
 		logger.warning("Sortorder " + searchTerm + " not implemented!");
 		
-		return documentService.find(searchTerm, startpos, count);
+		return documentService.find(searchTerm, pageSize, pageIndex);
 	}
 
 	/**
@@ -363,7 +363,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 *            SORT_ORDER_MODIFIED_ASC = 3)
 	 * @return List of workitems
 	 */
-	public List<ItemCollection> getWorkListByRef(String aref, int startpos, int count, String type, int sortorder) {
+	public List<ItemCollection> getWorkListByRef(String aref, String type, int pageSize, int pageIndex, int sortorder) {
 
 		String searchTerm="(";
 		if (type != null && !"".equals(type)) {
@@ -374,7 +374,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		
 		
 		
-		return documentService.find(searchTerm, startpos, count);
+		return documentService.find(searchTerm, pageSize, pageIndex);
 	}
 
 	/**
@@ -384,7 +384,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return List of workitems
 	 */
 	public List<ItemCollection> getWorkListByRef(String aref) {
-		return getWorkListByRef(aref, 0, -1, null, 0);
+		return getWorkListByRef(aref, null, -1,0, 0);
 	}
 
 	/**

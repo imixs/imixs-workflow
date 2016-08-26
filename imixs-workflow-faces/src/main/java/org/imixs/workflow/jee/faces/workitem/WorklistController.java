@@ -48,13 +48,7 @@ import org.imixs.workflow.ejb.WorkflowService;
 public class WorklistController extends ViewController {
 
 	private static final long serialVersionUID = 1L;
-	private int sortOrder;
 
-	/* Worklist and Search */
-	public static final String QUERY_WORKLIST_BY_OWNER = "worklist.owner";
-	public static final String QUERY_WORKLIST_BY_CREATOR = "worklist.creator";
-	public static final String QUERY_WORKLIST_BY_AUTHOR = "worklist.author";
-	public static final String QUERY_WORKLIST_BY_WRITEACCESS = "worklist.writeaccess";
 
 	@EJB
 	private org.imixs.workflow.ejb.WorkflowService workflowService;
@@ -64,56 +58,14 @@ public class WorklistController extends ViewController {
 	 */
 	public WorklistController() {
 		super();
-		setType("workitem");
-		setView(QUERY_WORKLIST_BY_OWNER);
-		setSortOrder(WorkflowService.SORT_ORDER_CREATED_DESC);
-		setViewAdapter(new WorkflowViewAdapter());
+	
 	}
 
 	public org.imixs.workflow.ejb.WorkflowService getWorkflowService() {
 		return workflowService;
 	}
 
-	public int getSortOrder() {
-		return sortOrder;
-	}
+	
 
-	public void setSortOrder(int sortOrder) {
-		this.sortOrder = sortOrder;
-	}
-
-	/**
-	 * Custom implementation of a ViewAdapter to return workflow specific result
-	 * lists.
-	 * 
-	 * @author rsoika
-	 *
-	 */
-	class WorkflowViewAdapter extends ViewAdapter {
-
-		public List<ItemCollection> getViewEntries(
-				final ViewController controller) {
-			if (QUERY_WORKLIST_BY_AUTHOR.equals(getView()))
-				return workflowService.getWorkListByAuthor(null,
-						controller.getRow(), controller.getMaxResult(),
-						controller.getType(), getSortOrder());
-
-			if (QUERY_WORKLIST_BY_CREATOR.equals(getView()))
-				return workflowService.getWorkListByCreator(null,
-						controller.getRow(), controller.getMaxResult(),
-						controller.getType(), getSortOrder());
-			if (QUERY_WORKLIST_BY_OWNER.equals(getView()))
-				return workflowService.getWorkListByOwner(null,
-						controller.getRow(), controller.getMaxResult(),
-						controller.getType(), getSortOrder());
-			if (QUERY_WORKLIST_BY_WRITEACCESS.equals(getView()))
-				return workflowService.getWorkListByWriteAccess(
-						controller.getRow(), controller.getMaxResult(),
-						controller.getType(), getSortOrder());
-
-			// default behaivor - QUERY_WORKLIST_ALL
-			return super.getViewEntries(controller);
-
-		}
-	}
+	
 }

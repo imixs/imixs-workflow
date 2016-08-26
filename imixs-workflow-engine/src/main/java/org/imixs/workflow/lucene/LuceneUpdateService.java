@@ -108,8 +108,8 @@ public class LuceneUpdateService {
 	private Properties properties = null;
 
 	private static List<String> NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$processid", "$workitemid",
-			"$uniqueidref", "type", "$writeaccess", "namcreator", "txtworkflowgroup", "txtname", "namowner",
-			"txtworkitemref");
+			"$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "txtworkflowgroup",
+			"txtname", "namowner", "txtworkitemref");
 
 	@EJB
 	PropertyService propertyService;
@@ -182,29 +182,23 @@ public class LuceneUpdateService {
 		}
 	}
 
-	
-	
 	/**
-	 * Returns the Lucene configuration 
+	 * Returns the Lucene configuration
+	 * 
 	 * @return
 	 */
 	public ItemCollection getConfiguration() {
-		ItemCollection config=new ItemCollection();
-		
+		ItemCollection config = new ItemCollection();
+
 		config.replaceItemValue("lucence.indexDir", indexDirectoryPath);
 		config.replaceItemValue("lucence.lockFactory", luceneLockFactory);
 		config.replaceItemValue("lucence.analyzerClass", analyserClass);
 		config.replaceItemValue("lucence.fulltextFieldList", searchFieldList);
 		config.replaceItemValue("lucence.indexFieldListAnalyze", indexFieldListAnalyse);
 		config.replaceItemValue("lucence.indexFieldListNoAnalyze", indexFieldListNoAnalyse);
-		
-	
+
 		return config;
 	}
-
-
-
-
 
 	/**
 	 * This method adds a single document into the search index.
@@ -411,7 +405,7 @@ public class LuceneUpdateService {
 					continue;
 
 				if (o instanceof Calendar || o instanceof Date) {
-					SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmm");
+					SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmmss");
 					// convert calendar to string
 					String sDateValue;
 					if (o instanceof Calendar)
@@ -512,7 +506,7 @@ public class LuceneUpdateService {
 
 			// Object o = vValues.firstElement();
 			if (singleValue instanceof Calendar || singleValue instanceof Date) {
-				SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmm");
+				SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmmss");
 
 				// convert calendar to string
 				String sDateValue;
