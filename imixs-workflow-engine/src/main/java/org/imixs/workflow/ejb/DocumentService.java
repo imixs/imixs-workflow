@@ -59,6 +59,7 @@ import javax.persistence.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
+import org.apache.lucene.search.SortedSetSortField;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
@@ -505,14 +506,17 @@ public class DocumentService {
 	 * 
 	 * @see org.imixs.workflow.jpa.Document
 	 */
-	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy,
-			boolean sortReverse) throws InvalidAccessException {
+	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy, boolean sortReverse)
+			throws InvalidAccessException {
 		logger.fine("find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber=" + pageIndex
 				+ " , sortBy=" + sortBy + " reverse=" + sortReverse);
 
 		// create sort object
 		Sort sortOrder = null;
 		if (sortBy != null && !sortBy.isEmpty()) {
+			// we do not support multi values here - see
+			// LuceneUpdateService.addItemValues
+			// it would be possible if we use a SortedSetSortField class here
 			sortOrder = new Sort(new SortField[] { new SortField(sortBy, Type.STRING, sortReverse) });
 		}
 

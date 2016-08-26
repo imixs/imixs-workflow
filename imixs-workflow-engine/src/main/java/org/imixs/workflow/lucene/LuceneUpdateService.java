@@ -45,10 +45,11 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.ClassicAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.SortedDocValuesField;
+import org.apache.lucene.document.SortedSetDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.CorruptIndexException;
@@ -58,6 +59,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockObtainFailedException;
+import org.apache.lucene.util.BytesRef;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ejb.PropertyService;
 import org.imixs.workflow.exceptions.PluginException;
@@ -96,18 +98,20 @@ public class LuceneUpdateService {
 	public static final String INVALID_INDEX = "INVALID_INDEX";
 	protected static final String DEFAULT_ANALYSER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
 	protected static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
+	protected static final String ANONYMOUS = "ANONYMOUS";
 
 	private List<String> searchFieldList = null;
 	private List<String> indexFieldListAnalyse = null;
 	private List<String> indexFieldListNoAnalyse = null;
 	private String indexDirectoryPath = null;
-	//private String luceneLockFactory = null;
 	private String analyserClass = null;
 	private Properties properties = null;
 
-	private static List<String> NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$processid", "$workitemid",
-			"$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "txtworkflowgroup",
-			"txtname", "namowner", "txtworkitemref");
+	// default field lists
+	private static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("txtworkflowsummary", "txtworkflowabstract");
+	private static List<String> DEFAULT_NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$processid",
+			"$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator",
+			"txtworkflowgroup", "txtname", "namowner", "txtworkitemref");
 
 	@EJB
 	PropertyService propertyService;
@@ -126,7 +130,7 @@ public class LuceneUpdateService {
 		// read configuration
 		properties = propertyService.getProperties();
 		indexDirectoryPath = properties.getProperty("lucence.indexDir", DEFAULT_INDEX_DIRECTORY);
-		//luceneLockFactory = properties.getProperty("lucence.lockFactory");
+		// luceneLockFactory = properties.getProperty("lucence.lockFactory");
 		// get Analyzer Class -
 		// default=org.apache.lucene.analysis.standard.ClassicAnalyzer
 		analyserClass = properties.getProperty("lucence.analyzerClass", DEFAULT_ANALYSER);
@@ -142,12 +146,14 @@ public class LuceneUpdateService {
 
 		// compute search field list
 		searchFieldList = new ArrayList<String>();
+		// add all static default field list
+		searchFieldList.addAll(DEFAULT_SEARCH_FIELD_LIST);
 		if (sFulltextFieldList != null && !sFulltextFieldList.isEmpty()) {
 			StringTokenizer st = new StringTokenizer(sFulltextFieldList, ",");
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase();
 				// do not add internal fields
-				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
+				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName) && !searchFieldList.contains(sName))
 					searchFieldList.add(sName);
 			}
 		}
@@ -167,8 +173,8 @@ public class LuceneUpdateService {
 		// compute Index field list (NoAnalyze)
 
 		indexFieldListNoAnalyse = new ArrayList<String>();
-		// add all static fields from the WorkflowService
-		indexFieldListNoAnalyse.addAll(NOANALYSE_FIELD_LIST);
+		// add all static default field list
+		indexFieldListNoAnalyse.addAll(DEFAULT_NOANALYSE_FIELD_LIST);
 		if (sIndexFieldListNoAnalyse != null && !sIndexFieldListNoAnalyse.isEmpty()) {
 			// add additional field list from imixs.properties
 			StringTokenizer st = new StringTokenizer(sIndexFieldListNoAnalyse, ",");
@@ -189,7 +195,7 @@ public class LuceneUpdateService {
 		ItemCollection config = new ItemCollection();
 
 		config.replaceItemValue("lucence.indexDir", indexDirectoryPath);
-		//config.replaceItemValue("lucence.lockFactory", luceneLockFactory);
+		// config.replaceItemValue("lucence.lockFactory", luceneLockFactory);
 		config.replaceItemValue("lucence.analyzerClass", analyserClass);
 		config.replaceItemValue("lucence.fulltextFieldList", searchFieldList);
 		config.replaceItemValue("lucence.indexFieldListAnalyze", indexFieldListAnalyse);
@@ -303,13 +309,13 @@ public class LuceneUpdateService {
 		// create a IndexWriter Instance
 		Directory indexDir = FSDirectory.open(Paths.get(indexDirectoryPath));
 		IndexWriterConfig indexWriterConfig;
-		indexWriterConfig = new IndexWriterConfig( new ClassicAnalyzer());
+		indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
 
 		return new IndexWriter(indexDir, indexWriterConfig);
 	}
 
 	/**
-	 * Creates a Lucene FSDirectory Instance. 
+	 * Creates a Lucene FSDirectory Instance.
 	 * 
 	 * @return
 	 * @throws IOException
@@ -370,58 +376,33 @@ public class LuceneUpdateService {
 				sContent += sValue + ",";
 			}
 		}
-		logger.fine("lucene document content=" + sContent);
-
-		// Migration guide
-		// http://lucene.apache.org/core/4_0_0/MIGRATE.html
-
-		// If instead the value was stored:
-		//
-		// new Field("field", value, Field.Store.YES, Field.Indexed.ANALYZED)
-		// you can now do this:
-		//
-		// new Field("field", value, TextField.TYPE_STORED)
-		//
-
-		// doc.add(new Field("content", sContent, Field.Store.NO,
-		// Field.Index.ANALYZED));
+		logger.fine("add lucene field content=" + sContent);
 		doc.add(new TextField("content", sContent, Store.NO));
 
 		// add each field from the indexFieldList into the lucene document
+
+		// analyzed...
 		for (String aFieldname : indexFieldListAnalyse) {
-			addFieldValue(doc, aworkitem, aFieldname, true);
+			addItemValues(doc, aworkitem, aFieldname, true);
 		}
-
+		// ... and not analyzed...
 		for (String aFieldname : indexFieldListNoAnalyse) {
-			addFieldValue(doc, aworkitem, aFieldname, false);
+			addItemValues(doc, aworkitem, aFieldname, false);
 		}
 
-		// add default value $uniqueid
-		// doc.add(new Field("$uniqueid",
-		// aworkitem.getItemValueString("$uniqueid"),
-		// Field.Store.YES,Field.Index.NOT_ANALYZED));
+		// add $uniqueid not analyzed
 		doc.add(new StringField("$uniqueid", aworkitem.getItemValueString("$uniqueid"), Store.YES));
 
-		// add default values $readAccess
+		// add $readAccess not analyzed
 		List<String> vReadAccess = (List<String>) aworkitem.getItemValue("$readAccess");
 		if (vReadAccess.size() == 0 || (vReadAccess.size() == 1 && "".equals(vReadAccess.get(0).toString()))) {
-			sValue = "ANONYMOUS";
-
-			// migration
-			// new Field("field", "value", Field.Store.NO,
-			// Field.Indexed.NOT_ANALYZED_NO_NORMS)
-			// you can now do this:
-			// new StringField("field", "value")
-
-			// doc.add(new Field("$readaccess", sValue,
-			// Field.Store.NO,Field.Index.NOT_ANALYZED_NO_NORMS));
+			// if emtpy add the ANONYMOUS default entry
+			sValue = ANONYMOUS;
 			doc.add(new StringField("$readaccess", sValue, Store.NO));
 		} else {
 			sValue = "";
 			// add each role / username as a single field value
 			for (String sReader : vReadAccess) {
-				// doc.add(new Field("$readaccess", sReader,
-				// Field.Store.NO,Field.Index.NOT_ANALYZED_NO_NORMS));
 				doc.add(new StringField("$readaccess", sReader, Store.NO));
 			}
 
@@ -434,21 +415,22 @@ public class LuceneUpdateService {
 	 * 
 	 * @param doc
 	 *            an existing lucene document
-	 * @param aworkitem
+	 * @param workitem
 	 *            the workitem containg the values
-	 * @param aFieldname
+	 * @param itemName
 	 *            the Fieldname inside the workitem
 	 * @param analyzeValue
 	 *            indicates if the value should be parsed by the analyzer
 	 */
-	void addFieldValue(Document doc, ItemCollection aworkitem, String aFieldname, boolean analyzeValue) {
+	void addItemValues(Document doc, ItemCollection workitem, String itemName, boolean analyzeValue) {
 		String sValue = null;
-		List<?> vValues = aworkitem.getItemValue(aFieldname);
+		List<?> vValues = workitem.getItemValue(itemName);
 		if (vValues.size() == 0)
 			return;
 		if (vValues.get(0) == null)
 			return;
 
+		boolean firstValue = true;
 		for (Object singleValue : vValues) {
 
 			// Object o = vValues.firstElement();
@@ -457,33 +439,37 @@ public class LuceneUpdateService {
 
 				// convert calendar to string
 				String sDateValue;
-				if (singleValue instanceof Calendar)
+				if (singleValue instanceof Calendar) {
 					sDateValue = dateformat.format(((Calendar) singleValue).getTime());
-				else
+				} else {
 					sDateValue = dateformat.format((Date) singleValue);
+				}
 				sValue = sDateValue;
 
-			} else
+			} else {
 				// simple string representation
 				sValue = singleValue.toString();
-
-			logger.fine("lucene add IndexField (analyse=" + analyzeValue + "): " + aFieldname + "=" + sValue);
-			if (analyzeValue) {
-				// If you did this before (value can be String or Reader):
-				// new Field("field", value, Field.Store.NO,
-				// Field.Indexed.ANALYZED)
-				// you can now do this:
-				// new TextField("field", value)
-
-				// doc.add(new Field(aFieldname, sValue,
-				// Field.Store.NO,Field.Index.ANALYZED));
-				doc.add(new TextField(aFieldname, sValue, Store.NO));
-			} else {
-				// do not analyse content of index fields!
-				// doc.add(new Field(aFieldname, sValue,
-				// Field.Store.NO,Field.Index.NOT_ANALYZED));
-				doc.add(new StringField(aFieldname, sValue, Store.NO));
 			}
+
+			logger.fine("lucene add IndexField (analyse=" + analyzeValue + "): " + itemName + "=" + sValue);
+			if (analyzeValue) {
+				doc.add(new TextField(itemName, sValue, Store.NO));
+			} else {
+				// do not analyze content of index fields!
+				doc.add(new StringField(itemName, sValue, Store.NO));
+
+				// we only add the first value of a multiValue field into the
+				// sort index, because it seems not to make any sense to sort a
+				// result set by multivalues.
+				// since lucene 5 we create an additional sortedSet field..
+				// doc.add(new SortedSetDocValuesField(itemName, new
+				// BytesRef(sValue)));
+				if (firstValue) {
+					doc.add(new SortedDocValuesField(itemName, new BytesRef(sValue)));
+				}
+			}
+
+			firstValue = false;
 		}
 
 	}

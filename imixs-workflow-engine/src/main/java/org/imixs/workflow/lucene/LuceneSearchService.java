@@ -196,8 +196,8 @@ public class LuceneSearchService {
 			if (!documentService.isUserInRole(EntityService.ACCESSLEVEL_MANAGERACCESS)) {
 				// get user names list
 				List<String> userNameList = documentService.getUserNameList();
-				// create search term
-				String sAccessTerm = "($readaccess:ANONYMOUS";
+				// create search term (always add ANONYMOUS)
+				String sAccessTerm = "($readaccess:"+LuceneUpdateService.ANONYMOUS;
 				for (String aRole : userNameList) {
 					if (!"".equals(aRole))
 						sAccessTerm += " OR $readaccess:\"" + aRole + "\"";
