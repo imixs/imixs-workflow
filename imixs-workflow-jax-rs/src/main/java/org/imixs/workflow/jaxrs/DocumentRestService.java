@@ -130,7 +130,7 @@ public class DocumentRestService {
 	 * 
 	 * @param query
 	 * @param pageSize
-	 * @param pageNumber
+	 * @param pageIndex
 	 * @param items
 	 * @return
 	 */
@@ -138,12 +138,15 @@ public class DocumentRestService {
 	@Path("/search/{query}")
 	public EntityCollection findDocumentsByQuery(@PathParam("query") String query,
 			@DefaultValue("-1") @QueryParam("pageSize") int pageSize,
-			@DefaultValue("0") @QueryParam("pageNumber") int pageNumber, @QueryParam("items") String items) {
+			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
+			@QueryParam("sortBy") String sortBy,
+			@QueryParam("sortReverse") boolean sortReverse,
+			@QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
 			// decode query...
 			String decodedQuery = URLDecoder.decode(query, "UTF-8");
-			col = documentService.find(decodedQuery, pageSize, pageNumber);
+			col = documentService.find(decodedQuery, pageSize, pageIndex,sortBy, sortReverse);
 			return XMLItemCollectionAdapter.putCollection(col, getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -160,15 +163,15 @@ public class DocumentRestService {
 	 */
 	@GET
 	@Path("/configuration")
-	public Response getIndexFieldListNoAnalyse() throws Exception {
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public XMLItemCollection getConfiguration() throws Exception {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
-			return Response.status(Response.Status.UNAUTHORIZED).build();
+			return null;
 		}
 		
 		ItemCollection config=lucenUpdateService.getConfiguration();
 		
-		return Response.ok(XMLItemCollectionAdapter.putItemCollection(config), MediaType.APPLICATION_XML)
-				.status(Response.Status.NOT_ACCEPTABLE).build();
+		return XMLItemCollectionAdapter.putItemCollection(config);
 		
 	}
 
