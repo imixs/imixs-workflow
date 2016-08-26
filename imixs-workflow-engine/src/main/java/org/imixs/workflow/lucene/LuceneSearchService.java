@@ -27,8 +27,8 @@
 
 package org.imixs.workflow.lucene;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -59,7 +59,6 @@ import org.apache.lucene.search.TopFieldCollector;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.LockFactory;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ejb.DocumentService;
 import org.imixs.workflow.ejb.PropertyService;
@@ -233,13 +232,13 @@ public class LuceneSearchService {
 					// sorted by sortoder
 					logger.fine("lucene result sorted by sortOrder= '" + sortOrder + "' ");
 					// MAX_SEARCH_RESULT is limiting the total number of hits
-					collector = TopFieldCollector.create(sortOrder, maxSerachresult, false, false, false, false);
+					collector = TopFieldCollector.create(sortOrder, maxSerachresult, false, false, false);
 
 				} else {
 					// sorted by score
 					logger.fine("lucene result sorted by score ");
 					// MAX_SEARCH_RESULT is limiting the total number of hits
-					collector = TopScoreDocCollector.create(maxSerachresult, true);
+					collector = TopScoreDocCollector.create(maxSerachresult);
 				}
 
 				// - ignore time limiting for now
@@ -290,6 +289,7 @@ public class LuceneSearchService {
 
 		return workitems;
 	}
+	
 
 	/**
 	 * Creates a Lucene FSDirectory Instance. The method uses the proeprty
@@ -301,40 +301,10 @@ public class LuceneSearchService {
 	 * @throws IOException
 	 */
 	Directory createIndexDirectory(Properties prop) throws IOException {
-
 		logger.fine("lucene createIndexDirectory...");
 		// read configuration
-		String sLuceneLockFactory = prop.getProperty("lucence.lockFactory");
 		String sIndexDir = prop.getProperty("lucence.indexDir", LuceneUpdateService.DEFAULT_INDEX_DIRECTORY);
-
-		Directory indexDir = FSDirectory.open(new File(sIndexDir));
-
-		// set lockFactory
-		// NativeFSLockFactory: using native OS file locks
-		// SimpleFSLockFactory: recommended for NFS based access to an index,
-		if (sLuceneLockFactory != null && !"".equals(sLuceneLockFactory)) {
-			// indexDir.setLockFactory(new SimpleFSLockFactory());
-			// set factory by class name
-			logger.fine("lucene set LockFactory=" + sLuceneLockFactory);
-			try {
-				Class<?> fsFactoryClass;
-				fsFactoryClass = Class.forName(sLuceneLockFactory);
-				LockFactory factoryInstance = (LockFactory) fsFactoryClass.newInstance();
-				indexDir.setLockFactory(factoryInstance);
-			} catch (ClassNotFoundException e) {
-				logger.severe("lucene error - unable to create Lucene LockFactory!");
-				e.printStackTrace();
-				return null;
-			} catch (InstantiationException e) {
-				logger.severe("lucene error - unable to create Lucene LockFactory!");
-				e.printStackTrace();
-				return null;
-			} catch (IllegalAccessException e) {
-				logger.severe("lucene error - unable to create Lucene LockFactory!");
-				e.printStackTrace();
-				return null;
-			}
-		}
+		Directory indexDir = FSDirectory.open(Paths.get(sIndexDir));
 		return indexDir;
 	}
 

@@ -27,8 +27,8 @@
 
 package org.imixs.workflow.lucene;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,9 +57,7 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.LockObtainFailedException;
-import org.apache.lucene.util.Version;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ejb.PropertyService;
 import org.imixs.workflow.exceptions.PluginException;
@@ -103,7 +101,7 @@ public class LuceneUpdateService {
 	private List<String> indexFieldListAnalyse = null;
 	private List<String> indexFieldListNoAnalyse = null;
 	private String indexDirectoryPath = null;
-	private String luceneLockFactory = null;
+	//private String luceneLockFactory = null;
 	private String analyserClass = null;
 	private Properties properties = null;
 
@@ -128,7 +126,7 @@ public class LuceneUpdateService {
 		// read configuration
 		properties = propertyService.getProperties();
 		indexDirectoryPath = properties.getProperty("lucence.indexDir", DEFAULT_INDEX_DIRECTORY);
-		luceneLockFactory = properties.getProperty("lucence.lockFactory");
+		//luceneLockFactory = properties.getProperty("lucence.lockFactory");
 		// get Analyzer Class -
 		// default=org.apache.lucene.analysis.standard.ClassicAnalyzer
 		analyserClass = properties.getProperty("lucence.analyzerClass", DEFAULT_ANALYSER);
@@ -191,7 +189,7 @@ public class LuceneUpdateService {
 		ItemCollection config = new ItemCollection();
 
 		config.replaceItemValue("lucence.indexDir", indexDirectoryPath);
-		config.replaceItemValue("lucence.lockFactory", luceneLockFactory);
+		//config.replaceItemValue("lucence.lockFactory", luceneLockFactory);
 		config.replaceItemValue("lucence.analyzerClass", analyserClass);
 		config.replaceItemValue("lucence.fulltextFieldList", searchFieldList);
 		config.replaceItemValue("lucence.indexFieldListAnalyze", indexFieldListAnalyse);
@@ -303,74 +301,23 @@ public class LuceneUpdateService {
 	 */
 	IndexWriter createIndexWriter() throws IOException {
 		// create a IndexWriter Instance
-		Directory indexDir = createIndexDirectory();
-
-		// IndexWriterConfig indexWriterConfig = new
-		// IndexWriterConfig(Version.LATEST, new ClassicAnalyzer());
-		// we build the analyzer form the configuration - default =
-		// org.apache.lucene.analysis.standard.ClassicAnalyzer
-
+		Directory indexDir = FSDirectory.open(Paths.get(indexDirectoryPath));
 		IndexWriterConfig indexWriterConfig;
-		try {
-			indexWriterConfig = new IndexWriterConfig(Version.LATEST,
-					(Analyzer) Class.forName(analyserClass).newInstance());
-			logger.fine("Analyzer Class: " + analyserClass);
-		} catch (Exception e) {
-			logger.warning("Unable to instanciate Analyzer Class '" + analyserClass + "' - verify imixs.properties");
-			logger.warning("Create default analyzer: " + DEFAULT_ANALYSER);
-			indexWriterConfig = new IndexWriterConfig(Version.LATEST, new ClassicAnalyzer());
-		}
-		// set the WriteLockTimeout to wait for a write lock (in milliseconds)
-		// for this instance. 10 seconds!
-		indexWriterConfig.setWriteLockTimeout(10000);
+		indexWriterConfig = new IndexWriterConfig( new ClassicAnalyzer());
 
 		return new IndexWriter(indexDir, indexWriterConfig);
 	}
 
 	/**
-	 * Creates a Lucene FSDirectory Instance. The method uses the proeprty
-	 * LockFactory to set a custom LockFactory.
-	 * 
-	 * For example: org.apache.lucene.store.SimpleFSLockFactory
+	 * Creates a Lucene FSDirectory Instance. 
 	 * 
 	 * @return
 	 * @throws IOException
 	 */
 	Directory createIndexDirectory() throws IOException {
-
 		logger.fine("lucene createIndexDirectory...");
-		/**
-		 * Read configuration
-		 */
-
-		Directory indexDir = FSDirectory.open(new File(indexDirectoryPath));
-
-		// set lockFactory
-		// NativeFSLockFactory: using native OS file locks
-		// SimpleFSLockFactory: recommended for NFS based access to an index,
-		if (luceneLockFactory != null && !"".equals(luceneLockFactory)) {
-			// indexDir.setLockFactory(new SimpleFSLockFactory());
-			// set factory by class name
-			logger.fine("lucene set LockFactory=" + luceneLockFactory);
-			try {
-				Class<?> fsFactoryClass;
-				fsFactoryClass = Class.forName(luceneLockFactory);
-				LockFactory factoryInstance = (LockFactory) fsFactoryClass.newInstance();
-				indexDir.setLockFactory(factoryInstance);
-			} catch (ClassNotFoundException e) {
-				logger.severe("lucene error - unable to create Lucene LockFactory!");
-				e.printStackTrace();
-				return null;
-			} catch (InstantiationException e) {
-				logger.severe("lucene error - unable to create Lucene LockFactory!");
-				e.printStackTrace();
-				return null;
-			} catch (IllegalAccessException e) {
-				logger.severe("lucene error - unable to create Lucene LockFactory!");
-				e.printStackTrace();
-				return null;
-			}
-		}
+		Directory indexDir = FSDirectory.open(Paths.get(indexDirectoryPath));
+		// since version 5.0 we do no longer use set lockFactory
 		return indexDir;
 	}
 
