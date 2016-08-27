@@ -41,12 +41,9 @@ import javax.xml.bind.Marshaller;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
-import org.imixs.workflow.WorkflowContext;
-import org.imixs.workflow.ejb.DocumentService;
-import org.imixs.workflow.ejb.ReportService;
-import org.imixs.workflow.ejb.WorkflowService;
+import org.imixs.workflow.engine.WorkflowService;
+import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.plugins.jee.VersionPlugin;
 import org.imixs.workflow.xml.EntityCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
@@ -68,15 +65,11 @@ import org.imixs.workflow.xml.XMLItemCollectionAdapter;
  * @version 1.0
  */
 
-public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin {
+public class ReportPlugin extends AbstractPlugin {
 
 	public static final String INVALID_CONTEXT = "INVALID_CONTEXT";
 	public static final String REPORT_UNDEFINED = "REPORT_UNDEFINED";
 	public static final String INVALID_REPORT_DEFINITION = "INVALID_REPORT_DEFINITION";
-
-	private DocumentService documentService = null;
-	private WorkflowService workflowService = null;
-	private ReportService reportService = null;
 
 	private String reportName = null;
 	private String reportFilePath = null;
@@ -89,23 +82,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 
 	private static Logger logger = Logger.getLogger(ReportPlugin.class.getName());
 
-	public void init(WorkflowContext actx) throws PluginException {
-		super.init(actx);
-
-		// check for an instance of WorkflowService
-		if (actx instanceof WorkflowService) {
-			// yes we are running in a WorkflowService EJB
-			workflowService = (WorkflowService) actx;
-
-			if (workflowService == null)
-				throw new PluginException(VersionPlugin.class.getSimpleName(), INVALID_CONTEXT,
-						"VersionPlugin unable to access WorkflowSerive");
-
-			documentService = workflowService.getDocumentService();
-			reportService = workflowService.getReportService();
-		}
-
-	}
+	
 
 	/**
 	 * creates report defined by the txtReportName.
@@ -146,7 +123,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 		if (!reportName.endsWith(".ixr"))
 			reportName = reportName + ".ixr";
 
-		ItemCollection itemCol = reportService.getReport(reportName);
+		ItemCollection itemCol = getWorkflowService().getReportService().getReport(reportName);
 		if (itemCol == null) {
 			// report undefined
 			throw new PluginException(ReportPlugin.class.getSimpleName(), REPORT_UNDEFINED,
@@ -186,7 +163,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 			sEncoding = "UTF-8";
 
 		// query result ....
-		Collection<ItemCollection> col = documentService.find(sEQL, 0, -1);
+		Collection<ItemCollection> col = getWorkflowService().getDocumentService().find(sEQL, 0, -1);
 		// now add the current Workitem into the collection if an older
 		// version is
 		// included in the result
@@ -417,7 +394,7 @@ public class ReportPlugin extends org.imixs.workflow.plugins.jee.AbstractPlugin 
 
 		// search entity...
 		String searchTerm = "(type:\"workitemlob\" AND $uniqueidref:\"" + sUniqueID + "\")";
-		Collection<ItemCollection> itemcol = documentService.find(searchTerm, 0, 1);
+		Collection<ItemCollection> itemcol = getWorkflowService().getDocumentService().find(searchTerm, 0, 1);
 		if (itemcol != null && itemcol.size() > 0) {
 
 			blobWorkitem = itemcol.iterator().next();

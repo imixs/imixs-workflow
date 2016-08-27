@@ -7,10 +7,10 @@ import java.util.regex.Pattern;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.ejb.AbstractWorkflowEnvironment;
+import org.imixs.workflow.engine.AbstractWorkflowEnvironment;
+import org.imixs.workflow.engine.plugins.SplitAndJoinPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.plugins.jee.SplitAndJoinPlugin;
 import org.junit.Before;
 import org.junit.Test;
 

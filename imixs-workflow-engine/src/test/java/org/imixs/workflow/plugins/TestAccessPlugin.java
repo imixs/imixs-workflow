@@ -5,7 +5,8 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.ejb.AbstractWorkflowEnvironment;
+import org.imixs.workflow.engine.AbstractWorkflowEnvironment;
+import org.imixs.workflow.engine.plugins.AccessPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;

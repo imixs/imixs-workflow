@@ -5,6 +5,7 @@ import java.util.Date;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.faces.workitem.DocumentController;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

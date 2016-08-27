@@ -59,6 +59,7 @@ import javax.ws.rs.core.UriInfo;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.bpmn.BPMNModel;
+import org.imixs.workflow.engine.ModelService;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.xml.EntityCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
@@ -88,7 +89,7 @@ public class ModelRestService {
 	WorkflowRestService workflowRestService;
 
 	@EJB
-	org.imixs.workflow.ejb.ModelService modelService;
+	ModelService modelService;
 
 	@GET
 	@Produces({ MediaType.TEXT_HTML })

@@ -12,6 +12,7 @@ import javax.script.ScriptException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
+import org.imixs.workflow.engine.plugins.RulePlugin;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -30,7 +31,7 @@ public class TestRulePlugin {
 	@Before
 	public void setup() throws PluginException {
 		rulePlugin = new RulePlugin();
-		rulePlugin.init(null);
+		rulePlugin.init(null); 
 	}
 
 	/**

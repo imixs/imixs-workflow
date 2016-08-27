@@ -79,6 +79,8 @@ import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.MimeConstants;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.ReportService;
 import org.imixs.workflow.xml.EntityCollection;
 import org.imixs.workflow.xml.EntityTable;
 import org.imixs.workflow.xml.XMLItemCollection;
@@ -97,10 +99,10 @@ import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 public class ReportRestService {
 
 	@EJB
-	org.imixs.workflow.jee.ejb.EntityService entityService;
+	DocumentService entityService;
 
 	@EJB
-	org.imixs.workflow.ejb.ReportService reportService;
+	ReportService reportService;
 
 	@javax.ws.rs.core.Context
 	private static HttpServletRequest servletRequest;

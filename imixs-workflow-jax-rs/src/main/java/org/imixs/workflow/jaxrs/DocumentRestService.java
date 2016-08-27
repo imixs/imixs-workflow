@@ -55,10 +55,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.ejb.DocumentService;
+import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.jee.ejb.EntityService;
-import org.imixs.workflow.lucene.LuceneUpdateService;
 import org.imixs.workflow.xml.EntityCollection;
 import org.imixs.workflow.xml.XMLCount;
 import org.imixs.workflow.xml.XMLItemCollection;
@@ -77,7 +77,7 @@ public class DocumentRestService {
 
 	@EJB
 	private DocumentService documentService;
-	
+
 	@EJB
 	private LuceneUpdateService lucenUpdateService;
 
@@ -138,15 +138,13 @@ public class DocumentRestService {
 	@Path("/search/{query}")
 	public EntityCollection findDocumentsByQuery(@PathParam("query") String query,
 			@DefaultValue("-1") @QueryParam("pageSize") int pageSize,
-			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
-			@QueryParam("sortBy") String sortBy,
-			@QueryParam("sortReverse") boolean sortReverse,
-			@QueryParam("items") String items) {
+			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
+			@QueryParam("sortReverse") boolean sortReverse, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
 			// decode query...
 			String decodedQuery = URLDecoder.decode(query, "UTF-8");
-			col = documentService.find(decodedQuery, pageSize, pageIndex,sortBy, sortReverse);
+			col = documentService.find(decodedQuery, pageSize, pageIndex, sortBy, sortReverse);
 			return XMLItemCollectionAdapter.putCollection(col, getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -154,12 +152,11 @@ public class DocumentRestService {
 		return new EntityCollection();
 	}
 
-	
-	
 	/**
 	 * Returns the IndexFieldListNoAnalyse from the lucensUpdateService
+	 * 
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	@GET
 	@Path("/configuration")
@@ -168,14 +165,13 @@ public class DocumentRestService {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
 			return null;
 		}
-		
-		ItemCollection config=lucenUpdateService.getConfiguration();
-		
+
+		ItemCollection config = lucenUpdateService.getConfiguration();
+
 		return XMLItemCollectionAdapter.putItemCollection(config);
-		
+
 	}
 
-	
 	/**
 	 * Returns the size of a result set by JPQL Query
 	 * 
@@ -202,13 +198,14 @@ public class DocumentRestService {
 	}
 
 	/**
-	 * This method saves a entity provided in xml format
+	 * The method saves a document provided in xml format. The caller need to be
+	 * assigned to the access role 'org.imixs.ACCESSLEVEL.MANAGERACCESS'
 	 * 
-	 * Note: the method merges the content of the given entity into an existing
-	 * one because the EntityService method save() did not merge an entity. But
+	 * Note: the method merges the content of the given document into an existing
+	 * one because the DocumentService method save() did not merge an entity. But
 	 * the rest service typically consumes only a subset of attributes. So this
 	 * is the reason why we merge the entity here. In different to the behavior
-	 * of the EntityService the WorkflowService method process() did this merge
+	 * of the DocumentService the WorkflowService method process() did this merge
 	 * automatically.
 	 * 
 	 * @param xmlworkitem
