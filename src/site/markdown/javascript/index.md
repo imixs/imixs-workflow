@@ -30,6 +30,8 @@ See also the following sections for details and examples:
 
  * [Working with Documents](./documents.html)
  
+ * [XML](./xml.html)
+
  * [Layout & UI](./layout.html)
  
 
@@ -47,6 +49,18 @@ To embed Imixs-Script into a JavaScript application the following libraries need
     <script type="text/javascript" src="./js/imixs-ui.js"></script>
     ...
     </body>
+
+Imixs-Script use namespaces to isolate the framework from other libraries used in the same project. The namespaces can be mapped to local variables to access the libraries: 
+
+
+	var imixs = IMIXS.org.imixs.core, 
+	    imixsXML = IMIXS.org.imixs.xml,
+	    imixsWorkflow = IMIXS.org.imixs.workflow, 
+	    imixsUI = IMIXS.org.imixs.ui;
+	...
+	var myDocument=new imixs.ItemCollection();
+
+
     
 ### Downloads
 Imixs-Script can be downloaded from [GitHub](https://github.com/imixs/imixs-script/releases). The download contains the libraries and also a JEE sample application. 

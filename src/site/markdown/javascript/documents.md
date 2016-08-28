@@ -3,7 +3,7 @@
 Imixs-Script provides the object 'ItemCollection' which provides functionality to work with documents. A document is a set of items haveing a name, a value list and an xsi:type. The ItemColleciton provides methods to access and manges items of a document:
 
 
-	var myDocument=new ItemCollection();
+	var myDocument=new imixs.ItemCollection();
 	myDocument.setItem('name','Bill');
 	myDocument.setItem('age','57','xs:int');  
 
