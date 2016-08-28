@@ -61,6 +61,7 @@ import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.jpa.Document;
+import org.imixs.workflow.engine.lucene.LuceneException;
 import org.imixs.workflow.engine.lucene.LuceneSearchService;
 import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -449,16 +450,20 @@ public class DocumentService {
 		if (persistedDocument != null) {
 			if (!isCallerReader(persistedDocument) || !isCallerAuthor(persistedDocument))
 				throw new AccessDeniedException(OPERATION_NOTALLOWED,
-						"[EntityService] You are not allowed to perform this operation");
+						"remove - You are not allowed to perform this operation");
 
 			// remove document...
 			manager.remove(persistedDocument);
 
-			// remove document form index
-			luceneUpdateService.removeDocument(itemcol.getUniqueID());
+			try {
+				// remove document form index
+				luceneUpdateService.removeDocument(itemcol.getUniqueID());
+			} catch (LuceneException le) {
+				logger.severe("remove - Unable to remove document (" + sID + " form index: " + le.getMessage());
+			}
 
 		} else
-			throw new AccessDeniedException(INVALID_UNIQUEID, "[EntityService] invalid $uniqueid");
+			throw new AccessDeniedException(INVALID_UNIQUEID, "remove - invalid $uniqueid");
 	}
 
 	/**
@@ -481,17 +486,17 @@ public class DocumentService {
 	 * @see org.imixs.workflow.engine.jpa.Document.jee.jpa.Entity
 	 */
 	public int count(String query) throws InvalidAccessException {
-	
+
 		long l = 0;
-	
+
 		logger.fine("countAllDocuments - Query=" + query);
-	
+
 		logger.warning("Count not implemented!");
 		// TODO - implementation missing
-	
+
 		logger.fine("[EntityService] countAllEntities in " + (System.currentTimeMillis() - l) + " ms");
 		return 0;
-	
+
 	}
 
 	/**
@@ -597,9 +602,8 @@ public class DocumentService {
 	}
 
 	/**
-	 * Returns all documents of a specific type. Use
-	 * getDocumentsByType(String type,int startpost, int maxcount) to select
-	 * a subset.
+	 * Returns all documents of a specific type. Use getDocumentsByType(String
+	 * type,int startpost, int maxcount) to select a subset.
 	 * 
 	 * @param type
 	 * @return
@@ -611,7 +615,7 @@ public class DocumentService {
 	}
 
 	/**
-	 * Returns all documents of a specific type
+	 * Returns all documents of a specific type ordered by creation date descending. 
 	 * 
 	 * @param type
 	 * @param startpost
@@ -622,30 +626,45 @@ public class DocumentService {
 
 	public List<ItemCollection> getDocumentsByType(String type, int startpos, int maxcount)
 			throws InvalidAccessException {
-		List<ItemCollection> result = new ArrayList<ItemCollection>();
 
 		String query = "SELECT document FROM Document AS document ";
-		if (type!=null && !type.isEmpty()) {
-			query+= " WHERE document.type = '" + type + "'";
+		if (type != null && !type.isEmpty()) {
+			query += " WHERE document.type = '" + type + "'";
 		}
-		query+= " ORDER BY document.created";
+		query += " ORDER BY document.created DESC";
 
+		return getDocumentsByQuery(query, startpos, maxcount);
+	}
+
+	/**
+	 * Returns all documents of by JPQL statement
+	 * 
+	 * @param query
+	 * @param startpost
+	 * @param maxcount
+	 * @return
+	 * @throws InvalidAccessException
+	 */
+
+	public List<ItemCollection> getDocumentsByQuery(String query, int startpos, int maxcount)
+			throws InvalidAccessException {
+		List<ItemCollection> result = new ArrayList<ItemCollection>();
 		Query q = manager.createQuery(query);
-		if (startpos>0) {
+		if (startpos > 0) {
 			q.setFirstResult(startpos);
 		}
-		if (maxcount>0) {
+		if (maxcount > 0) {
 			q.setMaxResults(maxcount);
 		}
 		long l = System.currentTimeMillis();
 		@SuppressWarnings("unchecked")
 		Collection<Document> entityList = q.getResultList();
-		logger.fine("getDocumentsByType - getResultList in " + (System.currentTimeMillis() - l) + " ms");
+		logger.fine("getDocumentsByQuery in " + (System.currentTimeMillis() - l) + " ms");
 
 		if (entityList == null)
 			return result;
 
-		logger.fine("getDocumentsByType - ResultList size=" + entityList.size());
+		logger.fine("getDocumentsByQuery - ResultList size=" + entityList.size());
 		l = System.currentTimeMillis();
 		// verify read access
 		for (Document doc : entityList) {

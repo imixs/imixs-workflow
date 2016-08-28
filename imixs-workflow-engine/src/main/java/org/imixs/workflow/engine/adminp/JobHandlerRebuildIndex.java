@@ -1,6 +1,10 @@
 package org.imixs.workflow.engine.adminp;
 
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -96,8 +100,12 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		// save it...
 		// adminp = entityService.save(adminp);
 		adminp = ctx.getBusinessObject(JobHandlerRebuildIndex.class).saveJobEntity(adminp);
-
-		Collection<ItemCollection> col = documentService.getDocumentsByType(null, iIndex, iBlockSize);
+		
+		
+		String query=buildQuery(adminp);
+		logger.fine("JQPL query: " + query);
+		adminp.replaceItemValue("txtQuery", query);
+		Collection<ItemCollection> col = documentService.getDocumentsByQuery(query,iIndex, iBlockSize);
 
 		int colSize = col.size();
 		// Update index
@@ -142,5 +150,62 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		adminp = documentService.save(adminp);
 		return adminp;
 
+	}
+	
+	
+	/**
+	 * This method builds the query statemetn based on the filter criteria. 
+	 * @param adminp
+	 * @return
+	 */
+	private String buildQuery(ItemCollection adminp) {
+		Date datFilterFrom=adminp.getItemValueDate("datfrom");
+		Date datFilterTo=adminp.getItemValueDate("datto");
+		String typeFilter=adminp.getItemValueString("typelist");
+        SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        
+		boolean bAddAnd=false;
+		String query = "SELECT document FROM Document AS document ";
+		
+		if (datFilterFrom!=null || datFilterTo!=null || (typeFilter!=null && !typeFilter.isEmpty())) {
+			query+= " WHERE ";
+
+		}
+		
+		if (typeFilter!=null && !typeFilter.isEmpty()) {
+			// convert type list into comma separated list
+			List<String> typeList = Arrays.asList(typeFilter.split("\\s*,\\s*"));
+			String sType = "";
+			for (String aValue : typeList) {
+				sType += "'" + aValue.trim() + "',";
+			}
+			sType = sType.substring(0, sType.length() - 1);
+			query += " document.type IN(" + sType + ")";
+			bAddAnd=true;
+		}
+		
+		
+		if (datFilterFrom!=null) {
+			if (bAddAnd) {
+				query+= " AND ";
+			}	
+	        query+= " document.created>='" + isoFormat.format(datFilterFrom) + "' ";
+			bAddAnd=true;
+		}
+
+		if (datFilterTo!=null) {
+			if (bAddAnd) {
+				query+= " AND ";
+			}	
+	        query+= " document.created<='" + isoFormat.format(datFilterTo) + "' ";
+			bAddAnd=true;
+		}
+
+		
+		query+= " ORDER BY document.created";
+		
+		
+		return query;
 	}
 }

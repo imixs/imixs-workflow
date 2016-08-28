@@ -23,9 +23,7 @@
 package org.imixs.workflow.engine.adminp;
 
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -37,19 +35,13 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
-import org.imixs.workflow.engine.WorkflowService;
-import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
-import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
-import org.imixs.workflow.jee.ejb.EntityService;
 
 /**
  * The AmdinPService provides a mechanism to start long running jobs. Those jobs
@@ -88,6 +80,7 @@ public class AdminPService {
 
 	public static final String JOB_RENAME_USER = "RENAME_USER";
 	public static final String JOB_REBUILD_LUCENE_INDEX = "REBUILD_LUCENE_INDEX";
+	private static final int DEFAULT_INTERVAL = 1;
 
 	@Resource
 	SessionContext ctx;
@@ -95,19 +88,17 @@ public class AdminPService {
 	@Resource
 	javax.ejb.TimerService timerService;
 
-	
 	@EJB
 	DocumentService documentService;
 
-	
 	@EJB
 	JobHandlerRebuildIndex jobHandlerRebuildIndex;
-	
-	@EJB 
+
+	@EJB
 	JobHandlerRenameUser jobHandlerRenameUser;
 
-	//private String lastUnqiueID = null;
-	//private static int MAX_COUNT = 300;
+	// private String lastUnqiueID = null;
+	// private static int MAX_COUNT = 300;
 	private static Logger logger = Logger.getLogger(AdminPService.class.getName());
 
 	/**
@@ -135,40 +126,39 @@ public class AdminPService {
 	 * @throws AccessDeniedException
 	 */
 	public ItemCollection createJob(ItemCollection adminp) throws AccessDeniedException {
-		
-		
-		String jobtype=adminp.getItemValueString("job");
+
+		String jobtype = adminp.getItemValueString("job");
 		if (!jobtype.equals(JOB_RENAME_USER) && !jobtype.equals(JOB_REBUILD_LUCENE_INDEX)) {
-			throw new InvalidAccessException(ProcessingErrorException.INVALID_WORKITEM, "AdminPService: error - invalid job type");
+			throw new InvalidAccessException(ProcessingErrorException.INVALID_WORKITEM,
+					"AdminPService: error - invalid job type");
 		}
-				
-				
+
 		// generate new UniqueID...
-		adminp.replaceItemValue(WorkflowKernel.UNIQUEID,WorkflowKernel.generateUniqueID());
-	
+		adminp.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
+
+		// Test interval - in minutes
+		int interval = adminp.getItemValueInteger("numInterval");
+		if (interval <= 0) {
+			interval = DEFAULT_INTERVAL;
+			adminp.replaceItemValue("numInterval", new Long(interval));
+		}
+
 		// startdatum und enddatum manuell festlegen
 		Calendar cal = Calendar.getInstance();
-		Date startDate = cal.getTime();
-		cal.add(Calendar.YEAR, 10);
-		adminp.replaceItemValue("datstart", startDate);
-	
-		long interval = 60 * 1000;
-	
-		adminp.replaceItemValue("numInterval", new Long(interval));
-	
-		adminp.replaceItemValue("txtTimerStatus", "Running");
-	
+		Date terminationDate = cal.getTime();
+		cal.add(Calendar.HOUR, 24);
+		adminp.replaceItemValue("datTerminate", terminationDate);
+
 		// save job document
 		adminp = documentService.save(adminp);
-	
+
 		// start timer...
-		Timer timer = timerService.createTimer(startDate, interval, adminp.getItemValueString(WorkflowKernel.UNIQUEID));
-	
-		logger.info("Job started - ID=" + timer.getInfo().toString() );
+		Timer timer = timerService.createTimer(terminationDate, (60 * interval * 1000),
+				adminp.getItemValueString(WorkflowKernel.UNIQUEID));
+
+		logger.info("Job started - ID=" + timer.getInfo().toString());
 		return adminp;
 	}
-
-
 
 	/**
 	 * Stops a running job and deletes the job configuration.
@@ -177,21 +167,12 @@ public class AdminPService {
 	 * @return
 	 * @throws AccessDeniedException
 	 */
-	public ItemCollection deleteJob(String id) throws AccessDeniedException {
-		ItemCollection adminp = stopTimer(id);
-	
-		ItemCollection entity = documentService.load(id);
-		if (entity != null) {
-			documentService.remove(entity);
+	public void deleteJob(String id) throws AccessDeniedException {
+		ItemCollection adminp = cancelTimer(id);
+		if (adminp != null) {
+			documentService.remove(adminp);
 		}
-		
-		return adminp;
 	}
-
-
-
-	
-	
 
 	/**
 	 * This method processes the timeout event. The method loads the
@@ -227,24 +208,22 @@ public class AdminPService {
 			if (job.equals(JOB_RENAME_USER)) {
 				if (jobHandlerRenameUser.run(adminp)) {
 					timer.cancel();
-					logger.info("Job "+ adminp.getUniqueID() + " completed - timer stopped");
+					logger.info("Job " + adminp.getUniqueID() + " completed - timer stopped");
 				}
 			}
 			if (job.equals(JOB_REBUILD_LUCENE_INDEX)) {
 				if (jobHandlerRebuildIndex.run(adminp)) {
 					timer.cancel();
-					logger.info("Job "+ adminp.getUniqueID() + " completed - timer stopped");
+					logger.info("Job " + adminp.getUniqueID() + " completed - timer stopped");
 				}
 			}
-
-			
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			// stop timer!
 			timer.cancel();
 			logger.severe("Timeout sevice stopped: " + sTimerID);
-			
+
 			try {
 				adminp.replaceItemValue("txtworkflowStatus", "Error");
 				adminp.replaceItemValue("errormessage", e.toString());
@@ -258,37 +237,34 @@ public class AdminPService {
 
 		}
 
-		logger.fine("timer call finished successfull after "
-				+ ((System.currentTimeMillis()) - lProfiler) + " ms");
+		logger.fine("timer call finished successfull after " + ((System.currentTimeMillis()) - lProfiler) + " ms");
 
 	}
 
-	
-	
-	
-	
+	/**
+	 * This method cancels a timer by ID. If a timer configuration exits, the
+	 * method returns the document entity.
+	 * 
+	 * @param id
+	 * @return
+	 */
+	private ItemCollection cancelTimer(String id) {
 
-
-	private ItemCollection stopTimer(String id) {
-
-		logger.info("[AdminPService] Stopping timer ID=" + id + "....");
+		logger.fine("cancelTimer - id:" + id + " ....");
 		ItemCollection adminp = documentService.load(id);
 		if (adminp == null) {
-			logger.warning("[AdminPService] anable to load timer data ID=" + id + " ");
-			return null;
+			logger.warning("failed to load timer data ID:" + id + " ");
 		}
-
-		// try to cancel an existing timer for this workflowinstance
+		// try to cancel an existing timer
 		Timer timer = this.findTimer(id);
 		if (timer != null) {
 			timer.cancel();
-
+			logger.info("cancelTimer - id:" + id + " successful.");
+		} else {
+			logger.info("cancelTimer - id:" + id + " failed - timer does no longer exist.");
+		}
+		if (adminp != null) {
 			adminp.replaceItemValue("txtTimerStatus", "Stopped");
-
-			// adminp = entityService.save(adminp);
-			adminp = documentService.save(adminp);
-
-			logger.info("[AdminPService] Timer ID=" + id + " STOPPED.");
 		}
 		return adminp;
 	}
@@ -314,6 +290,7 @@ public class AdminPService {
 				}
 			}
 		}
+		logger.warning("findTimer - id:" + id + " does no longer exist.");
 		return null;
 	}
 }

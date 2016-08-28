@@ -248,13 +248,13 @@ public class LuceneUpdateService {
 		} finally {
 			// close writer!
 			if (awriter != null) {
-				logger.fine("lucene close writer");
+				logger.fine("lucene close IndexWriter...");
 				try {
 					awriter.close();
 				} catch (CorruptIndexException e) {
-					throw new LuceneException(INVALID_INDEX, "Unable to update lucene search index", e);
+					throw new LuceneException(INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
 				} catch (IOException e) {
-					throw new LuceneException(INVALID_INDEX, "Unable to update lucene search index", e);
+					throw new LuceneException(INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
 				}
 			}
 		}
@@ -275,8 +275,9 @@ public class LuceneUpdateService {
 	 */
 	public void removeDocument(String uniqueID) throws LuceneException {
 		IndexWriter awriter = null;
+		long ltime = System.currentTimeMillis();
 		try {
-			awriter = createIndexWriter();
+			awriter = createIndexWriter();			
 			Term term = new Term("$uniqueid", uniqueID);
 			awriter.deleteDocuments(term);
 		} catch (CorruptIndexException e) {
@@ -289,6 +290,21 @@ public class LuceneUpdateService {
 			throw new LuceneException(INVALID_INDEX, "Unable to remove workitem '" + uniqueID + "' from search index",
 					e);
 		}
+		finally {
+			// close writer!
+			if (awriter != null) {
+				logger.fine("lucene close IndexWriter...");
+				try {
+					awriter.close();
+				} catch (CorruptIndexException e) {
+					throw new LuceneException(INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+				} catch (IOException e) {
+					throw new LuceneException(INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+				}
+			}
+		}
+
+		logger.fine("lucene removeDocument in " + (System.currentTimeMillis() - ltime) + " ms");
 
 	}
 
