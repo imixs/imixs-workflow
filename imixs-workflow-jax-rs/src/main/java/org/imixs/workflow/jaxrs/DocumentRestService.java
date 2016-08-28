@@ -70,7 +70,7 @@ import org.imixs.workflow.xml.XMLItemCollectionAdapter;
  * @author rsoika
  * 
  */
-@Path("/document")
+@Path("/documents")
 @Produces({ MediaType.TEXT_HTML, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, MediaType.TEXT_XML })
 @Stateless
 public class DocumentRestService {
@@ -125,6 +125,27 @@ public class DocumentRestService {
 
 	}
 
+	
+	/**
+	 * returns a single document defined by $uniqueid
+	 * 
+	 * @param uniqueid
+	 * @return
+	 */
+	@GET
+	@Path("/{uniqueid}")
+	public XMLItemCollection getDocument(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
+
+		ItemCollection document;
+		try { 
+			document = documentService.load(uniqueid);
+			return XMLItemCollectionAdapter.putItemCollection(document, DocumentRestService.getItemList(items));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	/**
 	 * Returns a result set by lucene Search Query
 	 * 
@@ -153,33 +174,13 @@ public class DocumentRestService {
 	}
 
 	/**
-	 * Returns the IndexFieldListNoAnalyse from the lucensUpdateService
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-	@GET
-	@Path("/configuration")
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public XMLItemCollection getConfiguration() throws Exception {
-		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
-			return null;
-		}
-
-		ItemCollection config = lucenUpdateService.getConfiguration();
-
-		return XMLItemCollectionAdapter.putItemCollection(config);
-
-	}
-
-	/**
-	 * Returns the size of a result set by JPQL Query
+	 * Returns the size of a result set by Query
 	 * 
 	 * @param query
 	 * @return
 	 */
 	@GET
-	@Path("/count/search/{query}")
+	@Path("/count/{query}")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public XMLCount countEntitiesByQuery(@PathParam("query") String query) {
 		logger.fine("Query=" + query);
@@ -339,6 +340,27 @@ public class DocumentRestService {
 		return Response.status(Response.Status.OK).build();
 
 	}
+
+	/**
+	 * Returns the IndexFieldListNoAnalyse from the lucensUpdateService
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	@GET
+	@Path("/configuration")
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public XMLItemCollection getConfiguration() throws Exception {
+		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+			return null;
+		}
+	
+		ItemCollection config = lucenUpdateService.getConfiguration();
+	
+		return XMLItemCollectionAdapter.putItemCollection(config);
+	
+	}
+
 
 	/**
 	 * This method returns a List object from a given comma separated string.

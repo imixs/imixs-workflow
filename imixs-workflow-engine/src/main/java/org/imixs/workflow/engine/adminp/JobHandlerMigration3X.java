@@ -96,7 +96,7 @@ public class JobHandlerMigration3X implements JobHandler {
 		
 		logger.fine("JQPL query: " + query);
 		adminp.replaceItemValue("txtQuery", query);
-		Collection<ItemCollection> col = entityService.findAllEntities(query,iIndex, iBlockSize);
+		Collection<ItemCollection> col = entityService._findAllEntities(query,iIndex, iBlockSize);
 
 		int colSize = col.size();
 		// Update index

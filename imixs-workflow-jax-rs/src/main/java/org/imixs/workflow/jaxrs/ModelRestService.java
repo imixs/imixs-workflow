@@ -59,6 +59,7 @@ import javax.ws.rs.core.UriInfo;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.bpmn.BPMNModel;
+import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.ModelService;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.xml.EntityCollection;
@@ -83,7 +84,7 @@ public class ModelRestService {
 			"activityentity");
 
 	@EJB
-	org.imixs.workflow.jee.ejb.EntityService entityService;
+	DocumentService documentService;
 
 	@EJB
 	WorkflowRestService workflowRestService;
@@ -386,7 +387,7 @@ public class ModelRestService {
 					// update model version
 					itemCollection.replaceItemValue("$modelVersion", sModelVersion);
 					// save entity
-					entityService.save(itemCollection);
+					documentService.save(itemCollection);
 				}
 			}
 
