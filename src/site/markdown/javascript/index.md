@@ -6,22 +6,12 @@ Imixs-Script is a JavaScript Framework to build business applications using the 
   
 ##Get started....
 
-Imixs-Script! is based on [jQuery](www.jquery.com)  and interacts through the Imixs REST API with the workflow engine in background.
-Imixs script can be combined with any other JavaScript library such as for example [Ben.JS](http://www.benjs.org), EmberJS, Angular or React. 
+Imixs-Script is a JavaScritp library based on [jQuery](www.jquery.com), which interacts through the [Imixs Rest API](../restapi/index.html) with the Imixs-Workflow engine.
+Imixs script can be used together with any other JavaScript library to build Single-Page-Applications based on the Imixs-Worklfow einge (e.g.  [Ben.JS](http://www.benjs.org), EmberJS, Angular or React). 
 
-Before you can start you need to deploy an instance of the Imixs-Workflow engine. This can be a custom project or you can install the Imixs-Script Sample Application providing an instance of Imixs-Workflow. See the section [Sample Application](#sample_application) for further details.
+<img src="../images/script/architecture.png"/>
 
-To embed Imixs-Script into your JavaScript application simply add the following libraries at the end of your HTML page.
-
-    ...
-    <script type="text/javascript" src="./js/jquery-2.1.4.min.js"></script>
-    <script type="text/javascript" src="./js/jquery-ui.min.js"></script>
-    <script type="text/javascript" src="./js/imixs-core.js"></script>
-    <script type="text/javascript" src="./js/imixs-xml.js"></script>
-    <script type="text/javascript" src="./js/imixs-workflow.js"></script>
-    <script type="text/javascript" src="./js/imixs-ui.js"></script>
-    ...
-    </body>
+Imixs-Script is hosted on [GitHub](https://github.com/imixs/imixs-script). The project contains a deployable for Java EE web containers. 
 
 
 As you can see Imixs-Script consists of separate modules which can be loaded also on demand. 
@@ -36,13 +26,31 @@ As you can see Imixs-Script consists of separate modules which can be loaded als
  * __imixs-ui.js___ - provides UI methods  
  
 
+See also the following sections for details and examples:
+
+ * [Working with Documents](./documents.html)
+ 
+ * [Layout & UI](./layout.html)
+ 
+
+
+##How To Install
+
+To embed Imixs-Script into a JavaScript application the following libraries need to be added:
+
+    ...
+    <script type="text/javascript" src="./js/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="./js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="./js/imixs-core.js"></script>
+    <script type="text/javascript" src="./js/imixs-xml.js"></script>
+    <script type="text/javascript" src="./js/imixs-workflow.js"></script>
+    <script type="text/javascript" src="./js/imixs-ui.js"></script>
+    ...
+    </body>
+    
 ### Downloads
 Imixs-Script can be downloaded from [GitHub](https://github.com/imixs/imixs-script/releases). The download contains the libraries and also a JEE sample application. 
 
-Please note that you also need to download jQuery from the [jQuery download page](www.jquery.com)
 
-<a id="sample_application"></a>
- 
-##The Sample application
-The Imixs-Script sample application provides an instance of the Imixs-Workflow engine and can be used as a template for custom project. See the [Installation Guide] how to install the sample application on WildFly or GlassFish application servers.
-
+###The Sample application
+The Imixs-Script sample application provides an instance of the Imixs-Workflow engine and can be used as a template for custom project.
