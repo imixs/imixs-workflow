@@ -43,4 +43,16 @@ JPQL Statements can be replaced with Lucene Search terms.
 		Collection<ItemCollection> col = documentService.find(sQuery, 0, 1);
 
 		
-		
+# Migration Guide
+
+ 2. Undeploy Application (with Imixs-Workflow 3.x)
+
+ 2. Backup Database
+ 
+ 3. Remove Fulltextindex from Filesystem
+ 
+ 4. Deploy new Application (with Imixs-Workflow 4.x) 
+ 
+ 5. Start Migration Job from Imixs-Admin Interface
+ 
+ 		

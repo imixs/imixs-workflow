@@ -80,6 +80,7 @@ public class AdminPService {
 
 	public static final String JOB_RENAME_USER = "RENAME_USER";
 	public static final String JOB_REBUILD_LUCENE_INDEX = "REBUILD_LUCENE_INDEX";
+	public static final String JOB_MIGRATION = "MIGRATION";
 	private static final int DEFAULT_INTERVAL = 1;
 
 	@Resource
@@ -96,6 +97,9 @@ public class AdminPService {
 
 	@EJB
 	JobHandlerRenameUser jobHandlerRenameUser;
+
+	@EJB
+	JobHandlerMigration3X jobHandlerMigration3X;
 
 	// private String lastUnqiueID = null;
 	// private static int MAX_COUNT = 300;
@@ -128,7 +132,8 @@ public class AdminPService {
 	public ItemCollection createJob(ItemCollection adminp) throws AccessDeniedException {
 
 		String jobtype = adminp.getItemValueString("job");
-		if (!jobtype.equals(JOB_RENAME_USER) && !jobtype.equals(JOB_REBUILD_LUCENE_INDEX)) {
+		if (!jobtype.equals(JOB_RENAME_USER) && !jobtype.equals(JOB_REBUILD_LUCENE_INDEX)
+				&& !jobtype.equals(JOB_MIGRATION)) {
 			throw new InvalidAccessException(ProcessingErrorException.INVALID_WORKITEM,
 					"AdminPService: error - invalid job type");
 		}
@@ -204,19 +209,38 @@ public class AdminPService {
 
 			logger.info("Processing : " + sTimerID);
 
+			boolean jobfound=false;
 			String job = adminp.getItemValueString("job");
 			if (job.equals(JOB_RENAME_USER)) {
+				jobfound=true;
 				if (jobHandlerRenameUser.run(adminp)) {
 					timer.cancel();
 					logger.info("Job " + adminp.getUniqueID() + " completed - timer stopped");
 				}
 			}
 			if (job.equals(JOB_REBUILD_LUCENE_INDEX)) {
+				jobfound=true;
 				if (jobHandlerRebuildIndex.run(adminp)) {
 					timer.cancel();
 					logger.info("Job " + adminp.getUniqueID() + " completed - timer stopped");
 				}
 			}
+			
+			if (job.equals(JOB_MIGRATION)) {
+				jobfound=true;
+				if (jobHandlerMigration3X.run(adminp)) {
+					timer.cancel();
+					logger.info("Job " + adminp.getUniqueID() + " completed - timer stopped");
+				}
+			}
+			
+			
+			if (!jobfound) {
+				logger.warning("Unable to start jobtype '" + job + "' -  not defined!");
+				timer.cancel();
+				logger.info("Job " + adminp.getUniqueID() + " - timer stopped");
+			}
+			
 
 		} catch (Exception e) {
 			e.printStackTrace();

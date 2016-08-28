@@ -160,6 +160,27 @@ public class EntityRestService {
 
 
 	/**
+	 * returns a singel entity defined by $uniqueid
+	 * 
+	 * @param uniqueid
+	 * @return
+	 */
+	@GET
+	@Path("/entities/{uniqueid}")
+	public XMLItemCollection getEntity(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
+
+		ItemCollection entity;
+		try {
+			entity = entityService.load(uniqueid);
+			return XMLItemCollectionAdapter.putItemCollection(entity, DocumentRestService.getItemList(items));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+
+	/**
 	 * Returns the size of a result set by JPQL Query
 	 * 
 	 * @param query

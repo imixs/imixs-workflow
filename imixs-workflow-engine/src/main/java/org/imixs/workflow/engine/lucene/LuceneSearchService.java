@@ -267,7 +267,7 @@ public class LuceneSearchService {
 					if (itemCol != null) {
 						workitems.add(itemCol);
 					} else {
-						logger.warning("lucene index returned un unreadable workitem : " + sID);
+						logger.warning("lucene index returned unreadable workitem : " + sID);
 						// this situation happens if the search index returned
 						// documents the current user has no read access.
 						// this should normally avoided with the $readaccess
