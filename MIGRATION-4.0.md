@@ -45,14 +45,19 @@ JPQL Statements can be replaced with Lucene Search terms.
 		
 # Migration Guide
 
+ 1. Migrate Workflow Models - (new package org.imixs.workflow.engine)
+
  2. Undeploy Application (with Imixs-Workflow 3.x)
 
- 2. Backup Database
+ 2. Backup Database (optional)
  
  3. Remove Fulltextindex from Filesystem
  
- 4. Deploy new Application (with Imixs-Workflow 4.x) 
+ 4. Exted FieldListNoAnalyse (txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername)
+
+ 5. Deploy new Application (with Imixs-Workflow 4.x) 
+  
+ 6. Start Migration Job from Imixs-Admin Interface
  
- 5. Start Migration Job from Imixs-Admin Interface
- 
+ 7. Upload new Models
  		
