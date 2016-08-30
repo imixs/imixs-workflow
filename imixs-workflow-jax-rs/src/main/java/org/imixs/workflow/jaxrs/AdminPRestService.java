@@ -129,11 +129,10 @@ public class AdminPRestService {
 	 */
 	@GET
 	@Path("/jobs")
-	public EntityCollection getAllJobs(@DefaultValue("0") @QueryParam("startpos") int startpos,
-			@DefaultValue("-1") @QueryParam("maxcount") int maxcount) {
+	public EntityCollection getAllJobs() {
 		Collection<ItemCollection> col = null;
 		try {
-			col = documentService.getDocumentsByType("adminp", startpos, maxcount);
+			col = documentService.getDocumentsByType("adminp");
 			return XMLItemCollectionAdapter.putCollection(col);
 		} catch (Exception e) {
 			e.printStackTrace();
