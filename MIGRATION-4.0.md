@@ -51,7 +51,7 @@ JPQL Statements can be replaced with Lucene Search terms.
 
  2. Backup Database (optional)
  
- 3. Remove Fulltextindex from Filesystem
+ 3. Remove Fulltextindex from Filesystem, and remove old artifacts
  
  4. Exted FieldListNoAnalyse (txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername)
 
