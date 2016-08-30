@@ -47,7 +47,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
 import org.imixs.workflow.util.Base64;
-import org.imixs.workflow.xml.EntityCollection;
+import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
 
 /**
@@ -229,7 +229,7 @@ public class RestClient {
 	 *            - an Entity Collection
 	 * @return HTTPResult
 	 */
-	public int postCollection(String uri, EntityCollection aEntityCol)
+	public int postCollection(String uri, DocumentCollection aEntityCol)
 			throws Exception {
 		PrintWriter printWriter = null;
 
@@ -258,7 +258,7 @@ public class RestClient {
 			StringWriter writer = new StringWriter();
 
 			JAXBContext context = JAXBContext
-					.newInstance(EntityCollection.class);
+					.newInstance(DocumentCollection.class);
 			Marshaller m = context.createMarshaller();
 			m.marshal(aEntityCol, writer);
 

@@ -62,7 +62,7 @@ import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.ModelService;
 import org.imixs.workflow.exceptions.ModelException;
-import org.imixs.workflow.xml.EntityCollection;
+import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
@@ -213,7 +213,7 @@ public class ModelRestService {
 
 	@GET
 	@Path("/{version}/tasks/")
-	public EntityCollection findAllTasks(@PathParam("version") String version, @QueryParam("items") String items) {
+	public DocumentCollection findAllTasks(@PathParam("version") String version, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
 
@@ -223,7 +223,7 @@ public class ModelRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 	@GET
@@ -255,7 +255,7 @@ public class ModelRestService {
 
 	@GET
 	@Path("/{version}/tasks/{taskid}/events")
-	public EntityCollection findAllEventsByTask(@PathParam("version") String version,
+	public DocumentCollection findAllEventsByTask(@PathParam("version") String version,
 			@PathParam("taskid") int processid, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
@@ -264,7 +264,7 @@ public class ModelRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 	/**
@@ -296,7 +296,7 @@ public class ModelRestService {
 	 */
 	@GET
 	@Path("/{version}/groups/{group}")
-	public EntityCollection findTasksByGroup(@PathParam("version") String version, @PathParam("group") String group,
+	public DocumentCollection findTasksByGroup(@PathParam("version") String version, @PathParam("group") String group,
 			@QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
@@ -306,7 +306,7 @@ public class ModelRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 	@DELETE
@@ -364,12 +364,12 @@ public class ModelRestService {
 	@PUT
 	@Path("/{version}")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-	public void putModelByVersion(@PathParam("version") String sModelVersion, EntityCollection ecol) {
+	public void putModelByVersion(@PathParam("version") String sModelVersion, DocumentCollection ecol) {
 
 		XMLItemCollection entity;
 		ItemCollection itemCollection;
 		try {
-			if (ecol.getEntity().length > 0) {
+			if (ecol.getDocument().length > 0) {
 				/*
 				 * first we need to delete the old model if available.
 				 */
@@ -381,8 +381,8 @@ public class ModelRestService {
 					modelService.removeModel(sModelVersion);
 
 				// save new entities into database and update modelversion.....
-				for (int i = 0; i < ecol.getEntity().length; i++) {
-					entity = ecol.getEntity()[i];
+				for (int i = 0; i < ecol.getDocument().length; i++) {
+					entity = ecol.getDocument()[i];
 					itemCollection = XMLItemCollectionAdapter.getItemCollection(entity);
 					// update model version
 					itemCollection.replaceItemValue("$modelVersion", sModelVersion);
@@ -400,7 +400,7 @@ public class ModelRestService {
 	@POST
 	@Path("/{version}")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-	public void postModelByVersion(@PathParam("version") String sModelVersion, EntityCollection ecol) {
+	public void postModelByVersion(@PathParam("version") String sModelVersion, DocumentCollection ecol) {
 		putModelByVersion(sModelVersion, ecol);
 	}
 
@@ -414,16 +414,16 @@ public class ModelRestService {
 	 */
 	@PUT
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-	public void putModel(EntityCollection ecol) {
+	public void putModel(DocumentCollection ecol) {
 		String sModelVersion = null;
 		XMLItemCollection entity;
 		ItemCollection itemCollection;
 		try {
-			if (ecol.getEntity().length > 0) {
+			if (ecol.getDocument().length > 0) {
 				/*
 				 * first we need get model version from first entity
 				 */
-				entity = ecol.getEntity()[0];
+				entity = ecol.getDocument()[0];
 				itemCollection = XMLItemCollectionAdapter.getItemCollection(entity);
 				sModelVersion = itemCollection.getItemValueString("$ModelVersion");
 
@@ -439,7 +439,7 @@ public class ModelRestService {
 
 	@POST
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-	public void postModel(EntityCollection ecol) {
+	public void postModel(DocumentCollection ecol) {
 		putModel(ecol);
 	}
 

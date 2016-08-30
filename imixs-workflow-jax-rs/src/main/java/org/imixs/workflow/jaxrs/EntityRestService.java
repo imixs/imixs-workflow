@@ -58,7 +58,7 @@ import javax.ws.rs.core.StreamingOutput;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.jee.ejb.EntityService;
-import org.imixs.workflow.xml.EntityCollection;
+import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLCount;
 import org.imixs.workflow.xml.XMLIndexList;
 import org.imixs.workflow.xml.XMLItemCollection;
@@ -137,7 +137,7 @@ public class EntityRestService {
 	 */
 	@GET
 	@Path("/query/{query}")
-	public EntityCollection getEntitiesByQuery(
+	public DocumentCollection getEntitiesByQuery(
 			@PathParam("query") String query,
 			@DefaultValue("0") @QueryParam("start") int start,
 			@DefaultValue("10") @QueryParam("count") int count,
@@ -155,7 +155,7 @@ public class EntityRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 

@@ -44,7 +44,7 @@ import org.imixs.workflow.Plugin;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.xml.EntityCollection;
+import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
 /**
@@ -192,11 +192,11 @@ public class ReportPlugin extends AbstractPlugin {
 		}
 		try {
 			// Transform XML per XSL and generate output
-			EntityCollection xmlCol = XMLItemCollectionAdapter.putCollection(col, vAttributList);
+			DocumentCollection xmlCol = XMLItemCollectionAdapter.putCollection(col, vAttributList);
 
 			StringWriter xmlWriter = new StringWriter();
 
-			JAXBContext context = JAXBContext.newInstance(EntityCollection.class);
+			JAXBContext context = JAXBContext.newInstance(DocumentCollection.class);
 
 			Marshaller m = context.createMarshaller();
 			m.setProperty("jaxb.encoding", sEncoding);

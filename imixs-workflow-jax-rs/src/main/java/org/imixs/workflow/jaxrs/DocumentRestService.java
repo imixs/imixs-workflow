@@ -59,7 +59,7 @@ import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.jee.ejb.EntityService;
-import org.imixs.workflow.xml.EntityCollection;
+import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLCount;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
@@ -157,7 +157,7 @@ public class DocumentRestService {
 	 */
 	@GET
 	@Path("/search/{query}")
-	public EntityCollection findDocumentsByQuery(@PathParam("query") String query,
+	public DocumentCollection findDocumentsByQuery(@PathParam("query") String query,
 			@DefaultValue("-1") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
 			@QueryParam("sortReverse") boolean sortReverse, @QueryParam("items") String items) {
@@ -170,7 +170,7 @@ public class DocumentRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 	/**

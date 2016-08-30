@@ -32,22 +32,22 @@ import java.util.Vector;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * An EntityTabe represents a list of XMLItemCollections to be used by JAXB api.
+ * The DocumentTable represents a list of XMLItemCollections to be used by JAXB api.
  * Each XMLItemCollection in the list represents the same properties. So the
- * EntityTable can be used to generate a table repseentation of
+ * DocumentTable can be used to generate a table repseentation of
  * XMLItemCollections
  * 
  * @author rsoika
  * @version 0.0.1
  */
 @XmlRootElement(name = "collection")
-public class EntityTable implements java.io.Serializable {
+public class DocumentTable implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private XMLItemCollection[] entity;
 	private List<String> attributeList;
 
-	public EntityTable() {
+	public DocumentTable() {
 		setEntity(new XMLItemCollection[] {});
 		setAttributeList(new Vector<String>());
 	}

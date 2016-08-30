@@ -41,7 +41,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import org.imixs.workflow.xml.EntityCollection;
+import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
 
 /**
@@ -52,14 +52,14 @@ import org.imixs.workflow.xml.XMLItemCollection;
  */
 @Provider
 @Produces("text/html")
-public class EntityCollectionWriter implements MessageBodyWriter<EntityCollection> {
+public class EntityCollectionWriter implements MessageBodyWriter<DocumentCollection> {
 
 	public boolean isWriteable(Class<?> type, Type genericType,
 			Annotation[] annotations, MediaType mediaType) {
-		return EntityCollection.class.isAssignableFrom(type);
+		return DocumentCollection.class.isAssignableFrom(type);
 	}
 
-	public void writeTo(EntityCollection entityCollection, Class<?> type, Type genericType,
+	public void writeTo(DocumentCollection entityCollection, Class<?> type, Type genericType,
 			Annotation[] annotations, MediaType mediaType,
 			MultivaluedMap<String, Object> httpHeaders,
 			OutputStream entityStream) throws IOException,
@@ -74,9 +74,9 @@ public class EntityCollectionWriter implements MessageBodyWriter<EntityCollectio
 		bw.write("<body>");
 		try {
 			bw.write("<h1>EntityCollection</h1>");
-			bw.write("<h2>" + entityCollection.getEntity().length + " Entries</h2>");
+			bw.write("<h2>" + entityCollection.getDocument().length + " Entries</h2>");
 
-			for (XMLItemCollection xmlworkItem : entityCollection.getEntity()) {
+			for (XMLItemCollection xmlworkItem : entityCollection.getDocument()) {
 				XMLItemCollectionWriter.printXMLItemCollectionHTML(bw, xmlworkItem);
 
 			}
@@ -92,7 +92,7 @@ public class EntityCollectionWriter implements MessageBodyWriter<EntityCollectio
 		bw.flush();
 	}
 
-	public long getSize(EntityCollection arg0, Class<?> arg1, Type arg2,
+	public long getSize(DocumentCollection arg0, Class<?> arg1, Type arg2,
 			Annotation[] arg3, MediaType arg4) {
 		return -1;
 	}

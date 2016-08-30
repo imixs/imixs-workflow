@@ -44,7 +44,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.util.XMLParser;
-import org.imixs.workflow.xml.EntityTable;
+import org.imixs.workflow.xml.DocumentTable;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
@@ -57,10 +57,10 @@ import org.imixs.workflow.xml.XMLItemCollectionAdapter;
  */
 @Provider
 @Produces("text/html")
-public class EntityTableWriter implements MessageBodyWriter<EntityTable> {
+public class EntityTableWriter implements MessageBodyWriter<DocumentTable> {
 
 	public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-		return EntityTable.class.isAssignableFrom(type);
+		return DocumentTable.class.isAssignableFrom(type);
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class EntityTableWriter implements MessageBodyWriter<EntityTable> {
 	 * 
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public void writeTo(EntityTable entityCollection, Class<?> type, Type genericType, Annotation[] annotations,
+	public void writeTo(DocumentTable entityCollection, Class<?> type, Type genericType, Annotation[] annotations,
 			MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
 			throws IOException, WebApplicationException {
 
@@ -152,7 +152,7 @@ public class EntityTableWriter implements MessageBodyWriter<EntityTable> {
 		bw.flush();
 	}
 
-	public long getSize(EntityTable arg0, Class<?> arg1, Type arg2, Annotation[] arg3, MediaType arg4) {
+	public long getSize(DocumentTable arg0, Class<?> arg1, Type arg2, Annotation[] arg3, MediaType arg4) {
 		return -1;
 	}
 

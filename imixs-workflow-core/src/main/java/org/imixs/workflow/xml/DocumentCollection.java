@@ -29,28 +29,28 @@ package org.imixs.workflow.xml;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * An EntityCollection represents a list of XMLItemCollections to be used by
+ * The DocumentCollection represents a list of XMLItemCollections to be used by
  * JAXB api
  * 
  * @author rsoika
  * @version 0.0.1
  */
 @XmlRootElement(name="collection")
-public class EntityCollection implements java.io.Serializable {
+public class DocumentCollection implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private XMLItemCollection[] entity;
+	private XMLItemCollection[] document;
 
-	public EntityCollection() {
-		setEntity(new XMLItemCollection[] {});
+	public DocumentCollection() {
+		setDocument(new XMLItemCollection[] {});
 	}
 
-	public XMLItemCollection[] getEntity() {
-		return entity;
+	public XMLItemCollection[] getDocument() {
+		return document;
 	}
 
-	public void setEntity(XMLItemCollection[] entity) {
-		this.entity = entity;
+	public void setDocument(XMLItemCollection[] entity) {
+		this.document = entity;
 	}
 
 	

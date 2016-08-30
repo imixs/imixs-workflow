@@ -53,7 +53,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.xml.EntityCollection;
+import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
@@ -129,7 +129,7 @@ public class AdminPRestService {
 	 */
 	@GET
 	@Path("/jobs")
-	public EntityCollection getAllJobs() {
+	public DocumentCollection getAllJobs() {
 		Collection<ItemCollection> col = null;
 		try {
 			col = documentService.getDocumentsByType("adminp");
@@ -137,7 +137,7 @@ public class AdminPRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 	

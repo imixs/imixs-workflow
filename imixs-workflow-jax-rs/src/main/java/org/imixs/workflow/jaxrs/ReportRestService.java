@@ -81,8 +81,8 @@ import org.apache.fop.apps.MimeConstants;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.ReportService;
-import org.imixs.workflow.xml.EntityCollection;
-import org.imixs.workflow.xml.EntityTable;
+import org.imixs.workflow.xml.DocumentCollection;
+import org.imixs.workflow.xml.DocumentTable;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
@@ -153,7 +153,7 @@ public class ReportRestService {
 
 	@GET
 	@Path("/reports")
-	public EntityCollection getAllReports() {
+	public DocumentCollection getAllReports() {
 		try {
 			Collection<ItemCollection> col = null;
 			col = reportService.getReportList();
@@ -161,7 +161,7 @@ public class ReportRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 	/**
@@ -238,11 +238,11 @@ public class ReportRestService {
 			}
 
 			// Transform XML per XSL and generate output
-			EntityCollection xmlCol = XMLItemCollectionAdapter.putCollection(col);
+			DocumentCollection xmlCol = XMLItemCollectionAdapter.putCollection(col);
 
 			StringWriter writer = new StringWriter();
 
-			JAXBContext context = JAXBContext.newInstance(EntityCollection.class);
+			JAXBContext context = JAXBContext.newInstance(DocumentCollection.class);
 
 			Marshaller m = context.createMarshaller();
 			m.setProperty("jaxb.encoding", encoding);
@@ -313,7 +313,7 @@ public class ReportRestService {
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	@Path("/{name}.html")
-	public EntityTable getExcecuteReportHTML(@PathParam("name") String name,
+	public DocumentTable getExcecuteReportHTML(@PathParam("name") String name,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
 			@DefaultValue("") @QueryParam("encoding") String encoding, @QueryParam("items") String items,
 			@Context UriInfo uriInfo, @Context HttpServletResponse servlerResponse) {
@@ -336,10 +336,10 @@ public class ReportRestService {
 			Map<String, String> params = getQueryParams(uriInfo);
 			col = reportService.executeReport(reportName, start, count, params, vAttributList);
 
-			EntityCollection entityCol = XMLItemCollectionAdapter.putCollection(col);
-			EntityTable entityTable = new EntityTable();
+			DocumentCollection entityCol = XMLItemCollectionAdapter.putCollection(col);
+			DocumentTable entityTable = new DocumentTable();
 			entityTable.setAttributeList(vAttributList);
-			entityTable.setEntity(entityCol.getEntity());
+			entityTable.setEntity(entityCol.getDocument());
 
 			// set content type and character encoding
 			if (encoding == null || encoding.isEmpty()) {
@@ -374,7 +374,7 @@ public class ReportRestService {
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
 	@Path("/{name}.xml")
-	public EntityCollection getExcecuteReportXML(@PathParam("name") String name,
+	public DocumentCollection getExcecuteReportXML(@PathParam("name") String name,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
 			@DefaultValue("") @QueryParam("encoding") String encoding, @QueryParam("items") String items,
 			@Context UriInfo uriInfo, @Context HttpServletResponse servlerResponse) throws Exception {
@@ -419,12 +419,12 @@ public class ReportRestService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{name}.json")
-	public EntityCollection getExcecuteReportJSON(@PathParam("name") String name,
+	public DocumentCollection getExcecuteReportJSON(@PathParam("name") String name,
 			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
 			@DefaultValue("") @QueryParam("encoding") String encoding, @QueryParam("items") String items,
 			@Context UriInfo uriInfo, @Context HttpServletResponse servlerResponse) throws Exception {
 
-		EntityCollection result = getExcecuteReportXML(name, start, count, encoding, items, uriInfo, servlerResponse);
+		DocumentCollection result = getExcecuteReportXML(name, start, count, encoding, items, uriInfo, servlerResponse);
 
 		// set content type and character encoding
 		if (encoding == null || encoding.isEmpty()) {

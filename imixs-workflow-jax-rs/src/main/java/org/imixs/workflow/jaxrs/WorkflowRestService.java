@@ -69,7 +69,7 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.WorkflowException;
 import org.imixs.workflow.util.JSONParser;
-import org.imixs.workflow.xml.EntityCollection;
+import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
@@ -249,7 +249,7 @@ public class WorkflowRestService {
 	 */
 	@GET
 	@Path("/workitem/events/{uniqueid}")
-	public EntityCollection getEvents(@PathParam("uniqueid") String uniqueid) {
+	public DocumentCollection getEvents(@PathParam("uniqueid") String uniqueid) {
 		Collection<ItemCollection> eventList = null;
 		try {
 			eventList = workflowService.getEvents(this.workflowService.getDocumentService().load(uniqueid));
@@ -258,7 +258,7 @@ public class WorkflowRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 	/**
@@ -272,7 +272,7 @@ public class WorkflowRestService {
 	 */
 	@GET
 	@Path("/worklist")
-	public EntityCollection getWorkList(@QueryParam("type") String type,
+	public DocumentCollection getWorkList(@QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
@@ -282,7 +282,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/tasklist/owner/{owner}")
-	public EntityCollection getTaskListByOwner(@PathParam("owner") String owner, @QueryParam("type") String type,
+	public DocumentCollection getTaskListByOwner(@PathParam("owner") String owner, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
@@ -300,7 +300,7 @@ public class WorkflowRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 	/**
@@ -314,7 +314,7 @@ public class WorkflowRestService {
 	 */
 	@GET
 	@Path("/tasklist/author/{user}")
-	public EntityCollection getTaskListByAuthor(@PathParam("user") String user, @QueryParam("type") String type,
+	public DocumentCollection getTaskListByAuthor(@PathParam("user") String user, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
@@ -333,12 +333,12 @@ public class WorkflowRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 	@GET
 	@Path("/tasklist/creator/{creator}")
-	public EntityCollection getTaskListByCreator(@PathParam("creator") String creator, @QueryParam("type") String type,
+	public DocumentCollection getTaskListByCreator(@PathParam("creator") String creator, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
@@ -357,12 +357,12 @@ public class WorkflowRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 	@GET
 	@Path("/tasklist/processid/{processid}")
-	public EntityCollection getTaskListByProcessID(@PathParam("processid") int processid,
+	public DocumentCollection getTaskListByProcessID(@PathParam("processid") int processid,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
@@ -373,12 +373,12 @@ public class WorkflowRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 	@GET
 	@Path("/tasklist/group/{processgroup}")
-	public EntityCollection getTaskListByGroup(@PathParam("processgroup") String processgroup,
+	public DocumentCollection getTaskListByGroup(@PathParam("processgroup") String processgroup,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
@@ -394,12 +394,12 @@ public class WorkflowRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 	@GET
 	@Path("/tasklist/ref/{uniqueid}")
-	public EntityCollection getTaskListByRef(@PathParam("uniqueid") String uniqueid, @QueryParam("type") String type,
+	public DocumentCollection getTaskListByRef(@PathParam("uniqueid") String uniqueid, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
@@ -410,7 +410,7 @@ public class WorkflowRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
 	}
 
 	/**
@@ -693,7 +693,7 @@ public class WorkflowRestService {
 	@POST
 	@Path("/workitems")
 	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
-	public Response putWorkitemsXML(EntityCollection worklist) {
+	public Response putWorkitemsXML(DocumentCollection worklist) {
 
 		logger.fine("[WorkflowRestService] @POST /workitems  method:postWorkitemsXML....");
 
@@ -701,8 +701,8 @@ public class WorkflowRestService {
 		ItemCollection itemCollection;
 		try {
 			// save new entities into database and update modelversion.....
-			for (int i = 0; i < worklist.getEntity().length; i++) {
-				entity = worklist.getEntity()[i];
+			for (int i = 0; i < worklist.getDocument().length; i++) {
+				entity = worklist.getDocument()[i];
 				itemCollection = XMLItemCollectionAdapter.getItemCollection(entity);
 				// process entity
 				workflowService.processWorkItem(itemCollection);
@@ -717,7 +717,7 @@ public class WorkflowRestService {
 	@PUT
 	@Path("/workitems")
 	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
-	public Response postWorkitemsXML(EntityCollection worklist) {
+	public Response postWorkitemsXML(DocumentCollection worklist) {
 		logger.fine("[WorkflowRestService] @PUT /workitems  delegate to @POST....");
 		return putWorkitemsXML(worklist);
 	}
