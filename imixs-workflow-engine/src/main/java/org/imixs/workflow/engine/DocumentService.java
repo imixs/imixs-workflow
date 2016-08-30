@@ -146,7 +146,7 @@ public class DocumentService {
 	private final static Logger logger = Logger.getLogger(DocumentService.class.getName());
 
 	public static final String OPERATION_NOTALLOWED = "OPERATION_NOTALLOWED";
-
+	public static final String INVALID_PARAMETER = "INVALID_PARAMETER";
 	public static final String INVALID_UNIQUEID = "INVALID_UNIQUEID";
 
 	@Resource
@@ -247,28 +247,29 @@ public class DocumentService {
 	}
 
 	/**
-	 * This Method saves an ItemCollection into a database. If the
+	 * This Method saves an ItemCollection into the database. If the
 	 * ItemCollection is saved the first time the method generates a uniqueID
 	 * ('$uniqueid') which can be used to identify the ItemCollection by its ID.
-	 * If the ItemCollection was saved before, the method updates the
-	 * ItemCollection stored in the database. The Method returns an updated
-	 * instance of the ItemCollection containing the attributes $modified,
-	 * $created, and $uniqueid
+	 * If the ItemCollection was saved before, the method updates the existing
+	 * ItemCollection stored in the database.
+	 * <p>
+	 * The Method returns an updated instance of the ItemCollection containing
+	 * the attributes $modified, $created, and $uniqueId
 	 * <p>
 	 * The method throws an AccessDeniedException if the CallerPrincipal is not
 	 * allowed to save or update the ItemCollection in the database. The
 	 * CallerPrincipial should have at least the access Role
 	 * org.imixs.ACCESSLEVEL.AUTHORACCESS
 	 * <p>
-	 * The method returns a the detached itemCollection with the current
-	 * VersionNumber from the persisted entity. (see issue #145)
-	 * 
+	 * The method returns a itemCollection with the current VersionNumber from
+	 * the persisted entity. (see issue #145)
 	 * <p>
 	 * The method adds/updates the document into the lucene index.
 	 * 
 	 * @param ItemCollection
 	 *            to be saved
 	 * @return updated ItemCollection
+	 * @throws AccessDeniedException
 	 */
 	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
 
@@ -401,12 +402,13 @@ public class DocumentService {
 	 * ID exists.
 	 * <p>
 	 * The method checks if the CallerPrincipal has read access to Document
-	 * stored in the database. If not, the method returns null. The method dose
-	 * not throw an AccessDeniedException if the user is not allowed to read the
-	 * entity to prevent a aggressor with informations about the existence of
-	 * that specific Document.
+	 * stored in the database. If not, the method returns null.
 	 * <p>
-	 * CallerPrincipial should have at least the access Role
+	 * <strong>Note:</strong> The method dose not throw an AccessDeniedException
+	 * if the user is not allowed to read the entity to prevent a aggressor with
+	 * informations about the existence of that specific Document.
+	 * <p>
+	 * The CallerPrincipial need to have at least the access level
 	 * org.imixs.ACCESSLEVEL.READACCESS
 	 * 
 	 * @param id
@@ -434,8 +436,7 @@ public class DocumentService {
 	 * The CallerPrincipial should have at least the access Role
 	 * org.imixs.ACCESSLEVEL.AUTHORACCESS
 	 * <p>
-	 * Also the method removes all existing relation ships of the entity. This
-	 * is necessary becaus of the FetchType.LAZY used for most relations.
+	 * Also the method removes the document form the lucene index.
 	 * 
 	 * 
 	 * @param ItemCollection
@@ -485,7 +486,7 @@ public class DocumentService {
 	 * 
 	 * @see org.imixs.workflow.engine.jpa.Document.jee.jpa.Entity
 	 */
-	public int count(String query) throws InvalidAccessException {
+	public int count(String query) {
 
 		long l = 0;
 
@@ -494,16 +495,18 @@ public class DocumentService {
 		logger.warning("Count not implemented!");
 		// TODO - implementation missing
 
-		logger.fine("[EntityService] countAllEntities in " + (System.currentTimeMillis() - l) + " ms");
+		logger.fine("countAllEntities in " + (System.currentTimeMillis() - l) + " ms");
 		return 0;
 
 	}
 
 	/**
-	 * The method returns a collection of ItemCollections. The method expects an
-	 * valid Lucene search statement. The method returns only ItemCollections
-	 * which are readable by the CallerPrincipal. With the pageSize and
-	 * pageNumber it is possible to paginate.
+	 * The method returns a list of ItemCollections by calling the
+	 * LuceneSearchService. The method expects an valid Lucene search term.
+	 * <p>
+	 * The method returns only ItemCollections which are readable by the
+	 * CallerPrincipal. With the pageSize and pageNumber it is possible to
+	 * paginate.
 	 * 
 	 * @param searchTerm
 	 *            - Lucene search term
@@ -512,18 +515,20 @@ public class DocumentService {
 	 * @param pageIndex
 	 *            - number of page to start (default = 0)
 	 * @return list of ItemCollection elements
-	 * @throws InvalidAccessException
 	 * 
-	 * @see org.imixs.workflow.engine.jpa.Document
+	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
 	 */
-	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex) throws InvalidAccessException {
+	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex) {
 		return find(searchTerm, pageSize, pageIndex, null, false);
 	}
 
 	/**
-	 * The method returns a collection of ItemCollections sorted by a sortField.
-	 * The method expects an valid Lucene search statement. The method returns
-	 * only ItemCollections which are readable by the CallerPrincipal. With the
+	 * The method returns a sorted list of ItemCollections by calling the
+	 * LuceneSearchService. The result list can be sorted by a sortField and a
+	 * sort direction.
+	 * <p>
+	 * The method expects an valid Lucene search term. The method returns only
+	 * ItemCollections which are readable by the CallerPrincipal. With the
 	 * pageSize and pageNumber it is possible to paginate.
 	 * 
 	 * @param searchTerm
@@ -539,12 +544,11 @@ public class DocumentService {
 	 *            - optional sort direction
 	 * 
 	 * @return list of ItemCollection elements
-	 * @throws InvalidAccessException
 	 * 
-	 * @see org.imixs.workflow.engine.jpa.Document
+	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
 	 */
-	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy, boolean sortReverse)
-			throws InvalidAccessException {
+	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy,
+			boolean sortReverse) {
 		logger.fine("find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber=" + pageIndex
 				+ " , sortBy=" + sortBy + " reverse=" + sortReverse);
 
@@ -562,116 +566,78 @@ public class DocumentService {
 	}
 
 	/**
-	 * The method returns the parent ItemCollection to a given child
-	 * ItemCollection. A parent ItemCollection is referenced by a child
-	 * ItemCollection through the property $uniqueidRef which is equals the
-	 * parent entity's $uniqueID.
-	 * 
-	 * @param childentity
-	 * @return parententity
-	 */
-	public ItemCollection getParentDocument(ItemCollection child) throws InvalidAccessException {
-		String parentUniqueID = child.getItemValueString("$uniqueidref");
-		return this.load(parentUniqueID);
-	}
-
-	/**
-	 * The method returns a collection of child ItemCollections. A child entity
-	 * is defined by the property $uniqueidRef which points to a parent entity.
-	 * 
+	 * The method returns a collection of ItemCollections referred by a
+	 * $uniqueid.
+	 * <p>
 	 * The method returns only ItemCollections which are readable by the
-	 * CallerPrincipal. With the startPos and count parameters it is possible to
-	 * read chunks of entities.
+	 * CallerPrincipal. With the pageSize and pageNumber it is possible to
+	 * paginate.
 	 * 
-	 * @see findParentEntity
 	 * 
-	 * @param parententity
-	 * @param startpos
-	 * @param count
-	 * @return
-	 * @throws InvalidAccessException
+	 * @param uniqueIdRef
+	 *            - $uniqueId to be referred by the collected documents
+	 * @param pageSize
+	 *            - total docs per page
+	 * @param pageIndex
+	 *            - number of page to start (default = 0)
+	 * @return resultset
+	 * 
 	 */
-	public List<ItemCollection> getChildEntities(ItemCollection child, int start, int count)
-			throws InvalidAccessException {
-
-		String parentUniqueID = child.getItemValueString("$uniqueid");
-
-		String searchTerm = "(" + "$uniqueidref:\"" + parentUniqueID + "\")";
-
+	public List<ItemCollection> findDocumentsByRef(String uniqueIdRef, int start, int count) {
+		String searchTerm = "(" + "$uniqueidref:\"" + uniqueIdRef + "\")";
 		return find(searchTerm, start, count);
 	}
 
 	/**
-	 * Returns all documents of a specific type. Use getDocumentsByType(String
-	 * type,int startpost, int maxcount) to select a subset.
+	 * Returns an unordered list of all documents of a specific type. The method
+	 * throws an InvalidAccessException in case no type attribute is defined.
 	 * 
 	 * @param type
 	 * @return
 	 * @throws InvalidAccessException
 	 */
-
-	public List<ItemCollection> getDocumentsByType(String type) throws InvalidAccessException {
-		return getDocumentsByType(type, 0, -1);
-	}
-
-	/**
-	 * Returns all documents of a specific type ordered by creation date descending. 
-	 * 
-	 * @param type
-	 * @param startpost
-	 * @param maxcount
-	 * @return
-	 * @throws InvalidAccessException
-	 */
-
-	public List<ItemCollection> getDocumentsByType(String type, int startpos, int maxcount)
-			throws InvalidAccessException {
+	public List<ItemCollection> getDocumentsByType(String type) {
+		if (type == null || type.isEmpty()) {
+			throw new InvalidAccessException(INVALID_PARAMETER, "undefined type attribute");
+		}
 
 		String query = "SELECT document FROM Document AS document ";
-		if (type != null && !type.isEmpty()) {
-			query += " WHERE document.type = '" + type + "'";
-		}
+		query += " WHERE document.type = '" + type + "'";
 		query += " ORDER BY document.created DESC";
-
-		return getDocumentsByQuery(query, startpos, maxcount);
+		return getDocumentsByQuery(query);
 	}
 
 	/**
 	 * Returns all documents of by JPQL statement
 	 * 
 	 * @param query
-	 * @param startpost
-	 * @param maxcount
+	 *            - JPQL statement
 	 * @return
-	 * @throws InvalidAccessException
+	 * 
 	 */
-
-	public List<ItemCollection> getDocumentsByQuery(String query, int startpos, int maxcount)
-			throws InvalidAccessException {
+	public List<ItemCollection> getDocumentsByQuery(String query) {
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
 		Query q = manager.createQuery(query);
-		if (startpos > 0) {
-			q.setFirstResult(startpos);
-		}
-		if (maxcount > 0) {
-			q.setMaxResults(maxcount);
-		}
+
 		long l = System.currentTimeMillis();
 		@SuppressWarnings("unchecked")
-		Collection<Document> entityList = q.getResultList();
+		Collection<Document> documentList = q.getResultList();
 		logger.fine("getDocumentsByQuery in " + (System.currentTimeMillis() - l) + " ms");
 
-		if (entityList == null)
+		if (documentList == null) {
+			logger.fine("getDocumentsByQuery - no ducuments found.");
 			return result;
+		}
 
-		logger.fine("getDocumentsByQuery - ResultList size=" + entityList.size());
 		l = System.currentTimeMillis();
-		// verify read access
-		for (Document doc : entityList) {
+		// filter resultset by read access
+		for (Document doc : documentList) {
 			if (isCallerReader(doc)) {
 				result.add(new ItemCollection(doc.getData()));
 			}
 		}
+
+		logger.fine("getDocumentsByQuery - ResultList size=" + documentList.size());
 		return result;
 	}
 
