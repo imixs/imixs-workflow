@@ -53,9 +53,9 @@ JPQL Statements can be replaced with Lucene Search terms.
  
  3. Shutdown server, remove Fulltextindex from Filesystem, and remove old artifacts
  
- 4. Exted FieldListNoAnalyse (txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername)
+ 4. Extend FieldListNoAnalyse (txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername)
 
- 5. Deploy new Application (with Imixs-Workflow 4.x) 
+ 5. Restart Server and deploy new Application (with Imixs-Workflow 4.x) 
   
  6. Start Migration Job from Imixs-Admin Interface
  
