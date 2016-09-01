@@ -106,20 +106,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		}
 
-		// bpmn2:collaboration
-		// ignore collaboration
-
-		if (qName.equalsIgnoreCase("bpmn2:collaboration") && 1 == 2) {
-			if (bDefinitions && currentEntity != null) {
-				definition = currentEntity;
-				currentWorkflowGroup = attributes.getValue("name");
-				if (currentWorkflowGroup == null || currentWorkflowGroup.isEmpty()) {
-					logger.warning("No process name defined!");
-					currentWorkflowGroup = "Default";
-				}
-				bDefinitions = false;
-			}
-		}
+		
 
 		// bpmn2:process -  parse workflowGroup 
 		if (qName.equalsIgnoreCase("bpmn2:process")) {
@@ -210,12 +197,14 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 
 		// bpmn2:messageFlow - cache all messageFlow...
+		/*
 		if (qName.equalsIgnoreCase("bpmn2:messageFlow")) {
 			bpmnID = attributes.getValue("id");
 			String source = attributes.getValue("sourceRef");
 			String target = attributes.getValue("targetRef");
 			sequenceCache.put(bpmnID, new SequenceFlow(source, target));
 		}
+		*/
 
 		/*
 		 * parse a imixs:item

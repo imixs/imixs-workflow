@@ -89,10 +89,10 @@ public class TestBPMNParserCollaboration {
 		ItemCollection activity = model.getEvent(1000, 10);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
-		Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
+		Assert.assertEquals(2000, activity.getItemValueInteger("numNextProcessID"));
 
 		// test task 1100
-		task = model.getTask(1100);
+		task = model.getTask(2000);
 		Assert.assertNotNull(task);
 		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
 		Assert.assertEquals("WorkflowGroup2", task.getItemValueString("txtworkflowgroup"));
