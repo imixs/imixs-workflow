@@ -494,7 +494,7 @@ public class ReportService {
 		if (result == null) {
 			// try to search for name
 			String searchTerm = "(type:\"ReportEntity\" AND txtname:\"" + aid + "\")";
-			Collection<ItemCollection> col = entityService.find(searchTerm, 0, 1);
+			Collection<ItemCollection> col = entityService.find(searchTerm, 1, 0);
 			if (col.size() > 0) {
 				result = col.iterator().next();
 			}

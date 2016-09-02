@@ -211,6 +211,10 @@ public class ReportRestService {
 		try {
 			reportName = name + ".ixr";
 			ItemCollection itemCol = reportService.getReport(reportName);
+			if (itemCol==null) {
+				logger.severe("Report '" +reportName + "' not defined!");
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+			}
 
 			sXSL = itemCol.getItemValueString("txtXSL").trim();
 			sContentType = itemCol.getItemValueString("txtcontenttype");
@@ -279,7 +283,9 @@ public class ReportRestService {
 			return builder.build();
 		} catch (Exception e) {
 			e.printStackTrace();
+		
 		}
+		
 		return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 
 	}

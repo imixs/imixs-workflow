@@ -593,7 +593,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * Returns an instance of the EJB session context.
 	 * @return
 	 */
-	public Object getSessionContext() {
+	public SessionContext getSessionContext() {
 		return ctx;
 	}
 

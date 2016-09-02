@@ -432,7 +432,7 @@ public class ReportPlugin extends AbstractPlugin {
 			// Update BlobWorkitem
 			// blobWorkitem = entityService.save(blobWorkitem);
 			// new transaction....
-			blobWorkitem = this.getEjbSessionContext().getBusinessObject(WorkflowService.class).getDocumentService()
+			blobWorkitem = this.getWorkflowService().getSessionContext().getBusinessObject(WorkflowService.class).getDocumentService()
 					.saveByNewTransaction(blobWorkitem);
 
 		}

@@ -110,7 +110,7 @@ public class HistoryPlugin extends AbstractPlugin {
 		List<Object> newEntry = new ArrayList<Object>();
 		newEntry.add(new Date());
 		newEntry.add(rtfItemLog);
-		newEntry.add(this.getUserName());
+		newEntry.add(this.getWorkflowService().getUserName());
 		historyList.add(newEntry);
 
 		// check if maximum length of log is defined

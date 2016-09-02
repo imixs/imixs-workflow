@@ -264,7 +264,7 @@ public class MailPlugin extends AbstractPlugin {
 		}
 		// if no default sender take the current username
 		if (sFrom == null || sFrom.isEmpty())
-			sFrom = getUserName();
+			sFrom = this.getWorkflowService().getUserName();
 
 		logger.fine("[MailPlugin]  From: " + sFrom);
 
@@ -286,7 +286,7 @@ public class MailPlugin extends AbstractPlugin {
 		// check for ReplyTo...
 		if ("1".equals(documentActivity
 				.getItemValueString("keyMailReplyToCurrentUser")))
-			sReplyTo = getUserName();
+			sReplyTo = this.getWorkflowService().getUserName();
 		else
 			sReplyTo = documentActivity
 					.getItemValueString("namMailReplyToUser");

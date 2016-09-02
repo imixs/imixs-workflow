@@ -59,7 +59,6 @@ public abstract class AbstractPlugin implements Plugin {
 	public static final String INVALID_ITEMVALUE_FORMAT = "INVALID_ITEMVALUE_FORMAT";
 	public static final String INVALID_PROPERTYVALUE_FORMAT = "INVALID_PROPERTYVALUE_FORMAT";
 
-	private javax.ejb.SessionContext ejbSessionContext;
 	private WorkflowContext ctx;
 	private WorkflowService workflowService;
 
@@ -70,11 +69,6 @@ public abstract class AbstractPlugin implements Plugin {
 	 */
 	public void init(WorkflowContext actx) throws PluginException {
 		ctx = actx;
-
-		// get EJB Session Context
-		if (ctx!=null && ctx instanceof javax.ejb.SessionContext ) {
-			ejbSessionContext = (javax.ejb.SessionContext) getCtx().getSessionContext();
-		}
 		// get WorkflowService by check for an instance of WorkflowService
 		if (actx instanceof WorkflowService) {
 			// yes we are running in a WorkflowService EJB
@@ -95,32 +89,6 @@ public abstract class AbstractPlugin implements Plugin {
 	public WorkflowService getWorkflowService() {
 		return workflowService;
 	}
-
-	/**
-	 * determines the current username (callerPrincipal)
-	 * 
-	 * @return
-	 */
-	public String getUserName() {
-		if (ejbSessionContext != null) {
-			return ejbSessionContext.getCallerPrincipal().getName();
-		} else
-			return null;
-	}
-
-	/**
-	 * Returns the EJB Session Context
-	 * 
-	 * @return SessionContext
-	 */
-	public javax.ejb.SessionContext getEjbSessionContext() {
-		return ejbSessionContext;
-	}
-
-	public void setEjbSessionContext(javax.ejb.SessionContext ejbSessionContext) {
-		this.ejbSessionContext = ejbSessionContext;
-	}
-
 
 
 	/**

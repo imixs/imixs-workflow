@@ -92,6 +92,7 @@ public class LuceneSearchService {
 
 	public static final String UNDEFINED_ERROR = "UNDEFINED_ERROR";
 	public static final String INVALID_INDEX = "INVALID_INDEX";
+	public static final String PARSE_ERROR = "PARSE_ERROR";
 
 	private static final int DEFAULT_MAX_SEARCH_RESULT = 9999; // limiting the
 																// total
@@ -288,7 +289,8 @@ public class LuceneSearchService {
 		} catch (IOException e) {
 			logger.warning("Lucene search error: " + e.getMessage());
 		} catch (ParseException e) {
-			logger.warning("Lucene search error: " + e.getMessage());
+			logger.severe("Lucene search error: " + e.getMessage());
+			throw new LuceneException(PARSE_ERROR,e.getMessage(),e);
 		}
 
 		return workitems;
