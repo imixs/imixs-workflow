@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Logger;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -54,6 +55,7 @@ public class XMLItem implements java.io.Serializable {
 
 	private java.lang.Object[] value;
 
+	@XmlAttribute
 	public java.lang.String getName() {
 		return name;
 	}
