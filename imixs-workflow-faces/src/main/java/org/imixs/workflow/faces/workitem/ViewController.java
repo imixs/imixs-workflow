@@ -73,7 +73,7 @@ public class ViewController implements Serializable {
 
 	public ViewController() {
 		super();
-		
+
 	}
 
 	/**
@@ -255,7 +255,7 @@ public class ViewController implements Serializable {
 		if (workitems != null)
 			return workitems;
 
-		workitems = getDocumentService().find(query, pageSize, pageIndex, sortBy, sortReverse);
+		workitems = getDocumentService().find(getQuery(), getPageSize(), getPageIndex(), getSortBy(), isSortReverse());
 
 		// if no result is defined return an empty list.
 		if (workitems == null)
