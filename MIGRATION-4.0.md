@@ -60,4 +60,14 @@ JPQL Statements can be replaced with Lucene Search terms.
  6. Start Migration Job from Imixs-Admin Interface
  
  7. Upload new Models
+ 
+ 
+## Migrate Models
+
+In Imixs-Workflow 4.0.0 the plug-in package has changed from 'org.imixs.workflow.plugins....'  to 'org.imixs.workflow.engine.plugins...'.
+The plugin 'org.imixs.workflow.lucene.LucenePlugin' can be removed form the model. 
+
+You need to change the plugin classes in your model files and upload the new models through the rest API
+
+	curl --user admin:adminadmin --request POST -Tmymodel.bpmn http://localhost:8080/workflow/rest-service/model/bpmn
  		

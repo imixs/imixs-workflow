@@ -313,7 +313,7 @@ public class ModelService implements ModelManager {
 
 			// find model by version
 			String searchTerm="(type:\"model\" AND txtname:\"" + version + "\")";
-			Collection<ItemCollection> col = documentService.find(searchTerm, 0, -1);
+			Collection<ItemCollection> col = documentService.find(searchTerm, 1, 0);
 			if (col != null && col.size() > 0) {
 				return col.iterator().next();
 			}

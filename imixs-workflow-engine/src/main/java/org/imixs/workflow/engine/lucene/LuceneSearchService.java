@@ -176,6 +176,10 @@ public class LuceneSearchService {
 			pageSize = DEFAULT_PAGE_SIZE;
 		}
 
+		if (pageIndex<0) {
+			pageIndex=0;
+		}
+		
 		logger.fine("lucene search: pageNumber=" + pageIndex + " pageSize=" + pageSize);
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
