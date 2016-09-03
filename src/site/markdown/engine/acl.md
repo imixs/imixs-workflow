@@ -4,9 +4,9 @@ The Imixs-Workflow Engine supports a multiple-level security model that offers a
 You can define this individual roles to precisely control who will have access  to certain workitems and which maximum privileges should be assigned to each user.  For instance, a user can be authorized for only reading workitems while another one is allowed to create and process them.
 See also the Section [Deployment Security](../deployment/security.html). 
  
-##Access roles of the Imixs JEE Workflow system
+##The Imixs-Workflow Access Roles 
 
-The following section describes the concept how to restrict access to workitems in the  Imixs JEE workflow system using the different general access roles. The access privileges  can be controlled by the deployment descriptors. See details about the deployment descriptor here.
+The following section describes the concept how to restrict the access to workitems controlled by the Imixs-Workflow engine. The access privileges can be controlled by the deployment descriptors. See details about the deployment descriptor [here](../deployment/security.html).
 
 The security concept of the Imixs-Workflow Engine defines 5 roles :
 
@@ -16,8 +16,7 @@ The security concept of the Imixs-Workflow Engine defines 5 roles :
   * org.imixs.ACCESSLEVEL.EDITORACCESS
   * org.imixs.ACCESSLEVEL.MANAGERACCESS
 
- Each role allows the user a different privilege to work with the Imixs JEE Workflow System
- in general.
+ Each role allows the user a different privilege to interact with the Imixs-Workflow engine.
 
   * MANAGERACCESS: 
       Users who are assigned to this AccessLevel, are authorized to read and write all workitems inside the workflow system. The AccessLevels having been set to a single workitem are to be ignored.
