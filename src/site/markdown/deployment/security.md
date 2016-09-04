@@ -1,5 +1,5 @@
 # Security Configuration
-Each method call to the Imixs Workflow System have to possess an applicable authentication process to grant the demands of the Imixs-Workflow technology according security. In the security concept of the workflow there are 5 default roles defined:
+Each method call to the Imixs-Workflow engine have to possess an applicable authentication process to grant the demands of the Imixs-Workflow security layer. The security layer of Imixs-Workflow defines the following access roles:
 
   * org.imixs.ACCESSLEVEL.NOACCESS  
   * org.imixs.ACCESSLEVEL.READACCESS
@@ -12,9 +12,50 @@ You will find more information about the general ACL concept of the Imixs-Workfl
 
 See the following section for details
 
+## JBoss/Wildfly
+
+Running Imixs-Workflow on JBoss/Wildfly the definition of a security-domain is mandatory. For Webservices or Web Front-Ends the security-domain can be defined in the file jboss-web.xml which is located in the WEB-INF folder of each web module. The following example defiens a security domain 'imixsrealm':
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<jboss-web>
+	  <security-domain>imixsrealm</security-domain>
+	</jboss-web>
+
+For WildFly there is no explicit role-group mapping necessary. The Roles defined by an application can be directly used in the security configuration.
+In case you have existing group mappings (e.g. in a database group table or in a LDAP directory) you can add the mapping by defining a file _app.properties_, where app is the name of the security domain, as defined above (e.g. imixsrealm.properties). This file is located unter the /configuration directory of Wildfly.
+
+The following example file _imixsrealm.properties_  maps the individual group names to Imixs-Workflow access roles:
+
+	IMIXS-WORKFLOW-Reader=org.imixs.ACCESSLEVEL.READERACCESS
+	IMIXS-WORKFLOW-Author=org.imixs.ACCESSLEVEL.AUTHORACCESS
+	IMIXS-WORKFLOW-Editor=org.imixs.ACCESSLEVEL.EDITORACCESS
+	IMIXS-WORKFLOW-Manager=org.imixs.ACCESSLEVEL.MANAGERACCESS
+
+Groupnames are listed on the left of the equal operator and roles are listed on the right. In the example above, users in the group ‘IMIXS-WORKFLOW-Reader’ fulfill the role ‘org.imixs.ACCESSLEVEL.READACCESS’.
+
+Finally an appropriate security-domain have to be configured in the standalone.xml file of Wildfly. See the following example of a database realm:
+
+	<security-domain name="imixsrealm">
+	 <authentication>
+	 	<login-module code="Database" flag="required">
+	 		<module-option name="dsJndiName" value="java:/jdbc/imixs-workflow"/>
+	 		<module-option name="hashAlgorithm" value="SHA-256"/>
+	 		<module-option name="hashEncoding" value="hex"/>
+	 		<module-option name="principalsQuery" value="select PASSWORD from USERID where ID=?"/>
+	 		<module-option name="rolesQuery" value="select GROUP_ID,'Roles' from USERID_USERGROUP where ID=?"/>
+	 		<module-option name="unauthenticatedIdentity" value="anonymous"/>
+	 	</login-module>
+	 	<login-module code="RoleMapping" flag="required">
+	 		<module-option name="rolesProperties" value="file:${jboss.server.config.dir}/imixsrealm.properties"/>
+	 		<module-option name="replaceRole" value="false"/>
+	 	</login-module>
+	 </authentication>
+	</security-domain>
+ 
+
 ## GlassFish
 The following section holds deployment strategies for the GlassFish platform.
-The security roles defined by the Imixs-Workflow Engine need to be mapped in an application to corresponding groups defined by a authentication realm.
+For Glassfish the security roles defined by the Imixs-Workflow Engine need to be mapped in an application to corresponding groups defined by a authentication realm.
 
 The following example shows the glassfish-web.xml deployment descriptor for GlassFish Server which maps these roles to corresponding groups:
  
@@ -95,16 +136,15 @@ In this example the name in the tag "role-link" must match the name of the imixs
 
 The deployment is similar to other application servers. 
   
-##Defining application specific access roles
-In addition to the standard security model of the Imixs Workflow System it is also possible to define application  specific roles. These roles can be used in a Workflow application to restrict the access in a more fine grained way. An application specific role is typical mapped to a workitem by using the [Imixs-BPMN Modeler](../modelling/index.html).  You can add such a Role to the Read or Write Access configuration of an Activity Entity.  The Workflow Manager will map the application specific role later directly into a workitem.
+## How to Define Individual Access Role
+In addition to the standard security model of the Imixs-Workflow engine, it is also possible to define application specific roles. These roles can be used in a custom workflow application to restrict the access in a more fine grained way. An application specific role is typical mapped to a workitem by using the [Imixs-BPMN Modeler](../modelling/index.html). You can add such a Role to the corresponding ACL configuration in the model. The Imixs-Workflow engine will map the application specific role automatically into a workitem.
 
 <strong>Note:</strong> Users must have at least the general AccessRole 
 org.imixs.ACCESSLEVEL.READACCESS to access a workitem. Also if you define application specific roles. Otherwise a uses is not allowed to access the workitems with an application specific role restriction in the WorkfloManager.
  
- 
-###Example
-For example you may add an additional application specific role named "PROJECTMANAGER" to your workflow application. You can restrict the access (read and write access) to that new role for all workitems in a specific workflow status by defining this role in your model.
-To use such an application specific role like "PROJECTMANAGER" you need to define this role in the ejb deployment  descriptor (ejb-jar.xml) and map this role also to a UserGroup (sun-ejb-jar.xml) as described above. The following code example illustrates how to define an application specific role in the ejb-jar.xml deployment descriptor:
+The following example shows how to add an additional application specific role named "PROJECTMANAGER" to a workflow application.
+To use such an application specific role, the role definition need to be added into the EJB deployment descriptor (ejb-jar.xml).
+The following example illustrates how to define an application specific role in the ejb-jar.xml deployment descriptor:
 
 	  <enterprise-beans>
 	 .....
@@ -130,13 +170,12 @@ To use such an application specific role like "PROJECTMANAGER" you need to defin
 	  </assembly-descriptor>
 
 
-To link the new Role to the Imixs Workflow components it is adequate to define the role to the  EntiyServiceBean. There you need to add two additional entries. The env-entry defines the new role to be used by the access control of the EntityServiceBean. The security-role-ref adds the role to the EJB. You need to specify the role-name and also the role-link
-for an additional role. If you need to access those role definitions also from other EJBs like the WorkflowService ore from a WorkflowPlugins, you need to add the additional security-role-ref tags also to the corresponding ejb definitions.
+The env-entry defines the new role to be used by the access control of the Imixs-Workflow engine. The security-role-ref adds the role to the EJB. It is necessary to specify the role-name and also the role-link for each custom role. 
 
-##Working with dynamic user groups
-Imixs Workflow also allows the mapping of user groups from an application. Through this mechanism it is possible to inject user groups into the  security layer from the EntityService.  For example an application can lookup dynamic created groups from a ldap directory or a  database and inject this groups into the security mechanism from Imixs Workflow. The EntityService EJB test if dynamic user groups are provided by testing the EJB ContextData named "org.imixs.USER.GROUPLIST". The expected data is a  String array containing the users group names.   
+## How to Use Dynamic User Groups
+Imixs-Workflow also allows the dynamic mapping of user groups from an application. Through this mechanism it is possible to inject any user groups into the  security layer of the Imxis-Workflow engine. For example an application can lookup dynamic created groups from a LDAP directory or a user-database and inject this groups into the security mechanism. The Imxis-Workflow engine test if dynamic user groups are provided by checking the EJB ContextData named _"org.imixs.USER.GROUPLIST"_. The context data is a  String array containing the users group names.   
  
-The typically implementation of this mechanism is done by an interceptor Class attached to the EntityService. This is an example of a simple interceptor:
+The typically implementation of this mechanism is done by an interceptor Class attached to the DocumentService EJB. This is an example of a simple interceptor:
  
 	 public class UserGroupInterceptor {
 		@Resource
@@ -144,12 +183,12 @@ The typically implementation of this mechanism is done by an interceptor Class a
 	
 		@AroundInvoke
 		public Object intercept(InvocationContext ctx) throws Exception {
-			ctx.getContextData().put(EntityService.USER_GROUP_LIST, "MyGroup");
+			ctx.getContextData().put(DocumentService.USER_GROUP_LIST, "MyGroup");
 			return ctx.proceed();
 		}
 	 }
  
-The intercepter can be configured using the ejb-jar.xml deployment descriptor
+The intercepter can be configured using again the ejb-jar.xml deployment descriptor
 
 	 ....
 		<!-- adding interceptor -->
@@ -162,7 +201,7 @@ The intercepter can be configured using the ejb-jar.xml deployment descriptor
 		<assembly-descriptor>
 			<interceptor-binding>
 				<description>Intercepter to add project-role mapping into EJB Context Data</description>
-				<ejb-name>EntityService</ejb-name>
+				<ejb-name>DocumentService</ejb-name>
 				<interceptor-class>org.imixs.business.ejb.UserGroupInterceptor</interceptor-class>
 			</interceptor-binding>
 		</assembly-descriptor>

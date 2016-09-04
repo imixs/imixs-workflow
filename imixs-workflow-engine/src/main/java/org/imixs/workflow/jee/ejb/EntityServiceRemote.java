@@ -104,7 +104,7 @@ public interface EntityServiceRemote {
 	 *            to be saved
 	 * @return updated ItemCollection
 	 */
-	public ItemCollection save(ItemCollection itemcol)
+	public ItemCollection _save(ItemCollection itemcol)
 			throws AccessDeniedException;
 
 	/**
@@ -128,7 +128,7 @@ public interface EntityServiceRemote {
 	 *         exist or the CallerPrincipal hat insufficient read access.
 	 * 
 	 */
-	public ItemCollection load(String id);
+	public ItemCollection _load(String id);
 
 	/**
 	 * This method removes an ItemCollection from the database. If the
@@ -142,7 +142,7 @@ public interface EntityServiceRemote {
 	 *            to be removed
 	 * @throws AccessDeniedException
 	 */
-	public void remove(ItemCollection itemcol) throws AccessDeniedException;
+	public void _remove(ItemCollection itemcol) throws AccessDeniedException;
 
 	/**
 	 * Adds an EntityIndex to the current list of external properties. A
@@ -182,7 +182,7 @@ public interface EntityServiceRemote {
 	 * @param count
 	 * @return
 	 */
-	public List<ItemCollection> findAllEntities(String query,
+	public List<ItemCollection> _findAllEntities(String query,
 			int startpos, int count) throws InvalidAccessException;
 
 	/**

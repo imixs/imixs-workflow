@@ -112,7 +112,11 @@
 				<item name="Examples" href="./webtools/examples.html" />
 			</item>
 
-			<item name="JavaScript" href="./javascript/index.html"  collapse="true"/>
+			<item name="JavaScript" href="./javascript/index.html"  collapse="true">
+				<item name="Documents" href="./javascript/documents.html" />
+				<item name="XML" href="./javascript/xml.html" />
+				<item name="Layout / UI" href="./javascript/layout.html" />
+			</item>
 
 			<item name="Deployment" href="./deployment/index.html" collapse="true">
 				<item name="Deployment Guide" href="./deployment/deployment_guide.html" />

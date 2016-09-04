@@ -48,13 +48,16 @@ A Workflow Management System provides views of all running process instances. A 
 There are several ways how you can benefit from Imixs-Workflow. The following section gives you a short guideline how to find out the best way to use Imixs-Workflow in your own project.
  
 ### Using the Imixs-Workflow Engine out of the Box
-Using Imixs-Workflow out of the Box is a good starting point to run the workflow engine without modification or Java EE development. You can start with the [Imixs-Workflow Sample Application](sampleapplication.html) if you don't want to develop a new project from scratch. 
+Using Imixs-Workflow out of the Box is a good starting point to run the workflow engine without modification or Java EE development. 
+You can start with the [Imixs-Microservice Project](https://github.com/imixs/imixs-microservice) which can be deployed in a Java EE Application server or by simply starting a [Docker Container](https://hub.docker.com/r/imixs/workflow/). 
 
-Before you begin, consider the following:
+If you want to develop a business application or embed the Imixs-Workflow engine into an existing project, you can also start with the [Imixs-Workflow Sample Application](sampleapplication.html) which gives a good starting point to develop a new project from scratch. 
+
+Before you start developing with Imixs-Workflow, consider the following:
  
-  * Provide a database where the workflow model and the workitems can be stored
-  * Configure a security realm to grant access for actors
-  * Define a workflow model using the [Imixs-Workflow-Modeler](./modelling/index.html) 
+  * Provide a database where the workflow data can be stored
+  * Configure a [security realm](./deployment/security.html) for granting access to different actors
+  * Design a workflow model using the [Imixs-Workflow-Modeler](./modelling/index.html) 
   * Deploy the workflow application on an application server
   
 

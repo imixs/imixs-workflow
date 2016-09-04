@@ -5,8 +5,8 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.plugins.MailPlugin;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.plugins.jee.MailPlugin;
 import org.junit.Before;
 import org.junit.Test;
 

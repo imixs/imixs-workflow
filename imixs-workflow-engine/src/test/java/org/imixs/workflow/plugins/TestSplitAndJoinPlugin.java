@@ -7,10 +7,10 @@ import java.util.regex.Pattern;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.engine.AbstractWorkflowEnvironment;
+import org.imixs.workflow.engine.plugins.SplitAndJoinPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.jee.ejb.AbstractWorkflowEnvironment;
-import org.imixs.workflow.plugins.jee.SplitAndJoinPlugin;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -62,7 +62,7 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);
 		documentContext.replaceItemValue(WorkflowKernel.PROCESSID, 100);
 		documentContext.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
-		entityService.save(documentContext);
+		documentService.save(documentContext);
 
 	}
 
@@ -93,7 +93,7 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		String subprocessUniqueid = workitemRefList.get(0);
 
 		// get the subprocess...
-		ItemCollection subprocess = this.entityService.load(subprocessUniqueid);
+		ItemCollection subprocess = this.documentService.load(subprocessUniqueid);
 
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
@@ -136,7 +136,7 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		String subprocessUniqueid = workitemRefList.get(0);
 	
 		// get the subprocess...
-		ItemCollection subprocess = this.entityService.load(subprocessUniqueid);
+		ItemCollection subprocess = this.documentService.load(subprocessUniqueid);
 	
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
@@ -180,14 +180,14 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 
 		// test first subprocess instance...
 		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = this.entityService.load(subprocessUniqueid);
+		ItemCollection subprocess = this.documentService.load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getProcessID());
 		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
 
 		// test second subprocess instance... 100.20 -> $processId=200
 		subprocessUniqueid = workitemRefList.get(1);
-		subprocess = this.entityService.load(subprocessUniqueid);
+		subprocess = this.documentService.load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getProcessID());
 		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
@@ -246,7 +246,7 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		// now load the subprocess
 		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = this.entityService.load(subprocessUniqueid);
+		ItemCollection subprocess = this.documentService.load(subprocessUniqueid);
 
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
@@ -268,7 +268,7 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		}
 
 		// load origin document
-		documentContext = entityService.load(orignUniqueID);
+		documentContext = documentService.load(orignUniqueID);
 		Assert.assertNotNull(documentContext);
 
 		// test data.... (new $processId=200 and _sub_data from subprocess
@@ -301,7 +301,7 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		Assert.assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = this.entityService.load(subprocessUniqueid);
+		ItemCollection subprocess = this.documentService.load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getProcessID());
 
@@ -322,7 +322,7 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 
 		Assert.assertNotNull(documentContext);
 
-		subprocess = this.entityService.load(subprocessUniqueid);
+		subprocess = this.documentService.load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getProcessID());
 		Assert.assertEquals("Walter", subprocess.getItemValueString("namTEAM"));

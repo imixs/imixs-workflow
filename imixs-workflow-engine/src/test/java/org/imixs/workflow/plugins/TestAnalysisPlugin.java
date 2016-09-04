@@ -6,6 +6,7 @@ import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
+import org.imixs.workflow.engine.plugins.AnalysisPlugin;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
 import org.junit.Test;

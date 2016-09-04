@@ -213,7 +213,7 @@ public class EntityService implements EntityServiceRemote {
 	@Resource(name = "DISABLE_OPTIMISTIC_LOCKING")
 	private Boolean disableOptimisticLocking = false;
 
-	@PersistenceContext(unitName = "org.imixs.workflow.jee.jpa")
+	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
 
 	/**
@@ -276,7 +276,8 @@ public class EntityService implements EntityServiceRemote {
 	 * 
 	 * @return
 	 */
-	public List<String> getUserNameList() {
+	@Deprecated
+	public List<String> _getUserNameList() {
 
 		List<String> userNameList = new Vector<String>();
 
@@ -330,7 +331,8 @@ public class EntityService implements EntityServiceRemote {
 	 *            to be saved
 	 * @return updated ItemCollection
 	 */
-	public ItemCollection save(ItemCollection itemcol) throws AccessDeniedException {
+	@Deprecated
+	public ItemCollection _save(ItemCollection itemcol) throws AccessDeniedException {
 
 		Entity activeEntity = null;
 		ItemCollection slimItemCollection = null;
@@ -493,9 +495,10 @@ public class EntityService implements EntityServiceRemote {
 	 * @return
 	 * @throws AccessDeniedException
 	 */
+	@Deprecated
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-	public ItemCollection saveByNewTransaction(ItemCollection itemcol) throws AccessDeniedException {
-		return save(itemcol);
+	public ItemCollection _saveByNewTransaction(ItemCollection itemcol) throws AccessDeniedException {
+		return _save(itemcol);
 	}
 
 	/**
@@ -519,7 +522,8 @@ public class EntityService implements EntityServiceRemote {
 	 *         exist or the CallerPrincipal hat insufficient read access.
 	 * 
 	 */
-	public ItemCollection load(String id) {
+	@Deprecated
+	public ItemCollection _load(String id) {
 		Entity activeEntity = null;
 		activeEntity = manager.find(Entity.class, id);
 
@@ -552,7 +556,8 @@ public class EntityService implements EntityServiceRemote {
 	 *            to be removed
 	 * @throws AccessDeniedException
 	 */
-	public void remove(ItemCollection itemcol) throws AccessDeniedException {
+	@Deprecated
+	public void _remove(ItemCollection itemcol) throws AccessDeniedException {
 		Entity activeEntity = null;
 		String sID = itemcol.getItemValueString("$uniqueid");
 		activeEntity = manager.find(Entity.class, sID);
@@ -763,7 +768,8 @@ public class EntityService implements EntityServiceRemote {
 	 * @see org.imixs.workfow.jee.jpa.Entity
 	 */
 	@SuppressWarnings("unchecked")
-	public List<ItemCollection> findAllEntities(String query, int startpos, int maxcount)
+	@Deprecated
+	public List<ItemCollection> _findAllEntities(String query, int startpos, int maxcount)
 			throws InvalidAccessException {
 
 		long l = 0;
@@ -874,7 +880,7 @@ public class EntityService implements EntityServiceRemote {
 	 */
 	public ItemCollection findParentEntity(ItemCollection child) throws InvalidAccessException {
 		String parentUniqueID = child.getItemValueString("$uniqueidref");
-		return this.load(parentUniqueID);
+		return this._load(parentUniqueID);
 	}
 
 	/**
@@ -902,7 +908,7 @@ public class EntityService implements EntityServiceRemote {
 		sQuery += " JOIN wi.textItems as t2 ";
 		sQuery += " WHERE t2.itemName = '$uniqueidref' and t2.itemValue = '" + parentUniqueID + "' ";
 
-		return this.findAllEntities(sQuery, start, count);
+		return this._findAllEntities(sQuery, start, count);
 	}
 
 	/**
@@ -934,7 +940,7 @@ public class EntityService implements EntityServiceRemote {
 		ObjectOutputStream out = new ObjectOutputStream(fos);
 		while (hasMoreData) {
 			// read a junk....
-			Collection<ItemCollection> col = findAllEntities(query, startpos, JUNK_SIZE);
+			Collection<ItemCollection> col = _findAllEntities(query, startpos, JUNK_SIZE);
 			if (col.size() < JUNK_SIZE)
 				hasMoreData = false;
 			startpos = startpos + col.size();
@@ -978,7 +984,7 @@ public class EntityService implements EntityServiceRemote {
 				// remove the $version property!
 				itemCol.removeItem("$Version");
 				// now save imported data
-				save(itemCol);
+				_save(itemCol);
 				totalcount++;
 				icount++;
 				if (icount >= JUNK_SIZE) {
@@ -1049,7 +1055,7 @@ public class EntityService implements EntityServiceRemote {
 		boolean notemptyfield = false;
 
 		// get user name list
-		List<String> auserNameList = getUserNameList();
+		List<String> auserNameList = _getUserNameList();
 
 		// check each read access
 		for (ReadAccess aReadAccess : readAccessList) {
@@ -1100,7 +1106,7 @@ public class EntityService implements EntityServiceRemote {
 			}
 
 			// get user name list
-			List<String> auserNameList = getUserNameList();
+			List<String> auserNameList = _getUserNameList();
 
 			// check each read access
 			for (WriteAccess aWriteAccess : writeAccessList) {
@@ -1809,7 +1815,7 @@ public class EntityService implements EntityServiceRemote {
 			return aQuery;
 
 		// now construct user role list
-		List<String> auserNameList = getUserNameList();
+		List<String> auserNameList = _getUserNameList();
 		for (String auserName : auserNameList) {
 			nameListBuf.append(",'" + auserName + "'");
 		}

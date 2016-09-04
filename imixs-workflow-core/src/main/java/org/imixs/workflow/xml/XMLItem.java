@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Logger;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -54,6 +55,7 @@ public class XMLItem implements java.io.Serializable {
 
 	private java.lang.Object[] value;
 
+	@XmlAttribute
 	public java.lang.String getName() {
 		return name;
 	}
@@ -249,6 +251,10 @@ public class XMLItem implements java.io.Serializable {
 	@SuppressWarnings("rawtypes")
 	private static boolean isBasicType(java.lang.Object[] v) {
 		for (Object o : v) {
+			
+			if (o==null) {
+				continue;
+			}
 			// test raw array types first
 			if (o instanceof byte[] || o instanceof boolean[] || o instanceof short[] || o instanceof char[]
 					|| o instanceof int[] || o instanceof long[] || o instanceof float[] || o instanceof double[]) {

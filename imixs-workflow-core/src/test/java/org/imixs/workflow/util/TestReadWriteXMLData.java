@@ -12,7 +12,7 @@ import javax.xml.bind.Marshaller;
 import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.xml.EntityCollection;
+import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 import org.junit.After;
 import org.junit.Before;
@@ -46,28 +46,28 @@ public class TestReadWriteXMLData {
 		try {
 			col = XMLItemCollectionAdapter
 					.readCollectionFromInputStream(getClass()
-							.getResourceAsStream("/model.ixm"));
+							.getResourceAsStream("/document-example.xml"));
 		} catch (JAXBException e) {
 			Assert.fail();
 		} catch (IOException e) {
 			Assert.fail();
 		}
 
-		Assert.assertEquals(15, col.size());
+		Assert.assertEquals(2, col.size());
 	}
 
 	/**
-	 * Writes a new ixm file
+	 * reads a xml input file and writes the jaxb object back into a new xml file
 	 */
 	@Test
-	@Ignore
+	//@Ignore
 	public void testWrite() {
 		List<ItemCollection> col = null;
 		// read default content
 		try {
 			col = XMLItemCollectionAdapter
 					.readCollectionFromInputStream(getClass()
-							.getResourceAsStream("/model.ixm"));
+							.getResourceAsStream("/document-example.xml"));
 		} catch (JAXBException e) {
 			Assert.fail();
 		} catch (IOException e) {
@@ -75,7 +75,7 @@ public class TestReadWriteXMLData {
 		}
 
 		// create JAXB object
-		EntityCollection xmlCol = null;
+		DocumentCollection xmlCol = null;
 		try {
 			xmlCol = XMLItemCollectionAdapter.putCollection(col);
 		} catch (Exception e1) {
@@ -88,9 +88,9 @@ public class TestReadWriteXMLData {
 		File file = null;
 		try {
 
-			file = new File("src/test/resources/export_test.xml");
+			file = new File("src/test/resources/export-test.xml");
 			JAXBContext jaxbContext = JAXBContext
-					.newInstance(EntityCollection.class);
+					.newInstance(DocumentCollection.class);
 			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
 			// output pretty printed

@@ -58,7 +58,7 @@ import javax.ws.rs.core.StreamingOutput;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.jee.ejb.EntityService;
-import org.imixs.workflow.xml.EntityCollection;
+import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLCount;
 import org.imixs.workflow.xml.XMLIndexList;
 import org.imixs.workflow.xml.XMLItemCollection;
@@ -137,7 +137,7 @@ public class EntityRestService {
 	 */
 	@GET
 	@Path("/query/{query}")
-	public EntityCollection getEntitiesByQuery(
+	public DocumentCollection getEntitiesByQuery(
 			@PathParam("query") String query,
 			@DefaultValue("0") @QueryParam("start") int start,
 			@DefaultValue("10") @QueryParam("count") int count,
@@ -149,13 +149,34 @@ public class EntityRestService {
 			// decode query...
 			String decodedQuery = URLDecoder.decode(query, "UTF-8");
 
-			col = entityService.findAllEntities(decodedQuery, start, count);
+			col = entityService._findAllEntities(decodedQuery, start, count);
 			return XMLItemCollectionAdapter.putCollection(col,
 					getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EntityCollection();
+		return new DocumentCollection();
+	}
+
+
+	/**
+	 * returns a singel entity defined by $uniqueid
+	 * 
+	 * @param uniqueid
+	 * @return
+	 */
+	@GET
+	@Path("/entities/{uniqueid}")
+	public XMLItemCollection getEntity(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
+
+		ItemCollection entity;
+		try {
+			entity = entityService._load(uniqueid);
+			return XMLItemCollectionAdapter.putItemCollection(entity, DocumentRestService.getItemList(items));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 
@@ -267,7 +288,7 @@ public class EntityRestService {
 		try {
 
 			// try to load current instance of this entity
-			ItemCollection currentInstance = entityService.load(workitem
+			ItemCollection currentInstance = entityService._load(workitem
 					.getItemValueString(EntityService.UNIQUEID));
 			if (currentInstance != null) {
 				// merge entity into current instance
@@ -280,7 +301,7 @@ public class EntityRestService {
 			workitem.removeItem("$error_code");
 			workitem.removeItem("$error_message");
 			// now lets try to process the workitem...
-			workitem = entityService.save(workitem);
+			workitem = entityService._save(workitem);
 
 		} catch (AccessDeniedException e) {
 			logger.severe(e.getMessage());
@@ -318,9 +339,9 @@ public class EntityRestService {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
-		ItemCollection entity = entityService.load(uniqueid);
+		ItemCollection entity = entityService._load(uniqueid);
 		if (entity != null) {
-			entityService.remove(entity);
+			entityService._remove(entity);
 		}
 
 		return Response.status(Response.Status.OK).build();

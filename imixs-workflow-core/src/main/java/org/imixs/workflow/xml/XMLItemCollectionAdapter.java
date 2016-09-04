@@ -120,7 +120,7 @@ public class XMLItemCollectionAdapter {
 	@SuppressWarnings({ "unchecked" })
 	public static XMLItemCollection putItemCollection(final ItemCollection aItemCollection,
 			final List<String> itemNames) throws Exception {
-		String sName = null;
+		String itemName = null;
 		XMLItemCollection entity = new XMLItemCollection();
 		int i = 0;
 		XMLItem[] items = null;
@@ -132,11 +132,11 @@ public class XMLItemCollectionAdapter {
 					for (String aField : itemNames) {
 						// this code block guarantees that the order of items
 						// returned
-						sName = aField;
+						itemName = aField;
 						XMLItem item = new XMLItem();
 						// test the ItemValue
 						List<?> vOrg = aItemCollection.getItemValue(aField);
-						item.setName(sName);
+						item.setName(itemName);
 						item.setValue(vOrg.toArray());
 
 						items[i] = item;
@@ -152,13 +152,18 @@ public class XMLItemCollectionAdapter {
 					// iterate over all items if no itemNames are provided
 					while (it.hasNext()) {
 						Map.Entry<String, List<?>> entry = (Entry<String, List<?>>) it.next();
+						itemName=entry.getKey();
 						XMLItem item = null;
 						item = new XMLItem();
-						item.setName((String) entry.getKey());
-						item.setValue(entry.getValue().toArray());
-						if (item != null) {
-							items[i] = item;
-							i++;
+						item.setName(itemName);
+						if (entry.getValue()!=null) {
+							item.setValue(entry.getValue().toArray());
+							if (item != null) {
+								items[i] = item;
+								i++;
+							}
+						} else {
+							logger.warning("putItemCollection - itemName=" + itemName + " has null value");
 						}
 					}
 				}
@@ -167,7 +172,7 @@ public class XMLItemCollectionAdapter {
 			}
 
 		} catch (Exception e) {
-			System.out.println("[XMLItemCollectionAdapter] Error putItemCollection (" + sName + ")");
+			logger.severe("putItemCollection - itemName=" + itemName + " : "+e.getMessage());
 			throw e;
 		}
 
@@ -215,7 +220,7 @@ public class XMLItemCollectionAdapter {
 	 * @return
 	 * @throws Exception
 	 */
-	public static EntityCollection putCollection(final Collection<ItemCollection> col) throws Exception {
+	public static DocumentCollection putCollection(final Collection<ItemCollection> col) throws Exception {
 
 		return putCollection(col, null);
 	}
@@ -235,9 +240,9 @@ public class XMLItemCollectionAdapter {
 	 * @return
 	 * @throws Exception
 	 */
-	public static EntityCollection putCollection(final Collection<ItemCollection> col, final List<String> itemNames)
+	public static DocumentCollection putCollection(final Collection<ItemCollection> col, final List<String> itemNames)
 			throws Exception {
-		EntityCollection entiCol = new EntityCollection();
+		DocumentCollection entiCol = new DocumentCollection();
 		Iterator<ItemCollection> it = col.iterator();
 		int max = col.size();
 		int i = 0;
@@ -249,7 +254,7 @@ public class XMLItemCollectionAdapter {
 			i++;
 		}
 		if (max > 0)
-			entiCol.setEntity(entities);
+			entiCol.setDocument(entities);
 		return entiCol;
 	}
 
@@ -295,9 +300,9 @@ public class XMLItemCollectionAdapter {
 			return null;
 		}
 
-		EntityCollection ecol = null;
+		DocumentCollection ecol = null;
 		logger.fine("[XMLItemCollectionAdapter] importXmlEntityData - verifing  content....");
-		JAXBContext context = JAXBContext.newInstance(EntityCollection.class);
+		JAXBContext context = JAXBContext.newInstance(DocumentCollection.class);
 		Unmarshaller m = context.createUnmarshaller();
 
 		ByteArrayInputStream input = new ByteArrayInputStream(byteInput);
@@ -307,14 +312,14 @@ public class XMLItemCollectionAdapter {
 					"[XMLItemCollectionAdapter] error - wrong xml file format - unable to read content!");
 		}
 
-		ecol = (EntityCollection) jaxbObject;
+		ecol = (DocumentCollection) jaxbObject;
 
 		// convert entities....
-		if (ecol.getEntity().length > 0) {
-			for (XMLItemCollection aentity : ecol.getEntity()) {
+		if (ecol.getDocument().length > 0) {
+			for (XMLItemCollection aentity : ecol.getDocument()) {
 				resultList.add(XMLItemCollectionAdapter.getItemCollection(aentity));
 			}
-			logger.fine("[XMLItemCollectionAdapter] " + ecol.getEntity().length + " entries sucessfull imported");
+			logger.fine("[XMLItemCollectionAdapter] " + ecol.getDocument().length + " entries sucessfull imported");
 		}
 		return resultList;
 
