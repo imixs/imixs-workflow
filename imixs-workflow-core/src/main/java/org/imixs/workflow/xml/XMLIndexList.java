@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author rsoika
  *
  */
+@Deprecated
 @XmlRootElement
 public class XMLIndexList implements java.io.Serializable {
 	private static final long serialVersionUID = 1L;

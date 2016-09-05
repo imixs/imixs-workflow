@@ -95,7 +95,7 @@ public class XMLItemCollectionAdapter {
 					}
 				}
 		} catch (Exception e) {
-			logger.warning("[XMLItemCollectionAdapter] getItemCollection - can't convert XMLItem value - error: "
+			logger.warning("getItemCollection - can't convert XMLItem value - error: "
 					+ e.toString());
 			itemCol = null;
 		}
@@ -301,7 +301,7 @@ public class XMLItemCollectionAdapter {
 		}
 
 		DocumentCollection ecol = null;
-		logger.fine("[XMLItemCollectionAdapter] importXmlEntityData - verifing  content....");
+		logger.fine("readCollection importXmlEntityData - verifing  content....");
 		JAXBContext context = JAXBContext.newInstance(DocumentCollection.class);
 		Unmarshaller m = context.createUnmarshaller();
 
@@ -309,7 +309,7 @@ public class XMLItemCollectionAdapter {
 		Object jaxbObject = m.unmarshal(input);
 		if (jaxbObject == null) {
 			throw new RuntimeException(
-					"[XMLItemCollectionAdapter] error - wrong xml file format - unable to read content!");
+					"readCollection error - wrong xml file format - unable to read content!");
 		}
 
 		ecol = (DocumentCollection) jaxbObject;
@@ -319,7 +319,7 @@ public class XMLItemCollectionAdapter {
 			for (XMLItemCollection aentity : ecol.getDocument()) {
 				resultList.add(XMLItemCollectionAdapter.getItemCollection(aentity));
 			}
-			logger.fine("[XMLItemCollectionAdapter] " + ecol.getDocument().length + " entries sucessfull imported");
+			logger.fine("readCollection" + ecol.getDocument().length + " entries sucessfull imported");
 		}
 		return resultList;
 
@@ -342,7 +342,7 @@ public class XMLItemCollectionAdapter {
 		}
 
 		XMLItemCollection ecol = null;
-		logger.fine("[XMLItemCollectionAdapter] importXmlEntityData - verifing content....");
+		logger.fine("importXmlEntityData - verifing content....");
 		JAXBContext context = JAXBContext.newInstance(XMLItemCollection.class);
 		Unmarshaller m = context.createUnmarshaller();
 
@@ -350,7 +350,7 @@ public class XMLItemCollectionAdapter {
 		Object jaxbObject = m.unmarshal(input);
 		if (jaxbObject == null) {
 			throw new RuntimeException(
-					"[XMLItemCollectionAdapter] error - wrong xml file format - unable to read content!");
+					"readItemCollection error - wrong xml file format - unable to read content!");
 		}
 
 		ecol = (XMLItemCollection) jaxbObject;
