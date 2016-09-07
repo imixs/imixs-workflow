@@ -44,6 +44,7 @@ import org.imixs.workflow.Plugin;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
@@ -163,7 +164,12 @@ public class ReportPlugin extends AbstractPlugin {
 			sEncoding = "UTF-8";
 
 		// query result ....
-		Collection<ItemCollection> col = getWorkflowService().getDocumentService().find(sEQL, 0, -1);
+		Collection<ItemCollection> col;
+		try {
+			col = getWorkflowService().getDocumentService().find(sEQL, 0, -1);
+		} catch (QueryException e1) {
+			throw new PluginException(e1.getErrorContext(), e1.getErrorCode(), e1.getMessage(), e1);
+		}
 		// now add the current Workitem into the collection if an older
 		// version is
 		// included in the result

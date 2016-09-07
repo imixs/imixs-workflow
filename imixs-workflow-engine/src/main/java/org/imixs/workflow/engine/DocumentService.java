@@ -61,11 +61,11 @@ import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.jpa.Document;
-import org.imixs.workflow.engine.lucene.LuceneException;
 import org.imixs.workflow.engine.lucene.LuceneSearchService;
 import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
+import org.imixs.workflow.exceptions.QueryException;
 
 /**
  * The DocumentService is used to save and load instances of ItemCollections
@@ -455,14 +455,8 @@ public class DocumentService {
 
 			// remove document...
 			manager.remove(persistedDocument);
-
-			try {
-				// remove document form index
-				luceneUpdateService.removeDocument(itemcol.getUniqueID());
-			} catch (LuceneException le) {
-				logger.severe("remove - Unable to remove document (" + sID + " form index: " + le.getMessage());
-			}
-
+			// remove document form index
+			luceneUpdateService.removeDocument(itemcol.getUniqueID());
 		} else
 			throw new AccessDeniedException(INVALID_UNIQUEID, "remove - invalid $uniqueid");
 	}
@@ -515,10 +509,11 @@ public class DocumentService {
 	 * @param pageIndex
 	 *            - number of page to start (default = 0)
 	 * @return list of ItemCollection elements
+	 * @throws QueryException 
 	 * 
 	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
 	 */
-	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex) {
+	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex) throws QueryException {
 		return find(searchTerm, pageSize, pageIndex, null, false);
 	}
 
@@ -544,11 +539,12 @@ public class DocumentService {
 	 *            - optional sort direction
 	 * 
 	 * @return list of ItemCollection elements
+	 * @throws QueryException 
 	 * 
 	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
 	 */
 	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy,
-			boolean sortReverse) {
+			boolean sortReverse) throws QueryException {
 		logger.fine("find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber=" + pageIndex
 				+ " , sortBy=" + sortBy + " reverse=" + sortReverse);
 
@@ -585,7 +581,12 @@ public class DocumentService {
 	 */
 	public List<ItemCollection> findDocumentsByRef(String uniqueIdRef, int start, int count) {
 		String searchTerm = "(" + "$uniqueidref:\"" + uniqueIdRef + "\")";
-		return find(searchTerm, start, count);
+		try {
+			return find(searchTerm, start, count);
+		} catch (QueryException e) {
+			logger.severe("findDocumentsByRef - invalid query: " + e.getMessage());
+			return null;
+		}
 	}
 
 	/**

@@ -54,6 +54,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ItemCollectionComparator;
 import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.util.XMLParser;
 
 /**
@@ -86,7 +87,7 @@ public class ReportService {
 	private static Logger logger = Logger.getLogger(ReportService.class.getName());
 
 	@EJB
-	DocumentService entityService;
+	DocumentService documentService;
 
 	/**
 	 * Returns a Report Entity identified by the attribute txtname
@@ -109,7 +110,7 @@ public class ReportService {
 	 * access for.
 	 */
 	public List<ItemCollection> getReportList() {
-		List<ItemCollection> col = entityService.getDocumentsByType("ReportEntity");
+		List<ItemCollection> col = documentService.getDocumentsByType("ReportEntity");
 
 		// sort resultset by name
 		Collections.sort(col, new ItemCollectionComparator("txtname", true));
@@ -150,7 +151,7 @@ public class ReportService {
 			}
 		}
 
-		entityService.save(aReport);
+		documentService.save(aReport);
 	}
 
 	/**
@@ -180,11 +181,12 @@ public class ReportService {
 	 * @param itemList
 	 *            - optional attribute list of items to be returned
 	 * @return collection of entities
+	 * @throws QueryException 
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
 	public List<ItemCollection> executeReport(String reportName, int startPos, int maxcount, Map<String, String> params,
-			List<String> itemList) {
+			List<String> itemList) throws QueryException {
 
 		long l = System.currentTimeMillis();
 		logger.fine("executeReport: " + reportName);
@@ -216,7 +218,7 @@ public class ReportService {
 
 		// execute query
 		logger.fine("executeReport jpql=" + query);
-		List<ItemCollection> result = entityService.find(query, startPos, maxcount);
+		List<ItemCollection> result = documentService.find(query, startPos, maxcount);
 
 		// test if a itemList is provided or defined in the reportEntity...
 		if (itemList == null) {
@@ -490,11 +492,17 @@ public class ReportService {
 	private ItemCollection findReport(String aid) {
 		ItemCollection result = null;
 
-		result = entityService.load(aid);
+		result = documentService.load(aid);
 		if (result == null) {
 			// try to search for name
 			String searchTerm = "(type:\"ReportEntity\" AND txtname:\"" + aid + "\")";
-			Collection<ItemCollection> col = entityService.find(searchTerm, 1, 0);
+			Collection<ItemCollection> col;
+			try {
+				col = documentService.find(searchTerm, 1, 0);
+			} catch (QueryException e) {
+				logger.severe("findReport - invalid id: " + e.getMessage());
+				return null;
+			}
 			if (col.size() > 0) {
 				result = col.iterator().next();
 			}

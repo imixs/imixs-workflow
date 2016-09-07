@@ -55,8 +55,10 @@ import javax.ejb.TransactionAttributeType;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.jee.ejb.EntityService;
 
 /**
@@ -125,7 +127,13 @@ public class WorkflowSchedulerService {
 		ItemCollection configItemCollection = null;
 		String searchTerm="(type:\"" + TYPE_CONFIGURATION  +"\" AND txtname:\"" + NAME + "\")";
 		
-		Collection<ItemCollection> col = entityService.find(searchTerm, 0, 1);
+		Collection<ItemCollection> col;
+		try {
+			col = entityService.find(searchTerm, 0, 1);
+		} catch (QueryException e) {
+			logger.severe("loadConfiguration - invalid param: " + e.getMessage());
+			throw new InvalidAccessException(InvalidAccessException.INVALID_ID,e.getMessage(),e);			
+		}
 
 		if (col.size() > 0) {
 			configItemCollection = col.iterator().next();

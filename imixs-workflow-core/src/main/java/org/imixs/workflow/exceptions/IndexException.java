@@ -28,54 +28,48 @@
 package org.imixs.workflow.exceptions;
 
 /**
- * An InvalidAccessException is a runtime exception which should be thrown by a
- * Imixs Workflow component if a method call is invalid or the data structure is
- * in an invalid state.
+ * An IndexException is a runtime exception which is thrown by a Imixs Workflow
+ * component if a index is not read or writable. .
  * 
- * The property errorCode specifies the exception type. Extensions of this
- * Exception may add additional errorCodes.
- * 
+ * @see org.imixs.workflow.engine.lucene.LuceneUpdateService
  * @author rsoika
  * 
  */
-public class InvalidAccessException extends RuntimeException {
+public class IndexException extends RuntimeException {
 
-	public static final String OPERATION_NOTALLOWED = "OPERATION_NOTALLOWED";
-	public static final String INVALID_ID = "INVALID_ID";
+	public static final String INVALID_INDEX = "INVALID_INDEX";
 
 	protected String errorCode = "UNDEFINED";
 	protected String errorContext = "UNDEFINED";
 
 	private static final long serialVersionUID = 1L;
 
-	public InvalidAccessException(String message) {
+	public IndexException(String message) {
 		super(message);
 	}
-	
-	public InvalidAccessException(String message,Exception e) {
-		super(message,e);
+
+	public IndexException(String message, Exception e) {
+		super(message, e);
 	}
 
-	public InvalidAccessException(String aErrorCode, String message) {
+	public IndexException(String aErrorCode, String message) {
 		super(message);
 		errorCode = aErrorCode;
 	}
 
-	public InvalidAccessException(String aErrorCode, String message, Exception e) {
+	public IndexException(String aErrorCode, String message, Exception e) {
 		super(message, e);
 		errorCode = aErrorCode;
 	}
 
-	public InvalidAccessException(String aErrorContext, String aErrorCode,
-			String message) {
+	public IndexException(String aErrorContext, String aErrorCode, String message) {
 		super(message);
 		errorContext = aErrorContext;
 		errorCode = aErrorCode;
 
 	}
 
-	public InvalidAccessException(String aErrorContext, String aErrorCode,
-			String message, Exception e) {
+	public IndexException(String aErrorContext, String aErrorCode, String message, Exception e) {
 		super(message, e);
 		errorContext = aErrorContext;
 		errorCode = aErrorCode;

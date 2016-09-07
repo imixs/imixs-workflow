@@ -62,6 +62,8 @@ import org.apache.lucene.store.FSDirectory;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.PropertyService;
+import org.imixs.workflow.exceptions.IndexException;
+import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.jee.ejb.EntityService;
 
 /**
@@ -90,10 +92,7 @@ import org.imixs.workflow.jee.ejb.EntityService;
 @LocalBean
 public class LuceneSearchService {
 
-	public static final String UNDEFINED_ERROR = "UNDEFINED_ERROR";
-	public static final String INVALID_INDEX = "INVALID_INDEX";
-	public static final String PARSE_ERROR = "PARSE_ERROR";
-
+	
 	private static final int DEFAULT_MAX_SEARCH_RESULT = 9999; // limiting the
 																// total
 	// number of hits
@@ -122,8 +121,9 @@ public class LuceneSearchService {
 	 * 
 	 * @param sSearchTerm
 	 * @return collection of search result
+	 * @throws QueryException 
 	 */
-	public List<ItemCollection> search(String sSearchTerm) {
+	public List<ItemCollection> search(String sSearchTerm) throws QueryException {
 		// no sort order
 		return search(sSearchTerm, DEFAULT_MAX_SEARCH_RESULT, 0, null, null);
 	}
@@ -140,8 +140,9 @@ public class LuceneSearchService {
 	 *            - page number
 	 * 
 	 * @return collection of search result
+	 * @throws QueryException 
 	 */
-	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) {
+	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) throws QueryException {
 		// no sort order
 		return search(sSearchTerm, pageSize, pageIndex, null, null);
 	}
@@ -168,9 +169,10 @@ public class LuceneSearchService {
 	 *            - optional to change the default search operator
 	 * 
 	 * @return collection of search result
+	 * @throws QueryException in case the searchtem is not understandable.
 	 */
 	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex, Sort sortOrder,
-			Operator defaultOperator) {
+			Operator defaultOperator) throws QueryException {
 
 		long ltime = System.currentTimeMillis();
 		if (pageSize <= 0) {
@@ -287,10 +289,11 @@ public class LuceneSearchService {
 
 			logger.fine("lucene search result computed in " + (System.currentTimeMillis() - ltime) + " ms");
 		} catch (IOException e) {
-			logger.warning("Lucene search error: " + e.getMessage());
+			logger.severe("Lucene index error: " + e.getMessage());
+			throw new IndexException(IndexException.INVALID_INDEX,e.getMessage(),e);
 		} catch (ParseException e) {
 			logger.severe("Lucene search error: " + e.getMessage());
-			throw new LuceneException(PARSE_ERROR,e.getMessage(),e);
+			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE,e.getMessage(),e);
 		}
 
 		return workitems;
@@ -306,11 +309,12 @@ public class LuceneSearchService {
 	 * @return
 	 * @throws IOException
 	 */
-	Directory createIndexDirectory(Properties prop) throws IOException {
+	Directory createIndexDirectory(Properties prop) throws IOException   {
 		logger.fine("lucene createIndexDirectory...");
 		// read configuration
 		String sIndexDir = prop.getProperty("lucence.indexDir", LuceneUpdateService.DEFAULT_INDEX_DIRECTORY);
-		Directory indexDir = FSDirectory.open(Paths.get(sIndexDir));
+		Directory indexDir;
+		indexDir = FSDirectory.open(Paths.get(sIndexDir));
 		return indexDir;
 	}
 
@@ -417,18 +421,25 @@ public class LuceneSearchService {
 	 * 
 	 * @param searchTerm
 	 * @return normalzed search term
+	 * @throws QueryException 
 	 */
-	public static String normalizeSearchTerm(String searchTerm) {
+	public static String normalizeSearchTerm(String searchTerm) throws QueryException {
+		if (searchTerm==null) {
+			return "";
+		}
+		if (searchTerm.trim().isEmpty()) {
+			return "";
+		}
+		
 		ClassicAnalyzer analyzer = new ClassicAnalyzer();
-
 		QueryParser parser = new QueryParser("content", analyzer);
 		try {
 			Query result = parser.parse(escapeSearchTerm(searchTerm, false));
 			searchTerm = result.toString("content");
 		} catch (ParseException e) {
 			logger.warning("Unable to normalze serchTerm '" + searchTerm + "'  -> " + e.getMessage());
+			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE,e.getMessage(),e);
 		}
-
 		return escapeSearchTerm(searchTerm, true);
 
 	}

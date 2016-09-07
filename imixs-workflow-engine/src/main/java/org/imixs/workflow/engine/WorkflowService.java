@@ -56,6 +56,7 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.jee.ejb.EntityService;
 
 /**
@@ -164,7 +165,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		searchTerm+=" namowner:\"" + name + "\" )";
 		logger.warning("Sortorder " + sortorder + " not implemented!");
 
-		return documentService.find(searchTerm, pageSize, pageIndex);
+		try {
+			return documentService.find(searchTerm, pageSize, pageIndex);
+		} catch (QueryException e) {
+			logger.severe("getWorkListByOwner - invalid param: " + e.getMessage());
+			return null;
+		}
 	}
 
 	/**
@@ -205,7 +211,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		logger.warning("Sortorder " + sortorder + " not implemented!");
 
 		
-		return documentService.find(searchTerm, pageSize, pageIndex);
+		try {
+			return documentService.find(searchTerm, pageSize, pageIndex);
+		} catch (QueryException e) {
+			logger.severe("getWorkListByAuthor - invalid param: " + e.getMessage());
+			return null;
+		}
 	}
 
 	/**
@@ -243,7 +254,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		logger.warning("Sortorder " + sortorder + " not implemented!");
 
 		
-		return documentService.find(searchTerm, pageSize, pageIndex);
+		try {
+			return documentService.find(searchTerm, pageSize, pageIndex);
+		} catch (QueryException e) {
+			logger.severe("getWorkListByCreator - invalid param: " + e.getMessage());
+			return null;
+		}
 	}
 
 	/**
@@ -296,7 +312,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		logger.warning("Sortorder " + sortorder + " not implemented!");
 
 
-		return documentService.find(searchTerm, pageSize, pageIndex);
+		try {
+			return documentService.find(searchTerm, pageSize, pageIndex);
+		} catch (QueryException e) {
+			logger.severe("getWorkListByWriteAccess - invalid param: " + e.getMessage());
+			return null;
+		}
 	}
 
 	public List<ItemCollection> getWorkListByGroup(String name,  String type, int pageSize, int pageIndex, int sortorder) {
@@ -309,7 +330,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		logger.warning("Sortorder " + searchTerm + " not implemented!");
 
 		
-		return documentService.find(searchTerm, pageSize, pageIndex);
+		try {
+			return documentService.find(searchTerm, pageSize, pageIndex);
+		} catch (QueryException e) {
+			logger.severe("getWorkListByGroup - invalid param: " + e.getMessage());
+			return null;
+		}
 	}
 
 	/**
@@ -342,7 +368,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		searchTerm+=" $processid:\"" + aid + "\" )";
 		logger.warning("Sortorder " + searchTerm + " not implemented!");
 		
-		return documentService.find(searchTerm, pageSize, pageIndex);
+		try {
+			return documentService.find(searchTerm, pageSize, pageIndex);
+		} catch (QueryException e) {
+			logger.severe("getWorkListByProcessID - invalid param: " + e.getMessage());
+			return null;
+		}
 	}
 
 	/**
@@ -374,10 +405,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		}
 		searchTerm+=" $uniqueidref:\"" + aref + "\" )";
 		logger.warning("Sortorder " + searchTerm + " not implemented!");
-		
-		
-		
-		return documentService.find(searchTerm, pageSize, pageIndex);
+		try {
+			return documentService.find(searchTerm, pageSize, pageIndex);
+		} catch (QueryException e) {
+			logger.severe("getWorkListByRef - invalid param: " + e.getMessage());
+			return null;
+		}
 	}
 
 	/**

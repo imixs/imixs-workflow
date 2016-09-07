@@ -25,27 +25,27 @@
  *  	Ralph Soika - Software Developer
  *******************************************************************************/
 
-package org.imixs.workflow.engine.lucene;
-
-import org.imixs.workflow.exceptions.InvalidAccessException;
+package org.imixs.workflow.exceptions;
 
 /**
- * This Exception is thrown by the LuceneUpdateService
+ * The QueryException is thrown in case a search query can not be pased.
  * 
+ * @see  org.imixs.workflow.engine.lucene.LuceneSearchService
  * @author rsoika
  * 
  */
-public class LuceneException extends InvalidAccessException {
+public class QueryException extends WorkflowException {
+
+	public static final String QUERY_NOT_UNDERSTANDABLE = "QUERY_NOT_UNDERSTANDABLE";
 
 	private static final long serialVersionUID = 1L;
-	
-	
-	public LuceneException(String aErrorCode, String message) {
+
+	public QueryException(String aErrorCode, String message) {
 		super(aErrorCode, message);
 	}
-	
-	public LuceneException(String aErrorCode, String message, Exception e) {
+
+	public QueryException(String aErrorCode, String message, Exception e) {
 		super(aErrorCode,message, e);
 	}
-	
+
 }

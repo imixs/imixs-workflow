@@ -54,7 +54,9 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.QueryException;
 
 /**
  * The ModelManager is independend form the IX JEE Entity EJBs and uses the
@@ -292,7 +294,13 @@ public class ModelService implements ModelManager {
 
 			// first remove existing model entities
 			String searchTerm="(type:\"model\" AND txtname:\"" + version + "\")";
-			Collection<ItemCollection> col = documentService.find(searchTerm, 0, -1);
+			Collection<ItemCollection> col;
+			try {
+				col = documentService.find(searchTerm, 0, -1);
+			} catch (QueryException e) {
+				logger.severe("removeModelEntity - invalid query: " + e.getMessage());
+				throw new InvalidAccessException(InvalidAccessException.INVALID_ID,e.getMessage(),e);
+			}
 			// delete model entites
 			for (ItemCollection modelEntity : col) {
 				documentService.remove(modelEntity);
@@ -313,7 +321,13 @@ public class ModelService implements ModelManager {
 
 			// find model by version
 			String searchTerm="(type:\"model\" AND txtname:\"" + version + "\")";
-			Collection<ItemCollection> col = documentService.find(searchTerm, 1, 0);
+			Collection<ItemCollection> col;
+			try {
+				col = documentService.find(searchTerm, 1, 0);
+			} catch (QueryException e) {
+				logger.severe("loadModelEntity - invalid version: " + e.getMessage());
+				return null;
+			}
 			if (col != null && col.size() > 0) {
 				return col.iterator().next();
 			}

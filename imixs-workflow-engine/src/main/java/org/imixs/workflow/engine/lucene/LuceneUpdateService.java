@@ -61,6 +61,7 @@ import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.BytesRef;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.PropertyService;
+import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.jee.ejb.EntityService;
 
@@ -93,8 +94,6 @@ import org.imixs.workflow.jee.ejb.EntityService;
 @Singleton
 public class LuceneUpdateService {
 
-	public static final String UNDEFINED_ERROR = "UNDEFINED_ERROR";
-	public static final String INVALID_INDEX = "INVALID_INDEX";
 	protected static final String DEFAULT_ANALYSER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
 	protected static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
 	protected static final String ANONYMOUS = "ANONYMOUS";
@@ -227,7 +226,7 @@ public class LuceneUpdateService {
 	 * @return - true if the update was successful
 	 * @throws Exception
 	 */
-	public boolean updateDocuments(Collection<ItemCollection> documents) throws LuceneException {
+	public boolean updateDocuments(Collection<ItemCollection> documents) {
 
 		IndexWriter awriter = null;
 		long ltime = System.currentTimeMillis();
@@ -244,7 +243,7 @@ public class LuceneUpdateService {
 			}
 		} catch (IOException luceneEx) {
 			logger.warning("lucene error: " + luceneEx.getMessage());
-			throw new LuceneException(INVALID_INDEX, "Unable to update lucene search index", luceneEx);
+			throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index", luceneEx);
 		} finally {
 			// close writer!
 			if (awriter != null) {
@@ -252,9 +251,9 @@ public class LuceneUpdateService {
 				try {
 					awriter.close();
 				} catch (CorruptIndexException e) {
-					throw new LuceneException(INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
 				} catch (IOException e) {
-					throw new LuceneException(INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
 				}
 			}
 		}
@@ -273,7 +272,7 @@ public class LuceneUpdateService {
 	 *            of the workitem to be removed
 	 * @throws PluginException
 	 */
-	public void removeDocument(String uniqueID) throws LuceneException {
+	public void removeDocument(String uniqueID)  {
 		IndexWriter awriter = null;
 		long ltime = System.currentTimeMillis();
 		try {
@@ -281,13 +280,13 @@ public class LuceneUpdateService {
 			Term term = new Term("$uniqueid", uniqueID);
 			awriter.deleteDocuments(term);
 		} catch (CorruptIndexException e) {
-			throw new LuceneException(INVALID_INDEX, "Unable to remove workitem '" + uniqueID + "' from search index",
+			throw new IndexException(IndexException.INVALID_INDEX, "Unable to remove workitem '" + uniqueID + "' from search index",
 					e);
 		} catch (LockObtainFailedException e) {
-			throw new LuceneException(INVALID_INDEX, "Unable to remove workitem '" + uniqueID + "' from search index",
+			throw new IndexException(IndexException.INVALID_INDEX,  "Unable to remove workitem '" + uniqueID + "' from search index",
 					e);
 		} catch (IOException e) {
-			throw new LuceneException(INVALID_INDEX, "Unable to remove workitem '" + uniqueID + "' from search index",
+			throw new IndexException(IndexException.INVALID_INDEX, "Unable to remove workitem '" + uniqueID + "' from search index",
 					e);
 		}
 		finally {
@@ -297,9 +296,9 @@ public class LuceneUpdateService {
 				try {
 					awriter.close();
 				} catch (CorruptIndexException e) {
-					throw new LuceneException(INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
 				} catch (IOException e) {
-					throw new LuceneException(INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
 				}
 			}
 		}
@@ -311,10 +310,7 @@ public class LuceneUpdateService {
 	/**
 	 * This method creates a new instance of a lucene IndexWriter.
 	 * 
-	 * The configuration how to index a workiem is read from the properties
-	 * param.
-	 * 
-	 * The timeout to wait for a write lock is set to 10 seconds.
+	 * The location of the lucene index in the filesystem  is read from the imixs.properties
 	 * 
 	 * @return
 	 * @throws IOException
@@ -335,12 +331,20 @@ public class LuceneUpdateService {
 	 * @return
 	 * @throws IOException
 	 */
-	Directory createIndexDirectory() throws IOException {
+	/*
+	private Directory createIndexDirectory() {
 		logger.fine("lucene createIndexDirectory...");
-		Directory indexDir = FSDirectory.open(Paths.get(indexDirectoryPath));
+		Directory indexDir;
+		try {
+			indexDir = FSDirectory.open(Paths.get(indexDirectoryPath));
+		} catch (IOException e) {
+			// 
+			e.printStackTrace();
+		}
 		// since version 5.0 we do no longer use set lockFactory
 		return indexDir;
 	}
+	*/
 
 	/**
 	 * This method creates a lucene document based on a ItemCollection. The

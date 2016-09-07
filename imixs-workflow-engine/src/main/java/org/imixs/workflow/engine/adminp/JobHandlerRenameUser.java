@@ -18,6 +18,8 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.InvalidAccessException;
+import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.jee.ejb.EntityService;
 
 @DeclareRoles({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
@@ -49,6 +51,7 @@ public class JobHandlerRenameUser implements JobHandler {
 		sQuery +=" AND ($writeaccess:\""+fromName+"\" OR $readaccess:\""+fromName+"\" OR namowner:\""+fromName+"\" OR namcreator:\""+fromName+"\" )";
 	
 	 * </code>
+	 * @throws QueryException 
 	 * 
 	 * 
 	 * @throws AccessDeniedException
@@ -92,7 +95,12 @@ public class JobHandlerRenameUser implements JobHandler {
 		sQuery +=" AND ($writeaccess:\""+fromName+"\" OR $readaccess:\""+fromName+"\" OR namowner:\""+fromName+"\" OR namcreator:\""+fromName+"\" )";
 	
 		
-		Collection<ItemCollection> col = documentService.find(sQuery, iStart, iCount);
+		Collection<ItemCollection> col;
+		try {
+			col = documentService.find(sQuery, iStart, iCount);
+		} catch (QueryException e) {
+			throw new InvalidAccessException(InvalidAccessException.INVALID_ID,e.getMessage(),e);			
+		}
 
 		// check all selected documents
 		for (ItemCollection entity : col) {

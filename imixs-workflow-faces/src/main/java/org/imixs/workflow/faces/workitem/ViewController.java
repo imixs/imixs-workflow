@@ -38,6 +38,7 @@ import javax.faces.event.AjaxBehaviorEvent;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.exceptions.QueryException;
 
 /**
  * The ViewController can be used in JSF Applications to manage lists of
@@ -249,8 +250,9 @@ public class ViewController implements Serializable {
 	 * ItemCollections based on the current view type
 	 * 
 	 * @return view result
+	 * @throws QueryException 
 	 */
-	public List<ItemCollection> getWorkitems() {
+	public List<ItemCollection> getWorkitems() throws QueryException {
 		// return a cached result set?
 		if (workitems != null)
 			return workitems;

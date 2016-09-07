@@ -37,6 +37,7 @@ import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.imixs.workflow.exceptions.QueryException;
 
 /**
  * This plugin handles the creation and management of versions from an existing
@@ -183,6 +184,8 @@ public class VersionPlugin extends AbstractPlugin {
 		} catch (AccessDeniedException e) {
 			throw new PluginException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
 		} catch (ProcessingErrorException e) {
+			throw new PluginException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
+		} catch (QueryException e) {
 			throw new PluginException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
 		}
 		return Plugin.PLUGIN_OK;
