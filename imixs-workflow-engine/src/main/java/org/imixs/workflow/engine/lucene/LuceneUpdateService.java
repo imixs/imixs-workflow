@@ -60,10 +60,10 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.BytesRef;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.PropertyService;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.jee.ejb.EntityService;
 
 /**
  * The LuceneUpdateService provides methods to write Imixs Workitems into a
@@ -137,10 +137,10 @@ public class LuceneUpdateService {
 		String sIndexFieldListAnalyse = properties.getProperty("lucence.indexFieldListAnalyze");
 		String sIndexFieldListNoAnalyse = properties.getProperty("lucence.indexFieldListNoAnalyze");
 
-		logger.fine("lucene IndexDir=" + indexDirectoryPath);
-		logger.fine("lucene FulltextFieldList=" + sFulltextFieldList);
-		logger.fine("lucene IndexFieldListAnalyse=" + sIndexFieldListAnalyse);
-		logger.fine("lucene IndexFieldListNoAnalyse=" + sIndexFieldListNoAnalyse);
+		logger.finest("lucene IndexDir=" + indexDirectoryPath);
+		logger.finest("lucene FulltextFieldList=" + sFulltextFieldList);
+		logger.finest("lucene IndexFieldListAnalyse=" + sIndexFieldListAnalyse);
+		logger.finest("lucene IndexFieldListNoAnalyse=" + sIndexFieldListNoAnalyse);
 
 		// compute search field list
 		searchFieldList = new ArrayList<String>();
@@ -237,7 +237,7 @@ public class LuceneUpdateService {
 				// create term
 				Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
 
-				logger.fine("lucene add/update workitem '" + workitem.getItemValueString(EntityService.UNIQUEID)
+				logger.finest("lucene add/update workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
 						+ "' to index...");
 				awriter.updateDocument(term, createDocument(workitem));
 			}
@@ -247,7 +247,7 @@ public class LuceneUpdateService {
 		} finally {
 			// close writer!
 			if (awriter != null) {
-				logger.fine("lucene close IndexWriter...");
+				logger.finest("lucene close IndexWriter...");
 				try {
 					awriter.close();
 				} catch (CorruptIndexException e) {
@@ -292,7 +292,7 @@ public class LuceneUpdateService {
 		finally {
 			// close writer!
 			if (awriter != null) {
-				logger.fine("lucene close IndexWriter...");
+				logger.finest("lucene close IndexWriter...");
 				try {
 					awriter.close();
 				} catch (CorruptIndexException e) {
@@ -325,26 +325,6 @@ public class LuceneUpdateService {
 		return new IndexWriter(indexDir, indexWriterConfig);
 	}
 
-	/**
-	 * Creates a Lucene FSDirectory Instance.
-	 * 
-	 * @return
-	 * @throws IOException
-	 */
-	/*
-	private Directory createIndexDirectory() {
-		logger.fine("lucene createIndexDirectory...");
-		Directory indexDir;
-		try {
-			indexDir = FSDirectory.open(Paths.get(indexDirectoryPath));
-		} catch (IOException e) {
-			// 
-			e.printStackTrace();
-		}
-		// since version 5.0 we do no longer use set lockFactory
-		return indexDir;
-	}
-	*/
 
 	/**
 	 * This method creates a lucene document based on a ItemCollection. The
@@ -395,7 +375,7 @@ public class LuceneUpdateService {
 				sContent += sValue + ",";
 			}
 		}
-		logger.fine("add lucene field content=" + sContent);
+		logger.finest("add lucene field content=" + sContent);
 		doc.add(new TextField("content", sContent, Store.NO));
 
 		// add each field from the indexFieldList into the lucene document
@@ -470,7 +450,7 @@ public class LuceneUpdateService {
 				sValue = singleValue.toString();
 			}
 
-			logger.fine("lucene add IndexField (analyse=" + analyzeValue + "): " + itemName + "=" + sValue);
+			logger.finest("lucene add IndexField (analyse=" + analyzeValue + "): " + itemName + "=" + sValue);
 			if (analyzeValue) {
 				doc.add(new TextField(itemName, sValue, Store.NO));
 			} else {

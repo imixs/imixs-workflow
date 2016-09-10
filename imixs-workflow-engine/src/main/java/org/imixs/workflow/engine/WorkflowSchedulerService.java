@@ -59,7 +59,6 @@ import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.QueryException;
-import org.imixs.workflow.jee.ejb.EntityService;
 
 /**
  * This EJB implements a TimerService which scans workitems for scheduled
@@ -829,7 +828,7 @@ public class WorkflowSchedulerService {
 		for (ItemCollection workitem : worklist) {
 			// verify due date
 			if (workItemInDue(workitem, activityEntity)) {
-				String sID = workitem.getItemValueString(EntityService.UNIQUEID);
+				String sID = workitem.getItemValueString(WorkflowKernel.UNIQUEID);
 				logger.fine("[WorkflowSchedulerService] workitem " + sID + "is in due");
 				workitem.replaceItemValue("$activityid", iActivityID);
 				try {

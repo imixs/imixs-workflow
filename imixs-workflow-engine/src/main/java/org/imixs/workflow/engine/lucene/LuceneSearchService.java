@@ -64,7 +64,6 @@ import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.PropertyService;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.QueryException;
-import org.imixs.workflow.jee.ejb.EntityService;
 
 /**
  * This session ejb provides a service to search the lucene index. The EJB uses
@@ -183,7 +182,7 @@ public class LuceneSearchService {
 			pageIndex=0;
 		}
 		
-		logger.fine("lucene search: pageNumber=" + pageIndex + " pageSize=" + pageSize);
+		logger.finest("lucene search: pageNumber=" + pageIndex + " pageSize=" + pageSize);
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
@@ -200,7 +199,7 @@ public class LuceneSearchService {
 			QueryParser parser = createQueryParser(prop);
 
 			// extend the Search Term
-			if (!documentService.isUserInRole(EntityService.ACCESSLEVEL_MANAGERACCESS)) {
+			if (!documentService.isUserInRole(DocumentService.ACCESSLEVEL_MANAGERACCESS)) {
 				// get user names list
 				List<String> userNameList = documentService.getUserNameList();
 				// create search term (always add ANONYMOUS)
@@ -237,13 +236,13 @@ public class LuceneSearchService {
 				Query query = parser.parse(sSearchTerm);
 				if (sortOrder != null) {
 					// sorted by sortoder
-					logger.fine("lucene result sorted by sortOrder= '" + sortOrder + "' ");
+					logger.finest("lucene result sorted by sortOrder= '" + sortOrder + "' ");
 					// MAX_SEARCH_RESULT is limiting the total number of hits
 					collector = TopFieldCollector.create(sortOrder, maxSerachresult, false, false, false);
 
 				} else {
 					// sorted by score
-					logger.fine("lucene result sorted by score ");
+					logger.finest("lucene result sorted by score ");
 					// MAX_SEARCH_RESULT is limiting the total number of hits
 					collector = TopScoreDocCollector.create(maxSerachresult);
 				}
@@ -269,7 +268,7 @@ public class LuceneSearchService {
 					Document doc = searcher.doc(scoredoc.doc);
 
 					String sID = doc.get("$uniqueid");
-					logger.fine("lucene lookup $uniqueid=" + sID);
+					logger.finest("lucene lookup $uniqueid=" + sID);
 					ItemCollection itemCol = documentService.load(sID);
 					if (itemCol != null) {
 						workitems.add(itemCol);
@@ -310,7 +309,7 @@ public class LuceneSearchService {
 	 * @throws IOException
 	 */
 	Directory createIndexDirectory(Properties prop) throws IOException   {
-		logger.fine("lucene createIndexDirectory...");
+		logger.finest("lucene createIndexDirectory...");
 		// read configuration
 		String sIndexDir = prop.getProperty("lucence.indexDir", LuceneUpdateService.DEFAULT_INDEX_DIRECTORY);
 		Directory indexDir;
@@ -327,7 +326,7 @@ public class LuceneSearchService {
 	 * @throws Exception
 	 */
 	IndexSearcher createIndexSearcher(Properties prop) throws IOException {
-		logger.fine("lucene createIndexSearcher...");
+		logger.finest("lucene createIndexSearcher...");
 
 		Directory indexDir = createIndexDirectory(prop);
 		IndexReader reader = DirectoryReader.open(indexDir);
@@ -351,10 +350,10 @@ public class LuceneSearchService {
 		// set default operator to 'AND' if not defined by property setting
 		String defaultOperator = prop.getProperty("lucene.defaultOperator");
 		if (defaultOperator != null && "OR".equals(defaultOperator.toUpperCase())) {
-			logger.fine("lucene DefaultOperator: OR");
+			logger.finest("lucene DefaultOperator: OR");
 			parser.setDefaultOperator(Operator.OR);
 		} else {
-			logger.fine("lucene DefaultOperator: AND");
+			logger.finest("lucene DefaultOperator: AND");
 			parser.setDefaultOperator(Operator.AND);
 		}
 

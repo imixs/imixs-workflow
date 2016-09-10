@@ -15,12 +15,12 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
-import org.imixs.workflow.jee.ejb.EntityService;
 
 @DeclareRoles({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
@@ -110,7 +110,7 @@ public class JobHandlerRenameUser implements JobHandler {
 			// see: http://blog.imixs.org/?p=155
 			// see: https://www.java.net/node/705304
 			boolean result = ctx.getBusinessObject(JobHandlerRenameUser.class).updateWorkitemUserIds(entity, fromName, to, replace,
-					adminp.getItemValueString(EntityService.UNIQUEID));
+					adminp.getItemValueString(WorkflowKernel.UNIQUEID));
 			if (result == true) {
 				// inc counter
 				iUpdates++;
@@ -125,7 +125,7 @@ public class JobHandlerRenameUser implements JobHandler {
 		iStart = iStart + col.size();
 		adminp.replaceItemValue("numStart", iStart);
 
-		String timerid = adminp.getItemValueString(EntityService.UNIQUEID);
+		String timerid = adminp.getItemValueString(WorkflowKernel.UNIQUEID);
 
 		long time = (System.currentTimeMillis() - lProfiler) / 1000;
 
@@ -169,8 +169,6 @@ public class JobHandlerRenameUser implements JobHandler {
 		if (entity == null)
 			return false;
 
-		String lastUnqiueID = entity.getItemValueString(EntityService.UNIQUEID);
-
 		// log current values
 		entity.replaceItemValue("txtAdminP", "AdminP:" + adminpUniqueid + " ");
 
@@ -193,7 +191,7 @@ public class JobHandlerRenameUser implements JobHandler {
 
 		if (bUpdate) {
 			documentService.save(entity);
-			logger.fine("[AmdinP] updated: " + entity.getItemValueString(EntityService.UNIQUEID));
+			logger.fine("[AmdinP] updated: " + entity.getItemValueString(WorkflowKernel.UNIQUEID));
 		}
 		return bUpdate;
 	}
