@@ -30,6 +30,7 @@ package org.imixs.workflow;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,8 +69,8 @@ public class WorkflowKernel {
 	public static final String ACTIVITYID = "$activityid";
 	public static final String ACTIVITYIDLIST = "$activityidlist";
 	public static final String TYPE = "type";
-	
-	public static final int MAXIMUM_ACTIVITYLOGENTRIES=30;
+
+	public static final int MAXIMUM_ACTIVITYLOGENTRIES = 30;
 
 	/** Plugin objects **/
 	private Vector<Plugin> vectorPlugins = null;
@@ -188,15 +189,13 @@ public class WorkflowKernel {
 		// check processID
 		if (workitem.getItemValueInteger(PROCESSID) <= 0)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_PROCESSID,
-					"processing error: $processid undefined ("
-							+ workitem.getItemValueInteger(PROCESSID) + ")");
+					"processing error: $processid undefined (" + workitem.getItemValueInteger(PROCESSID) + ")");
 
 		// check activityid
 
 		if (workitem.getItemValueInteger(ACTIVITYID) <= 0)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_ACTIVITYID,
-					"processing error: $activityid undefined ("
-							+ workitem.getItemValueInteger(ACTIVITYID) + ")");
+					"processing error: $activityid undefined (" + workitem.getItemValueInteger(ACTIVITYID) + ")");
 
 		// Check if $UniqueID is available
 		if ("".equals(documentContext.getItemValueString(UNIQUEID))) {
@@ -266,22 +265,15 @@ public class WorkflowKernel {
 	}
 
 	/**
-	 * This method creates a unique key which can be used as a primary key. The
-	 * method is used by the 'checkWorkItemID()' method and the checkUniqueID()
-	 * method.
-	 * <p>
-	 * The uniqueID consists of two parts containing a random unique char
-	 * sequence
+	 * This method generates an immutable universally unique identifier (UUID).
+	 * A UUID represents a 128-bit value.
+	 * 
+	 * @see https://docs.oracle.com/javase/8/docs/api/java/util/UUID.html
 	 * 
 	 * @return
 	 */
 	public static String generateUniqueID() {
-		String sIDPart1 = Long.toHexString(System.currentTimeMillis());
-		double d = Math.random() * 900000000;
-		int i = new Double(d).intValue();
-		String sIDPart2 = Integer.toHexString(i);
-		String id = sIDPart1 + "-" + sIDPart2;
-
+		String id = UUID.randomUUID().toString();
 		return id;
 	}
 
@@ -425,13 +417,14 @@ public class WorkflowKernel {
 			logEntries = new Vector<String>();
 
 		logEntries.add(sLogEntry.toString());
-				
+
 		// test if the log has exceeded the maximum count of entries
-		while (logEntries.size()>MAXIMUM_ACTIVITYLOGENTRIES) {
-			logger.fine("Maximum activity log entries=" + MAXIMUM_ACTIVITYLOGENTRIES + " exceeded, remove first entry...");
+		while (logEntries.size() > MAXIMUM_ACTIVITYLOGENTRIES) {
+			logger.fine(
+					"Maximum activity log entries=" + MAXIMUM_ACTIVITYLOGENTRIES + " exceeded, remove first entry...");
 			logEntries.remove(0);
 		}
-		
+
 		documentContext.replaceItemValue("txtworkflowactivitylog", logEntries);
 		documentContext.replaceItemValue("numlastactivityid",
 				Integer.valueOf(documentActivity.getItemValueInteger("numactivityid")));

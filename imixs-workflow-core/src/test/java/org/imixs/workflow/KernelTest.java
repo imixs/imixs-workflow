@@ -207,7 +207,7 @@ public class KernelTest {
 		List log = itemCollection.getItemValue("txtworkflowactivitylog");
 
 		Assert.assertNotNull(log);
-		Assert.assertEquals(2,log.size());
+		Assert.assertEquals(2, log.size());
 
 		logger.info("'txtworkflowactivitylog'=" + log);
 
@@ -271,15 +271,14 @@ public class KernelTest {
 		itemCollection.replaceItemValue("txtTitel", "Hello");
 		itemCollection.replaceItemValue("$processid", 100);
 
-		
 		// we create 40 dummy entries
-		String dummyEntry=""+new Date() + "|1.0.0|100.10|100";
-		Vector<String> v=new Vector<String>();
-		for (int i=1;i<=40;i++) {
+		String dummyEntry = "" + new Date() + "|1.0.0|100.10|100";
+		Vector<String> v = new Vector<String>();
+		for (int i = 1; i <= 40; i++) {
 			v.add(dummyEntry);
 		}
-		itemCollection.replaceItemValue("txtworkflowactivitylog",v);
-	
+		itemCollection.replaceItemValue("txtworkflowactivitylog", v);
+
 		try {
 			// simulate two steps
 			itemCollection.replaceItemValue("$activityid", 10);
@@ -307,13 +306,13 @@ public class KernelTest {
 		List log = itemCollection.getItemValue("txtworkflowactivitylog");
 
 		Assert.assertNotNull(log);
-		Assert.assertEquals(30,log.size());
+		Assert.assertEquals(30, log.size());
 
 		logger.info("'txtworkflowactivitylog'=" + log);
 
 		// test log entries
 		// Format: timestamp|model-version|1000.10|1000|userid|
-		String logEntry = (String) log.get(log.size()-2);
+		String logEntry = (String) log.get(log.size() - 2);
 		StringTokenizer st = new StringTokenizer(logEntry, "|");
 		st.nextToken();
 		Assert.assertEquals("1.0.0", st.nextToken());
@@ -322,7 +321,7 @@ public class KernelTest {
 		Assert.assertFalse(st.hasMoreTokens());
 
 		// test last entry
-		logEntry = (String) log.get(log.size()-1);
+		logEntry = (String) log.get(log.size() - 1);
 		st = new StringTokenizer(logEntry, "|");
 		try {
 			// check date object
@@ -354,5 +353,18 @@ public class KernelTest {
 		Assert.assertEquals("comment", st.nextToken());
 		Assert.assertFalse(st.hasMoreTokens());
 
+	}
+
+	/**
+	 * test generated UUID
+	 * 
+	 * @see https://docs.oracle.com/javase/8/docs/api/java/util/UUID.html
+	 */
+	@Test
+	@Category(org.imixs.workflow.WorkflowKernel.class)
+	public void testUUID() {
+		String uid = WorkflowKernel.generateUniqueID();
+		// expected length is 36
+		Assert.assertEquals(36, uid.length());
 	}
 }
