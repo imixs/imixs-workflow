@@ -42,6 +42,15 @@ JPQL Statements can be replaced with Lucene Search terms.
 		String searchTerm="(type:\"" + TYPE_CONFIGURATION  +"\" AND txtname:\"" + NAME + "\")";
 		Collection<ItemCollection> col = documentService.find(sQuery, 0, 1);
 
+## Rest API
+
+The old rest api to post workitems in JSON/XML format is supported by a backport using the resource /v3/
+
+     /v3/workflow/
+     /v3/entity/
+     /v3/model/
+
+**NOTE:** This api is deprecated and will be droped with future releases!
 		
 # Migration Guide
 

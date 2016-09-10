@@ -166,6 +166,7 @@ import org.imixs.workflow.jee.jpa.WriteAccess;
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @LocalBean
+@Deprecated
 public class EntityService implements EntityServiceRemote {
 
 	public static final int TYP_TEXT = 0;

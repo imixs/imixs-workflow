@@ -1,0 +1,1 @@
+This package includes classes to support the deprecated rest api from Imixs-Workflow 3.x
