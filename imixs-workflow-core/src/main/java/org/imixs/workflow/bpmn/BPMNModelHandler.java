@@ -67,6 +67,9 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	Map<String, SequenceFlow> sequenceCache = null;
 	Map<String, String> messageCache = null;
+
+	List<String> startEvents = null;
+
 	ItemCollection definition = null;
 
 	private List<String> ignoreItemList = null;
@@ -81,6 +84,8 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		linkThrowEventCache = new HashMap<String, String>();
 		linkCatchEventCache = new HashMap<String, String>();
+
+		startEvents = new ArrayList<String>();
 
 		// nodeCache = new HashMap<String, ItemCollection>();
 		sequenceCache = new HashMap<String, SequenceFlow>();
@@ -106,20 +111,23 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		}
 
-		
-
-		// bpmn2:process -  parse workflowGroup 
+		// bpmn2:process - parse workflowGroup
 		if (qName.equalsIgnoreCase("bpmn2:process")) {
 			if (bDefinitions && currentEntity != null) {
 				definition = currentEntity;
 				bDefinitions = false;
 
-			}	
+			}
 			currentWorkflowGroup = attributes.getValue("name");
 			if (currentWorkflowGroup == null || currentWorkflowGroup.isEmpty()) {
 				logger.warning("No process name defined!");
 				currentWorkflowGroup = "Default";
 			}
+		}
+
+		// bpmn2:startEvent
+		if (qName.equalsIgnoreCase("bpmn2:startEvent")) {
+			startEvents.add(attributes.getValue("id"));
 		}
 
 		// bpmn2:task - identify a Imixs Workflow Taks element
@@ -198,13 +206,12 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		// bpmn2:messageFlow - cache all messageFlow...
 		/*
-		if (qName.equalsIgnoreCase("bpmn2:messageFlow")) {
-			bpmnID = attributes.getValue("id");
-			String source = attributes.getValue("sourceRef");
-			String target = attributes.getValue("targetRef");
-			sequenceCache.put(bpmnID, new SequenceFlow(source, target));
-		}
-		*/
+		 * if (qName.equalsIgnoreCase("bpmn2:messageFlow")) { bpmnID =
+		 * attributes.getValue("id"); String source =
+		 * attributes.getValue("sourceRef"); String target =
+		 * attributes.getValue("targetRef"); sequenceCache.put(bpmnID, new
+		 * SequenceFlow(source, target)); }
+		 */
 
 		/*
 		 * parse a imixs:item
@@ -449,6 +456,24 @@ public class BPMNModelHandler extends DefaultHandler {
 						isFollowUp = true;
 						// ignore
 						continue;
+					} else {
+						// now as we found no task or event we check if we got a
+						// start event!
+						if (startEvents.contains(aFlow.source)) {
+							// all possible target Tasks are the source tasks
+							// for this event!
+							List<SequenceFlow> outFlows = findOutgoingFlows(eventID);
+							List<String> targetTaskList = new ArrayList<String>();
+
+							for (SequenceFlow outgoingFlow : outFlows) {
+								targetTaskList = new ElementResolver().findAllImixsTargetTaskIDs(outgoingFlow,
+										targetTaskList);
+							}
+							// here we retrun all possible target tasks
+							for (String targetID : targetTaskList) {
+								result.add(taskCache.get(targetID));
+							}
+						}
 					}
 				}
 			}
@@ -506,6 +531,13 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		logger.finest("adding event '" + eventName + "'");
 
+		if (sourceTask == null) {
+			// invalid model!!
+			throw new ModelException(ModelException.INVALID_MODEL,
+					"Imixs BPMN Event '" + eventName + "' has no source task!");
+		}
+
+		
 		List<SequenceFlow> outFlows = findOutgoingFlows(eventID);
 		if (outFlows == null || outFlows.size() == 0) {
 			// invalid model!!
@@ -513,6 +545,7 @@ public class BPMNModelHandler extends DefaultHandler {
 					"Imixs BPMN Event '" + eventName + "' has no target!");
 		}
 
+		
 		// test if the element has multiple targets. In this case the event is
 		// handled as a loop event
 		List<String> targetList = new ArrayList<String>();
@@ -562,7 +595,6 @@ public class BPMNModelHandler extends DefaultHandler {
 					event.replaceItemValue("numNextProcessID", targetTask.getItemValue("numProcessID"));
 
 				} else {
-
 					// invalid model!!
 					throw new ModelException(ModelException.INVALID_MODEL,
 							"Imixs BPMN Event '" + eventName + "' has no target task element!");
@@ -861,6 +893,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			for (SequenceFlow aflow : refList) {
 				return (findImixsTargetTask(aflow));
 			}
+			// no result!
 			return null;
 		}
 
@@ -910,7 +943,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		/**
 		 * This method searches for all target events or task for a outgoing
-		 * sequence flow. The method returns a List of possible target elemetns.
+		 * sequence flow. The method returns a List of possible target elements.
 		 * 
 		 * 
 		 * @return the ID of the Imixs Event element or null if no Event Element
@@ -944,6 +977,49 @@ public class BPMNModelHandler extends DefaultHandler {
 
 			// test if the target is a Imixs Event
 			imixsElement = eventCache.get(flow.target);
+			if (imixsElement != null) {
+				targetList.add(flow.target);
+				// stop here!
+				return targetList;
+			}
+
+			// no Imixs task or event found so we are trying to look for the
+			// next outgoing flow elements.
+			List<SequenceFlow> refList = findOutgoingFlows(flow.target);
+			for (SequenceFlow aflow : refList) {
+				targetList = findAllImixsTargetIDs(aflow, targetList);
+			}
+			return targetList;
+		}
+
+		/**
+		 * This method searches for all target tasks for a outgoing sequence
+		 * flow. The method returns a List of possible imixs task elements.
+		 * 
+		 * 
+		 * @return the ID of the Imixs Event element or null if no Event Element
+		 *         was found.
+		 * @return
+		 */
+		public List<String> findAllImixsTargetTaskIDs(SequenceFlow flow, List<String> targetList) {
+
+			if (targetList == null) {
+				targetList = new ArrayList<String>();
+			}
+
+			if (flow.source == null) {
+				return targetList;
+			}
+			// detect loops...
+			if (loopFlowCache.contains(flow.target)) {
+				// loop!
+				return targetList;
+			} else {
+				loopFlowCache.add(flow.target);
+			}
+
+			// test if the target is a Imixs task
+			ItemCollection imixsElement = taskCache.get(flow.target);
 			if (imixsElement != null) {
 				targetList.add(flow.target);
 				// stop here!
