@@ -40,16 +40,14 @@ public class JobHandlerMigration3X implements JobHandler {
 
 	private static final int DEFAULT_BLOCK_SIZE = 100;
 
-	
 	@Resource
 	SessionContext ctx;
 
 	@EJB
 	DocumentService documentService;
-	
-	@EJB 
+
+	@EJB
 	EntityService entityService;
-	
 
 	private static Logger logger = Logger.getLogger(JobHandlerMigration3X.class.getName());
 
@@ -61,9 +59,9 @@ public class JobHandlerMigration3X implements JobHandler {
 	 * 
 	 * This Job use the old EntityService
 	 * 
-	 * If the number of documents returned from the EnityService is less the
-	 * the BlockSize, the method returns true to indicate that the Timer should
-	 * be canceled.
+	 * If the number of documents returned from the EnityService is less the the
+	 * BlockSize, the method returns true to indicate that the Timer should be
+	 * canceled.
 	 * 
 	 * @param adminp
 	 * @return true if no more unprocessed documents exist.
@@ -76,45 +74,57 @@ public class JobHandlerMigration3X implements JobHandler {
 		long lProfiler = System.currentTimeMillis();
 		int iIndex = adminp.getItemValueInteger("numIndex");
 		int iBlockSize = adminp.getItemValueInteger("numBlockSize");
-		
+
 		// test if numBlockSize is defined.
-		if (iBlockSize<=0) {
+		if (iBlockSize <= 0) {
 			// no set default block size.
-			iBlockSize=DEFAULT_BLOCK_SIZE;
+			iBlockSize = DEFAULT_BLOCK_SIZE;
 			adminp.replaceItemValue("numBlockSize", iBlockSize);
 		}
-		
+
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
 
 		adminp.replaceItemValue("txtworkflowStatus", "Processing");
 		// save it...
 		// adminp = entityService.save(adminp);
 		adminp = ctx.getBusinessObject(JobHandlerMigration3X.class).saveJobEntity(adminp);
-		
-		
-		String query = "SELECT entity FROM Entity AS entity  ORDER BY entity.created";;
-		
-		logger.fine("JQPL query: " + query);
-		adminp.replaceItemValue("txtQuery", query);
-		Collection<ItemCollection> col = entityService._findAllEntities(query,iIndex, iBlockSize);
 
+		String query = "SELECT entity FROM Entity AS entity  ORDER BY entity.created";
+		;
+
+		logger.info(
+				"Job " + adminp.getUniqueID() + " - index=" + iIndex + " blocksize=" + iBlockSize + " JQPL=" + query);
+		adminp.replaceItemValue("txtQuery", query);
+
+		Collection<ItemCollection> col = null;
+		try {
+			col = entityService._findAllEntities(query, iIndex, iBlockSize);
+
+		} catch (Exception eerror) {
+			// prepare for rerun
+			logger.severe("Job " + adminp.getUniqueID() + " - error at: index=" + iIndex + " blocksize=" + iBlockSize
+					+ " : " + eerror.getMessage());
+			adminp.replaceItemValue("txtworkflowStatus", "Error (" + iIndex + "-" + (iIndex + iBlockSize) + ")");
+			adminp = ctx.getBusinessObject(JobHandlerMigration3X.class).saveJobEntity(adminp);
+			return true;
+		}
 		int colSize = col.size();
 		// Update index
-		logger.info("Job " + adminp.getUniqueID() + " - verifying " + col.size() + " Entity objects for migration. (" + iUpdates
-				+ " Entity objects already migrated) ...");
-		
-		for (ItemCollection oldEntiy: col) {
+		logger.info("Job " + adminp.getUniqueID() + " - verifying " + col.size() + " Entity objects for migration. ("
+				+ iUpdates + " Entity objects already migrated) ...");
+
+		for (ItemCollection oldEntiy : col) {
 			// test if we already have migrated this entity
-			String uid=oldEntiy.getUniqueID();
-			ItemCollection migratedEntity=documentService.load(uid);
-			if (migratedEntity==null) {
+			String uid = oldEntiy.getUniqueID();
+			ItemCollection migratedEntity = documentService.load(uid);
+			if (migratedEntity == null) {
 				// save as new Document
 				documentService.save(oldEntiy);
-				logger.info("  -> Entity '" + uid +"' migrated.");
+				logger.info("  -> Entity '" + uid + "' migrated.");
 				iUpdates++;
 			}
-		} 
-		
+		}
+
 		iIndex = iIndex + col.size();
 
 		// adjust start pos and update count
@@ -125,7 +135,6 @@ public class JobHandlerMigration3X implements JobHandler {
 
 		logger.info("Job " + adminp.getUniqueID() + " - finished, " + col.size() + " Entity objects verified in " + time
 				+ " sec. (" + iUpdates + " Entity objects total migrated)");
-
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {
@@ -152,7 +161,5 @@ public class JobHandlerMigration3X implements JobHandler {
 		return adminp;
 
 	}
-	
-	
-	
+
 }
