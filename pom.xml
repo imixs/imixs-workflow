@@ -16,7 +16,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- 4.10.4, 5.5.2, 6.2.0-->
-		<lucene.version>5.5.2</lucene.version>
+		<lucene.version>6.2.0</lucene.version>
 	</properties>
 
 
@@ -95,8 +95,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 			<plugin>
