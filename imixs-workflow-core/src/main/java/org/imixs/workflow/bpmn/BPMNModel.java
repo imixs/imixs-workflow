@@ -68,14 +68,14 @@ public class BPMNModel implements Model {
 	 * @return
 	 */
 	public ItemCollection getDefinition() {
-		return definition;
+		return new ItemCollection(definition);
 	}
 
 	@Override
 	public ItemCollection getTask(int processid) throws ModelException {
 		ItemCollection process = taskList.get(processid);
 		if (process != null)
-			return process;
+			return new ItemCollection(process);
 		else
 			throw new ModelException(BPMNModel.class.getSimpleName(), ModelException.UNDEFINED_MODEL_ENTRY);
 	}
@@ -85,7 +85,7 @@ public class BPMNModel implements Model {
 		List<ItemCollection> activities = findAllEventsByTask(processid);
 		for (ItemCollection aactivity : activities) {
 			if (activityid == aactivity.getItemValueInteger("numactivityid")) {
-				return aactivity;
+				return new ItemCollection(aactivity);
 			}
 		}
 		// not found!
@@ -93,18 +93,26 @@ public class BPMNModel implements Model {
 	}
 
 	public List<String> getGroups() {
-		return workflowGroups;
+		return new ArrayList<>(workflowGroups);
 	}
 
 	/**
-	 * Returns a list of all tasks. The result set is sorted by taskID
+	 * Returns a list of all tasks. The result set is sorted by taskID.
+	 * 
+	 * The list is a clone of the internal map values!
 	 * 
 	 * @return list of tasks
 	 */
 	@Override
 	public List<ItemCollection> findAllTasks() {
-		List<ItemCollection> result = new ArrayList<ItemCollection>(taskList.values());
+		List<ItemCollection> _tasks = new ArrayList<ItemCollection>(taskList.values());
+		// clone task list
+		ArrayList<ItemCollection> result = new ArrayList<ItemCollection>();
+		for (ItemCollection _task : _tasks) {
+			result.add(new ItemCollection(_task));
+		}
 		return result;
+
 	}
 
 	/**
@@ -115,10 +123,15 @@ public class BPMNModel implements Model {
 	 */
 	@Override
 	public List<ItemCollection> findAllEventsByTask(int processid) {
-		List<ItemCollection> result = eventList.get(processid);
-		if (result == null)
-			result = new ArrayList<ItemCollection>();
-
+		List<ItemCollection> _events = eventList.get(processid);
+		if (_events == null) {
+			return new ArrayList<ItemCollection>();
+		}
+		// clone event list
+		ArrayList<ItemCollection> result = new ArrayList<ItemCollection>();
+		for (ItemCollection _event : _events) {
+			result.add(new ItemCollection(_event));
+		}
 		return result;
 	}
 
@@ -204,11 +217,10 @@ public class BPMNModel implements Model {
 		List<ItemCollection> activities = findAllEventsByTask(pID);
 
 		activities.add(clonedEntity);
-		
+
 		// sort event list
-		Collections.sort(activities,
-						new ItemCollectionComparator("numactivityid", true));
-		
+		Collections.sort(activities, new ItemCollectionComparator("numactivityid", true));
+
 		eventList.put(pID, activities);
 	}
 
