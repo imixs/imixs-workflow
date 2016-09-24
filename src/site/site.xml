@@ -58,17 +58,6 @@
 				</item>
 			</item>
 
-
-			<item name="REST API" href="./restapi/index.html" collapse="true">
-				<item name="Workflow Service" href="./restapi/workflowservice.html" />
-				<item name="Model Service" href="./restapi/modelservice.html" />
-				<item name="Report Service" href="./restapi/reportservice.html" collapse="true">
-				<item name="XSLT" href="./restapi/xslt.html" />
-				</item>
-				<item name="Entity Service" href="./restapi/entityservice.html" />
-				<item name="JSON" href="./restapi/json.html" />
-			</item>
-
 			<item name="Workflow Engine" href="./engine/index.html"
 				collapse="true">
 				<item name="EntityService" href="./engine/entityservice.html"
@@ -100,6 +89,18 @@
 				<item name="Remote EJB Lookup" href="./engine/remote_lookup.html" />
 
 			</item>
+
+			<item name="REST API" href="./restapi/index.html" collapse="true">
+				<item name="Workflow Service" href="./restapi/workflowservice.html" />
+				<item name="Model Service" href="./restapi/modelservice.html" />
+				<item name="Report Service" href="./restapi/reportservice.html" collapse="true">
+				<item name="XSLT" href="./restapi/xslt.html" />
+				</item>
+				<item name="Entity Service" href="./restapi/entityservice.html" />
+				<item name="JSON" href="./restapi/json.html" />
+			</item>
+
+		
 
 			<item name="JSF Components" href="./webtools/index.html"  collapse="true">
 

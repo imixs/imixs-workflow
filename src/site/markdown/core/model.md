@@ -1,65 +1,58 @@
 #The Imixs-Workflow Model 
 
-The Imixs-Workflow Model separates the process definition from the Workflow implementation. For this purpose, the interface '_org.imixs.workflow.Model_' provides methods to navigate through a  Workflow Model with its 'Process Entities' and 'Activity Entities'. A 'Process Entity' describes the state within the model definition (Task). It is typically represented as a Node inside a graphical workflow model. On the contrary, an 'Activity Entity' contains information to control the process flow (Event). 
-An activity entity is typical represented as an edge inside a graphical workflow model. A workflow model always has a unique version which allows to manage different process model inside one Workflow Management System. 
+The Imixs-Workflow Model separates the process definition from the Workflow implementation. For this purpose, the interface '_org.imixs.workflow.Model_' provides methods to navigate through a  Workflow Model with its different elements. A workflow model has a unique version ID which allows to manage different workflow models inside one Workflow Management System. 
+
+A Workflow Model can be defined using the [Imixs-BPMN modeling tool](../modelling/index.html).
 
 <img src="../images/modelling/bpmn_screen_00.png"/>
 
-##The Process Entity
+## The Task Element
 
-A 'Process Entity' contains information about a process stage within the process model. It is used to unambiguously define the status of a WorkItem. In BPMN an Process Entity is modeled as a Task element. 
+A 'Task Element' describes the unambiguously status of a running process instance within the process. 
 
 <img src="../images/modelling/bpmn_screen_04.png"/>
 
-A 'Process Entity' is defined by a unique ID. A model cannot contain several 'Process Entities' having the same ID. The following attributes must be provided by each instance of a 'Process Entity': 
+A 'Task' can be identified by a unique ID in each model. A model cannot contain several Task elements having the same ID. The following attributes must be at least provided by an instance of a 'Task Element': 
   
-   * numProcessID  - an integer unique identifier for the 'Process Entity' inside the model   
+   * numProcessID  - an integer unique identifier for the 'Task' inside the model   
    * txtName  - The name for the Entity   
-   * txtWorkflowGroup - The name of the ProcessGroup the Entity belongs to.
+   * txtWorkflowGroup - The name of the WorkflowGroup the Task belongs to.
 
-##The Activity Entity
-On the contrary, an 'Activity Entity' contains all information required to process a Workitem.  The 'Activity Entity' defines the process flow of a Workitem from one 'Process Entity' to another. In BPMN an Activity Entity is modeled as an Event element.
+## The Event Element
+On the contrary, the 'Task Element', the 'Event Element' defines all information required to process a Workitem.  The 'Event Element' defines the process flow of a Workitem from one 'Task' to another. 
 
 <img src="../images/modelling/bpmn_screen_05.png"/>
 
-An 'Activity Entity' is assigned to a 'Process Entity'. The ID of each 'Activity Entity' must be unique inside a collection of Activities assigned to the same 'Process Entity'. The 'Activity Entity' must provide the following items:
+An 'Event Element' is assigned to a 'Task'. The ID of each 'Event' must be unique inside a collection of events assigned to the same 'Task'. The following attributes must be at least provided by an instance of a 'Event Element': 
  
-   * numProcessID - an integer ID which associates the 'Activity Entity' to a 'Process Entity' 
-   * numActivityID - an integer unique identifier for the 'Activity Entity'
-   * numNextID - an Iteger ID which defines the next 'Process Entity' a workitem is assigned to after processing.
+   * numProcessID - an integer ID which associates the 'Event' to a 'Task Element' 
+   * numActivityID - an integer unique identifier for the 'Event'
+   * numNextID - an Integer ID which defines the next 'Task' a workitem is assigned to after processing.
    * txtName  - The name for the Entity
  
  
-## The Process Flow
-When a Workitem is processed by the Imixs-Workflow engine the properties '$ProcessID' and '$ActivityID' are verified against the process model by the WorkflowKernel. Depending on the information of the assigned 'Activity Entity' the WorkflowKernel updates the status of the Workitem ('$ProcessID') after the Workitem was processed.
+### The Process Flow
+When a Workitem is processed by the Imixs-Workflow engine, the properties '$modelVersion', '$ProcessID' and '$ActivityID' are verified against the current workflow model. Depending on the information of the assigned 'Event' the _WorkflowKernel_ updates the status of the Workitem ('$ProcessID') after a Workitem was processed successful.
 
-##The Interface
+##The Model Interface
 The Interface '_org.imixs.workflow.Model_' defines the following methods:
 
 |Method              		 | Description 				 |
 |----------------------------|---------------------------|
-|getProcessEntity(processID,Version)| returns a process entity |
-|getActivityEntity(processID,activityID,Version)| returns a activity entity assigned to a process entity| 
-|getProcessEntityList(Version)| returns all process entities for a specific model version | 
-|getActivityEntityList(processID,Version)| returns all activity entities assigned to a  process entity 
+|getVersion()| returns the workflow model version |
+|getDefinition()| returns a ItemCollection holding general model information (e.g. the plug-in list) |
+|getTask(taskId)| returns a task by its id |
+|getEvent(taskId,eventId)| returns an event by its id |
+|getGroups()| returns a list of all workflow groups defined in the model |
+|findAllTasks()| returns a list of all task elements defined in the model |
+|findAllEventsByTask(taskId)| returns a list of all event elements assigned to a task|
+|findAllTasksByGroup(workflowgroup)| returns a list of all task elements assigned to a workflow group|
 
 
-### Navigate the Model
-You can use the Model interface to navigate through the process model. See the following example:
- 
-    Model model;
-    //....
-    // lookup a ProcessEntiy 
-    processEntity=model.getProcessEntity(100,'1.1.0');
-    //...
-    // receive the processEntityList containing all Process Entities
-    Collection<ItemCollection> col1=model.getProcessEntityList();
-    // receive a collection of all Activities for a Process Entity
-    Collection<ItemCollection> col2=model.getActivityEntityList(processid)
 
 
-### The Imixs ModelService
-The Imixs-Workflow engine provides the ModelService component which implements the Model Interface  on the JEE component stack. This Service provides a various methods to navigate and manage a Workflow model. Find more information about the Imixs-WorkflowService in the section [Model Service](../engine/modelservice.html).    
+## The Imixs ModelService
+The Imixs-Workflow engine provides the [ModelManager](../engine/modelservice.html) which provides methods to managed different models in one application. Find more information about the _ModelManager_ in [this section(../engine/modelservice.html).    
  
 
      
