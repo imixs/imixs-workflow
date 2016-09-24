@@ -60,6 +60,7 @@ public class WorkflowKernel {
 	public static final String MODEL_ERROR = "MODEL_ERROR";
 	public static final String PLUGIN_NOT_CREATEABLE = "PLUGIN_NOT_CREATEABLE";
 	public static final String PLUGIN_NOT_REGISTERED = "PLUGIN_NOT_REGISTERED";
+	public static final String PLUGIN_ERROR = "PLUGIN_ERROR";
 
 	public static final String ISO8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
@@ -75,8 +76,8 @@ public class WorkflowKernel {
 	/** Plugin objects **/
 	private Vector<Plugin> vectorPlugins = null;
 	private WorkflowContext ctx = null;
-	private ItemCollection documentContext = null;
-	private ItemCollection documentActivity = null;
+	//private ItemCollection documentContext = null;
+	//private ItemCollection documentActivity = null;
 	private Vector<String> vectorEdgeHistory = new Vector<String>();
 
 	private static Logger logger = Logger.getLogger(WorkflowKernel.class.getName());
@@ -84,10 +85,23 @@ public class WorkflowKernel {
 	/**
 	 * Constructor initialize the contextObject and plugin vectors
 	 */
-	public WorkflowKernel(WorkflowContext actx) {
+	public WorkflowKernel(final WorkflowContext actx) {
 		ctx = actx;
 		vectorPlugins = new Vector<Plugin>();
 
+	}
+
+	/**
+	 * This method generates an immutable universally unique identifier (UUID).
+	 * A UUID represents a 128-bit value.
+	 * 
+	 * @see https://docs.oracle.com/javase/8/docs/api/java/util/UUID.html
+	 * 
+	 * @return
+	 */
+	public static String generateUniqueID() {
+		String id = UUID.randomUUID().toString();
+		return id;
 	}
 
 	/**
@@ -97,7 +111,7 @@ public class WorkflowKernel {
 	 * @param pluginClass
 	 * @throws PluginException
 	 */
-	public void registerPlugin(Plugin plugin) throws PluginException {
+	public void registerPlugin(final Plugin plugin) throws PluginException {
 		plugin.init(ctx);
 		vectorPlugins.add(plugin);
 	}
@@ -110,7 +124,7 @@ public class WorkflowKernel {
 	 * @param pluginClass
 	 * @throws PluginException
 	 */
-	public void registerPlugin(String pluginClass) throws PluginException {
+	public void registerPlugin(final String pluginClass) throws PluginException {
 
 		if ((pluginClass != null) && (!"".equals(pluginClass))) {
 			if (logger.isLoggable(Level.FINE))
@@ -144,7 +158,7 @@ public class WorkflowKernel {
 	 * @throws PluginException
 	 *             if plugin not registered
 	 */
-	public void unregisterPlugin(String pluginClass) throws PluginException {
+	public void unregisterPlugin(final String pluginClass) throws PluginException {
 		logger.fine("unregisterPlugin " + pluginClass);
 		for (Plugin plugin : vectorPlugins) {
 			if (plugin.getClass().getName().equals(pluginClass)) {
@@ -172,64 +186,64 @@ public class WorkflowKernel {
 	 * Processes a workitem. The Workitem have at least provide the properties
 	 * PROCESSID and ACTIVITYID
 	 * 
-	 * @param workitem
+	 * @param workitem to be processed. 
+	 * @return updated workitem
 	 * @throws PluginException
 	 *             ,ModelException
 	 */
-	public void process(ItemCollection workitem) throws PluginException {
+	public ItemCollection process(final ItemCollection workitem) throws PluginException {
 
+		ItemCollection documentResult=new ItemCollection(workitem);
 		vectorEdgeHistory = new Vector<String>();
-		documentContext = workitem;
 
 		// check document context
 		if (workitem == null)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_WORKITEM,
 					"processing error: workitem is null");
 
-		// check processID
+		// check $processID
 		if (workitem.getItemValueInteger(PROCESSID) <= 0)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_PROCESSID,
 					"processing error: $processid undefined (" + workitem.getItemValueInteger(PROCESSID) + ")");
 
-		// check activityid
-
+		// check $activityid
 		if (workitem.getItemValueInteger(ACTIVITYID) <= 0)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_ACTIVITYID,
 					"processing error: $activityid undefined (" + workitem.getItemValueInteger(ACTIVITYID) + ")");
 
 		// Check if $UniqueID is available
-		if ("".equals(documentContext.getItemValueString(UNIQUEID))) {
+		if ("".equals(workitem.getItemValueString(UNIQUEID))) {
 			// generating a new one
-			documentContext.replaceItemValue(UNIQUEID, generateUniqueID());
+			documentResult.replaceItemValue(UNIQUEID, generateUniqueID());
 		}
 
 		// Check if $WorkItemID is available
-		if ("".equals(documentContext.getItemValueString("$WorkItemID"))) {
-			documentContext.replaceItemValue("$WorkItemID", generateUniqueID());
+		if ("".equals(workitem.getItemValueString("$WorkItemID"))) {
+			documentResult.replaceItemValue("$WorkItemID", generateUniqueID());
 		}
 
-		// now process all activites defined by the model
-		while (hasMoreActivities())
-			processActivity();
+		// now process all events defined by the model
+		while (documentResult.getItemValueInteger(ACTIVITYID)>0) {
+			// load event...
+			ItemCollection event=loadEvent(documentResult);
+			documentResult=processActivity(documentResult,event);
+			documentResult=updateActivityList(documentResult);
+		}
 
+		return documentResult;
 	}
 
 	/**
-	 * This method controls the Process-Chain The method returns true if a) a
-	 * valid $activityid exists b) the attribute $activityidlist has more valid
-	 * ActivityIDs
+	 * This method controls the Evnet-Chain. If the attribute $activityidlist has more valid
+	 * ActivityIDs the next activiytID will be loaded into $activity.
 	 * 
 	 **/
-	private boolean hasMoreActivities() {
-		int integerID;
+	private ItemCollection updateActivityList(final ItemCollection documentContext) {
+		ItemCollection documentResult=documentContext;
 
-		// is $activityid provided?
-		integerID = documentContext.getItemValueInteger(ACTIVITYID);
-
-		if ((integerID > 0))
-			return true;
-		else {
-			// no - test for property $ActivityIDList
+		// is $activityid already provided?
+		if ((documentContext.getItemValueInteger(ACTIVITYID) <= 0)) {
+			// no $activityID provided, so we test for property $ActivityIDList
 			List<?> vActivityList = documentContext.getItemValue(ACTIVITYIDLIST);
 
 			// remove 0 values if contained!
@@ -253,32 +267,16 @@ public class WorkflowKernel {
 							+ " -> loading next activityID = " + iNextID);
 					vActivityList.remove(0);
 					// update document context
-					documentContext.replaceItemValue(ACTIVITYID, Integer.valueOf(iNextID));
-					documentContext.replaceItemValue(ACTIVITYIDLIST, vActivityList);
-					return true;
+					documentResult.replaceItemValue(ACTIVITYID, Integer.valueOf(iNextID));
+					documentResult.replaceItemValue(ACTIVITYIDLIST, vActivityList);
 				}
 			}
-			// no more Activities defined
-			return false;
 		}
-
+		return documentResult;
 	}
 
 	/**
-	 * This method generates an immutable universally unique identifier (UUID).
-	 * A UUID represents a 128-bit value.
-	 * 
-	 * @see https://docs.oracle.com/javase/8/docs/api/java/util/UUID.html
-	 * 
-	 * @return
-	 */
-	public static String generateUniqueID() {
-		String id = UUID.randomUUID().toString();
-		return id;
-	}
-
-	/**
-	 * This method process a activity instance by loading and running all
+	 * This method process an event by running all registered
 	 * plugins.
 	 * 
 	 * If an FollowUp Activity is defined (keyFollowUp="1" &
@@ -286,8 +284,8 @@ public class WorkflowKernel {
 	 * 
 	 * @throws ProcessingErrorException
 	 */
-	private void processActivity() throws PluginException {
-
+	private ItemCollection processActivity(final ItemCollection documentContext, final ItemCollection event) throws PluginException {
+		ItemCollection documentResult=documentContext;
 		// log the general processing message
 		String msg = "processing=" + documentContext.getItemValueString(UNIQUEID) + ", MODELVERSION="
 				+ documentContext.getItemValueString(MODELVERSION) + ", $processid="
@@ -299,43 +297,39 @@ public class WorkflowKernel {
 		}
 		logger.info(msg);
 
-		// load activity...
-		loadEvent();
-
-		// run plugins - PluginExceptions will bubble up....
-		int iStatus = runPlugins();
-		closePlugins(iStatus);
-
-		if (iStatus == Plugin.PLUGIN_ERROR) {
-			throw new PluginException(WorkflowKernel.class.getSimpleName(), UNDEFINED_PLUGIN_ERROR,
-					"PLUGIN_ERROR detected!");
-		}
-
-		writeLog();
+		
+		// execute plugins - PluginExceptions will bubble up....
+		documentResult=runPlugins(documentResult,event);
+		// close plugins
+		closePlugins();
+		// write execution log
+		documentResult=writeLog(documentResult,event);
 
 		// put current edge in history
-		vectorEdgeHistory.addElement(documentActivity.getItemValueInteger("numprocessid") + "."
-				+ documentActivity.getItemValueInteger("numactivityid"));
+		vectorEdgeHistory.addElement(event.getItemValueInteger("numprocessid") + "."
+				+ event.getItemValueInteger("numactivityid"));
 
 		/*** get Next Task **/
-		int iNewProcessID = documentActivity.getItemValueInteger("numnextprocessid");
+		int iNewProcessID = event.getItemValueInteger("numnextprocessid");
 		if (logger.isLoggable(Level.FINE))
 			logger.info("next $processid=" + iNewProcessID + "");
 
 		// NextProcessID will only be set if NextTask>0
 		if (iNewProcessID > 0) {
-			documentContext.replaceItemValue(PROCESSID, Integer.valueOf(iNewProcessID));
+			documentResult.replaceItemValue(PROCESSID, Integer.valueOf(iNewProcessID));
 		}
 
 		// clear ActivityID and create new workflowActivity Instance
-		documentContext.replaceItemValue(ACTIVITYID, Integer.valueOf(0));
+		documentResult.replaceItemValue(ACTIVITYID, Integer.valueOf(0));
 
 		// FollowUp Activity ?
-		String sFollowUp = documentActivity.getItemValueString("keyFollowUp");
-		int iNextActivityID = documentActivity.getItemValueInteger("numNextActivityID");
+		String sFollowUp = event.getItemValueString("keyFollowUp");
+		int iNextActivityID = event.getItemValueInteger("numNextActivityID");
 		if ("1".equals(sFollowUp) && iNextActivityID > 0) {
-			this.appendActivityID(iNextActivityID);
+			documentResult=appendActivityID(documentResult,iNextActivityID);
 		}
+		
+		return documentResult;
 
 	}
 
@@ -345,8 +339,9 @@ public class WorkflowKernel {
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	private void appendActivityID(int aID) {
+	private ItemCollection appendActivityID(final ItemCollection documentContext,final int aID) {
 
+		ItemCollection documentResult=documentContext;
 		// check if activityidlist is available
 		List<Integer> vActivityList = (List<Integer>) documentContext.getItemValue(ACTIVITYIDLIST);
 		if (vActivityList == null)
@@ -362,10 +357,11 @@ public class WorkflowKernel {
 			vActivityList.remove(vActivityList.indexOf(Integer.valueOf(0)));
 		}
 
-		documentContext.replaceItemValue(ACTIVITYIDLIST, vActivityList);
+		documentResult.replaceItemValue(ACTIVITYIDLIST, vActivityList);
 		if (logger.isLoggable(Level.FINE))
 			logger.info("  append new Activity ID=" + aID);
 
+		return documentResult;
 	}
 
 	/**
@@ -388,8 +384,9 @@ public class WorkflowKernel {
 	 * (issue #179)
 	 * 
 	 */
-	private void writeLog() {
+	private ItemCollection writeLog(final ItemCollection documentContext, final ItemCollection event) {
 
+		ItemCollection documentResult=documentContext;
 		StringBuffer sLogEntry = new StringBuffer();
 		// 22.9.2004 13:50:41|modelversion|1000.90|1000|
 
@@ -399,11 +396,11 @@ public class WorkflowKernel {
 		sLogEntry.append(documentContext.getItemValueString(MODELVERSION));
 
 		sLogEntry.append("|");
-		sLogEntry.append(documentActivity.getItemValueInteger("numprocessid") + "."
-				+ documentActivity.getItemValueInteger("numactivityid"));
+		sLogEntry.append(event.getItemValueInteger("numprocessid") + "."
+				+ event.getItemValueInteger("numactivityid"));
 
 		sLogEntry.append("|");
-		sLogEntry.append(documentActivity.getItemValueInteger("numnextprocessid"));
+		sLogEntry.append(event.getItemValueInteger("numnextprocessid"));
 		sLogEntry.append("|");
 
 		// check for optional log comment
@@ -425,10 +422,11 @@ public class WorkflowKernel {
 			logEntries.remove(0);
 		}
 
-		documentContext.replaceItemValue("txtworkflowactivitylog", logEntries);
-		documentContext.replaceItemValue("numlastactivityid",
-				Integer.valueOf(documentActivity.getItemValueInteger("numactivityid")));
+		documentResult.replaceItemValue("txtworkflowactivitylog", logEntries);
+		documentResult.replaceItemValue("numlastactivityid",
+				Integer.valueOf(event.getItemValueInteger("numactivityid")));
 
+		return documentResult;
 	}
 
 	/**
@@ -436,11 +434,10 @@ public class WorkflowKernel {
 	 * 
 	 * The method also verifies the activity to be valid
 	 * 
-	 * @throws ModelException
-	 * @throws ProcessingErrorException
+	 * @return workflow event object. 
 	 */
-	private void loadEvent() {
-
+	private ItemCollection loadEvent(final ItemCollection documentContext) {
+		ItemCollection event=null;
 		int aProcessID = documentContext.getItemValueInteger(PROCESSID);
 		int aActivityID = documentContext.getItemValueInteger(ACTIVITYID);
 
@@ -449,12 +446,12 @@ public class WorkflowKernel {
 
 		try {
 			Model model = ctx.getModelManager().getModelByWorkitem(documentContext);
-			documentActivity = model.getEvent(aProcessID, aActivityID);
+			event = model.getEvent(aProcessID, aActivityID);
 		} catch (ModelException e) {
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MODEL_ERROR, e.getMessage());
 		}
 
-		if (documentActivity == null)
+		if (event == null)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), ACTIVITY_NOT_FOUND,
 					"[loadEvent] model entry " + aProcessID + "." + aActivityID + " not found for model version '"
 							+ version + "'");
@@ -469,6 +466,8 @@ public class WorkflowKernel {
 						"[loadEvent] loop detected " + aProcessID + "." + aActivityID + ","
 								+ vectorEdgeHistory.toString());
 		}
+		
+		return event;
 
 	}
 
@@ -478,8 +477,8 @@ public class WorkflowKernel {
 	 * 
 	 * @throws PluginException
 	 */
-	private int runPlugins() throws PluginException {
-		int iStatus;
+	private ItemCollection runPlugins(final ItemCollection documentContext, final ItemCollection event) throws PluginException {
+		ItemCollection documentResult=documentContext;
 		String sPluginName = null;
 		List<String> localPluginLog = new Vector<String>();
 
@@ -489,26 +488,24 @@ public class WorkflowKernel {
 				sPluginName = plugin.getClass().getName();
 				if (logger.isLoggable(Level.FINE))
 					logger.info("running Plugin: " + sPluginName + "...");
-
-				iStatus = plugin.run(documentContext, documentActivity);
-
-				// write PluginLog
-				String sLog = new SimpleDateFormat(ISO8601_FORMAT).format(new Date());
-				sLog = sLog + " " + plugin.getClass().getName() + "=" + iStatus;
-
-				localPluginLog.add(sLog);
-
-				if (iStatus == Plugin.PLUGIN_ERROR) {
-					// log error....
+ 
+				documentResult = plugin.run(documentResult, event);
+				if (documentResult==null) {
 					logger.severe("[runPlugins] PLUGIN_ERROR: " + sPluginName);
-					logger.severe("[runPlugins] Plugin-Log: ");
 					for (String sLogEntry : localPluginLog)
 						logger.severe("[runPlugins]   " + sLogEntry);
 
-					return Plugin.PLUGIN_ERROR;
+					throw new PluginException(WorkflowKernel.class.getSimpleName(),PLUGIN_ERROR,
+							"plugin: " + sPluginName + " returned null");
 				}
+				// write PluginLog
+				String sLog = new SimpleDateFormat(ISO8601_FORMAT).format(new Date());
+				sLog = sLog + " " + plugin.getClass().getName();
+
+				localPluginLog.add(sLog);
+
 			}
-			return Plugin.PLUGIN_OK;
+			return documentResult;
 
 		} catch (PluginException e) {
 			// log plugin stack!....
@@ -516,18 +513,17 @@ public class WorkflowKernel {
 			logger.severe("Last Plugins run successfull:");
 			for (String sLogEntry : localPluginLog)
 				logger.severe("   ..." + sLogEntry);
-			// re throw the PluginException !
 			throw e;
 		}
 
 	}
 
-	private void closePlugins(int astatus) throws PluginException {
+	private void closePlugins() throws PluginException {
 		for (int i = 0; i < vectorPlugins.size(); i++) {
 			Plugin plugin = (Plugin) vectorPlugins.elementAt(i);
 			if (logger.isLoggable(Level.FINE))
 				logger.info("closing Plugin: " + plugin.getClass().getName() + "...");
-			plugin.close(astatus);
+			plugin.close();
 		}
 	}
 

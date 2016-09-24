@@ -51,7 +51,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -84,19 +83,19 @@ public class MailPlugin extends AbstractPlugin {
 	 * current Activity. The mail will be send in the close method.
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public int run(ItemCollection documentContext,
+	public ItemCollection run(ItemCollection documentContext,
 			ItemCollection documentActivity) throws PluginException {
 
 		mailMessage = null;
 
 		// check if mail is active?
 		if ("1".equals(documentActivity.getItemValueString("keyMailInactive")))
-			return Plugin.PLUGIN_OK;
+			return documentContext;
 
 		List vectorRecipients = getRecipients(documentContext, documentActivity);
 		if (vectorRecipients.isEmpty()) {
 			logger.fine("[MailPlugin] No Receipients defined for this Activity...");
-			return Plugin.PLUGIN_OK;
+			return documentContext;
 		}
 
 		try {
@@ -106,7 +105,7 @@ public class MailPlugin extends AbstractPlugin {
 
 			if (mailMessage == null) {
 				logger.warning("[MailPlugin] mailMessage = null");
-				return Plugin.PLUGIN_WARNING;
+				return documentContext;
 			}
 
 			// set FROM
@@ -159,10 +158,10 @@ public class MailPlugin extends AbstractPlugin {
 		} catch (Exception e) {
 			logger.warning("[MailPlugin] run - Warning:" + e.toString());
 			e.printStackTrace();
-			return Plugin.PLUGIN_WARNING;
+			return documentContext;
 		}
 
-		return Plugin.PLUGIN_OK;
+		return documentContext;
 	}
 
 	/**
@@ -170,8 +169,8 @@ public class MailPlugin extends AbstractPlugin {
 	 * 
 	 * The method lookups the mail session from the session context.
 	 */
-	public void close(int status) throws PluginException {
-		if (status == Plugin.PLUGIN_OK && mailSession != null
+	public void close() throws PluginException {
+		if (mailSession != null
 				&& mailMessage != null) {
 			// Send the message
 			try {

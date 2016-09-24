@@ -599,7 +599,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		workitem.replaceItemValue("namcurrenteditor", nameEditor);
 
 		// now process the workitem
-		workflowkernel.process(workitem);
+		workitem=workflowkernel.process(workitem);
 
 		if (logger.isLoggable(Level.FINE))
 			logger.info("[WorkflowManager] workitem processed sucessfull");

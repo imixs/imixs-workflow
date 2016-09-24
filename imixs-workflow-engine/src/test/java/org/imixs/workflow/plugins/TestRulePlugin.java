@@ -11,7 +11,6 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.engine.plugins.RulePlugin;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
@@ -31,7 +30,7 @@ public class TestRulePlugin {
 	@Before
 	public void setup() throws PluginException {
 		rulePlugin = new RulePlugin();
-		rulePlugin.init(null); 
+		rulePlugin.init(null);
 	}
 
 	/**
@@ -53,9 +52,9 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		Assert.assertEquals("Anna", adocumentContext.getItemValueString("txtName"));
 
@@ -201,12 +200,12 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
 		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
 		Assert.assertEquals("1", sFllowUp);
 
@@ -233,14 +232,14 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
 		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
 
 		int nextTask = adocumentActivity.getItemValueInteger("numNextprocessiD");
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
 		Assert.assertTrue(!"1".equals(sFllowUp));
 
@@ -267,14 +266,14 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		int nextTask = adocumentActivity.getItemValueInteger("numNextprocessiD");
 
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
 		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
 		Assert.assertEquals("1", sFllowUp);
 
@@ -338,12 +337,11 @@ public class TestRulePlugin {
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
-
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
 		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
 		Assert.assertEquals("1", sFllowUp);
 
@@ -359,12 +357,12 @@ public class TestRulePlugin {
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		result = rulePlugin.run(adocumentContext, adocumentActivity);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
 		followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
 		Assert.assertEquals("", sFllowUp);
 
@@ -391,12 +389,12 @@ public class TestRulePlugin {
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
 		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
 		Assert.assertEquals("1", sFllowUp);
 
@@ -469,9 +467,9 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 	}
 
@@ -499,9 +497,9 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 	}
 
@@ -525,8 +523,9 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// Assert.assertTrue(rulePlugin.isValid(adocumentContext,
 		// adocumentActivity));
@@ -541,7 +540,9 @@ public class TestRulePlugin {
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		try {
-			result = rulePlugin.run(adocumentContext, adocumentActivity);
+			// run plugin
+			adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+
 			Assert.fail();
 		} catch (PluginException pe) {
 			// ok!
@@ -564,9 +565,9 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		result = rulePlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 	}
 
@@ -598,8 +599,9 @@ public class TestRulePlugin {
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtbetrag", "");
@@ -608,7 +610,9 @@ public class TestRulePlugin {
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 		try {
-			result = rulePlugin.run(adocumentContext, adocumentActivity);
+			// run plugin
+			adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+
 			Assert.fail();
 		} catch (PluginException e) {
 			// ok
@@ -621,7 +625,9 @@ public class TestRulePlugin {
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 		try {
-			result = rulePlugin.run(adocumentContext, adocumentActivity);
+			// run plugin
+			adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+
 			Assert.fail();
 		} catch (PluginException e) {
 			// ok
@@ -634,7 +640,9 @@ public class TestRulePlugin {
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 		try {
-			result = rulePlugin.run(adocumentContext, adocumentActivity);
+			// run plugin
+			adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+
 			Assert.fail();
 		} catch (PluginException e) {
 			// ok
@@ -646,8 +654,9 @@ public class TestRulePlugin {
 		adocumentActivity = new ItemCollection();
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		result = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 	}
 
@@ -738,11 +747,11 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		int nextTask = adocumentActivity.getItemValueInteger("numNextprocessiD");
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
 		Assert.assertEquals(3, nextTask);
 
@@ -758,7 +767,7 @@ public class TestRulePlugin {
 	@Test
 	public void testResultObjectFollowUpActivity() throws ScriptException, PluginException {
 
-		ItemCollection adocumentContext = new ItemCollection();
+		//ItemCollection adocumentContext = new ItemCollection();
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// set a business rule
@@ -767,12 +776,8 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
-
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
 		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
 		Assert.assertEquals("1", sFllowUp);
 
@@ -798,14 +803,14 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		int nextTask = adocumentActivity.getItemValueInteger("numNextprocessiD");
 
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
 		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
 		Assert.assertEquals("1", sFllowUp);
 
@@ -833,11 +838,11 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		String newdata = adocumentContext.getItemValueString("someitem");
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
 		Assert.assertEquals("Hello World", newdata);
 
@@ -862,11 +867,11 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		List<String> newdata = adocumentContext.getItemValue("some_item");
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 
 		Assert.assertEquals(2, newdata.size());
 		Assert.assertEquals("Hello World", newdata.get(0));
@@ -894,9 +899,9 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// test single value
 		String singelItem = adocumentContext.getItemValueString("single_item");
@@ -933,17 +938,16 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = "";
 		script += "var isValid =  'Anna'==workitem.txtname[0];";
-	
+
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		adocumentActivity.replaceItemValue("txtBusinessRuleEngine", "rhino");
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
- 
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
-		
 	}
 
 	/**
@@ -974,9 +978,9 @@ public class TestRulePlugin {
 
 		adocumentActivity.replaceItemValue("txtBusinessRuleEngine", "nashorn");
 
-		int result = rulePlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		Assert.assertEquals(1000, adocumentContext.getItemValueInteger("$ProcessID"));
 

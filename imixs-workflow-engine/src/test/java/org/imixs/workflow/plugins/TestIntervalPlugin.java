@@ -5,14 +5,13 @@ import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import junit.framework.Assert;
-
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.engine.plugins.IntervalPlugin;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 /**
  * Test class for IntervalPugin
@@ -69,12 +68,12 @@ public class TestIntervalPlugin {
 		logger.info("Expected=" + sExpectedDate);
 
 		// run plugin
-		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
+		adocumentContext = intervalPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// test new values
 		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
 
 	}
@@ -113,12 +112,12 @@ public class TestIntervalPlugin {
 		logger.info("Expected=" + sExpectedDate);
 
 		// run plugin
-		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
+		adocumentContext = intervalPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// test new values
 		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
 
 	}
@@ -157,12 +156,12 @@ public class TestIntervalPlugin {
 		logger.info("Expected=" + sExpectedDate);
 
 		// run plugin
-		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
+		adocumentContext = intervalPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// test new values
 		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
 
 	}
@@ -200,12 +199,12 @@ public class TestIntervalPlugin {
 		logger.info("Expected=" + sExpectedDate);
 
 		// run plugin
-		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
+		adocumentContext = intervalPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// test new values
 		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
 
 	}
@@ -244,12 +243,12 @@ public class TestIntervalPlugin {
 		logger.info("Expected=" + sExpectedDate);
 
 		// run plugin
-		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
+		adocumentContext = intervalPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// test new values
 		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
 
 		/*
@@ -277,12 +276,12 @@ public class TestIntervalPlugin {
 		logger.info("Expected=" + sExpectedDate);
 
 		// run plugin
-		result = intervalPlugin.run(adocumentContext, adocumentActivity);
+		adocumentContext = intervalPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// test new values
 		sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
 
 		/*
@@ -310,12 +309,12 @@ public class TestIntervalPlugin {
 		logger.info("Expected=" + sExpectedDate);
 
 		// run plugin
-		result = intervalPlugin.run(adocumentContext, adocumentActivity);
+		adocumentContext = intervalPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// test new values
 		sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
 
 	}
@@ -355,12 +354,12 @@ public class TestIntervalPlugin {
 		logger.info("Expected=" + sExpectedDate);
 
 		// run plugin
-		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
+		adocumentContext = intervalPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// test new values
 		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
 
 	}
@@ -399,12 +398,12 @@ public class TestIntervalPlugin {
 		logger.info("Expected=" + sExpectedDate);
 
 		// run plugin
-		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
+		adocumentContext = intervalPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// test new values
 		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
 
 	}
@@ -444,12 +443,12 @@ public class TestIntervalPlugin {
 		logger.info("Expected=" + sExpectedDate);
 
 		// run plugin
-		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
+		adocumentContext = intervalPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// test new values
 		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDate"));
 
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
 
 	}
@@ -489,12 +488,12 @@ public class TestIntervalPlugin {
 		logger.info("Expected=" + sExpectedDate);
 
 		// run plugin
-		int result = intervalPlugin.run(adocumentContext, adocumentActivity);
+		adocumentContext = intervalPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// test new values
 		String sNewDate = dateFormater.format(adocumentContext.getItemValueDate("datDateWrong"));
 
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
 		Assert.assertEquals(sExpectedDate, sNewDate);
 
 		// 2) test with missing date value
@@ -516,10 +515,8 @@ public class TestIntervalPlugin {
 		adocumentActivity.replaceItemValue("keyScheduledActivity", "1");
 
 		// run plugin
-		result = intervalPlugin.run(adocumentContext, adocumentActivity);
-
-		// test new values
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		adocumentContext = intervalPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		// 3) test with wrong interval field
 
@@ -540,10 +537,8 @@ public class TestIntervalPlugin {
 		adocumentActivity.replaceItemValue("keyScheduledActivity", "1");
 
 		// run plugin
-		result = intervalPlugin.run(adocumentContext, adocumentActivity);
-
-		// test new values
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		adocumentContext = intervalPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 	}
 

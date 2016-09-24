@@ -29,45 +29,46 @@ package org.imixs.workflow;
 
 import org.imixs.workflow.exceptions.PluginException;
 
-
-/** 
- * A Plugin defines the interface between the WorkflowKernel and the underlying softwaresystem in which the plugin runns.
- * Every Plugin have to be registerd to the workflowkernel by the workflowmanager. In this way the WorkflowManager can control
- * the functionallity of a single workflowactivity by defining the used plugin-moduls.
+/**
+ * A Plugin defines the interface between the WorkflowKernel and the
+ * WorkflowManager. Each Plugin have to be registered to the WorkflowKernel by
+ * the WorkflowManager. The WorkflowKernel executes all registered Plugins when
+ * processing a workflow event. A Plugin may throw a PluginException in case the
+ * execution failed. This will stop the execution of the process method. A
+ * Plugin methods init() and close() can be implemented by Plugin to initialize
+ * or tear down external resources or data.
  * 
  * @author Ralph Soika
- * @version 1.0 
- * @see    org.imixs.workflow.WorkflowKernel 
- */ 
-
+ * @version 2.0
+ * @see org.imixs.workflow.WorkflowKernel
+ */
 
 public interface Plugin {
-	
-	public final int PLUGIN_ERROR = 2;
-	public final int PLUGIN_WARNING = 1;
-	public final int PLUGIN_OK = 0;
 
-	
 	/**
-	 * The init Methode is usesd to initialize the plugin.
+	 * This method is called before the WorklfowKernel starts the execution. A
+	 * plugin can for example initialize external resources or data.
 	 * 
-	 * @param actx defines the context in which the plugin runs
-	 * a Plugin can use this context to get information about the enviroment
+	 * @param workflowContext
+	 *            defines the context in which the plugin runs. The context can
+	 *            be used to get information about the environment
 	 *
 	 */
-	public void init(WorkflowContext actx) throws PluginException;
+	public void init(WorkflowContext workflowContext) throws PluginException;
 
 	/**
-	 * @param documentContext defines the document to be processed
-	 * @param documentActivity defines the activity document which contains the workflowprocessing instructions
-	 * @return the current status for this plugin
+	 * @param document
+	 *            the workitem to be processed
+	 * @param event
+	 *            the workflow event containing the processing instructions
+	 * @return updated workitem for further processing
 	 */
-	public int run(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException;
-
+	public ItemCollection run(ItemCollection document,ItemCollection event) throws PluginException;
 
 	/**
-	 * This CallBack method is used to give the plugin the chance to close plugin specific data
-	 * @param status gives the plugin information about the current status. this parameter is delivered by the workflowKernel.  
+	 * This method is called after all plugins are executed by the WorkfloKernel. 
+	 * A plugin my tear down external resources. 
+	 * 
 	 */
-	public void close(int status) throws PluginException;
+	public void close() throws PluginException;
 }

@@ -40,7 +40,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.exceptions.PluginException;
@@ -105,7 +104,7 @@ public class ReportPlugin extends AbstractPlugin {
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 
 		reportName = adocumentActivity.getItemValueString("txtReportName");
 		reportFilePath = adocumentActivity.getItemValueString("txtReportFilePath");
@@ -118,7 +117,7 @@ public class ReportPlugin extends AbstractPlugin {
 		reportTarget = adocumentActivity.getItemValueString("txtReportTarget");
 
 		if ("".equals(reportName))
-			return PLUGIN_OK;
+			return adocumentContext;
 
 		// autocomplete file extention if missing
 		if (!reportName.endsWith(".ixr"))
@@ -146,7 +145,7 @@ public class ReportPlugin extends AbstractPlugin {
 		sXSL = itemCol.getItemValueString("txtXSL").trim();
 		// if no XSL is provided return
 		if ("".equals(sXSL))
-			return PLUGIN_OK;
+			return adocumentContext;
 
 		sContentType = itemCol.getItemValueString("txtcontenttype");
 		if ("".equals(sContentType))
@@ -263,7 +262,7 @@ public class ReportPlugin extends AbstractPlugin {
 				}
 			}
 
-			return Plugin.PLUGIN_OK;
+			return adocumentContext;
 		} catch (Exception e) {
 			// report undefined
 			throw new PluginException(ReportPlugin.class.getSimpleName(), INVALID_REPORT_DEFINITION,

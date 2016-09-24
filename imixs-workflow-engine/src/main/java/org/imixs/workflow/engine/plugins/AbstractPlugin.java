@@ -56,6 +56,7 @@ import org.imixs.workflow.exceptions.PluginException;
 
 public abstract class AbstractPlugin implements Plugin {
 
+	
 	public static final String INVALID_ITEMVALUE_FORMAT = "INVALID_ITEMVALUE_FORMAT";
 	public static final String INVALID_PROPERTYVALUE_FORMAT = "INVALID_PROPERTYVALUE_FORMAT";
 
@@ -76,10 +77,15 @@ public abstract class AbstractPlugin implements Plugin {
 		}
 	}
 	
+	@Override
+	public void close() throws PluginException {
+		
+	}
 	
 	public WorkflowContext getCtx() {
 		return ctx;
 	}
+
 
 	/**
 	 * Returns an instance of the WorkflowService EJB.

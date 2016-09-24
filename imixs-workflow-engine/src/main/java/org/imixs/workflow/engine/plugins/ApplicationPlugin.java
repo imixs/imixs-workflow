@@ -30,7 +30,6 @@ package org.imixs.workflow.engine.plugins;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 
@@ -84,7 +83,7 @@ public class ApplicationPlugin extends AbstractPlugin {
 	private String sSummary;
 	private static Logger logger = Logger.getLogger(ApplicationPlugin.class.getName());
 
-	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 
 		documentContext = adocumentContext;
 
@@ -107,7 +106,7 @@ public class ApplicationPlugin extends AbstractPlugin {
 		} catch (ModelException e) {
 			logger.warning(
 					"Warning - Task '" + iNextProcessID + "' is not defined by model version '" + aModelVersion + "' : "+e.getMessage());
-			return Plugin.PLUGIN_WARNING;
+			return documentContext;
 		}
 
 
@@ -155,11 +154,9 @@ public class ApplicationPlugin extends AbstractPlugin {
 		if (sSummary != null)
 			documentContext.replaceItemValue("txtworkflowsummary", sSummary);
 
-		return Plugin.PLUGIN_OK;
+		return documentContext;
 	}
 
-	public void close(int status) throws PluginException {
-		// no action necessary
-	}
+	
 
 }

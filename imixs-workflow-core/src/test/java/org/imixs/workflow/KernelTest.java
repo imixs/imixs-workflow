@@ -69,7 +69,7 @@ public class KernelTest {
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
 		try {
-			kernel.process(itemCollection);
+			itemCollection=kernel.process(itemCollection);
 		} catch (PluginException e) {
 			Assert.fail();
 			e.printStackTrace();
@@ -82,6 +82,45 @@ public class KernelTest {
 		Assert.assertEquals(100, itemCollection.getItemValueInteger("$processid"));
 	}
 
+
+	/**
+	 * This if a plugin which returns null influences the workitem
+	 */
+	@Test
+	@Category(org.imixs.workflow.WorkflowKernel.class)
+	public void testProcessNullPlugin() {
+		ItemCollection itemCollection = new ItemCollection();
+		itemCollection.replaceItemValue("txtTitel", "Hello");
+		itemCollection.replaceItemValue("$processid", 100);
+		itemCollection.replaceItemValue("$activityid", 10);
+		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
+
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+
+		try {
+			// MokWorkflowContext ctx = new MokWorkflowContext();
+			kernel = new WorkflowKernel(workflowContext);
+
+			MokPluginNull mokPlugin = new MokPluginNull();
+			kernel.registerPlugin(mokPlugin);
+			itemCollection.replaceItemValue("txtname","test");
+			
+			kernel.process(itemCollection);
+			// kernel should throw exception...
+			Assert.fail();
+		} catch (PluginException e) {
+			Assert.assertEquals(WorkflowKernel.PLUGIN_ERROR,e.getErrorCode());
+			
+		} catch (ProcessingErrorException e) {
+			Assert.fail();
+			e.printStackTrace();
+		}
+
+		Assert.assertEquals("test", itemCollection.getItemValueString("txtname"));
+		Assert.assertEquals(100, itemCollection.getItemValueInteger("$processid"));
+	}
+	
+	
 	@Test
 	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testForward() {
@@ -94,7 +133,7 @@ public class KernelTest {
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
 		try {
-			kernel.process(itemCollection);
+			itemCollection=kernel.process(itemCollection);
 		} catch (PluginException e) {
 			Assert.fail();
 			e.printStackTrace();
@@ -120,7 +159,7 @@ public class KernelTest {
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
 		try {
-			kernel.process(itemCollection);
+			itemCollection=kernel.process(itemCollection);
 		} catch (PluginException e) {
 			Assert.fail();
 			e.printStackTrace();
@@ -183,13 +222,13 @@ public class KernelTest {
 		try {
 			// simulate two steps
 			itemCollection.replaceItemValue("$activityid", 10);
-			kernel.process(itemCollection);
+			itemCollection=kernel.process(itemCollection);
 
 			itemCollection.replaceItemValue("$activityid", 20);
 			// sumulate a Log Comment...
 			itemCollection.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
 
-			kernel.process(itemCollection);
+			itemCollection=kernel.process(itemCollection);
 
 		} catch (PluginException e) {
 			Assert.fail();
@@ -282,13 +321,13 @@ public class KernelTest {
 		try {
 			// simulate two steps
 			itemCollection.replaceItemValue("$activityid", 10);
-			kernel.process(itemCollection);
+			itemCollection=kernel.process(itemCollection);
 
 			itemCollection.replaceItemValue("$activityid", 20);
 			// sumulate a Log Comment...
 			itemCollection.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
 
-			kernel.process(itemCollection);
+			itemCollection=kernel.process(itemCollection);
 
 		} catch (PluginException e) {
 			Assert.fail();

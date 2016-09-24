@@ -3,14 +3,12 @@ package org.imixs.workflow;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * Mokup Plugin
- * 
- * increases the property runs per each run .
+ * Mokup Plugin which returns null after run but changes the field "txtname"!
  * 
  * @author rsoika
  * 
  */
-public class MokPlugin implements Plugin {
+public class MokPluginNull implements Plugin {
 
 	@Override
 	public void init(WorkflowContext actx) throws PluginException {
@@ -19,14 +17,13 @@ public class MokPlugin implements Plugin {
 	}
  
 	@Override 
-	public ItemCollection run(ItemCollection documentContext,
+	public ItemCollection run(final ItemCollection documentContext,
 			ItemCollection documentActivity) throws PluginException {
 
-		int i = documentContext.getItemValueInteger("runs");
-		i++;
-		documentContext.replaceItemValue("runs", i);
+		
+		documentContext.replaceItemValue("txtName","should not be null");
 
-		return documentContext;
+		return null;
 	}
 
 	@Override

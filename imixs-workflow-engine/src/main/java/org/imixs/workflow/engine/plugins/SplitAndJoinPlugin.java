@@ -33,7 +33,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -89,12 +88,12 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 
 		ItemCollection evalItemCollection = ResultPlugin.evaluateWorkflowResult(adocumentActivity, adocumentContext);
 
 		if (evalItemCollection == null)
-			return Plugin.PLUGIN_OK;
+			return adocumentContext;
 
 		// 1.) test for items with name subprocess_create and create the
 		// defined suprocesses
@@ -123,16 +122,10 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			updateOrigin(processValue, adocumentContext);
 		}
 
-		//
-
-		return Plugin.PLUGIN_OK;
+		return adocumentContext;
 	}
 
-	@Override
-	public void close(int status) throws PluginException {
-		// no op
-
-	}
+	
 
 	/**
 	 * This method expects a list of Subprocess definitions and create for each

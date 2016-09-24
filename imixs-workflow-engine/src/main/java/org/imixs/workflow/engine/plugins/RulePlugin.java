@@ -46,7 +46,6 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -124,7 +123,7 @@ public class RulePlugin extends AbstractPlugin {
 	 * processing.
 	 * 
 	 */
-	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 
 		ScriptEngine engine = evaluateBusinessRule(adocumentContext, adocumentActivity);
 		if (engine != null) {
@@ -243,20 +242,14 @@ public class RulePlugin extends AbstractPlugin {
 				}
 			}
 
-			return Plugin.PLUGIN_OK;
+			return adocumentContext;
 		} else {
 			// no business rule is defined
-			return Plugin.PLUGIN_OK; // nothing to do
+			return adocumentContext; // nothing to do
 		}
 	}
 
-	/**
-	 * nothing to do
-	 */
-	@Override
-	public void close(int status) {
-		// no operation
-	}
+	
 
 	/**
 	 * This method evaluates the business rule defined by the provided activity.

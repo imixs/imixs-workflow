@@ -29,12 +29,10 @@ package org.imixs.workflow.engine.plugins;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 
@@ -81,8 +79,7 @@ import org.imixs.workflow.exceptions.PluginException;
 public class OwnerPlugin extends AbstractPlugin {
 	ItemCollection documentContext;
 	ItemCollection documentActivity, documentNextProcessEntity;
-	Vector<?> itemOwnerRollback;
-
+	
 	private static Logger logger = Logger.getLogger(AccessPlugin.class.getName());
 
 	/**
@@ -92,21 +89,12 @@ public class OwnerPlugin extends AbstractPlugin {
 	 * The method prevents the field 'namowner' of the documentcontext in case that 
 	 * namowner is part of the 
 	 */
-	@SuppressWarnings({ "rawtypes" })
-	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 
 		documentContext = adocumentContext;
 		documentActivity = adocumentActivity;
 
-		// save Attributes for roleback
-		itemOwnerRollback = (Vector) documentContext.getItemValue("namowner");
-
-		// test if fallback mode?
-		if (isFallBackMode()) {
-			// run the deprecated model evaluation...
-			processFallBack();
-			return Plugin.PLUGIN_OK;
-		}
+		
 
 		// get next process entity
 		int iNextProcessID = adocumentActivity.getItemValueInteger("numNextProcessID");
@@ -115,7 +103,7 @@ public class OwnerPlugin extends AbstractPlugin {
 			documentNextProcessEntity = getCtx().getModelManager().getModel(aModelVersion).getTask(iNextProcessID);
 		} catch (ModelException e) {
 			// no next task defined (follow up)
-			return Plugin.PLUGIN_OK;
+			return documentContext;
 		}
 		// in case the activity is connected to a followup activity the
 		// nextProcess can be null!
@@ -125,7 +113,7 @@ public class OwnerPlugin extends AbstractPlugin {
 		if (documentActivity.getItemValueBoolean("keyupdateacl") == false && (documentNextProcessEntity == null
 				|| documentNextProcessEntity.getItemValueBoolean("keyupdateacl") == false)) {
 			// no update!
-			return Plugin.PLUGIN_OK;
+			return documentContext;
 		} else {
 			// activity settings will not be merged with process entity
 			// settings!
@@ -136,7 +124,7 @@ public class OwnerPlugin extends AbstractPlugin {
 			}
 		}
 
-		return Plugin.PLUGIN_OK;
+		return documentContext;
 	}
 
 	/**
@@ -175,72 +163,7 @@ public class OwnerPlugin extends AbstractPlugin {
 
 	}
 
-	public void close(int status) {
-		// restore changes?
-		if (status == Plugin.PLUGIN_ERROR) {
-			documentContext.replaceItemValue("namOwner", itemOwnerRollback);
-		}
-	}
 
-	/**
-	 * Returns true if a old workflow model need to be evaluated
-	 * 
-	 * @return
-	 */
-	private boolean isFallBackMode() {
-		// if the new keyupdateacl exists no fallback mode!
-		if (documentActivity.hasItem("keyupdateacl")) {
-			return false;
-		}
 
-		// fallback mode if no keyupdateacl exists and keyaccessmode exits
-		if (documentActivity.hasItem("keyOwnershipMode")) {
-			return true;
-		}
-
-		return false;
-
-	}
-
-	@Deprecated
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void processFallBack() {
-		List itemOwner;
-		List vectorAccess;
-
-		itemOwner = (Vector) documentContext.getItemValue("namowner");
-
-		// save Attribute for roleback
-		itemOwnerRollback = (Vector) documentContext.getItemValue("namOwners");
-
-		// add new ownership
-		if ("1".equals(documentActivity.getItemValueString("keyOwnershipMode")))
-			vectorAccess = itemOwner;
-		else
-			vectorAccess = new Vector();
-
-		logger.fine(
-					"[OwnerPlugin] AccessMode: '" + documentActivity.getItemValueString("keyOwnershipMode") + "'");
-
-		if (vectorAccess == null)
-			vectorAccess = new Vector();
-
-		// **1** AllowAccess add names
-		mergeValueList(vectorAccess, documentActivity.getItemValue("namOwnershipNames"));
-
-		// **3** AllowAccess add Mapped Fields
-		mergeFieldList(documentContext, vectorAccess, documentActivity.getItemValue("keyOwnershipFields"));
-
-		// clean Vector
-		vectorAccess = uniqueList(vectorAccess);
-
-		// save Vector
-		documentContext.replaceItemValue("namOwner", vectorAccess);
-		if ((logger.isLoggable(Level.FINE)) && (vectorAccess.size() > 0)) {
-			logger.fine("[OwnerPlugin] Owner:");
-			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.fine("              " + (String) vectorAccess.get(j));
-		}
-
-	}
+	
 }

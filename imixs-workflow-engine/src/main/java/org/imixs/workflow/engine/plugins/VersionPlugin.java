@@ -30,10 +30,7 @@ package org.imixs.workflow.engine.plugins;
 import java.util.Collection;
 import java.util.logging.Logger;
 
-import javax.ejb.EJBTransactionRolledbackException;
-
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -112,7 +109,7 @@ public class VersionPlugin extends AbstractPlugin {
 	 * 
 	 * @throws PluginException
 	 */
-	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 
 		documentContext = adocumentContext;
 
@@ -140,7 +137,7 @@ public class VersionPlugin extends AbstractPlugin {
 					// no processing - simply save workitem
 					version = getWorkflowService().getDocumentService().save(version);
 				}
-				return Plugin.PLUGIN_OK;
+				return documentContext;
 
 			}
 
@@ -188,25 +185,17 @@ public class VersionPlugin extends AbstractPlugin {
 		} catch (QueryException e) {
 			throw new PluginException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
 		}
-		return Plugin.PLUGIN_OK;
+		return documentContext;
 	}
 
 	/**
 	 * This method removes the attribute $processingversion which is set to
 	 * 'true' during the processing of a new version
 	 */
-	public void close(int status) throws PluginException {
+	public void close() throws PluginException {
 
 		if (documentContext != null) {
 			documentContext.removeItem(PROCESSING_VERSION_ATTRIBUTE);
-
-			// if an error has occurred during processing take back new created
-			// versions
-			if (status == Plugin.PLUGIN_ERROR) {
-				// throw a ejb exception to cancel a running transaction
-				// this will avoid changes back into the database
-				throw new EJBTransactionRolledbackException();
-			}
 		}
 	}
 

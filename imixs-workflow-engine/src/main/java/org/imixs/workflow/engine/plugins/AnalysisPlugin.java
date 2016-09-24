@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -77,7 +76,7 @@ public class AnalysisPlugin extends AbstractPlugin {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public int run(ItemCollection documentContext,
+	public ItemCollection run(ItemCollection documentContext,
 			ItemCollection documentActivity) throws PluginException {
 
 		// parse for intem name=measurepoint....
@@ -155,14 +154,10 @@ public class AnalysisPlugin extends AbstractPlugin {
 			}
 		}
 
-		return Plugin.PLUGIN_OK;
+		return documentContext;
 	}
 
-	@Override
-	public void close(int status) throws PluginException {
-		// no op
-
-	}
+	
 
 	/**
 	 * This method parses the a string for xml tag <item

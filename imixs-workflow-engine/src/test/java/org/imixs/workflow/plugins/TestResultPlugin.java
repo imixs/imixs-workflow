@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 import javax.script.ScriptException;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
@@ -48,16 +47,20 @@ public class TestResultPlugin {
 		String sResult = "<item name=\"txtName\">Manfred</item>";
 		logger.info("txtActivityResult=" + sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
-		int result = resultPlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
+
 		Assert.assertEquals("Manfred", adocumentContext.getItemValueString("txtName"));
 
 		// test with ' instead of "
 		sResult = "<item name='txtName'>Manfred</item>";
 		logger.info("txtActivityResult=" + sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
-		result = resultPlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
+
 		Assert.assertEquals("Manfred", adocumentContext.getItemValueString("txtName"));
 	}
 
@@ -73,9 +76,9 @@ public class TestResultPlugin {
 		logger.info("txtActivityResult=" + sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
-		int result = resultPlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		Assert.assertTrue(adocumentContext.getItemValueBoolean("txtName"));
 
@@ -92,9 +95,9 @@ public class TestResultPlugin {
 		logger.info("txtActivityResult=" + sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
-		int result = resultPlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		Assert.assertEquals(47, adocumentContext.getItemValueInteger("numValue"));
 
@@ -116,9 +119,9 @@ public class TestResultPlugin {
 		logger.info("txtActivityResult=" + sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
-		int result = resultPlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		// run plugin
+		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		Assert.assertEquals("workitemdeleted", adocumentContext.getItemValueString("Type"));
 
@@ -145,8 +148,8 @@ public class TestResultPlugin {
 
 		int result;
 		try {
-			// exception expected
-			result = resultPlugin.run(adocumentContext, adocumentActivity);
+			// run plugin
+			adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
 
 			Assert.fail();
 
@@ -161,8 +164,8 @@ public class TestResultPlugin {
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
 		try {
-			// exception expected
-			result = resultPlugin.run(adocumentContext, adocumentActivity);
+			// run plugin
+			adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
 
 			Assert.fail();
 
@@ -282,10 +285,8 @@ public class TestResultPlugin {
 
 			// 1) create test result single line mode.....
 			String activityResult = "<item name=\"subprocess_create\">"
-					+ "    <modelversion>analyse-1.0.0</modelversion>" 
-					+ "	    <processid>1000</processid>"
-					+ "	    <activityid>100</activityid>" 
-					+ "	    <items>_subject,_sender,_receipients,$file</items>"
+					+ "    <modelversion>analyse-1.0.0</modelversion>" + "	    <processid>1000</processid>"
+					+ "	    <activityid>100</activityid>" + "	    <items>_subject,_sender,_receipients,$file</items>"
 					+ "	</item>";
 
 			activityEntity.replaceItemValue("txtActivityResult", activityResult);
@@ -296,16 +297,10 @@ public class TestResultPlugin {
 			Assert.assertFalse(xmlContent.isEmpty());
 			Assert.assertTrue(xmlContent.contains("<modelversion>analyse-1.0.0</modelversion>"));
 
-			
-			
-			
-			
 			// 2) create test result unix mode.....
-			activityResult = "<item name=\"subprocess_create\">\n" 
-					+ "    <modelversion>analyse-1.0.0</modelversion>\n"
+			activityResult = "<item name=\"subprocess_create\">\n" + "    <modelversion>analyse-1.0.0</modelversion>\n"
 					+ "	    <processid>1000</processid>\n" + "	    <activityid>100</activityid>\n"
-					+ "	    <items>_subject,_sender,_receipients,$file</items>\n" 
-					+ "	</item>";
+					+ "	    <items>_subject,_sender,_receipients,$file</items>\n" + "	</item>";
 
 			activityEntity.replaceItemValue("txtActivityResult", activityResult);
 			result = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
@@ -314,18 +309,12 @@ public class TestResultPlugin {
 			xmlContent = result.getItemValueString("subprocess_create");
 			Assert.assertFalse(xmlContent.isEmpty());
 			Assert.assertTrue(xmlContent.contains("<modelversion>analyse-1.0.0</modelversion>"));
-			
-			
-			
-			
-			
+
 			// 3) create test result windows mode.....
-			activityResult = "<item name=\"subprocess_create\">\r\n" 
-			+ "    <modelversion>analyse-1.0.0</modelversion>\r\n"
-			+ "	    <processid>1000</processid>\r\n" 
-			+ "	    <activityid>100</activityid>\r\n"
-			+ "	    <items>_subject,_sender,_receipients,$file</items>\r\n" 
-			+ "	</item>";
+			activityResult = "<item name=\"subprocess_create\">\r\n"
+					+ "    <modelversion>analyse-1.0.0</modelversion>\r\n" + "	    <processid>1000</processid>\r\n"
+					+ "	    <activityid>100</activityid>\r\n"
+					+ "	    <items>_subject,_sender,_receipients,$file</items>\r\n" + "	</item>";
 
 			activityEntity.replaceItemValue("txtActivityResult", activityResult);
 			result = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());

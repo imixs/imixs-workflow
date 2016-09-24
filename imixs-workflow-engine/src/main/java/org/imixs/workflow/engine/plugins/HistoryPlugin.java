@@ -38,7 +38,6 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -78,7 +77,7 @@ public class HistoryPlugin extends AbstractPlugin {
 	 * method convertOldFormat
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
 		String rtfItemLog;
 
 		documentContext = adocumentContext;
@@ -93,7 +92,7 @@ public class HistoryPlugin extends AbstractPlugin {
 		// add logtext into history log
 		rtfItemLog = documentActivity.getItemValueString("rtfresultlog");
 		if (rtfItemLog.isEmpty())
-			return Plugin.PLUGIN_OK;
+			return documentContext;
 
 		rtfItemLog = replaceDynamicValues(rtfItemLog, documentContext);
 
@@ -119,25 +118,16 @@ public class HistoryPlugin extends AbstractPlugin {
 			while (historyList.size() > iMaxLogLength)
 				historyList.remove(0);
 		}
-
-		return Plugin.PLUGIN_OK;
-	}
-
-	/**
-	 * store history only if no error has occurred
-	 * 
-	 * @throws
-	 */
-	public void close(int status) throws PluginException {
-		// restore changes if OK or WARNING
-		if (status < Plugin.PLUGIN_ERROR) {
-			if (historyList != null) {
-				documentContext.replaceItemValue("txtworkflowhistory", historyList);
-			}
-			// set timWorkflowLastAccess
-			documentContext.replaceItemValue("timworkflowlastaccess", new Date());
+		
+		if (historyList != null) {
+			documentContext.replaceItemValue("txtworkflowhistory", historyList);
 		}
+		// set timWorkflowLastAccess
+		documentContext.replaceItemValue("timworkflowlastaccess", new Date());
+		return documentContext;
 	}
+
+	
 
 	/**
 	 * This method converts the old StringList format in the new format with a

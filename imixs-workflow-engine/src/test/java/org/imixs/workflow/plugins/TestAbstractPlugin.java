@@ -193,12 +193,12 @@ public class TestAbstractPlugin {
 	class TestPlugin extends AbstractPlugin {
 
 		@Override
-		public int run(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
-			return PLUGIN_OK;
+		public ItemCollection run(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
+			return documentContext;
 		}
 
 		@Override
-		public void close(int status) throws PluginException {
+		public void close() throws PluginException {
 			// no op
 		}
 

@@ -2,14 +2,13 @@ package org.imixs.workflow.plugins;
 
 import java.util.logging.Logger;
 
-import junit.framework.Assert;
-
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.engine.plugins.AnalysisPlugin;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 /**
  * Test class for AnalysisPlugin
@@ -48,9 +47,8 @@ public class TestAnalysisPlugin {
 		logger.info("txtActivityResult=" + sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
-		int result = analysisPlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		adocumentContext = analysisPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		Assert.assertTrue(adocumentContext.hasItem("datMeasurePointStart_M1"));
 		
@@ -79,9 +77,8 @@ public class TestAnalysisPlugin {
 		logger.info("txtActivityResult=" + sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
-		int result = analysisPlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		adocumentContext = analysisPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		Assert.assertTrue(adocumentContext.hasItem("datMeasurePointStart_M1"));
 		
@@ -94,9 +91,8 @@ public class TestAnalysisPlugin {
 		logger.info("txtActivityResult=" + sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
-		 result = analysisPlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		adocumentContext = analysisPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		Assert.assertTrue(adocumentContext.hasItem("datMeasurePointStart_M1"));
 	}
@@ -126,9 +122,8 @@ public class TestAnalysisPlugin {
 		logger.info("txtActivityResult=" + sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
-		int result = analysisPlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		adocumentContext = analysisPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		Assert.assertTrue(adocumentContext.hasItem("datMeasurePointStart_M1"));
 		
@@ -148,9 +143,8 @@ public class TestAnalysisPlugin {
 		logger.info("txtActivityResult=" + sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
-		 result = analysisPlugin.run(adocumentContext, adocumentActivity);
-
-		Assert.assertTrue(result == Plugin.PLUGIN_OK);
+		adocumentContext = analysisPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		Assert.assertTrue(adocumentContext.hasItem("datMeasurePointStart_M1"));
 		

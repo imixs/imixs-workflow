@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.PluginException;
 
@@ -64,15 +63,15 @@ public class IntervalPlugin extends AbstractPlugin {
 	/**
 	 * The method paresed for a fields with the prafix 'keyitnerval'
 	 */
-	public int run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
-
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+		documentContext = adocumentContext;
 		// test if activity is a schedule activity...
 		// check if activity is scheduled
 		if (!"1".equals(adocumentActivity.getItemValueString("keyScheduledActivity"))) {
-			return Plugin.PLUGIN_OK;
+			return documentContext;
 		}
 
-		documentContext = adocumentContext;
+		
 		Calendar calNow = Calendar.getInstance();
 
 		logger.fine("[IntervalPlugin] compute next interval dates for workitem "
@@ -139,13 +138,9 @@ public class IntervalPlugin extends AbstractPlugin {
 			}
 		}
 
-		return Plugin.PLUGIN_OK;
+		return documentContext;
 	}
 
-	@Override
-	public void close(int status) throws PluginException {
-		// no op
-
-	}
+	
 
 }

@@ -30,7 +30,6 @@ package org.imixs.workflow.engine.plugins;
 import java.util.List;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Plugin;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -52,16 +51,14 @@ import org.imixs.workflow.exceptions.PluginException;
  */
 
 public class LogPlugin extends AbstractPlugin {
-	public ItemCollection documentContext;
-	List<?> vPluginLog, vActivityLog;
-
+	
 	/**
 	 * the log entries generated form the kernel will be cut if the attribute
 	 * numWorkflowLogLength was provided
 	 */
-	public int run(ItemCollection adocumentContext,
+	public ItemCollection run(ItemCollection documentContext,
 			ItemCollection adocumentActivity) throws PluginException {
-		documentContext = adocumentContext;
+		List<?> vPluginLog, vActivityLog;
 
 		vPluginLog = documentContext.getItemValue("txtWorkflowPluginLog");
 		vActivityLog = documentContext.getItemValue("txtWorkflowActivityLog");
@@ -83,14 +80,9 @@ public class LogPlugin extends AbstractPlugin {
 					vActivityLog);
 		}
 
-		return Plugin.PLUGIN_OK;
+		return documentContext;
 	}
 
-	/**
-	 * nothing to do
-	 */
-	public void close(int status) {
-
-	}
+	
 
 }
