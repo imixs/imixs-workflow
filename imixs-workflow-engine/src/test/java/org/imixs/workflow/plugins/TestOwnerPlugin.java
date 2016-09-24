@@ -175,31 +175,6 @@ public class TestOwnerPlugin extends AbstractWorkflowEnvironment {
 		Assert.assertEquals(0, writeAccess.size());
 	}
 
-	@SuppressWarnings({ "rawtypes" })
-	@Test
-	public void fallbackTest() {
-
-		documentActivity = new ItemCollection();
-		Vector<String> list = new Vector<String>();
-		list.add("sam");
-		list.add("joe");
-		documentActivity.replaceItemValue("namOwnershipNames", list);
-
-		documentActivity.replaceItemValue("keyOwnershipMode", "0");
-
-		try {
-			ownerPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
-
-			e.printStackTrace();
-			Assert.fail();
-		}
-
-		List writeAccess = documentContext.getItemValue("namowner");
-
-		Assert.assertEquals(2, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("joe"));
-		Assert.assertTrue(writeAccess.contains("sam"));
-	}
+	
 
 }

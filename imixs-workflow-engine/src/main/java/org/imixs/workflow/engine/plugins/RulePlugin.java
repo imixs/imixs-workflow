@@ -54,29 +54,38 @@ import org.imixs.workflow.exceptions.PluginException;
  * 
  * A business rule can be written in any script language supported by the JVM.
  * The Script Language is defined by the property 'txtBusinessRuleEngine' from
- * the current ActivityEntity. The script is defined by the property
+ * the current Event element. The script is defined by the property
  * 'txtBusinessRule'.
  * 
  * The Script can access all basic item values from the current workItem and
- * also the activity entity by the provided map object 'workitem' and
- * 'activity'. But the script may not update any of and workitem.
+ * also the event by the provided JSON objects 'workitem' and 'event'.
  * 
  * <code>
  *  // test first value of the workitem attribute 'txtname'
- *  var isValid = ('Anna'==workitem.get('txtname')[0]);
+ *  var isValid = ('Anna'==workitem.txtname[0]);
  * </code>
  * 
- * A script may change values of the activity map object. These changes will be
- * reflected back to the current ActivityEntity which can be used for further
- * processing.
+ * A script can add new values for the current workitem by providing the JSON
+ * object 'result'.
+ * 
+ * <code>
+ *     var result={ someitem:'Hello World', somenumber:1};
+ * </code>
+ * 
+ * Also change values of the event object can be made by the script. These
+ * changes will be reflected back for further processing.
  * 
  * <code>
  *  // disable mail 
- *   activity.put('keymailinactive',['0']);
+ *   event.keymailenabled='0';
  * </code>
  * 
  * A script can set the variables 'isValid' and 'followUp' to validate a
  * workItem or set a new followUp activity.
+ * 
+ * <code>
+ *   result={ isValid:false };
+ * </code>
  * 
  * If the script set the variable 'isValid' to false then the plugin throws a
  * PluginExcpetion. The Plugin evaluates the variables 'errorCode' and
@@ -91,7 +100,8 @@ import org.imixs.workflow.exceptions.PluginException;
  * If a script can not be evaluated by the scriptEngin a PluginExcpetion with
  * the errorCode 'INVALID_SCRIPT' will be thrown.
  * 
- * NOTE: all variable names are case sensitive!
+ * NOTE: all variable names are case sensitive! All JSON object elements are
+ * lower case!
  * 
  * @author Ralph Soika
  * @version 3.0
@@ -104,7 +114,6 @@ public class RulePlugin extends AbstractPlugin {
 	public static final String VALIDATION_ERROR = "VALIDATION_ERROR";
 	private static Logger logger = Logger.getLogger(RulePlugin.class.getName());
 
-	
 	/**
 	 * The run method evaluates a script provided by an activityEntity with the
 	 * specified scriptEngine.
@@ -123,7 +132,8 @@ public class RulePlugin extends AbstractPlugin {
 	 * processing.
 	 * 
 	 */
-	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+			throws PluginException {
 
 		ScriptEngine engine = evaluateBusinessRule(adocumentContext, adocumentActivity);
 		if (engine != null) {
@@ -249,8 +259,6 @@ public class RulePlugin extends AbstractPlugin {
 		}
 	}
 
-	
-
 	/**
 	 * This method evaluates the business rule defined by the provided activity.
 	 * The method returns the instance of the script engine which can be used to
@@ -280,7 +288,7 @@ public class RulePlugin extends AbstractPlugin {
 		ScriptEngine engine = manager.getEngineByName(sEngineType);
 
 		// set activity properties into engine
-		engine.put("activity", convertItemCollection(activity));
+		engine.put("event", convertItemCollection(activity));
 		engine.put("workitem", convertItemCollection(documentContext));
 
 		logger.fine("SCRIPT:" + script);
@@ -377,12 +385,12 @@ public class RulePlugin extends AbstractPlugin {
 
 		Map<String, Object[]> orginalActivity = convertItemCollection(event);
 		// get activity from engine
-		Map<String, Object[]> scriptActivity = (Map) engine.get("activity");
+		Map<String, Object[]> scriptActivity = (Map) engine.get("event");
 
 		// iterate over all entries
 		for (Map.Entry<String, Object[]> entry : scriptActivity.entrySet()) {
 
-			String expression = "activity.get('" + entry.getKey() + "')";
+			String expression = "event.get('" + entry.getKey() + "')";
 
 			Object[] oScript = evaluateNativeScriptArray(engine, expression);
 			if (oScript == null) {

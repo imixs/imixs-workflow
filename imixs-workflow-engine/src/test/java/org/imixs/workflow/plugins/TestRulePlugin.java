@@ -128,6 +128,22 @@ public class TestRulePlugin {
 		Assert.fail();
 
 	}
+	
+	@Test(expected = PluginException.class)
+	public void testResultObjectPluginException() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		// set a business rule
+		String script = "var result={ isValid:false };";
+
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+		rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.fail();
+
+	}
 
 	/**
 	 * This test verifies if in case of isValid==false a PluginExeption is
@@ -328,7 +344,7 @@ public class TestRulePlugin {
 
 		// set a business rule
 		// workitem.get(refField1)[0])
-		String script = " var followUp=null;" + " if (workitem.get('_amount_brutto')[0]>5000)" + "    followUp=90;";
+		String script = " var followUp=null;" + " if (workitem._amount_brutto[0]>5000)" + "    followUp=90;";
 		System.out.println("Script=" + script);
 
 		ItemCollection adocumentContext = new ItemCollection();
@@ -380,7 +396,7 @@ public class TestRulePlugin {
 	public void bigDecimalTest() throws ScriptException, PluginException {
 
 		// set a business rule
-		String script = " var followUp=null;" + " if (workitem.get('_amount_brutto')[0]>5000.50)" + "    followUp=90;";
+		String script = " var followUp=null;" + " if (workitem._amount_brutto[0]>5000.50)" + "    followUp=90;";
 		System.out.println("Script=" + script);
 
 		ItemCollection adocumentContext = new ItemCollection();
@@ -452,7 +468,7 @@ public class TestRulePlugin {
 	 * @throws PluginException
 	 */
 	@Test
-	public void testSimpleActivityScript() throws ScriptException, PluginException {
+	public void testEventObjectByScript() throws ScriptException, PluginException {
 
 		ItemCollection adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtName", "Anna");
@@ -462,7 +478,7 @@ public class TestRulePlugin {
 		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
 
 		// set a business rule
-		String script = "var isValid =  '1'==activity.get('keymailenabled')[0];";
+		String script = "var isValid =  '1'==event.keymailenabled[0];";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -470,6 +486,39 @@ public class TestRulePlugin {
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
 		Assert.assertNotNull(adocumentContext);
+
+	}
+	
+	
+
+	/**
+	 * This test test if a the properties of an activity entity can be evaluated
+	 * by a script
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testChangeEventObejctByScript() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("txtName", "Anna");
+
+		// simulate an activity
+		ItemCollection adocumentActivity = new ItemCollection();
+		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
+
+		// set a business rule
+		String script = "var isValid =event.keymailenabled[0]=='1'; event.keymailenabled='0';";
+
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
+		
+		Assert.assertEquals("0", adocumentActivity.getItemValueString("keyMailEnabled"));
 
 	}
 
@@ -728,6 +777,37 @@ public class TestRulePlugin {
 	 * 
 	 */
 
+	
+	/**
+	 * This test verifies a json result object
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testResultObjectJSON() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		// set a business rule
+		String script = "var result={ someitem:'Hello World', somenumber:1};";
+
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
+
+
+		Assert.assertEquals("Hello World", adocumentContext.getItemValueString("someitem"));
+		
+		Assert.assertEquals(1, adocumentContext.getItemValueInteger("somenumber"));
+
+	}
+	
+	
 	/**
 	 * This test verifies the nextTask behavior. If set then keyFollowUp and
 	 * numnextprocessid should be overwritten by the RulePlugin
@@ -767,7 +847,7 @@ public class TestRulePlugin {
 	@Test
 	public void testResultObjectFollowUpActivity() throws ScriptException, PluginException {
 
-		//ItemCollection adocumentContext = new ItemCollection();
+		ItemCollection adocumentContext = new ItemCollection();
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// set a business rule
@@ -775,6 +855,10 @@ public class TestRulePlugin {
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+		
+		// run plugin
+				adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+				Assert.assertNotNull(adocumentContext);
 
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
 		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
@@ -971,7 +1055,7 @@ public class TestRulePlugin {
 		String script = "";
 		script += "var isValid =  1000==workitem['$processid'][0];";
 		// now add a manipulation!
-		script += " activity['keymailenabled']=['0'];";
+		script += " event.keymailenabled='0';";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
