@@ -169,8 +169,9 @@ public class MailPlugin extends AbstractPlugin {
 	 * 
 	 * The method lookups the mail session from the session context.
 	 */
-	public void close() throws PluginException {
-		if (mailSession != null
+	@Override
+	public void close(boolean rollbackTransaction) throws PluginException {
+		if (!rollbackTransaction && mailSession != null
 				&& mailMessage != null) {
 			// Send the message
 			try {

@@ -299,9 +299,16 @@ public class WorkflowKernel {
 
 		
 		// execute plugins - PluginExceptions will bubble up....
-		documentResult=runPlugins(documentResult,event);
-		// close plugins
-		closePlugins();
+		try {
+			documentResult=runPlugins(documentResult,event);
+		} catch (PluginException pe) {
+			// close plugins
+			closePlugins(true);
+			// throw exeption
+			throw pe;
+		}
+		// Successful close plugins
+		closePlugins(false);
 		// write execution log
 		documentResult=writeLog(documentResult,event);
 
@@ -518,12 +525,12 @@ public class WorkflowKernel {
 
 	}
 
-	private void closePlugins() throws PluginException {
+	private void closePlugins(boolean rollbackTransaction) throws PluginException {
 		for (int i = 0; i < vectorPlugins.size(); i++) {
 			Plugin plugin = (Plugin) vectorPlugins.elementAt(i);
 			if (logger.isLoggable(Level.FINE))
 				logger.info("closing Plugin: " + plugin.getClass().getName() + "...");
-			plugin.close();
+			plugin.close(rollbackTransaction);
 		}
 	}
 

@@ -69,6 +69,7 @@ public interface Plugin {
 	 * This method is called after all plugins are executed by the WorkfloKernel. 
 	 * A plugin my tear down external resources. 
 	 * 
+	 * @param rollbackTransaction indicates if the current transaction will be rolled back.
 	 */
-	public void close() throws PluginException;
+	public void close(boolean rollbackTransaction) throws PluginException;
 }

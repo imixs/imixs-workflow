@@ -109,7 +109,8 @@ public class VersionPlugin extends AbstractPlugin {
 	 * 
 	 * @throws PluginException
 	 */
-	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+			throws PluginException {
 
 		documentContext = adocumentContext;
 
@@ -185,19 +186,14 @@ public class VersionPlugin extends AbstractPlugin {
 		} catch (QueryException e) {
 			throw new PluginException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
 		}
+
+		// removes the attribute $processingversion which is set to 'true'
+		// during the processing of a new version
+		documentContext.removeItem(PROCESSING_VERSION_ATTRIBUTE);
 		return documentContext;
 	}
 
-	/**
-	 * This method removes the attribute $processingversion which is set to
-	 * 'true' during the processing of a new version
-	 */
-	public void close() throws PluginException {
 
-		if (documentContext != null) {
-			documentContext.removeItem(PROCESSING_VERSION_ATTRIBUTE);
-		}
-	}
 
 	/**
 	 * returns true in case a new version is created based on the

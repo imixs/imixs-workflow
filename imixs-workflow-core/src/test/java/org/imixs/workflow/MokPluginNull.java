@@ -27,7 +27,7 @@ public class MokPluginNull implements Plugin {
 	}
 
 	@Override
-	public void close() throws PluginException {
+	public void close(boolean rollbackTransaction) throws PluginException {
 		// TODO Auto-generated method stub
 
 	}

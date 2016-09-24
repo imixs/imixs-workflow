@@ -198,7 +198,7 @@ public class TestAbstractPlugin {
 		}
 
 		@Override
-		public void close() throws PluginException {
+		public void close(boolean rollbackTransaction) throws PluginException {
 			// no op
 		}
 

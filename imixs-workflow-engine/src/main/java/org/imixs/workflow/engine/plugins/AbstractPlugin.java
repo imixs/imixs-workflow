@@ -78,7 +78,7 @@ public abstract class AbstractPlugin implements Plugin {
 	}
 	
 	@Override
-	public void close() throws PluginException {
+	public void close(boolean rollbackTransaction) throws PluginException {
 		
 	}
 	
