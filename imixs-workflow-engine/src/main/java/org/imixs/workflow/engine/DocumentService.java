@@ -273,6 +273,8 @@ public class DocumentService {
 	 */
 	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
 
+		logger.info("start: ID=" + document.getUniqueID() + " version=" + document.getItemValueInteger("$version"));
+
 		Document persistedDocument = null;
 		// Now set flush Mode to COMMIT
 		manager.setFlushMode(FlushModeType.COMMIT);
@@ -318,7 +320,8 @@ public class DocumentService {
 			}
 		}
 
-		// after all the activeEntity is now managed through the persistence
+		// after all the persistedDocument is now managed through the
+		// persistence
 		// manager!
 
 		// remove the property $isauthor
@@ -331,10 +334,23 @@ public class DocumentService {
 
 		// update the standard attributes $modified $created and $uniqueid
 		Calendar cal = Calendar.getInstance();
-
 		document.replaceItemValue("$uniqueid", persistedDocument.getId());
 		document.replaceItemValue("$modified", cal.getTime());
 		document.replaceItemValue("$created", persistedDocument.getCreated().getTime());
+
+		// update current version number
+		if (disableOptimisticLocking) {
+			// in case of optimistic locking is disabled we remove $version
+			document.removeItem("$Version");
+		}
+		if (!disableOptimisticLocking && document.hasItem("$Version") && document.getItemValueInteger("$Version") > 0) {
+			// if $version is provided we update the version number of
+			// the document to ensure that optimisticLock exception is
+			// handled the right way!
+			int version = document.getItemValueInteger("$Version");
+			persistedDocument.setVersion(version);
+			logger.finest("[save] version=" + version);
+		}
 
 		// finally update the data field and store the item map object
 		persistedDocument.setData(document.getAllItems());
@@ -355,7 +371,8 @@ public class DocumentService {
 		 * read.
 		 */
 		manager.flush();
-		// update version number
+
+		// get new $version
 		document.replaceItemValue("$Version", persistedDocument.getVersion());
 
 		/*
@@ -371,6 +388,8 @@ public class DocumentService {
 
 		// add/update document into index
 		luceneUpdateService.updateDocument(document);
+
+		logger.info("end: ID=" + document.getUniqueID() + " version=" + document.getItemValueInteger("$version"));
 
 		// return itemCollection
 		return document;
@@ -423,7 +442,14 @@ public class DocumentService {
 
 		// create instance of ItemCollection
 		if (persistedDocument != null && isCallerReader(persistedDocument)) {
-			return new ItemCollection(persistedDocument.getData());
+			ItemCollection result = new ItemCollection(persistedDocument.getData());
+			// if disable Optimistic Locking is TRUE we do not add the version
+			// number
+			if (disableOptimisticLocking)
+				result.removeItem("$Version");
+			else
+				result.replaceItemValue("$Version", persistedDocument.getVersion());
+			return result;
 		} else
 			return null;
 	}
@@ -509,7 +535,7 @@ public class DocumentService {
 	 * @param pageIndex
 	 *            - number of page to start (default = 0)
 	 * @return list of ItemCollection elements
-	 * @throws QueryException 
+	 * @throws QueryException
 	 * 
 	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
 	 */
@@ -539,12 +565,12 @@ public class DocumentService {
 	 *            - optional sort direction
 	 * 
 	 * @return list of ItemCollection elements
-	 * @throws QueryException 
+	 * @throws QueryException
 	 * 
 	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
 	 */
-	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy,
-			boolean sortReverse) throws QueryException {
+	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy, boolean sortReverse)
+			throws QueryException {
 		logger.fine("find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber=" + pageIndex
 				+ " , sortBy=" + sortBy + " reverse=" + sortReverse);
 
@@ -634,7 +660,14 @@ public class DocumentService {
 		// filter resultset by read access
 		for (Document doc : documentList) {
 			if (isCallerReader(doc)) {
-				result.add(new ItemCollection(doc.getData()));
+				ItemCollection _tmp = new ItemCollection(doc.getData());
+				// if disable Optimistic Locking is TRUE we do not add the version
+				// number
+				if (disableOptimisticLocking)
+					_tmp.removeItem("$Version");
+				else
+					_tmp.replaceItemValue("$Version", doc.getVersion());
+				result.add(_tmp);
 			}
 		}
 
