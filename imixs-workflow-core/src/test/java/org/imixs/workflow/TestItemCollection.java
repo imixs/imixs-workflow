@@ -488,17 +488,14 @@ public class TestItemCollection {
 		Assert.assertEquals("", itemCol2.getItemValueString("c"));
 
 		// test full clone
-		ItemCollection itemCol3=null;
-		try {
-			itemCol3 = (ItemCollection) itemCol1.clone();
-			Assert.assertEquals(1, itemCol3.getItemValueInteger("a"));
-			Assert.assertEquals("hello", itemCol3.getItemValueString("b"));
-			Assert.assertEquals("world", itemCol3.getItemValueString("c"));
+		ItemCollection itemCol3 = null;
 
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
-			Assert.fail();
+		if (itemCol1 instanceof Cloneable) {
+			itemCol3 = (ItemCollection) itemCol1.clone();
 		}
+		Assert.assertEquals(1, itemCol3.getItemValueInteger("a"));
+		Assert.assertEquals("hello", itemCol3.getItemValueString("b"));
+		Assert.assertEquals("world", itemCol3.getItemValueString("c"));
 
 		// itemCol2 should be equals to itemCol1
 		Assert.assertNotSame(itemCol2, itemCol1);
@@ -508,13 +505,13 @@ public class TestItemCollection {
 		Assert.assertEquals(itemCol1, itemCol3);
 		// itemCol2 should be equals to itemCol1
 		Assert.assertFalse(itemCol1.equals(itemCol2));
-				
-		
-		// now we change some values of itemCol1 to see if this affects itemCol2 and itemCol3....
+
+		// now we change some values of itemCol1 to see if this affects itemCol2
+		// and itemCol3....
 		itemCol1.replaceItemValue("c", "Imixs");
 		Assert.assertEquals("", itemCol2.getItemValueString("c"));
 		Assert.assertEquals("world", itemCol3.getItemValueString("c"));
-		
+
 	}
 
 }

@@ -65,7 +65,7 @@ import java.util.logging.Logger;
  * @see org.imixs.workflow.WorkflowManager
  */
 
-public class ItemCollection {
+public class ItemCollection implements Cloneable {
 	// NOTE: ItemCollection is not serializable
 
 	private static Logger logger = Logger.getLogger(ItemCollection.class.getName());
@@ -678,8 +678,11 @@ public class ItemCollection {
 		}
 	}
 
+	/**
+	 * Clone will make a deep copy of the current instance.
+	 */
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
+	public Object clone() {
 		ItemCollection itemColClone = new ItemCollection();
 		itemColClone.replaceAllItems(this.getAllItems());
 		return itemColClone;
