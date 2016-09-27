@@ -1,5 +1,6 @@
 package org.imixs.workflow;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +25,7 @@ public class TestItemCollection {
 	public void testItemCollection() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
-		Assert.assertEquals(itemCollection.getItemValueString("txttitel"),
-				"Hello");
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 	}
 
 	@Test
@@ -33,8 +33,7 @@ public class TestItemCollection {
 	public void testRemoveItem() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
-		Assert.assertEquals(itemCollection.getItemValueString("txttitel"),
-				"Hello");
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 		Assert.assertTrue(itemCollection.hasItem("txtTitel"));
 		itemCollection.removeItem("TXTtitel");
 		Assert.assertFalse(itemCollection.hasItem("txtTitel"));
@@ -57,8 +56,7 @@ public class TestItemCollection {
 		d = 1.234;
 		itemCollection.replaceItemValue("double", d);
 		Assert.assertTrue(itemCollection.isItemValueDouble("double"));
-		Assert.assertEquals(1.234, itemCollection.getItemValueDouble("double"),
-				0);
+		Assert.assertEquals(1.234, itemCollection.getItemValueDouble("double"), 0);
 
 		// test double with no digits
 		d = (double) 7;
@@ -78,15 +76,13 @@ public class TestItemCollection {
 		// test String....
 		d = 9.712;
 		itemCollection.replaceItemValue("double", d);
-		Assert.assertEquals("9.712",
-				itemCollection.getItemValueString("double"));
+		Assert.assertEquals("9.712", itemCollection.getItemValueString("double"));
 
 		// test cast back from string....
 		s = "9.723";
 		itemCollection.replaceItemValue("string", s);
 		Assert.assertFalse(itemCollection.isItemValueDouble("string"));
-		Assert.assertEquals(9.723, itemCollection.getItemValueDouble("string"),
-				0);
+		Assert.assertEquals(9.723, itemCollection.getItemValueDouble("string"), 0);
 
 	}
 
@@ -105,8 +101,7 @@ public class TestItemCollection {
 		itemCollection.replaceItemValue("float", f);
 		Assert.assertTrue(itemCollection.isItemValueFloat("float"));
 		Float fTest = (float) 4.777;
-		Assert.assertTrue(fTest.equals(itemCollection
-				.getItemValueFloat("float")));
+		Assert.assertTrue(fTest.equals(itemCollection.getItemValueFloat("float")));
 
 		// test cast back from string....
 		s = "9.723";
@@ -222,10 +217,8 @@ public class TestItemCollection {
 
 		// change value of itemcol2
 		itemCollection2.replaceItemValue("txtName", "Anna");
-		Assert.assertEquals("Manfred",
-				itemCollection1.getItemValueString("txtName"));
-		Assert.assertEquals("Anna",
-				itemCollection2.getItemValueString("txtName"));
+		Assert.assertEquals("Manfred", itemCollection1.getItemValueString("txtName"));
+		Assert.assertEquals("Anna", itemCollection2.getItemValueString("txtName"));
 
 		Assert.assertFalse(itemCollection1.equals(itemCollection2));
 		Assert.assertNotSame(itemCollection1, itemCollection2);
@@ -251,10 +244,8 @@ public class TestItemCollection {
 
 		// change valud of itemcol2
 		itemCollection2.replaceItemValue("txtName", "Anna");
-		Assert.assertEquals("Manfred",
-				itemCollection1.getItemValueString("txtName"));
-		Assert.assertEquals("Anna",
-				itemCollection2.getItemValueString("txtName"));
+		Assert.assertEquals("Manfred", itemCollection1.getItemValueString("txtName"));
+		Assert.assertEquals("Anna", itemCollection2.getItemValueString("txtName"));
 
 	}
 
@@ -279,8 +270,7 @@ public class TestItemCollection {
 		child1.replaceItemValue("numID", new Integer(2));
 
 		try {
-			itemCollection1.replaceItemValue("child",
-					XMLItemCollectionAdapter.putItemCollection(child1));
+			itemCollection1.replaceItemValue("child", XMLItemCollectionAdapter.putItemCollection(child1));
 		} catch (Exception e) {
 
 			Assert.fail();
@@ -291,11 +281,9 @@ public class TestItemCollection {
 		Assert.assertEquals(itemCollection1, itemCollection2);
 		Assert.assertNotSame(itemCollection1, itemCollection2);
 
-		XMLItemCollection xmlChild = (XMLItemCollection) itemCollection1
-				.getItemValue("child").get(0);
+		XMLItemCollection xmlChild = (XMLItemCollection) itemCollection1.getItemValue("child").get(0);
 
-		ItemCollection testChild = XMLItemCollectionAdapter
-				.getItemCollection(xmlChild);
+		ItemCollection testChild = XMLItemCollectionAdapter.getItemCollection(xmlChild);
 		Assert.assertEquals(2, testChild.getItemValueInteger("numID"));
 
 		// manipulate child1 and repeat the test!
@@ -307,21 +295,17 @@ public class TestItemCollection {
 		Assert.assertNotSame(child1, testChild);
 
 		// test child1 form itemcol1
-		 xmlChild = (XMLItemCollection) itemCollection1
-				.getItemValue("child").get(0);
+		xmlChild = (XMLItemCollection) itemCollection1.getItemValue("child").get(0);
 
-		 testChild = XMLItemCollectionAdapter
-				.getItemCollection(xmlChild);
-		
+		testChild = XMLItemCollectionAdapter.getItemCollection(xmlChild);
+
 		// expected id is not 3!
 		Assert.assertEquals(2, testChild.getItemValueInteger("numID"));
 
 		// change value of itemcol2
 		itemCollection2.replaceItemValue("txtName", "Anna");
-		Assert.assertEquals("Manfred",
-				itemCollection1.getItemValueString("txtName"));
-		Assert.assertEquals("Anna",
-				itemCollection2.getItemValueString("txtName"));
+		Assert.assertEquals("Manfred", itemCollection1.getItemValueString("txtName"));
+		Assert.assertEquals("Anna", itemCollection2.getItemValueString("txtName"));
 
 		Assert.assertFalse(itemCollection1.equals(itemCollection2));
 		Assert.assertNotSame(itemCollection1, itemCollection2);
@@ -423,11 +407,7 @@ public class TestItemCollection {
 		Assert.assertSame(child1, testChild);
 
 	}
-	
-	
-	
-	
-	
+
 	/**
 	 * This test verifies the imixs workflow basic attributes
 	 * 
@@ -436,23 +416,21 @@ public class TestItemCollection {
 	public void testBasicAttributes() {
 
 		ItemCollection itemCollection1 = new ItemCollection();
-	
+
 		itemCollection1.replaceItemValue(WorkflowKernel.MODELVERSION, "1.0.0");
 		itemCollection1.replaceItemValue(WorkflowKernel.PROCESSID, 100);
 		itemCollection1.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
-		itemCollection1.replaceItemValue(WorkflowKernel.TYPE,"workitem_test");
+		itemCollection1.replaceItemValue(WorkflowKernel.TYPE, "workitem_test");
 		itemCollection1.replaceItemValue(WorkflowKernel.UNIQUEID, "ABC-123");
 
-		
-		Assert.assertEquals("1.0.0",itemCollection1.getModelVersion());
-		Assert.assertEquals(10,itemCollection1.getActivityID());
-		Assert.assertEquals(100,itemCollection1.getProcessID());
-		Assert.assertEquals("workitem_test",itemCollection1.getType());
-		Assert.assertEquals("ABC-123",itemCollection1.getUniqueID());
+		Assert.assertEquals("1.0.0", itemCollection1.getModelVersion());
+		Assert.assertEquals(10, itemCollection1.getActivityID());
+		Assert.assertEquals(100, itemCollection1.getProcessID());
+		Assert.assertEquals("workitem_test", itemCollection1.getType());
+		Assert.assertEquals("ABC-123", itemCollection1.getUniqueID());
 
 	}
-	
-	
+
 	/**
 	 * This method verifies if null values will be removed from lists.
 	 */
@@ -460,32 +438,83 @@ public class TestItemCollection {
 	@Test
 	public void testNullValues() {
 
-		Vector v1=new Vector();
+		Vector v1 = new Vector();
 		v1.add(null);
 		v1.add("");
 		v1.add(null);
 		v1.add("anna");
-		
 
-		Vector v2=new Vector();
+		Vector v2 = new Vector();
 		v1.add(null);
 
-		ItemCollection itemCol=new ItemCollection();
+		ItemCollection itemCol = new ItemCollection();
 		itemCol.replaceItemValue("a", v1);
 		itemCol.replaceItemValue("b", v2);
-		
-		List l1=itemCol.getItemValue("a");
-		List l2=itemCol.getItemValue("b");
-		
+
+		List l1 = itemCol.getItemValue("a");
+		List l2 = itemCol.getItemValue("b");
+
 		// test if the null values are removed...
 		Assert.assertEquals(2, l1.size());
 		Assert.assertEquals("", l1.get(0));
 		Assert.assertEquals("anna", l1.get(1));
 
-		
 		Assert.assertEquals(0, l2.size());
-		
+
 	}
 
+	/**
+	 * This method verifies the clone interface
+	 */
+	@Test
+	public void testCloning() {
+
+		ItemCollection itemCol1 = new ItemCollection();
+		itemCol1.replaceItemValue("a", 1);
+		itemCol1.replaceItemValue("b", "hello");
+		itemCol1.replaceItemValue("c", "world");
+
+		// clone only some attributes
+		List<String> attributes = new ArrayList<String>();
+		attributes.add("a");
+		attributes.add("b");
+		ItemCollection itemCol2 = itemCol1.clone(attributes);
+
+		Assert.assertNotNull(itemCol2);
+
+		// test values of clone
+		Assert.assertEquals(1, itemCol2.getItemValueInteger("a"));
+		Assert.assertEquals("hello", itemCol2.getItemValueString("b"));
+		Assert.assertEquals("", itemCol2.getItemValueString("c"));
+
+		// test full clone
+		ItemCollection itemCol3=null;
+		try {
+			itemCol3 = (ItemCollection) itemCol1.clone();
+			Assert.assertEquals(1, itemCol3.getItemValueInteger("a"));
+			Assert.assertEquals("hello", itemCol3.getItemValueString("b"));
+			Assert.assertEquals("world", itemCol3.getItemValueString("c"));
+
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// itemCol2 should be equals to itemCol1
+		Assert.assertNotSame(itemCol2, itemCol1);
+		// itemCol3 should be equals to itemCol1
+		Assert.assertNotSame(itemCol3, itemCol1);
+		// itemCol3 should be equals to itemCol1
+		Assert.assertEquals(itemCol1, itemCol3);
+		// itemCol2 should be equals to itemCol1
+		Assert.assertFalse(itemCol1.equals(itemCol2));
+				
+		
+		// now we change some values of itemCol1 to see if this affects itemCol2 and itemCol3....
+		itemCol1.replaceItemValue("c", "Imixs");
+		Assert.assertEquals("", itemCol2.getItemValueString("c"));
+		Assert.assertEquals("world", itemCol3.getItemValueString("c"));
+		
+	}
 
 }
