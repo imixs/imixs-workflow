@@ -7,6 +7,7 @@ import java.text.ParseException;
 import java.util.Collection;
 import java.util.List;
 
+
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
@@ -30,7 +31,6 @@ public class TestBPMNParserCollaboration {
 
 	@Before
 	public void setup() {
-
 	}
 
 	@After
@@ -47,7 +47,7 @@ public class TestBPMNParserCollaboration {
 		InputStream inputStream = getClass().getResourceAsStream("/bpmn/collaboration.bpmn");
 
 		Model model = null;
-		try {
+		try {			
 			model = BPMNParser.parseModel(inputStream, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
