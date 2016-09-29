@@ -233,6 +233,74 @@ public class TestBPMNParserSimple {
 		Assert.assertEquals(0, activities.size());
 	}
 
+	
+	/**
+	 * This test test a more complex start scenario where a start event has
+	 * possible more than one target tasks
+	 * 
+	 * @throws ParseException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ModelException
+	 */
+	@Test
+	public void testFollowUpComplex()
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+
+		String VERSION = "1.0.0";
+
+		InputStream inputStream = getClass().getResourceAsStream("/bpmn/followup_complex.bpmn");
+
+		BPMNModel model = null;
+		try {
+			model = BPMNParser.parseModel(inputStream, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			Assert.fail();
+		} catch (ModelException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertNotNull(model);
+
+		// Test Environment
+		ItemCollection profile = model.getDefinition();
+		Assert.assertNotNull(profile);
+		Assert.assertEquals("environment.profile", profile.getItemValueString("txtname"));
+		Assert.assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));
+		Assert.assertEquals(VERSION, profile.getItemValueString("$ModelVersion"));
+
+		Assert.assertTrue(model.getGroups().contains("Simple"));
+
+		// test count of elements
+		Assert.assertEquals(2, model.findAllTasks().size());
+
+		// test task 1100
+		ItemCollection task = model.getTask(1100);
+		Assert.assertNotNull(task);
+		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
+		Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
+
+		// test import activity for task 1000.20 (followup)
+		ItemCollection activity = model.getEvent(1100, 20);
+		Assert.assertNotNull(activity);
+		Assert.assertEquals("import", activity.getItemValueString("txtname"));
+
+		Assert.assertFalse("1".equals(activity.getItemValueString("keyFollowUp")));
+		Assert.assertEquals(1100, activity.getItemValueInteger("numprocessID"));
+		Assert.assertEquals(1100, activity.getItemValueInteger("numprocessid"));
+
+		// test import activity for task 1000.30 (followup)
+		activity = model.getEvent(1100, 30);
+		Assert.assertNotNull(activity);
+		Assert.assertEquals("[follow up-1]", activity.getItemValueString("txtname"));
+		Assert.assertFalse("1".equals(activity.getItemValueString("keyFollowUp")));
+		Assert.assertEquals(1100, activity.getItemValueInteger("numprocessid"));
+
+	}
+	
+	
 	/**
 	 * This test verifies if the stream data can be stored in a byte array to be
 	 * parsed again. rawData is used by the ModelService to store the file
