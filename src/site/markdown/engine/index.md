@@ -14,11 +14,10 @@ The Imixs-Workflow Engine is based on the [Imixs-Workflow Core-API](../core/inde
  * The Analysis -> [ReportService](./reportservice.html)
  
 ### The DocumentService
-The _DocumentService_ provides an interface to create, save and load data objects (_workitems_) within a database. A _workitem_ is represented by the [ItemCollection class](../core/itemcollection.html) which presents a generic value object used by all methods of the Imixs-Workflow engine. The _DocumentService_ is independent form the workflow engine and can also be used to store any kind of business data not associated with the workflow engine (e.g configuration data). 
+The _DocumentService_ is the general persistence layer of the Imixs-Worklfow engine and provides an interface to store, load and query data objects (_Documents_) within a database. 
+The _DocumentService_ is independent from the workflow engine and can not only be used to persist a process instance (_workitem_), but also any other kind of business data, not necessarily associated with the workflow engine (e.g configuration data). Each document managed by the _DocumentService_ is assigned to a access control list (ACL). The ACL protects the document from unauthorized  access. 
 
-Each data object managed by the _DocumentService_ is assigned to a access control list (ACL). The ACL protects a data object for unauthorized  access. In case the _CallerPrincipal_ has insufficient rights to access or modify a specific data object, the _DocumentService_ throws an _AccessDeniedException_. 
-
-The _DocumentService_ creates a [Lucene Index](https://lucene.apache.org/) over all managed data objects and provides methods to query data objects by a search term. This is a power full feature to navigate easily through the workitems managed by the Imixs-Workflow engine.  
+The _DocumentService_ creates a [Lucene Search Index](https://lucene.apache.org/) over all documents and provides methods to query documents by a search term. This is a power full feature to navigate easily through the workitems managed by the Imixs-Workflow engine.  
 
 [Read more about the Imixs DocumentService](../engine/documentservice.html).
   
