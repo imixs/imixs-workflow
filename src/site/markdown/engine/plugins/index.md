@@ -59,12 +59,12 @@ The values from the imixs.prperties file are accessed by the [PropertyService](.
 	... 
 	 	<session>
 				<ejb-name>WorkflowService</ejb-name>
-				<ejb-class>org.imixs.workflow.jee.ejb.WorkflowService</ejb-class>
+				<ejb-class>org.imixs.workflow.engine.WorkflowService</ejb-class>
 				<session-type>Stateless</session-type>
 			    <ejb-ref>
 	                    <ejb-ref-name>ejb/PropertyService</ejb-ref-name>
 	                    <ejb-ref-type>Session</ejb-ref-type>
-	                    <remote>org.imixs.workflow.jee.util.PropertyService</remote>
+	                    <remote>org.imixs.workflow.engine.PropertyService</remote>
 	            </ejb-ref>
 	    ....
 	    </session>
@@ -72,9 +72,9 @@ The values from the imixs.prperties file are accessed by the [PropertyService](.
  
  
 ##How to access the WorkflowService EJB from a Plugin
-Implementing a Imixs Workflow Plugin is an easy way to extend the behavior of the Workflow Management System. A plugin is a simple Java Class (POJO) which makes it easy to implement. The WorkflowKernel provides a plugin with informations about the environment the plugin runs in. Each plugin class gets an instance of the interface WorkflowContext during the initialization of the plug-in. This interface represents the context the plugin currently runs in.  The context depends on the concrete WorkflowManager implementation which is calling a plugin to process a workitem. 
+Implementing a Imixs-Workflow Plug-in is an easy way to extend the behavior of the Imixs-Workflow engine. A plug-in is a simple Java Class (POJO) which makes it easy to implement. The WorkflowKernel provides a plug-in with informations about the environment the plug-in runs in. Each plugin class gets an instance of the interface WorkflowContext during the initialization of the plug-in. This interface represents the context the plugin currently runs in.  The context depends on the concrete WorkflowManager implementation which is calling a plug-in to process a workitem. 
  
-If a plug-in runs in the Imixs JEE Workflow Engine, the WorkflowContext is an instance of the  WorkflowService EJB. This behavior makes it easy to access the functionality provided by the WorkflowEngine  directly through a plugin. The following example shows how to access the WorkflowService and ModelService EJBs to determine the latest model version used in the WorkflowInstance: 
+If a plug-in runs in the Imixs-Workflow Engine, the WorkflowContext is an instance of the  WorkflowService EJB. This behavior makes it easy to access the functionality provided by the WorkflowEngine  directly through a plugin. The following example shows how to access the WorkflowService and ModelService EJBs to determine the latest model version used in the WorkflowInstance: 
 
 	public void init(WorkflowContext actx) throws Exception {
 		super.init(actx);
@@ -82,28 +82,27 @@ If a plug-in runs in the Imixs JEE Workflow Engine, the WorkflowContext is an in
 		if (actx instanceof WorkflowService) {
 			// yes we are running in a WorkflowService EJB
 			WorkflowService ws=(WorkflowService)actx;
-			// get latest model version....
-			String slw=ws.getModelService().getLatestVersion();
+			// get the model service....
+			ModelService modelService=ws.getModelService();
+			List<String> versions = modelService.getVersions();
 			.....
 		}
 	}
 
-Before you cast the WorkflowContext to the interface org.imixs.workflow.jee.ejb.WorkflowSerice 
-you should make sure that your plugin runs in an instance of the Imixs WorkflowService EJB. 
-This can be done with a simple test:
 
-	if (actx instanceof WorkflowService) 
-	  .....
+## CDI Support 
+Imixs-Workflow supports CDI for the plug-in API. So an EJB or Resource can be injected into a Plug-in class by the corresponding annotation. See the following example:
 
+	public class DemoPlugin extends AbstractPlugin {
+		// inject services...
+		@EJB
+		ModelService modelService;
+		...
+	}
 
 ## How to lookup a EJB from a Plugin
-Because of the fact that a Imixs Workflow plugin is independent from the Workflow implementation you can not  directly make use of the injection Feature from EJB 3.0 even if you plugin runs in the Imixs JEE Workflow. This is because the Plugin Class is typical not part of the servlet context nor it is implemented as a Session EJB.  For that reason it is not possible to inject an Session EJB with an annotation like it is typical  done in EJB 3.0:
-
-	@EJB
-	org.imixs.workflow.jee.ejb.EntityService entityService;
-
-To get a reference to a existing EJB in your Plugin Class, you can do a JNDI Lookup. The JNDI
-Lookup fetches the EJB from the EJB Container provided by the JEE Application Server. So this is the  typical way to get an EJB Instance inside a POJO Class. The following example shows how you can lookup an EJB during the init() method of a plugin:
+An alternative way to get a reference to an existing EJB in a Plugin Class, is to use a JNDI Lookup. The JNDI
+Lookup fetches the EJB from the EJB Container provided by the application server. So this way it is possible to get an EJB Instance inside a POJO Class without CDI support. The following example shows how to lookup an EJB during the init() method of a plugin:
 
 	public void init(WorkflowContext actx) throws Exception {
 		super.init(actx);
@@ -115,11 +114,11 @@ Lookup fetches the EJB from the EJB Container provided by the JEE Application Se
 		myService= (org.foo.ejb.MyService)ctx.lookup(jndiName);
 	}
 
-In this case a reference to the MyService Interface was created by JNDI Lookup. The Lookup fetches an EJB Reference with the name "ejb/MyServiceBean". To get this Interface returned from the JNDI Context you need to add this reference to the WorkflowManager EJB which is calling the Plugin. So you need to extend the ejb definition of the WorkflowServiceBean in the ejb-jar.xml file: 
+In this case a reference to the MyService Interface was created by JNDI Lookup. The Lookup fetches an EJB Reference with the name "ejb/MyServiceBean". To get this Interface returned from the JNDI Context it is necessary to add this reference to the WorkflowService EJB which is calling the Plugin. This can be done in the ejb-jar.xml file: 
 
 		<session>
-			<ejb-name>WorkflowServiceBean</ejb-name>
-			<ejb-class>org.imixs.workflow.jee.ejb.WorkflowServiceBean</ejb-class>
+			<ejb-name>WorkflowService</ejb-name>
+			<ejb-class>org.imixs.workflow.engine.WorkflowService</ejb-class>
 			<session-type>Stateless</session-type>
 			<ejb-ref>
 			    <ejb-ref-name>ejb/MyServiceBean</ejb-ref-name>
@@ -146,8 +145,8 @@ The resource being queried is listed in the res-ref-name element of the ejb-jar.
 
 	   ....
 		<session>
-			<ejb-name>WorkflowServiceBean</ejb-name>
-			<ejb-class>org.imixs.workflow.jee.ejb.WorkflowServiceBean</ejb-class>
+			<ejb-name>WorkflowService</ejb-name>
+			<ejb-class>org.imixs.workflow.engine.WorkflowService</ejb-class>
 			<session-type>Stateless</session-type>
 			
 			<!-- JDBC ressource -->
@@ -164,8 +163,8 @@ The resource-ref section in a Sun Java System specific deployment descriptor, fo
 
 	   ....
 		<ejb>
-			<ejb-name>WorkflowServiceBean</ejb-name>
-			<jndi-name> ejb/MyWorkflowServiceBean</jndi-name>
+			<ejb-name>WorkflowService</ejb-name>
+			<jndi-name>ejb/WorkflowService</jndi-name>
 			<!-- JDBC ressource -->
 			<resource-ref>
 			         <res-ref-name>jdbc/HelloDbDs</res-ref-name>

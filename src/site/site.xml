@@ -63,6 +63,7 @@
 				<item name="DocumentService" href="./engine/documentservice.html"
 					collapse="true">
 					<item name="Access Control" href="./engine/acl.html" />
+					<item name="Lucene" href="./engine/luceneservice.html" />
 				</item>
 				<item name="ModelService" href="./engine/modelservice.html" />
 				<item name="WorkflowService" href="./engine/workflowservice.html" />
@@ -79,7 +80,6 @@
 					<item name="Interval Plugin" href="./engine/plugins/intervalplugin.html" />
 					<item name="Split &amp; Join" href="./engine/plugins/splitandjoinplugin.html" />
 					<item name="Version Plugin" href="./engine/plugins/versionplugin.html" />
-					<item name="Lucene Plugin" href="./engine/plugins/luceneplugin.html" />
 					<item name="Exception handling" href="./engine/plugins/exception_handling.html" />
 				</item>
 
