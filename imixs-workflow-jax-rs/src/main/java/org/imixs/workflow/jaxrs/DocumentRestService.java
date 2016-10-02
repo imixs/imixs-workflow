@@ -324,7 +324,7 @@ public class DocumentRestService {
 	 * @return
 	 */
 	@GET
-	@Path("/backup")
+	@Path("/restore")
 	public Response restore(@QueryParam("filepath") String filepath) {
 
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {

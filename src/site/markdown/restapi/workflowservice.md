@@ -22,7 +22,6 @@ The resource /workflow/tasklist/ returns collections of workitems:
 | /workflow/tasklist/processid/{processid}      | a collection of workitems in a specific    process state             |
 | /workflow/tasklist/group/{processgroup}       | a collection of workitems in a specific    process group                             |
 | /workflow/tasklist/ref/{uniqueid}             | a collection of workitems referenced to a  specific uniqueid (childs)                |
-| /workflow/tasklist/query/{query}              | a collection of workitems specified by a  JPQL phrase                                |
 
 
 
@@ -46,10 +45,9 @@ Additional URI parameters can be used to filter the result set, or to navigate t
 
 | option      | description                                         | example               |
 |-------------|-----------------------------------------------------|-----------------------|
-| count       | number of workitems to be returned by a collection  | ..?count=10           |
-| start       | start position of a collection of workitems         | ..?start=5&count=10   |
+| pagesize    | number of documents returned                        | ..?pagesize=10           |
+| pageindex   | page index to start                                 | ..?pageindex=5&pagesize=10   |
 | type        | filter workitems by the 'type' property             | ..?type=workitem      | 
-| sortorder   | sortorder of the returned collection <br /> (0=creation date descending <br />,1=creation date ascending<br />,2=modified date descending<br />,3=modified date ascending)     |&sortorder=2  |
 		
 
 <strong>Note:</strong> The Imixs-Workflow manages the access to workitems by individual access lists per each entity. The result of a collection of workitems depends on the current user accesslevel and read access permissions for a workitem. Read also the section [Access Control](/engine/acl.html) for further information. 

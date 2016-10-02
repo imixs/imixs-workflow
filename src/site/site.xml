@@ -96,7 +96,7 @@
 				<item name="Report Service" href="./restapi/reportservice.html" collapse="true">
 				<item name="XSLT" href="./restapi/xslt.html" />
 				</item>
-				<item name="Entity Service" href="./restapi/entityservice.html" />
+				<item name="Document Service" href="./restapi/documentservice.html" />
 				<item name="JSON" href="./restapi/json.html" />
 			</item>
 
@@ -121,12 +121,11 @@
 
 			<item name="Deployment" href="./deployment/index.html" collapse="true">
 				<item name="Deployment Guide" href="./deployment/deployment_guide.html" />
+				<item name="WildFly" href="./deployment/wildfly.html" />
+				<item name="GlassFish" href="./deployment/glassfish.html" />
 				<item name="Database Schema" href="./deployment/database_schema.html" />
 				<item name="Security" href="./deployment/security.html" />
 				<item name="Concurrency" href="./deployment/concurrency.html" />
-				<item name="GlassFish" href="./deployment/glassfish.html" />
-				<item name="WildFly" href="./deployment/wildfly.html" />
-
 			</item>
 
 			<item name="Sample Application" href="./sampleapplication.html" />

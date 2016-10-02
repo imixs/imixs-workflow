@@ -3,7 +3,12 @@ The following section gives an overview how to deploy the Imixs-Workflow engine 
  
 The examples illustrate how to deploy the components on a [JBoss/Wildfly Application server](http://www.wildfly.org) which is an open source application server based on the Java EE specification. The deployment is similar to all other Java EE application servers (e.g. [Glassfish](http://www.glassfish.org), [Payara](http://www.payara.fish/)...).
  
-The Imixs-Workflow engine can be deployed into a web container or an EJB container (for enterprise applications). The packaging  will differ in some details. Both deployment concepts will be explained in the following section. 
+The Imixs-Workflow engine is based on JDK 1.8 and can be deployed into a Java EE web or EJB container. The packaging will differ in some details. Both deployment concepts will be explained in the following section. 
+
+To deploy the Imixs-Workflow engine on a specific platform see also the chapters:
+
+ * [Deployment Guide Wildfly](./wildfly.html)
+ * [Deployment Guide GlassFish](./glassfish.html)
 
 ##Imixs-Workflow components
 To bundle the Imixs-Workflow engine together with a business application the following components need to be added into the deployment:
