@@ -1,193 +1,41 @@
-# The Imixs-Workflow Database Schema
+# Database Schema
 
-The Imixs-Workflow engine persists all information about the model and the running workflow instances (_workitems_) using the Java Persistence API (JPA). Therefore the Imixs-Workflow engine is database vendor independent and can be run on any SQL database (e.g. MySQL, PostgreSQL, Oracle, MS SQL, ...).
- 
-## The JNDI Database Source
-During the deployment of the Imixs-Workflow engine, the application server has to provide a JNDI datasource. The datasource defines the connection form the application to a database on a database server. The only configuration file which is necessary to define the database connection from Imixs-Workflow engine to the datasource to is the _persistence.xml_ deployment descriptor. This standard descriptor is part of the workflow application (war or ejb modue):
- 
-	<?xml version="1.0" encoding="UTF-8"?>
-	<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence">
-		<persistence-unit name="org.imixs.workflow.jee.jpa" transaction-type="JTA">	
-			<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>	
-			<jta-data-source>jdbc/workflow-db</jta-data-source>
-			<jar-file>lib/imixs-workflow-engine-${org.imixs.workflow.version}.jar</jar-file>
-			<properties>
-				<property name="eclipselink.target-database" value="Auto" />
-				<property name="eclipselink.ddl-generation" value="create-tables" />
-				<property name="eclipselink.deploy-on-startup" value="true" />
-			</properties>				
-		</persistence-unit>
-	</persistence>
- 
-The section persistence-unit specifies the data objects to be stored into the database. The unit name is defined by the Imixs-Workflow Engine and should not be changed. The jta-data-source defines the name of the datasource to be used by the Imixs-Workflow Engine to store data into the database.
- 
-### The JPA Classes and Tables
-The database schema used by the Imixs-Workflow Engine is defined by a set of JPA classes which are part of the package _org.imixs.workflow.jee.jpa_. During the first deployment, JPA maps these classes automatically to the database and creates the corresponding data tables. For each of the following Entity classes a table is generated:
- 
-   * Entity
-   * EntityData
-   * EntityIndex
-   * TextItem
-   * IntegerItem
-   * DoubleItem
-   * CallendarItem
-   * ReadAccessEntity
-   * WriteAccessEntity
- 
-Each data object which is managed by the Imixs-Workflow Engine (_workitem_) is mapped to a data recored located in the entity table. The Entity Object holds a unique ID to identify the Entity. The Entity also holds information about the read- and write access. This ACL information defines whether the entity can be read or modified from different users (_actors_).  
-
-A _workitem_ which is managed by the Imixs-Workflow engine is mapped to the class [ItemCollection](../core/itemcollection.html). The _ItemCollection_ stores any kind of data independent from the structure of the database. This enables Imixs-Workflow to manage _workitems_ is a document-orientated way. If a scecific item contained by the ItemCollection need to be accessed by using a JPQL select statements, the Imixs-Workflow engine defined 4 additional data type objects:
+The Imixs-Workflow engine persists all information about the model and the running workflow instances (_workitems_) using the Java Persistence API (JPA). Therefore the Imixs-Workflow engine is database vendor independent and can be run on any SQL database (e.g. MySQL, PostgreSQL, Oracle, MS SQL, ...). See the [Deployment Guide](./deployment_guide.html) for further details how to deploy the Imixs-Workflow engine into a application sever.
   
-  * TextItem
-  * IntegerItem
-  * DoubleItem
-  * CalendarItem
-  
-The Imixs-Workflow Engine maps any data stored by the EntiyData Object to one of these specific data types if a corresponding IndexEntity is defined. As a result the data objects can be selected using a JPQL statement. Read more about the usage of JPQL in the [section JPQL](../engine/queries.html).
-
-To create a new IndexEntity, the EntityService provides the method add an index by specifying the name and object type:
+## The JPA Classes and Tables
+The database schema used by the Imixs-Workflow engine is quite simple and constis of only one table named '_DOCUMENT_'. During the deployment, JPA maps the jpa class _org.imixs.workflow.engine.jpa.Document_ automatically to the database and creates the corresponding data table.
 
 
-	entityService.addIndex("txtname", EntityIndex.TYP_TEXT);  
-  
+	CREATE TABLE `DOCUMENT` (
+	  `ID` varchar(255) NOT NULL,
+	  `CREATED` datetime DEFAULT NULL,
+	  `DATA` longblob,
+	  `MODIFIED` datetime DEFAULT NULL,
+	  `TYPE` varchar(255) DEFAULT NULL,
+	  `VERSION` int(11) DEFAULT NULL,
+	  PRIMARY KEY (`ID`)
+	) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 
 ## Performance
-In large databases with many workitems there can occur a performance issue which slows down the response time of an application in some situations. The reason for this issue is the default database schema generated by the OR-Mapper during the first deployment. The OR-Mapper did not create any indexes for newly created tables. 
+In large databases with many documents it is recommended to provide additional indexes to the following columns:
+
+ * type
+ * created
+ * modified
+ * version
  
-To fix this problem it is recommended to add additional indices to the database tables after the schema generation. This can be done with the database tools provided by database vendors.
  
 ### MySQL 
 
 The following statement adds the necessary indexes for a MySQL Database: 
  
-	ALTER TABLE `ENTITY` ADD INDEX `index1`(`CREATED`,`MODIFIED`,`TYPE`,`VERSION`);
-	ALTER TABLE `TEXTITEM` ADD INDEX `index1`(`ITEMNAME`, `ITEMVALUE`);
-	ALTER TABLE `INTEGERITEM` ADD INDEX `index1`(`ITEMNAME`, `ITEMVALUE`);
-	ALTER TABLE `CALENDARITEM` ADD INDEX `index1`(`ITEMNAME`, `ITEMVALUE`);
-	ALTER TABLE `DOUBLEITEM` ADD INDEX `index1`(`ITEMNAME`, `ITEMVALUE`);
-	ALTER TABLE `READACCESS` ADD INDEX `index1`(`VALUE`);
-	ALTER TABLE `WRITEACCESS` ADD INDEX `index1`(`VALUE`);
+	ALTER TABLE `DOCUMENT` ADD INDEX `index1`(`CREATED`,`MODIFIED`,`TYPE`,`VERSION`);
 
 ### PostgreSQL
 
 The following statement adds the necessary indexes for a PostgreSQL Database: 
 
-	CREATE INDEX index_entity1 ON entity USING btree(created, modified, type , version);
-	CREATE INDEX index_textitem1 ON textitem USING btree(itemname,itemvalue);
-	CREATE INDEX index_integeritem1 ON integeritem USING btree(itemname,itemvalue);
-	CREATE INDEX index_calendaritem1 ON calendaritem USING btree(itemname,itemvalue);
-	CREATE INDEX index_doubleitem1 ON doubleitem USING btree(itemname,itemvalue);
-	CREATE INDEX index_read1 ON readaccess USING btree(value);
-	CREATE INDEX index_write1 ON writeaccess USING btree(value);
- 
-  
+	CREATE INDEX index_document1 ON document USING btree(created, modified, type , version);
          
-## Foreign key constraint failures  
-In some situations a SQL Exception forced by a foreign key constraint failure can occur during complex transactions. In this case the cascading type of the auto generated foreign keys need to be changed from 'ON DELETE RESTRICT' to  'ON DELETE CASCADE' 
- 
-### MySQL
-
-The following statement changes the cascading type for a MySQL Database: 
-
- 
-	ALTER TABLE `ENTITY_WRITEACCESS` 
-	DROP FOREIGN KEY `FK_ENTITY_WRITEACCESS_writeAccessList_ID`;
-	ALTER TABLE `ENTITY_WRITEACCESS` 
-	ADD CONSTRAINT `FK_ENTITY_WRITEACCESS_writeAccessList_ID`
-	  FOREIGN KEY (`writeAccessList_ID`)
-	  REFERENCES `WRITEACCESS` (`ID`)
-	  ON DELETE CASCADE
-	  ON UPDATE RESTRICT;
-	  
-	ALTER TABLE `ENTITY_READACCESS` 
-	DROP FOREIGN KEY `FK_ENTITY_READACCESS_readAccessList_ID`;
-	ALTER TABLE `ENTITY_READACCESS` 
-	ADD CONSTRAINT `FK_ENTITY_READACCESS_readAccessList_ID`
-	  FOREIGN KEY (`readAccessList_ID`)
-	  REFERENCES `READACCESS` (`ID`)
-	  ON DELETE CASCADE
-	  ON UPDATE RESTRICT;
-	
-	ALTER TABLE `ENTITY_TEXTITEM` 
-	DROP FOREIGN KEY `FK_ENTITY_TEXTITEM_textItems_ID`;
-	ALTER TABLE `ENTITY_TEXTITEM` 
-	ADD CONSTRAINT `FK_ENTITY_TEXTITEM_textItems_ID`
-	  FOREIGN KEY (`textItems_ID`)
-	  REFERENCES `TEXTITEM` (`ID`)
-	  ON DELETE CASCADE
-	  ON UPDATE RESTRICT; 
-	  
-	ALTER TABLE `ENTITY_INTEGERITEM` 
-	DROP FOREIGN KEY `FK_ENTITY_INTEGERITEM_integerItems_ID`;
-	ALTER TABLE `ENTITY_INTEGERITEM` 
-	ADD CONSTRAINT `FK_ENTITY_INTEGERITEM_integerItems_ID`
-	  FOREIGN KEY (`integerItems_ID`)
-	  REFERENCES `INTEGERITEM` (`ID`)
-	  ON DELETE CASCADE
-	  ON UPDATE RESTRICT; 
-	  
-	ALTER TABLE `ENTITY_DOUBLEITEM` 
-	DROP FOREIGN KEY `FK_ENTITY_DOUBLEITEM_doubleItems_ID`;
-	ALTER TABLE `ENTITY_DOUBLEITEM` 
-	ADD CONSTRAINT `FK_ENTITY_DOUBLEITEM_doubleItems_ID`
-	  FOREIGN KEY (`doubleItems_ID`)
-	  REFERENCES `DOUBLEITEM` (`ID`)
-	  ON DELETE CASCADE
-	  ON UPDATE RESTRICT; 
-	  
-	ALTER TABLE `ENTITY_CALENDARITEM` 
-	DROP FOREIGN KEY `FK_ENTITY_CALENDARITEM_calendarItems_ID`;
-	ALTER TABLE `ENTITY_CALENDARITEM` 
-	ADD CONSTRAINT `FK_ENTITY_CALENDARITEM_calendarItems_ID`
-	  FOREIGN KEY (`calendarItems_ID`)
-	  REFERENCES `CALENDARITEM` (`ID`)
-	  ON DELETE CASCADE
-	  ON UPDATE RESTRICT; 
-
-### PostgreSQL
-
-The following statement changes the cascading type for a Postgres Database:
- 
-	ALTER TABLE ENTITY_TEXTITEM
-	DROP constraint FK_ENTITY_TEXTITEM_textItems_ID,
-	ADD CONSTRAINT FK_ENTITY_TEXTITEM_textItems_ID
-	  FOREIGN KEY (textItems_ID)
-	  REFERENCES TEXTITEM (ID)
-	  ON DELETE CASCADE; 
-	
-	ALTER TABLE ENTITY_INTEGERITEM
-	DROP constraint FK_ENTITY_INTEGERITEM_integerItems_ID,
-	ADD CONSTRAINT FK_ENTITY_INTEGERITEM_integerItems_ID
-	  FOREIGN KEY (integerItems_ID)
-	  REFERENCES INTEGERITEM (ID)
-	  ON DELETE CASCADE;
-	
-	ALTER TABLE ENTITY_DOUBLEITEM
-	DROP constraint FK_ENTITY_DOUBLEITEM_doubleItems_ID,
-	ADD CONSTRAINT FK_ENTITY_DOUBLEITEM_doubleItems_ID
-	  FOREIGN KEY (doubleItems_ID)
-	  REFERENCES DOUBLEITEM (ID)
-	  ON DELETE CASCADE;
-	
-	ALTER TABLE ENTITY_CALENDARITEM
-	DROP constraint FK_ENTITY_CALENDARITEM_calendarItems_ID,
-	ADD CONSTRAINT FK_ENTITY_CALENDARITEM_calendarItems_ID
-	  FOREIGN KEY (calendarItems_ID)
-	  REFERENCES CALENDARITEM (ID)
-	  ON DELETE CASCADE;
-	
-	ALTER TABLE ENTITY_WRITEACCESS
-	DROP constraint FK_ENTITY_WRITEACCESS_writeAccessList_ID,
-	ADD CONSTRAINT FK_ENTITY_WRITEACCESS_writeAccessList_ID
-	  FOREIGN KEY (writeAccessList_ID)
-	  REFERENCES WRITEACCESS (ID)
-	  ON DELETE CASCADE;
-	
-	ALTER TABLE ENTITY_READACCESS
-	DROP constraint FK_ENTITY_READACCESS_readAccessList_ID,
-	ADD CONSTRAINT FK_ENTITY_READACCESS_readAccessList_ID
-	  FOREIGN KEY (readAccessList_ID)
-	  REFERENCES READACCESS (ID)
-	  ON DELETE CASCADE;
-
-
