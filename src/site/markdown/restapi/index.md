@@ -12,7 +12,7 @@ The different resources provided by Imixs-Workflow are divided in the following 
 | [/workflow/](./workflowservice.html) | The Workflow resource provides resources and methods to get, create or modify workitems       |
 | [/model/](./modelservice.html)       | The Model resource provides resources and methods to get, create or modify a workflow model|
 | [/report/](./reportservice.html)     | The Report resource provides resources and methods to create or execute a report based on a report definition|
-| [/entity/](./entityservice.html)     | The Entity resource provides resources and methods to query entities and control the index used by the EntityService EJB |
+| [/documents/](./documentservice.html)     | This resource provides methods to query documents managed by the DocumentService EJB |
  
 <strong>Note:</strong> The root context of the REST Service is defined by the web application (web.xml) containing the REST Service. The default root context is "/rest-service/".
 
@@ -77,5 +77,5 @@ The following sections gives an detailed description of all resource groups defi
   * [Workflow Service](./workflowservice.html)
   * [Model Service](./modelservice.html) 
   * [Report Service](./reportservice.html) 
-  * [Entity Service](./entityservice.html) 
+  * [Document Service](./documentservice.html) 
     

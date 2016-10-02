@@ -41,7 +41,7 @@ The Imixs-Faces  component library provides widgets to design modern user interf
  
 ### The DataController
 One of the core concepts of the Imixs-Workflow API is a dynamic document structure represented by the class [ItemCollection](../core/itemcollection.html).
-This concept makes it possible to store any data fields of a web form into the Imixs back-end service. The DataControler is a CDI Bean providing the interface to an ItemCollection and basic methods to access the Imixs EntityService. The Component provides methods to save, load and delete an entity.
+This concept makes it possible to store any data fields of a web form into the Imixs back-end service. The DataControler is a CDI Bean providing the interface to an ItemCollection and basic methods to access the Imixs DocumentService. The Component provides methods to save, load and delete an entity.
 
 	<h:inputText value="#{dataController.item['txtSubject']}"/>
 	...

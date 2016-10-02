@@ -149,7 +149,7 @@ The following example illustrates how to define an application specific role in 
 	  <enterprise-beans>
 	 .....
 	 <session>
-		<ejb-name>EntityService</ejb-name>
+		<ejb-name>DocumentService</ejb-name>
 		<env-entry>
 			<description>Additional Access Rolls</description>
 			<env-entry-name>ACCESS_ROLES</env-entry-name>

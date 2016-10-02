@@ -1,8 +1,8 @@
 # Deployment
-The Imixs-Workflow engine can be deployed in various ways depending on the kind of the application and server environment. As the Imixs-Workflow engine is based on Java EE, the components are typically deployed into a container (EJB or Web Container). The deployment descriptors can used to configure the details of an environment and giving the flexibility to setup the Imixs-Workflow for custom environments and infrastructure. 
+The Imixs-Workflow engine can be deployed in various ways depending on the kind of the application and server environment. As the Imixs-Workflow engine is based on Java EE, the components are typically deployed into a container (EJB or Web Container). The deployment descriptors can be used to configure various details and the behavior of the Imixs-Worklfow engine. This concept gives the flexibility to setup the Imixs-Workflow engine individually for custom environments and infrastructure. 
 
 ## Maven
-All components of Imixs-Workflow are build with Maven which makes it easy to add them into a Maven based project. The following example adds the Imixs-Workflow Engine and the Imixs REST API into a project:
+All components of Imixs-Workflow are build with Maven which makes it easy to add them into a Maven based project. The following example adds the Imixs-Workflow Engine and the Imixs REST API into a maven based project:
 
 	
 	<properties>
@@ -24,7 +24,7 @@ All components of Imixs-Workflow are build with Maven which makes it easy to add
 Read the [section Maven](../maven.html) for further details about how to work with maven artifacts.
 
 ## Database
-The Imixs-Workflow Engine stores the workflow model and its process instances into a database using the Java Persistence API (JPA). Therefore a database pool need to be provided together with the container the Imixs-Workflow engine is deployed to. The configuration is done via the persistence.xml file. See the following example:
+The Imixs-Workflow engine stores the workflow model and its process instances into a database using the Java Persistence API (JPA). Therefore a database pool need to be provided together with the container the Imixs-Workflow engine is deployed to. The configuration is done via the persistence.xml file. See the following example:
 
 
 	<?xml version="1.0" encoding="UTF-8"?>
@@ -45,8 +45,7 @@ __Note:__ The jar-file must match the deployed version of the Imixs-Workflow eng
 
 
 ## Security
-Each back-end call to the Imixs-Workflow engine have to propagate an applicable user principal and security role to be verified by the Imixs EntityService layer.  
-The security concept of Imixs-Workflow defines the following roles:
+Each back-end call to the Imixs-Workflow engine have to propagate an applicable user principal and security role to be verified by the back-end services. The security concept of Imixs-Workflow defines the following roles:
 
   * org.imixs.ACCESSLEVEL.NOACCESS  
   * org.imixs.ACCESSLEVEL.READACCESS
@@ -54,7 +53,7 @@ The security concept of Imixs-Workflow defines the following roles:
   * org.imixs.ACCESSLEVEL.EDITORACCESS
   * org.imixs.ACCESSLEVEL.MANAGERACCESS
 
-Each user accessing the Imixs-Workflow Engine need to be assigned at least to one of these roles. To deploy the Imixs-Workflow engine a corresponding security realm have to be configured inside the application server. See the [section Security](./security.html) for further details.
+Each user accessing the Imixs-Workflow Engine need to be assigned at least to one of these roles. To deploy the Imixs-Workflow engine a corresponding security realm have to be configured in the application server. See the [section Security](./security.html) for further details.
 
 ## Further Information
 
