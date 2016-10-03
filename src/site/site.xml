@@ -64,6 +64,7 @@
 					collapse="true">
 					<item name="Access Control" href="./engine/acl.html" />
 					<item name="Lucene" href="./engine/luceneservice.html" />
+					<item name="Query Syntax" href="./engine/queries.html" />
 				</item>
 				<item name="ModelService" href="./engine/modelservice.html" />
 				<item name="WorkflowService" href="./engine/workflowservice.html" />
