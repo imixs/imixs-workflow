@@ -55,10 +55,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.jee.ejb.EntityService;
+import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLCount;
 import org.imixs.workflow.xml.XMLItemCollection;
@@ -231,7 +232,7 @@ public class DocumentRestService {
 		try {
 
 			// try to load current instance of this entity
-			ItemCollection currentInstance = documentService.load(workitem.getItemValueString(EntityService.UNIQUEID));
+			ItemCollection currentInstance = documentService.load(workitem.getItemValueString(WorkflowKernel.UNIQUEID));
 			if (currentInstance != null) {
 				// merge entity into current instance
 				// an instance of this Entity still exists! so we update the
@@ -308,6 +309,9 @@ public class DocumentRestService {
 		try {
 			documentService.backup(query, filepath);
 		} catch (IOException e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+		} catch (QueryException e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 		}

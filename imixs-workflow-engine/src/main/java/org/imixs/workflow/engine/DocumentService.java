@@ -684,8 +684,9 @@ public class DocumentService {
 	 * 
 	 * @param entities
 	 * @throws IOException
+	 * @throws QueryException 
 	 */
-	public void backup(String query, String filePath) throws IOException {
+	public void backup(String query, String filePath) throws IOException, QueryException {
 		boolean hasMoreData = true;
 		int JUNK_SIZE = 100;
 		long totalcount = 0;
@@ -697,7 +698,7 @@ public class DocumentService {
 		logger.info("backup - target=" + filePath);
 
 		if (filePath == null || filePath.isEmpty()) {
-			logger.severe("[EntityService] Invalid FilePath!");
+			logger.severe("Invalid FilePath!");
 			return;
 		}
 
@@ -706,11 +707,8 @@ public class DocumentService {
 		while (hasMoreData) {
 			// read a junk....
 
-			// TODO - implementation missing
-			// Collection<ItemCollection> col = findAllEntities(query, startpos,
-			// JUNK_SIZE);
-			Collection<ItemCollection> col = new Vector<ItemCollection>();
-
+			Collection<ItemCollection> col = find(query,JUNK_SIZE, startpos);
+			
 			if (col.size() < JUNK_SIZE)
 				hasMoreData = false;
 			startpos = startpos + col.size();
@@ -723,10 +721,10 @@ public class DocumentService {
 				out.writeObject(hmap);
 				icount++;
 			}
-			logger.fine("[EntityService] " + totalcount + " entries backuped....");
+			logger.fine(totalcount + " documents backuped....");
 		}
 		out.close();
-		logger.info("[EntityService] Backup finished - " + icount + " entities read totaly.");
+		logger.info("Backup finished - " + icount + " documents read totaly.");
 	}
 
 	/**

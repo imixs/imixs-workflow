@@ -13,9 +13,9 @@ The following java packages are deprecated in version 4.0.0 but still available 
  
 The following new packages are introduced with version 4.0.0 :
 
- * org.imixs.workflow.jpa - contains the persistence JPA classes
- * org.imixs.workflow.ejb - contains the services EJB classes
- * org.imixs.workflow.plugins - contains all plug-in classes
+ * org.imixs.workflow.engine - contains the services EJB classes
+ * org.imixs.workflow.engine.jpa - contains the persistence JPA classes
+ * org.imixs.workflow.engine.plugins - contains all plug-in classes
  
 ## Persistence
 
