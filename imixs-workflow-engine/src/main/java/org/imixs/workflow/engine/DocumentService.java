@@ -273,7 +273,7 @@ public class DocumentService {
 	 */
 	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
 
-		logger.info("start: ID=" + document.getUniqueID() + " version=" + document.getItemValueInteger("$version"));
+		logger.fine("save: ID=" + document.getUniqueID() + " version=" + document.getItemValueInteger("$version"));
 
 		Document persistedDocument = null;
 		// Now set flush Mode to COMMIT
@@ -388,8 +388,6 @@ public class DocumentService {
 
 		// add/update document into index
 		luceneUpdateService.updateDocument(document);
-
-		logger.info("end: ID=" + document.getUniqueID() + " version=" + document.getItemValueInteger("$version"));
 
 		// return itemCollection
 		return document;
