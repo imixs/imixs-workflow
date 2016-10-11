@@ -7,7 +7,7 @@ note left
 	Start of Measuring Point P1
 
 	datMeasurePointStart_P1 = timestamp
-	numMeasurePoint_P1 = duration in msec
+	numMeasurePoint_P1 = duration in sec
 end note
 activate NewTicket
 Open->Accepted: assign ticket
@@ -20,7 +20,7 @@ note left
 	Start of Measuring Point P2
 
 	datMeasurePointStart_P2 = timestamp
-	numMeasurePoint_P2 = duration in msec
+	numMeasurePoint_P2 = duration in sec
 end note
 
 

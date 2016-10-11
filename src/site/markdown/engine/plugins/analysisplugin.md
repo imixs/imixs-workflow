@@ -22,7 +22,7 @@ The result of a measuring point will be stored in the following workitem propert
 
   * datMeasurePointStart_[NAME] : contains the start time points (lists latest entry on top!)
   * datMeasurePointEnd_[NAME] : contains the end time points (list)
-  * numMeasurePoint_[NAME]: contains the total time in msec
+  * numMeasurePoint_[NAME]: contains the total time in seconds
 
 The [NAME] suffix will be replaced with the name of the measuring point. It is possible  
  to define several measuring points in one process model.
@@ -33,7 +33,7 @@ The following diagram illustrates two measuring points in the ticket-workflow:
 <img src="../../images/analysisplugin.png"/>  
 
 
-The first measuring point 'P1' will measure the total processing time for a ticket. The second measuring point 'P2' will measure the duration of the processing time for the solving.
+The first measuring point 'P1' will measure the total processing time for a ticket. The second measuring point 'P2' will measure the duration of the processing time (in seconds) for the solving.
 
 
 All measuring points will be also logged into the txtWorkflowActivityLog in the comment section.
