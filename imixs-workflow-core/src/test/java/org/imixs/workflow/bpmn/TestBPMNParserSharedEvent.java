@@ -252,7 +252,7 @@ public class TestBPMNParserSharedEvent {
 	 * @throws ModelException 
 	 */
 	@Test
-	public void testSharedEventWithDirectFollowUp()
+	public void testSharedEvent_Case4()
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		
@@ -275,18 +275,68 @@ public class TestBPMNParserSharedEvent {
 		Assert.assertNotNull(task);
 		List<ItemCollection> activities = model.findAllEventsByTask(2000);
 		Assert.assertNotNull(activities);
-		// there a 3 events....
-		Assert.assertEquals(3, activities.size());
+		// there are 3 events....
+		Assert.assertEquals(2, activities.size());
 		Assert.assertNotNull(model.getEvent(2000, 10)); // save
 		Assert.assertNotNull(model.getEvent(2000, 90)); // follow up
-		Assert.assertNotNull(model.getEvent(2000, 100)); // follow up (shared)
+	//	Assert.assertNotNull(model.getEvent(2000, 100)); // follow up (shared)
 		
 		// test task 2100
 		task = model.getTask(2100);
 		Assert.assertNotNull(task);
 		activities = model.findAllEventsByTask(2100);
 		Assert.assertNotNull(activities);
-		// there a 2 events....
+		// there are no events....
+		Assert.assertEquals(0, activities.size());
+
+	
+	}
+
+	/**
+	 * Shared event with a direct follow up event
+	 * 
+	 * @throws ParseException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ModelException 
+	 */
+	@Test
+	public void testSharedEvent_Case5()
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+
+		
+		InputStream inputStream = getClass().getResourceAsStream("/bpmn/shared_event5.bpmn");
+
+		BPMNModel model = null;
+		try {
+			model = BPMNParser.parseModel(inputStream, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			Assert.fail();
+		} catch (ModelException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertNotNull(model);
+
+		// test task 2000
+		ItemCollection task = model.getTask(2000);
+		Assert.assertNotNull(task);
+		List<ItemCollection> activities = model.findAllEventsByTask(2000);
+		Assert.assertNotNull(activities);
+		// there are 3 events....
+		Assert.assertEquals(2, activities.size());
+		Assert.assertNotNull(model.getEvent(2000, 10)); // save
+		Assert.assertNotNull(model.getEvent(2000, 90)); // follow up
+		//Assert.assertNotNull(model.getEvent(2000, 100)); // follow up (shared)
+		
+		// test task 2100
+		task = model.getTask(2100);
+		Assert.assertNotNull(task);
+		activities = model.findAllEventsByTask(2100);
+		Assert.assertNotNull(activities);
+		// there are 2 events....
 		Assert.assertEquals(2, activities.size());
 		Assert.assertNotNull(model.getEvent(2100, 80)); // archive
 		Assert.assertNotNull(model.getEvent(2100, 90)); // follow up (shared)

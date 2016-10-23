@@ -521,22 +521,45 @@ public class BPMNModelHandler extends DefaultHandler {
 	 * If a event has more than one targets (task or event elements) then the
 	 * event is handled as a loop event.
 	 * 
+	 * If a event is already assigned to the sourceTask, the method returns
+	 * without adding the event.
+	 * 
 	 * @param sourceTask
 	 * @param event
 	 * @throws ModelException
 	 */
 	private void addImixsEvent(String eventID, ItemCollection sourceTask) throws ModelException {
 
+		ItemCollection event = eventCache.get(eventID);
+		// test event for null
+		if (event == null) {
+			// invalid model (should not happen)
+			throw new ModelException(ModelException.INVALID_MODEL, "Imixs BPMN Event '" + eventID + "' unknown!");
+		}
 		// clone event
-		ItemCollection event = new ItemCollection(eventCache.get(eventID));
+		event = new ItemCollection(event);
 		String eventName = event.getItemValueString("txtname");
 
-		logger.finest("adding event '" + eventName + "'");
+		// test sourceTask for null
 		if (sourceTask == null) {
 			// invalid model!!
 			throw new ModelException(ModelException.INVALID_MODEL,
 					"Imixs BPMN Event '" + eventName + "' has no source task!");
 		}
+
+		// if the event is already assigned to the sourceTask, then we can
+		// skip, because there is no need to duplicate an event!
+		try {
+			if (model.getEvent(sourceTask.getItemValueInteger("numProcessID"),
+					event.getItemValueInteger("numactivityid")) != null) {
+				logger.fine("Imixs BPMN Event '" + eventName + "' is already assigned tosource task!");
+				return;
+			}
+		} catch (ModelException me1) {
+			// ok we need to add the event....
+		}
+
+		logger.finest("adding event '" + eventName + "'");
 
 		List<SequenceFlow> outFlows = findOutgoingFlows(eventID);
 		if (outFlows == null || outFlows.size() == 0) {
