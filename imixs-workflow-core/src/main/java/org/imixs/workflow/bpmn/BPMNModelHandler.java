@@ -423,8 +423,9 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	/**
 	 * This method returns all SourceTask Elements connected to a given eventID.
-	 * The method takes care about loop events and follow up events (later ones
-	 * will be handled by the method addImixsEvent().
+	 * The method takes care about loop events and follow up events. Later ones
+	 * are handled by the method addImixsEvent(). For that reason, the
+	 * result of this method can be also an empty list.
 	 * 
 	 * An event can be a shared event so it is possible that more than one
 	 * source tasks are found
@@ -505,12 +506,9 @@ public class BPMNModelHandler extends DefaultHandler {
 				}
 			}
 		}
-		if (result.size() == 0) {
-			logger.warning("Imixs BPMN Event '" + eventID + "' has no target task!");
-		}
 
+		logger.fine("Imixs BPMN Event '" + eventID + "' is directly assigend to " + result.size() + " task elements");
 		return result;
-
 	}
 
 	/**
@@ -538,7 +536,6 @@ public class BPMNModelHandler extends DefaultHandler {
 					"Imixs BPMN Event '" + eventName + "' has no source task!");
 		}
 
-		
 		List<SequenceFlow> outFlows = findOutgoingFlows(eventID);
 		if (outFlows == null || outFlows.size() == 0) {
 			// invalid model!!
@@ -902,7 +899,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			for (SequenceFlow aflow : refList) {
 				// recursive call....
 				ItemCollection aResult = findImixsTargetTask(aflow);
-				if (aResult!=null) {
+				if (aResult != null) {
 					// we got the task!
 					return aResult;
 				}
