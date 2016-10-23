@@ -11,7 +11,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -46,7 +45,6 @@ public class TestBPMNParserSharedLinkEvent {
 	 * @throws ModelException 
 	 */
 	@Test
-	@Ignore
 	public void testLinkEventSimple() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		InputStream inputStream = getClass().getResourceAsStream("/bpmn/shared-link-event.bpmn");
@@ -84,13 +82,8 @@ public class TestBPMNParserSharedLinkEvent {
 		ItemCollection event=model.getEvent(1000, 99);
 		Assert.assertEquals("cancel", event.getItemValueString("txtName"));
 		
-
-		
 		// test shared events
-		Assert.assertEquals(1,model.findAllEventsByTask(1100).size());
-
-
-	
+		Assert.assertEquals(2,model.findAllEventsByTask(1100).size());
 		Assert.assertEquals(0,model.findAllEventsByTask(1200).size());
 
 	}

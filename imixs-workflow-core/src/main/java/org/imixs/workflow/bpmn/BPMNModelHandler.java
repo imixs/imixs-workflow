@@ -424,8 +424,8 @@ public class BPMNModelHandler extends DefaultHandler {
 	/**
 	 * This method returns all SourceTask Elements connected to a given eventID.
 	 * The method takes care about loop events and follow up events. Later ones
-	 * are handled by the method addImixsEvent(). For that reason, the
-	 * result of this method can be also an empty list.
+	 * are handled by the method addImixsEvent(). For that reason, the result of
+	 * this method can be also an empty list.
 	 * 
 	 * An event can be a shared event so it is possible that more than one
 	 * source tasks are found
@@ -443,9 +443,10 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		if (inFlows != null && inFlows.size() > 0) {
 			for (SequenceFlow aFlow : inFlows) {
-				ItemCollection sourceTask = new ElementResolver().findImixsSourceTask(aFlow);
-				if (sourceTask != null) {
-					result.add(sourceTask);
+				List<ItemCollection> sourceTaskList = new ArrayList<ItemCollection>();
+				sourceTaskList = new ElementResolver().findAllImixsSourceTasks(aFlow, sourceTaskList);
+				if (sourceTaskList.size() > 0) {
+					result.addAll(sourceTaskList);
 				} else {
 					// we found no source task. Test if the incoming flow is a
 					// event. Than we can ignore this flow! (follow up event)
@@ -526,7 +527,8 @@ public class BPMNModelHandler extends DefaultHandler {
 	 */
 	private void addImixsEvent(String eventID, ItemCollection sourceTask) throws ModelException {
 
-		ItemCollection event = eventCache.get(eventID);
+		// clone event
+		ItemCollection event = new ItemCollection(eventCache.get(eventID));
 		String eventName = event.getItemValueString("txtname");
 
 		logger.finest("adding event '" + eventName + "'");
@@ -772,16 +774,16 @@ public class BPMNModelHandler extends DefaultHandler {
 		 * @return the Imixs Task element or null if no Task Element was found.
 		 * @return
 		 */
-		public ItemCollection findImixsSourceTask(SequenceFlow flow) {
+		public List<ItemCollection> findAllImixsSourceTasks(SequenceFlow flow, List<ItemCollection> sourceList) {
 
 			if (flow.source == null) {
-				return null;
+				return sourceList;
 			}
 
 			// detect loops...
 			if (loopFlowCache.contains(flow.source)) {
 				// loop!
-				return null;
+				return sourceList;
 			} else {
 				loopFlowCache.add(flow.source);
 			}
@@ -789,7 +791,8 @@ public class BPMNModelHandler extends DefaultHandler {
 			// test if the source is a Imixs task
 			ItemCollection imixstask = taskCache.get(flow.source);
 			if (imixstask != null) {
-				return imixstask;
+				sourceList.add(imixstask);
+				return sourceList;
 			}
 
 			// test if the source is a Imixs Event - than we are in a follow up
@@ -798,7 +801,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			if (imixsevent != null) {
 				// event is connected to a event - so we are in a follow up
 				// event!
-				return null;
+				return sourceList;
 			}
 
 			// no Imixs task found so we are trying to look for the next
@@ -806,9 +809,9 @@ public class BPMNModelHandler extends DefaultHandler {
 			// flow elements.
 			List<SequenceFlow> refList = findIncomingFlows(flow.source);
 			for (SequenceFlow aflow : refList) {
-				return (findImixsSourceTask(aflow));
+				sourceList = findAllImixsSourceTasks(aflow, sourceList);
 			}
-			return null;
+			return sourceList;
 		}
 
 		/**
