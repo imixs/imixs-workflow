@@ -274,10 +274,7 @@ public class DocumentService {
 	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
 
 		logger.fine("save: ID=" + document.getUniqueID() + " version=" + document.getItemValueInteger("$version"));
-
 		Document persistedDocument = null;
-		// Now set flush Mode to COMMIT
-		manager.setFlushMode(FlushModeType.COMMIT);
 
 		// check if a $uniqueid is available
 		String sID = document.getItemValueString(UNIQUEID);
@@ -319,10 +316,8 @@ public class DocumentService {
 				throw new AccessDeniedException(OPERATION_NOTALLOWED, "You are not allowed to perform this operation");
 			}
 		}
-
 		// after all the persistedDocument is now managed through the
-		// persistence
-		// manager!
+		// persistence manager!
 
 		// remove the property $isauthor
 		document.removeItem("$isauthor");
@@ -359,32 +354,16 @@ public class DocumentService {
 		// '$isauthor'
 		document.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
 
-		// we now increase the $Version number
-		// ! not necessary - version can be read after flush blow!
-
 		/*
-		 * Issue #166,#145
+		 * Issue #220
 		 * 
-		 * The flush call is important here. In cases of multiple updates of
-		 * different entities in same transaction data can be lost if not
-		 * flushed here! After the flush() the current version number can be
-		 * read.
+		 * The flush call is needed here to update the $version of the returned
+		 * document. We also will no longer detach the document.
 		 */
 		manager.flush();
-
+		logger.fine("flush: ID=" + document.getUniqueID() + " new version=" + persistedDocument.getVersion());
 		// get new $version
 		document.replaceItemValue("$Version", persistedDocument.getVersion());
-
-		/*
-		 * Issue #189
-		 * 
-		 * We need to detach the activeEntity here. In other cases there are
-		 * situations where updates caused by the vm are reflected back into the
-		 * entity and increases the version number. This can be tested when a
-		 * byte array is stored in a itemCollection. So for this reason we
-		 * detach the entity here!!
-		 */
-		manager.detach(persistedDocument);
 
 		// add/update document into index
 		luceneUpdateService.updateDocument(document);
@@ -659,7 +638,8 @@ public class DocumentService {
 		for (Document doc : documentList) {
 			if (isCallerReader(doc)) {
 				ItemCollection _tmp = new ItemCollection(doc.getData());
-				// if disable Optimistic Locking is TRUE we do not add the version
+				// if disable Optimistic Locking is TRUE we do not add the
+				// version
 				// number
 				if (disableOptimisticLocking)
 					_tmp.removeItem("$Version");
@@ -682,7 +662,7 @@ public class DocumentService {
 	 * 
 	 * @param entities
 	 * @throws IOException
-	 * @throws QueryException 
+	 * @throws QueryException
 	 */
 	public void backup(String query, String filePath) throws IOException, QueryException {
 		boolean hasMoreData = true;
@@ -705,8 +685,8 @@ public class DocumentService {
 		while (hasMoreData) {
 			// read a junk....
 
-			Collection<ItemCollection> col = find(query,JUNK_SIZE, startpos);
-			
+			Collection<ItemCollection> col = find(query, JUNK_SIZE, startpos);
+
 			if (col.size() < JUNK_SIZE)
 				hasMoreData = false;
 			startpos = startpos + col.size();
