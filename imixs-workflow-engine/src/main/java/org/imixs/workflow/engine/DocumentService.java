@@ -262,7 +262,7 @@ public class DocumentService {
 	 * org.imixs.ACCESSLEVEL.AUTHORACCESS
 	 * <p>
 	 * The method returns a itemCollection with the current VersionNumber from
-	 * the persisted entity. (see issue #145)
+	 * the persisted entity. (see issue #220)
 	 * <p>
 	 * The method adds/updates the document into the lucene index.
 	 * 
@@ -275,10 +275,10 @@ public class DocumentService {
 
 		logger.fine("save: ID=" + document.getUniqueID() + " version=" + document.getItemValueInteger("$version"));
 		Document persistedDocument = null;
-		
+
 		// Now set flush Mode to COMMIT
 		manager.setFlushMode(FlushModeType.COMMIT);
-		
+
 		// check if a $uniqueid is available
 		String sID = document.getItemValueString(UNIQUEID);
 		if (!"".equals(sID)) {
@@ -307,8 +307,7 @@ public class DocumentService {
 				// Overwrite Creation Date
 				persistedDocument.setCreated(cal);
 			}
-
-			// now persist the new Entity
+			// now persist the new EntityBean!
 			logger.finest("persist activeEntity");
 			manager.persist(persistedDocument);
 
@@ -318,16 +317,22 @@ public class DocumentService {
 			if (!isCallerAuthor(persistedDocument) || !isCallerReader(persistedDocument)) {
 				throw new AccessDeniedException(OPERATION_NOTALLOWED, "You are not allowed to perform this operation");
 			}
+			// there is no need to merge the persistedDocument because it is
+			// already managed by JPA!
 		}
-		// after all the persistedDocument is now managed through the
-		// persistence manager!
+
+		// after all the persistedDocument is now managed through JPA!
 
 		// remove the property $isauthor
 		document.removeItem("$isauthor");
 
+		// verify type attribute
 		String aType = document.getItemValueString("type");
-		if ("".equals(aType))
-			aType = "Entity";
+		if ("".equals(aType)) {
+			aType = "document";
+			document.replaceItemValue("type", aType);
+		}
+		// update type attribute
 		persistedDocument.setType(aType);
 
 		// update the standard attributes $modified $created and $uniqueid
@@ -350,29 +355,27 @@ public class DocumentService {
 			logger.finest("[save] version=" + version);
 		}
 
-		// finally update the data field by cloning the map object 
-		ItemCollection clone=(ItemCollection) document.clone();
+		// finally update the data field by cloning the map object
+		ItemCollection clone = (ItemCollection) document.clone();
 		persistedDocument.setData(clone.getAllItems());
 
-		
-		/*
-		 * Issue #220
+		/* Issue #220
 		 * 
 		 * The flush call is needed here to update the $version of the returned
-		 * document. We also will no longer detach the document.
+		 * document. We also won't detach the document!
 		 */
 		manager.flush();
 		logger.fine("flush: ID=" + document.getUniqueID() + " new version=" + persistedDocument.getVersion());
 
-		// update the $version	
+		// update the $version
 		document.replaceItemValue("$version", persistedDocument.getVersion());
 		// update the $isauthor flag
 		document.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
-		
-		// add/update document into index
+
+		// add/update document into lucene index
 		luceneUpdateService.updateDocument(document);
 
-		// return itemCollection
+		// return the updated document
 		return document;
 	}
 
@@ -420,7 +423,7 @@ public class DocumentService {
 	public ItemCollection load(String id) {
 		Document persistedDocument = null;
 		persistedDocument = manager.find(Document.class, id);
-		
+
 		// create instance of ItemCollection
 		if (persistedDocument != null && isCallerReader(persistedDocument)) {
 			ItemCollection result = new ItemCollection(persistedDocument.getData());
@@ -428,11 +431,10 @@ public class DocumentService {
 			// number
 			if (disableOptimisticLocking) {
 				result.removeItem("$Version");
+			} else {
+				result.replaceItemValue("$Version", persistedDocument.getVersion());
 			}
-			else {
-				result.replaceItemValue("$Version", persistedDocument.getVersion());			
-			}
-			
+
 			// update the $isauthor flag
 			result.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
 			manager.detach(persistedDocument);
@@ -646,7 +648,7 @@ public class DocumentService {
 
 		l = System.currentTimeMillis();
 		// filter resultset by read access
-		for (Document doc : documentList) {			
+		for (Document doc : documentList) {
 			if (isCallerReader(doc)) {
 				ItemCollection _tmp = new ItemCollection(doc.getData());
 				// if disable Optimistic Locking is TRUE we do not add the
@@ -654,14 +656,13 @@ public class DocumentService {
 				// number
 				if (disableOptimisticLocking) {
 					_tmp.removeItem("$Version");
-				}
-				else {
+				} else {
 					_tmp.replaceItemValue("$Version", doc.getVersion());
 				}
-				
+
 				// update the $isauthor flag
 				_tmp.replaceItemValue("$isauthor", isCallerAuthor(doc));
-				
+
 				manager.detach(doc);
 				result.add(_tmp);
 			}
