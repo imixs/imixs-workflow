@@ -52,6 +52,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
+import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -275,6 +276,8 @@ public class DocumentService {
 		logger.fine("save: ID=" + document.getUniqueID() + " version=" + document.getItemValueInteger("$version"));
 		Document persistedDocument = null;
 		
+		// Now set flush Mode to COMMIT
+		manager.setFlushMode(FlushModeType.COMMIT);
 		
 		// check if a $uniqueid is available
 		String sID = document.getItemValueString(UNIQUEID);
