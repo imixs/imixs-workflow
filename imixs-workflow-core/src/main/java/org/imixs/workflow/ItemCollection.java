@@ -73,7 +73,7 @@ public class ItemCollection implements Cloneable {
 	private Map<String, List<Object>> hash = new Hashtable<String, List<Object>>();
 
 	/**
-	 * Creates a empty ItemCollection
+	 * Creates a new empty ItemCollection
 	 * 
 	 */
 	public ItemCollection() {
@@ -81,28 +81,35 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Creates a new ItemCollection and transfers all Objects of map as new
-	 * values.
+	 * Creates a new ItemCollection and copy values from a Map interface
 	 * 
 	 * @param map
+	 *            - with item values
 	 */
 	public ItemCollection(Map<String, List<Object>> map) {
-		Iterator<?> it = map.entrySet().iterator();
-		while (it.hasNext()) {
-			@SuppressWarnings("unchecked")
-			Map.Entry<String, List<Object>> entry = (Entry<String, List<Object>>) it.next();
-			this.replaceItemValue(entry.getKey().toString(), entry.getValue());
-		}
+		super();
+		this.replaceAllItems(map);
 	}
 
 	/**
-	 * Creates a new ItemCollection by copy values from another ItemCollection
+	 * Creates a new ItemCollection and copy values from another ItemCollection
 	 * 
-	 * @param map
+	 * @param itemCol
+	 *            - ItemCollection with values
 	 */
-	public ItemCollection(ItemCollection aItemCol) {
+	public ItemCollection(ItemCollection itemCol) {
 		super();
-		this.replaceAllItems(aItemCol.getAllItems());
+		this.replaceAllItems(itemCol.getAllItems());
+	}
+
+	/**
+	 * Clone the current ItemCollection. The method will make a deep copy of the
+	 * current instance.
+	 */
+	@Override
+	public Object clone() {
+		ItemCollection itemColClone = new ItemCollection(this);
+		return itemColClone;
 	}
 
 	/**
@@ -676,16 +683,6 @@ public class ItemCollection implements Cloneable {
 			Map.Entry<String, List<Object>> entry = (Map.Entry<String, List<Object>>) it.next();
 			replaceItemValue(entry.getKey().toString(), entry.getValue());
 		}
-	}
-
-	/**
-	 * Clone will make a deep copy of the current instance.
-	 */
-	@Override
-	public Object clone() {
-		ItemCollection itemColClone = new ItemCollection();
-		itemColClone.replaceAllItems(this.getAllItems());
-		return itemColClone;
 	}
 
 	/**
