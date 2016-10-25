@@ -274,7 +274,8 @@ public class DocumentService {
 
 		logger.fine("save: ID=" + document.getUniqueID() + " version=" + document.getItemValueInteger("$version"));
 		Document persistedDocument = null;
-
+		
+		
 		// check if a $uniqueid is available
 		String sID = document.getItemValueString(UNIQUEID);
 		if (!"".equals(sID)) {
@@ -346,13 +347,11 @@ public class DocumentService {
 			logger.finest("[save] version=" + version);
 		}
 
-		// finally update the data field and store the item map object
-		persistedDocument.setData(document.getAllItems());
+		// finally update the data field by cloning the map object 
+		ItemCollection clone=(ItemCollection) document.clone();
+		persistedDocument.setData(clone.getAllItems());
 
-		// verify and update the author access and add again the property
-		// '$isauthor'
-		document.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
-
+		
 		/*
 		 * Issue #220
 		 * 
@@ -361,9 +360,12 @@ public class DocumentService {
 		 */
 		manager.flush();
 		logger.fine("flush: ID=" + document.getUniqueID() + " new version=" + persistedDocument.getVersion());
-		// get new $version
-		document.replaceItemValue("$Version", persistedDocument.getVersion());
 
+		// update the $version	
+		document.replaceItemValue("$version", persistedDocument.getVersion());
+		// update the $isauthor flag
+		document.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
+		
 		// add/update document into index
 		luceneUpdateService.updateDocument(document);
 
@@ -415,16 +417,23 @@ public class DocumentService {
 	public ItemCollection load(String id) {
 		Document persistedDocument = null;
 		persistedDocument = manager.find(Document.class, id);
-
+		
 		// create instance of ItemCollection
 		if (persistedDocument != null && isCallerReader(persistedDocument)) {
 			ItemCollection result = new ItemCollection(persistedDocument.getData());
 			// if disable Optimistic Locking is TRUE we do not add the version
 			// number
-			if (disableOptimisticLocking)
+			if (disableOptimisticLocking) {
 				result.removeItem("$Version");
-			else
-				result.replaceItemValue("$Version", persistedDocument.getVersion());
+			}
+			else {
+				result.replaceItemValue("$Version", persistedDocument.getVersion());			
+			}
+			
+			// update the $isauthor flag
+			result.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
+			manager.detach(persistedDocument);
+
 			return result;
 		} else
 			return null;
@@ -634,16 +643,23 @@ public class DocumentService {
 
 		l = System.currentTimeMillis();
 		// filter resultset by read access
-		for (Document doc : documentList) {
+		for (Document doc : documentList) {			
 			if (isCallerReader(doc)) {
 				ItemCollection _tmp = new ItemCollection(doc.getData());
 				// if disable Optimistic Locking is TRUE we do not add the
 				// version
 				// number
-				if (disableOptimisticLocking)
+				if (disableOptimisticLocking) {
 					_tmp.removeItem("$Version");
-				else
+				}
+				else {
 					_tmp.replaceItemValue("$Version", doc.getVersion());
+				}
+				
+				// update the $isauthor flag
+				_tmp.replaceItemValue("$isauthor", isCallerAuthor(doc));
+				
+				manager.detach(doc);
 				result.add(_tmp);
 			}
 		}
