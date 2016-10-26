@@ -2,11 +2,16 @@
 
 The Imixs-Workflow Result Plug-In is used to provide model based processing information. These information is provided by additional property values assigned to an Imixs BPMN Event. The plug-in evaluates these processing information which can be used by different modules. 
 
-The Plug-in: 
+_Plugin Class Name:_
 
     org.imixs.workflow.plugins.ResultPlugin
 
-The Result Plug-in should run in the first place so that processing information can be provided to following plug-ins.
+The Result Plug-in should run in the first place, so that processing information can be provided to following plug-ins.
+With the [Imixs-BPMN modeler](../../modelling/activities.html) the Workflow Result can be edited in the 'Workflow' section of an event. 
+
+
+<img src="../../images/modelling/bpmn_screen_20.png"/>
+
 
 ##The Item Tag
 
@@ -23,13 +28,19 @@ This example will update two properties of the current workitem. The property 't
  
 <strong>Note:</strong> It is not possible to update any internal [workflow data items](../../quickstart/workitem.html) beginning with an  '$' character. 
 
+### The Item Value 
+
 The Item value can also be evaluated by the tag 'itemValue' to assign a value form any existing item. See the following example which computes the value of the property 'responsible' to the value of the existing item 'namCreator':
  
     <item name="responsible"><itemvalue>namCreator</itemvalue></item> 
 
+With the optional attribute 'type' the item value type can be specified. The following types are supported:
+
+* boolean - results in type Boolean
+* integer - results in type Integer
 
 
-## Item Attributes
+### Item Attributes
 A item definition can also contain optional attributes : 
 
     <item name="[NAME]" [OPTION]="[OPTION-VALUE]">[VALUE]</item> 
@@ -47,9 +58,3 @@ The Result Plug-in provides the static method evaluateWorkflowResult() returning
 	Assert.assertEquals("some data", result.getItemValueString("comment"));
 	Assert.assertEquals("true", result.getItemValueString("comment.ignore"));
 
-## The Value Type
-
-With the optional attribute 'type' the item value type can be specified. The following types are supported:
-
-* boolean - results in type Boolean
-* integer - results in type Integer

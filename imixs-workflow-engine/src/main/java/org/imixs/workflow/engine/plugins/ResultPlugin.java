@@ -100,13 +100,11 @@ public class ResultPlugin extends AbstractPlugin {
 	 * 
 	 * Example:
 	 * 
-	 * <code>
-	  
+	 * <code>	  
 				<modelversion>1.0.0</modelversion>
 				<processid>1000</processid>
 				<activityid>10</activityid>
-				<items>namTeam</items>
-	  
+				<items>namTeam</items>	  
 	 * </code>
 	 * 
 	 * @param evalItemCollection
