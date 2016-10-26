@@ -65,11 +65,6 @@ import org.xml.sax.SAXException;
  * </code>
  * 
  * 
- * The final result will be stored into the attribute
- * "txtworkflowresultmessage".
- * 
- * This field could be used by an application to display individual messages
- * (e.g HTML Code) or return result Strings (e.g. JSF Action Results)
  * 
  * @author Ralph Soika
  * @version 1.0
@@ -80,20 +75,16 @@ public class ResultPlugin extends AbstractPlugin {
 
 	public static final String INVALID_FORMAT = "INVALID_FORMAT";
 
-	ItemCollection documentContext;
-	String sActivityResult;
 	private static Logger logger = Logger.getLogger(ResultPlugin.class.getName());
 
-	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
-		documentContext = adocumentContext;
+	public ItemCollection run(ItemCollection documentContext, ItemCollection adocumentActivity) throws PluginException {
 		// evaluate new items....
 		ItemCollection evalItemCollection = new ItemCollection();
-		evalItemCollection=adocumentContext=evaluateWorkflowResult(adocumentActivity,documentContext);
+		evalItemCollection=evaluateWorkflowResult(adocumentActivity,documentContext);
 		// copy values
 		if (evalItemCollection!=null) {
 			documentContext.replaceAllItems(evalItemCollection.getAllItems());
 		}
-		documentContext.replaceItemValue("txtworkflowresultmessage", sActivityResult);
 		return documentContext;
 	}
 
@@ -105,7 +96,7 @@ public class ResultPlugin extends AbstractPlugin {
 	 * ItemCollection containing all item values. Each tag is evaluated as the
 	 * item name.
 	 * 
-	 * MultiValues are currently not supported
+	 * MultiValues are currently not supported. 
 	 * 
 	 * Example:
 	 * 
@@ -122,7 +113,7 @@ public class ResultPlugin extends AbstractPlugin {
 	 * @throws PluginException
 	 */
 	public static ItemCollection parseItemStructure(String xmlContent) throws PluginException {
-		logger.fine("Evaluate Subprocess Item...");
+		logger.fine("parseItemStructure...");
 
 		ItemCollection result = new ItemCollection();
 		if (xmlContent.length() > 0) {

@@ -18,24 +18,19 @@ See the following examples:
  
 	<item name="txtName">Some Title</item> 
 	<item name="numAccount" type="integer">500</item> 
-	<item name="type">workitemarchive</item> 
 
-
-This example will set the property 'txtName' to the value 'Some Title' and change the value 
- of the field 'numAccount' to 500. The value will be of type 'integer'. The last will change the type of the workitem to 'workitemarchive'.
+This example will update two properties of the current workitem. The property 'txtName' is set to the value 'Some Title'. The property 'numAccount' will be set to the integer value 500. 
  
-<strong>Note:</strong> It is not possible to update any workflow processing properties beginning with an  '$' character in the item name. 
+<strong>Note:</strong> It is not possible to update any internal [workflow data items](../../quickstart/workitem.html) beginning with an  '$' character. 
 
-An Item value can also be evaluated by the tag 'itemValue' to assign a value form any existing processinstance. See the following example which computes the value of the property 'namCreator' to the item with the name 'responsible':
+The Item value can also be evaluated by the tag 'itemValue' to assign a value form any existing item. See the following example which computes the value of the property 'responsible' to the value of the existing item 'namCreator':
  
     <item name="responsible"><itemvalue>namCreator</itemvalue></item> 
 
- If the result message can not be evaluated, it will be stored into the attribute 
- "txtworkflowresultmessage". 
- 
+
 
 ## Item Attributes
-A item definiton can also contain optional attributes : 
+A item definition can also contain optional attributes : 
 
     <item name="[NAME]" [OPTION]="[OPTION-VALUE]">[VALUE]</item> 
 
@@ -43,7 +38,7 @@ See the following example:
  
 	<item name="comment" ignore="true">some data</item> 
 
-The Result Plug-in provides the static method evaluateWorkflowResult() returning a ItemCollection with all item names and there attributes. In the example the ItemCollection will contain a item with the name 'comment' storing the value 'some data' and also a item value with the name 'comment.ignore' storing the value 'true'	
+The Result Plug-in provides the static method evaluateWorkflowResult() returning a ItemCollection with all item names and there attributes. In the example the ItemCollection 'result' will contain a item with the name 'comment' storing the value 'some data' and also a item value with the name 'comment.ignore' storing the value 'true'	
 	
 	
 	ItemCollection result = ResultPlugin.evaluateWorkflowResult(activityEntity, workitem);
