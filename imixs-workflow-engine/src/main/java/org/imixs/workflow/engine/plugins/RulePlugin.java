@@ -189,7 +189,7 @@ public class RulePlugin extends AbstractPlugin {
 
 			// Next update the Activity entity. Values can be provided optional
 			// by the script variable 'activity'...
-			updateActivityEntity(engine, adocumentActivity);
+			updateEvent(engine, adocumentActivity);
 
 			// now test the variable 'followUp'
 			Object followUp = null;
@@ -381,7 +381,7 @@ public class RulePlugin extends AbstractPlugin {
 	 * @throws ScriptException
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void updateActivityEntity(ScriptEngine engine, ItemCollection event) {
+	private void updateEvent(ScriptEngine engine, ItemCollection event) {
 
 		Map<String, Object[]> orginalActivity = convertItemCollection(event);
 		// get activity from engine
