@@ -309,7 +309,7 @@ public class ModelRestServiceV3 {
 	@Path("/{version}")
 	public void deleteModel(@PathParam("version") String version) {
 		try {
-			modelService.removeModelEntity(version);
+			modelService.deleteModel(version);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
