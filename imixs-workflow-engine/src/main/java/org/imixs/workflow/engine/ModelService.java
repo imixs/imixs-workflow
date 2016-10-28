@@ -145,9 +145,9 @@ public class ModelService implements ModelManager {
 			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Version not provided! ");
 		}
 		getModelStore().put(modelVersion, model);
-		
+
 		// sort model list
-		
+
 		logger.info("added new model '" + modelVersion + "'");
 
 	}
@@ -206,15 +206,17 @@ public class ModelService implements ModelManager {
 					model = getModel(newVersion);
 				}
 			} else {
-				// model not found and no match for current txtworkflowgroup defined!
-				model=null;
+				// model not found and no match for current txtworkflowgroup
+				// defined!
+				model = null;
 			}
 		}
-		
+
 		// check if model was found....
 		if (model == null) {
-			throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION, "Modelversion '" + modelVersion
-					+ "' not found! No matching version found for WorkflowGroup '" + workflowGroup + "' ($uniqueid=" + workitem.getUniqueID() + ")");
+			throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
+					"Modelversion '" + modelVersion + "' not found! No matching version found for WorkflowGroup '"
+							+ workflowGroup + "' ($uniqueid=" + workitem.getUniqueID() + ")");
 		}
 
 		return model;
@@ -264,10 +266,10 @@ public class ModelService implements ModelManager {
 	 */
 	public void saveModelEntity(BPMNModel model) throws ModelException {
 		if (model != null) {
-			// first remove existing model entities
-			removeModelEntity(model.getVersion());
+			// first delete existing model entities
+			deleteModel(model.getVersion());
 			// store model into database
-			logger.fine("save BPMNModel Entity...");
+			logger.fine("save BPMNModel '" + model.getVersion() + "'...");
 			BPMNModel bpmnModel = (BPMNModel) model;
 			addModel(model);
 			ItemCollection modelItemCol = new ItemCollection();
@@ -276,30 +278,30 @@ public class ModelService implements ModelManager {
 			modelItemCol.replaceItemValue("txtname", bpmnModel.getVersion());
 			modelItemCol.addFile(bpmnModel.getRawData(), bpmnModel.getVersion() + ".bpmn", "application/xml");
 			documentService.save(modelItemCol);
-
-			logger.info("stored new model '" + model.getVersion() + "'");
 		}
 	}
 
 	/**
-	 * This method removes existing Model Entities from the database. A model
-	 * entity is identified by its name (model version). The model will also be
-	 * removed from the ModelManager
+	 * This method deletes an existing Model Entities from the database and
+	 * removes the model form the internal ModelStore. A model entity is
+	 * identified by the type='model' and its name (model version). After the
+	 * model entity was deleted form the database, the method will also remove
+	 * the model from the ModelManager
 	 * 
 	 * @param model
 	 */
-	public void removeModelEntity(String version) {
+	public void deleteModel(String version) {
 		if (version != null) {
 			logger.fine("delete BPMNModel Entity '" + version + "'...");
 
 			// first remove existing model entities
-			String searchTerm="(type:\"model\" AND txtname:\"" + version + "\")";
+			String searchTerm = "(type:\"model\" AND txtname:\"" + version + "\")";
 			Collection<ItemCollection> col;
 			try {
 				col = documentService.find(searchTerm, 0, -1);
 			} catch (QueryException e) {
 				logger.severe("removeModelEntity - invalid query: " + e.getMessage());
-				throw new InvalidAccessException(InvalidAccessException.INVALID_ID,e.getMessage(),e);
+				throw new InvalidAccessException(InvalidAccessException.INVALID_ID, e.getMessage(), e);
 			}
 			// delete model entites
 			for (ItemCollection modelEntity : col) {
@@ -320,7 +322,7 @@ public class ModelService implements ModelManager {
 			logger.fine("load BPMNModel Entity '" + version + "'...");
 
 			// find model by version
-			String searchTerm="(type:\"model\" AND txtname:\"" + version + "\")";
+			String searchTerm = "(type:\"model\" AND txtname:\"" + version + "\")";
 			Collection<ItemCollection> col;
 			try {
 				col = documentService.find(searchTerm, 1, 0);
