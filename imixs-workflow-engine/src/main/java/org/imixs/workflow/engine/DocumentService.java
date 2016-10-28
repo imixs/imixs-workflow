@@ -359,7 +359,8 @@ public class DocumentService {
 		ItemCollection clone = (ItemCollection) document.clone();
 		persistedDocument.setData(clone.getAllItems());
 
-		/* Issue #220
+		/*
+		 * Issue #220
 		 * 
 		 * The flush call is needed here to update the $version of the returned
 		 * document. We also won't detach the document!
@@ -374,6 +375,16 @@ public class DocumentService {
 
 		// add/update document into lucene index
 		luceneUpdateService.updateDocument(document);
+
+		/*
+		 * issue #226
+		 * 
+		 * We need to detach the activeEntity here. In some cases there are
+		 * situations where updates caused by the VM are reflected back into the
+		 * entity and increases the version number. This can be tested when a
+		 * byte array is stored in a itemCollection.
+		 */
+		manager.detach(persistedDocument);
 
 		// return the updated document
 		return document;
