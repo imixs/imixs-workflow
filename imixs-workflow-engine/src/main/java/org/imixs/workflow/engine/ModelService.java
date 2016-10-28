@@ -59,8 +59,8 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.QueryException;
 
 /**
- * The ModelManager is independend form the IX JEE Entity EJBs and uses the
- * standard IntemCollection Object as a data transfer object to comunitcate with
+ * The ModelManager is independent form the IX JEE Entity EJBs and uses the
+ * standard IntemCollection Object as a data transfer object to communicate with
  * clients.
  * 
  * 
@@ -118,7 +118,7 @@ public class ModelService implements ModelManager {
 				while (entries.hasNext()) {
 					Map.Entry<String, List<Object>> entry = entries.next();
 					String fileName = entry.getKey();
-					logger.info("loading " + fileName);
+					logger.fine("loading file:" + fileName);
 					List<Object> fileData = entry.getValue();
 					byte[] rawData = (byte[]) fileData.get(1);
 					InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
@@ -144,12 +144,9 @@ public class ModelService implements ModelManager {
 		if (modelVersion.isEmpty()) {
 			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Version not provided! ");
 		}
+		
+		logger.fine("add BPMNModel '" + modelVersion + "'...");
 		getModelStore().put(modelVersion, model);
-
-		// sort model list
-
-		logger.info("added new model '" + modelVersion + "'");
-
 	}
 
 	/**
@@ -160,7 +157,7 @@ public class ModelService implements ModelManager {
 	 */
 	public void removeModel(String modelversion) {
 		getModelStore().remove(modelversion);
-		logger.fine("removed modelversion: " + modelversion);
+		logger.fine("removed BPMNModel '" + modelversion + "'...");
 	}
 
 	/**
@@ -264,12 +261,12 @@ public class ModelService implements ModelManager {
 	 * @param model
 	 * @throws ModelException
 	 */
-	public void saveModelEntity(BPMNModel model) throws ModelException {
+	public void saveModel(BPMNModel model) throws ModelException {
 		if (model != null) {
 			// first delete existing model entities
 			deleteModel(model.getVersion());
 			// store model into database
-			logger.fine("save BPMNModel '" + model.getVersion() + "'...");
+			logger.info("save BPMNModel '" + model.getVersion() + "'...");
 			BPMNModel bpmnModel = (BPMNModel) model;
 			addModel(model);
 			ItemCollection modelItemCol = new ItemCollection();
@@ -292,7 +289,7 @@ public class ModelService implements ModelManager {
 	 */
 	public void deleteModel(String version) {
 		if (version != null) {
-			logger.fine("delete BPMNModel Entity '" + version + "'...");
+			logger.info("delete BPMNModel '" + version + "'...");
 
 			// first remove existing model entities
 			String searchTerm = "(type:\"model\" AND txtname:\"" + version + "\")";
@@ -319,8 +316,8 @@ public class ModelService implements ModelManager {
 	 */
 	public ItemCollection loadModelEntity(String version) {
 		if (version != null) {
-			logger.fine("load BPMNModel Entity '" + version + "'...");
-
+			logger.info("load BPMNModel '" + version + "'...");
+			
 			// find model by version
 			String searchTerm = "(type:\"model\" AND txtname:\"" + version + "\")";
 			Collection<ItemCollection> col;

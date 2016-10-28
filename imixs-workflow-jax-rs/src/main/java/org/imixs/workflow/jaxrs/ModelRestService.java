@@ -333,7 +333,7 @@ public class ModelRestService {
 	public Response putBPMNModel(BPMNModel bpmnmodel) {
 		try {
 			logger.fine("BPMN Model posted... ");
-			modelService.saveModelEntity(bpmnmodel);
+			modelService.saveModel(bpmnmodel);
 		} catch (ModelException e) {
 			logger.warning("Unable to update model: " + e.getMessage());
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
