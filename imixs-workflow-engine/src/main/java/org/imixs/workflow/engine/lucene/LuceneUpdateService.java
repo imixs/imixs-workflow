@@ -206,16 +206,13 @@ public class LuceneUpdateService {
 	 * This method adds a single document into the search index.
 	 * 
 	 * @param documentContext
-	 * @return
-	 * @throws Exception
 	 */
-	public boolean updateDocument(ItemCollection documentContext) {
+	public void updateDocument(ItemCollection documentContext) {
 		// adds the document into a empty Collection and call the method
 		// updateDocuments.
 		List<ItemCollection> documents = new ArrayList<ItemCollection>();
 		documents.add(documentContext);
 		updateDocuments(documents);
-		return true;
 	}
 
 	/**
@@ -223,10 +220,9 @@ public class LuceneUpdateService {
 	 * 
 	 * @param documents
 	 *            of ItemCollections to be indexed
-	 * @return - true if the update was successful
-	 * @throws Exception
+	 * @throws IndexException
 	 */
-	public boolean updateDocuments(Collection<ItemCollection> documents) {
+	public void updateDocuments(Collection<ItemCollection> documents) {
 
 		IndexWriter awriter = null;
 		long ltime = System.currentTimeMillis();
@@ -262,7 +258,6 @@ public class LuceneUpdateService {
 			logger.fine("lucene update worklist in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
 					+ " worktiems total)");
 		}
-		return true;
 	}
 
 	/**
