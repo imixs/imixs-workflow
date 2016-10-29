@@ -256,13 +256,22 @@ public class ViewController implements Serializable {
 		// return a cached result set?
 		if (workitems != null)
 			return workitems;
+		
+		workitems = new ArrayList<ItemCollection>();
 
-		workitems = getDocumentService().find(getQuery(), getPageSize(), getPageIndex(), getSortBy(), isSortReverse());
+		String _query=getQuery();
+		if (_query==null || _query.isEmpty()) {
+			// no query defined
+			return workitems;
+		}
+
+		workitems = getDocumentService().find(_query, getPageSize(), getPageIndex(), getSortBy(), isSortReverse());
 
 		// if no result is defined return an empty list.
-		if (workitems == null)
+		if (workitems == null) {
 			workitems = new ArrayList<ItemCollection>();
-
+		}
+		
 		// compute end of file
 		endOfList = (workitems.size() < pageSize);
 
