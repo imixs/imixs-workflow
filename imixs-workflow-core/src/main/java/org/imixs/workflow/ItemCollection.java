@@ -86,7 +86,7 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Creates a new ItemCollection and copy values from a Map interface
+	 * Creates a new ItemCollection and makes a deep copy from a given value Map
 	 * 
 	 * @param map
 	 *            - with item values
@@ -97,71 +97,60 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Creates a new ItemCollection and copy values from another ItemCollection
+	 * Creates a new ItemCollection and makes a deep copy from a given
+	 * ItemCollection
 	 * 
 	 * @param itemCol
 	 *            - ItemCollection with values
 	 */
 	public ItemCollection(ItemCollection itemCol) {
 		super();
-		this.replaceAllItems(itemCol.getAllItems());
+		this.replaceAllItems(itemCol.hash);
 	}
 
 	/**
-	 * Clone the current ItemCollection. The method will make a deep copy of the
-	 * current instance.
+	 * This method clones the current ItemCollection. The method makes a deep
+	 * copy of the current instance.
 	 */
 	@Override
 	public Object clone() {
-		ItemCollection itemColClone = new ItemCollection(this);
-		return itemColClone;
+		ItemCollection clone = new ItemCollection(this);
+		return clone;
 	}
 
 	/**
-	 * This method clones the current ItemCollection with a minimum of
-	 * attributes.
+	 * This method clones the current ItemCollection with a subset of items. The
+	 * method makes a deep copy of the current instance and removes items not
+	 * defined by the list of itemNames.
 	 * 
 	 * @param itemNames
 	 *            - list of properties to be copied into the clone
 	 * @return new ItemCollection
 	 */
+	@SuppressWarnings("unchecked")
 	public ItemCollection clone(final List<String> itemNames) {
-		ItemCollection clone = new ItemCollection();
+		ItemCollection clone = (ItemCollection) this.clone();
+		// remove all undefined items
 		if (itemNames != null && itemNames.size() > 0) {
-			for (String aField : itemNames) {
-				clone.replaceItemValue(aField, this.getItemValue(aField));
+			Iterator<?> it = hash.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<String, List<Object>> entry = (Map.Entry<String, List<Object>>) it.next();
+				if (!itemNames.contains(entry.getKey())) {
+					clone.removeItem(entry.getKey());
+				}
 			}
 		}
 		return clone;
 	}
 
 	/**
-	 * This method compare the values of two item collections by comparing the
-	 * serialized byte streams. This is to compare embedded object arrays
+	 * This method compares the values of two item collections by comparing the
+	 * hash maps. This did not garantie that also embedded arrays are equal.
 	 */
 	public boolean equals(Object o) {
 		if (!(o instanceof ItemCollection))
 			return false;
-		// convert to byte arrays.....
-		try {
-			ByteArrayOutputStream bosThis = new ByteArrayOutputStream();
-			ObjectOutputStream oosThis = new ObjectOutputStream(bosThis);
-			// serialize and pass the object
-			oosThis.writeObject(hash);
-			oosThis.flush();
-			byte[] arrayThis = bosThis.toByteArray();
-			ByteArrayOutputStream bosThat = new ByteArrayOutputStream();
-			ObjectOutputStream oosThat = new ObjectOutputStream(bosThat);
-			// serialize and pass the object
-			oosThat.writeObject( ((ItemCollection) o).hash);
-			oosThat.flush();
-			byte[] arrayThat = bosThat.toByteArray();
-
-			return Arrays.equals(arrayThis, arrayThat);
-		} catch (IOException e) {
-			logger.warning("Unable to serialize values of ItemCollection - " + e);
-			return false;
-		}
+		return hash.equals(((ItemCollection) o).hash);
 	}
 
 	/**
@@ -759,7 +748,7 @@ public class ItemCollection implements Cloneable {
 	 */
 	public void removeItem(String name) {
 		name = name.toLowerCase();
-		this.getAllItems().remove(name);
+		this.hash.remove(name);
 	}
 
 	/**

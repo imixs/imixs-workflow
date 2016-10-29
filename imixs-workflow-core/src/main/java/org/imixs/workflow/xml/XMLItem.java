@@ -196,6 +196,18 @@ public class XMLItem implements java.io.Serializable {
 	}
 
 	/**
+	 * This method compares the item name and value array
+	 */
+	public boolean equals(Object o) {
+		if (!(o instanceof XMLItem))
+			return false;
+		XMLItem _xmlItem=(XMLItem)o;
+		return  (name!=null && name.equals(_xmlItem.name)
+			&& value!=null && Arrays.equals(value,_xmlItem.value));
+	}
+	
+	
+	/**
 	 * returns true if all elements of values are from type Map
 	 * 
 	 * @param values

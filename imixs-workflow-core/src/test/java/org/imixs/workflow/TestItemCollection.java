@@ -2,7 +2,6 @@ package org.imixs.workflow;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -280,7 +279,7 @@ public class TestItemCollection {
 		// copy values
 		itemCollection2.replaceAllItems(itemCollection1.getAllItems());
 		Assert.assertEquals(itemCollection1, itemCollection2);
-		
+
 		Assert.assertNotSame(itemCollection1, itemCollection2);
 
 		XMLItemCollection xmlChild = (XMLItemCollection) itemCollection1.getItemValue("child").get(0);
@@ -314,8 +313,6 @@ public class TestItemCollection {
 
 	}
 
-	
-	
 	/**
 	 * Same as testCopyValuesWithEmbeddedCollection but now we add a list of
 	 * ItemCollections into a ItemCollection!
@@ -345,7 +342,6 @@ public class TestItemCollection {
 			e.printStackTrace();
 			Assert.fail();
 		}
-	//	childs.add(child2);
 		itemCollection1.replaceItemValue("childs", childs);
 
 		// copy values
@@ -361,16 +357,18 @@ public class TestItemCollection {
 		Assert.assertNotSame(itemCollection1, itemCollection2);
 
 		// get child 1 from itemcol2
-		Vector v = (Vector) itemCollection2.getItemValue("childs");
-		ItemCollection ct1 = (ItemCollection) v.elementAt(0);
+		List v = itemCollection2.getItemValue("childs");
+		XMLItemCollection xmlct1 = (XMLItemCollection) v.get(0);
+		ItemCollection ct1 = XMLItemCollectionAdapter.getItemCollection(xmlct1);
 		Assert.assertEquals("Thor", ct1.getItemValueString("txtName"));
-		Assert.assertEquals(101, ct1.getItemValueInteger("numID"));
+		Assert.assertEquals(2, ct1.getItemValueInteger("numID"));
 
 		Assert.assertEquals(101, child1.getItemValueInteger("numID"));
 
-		ct1 = (ItemCollection) v.elementAt(1);
-		Assert.assertEquals("Ilias", ct1.getItemValueString("txtName"));
-		Assert.assertEquals(3, ct1.getItemValueInteger("numID"));
+		XMLItemCollection xmlct2 = (XMLItemCollection) v.get(1);
+		ItemCollection ct2 = XMLItemCollectionAdapter.getItemCollection(xmlct2);
+		Assert.assertEquals("Ilias", ct2.getItemValueString("txtName"));
+		Assert.assertEquals(3, ct2.getItemValueInteger("numID"));
 
 		// test size
 		Assert.assertTrue(v.size() == 2);
@@ -550,7 +548,7 @@ public class TestItemCollection {
 		Map<String, List<Object>> conedFilesTest = itemCol2.getFiles();
 		List<Object> fileContentTest = conedFilesTest.get("test1.txt");
 		byte[] file1DataTest = (byte[]) fileContentTest.get(1);
-		
+
 		Assert.assertArrayEquals(empty, file1DataTest);
 
 		// -------------------
@@ -563,7 +561,7 @@ public class TestItemCollection {
 		Map<String, List<Object>> conedFiles1 = itemCol1.getFiles();
 		List<Object> fileContent1 = conedFiles1.get("test1.txt");
 		byte[] file1Data1 = (byte[]) fileContent1.get(1);
-		// we expect the new dummy array  { 1, 2, 3 }
+		// we expect the new dummy array { 1, 2, 3 }
 		Assert.assertArrayEquals(dummy, file1Data1);
 
 		// test the clone

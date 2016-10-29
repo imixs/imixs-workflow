@@ -118,8 +118,12 @@ public class XMLItemCollectionAdapter {
 	 *            items will be converted
 	 */
 	@SuppressWarnings({ "unchecked" })
-	public static XMLItemCollection putItemCollection(final ItemCollection aItemCollection,
+	public static XMLItemCollection putItemCollection(final ItemCollection sourceItemCollection,
 			final List<String> itemNames) throws Exception {
+		
+		// create a deep copy of the source
+		ItemCollection aItemCollection = (ItemCollection) sourceItemCollection.clone();
+		
 		String itemName = null;
 		XMLItemCollection entity = new XMLItemCollection();
 		int i = 0;

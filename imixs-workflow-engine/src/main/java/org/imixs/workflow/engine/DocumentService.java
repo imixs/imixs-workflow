@@ -354,7 +354,7 @@ public class DocumentService {
 			logger.finest("[save] version=" + version);
 		}
 
-		// finally update the data field by cloning the map object
+		// finally update the data field by cloning the map object (deep copy)
 		ItemCollection clone = (ItemCollection) document.clone();
 		persistedDocument.setData(clone.getAllItems());
 
@@ -369,6 +369,7 @@ public class DocumentService {
 
 		// update the $version
 		document.replaceItemValue("$version", persistedDocument.getVersion());
+
 		// update the $isauthor flag
 		document.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
 
@@ -381,8 +382,9 @@ public class DocumentService {
 		 * We need to detach the activeEntity here. In some cases there are
 		 * situations where updates caused by the VM are reflected back into the
 		 * entity and increases the version number. This can be tested when a
-		 * byte array is stored in a itemCollection. Only clear did work correctly. 
-		 * detach did not fix the problem with a odd version number in same transaction.
+		 * byte array is stored in a itemCollection. Only clear did work
+		 * correctly. detach did not fix the problem with a odd version number
+		 * in same transaction.
 		 * 
 		 * manager.detach(persistedDocument);
 		 */
@@ -439,7 +441,8 @@ public class DocumentService {
 
 		// create instance of ItemCollection
 		if (persistedDocument != null && isCallerReader(persistedDocument)) {
-			ItemCollection result = new ItemCollection(persistedDocument.getData());
+			ItemCollection result = new ItemCollection();
+			result.setAllItems(persistedDocument.getData());
 			manager.detach(persistedDocument);
 			// if disable Optimistic Locking is TRUE we do not add the version
 			// number
@@ -663,7 +666,8 @@ public class DocumentService {
 		// filter resultset by read access
 		for (Document doc : documentList) {
 			if (isCallerReader(doc)) {
-				ItemCollection _tmp = new ItemCollection(doc.getData());
+				ItemCollection _tmp = new ItemCollection();
+				_tmp.setAllItems(doc.getData());
 				manager.detach(doc);
 				// if disable Optimistic Locking is TRUE we do not add the
 				// version
@@ -676,7 +680,7 @@ public class DocumentService {
 
 				// update the $isauthor flag
 				_tmp.replaceItemValue("$isauthor", isCallerAuthor(doc));
-				
+
 				result.add(_tmp);
 			}
 		}

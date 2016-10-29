@@ -26,6 +26,8 @@
  *******************************************************************************/
 package org.imixs.workflow.xml;
 
+import java.util.Arrays;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -52,5 +54,14 @@ public class XMLItemCollection implements java.io.Serializable {
 	public void setItem(org.imixs.workflow.xml.XMLItem[] item) {
 		this.item = item;
 	}
-
+	
+	/**
+	 * This method compares the item array
+	 */
+	public boolean equals(Object o) {
+		if (!(o instanceof XMLItemCollection))
+			return false;
+		return Arrays.equals(item,((XMLItemCollection)o).item);
+	}
+	
 }
