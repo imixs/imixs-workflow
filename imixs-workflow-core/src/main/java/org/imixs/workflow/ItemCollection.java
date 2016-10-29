@@ -27,6 +27,11 @@
 
 package org.imixs.workflow;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -130,10 +135,33 @@ public class ItemCollection implements Cloneable {
 		return clone;
 	}
 
+	/**
+	 * This method compare the values of two item collections by comparing the
+	 * serialized byte streams. This is to compare embedded object arrays
+	 */
 	public boolean equals(Object o) {
 		if (!(o instanceof ItemCollection))
 			return false;
-		return hash.equals(((ItemCollection) o).getAllItems());
+		// convert to byte arrays.....
+		try {
+			ByteArrayOutputStream bosThis = new ByteArrayOutputStream();
+			ObjectOutputStream oosThis = new ObjectOutputStream(bosThis);
+			// serialize and pass the object
+			oosThis.writeObject(hash);
+			oosThis.flush();
+			byte[] arrayThis = bosThis.toByteArray();
+			ByteArrayOutputStream bosThat = new ByteArrayOutputStream();
+			ObjectOutputStream oosThat = new ObjectOutputStream(bosThat);
+			// serialize and pass the object
+			oosThat.writeObject( ((ItemCollection) o).hash);
+			oosThat.flush();
+			byte[] arrayThat = bosThat.toByteArray();
+
+			return Arrays.equals(arrayThis, arrayThat);
+		} catch (IOException e) {
+			logger.warning("Unable to serialize values of ItemCollection - " + e);
+			return false;
+		}
 	}
 
 	/**
@@ -672,16 +700,55 @@ public class ItemCollection implements Cloneable {
 
 	/**
 	 * Replaces all items specified in the map with new items, which are
-	 * assigned to the specified values inside the map
+	 * assigned to the specified values inside the map.
 	 * 
+	 * The method makes a deep copy of the source map using serialization. This
+	 * is to make sure, that no object reference is copied. Other wise for
+	 * example embedded arrays are not cloned. This is also important for JPA to
+	 * avoid changes of attached entity beans with references in the data of an
+	 * ItemCollection.
+	 * 
+	 * @see deepCopyOfMap
 	 * @param map
 	 */
+	@SuppressWarnings("unchecked")
 	public void replaceAllItems(Map<String, List<Object>> map) {
-		Iterator<?> it = map.entrySet().iterator();
+		// make a deep copy of the map
+		Map<String, List<Object>> clonedMap = (Map<String, List<Object>>) deepCopyOfMap(map);
+		Iterator<?> it = clonedMap.entrySet().iterator();
 		while (it.hasNext()) {
-			@SuppressWarnings("unchecked")
 			Map.Entry<String, List<Object>> entry = (Map.Entry<String, List<Object>>) it.next();
 			replaceItemValue(entry.getKey().toString(), entry.getValue());
+		}
+	}
+
+	/**
+	 * This helper method makes a deep copy of a map by serializing and
+	 * deserializing.
+	 * 
+	 * It is assumed that all elements in the object's source graph are
+	 * serializable.
+	 * 
+	 * @see http://www.javaworld.com/article/2077578/learn-java/java-tip-76--an-alternative-to-the-deep-copy-technique.html
+	 * @param map
+	 * @return
+	 */
+	private Object deepCopyOfMap(Map<String, List<Object>> map) {
+		try {
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(bos);
+			// serialize and pass the object
+			oos.writeObject(map);
+			oos.flush();
+			ByteArrayInputStream bais = new ByteArrayInputStream(bos.toByteArray());
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			return ois.readObject();
+		} catch (IOException e) {
+			logger.warning("Unable to clone values of ItemCollection - " + e);
+			return null;
+		} catch (ClassNotFoundException e) {
+			logger.warning("Unable to clone values of ItemCollection - " + e);
+			return null;
 		}
 	}
 

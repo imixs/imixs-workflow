@@ -2,6 +2,7 @@ package org.imixs.workflow;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -279,6 +280,7 @@ public class TestItemCollection {
 		// copy values
 		itemCollection2.replaceAllItems(itemCollection1.getAllItems());
 		Assert.assertEquals(itemCollection1, itemCollection2);
+		
 		Assert.assertNotSame(itemCollection1, itemCollection2);
 
 		XMLItemCollection xmlChild = (XMLItemCollection) itemCollection1.getItemValue("child").get(0);
@@ -312,6 +314,8 @@ public class TestItemCollection {
 
 	}
 
+	
+	
 	/**
 	 * Same as testCopyValuesWithEmbeddedCollection but now we add a list of
 	 * ItemCollections into a ItemCollection!
@@ -333,9 +337,15 @@ public class TestItemCollection {
 		child1.replaceItemValue("numID", new Integer(2));
 		child2.replaceItemValue("txtName", "Ilias");
 		child2.replaceItemValue("numID", new Integer(3));
-		Vector childs = new Vector();
-		childs.add(child1);
-		childs.add(child2);
+		List childs = new ArrayList<>();
+		try {
+			childs.add(XMLItemCollectionAdapter.putItemCollection(child1));
+			childs.add(XMLItemCollectionAdapter.putItemCollection(child2));
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+	//	childs.add(child2);
 		itemCollection1.replaceItemValue("childs", childs);
 
 		// copy values
@@ -400,7 +410,7 @@ public class TestItemCollection {
 
 		// manipulate child1 and repeat the test!
 		child1.put("numID", new Integer(3));
-		Assert.assertEquals(itemCollection1, itemCollection2);
+		Assert.assertFalse(itemCollection1.equals(itemCollection2));
 		Assert.assertNotSame(itemCollection1, itemCollection2);
 
 		// its the same object !
@@ -511,6 +521,57 @@ public class TestItemCollection {
 		itemCol1.replaceItemValue("c", "Imixs");
 		Assert.assertEquals("", itemCol2.getItemValueString("c"));
 		Assert.assertEquals("world", itemCol3.getItemValueString("c"));
+
+	}
+
+	/**
+	 * This method verifies the clone interface in conjunction with byte arrays
+	 * as used in the $file field
+	 */
+	@Test
+	public void testCloningByteArrays() {
+
+		ItemCollection itemCol1 = new ItemCollection();
+		itemCol1.replaceItemValue("a", 1);
+		itemCol1.replaceItemValue("b", "hello");
+		itemCol1.replaceItemValue("c", "world");
+		byte[] empty = { 0 };
+		// add a dummy file
+		itemCol1.addFile(empty, "test1.txt", "application/xml");
+
+		ItemCollection itemCol2 = (ItemCollection) itemCol1.clone();
+
+		Assert.assertNotNull(itemCol2);
+
+		// test values of clone
+		Assert.assertEquals(1, itemCol2.getItemValueInteger("a"));
+		Assert.assertEquals("hello", itemCol2.getItemValueString("b"));
+		// test the byte content of itemcol2
+		Map<String, List<Object>> conedFilesTest = itemCol2.getFiles();
+		List<Object> fileContentTest = conedFilesTest.get("test1.txt");
+		byte[] file1DataTest = (byte[]) fileContentTest.get(1);
+		
+		Assert.assertArrayEquals(empty, file1DataTest);
+
+		// -------------------
+		// Now we change file content in itemcol1
+		byte[] dummy = { 1, 2, 3 };
+		itemCol1.removeFile("test1.txt");
+		itemCol1.addFile(dummy, "test1.txt", "application/xml");
+
+		// test the byte content of itemCol1
+		Map<String, List<Object>> conedFiles1 = itemCol1.getFiles();
+		List<Object> fileContent1 = conedFiles1.get("test1.txt");
+		byte[] file1Data1 = (byte[]) fileContent1.get(1);
+		// we expect the new dummy array  { 1, 2, 3 }
+		Assert.assertArrayEquals(dummy, file1Data1);
+
+		// test the clone
+		Map<String, List<Object>> conedFiles2 = itemCol2.getFiles();
+		List<Object> fileContent2 = conedFiles2.get("test1.txt");
+		byte[] file1Data2 = (byte[]) fileContent2.get(1);
+		// we expect still the empty array
+		Assert.assertArrayEquals(empty, file1Data2);
 
 	}
 
