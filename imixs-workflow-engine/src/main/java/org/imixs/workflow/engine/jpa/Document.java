@@ -44,13 +44,14 @@ import javax.persistence.Version;
 import org.imixs.workflow.WorkflowKernel;
 
 /**
- * This Document entity bean is a wrapper class for the org.imixs.workflow.ItemCollection
- * which is used in all Imixs-Workflow Interfaces. The Document is used by the
- * DocumentService to store ItemCollections into a database, using the Java
- * Persistence API. Each Document is added into the Lucene index.
+ * This Document entity bean is a wrapper class for the
+ * org.imixs.workflow.ItemCollection which is used in all Imixs-Workflow
+ * Interfaces. The Document is used by the DocumentService to store
+ * ItemCollections into a database, using the Java Persistence API. Each
+ * Document is added into the Lucene index.
  * 
- * A Document contains a universal unique ID to identify the
- * Entity. Also the Document contains the following additional properties
+ * A Document contains a universal unique ID to identify the Entity. Also the
+ * Document contains the following additional properties
  * <ul>
  * <li>type
  * <li>created
@@ -58,19 +59,19 @@ import org.imixs.workflow.WorkflowKernel;
  * <li>
  * </ul>
  * 
- * The creation time represents the point of time where the Document was
- * first saved by the DocumentService to the Database. The modify property
- * represents the point of time where the Document was last saved by the
- * DocumentService. The type property is used to categorize documents in a
- * database. If an ItemCollection contains the attribute 'type' the
- * value will be automatically mapped to the type property. 
+ * The creation time represents the point of time where the Document was first
+ * saved by the DocumentService to the Database. The modify property represents
+ * the point of time where the Document was last saved by the DocumentService.
+ * The type property is used to categorize documents in a database. If an
+ * ItemCollection contains the attribute 'type' the value will be automatically
+ * mapped to the type property.
  * <p>
  * The data attribute is used to hold the ItemCollection data. It is mapped by a
- * OR-Mapper to a large object (Lob). 
+ * OR-Mapper to a large object (Lob).
  * 
- * A Client should not work directly with an instance of the Document entity. 
- * It's recommended to use the DocumentService which acts as a
- * session facade to manage instances of ItemCollection persisted in a database system.
+ * A Client should not work directly with an instance of the Document entity.
+ * It's recommended to use the DocumentService which acts as a session facade to
+ * manage instances of ItemCollection persisted in a database system.
  * <p>
  * 
  * 
@@ -89,24 +90,23 @@ public class Document implements java.io.Serializable {
 	private String type;
 	private Calendar created;
 	private Calendar modified;
-	private Map<String,List<Object>> data;
+	private Map<String, List<Object>> data;
 
-	
 	/**
 	 * A Document will be automatically initialized with a unique id and a
 	 * creation date.
 	 */
 	public Document() {
 		// Generate a new uniqueId
-		id=WorkflowKernel.generateUniqueID();
+		id = WorkflowKernel.generateUniqueID();
 		// Initialize objects
 		Calendar cal = Calendar.getInstance();
 		created = cal;
 	}
 
 	/**
-	 * This constructor allows the creation of an Document Instance with a default
-	 * uniqueID
+	 * This constructor allows the creation of an Document Instance with a
+	 * default uniqueID
 	 * 
 	 * @param aID
 	 */
@@ -130,8 +130,6 @@ public class Document implements java.io.Serializable {
 		id = aID;
 	}
 
-	
-	
 	@Version
 	public Integer getVersion() {
 		return version;
@@ -197,13 +195,15 @@ public class Document implements java.io.Serializable {
 	}
 
 	/**
-	 * returns the data object part of the Entity represented by a
-	 * java.util.Map
+	 * returns the data object part of the Entity represented by a java.util.Map
+	 * 
+	 * Data is loaded eager because it is read in any case by the
+	 * DocumentService.
 	 * 
 	 * @return Map
 	 */
 	@Lob
-	@Basic(fetch = FetchType.LAZY)
+	@Basic(fetch = FetchType.EAGER)
 	public Map<String, List<Object>> getData() {
 		return data;
 	}
@@ -213,8 +213,8 @@ public class Document implements java.io.Serializable {
 	 * 
 	 * @param data
 	 */
-	public void setData(Map<String,List<Object>> itemCol) {
+	public void setData(Map<String, List<Object>> itemCol) {
 		this.data = itemCol;
 	}
-	
+
 }
