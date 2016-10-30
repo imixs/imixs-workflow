@@ -273,7 +273,8 @@ public class DocumentService {
 	 */
 	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
 
-		logger.fine("save: ID=" + document.getUniqueID() + " version=" + document.getItemValueInteger("$version"));
+		logger.fine(
+				"save - ID=" + document.getUniqueID() + " provided version=" + document.getItemValueInteger("$version"));
 		Document persistedDocument = null;
 		// Now set flush Mode to COMMIT
 		manager.setFlushMode(FlushModeType.COMMIT);
@@ -321,6 +322,7 @@ public class DocumentService {
 		}
 
 		// after all the persistedDocument is now managed through JPA!
+		logger.fine("save - ID=" + document.getUniqueID() + " managed version=" + persistedDocument.getVersion());
 
 		// remove the property $isauthor
 		document.removeItem("$isauthor");
@@ -334,24 +336,23 @@ public class DocumentService {
 		// update type attribute
 		persistedDocument.setType(aType);
 
-		// update the standard attributes $modified $created and $uniqueid
+		// update the standard attributes $modified $created and $uniqueID
 		Calendar cal = Calendar.getInstance();
 		document.replaceItemValue("$uniqueid", persistedDocument.getId());
 		document.replaceItemValue("$modified", cal.getTime());
 		document.replaceItemValue("$created", persistedDocument.getCreated().getTime());
 
-		// update current version number
+		// update current version number into managed entity!
 		if (disableOptimisticLocking) {
 			// in case of optimistic locking is disabled we remove $version
 			document.removeItem("$Version");
 		}
 		if (!disableOptimisticLocking && document.hasItem("$Version") && document.getItemValueInteger("$Version") > 0) {
 			// if $version is provided we update the version number of
-			// the document to ensure that optimisticLock exception is
+			// the managaed document to ensure that optimisticLock exception is
 			// handled the right way!
 			int version = document.getItemValueInteger("$Version");
 			persistedDocument.setVersion(version);
-			logger.finest("[save] version=" + version);
 		}
 
 		// finally update the data field by cloning the map object (deep copy)
@@ -361,35 +362,23 @@ public class DocumentService {
 		/*
 		 * Issue #220
 		 * 
-		 * The flush call is needed here to update the $version of the returned
-		 * document. We also won't detach the document!
-		 */
-		manager.flush();
-		
+		 * No em.flush() call - see issue #226
+		 **/
+
 		/*
 		 * issue #226
 		 * 
-		 * We need to detach the activeEntity here. In some cases there are
-		 * situations where updates caused by the VM are reflected back into the
-		 * entity and increases the version number. This can be tested when a
-		 * byte array is stored in a itemCollection. Only clear did work
-		 * correctly. detach did not fix the problem with a odd version number
-		 * in same transaction.
-		 * 
-		 * manager.detach(persistedDocument);
+		 * No em.flush(), em.detach() or em.clear() is needed here. Finally we remove the $version property from the ItemCollection
+		 * returned to the client. This is important for the case that the method is called multiple times in 
+		 * one single transaction. 
 		 */
-		manager.clear();
 		
-		logger.fine("flush: ID=" + document.getUniqueID() + " new version=" + persistedDocument.getVersion());
-
-		// update the $version
-		document.replaceItemValue("$version", persistedDocument.getVersion());
+		// remove $version from ItemCollection
+		document.removeItem("$version");
 
 		// update the $isauthor flag
 		document.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
 
-		persistedDocument=null;
-		
 		// add/update document into lucene index
 		luceneUpdateService.updateDocument(document);
 
