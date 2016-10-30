@@ -365,17 +365,7 @@ public class DocumentService {
 		 * document. We also won't detach the document!
 		 */
 		manager.flush();
-		logger.fine("flush: ID=" + document.getUniqueID() + " new version=" + persistedDocument.getVersion());
-
-		// update the $version
-		document.replaceItemValue("$version", persistedDocument.getVersion());
-
-		// update the $isauthor flag
-		document.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
-
-		// add/update document into lucene index
-		luceneUpdateService.updateDocument(document);
-
+		
 		/*
 		 * issue #226
 		 * 
@@ -389,6 +379,19 @@ public class DocumentService {
 		 * manager.detach(persistedDocument);
 		 */
 		manager.clear();
+		
+		logger.fine("flush: ID=" + document.getUniqueID() + " new version=" + persistedDocument.getVersion());
+
+		// update the $version
+		document.replaceItemValue("$version", persistedDocument.getVersion());
+
+		// update the $isauthor flag
+		document.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
+
+		persistedDocument=null;
+		
+		// add/update document into lucene index
+		luceneUpdateService.updateDocument(document);
 
 		// return the updated document
 		return document;
