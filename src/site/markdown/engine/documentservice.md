@@ -115,6 +115,34 @@ For further details read the [section ACL](./acl.html).
 __Note:__ There is no need to set the Read- and Writeaccess programmatic because the ACL of a _workitem_ can be managed model definition in a transparent way.  
  
   
+## Transaction Management and Java Persistence API
 
-	
- 
+The DocumentService EJB is based on the Java Persistence API (JPA). To optimize the performance, an entity bean accessed through the _load()_ or _find()_ methods will always be detached from the persistence context of the EntityManager before the document is returned to the client. For that reason, you should NOT call the _save()_ and _load()_ method for the same document within one transaction. If you do this, changes persisted by calling the _save()_ method will get lost if the _load()_ method is called afterwards within the same transaction!
+
+This situation can happen e.g. in the Plug-In API if a Plug-In need to load a document which was created before by another Plug-In in the same process step. 
+To avoid this conflict, the _save()_ method can be called several times by Plug-In.
+
+
+
+	/**
+	 * This method loads a new persisted document in on transaction
+	 */
+	@Override
+	public ItemCollection run(ItemCollection documentContext,
+			ItemCollection documentActivity) throws PluginException {
+		...
+		// load some document ...
+		try {
+			String sQuery="($uniqueidref:\""+sUniqueID + "\")";
+			Collection<ItemCollection> itemcol= getWorkflowService().getDocumentService().find(sQuery, 1, 0);
+			myWorkitem = itemcol.iterator().next();
+			// the document entityBean is now detached!
+			....
+			// restore the state of detached document...
+			myWorkitem=getWorkflowService().getDocumentService().save(myWorkitem);
+		} catch (QueryException e) {
+			...
+		}
+		....
+		return documentContext;
+	} 
