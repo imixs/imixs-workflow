@@ -573,4 +573,32 @@ public class TestItemCollection {
 
 	}
 
+	/**
+	 * This method just test the time difference between clone and copy a
+	 * ItemCollection hashmap
+	 * 
+	 */
+	@Test
+	public void testPerformanceCloning() {
+
+		ItemCollection itemCol1 = new ItemCollection();
+		itemCol1.replaceItemValue("a", 1);
+		itemCol1.replaceItemValue("b", "hello");
+		itemCol1.replaceItemValue("c", "world");
+
+		// clone
+		long l = System.currentTimeMillis();
+		ItemCollection itemCol2 = (ItemCollection) itemCol1.clone();
+		System.out.println("Performancetest ItemCollecton clone: " + (System.currentTimeMillis() - l) + "ms");
+		Assert.assertNotNull(itemCol2);
+		
+		// copy
+		l = System.currentTimeMillis();
+		ItemCollection itemCol3 = new ItemCollection();
+		itemCol3.setAllItems(itemCol1.getAllItems());
+		System.out.println("Performancetest ItemCollecton clone: " + (System.currentTimeMillis() - l) + "ms");
+		Assert.assertNotNull(itemCol3);
+
+	}
+
 }
