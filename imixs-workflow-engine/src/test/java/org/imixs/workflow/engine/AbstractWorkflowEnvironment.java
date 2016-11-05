@@ -20,14 +20,11 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowContext;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
-import org.imixs.workflow.engine.DocumentService;
-import org.imixs.workflow.engine.ModelService;
-import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.jee.ejb.EntityService;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -119,7 +116,7 @@ public class AbstractWorkflowEnvironment {
 			public ItemCollection answer(InvocationOnMock invocation) throws Throwable {
 				Object[] args = invocation.getArguments();
 				ItemCollection entity = (ItemCollection) args[0];
-				database.put(entity.getItemValueString(EntityService.UNIQUEID), entity);
+				database.put(entity.getItemValueString(WorkflowKernel.UNIQUEID), entity);
 				return entity;
 			}
 		});
@@ -200,13 +197,13 @@ public class AbstractWorkflowEnvironment {
 		for (int i = 1; i < 6; i++) {
 			entity = new ItemCollection();
 			entity.replaceItemValue("type", "workitem");
-			entity.replaceItemValue(EntityService.UNIQUEID, "W0000-0000" + i);
+			entity.replaceItemValue(WorkflowKernel.UNIQUEID, "W0000-0000" + i);
 			entity.replaceItemValue("txtName", "Workitem " + i);
 			entity.replaceItemValue("$ModelVersion", "1.0.0");
 			entity.replaceItemValue("$ProcessID", 100);
 			entity.replaceItemValue("$ActivityID", 10);
 			entity.replaceItemValue(WorkflowService.ISAUTHOR, true);
-			database.put(entity.getItemValueString(EntityService.UNIQUEID), entity);
+			database.put(entity.getItemValueString(WorkflowKernel.UNIQUEID), entity);
 		}
 
 	}
