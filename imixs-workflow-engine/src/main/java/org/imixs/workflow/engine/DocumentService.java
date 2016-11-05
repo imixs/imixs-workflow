@@ -296,7 +296,7 @@ public class DocumentService {
 	 */
 	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
 
-		logger.fine("save - ID=" + document.getUniqueID() + " provided version="
+		logger.finest("save - ID=" + document.getUniqueID() + " provided version="
 				+ document.getItemValueInteger("$version"));
 		Document persistedDocument = null;
 		// Now set flush Mode to COMMIT
@@ -345,7 +345,7 @@ public class DocumentService {
 		}
 
 		// after all the persistedDocument is now managed through JPA!
-		logger.fine("save - ID=" + document.getUniqueID() + " managed version=" + persistedDocument.getVersion());
+		logger.finest("save - ID=" + document.getUniqueID() + " managed version=" + persistedDocument.getVersion());
 
 		// remove the property $isauthor
 		document.removeItem("$isauthor");

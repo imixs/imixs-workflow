@@ -59,6 +59,36 @@ public class TestRulePlugin {
 		Assert.assertEquals("Anna", adocumentContext.getItemValueString("txtName"));
 
 	}
+	
+	
+	/**
+	 * This test verifies the evaluation of a simple script unsing the json objects.
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testBasicScriptJson() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("txtName", "Anna");
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		// access single value 
+		String script = "var result={}; if (workitem.txtname && workitem.txtname[0]==='Anna') result.numage=50;";
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
+
+		Assert.assertEquals("Anna", adocumentContext.getItemValueString("txtName"));
+		Assert.assertEquals(50, adocumentContext.getItemValueInteger("numage"));
+
+
+		
+	
+	}
 
 	/**
 	 * This test verifies the isValid cases

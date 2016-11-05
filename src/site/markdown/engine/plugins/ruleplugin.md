@@ -12,7 +12,7 @@ The [Imixs-BPMN modeler](../../modelling/activities.html) provides an easy way t
 
 ## Script Objects
 
-From a script any basic item value contained by the processed workitem or the event definition can be accessed through local objects provided by the RulePlugin. This offers various ways to develop custom business rules.
+From a script any basic item value contained by the workitem or the event definition can be accessed through local objects provided by the RulePlugin. This offers various ways to develop custom business rules.
 
 A script may also create a result-object to provide custom processing information or update the current workitem. The following objects variables are provided by the RulePlugin:
 
@@ -24,16 +24,16 @@ The following section explains how the script objects can be used by a script.
 
 ### The 'workitem' Object
 
-The scritp object 'workitem' provides all item values form the process instance to be processed by the workflow engine. The item values are stored in a JSON object, holding the item name (key) and an object array of item values (value). See the following example, showing how to get the item value of an item with the name 'txtname':
+The script object '_workitem_' provides all item values form the current process instance. The item values are stored in a JSON object, holding the item name (key) and an object array of item values (value). See the following example, showing how to get the first item value of an item with the name 'txtname':
 
 	 // test the first value of the workitem attribute 'txtname'
-	 if (workitem.txtname == 'car') {
+	 if (workitem.txtname && workitem.txtname[0] === 'car') {
 	     ....
 	 }
 
 <strong>Note: </strong>The item name must always be written in lower case.
 
-A item can hold a single value or a value list which is stored in an array. The following example shows how to access the value list of the item 'namteam'
+A item value is stored in an array. The following example shows how to access all values of the item 'namteam'
 
 	 // test the number of item values stored in the attribute 'namteam'
 	 if (workitem.namteam && workitem.namteam.length>0) {
@@ -44,13 +44,14 @@ A item can hold a single value or a value list which is stored in an array. The 
 	 	value=workitem.namteam[i];
 	 	....
 	 }
+	 
 
 ### The 'event' Object
 
 The script object 'event' provides all item values of the BPMN event object currently processed by the workflow engine. The item values can be accessed the same way as from the 'workitem' object:
 
 	 // test the email flag
-	 if (event.keymailenabled == '0') {
+	 if (event.keymailenabled[0] == '0') {
 	     // email enabled....
 	 }
 
@@ -69,7 +70,7 @@ All changes made to the event object will be reflected back to the current proce
 
 ### The 'result' Object
 
-A business rule may also provide a result object with new or updated item values to be applied to the current process instance.
+A business rule can also provide an optional result object with new or updated item values. The item values stored in the result object will be applied to the current process instance.
 See the following example which creates a new single item name 'some_item' with the value 'Hello World'.
 
 
