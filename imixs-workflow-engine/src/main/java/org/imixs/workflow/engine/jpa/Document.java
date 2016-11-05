@@ -39,6 +39,7 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import org.imixs.workflow.WorkflowKernel;
@@ -91,6 +92,7 @@ public class Document implements java.io.Serializable {
 	private Calendar created;
 	private Calendar modified;
 	private Map<String, List<Object>> data;
+	private boolean pending;
 
 	/**
 	 * A Document will be automatically initialized with a unique id and a
@@ -114,6 +116,22 @@ public class Document implements java.io.Serializable {
 		this();
 		if (aID != null && !"".equals(aID))
 			id = aID;
+	}
+
+	/**
+	 * This transient flag indicates if the document was just saved and is still
+	 * managed by the entityManager. In this case the entity may not be detached
+	 * by other methods during the same transaction. See issue #230.
+	 * 
+	 * @return save status
+	 */
+	@Transient
+	public boolean isPending() {
+		return pending;
+	}
+
+	public void setPending(boolean pandingState) {
+		pending = pandingState;
 	}
 
 	/**

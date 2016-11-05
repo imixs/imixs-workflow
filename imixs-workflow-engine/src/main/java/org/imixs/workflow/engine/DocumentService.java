@@ -51,6 +51,7 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.interceptor.Interceptors;
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
@@ -120,6 +121,7 @@ import org.imixs.workflow.exceptions.QueryException;
 @RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
 		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
+@Interceptors({ DocumentInterceptor.class })
 @Stateless
 @LocalBean
 public class DocumentService {
@@ -151,6 +153,9 @@ public class DocumentService {
 
 	@Resource
 	SessionContext ctx;
+
+	// @Resource
+	// EntityContext ectx;
 
 	@Resource(name = "ACCESS_ROLES")
 	private String accessRoles = "";
@@ -252,19 +257,39 @@ public class DocumentService {
 	 * ('$uniqueid') which can be used to identify the ItemCollection by its ID.
 	 * If the ItemCollection was saved before, the method updates the existing
 	 * ItemCollection stored in the database.
+	 * 
 	 * <p>
 	 * The Method returns an updated instance of the ItemCollection containing
 	 * the attributes $modified, $created, and $uniqueId
+	 * 
 	 * <p>
 	 * The method throws an AccessDeniedException if the CallerPrincipal is not
 	 * allowed to save or update the ItemCollection in the database. The
 	 * CallerPrincipial should have at least the access Role
 	 * org.imixs.ACCESSLEVEL.AUTHORACCESS
-	 * <p>
-	 * The method returns a itemCollection with the current VersionNumber from
-	 * the persisted entity. (see issue #220)
+	 * 
 	 * <p>
 	 * The method adds/updates the document into the lucene index.
+	 * 
+	 * <p>
+	 * The method returns a itemCollection without the $VersionNumber from the
+	 * persisted entity. (see issue #226)
+	 * <p>
+	 * 
+	 * <p>
+	 * issue #230:
+	 * 
+	 * The document will be marked as 'saved' so that the methods load() and
+	 * getDocumentsByQuery() can evaluate this flag. Depending on the state, the
+	 * methods can decide the correct behavior. In general we detach a document
+	 * in the load() and getDocumentsByQuery() method. This is for performance
+	 * reasons and the fact, that a ItemCollection can hold byte arrays which
+	 * will be copied by reference. In cases where these methods are called
+	 * after a document was saved (document is now managed), in one single
+	 * transaction, the detach call will discard the changes made by the save()
+	 * method. For that reason we flag the entity and evaluate this flag in the
+	 * load method evaluates the save status.
+	 * 
 	 * 
 	 * @param ItemCollection
 	 *            to be saved
@@ -273,8 +298,8 @@ public class DocumentService {
 	 */
 	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
 
-		logger.fine(
-				"save - ID=" + document.getUniqueID() + " provided version=" + document.getItemValueInteger("$version"));
+		logger.fine("save - ID=" + document.getUniqueID() + " provided version="
+				+ document.getItemValueInteger("$version"));
 		Document persistedDocument = null;
 		// Now set flush Mode to COMMIT
 		manager.setFlushMode(FlushModeType.COMMIT);
@@ -368,11 +393,12 @@ public class DocumentService {
 		/*
 		 * issue #226
 		 * 
-		 * No em.flush(), em.detach() or em.clear() is needed here. Finally we remove the $version property from the ItemCollection
-		 * returned to the client. This is important for the case that the method is called multiple times in 
-		 * one single transaction. 
+		 * No em.flush(), em.detach() or em.clear() is needed here. Finally we
+		 * remove the $version property from the ItemCollection returned to the
+		 * client. This is important for the case that the method is called
+		 * multiple times in one single transaction.
 		 */
-		
+
 		// remove $version from ItemCollection
 		document.removeItem("$version");
 
@@ -381,6 +407,13 @@ public class DocumentService {
 
 		// add/update document into lucene index
 		luceneUpdateService.updateDocument(document);
+
+		/*
+		 * issue #230
+		 * 
+		 * flag this entity which is still managed
+		 */
+		persistedDocument.setPending(true);
 
 		// return the updated document
 		return document;
@@ -421,6 +454,15 @@ public class DocumentService {
 	 * The CallerPrincipial need to have at least the access level
 	 * org.imixs.ACCESSLEVEL.READACCESS
 	 * 
+	 * <p>
+	 * issue #230
+	 * 
+	 * In case a document is not flagged (not saved during same transaction), we
+	 * detach the loaded entity. In case a document is flagged (saved during
+	 * save transaction) we may not detach it, but make a deepCopy (clone) of
+	 * the document instance. This will avoid the effect, that data written to a
+	 * document get lost in a long running transaction with save and load calls.
+	 * 
 	 * @param id
 	 *            - the $unqiueid of the ItemCollection to be loaded
 	 * @return ItemCollection object or null if the Document dose not exist or
@@ -433,9 +475,19 @@ public class DocumentService {
 
 		// create instance of ItemCollection
 		if (persistedDocument != null && isCallerReader(persistedDocument)) {
-			ItemCollection result = new ItemCollection();
-			result.setAllItems(persistedDocument.getData());
-			manager.detach(persistedDocument);
+
+			ItemCollection result = null;// new ItemCollection();
+			if (persistedDocument.isPending()) {
+				// we clone but do not detach
+				logger.fine("clone manged entity '" + id + "' pending status=" + persistedDocument.isPending());
+				result = new ItemCollection(persistedDocument.getData());
+			} else {
+				// the document is not managed, so we detach it
+				result = new ItemCollection();
+				result.setAllItems(persistedDocument.getData());
+				manager.detach(persistedDocument);
+			}
+
 			// if disable Optimistic Locking is TRUE we do not add the version
 			// number
 			if (disableOptimisticLocking) {
@@ -655,15 +707,25 @@ public class DocumentService {
 		}
 
 		l = System.currentTimeMillis();
-		// filter resultset by read access
+		// filter result set by read access
 		for (Document doc : documentList) {
 			if (isCallerReader(doc)) {
-				ItemCollection _tmp = new ItemCollection();
-				_tmp.setAllItems(doc.getData());
-				manager.detach(doc);
+
+				ItemCollection _tmp = null;
+
+				if (doc.isPending()) {
+					// we clone but do not detach
+					logger.fine("clone manged entity '" + doc.getId() + "' pending status=" + doc.isPending());
+					_tmp = new ItemCollection(doc.getData());
+				} else {
+					// the document is not managed, so we detach it
+					_tmp = new ItemCollection();
+					_tmp.setAllItems(doc.getData());
+					manager.detach(doc);
+				}
+
 				// if disable Optimistic Locking is TRUE we do not add the
-				// version
-				// number
+				// version number
 				if (disableOptimisticLocking) {
 					_tmp.removeItem("$Version");
 				} else {
