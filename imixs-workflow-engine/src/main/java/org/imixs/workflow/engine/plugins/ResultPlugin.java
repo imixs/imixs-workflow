@@ -79,24 +79,20 @@ public class ResultPlugin extends AbstractPlugin {
 
 	public ItemCollection run(ItemCollection documentContext, ItemCollection adocumentActivity) throws PluginException {
 		// evaluate new items....
-		ItemCollection evalItemCollection = new ItemCollection();
-		evalItemCollection=evaluateWorkflowResult(adocumentActivity,documentContext);
+		ItemCollection evalItemCollection = evaluateWorkflowResult(adocumentActivity, documentContext);
 		// copy values
-		if (evalItemCollection!=null) {
+		if (evalItemCollection != null) {
 			documentContext.replaceAllItems(evalItemCollection.getAllItems());
 		}
 		return documentContext;
 	}
-
-
-	
 
 	/**
 	 * This method parses the xml content of a item element and returns a new
 	 * ItemCollection containing all item values. Each tag is evaluated as the
 	 * item name.
 	 * 
-	 * MultiValues are currently not supported. 
+	 * MultiValues are currently not supported.
 	 * 
 	 * Example:
 	 * 
@@ -177,7 +173,7 @@ public class ResultPlugin extends AbstractPlugin {
 	 * @return
 	 * @throws PluginException
 	 */
-	public static ItemCollection evaluateWorkflowResult(ItemCollection activityEntity,ItemCollection documentContext)
+	public static ItemCollection evaluateWorkflowResult(ItemCollection activityEntity, ItemCollection documentContext)
 			throws PluginException {
 
 		boolean invalidPattern = true;
@@ -192,7 +188,7 @@ public class ResultPlugin extends AbstractPlugin {
 
 		// extract all <item> tags with attributes using regex (including empty
 		// item tags)
-		Pattern pattern = Pattern.compile("<item(.*?)>(.*?)</item>|<item(.*?)./>",Pattern.DOTALL);
+		Pattern pattern = Pattern.compile("<item(.*?)>(.*?)</item>|<item(.*?)./>", Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(workflowResult);
 		while (matcher.find()) {
 			invalidPattern = false;
@@ -250,9 +246,9 @@ public class ResultPlugin extends AbstractPlugin {
 					if ("boolean".equalsIgnoreCase(sType)) {
 						result.appendItemValue(itemName, Boolean.valueOf(content));
 					} else if ("integer".equalsIgnoreCase(sType)) {
-						result.appendItemValue(itemName, new Integer(content));
+						result.appendItemValue(itemName, Integer.valueOf(content));
 					} else if ("double".equalsIgnoreCase(sType)) {
-						result.appendItemValue(itemName, new Double(content));
+						result.appendItemValue(itemName, Double.valueOf(content));
 					} else
 						// no type conversion
 						result.appendItemValue(itemName, content);
@@ -272,7 +268,8 @@ public class ResultPlugin extends AbstractPlugin {
 		// test for general invalid format
 		if (invalidPattern) {
 			throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_FORMAT,
-					"invalid <item> tag format - expected <item name=\"...\" ...></item>  -> workflowResult="+workflowResult);
+					"invalid <item> tag format - expected <item name=\"...\" ...></item>  -> workflowResult="
+							+ workflowResult);
 		}
 
 		return result;

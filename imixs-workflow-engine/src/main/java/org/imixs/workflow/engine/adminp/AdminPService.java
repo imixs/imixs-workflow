@@ -145,7 +145,7 @@ public class AdminPService {
 		int interval = adminp.getItemValueInteger("numInterval");
 		if (interval <= 0) {
 			interval = DEFAULT_INTERVAL;
-			adminp.replaceItemValue("numInterval", new Long(interval));
+			adminp.replaceItemValue("numInterval",Long.valueOf(interval));
 		}
 
 		// startdatum und enddatum manuell festlegen
@@ -209,38 +209,36 @@ public class AdminPService {
 
 			logger.info("Processing : " + sTimerID);
 
-			boolean jobfound=false;
+			boolean jobfound = false;
 			String job = adminp.getItemValueString("job");
 			if (job.equals(JOB_RENAME_USER)) {
-				jobfound=true;
+				jobfound = true;
 				if (jobHandlerRenameUser.run(adminp)) {
 					timer.cancel();
 					logger.info("Job " + adminp.getUniqueID() + " completed - timer stopped");
 				}
 			}
 			if (job.equals(JOB_REBUILD_LUCENE_INDEX)) {
-				jobfound=true;
+				jobfound = true;
 				if (jobHandlerRebuildIndex.run(adminp)) {
 					timer.cancel();
 					logger.info("Job " + adminp.getUniqueID() + " completed - timer stopped");
 				}
 			}
-			
+
 			if (job.equals(JOB_MIGRATION)) {
-				jobfound=true;
+				jobfound = true;
 				if (jobHandlerMigration3X.run(adminp)) {
 					timer.cancel();
 					logger.info("Job " + adminp.getUniqueID() + " completed - timer stopped");
 				}
 			}
-			
-			
+
 			if (!jobfound) {
 				logger.warning("Unable to start jobtype '" + job + "' -  not defined!");
 				timer.cancel();
 				logger.info("Job " + adminp.getUniqueID() + " - timer stopped");
 			}
-			
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -249,16 +247,16 @@ public class AdminPService {
 			logger.severe("Timeout sevice stopped: " + sTimerID);
 
 			try {
-				adminp.replaceItemValue("txtworkflowStatus", "Error");
-				adminp.replaceItemValue("errormessage", e.toString());
-				// adminp = entityService.save(adminp);
-				adminp = documentService.save(adminp);
-
+				if (adminp != null) {
+					adminp.replaceItemValue("txtworkflowStatus", "Error");
+					adminp.replaceItemValue("errormessage", e.toString());
+					// adminp = entityService.save(adminp);
+					adminp = documentService.save(adminp);
+				}
 			} catch (Exception e2) {
+				logger.warning("Unable to update status: " + e.getMessage());
 				e2.printStackTrace();
-
 			}
-
 		}
 
 		logger.fine("timer call finished successfull after " + ((System.currentTimeMillis()) - lProfiler) + " ms");

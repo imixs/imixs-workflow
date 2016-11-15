@@ -144,9 +144,7 @@ public class MailPlugin extends AbstractPlugin {
 
 			// set Body
 			String aBodyText = getBody(documentContext, documentActivity);
-			if (aBodyText == null) {
-				aBodyText = "";
-			}
+			
 			// set mailbody
 			MimeBodyPart messagePart = new MimeBodyPart();
 			logger.fine("[MailPlugin] ContentType: '" + getContentType() + "'");

@@ -283,9 +283,9 @@ public class BPMNModelHandler extends DefaultHandler {
 				List valueList = currentEntity.getItemValue(currentItemName);
 
 				if ("xs:boolean".equals(currentItemType.toLowerCase())) {
-					valueList.add(new Boolean(svalue));
+					valueList.add(Boolean.valueOf(svalue));
 				} else if ("xs:integer".equals(currentItemType.toLowerCase())) {
-					valueList.add(new Integer(svalue));
+					valueList.add(Integer.valueOf(svalue));
 				} else {
 					valueList.add(svalue);
 				}

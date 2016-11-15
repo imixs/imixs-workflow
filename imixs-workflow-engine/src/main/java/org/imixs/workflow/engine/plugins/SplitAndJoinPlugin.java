@@ -180,9 +180,9 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				workitemSubProcess.replaceItemValue(WorkflowKernel.MODELVERSION,
 						processData.getItemValueString("modelversion"));
 				workitemSubProcess.replaceItemValue(WorkflowKernel.PROCESSID,
-						new Integer(processData.getItemValueString("processid")));
+						 Integer.valueOf(processData.getItemValueString("processid")));
 				workitemSubProcess.replaceItemValue(WorkflowKernel.ACTIVITYID,
-						new Integer(processData.getItemValueString("activityid")));
+						 Integer.valueOf(processData.getItemValueString("activityid")));
 
 				// add the origin reference
 				workitemSubProcess.replaceItemValue(WorkflowService.UNIQUEIDREF, originWorkitem.getUniqueID());
@@ -264,7 +264,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 						copyItemList(processData.getItemValueString("items"), originWorkitem, workitemSubProcess);
 
 						workitemSubProcess.replaceItemValue(WorkflowKernel.ACTIVITYID,
-								new Integer(processData.getItemValueString("activityid")));
+								 Integer.valueOf(processData.getItemValueString("activityid")));
 						// process the exisitng subprocess...
 						workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
 
@@ -331,7 +331,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 					// process the origin workitem
 					originWorkitem.replaceItemValue(WorkflowKernel.ACTIVITYID,
-							new Integer(processData.getItemValueString("activityid")));
+							 Integer.valueOf(processData.getItemValueString("activityid")));
 
 					// now clone the field list...
 					copyItemList(processData.getItemValueString("items"), subprocessWorkitem, originWorkitem);
