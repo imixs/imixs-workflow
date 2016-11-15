@@ -89,7 +89,7 @@
 
 	<build>
 		<plugins>
-			<!-- use JDK 1.6 settings for compiling -->
+			<!-- use JDK 1.8 settings for compiling -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -102,14 +102,14 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
-				<version>3.4</version>
+				<version>3.5.1</version>
 				<configuration>
 					<locales>en</locales>
 					<reportPlugins>
 						<plugin>
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-project-info-reports-plugin</artifactId>
-							<version>2.4</version>
+							<version>2.9</version>
 							<reports>
 								<report>index</report>
 								<report>project-team</report>
@@ -129,7 +129,7 @@
 						<plugin>
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-javadoc-plugin</artifactId>
-							<version>2.9</version>
+							<version>2.10.4</version>
 						</plugin>
 
 						<plugin>
@@ -141,7 +141,7 @@
 						<plugin>
 							<groupId>org.codehaus.mojo</groupId>
 							<artifactId>findbugs-maven-plugin</artifactId>
-							<version>2.4.0</version>
+							<version>3.0.4</version>
 							<configuration>
 								<effort>Default</effort><!-- Min, Default, Max -->
 								<threshold>Default</threshold><!-- High, Default, Low, Ignore -->
