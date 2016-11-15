@@ -697,14 +697,12 @@ public class DocumentService {
 		long l = System.currentTimeMillis();
 		@SuppressWarnings("unchecked")
 		Collection<Document> documentList = q.getResultList();
-		logger.fine("getDocumentsByQuery in " + (System.currentTimeMillis() - l) + " ms");
 
 		if (documentList == null) {
 			logger.fine("getDocumentsByQuery - no ducuments found.");
 			return result;
 		}
 
-		l = System.currentTimeMillis();
 		// filter result set by read access
 		for (Document doc : documentList) {
 			if (isCallerReader(doc)) {
@@ -737,7 +735,7 @@ public class DocumentService {
 			}
 		}
 
-		logger.fine("getDocumentsByQuery - ResultList size=" + documentList.size());
+		logger.fine("getDocumentsByQuery - found " + documentList.size() + " documents in " + (System.currentTimeMillis() - l) + " ms");
 		return result;
 	}
 
