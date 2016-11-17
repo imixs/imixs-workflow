@@ -28,6 +28,7 @@
 package org.imixs.workflow;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
@@ -72,7 +73,7 @@ public class WorkflowKernel {
 	public static final int MAXIMUM_ACTIVITYLOGENTRIES=30;
 
 	/** Plugin objects **/
-	private Vector<Plugin> vectorPlugins = null;
+	private List<Plugin> pluginList = null;
 	private WorkflowContext ctx = null;
 	private ItemCollection documentContext = null;
 	private ItemCollection documentActivity = null;
@@ -85,7 +86,7 @@ public class WorkflowKernel {
 	 */
 	public WorkflowKernel(WorkflowContext actx) {
 		ctx = actx;
-		vectorPlugins = new Vector<Plugin>();
+		pluginList = new ArrayList<Plugin>();
 
 	}
 
@@ -93,12 +94,31 @@ public class WorkflowKernel {
 	 * This method registers a new plugin class. The method throws a
 	 * PluginException if the class can not be registered.
 	 * 
+	 * If the new Plugin implements the PluginDependency interface, the method
+	 * validates dependencies.
+	 * 
 	 * @param pluginClass
 	 * @throws PluginException
 	 */
 	public void registerPlugin(Plugin plugin) throws PluginException {
+		// validate dependencies
+		if (plugin instanceof PluginDependency) {
+			List<String> dependencies= ((PluginDependency)plugin).dependsOn();
+			for (String dependency: dependencies) {
+				boolean found=false;
+				for (Plugin regiseredPlugin: pluginList) {
+					if (regiseredPlugin.getClass().getName().equals(dependency)) {
+						found=true;
+						break;
+					}
+				}
+				if (!found) {
+					logger.warning("Plugin '"+ plugin.getClass().getName() + "' depends on unregistered Plugin class '" + dependency + "'");
+				}
+			}
+		}
 		plugin.init(ctx);
-		vectorPlugins.add(plugin);
+		pluginList.add(plugin);
 	}
 
 	/**
@@ -145,9 +165,9 @@ public class WorkflowKernel {
 	 */
 	public void unregisterPlugin(String pluginClass) throws PluginException {
 		logger.fine("unregisterPlugin " + pluginClass);
-		for (Plugin plugin : vectorPlugins) {
+		for (Plugin plugin : pluginList) {
 			if (plugin.getClass().getName().equals(pluginClass)) {
-				vectorPlugins.remove(plugin);
+				pluginList.remove(plugin);
 				return;
 			}
 		}
@@ -164,7 +184,7 @@ public class WorkflowKernel {
 	 */
 	public void unregisterAllPlugins() {
 		logger.fine("unregisterAllPlugins");
-		vectorPlugins = new Vector<Plugin>();
+		pluginList = new ArrayList<Plugin>();
 	}
 
 	/**
@@ -491,7 +511,7 @@ public class WorkflowKernel {
 		List<String> localPluginLog = new Vector<String>();
 
 		try {
-			for (Plugin plugin : vectorPlugins) {
+			for (Plugin plugin : pluginList) {
 
 				sPluginName = plugin.getClass().getName();
 				if (logger.isLoggable(Level.FINE))
@@ -530,8 +550,8 @@ public class WorkflowKernel {
 	}
 
 	private void closePlugins(int astatus) throws PluginException {
-		for (int i = 0; i < vectorPlugins.size(); i++) {
-			Plugin plugin = (Plugin) vectorPlugins.elementAt(i);
+		for (int i = 0; i < pluginList.size(); i++) {
+			Plugin plugin = (Plugin) pluginList.get(i);
 			if (logger.isLoggable(Level.FINE))
 				logger.info("closing Plugin: " + plugin.getClass().getName() + "...");
 			plugin.close(astatus);
