@@ -89,5 +89,21 @@ During the init() phase the _WorkflowKernel_ provides the plug-in with an instan
 
 
 
+# Plug-in Dependencies
 
+A plug-in may optionally implement the interface 'PluginDependency' to indicate dependencies on other plug-ins. Plug-in dependencies are validated by the WorkflowKernel during processing a workflow event. If a plug-in defined by the BPMN model signals dependencies which are not reflected by the current model definition, a warning message is logged. 
+
+The interface _PluginDependency_ only provide one method called 'dependsOn' returning a String array with plug-ins need to be called before this plug-in class can be executed by the WorkflowKernel. 
+
+	org.imixs.workflow.PluginDependency
+
+See the following example:
+
+	public class MyPlugin implements Plugin, PluginDependecy {
+    
+    public List<String> dependsOn {
+    	
+    	String[] depends = new String[] { "org.imixs.workflow.engine.plugins.AccessPlugin", "org.imixs.workflow.engine.plugins.RulePlugin" };
+		return Arrays.asList(depends);
+    } 
   
