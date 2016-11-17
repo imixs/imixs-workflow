@@ -114,8 +114,7 @@ public class WorkflowKernel {
 	 * @throws PluginException
 	 */
 	public void registerPlugin(final Plugin plugin) throws PluginException {
-		plugin.init(ctx);
-
+		// validate dependencies
 		if (plugin instanceof PluginDependency) {
 			List<String> dependencies= ((PluginDependency)plugin).dependsOn();
 			for (String dependency: dependencies) {
@@ -131,6 +130,7 @@ public class WorkflowKernel {
 				}
 			}
 		}
+		plugin.init(ctx);
 		pluginList.add(plugin);
 	}
 
