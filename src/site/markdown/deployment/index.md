@@ -24,22 +24,32 @@ All components of Imixs-Workflow are build with Maven which makes it easy to add
 Read the [section Maven](../maven.html) for further details about how to work with maven artifacts.
 
 ## Database
-The Imixs-Workflow engine stores the workflow model and its process instances into a database using the Java Persistence API (JPA). Therefore a database pool need to be provided together with the container the Imixs-Workflow engine is deployed to. The configuration is done via the persistence.xml file. See the following example:
+The Imixs-Workflow engine stores the workflow model and its process instances into a database using the Java Persistence API (JPA). Therefore a database pool need to be provided together with the container the Imixs-Workflow engine is deployed to. The configuration is done via the persistence.xml file. The persistence-unit name is 
+
+	org.imixs.workflow.jpa
+
+See the following example:
 
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence">
-		<persistence-unit name="org.imixs.workflow.jee.jpa" transaction-type="JTA">	
+		<persistence-unit name="org.imixs.workflow.jpa" transaction-type="JTA">	
 			<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>	
 			<jta-data-source>jdbc/workflow-db</jta-data-source>
 			<jar-file>lib/imixs-workflow-engine-${org.imixs.workflow.version}.jar</jar-file>
 			<properties>
+				<!-- target-database Auto MySQL PostgreSQL  -->
 				<property name="eclipselink.target-database" value="Auto" />
 				<property name="eclipselink.ddl-generation" value="create-tables" />
 				<property name="eclipselink.deploy-on-startup" value="true" />
+				<property name="eclipselink.logging.level" value="INFO" />	
 			</properties>				
 		</persistence-unit>
 	</persistence> 
+
+
+		
+	
 
 __Note:__ The jar-file must match the deployed version of the Imixs-Workflow engine jar. See the section [Deployment Guide](./deployment_guide.html) for further details.
 
