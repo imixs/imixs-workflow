@@ -23,24 +23,20 @@ Each resource published by the Imixs-Workfow REST API is represented by common r
 
 The following example shows a business object in XML representation used for request and response objects:
 
-	<entity xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-		<item>
-			<name>$modelversion</name>
+	<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+		<item name="$modelversion">
 			<value xsi:type="xs:string">1.0.1</value>
 		</item>
-		<item>
-			<name>$processid</name>
+		<item name="$processid">
 			<value xsi:type="xs:int">1000</value>
 		</item>
-		<item>
-			<name>$activityid</name>
+		<item name="$activityid">
 			<value xsi:type="xs:int">10</value>
 		</item>
-		<item>
-			<name>_subject</name>
-			<value xsi:type="xs:string"> Optionales Daten Feld</value>
+		<item name="_subject">
+			<value xsi:type="xs:string">some data...</value>
 		</item>
-	</entity>
+	</document>
 
 ### JSON Business Object
 
