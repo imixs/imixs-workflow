@@ -147,6 +147,6 @@ Therefore it is sufficient to copy the .war file into the folder
 
 The application can be accessed from the URL
 
-	http://localhost:8080/workflow/ 
+[http://localhost:8080/workflow](http://localhost:8080/workflow) 
 
       

@@ -1,8 +1,8 @@
 #GlassFish Deployment Guide
-This section will explain the configuration steps needed to successfully deploy the [Imixs-Sample Application](../sampleapplication.html) on GlassFish. The deployment is similar for other custom projects.  See also the section [Deployment Guide](./deployment_guide.html) for general information about deployment of the Imixs-Workflow engine.
+This section will explain the configuration steps needed to successfully deploy the [Imixs-Sample Application](../sampleapplication.html) on GlassFish application server. The deployment is similar for other custom projects. For general information about the deployment of the Imixs-Workflow engine, see also the section [Deployment Guide](./deployment_guide.html).
 
 ## Install GlassFish
-You can download the GlassFish Server from the [GlassFish project site](http://www.glassfish.org). This side also includes an Installation guide for installing GlassFish on different platforms. GlassFish is provided in two versions. Version 3.x is a Java EE6 Implementation. The newer Version GlassFish 4.x is  based on the Java EE7 specification. After you have installed the GlassFish Server you can start the server by switching into the directory and execute the startup script:
+You can download the GlassFish Server from the [GlassFish project site](http://www.glassfish.org). This site also includes an Installation guide for installing GlassFish on different platforms. GlassFish is provided in two versions - the latest [official version GlassFish](https://glassfish.java.net/) and the [Payara Project](http://www.payara.fish/). Both versions are based on the Java EE7 specification. After you have installed the GlassFish Server you can start the server by switching into the directory and execute the startup script:
  
     GLASSFISH_DIST/domains/domain1/bin
  

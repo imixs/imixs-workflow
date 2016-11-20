@@ -1,7 +1,11 @@
 # The Imixs-JSF-Sample Application
-The Imixs-Workflow project provides a Sample Application which demonstrates the behavior and the concepts of the Imixs-Workflow Engine. The sourcec can be downloaded from [GitHub](https://github.com/imixs/imixs-jsf-example). The following section gives a brief overview how to build and deploy the Imixs-Sample Application into an Application Server. The installation guide is also helpful to get a better understanding what is necessary to integrate Imixs-Workflow into your own project.  		
+The Imixs-Workflow project provides a Sample Application which demonstrates the behavior and the concepts of the Imixs-Workflow Engine. The source code can be downloaded from [GitHub](https://github.com/imixs/imixs-jsf-example). The following section gives a brief overview how to build and deploy the Imixs-Sample Application into an Application Server. The installation guide is also helpful to get a better understanding what is necessary to integrate Imixs-Workflow into your own project.  		
  
+<center><img src="./images/imixs-sample-application-01.png" style="width:700px"  /></center>
+
 This introduction refers the basic steps needed to get the Imixs-Sample Application up and running on different platforms. If you need further informations about the deployment of the Imixs-Workflow components see the [section deployment](./deployment/index.html) for more detailed information.
+
+
 
 
 ##How to Build the Imixs-Sample Application 
@@ -21,8 +25,8 @@ Before you deploy the Imixs-Sample Application you first need a Java EE applicat
 
 In the following deployment sections you will find more information how to setup a server environment:
 
-  * [GlassFish](./deployment/glassfish.html) 
   * [WildFly](./deployment/wildfly.html)
+  * [GlassFish](./deployment/glassfish.html) 
 
 
 ##How to Setup a Workflow Model
@@ -31,7 +35,7 @@ To run the workflow you need to provide a workflow model. The workflow model des
 ## Run the Imixs-Sample Application 
 After you have installed and setup the Imixs-Sample Application start the application with the following url from your browser:
 
-    http://localhost:8080/workflow
+[http://localhost:8080/workflow](http://localhost:8080/workflow)    
 
  
   
