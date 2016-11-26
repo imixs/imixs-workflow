@@ -62,7 +62,6 @@ import org.apache.lucene.store.FSDirectory;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.PropertyService;
-import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.QueryException;
 
 /**
