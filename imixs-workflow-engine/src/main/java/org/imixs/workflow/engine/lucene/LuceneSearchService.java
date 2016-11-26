@@ -91,7 +91,6 @@ import org.imixs.workflow.exceptions.QueryException;
 @LocalBean
 public class LuceneSearchService {
 
-	
 	private static final int DEFAULT_MAX_SEARCH_RESULT = 9999; // limiting the
 																// total
 	// number of hits
@@ -120,7 +119,7 @@ public class LuceneSearchService {
 	 * 
 	 * @param sSearchTerm
 	 * @return collection of search result
-	 * @throws QueryException 
+	 * @throws QueryException
 	 */
 	public List<ItemCollection> search(String sSearchTerm) throws QueryException {
 		// no sort order
@@ -139,7 +138,7 @@ public class LuceneSearchService {
 	 *            - page number
 	 * 
 	 * @return collection of search result
-	 * @throws QueryException 
+	 * @throws QueryException
 	 */
 	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) throws QueryException {
 		// no sort order
@@ -168,7 +167,8 @@ public class LuceneSearchService {
 	 *            - optional to change the default search operator
 	 * 
 	 * @return collection of search result
-	 * @throws QueryException in case the searchtem is not understandable.
+	 * @throws QueryException
+	 *             in case the searchtem is not understandable.
 	 */
 	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex, Sort sortOrder,
 			Operator defaultOperator) throws QueryException {
@@ -178,10 +178,10 @@ public class LuceneSearchService {
 			pageSize = DEFAULT_PAGE_SIZE;
 		}
 
-		if (pageIndex<0) {
-			pageIndex=0;
+		if (pageIndex < 0) {
+			pageIndex = 0;
 		}
-		
+
 		logger.finest("lucene search: pageNumber=" + pageIndex + " pageSize=" + pageSize);
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
@@ -203,7 +203,7 @@ public class LuceneSearchService {
 				// get user names list
 				List<String> userNameList = documentService.getUserNameList();
 				// create search term (always add ANONYMOUS)
-				String sAccessTerm = "($readaccess:"+LuceneUpdateService.ANONYMOUS;
+				String sAccessTerm = "($readaccess:" + LuceneUpdateService.ANONYMOUS;
 				for (String aRole : userNameList) {
 					if (!"".equals(aRole))
 						sAccessTerm += " OR $readaccess:\"" + aRole + "\"";
@@ -288,16 +288,16 @@ public class LuceneSearchService {
 
 			logger.fine("lucene search result computed in " + (System.currentTimeMillis() - ltime) + " ms");
 		} catch (IOException e) {
+			// in case of an IOException we just print an error message and
+			// return an empty result
 			logger.severe("Lucene index error: " + e.getMessage());
-			throw new IndexException(IndexException.INVALID_INDEX,e.getMessage(),e);
 		} catch (ParseException e) {
 			logger.severe("Lucene search error: " + e.getMessage());
-			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE,e.getMessage(),e);
+			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
 		}
 
 		return workitems;
 	}
-	
 
 	/**
 	 * Creates a Lucene FSDirectory Instance. The method uses the proeprty
@@ -308,7 +308,7 @@ public class LuceneSearchService {
 	 * @return
 	 * @throws IOException
 	 */
-	Directory createIndexDirectory(Properties prop) throws IOException   {
+	Directory createIndexDirectory(Properties prop) throws IOException {
 		logger.finest("lucene createIndexDirectory...");
 		// read configuration
 		String sIndexDir = prop.getProperty("lucence.indexDir", LuceneUpdateService.DEFAULT_INDEX_DIRECTORY);
@@ -420,16 +420,16 @@ public class LuceneSearchService {
 	 * 
 	 * @param searchTerm
 	 * @return normalzed search term
-	 * @throws QueryException 
+	 * @throws QueryException
 	 */
 	public static String normalizeSearchTerm(String searchTerm) throws QueryException {
-		if (searchTerm==null) {
+		if (searchTerm == null) {
 			return "";
 		}
 		if (searchTerm.trim().isEmpty()) {
 			return "";
 		}
-		
+
 		ClassicAnalyzer analyzer = new ClassicAnalyzer();
 		QueryParser parser = new QueryParser("content", analyzer);
 		try {
@@ -437,7 +437,7 @@ public class LuceneSearchService {
 			searchTerm = result.toString("content");
 		} catch (ParseException e) {
 			logger.warning("Unable to normalze serchTerm '" + searchTerm + "'  -> " + e.getMessage());
-			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE,e.getMessage(),e);
+			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
 		}
 		return escapeSearchTerm(searchTerm, true);
 
