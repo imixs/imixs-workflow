@@ -1,6 +1,6 @@
 #How Imixs-Workflow works
 
-Imixs-Workflow is an open source workflow engine for human-centric business process management (BPM). Human-centric BPM means to support human skills and activities by a task orientated workflow-engine. The Imixs-Workflow project provides a framework for the development of human-centric business applications. The Imixs-Workflow engine can be embedded in a Java EE application, or run stand-alone as a web-service in a microservice architecture.
+Imixs-Workflow is an open source workflow engine for human-centric business process management (BPM). Human-centric BPM means to support human skills and activities by a task oriented workflow-engine. The Imixs-Workflow project provides a framework for the development of human-centric business applications. The Imixs-Workflow engine can be embedded in a Java EE application, or run stand-alone as a web-service in a microservice architecture.
 
 ##BPMN 2.0
 
