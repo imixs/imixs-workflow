@@ -35,7 +35,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -181,12 +180,14 @@ public class ReportService {
 	 * @param itemList
 	 *            - optional attribute list of items to be returned
 	 * @return collection of entities
-	 * @throws QueryException 
+	 * @throws QueryException
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	public List<ItemCollection> executeReport(String reportName, int startPos, int maxcount, Map<String, String> params,
-			List<String> itemList) throws QueryException {
+	public List<ItemCollection> executeReport(String reportName, int pageSize, int pageIndex,
+			Map<String, String> params) throws QueryException {
+
+		List<ItemCollection> clonedResult = new ArrayList<ItemCollection>();
 
 		long l = System.currentTimeMillis();
 		logger.fine("executeReport: " + reportName);
@@ -194,8 +195,6 @@ public class ReportService {
 		// Load Query Object
 		ItemCollection reportEntity = findReport(reportName);
 		String query = reportEntity.getItemValueString("txtQuery");
-		if (maxcount == 0)
-			maxcount = -1;
 
 		// replace params in query statement
 		if (params != null) {
@@ -217,75 +216,38 @@ public class ReportService {
 		query = replaceDateString(query);
 
 		// execute query
-		logger.fine("executeReport jpql=" + query);
-		List<ItemCollection> result = documentService.find(query, startPos, maxcount);
+		logger.fine("executeReport query=" + query);
+		List<ItemCollection> result = documentService.find(query, pageSize, pageIndex);
 
 		// test if a itemList is provided or defined in the reportEntity...
-		if (itemList == null) {
-			// get list from report definition
-			itemList = (List<String>) reportEntity.getItemValue("txtAttributeList");
+		List<List<String>> attributes = (List<List<String>>) reportEntity.getItemValue("attributes");
+		List<String> itemNames=new ArrayList<String>();
+		for (List<String> attribute: attributes) {
+			itemNames.add(attribute.get(0));
 		}
 
-		// if we have a itemList we clone each entity of the result set
-		if (itemList != null && itemList.size() > 0) {
-			List<ItemCollection> clonedResult = new ArrayList<ItemCollection>();
+		// next we iterate over all entities from the result set and clone
+		// each entity with the given attribute list and format instructions
+		for (ItemCollection entity : result) {
 
-			// first we build a formating map.....
-			Map<String, String> formatMap = new HashMap<String, String>();
-			for (String field : itemList) {
-				List<String> formatList = XMLParser.findTags(field, "format");
-				if (formatList != null && formatList.size() > 0) {
-					String fieldName = field.substring(0, field.indexOf("<"));
-					List<String> xmlValues = XMLParser.findTagValues(field, "format");
-					if (xmlValues.size() > 0) {
-						formatMap.put(fieldName, xmlValues.get(0));
-					}
-				} else {
-					if (field.indexOf("<") > -1) {
-						field = field.substring(0, field.indexOf("<"));
-					}
-					formatMap.put(field, "");
-				}
-			}
-
-			// next we build a converter map.....
-			Map<String, String> converterMap = new HashMap<String, String>();
-			for (String field : itemList) {
-				List<String> formatList = XMLParser.findTags(field, "convert");
-				if (formatList != null && formatList.size() > 0) {
-					String fieldName = field.substring(0, field.indexOf("<"));
-					List<String> xmlValues = XMLParser.findTagValues(field, "convert");
-					if (xmlValues.size() > 0) {
-						converterMap.put(fieldName, xmlValues.get(0));
-					}
-				}
-			}
-
-			// next we iterate over all entities from the result set and clone
-			// each entity with the given itemList
-			for (ItemCollection entity : result) {
-
-				// in case _ChildItems are requested the entity will be
-				// duplicated for each child attribute.
-				// a child item is identified by the '~' char in the item name
-				List<ItemCollection> embeddedChildItems = getEmbeddedChildItems(entity, formatMap.keySet());
-				if (!embeddedChildItems.isEmpty()) {
-					for (ItemCollection child : embeddedChildItems) {
-						ItemCollection clone = cloneEntity(child, formatMap, converterMap);
-						clonedResult.add(clone);
-					}
-				} else {
-					// default - clone the entity
-					ItemCollection clone = cloneEntity(entity, formatMap, converterMap);
+			// in case _ChildItems are requested the entity will be
+			// duplicated for each child attribute.
+			// a child item is identified by the '~' char in the item name
+			List<ItemCollection> embeddedChildItems = getEmbeddedChildItems(entity, itemNames);
+			if (!embeddedChildItems.isEmpty()) {
+				for (ItemCollection child : embeddedChildItems) {
+					ItemCollection clone = cloneEntity(child, attributes);
 					clonedResult.add(clone);
 				}
+			} else {
+				// default - clone the entity
+				ItemCollection clone = cloneEntity(entity, attributes);
+				clonedResult.add(clone);
 			}
-			logger.fine("executed report '" + reportName + "' in " + (System.currentTimeMillis() - l) + "ms");
-			return clonedResult;
-		} else {
-			logger.fine("executed report '" + reportName + "' in " + (System.currentTimeMillis() - l) + "ms");
-			return result;
 		}
+		logger.fine("executed report '" + reportName + "' in " + (System.currentTimeMillis() - l) + "ms");
+		return clonedResult;
+
 	}
 
 	/**
@@ -299,7 +261,7 @@ public class ReportService {
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private List<ItemCollection> getEmbeddedChildItems(ItemCollection entity, Set<String> fieldNames) {
+	private List<ItemCollection> getEmbeddedChildItems(ItemCollection entity, List<String> fieldNames) {
 		List<String> embeddedItemNames = new ArrayList<String>();
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
 		// first find all items containing a child element
@@ -341,34 +303,65 @@ public class ReportService {
 	 * @param entity
 	 * @return
 	 */
-	private ItemCollection cloneEntity(ItemCollection entity, Map<String, String> formatMap,
-			Map<String, String> converterMap) {
-		ItemCollection clone = new ItemCollection();
-		Set<String> fieldNames = formatMap.keySet();
-		for (String field : fieldNames) {
-			// first look for converter
-			String converter = converterMap.get(field);
-			// did we have a format definition?
-			if (converter != null) {
-				entity = convertItemValue(entity, field, converter);
-			}
+	private ItemCollection cloneEntity(ItemCollection entity, List<List<String>> attributes) {
+		ItemCollection clone = null;
 
-			String format = formatMap.get(field);
-			// did we have a format definition?
-			if (!format.isEmpty()) {
-				String sLocale = XMLParser.findAttribute(format, "locale");
-				// create string array of formated values
-				ArrayList<String> vValues = new ArrayList<String>();
-				List<?> rawValues = entity.getItemValue(field);
-				for (Object rawValue : rawValues) {
-					vValues.add(formatObjectValue(rawValue, format, sLocale));
+		// if we have a itemList we clone each entity of the result set
+		if (attributes != null && attributes.size() > 0) {
+			clone = new ItemCollection();
+			for (List<String> attribute : attributes) {
+
+				String field = attribute.get(0);
+				String label = "field";
+				if (attribute.size() >= 1) {
+					label = attribute.get(1);
 				}
-				clone.replaceItemValue(field, vValues);
+				String convert = "";
+				if (attribute.size() >= 2) {
+					convert = attribute.get(2);
+				}
 
-			} else {
-				// not format definition - clone value as is
-				clone.replaceItemValue(field, entity.getItemValue(field));
+				String format = "";
+				if (attribute.size() >= 3) {
+					format = attribute.get(3);
+				}
+
+				String agregate = "";
+				if (attribute.size() >= 4) {
+					agregate = attribute.get(4);
+				}
+
+				// first look for converter
+
+				// did we have a format definition?
+				List<Object> values = entity.getItemValue(field);
+				if (!convert.isEmpty()) {
+					values = convertItemValue(entity, field, convert);
+				}
+
+				// did we have a format definition?
+				if (!format.isEmpty()) {
+					String sLocale = XMLParser.findAttribute(format, "locale");
+					// test if we have a XML format tag
+					List<String> content=XMLParser.findTagValues(format, "format");
+					if (content.size()>0) {
+						format=content.get(0);
+					}
+					// create string array of formated values
+					List<?> rawValues = values;
+					values = new ArrayList<Object>();
+					for (Object rawValue : rawValues) {
+						values.add(formatObjectValue(rawValue, format, sLocale));
+					}
+
+				}
+
+				clone.replaceItemValue(field, values);
 			}
+		} else {
+			// clone all attributes
+			clone = (ItemCollection) entity.clone();
+
 		}
 		return clone;
 	}
@@ -491,7 +484,7 @@ public class ReportService {
 	 */
 	private ItemCollection findReport(String aid) {
 		ItemCollection result = null;
-
+		// try to load report by uniqueid
 		result = documentService.load(aid);
 		if (result == null) {
 			// try to search for name
@@ -637,10 +630,10 @@ public class ReportService {
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private ItemCollection convertItemValue(ItemCollection itemcol, String itemName, String converter) {
+	private List<Object> convertItemValue(ItemCollection itemcol, String itemName, String converter) {
 
 		if (converter == null || converter.isEmpty()) {
-			return itemcol;
+			return itemcol.getItemValue(itemName);
 		}
 
 		List values = itemcol.getItemValue(itemName);
@@ -677,9 +670,7 @@ public class ReportService {
 			}
 
 		}
-		itemcol.replaceItemValue(itemName, values);
-
-		return itemcol;
+		return values;
 
 	}
 

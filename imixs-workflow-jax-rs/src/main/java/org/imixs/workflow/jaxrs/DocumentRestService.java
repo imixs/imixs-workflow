@@ -217,7 +217,7 @@ public class DocumentRestService {
 	@POST
 	@Path("/")
 	@Produces(MediaType.APPLICATION_XML)
-	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
 	public Response putEntity(XMLItemCollection xmlworkitem) {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();

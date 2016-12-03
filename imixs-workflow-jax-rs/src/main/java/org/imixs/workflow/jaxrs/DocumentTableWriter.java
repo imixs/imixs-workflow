@@ -43,7 +43,6 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.util.XMLParser;
 import org.imixs.workflow.xml.DocumentTable;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
@@ -57,7 +56,7 @@ import org.imixs.workflow.xml.XMLItemCollectionAdapter;
  */
 @Provider
 @Produces("text/html")
-public class EntityTableWriter implements MessageBodyWriter<DocumentTable> {
+public class DocumentTableWriter implements MessageBodyWriter<DocumentTable> {
 
 	public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
 		return DocumentTable.class.isAssignableFrom(type);
@@ -69,7 +68,7 @@ public class EntityTableWriter implements MessageBodyWriter<DocumentTable> {
 	 * 
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public void writeTo(DocumentTable entityCollection, Class<?> type, Type genericType, Annotation[] annotations,
+	public void writeTo(DocumentTable documentTable, Class<?> type, Type genericType, Annotation[] annotations,
 			MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
 			throws IOException, WebApplicationException {
 
@@ -90,29 +89,15 @@ public class EntityTableWriter implements MessageBodyWriter<DocumentTable> {
 			bw.write("<tr class=\"b\">");
 		trClass = !trClass;
 
-		for (String attr : entityCollection.getAttributeList()) {
-			String sLabel=null;
-			// test if the attribute name contains a formating definition
-			int fPos=attr.toLowerCase().indexOf("<format");
-			if (fPos>-1) {
-				// test if a label is defined
-				sLabel = XMLParser.findAttribute(attr, "label");
-				if (sLabel != null) {
-					bw.write("<th>" + sLabel + "</th>");
-				} else {
-					bw.write("<th>" + attr.substring(0,fPos) + "</th>");
-				}
-			}
-			else {
-				bw.write("<th>" + attr + "</th>");
-			}
+		for (String label : documentTable.getLabels()) {
+			bw.write("<th>" + label + "</th>");
 		}
 		bw.write("</tr>");
 
 		// print table body
 		try {
 
-			for (XMLItemCollection xmlworkItem : entityCollection.getEntity()) {
+			for (XMLItemCollection xmlworkItem : documentTable.getDocument()) {
 				/* Print row */
 				if (trClass)
 					bw.write("<tr class=\"a\">");
@@ -121,17 +106,8 @@ public class EntityTableWriter implements MessageBodyWriter<DocumentTable> {
 				trClass = !trClass;
 
 				ItemCollection itemCol = XMLItemCollectionAdapter.getItemCollection(xmlworkItem);
-				for (String itemName : entityCollection.getAttributeList()) {
+				for (String itemName : documentTable.getItems()) {
 					// test if item name contains format or converter definition
-					int i=itemName.toLowerCase().indexOf("<format");
-					if (i>-1) {
-						itemName=itemName.substring(0,i);
-					}
-					i=itemName.toLowerCase().indexOf("<convert");
-					if (i>-1) {
-						itemName=itemName.substring(0,i);
-					}
-					
 					List vValues = itemCol.getItemValue(itemName);
 					bw.write("<td>" + XMLItemCollectionWriter.convertValuesToString(vValues) + "</td>");
 				}

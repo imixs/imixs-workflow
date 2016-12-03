@@ -5,17 +5,17 @@ The main resource /report provides a flexible rest service interface to create d
 The /report GET resources are used to get business objects provided by the Imixs Report Manager:
 
 
-| URI                                           | Description                               | 
-|-----------------------------------------------|-------------------------------------------|
-| /report/reports                               | a list of reports provided by the  workflow instance          |
-| /report/reports/{name}                        | a report description for a specific report|
+| URI                                           | Description                               					   | 
+|-----------------------------------------------|------------------------------------------------------------------|
+| /report/definitions                           | a list of all report definitins provided by the workflow instance|
+| /report/definitions/{name}                    | returns a report definition by name or uniqueID                  |
+| /report/{name}.xml                            | the xml result of a report definition                            |
 | /report/{name}.ixr                            | the result of a specific report           |
 | /report/{name}.html                           | a html table of the result for a specific report              |
-| /report/{name}.xml                            | a xml representation of the result for a specific report      |
 
 A report definition need to provide a set of informations to define the layout and content of a report
  
-  * <strong>JPQL Statement</strong> - selection of workitems to be selected in a report
+  * <strong>Query</strong> - search query to select the result set
   * <strong>contentType / Encoding</strong> - defines the MIME-TYPE and encoding for a report (e.g. text/html for html output, application/pdf for pdf files)
   * <strong>processing instructions</strong> - xsl template to format the xml output of an workitem collection
 
@@ -55,20 +55,16 @@ The following example shows a simple XSLT file to format a workitem collection i
 		</xsl:template>
 	</xsl:stylesheet>
 
-###Providing JPQL Parameters
-A report definition can also contain dynamic JPQL parameters. These parameters can be defined in the JPQL statement of the report. See the following example of JPQL statement:
+###Providing Query Parameters
+A report definition can also contain dynamic query parameters. These parameters can be defined in the search query of the report definition. See the following example of JPQL statement:
   
-	 SELECT workitem FROM Entity AS workitem
-	 JOIN workitem.integerItems AS p
-	  WHERE workitem.type = 'workitem' 
-	  AND p.itemName = '$processid' 
-	  AND p.itemValue = ?1
+	 (type:"workitem") AND ($processid:"?1")
 
 To provide the Report with the expected parameter ?1 the parameter can be appended into the query string.
  
-    http://Host/WorkflowApp/report/reportfile.ixr&1=5130
+    http://Host/WorkflowApp/report/reporname?1=5130
  
-In this example request the URL contains the parameter "?1=5130" which will be inserted into the JPQL statement during the report execution.
+In this example request the URL contains the parameter "?1=5130" which will be inserted into the query statement during the report execution.
 
 
 ###Dynamic Date Values
@@ -161,12 +157,11 @@ You can specify additional URI parameters to access only a subset of workitems b
 
 | option      | description                                         | example               |
 |-------------|-----------------------------------------------------|-----------------------|
-| count       | number of workitems returned by a collection        | ..?count=10           |
-| start       | position to start  workitems returned by a  collection        | ..?start=5&count=10   |
-| type        | Optional type property workitems are filtered       | ..?type=workitem      | 
+| pageSize    | number of workitems returned by a collection        | ..?pageSize=10           |
+| pageIndex   | position to start  workitems returned by a  collection        | ..?pageSize=10&PageIndex=5  |
 | download    | Optional filename for a download request This generates the HTTP Header   Content-disposition,attachment;filename=example.pdf   |download=example.pdf   |
 
 
-<strong>Note:</strong> The Imixs JEE Workflow manages the access to workitems by individual access lists per each entity. So the result of a collection of workitems will only contain entities where the current user has a  read access right. Without that right the workitem will not be returned by the workflowManager and so it will not be included in the list. 
+<strong>Note:</strong> Imixs-Workflow controls the access to documents by individual access lists (ACL) per each document. So the result set will only contain documents where the current user has read access. Without that right the document will not be returned by the report service even if the document would be part of the search query. 
   
    

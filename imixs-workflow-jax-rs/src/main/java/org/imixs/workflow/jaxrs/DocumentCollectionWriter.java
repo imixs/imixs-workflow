@@ -45,14 +45,14 @@ import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
 
 /**
- * This MessageBodyWriter generates an HTML representation from a Entitycollection
+ * This MessageBodyWriter generates an HTML representation from a DocumetCollection
  * 
  * @author rsoika
  *
  */
 @Provider
 @Produces("text/html")
-public class EntityCollectionWriter implements MessageBodyWriter<DocumentCollection> {
+public class DocumentCollectionWriter implements MessageBodyWriter<DocumentCollection> {
 
 	public boolean isWriteable(Class<?> type, Type genericType,
 			Annotation[] annotations, MediaType mediaType) {

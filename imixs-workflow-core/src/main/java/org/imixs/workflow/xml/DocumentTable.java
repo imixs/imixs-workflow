@@ -32,41 +32,57 @@ import java.util.Vector;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * The DocumentTable represents a list of XMLItemCollections to be used by JAXB api.
- * Each XMLItemCollection in the list represents the same properties. So the
- * DocumentTable can be used to generate a table repseentation of
- * XMLItemCollections
+ * The JAXB DocumentTable represents a list of documents in a table format. 
+ * For each document the same list of items will be added into a separate row. 
+ * The property labels contans the table headers.
  * 
+
  * @author rsoika
- * @version 0.0.1
+ * @version 2.0.0
  */
 @XmlRootElement(name = "collection")
 public class DocumentTable implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private XMLItemCollection[] entity;
-	private List<String> attributeList;
+	private XMLItemCollection[] document;
+	private List<String> items;
+	private List<String> labels;
 
 	public DocumentTable() {
-		setEntity(new XMLItemCollection[] {});
-		setAttributeList(new Vector<String>());
+		setDocument(new XMLItemCollection[] {});
+	}
+	
+	public DocumentTable(XMLItemCollection[] documents,List<String> items,List<String> labels) {
+		setDocument(documents);
+		setItems(items);
+		setLabels(labels);
 	}
 
-	public XMLItemCollection[] getEntity() {
-		return entity;
+	public XMLItemCollection[] getDocument() {
+		return document;
 	}
 
-	public void setEntity(XMLItemCollection[] entity) {
-		this.entity = entity;
+	public void setDocument(XMLItemCollection[] document) {
+		this.document = document;
 	}
 
-	public List<String> getAttributeList() {
-		return attributeList;
+	public List<String> getItems() {
+		return items;
 	}
 
-	public void setAttributeList(List<String> attributeList) {
-		this.attributeList = attributeList;
+	public void setItems(List<String> items) {
+		this.items = items;
 	}
+
+	public List<String> getLabels() {
+		return labels;
+	}
+
+	public void setLabels(List<String> labels) {
+		this.labels = labels;
+	}
+
+
 	
 	
 
