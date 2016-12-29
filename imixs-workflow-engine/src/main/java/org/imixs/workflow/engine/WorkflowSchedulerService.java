@@ -99,7 +99,7 @@ public class WorkflowSchedulerService {
 	WorkflowService workflowService;
 
 	@EJB
-	DocumentService entityService;
+	DocumentService documentService;
 
 	@EJB
 	ModelService modelService;
@@ -124,19 +124,27 @@ public class WorkflowSchedulerService {
 	 */
 	public ItemCollection loadConfiguration() {
 		ItemCollection configItemCollection = null;
-		String searchTerm="(type:\"" + TYPE_CONFIGURATION  +"\" AND txtname:\"" + NAME + "\")";
-		
+		String searchTerm = "(type:\"" + TYPE_CONFIGURATION + "\" AND txtname:\"" + NAME + "\")";
+
 		Collection<ItemCollection> col;
 		try {
-			col = entityService.find(searchTerm, 0, 1);
+			col = documentService.find(searchTerm, 2, 0);
 		} catch (QueryException e) {
 			logger.severe("loadConfiguration - invalid param: " + e.getMessage());
-			throw new InvalidAccessException(InvalidAccessException.INVALID_ID,e.getMessage(),e);			
+			throw new InvalidAccessException(InvalidAccessException.INVALID_ID, e.getMessage(), e);
 		}
 
-		if (col.size() > 0) {
+		if (col.size() > 1) {
+			String message = "loadConfiguration - more than on timer configuration found! Check configuration (type:\"configuration\" txtname:\"org.imixs.workflow.scheduler\") ";
+			logger.severe(message);
+			throw new InvalidAccessException(InvalidAccessException.INVALID_ID, message);
+		}
+
+		if (col.size() == 1) {
+			logger.fine("loading existing timer configuration...");
 			configItemCollection = col.iterator().next();
 		} else {
+			logger.fine("creating new timer configuration...");
 			// create default values
 			configItemCollection = new ItemCollection();
 			configItemCollection.replaceItemValue("type", TYPE_CONFIGURATION);
@@ -174,7 +182,7 @@ public class WorkflowSchedulerService {
 
 		configItemCollection = updateTimerDetails(configItemCollection);
 		// save entity
-		configItemCollection = entityService.save(configItemCollection);
+		configItemCollection = documentService.save(configItemCollection);
 
 		return configItemCollection;
 	}
@@ -241,7 +249,7 @@ public class WorkflowSchedulerService {
 			timer = createTimerOnInterval(configItemCollection);
 		}
 
-		// start and set statusmessage
+		// start the timer and set a status message
 		if (timer != null) {
 
 			Calendar calNow = Calendar.getInstance();
@@ -256,8 +264,7 @@ public class WorkflowSchedulerService {
 				configItemCollection.replaceItemValue("Schedule", "");
 
 			}
-			logger.info("[WorkflowSchedulerService] " + configItemCollection.getItemValueString("txtName")
-					+ " started: " + id);
+			logger.info(configItemCollection.getItemValueString("txtName") + " started: " + id);
 		}
 
 		configItemCollection = saveConfiguration(configItemCollection);
@@ -287,8 +294,7 @@ public class WorkflowSchedulerService {
 			String msg = "stopped at " + dateFormatDE.format(calNow.getTime()) + " by "
 					+ ctx.getCallerPrincipal().getName();
 			configItemCollection.replaceItemValue("statusmessage", msg);
-			logger.info("[WorkflowSchedulerService] " + configItemCollection.getItemValueString("txtName")
-					+ " stopped: " + id);
+			logger.info(configItemCollection.getItemValueString("txtName") + " stopped: " + id);
 		} else {
 			configItemCollection.replaceItemValue("statusmessage", "");
 		}
@@ -340,17 +346,17 @@ public class WorkflowSchedulerService {
 															// 3=day, 4=workdays
 
 				if (iOffsetUnit < 1 || iOffsetUnit > 4) {
-					logger.warning("[WorkflowSchedulerService] error parsing delay in ActivityEntity "
-							+ docActivity.getItemValueInteger("numProcessID") + "."
-							+ docActivity.getItemValueInteger("numActivityID") + " : unsuported keyActivityDelayUnit="
-							+ sDelayUnit);
+					logger.warning(
+							"error parsing delay in ActivityEntity " + docActivity.getItemValueInteger("numProcessID")
+									+ "." + docActivity.getItemValueInteger("numActivityID")
+									+ " : unsuported keyActivityDelayUnit=" + sDelayUnit);
 					return false;
 				}
 
 			} catch (NumberFormatException nfe) {
-				logger.warning("[WorkflowSchedulerService] error parsing delay in ActivityEntity "
-						+ docActivity.getItemValueInteger("numProcessID") + "."
-						+ docActivity.getItemValueInteger("numActivityID") + " :" + nfe.getMessage());
+				logger.warning(
+						"error parsing delay in ActivityEntity " + docActivity.getItemValueInteger("numProcessID") + "."
+								+ docActivity.getItemValueInteger("numActivityID") + " :" + nfe.getMessage());
 				return false;
 			}
 			// get activityDelay from Event
@@ -365,7 +371,7 @@ public class WorkflowSchedulerService {
 			if ("4".equals(sDelayUnit))
 				sDelayUnit = "workdays";
 
-			logger.finest("[WorkflowSchedulerService] " + suniqueid + " offset =" + iOffset + " " + sDelayUnit);
+			logger.finest(suniqueid + " offset =" + iOffset + " " + sDelayUnit);
 
 			iCompareType = Integer.parseInt(docActivity.getItemValueString("keyScheduledBaseObject"));
 
@@ -375,16 +381,16 @@ public class WorkflowSchedulerService {
 			switch (iCompareType) {
 			// last process -
 			case 1: {
-				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": CompareType = last process");
+				logger.finest(suniqueid + ": CompareType = last process");
 
 				if (!doc.hasItem("timWorkflowLastAccess"))
 					return false;
 
 				dateTimeCompare = doc.getItemValueDate("timWorkflowLastAccess");
-				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": timWorkflowLastAccess=" + dateTimeCompare);
+				logger.finest(suniqueid + ": timWorkflowLastAccess=" + dateTimeCompare);
 
 				// scheduled time
-				dateTimeCompare = adjustBaseDate(dateTimeCompare,iOffsetUnit, iOffset);
+				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
 
 				if (dateTimeCompare != null)
 					return dateTimeCompare.before(dateTimeNow);
@@ -394,14 +400,14 @@ public class WorkflowSchedulerService {
 
 			// last modification
 			case 2: {
-				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": CompareType = last modify");
+				logger.finest(suniqueid + ": CompareType = last modify");
 
 				dateTimeCompare = doc.getItemValueDate("$modified");
 
-				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": modified=" + dateTimeCompare);
+				logger.finest(suniqueid + ": modified=" + dateTimeCompare);
 
-				dateTimeCompare = adjustBaseDate(dateTimeCompare,iOffsetUnit, iOffset);
-				
+				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
+
 				if (dateTimeCompare != null)
 					return dateTimeCompare.before(dateTimeNow);
 				else
@@ -410,14 +416,14 @@ public class WorkflowSchedulerService {
 
 			// creation
 			case 3: {
-				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": CompareType = creation");
+				logger.finest(suniqueid + ": CompareType = creation");
 
 				dateTimeCompare = doc.getItemValueDate("$created");
-				logger.fine("[WorkflowSchedulerService] " + suniqueid + ": doc.getCreated() =" + dateTimeCompare);
+				logger.fine(suniqueid + ": doc.getCreated() =" + dateTimeCompare);
 
 				// Nein -> Creation date ist masstab
-				dateTimeCompare =adjustBaseDate(dateTimeCompare,iOffsetUnit, iOffset);
-				
+				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
+
 				if (dateTimeCompare != null)
 					return dateTimeCompare.before(dateTimeNow);
 				else
@@ -427,8 +433,7 @@ public class WorkflowSchedulerService {
 			// field
 			case 4: {
 				String sNameOfField = docActivity.getItemValueString("keyTimeCompareField");
-				logger.finest(
-						"[WorkflowSchedulerService] " + suniqueid + ": CompareType = field: '" + sNameOfField + "'");
+				logger.finest(suniqueid + ": CompareType = field: '" + sNameOfField + "'");
 
 				if (!doc.hasItem(sNameOfField)) {
 					logger.finest("[WorkflowSchedulerService] " + suniqueid + ": CompareType =" + sNameOfField
@@ -438,15 +443,14 @@ public class WorkflowSchedulerService {
 
 				dateTimeCompare = doc.getItemValueDate(sNameOfField);
 
-				logger.finest("[WorkflowSchedulerService] " + suniqueid + ": " + sNameOfField + "=" + dateTimeCompare);
+				logger.finest(suniqueid + ": " + sNameOfField + "=" + dateTimeCompare);
 
-				dateTimeCompare =adjustBaseDate(dateTimeCompare,iOffsetUnit, iOffset);
+				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
 				if (dateTimeCompare != null) {
-					logger.finest("[WorkflowSchedulerService] " + suniqueid + ": Compare " + dateTimeCompare + " <-> "
-							+ dateTimeNow);
+					logger.finest(suniqueid + ": Compare " + dateTimeCompare + " <-> " + dateTimeNow);
 
 					if (dateTimeCompare.before(dateTimeNow)) {
-						logger.finest("[WorkflowSchedulerService] " + suniqueid + " isInDue!");
+						logger.finest(suniqueid + " isInDue!");
 					}
 					return dateTimeCompare.before(dateTimeNow);
 				} else
@@ -548,12 +552,12 @@ public class WorkflowSchedulerService {
 	void runTimer(javax.ejb.Timer timer) throws AccessDeniedException {
 
 		ItemCollection configItemCollection = loadConfiguration();
-		logger.info("[WorkflowSchedulerService] started....");
+		logger.info(" started....");
 
 		// test if imixsDayOfWeek is provided
 		// https://java.net/jira/browse/GLASSFISH-20673
 		if (!isImixsDayOfWeek(configItemCollection)) {
-			logger.info("[WorkflowSchedulerService] runTimer skipped because today is no imixsDayOfWeek");
+			logger.info("runTimer skipped because today is no imixsDayOfWeek");
 			return;
 		}
 
@@ -568,11 +572,11 @@ public class WorkflowSchedulerService {
 			// get all model versions...
 			List<String> modelVersions = modelService.getVersions();
 			for (String version : modelVersions) {
-				logger.info("[WorkflowSchedulerService] processing ModelVersion: " + version);
+				logger.info("processing ModelVersion: " + version);
 				// find scheduled Activities
 				Collection<ItemCollection> colScheduledActivities = findScheduledActivities(version);
-				logger.info("[WorkflowSchedulerService] " + colScheduledActivities.size()
-						+ " scheduled activityEntities found in ModelVersion: " + version);
+				logger.info(" " + colScheduledActivities.size() + " scheduled activityEntities found in ModelVersion: "
+						+ version);
 				// process all workitems for coresponding activities
 				for (ItemCollection aactivityEntity : colScheduledActivities) {
 					processWorkListByActivityEntity(aactivityEntity);
@@ -580,20 +584,20 @@ public class WorkflowSchedulerService {
 			}
 
 		} catch (Exception e) {
-			logger.severe("[WorkflowSchedulerService] error processing worklist: " + e.getMessage());
+			logger.severe(" error processing worklist: " + e.getMessage());
 			if (logger.isLoggable(Level.FINE)) {
 				e.printStackTrace();
 			}
 		}
 
-		logger.info("[WorkflowSchedulerService] finished successfull");
+		logger.info("finished successfull");
 
-		logger.info("[WorkflowSchedulerService] " + iProcessWorkItems + " workitems processed");
+		logger.info(iProcessWorkItems + " workitems processed");
 
 		if (unprocessedIDs.size() > 0) {
-			logger.warning("[WorkflowSchedulerService] " + unprocessedIDs.size() + " workitems could be processed!");
+			logger.warning(unprocessedIDs.size() + " workitems could be processed!");
 			for (String aid : unprocessedIDs) {
-				logger.warning("[WorkflowSchedulerService]          " + aid);
+				logger.warning("          " + aid);
 			}
 
 		}
@@ -606,7 +610,7 @@ public class WorkflowSchedulerService {
 		configItemCollection.replaceItemValue("numWorkItemsUnprocessed", unprocessedIDs.size());
 
 		/*
-		 * Check if Timer should be canceld now? - only by interval
+		 * Check if Timer should be canceled now? - only by interval
 		 * configuration. In case of calenderBasedTimer the timer will stop
 		 * automatically.
 		 */
@@ -617,7 +621,7 @@ public class WorkflowSchedulerService {
 			Calendar calNow = Calendar.getInstance();
 			if (endDate != null && calNow.getTime().after(endDate)) {
 				timer.cancel();
-				System.out.println("[WorkflowSchedulerService] Timeout sevice stopped: " + sTimerID);
+				System.out.println("Timeout - sevice stopped: " + sTimerID);
 
 				SimpleDateFormat dateFormatDE = new SimpleDateFormat("dd.MM.yy hh:mm:ss");
 				String msg = "stopped at " + dateFormatDE.format(calNow.getTime()) + " by datstop="
@@ -638,25 +642,32 @@ public class WorkflowSchedulerService {
 	 * interval.
 	 **/
 	Timer createTimerOnInterval(ItemCollection configItemCollection) {
-
 		// Create an interval timer
 		Date startDate = configItemCollection.getItemValueDate("datstart");
 		Date endDate = configItemCollection.getItemValueDate("datstop");
 		long interval = configItemCollection.getItemValueInteger("numInterval");
-		// if endDate is in the past we do not start the timer!
-		Calendar calNow = Calendar.getInstance();
-		Calendar calEnd = Calendar.getInstance();
 
-		if (endDate != null)
+		// set default start date?
+		if (startDate == null) {
+			// set start date to now
+			startDate = new Date();
+		}
+
+		// check if endDate is before start date, than we do not start the
+		// timer!
+		if (endDate != null) {
+			Calendar calStart = Calendar.getInstance();
+			calStart.setTime(startDate);
+			Calendar calEnd = Calendar.getInstance();
 			calEnd.setTime(endDate);
-		if (calNow.after(calEnd)) {
-			logger.warning("[WorkflowSchedulerService] " + configItemCollection.getItemValueString("txtName")
-					+ " stop-date is in the past");
-
-			endDate = startDate;
+			if (calStart.after(calEnd)) {
+				logger.warning(configItemCollection.getItemValueString("txtName") + " stop-date (" + startDate
+						+ ") is before start-date (" + endDate + "). Timer will not be started!");
+				return null;
+			}
 		}
 		Timer timer = null;
-		// create timer object ($uniqueid)
+		// create timer object ($uniqueId)
 		timer = timerService.createTimer(startDate, interval, configItemCollection.getUniqueID());
 		return timer;
 
@@ -756,7 +767,8 @@ public class WorkflowSchedulerService {
 			// select all activities for this process entity...
 			int processid = aprocessentity.getItemValueInteger("numprocessid");
 			logger.fine("Analyse processentity '" + processid + "'");
-			Collection<ItemCollection> aActivityList = modelService.getModel(aModelVersion).findAllEventsByTask(processid);
+			Collection<ItemCollection> aActivityList = modelService.getModel(aModelVersion)
+					.findAllEventsByTask(processid);
 
 			for (ItemCollection aactivityEntity : aActivityList) {
 				logger.fine("Analyse acitity '" + aactivityEntity.getItemValueString("txtname") + "'");
@@ -783,8 +795,9 @@ public class WorkflowSchedulerService {
 			Timer atimer = (javax.ejb.Timer) obj;
 			String timerID = atimer.getInfo().toString();
 			if (id.equals(timerID)) {
-				if (timer != null)
-					logger.severe("[WorkflowScheduelrService] - more then one timer with id " + id + " was found!");
+				if (timer != null) {
+					logger.severe("more then one timer with id " + id + " was found!");
+				}
 				timer = atimer;
 			}
 		}
@@ -813,33 +826,32 @@ public class WorkflowSchedulerService {
 		// get Modelversion
 		String sModelVersion = activityEntity.getItemValueString("$modelversion");
 
-		logger.info("[WorkflowSchedulerService] processing " + iProcessID + "." + iActivityID + " (" + sModelVersion
-				+ ") ...");
+		logger.info("processing " + iProcessID + "." + iActivityID + " (" + sModelVersion + ") ...");
 
 		// now we need to select by type, $ProcessID and by $modelVersion!
-		String searchTerm="(type:\"workitem\" AND $processid:\"" + iProcessID + "\" AND $modelversion:\"" + sModelVersion + "\")";
-		
+		String searchTerm = "(type:\"workitem\" AND $processid:\"" + iProcessID + "\" AND $modelversion:\""
+				+ sModelVersion + "\")";
 
-		logger.fine("[WorkflowSchedulerService] select: " + searchTerm);
+		logger.fine("select: " + searchTerm);
 
-		Collection<ItemCollection> worklist = entityService.find(searchTerm, 0, -1);
+		Collection<ItemCollection> worklist = documentService.find(searchTerm, 1000, 0);
 
 		logger.fine("[WorkflowSchedulerService] " + worklist.size() + " workitems found");
 		for (ItemCollection workitem : worklist) {
 			// verify due date
 			if (workItemInDue(workitem, activityEntity)) {
 				String sID = workitem.getItemValueString(WorkflowKernel.UNIQUEID);
-				logger.fine("[WorkflowSchedulerService] workitem " + sID + "is in due");
+				logger.fine("workitem " + sID + "is in due");
 				workitem.replaceItemValue("$activityid", iActivityID);
 				try {
-					logger.finest("[WorkflowSchedulerService] getBusinessObject.....");
+					logger.finest("getBusinessObject.....");
 					// call from new instance because of transaction new...
 					// see: http://blog.imixs.org/?p=155
 					// see: https://www.java.net/node/705304
 					ctx.getBusinessObject(WorkflowSchedulerService.class).processSingleWorkitem(workitem);
 					iProcessWorkItems++;
 				} catch (Exception e) {
-					logger.warning("[WorkflowSchedulerService] error processing workitem: " + sID);
+					logger.warning("error processing workitem: " + sID);
 					if (logger.isLoggable(Level.FINEST)) {
 						e.printStackTrace();
 					}
@@ -889,7 +901,7 @@ public class WorkflowSchedulerService {
 				configuration.removeItem("timeRemaining");
 			}
 		} catch (Exception e) {
-			logger.warning("[WorkflowSchedulerService] unable to updateTimerDetails: " + e.getMessage());
+			logger.warning("unable to updateTimerDetails: " + e.getMessage());
 			configuration.removeItem("nextTimeout");
 			configuration.removeItem("timeRemaining");
 		}
@@ -911,7 +923,7 @@ public class WorkflowSchedulerService {
 		// try to parse the configuration list....
 		for (String confgEntry : calendarConfiguation) {
 			if (confgEntry.startsWith("imixsDayOfWeek=")) {
-				logger.info("[WorkflowSchedulerService] " + confgEntry);
+				logger.info(confgEntry);
 				try {
 					String dayValue = confgEntry.substring(confgEntry.indexOf('=') + 1);
 
@@ -936,14 +948,14 @@ public class WorkflowSchedulerService {
 					iDay--;
 
 					if (iDay < iStartDay || iDay > iEndDay) {
-						logger.info("[WorkflowSchedulerService] imixsDayOfWeek=false");
+						logger.info("imixsDayOfWeek=false");
 						return false; // not a imixsDayOfWeek!
 					} else {
-						logger.info("[WorkflowSchedulerService] imixsDayOfWeek=true");
+						logger.info("imixsDayOfWeek=true");
 						return true;
 					}
 				} catch (Exception e) {
-					logger.warning("[WorkflowSchedulerService] imixsDayOfWeek not parseable!");
+					logger.warning("imixsDayOfWeek not parseable!");
 				}
 
 			}
