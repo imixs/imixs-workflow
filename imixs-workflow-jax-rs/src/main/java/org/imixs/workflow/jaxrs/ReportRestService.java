@@ -95,7 +95,7 @@ import org.imixs.workflow.xml.XMLItemCollectionAdapter;
  * 
  */
 @Path("/report")
-@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.TEXT_XML})
+@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.TEXT_XML })
 @Stateless
 public class ReportRestService {
 
@@ -202,19 +202,21 @@ public class ReportRestService {
 	 */
 	@GET
 	@Path("/{name}.ixr")
-	public Response getExcecuteReport(@PathParam("name") String reportName, @DefaultValue("1000") @QueryParam("pageSize") int pageSize,
-			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
-			@DefaultValue("") @QueryParam("encoding") String encoding, @Context UriInfo uriInfo) {
+	public Response getExcecuteReport(@PathParam("name") String reportName,
+			@DefaultValue("1000") @QueryParam("pageSize") int pageSize,
+			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
+			@QueryParam("sortReverse") boolean sortReverse, @DefaultValue("") @QueryParam("encoding") String encoding,
+			@Context UriInfo uriInfo) {
 		Collection<ItemCollection> col = null;
-		
+
 		String sXSL;
 		String sContentType;
 
 		try {
-			
+
 			ItemCollection itemCol = reportService.getReport(reportName);
-			if (itemCol==null) {
-				logger.severe("Report '" +reportName + "' not defined!");
+			if (itemCol == null) {
+				logger.severe("Report '" + reportName + "' not defined!");
 				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 			}
 
@@ -234,7 +236,7 @@ public class ReportRestService {
 
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(reportName, pageSize,pageIndex, params);
+			col = reportService.executeReport(reportName, pageSize, pageIndex, sortBy, sortReverse, params);
 
 			// if no XSL is provided return standard html format...?
 			if ("".equals(sXSL)) {
@@ -285,9 +287,9 @@ public class ReportRestService {
 			return builder.build();
 		} catch (Exception e) {
 			e.printStackTrace();
-		
+
 		}
-		
+
 		return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 
 	}
@@ -302,10 +304,12 @@ public class ReportRestService {
 	 */
 	@GET
 	@Path("/{name}.pdf")
-	public Response getPdfReport(@PathParam("name") String name, @DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("10") @QueryParam("count") int count,
-			@DefaultValue("") @QueryParam("encoding") String encoding, @Context UriInfo uriInfo) {
-		return this.getExcecuteReport(name, start, count, encoding, uriInfo);
+	public Response getPdfReport(@PathParam("name") String reportName,
+			@DefaultValue("1000") @QueryParam("pageSize") int pageSize,
+			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
+			@QueryParam("sortReverse") boolean sortReverse, @DefaultValue("") @QueryParam("encoding") String encoding,
+			@Context UriInfo uriInfo) {
+		return this.getExcecuteReport(reportName, pageSize, pageIndex, sortBy, sortReverse, encoding, uriInfo);
 	}
 
 	/**
@@ -319,36 +323,36 @@ public class ReportRestService {
 	 */
 	@SuppressWarnings("unchecked")
 	@GET
-	@Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_XHTML_XML})
+	@Produces({ MediaType.TEXT_HTML, MediaType.APPLICATION_XHTML_XML })
 	@Path("/{name}.html")
 	public DocumentTable getHTMLResult(@PathParam("name") String reportName,
-			@DefaultValue("1000") @QueryParam("pageSize") int pageSize, @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
-			@DefaultValue("") @QueryParam("encoding") String encoding, 
+			@DefaultValue("1000") @QueryParam("pageSize") int pageSize,
+			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
+			@QueryParam("sortReverse") boolean sortReverse, @DefaultValue("") @QueryParam("encoding") String encoding,
 			@Context UriInfo uriInfo, @Context HttpServletResponse servlerResponse) {
 		Collection<ItemCollection> col = null;
-		
+
 		try {
 			ItemCollection report = reportService.getReport(reportName);
 			List<List<String>> attributes = (List<List<String>>) report.getItemValue("attributes");
-			List<String> items=new ArrayList<String>();
-			List<String> labels=new ArrayList<String>();
-			for (List<String> attribute: attributes) {
+			List<String> items = new ArrayList<String>();
+			List<String> labels = new ArrayList<String>();
+			for (List<String> attribute : attributes) {
 				items.add(attribute.get(0));
-				String label=attribute.get(0);
-				if ((attribute.size()>=2) && !(attribute.get(1).isEmpty())) {
-					label=attribute.get(1);
+				String label = attribute.get(0);
+				if ((attribute.size() >= 2) && !(attribute.get(1).isEmpty())) {
+					label = attribute.get(1);
 				}
 				labels.add(label);
 			}
-			
+
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(reportName, pageSize,pageIndex, params);
+			col = reportService.executeReport(reportName, pageSize, pageIndex, sortBy, sortReverse, params);
 
 			DocumentCollection documentCollection = XMLItemCollectionAdapter.putCollection(col);
-			DocumentTable documentTable = new DocumentTable(documentCollection.getDocument(),items,labels);
-	//		documentTable.setDocument(documentCollection.getDocument());
-			
+			DocumentTable documentTable = new DocumentTable(documentCollection.getDocument(), items, labels);
+			// documentTable.setDocument(documentCollection.getDocument());
 
 			// set content type and character encoding
 			if (encoding == null || encoding.isEmpty()) {
@@ -381,12 +385,12 @@ public class ReportRestService {
 	 * @throws Exception
 	 */
 	@GET
-	@Produces({MediaType.APPLICATION_XML, MediaType.TEXT_XML})
+	@Produces({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
 	@Path("/{name}.xml")
 	public DocumentCollection getXMLResult(@PathParam("name") String reportName,
 			@DefaultValue("100") @QueryParam("pageSize") int pageSize,
-			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
-			@DefaultValue("") @QueryParam("encoding") String encoding,
+			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
+			@QueryParam("sortReverse") boolean sortReverse, @DefaultValue("") @QueryParam("encoding") String encoding,
 
 			@Context UriInfo uriInfo, @Context HttpServletResponse servlerResponse) throws Exception {
 		Collection<ItemCollection> col = null;
@@ -394,7 +398,7 @@ public class ReportRestService {
 		try {
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(reportName, pageSize,pageIndex,params);
+			col = reportService.executeReport(reportName, pageSize, pageIndex, sortBy, sortReverse, params);
 
 			// set content type and character encoding
 			if (encoding == null || encoding.isEmpty()) {
@@ -429,11 +433,16 @@ public class ReportRestService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{name}.json")
 	public DocumentCollection getExcecuteReportJSON(@PathParam("name") String name,
-			@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("10") @QueryParam("count") int count,
-			@DefaultValue("") @QueryParam("encoding") String encoding, 
-			@Context UriInfo uriInfo, @Context HttpServletResponse servlerResponse) throws Exception {
 
-		DocumentCollection result = getXMLResult(name, start, count, encoding, uriInfo, servlerResponse);
+			@DefaultValue("-1") @QueryParam("pageSize") int pageSize,
+			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
+			@QueryParam("sortReverse") boolean sortReverse,
+
+			@DefaultValue("") @QueryParam("encoding") String encoding, @Context UriInfo uriInfo,
+			@Context HttpServletResponse servlerResponse) throws Exception {
+
+		DocumentCollection result = getXMLResult(name, pageSize, pageIndex, sortBy, sortReverse, encoding, uriInfo,
+				servlerResponse);
 
 		// set content type and character encoding
 		if (encoding == null || encoding.isEmpty()) {
@@ -473,7 +482,8 @@ public class ReportRestService {
 	 *            - report data
 	 */
 	@PUT
-	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN, MediaType.TEXT_XML })
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN,
+			MediaType.TEXT_XML })
 	public void putReport(XMLItemCollection reportCol) {
 		ItemCollection itemCollection;
 		try {
@@ -485,7 +495,8 @@ public class ReportRestService {
 	}
 
 	@POST
-	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN, MediaType.TEXT_XML })
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN,
+			MediaType.TEXT_XML })
 	public void postReport(XMLItemCollection reportCol) {
 		putReport(reportCol);
 	}

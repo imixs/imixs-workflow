@@ -184,7 +184,7 @@ public class ReportService {
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	public List<ItemCollection> executeReport(String reportName, int pageSize, int pageIndex,
+	public List<ItemCollection> executeReport(String reportName, int pageSize, int pageIndex,String sortBy, boolean sortReverse,
 			Map<String, String> params) throws QueryException {
 
 		List<ItemCollection> clonedResult = new ArrayList<ItemCollection>();
@@ -217,7 +217,7 @@ public class ReportService {
 
 		// execute query
 		logger.fine("executeReport query=" + query);
-		List<ItemCollection> result = documentService.find(query, pageSize, pageIndex);
+		List<ItemCollection> result = documentService.find(query, pageSize, pageIndex,sortBy, sortReverse);
 
 		// test if a itemList is provided or defined in the reportEntity...
 		List<List<String>> attributes = (List<List<String>>) reportEntity.getItemValue("attributes");
