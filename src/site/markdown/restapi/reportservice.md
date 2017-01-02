@@ -155,10 +155,12 @@ The /report PUT and POST resources URIs are used to write business objects:
 ## Resource Options
 You can specify additional URI parameters to access only a subset of workitems by a collection  method URI. This is useful to get only a subset of the whole worklist and to navigate through a list of workitems. Append optional arguments to define the number of workitems returned by a URL and the starting point inside the list. Combine any of the following arguments for the desired result. 
 
-| option      | description                                         | example               |
-|-------------|-----------------------------------------------------|-----------------------|
-| pageSize    | number of workitems returned by a collection        | ..?pageSize=10           |
-| pageIndex   | position to start  workitems returned by a  collection        | ..?pageSize=10&PageIndex=5  |
+| option      | description                                             | example                          |
+|-------------|---------------------------------------------------------|----------------------------------|
+| pageSize    | number of workitems returned by a collection            | ..?pageSize=10                   |
+| pageIndex   | position to start  workitems returned by a  collection  | ..?pageSize=10&PageIndex=5       |
+| sortBy      | optional sort field                                     | ..?sortBy=$created               |
+| sortReverse | optional sort order (default is ascending = false)      | ..?sortReverse=true              |
 | download    | Optional filename for a download request This generates the HTTP Header   Content-disposition,attachment;filename=example.pdf   |download=example.pdf   |
 
 
