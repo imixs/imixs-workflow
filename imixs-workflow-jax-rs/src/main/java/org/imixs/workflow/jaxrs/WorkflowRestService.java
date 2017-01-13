@@ -122,7 +122,7 @@ public class WorkflowRestService {
 				// body
 				out.write("<h1>Imixs-Workflow REST Service</h1>".getBytes());
 				out.write(
-						"<p>See the <a href=\"http://www.imixs.org/xml/restservice/workflowservice.html\" target=\"_blank\">Imixs REST Service API</a> for more information about this Service.</p>"
+						"<p>See the <a href=\"http://www.imixs.org/doc/restapi/workflowservice.html\" target=\"_blank\">Imixs-Workflow REST API</a> for more information about this Service.</p>"
 								.getBytes());
 
 				// end

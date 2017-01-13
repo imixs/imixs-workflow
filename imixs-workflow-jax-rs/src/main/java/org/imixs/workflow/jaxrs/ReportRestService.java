@@ -137,7 +137,7 @@ public class ReportRestService {
 				out.write("</head><body>".getBytes());
 
 				// body
-				out.write("<h1>Imixs Workflow REST Service</h1>".getBytes());
+				out.write("<h1>Imixs Workflow Report Service</h1>".getBytes());
 				out.write(
 						"<p>Read the Imixs REST Service <a href=\"http://doc.imixs.org/xml/restservice.html\">Online Help</a> for a detailed description of this Service.</p>"
 								.getBytes());

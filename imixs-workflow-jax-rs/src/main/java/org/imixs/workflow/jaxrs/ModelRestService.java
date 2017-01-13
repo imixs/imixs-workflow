@@ -116,13 +116,13 @@ public class ModelRestService {
 				out.write("</style>".getBytes());
 				out.write("</head><body>".getBytes());
 
-				out.write("<h1>Imixs-Workflow REST Service</h1>".getBytes());
+				out.write("<h1>Imixs-Workflow Model Service</h1>".getBytes());
 				out.write("<p>".getBytes());
 				printVersionTable(out);
 				out.write("</p>".getBytes());
 				// footer
 				out.write(
-						"<p>See the <a href=\"http://www.imixs.org/xml/restservice/modelservice.html\" target=\"_bank\">Imixs-Workflow RestFull Service API</a> for more information.</p>"
+						"<p>See the <a href=\"http://www.imixs.org/doc/restapi/modelservice.html\" target=\"_bank\">Imixs-Workflow REST API</a> for more information.</p>"
 								.getBytes());
 
 				// end
