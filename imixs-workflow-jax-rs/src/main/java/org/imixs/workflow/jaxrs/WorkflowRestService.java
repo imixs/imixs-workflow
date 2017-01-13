@@ -140,12 +140,18 @@ public class WorkflowRestService {
 	 */
 	@GET
 	@Path("/workitem/{uniqueid}")
-	public XMLItemCollection getWorkItem(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
+	public Response getWorkItem(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
 
 		ItemCollection workitem;
 		try {
 			workitem = workflowService.getWorkItem(uniqueid);
-			return XMLItemCollectionAdapter.putItemCollection(workitem, DocumentRestService.getItemList(items));
+			if (workitem==null) {
+				// workitem not found
+				return Response.status(Response.Status.NOT_FOUND).build();
+			}
+			//return XMLItemCollectionAdapter.putItemCollection(workitem, DocumentRestService.getItemList(items));
+			return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem, DocumentRestService.getItemList(items)))
+					.build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
