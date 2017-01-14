@@ -466,8 +466,8 @@ public class ReportService {
 		List<String> dates = XMLParser.findTags(content, "date");
 		for (String dateString : dates) {
 			Calendar cal = computeDynamicDate(dateString);
-			// convert into ISO format
-			DateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+			// convert into lucene format  20020101
+			DateFormat f = new SimpleDateFormat("yyyyMMdd");
 			// f.setTimeZone(tz);
 			String dateValue = f.format(cal.getTime());
 			content = content.replace(dateString, dateValue);
