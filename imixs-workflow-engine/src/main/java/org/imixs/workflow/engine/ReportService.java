@@ -605,22 +605,10 @@ public class ReportService {
 			// test if number formater is provided....
 			if (format.contains("#")) {
 				try {
-					// getLocaleFromString(locale)
-
 					double d = Double.parseDouble(o.toString());
-					// NumberFormat numberFormatter = null;
-					// if (locale != null && !locale.isEmpty()) {
-					// numberFormatter =
-					// NumberFormat.getNumberInstance(getLocaleFromString(locale));
-					// } else {
-					// numberFormatter = NumberFormat.getNumberInstance();
-					// }
-
-					DecimalFormat numberFormatter = new DecimalFormat(format);
-
-					singleValue = numberFormatter.format(d);
-
-				} catch (NumberFormatException e) {
+					singleValue = customNumberFormat(format, locale, d);
+				} catch (IllegalArgumentException e) {
+					logger.warning("Format Error (" + format + ") = " + e.getMessage());
 					singleValue = "0";
 				}
 
