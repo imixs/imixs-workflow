@@ -29,6 +29,7 @@ package org.imixs.workflow.engine;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -184,8 +185,8 @@ public class ReportService {
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	public List<ItemCollection> executeReport(String reportName, int pageSize, int pageIndex,String sortBy, boolean sortReverse,
-			Map<String, String> params) throws QueryException {
+	public List<ItemCollection> executeReport(String reportName, int pageSize, int pageIndex, String sortBy,
+			boolean sortReverse, Map<String, String> params) throws QueryException {
 
 		List<ItemCollection> clonedResult = new ArrayList<ItemCollection>();
 
@@ -217,12 +218,12 @@ public class ReportService {
 
 		// execute query
 		logger.fine("executeReport query=" + query);
-		List<ItemCollection> result = documentService.find(query, pageSize, pageIndex,sortBy, sortReverse);
+		List<ItemCollection> result = documentService.find(query, pageSize, pageIndex, sortBy, sortReverse);
 
 		// test if a itemList is provided or defined in the reportEntity...
 		List<List<String>> attributes = (List<List<String>>) reportEntity.getItemValue("attributes");
-		List<String> itemNames=new ArrayList<String>();
-		for (List<String> attribute: attributes) {
+		List<String> itemNames = new ArrayList<String>();
+		for (List<String> attribute : attributes) {
 			itemNames.add(attribute.get(0));
 		}
 
@@ -343,9 +344,9 @@ public class ReportService {
 				if (!format.isEmpty()) {
 					String sLocale = XMLParser.findAttribute(format, "locale");
 					// test if we have a XML format tag
-					List<String> content=XMLParser.findTagValues(format, "format");
-					if (content.size()>0) {
-						format=content.get(0);
+					List<String> content = XMLParser.findTagValues(format, "format");
+					if (content.size() > 0) {
+						format = content.get(0);
 					}
 					// create string array of formated values
 					List<?> rawValues = values;
@@ -466,7 +467,7 @@ public class ReportService {
 		List<String> dates = XMLParser.findTags(content, "date");
 		for (String dateString : dates) {
 			Calendar cal = computeDynamicDate(dateString);
-			// convert into lucene format  20020101
+			// convert into lucene format 20020101
 			DateFormat f = new SimpleDateFormat("yyyyMMdd");
 			// f.setTimeZone(tz);
 			String dateValue = f.format(cal.getTime());
@@ -604,9 +605,21 @@ public class ReportService {
 			// test if number formater is provided....
 			if (format.contains("#")) {
 				try {
+					// getLocaleFromString(locale)
+
 					double d = Double.parseDouble(o.toString());
+					// NumberFormat numberFormatter = null;
+					// if (locale != null && !locale.isEmpty()) {
+					// numberFormatter =
+					// NumberFormat.getNumberInstance(getLocaleFromString(locale));
+					// } else {
+					// numberFormatter = NumberFormat.getNumberInstance();
+					// }
+
 					DecimalFormat numberFormatter = new DecimalFormat(format);
+
 					singleValue = numberFormatter.format(d);
+
 				} catch (NumberFormatException e) {
 					singleValue = "0";
 				}
@@ -619,6 +632,33 @@ public class ReportService {
 
 		return singleValue;
 
+	}
+
+	/**
+	 * This method converts a double value into a custom number format including
+	 * an optional locale.
+	 * 
+	 * "###,###.###", "en_UK", 123456.789
+	 * 
+	 * "EUR #,###,##0.00", "de_DE", 1456.781
+	 * 
+	 * @param pattern
+	 * @param value
+	 * @return
+	 */
+	public static String customNumberFormat(String pattern, String locale, double value) {
+		DecimalFormat formatter = null;
+		Locale _locale = getLocaleFromString(locale);
+		// test if we have a locale
+		if (_locale != null) {
+			formatter = (DecimalFormat) DecimalFormat.getInstance(getLocaleFromString(locale));
+		} else {
+			formatter = (DecimalFormat) DecimalFormat.getInstance();
+		}
+		formatter.applyPattern(pattern);
+		String output = formatter.format(value);
+
+		return output;
 	}
 
 	/**
@@ -677,10 +717,12 @@ public class ReportService {
 	/**
 	 * generates a Locale Object form a String
 	 * 
+	 * fr_FR , en_US,
+	 * 
 	 * @param sLocale
 	 * @return
 	 */
-	private Locale getLocaleFromString(String sLocale) {
+	private static Locale getLocaleFromString(String sLocale) {
 		Locale locale = null;
 
 		// genreate locale?

@@ -102,13 +102,17 @@ This example formats the a date value into ISO Date format. The optional attribu
 
     <format locale="DE">dd. mmm yyyy</format>
 
-See details about how to format a date value in the [Java Doc](http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).  
+Find more details about how to format a date value in the [Java Date Format Patterns](http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).  
 
-The format definition can also be used to format the output of currency and number values: 
+The format definition can also be used to format the output of currency and number values. 
+
+Examples: 
 
      <format>#,##0.00</format>
+     <format locale="DE">#,###,##0.00 €</format>
+     <format locale="en_UK">###,###.###</format>
 
-See the [Class DecimalFormat](http://docs.oracle.com/javase/7/docs/api/java/text/DecimalFormat.html) for more details. 
+Find more details about how to format a number in the [Java Formating Patterns](https://docs.oracle.com/javase/tutorial/i18n/format/decimalFormat.html). 
 
 ### Convert
 Beside the option to format values it is also possible to convert the values into a specific object type. This can be useful in case
