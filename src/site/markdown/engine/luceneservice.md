@@ -31,10 +31,6 @@ The custom configuration of the _LuceneService_ can be provided in the file _imi
 	lucence.fulltextFieldList=txtsearchstring,txtSubject,txtname,txtEmail,txtWorkflowAbstract,txtWorkflowSummary
 	lucence.indexFieldListAnalyze=
 	lucence.indexFieldListNoAnalyze=type,$UniqueIDRef,$created,$modified,$ModelVersion,namCreator,$ProcessID,datDate,txtWorkflowGroup,txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername,
-	# Matching Patterns to index a workitem
-	lucence.matchingType=workitem|workitemarchive|profile
-	lucence.matchingProcessID= 
-	lucence.defaultOperator=  
 
 
 ###IndexDir
@@ -52,12 +48,3 @@ The property 'lucene.indexFieldListAnalyze' defines a comma separated list of fi
 The property 'lucene.indexFieldListNoAnalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here.
  
  
-###MatchingType
-The optional property 'lucene.matchingType' defines a regular expression the type value of a workitem should match.  It not the workitem will not be added into the index.
- 
-###MatchingProcessID
-The optional property 'lucene.matchingProcessID' defines a regular expression the $processID of a workitem should match.  It not the workitem will not be added into the index.
-
-###DefaultOperator
-The optional property defaultOperator can be used to change the default operator to 'AND'. In default mode (OR_OPERATOR) terms without any modifiers are considered  optional: for example capital of Hungary is equal to capital OR of OR Hungary.
-
