@@ -149,9 +149,8 @@ public class TestReportService {
 	@Test
 	public void testReplaceDateString() {
 
-		String test = "SELECT entitiy FORM ENTITY"
-				+ " WHERE entity.modified > <date DAY_OF_MONTH=\"1\" MONTH=\"4\" YEAR=\"2016\" />"
-				+ " ORDER BY entity.modified DESC";
+		String test = "(type:\"workitem\" OR type:\"workitemarchive\") AND (txtworkflowgroup:\"Rechnungsausgang\")"
+				+ " AND ($created:[<date DAY_OF_MONTH=\"1\" ADD=\"MONTH,-6\" /> TO <date DAY_OF_MONTH=\"ACTUAL_MAXIMUM\" />])";
 
 		// construct expected test date....
 		Calendar cal = Calendar.getInstance();
@@ -167,7 +166,7 @@ public class TestReportService {
 		System.out.println("Result=" + result);
 
 		// compare result with test data
-		Assert.assertTrue(result.contains(" entity.modified > 2016-04-01"));
+		Assert.assertTrue(result.contains("$created:[20160701 TO "));
 
 	}
 
