@@ -49,10 +49,21 @@ The Interface '_org.imixs.workflow.Model_' defines the following methods:
 |findAllTasksByGroup(workflowgroup)| returns a list of all task elements assigned to a workflow group|
 
 
+## The ModelManager 
+The interface ModelManager stores instances of a Model. A Model instance is uniquely identified by the ModelVersion. The IModelManager is used by the [WorkflowKernel](workflowkernel.html) to manage the process-model of a workitem.
+
+The Interface '_org.imixs.workflow.ModelManager_' defines the following methods:
+
+|Method              		 | Description 				 |
+|----------------------------|---------------------------|
+|getModel(version)           | Returns a Model by version. The method throws a ModelException in case  the model version did not exits.|
+|addModel(model  )           | Adds a new Model to the ModelManager.|
+|removeModel(version)        | Removes a Model from the ModelManager.|
+|getModelByWorkitem(workitem)| Returns a Model matching a given workitem. The method throws a ModelException in case the model version did not exits..|
 
 
-## The Imixs ModelService
-The Imixs-Workflow engine provides the [ModelManager](../engine/modelservice.html) which provides methods to managed different models in one application. Find more information about the _ModelManager_ in [this section(../engine/modelservice.html).    
+### The Imixs ModelService
+The Imixs-Workflow engine provides the [ModelService](../engine/modelservice.html) which provides additional methods to managed different models in one application.    
  
 
      

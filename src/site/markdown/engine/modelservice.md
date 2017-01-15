@@ -4,36 +4,20 @@ The Model Service provides a service layer to manage workflow models. The model 
 To create and manage workflow models the Eclipse tool  [Imixs-BPMN Modeller](../modelling/index.html) can be used.
  
 ##Methods 
-The ModelService implementations extends Interface '_org.imixs.workflow.Model_' and provides the following methods:
+The ModelService EJB extends the interface '_org.imixs.workflow.ModelManager_' and provides the following methods:
 
 
 |Method              		 | Description 				 |
 |----------------------------|---------------------------|
-|getProcessEntity(processID,Version)| returns a process entity |
-|getActivityEntity(processID,activityID,Version)| returns a activity entity assigned to a process entity| 
-|getProcessEntityList(Version)| returns all process entities for a specific model version | 
-|getActivityEntityList(processID,Version)| returns all activity entities assigned to a  process entity |
-|saveProcessEntity(entity)	| persists an activity entity 				|
-|saveActivityEntity(entity)	| persists an activity entity 				|
-|saveEnvironmentEntity(entity)|persists an environament entity  containing model environment properties				|
-|removeModel(version)		| removes a persisted process model version|
-|removeModelGroup(group,version)		| removes a persisted process model group by inside a model|
-|getLatestVersion()		| returns the latest model version available in the model repository|
-|getLatestVersionByWorkitem()		| returns the latest model version available in the model repository matching the model assigned to a existing process instance|
-|getAllModelProfiles()		| returns all profile environment entities |
-|getAllModelVersions()		| returns a list of all model versions stored in the model repository|
-|getPublicActivities(processID,Version)| returns all public activity entities assigned to a  process entity |
-|getAllWorkflowGroups(Version)| returns all workflow groups assigned to a model version |
-|getAllStartProcessEntities(Version)| returns all initial process entities for a model version |
-|getAllProcessEntitiesByGroup(Group,Version)| returns all process entities for a workflow group in a specific model version |
-|importBPMNModel(Stream)| imports a BPMN model file |
-|importModel(Stream)| imports a XML model file |
-
-
-
+|getModel(version)           | Returns a Model by version. The method throws a ModelException in case  the model version did not exits.|
+|addModel(model  )           | Adds a new Model to the ModelManager.|
+|removeModel(version)        | Removes a Model from the ModelManager.|
+|getModelByWorkitem(workitem)| Returns a Model matching a given workitem. The method throws a ModelException in case the model version did not exits..|
+|getVersions()        |Returns a sorted String list of all stored model versions.|
+|findVersionsByGroup(group)        | Returns a sorted list of model versions containing the workflow group. The result is sorted in reverse order, so the highest version number is the first in the result list.|
+|saveModel(model)        | Saves a BPMNModel as an Entity and adds the model into the ModelManager.|
+|deleteModel(version)        | Deletes an existing Model Entities from the database and removes the model form the internal ModelStore..|
+|loadModelEntity(version)        | Loads an existing Model Entities from the database.|
 
 
  
-
-  
-  
