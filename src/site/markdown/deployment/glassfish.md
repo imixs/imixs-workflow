@@ -60,16 +60,18 @@ To login to the Imixs-Sample Application you need also to configure a security r
 It is also possible to configure other security bindings as the file based described here.  Only the realm name should match to "imixsrealm". 
 
 ## Deploy the Imixs-Sample Application
-Now install the war file of the Imixs-Sample Application by the following steps:
+Now install the .war or .ear file of your application by the following steps:
 
-   1. Be sure, that your database server is up and running. Start it with
+   1. Be sure, that your database server is up and running. 
+      in case you use the glassfish embedded database, start it with
       >asadmin start-database
+      otherwise start your external database server.
    2. Be sure, that the domain, which you will deploy the application on, is started and alive
    3. Now you can start the Admin Console in the browser. The port is listed in the output while starting the domain, i.e. in the default domain domain1 it is
       >http://localhost:4848
-   4. Choose Applications -> Enterprise Applications and click the button "deploy" in the main frame
+   4. Choose Applications ->  click the button "deploy" in the main frame
    5. Choose as type "Enterprise Application (.ear)"
-   6. at Location choose "Packaged file to be uploaded to the server" and browse to the location, where the ear file is stored
+   6. select your appliation (.war or .ear file)
    7. press the button "ok" located in the upper right corner --> ear will be deployed
 
  
