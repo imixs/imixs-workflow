@@ -436,11 +436,10 @@ public class WorkflowRestService {
 	 */
 	@POST
 	@Path("/workitem")
-	@Consumes({ "application/x-www-form-urlencoded" })
-	@Produces(MediaType.APPLICATION_XML)
-	public Response putWorkitem(InputStream requestBodyStream) {
+	@Consumes({ MediaType.APPLICATION_FORM_URLENCODED })
+	public Response postFormWorkitem(InputStream requestBodyStream) {
 
-		logger.fine("[WorkflowRestService] @POST /workitem  method:postWorkitem....");
+		logger.fine("postFormWorkitem @POST /workitem  method:postWorkitem....");
 		// parse the workItem.
 		ItemCollection workitem = parseWorkitem(requestBodyStream);
 
@@ -465,11 +464,10 @@ public class WorkflowRestService {
 		// return workitem
 		try {
 			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_XML)
+				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem))
 						.status(Response.Status.NOT_ACCEPTABLE).build();
 			else
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_XML)
-						.build();
+				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem)).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -486,12 +484,11 @@ public class WorkflowRestService {
 	 */
 	@PUT
 	@Path("/workitem")
-	@Consumes({ "application/x-www-form-urlencoded" })
-	@Produces(MediaType.APPLICATION_XML)
-	public Response postWorkitem(InputStream requestBodyStream) {
-		logger.fine("[WorkflowRestService] @POST /workitem  delegate to POST....");
+	@Consumes({ MediaType.APPLICATION_FORM_URLENCODED })
+	public Response putFormWorkitem(InputStream requestBodyStream) {
+		logger.fine("putFormWorkitem @POST /workitem  delegate to POST....");
 
-		return putWorkitem(requestBodyStream);
+		return postFormWorkitem(requestBodyStream);
 	}
 
 	/**
@@ -508,11 +505,10 @@ public class WorkflowRestService {
 	 */
 	@POST
 	@Path("/workitem")
-	@Produces(MediaType.APPLICATION_XML)
-	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
-	public Response postWorkitemXML(XMLItemCollection xmlworkitem) {
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
+	public Response postXMLWorkitem(XMLItemCollection xmlworkitem) {
 
-		logger.fine("[WorkflowRestService] @POST /workitem  method:postWorkitemXML....");
+		logger.fine("postXMLWorkitem @POST /workitem  method:postWorkitemXML....");
 
 		ItemCollection workitem;
 		workitem = XMLItemCollectionAdapter.getItemCollection(xmlworkitem);
@@ -521,6 +517,7 @@ public class WorkflowRestService {
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
 
+		// process workitem
 		try {
 			workitem.removeItem("$error_code");
 			workitem.removeItem("$error_message");
@@ -541,11 +538,10 @@ public class WorkflowRestService {
 		// return workitem
 		try {
 			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_XML)
+				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem))
 						.status(Response.Status.NOT_ACCEPTABLE).build();
 			else
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_XML)
-						.build();
+				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem)).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -553,30 +549,62 @@ public class WorkflowRestService {
 
 	}
 
+	@PUT
+	@Path("/workitem")
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
+	public Response putXMLWorkitem(XMLItemCollection workitem) {
+		logger.fine("putXMLWorkitem @PUT /workitem  delegate to POST....");
+		return postXMLWorkitem(workitem);
+	}
+
 	@POST
 	@Path("/workitem/{uniqueid}")
-	@Produces(MediaType.APPLICATION_XML)
-	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
-	public Response postWorkitemByUniqueIDXML(@PathParam("uniqueid") String uniqueid, XMLItemCollection xmlworkitem) {
-		logger.fine("[WorkflowRestService] @POST /workitem/" + uniqueid + "  method:postWorkitemXML....");
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
+	public Response postXMLWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, XMLItemCollection xmlworkitem) {
+		logger.fine("postXMLWorkitemByUniqueID @POST /workitem/" + uniqueid + "  method:postWorkitemXML....");
 		ItemCollection workitem;
 		workitem = XMLItemCollectionAdapter.getItemCollection(xmlworkitem);
 
-		if (workitem != null && !uniqueid.equals(workitem.getUniqueID())) {
-			logger.warning("@POST /workitem/" + uniqueid + "  $UNIQUEID did not match!");
+		// validate given unqiueid....
+		if (!workitem.getUniqueID().isEmpty() && !uniqueid.equals(workitem.getUniqueID())) {
+			logger.warning("postXMLWorkitemByUniqueID @POST /workitem/" + uniqueid + "  $UNIQUEID did not match!");
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
-		return postWorkitemXML(xmlworkitem);
 
-	}
+		// set uniqueId if not available
+		if (workitem.getUniqueID().isEmpty()) {
+			workitem.replaceItemValue(WorkflowKernel.UNIQUEID, uniqueid);
+		}
 
-	@PUT
-	@Path("/workitem")
-	@Produces(MediaType.APPLICATION_XML)
-	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
-	public Response putWorkitemXML(XMLItemCollection workitem) {
-		logger.fine("[WorkflowRestService] @PUT /workitem  delegate to POST....");
-		return postWorkitemXML(workitem);
+		// process workitem
+		try {
+			workitem.removeItem("$error_code");
+			workitem.removeItem("$error_message");
+			// now lets try to process the workitem...
+			workitem = workflowService.processWorkItem(workitem);
+
+		} catch (AccessDeniedException e) {
+			logger.severe(e.getMessage());
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (PluginException e) {
+			logger.severe(e.getMessage());
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (RuntimeException e) {
+			logger.severe(e.getMessage());
+			workitem = this.addErrorMessage(e, workitem);
+		}
+
+		// return workitem
+		try {
+			if (workitem.hasItem("$error_code"))
+				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem))
+						.status(Response.Status.NOT_ACCEPTABLE).build();
+			else
+				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem)).build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
 	}
 
 	/**
@@ -601,31 +629,30 @@ public class WorkflowRestService {
 	 * @throws Exception
 	 */
 	@POST
-	@Path("/workitem.json")
-	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/workitem")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response postWorkitemJSON(InputStream requestBodyStream, @QueryParam("error") String error,
+	public Response postJSONWorkitem(InputStream requestBodyStream, @QueryParam("error") String error,
 			@QueryParam("encoding") String encoding) {
 
-		logger.fine("postWorkitemJSON @POST workitem  postWorkitemJSON....");
+		logger.fine("postWorkitem_JSON @POST workitem  postWorkitemJSON....");
 
 		// determine encoding from servlet request ....
 		if (encoding == null || encoding.isEmpty()) {
 			encoding = servletRequest.getCharacterEncoding();
-			logger.fine("postWorkitemJSON using request econding=" + encoding);
+			logger.fine("postJSONWorkitem using request econding=" + encoding);
 		} else {
-			logger.fine("postWorkitemJSON set econding=" + encoding);
+			logger.fine("postJSONWorkitem set econding=" + encoding);
 		}
 
 		ItemCollection workitem = null;
 		try {
 			workitem = JSONParser.parseWorkitem(requestBodyStream, encoding);
 		} catch (ParseException e) {
-			logger.severe("postWorkitemJSON wrong json format!");
+			logger.severe("postJSONWorkitem wrong json format!");
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		} catch (UnsupportedEncodingException e) {
-			logger.severe("postWorkitemJSON wrong json format!");
+			logger.severe("postJSONWorkitem wrong json format!");
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
@@ -641,21 +668,23 @@ public class WorkflowRestService {
 			workitem = workflowService.processWorkItem(workitem);
 
 		} catch (AccessDeniedException e) {
+			logger.severe(e.getMessage());
 			workitem = this.addErrorMessage(e, workitem);
 		} catch (PluginException e) {
+			logger.severe(e.getMessage());
 			workitem = this.addErrorMessage(e, workitem);
 		} catch (RuntimeException e) {
+			logger.severe(e.getMessage());
 			workitem = this.addErrorMessage(e, workitem);
 		}
 
 		// return workitem
 		try {
 			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_JSON)
+				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem))
 						.status(Response.Status.NOT_ACCEPTABLE).build();
 			else
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_JSON)
-						.build();
+				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem)).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -664,30 +693,30 @@ public class WorkflowRestService {
 	}
 
 	@POST
-	@Path("/workitem.json/{uniqueid}")
-	@Produces(MediaType.APPLICATION_JSON)
+	// @Path("/workitem.json/{uniqueid}")
+	@Path("/workitem/{uniqueid}")
 	@Consumes({ MediaType.APPLICATION_JSON })
-	public Response postWorkitemByUniqueIDJSON(@PathParam("uniqueid") String uniqueid, InputStream requestBodyStream,
+	public Response postJSONWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, InputStream requestBodyStream,
 			@QueryParam("error") String error, @QueryParam("encoding") String encoding) {
-		logger.fine("postWorkitemByUniqueIDJSON @POST /workitem/" + uniqueid + "....");
+		logger.fine("postJSONWorkitemByUniqueID @POST /workitem/" + uniqueid + "....");
 
 		// determine encoding from servlet request ....
 		if (encoding == null || encoding.isEmpty()) {
 			encoding = servletRequest.getCharacterEncoding();
-			logger.fine("postWorkitemJSON using request econding=" + encoding);
+			logger.fine("postJSONWorkitemByUniqueID using request econding=" + encoding);
 		} else {
-			logger.fine("postWorkitemJSON set econding=" + encoding);
+			logger.fine("postJSONWorkitemByUniqueID set econding=" + encoding);
 		}
 
 		ItemCollection workitem = null;
 		try {
 			workitem = JSONParser.parseWorkitem(requestBodyStream, encoding);
 		} catch (ParseException e) {
-			logger.severe("postWorkitemJSON wrong json format!");
+			logger.severe("postJSONWorkitemByUniqueID wrong json format!");
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		} catch (UnsupportedEncodingException e) {
-			logger.severe("postWorkitemJSON wrong json format!");
+			logger.severe("postJSONWorkitemByUniqueID wrong json format!");
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
@@ -697,7 +726,7 @@ public class WorkflowRestService {
 
 		// validate given unqiueid....
 		if (!workitem.getUniqueID().isEmpty() && !uniqueid.equals(workitem.getUniqueID())) {
-			logger.warning("postWorkitemByUniqueIDJSON @POST /workitem/" + uniqueid + "  $UNIQUEID did not match!");
+			logger.warning("postJSONWorkitemByUniqueID @POST /workitem/" + uniqueid + "  $UNIQUEID did not match!");
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
 
@@ -714,21 +743,23 @@ public class WorkflowRestService {
 			workitem = workflowService.processWorkItem(workitem);
 
 		} catch (AccessDeniedException e) {
+			logger.severe(e.getMessage());
 			workitem = this.addErrorMessage(e, workitem);
 		} catch (PluginException e) {
+			logger.severe(e.getMessage());
 			workitem = this.addErrorMessage(e, workitem);
 		} catch (RuntimeException e) {
+			logger.severe(e.getMessage());
 			workitem = this.addErrorMessage(e, workitem);
 		}
 
 		// return workitem
 		try {
 			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_JSON)
+				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem))
 						.status(Response.Status.NOT_ACCEPTABLE).build();
 			else
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_JSON)
-						.build();
+				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem)).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -746,9 +777,9 @@ public class WorkflowRestService {
 	@POST
 	@Path("/workitems")
 	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
-	public Response putWorkitemsXML(DocumentCollection worklist) {
+	public Response postWorkitems_XML(DocumentCollection worklist) {
 
-		logger.fine("[WorkflowRestService] @POST /workitems  method:postWorkitemsXML....");
+		logger.fine("postWorkitems_XML @POST /workitems  method:postWorkitemsXML....");
 
 		XMLItemCollection entity;
 		ItemCollection itemCollection;
@@ -770,9 +801,9 @@ public class WorkflowRestService {
 	@PUT
 	@Path("/workitems")
 	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
-	public Response postWorkitemsXML(DocumentCollection worklist) {
-		logger.fine("[WorkflowRestService] @PUT /workitems  delegate to @POST....");
-		return putWorkitemsXML(worklist);
+	public Response putWorkitems_XML(DocumentCollection worklist) {
+		logger.fine("pupWorkitems_XML @PUT /workitems  delegate to @POST....");
+		return postWorkitems_XML(worklist);
 	}
 
 	/**
@@ -805,13 +836,13 @@ public class WorkflowRestService {
 		BufferedReader in = new BufferedReader(new InputStreamReader(requestBodyStream));
 		String inputLine;
 		ItemCollection workitem = new ItemCollection();
-
+	
 		logger.fine("[WorkflowRestService] parseWorkitem....");
-
+	
 		try {
 			while ((inputLine = in.readLine()) != null) {
 				// System.out.println(inputLine);
-
+	
 				// split params separated by &
 				StringTokenizer st = new StringTokenizer(inputLine, "&", false);
 				while (st.hasMoreTokens()) {
@@ -819,22 +850,22 @@ public class WorkflowRestService {
 					logger.finest("[WorkflowRestService] parse line:" + fieldValue + "");
 					try {
 						fieldValue = URLDecoder.decode(fieldValue, "UTF-8");
-
+	
 						if (!fieldValue.contains("=")) {
 							logger.finest("[WorkflowRestService] line will be skipped");
 							continue;
 						}
-
+	
 						// get fieldname
 						String fieldName = fieldValue.substring(0, fieldValue.indexOf('='));
-
+	
 						// if fieldName contains blank or : or --- we skipp the
 						// line
 						if (fieldName.contains(":") || fieldName.contains(" ") || fieldName.contains(";")) {
 							logger.finest("[WorkflowRestService] line will be skipped");
 							continue;
 						}
-
+	
 						// test for value...
 						if (fieldValue.indexOf('=') == fieldValue.length()) {
 							// no value
@@ -847,7 +878,7 @@ public class WorkflowRestService {
 							// field....?
 							fieldName = fieldName.toLowerCase();
 							if (vMultiValueFieldNames.indexOf(fieldName) > -1) {
-
+	
 								List v = workitem.getItemValue(fieldName);
 								v.add(fieldValue);
 								logger.fine("[WorkflowRestService] multivalue for '" + fieldName + "' = '" + fieldValue
@@ -861,14 +892,14 @@ public class WorkflowRestService {
 								vMultiValueFieldNames.add(fieldName);
 							}
 						}
-
+	
 					} catch (NumberFormatException e) {
 						e.printStackTrace();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				}
-
+	
 			}
 		} catch (IOException e1) {
 			logger.severe("[WorkflowRestService] Unable to parse workitem data!");
@@ -880,10 +911,36 @@ public class WorkflowRestService {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
+	
 		}
-
+	
 		return workitem;
+	}
+
+	@Deprecated
+	@POST
+	@Path("/workitem.json/{uniqueid}")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	public Response postWorkitemByUniqueIDJSONDeprecated(@PathParam("uniqueid") String uniqueid,
+			InputStream requestBodyStream, @QueryParam("error") String error, @QueryParam("encoding") String encoding) {
+		return postJSONWorkitemByUniqueID(uniqueid, requestBodyStream, error, encoding);
+	}
+
+	/**
+	 * uri was introduced with 4.0 but should be removed with 4.1
+	 * 
+	 * @param requestBodyStream
+	 * @param error
+	 * @param encoding
+	 * @return
+	 */
+	@Deprecated
+	@POST
+	@Path("/workitem.json")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response postWorkitemJSONDeprecated(InputStream requestBodyStream, @QueryParam("error") String error,
+			@QueryParam("encoding") String encoding) {
+		return postJSONWorkitem(requestBodyStream, error, encoding);
 	}
 
 	/**
