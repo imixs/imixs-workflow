@@ -31,11 +31,9 @@ The following resource URIs are used to PUT and POST a wokitem or a task list:
 
 | URI                          | Description                               | 
 |------------------------------|-------------------------------------------|
-| /workflow/workitem           | posts a workitem to be processed by the  workflow manager. The post data can be x-www-form-urlencoded or in xml format   |
-| /workflow/workitem/{uniqueid}| posts a workitem to be processed by the  workflow manager. The post data can be x-www-form-urlencoded or in xml format   |
-| /workflow/workitem.json      | posts a workitem to be processed by the  workflow manager. The post data is expected in json format. The result in json format     |
-| /workflow/workitem.json/{uniqueid}      | posts a workitem to be processed by the  workflow manager. The post data is expected in json format. The result in json format     |
-| /workflow/tasklist           | posts a list of workitems to be processed by the  workflow manager. The post data can be x-www-form-urlencoded or in xml format  |
+| /workflow/workitem           | posts a workitem, to be processed by the  workflow manager. To update an existing workitem, the attribute $uniqueid must be provided as part of the data structure. The media types application/xml, application/json and x-www-form-urlencoded are supported.   |
+| /workflow/workitem/{uniqueid}| posts a workitem by uniqueid, to be processed by the  workflow manager. The media types application/xml, application/json and x-www-form-urlencoded are supported.   |
+| /workflow/tasklist           | posts a list of workitems to be processed by the  workflow manager. The media type application/xml is supported.   |
 
 
 

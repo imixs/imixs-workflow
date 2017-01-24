@@ -61,7 +61,7 @@ Depending on the Rest Service Implementation the JSON format for response object
 
 
 
-The Imixs-Workflow REST API accepts the following media types:
+The Imixs-Workflow REST API accepts the following media types to return data:
  
  * text/html
  * application/xml
