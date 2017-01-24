@@ -45,10 +45,16 @@ public class JSONParser {
 			throws ParseException, UnsupportedEncodingException {
 
 		if (requestBodyStream == null) {
-			logger.severe("[JSONParser] parseWorkitem - inputStream is null!");
+			logger.severe("parseWorkitem - inputStream is null!");
 			throw new java.text.ParseException("inputStream is null", -1);
 		}
 
+		// default encoding?
+		if (encoding==null || encoding.isEmpty()) {
+			logger.fine("parseWorkitem - switch to default encoding 'UTF-8'");
+			encoding="UTF-8";
+		}
+		
 		// Vector<String> vMultiValueFieldNames = new Vector<String>();
 		BufferedReader in = new BufferedReader(new InputStreamReader(requestBodyStream, encoding));
 
@@ -66,13 +72,13 @@ public class JSONParser {
 			// first we concat all lines
 			while ((inputLine = in.readLine()) != null) {
 				stringBuffer.append(inputLine);
-				logger.finest("[JSONParser] parseWorkitem - read line:" + inputLine + "");
+				logger.finest("parseWorkitem - read line:" + inputLine + "");
 			}
 			content = stringBuffer.toString();
 
 			// find start ...."item":[...
 			content = content.substring(content.indexOf('[') + 0);
-			logger.finest("[JSONParser] parseWorkitem - start parsing...");
+			logger.finest("parseWorkitem - start parsing...");
 			while (content != null) {
 
 				// find name => "name" : "$isauthor" ,
