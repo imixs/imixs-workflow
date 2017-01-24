@@ -63,6 +63,7 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -145,12 +146,14 @@ public class WorkflowRestService {
 		ItemCollection workitem;
 		try {
 			workitem = workflowService.getWorkItem(uniqueid);
-			if (workitem==null) {
+			if (workitem == null) {
 				// workitem not found
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
-			//return XMLItemCollectionAdapter.putItemCollection(workitem, DocumentRestService.getItemList(items));
-			return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem, DocumentRestService.getItemList(items)))
+			// return XMLItemCollectionAdapter.putItemCollection(workitem,
+			// DocumentRestService.getItemList(items));
+			return Response
+					.ok(XMLItemCollectionAdapter.putItemCollection(workitem, DocumentRestService.getItemList(items)))
 					.build();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -344,8 +347,8 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/tasklist/creator/{creator}")
-	public DocumentCollection getTaskListByCreator(@PathParam("creator") String creator, @QueryParam("type") String type,
-			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
+	public DocumentCollection getTaskListByCreator(@PathParam("creator") String creator,
+			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
@@ -604,26 +607,19 @@ public class WorkflowRestService {
 	public Response postWorkitemJSON(InputStream requestBodyStream, @QueryParam("error") String error,
 			@QueryParam("encoding") String encoding) {
 
-		logger.fine("[WorkflowRestService] @POST workitem  postWorkitemJSON....");
+		logger.fine("postWorkitemJSON @POST workitem  postWorkitemJSON....");
 
 		// determine encoding from servlet request ....
 		if (encoding == null || encoding.isEmpty()) {
 			encoding = servletRequest.getCharacterEncoding();
-			logger.fine("[WorkflowRestService] postWorkitemJSON using request econding=" + encoding);
+			logger.fine("postWorkitemJSON using request econding=" + encoding);
 		} else {
-			logger.fine("[WorkflowRestService] postWorkitemJSON set econding=" + encoding);
-		}
-		// set defautl encoding UTF-8
-		if (encoding == null || encoding.isEmpty()) {
-			encoding = "UTF-8";
-			logger.fine(
-					"[WorkflowRestService] postWorkitemJSON no encoding defined, set default econding to" + encoding);
+			logger.fine("postWorkitemJSON set econding=" + encoding);
 		}
 
 		ItemCollection workitem = null;
 		try {
 			workitem = JSONParser.parseWorkitem(requestBodyStream, encoding);
-
 		} catch (ParseException e) {
 			logger.severe("postWorkitemJSON wrong json format!");
 			e.printStackTrace();
@@ -633,11 +629,11 @@ public class WorkflowRestService {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
-
 		if (workitem == null) {
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
 
+		// process workitem
 		try {
 			workitem.removeItem("$error_code");
 			workitem.removeItem("$error_message");
@@ -673,19 +669,70 @@ public class WorkflowRestService {
 	@Consumes({ MediaType.APPLICATION_JSON })
 	public Response postWorkitemByUniqueIDJSON(@PathParam("uniqueid") String uniqueid, InputStream requestBodyStream,
 			@QueryParam("error") String error, @QueryParam("encoding") String encoding) {
-		logger.fine("[WorkflowRestService] @POST /workitem/" + uniqueid + "  method:postWorkitemXML....");
+		logger.fine("postWorkitemByUniqueIDJSON @POST /workitem/" + uniqueid + "....");
+
+		// determine encoding from servlet request ....
+		if (encoding == null || encoding.isEmpty()) {
+			encoding = servletRequest.getCharacterEncoding();
+			logger.fine("postWorkitemJSON using request econding=" + encoding);
+		} else {
+			logger.fine("postWorkitemJSON set econding=" + encoding);
+		}
+
 		ItemCollection workitem = null;
 		try {
 			workitem = JSONParser.parseWorkitem(requestBodyStream, encoding);
-		} catch (UnsupportedEncodingException | ParseException e) {
-			logger.warning(e.getMessage());
-		}
-
-		if (workitem != null && !uniqueid.equals(workitem.getUniqueID())) {
-			logger.warning("@POST /workitem/" + uniqueid + "  $UNIQUEID did not match!");
+		} catch (ParseException e) {
+			logger.severe("postWorkitemJSON wrong json format!");
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		} catch (UnsupportedEncodingException e) {
+			logger.severe("postWorkitemJSON wrong json format!");
+			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
-		return postWorkitemJSON(requestBodyStream, error, encoding);
+		if (workitem == null) {
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
+
+		// validate given unqiueid....
+		if (!workitem.getUniqueID().isEmpty() && !uniqueid.equals(workitem.getUniqueID())) {
+			logger.warning("postWorkitemByUniqueIDJSON @POST /workitem/" + uniqueid + "  $UNIQUEID did not match!");
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
+
+		// set uniqueId if not available
+		if (workitem.getUniqueID().isEmpty()) {
+			workitem.replaceItemValue(WorkflowKernel.UNIQUEID, uniqueid);
+		}
+
+		// process workitem
+		try {
+			workitem.removeItem("$error_code");
+			workitem.removeItem("$error_message");
+			// now lets try to process the workitem...
+			workitem = workflowService.processWorkItem(workitem);
+
+		} catch (AccessDeniedException e) {
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (PluginException e) {
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (RuntimeException e) {
+			workitem = this.addErrorMessage(e, workitem);
+		}
+
+		// return workitem
+		try {
+			if (workitem.hasItem("$error_code"))
+				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_JSON)
+						.status(Response.Status.NOT_ACCEPTABLE).build();
+			else
+				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_JSON)
+						.build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
 
 	}
 

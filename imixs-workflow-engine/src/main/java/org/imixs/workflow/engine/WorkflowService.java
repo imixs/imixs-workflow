@@ -57,7 +57,6 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.QueryException;
-import org.imixs.workflow.jee.ejb.EntityService;
 
 /**
  * The WorkflowService is the JEE Implementation for the Imixs Workflow Core
@@ -450,7 +449,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		List<ItemCollection> eventList = model.findAllEventsByTask(processID);
 
 		String username = getUserName();
-		boolean bManagerAccess = ctx.isCallerInRole(EntityService.ACCESSLEVEL_MANAGERACCESS);
+		boolean bManagerAccess = ctx.isCallerInRole(DocumentService.ACCESSLEVEL_MANAGERACCESS);
 
 		// now filter events which are not public (keypublicresult==false) or
 		// restricted for current user (keyRestrictedVisibility).
@@ -520,13 +519,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 					ProcessingErrorException.INVALID_WORKITEM, "WorkflowService: error - workitem is null");
 
 		// load current instance of this workitem
-		ItemCollection currentInstance = this.getWorkItem(workitem.getItemValueString(EntityService.UNIQUEID));
+		ItemCollection currentInstance = this.getWorkItem(workitem.getItemValueString(WorkflowKernel.UNIQUEID));
 
 		if (currentInstance != null) {
 			// test author access
 			if (!currentInstance.getItemValueBoolean(ISAUTHOR))
 				throw new AccessDeniedException(AccessDeniedException.OPERATION_NOTALLOWED,
-						"WorkflowService: error - $UnqiueID (" + workitem.getItemValueInteger(EntityService.UNIQUEID)
+						"WorkflowService: error - $UnqiueID (" + workitem.getItemValueInteger(WorkflowKernel.UNIQUEID)
 								+ ") no Author Access!");
 
 			// test if $ProcessID matches current instance
