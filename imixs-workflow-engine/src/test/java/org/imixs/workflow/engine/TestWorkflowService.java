@@ -1,5 +1,8 @@
 package org.imixs.workflow.engine;
 
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -12,6 +15,9 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import junit.framework.Assert;
 
@@ -25,12 +31,12 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestWorkflowService extends AbstractWorkflowEnvironment {
-	public static final String DEFAULT_MODEL_VERSION="1.0.0";
+	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 
 	@Before
 	public void setup() throws PluginException {
 		this.setModelPath("/bpmn/TestWorkflowService.bpmn");
-		
+
 		super.setup();
 	}
 
@@ -48,10 +54,9 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 	public void testProcessSimple() throws AccessDeniedException, ProcessingErrorException, PluginException {
 		// load test workitem
 		ItemCollection workitem = database.get("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.MODELVERSION,DEFAULT_MODEL_VERSION);
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID,100);
-		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID,10);
-	
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);
+		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 100);
+
 		workitem = workflowService.processWorkItem(workitem);
 
 		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
@@ -63,13 +68,12 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 	 */
 	@Test
 	public void testGetEventsSimple() {
-	
+
 		// get workitem
 		ItemCollection workitem = database.get("W0000-00001");
 		workitem.replaceItemValue(WorkflowService.PROCESSID, 200);
-		workitem.replaceItemValue(WorkflowService.ACTIVITYID, 10);
 
-		List<ItemCollection> eventList=null;
+		List<ItemCollection> eventList = null;
 		try {
 			eventList = workflowService.getEvents(workitem);
 		} catch (ModelException e) {
@@ -81,17 +85,15 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 	}
 
 	/**
-	 * test if the method getEvents returns correct lists of public and restricted events.
-	 * User "manfred" is listed in current workitem namTeam.
+	 * test if the method getEvents returns correct lists of public and
+	 * restricted events. User "manfred" is listed in current workitem namTeam.
 	 */
 	@Test
 	public void testGetEventsComplex() {
 
-	
 		// get workitem
 		ItemCollection workitem = database.get("W0000-00001");
 		workitem.replaceItemValue(WorkflowService.PROCESSID, 100);
-		workitem.replaceItemValue(WorkflowService.ACTIVITYID, 10);
 
 		Vector<String> members = new Vector<String>();
 		members.add("jo");
@@ -102,7 +104,7 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 		workitem.replaceItemValue("nammanager", members);
 		workitem.replaceItemValue("namassist", "");
 
-		List<ItemCollection> eventList=null;
+		List<ItemCollection> eventList = null;
 		try {
 			eventList = workflowService.getEvents(workitem);
 		} catch (ModelException e) {
@@ -112,8 +114,6 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 		Assert.assertEquals(3, eventList.size());
 	}
 
-	
-	
 	/**
 	 * test if the method getEvents returns correct lists of workflow events,
 	 * with a more complex setup. User 'manfred' is not listed in namManger!
@@ -121,11 +121,9 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 	@Test
 	public void testGetEventsComplexRestricted() {
 
-	
 		// get workitem
 		ItemCollection workitem = database.get("W0000-00001");
 		workitem.replaceItemValue(WorkflowService.PROCESSID, 100);
-		workitem.replaceItemValue(WorkflowService.ACTIVITYID, 10);
 
 		Vector<String> members = new Vector<String>();
 		members.add("jo");
@@ -134,7 +132,7 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 		workitem.replaceItemValue("nammanager", members);
 		workitem.replaceItemValue("namassist", "");
 
-		List<ItemCollection> eventList=null;
+		List<ItemCollection> eventList = null;
 		try {
 			eventList = workflowService.getEvents(workitem);
 		} catch (ModelException e) {
@@ -144,5 +142,87 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 		Assert.assertEquals(2, eventList.size());
 	}
 
-	
+	/**
+	 * This test verifies if the method getEvents returns only events where the
+	 * current user has read access! In this case, the user "manfred" is not
+	 * granted to the event 300.20 which is restricted to rhe access role
+	 * 'org.imixs.ACCESSLEVEL.MANAGERACCESS'
+	 * 
+	 * So we expect only one event!
+	 */
+	@Test
+	public void testGetEventsReadRestrictedForSimpleUser() {
+
+		when(workflowService.getUserNameList()).thenAnswer(new Answer<List<String>>() {
+			@Override
+			public List<String> answer(InvocationOnMock invocation) throws Throwable {
+				List<String> result = new ArrayList<>();
+				result.add("manfred");
+				return result;
+			}
+		});
+
+		// get workitem
+		ItemCollection workitem = database.get("W0000-00001");
+		workitem.replaceItemValue(WorkflowService.PROCESSID, 300);
+
+		Vector<String> members = new Vector<String>();
+		members.add("jo");
+		members.add("alex");
+		workitem.replaceItemValue("nammteam", "tom");
+		workitem.replaceItemValue("nammanager", members);
+		workitem.replaceItemValue("namassist", "");
+
+		List<ItemCollection> eventList = null;
+		try {
+			eventList = workflowService.getEvents(workitem);
+		} catch (ModelException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertEquals(1, eventList.size());
+	}
+
+	/**
+	 * This test verifies if the method getEvents returns only events where the
+	 * current user has read access! In this case, the user "manfred" is in the
+	 * role 'org.imixs.ACCESSLEVEL.MANAGERACCESS' and granted to the event
+	 * 300.20
+	 * 
+	 * So we expect both events!
+	 */
+	@Test
+	public void testGetEventsReadRestrictedForManagerAccess() {
+
+		when(workflowService.getUserNameList()).thenAnswer(new Answer<List<String>>() {
+			@Override
+			public List<String> answer(InvocationOnMock invocation) throws Throwable {
+				List<String> result = new ArrayList<>();
+				result.add("manfred");
+				result.add("org.imixs.ACCESSLEVEL.MANAGERACCESS");
+				return result;
+			}
+		});
+
+		// get workitem
+		ItemCollection workitem = database.get("W0000-00001");
+		workitem.replaceItemValue(WorkflowService.PROCESSID, 300);
+
+		Vector<String> members = new Vector<String>();
+		members.add("jo");
+		members.add("alex");
+		workitem.replaceItemValue("nammteam", "tom");
+		workitem.replaceItemValue("nammanager", members);
+		workitem.replaceItemValue("namassist", "");
+
+		List<ItemCollection> eventList = null;
+		try {
+			eventList = workflowService.getEvents(workitem);
+		} catch (ModelException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertEquals(2, eventList.size());
+	}
+
 }

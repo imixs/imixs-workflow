@@ -110,7 +110,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 	@EJB
 	ReportService reportService;
-	
+
 	@EJB
 	PropertyService propertyService;
 
@@ -118,8 +118,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	SessionContext ctx;
 
 	private static Logger logger = Logger.getLogger(WorkflowService.class.getName());
-
-	
 
 	/**
 	 * This method loads a Workitem with the corresponding uniqueid.
@@ -151,17 +149,17 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByOwner(String name,  String type, int pageSize, int pageIndex, int sortorder) {
+	public List<ItemCollection> getWorkListByOwner(String name, String type, int pageSize, int pageIndex,
+			int sortorder) {
 
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
 
-		
-		String searchTerm="(";
+		String searchTerm = "(";
 		if (type != null && !"".equals(type)) {
-			searchTerm+=" type:\"" + type + "\" AND ";
+			searchTerm += " type:\"" + type + "\" AND ";
 		}
-		searchTerm+=" namowner:\"" + name + "\" )";
+		searchTerm += " namowner:\"" + name + "\" )";
 		logger.warning("Sortorder " + sortorder + " not implemented!");
 
 		try {
@@ -197,19 +195,19 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByAuthor(String name,  String type, int pageSize, int pageIndex, int sortorder) {
+	public List<ItemCollection> getWorkListByAuthor(String name, String type, int pageSize, int pageIndex,
+			int sortorder) {
 
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
 
-		String searchTerm="(";
+		String searchTerm = "(";
 		if (type != null && !"".equals(type)) {
-			searchTerm+=" type:\"" + type + "\" AND ";
+			searchTerm += " type:\"" + type + "\" AND ";
 		}
-		searchTerm+=" $writeaccess:\"" + name + "\" )";
+		searchTerm += " $writeaccess:\"" + name + "\" )";
 		logger.warning("Sortorder " + sortorder + " not implemented!");
 
-		
 		try {
 			return documentService.find(searchTerm, pageSize, pageIndex);
 		} catch (QueryException e) {
@@ -240,19 +238,19 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByCreator(String name,  String type, int pageSize, int pageIndex, int sortorder) {
+	public List<ItemCollection> getWorkListByCreator(String name, String type, int pageSize, int pageIndex,
+			int sortorder) {
 
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
 
-		String searchTerm="(";
+		String searchTerm = "(";
 		if (type != null && !"".equals(type)) {
-			searchTerm+=" type:\"" + type + "\" AND ";
+			searchTerm += " type:\"" + type + "\" AND ";
 		}
-		searchTerm+=" namcreator:\"" + name + "\" )";
+		searchTerm += " namcreator:\"" + name + "\" )";
 		logger.warning("Sortorder " + sortorder + " not implemented!");
 
-		
 		try {
 			return documentService.find(searchTerm, pageSize, pageIndex);
 		} catch (QueryException e) {
@@ -281,7 +279,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByWriteAccess( String type, int pageSize, int pageIndex, int sortorder) {
+	public List<ItemCollection> getWorkListByWriteAccess(String type, int pageSize, int pageIndex, int sortorder) {
 		StringBuffer nameListBuffer = new StringBuffer();
 
 		String name = ctx.getCallerPrincipal().getName();
@@ -302,14 +300,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 				nameListBuffer.append(" OR $writeaccess:\"" + testRole + "\"");
 		}
 		nameListBuffer.append(")");
-		
-		String searchTerm="(";
-		if (type != null && !"".equals(type)) {
-			searchTerm+=" type:\"" + type + "\" AND " + nameListBuffer.toString() ;
-		}
-		searchTerm+=" $writeaccess:\"" + name + "\" )";
-		logger.warning("Sortorder " + sortorder + " not implemented!");
 
+		String searchTerm = "(";
+		if (type != null && !"".equals(type)) {
+			searchTerm += " type:\"" + type + "\" AND " + nameListBuffer.toString();
+		}
+		searchTerm += " $writeaccess:\"" + name + "\" )";
+		logger.warning("Sortorder " + sortorder + " not implemented!");
 
 		try {
 			return documentService.find(searchTerm, pageSize, pageIndex);
@@ -319,16 +316,16 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		}
 	}
 
-	public List<ItemCollection> getWorkListByGroup(String name,  String type, int pageSize, int pageIndex, int sortorder) {
+	public List<ItemCollection> getWorkListByGroup(String name, String type, int pageSize, int pageIndex,
+			int sortorder) {
 
-		String searchTerm="(";
+		String searchTerm = "(";
 		if (type != null && !"".equals(type)) {
-			searchTerm+=" type:\"" + type + "\" AND ";
+			searchTerm += " type:\"" + type + "\" AND ";
 		}
-		searchTerm+=" txtworkflowgroup:\"" + name + "\" )";
+		searchTerm += " txtworkflowgroup:\"" + name + "\" )";
 		logger.warning("Sortorder " + searchTerm + " not implemented!");
 
-		
 		try {
 			return documentService.find(searchTerm, pageSize, pageIndex);
 		} catch (QueryException e) {
@@ -358,15 +355,16 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByProcessID(int aid,  String type, int pageSize, int pageIndex, int sortorder) {
+	public List<ItemCollection> getWorkListByProcessID(int aid, String type, int pageSize, int pageIndex,
+			int sortorder) {
 
-		String searchTerm="(";
+		String searchTerm = "(";
 		if (type != null && !"".equals(type)) {
-			searchTerm+=" type:\"" + type + "\" AND ";
+			searchTerm += " type:\"" + type + "\" AND ";
 		}
-		searchTerm+=" $processid:\"" + aid + "\" )";
+		searchTerm += " $processid:\"" + aid + "\" )";
 		logger.warning("Sortorder " + searchTerm + " not implemented!");
-		
+
 		try {
 			return documentService.find(searchTerm, pageSize, pageIndex);
 		} catch (QueryException e) {
@@ -398,11 +396,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 */
 	public List<ItemCollection> getWorkListByRef(String aref, String type, int pageSize, int pageIndex, int sortorder) {
 
-		String searchTerm="(";
+		String searchTerm = "(";
 		if (type != null && !"".equals(type)) {
-			searchTerm+=" type:\"" + type + "\" AND ";
+			searchTerm += " type:\"" + type + "\" AND ";
 		}
-		searchTerm+=" $uniqueidref:\"" + aref + "\" )";
+		searchTerm += " $uniqueidref:\"" + aref + "\" )";
 		logger.warning("Sortorder " + searchTerm + " not implemented!");
 		try {
 			return documentService.find(searchTerm, pageSize, pageIndex);
@@ -419,7 +417,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return List of workitems
 	 */
 	public List<ItemCollection> getWorkListByRef(String aref) {
-		return getWorkListByRef(aref, null, -1,0, 0);
+		return getWorkListByRef(aref, null, -1, 0, 0);
 	}
 
 	/**
@@ -460,6 +458,32 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			if ("0".equals(event.getItemValueString("keypublicresult"))) {
 				continue;
 			}
+
+			// test user access level
+			List<String> readAccessList = event.getItemValue("$readaccess");
+			if (!bManagerAccess && !readAccessList.isEmpty()) {
+				/**
+				 * check read access for current user
+				 */
+				boolean accessGranted = false;
+				// get user name list
+				List<String> auserNameList = getUserNameList();
+
+				// check each read access
+				for (String aReadAccess : readAccessList) {
+					if (aReadAccess != null && !aReadAccess.isEmpty()) {
+						if (auserNameList.indexOf(aReadAccess) > -1) {
+							accessGranted = true;
+							break;
+						}
+					}
+				}
+				if (!accessGranted) {
+					// user has no read access!
+					continue;
+				}
+			}
+
 			// test RestrictedVisibility
 			List<String> restrictedList = event.getItemValue("keyRestrictedVisibility");
 			if (!bManagerAccess && !restrictedList.isEmpty()) {
@@ -598,7 +622,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		workitem.replaceItemValue("namcurrenteditor", nameEditor);
 
 		// now process the workitem
-		workitem=workflowkernel.process(workitem);
+		workitem = workflowkernel.process(workitem);
 
 		if (logger.isLoggable(Level.FINE))
 			logger.info("[WorkflowManager] workitem processed sucessfull");
@@ -623,6 +647,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 	/**
 	 * Returns an instance of the EJB session context.
+	 * 
 	 * @return
 	 */
 	public SessionContext getSessionContext() {
@@ -631,15 +656,16 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 	/**
 	 * Returns an instance of the DocumentService EJB.
+	 * 
 	 * @return
 	 */
 	public DocumentService getDocumentService() {
 		return documentService;
 	}
 
-	
 	/**
 	 * Returns an instance of the ReportService EJB.
+	 * 
 	 * @return
 	 */
 	public ReportService getReportService() {
@@ -648,6 +674,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 	/**
 	 * Returns an instance of the PropertyService EJB.
+	 * 
 	 * @return
 	 */
 	public PropertyService getPropertyService() {
