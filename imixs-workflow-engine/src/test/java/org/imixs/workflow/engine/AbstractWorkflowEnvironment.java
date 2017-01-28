@@ -23,8 +23,10 @@ import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
+import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -81,7 +83,7 @@ public class AbstractWorkflowEnvironment {
 	}
 
 	@Before
-	public void setup() throws PluginException {
+	public void setup() throws PluginException, ModelException {
 		MockitoAnnotations.initMocks(this);
 		// setup db
 		createTestDatabase();

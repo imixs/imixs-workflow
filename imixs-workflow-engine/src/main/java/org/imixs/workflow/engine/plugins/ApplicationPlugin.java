@@ -39,8 +39,6 @@ import org.imixs.workflow.exceptions.PluginException;
  * <ul>
  * <li>txtWorkflowEditorID - optional EditorID to be used by an application
  * <li>txtWorkflowImageURL - visual image can be displayed by an application
- * <li>txtWorkflowStatus - Status of current process
- * <li>txtWorkflowGroup - Workflow Group of current process
  * <li>txtWorkflowAbstract - Abstract text
  * <li>txtWorkflowSummary - Summary
  * 
@@ -63,8 +61,10 @@ import org.imixs.workflow.exceptions.PluginException;
  * so other plugins can access the new properties for further operations
  * http://java.net/jira/browse/IMIXS_WORKFLOW-81
  * 
+ * Version 1.3: type, workflowgroup and workfowstatus are handled by the WorkflowKernel
+ * 
  * @author Ralph Soika
- * @version 1.2
+ * @version 1.3
  * @see org.imixs.workflow.WorkflowManager
  * 
  */
@@ -75,10 +75,7 @@ public class ApplicationPlugin extends AbstractPlugin {
 	ItemCollection documentContext;
 
 	private String sEditorID;
-	private String sType;
 	private String sImageURL;
-	private String sStatus;
-	private String sGroup;
 	private String sAbstract;
 	private String sSummary;
 	private static Logger logger = Logger.getLogger(ApplicationPlugin.class.getName());
@@ -114,11 +111,6 @@ public class ApplicationPlugin extends AbstractPlugin {
 		sEditorID = itemColNextProcess.getItemValueString("txtEditorID");
 		sImageURL = itemColNextProcess.getItemValueString("txtImageURL");
 
-		// fetch Status and Group
-		sStatus = itemColNextProcess.getItemValueString("txtname");
-		sGroup = itemColNextProcess.getItemValueString("txtworkflowgroup");
-		sType = itemColNextProcess.getItemValueString("txttype");
-
 		// fetch workflow Abstract
 		sAbstract = itemColNextProcess.getItemValueString("txtworkflowabstract");
 		if (!"".equals(sAbstract))
@@ -130,10 +122,7 @@ public class ApplicationPlugin extends AbstractPlugin {
 			sSummary = this.replaceDynamicValues(sSummary, documentContext);
 
 		// submit data now into documentcontext
-		// set Status and Group
-		documentContext.replaceItemValue("txtWorkflowStatus", sStatus);
-		documentContext.replaceItemValue("txtworkflowgroup", sGroup);
-
+	
 		// set Editor if value is defined
 		if (sEditorID != null && !"".equals(sEditorID))
 			documentContext.replaceItemValue("txtWorkflowEditorID", sEditorID);
@@ -142,10 +131,7 @@ public class ApplicationPlugin extends AbstractPlugin {
 		if (sImageURL != null && !"".equals(sImageURL))
 			documentContext.replaceItemValue("txtWorkflowImageURL", sImageURL);
 
-		// set Type if one is defined
-		if (sType != null && !"".equals(sType))
-			documentContext.replaceItemValue("type", sType);
-
+	
 		// set Abstract
 		if (sAbstract != null)
 			documentContext.replaceItemValue("txtworkflowabstract", sAbstract);

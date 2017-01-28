@@ -32,7 +32,7 @@ public class TestOwnerPlugin extends AbstractWorkflowEnvironment {
 	ItemCollection documentActivity;
 
 	@Before
-	public void setup() throws PluginException {
+	public void setup() throws PluginException, ModelException {
 		
 		this.setModelPath("/bpmn/TestOwnerPlugin.bpmn");
 		

@@ -33,13 +33,12 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 	/**
 	 * We use the provided test workflow model form the
 	 * AbstractWorkflowServiceTest
+	 * @throws ModelException 
 	 */
 	@Before
-	public void setup() throws PluginException {
+	public void setup() throws PluginException, ModelException {
 
 		this.setModelPath("/bpmn/TestSplitAndJoinPlugin.bpmn");
-		
-		
 		
 		super.setup();
 

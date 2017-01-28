@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import javax.ejb.SessionContext;
 
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Assert;
@@ -76,6 +77,9 @@ public class KernelTest {
 		} catch (ProcessingErrorException e) {
 			Assert.fail();
 			e.printStackTrace();
+		} catch (ModelException e) {
+			Assert.fail();
+			e.printStackTrace();
 		}
 
 		Assert.assertEquals(1, itemCollection.getItemValueInteger("runs"));
@@ -114,6 +118,9 @@ public class KernelTest {
 		} catch (ProcessingErrorException e) {
 			Assert.fail();
 			e.printStackTrace();
+		} catch (ModelException e) {
+			Assert.fail();
+			e.printStackTrace();
 		}
 
 		Assert.assertEquals("test", itemCollection.getItemValueString("txtname"));
@@ -140,6 +147,9 @@ public class KernelTest {
 		} catch (ProcessingErrorException e) {
 			Assert.fail();
 			e.printStackTrace();
+		} catch (ModelException e) {
+			Assert.fail();
+			e.printStackTrace();
 		}
 
 		Assert.assertEquals(1, itemCollection.getItemValueInteger("runs"));
@@ -164,6 +174,9 @@ public class KernelTest {
 			Assert.fail();
 			e.printStackTrace();
 		} catch (ProcessingErrorException e) {
+			Assert.fail();
+			e.printStackTrace();
+		} catch (ModelException e) {
 			Assert.fail();
 			e.printStackTrace();
 		}
@@ -234,6 +247,9 @@ public class KernelTest {
 			Assert.fail();
 			e.printStackTrace();
 		} catch (ProcessingErrorException e) {
+			Assert.fail();
+			e.printStackTrace();
+		} catch (ModelException e) {
 			Assert.fail();
 			e.printStackTrace();
 		}
@@ -333,6 +349,9 @@ public class KernelTest {
 			Assert.fail();
 			e.printStackTrace();
 		} catch (ProcessingErrorException e) {
+			Assert.fail();
+			e.printStackTrace();
+		} catch (ModelException e) {
 			Assert.fail();
 			e.printStackTrace();
 		}

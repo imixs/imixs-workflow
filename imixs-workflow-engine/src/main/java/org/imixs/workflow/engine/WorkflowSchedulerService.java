@@ -56,6 +56,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.QueryException;
@@ -383,11 +384,11 @@ public class WorkflowSchedulerService {
 			case 1: {
 				logger.finest(suniqueid + ": CompareType = last process");
 
-				if (!doc.hasItem("timWorkflowLastAccess"))
+				if (!doc.hasItem("$lastProcessingDate"))
 					return false;
 
-				dateTimeCompare = doc.getItemValueDate("timWorkflowLastAccess");
-				logger.finest(suniqueid + ": timWorkflowLastAccess=" + dateTimeCompare);
+				dateTimeCompare = doc.getItemValueDate("$lastProcessingDate");
+				logger.finest(suniqueid + ": $lastProcessingDate=" + dateTimeCompare);
 
 				// scheduled time
 				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
@@ -870,10 +871,11 @@ public class WorkflowSchedulerService {
 	 * @throws PluginException
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
+	 * @throws ModelException 
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public void processSingleWorkitem(ItemCollection aWorkitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 		workflowService.processWorkItem(aWorkitem);
 	}
 

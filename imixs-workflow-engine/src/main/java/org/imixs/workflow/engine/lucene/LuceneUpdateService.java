@@ -108,8 +108,8 @@ public class LuceneUpdateService {
 	// default field lists
 	private static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("txtworkflowsummary", "txtworkflowabstract");
 	private static List<String> DEFAULT_NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$processid",
-			"$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator",
-			"txtworkflowgroup", "txtname", "namowner", "txtworkitemref");
+			"$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator", "$editor", "$lasteditor",
+			"$workflowgroup", "$workflowstatus", "txtworkflowgroup", "txtname", "namowner", "txtworkitemref");
 
 	@EJB
 	PropertyService propertyService;

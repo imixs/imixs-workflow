@@ -161,8 +161,9 @@ public class WorkflowController extends DocumentController {
 	 *         ActivityEntity
 	 * @throws AccessDeniedException
 	 * @throws PluginException
+	 * @throws ModelException 
 	 */
-	public String process() throws AccessDeniedException, ProcessingErrorException, PluginException {
+	public String process() throws PluginException, ModelException {
 		if (workitem == null) {
 			logger.warning("Unable to process workitem == null!");
 			return null;
@@ -191,10 +192,11 @@ public class WorkflowController extends DocumentController {
 	 * @param resetWorkitem
 	 *            - boolean indicates if the workitem should be reset
 	 * @throws PluginException
+	 * @throws ModelException 
 	 * @see process()
 	 */
 	public String process(int id, boolean resetWorkitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException {
+			throws  PluginException, ModelException {
 		// update the property $ActivityID
 		this.getWorkitem().replaceItemValue("$ActivityID", id);
 		String result = process();
@@ -213,7 +215,7 @@ public class WorkflowController extends DocumentController {
 	 * @see process()
 	 * @see process(id,resetWorkitem)
 	 */
-	public String process(int id) throws AccessDeniedException, ProcessingErrorException, PluginException {
+	public String process(int id) throws ModelException, PluginException {
 		return process(id, false);
 	}
 

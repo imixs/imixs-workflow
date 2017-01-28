@@ -31,7 +31,7 @@ public class TestAccessPlugin extends AbstractWorkflowEnvironment {
 	ItemCollection documentActivity;
 
 	@Before
-	public void setup() throws PluginException {
+	public void setup() throws PluginException, ModelException {
 		this.setModelPath("/bpmn/TestAccessPlugin.bpmn");
 		
 		super.setup();

@@ -23,7 +23,7 @@ public class TestModelService extends AbstractWorkflowEnvironment {
 	public static final String DEFAULT_MODEL_VERSION="1.0.0";
 
 	@Before
-	public void setup() throws PluginException {
+	public void setup() throws PluginException, ModelException {
 		this.setModelPath("/bpmn/TestWorkflowService.bpmn");
 		super.setup();
 	}

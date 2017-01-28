@@ -121,8 +121,9 @@ public class HistoryPlugin extends AbstractPlugin {
 		
 		documentContext.replaceItemValue("txtworkflowhistory", historyList);
 
-		// set timWorkflowLastAccess
-		documentContext.replaceItemValue("timworkflowlastaccess", new Date());
+		// set timWorkflowLastAccess (Deprecated)
+		// issue #244 
+		// documentContext.replaceItemValue("timworkflowlastaccess", new Date());
 		return documentContext;
 	}
 

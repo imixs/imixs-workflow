@@ -59,7 +59,7 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.QueryException;
 
 /**
- * The WorkflowService is the JEE Implementation for the Imixs Workflow Core
+ * The WorkflowService is the Java EE Implementation for the Imixs Workflow Core
  * API. This interface acts as a service facade and supports basic methods to
  * create, process and access workitems. The Interface extends the core api
  * interface org.imixs.workflow.WorkflowManager with getter methods to fetch
@@ -533,10 +533,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 *             workflowKernel
 	 * @throws PluginException
 	 *             - thrown if processing by a plugin fails
+	 * @throws ModelException 
 	 */
 	@SuppressWarnings("unchecked")
 	public ItemCollection processWorkItem(ItemCollection workitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
 		if (workitem == null)
 			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
@@ -608,17 +609,30 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		nameEditor = ctx.getCallerPrincipal().getName();
 
 		// add namCreator if empty
-		if (workitem.getItemValueString("namCreator").isEmpty()) {
+		// migrate $creator
+		if (workitem.getItemValueString("$creator").isEmpty() && !workitem.getItemValueString("namCreator").isEmpty()) {
+			workitem.replaceItemValue("$creator", workitem.getItemValue("namCreator"));
+		}
+		
+		if (workitem.getItemValueString("$creator").isEmpty()) {
+			workitem.replaceItemValue("$creator", nameEditor);
+			// support deprecated fieldname
 			workitem.replaceItemValue("namCreator", nameEditor);
 		}
 
 		// update namLastEditor only if current editor has changed
-		if (!nameEditor.equals(workitem.getItemValueString("namcurrenteditor"))
-				&& !workitem.getItemValueString("namcurrenteditor").isEmpty()) {
-			workitem.replaceItemValue("namlasteditor", workitem.getItemValueString("namcurrenteditor"));
+		if (!nameEditor.equals(workitem.getItemValueString("$editor"))
+				&& !workitem.getItemValueString("$editor").isEmpty()) {
+			
+			workitem.replaceItemValue("$lasteditor", workitem.getItemValueString("$editor"));
+			// deprecated
+			workitem.replaceItemValue("namlasteditor", workitem.getItemValueString("$editor"));
 		}
 
-		// update namCurrentEditor
+		// update $editor
+		
+		workitem.replaceItemValue("$editor", nameEditor);
+		// deprecated
 		workitem.replaceItemValue("namcurrenteditor", nameEditor);
 
 		// now process the workitem

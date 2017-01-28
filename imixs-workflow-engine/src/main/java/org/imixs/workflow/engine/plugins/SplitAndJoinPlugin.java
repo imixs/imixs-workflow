@@ -36,6 +36,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 
@@ -86,46 +87,54 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * 
 	 * For each item a corresponding processing cycle will be started.
 	 * 
+	 * @throws @throws
+	 *             ProcessingErrorException
+	 * @throws AccessDeniedException
+	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+			throws PluginException, AccessDeniedException, ProcessingErrorException {
 
 		ItemCollection evalItemCollection = ResultPlugin.evaluateWorkflowResult(adocumentActivity, adocumentContext);
 
 		if (evalItemCollection == null)
 			return adocumentContext;
 
-		// 1.) test for items with name subprocess_create and create the
-		// defined suprocesses
-		if (evalItemCollection.hasItem(SUBPROCESS_CREATE)) {
-			logger.fine("processing " + SUBPROCESS_CREATE);
-			// extract the create subprocess definitions...
-			List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_CREATE);
-			createSubprocesses(processValueList, adocumentContext);
-		}
+		try {
+			// 1.) test for items with name subprocess_create and create the
+			// defined suprocesses
+			if (evalItemCollection.hasItem(SUBPROCESS_CREATE)) {
+				logger.fine("processing " + SUBPROCESS_CREATE);
+				// extract the create subprocess definitions...
+				List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_CREATE);
+				createSubprocesses(processValueList, adocumentContext);
+			}
 
-		// 2.) test for items with name subprocess_update and create the
-		// defined suprocesses
-		if (evalItemCollection.hasItem(SUBPROCESS_UPDATE)) {
-			logger.fine("processing " + SUBPROCESS_UPDATE);
-			// extract the create subprocess definitions...
-			List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_UPDATE);
-			updateSubprocesses(processValueList, adocumentContext);
-		}
+			// 2.) test for items with name subprocess_update and create the
+			// defined suprocesses
+			if (evalItemCollection.hasItem(SUBPROCESS_UPDATE)) {
+				logger.fine("processing " + SUBPROCESS_UPDATE);
+				// extract the create subprocess definitions...
+				List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_UPDATE);
+				updateSubprocesses(processValueList, adocumentContext);
+			}
 
-		// 3.) test for items with name origin_update and update the
-		// origin workitem
-		if (evalItemCollection.hasItem(ORIGIN_UPDATE)) {
-			logger.fine("processing " + ORIGIN_UPDATE);
-			// extract the create subprocess definitions...
-			String processValue = evalItemCollection.getItemValueString(ORIGIN_UPDATE);
-			updateOrigin(processValue, adocumentContext);
+			// 3.) test for items with name origin_update and update the
+			// origin workitem
+			if (evalItemCollection.hasItem(ORIGIN_UPDATE)) {
+				logger.fine("processing " + ORIGIN_UPDATE);
+				// extract the create subprocess definitions...
+				String processValue = evalItemCollection.getItemValueString(ORIGIN_UPDATE);
+				updateOrigin(processValue, adocumentContext);
+			}
+		} catch (ModelException e) {
+			throw new PluginException(e.getErrorContext(),e.getErrorCode(),e.getMessage(),e);
+			
 		}
 
 		return adocumentContext;
 	}
-
-	
 
 	/**
 	 * This method expects a list of Subprocess definitions and create for each
@@ -152,9 +161,10 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * @throws AccessDeniedException
 	 * @throws ProcessingErrorException
 	 * @throws PluginException
+	 * @throws ModelException
 	 */
 	private void createSubprocesses(final List<String> subProcessDefinitions, final ItemCollection originWorkitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
 		if (subProcessDefinitions == null || subProcessDefinitions.size() == 0) {
 			// no definition found
@@ -180,9 +190,9 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				workitemSubProcess.replaceItemValue(WorkflowKernel.MODELVERSION,
 						processData.getItemValueString("modelversion"));
 				workitemSubProcess.replaceItemValue(WorkflowKernel.PROCESSID,
-						 Integer.valueOf(processData.getItemValueString("processid")));
+						Integer.valueOf(processData.getItemValueString("processid")));
 				workitemSubProcess.replaceItemValue(WorkflowKernel.ACTIVITYID,
-						 Integer.valueOf(processData.getItemValueString("activityid")));
+						Integer.valueOf(processData.getItemValueString("activityid")));
 
 				// add the origin reference
 				workitemSubProcess.replaceItemValue(WorkflowService.UNIQUEIDREF, originWorkitem.getUniqueID());
@@ -223,9 +233,10 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * @throws AccessDeniedException
 	 * @throws ProcessingErrorException
 	 * @throws PluginException
+	 * @throws ModelException
 	 */
 	private void updateSubprocesses(final List<String> subProcessDefinitions, final ItemCollection originWorkitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
 		if (subProcessDefinitions == null || subProcessDefinitions.size() == 0) {
 			// no definition found
@@ -248,7 +259,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				String model_pattern = processData.getItemValueString("modelversion");
 				String process_pattern = processData.getItemValueString("processid");
 
-				List<ItemCollection> subprocessList = getWorkflowService().getWorkListByRef(originWorkitem.getUniqueID());
+				List<ItemCollection> subprocessList = getWorkflowService()
+						.getWorkListByRef(originWorkitem.getUniqueID());
 				// process all subprcess matching...
 				for (ItemCollection workitemSubProcess : subprocessList) {
 
@@ -264,7 +276,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 						copyItemList(processData.getItemValueString("items"), originWorkitem, workitemSubProcess);
 
 						workitemSubProcess.replaceItemValue(WorkflowKernel.ACTIVITYID,
-								 Integer.valueOf(processData.getItemValueString("activityid")));
+								Integer.valueOf(processData.getItemValueString("activityid")));
 						// process the exisitng subprocess...
 						workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
 
@@ -295,10 +307,11 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * @throws AccessDeniedException
 	 * @throws ProcessingErrorException
 	 * @throws PluginException
+	 * @throws ModelException
 	 */
 	@SuppressWarnings("unchecked")
 	private void updateOrigin(final String originProcessDefinition, final ItemCollection subprocessWorkitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
 		ItemCollection originWorkitem = null;
 
@@ -331,7 +344,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 					// process the origin workitem
 					originWorkitem.replaceItemValue(WorkflowKernel.ACTIVITYID,
-							 Integer.valueOf(processData.getItemValueString("activityid")));
+							Integer.valueOf(processData.getItemValueString("activityid")));
 
 					// now clone the field list...
 					copyItemList(processData.getItemValueString("items"), subprocessWorkitem, originWorkitem);

@@ -116,17 +116,18 @@ public class WorkflowKernel {
 	public void registerPlugin(final Plugin plugin) throws PluginException {
 		// validate dependencies
 		if (plugin instanceof PluginDependency) {
-			List<String> dependencies= ((PluginDependency)plugin).dependsOn();
-			for (String dependency: dependencies) {
-				boolean found=false;
-				for (Plugin regiseredPlugin: pluginList) {
+			List<String> dependencies = ((PluginDependency) plugin).dependsOn();
+			for (String dependency : dependencies) {
+				boolean found = false;
+				for (Plugin regiseredPlugin : pluginList) {
 					if (regiseredPlugin.getClass().getName().equals(dependency)) {
-						found=true;
+						found = true;
 						break;
 					}
 				}
 				if (!found) {
-					logger.warning("Plugin '"+ plugin.getClass().getName() + "' depends on unregistered Plugin class '" + dependency + "'");
+					logger.warning("Plugin '" + plugin.getClass().getName() + "' depends on unregistered Plugin class '"
+							+ dependency + "'");
 				}
 			}
 		}
@@ -207,10 +208,9 @@ public class WorkflowKernel {
 	 * @param workitem
 	 *            to be processed.
 	 * @return updated workitem
-	 * @throws PluginException
-	 *             ,ModelException
+	 * @throws PluginException,ModelException
 	 */
-	public ItemCollection process(final ItemCollection workitem) throws PluginException {
+	public ItemCollection process(final ItemCollection workitem) throws PluginException, ModelException {
 
 		// check document context
 		if (workitem == null)
@@ -236,6 +236,9 @@ public class WorkflowKernel {
 			documentResult.replaceItemValue(UNIQUEID, generateUniqueID());
 		}
 
+		// store last $lastTask
+		documentResult.replaceItemValue("$lastTask", workitem.getProcessID());
+
 		// Check if $WorkItemID is available
 		if ("".equals(workitem.getItemValueString("$WorkItemID"))) {
 			documentResult.replaceItemValue("$WorkItemID", generateUniqueID());
@@ -248,6 +251,9 @@ public class WorkflowKernel {
 			documentResult = processActivity(documentResult, event);
 			documentResult = updateActivityList(documentResult);
 		}
+
+		// set $lastProcessingDate
+		documentResult.replaceItemValue("$lastProcessingDate", new Date());
 
 		return documentResult;
 	}
@@ -301,10 +307,11 @@ public class WorkflowKernel {
 	 * If an FollowUp Activity is defined (keyFollowUp="1" &
 	 * numNextActivityID>0) it will be attached at the $ActiviyIDList.
 	 * 
+	 * @throws PluginException,ModelException
 	 * @throws ProcessingErrorException
 	 */
 	private ItemCollection processActivity(final ItemCollection documentContext, final ItemCollection event)
-			throws PluginException {
+			throws PluginException, ModelException {
 		ItemCollection documentResult = documentContext;
 		// log the general processing message
 		String msg = "processing=" + documentContext.getItemValueString(UNIQUEID) + ", MODELVERSION="
@@ -340,14 +347,35 @@ public class WorkflowKernel {
 		if (logger.isLoggable(Level.FINE))
 			logger.info("next $processid=" + iNewProcessID + "");
 
-		// NextProcessID will only be set if NextTask>0
+		/*** Update $ProcessID, Workflow Group and WorkflowStatus **/
+		ItemCollection itemColNextProcess = null;
 		if (iNewProcessID > 0) {
+			// NextProcessID will only be set if NextTask>0
 			documentResult.replaceItemValue(PROCESSID, Integer.valueOf(iNewProcessID));
+			itemColNextProcess = this.ctx.getModelManager().getModel(documentContext.getItemValueString(MODELVERSION))
+					.getTask(iNewProcessID);
+		} else {
+			// get current task...
+			itemColNextProcess = this.ctx.getModelManager().getModel(documentContext.getItemValueString(MODELVERSION))
+					.getTask(documentContext.getProcessID());
 		}
+		// update $workflowGroup and $workflowStatus
+		documentResult.replaceItemValue("$workflowStatus", itemColNextProcess.getItemValueString("txtname"));
+		documentResult.replaceItemValue("$workflowGroup", itemColNextProcess.getItemValueString("txtworkflowgroup"));
+
+		// deprecated fields
+		documentResult.replaceItemValue("txtworkflowStatus", itemColNextProcess.getItemValueString("txtname"));
+		documentResult.replaceItemValue("txtworkflowGroup", itemColNextProcess.getItemValueString("txtworkflowgroup"));
 
 		// clear ActivityID and create new workflowActivity Instance
 		documentResult.replaceItemValue(ACTIVITYID, Integer.valueOf(0));
 
+		// set Type if one is defined
+		String sType = itemColNextProcess.getItemValueString("txttype");
+		if (sType != null && !"".equals(sType)) {
+			documentResult.replaceItemValue("type", sType);
+		}
+		
 		// FollowUp Activity ?
 		String sFollowUp = event.getItemValueString("keyFollowUp");
 		int iNextActivityID = event.getItemValueInteger("numNextActivityID");
@@ -443,6 +471,10 @@ public class WorkflowKernel {
 		}
 
 		documentResult.replaceItemValue("txtworkflowactivitylog", logEntries);
+
+		documentResult.replaceItemValue("$lastEvent", Integer.valueOf(event.getItemValueInteger("numactivityid")));
+
+		// deprecated
 		documentResult.replaceItemValue("numlastactivityid",
 				Integer.valueOf(event.getItemValueInteger("numactivityid")));
 

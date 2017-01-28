@@ -48,7 +48,7 @@ public class TestOwnerPluginProcessEntity extends AbstractWorkflowEnvironment {
 	ItemCollection documentActivity, documentProcess;
 
 	@Before
-	public void setup() throws PluginException {
+	public void setup() throws PluginException, ModelException {
 
 		this.setModelPath("/bpmn/acl-test.bpmn");
 		super.setup();

@@ -31,7 +31,7 @@ public class TestApplicationPlugin extends AbstractWorkflowEnvironment {
 	ItemCollection documentActivity, documentProcess;
 
 	@Before
-	public void setup() throws PluginException {
+	public void setup() throws PluginException, ModelException {
 
 		super.setup();
 

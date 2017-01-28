@@ -34,7 +34,7 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 
 	@Before
-	public void setup() throws PluginException {
+	public void setup() throws PluginException, ModelException {
 		this.setModelPath("/bpmn/TestWorkflowService.bpmn");
 
 		super.setup();
@@ -48,10 +48,11 @@ public class TestWorkflowService extends AbstractWorkflowEnvironment {
 	 * 
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
+	 * @throws ModelException 
 	 * 
 	 */
 	@Test
-	public void testProcessSimple() throws AccessDeniedException, ProcessingErrorException, PluginException {
+	public void testProcessSimple() throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 		// load test workitem
 		ItemCollection workitem = database.get("W0000-00001");
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);

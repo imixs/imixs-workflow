@@ -28,7 +28,7 @@ public class TestWorkflowScheduler {
 	}
 
 	/**
-	 * This test the date compare base on timWorkflowLastAccess in days
+	 * This test the date compare base on $lastProcessingDate in days
 	 * 
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
@@ -52,7 +52,7 @@ public class TestWorkflowScheduler {
 		// adjust -14
 		workitemCal.add(Calendar.DAY_OF_MONTH, -14);
 		// prepare doc
-		doc.replaceItemValue("timWorkflowLastAccess", workitemCal.getTime());
+		doc.replaceItemValue("$lastProcessingDate", workitemCal.getTime());
 		Assert.assertTrue(WorkflowSchedulerService.workItemInDue(doc, activity));
 
 		// delay
@@ -61,7 +61,7 @@ public class TestWorkflowScheduler {
 		// adjust -14
 		workitemCal.add(Calendar.DAY_OF_MONTH, -14);
 		// prepare doc
-		doc.replaceItemValue("timWorkflowLastAccess", workitemCal.getTime());
+		doc.replaceItemValue("$lastProcessingDate", workitemCal.getTime());
 		Assert.assertFalse(WorkflowSchedulerService.workItemInDue(doc, activity));
 
 	}
