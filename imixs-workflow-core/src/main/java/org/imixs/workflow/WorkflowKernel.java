@@ -302,13 +302,19 @@ public class WorkflowKernel {
 	}
 
 	/**
-	 * This method process an event by running all registered plugins.
+	 * This method process an event by running all registered plug-ins.
+	 * 
+	 * Before a plug-in is called the method updates the 'type' attribute
+	 * defined by the next Task.
+	 * 
+	 * After all plug-ins are processed, the attributes $processid,
+	 * $workflowstatus and $workflowgroup are updated.
 	 * 
 	 * If an FollowUp Activity is defined (keyFollowUp="1" &
-	 * numNextActivityID>0) it will be attached at the $ActiviyIDList.
+	 * numNextActivityID>0) the next event will be attached to the
+	 * $ActiviyIDList.
 	 * 
 	 * @throws PluginException,ModelException
-	 * @throws ProcessingErrorException
 	 */
 	private ItemCollection processActivity(final ItemCollection documentContext, final ItemCollection event)
 			throws PluginException, ModelException {
@@ -323,6 +329,16 @@ public class WorkflowKernel {
 			logger.warning("no WorkflowContext defined!");
 		}
 		logger.info(msg);
+
+		// compute next task..
+		ItemCollection itemColNextTask = getNextTask(documentContext, event);
+
+		// update the type attribute if defined.
+		// the type attribute can be overwritten by a plug-in
+		String sType = itemColNextTask.getItemValueString("txttype");
+		if (sType != null && !"".equals(sType)) {
+			documentResult.replaceItemValue(TYPE, sType);
+		}
 
 		// execute plugins - PluginExceptions will bubble up....
 		try {
@@ -342,41 +358,22 @@ public class WorkflowKernel {
 		vectorEdgeHistory.addElement(
 				event.getItemValueInteger("numprocessid") + "." + event.getItemValueInteger("numactivityid"));
 
-		/*** get Next Task **/
-		int iNewProcessID = event.getItemValueInteger("numnextprocessid");
-		if (logger.isLoggable(Level.FINE))
-			logger.info("next $processid=" + iNewProcessID + "");
+		// Update the attributes $ProcessID, $WorkflowGroup and $WorkflowStatus
+		documentResult.replaceItemValue(PROCESSID,
+				Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
+		logger.fine("new $processid=" + documentResult.getProcessID());
+		documentResult.replaceItemValue("$workflowStatus", itemColNextTask.getItemValueString("txtname"));
+		documentResult.replaceItemValue("$workflowGroup", itemColNextTask.getItemValueString("txtworkflowgroup"));
+		logger.fine("new $workflowStatus=" + documentResult.getItemValueString("$workflowStatus"));
+		logger.fine("new $workflowGroup=" + documentResult.getItemValueString("$workflowGroup"));
+		// update deprecated attributes txtworkflowStatus and txtworkflowGroup
+		documentResult.replaceItemValue("txtworkflowStatus", documentResult.getItemValueString("$workflowStatus"));
+		documentResult.replaceItemValue("txtworkflowGroup", documentResult.getItemValueString("$workflowGroup"));
 
-		/*** Update $ProcessID, Workflow Group and WorkflowStatus **/
-		ItemCollection itemColNextProcess = null;
-		if (iNewProcessID > 0) {
-			// NextProcessID will only be set if NextTask>0
-			documentResult.replaceItemValue(PROCESSID, Integer.valueOf(iNewProcessID));
-			itemColNextProcess = this.ctx.getModelManager().getModel(documentContext.getItemValueString(MODELVERSION))
-					.getTask(iNewProcessID);
-		} else {
-			// get current task...
-			itemColNextProcess = this.ctx.getModelManager().getModel(documentContext.getItemValueString(MODELVERSION))
-					.getTask(documentContext.getProcessID());
-		}
-		// update $workflowGroup and $workflowStatus
-		documentResult.replaceItemValue("$workflowStatus", itemColNextProcess.getItemValueString("txtname"));
-		documentResult.replaceItemValue("$workflowGroup", itemColNextProcess.getItemValueString("txtworkflowgroup"));
-
-		// deprecated fields
-		documentResult.replaceItemValue("txtworkflowStatus", itemColNextProcess.getItemValueString("txtname"));
-		documentResult.replaceItemValue("txtworkflowGroup", itemColNextProcess.getItemValueString("txtworkflowgroup"));
-
-		// clear ActivityID and create new workflowActivity Instance
+		// clear ActivityID
 		documentResult.replaceItemValue(ACTIVITYID, Integer.valueOf(0));
 
-		// set Type if one is defined
-		String sType = itemColNextProcess.getItemValueString("txttype");
-		if (sType != null && !"".equals(sType)) {
-			documentResult.replaceItemValue("type", sType);
-		}
-		
-		// FollowUp Activity ?
+		// test if a FollowUp event is defined...
 		String sFollowUp = event.getItemValueString("keyFollowUp");
 		int iNextActivityID = event.getItemValueInteger("numNextActivityID");
 		if ("1".equals(sFollowUp) && iNextActivityID > 0) {
@@ -384,7 +381,30 @@ public class WorkflowKernel {
 		}
 
 		return documentResult;
+	}
 
+	/**
+	 * This method computes the next task based on a Model Event element. If the
+	 * event did not point to a new task, the current task will be returned.
+	 * 
+	 * @return Task entity
+	 * @throws ModelException
+	 */
+	private ItemCollection getNextTask(ItemCollection documentContext, ItemCollection event) throws ModelException {
+		int iNewProcessID = event.getItemValueInteger("numnextprocessid");
+		logger.fine("next $processid=" + iNewProcessID + "");
+
+		// NextProcessID will only be set if NextTask>0
+		ItemCollection itemColNextTask = null;
+		if (iNewProcessID > 0) {
+			itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getModelVersion())
+					.getTask(iNewProcessID);
+		} else {
+			// get current task...
+			itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getItemValueString(MODELVERSION))
+					.getTask(documentContext.getProcessID());
+		}
+		return itemColNextTask;
 	}
 
 	/**

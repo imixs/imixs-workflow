@@ -8,8 +8,13 @@ import java.util.regex.Pattern;
 import javax.script.ScriptException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.engine.AbstractWorkflowEnvironment;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
+import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -17,18 +22,33 @@ import org.junit.Test;
 import junit.framework.Assert;
 
 /**
- * Test class for ResultPugin
+ * Test class for WorkflowService
+ * 
+ * This test verifies specific method implementations of the workflowService by
+ * mocking the WorkflowService with the @spy annotation.
+ * 
  * 
  * @author rsoika
  */
-public class TestResultPlugin {
+public class TestResultPlugin extends AbstractWorkflowEnvironment {
 	ResultPlugin resultPlugin = null;
+	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 	private static Logger logger = Logger.getLogger(TestResultPlugin.class.getName());
 
 	@Before
-	public void setup() throws PluginException {
+	public void setup() throws PluginException, ModelException {
+		this.setModelPath("/bpmn/TestResultPlugin.bpmn");
+
+		super.setup();
+
 		resultPlugin = new ResultPlugin();
-		resultPlugin.init(null);
+		try {
+			resultPlugin.init(workflowContext);
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+		}
+
 	}
 
 	/**
@@ -357,6 +377,47 @@ public class TestResultPlugin {
 			// ok
 		}
 
+	}
+
+	/**
+	 * This test simulates a workflowService process call.
+	 * 
+	 * The test validates the update of the type attribute
+	 * 
+	 * event 10 - no type defined - empty event 20 - type = "workitem" event 30
+	 * - type = "workitemeleted"
+	 * 
+	 * @throws ProcessingErrorException
+	 * @throws AccessDeniedException
+	 * @throws ModelException
+	 * 
+	 */
+	@Test
+	public void testProcessTypeAttriubteComplex()
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+		ItemCollection workitem = getDatabase().get("W0000-00001");
+		workitem.removeItem("type");
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);
+		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 100);
+	
+		// case 1 - no type attribute
+		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
+		workitem = workflowService.processWorkItem(workitem);
+		Assert.assertEquals(100, workitem.getProcessID());
+		Assert.assertEquals("", workitem.getType());
+	
+		// case 2 - workitem
+		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 20);
+		workitem = workflowService.processWorkItem(workitem);
+		Assert.assertEquals(200, workitem.getProcessID());
+		Assert.assertEquals("workitem", workitem.getType());
+	
+		// case 3 - workitemdeleted
+		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 30);
+		workitem = workflowService.processWorkItem(workitem);
+		Assert.assertEquals(200, workitem.getProcessID());
+		Assert.assertEquals("workitemdeleted", workitem.getType());
+	
 	}
 
 	/*
