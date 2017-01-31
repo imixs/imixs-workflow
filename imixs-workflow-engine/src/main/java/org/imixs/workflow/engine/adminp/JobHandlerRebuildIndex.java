@@ -127,8 +127,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 
 		int colSize = col.size();
 		// Update index
-		logger.info("Job " + adminp.getUniqueID() + " - reindexing " + col.size() + " documents. (" + iUpdates
-				+ " documents already reindexed) ...");
+		logger.info("Job " + adminp.getUniqueID() + " - reindexing " + col.size() + " documents...");
 		luceneService.updateDocuments(col);
 
 		iUpdates = iUpdates + colSize;
@@ -140,8 +139,8 @@ public class JobHandlerRebuildIndex implements JobHandler {
 
 		long time = (System.currentTimeMillis() - lProfiler) / 1000;
 
-		logger.info("Job " + adminp.getUniqueID() + " - finished, " + col.size() + " documents reindexed in " + time
-				+ " sec. (" + iUpdates + " documents total reindexed)");
+		logger.info("Job " + adminp.getUniqueID() + " - " + col.size() + " documents reindexed in " + time
+				+ " sec.  (" + iUpdates + " documents have been processed in total) ");
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {
