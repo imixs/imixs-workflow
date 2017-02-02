@@ -29,7 +29,7 @@
 				<item name="Workflow Engine" href="quickstart/workflowengine.html" />
 			</item>
 
-			<item name="BPMN Modelling" href="modelling/index.html" collapse="true">
+			<item name="BPMN Modeling" href="modelling/index.html" collapse="true">
 				<item name="Overview" href="modelling/overview.html" />
 				<item name="Installation" href="modelling/install.html" />
 				<item name="Eclipse Workbench" href="modelling/eclipse_workbench.html" />

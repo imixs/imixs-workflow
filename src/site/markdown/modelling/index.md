@@ -15,7 +15,7 @@ The section [Overview](./overview.html) provides general information about the I
 
 Imixs-BPMN is a open source project. Further information about the project can be found on [GitHub](https://github.com/imixs/imixs-bpmn).
  
-Information about the Eclipse BPMN2 Modelling Framework can be found here:
+Information about the Eclipse BPMN2 Modeling Framework can be found here:
  
  * [Project Site](https://www.eclipse.org/bpmn2-modeler/)
  

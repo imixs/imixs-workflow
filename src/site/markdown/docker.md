@@ -58,7 +58,7 @@ Using the command-line tool '[curl](http://curl.haxx.se/)' makes it easy to test
 
 ### Deploy a new BPMN model
 
-With the following command a BPMN model created with the [Imixs-BPMN Modelling Tool](./modelling/index.html) can be deployed into the Imixs-Microservce.
+With the following command a BPMN model created with the [Imixs-BPMN Modeling Tool](./modelling/index.html) can be deployed into the Imixs-Microservce.
 
     curl --user admin:adminadmin --request POST \
     	-Tticket.bpmn \
