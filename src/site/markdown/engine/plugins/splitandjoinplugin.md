@@ -44,6 +44,18 @@ To avoid item name conflicts the item name in the target workitem can be changed
 
 In this example the item '_ordernumber' will be copied into the target workitem with the new item name '_origin_ordernumber'.
 
+### Sub-Process Reference
+
+After a new subprocess was created, the uniqueID of the new process instance is stored in the item "txtSubprocessRef" of the origin workitem. In case more than one subprocess was created, the uniqueID of the last created subprocess will be stored in the origin workitem. This reference can be used for further processing or navigation. See the following example of a action result to navigate to the new created subprocess:
+
+	<item name="subprocess_create">
+	    <modelversion>1.1.0</modelversion>
+	    <processid>1000</processid>
+	    <activityid>10</activityid>
+	</item>
+	<item name="action">/pages/workitems/workitem.jsf?id=<itemValue>txtSubprocessRef</itemValue></item>
+
+
 
  
 ## Updating a Subprocess
@@ -97,3 +109,15 @@ Only one definition to update the origin process is allowed in a subprocess even
 
 The definition will update the origin process instance linked to the current subprocess. As the origin process instance is uniquely defined by the attribute $UniqueIDRef no further expression is needed in this case.   
 The tag 'items' defines the list of attributes to be updated from the subprocess into the origin process.
+
+
+### Origin-Process Reference
+
+After the origin WorkItem was updated, the uniqueID of the origin process instance is stored in the item "txtOriginRef" of the subprocess WorkItem. This reference can be used for further processing or navigation. See the following example of a action result to navigate to the origin subprocess:
+
+	<item name="origin_update">
+		<activityid>20</activityid>
+		<items>namTeam</items>
+	</item>
+	<item name="action">/pages/workitems/workitem.jsf?id=<itemValue>txtOriginRef</itemValue></item>
+

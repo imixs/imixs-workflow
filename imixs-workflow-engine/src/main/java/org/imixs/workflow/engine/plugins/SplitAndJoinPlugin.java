@@ -69,6 +69,8 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
  */
 public class SplitAndJoinPlugin extends AbstractPlugin {
 	public static final String LINK_PROPERTY = "txtworkitemref";
+	public static final String SUBPROCESS_REF = "txtsubprocessref";
+	public static final String ORIGIN_REF = "txtoriginref";
 	public static final String INVALID_FORMAT = "INVALID_FORMAT";
 	public static final String SUBPROCESS_CREATE = "subprocess_create";
 	public static final String SUBPROCESS_UPDATE = "subprocess_update";
@@ -129,8 +131,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				updateOrigin(processValue, adocumentContext);
 			}
 		} catch (ModelException e) {
-			throw new PluginException(e.getErrorContext(),e.getErrorCode(),e.getMessage(),e);
-			
+			throw new PluginException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
+
 		}
 
 		return adocumentContext;
@@ -204,6 +206,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				// finally add the new workitemRef into the origin
 				// documentContext
 				addWorkitemRef(workitemSubProcess.getUniqueID(), originWorkitem);
+
+				originWorkitem.replaceItemValue(SUBPROCESS_REF, workitemSubProcess.getUniqueID());
 			}
 
 		}
@@ -280,6 +284,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 						// process the exisitng subprocess...
 						workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
 
+						originWorkitem.replaceItemValue(SUBPROCESS_REF, workitemSubProcess.getUniqueID());
 						logger.fine("[SplitAndJoinPlugin] successful updated subprocess.");
 					}
 				}
@@ -351,6 +356,9 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 					// finally we process the new subprocess...
 					originWorkitem = getWorkflowService().processWorkItem(originWorkitem);
+
+					subprocessWorkitem.replaceItemValue(ORIGIN_REF, originWorkitem.getUniqueID());
+
 					logger.fine("[SplitAndJoinPlugin] successful processed originprocess.");
 
 				}

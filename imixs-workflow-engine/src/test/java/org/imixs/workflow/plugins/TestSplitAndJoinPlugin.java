@@ -97,6 +97,9 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
 
+		// test subprocessRef
+		Assert.assertEquals(subprocessUniqueid,documentContext.getItemValueString(SplitAndJoinPlugin.SUBPROCESS_REF));
+		
 		Assert.assertEquals(100, subprocess.getProcessID());
 
 		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
@@ -265,6 +268,10 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 			e.printStackTrace();
 			Assert.fail();
 		}
+		
+		// test orign ref
+		Assert.assertEquals(orignUniqueID,subprocess.getItemValueString(SplitAndJoinPlugin.ORIGIN_REF));
+			
 
 		// load origin document
 		documentContext = documentService.load(orignUniqueID);
@@ -274,6 +281,8 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		Assert.assertEquals(100, documentContext.getProcessID());
 		Assert.assertEquals("some test data", documentContext.getItemValueString("_sub_data"));
 
+		
+		
 	}
 
 	/**
