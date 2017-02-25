@@ -34,7 +34,7 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 	 * We use the provided test workflow model form the
 	 * AbstractWorkflowServiceTest
 	 * @throws ModelException 
-	 */
+	 */ 
 	@Before
 	public void setup() throws PluginException, ModelException {
 
@@ -97,8 +97,8 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
 
-		// test subprocessRef
-		Assert.assertEquals(subprocessUniqueid,documentContext.getItemValueString(SplitAndJoinPlugin.SUBPROCESS_REF));
+		// test the new action result based on the new subprocess uniqueid....
+		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + subprocessUniqueid ,documentContext.getItemValueString("action"));
 		
 		Assert.assertEquals(100, subprocess.getProcessID());
 
@@ -269,10 +269,9 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 			Assert.fail();
 		}
 		
-		// test orign ref
-		Assert.assertEquals(orignUniqueID,subprocess.getItemValueString(SplitAndJoinPlugin.ORIGIN_REF));
-			
-
+		// test the new action result based on the origin process uniqueid....
+		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" +orignUniqueID,subprocess.getItemValueString("action"));
+				
 		// load origin document
 		documentContext = documentService.load(orignUniqueID);
 		Assert.assertNotNull(documentContext);

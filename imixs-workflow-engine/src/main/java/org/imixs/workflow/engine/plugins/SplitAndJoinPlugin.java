@@ -69,8 +69,6 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
  */
 public class SplitAndJoinPlugin extends AbstractPlugin {
 	public static final String LINK_PROPERTY = "txtworkitemref";
-	public static final String SUBPROCESS_REF = "txtsubprocessref";
-	public static final String ORIGIN_REF = "txtoriginref";
 	public static final String INVALID_FORMAT = "INVALID_FORMAT";
 	public static final String SUBPROCESS_CREATE = "subprocess_create";
 	public static final String SUBPROCESS_UPDATE = "subprocess_update";
@@ -98,7 +96,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
 			throws PluginException, AccessDeniedException, ProcessingErrorException {
 
-		ItemCollection evalItemCollection = ResultPlugin.evaluateWorkflowResult(adocumentActivity, adocumentContext);
+		ItemCollection evalItemCollection = ResultPlugin.evaluateWorkflowResult(adocumentActivity, adocumentContext,false);
 
 		if (evalItemCollection == null)
 			return adocumentContext;
@@ -151,12 +149,16 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 *    <processid>100</processid>
 	 *    <activityid>20</activityid>
 	 *    <items>namTeam,_sub_data</items>
+	 *    <action>home</action>
 	 * </code>
 	 * 
+	 *
 	 * Both workitems are connected to each other. The subprocess will contain
 	 * the $UniqueID of the origin process stored in the property $uniqueidRef.
 	 * The origin process will contain a link to the subprocess stored in the
 	 * property txtworkitemRef.
+	 *
+	 * The tag 'action' is optional and allows to overwrite the action result evaluated by the ResultPlugin.
 	 * 
 	 * @param subProcessDefinitions
 	 * @param originWorkitem
@@ -196,6 +198,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				workitemSubProcess.replaceItemValue(WorkflowKernel.ACTIVITYID,
 						Integer.valueOf(processData.getItemValueString("activityid")));
 
+				
+				
 				// add the origin reference
 				workitemSubProcess.replaceItemValue(WorkflowService.UNIQUEIDREF, originWorkitem.getUniqueID());
 
@@ -207,7 +211,15 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				// documentContext
 				addWorkitemRef(workitemSubProcess.getUniqueID(), originWorkitem);
 
-				originWorkitem.replaceItemValue(SUBPROCESS_REF, workitemSubProcess.getUniqueID());
+				// test for optional action result..
+				if (processData.hasItem("action")) {
+					String workflowResult=processData.getItemValueString("action");
+					if (!workflowResult.isEmpty()) {
+						workflowResult = new ResultPlugin().replaceDynamicValues(workflowResult, workitemSubProcess);
+						originWorkitem.replaceItemValue("action", workflowResult);
+					}
+					
+				}
 			}
 
 		}
@@ -284,7 +296,16 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 						// process the exisitng subprocess...
 						workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
 
-						originWorkitem.replaceItemValue(SUBPROCESS_REF, workitemSubProcess.getUniqueID());
+						
+						// test for optional action result..
+						if (processData.hasItem("action")) {
+							String workflowResult=processData.getItemValueString("action");
+							if (!workflowResult.isEmpty()) {
+								workflowResult = new ResultPlugin().replaceDynamicValues(workflowResult, workitemSubProcess);
+								originWorkitem.replaceItemValue("action", workflowResult);
+							}
+						}
+
 						logger.fine("[SplitAndJoinPlugin] successful updated subprocess.");
 					}
 				}
@@ -357,8 +378,15 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 					// finally we process the new subprocess...
 					originWorkitem = getWorkflowService().processWorkItem(originWorkitem);
 
-					subprocessWorkitem.replaceItemValue(ORIGIN_REF, originWorkitem.getUniqueID());
-
+					// test for optional action result..
+					if (processData.hasItem("action")) {
+						String workflowResult=processData.getItemValueString("action");
+						if (!workflowResult.isEmpty()) {
+							workflowResult = new ResultPlugin().replaceDynamicValues(workflowResult, originWorkitem);
+							subprocessWorkitem.replaceItemValue("action", workflowResult);
+						}
+						
+					}
 					logger.fine("[SplitAndJoinPlugin] successful processed originprocess.");
 
 				}

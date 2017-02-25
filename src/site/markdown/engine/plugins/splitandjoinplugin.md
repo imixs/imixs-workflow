@@ -26,7 +26,7 @@ To create a new subprocess instance during the processing life cycle of an origi
 		<items>namTeam</items>
 	</item>
 
-This example will create a new subprocess instance with the model version '1.0.0' and the intial processID 100, which will be processed by the activityID 10. The tag 'items' defines a list of attributes to be copied from the origin process into the new subprocess.
+This example will create a new subprocess instance with the model version '1.0.0' and the initial processID 100, which will be processed by the activityID 10. The tag 'items' defines a list of attributes to be copied from the origin process into the new subprocess.
 
 Both workitems will be connected to each other. The subprocess will contain the $UniqueID of the origin process stored in the property $uniqueidRef. The origin process will contain a link to the subprocess stored in the property txtworkitemRef. So it is possible to navigate between the process instances.
  
@@ -44,16 +44,17 @@ To avoid item name conflicts the item name in the target workitem can be changed
 
 In this example the item '_ordernumber' will be copied into the target workitem with the new item name '_origin_ordernumber'.
 
-### Sub-Process Reference
+### Action result
 
-After a new subprocess was created, the uniqueID of the new process instance is stored in the item "txtSubprocessRef" of the origin workitem. In case more than one subprocess was created, the uniqueID of the last created subprocess will be stored in the origin workitem. This reference can be used for further processing or navigation. See the following example of a action result to navigate to the new created subprocess:
+After a new subprocess was created, an optional action result can be evaluated to overwrite the action result provided by the ResultPlugin.
+The following example computes a new action result based on the uniqueId of the new subprocess:
 
 	<item name="subprocess_create">
 	    <modelversion>1.1.0</modelversion>
 	    <processid>1000</processid>
 	    <activityid>10</activityid>
+	    <action>/pages/workitems/workitem.jsf?id=<itemValue>$uniqueid</itemValue></action>
 	</item>
-	<item name="action">/pages/workitems/workitem.jsf?id=<itemValue>txtSubprocessRef</itemValue></item>
 
 
 
@@ -111,13 +112,16 @@ The definition will update the origin process instance linked to the current sub
 The tag 'items' defines the list of attributes to be updated from the subprocess into the origin process.
 
 
-### Origin-Process Reference
+### Action result
 
-After the origin WorkItem was updated, the uniqueID of the origin process instance is stored in the item "txtOriginRef" of the subprocess WorkItem. This reference can be used for further processing or navigation. See the following example of a action result to navigate to the origin subprocess:
+After the origin process was updated, an optional action result can be evaluated to overwrite the action result provided by the ResultPlugin.
+The following example computes a new action result based on the uniqueId of the originprocess:
 
-	<item name="origin_update">
-		<activityid>20</activityid>
-		<items>namTeam</items>
+	<item name="subprocess_create">
+	    <modelversion>1.1.0</modelversion>
+	    <processid>1000</processid>
+	    <activityid>10</activityid>
+	    <action>/pages/workitems/workitem.jsf?id=<itemValue>$uniqueid</itemValue></action>
 	</item>
-	<item name="action">/pages/workitems/workitem.jsf?id=<itemValue>txtOriginRef</itemValue></item>
+
 

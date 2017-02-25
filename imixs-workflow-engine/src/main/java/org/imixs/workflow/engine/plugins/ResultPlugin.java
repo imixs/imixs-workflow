@@ -29,6 +29,7 @@ package org.imixs.workflow.engine.plugins;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -38,6 +39,13 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
@@ -57,7 +65,7 @@ import org.xml.sax.SAXException;
  * 		<item name="fieldname">value</item> 
  * </code>
  * 
- * The provided value will be assigend to the named property. The value can also
+ * The provided value will be assigned to the named property. The value can also
  * be evaluated with the tag 'itemValue'
  * 
  * <code>
@@ -79,7 +87,7 @@ public class ResultPlugin extends AbstractPlugin {
 
 	public ItemCollection run(ItemCollection documentContext, ItemCollection adocumentActivity) throws PluginException {
 		// evaluate new items....
-		ItemCollection evalItemCollection = evaluateWorkflowResult(adocumentActivity, documentContext);
+		ItemCollection evalItemCollection = evaluateWorkflowResult(adocumentActivity, documentContext, true);
 		// copy values
 		if (evalItemCollection != null) {
 			documentContext.replaceAllItems(evalItemCollection.getAllItems());
@@ -108,7 +116,6 @@ public class ResultPlugin extends AbstractPlugin {
 	 */
 	public static ItemCollection parseItemStructure(String xmlContent) throws PluginException {
 		logger.fine("parseItemStructure...");
-
 		ItemCollection result = new ItemCollection();
 		if (xmlContent.length() > 0) {
 			// surround with a root element
@@ -131,27 +138,22 @@ public class ResultPlugin extends AbstractPlugin {
 					Node childNode = childs.item(i);
 					if (childNode instanceof Element && childNode.getFirstChild() != null) {
 						String name = childNode.getNodeName();
-						String value = childNode.getFirstChild().getNodeValue();
+						// String value =
+						// childNode.getFirstChild().getNodeValue();
+						String value = innerXml(childNode);
+
 						result.replaceItemValue(name, value);
 						logger.fine("[ResultPlugin] parsing item '" + name + "' value=" + value);
 					}
 				}
 
-			} catch (ParserConfigurationException e) {
+			} catch (ParserConfigurationException | TransformerFactoryConfigurationError | TransformerException | SAXException | IOException e) {
 				throw new PluginException(RulePlugin.class.getName(), INVALID_FORMAT,
 						"Parsing item content failed: " + e.getMessage());
 
-			} catch (SAXException e) {
-				throw new PluginException(RulePlugin.class.getName(), INVALID_FORMAT,
-						"Parsing item content failed: " + e.getMessage());
-
-			} catch (IOException e) {
-				throw new PluginException(RulePlugin.class.getName(), INVALID_FORMAT,
-						"Parsing item content failed: " + e.getMessage());
-
+			
 			}
 		}
-
 		return result;
 	}
 
@@ -165,17 +167,26 @@ public class ResultPlugin extends AbstractPlugin {
 	 * will result in the attributes 'comment' with value 'text' and
 	 * 'comment.ignore' with the value 'true'
 	 * 
+	 * Also embedded itemVaues can be resolved (resolveItemValues=true):
+	 * 
+	 * <code>
+	 * 		<somedata>ABC<itemValue>$uniqueid</itemValue></somedata>
+	 * </code>
+	 * 
+	 * This example will result in a new item 'somedata' with the $unqiueid
+	 * prafixed with 'ABC'
 	 * 
 	 * @see http://ganeshtiwaridotcomdotnp.blogspot.de/2011/12/htmlxml-tag-
 	 *      parsing-using-regex-in-java.html
 	 * @param activityEntity
 	 * @param documentContext
+	 * @param resolveItemValues
+	 *            - if true, itemValue tags will be resolved.
 	 * @return
 	 * @throws PluginException
 	 */
-	public static ItemCollection evaluateWorkflowResult(ItemCollection activityEntity, ItemCollection documentContext)
-			throws PluginException {
-
+	public static ItemCollection evaluateWorkflowResult(ItemCollection activityEntity, ItemCollection documentContext,
+			boolean resolveItemValues) throws PluginException {
 		boolean invalidPattern = true;
 
 		ItemCollection result = new ItemCollection();
@@ -183,9 +194,10 @@ public class ResultPlugin extends AbstractPlugin {
 		if (workflowResult.isEmpty()) {
 			return null;
 		}
-		// replace dynamic values
-		workflowResult = new ResultPlugin().replaceDynamicValues(workflowResult, documentContext);
-
+		// replace dynamic values?
+		if (resolveItemValues) {
+			workflowResult = new ResultPlugin().replaceDynamicValues(workflowResult, documentContext);
+		}
 		// extract all <item> tags with attributes using regex (including empty
 		// item tags)
 		Pattern pattern = Pattern.compile("<item(.*?)>(.*?)</item>|<item(.*?)./>", Pattern.DOTALL);
@@ -271,8 +283,50 @@ public class ResultPlugin extends AbstractPlugin {
 					"invalid <item> tag format - expected <item name=\"...\" ...></item>  -> workflowResult="
 							+ workflowResult);
 		}
-
 		return result;
 	}
 
+	/**
+	 * The method evaluates the WorkflowResult and resolves embedded ItemValues.
+	 * 
+	 * * <code>
+	 * 		<somedata>ABC<itemValue>$uniqueid</itemValue></somedata>
+	 * </code>
+	 * 
+	 * This example will result in a new item 'somedata' with the $unqiueid
+	 * prafixed with 'ABC'
+	 * 
+	 * @see evaluateWorkflowResult(ItemCollection activityEntity, ItemCollection
+	 *      documentContext,boolean resolveItemValues)
+	 * @param activityEntity
+	 * @param documentContext
+	 * @return
+	 * @throws PluginException
+	 */
+	public static ItemCollection evaluateWorkflowResult(ItemCollection activityEntity, ItemCollection documentContext)
+			throws PluginException {
+		return evaluateWorkflowResult(activityEntity, documentContext, true);
+	}
+
+	/**
+	 * This method extracts the content of a XML node and prevents inner XML
+	 * tags
+	 * 
+	 * @param node
+	 * @return
+	 * @throws TransformerFactoryConfigurationError
+	 * @throws TransformerException
+	 */
+	private static String innerXml(Node node) throws TransformerFactoryConfigurationError, TransformerException {
+		StringWriter writer = new StringWriter();
+		String xml = null;
+		Transformer transformer;
+		transformer = TransformerFactory.newInstance().newTransformer();
+		transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		transformer.transform(new DOMSource(node), new StreamResult(writer));
+		// now we remove the outer tag....
+		xml = writer.toString();
+		xml = xml.substring(xml.indexOf(">") + 1, xml.lastIndexOf("</"));
+		return xml;
+	}
 }
