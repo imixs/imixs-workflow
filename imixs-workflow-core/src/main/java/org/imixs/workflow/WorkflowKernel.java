@@ -70,6 +70,9 @@ public class WorkflowKernel {
 	public static final String PROCESSID = "$processid";
 	public static final String ACTIVITYID = "$activityid";
 	public static final String ACTIVITYIDLIST = "$activityidlist";
+	public static final String WORKFLOWGROUP = "$workflowgroup";
+	public static final String WORKFLOWSTATUS = "$workflowstatus";
+	
 	public static final String TYPE = "type";
 
 	public static final int MAXIMUM_ACTIVITYLOGENTRIES = 30;
@@ -339,6 +342,11 @@ public class WorkflowKernel {
 		if (sType != null && !"".equals(sType)) {
 			documentResult.replaceItemValue(TYPE, sType);
 		}
+		
+		// update the $workflowGroup
+		documentResult.replaceItemValue(WORKFLOWGROUP, itemColNextTask.getItemValueString("txtworkflowgroup"));
+		logger.fine("new $workflowGroup=" + documentResult.getItemValueString(WORKFLOWGROUP));
+
 
 		// execute plugins - PluginExceptions will bubble up....
 		try {
@@ -358,17 +366,15 @@ public class WorkflowKernel {
 		vectorEdgeHistory.addElement(
 				event.getItemValueInteger("numprocessid") + "." + event.getItemValueInteger("numactivityid"));
 
-		// Update the attributes $ProcessID, $WorkflowGroup and $WorkflowStatus
+		// Update the attributes $ProcessID and $WorkflowStatus
 		documentResult.replaceItemValue(PROCESSID,
 				Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
 		logger.fine("new $processid=" + documentResult.getProcessID());
-		documentResult.replaceItemValue("$workflowStatus", itemColNextTask.getItemValueString("txtname"));
-		documentResult.replaceItemValue("$workflowGroup", itemColNextTask.getItemValueString("txtworkflowgroup"));
-		logger.fine("new $workflowStatus=" + documentResult.getItemValueString("$workflowStatus"));
-		logger.fine("new $workflowGroup=" + documentResult.getItemValueString("$workflowGroup"));
+		documentResult.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString("txtname"));
+		logger.fine("new $workflowStatus=" + documentResult.getItemValueString(WORKFLOWSTATUS));
 		// update deprecated attributes txtworkflowStatus and txtworkflowGroup
-		documentResult.replaceItemValue("txtworkflowStatus", documentResult.getItemValueString("$workflowStatus"));
-		documentResult.replaceItemValue("txtworkflowGroup", documentResult.getItemValueString("$workflowGroup"));
+		documentResult.replaceItemValue("txtworkflowStatus", documentResult.getItemValueString(WORKFLOWSTATUS));
+		documentResult.replaceItemValue("txtworkflowGroup", documentResult.getItemValueString(WORKFLOWGROUP));
 
 		// clear ActivityID
 		documentResult.replaceItemValue(ACTIVITYID, Integer.valueOf(0));
