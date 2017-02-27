@@ -422,9 +422,10 @@ public class LuceneUpdateService {
 		if (itemName == null) {
 			return;
 		}
-		// item name must be LowerCased and trimmed because of later usage in doc.add(...)
-		itemName=itemName.toLowerCase().trim();
-		
+		// item name must be LowerCased and trimmed because of later usage in
+		// doc.add(...)
+		itemName = itemName.toLowerCase().trim();
+
 		List<?> vValues = workitem.getItemValue(itemName);
 		if (vValues.size() == 0) {
 			return;
