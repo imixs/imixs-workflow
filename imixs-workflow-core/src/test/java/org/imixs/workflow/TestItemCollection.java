@@ -591,7 +591,7 @@ public class TestItemCollection {
 		ItemCollection itemCol2 = (ItemCollection) itemCol1.clone();
 		System.out.println("Performancetest ItemCollecton clone: " + (System.currentTimeMillis() - l) + "ms");
 		Assert.assertNotNull(itemCol2);
-		
+
 		// copy
 		l = System.currentTimeMillis();
 		ItemCollection itemCol3 = new ItemCollection();
@@ -599,6 +599,31 @@ public class TestItemCollection {
 		System.out.println("Performancetest ItemCollecton clone: " + (System.currentTimeMillis() - l) + "ms");
 		Assert.assertNotNull(itemCol3);
 
+	}
+
+	/**
+	 * This getItemValue hasItem with invalid string patterns
+	 * 
+	 */
+	@Test
+	public void testGetItemByName() {
+
+		ItemCollection itemCol1 = new ItemCollection();
+		itemCol1.replaceItemValue(" a", "hello");
+		itemCol1.replaceItemValue(" b ", "world");
+		itemCol1.replaceItemValue("c", "of");
+		itemCol1.replaceItemValue("d", "Imixs-Worklfow");
+
+		Assert.assertEquals("hello", itemCol1.getItemValueString("a"));
+		Assert.assertEquals("hello", itemCol1.getItemValueString(" a"));
+		Assert.assertEquals("world", itemCol1.getItemValueString(" b"));
+		Assert.assertEquals("of", itemCol1.getItemValueString(" c "));
+
+		Assert.assertTrue(itemCol1.hasItem(" a  "));
+		Assert.assertTrue(itemCol1.hasItem(" a"));
+		Assert.assertTrue(itemCol1.hasItem("a"));
+
+		Assert.assertFalse(itemCol1.hasItem(null));
 	}
 
 }

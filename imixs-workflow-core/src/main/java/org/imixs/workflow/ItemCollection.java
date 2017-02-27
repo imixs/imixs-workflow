@@ -168,7 +168,10 @@ public class ItemCollection implements Cloneable {
 	 */
 	@SuppressWarnings("rawtypes")
 	public List getItemValue(String aName) {
-		aName = aName.toLowerCase();
+		if (aName == null) {
+			return null;
+		}
+		aName = aName.toLowerCase().trim();
 		List<Object> o = hash.get(aName);
 		if (o == null)
 			return new Vector<Object>();
@@ -197,8 +200,6 @@ public class ItemCollection implements Cloneable {
 	 * 
 	 */
 	public String getItemValueString(String aName) {
-
-		aName = aName.toLowerCase();
 		List<?> v = (List<?>) getItemValue(aName);
 		if (v.size() == 0)
 			return "";
@@ -228,7 +229,6 @@ public class ItemCollection implements Cloneable {
 	 */
 	public int getItemValueInteger(String aName) {
 		try {
-			aName = aName.toLowerCase();
 			List<?> v = getItemValue(aName);
 			if (v.size() == 0)
 				return 0;
@@ -256,7 +256,6 @@ public class ItemCollection implements Cloneable {
 	 */
 	public long getItemValueLong(String aName) {
 		try {
-			aName = aName.toLowerCase();
 			List<?> v = getItemValue(aName);
 			if (v.size() == 0)
 				return 0;
@@ -284,7 +283,6 @@ public class ItemCollection implements Cloneable {
 	 */
 	public Date getItemValueDate(String aName) {
 		try {
-			aName = aName.toLowerCase();
 			List<?> v = getItemValue(aName);
 			if (v.size() == 0)
 				return null;
@@ -313,7 +311,6 @@ public class ItemCollection implements Cloneable {
 	 */
 	public double getItemValueDouble(String aName) {
 		try {
-			aName = aName.toLowerCase();
 			List<?> v = getItemValue(aName);
 			if (v.size() == 0)
 				return 0.0;
@@ -358,7 +355,6 @@ public class ItemCollection implements Cloneable {
 	 */
 	public float getItemValueFloat(String aName) {
 		try {
-			aName = aName.toLowerCase();
 			List<?> v = getItemValue(aName);
 			if (v.size() == 0)
 				return (float) 0.0;
@@ -405,7 +401,6 @@ public class ItemCollection implements Cloneable {
 	 */
 	public boolean getItemValueBoolean(String aName) {
 		try {
-			aName = aName.toLowerCase();
 			List<?> v = getItemValue(aName);
 			if (v.size() == 0)
 				return false;
@@ -427,7 +422,10 @@ public class ItemCollection implements Cloneable {
 	 * 
 	 */
 	public boolean hasItem(String aName) {
-		aName = aName.toLowerCase();
+		if (aName == null) {
+			return false;
+		}
+		aName = aName.toLowerCase().trim();
 		return (hash.get(aName) != null);
 	}
 
@@ -440,8 +438,6 @@ public class ItemCollection implements Cloneable {
 	 * 
 	 */
 	public boolean isItemValueInteger(String aName) {
-
-		aName = aName.toLowerCase();
 		List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
@@ -461,8 +457,6 @@ public class ItemCollection implements Cloneable {
 	 * 
 	 */
 	public boolean isItemValueLong(String aName) {
-
-		aName = aName.toLowerCase();
 		List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
@@ -482,8 +476,6 @@ public class ItemCollection implements Cloneable {
 	 * 
 	 */
 	public boolean isItemValueDouble(String aName) {
-
-		aName = aName.toLowerCase();
 		List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
@@ -503,8 +495,6 @@ public class ItemCollection implements Cloneable {
 	 * 
 	 */
 	public boolean isItemValueFloat(String aName) {
-
-		aName = aName.toLowerCase();
 		List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
@@ -523,8 +513,6 @@ public class ItemCollection implements Cloneable {
 	 * 
 	 */
 	public boolean isItemValueDate(String aName) {
-
-		aName = aName.toLowerCase();
 		List<?> v = getItemValue(aName);
 		if (v.size() == 0)
 			return false;
@@ -627,7 +615,7 @@ public class ItemCollection implements Cloneable {
 		if (itemName == null)
 			return;
 		// lower case itemname
-		itemName = itemName.toLowerCase();
+		itemName = itemName.toLowerCase().trim();
 
 		// test if value is null
 		if (itemValue == null) {
@@ -747,8 +735,10 @@ public class ItemCollection implements Cloneable {
 	 * @param name
 	 */
 	public void removeItem(String name) {
-		name = name.toLowerCase();
-		this.hash.remove(name);
+		if (name != null) {
+			name = name.toLowerCase().trim();
+			this.hash.remove(name);
+		}
 	}
 
 	/**
