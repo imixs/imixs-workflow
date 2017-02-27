@@ -108,8 +108,9 @@ public class LuceneUpdateService {
 	// default field lists
 	private static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("txtworkflowsummary", "txtworkflowabstract");
 	private static List<String> DEFAULT_NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$processid",
-			"$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator", "$editor", "$lasteditor",
-			"$workflowgroup", "$workflowstatus", "txtworkflowgroup", "txtname", "namowner", "txtworkitemref");
+			"$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator",
+			"$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "txtname", "namowner",
+			"txtworkitemref");
 
 	@EJB
 	PropertyService propertyService;
@@ -149,7 +150,7 @@ public class LuceneUpdateService {
 		if (sFulltextFieldList != null && !sFulltextFieldList.isEmpty()) {
 			StringTokenizer st = new StringTokenizer(sFulltextFieldList, ",");
 			while (st.hasMoreElements()) {
-				String sName = st.nextToken().toLowerCase();
+				String sName = st.nextToken().toLowerCase().trim();
 				// do not add internal fields
 				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName) && !searchFieldList.contains(sName))
 					searchFieldList.add(sName);
@@ -161,7 +162,7 @@ public class LuceneUpdateService {
 		if (sIndexFieldListAnalyse != null && !sIndexFieldListAnalyse.isEmpty()) {
 			StringTokenizer st = new StringTokenizer(sIndexFieldListAnalyse, ",");
 			while (st.hasMoreElements()) {
-				String sName = st.nextToken().toLowerCase();
+				String sName = st.nextToken().toLowerCase().trim();
 				// do not add internal fields
 				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
 					indexFieldListAnalyse.add(sName);
@@ -177,7 +178,7 @@ public class LuceneUpdateService {
 			// add additional field list from imixs.properties
 			StringTokenizer st = new StringTokenizer(sIndexFieldListNoAnalyse, ",");
 			while (st.hasMoreElements()) {
-				String sName = st.nextToken().toLowerCase();
+				String sName = st.nextToken().toLowerCase().trim();
 				if (!indexFieldListNoAnalyse.contains(sName))
 					indexFieldListNoAnalyse.add(sName);
 			}
@@ -267,24 +268,23 @@ public class LuceneUpdateService {
 	 *            of the workitem to be removed
 	 * @throws PluginException
 	 */
-	public void removeDocument(String uniqueID)  {
+	public void removeDocument(String uniqueID) {
 		IndexWriter awriter = null;
 		long ltime = System.currentTimeMillis();
 		try {
-			awriter = createIndexWriter();			
+			awriter = createIndexWriter();
 			Term term = new Term("$uniqueid", uniqueID);
 			awriter.deleteDocuments(term);
 		} catch (CorruptIndexException e) {
-			throw new IndexException(IndexException.INVALID_INDEX, "Unable to remove workitem '" + uniqueID + "' from search index",
-					e);
+			throw new IndexException(IndexException.INVALID_INDEX,
+					"Unable to remove workitem '" + uniqueID + "' from search index", e);
 		} catch (LockObtainFailedException e) {
-			throw new IndexException(IndexException.INVALID_INDEX,  "Unable to remove workitem '" + uniqueID + "' from search index",
-					e);
+			throw new IndexException(IndexException.INVALID_INDEX,
+					"Unable to remove workitem '" + uniqueID + "' from search index", e);
 		} catch (IOException e) {
-			throw new IndexException(IndexException.INVALID_INDEX, "Unable to remove workitem '" + uniqueID + "' from search index",
-					e);
-		}
-		finally {
+			throw new IndexException(IndexException.INVALID_INDEX,
+					"Unable to remove workitem '" + uniqueID + "' from search index", e);
+		} finally {
 			// close writer!
 			if (awriter != null) {
 				logger.finest("lucene close IndexWriter...");
@@ -305,7 +305,8 @@ public class LuceneUpdateService {
 	/**
 	 * This method creates a new instance of a lucene IndexWriter.
 	 * 
-	 * The location of the lucene index in the filesystem  is read from the imixs.properties
+	 * The location of the lucene index in the filesystem is read from the
+	 * imixs.properties
 	 * 
 	 * @return
 	 * @throws IOException
@@ -319,7 +320,6 @@ public class LuceneUpdateService {
 
 		return new IndexWriter(indexDir, indexWriterConfig);
 	}
-
 
 	/**
 	 * This method creates a lucene document based on a ItemCollection. The
@@ -418,11 +418,20 @@ public class LuceneUpdateService {
 	 */
 	void addItemValues(Document doc, ItemCollection workitem, String itemName, boolean analyzeValue) {
 		String sValue = null;
+
+		if (itemName == null) {
+			return;
+		}
+		// item name must be LowerCased and trimmed because of later usage in doc.add(...)
+		itemName=itemName.toLowerCase().trim();
+		
 		List<?> vValues = workitem.getItemValue(itemName);
-		if (vValues.size() == 0)
+		if (vValues.size() == 0) {
 			return;
-		if (vValues.get(0) == null)
+		}
+		if (vValues.get(0) == null) {
 			return;
+		}
 
 		boolean firstValue = true;
 		for (Object singleValue : vValues) {
