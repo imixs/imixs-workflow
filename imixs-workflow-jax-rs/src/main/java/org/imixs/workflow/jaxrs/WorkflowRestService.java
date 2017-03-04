@@ -151,11 +151,7 @@ public class WorkflowRestService {
 				// workitem not found
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
-			// return XMLItemCollectionAdapter.putItemCollection(workitem,
-			// DocumentRestService.getItemList(items));
-			return Response
-					.ok(XMLItemCollectionAdapter.putItemCollection(workitem, DocumentRestService.getItemList(items)))
-					.build();
+			return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem, DocumentRestService.getItemList(items))).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

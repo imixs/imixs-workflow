@@ -1,5 +1,6 @@
 package org.imixs.workflow.xml;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -22,31 +23,21 @@ import org.junit.Test;
  */
 public class TestXMLItemCollectionAdapter {
 
-	
-
-
-
-
-
-
 	@Test
 	public void testItemCollection() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
 		XMLItemCollection xmlItemCollection = null;
 		try {
-			xmlItemCollection = XMLItemCollectionAdapter
-					.putItemCollection(itemCollection);
+			xmlItemCollection = XMLItemCollectionAdapter.putItemCollection(itemCollection);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
-		ItemCollection col2 = XMLItemCollectionAdapter
-				.getItemCollection(xmlItemCollection);
+		ItemCollection col2 = XMLItemCollectionAdapter.getItemCollection(xmlItemCollection);
 
-		Assert.assertEquals(itemCollection.getItemValueString("txttitel"),
-				"Hello");
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
 		Assert.assertEquals(col2.getItemValueString("txttitel"), "Hello");
 	}
@@ -63,19 +54,16 @@ public class TestXMLItemCollectionAdapter {
 
 		XMLItemCollection xmlItemCollection = null;
 		try {
-			xmlItemCollection = XMLItemCollectionAdapter
-					.putItemCollection(itemCollection);
+			xmlItemCollection = XMLItemCollectionAdapter.putItemCollection(itemCollection);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
-		ItemCollection col2 = XMLItemCollectionAdapter
-				.getItemCollection(xmlItemCollection);
+		ItemCollection col2 = XMLItemCollectionAdapter.getItemCollection(xmlItemCollection);
 
 		// test if date is equals
-		Assert.assertEquals(col2.getItemValueDate("datDate"),
-				itemCollection.getItemValueDate("datDate"));
+		Assert.assertEquals(col2.getItemValueDate("datDate"), itemCollection.getItemValueDate("datDate"));
 
 		Assert.assertEquals(col2.getItemValueDate("datDate"), datTest);
 
@@ -104,8 +92,7 @@ public class TestXMLItemCollectionAdapter {
 		XMLItem[] xmlItemList = new XMLItem[] { xmlItem };
 		xmlItemCollection.setItem(xmlItemList);
 
-		ItemCollection itemCollection = XMLItemCollectionAdapter
-				.getItemCollection(xmlItemCollection);
+		ItemCollection itemCollection = XMLItemCollectionAdapter.getItemCollection(xmlItemCollection);
 		Assert.assertEquals(itemCollection.getItemValueDate("datdate"), datTest);
 
 		/*
@@ -130,8 +117,7 @@ public class TestXMLItemCollectionAdapter {
 		xmlItemList = new XMLItem[] { xmlItem };
 		xmlItemCollection.setItem(xmlItemList);
 
-		itemCollection = XMLItemCollectionAdapter
-				.getItemCollection(xmlItemCollection);
+		itemCollection = XMLItemCollectionAdapter.getItemCollection(xmlItemCollection);
 
 		// now we expect that the XMLItemCollectionAdapter has converted
 		// the XMLGregorianCalendar impl into a java.util.Date object
@@ -139,54 +125,143 @@ public class TestXMLItemCollectionAdapter {
 		List resultDate = itemCollection.getItemValue("datdate");
 		Assert.assertNotNull(resultDate);
 		Assert.assertEquals(1, resultDate.size());
-		
+
 		Assert.assertFalse(resultDate.get(0) instanceof XMLGregorianCalendar);
 		Assert.assertTrue(resultDate.get(0) instanceof java.util.Date);
 
 		Assert.assertEquals(itemCollection.getItemValueDate("datdate"), datTest);
 
 	}
-	
-	
-	
-	
-	
-	
-	
+
 	@Test
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void testItemCollectionContainingMap() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
-		
-		Map map=new HashMap<>();
+
+		Map map = new HashMap<>();
 		map.put("_name", "some data");
 		itemCollection.replaceItemValue("_mapdata", map);
-		
+
 		XMLItemCollection xmlItemCollection = null;
 		try {
-			xmlItemCollection = XMLItemCollectionAdapter
-					.putItemCollection(itemCollection);
+			xmlItemCollection = XMLItemCollectionAdapter.putItemCollection(itemCollection);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
-		ItemCollection col2 = XMLItemCollectionAdapter
-				.getItemCollection(xmlItemCollection);
+		ItemCollection col2 = XMLItemCollectionAdapter.getItemCollection(xmlItemCollection);
 
-		Assert.assertEquals(itemCollection.getItemValueString("txttitel"),
-				"Hello");
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
 		Assert.assertEquals(col2.getItemValueString("txttitel"), "Hello");
-		
-		
-		 List  listOfMap=col2.getItemValue("_mapdata");
-		 Assert.assertEquals(1,listOfMap.size());
-		 
-		 Object some = listOfMap.get(0);
-			
-		 Assert.assertTrue(some instanceof Map);
-		
+
+		List listOfMap = col2.getItemValue("_mapdata");
+		Assert.assertEquals(1, listOfMap.size());
+
+		Object some = listOfMap.get(0);
+
+		Assert.assertTrue(some instanceof Map);
+
+	}
+
+	/**
+	 * Test conversion of a ItemCollection containing a Item which value is a
+	 * single Map object
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Test
+	public void testItemCollectionContainingListOfMap() {
+		ItemCollection itemColSource = new ItemCollection();
+		itemColSource.replaceItemValue("txtTitel", "Hello");
+
+		List<Map<String, List<Object>>> mapList = new ArrayList<Map<String, List<Object>>>();
+
+		Map map1 = new HashMap<>();
+		map1.put("_name", "some data");
+		map1.put("_city", "Munich");
+
+		mapList.add(map1);
+		itemColSource.replaceItemValue("_mapdata", mapList);
+
+		XMLItemCollection xmlItemCollection = null;
+		try {
+			xmlItemCollection = XMLItemCollectionAdapter.putItemCollection(itemColSource);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// now reconstruct the xmlItemCollection into a ItemCollection...
+		ItemCollection itemColTest = XMLItemCollectionAdapter.getItemCollection(xmlItemCollection);
+
+		Assert.assertEquals(itemColTest.getItemValueString("txttitel"), "Hello");
+
+		List listOfMap = itemColTest.getItemValue("_mapdata");
+		Assert.assertEquals(1, listOfMap.size());
+
+		Object o1 = listOfMap.get(0);
+		Assert.assertTrue(o1 instanceof Map);
+		Map<String, List<Object>> mapTest1 = (Map<String, List<Object>>) o1;
+		Assert.assertEquals("some data", mapTest1.get("_name").get(0));
+
+		Assert.assertEquals("Munich", mapTest1.get("_city").get(0));
+
+	}
+
+	/**
+	 * Test conversion of a ItemCollection containing a Item which value is a
+	 * list of Map objects. The map objects where constructed from
+	 * ItemCollection objects
+	 * 
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Test
+	public void testItemCollectionContainingListOfMapConstructedOfItemCollections() {
+		ItemCollection itemColSource = new ItemCollection();
+		itemColSource.replaceItemValue("txtTitel", "Hello");
+
+		List<Map<String, List<Object>>> mapList = new ArrayList<Map<String, List<Object>>>();
+
+		ItemCollection i1 = new ItemCollection();
+		i1.replaceItemValue("_name", "some data");
+		i1.replaceItemValue("_city", "Berlin");
+		ItemCollection i2 = new ItemCollection();
+		i2.replaceItemValue("_name", "other data");
+		i2.replaceItemValue("_city", "Munich");
+		mapList.add(i1.getAllItems());
+		mapList.add(i2.getAllItems());
+		itemColSource.replaceItemValue("_mapdata", mapList);
+
+		XMLItemCollection xmlItemCollection = null;
+		try {
+			xmlItemCollection = XMLItemCollectionAdapter.putItemCollection(itemColSource);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// now reconstruct the xmlItemCollection into a ItemCollection...
+		ItemCollection itemColTest = XMLItemCollectionAdapter.getItemCollection(xmlItemCollection);
+
+		Assert.assertEquals(itemColTest.getItemValueString("txttitel"), "Hello");
+
+		List listOfMap = itemColTest.getItemValue("_mapdata");
+		Assert.assertEquals(2, listOfMap.size());
+
+		Object o1 = listOfMap.get(0);
+		Assert.assertTrue(o1 instanceof Map);
+		Map<String, List<Object>> mapTest1 = (Map<String, List<Object>>) o1;
+		Assert.assertEquals("some data", mapTest1.get("_name").get(0));
+		Assert.assertEquals("Berlin", mapTest1.get("_city").get(0));
+
+		Object o2 = listOfMap.get(1);
+		Assert.assertTrue(o2 instanceof Map);
+		Map<String, List<Object>> mapTest2 = (Map<String, List<Object>>) o2;
+		Assert.assertEquals("other data", mapTest2.get("_name").get(0));
+		Assert.assertEquals("Munich", mapTest2.get("_city").get(0));
+
 	}
 
 }

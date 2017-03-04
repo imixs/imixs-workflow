@@ -105,14 +105,14 @@ public class XMLItemCollectionAdapter {
 
 	/**
 	 * This Method converts a <code> org.imixs.workflow.ItemCollection</code>
-	 * into a <code>Entity</code>
+	 * into a <code>XMLItemCollection</code>
 	 * 
 	 * <p>
 	 * The method verifies if the values stored are basic java types. If not
 	 * these values will not be converted!
 	 * 
-	 * @param aItemCollection
-	 *            Collection Object to be converted
+	 * @param sourceItemCollection
+	 *            ItemCollection Object to be converted
 	 * @param itemNames
 	 *            - optional list of item names to be converted. If null all
 	 *            items will be converted
