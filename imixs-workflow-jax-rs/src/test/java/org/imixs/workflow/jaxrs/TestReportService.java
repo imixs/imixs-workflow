@@ -166,7 +166,7 @@ public class TestReportService {
 		System.out.println("Result=" + result);
 
 		// compare result with test data
-		Assert.assertTrue(result.contains("$created:[20160701 TO "));
+		Assert.assertTrue(result.contains("$created:[20160901 TO "));
 
 	}
 
