@@ -165,6 +165,84 @@ public class TestXMLItemCollectionAdapter {
 		Assert.assertTrue(some instanceof Map);
 
 	}
+	
+	
+	
+	
+	
+	
+	/**
+	 * Test conversion of a ItemCollection containing a Item which value is a
+	 * List 
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Test
+	public void testItemCollectionContainingListOfList() {
+		ItemCollection itemColSource = new ItemCollection();
+		itemColSource.replaceItemValue("txtTitel", "Hello");
+
+		List<List<String>> valueList = new ArrayList<List<String>>();
+
+		List<String> list1 = new ArrayList<String>();
+		list1.add("Berlin");
+		list1.add("Munich");
+		valueList.add(list1);
+		
+		List<String> list2 = new ArrayList<String>();
+		list2.add("John");
+		list2.add("Sam");
+		valueList.add(list2);
+		
+		itemColSource.replaceItemValue("_listdata", valueList);
+				
+		
+		XMLItemCollection xmlItemCollection = null;
+		try {
+			xmlItemCollection = XMLItemCollectionAdapter.putItemCollection(itemColSource);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// now reconstruct the xmlItemCollection into a ItemCollection...
+		ItemCollection itemColTest = XMLItemCollectionAdapter.getItemCollection(xmlItemCollection);
+
+		Assert.assertEquals(itemColTest.getItemValueString("txttitel"), "Hello");
+
+		List listOfList = itemColTest.getItemValue("_listdata");
+		Assert.assertEquals(2, listOfList.size());
+
+
+		
+		// test list1
+		Object o1 = listOfList.get(0);
+		Assert.assertTrue(o1 instanceof List);
+		List<String> resultlist1 = (List<String>) o1;
+		Assert.assertEquals("Berlin", resultlist1.get(0));
+		Assert.assertEquals("Munich", resultlist1.get(1));
+
+		// test list2
+		Object o2 = listOfList.get(1);
+		Assert.assertTrue(o2 instanceof List);
+		List<String> resultlist2 = (List<String>) o2;
+		Assert.assertEquals("John", resultlist2.get(0));
+		Assert.assertEquals("Sam", resultlist2.get(1));
+		
+		
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	/**
 	 * Test conversion of a ItemCollection containing a Item which value is a

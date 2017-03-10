@@ -88,17 +88,29 @@ public class XMLItem implements java.io.Serializable {
 	 */
 	public java.lang.Object[] getValue(boolean forceConversion) {
 
-		if (forceConversion && isArrayOfXMLItem(value)) {
+		// check array of map
+		if (forceConversion && isArrayOfXMLItemArray(value)) {
 			ArrayList<Map<String, List<Object>>> convertedValue = new ArrayList<Map<String, List<Object>>>();
 			for (Object object : value) {
 				XMLItem[] innerlist = (XMLItem[]) object;
-				Map<String, List<Object>> map = XMLItem.convertArray(innerlist);
+				Map<String, List<Object>> map = XMLItem.convertXMLItemArray(innerlist);
 				convertedValue.add(map);
 			}
 			return convertedValue.toArray();
-		} else {
-			return value;
 		}
+
+		// check array of list
+		if (forceConversion && isArrayOfXMLItem(value)) {
+			ArrayList<List<Object>> convertedValue = new ArrayList<List<Object>>();
+			for (Object object : value) {
+				convertedValue.add(convertXMLItemValues((XMLItem) object));
+			}
+			return convertedValue.toArray();
+		}
+
+		// simple value
+		return value;
+
 	}
 
 	/**
@@ -142,21 +154,24 @@ public class XMLItem implements java.io.Serializable {
 				List<XMLItem[]> listOfXMLItems = new ArrayList<XMLItem[]>();
 				for (Object singleMapEntry : values) {
 					Map<String, Object> map = (Map<String, Object>) singleMapEntry;
-					XMLItem[] sonTeil = XMLItem.convertMap(map);
-					listOfXMLItems.add(sonTeil);
+					XMLItem[] xmlVal = XMLItem.convertMap(map);
+					listOfXMLItems.add(xmlVal);
 				}
 				this.value = listOfXMLItems.toArray();
 
 			} else {
 				if (isListOfList(values)) {
-					logger.fine("[XMLItem] convert List intefaces into list of XMLItem elements");
-					List<XMLItem> mapData = new ArrayList<XMLItem>();
-					for (Object singleValue : values) {
-						XMLItem mapValueItem = new XMLItem();
-						mapValueItem.setValue(((List<Object>) singleValue).toArray());
-						mapData.add(mapValueItem);
+					// list - convert to XMLItem elements
+					XMLItem[] result = new XMLItem[values.length];
+					int j = 0;
+					for (Object aSingleValueList : values) {
+						XMLItem xmlVal = new XMLItem();
+						List<?> aList = (List<?>) aSingleValueList;
+						xmlVal.setValue(aList.toArray());
+						result[j] = xmlVal;
+						j++;
 					}
-					this.value = mapData.toArray();
+					this.value = result;
 
 				} else {
 					// unable to convert object!
@@ -173,7 +188,7 @@ public class XMLItem implements java.io.Serializable {
 	}
 
 	/**
-	 * Converts a Map inerface into a Array of XMLItem objects
+	 * Converts a Map interface into a Array of XMLItem objects
 	 * 
 	 * @return
 	 */
@@ -205,13 +220,28 @@ public class XMLItem implements java.io.Serializable {
 	 * @param xmlItems
 	 * @return
 	 */
-	private static Map<String, List<Object>> convertArray(XMLItem[] xmlItems) {
+	private static Map<String, List<Object>> convertXMLItemArray(XMLItem[] xmlItems) {
 		// create map
-		HashMap<String, List<Object>> map = new HashMap<String, List<Object>>();
+		HashMap<String, List<Object>> resultMap = new HashMap<String, List<Object>>();
 		for (XMLItem x : xmlItems) {
-			map.put(x.getName(), Arrays.asList(x.getValue()));
+			resultMap.put(x.getName(), Arrays.asList(x.getValue()));
 		}
-		return map;
+		return resultMap;
+	}
+
+	/**
+	 * Converts the values of a XMLItem objects into a List interface
+	 * 
+	 * @param xmlItems
+	 * @return
+	 */
+	private static List<Object> convertXMLItemValues(XMLItem axmlItem) {
+		List<Object> resultList = new ArrayList<Object>();
+		for (Object o : axmlItem.getValue()) {
+			resultList.add(o);
+		}
+		return resultList;
+
 	}
 
 	/**
@@ -255,12 +285,13 @@ public class XMLItem implements java.io.Serializable {
 	}
 
 	/**
-	 * returns true if all elements of values are from type XMLItem
+	 * returns true if all elements of values are an array from type XMLItem
+	 * arrays
 	 * 
 	 * @param values
 	 * @return
 	 */
-	private boolean isArrayOfXMLItem(java.lang.Object[] values) {
+	private boolean isArrayOfXMLItemArray(java.lang.Object[] values) {
 		for (Object singleValue : values) {
 			if (!(singleValue instanceof Object[])) {
 				return false;
@@ -272,6 +303,21 @@ public class XMLItem implements java.io.Serializable {
 						return false;
 					}
 				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * returns true if all elements of values are from type XMLItem
+	 * 
+	 * @param values
+	 * @return
+	 */
+	private boolean isArrayOfXMLItem(java.lang.Object[] values) {
+		for (Object singleValue : values) {
+			if (!(singleValue instanceof XMLItem)) {
+				return false;
 			}
 		}
 		return true;

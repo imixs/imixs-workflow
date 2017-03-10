@@ -3,21 +3,19 @@ package org.imixs.workflow.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-
-import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 /**
  * Test class reads and writes a model from the file system
@@ -26,8 +24,6 @@ import org.junit.Test;
  * @author rsoika
  */
 public class TestReadWriteXMLData {
-	private final static Logger logger = Logger.getLogger(TestReadWriteXMLData.class
-			.getName());
 
 	@Before
 	public void setup() {
