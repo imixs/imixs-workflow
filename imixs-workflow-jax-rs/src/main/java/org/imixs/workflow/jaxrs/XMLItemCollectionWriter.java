@@ -188,8 +188,8 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollect
 	}
 
 	/**
-	 * prints the generic HTML Head for HTML output. The method genereates a
-	 * default CSS definition for table output
+	 * THis method prints the generic HTML Header for HTML output, including a
+	 * default CSS definition for table layout.
 	 * 
 	 * @param bw
 	 * @throws IOException
@@ -197,16 +197,11 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollect
 	public static void printHead(BufferedWriter bw) throws IOException {
 		bw.write("<head>");
 		bw.write("<style>");
-		bw.write("table {padding:0px;width: 100%;margin-left: -2px;margin-right: -2px;}");
-		bw.write("body,td,select,input,li {font-family: Verdana, Helvetica, Arial, sans-serif;font-size: 13px;}");
-		bw.write("table th {color: white;background-color: #bbb;text-align: left;font-weight: bold;}");
-
-		bw.write("table th,table td {font-size: 12px;}");
-
-		bw.write("table tr.a {background-color: #ddd;}");
-
-		bw.write("table tr.b {background-color: #eee;}");
-
+		bw.write("table {width: 100%;font-size:small;} ");
+		bw.write("body,td,select,input,li {font-family: Verdana, Helvetica, Arial, sans-serif;} ");
+		bw.write("table th {border-bottom:1px solid #ccc;text-align: left;font-weight: bold;} ");
+		bw.write("table tr td {border-bottom:1px solid #ccc;} ");
+		bw.write("table tr.a {} table tr.b {}");
 		bw.write("</style>");
 		bw.write("</head>");
 	}

@@ -40,8 +40,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -629,23 +627,5 @@ public class ReportRestService {
 		return result;
 	}
 
-	/**
-	 * This method returns a List object from a given comma separated string.
-	 * The method returns null if no elements are found. The provided parameter
-	 * looks typical like this: <code>
-	 *   txtWorkflowStatus,numProcessID,txtName
-	 * </code>
-	 * 
-	 * @param items
-	 * @return
-	 */
-	private List<String> getItemList(String items) {
-		if (items == null || "".equals(items))
-			return null;
-		Vector<String> v = new Vector<String>();
-		StringTokenizer st = new StringTokenizer(items, ",");
-		while (st.hasMoreTokens())
-			v.add(st.nextToken());
-		return v;
-	}
+
 }
