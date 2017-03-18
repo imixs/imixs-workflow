@@ -38,53 +38,78 @@ public class TestXMLParser {
 
 		String test = "<date field=\"a\"   number=1 />";
 
-		String result = XMLParser.findAttribute(test,"field");
+		String result = XMLParser.findAttribute(test, "field");
 		Assert.assertNotNull(result);
 		Assert.assertEquals("a", result);
 
-		result = XMLParser.findAttribute(test,"number");
+		result = XMLParser.findAttribute(test, "number");
 		Assert.assertNotNull(result);
 		Assert.assertEquals("1", result);
 	}
-	
-	
 
-	
-	
-	
+	@Test
+	public void testSingleAttributeUppercase() {
+		String test = "<date FIELD=\"a\"   nUMBER=1 />";
+		String result = XMLParser.findAttribute(test, "FIELD");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("a", result);
+
+		result = XMLParser.findAttribute(test, "nUMBER");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("1", result);
+	}
+
+	/**
+	 * issue #201
+	 */
+	@Test
+	public void testSingleAttributeWithDash() {
+
+		String test = "<format aggreation-type=\"SUM\">some data</format>";
+
+		// verify attribute
+		String result = XMLParser.findAttribute(test, "aggreation-type");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("SUM", result);
+
+		// verify value
+		List<String> values = XMLParser.findTagValues(test, "format");
+		Assert.assertNotNull(values);
+		Assert.assertEquals(1, values.size());
+		Assert.assertEquals("some data", values.get(0));
+
+	}
+
 	@Test
 	public void testSingelTags() {
 
 		// test simple tag <date>..</date>
 		String test = "abc <date field=\"a\"   number=1 >def</date>ghi";
-		List<String> result = XMLParser.findTags(test,"date");
+		List<String> result = XMLParser.findTags(test, "date");
 		System.out.println(result);
 		Assert.assertNotNull(result);
 		Assert.assertEquals("<date field=\"a\"   number=1 >def</date>", result.get(0));
 
 		// test simple singel tag <date/>
 		test = "abc <date field=\"a\"   number=1 />def";
-		result = XMLParser.findTags(test,"date");
+		result = XMLParser.findTags(test, "date");
 		System.out.println(result);
 		Assert.assertNotNull(result);
 		Assert.assertEquals("<date field=\"a\"   number=1 />", result.get(0));
 
-		
-		
 		// test simple singel tag lowercase <DATE/>
 		test = "abc <DATE field=\"a\"   number=1 />def";
-		result = XMLParser.findTags(test,"date");
+		result = XMLParser.findTags(test, "date");
 		System.out.println(result);
 		Assert.assertNotNull(result);
 		Assert.assertEquals("<DATE field=\"a\"   number=1 />", result.get(0));
 
-		
 		// test simple tag <DATE>..</DATE>
-				 test = "abc <DATE field=\"a\"   number=1 >def</DATE>ghi";
-			 result = XMLParser.findTags(test,"date");
-				System.out.println(result);
-				Assert.assertNotNull(result);
-				Assert.assertEquals("<DATE field=\"a\"   number=1 >def</DATE>", result.get(0));
+		test = "abc <DATE field=\"a\"   number=1 >def</DATE>ghi";
+		result = XMLParser.findTags(test, "date");
+		System.out.println(result);
+		Assert.assertNotNull(result);
+		Assert.assertEquals("<DATE field=\"a\"   number=1 >def</DATE>", result.get(0));
 
 	}
 
@@ -93,7 +118,7 @@ public class TestXMLParser {
 
 		// test simple tag <date>..</date> <date />
 		String test = "abc <date field=\"a\"   number=1 >def</date>ghi\n" + "<date>abc</date>";
-		List<String> result = XMLParser.findTags(test,"date");
+		List<String> result = XMLParser.findTags(test, "date");
 		System.out.println(result);
 		Assert.assertNotNull(result);
 		Assert.assertEquals(2, result.size());
@@ -103,7 +128,7 @@ public class TestXMLParser {
 		// test complex list of tags
 		test = "abc <date field=\"a\"   number=1 >def</date>ghi\n" + "<item name=\"test\">value</item>"
 				+ "<date>abc</date>" + "<date field=\"abc\">xyz</date>";
-		result = XMLParser.findTags(test,"date");
+		result = XMLParser.findTags(test, "date");
 		System.out.println(result);
 		Assert.assertNotNull(result);
 		Assert.assertEquals(3, result.size());
@@ -113,8 +138,6 @@ public class TestXMLParser {
 
 	}
 
-	
-	
 	@Test
 	public void testFindTagValue() {
 
@@ -125,9 +148,7 @@ public class TestXMLParser {
 		Assert.assertEquals(1, result.size());
 		Assert.assertEquals("2016-12-31", result.get(0));
 
-
-		
-		 test = "<date>2016-12-31</date>  <date>2016-11-30</date>";
+		test = "<date>2016-12-31</date>  <date>2016-11-30</date>";
 
 		result = XMLParser.findTagValues(test, "date");
 		Assert.assertNotNull(result);
@@ -136,5 +157,5 @@ public class TestXMLParser {
 		Assert.assertEquals("2016-11-30", result.get(1));
 
 	}
-	
+
 }

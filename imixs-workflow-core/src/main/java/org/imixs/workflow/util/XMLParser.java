@@ -28,7 +28,8 @@ public class XMLParser {
 	 */
 	public static Map<String, String> findAttributes(String content) {
 		Map<String, String> result = new HashMap<String, String>();
-		Pattern p = Pattern.compile("(\\w+)=\"*((?<=\")[^\"]+(?=\")|([^\\s]+))\"*");
+		// short version of [A-Za-z0-9\-]
+		Pattern p = Pattern.compile("([\\w\\-]+)=\"*((?<=\")[^\"]+(?=\")|([^\\s]+))\"*");
 		Matcher m = p.matcher(content);
 		while (m.find()) {
 			result.put(m.group(1), m.group(2));
