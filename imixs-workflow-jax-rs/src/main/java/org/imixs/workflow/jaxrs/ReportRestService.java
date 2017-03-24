@@ -218,15 +218,15 @@ public class ReportRestService {
 				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 			}
 
-			sXSL = itemCol.getItemValueString("txtXSL").trim();
-			sContentType = itemCol.getItemValueString("txtcontenttype");
+			sXSL = itemCol.getItemValueString("XSL").trim();
+			sContentType = itemCol.getItemValueString("contenttype");
 			if ("".equals(sContentType))
 				sContentType = "text/html";
 
 			// if no encoding is provided by the query string than the encoding
 			// from the report will be taken
 			if ("".equals(encoding))
-				encoding = itemCol.getItemValueString("txtencoding");
+				encoding = itemCol.getItemValueString("encoding");
 			// no encoding defined so take a default encoding
 			// (UTF-8)
 			if ("".equals(encoding))

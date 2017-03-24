@@ -29,7 +29,6 @@ package org.imixs.workflow.engine;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -62,7 +61,7 @@ import org.imixs.workflow.util.XMLParser;
  * instances.
  * 
  * A Report Entity is identified by its name represented by the attribute
- * 'txtname' So a ReportService Implementation should ensure that txtname is a
+ * 'name' So a ReportService Implementation should ensure that name is a
  * unique key for the report entity.
  * 
  * Also each report entity holds a EQL Query in the attribute "txtquery". this
@@ -90,7 +89,7 @@ public class ReportService {
 	DocumentService documentService;
 
 	/**
-	 * Returns a Report Entity identified by the attribute txtname
+	 * Returns a Report Entity identified by the attribute name
 	 * 
 	 * @param aReportName
 	 *            - name of the report
@@ -142,7 +141,7 @@ public class ReportService {
 		String sUniqueID = aReport.getItemValueString("$uniqueID");
 		// if not try to find report by its name
 		if ("".equals(sUniqueID)) {
-			String sReportName = aReport.getItemValueString("txtName");
+			String sReportName = aReport.getItemValueString("txtname");
 			// try to find existing Report by name.
 			ItemCollection oldReport = findReport(sReportName);
 			if (oldReport != null) {
@@ -161,7 +160,7 @@ public class ReportService {
 	 * 
 	 * issue #144
 	 * 
-	 * The method parses the attribute name for a formating expression to format
+	 * The method parses the attribute txtname for a formating expression to format
 	 * the item value. E.g.:
 	 * 
 	 * 
@@ -195,7 +194,7 @@ public class ReportService {
 
 		// Load Query Object
 		ItemCollection reportEntity = findReport(reportName);
-		String query = reportEntity.getItemValueString("txtQuery");
+		String query = reportEntity.getItemValueString("txtquery");
 
 		// replace params in query statement
 		if (params != null) {
