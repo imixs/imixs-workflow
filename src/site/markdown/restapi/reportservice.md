@@ -7,11 +7,12 @@ The /report GET resources are used to get business objects provided by the Imixs
 
 | URI                                           | Description                               					   | 
 |-----------------------------------------------|------------------------------------------------------------------|
-| /report/definitions                           | a list of all report definitins provided by the workflow instance|
-| /report/definitions/{name}                    | returns a report definition by name or uniqueID                  |
-| /report/{name}.xml                            | the xml result of a report definition                            |
-| /report/{name}.ixr                            | the result of a specific report           |
-| /report/{name}.html                           | a html table of the result for a specific report              |
+| /report/definitions                           | all report definitions                                           |
+| /report/definitions/{name}                    | a single report definition by name or uniqueID                   |
+| /report/{name}.xml                            | the XML result-set of a report definition                        |
+| /report/{name}.json                           | the JSON result-set of a report definition                       |
+| /report/{name}.html                           | the HTML output-set of a report definition                       |
+| /report/{name}.imixs-report                   | the XSL result of a report definition                            |
 
 A report definition need to provide a set of informations to define the layout and content of a report
  
