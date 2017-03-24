@@ -199,7 +199,7 @@ public class ReportRestService {
 	 * 
 	 */
 	@GET
-	@Path("/{name}.ixr")
+	@Path("/{name}.imixs-report")
 	public Response getExcecuteReport(@PathParam("name") String reportName,
 			@DefaultValue("1000") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
