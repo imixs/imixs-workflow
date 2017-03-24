@@ -367,7 +367,7 @@ public class ReportRestService {
 	}
 
 	/**
-	 * Returns a xml stream from a report execution
+	 * Returns a xml stream from a report 
 	 * 
 	 * If a attribute list is defined in the report only the corresponding
 	 * properties will be returend in the xml stream.
@@ -414,7 +414,7 @@ public class ReportRestService {
 	}
 
 	/**
-	 * Returns a JSON stream from a report execution
+	 * Returns a JSON stream from a report 
 	 * 
 	 * If a attribute list is defined in the report only the corresponding
 	 * properties will be returend in the xml stream.
@@ -430,7 +430,7 @@ public class ReportRestService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{name}.json")
-	public DocumentCollection getExcecuteReportJSON(@PathParam("name") String name,
+	public DocumentCollection getJSONResult(@PathParam("name") String name,
 
 			@DefaultValue("-1") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
@@ -454,14 +454,14 @@ public class ReportRestService {
 	}
 
 	/**
-	 * Deletes a report by name or by uniqueid
+	 * Deletes a report by name or by its $uniqueID or name. 
 	 * 
 	 * @param name
 	 *            of report or uniqueid
 	 */
 	@DELETE
 	@Path("/reports/{name}")
-	public void deleteModel(@PathParam("version") String name) {
+	public void deleteReport(@PathParam("name") String name) {
 		try {
 			ItemCollection itemCol = reportService.getReport(name);
 			entityService.remove(itemCol);
