@@ -47,7 +47,7 @@ The search statement of a report can contain dynamic query parameters. These par
 
 To provide the Report during execution with the expected parameter ?1 the parameter can be appended into the query string of a Rest API call:
  
-    http://Host/WorkflowApp/report/reportfile.ixr&1=5130
+    http://Host/WorkflowApp/report/reportfile.imixs-report?pagesize=100&1=5130
  
 In this example the URL contains the parameter "?1=5130" which will be inserted into the search statement during the report execution.
 
@@ -68,12 +68,12 @@ Another feature provided by the Imixs-Report API are *dynamic date values* added
 | YEAR           | set year                       | <date YEAR="2016" />   
 | ADD            | add offset (see Calendar.class)| <date ADD="MONTH,-1" /> subracts one month from the current year
  
-See the following example to set the start and end date of the last month:
+See the following example selects all workitems form type 'invoice' from the last 6 months:
 
 
-     SELECT workitem FROM Entity AS workitem
-	  WHERE workitem.created BETWEEN '<date DAY_OF_MONTH="1" ADD="MONTH,-1 />' 
-	                            AND  '<date DAY_OF_MONTH="ACTUAL_MAXIMUM" ADD="MONTH,-1 />' 
+    (type:"workitem" OR type:"workitemarchive") 
+		AND (txtworkflowgroup:"Invoice")
+		AND ($created:[<date DAY_OF_MONTH="1" ADD="MONTH,-6" /> TO <date DAY_OF_MONTH="ACTUAL_MAXIMUM" />])
 
  
 
@@ -143,7 +143,27 @@ The XSL template is a file provided in the Eclipse project workspace. For each R
  
 These parameters are equals to the corresponding  parameters of the Imixs-REST Service interface. 
 
-To execute the transformation of a result set by the defined XSL template the report can be requested with the '.ixr' extension from the [Report REST API](../restapi/reportservice.html):
+To execute the transformation of a result set by the defined XSL template the report can be requested with the '.imixs-report' extension from the [Report REST API](../restapi/reportservice.html):
 
-    http://localhost:8080/workflow/rest-service/report/REPOTNAME.ixr
+    http://localhost:8080/workflow/rest-service/report/REPOTNAME.imixs-report
  
+ 
+## Report Definition
+
+Internally a report is stored in a document with the type 'ReportEntity'. The following attributes are stored in report definition entity.
+  
+
+
+| Attribute      | Description                    | Example  |
+|----------------|--------------------------------|-----------
+| txtName        | Report name                    | my report
+| txtQuery       | Lucene search term             | (type:"workitem") AND ($processid:1200)
+| xslResource    | Optional XSL Resource File     |   |
+| contenttype    | Optional content type for XSL transformation   |  application/json
+| encoding       | Optional encoding for XSL transformation     | ISO-8859-1
+| attributes     | attribute list for result set  |  |
+
+
+
+
+     
