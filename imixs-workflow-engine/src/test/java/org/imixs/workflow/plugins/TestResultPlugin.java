@@ -419,6 +419,37 @@ public class TestResultPlugin extends AbstractWorkflowEnvironment {
 		Assert.assertEquals("workitemdeleted", workitem.getType());
 	
 	}
+	
+	
+	
+	/**
+	 * This test verifies white space in the result (e.g. newline)
+	 * 
+	 * @see issue #255
+	 * @throws PluginException
+	 */
+	@Test
+	public void testWhiteSpace() throws PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		// test new line...
+		String sResult = "  \r\n  some data \r\n <item name='type' >workitemdeleted</item> \r\n ";
+
+		logger.info("txtActivityResult=" + sResult);
+		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+
+		// run plugin
+		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
+
+		Assert.assertEquals("workitemdeleted", adocumentContext.getItemValueString("Type"));
+
+	}
+	
+	
+	
 
 	/*
 	 * Just for development
