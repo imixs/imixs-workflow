@@ -1,6 +1,9 @@
 package org.imixs.workflow.jaxrs;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 import org.imixs.workflow.engine.ReportService;
 import org.junit.Assert;
@@ -154,19 +157,21 @@ public class TestReportService {
 
 		// construct expected test date....
 		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
 		cal.set(Calendar.DAY_OF_MONTH, 1);
-		cal.set(Calendar.MONTH, 3);
-		cal.set(Calendar.YEAR, 2016);
+		cal.add(Calendar.MONTH, -6);
 		
-		System.out.println("Test Date =" + cal.getTime());
+		DateFormat f = new SimpleDateFormat("yyyyMMdd");
+		String exprectedDateResult=f.format(cal.getTime());;
+		System.out.println("expected test-date =" +  exprectedDateResult);
 
 		// parse string and compute result
 		String result = ReportService.replaceDateString(test);
 
-		System.out.println("Result=" + result);
+		System.out.println("result=" + result);
 
 		// compare result with test data
-		Assert.assertTrue(result.contains("$created:[20160901 TO "));
+		Assert.assertTrue(result.contains("$created:[" + exprectedDateResult + " TO "));
 
 	}
 
