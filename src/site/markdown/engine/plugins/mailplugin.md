@@ -6,7 +6,7 @@ The MailPlugin provides an implementation for sending mails via the Java mail ap
 
 ## Mail Content
 
-The mail content can be defined by the corresponding BPMN event using the Imixs-BPMN modelling too. 
+The mail content can be defined by the corresponding BPMN event using the [Imixs-BPMN modeling tool](../../modelling/activities.html). 
 The content of the email can either be plain text or HTML.
 The e-mail message can be canceled by the application or another plug-in by setting the attribute 
 
