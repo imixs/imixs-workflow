@@ -48,12 +48,12 @@ import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
 /**
- * This plugin handles the creation of a Imixs Reoprt. The coresponding
- * activityEntity provide the following properties:
+ * This plug-in handles the creation of a Imixs Reoprt. The corresponding
+ * BPMN event provide the following properties:
  * <p>
  * <ul>
  * <li>txtReportName=Name of the Report to be processed
- * <li>txtReportFilePath= filename or filepath the result will be saved
+ * <li>txtReportFilePath= optional filename or file path the result will be saved
  * <li>txtReportTarget = where the result is saved (0=workitem, 1=blobWorkitem,
  * 2= disk)
  * 
@@ -226,7 +226,7 @@ public class ReportPlugin extends AbstractPlugin {
 					org.imixs.workflow.jaxrs.ReportRestService.fopTranformation(xmlContentExtended, sXSL, sEncoding,
 							outputStream);
 				else
-					org.imixs.workflow.jaxrs.ReportRestService.xslTranformation(xmlContentExtended, sXSL, sEncoding,
+					org.imixs.workflow.xml.XSLHandler.transform(xmlContentExtended, sXSL, sEncoding,
 							outputStream);
 			} finally {
 				outputStream.close();

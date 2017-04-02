@@ -70,7 +70,6 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.fop.apps.FOUserAgent;
@@ -84,6 +83,7 @@ import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.DocumentTable;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XSLHandler;
 
 /**
  * The WorkflowService Handler supports methods to process different kind of
@@ -261,7 +261,7 @@ public class ReportRestService {
 				if ("application/pdf".equals(sContentType.toLowerCase()))
 					ReportRestService.fopTranformation(writer.toString(), sXSL, encoding, outputStream);
 				else
-					ReportRestService.xslTranformation(writer.toString(), sXSL, encoding, outputStream);
+					XSLHandler.transform(writer.toString(), sXSL, encoding, outputStream);
 			} finally {
 				outputStream.close();
 			}
@@ -499,46 +499,6 @@ public class ReportRestService {
 		putReport(reportCol);
 	}
 
-	/**
-	 * This method transforms an xml string with a provided xsl String
-	 * 
-	 * The XMLSource will be read from a InputStreamReader object to provide the
-	 * XSLTransformer with a inputsream in expected encoding.
-	 * 
-	 * 
-	 * 
-	 * @param xmlSource
-	 * @param xsltSourceFile
-	 * @return
-	 */
-
-	public static void xslTranformation(String xmlSource, String xslSource, String aEncoding, OutputStream output)
-			throws Exception {
-		try {
-			TransformerFactory transFact = TransformerFactory.newInstance();
-
-			logger.fine("xslTransformation: encoding=" + aEncoding);
-			// generate XML InputStream Reader with encoding
-			ByteArrayInputStream baisXML = new ByteArrayInputStream(xmlSource.getBytes());
-			InputStreamReader isreaderXML;
-
-			isreaderXML = new InputStreamReader(baisXML, aEncoding);
-
-			Source xmlSrc = new StreamSource(isreaderXML);
-
-			// generate XSL InputStream Reader with encoding
-			ByteArrayInputStream baisXSL = new ByteArrayInputStream(xslSource.getBytes());
-			InputStreamReader isreaderXSL = new InputStreamReader(baisXSL, aEncoding);
-			Source xslSrc = new StreamSource(isreaderXSL);
-
-			Transformer trans = transFact.newTransformer(xslSrc);
-			trans.transform(xmlSrc, new StreamResult(output));
-
-		} finally {
-
-		}
-
-	}
 
 	/**
 	 * This method dos a apache FOP transformation using the FopFactory
