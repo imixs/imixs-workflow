@@ -23,10 +23,8 @@ import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
-import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -53,7 +51,7 @@ import org.xml.sax.SAXException;
  * 
  * 
  * @version 2.0
- * @see AbstractPluginTest, TestWorkflowService
+ * @see AbstractPluginTest, TestWorkflowService, ModelPluginMock
  * @author rsoika
  */
 public class AbstractWorkflowEnvironment {
