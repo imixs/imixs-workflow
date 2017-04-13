@@ -48,3 +48,41 @@ The property 'lucene.indexFieldListAnalyze' defines a comma separated list of fi
 The property 'lucene.indexFieldListNoAnalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here.
  
  
+## Keyword Search
+
+The Imixs LuceneSearchService uses the Lucene KeywordAnalyzer to parse a given search term. This means that a search phrase is taken as is. For example:
+
+	rs/82550/201618 
+
+will search exactly for the keyword 'rs/82550/201618'. Also the phrase
+
+	europe/berlin
+
+will start a search for the keyword 'europe/berlin'. This sometimes leads to an unexpected search result, because the Imixs LuceneUpdateService is using the 'ClassicAnalyzer' per default to create the luncene index. And this analyzer will splitt 'europe/berlin' into ''europe' and 'berlin'. If you need to seach for an exact keyoword you need to add the corresponding field into the imixs.property value 'lucence.indexFieldListNoAnalyze'. This will create a document field with the exact keyword independent form the content and it will not be split up by the ClassicAnalyzer. But in this case you need to specify the document field also in your query. See the following example:
+
+	(_country:europe\/berlin)
+
+This lucene search query will search for the keyword 'europe/berlin' in the document field '_country'.
+
+Note: All other content of a workitem will typically be stored into the document field 'content' and analyzed by the ClassicAnalyer which will - as explained before - split up the keyword into two separate words.
+
+### Normalze a Search Term.
+
+The Imixs LuceneSearchService provides a static method 'normalizeSearchTerm'. This method can be used to split up a search term in separate phrases in the same way as the term would be split up by the Lucene ClassicAnalyzer. So for example the search term:
+
+	europe/berlin
+
+will be modified by this method into:
+
+	europe berlin
+
+The normalizeSearchTerm method takes care about article numbers supported by the ClassicAnalyzer. So the following search term
+
+	europe/berlin rs/82550/201618
+
+will result in
+
+	europe berlin rs/82550/201618
+
+and will return all workitems containing the keywords 'europe', 'berlin' and 'rs/82550/201618'
+ 
