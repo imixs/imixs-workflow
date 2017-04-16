@@ -783,11 +783,6 @@ public class ItemCollection implements Cloneable {
 			vectorFileInfo.add(data);
 			mapFiles.put(fileName, vectorFileInfo);
 			replaceItemValue("$file", mapFiles);
-
-			// add $filecount
-			replaceItemValue("$filecount", mapFiles.size());
-			// add $filenames
-			replaceItemValue("$filenames",getFileNames());
 		}
 	}
 
@@ -804,11 +799,6 @@ public class ItemCollection implements Cloneable {
 			mapFiles = (Map<String, List<Object>>) vFiles.get(0);
 			mapFiles.remove(aFilename);
 			replaceItemValue("$file", mapFiles);
-			
-			// add $filecount
-			replaceItemValue("$filecount", mapFiles.size());
-			// add $filenames
-			replaceItemValue("$filenames",getFileNames());
 		}
 
 	}
@@ -866,7 +856,6 @@ public class ItemCollection implements Cloneable {
 			while (iter.hasNext()) {
 				Map.Entry<String, List<Object>> mapEntry = (Map.Entry<String, List<Object>>) iter.next();
 				String aFileName = mapEntry.getKey().toString();
-				// files[iFileCount] = aFileName;
 				files.add(aFileName);
 			}
 		}
