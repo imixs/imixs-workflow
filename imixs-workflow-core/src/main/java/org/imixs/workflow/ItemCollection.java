@@ -37,9 +37,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -627,13 +627,13 @@ public class ItemCollection implements Cloneable {
 		// test if value is ItemCollection
 		if (itemValue instanceof ItemCollection) {
 			// just warn - do not remove
-			logger.warning("[ItemCollection] replaceItemValue '" + itemName
+			logger.warning("replaceItemValue '" + itemName
 					+ "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
 		}
 
 		// test if value is serializable
 		if (!(itemValue instanceof java.io.Serializable)) {
-			logger.warning("[ItemCollection] replaceItemValue '" + itemName + "': Object no Serializable!");
+			logger.warning("replaceItemValue '" + itemName + "': object is not serializable!");
 			this.removeItem(itemName);
 			return;
 		}
@@ -647,7 +647,7 @@ public class ItemCollection implements Cloneable {
 				// test if ItemCollection
 				if (itemValueList.get(i) instanceof ItemCollection) {
 					// just warn - do not remove
-					logger.warning("[ItemCollection] replaceItemValue '" + itemName
+					logger.warning("replaceItemValue '" + itemName
 							+ "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
 				}
 			}
@@ -756,7 +756,7 @@ public class ItemCollection implements Cloneable {
 	@SuppressWarnings("unchecked")
 	public void addFile(byte[] data, String fileName, String contentType) {
 		if (data != null) {
-			Vector<Object> vectorFileInfo = null;
+			List<Object> vectorFileInfo = null;
 
 			// IE includes '\' characters! so remove all these characters....
 			if (fileName.indexOf('\\') > -1)
@@ -768,21 +768,26 @@ public class ItemCollection implements Cloneable {
 				contentType = "application/unknown";
 
 			// Store files using a map....
-			HashMap<String, List<Object>> mapFiles = null;
+			Map<String, List<Object>> mapFiles = null;
 			List<?> vFiles = getItemValue("$file");
 			if (vFiles != null && vFiles.size() > 0)
-				mapFiles = (HashMap<String, List<Object>>) vFiles.get(0);
+				mapFiles = (Map<String, List<Object>>) vFiles.get(0);
 			else
-				mapFiles = new HashMap<String, List<Object>>();
+				mapFiles = new LinkedHashMap<String, List<Object>>();
 
 			// existing file will be overridden!
-			vectorFileInfo = new Vector<Object>();
+			vectorFileInfo = new ArrayList<Object>();
 			// put file in a vector containing the byte array and also the
 			// content type
 			vectorFileInfo.add(contentType);
 			vectorFileInfo.add(data);
 			mapFiles.put(fileName, vectorFileInfo);
 			replaceItemValue("$file", mapFiles);
+
+			// add $filecount
+			replaceItemValue("$filecount", mapFiles.size());
+			// add $filenames
+			replaceItemValue("$filenames",getFileNames());
 		}
 	}
 
@@ -799,6 +804,11 @@ public class ItemCollection implements Cloneable {
 			mapFiles = (Map<String, List<Object>>) vFiles.get(0);
 			mapFiles.remove(aFilename);
 			replaceItemValue("$file", mapFiles);
+			
+			// add $filecount
+			replaceItemValue("$filecount", mapFiles.size());
+			// add $filenames
+			replaceItemValue("$filenames",getFileNames());
 		}
 
 	}
@@ -819,7 +829,7 @@ public class ItemCollection implements Cloneable {
 			// Object[] we convert the array to a List
 
 			Map<String, ?> testContent = (Map<String, ?>) vFiles.get(0);
-			Map<String, List<Object>> mapFiles = new HashMap<String, List<Object>>();
+			Map<String, List<Object>> mapFiles = new LinkedHashMap<String, List<Object>>();
 			for (Entry<String, ?> entry : testContent.entrySet()) {
 				String sFileName = entry.getKey();
 				Object obj = entry.getValue();
@@ -847,10 +857,10 @@ public class ItemCollection implements Cloneable {
 		// File attachments...
 		List<String> files = new Vector<String>();
 
-		HashMap<String, List<Object>> mapFiles = null;
+		Map<String, List<Object>> mapFiles = null;
 		List<?> vFiles = getItemValue("$file");
 		if (vFiles != null && vFiles.size() > 0) {
-			mapFiles = (HashMap<String, List<Object>>) vFiles.get(0);
+			mapFiles = (Map<String, List<Object>>) vFiles.get(0);
 			// files = new String[mapFiles.entrySet().size()];
 			Iterator<?> iter = mapFiles.entrySet().iterator();
 			while (iter.hasNext()) {
