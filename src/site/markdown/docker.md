@@ -10,7 +10,7 @@ The subproject [Imixs-Microservice](https://github.com/imixs/imixs-microservice)
 
 ## How to run a Imixs Docker Container
 
-To use Imixs-Workflow out of the box, the Imixs-Microservice is also available as a [docker image on Docker Hub](https://hub.docker.com/r/imixs/workflow/) which can be deployed into any [Docker Environment](https://www.docker.com/). 
+To use Imixs-Workflow out of the box, the Imixs-Microservice is also available as a [docker image on Docker Hub](https://hub.docker.com/r/imixs/imixs-microservice/) which can be deployed into any [Docker Environment](https://www.docker.com/). 
 To run Imixs-Workflow in a container start the Docker Image imixs/workflow:
 
 	docker run --name="imixs-workflow" -d -p 8080:8080 -p 9990:9990 \
@@ -18,7 +18,7 @@ To run Imixs-Workflow in a container start the Docker Image imixs/workflow:
 	         --link imixs-workflow-db:postgres \
 	         imixs/imixs-workflow
 
-The container need to be linked to the postgres container providing a database name 'workflow-db'. See the [docker project home](https://hub.docker.com/r/imixs/workflow/) for more information. 
+The container need to be linked to the postgres container providing a database name 'workflow-db'. See the [docker project home](https://hub.docker.com/r/imixs/imixs-microservice/) for more information. 
 
 ### ...via docker-compose
 
