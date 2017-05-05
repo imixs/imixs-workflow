@@ -110,14 +110,17 @@ Imixs-Workflow supports CDI for the plug-in API. So an EJB or Resource can be in
 An alternative way to get a reference to an existing EJB in a Plug-in Class, is to use a JNDI Lookup. The JNDI
 Lookup fetches the EJB from the EJB Container provided by the application server. So this way it is possible to get an EJB Instance inside a POJO Class without CDI support. The following example shows how to lookup an EJB during the init() method of a Plug-in:
 
-	public void init(WorkflowContext actx) throws Exception {
+	@Override
+	public void init(WorkflowContext actx) throws PluginException {
 		super.init(actx);
-	
-		String jndiName="java:comp/env/ejb/MyService";
-		InitialContext ictx = new InitialContext();
-		Context ctx = (Context) ictx.lookup("java:comp/env"); 
-		jndiName="ejb/MyServiceBean";
-		myService= (org.foo.ejb.MyService)ctx.lookup(jndiName);
+
+		try {
+			InitialContext ictx = new InitialContext();
+			Context ctx = (Context) ictx.lookup("java:comp/env");
+			inmService = (INMService) ctx.lookup("ejb/MyServiceBean");
+		} catch (NamingException e) {
+			throw new PluginException(this.getClass().getName(), "JNDI_LOOKUP_ERROR", e.getMessage());
+		}
 	}
 
 In this case a reference to the MyService Interface was created by JNDI Lookup. The Lookup fetches an EJB Reference with the name "ejb/MyServiceBean". To get this Interface returned from the JNDI Context it is necessary to add this reference to the WorkflowService EJB which is calling the Plug-in. This can be done in the ejb-jar.xml file: 
