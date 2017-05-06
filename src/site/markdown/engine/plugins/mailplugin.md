@@ -1,37 +1,39 @@
-#MailPlugin 
-The MailPlugin provides an implementation for sending mails via the Java mail api.  To activate this plug-in add the following PluginClass to the Model Configuration:
+# MailPlugin 
+The Imixs-MailPlugin provides a convenient way to send e-mail messages through a corresponding BPMN event.
+The Imixs-MailPlugin is based on the Java Mail API and can be activated by adding the plug-in class to the corresponding model definition:
 
     org.imixs.workflow.engine.plugins.MailPlugin
 
+Sending an E-Mail can be configured by the corresponding BPMN event using the [Imixs-BPMN modeling tool](../../modelling/activities.html) in various ways. 
 
-## Mail Content
+<img src="../../images/modelling/bpmn_screen_23.png"/>  
 
-The mail content can be defined by the corresponding BPMN event using the [Imixs-BPMN modeling tool](../../modelling/activities.html). 
-The content of the email can either be plain text or HTML.
-The e-mail message can be canceled by the application or another plug-in by setting the attribute 
-
-    keyMailInactive=true
-
-A E-Mail message consists of a list of recipients. The following event properties are supported:
+The subject and the body of the e-mail can contain any information from the corresponding workitem. The content can either be plain text or HTML mail. The recipients of the e-mail can be computed on naming attributes of the workitem or by fixed mail addresses or distribution lists. 
 
 
-|Name                  |Type       | Description                                   |
-|----------------------|-----------|-----------------------------------------------| 
-| txtMailSubject       | String    | Mail Subject                                  |
-| rtfMailBody          | String    | Mail Body (can be plain text or HTML          |
-| namMailReplyToUser   | String    | Reply To address. If not set the reply address is the sender address |
-| namMailReceiver      | String (list)   | Receiver list (TO)                      |
-| namMailReceiver      | String (list)   | Receiver list (TO)                      |
-| namMailReceiverCC    | String (list)   | Receiver list (CC)                      |
-| namMailReceiverBCC   | String (list)   | Receiver list (BCC)                     |
+## The Mail Content
 
+The content of the email can either be plain text or HTML. Using the item-Tag a subject or the e-mail body can be combined with any information from the current workitem as also with properties from the imixs.properties file. 
+
+See the following plain text example:
+
+
+    Dear <itemValue>firstName</itemValue> <itemValue>lastName</itemValue>,
+    
+    A new task needs your attention. Please click on the following link to see further information: 
+	<propertyvalue>application.url</propertyvalue>index.jsf?workitem=<itemvalue>$uniqueid</itemvalue>
+    
+	In case of questions or problems, please contact the Workflow team.    
+
+
+<br />
 
 ### HTML E-Mail
 
 The Mail body can contain plain text or HTML. 
-A HTML Mail must start with <!doctype...>" or <html...> 
+A HTML Mail must start with the tags <!doctype...>" or <html...>. Also a html mail can be combined with values from the current workitem. 
 
-See the following example
+See the following HTML example:
 
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 	<html xmlns="http://www.w3.org/1999/xhtml">
@@ -50,18 +52,21 @@ See the following example
 		<div class="container" bgcolor="#FFFFFF">
 			<!-- content -->
 			<div class="content">
-				<h1>Welcome </h1>
+				<h1>Dear <itemValue>firstName</itemValue> <itemValue>lastName</itemValue>, </h1>
+				<p>A new task needs your attention.</p>
           ....
     </body>
     </html>
 
+<br />
 
+### XSL Templates
 
-### XSL Transformation
+For a more complex e-mail message, the Imixs-MailPlugin supports also e-mail Templates. With this feature the e-mail output is based on a XSL Template. This opens up a powerful way to configure the mail content.
 
-Optional the Mail body can contain a XSL Template. In this case the current document content will be transformed based on the XSL template.
+To activate the template mode, a valid XSL document need to put into the mail body definition. The template will be processed automatically with the XML representation of the current workitem.
 
-See the following example:
+See the following XSL Template example:
 
 	<?xml version="1.0" encoding="UTF-8" ?>
 	<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml"
@@ -82,37 +87,88 @@ See the following example:
 
 
 
-##Default Sender Address
+<br />
+
+## Configuration
+
+Further configuration is supported by the Imixs-MailPlugin.
+
+
+
+### Default Sender Address
 The default sender address will be set with the current user name.  The sender address can be changed by the imixs property 'mail.defaultSender'. If the property is defined, the plug-in overwrites the 'From' attribute of every mail with the DefaultSender address.  If no value is set the mail will be send from the current users mail address.
- 
-A subclass of the MailPlugin can change the behavior by overwriting the method 'getFrom()'
  
 Example (imixs.properties):
 
 	# Marty Mail Plugin
 	mail.defaultSender=info@imixs.com
 
+A subclass of the MailPlugin can change the behavior by overwriting the method 'getFrom()'
+ 
 
-##Test Mode
-The Mailplugin can be configured to run in a Test-Mode when the property 'mail.testRecipients' is defined.  The property value can contain one ore many (comma separated) Email addresses. If those email addresses are defined than a email will be send only to this recipients. The Subject will be prefixed with the text 'TEST: '.
+### Testing Mode
+During development you can switch the Imixs-MailPlugin into a Testing-Mode by defining the imixs property: 
+
+    mail.testRecipients
+ 
+The property value can contain one ore many (comma separated) Email addresses. If the property is  defined, than an e-mail message will be send only to those recipients. The Subject will be prefixed with the text 'TEST: '.
+
+Example (imixs.properties):
 
 	#Testmode
 	mail.testRecipients=test@development.com
 
 
-##CharSet
-It is possible to set the character set used for the mail subject and body parts. There for the imixs.property key 'mail.charSet' is used. If this property is not defined the charset defaults to 'ISO-8859-1'!
 
-#Deployment
 
-See the [Imixs-BPMN Modeller](../../modelling/index.html) for details about modeling a mail activity. Running the Imixs MailPlugin in a EJB container requires a valid JNDI mail resource. A mail resource can be configured from the application server environment. 
+### CharSet
+The default character-set used for the mail subject and body parts is set to 'ISO-8859-1'.
+It is possible to switch to a specific character set . There for the imixs.property key 'mail.charSet' can be used. 
+
+Example (imixs.properties):
+
+	#Charset
+	mail.charSet=UTF-8
+
+
+### Cancel e-mail
+
+Sending a e-mail message can be canceled by the application or another plug-in by setting the attribute 'keyMailInactive' to 'true'. The attribute is part of the corresponding BPMN event. 
+
+    keyMailInactive=true
+
+The attribute can be set by the [Imixs-RulePlugin](./ruleplugin.html).
+
+### Receipients and Event Properties
+
+A E-Mail message consists of a list of recipients. The recipients can be mapped to name-fields defined in the BPMN definition.
+ 
+The following event properties are supported:
+
+
+|Name                  |Type       | Description                                   |
+|----------------------|-----------|-----------------------------------------------| 
+| txtMailSubject       | String    | Mail Subject                                  |
+| rtfMailBody          | String    | Mail Body (can be plain text or HTML          |
+| namMailReplyToUser   | String    | Reply To address. If not set the reply address is the sender address |
+| namMailReceiver      | String (list)   | Receiver list (TO)                      |
+| namMailReceiver      | String (list)   | Receiver list (TO)                      |
+| namMailReceiverCC    | String (list)   | Receiver list (CC)                      |
+| namMailReceiverBCC   | String (list)   | Receiver list (BCC)                     |
+| keyMailInactive      | Boolean    | If true, the e-mail will be canceled (can be set by other plugins)  |
+
+
+
+## Deployment
+
+Running the Imixs MailPlugin in a EJB container requires a valid JNDI mail resource. A mail resource can be configured from the application server environment. 
 The expected JNDI resource name to lookup the mail resource by the Imixs MailPlugin is
 
     org.imixs.workflow.mail
 
 The mail resource object is used to send outgoing mails to mail server. See Java EE spec for details about Java managing mail sessions.
 
-## Deployment Descriptors
+### Deployment Descriptors
 As the MailPlugin needs to lookup the Java mail resource using a JNDI Lookup you need to provide a  valid resource reference to the WorkflowService. Therefore you need to add the mail resource into the ejb-jar.xml to provide the WorkflowService EJB with a valid JNDI resource. See the following ejb-jar.xml example for GlassFish V3
    
 	......   

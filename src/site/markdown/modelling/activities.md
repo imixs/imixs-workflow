@@ -55,7 +55,7 @@ The 'Read Access' property can be used to define a general read permission for a
 </ul>
 
   
-##ACL Properties
+## ACL Properties
 The ACL Tab is used to define the Access Control List (ACL) for a workitem which is processed by the Imixs-Workflow engine.
 
 <img src="../images/modelling/bpmn_screen_21.png"/>  
@@ -65,7 +65,7 @@ The ACL defines the read- and write access a user will be granted for, after a W
 <strong>Note:</strong> If the ACL setting is defined on Event level, the ACL settings on the Task Level are overwritten.
 
 
-###Owner, Read and Write Access:
+### Owner, Read and Write Access:
 The ACL of a WorkItem is defined in three different layers.  The 'Owner' defines the users assigned to the WorkItem for the next Workflow Task. This setting typically adds the WorkItem to the users task list.  The 'Read Access' is used to restrict the read access for a WorkItem. Only users which are assigned to the Read Access of a WorkItem can access the workitem from the application. If no Users or Roles are defined in the Read Access not read restrictions are set to a WorkItem.
  
 The 'Write Access' restricts the author access for a WorkItem. The Author Access depends on the 
@@ -96,7 +96,7 @@ It is also possible to define the ACL in a static way. The UserIDs and Role name
 
 See also the section [security settings](../engine/acl.html) for more details.  
 
-##History Properties
+## History Properties
 This history property defines information added by the [HistoryPlugin](../engine/plugins/historyplugin.html) during the processing phase of the imixs-workflow engine. 
 
 <img src="../images/modelling/bpmn_screen_22.png"/>  
@@ -111,7 +111,7 @@ A history entry support the [Text Replacer feature](./textreplacement.html).
 
     Document saved by <itemvalue>namcurrenteditor</itemvalue>
 
-##Mail Properties
+## Mail Properties
 The property section 'Mail' defines information for mail messaging during a process step.
 
 <img src="../images/modelling/bpmn_screen_23.png"/>  
