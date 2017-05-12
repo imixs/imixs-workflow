@@ -23,7 +23,7 @@ Imixs-Workflow provides a RESTful API to integrate the Imixs-Workflow engine int
 ## How to Build
 Imixs-Workflow can be build with Maven. All artifacts are provided in the [maven central repository](http://search.maven.org/#browse).
 
-This is an example how to add a maven dependency of imixs-workflow into your own project:
+This is an example how to add imixs-workflow into the dependencies of your own maven project:
 
 	<dependencies> 
 	   .....
@@ -48,7 +48,7 @@ This is an example how to add a maven dependency of imixs-workflow into your own
 
 
 
-Run the build form the source code run:
+To build form the source code run:
 
 	mvn install
 
@@ -72,8 +72,10 @@ The Imixs-Workflow engine is also available as a Docker Image running Imixs-Work
 
 ## Joining the Project
 
-If you have any questions post them on [issue tracker](https://github.com/imixs/imixs-workflow/issues)
+If you have any questions post them into the [issue tracker](https://github.com/imixs/imixs-workflow/issues)
 
 ## License
 
-Imixs-Workflow is free software, because we believe that an open exchange of experiences is fundamental for the development of useful software. All results of this project are provided under the GNU General Public License. Since the Imixs-Workflow engine runs as a separate process embedded into an application which is probably a separate work we do not see any violation of the GPL. Feel free to ask for concreate use cases. 
+Imixs-Workflow is free software, because we believe that an open exchange of experiences is fundamental for the development of valuable software. All results of this project are provided under the [GNU General Public License](http://www.gnu.org/licenses/gpl-3.0.en.html). 
+
+Since in the typical use cases the Imixs-Workflow engine runs as a separate process, embedded into an application which is probably a separate work, we do not see any violation of the GPL. Feel free to ask for your concrete use case. 
