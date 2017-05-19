@@ -79,19 +79,19 @@ The following table shows an example of a user list with different access levels
 The _UsersRolesLoginModule_ is a simple login module that supports multiple users and user roles loaded from Java properties files:
 
 	...
-		<security-domain name="imixsrealm">
-	   		<authentication>
-	   			<login-module code="org.jboss.security.auth.spi.UsersRolesLoginModule" flag="required"> 
-	            <module-option name="usersProperties">sampleapp-users.properties</module-option> 
-	            <module-option name="rolesProperties">sampleapp-roles.properties</module-option> 
-	         	</login-module> 
-	           <login-module code="RoleMapping" flag="required">
-	           	<module-option name="rolesProperties" value="file:${jboss.server.config.dir}/imixsrealm.properties"/>
-	              	<module-option name="replaceRole" value="false"/>
-	           </login-module>
-	        </authentication>
-		</security-domain>
-	...
+    <security-domain name="imixsrealm">
+        <authentication>
+            <login-module code="UsersRoles" flag="required">  
+                <module-option name="usersProperties" value="${jboss.server.config.dir}/sampleapp-users.properties"/>  
+                <module-option name="rolesProperties" value="${jboss.server.config.dir}/sampleapp-roles.properties"/>  
+            </login-module>  
+            <login-module code="RoleMapping" flag="required">
+    			<module-option name="rolesProperties" value="file:${jboss.server.config.dir}/imixsrealm.properties"/>
+        		<module-option name="replaceRole" value="false"/>
+   			</login-module>
+        </authentication>
+    </security-domain>
+   ...
 	
 The sampleapp-users.properties file uses a username=password format with each user entry on a separate line:
 
