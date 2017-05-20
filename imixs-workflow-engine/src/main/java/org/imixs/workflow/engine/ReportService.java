@@ -303,6 +303,7 @@ public class ReportService {
 	 * @param entity
 	 * @return
 	 */
+	@SuppressWarnings({ "unused", "unchecked" })
 	private ItemCollection cloneEntity(ItemCollection entity, List<List<String>> attributes) {
 		ItemCollection clone = null;
 
