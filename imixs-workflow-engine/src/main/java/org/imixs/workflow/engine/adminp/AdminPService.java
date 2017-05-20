@@ -161,7 +161,7 @@ public class AdminPService {
 		Timer timer = timerService.createTimer(terminationDate, (60 * interval * 1000),
 				adminp.getItemValueString(WorkflowKernel.UNIQUEID));
 
-		logger.info("Job started - ID=" + timer.getInfo().toString());
+		logger.info("Job " + jobtype+ " (" + timer.getInfo().toString()+ ") started... ");
 		return adminp;
 	}
 
@@ -207,22 +207,22 @@ public class AdminPService {
 				return;
 			}
 
-			logger.info("Processing : " + sTimerID);
+			String job = adminp.getItemValueString("job");
+			logger.info("Job " + job + " ("+ adminp.getUniqueID() + ")  processing...");
 
 			boolean jobfound = false;
-			String job = adminp.getItemValueString("job");
 			if (job.equals(JOB_RENAME_USER)) {
 				jobfound = true;
 				if (jobHandlerRenameUser.run(adminp)) {
 					timer.cancel();
-					logger.info("Job " + adminp.getUniqueID() + " completed - timer stopped");
+					logger.info("Job " + JOB_RENAME_USER + " ("+ adminp.getUniqueID() + ") completed - timer stopped");
 				}
 			}
 			if (job.equals(JOB_REBUILD_LUCENE_INDEX)) {
 				jobfound = true;
 				if (jobHandlerRebuildIndex.run(adminp)) {
 					timer.cancel();
-					logger.info("Job " + adminp.getUniqueID() + " completed - timer stopped");
+					logger.info("Job " + JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") completed - timer stopped");
 				}
 			}
 
@@ -230,7 +230,7 @@ public class AdminPService {
 				jobfound = true;
 				if (jobHandlerMigration3X.run(adminp)) {
 					timer.cancel();
-					logger.info("Job " + adminp.getUniqueID() + " completed - timer stopped");
+					logger.info("Job " +JOB_MIGRATION + " (" + adminp.getUniqueID() + ") completed - timer stopped");
 				}
 			}
 

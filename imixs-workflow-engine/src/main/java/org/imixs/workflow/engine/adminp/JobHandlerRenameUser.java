@@ -60,11 +60,11 @@ public class JobHandlerRenameUser implements JobHandler {
 	@Override
 	public boolean run(ItemCollection adminp) throws AdminPException {
 		long lProfiler = System.currentTimeMillis();
-		int iStart = adminp.getItemValueInteger("numStart");
-		int iCount = adminp.getItemValueInteger("numMaxCount");
-		if (iCount<=0) {
-			iCount=DEFAULT_COUNT;
-			adminp.replaceItemValue("numMaxCount", iCount);
+		int iIndex = adminp.getItemValueInteger("numIndex");
+		int iBlockSize = adminp.getItemValueInteger("numBlockSize");
+		if (iBlockSize<=0) {
+			iBlockSize=DEFAULT_COUNT;
+			adminp.replaceItemValue("numBlockSize", iBlockSize);
 		}
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
 		int iProcessed = adminp.getItemValueInteger("numProcessed");
@@ -82,27 +82,24 @@ public class JobHandlerRenameUser implements JobHandler {
 		summary += ")";
 		
 		logger.info(summary);
-		
 		adminp.replaceItemValue("$WorkflowSummary", summary);
-		
 		adminp.replaceItemValue("$workflowStatus", "Processing");
 		// save it...
 		// adminp = entityService.save(adminp);
 		adminp = ctx.getBusinessObject(JobHandlerRenameUser.class).saveJobEntity(adminp);
-
 		
 		// Select Statement - ASC sorting is important here!
 		String sQuery = "(type:\"workitem\" OR type:\"workitemarchive\" OR type:\"childworkitem\" OR type:\"childworkitemarchive\" OR type:\"workitemlob\" )";
-		sQuery +=" AND ($writeaccess:\""+fromName+"\" OR $readaccess:\""+fromName+"\" OR namowner:\""+fromName+"\" OR namcreator:\""+fromName+"\" )";
+		sQuery +=" AND ($writeaccess:\""+fromName+"\" OR $readaccess:\""+fromName+"\" OR namowner:\""+fromName+"\" OR $creator:\""+fromName+"\" OR namcreator:\""+fromName+"\" )";
 	
 		
 		Collection<ItemCollection> col;
 		try {
-			col = documentService.find(sQuery, iStart, iCount);
+			col = documentService.find(sQuery,iBlockSize, iIndex);
 		} catch (QueryException e) {
 			throw new InvalidAccessException(InvalidAccessException.INVALID_ID,e.getMessage(),e);			
 		}
-
+		int colSize = col.size();
 		// check all selected documents
 		for (ItemCollection entity : col) {
 			iProcessed++;
@@ -123,26 +120,25 @@ public class JobHandlerRenameUser implements JobHandler {
 		adminp.replaceItemValue("numProcessed", iProcessed);
 
 		adminp.replaceItemValue("numLastCount", col.size());
-		iStart = iStart + col.size();
-		adminp.replaceItemValue("numStart", iStart);
-
-		String timerid = adminp.getItemValueString(WorkflowKernel.UNIQUEID);
-
+		iIndex++;
+		adminp.replaceItemValue("numIndex", iIndex);
+		
 		long time = (System.currentTimeMillis() - lProfiler) / 1000;
 
-		logger.info("run:" + timerid + " " + col.size() + " workitems processed in " + time + " sec.");
 		
-		// if numLastCount<numMacCount then we can stop the timer
-		int iMax = adminp.getItemValueInteger("numMaxCount");
-		int iLast = adminp.getItemValueInteger("numLastCount");
-		if (iLast < iMax) {
+		logger.info("Job " + AdminPService.JOB_RENAME_USER + " (" + adminp.getUniqueID() + ") - " + col.size() +  " workitems processed in " + time + " sec.");
+
+		// if colSize<numBlockSize we can stop the timer
+		if (colSize < iBlockSize) {
 			// prepare for rerun
 			adminp.replaceItemValue("$workflowStatus", "Finished");
+			adminp = ctx.getBusinessObject(JobHandlerRenameUser.class).saveJobEntity(adminp);
 			return true;
 
 		} else {
 			// prepare for rerun
 			adminp.replaceItemValue("$workflowStatus", "Waiting");
+			adminp = ctx.getBusinessObject(JobHandlerRenameUser.class).saveJobEntity(adminp);
 			return false;
 		}
 	}
@@ -183,13 +179,17 @@ public class JobHandlerRenameUser implements JobHandler {
 		if (updateList(entity.getItemValue("namOwner"), from, to, replace))
 			bUpdate = true;
 
+		// !! We do not replace the creator!! - we only allow additions here!
+		logOldValues(entity, "$Creator");
+		if (updateList(entity.getItemValue("$Creator"), from, to, false))
+			bUpdate = true;
 		logOldValues(entity, "namCreator");
-		if (updateList(entity.getItemValue("namCreator"), from, to, replace))
+		if (updateList(entity.getItemValue("namCreator"), from, to, false))
 			bUpdate = true;
 
 		if (bUpdate) {
 			documentService.save(entity);
-			logger.fine("[AmdinP] updated: " + entity.getItemValueString(WorkflowKernel.UNIQUEID));
+			logger.fine("updated: " + entity.getItemValueString(WorkflowKernel.UNIQUEID));
 		}
 		return bUpdate;
 	}

@@ -102,7 +102,7 @@ public class JobHandlerMigration3X implements JobHandler {
 
 		} catch (Exception eerror) {
 			// prepare for rerun
-			logger.severe("Job " + adminp.getUniqueID() + " - error at: index=" + iIndex + " blocksize=" + iBlockSize
+			logger.severe("Job " + AdminPService.JOB_MIGRATION + " (" + adminp.getUniqueID() + ") - error at: index=" + iIndex + " blocksize=" + iBlockSize
 					+ " : " + eerror.getMessage());
 			adminp.replaceItemValue("txtworkflowStatus", "Error (" + iIndex + "-" + (iIndex + iBlockSize) + ")");
 			adminp = ctx.getBusinessObject(JobHandlerMigration3X.class).saveJobEntity(adminp);
@@ -110,7 +110,7 @@ public class JobHandlerMigration3X implements JobHandler {
 		}
 		int colSize = col.size();
 		// Update index
-		logger.info("Job " + adminp.getUniqueID() + " - verifying " + col.size() + " Entity objects for migration. ("
+		logger.info("Job " + AdminPService.JOB_MIGRATION + " (" + adminp.getUniqueID() + ") - verifying " + col.size() + " Entity objects for migration. ("
 				+ iUpdates + " Entity objects already migrated) ...");
 
 		for (ItemCollection oldEntiy : col) {
@@ -133,19 +133,21 @@ public class JobHandlerMigration3X implements JobHandler {
 
 		long time = (System.currentTimeMillis() - lProfiler) / 1000;
 
-		logger.info("Job " + adminp.getUniqueID() + " - finished, " + col.size() + " Entity objects verified in " + time
+		logger.info("Job " + AdminPService.JOB_MIGRATION + " (" + adminp.getUniqueID() + ") - finished, " + col.size() + " Entity objects verified in " + time
 				+ " sec. (" + iUpdates + " Entity objects total migrated)");
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {
 			// prepare for rerun
 			adminp.replaceItemValue("txtworkflowStatus", "Finished");
+			adminp.replaceItemValue("$workflowStatus", "Finished");
 			adminp = ctx.getBusinessObject(JobHandlerMigration3X.class).saveJobEntity(adminp);
 			return true;
 
 		} else {
 			// prepare for rerun
 			adminp.replaceItemValue("txtworkflowStatus", "Waiting");
+			adminp.replaceItemValue("$workflowStatus", "Waiting");
 			adminp = ctx.getBusinessObject(JobHandlerMigration3X.class).saveJobEntity(adminp);
 			return false;
 		}
