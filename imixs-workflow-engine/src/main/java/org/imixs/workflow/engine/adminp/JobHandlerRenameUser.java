@@ -38,6 +38,7 @@ public class JobHandlerRenameUser implements JobHandler {
 	@EJB
 	LuceneUpdateService luceneService;
 
+	private static final int DEFAULT_COUNT=100;
 	private static Logger logger = Logger.getLogger(JobHandlerRenameUser.class.getName());
 
 	/**
@@ -61,6 +62,10 @@ public class JobHandlerRenameUser implements JobHandler {
 		long lProfiler = System.currentTimeMillis();
 		int iStart = adminp.getItemValueInteger("numStart");
 		int iCount = adminp.getItemValueInteger("numMaxCount");
+		if (iCount<=0) {
+			iCount=DEFAULT_COUNT;
+			adminp.replaceItemValue("numMaxCount", iCount);
+		}
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
 		int iProcessed = adminp.getItemValueInteger("numProcessed");
 		String fromName = adminp.getItemValueString("namFrom");
@@ -126,9 +131,6 @@ public class JobHandlerRenameUser implements JobHandler {
 		long time = (System.currentTimeMillis() - lProfiler) / 1000;
 
 		logger.info("run:" + timerid + " " + col.size() + " workitems processed in " + time + " sec.");
-
-		
-		
 		
 		// if numLastCount<numMacCount then we can stop the timer
 		int iMax = adminp.getItemValueInteger("numMaxCount");
