@@ -58,9 +58,6 @@ public class JobHandlerRenameUser implements JobHandler {
 	 */
 	@Override
 	public boolean run(ItemCollection adminp) throws AdminPException {
-
-		
-		
 		long lProfiler = System.currentTimeMillis();
 		int iStart = adminp.getItemValueInteger("numStart");
 		int iCount = adminp.getItemValueInteger("numMaxCount");
@@ -69,9 +66,8 @@ public class JobHandlerRenameUser implements JobHandler {
 		String fromName = adminp.getItemValueString("namFrom");
 		String to = adminp.getItemValueString("namTo");
 		boolean replace = adminp.getItemValueBoolean("keyReplace");
-
 		
-		// update txtWorkflowSummary
+		// update $WorkflowSummary
 		String summary = "Rename: " + fromName + ">>" + to + " (";
 		if (replace)
 			summary += "replace";
@@ -82,9 +78,9 @@ public class JobHandlerRenameUser implements JobHandler {
 		
 		logger.info(summary);
 		
-		adminp.replaceItemValue("txtWorkflowSummary", summary);
+		adminp.replaceItemValue("$WorkflowSummary", summary);
 		
-		adminp.replaceItemValue("txtworkflowStatus", "Processing");
+		adminp.replaceItemValue("$workflowStatus", "Processing");
 		// save it...
 		// adminp = entityService.save(adminp);
 		adminp = ctx.getBusinessObject(JobHandlerRenameUser.class).saveJobEntity(adminp);
@@ -139,12 +135,12 @@ public class JobHandlerRenameUser implements JobHandler {
 		int iLast = adminp.getItemValueInteger("numLastCount");
 		if (iLast < iMax) {
 			// prepare for rerun
-			adminp.replaceItemValue("txtworkflowStatus", "Finished");
+			adminp.replaceItemValue("$workflowStatus", "Finished");
 			return true;
 
 		} else {
 			// prepare for rerun
-			adminp.replaceItemValue("txtworkflowStatus", "Waiting");
+			adminp.replaceItemValue("$workflowStatus", "Waiting");
 			return false;
 		}
 	}

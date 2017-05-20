@@ -185,7 +185,12 @@ public class ModelService implements ModelManager {
 	@Override
 	public Model getModelByWorkitem(ItemCollection workitem) throws ModelException {
 		String modelVersion = workitem.getModelVersion();
-		String workflowGroup = workitem.getItemValueString("txtWorkflowGroup");
+		String workflowGroup = workitem.getItemValueString("$workflowgroup");
+		// if $workflowgroup is empty try deprecated field txtworkflowgroup
+		if (workflowGroup.isEmpty()) {
+			workflowGroup = workitem.getItemValueString("txtworkflowgroup");
+		}
+		
 		Model model = null;
 		try {
 			model = getModel(modelVersion);

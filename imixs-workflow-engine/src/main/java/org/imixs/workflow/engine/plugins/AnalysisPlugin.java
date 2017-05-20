@@ -53,7 +53,7 @@ import org.imixs.workflow.exceptions.PluginException;
  * 
  * definens a end point named 'M1'
  * 
- * The result will be stored into the txtWOrkflowActivityLog (comments) and also
+ * The result will be stored into the txtWorkflowActivityLog (comments) and also
  * the Plugin will create the following fields:
  * 
  * - datMeasurePointStart_M1 : contains the start time points (list latest entry

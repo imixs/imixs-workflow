@@ -103,7 +103,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
 
-		adminp.replaceItemValue("txtworkflowStatus", "Processing");
+		adminp.replaceItemValue("$workflowStatus", "Processing");
 		// save it...
 		// adminp = entityService.save(adminp);
 		adminp = ctx.getBusinessObject(JobHandlerRebuildIndex.class).saveJobEntity(adminp);
@@ -145,13 +145,13 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {
 			// prepare for rerun
-			adminp.replaceItemValue("txtworkflowStatus", "Finished");
+			adminp.replaceItemValue("$workflowStatus", "Finished");
 			adminp = ctx.getBusinessObject(JobHandlerRebuildIndex.class).saveJobEntity(adminp);
 			return true;
 
 		} else {
 			// prepare for rerun
-			adminp.replaceItemValue("txtworkflowStatus", "Waiting");
+			adminp.replaceItemValue("$workflowStatus", "Waiting");
 			adminp = ctx.getBusinessObject(JobHandlerRebuildIndex.class).saveJobEntity(adminp);
 			return false;
 		}

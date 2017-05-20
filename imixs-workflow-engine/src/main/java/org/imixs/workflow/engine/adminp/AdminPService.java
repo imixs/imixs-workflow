@@ -48,7 +48,7 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
  * can be used to update workitems in a scheduled batch process. This is called
  * a AdminP-Process. The result of a adminp process is documented into an log
  * entity from type='adminp'. The job description is stored in the field
- * 'txtWorkflowSummary'. The current startpos and maxcount are stored in the
+ * '$WorkflowSummary'. The current startpos and maxcount are stored in the
  * configuration entity in the properties 'numStart' 'numMaxCount'
  * 
  * The service provides methods to create and start different types of jobs. The
@@ -248,7 +248,7 @@ public class AdminPService {
 
 			try {
 				if (adminp != null) {
-					adminp.replaceItemValue("txtworkflowStatus", "Error");
+					adminp.replaceItemValue("$workflowStatus", "Error");
 					adminp.replaceItemValue("errormessage", e.toString());
 					// adminp = entityService.save(adminp);
 					adminp = documentService.save(adminp);

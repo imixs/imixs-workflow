@@ -316,6 +316,20 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		}
 	}
 
+	
+	/**
+	 * Returns a list of workitems filtered by the field $workflowgroup
+	 * 
+	 * the method supports still also the deprecated field "txtworkflowgroup"
+	 * 
+	 * @param name
+	 * @param type
+	 * @param pageSize
+	 * @param pageIndex
+	 * @param sortorder
+	 * @return
+	 */
+	
 	public List<ItemCollection> getWorkListByGroup(String name, String type, int pageSize, int pageIndex,
 			int sortorder) {
 
@@ -323,7 +337,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		if (type != null && !"".equals(type)) {
 			searchTerm += " type:\"" + type + "\" AND ";
 		}
-		searchTerm += " txtworkflowgroup:\"" + name + "\" )";
+		// we support still the deprecated txtworkflowgroup
+		searchTerm += " ($workflowgroup:\"" + name + "\" OR txtworkflowgroup:\"" + name + "\") )";
 		logger.warning("Sortorder " + searchTerm + " not implemented!");
 
 		try {

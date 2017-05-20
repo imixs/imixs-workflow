@@ -39,8 +39,8 @@ import org.imixs.workflow.exceptions.PluginException;
  * <ul>
  * <li>txtWorkflowEditorID - optional EditorID to be used by an application
  * <li>txtWorkflowImageURL - visual image can be displayed by an application
- * <li>txtWorkflowAbstract - Abstract text
- * <li>txtWorkflowSummary - Summary
+ * <li>$WorkflowAbstract - Abstract text
+ * <li>$WorkflowSummary - Summary
  * 
  * 
  * These settings can be configured by the imixs modeler on the Application
@@ -134,11 +134,11 @@ public class ApplicationPlugin extends AbstractPlugin {
 	
 		// set Abstract
 		if (sAbstract != null)
-			documentContext.replaceItemValue("txtworkflowabstract", sAbstract);
+			documentContext.replaceItemValue("$workflowabstract", sAbstract);
 
 		// set Summary
 		if (sSummary != null)
-			documentContext.replaceItemValue("txtworkflowsummary", sSummary);
+			documentContext.replaceItemValue("$workflowsummary", sSummary);
 
 		return documentContext;
 	}
