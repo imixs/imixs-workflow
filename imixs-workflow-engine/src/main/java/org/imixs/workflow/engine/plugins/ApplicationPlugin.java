@@ -132,14 +132,19 @@ public class ApplicationPlugin extends AbstractPlugin {
 			documentContext.replaceItemValue("txtWorkflowImageURL", sImageURL);
 
 	
+		/* We still support the deprecated fields here - see issue #265 
+		 * can be removed with version 4.3.0
+		 */
 		// set Abstract
-		if (sAbstract != null)
+		if (sAbstract != null) {
 			documentContext.replaceItemValue("$workflowabstract", sAbstract);
-
+			documentContext.replaceItemValue("txtworkflowabstract", sAbstract);
+		}
 		// set Summary
-		if (sSummary != null)
+		if (sSummary != null) {
 			documentContext.replaceItemValue("$workflowsummary", sSummary);
-
+			documentContext.replaceItemValue("txtworkflowsummary", sSummary);
+		}
 		return documentContext;
 	}
 
