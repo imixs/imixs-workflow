@@ -200,7 +200,7 @@ public class MailPlugin extends AbstractPlugin {
 							vRecipients.add(st.nextToken().trim());
 						}
 
-						logger.info(" - TestMode - forward to:");
+						logger.info("Running in TestMode, forwarding mails to:");
 						for (String adr : vRecipients) {
 							logger.info("     " + adr);
 						}
@@ -211,7 +211,7 @@ public class MailPlugin extends AbstractPlugin {
 									getInternetAddressArray(vRecipients));
 							// change subject
 							String sSubject = getMailMessage().getSubject();
-							getMailMessage().setSubject(" : " + sSubject);
+							getMailMessage().setSubject("[TESTMODE] : " + sSubject);
 
 						} catch (MessagingException e) {
 							throw new PluginException(MailPlugin.class.getSimpleName(), INVALID_ADDRESS,
@@ -221,7 +221,7 @@ public class MailPlugin extends AbstractPlugin {
 
 				}
 
-				logger.fine("[MailPlugin] SendMessage now...");
+				logger.fine("Sending message...");
 
 				// if send message fails (e.g. for policy reasons) the process
 				// will
@@ -243,7 +243,7 @@ public class MailPlugin extends AbstractPlugin {
 				trans.close();
 
 			} catch (Exception esend) {
-				logger.warning("[MailPlugin] close - Warning:" + esend.toString());
+				logger.warning("close failed with exception: " + esend.toString());
 			}
 		}
 	}
@@ -266,7 +266,7 @@ public class MailPlugin extends AbstractPlugin {
 		if (sFrom == null || sFrom.isEmpty())
 			sFrom = this.getWorkflowService().getUserName();
 
-		logger.fine("[MailPlugin]  From: " + sFrom);
+		logger.fine("From: " + sFrom);
 
 		return sFrom;
 	}
@@ -288,7 +288,7 @@ public class MailPlugin extends AbstractPlugin {
 		else
 			sReplyTo = documentActivity.getItemValueString("namMailReplyToUser");
 
-		logger.fine("[MailPlugin] ReplyTo=" + sReplyTo);
+		logger.fine("ReplyTo=" + sReplyTo);
 		return sReplyTo;
 	}
 
@@ -302,9 +302,8 @@ public class MailPlugin extends AbstractPlugin {
 	 * @throws PluginException
 	 */
 	public String getSubject(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
-
 		String subject = replaceDynamicValues(documentActivity.getItemValueString("txtMailSubject"), documentContext);
-		logger.fine("[MailPlugin]  Subject: " + subject);
+		logger.fine("Subject: " + subject);
 
 		return subject;
 	}
@@ -331,9 +330,9 @@ public class MailPlugin extends AbstractPlugin {
 
 		// write debug Log
 		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("[MailPlugin]  " + vectorRecipients.size() + " Receipients: ");
+			logger.fine(vectorRecipients.size() + " Receipients: ");
 			for (String rez : vectorRecipients)
-				logger.fine("[MailPlugin]     " + rez);
+				logger.fine("     " + rez);
 		}
 
 		return vectorRecipients;
@@ -360,9 +359,9 @@ public class MailPlugin extends AbstractPlugin {
 
 		// write debug Log
 		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("[MailPlugin]  " + vectorRecipients.size() + " ReceipientsCC: ");
+			logger.fine(vectorRecipients.size() + " ReceipientsCC: ");
 			for (String rez : vectorRecipients)
-				logger.fine("[MailPlugin]     " + rez);
+				logger.fine("     " + rez);
 		}
 		return vectorRecipients;
 	}
@@ -388,9 +387,9 @@ public class MailPlugin extends AbstractPlugin {
 
 		// write debug Log
 		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("[MailPlugin]  " + vectorRecipients.size() + " ReceipientsBCC: ");
+			logger.fine(vectorRecipients.size() + " ReceipientsBCC: ");
 			for (String rez : vectorRecipients)
-				logger.fine("[MailPlugin]     " + rez);
+				logger.fine("     " + rez);
 		}
 		return vectorRecipients;
 	}
@@ -522,11 +521,10 @@ public class MailPlugin extends AbstractPlugin {
 	 * @throws AddressException
 	 */
 	public InternetAddress getInternetAddress(String aAddr) throws AddressException {
-
 		InternetAddress inetAddr = null;
-
-		if (aAddr == null)
+		if (aAddr == null) {
 			return null;
+		}
 
 		try {
 			// surround with "" if space
@@ -556,8 +554,9 @@ public class MailPlugin extends AbstractPlugin {
 		// set TO Recipient
 		// store valid addresses into atemp vector to avoid null values
 		InternetAddress inetAddr = null;
-		if (aList == null)
+		if (aList == null) {
 			return null;
+		}
 
 		Vector<InternetAddress> vReceipsTemp = new Vector<InternetAddress>();
 		for (int i = 0; i < aList.size(); i++) {
@@ -612,9 +611,8 @@ public class MailPlugin extends AbstractPlugin {
 			logger.finest(" Lookup MailSession '" + sJNDINName + "' successful");
 
 		} catch (NamingException e) {
-			logger.warning(" Lookup MailSession '" + sJNDINName + "' FAILED!");
+			logger.warning(" Lookup MailSession '" + sJNDINName + "' failed: "+e.getMessage());
 			logger.warning(" Unable to send mails! Verify server resources -> mail session.");
-			logger.warning(" ErrorMessage: " + e.getMessage());
 			noMailSessionBound = true;
 		}
 
