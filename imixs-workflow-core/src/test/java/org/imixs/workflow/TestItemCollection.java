@@ -625,5 +625,30 @@ public class TestItemCollection {
 
 		Assert.assertFalse(itemCol1.hasItem(null));
 	}
+	
+	
+	
+	/**
+	 * Test the append method
+	 */
+	@SuppressWarnings("rawtypes")
+	@Test
+	@Category(org.imixs.workflow.ItemCollection.class)
+	public void testItemCollectionAppend() {
+		ItemCollection itemCollection = new ItemCollection();
+		itemCollection.replaceItemValue("txtTitel", "Hello");
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+		
+		itemCollection.appendItemValue("txttitel", "World");
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+		List values = itemCollection.getItemValue("txtTitel");
+		Assert.assertEquals(2, values.size());
+				
+		itemCollection.appendItemValue("txttitel", "World");
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+		values = itemCollection.getItemValue("txtTitel");
+		Assert.assertEquals(3, values.size());
+		
+	}
 
 }
