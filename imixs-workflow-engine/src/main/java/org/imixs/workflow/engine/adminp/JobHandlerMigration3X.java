@@ -1,6 +1,7 @@
 package org.imixs.workflow.engine.adminp;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -90,7 +91,6 @@ public class JobHandlerMigration3X implements JobHandler {
 		adminp = ctx.getBusinessObject(JobHandlerMigration3X.class).saveJobEntity(adminp);
 
 		String query = "SELECT entity FROM Entity AS entity  ORDER BY entity.created";
-		;
 
 		logger.info(
 				"Job " + adminp.getUniqueID() + " - index=" + iIndex + " blocksize=" + iBlockSize + " JQPL=" + query);
@@ -118,6 +118,8 @@ public class JobHandlerMigration3X implements JobHandler {
 			String uid = oldEntiy.getUniqueID();
 			ItemCollection migratedEntity = documentService.load(uid);
 			if (migratedEntity == null) {
+				// create log entry....
+				oldEntiy.appendItemValue("txtAdminpLog", new Date(System.currentTimeMillis()) + " Migrated from Imixs-Workflow 3.X");
 				// save as new Document
 				documentService.save(oldEntiy);
 				logger.info("  -> Entity '" + uid + "' migrated.");

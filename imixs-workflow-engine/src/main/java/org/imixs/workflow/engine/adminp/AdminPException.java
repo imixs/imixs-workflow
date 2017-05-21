@@ -38,7 +38,7 @@ import org.imixs.workflow.exceptions.InvalidAccessException;
 public class AdminPException extends InvalidAccessException {
 
 	private static final long serialVersionUID = 1L;
-	
+	public static final String INVALID_PARAMS="INVALID_PARAMS";
 	
 	public AdminPException(String aErrorCode, String message) {
 		super(aErrorCode, message);

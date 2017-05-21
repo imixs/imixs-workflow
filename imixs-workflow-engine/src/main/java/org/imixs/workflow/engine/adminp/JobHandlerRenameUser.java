@@ -1,6 +1,7 @@
 package org.imixs.workflow.engine.adminp;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -22,6 +23,39 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
 
+/**
+ * The JobHandlerRenameUser updates the name fields of workitems. A name can be
+ * replaced or added. The following job attributes are expected:
+ * 
+ * <ul>
+ * <li>namFrom - source userID</li>
+ * <li>namTo - target userID</li>
+ * <li>keyReplace - if true the source UserID will be replaced with the target
+ * UserID, otherwise the target userID will be added</li>
+ * </ul>
+ * 
+ * The jobHandler only processes workitems from the type
+ * <ul>
+ * <li>workitem</li>
+ * <li>childworkitem</li>
+ * <li>workitemlob</li>
+ * </ul>
+ * 
+ * The following workitem attributes will be updated:
+ * <ul>
+ * <li>$writeaccess</li>
+ * <li>$readaccess</li>
+ * <li>namowner</li>
+ * <li>$creator</li>
+ * <li>namcreator (deprecated)</li>
+ * </ul>
+ * 
+ * The attributes $creator can not be replaced. Only an additional userID is placed here.
+ * 
+ * @see AdminPService AdminPService for details
+ * @version 1.0
+ * 
+ */
 @DeclareRoles({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @RunAs("org.imixs.ACCESSLEVEL.MANAGERACCESS")
@@ -34,27 +68,16 @@ public class JobHandlerRenameUser implements JobHandler {
 	@EJB
 	DocumentService documentService;
 
-	
 	@EJB
 	LuceneUpdateService luceneService;
 
-	private static final int DEFAULT_COUNT=100;
+	private static final int DEFAULT_COUNT = 100;
 	private static Logger logger = Logger.getLogger(JobHandlerRenameUser.class.getName());
 
 	/**
-	 * This method creates a new AdminP Job. Depending on the data provided in
-	 * the job description this will result in different kind of timer tasks.
+	 * This method creates a new AdminP Job to rename userId in workitems.
 	 * 
-	 * Lucene Search Statement to quey workitems:
-	 * 
-	 * <code>
-		  "(type:\"workitem\" OR type:\"workitemarchive\" OR type:\"childworkitem\" OR type:\"childworkitemarchive\" OR type:\"workitemlob\" )";
-		sQuery +=" AND ($writeaccess:\""+fromName+"\" OR $readaccess:\""+fromName+"\" OR namowner:\""+fromName+"\" OR namcreator:\""+fromName+"\" )";
-	
-	 * </code>
-	 * @throws QueryException 
-	 * 
-	 * 
+	 * @throws QueryException
 	 * @throws AccessDeniedException
 	 */
 	@Override
@@ -62,53 +85,51 @@ public class JobHandlerRenameUser implements JobHandler {
 		long lProfiler = System.currentTimeMillis();
 		int iIndex = adminp.getItemValueInteger("numIndex");
 		int iBlockSize = adminp.getItemValueInteger("numBlockSize");
-		if (iBlockSize<=0) {
-			iBlockSize=DEFAULT_COUNT;
+		if (iBlockSize <= 0) {
+			iBlockSize = DEFAULT_COUNT;
 			adminp.replaceItemValue("numBlockSize", iBlockSize);
 		}
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
 		int iProcessed = adminp.getItemValueInteger("numProcessed");
-		String fromName = adminp.getItemValueString("namFrom");
-		String to = adminp.getItemValueString("namTo");
+		String fromUserID = adminp.getItemValueString("namFrom").trim();
+		String toUserID = adminp.getItemValueString("namTo").trim();
 		boolean replace = adminp.getItemValueBoolean("keyReplace");
-		
-		// update $WorkflowSummary
-		String summary = "Rename: " + fromName + ">>" + to + " (";
-		if (replace)
-			summary += "replace";
-		else
-			summary += "no replace";
 
-		summary += ")";
-		
+		if (fromUserID.isEmpty() || toUserID.isEmpty()) {
+			throw new AdminPException(AdminPException.INVALID_PARAMS,
+					"Invalid job configuration - attributes 'namFrom' or 'namTo' are empty.");
+		}
+
+		// update $WorkflowSummary
+		String summary = "Rename: " + fromUserID + " -> " + toUserID + " (replace=" + replace + ")";
 		logger.info(summary);
+
 		adminp.replaceItemValue("$WorkflowSummary", summary);
 		adminp.replaceItemValue("$workflowStatus", "Processing");
-		// save it...
-		// adminp = entityService.save(adminp);
+		// update status...
 		adminp = ctx.getBusinessObject(JobHandlerRenameUser.class).saveJobEntity(adminp);
-		
-		// Select Statement - ASC sorting is important here!
-		String sQuery = "(type:\"workitem\" OR type:\"workitemarchive\" OR type:\"childworkitem\" OR type:\"childworkitemarchive\" OR type:\"workitemlob\" )";
-		sQuery +=" AND ($writeaccess:\""+fromName+"\" OR $readaccess:\""+fromName+"\" OR namowner:\""+fromName+"\" OR $creator:\""+fromName+"\" OR namcreator:\""+fromName+"\" )";
-	
-		
+
+		// build search query
+		String sQuery = "(type:\"workitem\" OR type:\"childworkitem\" OR type:\"workitemlob\" ) "
+				+ " AND ($writeaccess:\"" + fromUserID + "\" OR $readaccess:\"" + fromUserID + "\" OR namowner:\""
+				+ fromUserID + "\" OR $creator:\"" + fromUserID + "\" OR namcreator:\"" + fromUserID + "\" )";
+
 		Collection<ItemCollection> col;
 		try {
-			col = documentService.find(sQuery,iBlockSize, iIndex);
+			// ASC sorting is important here!
+			col = documentService.find(sQuery, iBlockSize, iIndex, "$created", false);
 		} catch (QueryException e) {
-			throw new InvalidAccessException(InvalidAccessException.INVALID_ID,e.getMessage(),e);			
+			throw new InvalidAccessException(InvalidAccessException.INVALID_ID, e.getMessage(), e);
 		}
 		int colSize = col.size();
 		// check all selected documents
 		for (ItemCollection entity : col) {
 			iProcessed++;
-
 			// call from new instance because of transaction new...
 			// see: http://blog.imixs.org/?p=155
 			// see: https://www.java.net/node/705304
-			boolean result = ctx.getBusinessObject(JobHandlerRenameUser.class).updateWorkitemUserIds(entity, fromName, to, replace,
-					adminp.getItemValueString(WorkflowKernel.UNIQUEID));
+			boolean result = ctx.getBusinessObject(JobHandlerRenameUser.class).updateWorkitemUserIds(entity, fromUserID,
+					toUserID, replace);
 			if (result == true) {
 				// inc counter
 				iUpdates++;
@@ -118,15 +139,14 @@ public class JobHandlerRenameUser implements JobHandler {
 		// adjust start pos and update count
 		adminp.replaceItemValue("numUpdates", iUpdates);
 		adminp.replaceItemValue("numProcessed", iProcessed);
-
 		adminp.replaceItemValue("numLastCount", col.size());
 		iIndex++;
 		adminp.replaceItemValue("numIndex", iIndex);
-		
+
 		long time = (System.currentTimeMillis() - lProfiler) / 1000;
 
-		
-		logger.info("Job " + AdminPService.JOB_RENAME_USER + " (" + adminp.getUniqueID() + ") - " + col.size() +  " workitems processed in " + time + " sec.");
+		logger.info("Job " + AdminPService.JOB_RENAME_USER + " (" + adminp.getUniqueID() + ") - " + col.size()
+				+ " workitems processed in " + time + " sec.");
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {
@@ -134,7 +154,6 @@ public class JobHandlerRenameUser implements JobHandler {
 			adminp.replaceItemValue("$workflowStatus", "Finished");
 			adminp = ctx.getBusinessObject(JobHandlerRenameUser.class).saveJobEntity(adminp);
 			return true;
-
 		} else {
 			// prepare for rerun
 			adminp.replaceItemValue("$workflowStatus", "Waiting");
@@ -142,8 +161,7 @@ public class JobHandlerRenameUser implements JobHandler {
 			return false;
 		}
 	}
-	
-	
+
 	/**
 	 * Updates read,write and owner of a entity and returns true if an update
 	 * was necessary
@@ -156,57 +174,38 @@ public class JobHandlerRenameUser implements JobHandler {
 	 * @throws AccessDeniedException
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-	public boolean updateWorkitemUserIds(ItemCollection entity, String from, String to, boolean replace,
-			String adminpUniqueid) throws AccessDeniedException {
+	public boolean updateWorkitemUserIds(ItemCollection entity, String from, String to, boolean replace) throws AccessDeniedException {
 
 		boolean bUpdate = false;
 		if (entity == null)
 			return false;
-
-		// log current values
-		entity.replaceItemValue("txtAdminP", "AdminP:" + adminpUniqueid + " ");
-
+		
 		// Verify Fields
-		logOldValues(entity, "$ReadAccess");
 		if (updateList(entity.getItemValue("$ReadAccess"), from, to, replace))
 			bUpdate = true;
 
-		logOldValues(entity, "$WriteAccess");
 		if (updateList(entity.getItemValue("$WriteAccess"), from, to, replace))
 			bUpdate = true;
 
-		logOldValues(entity, "namOwner");
 		if (updateList(entity.getItemValue("namOwner"), from, to, replace))
 			bUpdate = true;
 
 		// !! We do not replace the creator!! - we only allow additions here!
-		logOldValues(entity, "$Creator");
 		if (updateList(entity.getItemValue("$Creator"), from, to, false))
 			bUpdate = true;
-		logOldValues(entity, "namCreator");
 		if (updateList(entity.getItemValue("namCreator"), from, to, false))
 			bUpdate = true;
 
 		if (bUpdate) {
+			// create log entry....
+			String summary = "Rename: " + from + " -> " + to + " (replace=" + replace + ")";
+			entity.appendItemValue("txtAdminpLog", new Date(System.currentTimeMillis()) + " " + summary);
 			documentService.save(entity);
 			logger.fine("updated: " + entity.getItemValueString(WorkflowKernel.UNIQUEID));
 		}
 		return bUpdate;
 	}
 
-	@SuppressWarnings("rawtypes")
-	private void logOldValues(ItemCollection entity, String field) {
-
-		// update log
-		String log = entity.getItemValueString("txtAdminP");
-		log = log + " " + field + "=";
-		List list = entity.getItemValue(field);
-		for (Object o : list) {
-			log = log + o.toString() + ",";
-		}
-		entity.replaceItemValue("txtAdminP", log);
-
-	}
 	
 
 	/**
@@ -244,7 +243,6 @@ public class JobHandlerRenameUser implements JobHandler {
 
 		return update;
 	}
-
 
 	/**
 	 * Save AdminP Entity
