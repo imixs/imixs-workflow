@@ -1,15 +1,18 @@
-#The ItemCollection
-The Imixs ItemCollection is a generic value object used by the Imixs-Workflow API. You can see an ItemCollection as a kind of document which contains a various set of properties (Items). Each Item of an ItemCollection consists of a name and a value. The value of an Item can be any serializeable data object. So an ItemCollection is a very flexible data structure. 
+# The ItemCollection
+The Imixs ItemCollection is a generic value object used by the Imixs-Workflow API. You can see an ItemCollection as a kind of document which contains a set of properties (called _Items_). Each Item of an ItemCollection consists of a name and a value. The value of an Item can be any serializeable data object. So an ItemCollection is a very flexible data structure. 
 
-Each Workitem processed by the Imixs-Workflow engine is represented by an instance of an ItemCollection. But also other Entities used by the Imixs-Workflow - like the Model Entities - are represented as instances of an ItemCollection. The ItemCollection provides methods which makes it very easy to create, access or modify the properties of an ItemCollection. See the following example:  
+Each Workitem processed by the Imixs-Workflow engine is represented by an instance of an ItemCollection. But also other Entities used by the Imixs-Workflow - like the Model Entities - are represented in the same object structure. The ItemCollection provides methods which makes it very easy to create, access or modify the properties of an ItemCollection. See the following example:  
 
     import org.imixs.workflow.ItemCollection;
      
     ItemCollection myItemCollection=new ItemCollection;
     myItemCollection.replaceItemValue("FirstName","Anna");
     myItemCollection.replaceItemValue("CostCenter",new Integer(4010));
+    myItemCollection.appendItemValue("team","mark");
+    myItemCollection.appendItemValue("team","anna");
 
-The method 'replaceItemValue()' adds a new Item or replaces the value of an existing item. This code example demonstrates the usage of the replaceItemValue method. The code creates a new empty ItemCollection and adds two new items. The first Item with the name "FirstName" contains a String value and the second item "CostCenter" contains an Integer value. 
+The method _replaceItemValue_ adds a new Item or replaces the value of an existing item. This code example creates a new empty ItemCollection and adds three new items. The first Item with the name "FirstName" contains a String value and the second item "CostCenter" contains an Integer value. 
+For the third item 'team' the  method _appendItemValue_ is used, which allows to add multiple values into one item.  
 
 ###Getter Methods
 The ItemCollection provides different methods to access items values. Some of the  methods are type-save and allow to access a value of a specific type. See the following example:
@@ -50,12 +53,17 @@ The ItemCollection provides also methods to test the existence of an Item. See t
 
 
 ### Multivalue Attributes
-The value of an Item can also be a value list (multi-value). Multi-values can be added to an ItemCollection in a List object:
+The value of an Item can also be a value list (multi-value). Multi-values can be added to an ItemCollection with the method _appendItemValue_ or as a List of objects:
 
     List<String> multiValue=new ArrayList<String>();
     multiValue.add("Anna");
     multiValue.add("John");
     myItemCollection.replaceItemValue("team", multiValue);
+
+The method _appendItemValue_ creates the same list:
+
+    myItemCollection.appendItemValue("team", "Anna");
+    myItemCollection.appendItemValue("team", "John");
 
   
 This code example adds a teamlist with two String values as an item with the Name "team" to an ItemCollection. To access a multi-value list you can use the method getItemValue() which always returns a List of values:
@@ -91,7 +99,7 @@ As an ItemCollection is not serializable it is not recommanded to store a ItemCo
 In this code example the values of the ItemCollection "teamMemer" are stored as a HashMap into the ItemCollection "project" with is mapped to the item "projectManager".
    
   
-###Get and Set all Items
+### Get and Set all Items
 With the methods setAllItems() and getAllItems() it is possible to set and get the internal Map ValueObject. See the following example:
 
     // create a Java HashMap
