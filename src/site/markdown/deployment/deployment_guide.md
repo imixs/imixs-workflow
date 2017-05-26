@@ -13,13 +13,13 @@ To deploy the Imixs-Workflow engine on a specific platform see also the chapters
 ##Imixs-Workflow components
 To bundle the Imixs-Workflow engine together with a business application the following components need to be added into the deployment:
  
-  * imixs-workflow-core-4.x.x.jar  - contains the core api and xml api
-  * imixs-workflow-engine-4.x.x.jar - the jee workflow engine containing jpa and ejb components
+  * _imixs-workflow-core-4.x.x.jar_  - contains the core api and xml api
+  * _imixs-workflow-engine-4.x.x.jar_ - the jee workflow engine containing jpa and ejb components
 
 For following components are used for web applications or the Rest API
   
-  * imixs-workflow-faces-4.x.x.jar - contains optional JSF components
-  * imixs-workflow-jax-rs-4.x.x.jar - contains the Imixs RESTful Web Service
+  * _imixs-workflow-faces-4.x.x.jar_ - contains optional JSF components
+  * _imixs-workflow-jax-rs-4.x.x.jar_ - contains the Imixs RESTful Web Service
   
 All artifacts can be downloaded from the [Maven central repository page](https://search.maven.org/). In case of maven the components will be downloaded and bundled automatically during the maven build process.
   
@@ -42,16 +42,16 @@ To install and deploy the Imixs-Workflow engine into a web application it is suf
 	  +- WEB-INF/
 	  |  |- ejb-jar.xml  (optional)
 	  |  +- lib/
-	  |  |  |- imixs-workflow-core-3.0.0.jar
-	  |  |  |- imixs-workflow-engine-3.0.0.jar
-	  |  |  |- imixs-workflow-faces-3.0.0.jar
-	  |  |  |- imixs-workflow-jax-rs-3.0.0.jar
-	  |  |  |- lucene-codecs-6.2.0.jar
-	  |  |  |- lucene-core-6.2.0.jar
-	  |  |  |- lucene-analyzers-common-6.2.0.jar
-	  |  |  |- lucene-queries-6.2.0.jar
-	  |  |  |- lucene-queryparser-6.2.0.jar
-	  |  |  |- lucene-sandbox-6.2.0.jar
+	  |  |  |- imixs-workflow-core-4.1.2.jar
+	  |  |  |- imixs-workflow-engine-4.1.2.jar
+	  |  |  |- imixs-workflow-faces-4.1.2.jar
+	  |  |  |- imixs-workflow-jax-rs-4.1.2.jar
+	  |  |  |- lucene-codecs-6.3.0.jar
+	  |  |  |- lucene-core-6.3.0.jar
+	  |  |  |- lucene-analyzers-common-6.3.0.jar
+	  |  |  |- lucene-queries-6.3.0.jar
+	  |  |  |- lucene-queryparser-6.3.0.jar
+	  |  |  |- lucene-sandbox-6.3.0.jar
 	  |  +- classes/
 	  |  |  +- META-INF/
 	  |  |  |  |- persistence.xml
@@ -61,8 +61,8 @@ The following example shows the maven dependencies used in a maven project:
 
 	...
 	<properties>
-		<org.imixs.workflow.version>4.0.0</org.imixs.workflow.version>
-		<lucene.version>6.2.0</lucene.version>
+		<org.imixs.workflow.version>4.1.2</org.imixs.workflow.version>
+		<lucene.version>6.3.0</lucene.version>
 	</properties>
 	... 
 	<dependencies>

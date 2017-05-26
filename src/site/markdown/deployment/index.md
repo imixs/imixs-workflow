@@ -24,11 +24,11 @@ All components of Imixs-Workflow are build with Maven which makes it easy to add
 Read the [section Maven](../maven.html) for further details about how to work with maven artifacts.
 
 ## Database
-The Imixs-Workflow engine stores the workflow model and its process instances into a database using the Java Persistence API (JPA). Therefore a database pool need to be provided together with the container the Imixs-Workflow engine is deployed to. The configuration is done via the persistence.xml file. The persistence-unit name is 
+The Imixs-Workflow engine stores the workflow model and its process instances into a database by using the Java Persistence API (JPA). Therefore a database pool need to be provided together with the container the Imixs-Workflow engine is deployed to. The configuration is done via the persistence.xml file. The persistence-unit name is 
 
 	org.imixs.workflow.jpa
 
-See the following example:
+See the following example file, which referes to a JNDI Database Pool named 'jdbc/workflow-db':
 
 
 	<?xml version="1.0" encoding="UTF-8"?>
@@ -57,7 +57,6 @@ __Note:__ The jar-file must match the deployed version of the Imixs-Workflow eng
 ## Security
 Each back-end call to the Imixs-Workflow engine have to propagate an applicable user principal and security role to be verified by the back-end services. The security concept of Imixs-Workflow defines the following roles:
 
-  * org.imixs.ACCESSLEVEL.NOACCESS  
   * org.imixs.ACCESSLEVEL.READACCESS
   * org.imixs.ACCESSLEVEL.AUTHORACCESS
   * org.imixs.ACCESSLEVEL.EDITORACCESS
@@ -70,8 +69,8 @@ Each user accessing the Imixs-Workflow Engine need to be assigned at least to on
 See the following section for details about how to deploy the Imixs-Workflow engine:
 
  * [General Deployment Guide](./deployment_guide.html)
- * [Wildfly Deployment Guide](./wildfly.html);
- * [GlassFish Deployment Guide](./glassfish.html);
+ * [Wildfly Deployment Guide](./wildfly.html)
+ * [GlassFish Deployment Guide](./glassfish.html)
  * [Maven](../maven.html)
  * [Database Schema](./database_schema.html)
  * [Security Issues](./security.html) 
