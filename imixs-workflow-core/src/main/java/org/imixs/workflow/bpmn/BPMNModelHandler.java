@@ -38,6 +38,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	boolean bDefinitions = false;
 	boolean bMessage = false;
+	boolean bAnnotation = false;
 	boolean bExtensionElements = false;
 	boolean bImixsProperty = false;
 	boolean bImixsTask = false;
@@ -53,6 +54,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	String currentItemType = null;
 	String currentWorkflowGroup = null;
 	String currentMessageName = null;
+	String currentAnnotationName = null;
 	String currentLinkName = null;
 	String bpmnID = null;
 	StringBuilder characterStream = null;
@@ -66,7 +68,9 @@ public class BPMNModelHandler extends DefaultHandler {
 	Map<String, String> linkCatchEventCache = null;
 
 	Map<String, SequenceFlow> sequenceCache = null;
+	Map<String, SequenceFlow> associationCache = null;
 	Map<String, String> messageCache = null;
+	Map<String, String> annotationCache = null;
 
 	List<String> startEvents = null;
 
@@ -81,14 +85,15 @@ public class BPMNModelHandler extends DefaultHandler {
 		taskCache = new HashMap<String, ItemCollection>();
 		eventCache = new HashMap<String, ItemCollection>();
 		messageCache = new HashMap<String, String>();
+		annotationCache = new HashMap<String, String>();
 
 		linkThrowEventCache = new HashMap<String, String>();
 		linkCatchEventCache = new HashMap<String, String>();
 
 		startEvents = new ArrayList<String>();
 
-		// nodeCache = new HashMap<String, ItemCollection>();
 		sequenceCache = new HashMap<String, SequenceFlow>();
+		associationCache = new HashMap<String, SequenceFlow>();
 
 		// define items to be ignored for import
 		String[] array = { "txtname", "txtworkflowgroup", "numprocessid", "numactivityid", "type" };
@@ -201,14 +206,13 @@ public class BPMNModelHandler extends DefaultHandler {
 			sequenceCache.put(bpmnID, new SequenceFlow(source, target));
 		}
 
-		// bpmn2:messageFlow - cache all messageFlow...
-		/*
-		 * if (qName.equalsIgnoreCase("bpmn2:messageFlow")) { bpmnID =
-		 * attributes.getValue("id"); String source =
-		 * attributes.getValue("sourceRef"); String target =
-		 * attributes.getValue("targetRef"); sequenceCache.put(bpmnID, new
-		 * SequenceFlow(source, target)); }
-		 */
+		// bpmn2:association - cache all association...
+		if (qName.equalsIgnoreCase("bpmn2:association")) {
+			bpmnID = attributes.getValue("id");
+			String source = attributes.getValue("sourceRef");
+			String target = attributes.getValue("targetRef");
+			associationCache.put(bpmnID, new SequenceFlow(source, target));
+		}
 
 		/*
 		 * parse a imixs:item
@@ -239,6 +243,11 @@ public class BPMNModelHandler extends DefaultHandler {
 		if (qName.equalsIgnoreCase("bpmn2:message")) {
 			bMessage = true;
 			currentMessageName = attributes.getValue("name");
+		}
+
+		if (qName.equalsIgnoreCase("bpmn2:textAnnotation")) {
+			bAnnotation = true;
+			currentAnnotationName = attributes.getValue("id");
 		}
 
 	}
@@ -307,9 +316,18 @@ public class BPMNModelHandler extends DefaultHandler {
 
 			// bpmn2:message?
 			if (bMessage) {
+				// cache the message...
 				messageCache.put(currentMessageName, characterStream.toString());
 				bMessage = false;
 			}
+
+			// bpmn2:annotation?
+			if (bAnnotation) {
+				// cache the annotation
+				annotationCache.put(currentAnnotationName, characterStream.toString());
+				bAnnotation = false;
+			}
+
 			characterStream = null;
 			bdocumentation = false;
 		}
@@ -401,6 +419,15 @@ public class BPMNModelHandler extends DefaultHandler {
 
 			// update modelversion...
 			task.replaceItemValue("$modelVersion", modelVersion);
+
+			// look for optional annotations....
+			// annotation text will be added to the task if the task has yet no documentation
+			String annotationText = getAnnotationForElement(key);
+			if (annotationText!=null && task.getItemValueString("rtfdescription").isEmpty()) {
+				// we take the annotation as the new documentation
+				task.replaceItemValue("rtfdescription", annotationText);
+			}
+
 			model.addTask(task);
 
 			// add id and resort
@@ -418,6 +445,41 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 
 		return model;
+
+	}
+
+	/**
+	 * This method returns the documentation of connected annotations to a given
+	 * Element
+	 * 
+	 * @param elementID
+	 *            - BPMN element linked with an annotation
+	 * @return - the documentation text or null if no annotation was linked
+	 **/
+	private String getAnnotationForElement(String elementID) {
+		StringBuilder builder = new StringBuilder();
+		// check all annotations....
+		for (Map.Entry<String, String> entry : annotationCache.entrySet()) {
+			String id = entry.getKey();
+			String annotation = entry.getValue();
+			if (annotation==null || annotation.trim().isEmpty()) {
+				continue;
+			}
+			// test if the elementID is connected to this annotation....
+			List<SequenceFlow> resultList = findIncomingAssociations(elementID);
+			for (SequenceFlow flow : resultList) {
+				if (flow.source.equals(id)) {
+					builder.append(annotation);
+				}
+			}
+		}
+		
+		if (builder.length()>0) {
+			return builder.toString();
+		}
+		else {
+			return null;
+		}
 
 	}
 
@@ -715,6 +777,45 @@ public class BPMNModelHandler extends DefaultHandler {
 		List<SequenceFlow> result = new ArrayList<BPMNModelHandler.SequenceFlow>();
 		for (String aFlowID : sequenceCache.keySet()) {
 			SequenceFlow aFlow = sequenceCache.get(aFlowID);
+			if (aFlow.source.equals(elementID)) {
+				result.add(aFlow);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * This method returns all incoming Associations flows for a given element
+	 * ID
+	 * 
+	 * @param elementID
+	 * @return
+	 */
+	private List<SequenceFlow> findIncomingAssociations(String elementID) {
+
+		List<SequenceFlow> result = new ArrayList<BPMNModelHandler.SequenceFlow>();
+		for (String aFlowID : associationCache.keySet()) {
+			SequenceFlow aFlow = associationCache.get(aFlowID);
+			if (aFlow.target.equals(elementID)) {
+				result.add(aFlow);
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * This method returns all outgoing Associations flows for a given element
+	 * ID
+	 * 
+	 * @param elementID
+	 * @return
+	 */
+	@SuppressWarnings("unused")
+	private List<SequenceFlow> findOutgoingAssociations(String elementID) {
+		List<SequenceFlow> result = new ArrayList<BPMNModelHandler.SequenceFlow>();
+		for (String aFlowID : associationCache.keySet()) {
+			SequenceFlow aFlow = associationCache.get(aFlowID);
 			if (aFlow.source.equals(elementID)) {
 				result.add(aFlow);
 			}
