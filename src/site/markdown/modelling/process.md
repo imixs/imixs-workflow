@@ -1,4 +1,4 @@
-#The Workflow Task Properties
+# The Workflow Task Properties
 When a Imixs BPMN Task Element is selected in the Drawing Canvas, different settings can be
 configured from the tabbed property sheets displayed in the Property View.
  
@@ -6,17 +6,21 @@ configured from the tabbed property sheets displayed in the Property View.
 
 The property settings are grouped into different sections.
  
-##General Properties
+## General Properties
 The property tab 'General' defines basic information for an Imixs BPMN Task element. 
 
 <img src="../images/modelling/bpmn_screen_16.png" />
 
-###Name 
+### Name 
 The name of the Task element is used to identify the status of a process instance. The Name should describe the status of a workitem in a bussiness model. e.g. "open" or "in approval" "closed".
 
-###Description
-The description of the Task element is used by the Imixs Workflow System to provide the user
-with additional information about the task. Typically a description can provide information how the task should be performed or which information need to be entered into a application.
+### Documentation
+The documentation of the Task element is used by the Imixs Workflow System to provide the user
+with additional information about the task. Typically a documentation can provide information how the task should be performed or which information need to be entered into a application.
+
+The documentation can also be created by assigning a TextAnnotation element to the task. In this case the documentation field of the Task should remain empty. 
+
+<img src="../images/modelling/bpmn_screen_33.png" />
  
   
 ##Workflow Properties

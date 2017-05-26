@@ -88,10 +88,10 @@ The _UsersRolesLoginModule_ is a simple login module that supports multiple user
             <login-module code="RoleMapping" flag="required">
     			<module-option name="rolesProperties" value="file:${jboss.server.config.dir}/imixsrealm.properties"/>
         		<module-option name="replaceRole" value="false"/>
-   			</login-module>
+      	    </login-module>
         </authentication>
     </security-domain>
-   ...
+    ...
 	
 The sampleapp-users.properties file uses a username=password format with each user entry on a separate line:
 
