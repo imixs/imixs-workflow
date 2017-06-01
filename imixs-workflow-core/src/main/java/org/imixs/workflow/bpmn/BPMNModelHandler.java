@@ -412,6 +412,9 @@ public class BPMNModelHandler extends DefaultHandler {
 				// we need a new pid!
 				pId = processIDList.get(processIDList.size() - 1);
 				pId = pId + 100;
+				logger.warning("Task " + task.getItemValueInteger("numProcessID") + " ("
+						+ task.getItemValueString("txtname") + ") is not unique, assigning new ProcessID " + pId
+						+ ". Please verify the XML content.");
 				task.replaceItemValue("numProcessID", pId);
 				// update task in cache
 				taskCache.put(key, task);
@@ -421,9 +424,10 @@ public class BPMNModelHandler extends DefaultHandler {
 			task.replaceItemValue("$modelVersion", modelVersion);
 
 			// look for optional annotations....
-			// annotation text will be added to the task if the task has yet no documentation
+			// annotation text will be added to the task if the task has yet no
+			// documentation
 			String annotationText = getAnnotationForElement(key);
-			if (annotationText!=null && task.getItemValueString("rtfdescription").isEmpty()) {
+			if (annotationText != null && task.getItemValueString("rtfdescription").isEmpty()) {
 				// we take the annotation as the new documentation
 				task.replaceItemValue("rtfdescription", annotationText);
 			}
@@ -462,7 +466,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		for (Map.Entry<String, String> entry : annotationCache.entrySet()) {
 			String id = entry.getKey();
 			String annotation = entry.getValue();
-			if (annotation==null || annotation.trim().isEmpty()) {
+			if (annotation == null || annotation.trim().isEmpty()) {
 				continue;
 			}
 			// test if the elementID is connected to this annotation....
@@ -473,11 +477,10 @@ public class BPMNModelHandler extends DefaultHandler {
 				}
 			}
 		}
-		
-		if (builder.length()>0) {
+
+		if (builder.length() > 0) {
 			return builder.toString();
-		}
-		else {
+		} else {
 			return null;
 		}
 
