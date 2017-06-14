@@ -117,7 +117,7 @@ Lookup fetches the EJB from the EJB Container provided by the application server
 		try {
 			InitialContext ictx = new InitialContext();
 			Context ctx = (Context) ictx.lookup("java:comp/env");
-			inmService = (INMService) ctx.lookup("ejb/MyServiceBean");
+			myService = (MyService) ctx.lookup("ejb/MyServiceBean");
 		} catch (NamingException e) {
 			throw new PluginException(this.getClass().getName(), "JNDI_LOOKUP_ERROR", e.getMessage());
 		}
