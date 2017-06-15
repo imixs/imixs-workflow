@@ -308,7 +308,21 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 						logger.fine("[SplitAndJoinPlugin] successful updated subprocess.");
 					}
+					
+					
+					// test for optional action result..
+					if (processData.hasItem("action")) {
+						String workflowResult=processData.getItemValueString("action");
+						if (!workflowResult.isEmpty()) {
+							workflowResult = new ResultPlugin().replaceDynamicValues(workflowResult, workitemSubProcess);
+							originWorkitem.replaceItemValue("action", workflowResult);
+						}
+						
+					}
 				}
+				
+
+				
 			}
 
 		}
