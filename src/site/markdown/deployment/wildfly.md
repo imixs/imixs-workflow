@@ -5,15 +5,15 @@ This section will explain the configuration steps needed to successfully deploy 
 ## Install Wildfly
 The Wildfly Server is supporting the EE7 specification and can be downloaded from the [Wildfly project site](http://www.wildfly.org). The site also includes an installation guide how to install Wildfly server on different platforms. 
 
-After the server is started it can be access from a web browser with the following URL:
+After the server is started it can be opened from a web browser with the following URL:
 
     http://localhost:8080/
       
-##Setting up a Imixs-Workflow database pool
+## Setting up a Imixs-Workflow database pool
 The [Imixs-Sample Application](../sampleapplication.html) expects a database resource with the name "jdbc/workflow-db". The corresponding datasource configuration can be added into the file _wildfly/standalone/configuration/standalone.xml_ in the subsystem section 'datasources' 
 
 
-###MySQL
+### MySQL
 For MySQL the corresponding JDBC driver need to be deployed into Wildfly first. Copy the mysql-connector-java-bin.jar into the /deployment folder of Wildfly.
 
 Next a datasource can be configured in the standlone.xml:
@@ -56,11 +56,48 @@ Next a datasource can be configured in the standlone.xml:
        </datasource>
 	...
 	                
-The configuraton for any other database like Oracle, Informix, Microsoft SQL Server can be addapted in a simmilar way.
+The configuration for any other database like Oracle, Informix, Microsoft SQL Server can be addapted in a simmilar way.
 
 
 
-##Setup a Security Realm
+### EclipseLink
+The Imixs-Sample Application uses EclipseLink for JPA. Make sure that EclipseLink is configured in your Wildfly. To add EclipseLink to your configuration see the following steps:
+
+First download the eclipseLink from [here](https://www.eclipse.org/eclipselink/downloads/). The Zip file includes the file _eclipselink.jar_. Copy this file _eclipselink.jar_ into the following location:
+
+	modules/system/layers/base/org/eclipse/persistence/main
+
+Next edit the file _module.xml_ located at the same location and add the following new resource definition:
+
+	...
+	<resources>
+	  ....
+	  <resource-root path="eclipselink.jar">
+	    <filter>
+	            <exclude path="javax/**" />
+	    </filter>
+	  </resource-root>
+	  ...
+	</resources>
+	...
+
+Finally add the org.jipijapa.eclipselink.JBossArchiveFactoryImpl to your configuration. This can be done by using the jboss-cli tool:
+
+	./jboss-cli.sh --connect '/system-property=eclipselink.archive.factory:add(value=org.jipijapa.eclipselink.JBossArchiveFactoryImpl)'
+
+This command will add the following entry into your standalone.xml configuration file:
+
+	...
+	 <system-properties>
+	 ...
+	 <property name="eclipselink.archive.factory" value="org.jipijapa.eclipselink.JBossArchiveFactoryImpl"/>
+	 </system-properties>
+	...
+
+You can also edit the standalone.xml file directly if you have problems to use the command line tool.
+
+
+## Setup a Security Realm
 To login to the Imixs-Sample Application a security realm name 'imixsrealm' need to be provided. For Wildfly a security domain can be configured in the standalone.xml file. Wildfly supports a lot of different login modules which can be used.
 Each user need to be mapped to one of the [Imixs security roles](../engine/acl.html).
 The following table shows an example of a user list with different access levels:
@@ -127,7 +164,7 @@ The following example shows a security-domain named 'imixs' using a Database log
 		</security-domain>
 	...
 	                
-###RoleMapping
+### RoleMapping
 
 To map the Imxis security roles to the corresponding groups provided by the security-domain a roleMapping section need to be included into the security-domain. The content of the file _imixsrealm.properties_ looks like this:
 
@@ -137,6 +174,7 @@ To map the Imxis security roles to the corresponding groups provided by the secu
 	IMIXS-WORKFLOW-Manager=org.imixs.ACCESSLEVEL.MANAGERACCESS
 
 The file can be used to map any other role into the security-domain as well.
+
 
 
 ## Deploy the Imixs-Sample Application
