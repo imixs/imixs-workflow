@@ -74,10 +74,12 @@ public class BPMNModel implements Model {
 	@Override
 	public ItemCollection getTask(int processid) throws ModelException {
 		ItemCollection process = taskList.get(processid);
-		if (process != null)
+		if (process != null) {
 			return new ItemCollection(process);
-		else
-			throw new ModelException(BPMNModel.class.getSimpleName(), ModelException.UNDEFINED_MODEL_ENTRY);
+		} else {
+			throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
+					"BPMN Task " + processid + " not defined by version '" + this.getVersion() + "'");
+		}
 	}
 
 	@Override
@@ -89,7 +91,8 @@ public class BPMNModel implements Model {
 			}
 		}
 		// not found!
-		throw new ModelException(BPMNModel.class.getSimpleName(), ModelException.UNDEFINED_MODEL_ENTRY);
+		throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
+				"BPMN Event " + processid + "." + activityid + " not defined by version '" + this.getVersion() + "'");
 	}
 
 	public List<String> getGroups() {
