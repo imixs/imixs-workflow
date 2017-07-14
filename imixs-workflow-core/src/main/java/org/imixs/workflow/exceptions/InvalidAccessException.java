@@ -42,6 +42,7 @@ public class InvalidAccessException extends RuntimeException {
 
 	public static final String OPERATION_NOTALLOWED = "OPERATION_NOTALLOWED";
 	public static final String INVALID_ID = "INVALID_ID";
+	public static final String INVALID_INDEX = "INVALID_INDEX";
 
 	protected String errorCode = "UNDEFINED";
 	protected String errorContext = "UNDEFINED";

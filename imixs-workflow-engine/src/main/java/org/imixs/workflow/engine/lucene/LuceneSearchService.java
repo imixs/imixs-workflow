@@ -62,6 +62,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.PropertyService;
+import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
 
 /**
@@ -290,6 +291,7 @@ public class LuceneSearchService {
 			// in case of an IOException we just print an error message and
 			// return an empty result
 			logger.severe("Lucene index error: " + e.getMessage());
+			throw new InvalidAccessException(InvalidAccessException.INVALID_INDEX, e.getMessage(), e);
 		} catch (ParseException e) {
 			logger.severe("Lucene search error: " + e.getMessage());
 			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
