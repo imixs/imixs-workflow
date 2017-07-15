@@ -17,7 +17,7 @@
 
  Project: 
 	http://www.imixs.org
-	http://java.net/projects/imixs-workflow
+	https://github.com/imixs
 
  Contributors:  
 	Imixs Software Solutions GmbH - initial API and implementation
