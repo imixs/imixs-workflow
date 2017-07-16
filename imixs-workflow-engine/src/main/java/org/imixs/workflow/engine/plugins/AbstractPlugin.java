@@ -43,6 +43,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.engine.WorkflowService;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -56,7 +57,6 @@ import org.imixs.workflow.exceptions.PluginException;
 
 public abstract class AbstractPlugin implements Plugin {
 
-	
 	public static final String INVALID_ITEMVALUE_FORMAT = "INVALID_ITEMVALUE_FORMAT";
 	public static final String INVALID_PROPERTYVALUE_FORMAT = "INVALID_PROPERTYVALUE_FORMAT";
 
@@ -76,16 +76,15 @@ public abstract class AbstractPlugin implements Plugin {
 			workflowService = (WorkflowService) actx;
 		}
 	}
-	
+
 	@Override
 	public void close(boolean rollbackTransaction) throws PluginException {
-		
+
 	}
-	
+
 	public WorkflowContext getCtx() {
 		return ctx;
 	}
-
 
 	/**
 	 * Returns an instance of the WorkflowService EJB.
@@ -95,7 +94,6 @@ public abstract class AbstractPlugin implements Plugin {
 	public WorkflowService getWorkflowService() {
 		return workflowService;
 	}
-
 
 	/**
 	 * this method parses a string for xml tag <itemvalue>. Those tags will be
@@ -149,8 +147,7 @@ public abstract class AbstractPlugin implements Plugin {
 		 * 
 		 * 
 		 */
-		
-		
+
 		if (aString.toLowerCase().contains("<propertyvalue")) {
 
 			// test if a <value> tag exists...
@@ -200,7 +197,6 @@ public abstract class AbstractPlugin implements Plugin {
 
 			}
 		}
-		
 
 		// test if a <value> tag exists...
 		while ((iTagStartPos = aString.toLowerCase().indexOf("<itemvalue")) != -1) {
@@ -485,5 +481,32 @@ public abstract class AbstractPlugin implements Plugin {
 			valueList.add("");
 
 		return valueList;
+	}
+
+	/**
+	 * This method returns the next Task of the current processing call based on
+	 * the BPMN model.
+	 * 
+	 * @return
+	 * @throws ModelException
+	 */
+	public ItemCollection getNextTask(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+			throws ModelException {
+
+		ItemCollection itemColNextProcess = null;
+		String aModelVersion = adocumentActivity.getItemValueString("$modelVersion");
+		int iNextProcessID = adocumentActivity.getItemValueInteger("numNextProcessID");
+		if (iNextProcessID > 0) {
+			// now get the next task 
+			itemColNextProcess = getCtx().getModelManager().getModel(aModelVersion)
+					.getTask(adocumentActivity.getItemValueInteger("numNextProcessID"));
+
+		} else {
+			// return the current task
+			itemColNextProcess = getCtx().getModelManager().getModel(aModelVersion)
+					.getTask(adocumentActivity.getItemValueInteger("numProcessID"));
+		}
+
+		return itemColNextProcess;
 	}
 }

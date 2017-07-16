@@ -90,19 +90,13 @@ public class ApplicationPlugin extends AbstractPlugin {
 		sSummary = null;
 
 		// try to get next ProcessEntity
-
-		// get numNextProcessID and modelVersion
-		int iNextProcessID = adocumentActivity.getItemValueInteger("numNextProcessID");
-
-		// now get the next ProcessEntity from ctx
-		ItemCollection itemColNextProcess = null;
-		// get from model version
-		String aModelVersion = adocumentActivity.getItemValueString("$modelVersion");
+		ItemCollection itemColNextProcess =null;
 		try {
-			itemColNextProcess = getCtx().getModelManager().getModel(aModelVersion).getTask(iNextProcessID);
+		// now get the next ProcessEntity from ctx
+			itemColNextProcess = this.getNextTask(adocumentContext, adocumentActivity);
 		} catch (ModelException e) {
 			logger.warning(
-					"Warning - Task '" + iNextProcessID + "' is not defined by model version '" + aModelVersion + "' : "+e.getMessage());
+					"Warning - unable to fetch next Task for current model '" + adocumentContext.getModelVersion() + "' : "+e.getMessage());
 			return documentContext;
 		}
 
