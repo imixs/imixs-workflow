@@ -1,48 +1,64 @@
-#How Imixs-Workflow works
+# How Imixs-Workflow works
 
-Imixs-Workflow is an open source workflow engine for human-centric business process management (BPM). Human-centric BPM means to support human skills and activities by a task oriented workflow-engine. The Imixs-Workflow project provides a framework for the development of human-centric business applications. The Imixs-Workflow engine can be embedded in a Java EE application, or run stand-alone as a web-service in a microservice architecture.
+Imixs-Workflow is an open source workflow engine for human-centric business process management (BPM). Human-centric BPM means to support human skills and activities by a task oriented workflow-engine. The Imixs-Workflow project provides an easy to use framework for the development business applications and business process management solutions. 
+The Imixs-Workflow engine can be either be embedded into a Java EE application, or run stand-alone as a BPM-Web-Service in a microservice architecture.
 
-##BPMN 2.0
+## BPMN 2.0
 
-Imixs-Workflow is based on BPMN 2.0 which is be used to describe a business process on different levels. In a human-centric business process, the BPMN "Task" element is used to describe the activity to be processed by the human actor, and the BPMN "Event" element is used to describe the transition form one state into the next.
+Imixs-Workflow is based on the [BPMN 2.0 standard](http://www.bpmn.org/). BPMN 2.0 can be used to describe a business process on different levels. In a human-centric business process, the BPMN "Task" element is used to describe the activity to be processed by the human actor or a technical service. The BPMN "Event" element is used to describe the transition from one state to another. There are several ways to describe also complex busness processes.
 
 <img src="./images/bpmn-example01.png"  />
 
-Based on the model, the Imixs-Workflow engine controls the state of a business object and guides the different actors through the process. The Imixs-Workflow provides all the necessary information and decisions arising from the processing of a business task. With the help of BPMN 2.0 different business situations can be described easily and so the implementation and maintenance of a business application becomes even faster and more flexible. 
+Based on a BPMN workflow model, the Imixs-Workflow engine controls the state of a business object and guides the different actors through the process. The Imixs-Workflow engine controls and logs all information and decisions that occur during the processing of a business task.
+With the help of BPMN 2.0 various business processes can be easily designed, making the implementation and maintenance of a business application even faster and more flexible.
 
 
-##The Actors
+## The Actors
 
-The main objective of a  human-centric workflow engine is to support the human actors with relevant information about the process and to ensure the business process is aligned to the predetermined rules:
+The main objective of a  human-centric workflow engine is to support the human actors with relevant information about the business process and to ensure that the business process is aligned to predetermined business rules:
  
-  * What is the current status of a business process 
-  * Who is the owner for a business process
+  * What is the current status of a business process
+  * Who is the owner of a business process
   * Who need to be informed
   * What happened so far to the business process
-  * Who is allowed to access and modify data
+  * Who is allowed to access and modify the data
 
-In that way Imixs-Workflow assists users in starting a new process, finding and processing open tasks and helps users to complete current jobs in the defined way. The Workflow Engine automatically routes open tasks to the next actor and notifies users about new tasks depending on the current process definition. 
+In that way Imixs-Workflow assists users in starting a new process, finding and processing open tasks and to complete current jobs. The Workflow Engine automatically routes open tasks to the next actor and notifies users about open tasks depending on the current process definition. 
 
-Each business process defines different users to be involved. These users are called the actors, which are interacting with the Workflow Management System during a business process. Actors can either start, update or read information about a process instance. The Imixs-Workflow allows to grant actors access to a process instance depending on the process flow. This means also that users who are not involved will not be allowed to access a running process instance. Thus Imixs-Workflow provides also a security layer to secure business data based on a process model.  
+Each business process can involve different users to interact with the Workflow Management System.
+These users are called the *actors*. An Actor can either start, update or read a process instance and also the embedded business data
+Imixs Workflow allows you to assign any kind of business data with a running process instance.
+You can use Imixs workflow to control access to a process instance in a fine-grained way using an ACL. This includes the read and write access for users and roles. The ACL can be defined via the BPMN model for each Task or Event separately. 
 
 <img src="./images/bpmn-example02.png" width="500px" />
  
-## The Concept
-The Imixs-Workflow engine allows the linking of business data to a business process. For this purpose, the project offers some basic concepts, which simplify the development of business applications.
+## The Architecture
+The architecture of the Imixs-Workflow engine provides different basic concepts to simplify the development of business applications.
  
-###The Workitem
-A running process instance inside a Workflow Management System is called 'Workitem'. Each Workitem can assume different states during a business process and can contain any kind of business data. If a Workitem is still processed and yet not finished, the Workitem is called a 'running process instance'. The status of a workitem is defined by the process model and is controlled by the workflow engine.
+### The Workitem
+A running process instance inside a Workflow Management System is called a '*Workitem*'. Each workitem is assigned to a Task in the BPMN model and can contain several business information.
+If a Workitem is still in process, the Workitem is called a '*running process instance*'. After a process instance is finished the workitem is '*closed*'. 
+Imixs Workflow provides an [XML schema](core/xml/index.html) to translate all workflow and business information of a process instance into an open and compatible data format. As a result, business data can be safely archived with Imixs-Workflow for long periods of time.
 
-###The Process Model
-The Process Model (or Workflow Model) defines which status a process instance can present during its life-cycle. Each time a Workitem  is processed, the Workflow Management System assigns a new status (Task). The transition form one status into another is defined by the Workflow Activities (Event). 
+### The Process Model
+The process model (or workflow model) defines what state a process instance can present during its life-cycle. Each time a workitem is processed, the workflow management system synchronizes the status (Task) with the process instance based on the BPMN model.
 
-###The Workflow Engine
-The Workflow Engine persists and controls each process instance depending on the model definition. The Workflow Engine ensures that a workitem is always in a state defined by the process model and can not change its status in a way which is not defined by the model. The Workflow Engine also routes the workitem to the next actor and sends notifications if defined by the model.  
+### The Workflow Engine
+The Imixs-Workflow engine persists and controls the process instance into a database. The Workflow Engine ensures that a workitem is always in sync with the process model. The Imixs-Workflow engine provides a Plug-In concept to implement different function blocks of a workflow management system. 
+This includes, for example: 
 
-###Tasklist and Statuslist
-A Workflow Management System provides views of all running process instances. A 'tasklist' contains all open tasks from the view of an individual actor. The statuslist provides the user with the latest status information about running process instances. There are a lot of different views allowing the actor to navigate through the running process instances. 
- 
- 
+* Access Controll
+* Routing 
+* E-Mail Notification
+* Versioning
+* Business Rules
+* Reporting 
+* Archiving
+
+
+### Tasklists
+A Workflow Management System provides various views of all running process instances. A 'tasklist' contains all open tasks from the view of an individual actor. Imixs-Workflow provides a lot of different views to navigate through the running process instances. 
+  
  
 ## Getting started...
 There are several ways how you can benefit from Imixs-Workflow. The following section gives you a short guideline how to find out the best way to use Imixs-Workflow in your own project.

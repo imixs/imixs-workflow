@@ -1,19 +1,19 @@
 #XML
 
-The Imixs-Workflow core API provides a XML interface to exchanged data between the Imixs-Workflow engine and a client. The API provides also methods to transform the generic value object ItemCollection into a XML representation. The API is used by the Imixs-Workflow REST API. The Imixs XML API is based on the [JAXB specification (JSR-222)](http://java.sun.com/developer/technicalArticles/WebServices/jaxb/) and can be integrated very easy in any common java framework. 
+The Imixs-Workflow core API provides a XML interface to translate all workflow and business information of a process instance into an open and compatible data format.
+The XML API provides methods to transform the generic value object *org.imixs.workflow.ItemCollection* into a XML representation. The Imixs XML API is based on the [JAXB specification (JSR-222)](http://java.sun.com/developer/technicalArticles/WebServices/jaxb/) and can be integrated very easy in any common java framework. The XML API is also used by the Imixs-Workflow Rest API. 
  
  
-##Dataobjects
-The Imixs XML API make use of the Java Architecture for XML Binding (JAXB) to provide the Imixs data objects in XML. JAXB defines a standard to bind java representation to XML and vice versa. It manages XML documents and XML schema definitions (XSD) in a transparent, object-oriented way that hides the complexity of the XSD Language. The Imixs XML API defines the following XML Root Elements:
+## Dataobjects
+The Imixs XML API make use of the Java Architecture for XML Binding (JAXB) to translate the Imixs ItemCollection into XML. JAXB defines a standard to bind java representation to XML and vice versa. It manages XML documents and XML schema definitions (XSD) in a transparent, object-oriented way that hides the complexity of the XSD Language. The Imixs XML API defines the following XML Root Elements:
  
   * <strong>XMLItem</strong> - Represents a single item inside a XMLItemCollection. An XMLItem has a name and a
        value. The value can be any serializable collection of objects.
   * <strong>XMLItemCollection</strong> - The XMLitemCollection is the basic serializable representation of a pojo to map
       the org.imixs.workflow.ItemCollection into a xml
-  * <strong>EntityCollection</strong> - An EntityCollection represents a list of XMLItemCollections 
-  * <strong>EntityTable</strong> -  An EntityTabe represents a list of XMLItemCollections to be used by JAXB api.
-      Each XMLItemCollection in the list represents the same properties. So the 
-      EntityTable can be used to generate a table representation of XMLItemCollections
+  * <strong>DocumentCollection</strong> - The DocumentCollection represents a list of XMLItemCollections 
+  * <strong>DocumentTable</strong> -  The DocumentTable represents a list of XMLItemCollections to be used by JAXB api.
+      Each XMLItemCollection in the list represents the same properties. This object can be used to generate a table representation of XMLItemCollections
   
 
 
@@ -70,14 +70,14 @@ The XMLItemCollection represents a single workitem or document structure contain
  
     org.imixs.workflow.xml.XMLItemCollection
  
-### EntityCollection
-The EntityCollection is a complex data type containing a collection of XMLItemCollection objects.  
+### DocumentCollection
+The DocumentCollection is a complex data type containing a collection of XMLItemCollection objects.  
 
 <img src="../../images/xml/entityCollection.png"/>
 
 This datatype is typical used in service methods returning a collection of workitems or other entity objects. Typical a worklist provided by the Imixs Workflow Manager is represented as an EntityCollection in a service definition like the Imixs Web Services or the Imixs REST Service. This data type can be mapped to the java class
  
-    org.imixs.workflow.xml.EntityCollection
+    org.imixs.workflow.xml.DocumentCollection
 
 
 ## Datatype mapping 
