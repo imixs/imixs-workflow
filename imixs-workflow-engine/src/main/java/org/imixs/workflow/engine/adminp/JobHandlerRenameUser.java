@@ -122,11 +122,10 @@ public class JobHandlerRenameUser implements JobHandler {
 		String sQuery = "(";
 		// convert type list into comma separated list
 		List<String> typeList = Arrays.asList(typeFilter.split("\\s*,\\s*"));
-		String sType = "";
 		for (String aValue : typeList) {
-			sType += "type:\"" + aValue.trim() + "\" OR ";
+			sQuery += "type:\"" + aValue.trim() + "\" OR ";
 		}
-		sType = sType.substring(0, sType.length() - 3);
+		sQuery = sQuery.substring(0, sQuery.length() - 4);
 		sQuery += ")";
 		sQuery += " AND ($writeaccess:\"" + fromUserID + "\" OR $readaccess:\"" + fromUserID + "\" OR namowner:\""
 				+ fromUserID + "\" OR $creator:\"" + fromUserID + "\" OR namcreator:\"" + fromUserID + "\" )";
