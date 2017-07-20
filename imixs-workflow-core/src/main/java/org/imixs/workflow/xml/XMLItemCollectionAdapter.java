@@ -102,6 +102,28 @@ public class XMLItemCollectionAdapter {
 
 		return itemCol;
 	}
+	
+	/**
+	 * This Method converts a
+	 * <code>org.imixs.workflow.xml.DocumentCollection</code> into a
+	 * List of  <code>org.imixs.workflow.ItemCollection</code> 
+	 * 
+	 * The method returns an empty list if the collection is empty or null
+	 * 
+	 * @param entity
+	 * @return ItemCollection
+	 */
+	public static List<ItemCollection> getCollection(DocumentCollection doccol) {
+		List<ItemCollection> result=new ArrayList<ItemCollection>();
+		
+		if (doccol != null && doccol.getDocument()!=null) {
+			for (int i = 0; i < doccol.getDocument().length; i++) {
+				XMLItemCollection xmlItemCol = doccol.getDocument()[i];
+				result.add(getItemCollection(xmlItemCol));
+			}
+		}
+		return result;
+	}
 
 	/**
 	 * This Method converts a <code> org.imixs.workflow.ItemCollection</code>
