@@ -1,5 +1,6 @@
 package org.imixs.workflow.engine.adminp;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -50,7 +51,8 @@ import org.imixs.workflow.exceptions.QueryException;
  * <li>namcreator (deprecated)</li>
  * </ul>
  * 
- * The attributes $creator can not be replaced. Only an additional userID is placed here.
+ * The attributes $creator can not be replaced. Only an additional userID is
+ * placed here.
  * 
  * @see AdminPService AdminPService for details
  * @version 1.0
@@ -110,8 +112,23 @@ public class JobHandlerRenameUser implements JobHandler {
 		adminp = ctx.getBusinessObject(JobHandlerRenameUser.class).saveJobEntity(adminp);
 
 		// build search query
-		String sQuery = "(type:\"workitem\" OR type:\"childworkitem\" OR type:\"workitemlob\" ) "
-				+ " AND ($writeaccess:\"" + fromUserID + "\" OR $readaccess:\"" + fromUserID + "\" OR namowner:\""
+
+		String typeFilter = adminp.getItemValueString("typelist");
+		if (typeFilter.isEmpty()) {
+			// set default type
+			typeFilter = "workitem";
+		}
+
+		String sQuery = "(";
+		// convert type list into comma separated list
+		List<String> typeList = Arrays.asList(typeFilter.split("\\s*,\\s*"));
+		String sType = "";
+		for (String aValue : typeList) {
+			sType += "type:\"" + aValue.trim() + "\" OR ";
+		}
+		sType = sType.substring(0, sType.length() - 3);
+		sQuery += ")";
+		sQuery += " AND ($writeaccess:\"" + fromUserID + "\" OR $readaccess:\"" + fromUserID + "\" OR namowner:\""
 				+ fromUserID + "\" OR $creator:\"" + fromUserID + "\" OR namcreator:\"" + fromUserID + "\" )";
 
 		Collection<ItemCollection> col;
@@ -163,8 +180,8 @@ public class JobHandlerRenameUser implements JobHandler {
 	}
 
 	/**
-	 * Updates read,write and owner of a entity and returns true if an update
-	 * was necessary
+	 * Updates read,write and owner of a entity and returns true if an update was
+	 * necessary
 	 * 
 	 * @param entity
 	 * @param from
@@ -174,12 +191,13 @@ public class JobHandlerRenameUser implements JobHandler {
 	 * @throws AccessDeniedException
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-	public boolean updateWorkitemUserIds(ItemCollection entity, String from, String to, boolean replace) throws AccessDeniedException {
+	public boolean updateWorkitemUserIds(ItemCollection entity, String from, String to, boolean replace)
+			throws AccessDeniedException {
 
 		boolean bUpdate = false;
 		if (entity == null)
 			return false;
-		
+
 		// Verify Fields
 		if (updateList(entity.getItemValue("$ReadAccess"), from, to, replace))
 			bUpdate = true;
@@ -205,8 +223,6 @@ public class JobHandlerRenameUser implements JobHandler {
 		}
 		return bUpdate;
 	}
-
-	
 
 	/**
 	 * Update the values of a single list.
