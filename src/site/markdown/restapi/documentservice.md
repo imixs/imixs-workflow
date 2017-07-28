@@ -5,11 +5,12 @@
 ## The /documents GET resources
 The /documents resources are used to get direct access to the documentService EJB:
 
-| URI                                     | Description                               | 
-|-----------------------------------------|-------------------------------------------|
-| /{uniqueid}         | returns a single document defined by $uniqueid   |
-| /search/{query}          | Returns a result set of documetns by a lucene search query   |
-| /count/query/{query}    | the count of documents returned by a lucene search query      |
+| URI                     | Description                                                        | 
+|-------------------------|--------------------------------------------------------------------|
+| /{uniqueid}             | returns a single document defined by $uniqueid                     |
+| /search/{query}         | Returns a result set of documents by a lucene search query         |
+| /count/query/{query}    | the total hits of lucene search query                              |
+| /countpages/query/{query}?pagesize= | the total pages of lucene search query for a given page size |
 
  
 
@@ -26,7 +27,7 @@ The following resource URIs are used to PUT and POST a document:
 
 
 ## Resource Options
-You can specify additional URI paramters to filter the resultset  or to navigate through a sub list of entities. Append optional arguments to define the number of entities returned by a URL, the starting point inside the list or the sort order. Combine any of the following arguments for the desired result. 
+You can specify additional URI parameters to filter the result-set  or to navigate through a sub list of entities. Append optional arguments to define the number of entities returned by a URL, the starting point inside the list or the sort order. Combine any of the following arguments for the desired result. 
 
 | option      | description                       | example               |
 |-------------|---------------- ------------------|-----------------------|
@@ -42,11 +43,11 @@ You can specify additional URI paramters to filter the resultset  or to navigate
 
 The Document Rest Service provides resource URIs for administrative purpose. To access these resources, the caller  must at least be in role "org.imixs.ACCESSLEVEL.MANAGERACCESS". These administrative URIs should not be used in  general business logic.  
  
-| METHOD |URI                           | Description                                                                               | 
-|--------|------------------------------|-------------------------------------------------------------------------------------------|
+| METHOD |URI                     | Description                                                                        | 
+|--------|------------------------|------------------------------------------------------------------------------------|
 | PUT 	 | /backup/{query}        | creates a backup of the result set form a query. The entity list will be stored into the file system. The backup can be restored by calling the restore method | 
-| GET    | /restore                    |restore a backup from the filesysem  |
-| GET    |/configuration              | Returns the configuration details of the lucen index writer. | 
+| GET    | /restore               |restore a backup from the filesystem  |
+| GET    |/configuration          | Returns the configuration details of the lucene index writer. | 
 
 
 

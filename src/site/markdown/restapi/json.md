@@ -3,7 +3,7 @@ The Imixs-Workflow REST API supports also the JSON format.  So a workitem can be
  
  
 ## The JSON Workitem Format
-The Imixs Workflow JSON format for a workitem is based on the  JAX-B representation of a ItemCollcation provided by the Imixs-Core-API.  A single workitem contains a list of items. Each item has a name and a value attribute. The value can be assigned with a specific *xsd data type* which will be reflected to the backend. This format is called the *BadgerFish Convention*.
+The Imixs Workflow JSON format for a workitem is based on the  JAX-B representation of a ItemCollcation provided by the Imixs-Core-API.  A single workitem contains a list of items. Each item has a name and a value attribute. The value can be assigned with a specific *xsd data type* which will be reflected to the back-end. This format is called the *BadgerFish Convention*.
  
 See the following example:
  

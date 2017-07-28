@@ -17,7 +17,7 @@ This serach term will serach for all documents containing a phrase starting with
 
 ##Query Items
 
-The Imixs-Worklfow engine takes also a list of [workflow data items](../quickstart/workitem.html) into the index. These items can be used to serach for documents of a specific type or category:
+The Imixs-Worklfow engine takes also a list of [workflow data items](../quickstart/workitem.html) into the index. These items can be used to search for documents of a specific type or category:
 
 
     (type:"workitem") ($processid:1200)

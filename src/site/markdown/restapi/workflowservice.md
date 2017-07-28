@@ -1,5 +1,5 @@
 #The Workflow Service
-The Imixs-Workflow REST service interface provides different resources located under */workflow* to access and modifiy workitems.
+The Imixs-Workflow REST service interface provides different resources located under */workflow* to access and modify workitems.
 
  
 ## GET Workitem Resource
@@ -21,7 +21,7 @@ The resource /workflow/tasklist/ returns collections of workitems:
 | /workflow/tasklist/creator/{creator}          | a collection of workitems created by a specific user (or value 'null' for the current user)                           |
 | /workflow/tasklist/processid/{processid}      | a collection of workitems in a specific    process state             |
 | /workflow/tasklist/group/{processgroup}       | a collection of workitems in a specific    process group                             |
-| /workflow/tasklist/ref/{uniqueid}             | a collection of workitems referenced to a  specific uniqueid (childs)                |
+| /workflow/tasklist/ref/{uniqueid}             | a collection of workitems referenced to a  specific uniqueId (childs)                |
 
 
 
@@ -48,6 +48,6 @@ Additional URI parameters can be used to filter the result set, or to navigate t
 | type        | filter workitems by the 'type' property             | ..?type=workitem      | 
 		
 
-<strong>Note:</strong> The Imixs-Workflow manages the access to workitems by individual access lists per each entity. The result of a collection of workitems depends on the current user accesslevel and read access permissions for a workitem. Read also the section [Access Control](/engine/acl.html) for further information. 
+<strong>Note:</strong> The Imixs-Workflow manages the access to workitems by individual access lists per each entity. The result of a collection of workitems depends on the current user access-level and read access permissions for a workitem. Read also the section [Access Control](/engine/acl.html) for further information. 
   
    

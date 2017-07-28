@@ -17,8 +17,8 @@ The /report GET resources are used to get business objects provided by the Imixs
 A report definition need to provide a set of informations to define the layout and content of a report
  
   * <strong>Query</strong> - search query to select the result set
-  * <strong>contentType / Encoding</strong> - defines the MIME-TYPE and encoding for a report (e.g. text/html for html output, application/pdf for pdf files)
-  * <strong>processing instructions</strong> - xsl template to format the xml output of an workitem collection
+  * <strong>contentType / Encoding</strong> - defines the MIME-TYPE and encoding for a report (e.g. text/html for HTML output, application/pdf for pdf files)
+  * <strong>processing instructions</strong> - XSL template to format the XML output of an workitem collection
 
 
 The following example shows a simple XSLT file to format a workitem collection into a html output:
@@ -83,7 +83,7 @@ date during execution time. A dynamic date value is embraced by the 'date' tag:
 | DAY_OF_MONTH   | set day of month               | <date DAY_OF_MONTH="1" /> (first day of month, use 'ACTUAL_MAXIMUM' to get last day of month
 | MONTH          | set month                      | <date MONTH="1" /> (January)
 | YEAR           | set year                       | <date YEAR="2016" />   
-| ADD            | add offset (see Calendar.class)| <date ADD="MONTH,-1" /> subracts one month from the current year
+| ADD            | add offset (see Calendar.class)| <date ADD="MONTH,-1" /> subtracts one month from the current year
  
 See the following example to set the start and end date of the last month:
 
@@ -131,7 +131,7 @@ Reports can also be computed during the processing life cycle by adding the foll
 
     org.imixs.workflow.jee.plugins.ReportPlugin
  
-The Report Plugin can compute dynamic collections of workitems based on a JPQL statement as explained before.  As the Plugin runs in the phase of workflow processing the current workitem is typical not selectable with JPQL. Therefore the Report Plugin replaces the result-set with a new instance of the current workitem if the workitem is included in the result-set.
+The Report Plug-in can compute dynamic collections of workitems based on a JPQL statement as explained before.  As the Plugin runs in the phase of workflow processing the current workitem is typical not selectable with JPQL. Therefore the Report Plug-in replaces the result-set with a new instance of the current workitem if the workitem is included in the result-set.
  
 
 ## The /report resources DELETE

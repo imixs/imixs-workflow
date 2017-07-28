@@ -86,8 +86,11 @@ Per default the search result is sorted by the lucene internal score of each doc
     // sort by $created descending
     result=documentService.find(serachTerm,10,0,'$created',true);
  
-### Count Documents of a search result 
-The method count() can be used to compute the max count of a  specific serach term.  The method expects the same search term as for the find() method but returns only the count of documents. The method counts only ItemCollections which are accessible by the CallerPrincipal.
+### Count Total Hits 
+The method *count(String)* can be used to compute the total hits of a  specific serach term.  The method expects the same search term as for the find() method but returns only the count of documents. The method counts only ItemCollections which are accessible by the CallerPrincipal.
+
+### Count Total Pages
+The method *countPages(String,int)* can be used to compute the total pages of a  specific search term by a given page size.  The method expects the same search term as for the find() method but returns only the count of documents. The method counts only ItemCollections which are accessible by the CallerPrincipal.
 
  
 ## The Access Control List of a Document
