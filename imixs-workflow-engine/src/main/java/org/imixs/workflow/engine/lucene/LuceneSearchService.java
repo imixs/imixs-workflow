@@ -91,10 +91,10 @@ import org.imixs.workflow.exceptions.QueryException;
 @LocalBean
 public class LuceneSearchService {
 
-	private static final int DEFAULT_MAX_SEARCH_RESULT = 9999; // limiting the
+	public static final int DEFAULT_MAX_SEARCH_RESULT = 9999; // limiting the
 																// total
 	// number of hits
-	private static final int DEFAULT_PAGE_SIZE = 20; // default docs in one page
+	public static final int DEFAULT_PAGE_SIZE = 20; // default docs in one page
 
 	@EJB
 	PropertyService propertyService;
@@ -146,10 +146,10 @@ public class LuceneSearchService {
 	}
 
 	/**
-	 * Returns a collection of documents matching matching the provided search
-	 * term. The provided search team will we extended with a users roles to
-	 * test the read access level of each workitem matching the search term. The
-	 * usernames and user roles will be search lowercase!
+	 * Returns a collection of documents matching matching the provided search term.
+	 * The provided search term will we extended with a users roles to test the read
+	 * access level of each workitem matching the search term. The usernames and
+	 * user roles will be search lowercase!
 	 * 
 	 * The optional param 'searchOrder' can be set to force lucene to sort the
 	 * search result by any search order.
@@ -186,102 +186,88 @@ public class LuceneSearchService {
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
+		sSearchTerm = getExtendedSearchTerm(sSearchTerm);
 		// test if searchtem is provided
-		if (sSearchTerm == null || "".equals(sSearchTerm))
+		if (sSearchTerm == null || "".equals(sSearchTerm)) {
 			return workitems;
+		}
 
 		Properties prop = propertyService.getProperties();
-		if (prop.isEmpty())
+		if (prop.isEmpty()) {
+			logger.warning("imixs.properties not found!");
 			return workitems;
+		}
 
 		try {
 			IndexSearcher searcher = createIndexSearcher(prop);
 			QueryParser parser = createQueryParser(prop);
 
-			// extend the Search Term
-			if (!documentService.isUserInRole(DocumentService.ACCESSLEVEL_MANAGERACCESS)) {
-				// get user names list
-				List<String> userNameList = documentService.getUserNameList();
-				// create search term (always add ANONYMOUS)
-				String sAccessTerm = "($readaccess:" + LuceneUpdateService.ANONYMOUS;
-				for (String aRole : userNameList) {
-					if (!"".equals(aRole))
-						sAccessTerm += " OR $readaccess:\"" + aRole + "\"";
-				}
-				sAccessTerm += ") AND ";
-				sSearchTerm = sAccessTerm + sSearchTerm;
+			parser.setAllowLeadingWildcard(true);
+
+			// set default operator?
+			if (defaultOperator != null)
+				parser.setDefaultOperator(defaultOperator);
+
+			long lsearchtime = System.currentTimeMillis();
+			TopDocs topDocs = null;
+			TopDocsCollector<?> collector = null;
+			int startIndex = pageIndex * pageSize;
+
+			// test it pageindex is above th DEFAULT_MAX_SEARCH_RESULT
+			int maxSerachresult = DEFAULT_MAX_SEARCH_RESULT;
+			if ((startIndex + pageSize) > DEFAULT_MAX_SEARCH_RESULT) {
+				maxSerachresult = startIndex + (3 * pageSize);
+				logger.warning("PageIndex (" + pageSize + "x" + pageIndex + ") exeeded DEFAULT_MAX_SEARCH_RESULT("
+						+ DEFAULT_MAX_SEARCH_RESULT + ") -> new MAX_SEARCH_RESULT set to " + maxSerachresult);
 			}
-			logger.fine("lucene final searchTerm=" + sSearchTerm);
 
-			if (!"".equals(sSearchTerm)) {
-				parser.setAllowLeadingWildcard(true);
+			Query query = parser.parse(sSearchTerm);
+			if (sortOrder != null) {
+				// sorted by sortoder
+				logger.finest("lucene result sorted by sortOrder= '" + sortOrder + "' ");
+				// MAX_SEARCH_RESULT is limiting the total number of hits
+				collector = TopFieldCollector.create(sortOrder, maxSerachresult, false, false, false);
 
-				// set default operator?
-				if (defaultOperator != null)
-					parser.setDefaultOperator(defaultOperator);
+			} else {
+				// sorted by score
+				logger.finest("lucene result sorted by score ");
+				// MAX_SEARCH_RESULT is limiting the total number of hits
+				collector = TopScoreDocCollector.create(maxSerachresult);
+			}
 
-				long lsearchtime = System.currentTimeMillis();
-				TopDocs topDocs = null;
-				TopDocsCollector<?> collector = null;
-				int startIndex = pageIndex * pageSize;
+			// - ignore time limiting for now
+			// Counter clock = Counter.newCounter(true);
+			// TimeLimitingCollector timeLimitingCollector = new
+			// TimeLimitingCollector(collector, clock, 10);
 
-				// test it pageindex is above th DEFAULT_MAX_SEARCH_RESULT
-				int maxSerachresult = DEFAULT_MAX_SEARCH_RESULT;
-				if ((startIndex + pageSize) > DEFAULT_MAX_SEARCH_RESULT) {
-					maxSerachresult = startIndex + (3 * pageSize);
-					logger.warning("PageIndex (" + pageSize + "x" + pageIndex + ") exeeded DEFAULT_MAX_SEARCH_RESULT("
-							+ DEFAULT_MAX_SEARCH_RESULT + ") -> new MAX_SEARCH_RESULT set to " + maxSerachresult);
-				}
+			// start search....
+			searcher.search(query, collector);
 
-				Query query = parser.parse(sSearchTerm);
-				if (sortOrder != null) {
-					// sorted by sortoder
-					logger.finest("lucene result sorted by sortOrder= '" + sortOrder + "' ");
-					// MAX_SEARCH_RESULT is limiting the total number of hits
-					collector = TopFieldCollector.create(sortOrder, maxSerachresult, false, false, false);
+			// get one page
+			topDocs = collector.topDocs(startIndex, pageSize);
+			// Get an array of references to matched documents
+			ScoreDoc[] scoreDosArray = topDocs.scoreDocs;
 
+			logger.fine("lucene returned " + scoreDosArray.length + " documents in "
+					+ (System.currentTimeMillis() - lsearchtime) + " ms - total hits=" + topDocs.totalHits);
+
+			for (ScoreDoc scoredoc : scoreDosArray) {
+				// Retrieve the matched document and show relevant details
+				Document doc = searcher.doc(scoredoc.doc);
+
+				String sID = doc.get("$uniqueid");
+				logger.finest("lucene lookup $uniqueid=" + sID);
+				ItemCollection itemCol = documentService.load(sID);
+				if (itemCol != null) {
+					workitems.add(itemCol);
 				} else {
-					// sorted by score
-					logger.finest("lucene result sorted by score ");
-					// MAX_SEARCH_RESULT is limiting the total number of hits
-					collector = TopScoreDocCollector.create(maxSerachresult);
+					logger.warning("lucene index returned unreadable workitem : " + sID);
+					// this situation happens if the search index returned
+					// documents the current user has no read access.
+					// this should normally avoided with the $readaccess
+					// search phrase! So if this happens we need to check
+					// the createDocument method!
 				}
-
-				// - ignore time limiting for now
-				// Counter clock = Counter.newCounter(true);
-				// TimeLimitingCollector timeLimitingCollector = new
-				// TimeLimitingCollector(collector, clock, 10);
-
-				// start search....
-				searcher.search(query, collector);
-
-				// get one page
-				topDocs = collector.topDocs(startIndex, pageSize);
-				// Get an array of references to matched documents
-				ScoreDoc[] scoreDosArray = topDocs.scoreDocs;
-
-				logger.fine("lucene returned " + scoreDosArray.length + " documents in "
-						+ (System.currentTimeMillis() - lsearchtime) + " ms - total hits=" + topDocs.totalHits);
-
-				for (ScoreDoc scoredoc : scoreDosArray) {
-					// Retrieve the matched document and show relevant details
-					Document doc = searcher.doc(scoredoc.doc);
-
-					String sID = doc.get("$uniqueid");
-					logger.finest("lucene lookup $uniqueid=" + sID);
-					ItemCollection itemCol = documentService.load(sID);
-					if (itemCol != null) {
-						workitems.add(itemCol);
-					} else {
-						logger.warning("lucene index returned unreadable workitem : " + sID);
-						// this situation happens if the search index returned
-						// documents the current user has no read access.
-						// this should normally avoided with the $readaccess
-						// search phrase! So if this happens we need to check
-						// the createDocument method!
-					}
-				}
-
 			}
 
 			searcher.getIndexReader().close();
@@ -298,6 +284,124 @@ public class LuceneSearchService {
 		}
 
 		return workitems;
+	}
+
+
+
+	/**
+	 * Returns the total hits for a given search term from the lucene index. The
+	 * method did not load any data. The provided search term will we extended with
+	 * a users roles to test the read access level of each workitem matching the
+	 * search term. The usernames and user roles will be search lowercase!
+	 * 
+	 * The optional param 'maxResult' can be set to overwrite the
+	 * DEFAULT_MAX_SEARCH_RESULT.
+	 * 
+	 * @see search(String, int, int, Sort, Operator)
+	 * 
+	 * @param sSearchTerm
+	 * @param maxResult
+	 *            - max search result 
+	 * @return total hits of search result
+	 * @throws QueryException
+	 *             in case the searchterm is not understandable.
+	 */
+	public int getTotalHits(String sSearchTerm, int maxResult, Operator defaultOperator) throws QueryException {
+		int result;
+		if (maxResult <= 0) {
+			maxResult = DEFAULT_MAX_SEARCH_RESULT;
+		}
+
+		sSearchTerm = getExtendedSearchTerm(sSearchTerm);
+		// test if searchtem is provided
+		if (sSearchTerm == null || "".equals(sSearchTerm)) {
+			return 0;
+		}
+
+		Properties prop = propertyService.getProperties();
+		if (prop.isEmpty()) {
+			logger.warning("imixs.properties not found!");
+			return 0;
+		}
+
+		try {
+			IndexSearcher searcher = createIndexSearcher(prop);
+			QueryParser parser = createQueryParser(prop);
+
+			parser.setAllowLeadingWildcard(true);
+
+			// set default operator?
+			if (defaultOperator != null) {
+				parser.setDefaultOperator(defaultOperator);
+			}
+
+			TopDocsCollector<?> collector = null;
+
+			Query query = parser.parse(sSearchTerm);
+			// MAX_SEARCH_RESULT is limiting the total number of hits
+			collector = TopScoreDocCollector.create(maxResult);
+
+			// - ignore time limiting for now
+			// Counter clock = Counter.newCounter(true);
+			// TimeLimitingCollector timeLimitingCollector = new
+			// TimeLimitingCollector(collector, clock, 10);
+
+			// start search....
+			searcher.search(query, collector);
+			result = collector.getTotalHits();
+
+			logger.fine("lucene count result = " + result);
+		} catch (IOException e) {
+			// in case of an IOException we just print an error message and
+			// return an empty result
+			logger.severe("Lucene index error: " + e.getMessage());
+			throw new InvalidAccessException(InvalidAccessException.INVALID_INDEX, e.getMessage(), e);
+		} catch (ParseException e) {
+			logger.severe("Lucene search error: " + e.getMessage());
+			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
+		}
+
+		return result;
+	}
+
+	/**
+	 * Returns the extended search term for a given query. The search term will we
+	 * extended with a users roles to test the read access level of each workitem
+	 * matching the search term. The usernames and user roles will be search
+	 * lowercase!
+	 * 
+	 * The optional param 'defaultOperator' can be set to Operator.AND
+	 * 
+	 * @param sSearchTerm
+	 * @param defaultOperator
+	 *            - optional to change the default search operator
+	 * 
+	 * @return extended search term
+	 * @throws QueryException
+	 *             in case the searchtem is not understandable.
+	 */
+	String getExtendedSearchTerm(String sSearchTerm) throws QueryException {
+		// test if searchtem is provided
+		if (sSearchTerm == null || "".equals(sSearchTerm)) {
+			logger.warning("No search term provided!");
+			return "";
+		}
+		// extend the Search Term if user is not ACCESSLEVEL_MANAGERACCESS
+		if (!documentService.isUserInRole(DocumentService.ACCESSLEVEL_MANAGERACCESS)) {
+			// get user names list
+			List<String> userNameList = documentService.getUserNameList();
+			// create search term (always add ANONYMOUS)
+			String sAccessTerm = "($readaccess:" + LuceneUpdateService.ANONYMOUS;
+			for (String aRole : userNameList) {
+				if (!"".equals(aRole))
+					sAccessTerm += " OR $readaccess:\"" + aRole + "\"";
+			}
+			sAccessTerm += ") AND ";
+			sSearchTerm = sAccessTerm + sSearchTerm;
+		}
+		logger.fine("lucene final searchTerm=" + sSearchTerm);
+
+		return sSearchTerm;
 	}
 
 	/**
@@ -337,9 +441,9 @@ public class LuceneSearchService {
 	}
 
 	/**
-	 * Returns in instance of a QueyParser based on a KeywordAnalyser. The
-	 * method set the lucene DefaultOperator to 'OR' if not specified otherwise
-	 * in the imixs.properties.
+	 * Returns in instance of a QueyParser based on a KeywordAnalyser. The method
+	 * set the lucene DefaultOperator to 'OR' if not specified otherwise in the
+	 * imixs.properties.
 	 * 
 	 * @see issue #28 - normalizeSearchTerm
 	 * @param prop
@@ -362,11 +466,11 @@ public class LuceneSearchService {
 	}
 
 	/**
-	 * This helper method escapes wildcard tokens found in a lucene search term.
-	 * The method can be used by clients to prepare a search phrase.
+	 * This helper method escapes wildcard tokens found in a lucene search term. The
+	 * method can be used by clients to prepare a search phrase.
 	 * 
-	 * The method rewrites the lucene <code>QueryParser.escape</code> method and
-	 * did not! escape '*' char.
+	 * The method rewrites the lucene <code>QueryParser.escape</code> method and did
+	 * not! escape '*' char.
 	 * 
 	 * Clients should use the method normalizeSearchTerm() instead of
 	 * escapeSearchTerm() to prepare a user input for a lucene search.
@@ -411,13 +515,13 @@ public class LuceneSearchService {
 	}
 
 	/**
-	 * This method normalizes a search term using the Lucene ClassicTokenzier.
-	 * The method can be used by clients to prepare a search phrase.
+	 * This method normalizes a search term using the Lucene ClassicTokenzier. The
+	 * method can be used by clients to prepare a search phrase.
 	 * 
 	 * The method also escapes the result search term.
 	 * 
-	 * e.g. 'europe/berlin' will be normalized to 'europe berlin' e.g.
-	 * 'r555/333' will be unmodified 'r555/333'
+	 * e.g. 'europe/berlin' will be normalized to 'europe berlin' e.g. 'r555/333'
+	 * will be unmodified 'r555/333'
 	 * 
 	 * @param searchTerm
 	 * @return normalzed search term

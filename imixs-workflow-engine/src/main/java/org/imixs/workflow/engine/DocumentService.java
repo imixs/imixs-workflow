@@ -196,8 +196,8 @@ public class DocumentService {
 	}
 
 	/**
-	 * This method returns a list of user names, roles and application groups
-	 * the user belongs to.
+	 * This method returns a list of user names, roles and application groups the
+	 * user belongs to.
 	 * 
 	 * @return
 	 */
@@ -250,15 +250,15 @@ public class DocumentService {
 	}
 
 	/**
-	 * This Method saves an ItemCollection into the database. If the
-	 * ItemCollection is saved the first time the method generates a uniqueID
-	 * ('$uniqueid') which can be used to identify the ItemCollection by its ID.
-	 * If the ItemCollection was saved before, the method updates the existing
-	 * ItemCollection stored in the database.
+	 * This Method saves an ItemCollection into the database. If the ItemCollection
+	 * is saved the first time the method generates a uniqueID ('$uniqueid') which
+	 * can be used to identify the ItemCollection by its ID. If the ItemCollection
+	 * was saved before, the method updates the existing ItemCollection stored in
+	 * the database.
 	 * 
 	 * <p>
-	 * The Method returns an updated instance of the ItemCollection containing
-	 * the attributes $modified, $created, and $uniqueId
+	 * The Method returns an updated instance of the ItemCollection containing the
+	 * attributes $modified, $created, and $uniqueId
 	 * 
 	 * <p>
 	 * The method throws an AccessDeniedException if the CallerPrincipal is not
@@ -279,14 +279,14 @@ public class DocumentService {
 	 * 
 	 * The document will be marked as 'saved' so that the methods load() and
 	 * getDocumentsByQuery() can evaluate this flag. Depending on the state, the
-	 * methods can decide the correct behavior. In general we detach a document
-	 * in the load() and getDocumentsByQuery() method. This is for performance
-	 * reasons and the fact, that a ItemCollection can hold byte arrays which
-	 * will be copied by reference. In cases where these methods are called
-	 * after a document was saved (document is now managed), in one single
-	 * transaction, the detach call will discard the changes made by the save()
-	 * method. For that reason we flag the entity and evaluate this flag in the
-	 * load method evaluates the save status.
+	 * methods can decide the correct behavior. In general we detach a document in
+	 * the load() and getDocumentsByQuery() method. This is for performance reasons
+	 * and the fact, that a ItemCollection can hold byte arrays which will be copied
+	 * by reference. In cases where these methods are called after a document was
+	 * saved (document is now managed), in one single transaction, the detach call
+	 * will discard the changes made by the save() method. For that reason we flag
+	 * the entity and evaluate this flag in the load method evaluates the save
+	 * status.
 	 * 
 	 * 
 	 * @param ItemCollection
@@ -391,10 +391,10 @@ public class DocumentService {
 		/*
 		 * issue #226
 		 * 
-		 * No em.flush(), em.detach() or em.clear() is needed here. Finally we
-		 * remove the $version property from the ItemCollection returned to the
-		 * client. This is important for the case that the method is called
-		 * multiple times in one single transaction.
+		 * No em.flush(), em.detach() or em.clear() is needed here. Finally we remove
+		 * the $version property from the ItemCollection returned to the client. This is
+		 * important for the case that the method is called multiple times in one single
+		 * transaction.
 		 */
 
 		// remove $version from ItemCollection
@@ -418,9 +418,8 @@ public class DocumentService {
 	}
 
 	/**
-	 * This method saves a workitem in a new transaction. The method can be used
-	 * by plugins to isolate a save request from the current transaction
-	 * context.
+	 * This method saves a workitem in a new transaction. The method can be used by
+	 * plugins to isolate a save request from the current transaction context.
 	 * 
 	 * To call this method a EJB session context is necessary: <code>
 	 * 		workitem= sessionContext.getBusinessObject(EntityService.class)
@@ -437,16 +436,16 @@ public class DocumentService {
 	}
 
 	/**
-	 * This method loads an ItemCollection from the Database. The method expects
-	 * a valid $unqiueID to identify the Document entity saved before into the
-	 * database. The method returns null if no Document with the corresponding
-	 * ID exists.
+	 * This method loads an ItemCollection from the Database. The method expects a
+	 * valid $unqiueID to identify the Document entity saved before into the
+	 * database. The method returns null if no Document with the corresponding ID
+	 * exists.
 	 * <p>
-	 * The method checks if the CallerPrincipal has read access to Document
-	 * stored in the database. If not, the method returns null.
+	 * The method checks if the CallerPrincipal has read access to Document stored
+	 * in the database. If not, the method returns null.
 	 * <p>
-	 * <strong>Note:</strong> The method dose not throw an AccessDeniedException
-	 * if the user is not allowed to read the entity to prevent a aggressor with
+	 * <strong>Note:</strong> The method dose not throw an AccessDeniedException if
+	 * the user is not allowed to read the entity to prevent a aggressor with
 	 * informations about the existence of that specific Document.
 	 * <p>
 	 * The CallerPrincipial need to have at least the access level
@@ -456,15 +455,15 @@ public class DocumentService {
 	 * issue #230
 	 * 
 	 * In case a document is not flagged (not saved during same transaction), we
-	 * detach the loaded entity. In case a document is flagged (saved during
-	 * save transaction) we may not detach it, but make a deepCopy (clone) of
-	 * the document instance. This will avoid the effect, that data written to a
+	 * detach the loaded entity. In case a document is flagged (saved during save
+	 * transaction) we may not detach it, but make a deepCopy (clone) of the
+	 * document instance. This will avoid the effect, that data written to a
 	 * document get lost in a long running transaction with save and load calls.
 	 * 
 	 * @param id
 	 *            - the $unqiueid of the ItemCollection to be loaded
-	 * @return ItemCollection object or null if the Document dose not exist or
-	 *         the CallerPrincipal hat insufficient read access.
+	 * @return ItemCollection object or null if the Document dose not exist or the
+	 *         CallerPrincipal hat insufficient read access.
 	 * 
 	 */
 	public ItemCollection load(String id) {
@@ -504,8 +503,8 @@ public class DocumentService {
 
 	/**
 	 * This method removes an ItemCollection from the database. If the
-	 * CallerPrincipal is not allowed to access the ItemColleciton the method
-	 * throws an AccessDeniedException.
+	 * CallerPrincipal is not allowed to access the ItemColleciton the method throws
+	 * an AccessDeniedException.
 	 * <p>
 	 * The CallerPrincipial should have at least the access Role
 	 * org.imixs.ACCESSLEVEL.AUTHORACCESS
@@ -536,45 +535,75 @@ public class DocumentService {
 	}
 
 	/**
-	 * The method returns only the count of entities for an an valid Lucene
-	 * statement. The method counts only ItemCollections which are readable by
-	 * the CallerPrincipal. With the startpos and count parameters it is
-	 * possible to read chunks of entities. The jPQL Statement must match the
-	 * conditions of the JPA Object Class Entity.
+	 * Returns the total hits for a given search query. The provided search term
+	 * will we extended with a users roles to test the read access level of each
+	 * workitem matching the search term. The usernames and user roles will be
+	 * search lowercase!
 	 * 
+	 * @see search(String, int, int, Sort, Operator)
 	 * 
-	 * @param query
-	 *            - Lucene search query
-	 * @param startpos
-	 *            - optional start position
-	 * @param maxcount
-	 *            - maximum count of elements to be returned
-	 * @return count of elements to returned by this query
-	 * @throws InvalidAccessException
-	 * 
-	 * @see org.imixs.workflow.engine.jpa.Document.jee.jpa.Entity
+	 * @param sSearchTerm
+	 * @return total hits of search result
+	 * @throws QueryException
+	 *             in case the searchterm is not understandable.
 	 */
-	public int count(String query) {
-
-		long l = 0;
-
-		logger.fine("countAllDocuments - Query=" + query);
-
-		logger.warning("Count not implemented!");
-		// TODO - implementation missing
-
-		logger.fine("countAllEntities in " + (System.currentTimeMillis() - l) + " ms");
-		return 0;
-
+	public int count(String searchTerm) throws QueryException {
+		return count(searchTerm, 0);
 	}
+
+	
+	/**
+	 * Returns the total hits for a given search query. The provided search term
+	 * will we extended with a users roles to test the read access level of each
+	 * workitem matching the search term. The usernames and user roles will be
+	 * search lowercase!
+	 * 
+	 * The optional param 'maxResult' can be set to overwrite the
+	 * DEFAULT_MAX_SEARCH_RESULT.
+	 * 
+	 * @see search(String, int, int, Sort, Operator)
+	 * 
+	 * @param sSearchTerm
+	 * @param maxResult
+	 *            - max search result
+	 * @param defaultOperator
+	 *            - optional to change the default search operator
+	 * 
+	 * @return total hits of search result
+	 * @throws QueryException
+	 *             in case the searchterm is not understandable.
+	 */
+	public int count(String sSearchTerm, int maxResult) throws QueryException {
+		return luceneSearchService.getTotalHits(sSearchTerm, maxResult,null);
+	}
+
+	/**
+	 * Returns the total pages for a given search term and a given page size.
+	 * 
+	 * @see count(String sSearchTerm)
+	 * 
+	 * @param searchTerm
+	 * @param pageSize 
+	 * @return total pages of search result
+	 * @throws QueryException
+	 *             in case the searchterm is not understandable.
+	 */
+	public int countPages(String searchTerm, int pageSize) throws QueryException {
+		double pages = 1;
+		double count = count(searchTerm);
+		if (count > 0) {
+			pages = Math.ceil(count / pageSize);
+		}
+		return ((int) pages);
+	}
+	
 
 	/**
 	 * The method returns a list of ItemCollections by calling the
 	 * LuceneSearchService. The method expects an valid Lucene search term.
 	 * <p>
 	 * The method returns only ItemCollections which are readable by the
-	 * CallerPrincipal. With the pageSize and pageNumber it is possible to
-	 * paginate.
+	 * CallerPrincipal. With the pageSize and pageNumber it is possible to paginate.
 	 * 
 	 * @param searchTerm
 	 *            - Lucene search term
@@ -593,12 +622,12 @@ public class DocumentService {
 
 	/**
 	 * The method returns a sorted list of ItemCollections by calling the
-	 * LuceneSearchService. The result list can be sorted by a sortField and a
-	 * sort direction.
+	 * LuceneSearchService. The result list can be sorted by a sortField and a sort
+	 * direction.
 	 * <p>
 	 * The method expects an valid Lucene search term. The method returns only
-	 * ItemCollections which are readable by the CallerPrincipal. With the
-	 * pageSize and pageNumber it is possible to paginate.
+	 * ItemCollections which are readable by the CallerPrincipal. With the pageSize
+	 * and pageNumber it is possible to paginate.
 	 * 
 	 * @param searchTerm
 	 *            - Lucene search term
@@ -636,12 +665,10 @@ public class DocumentService {
 	}
 
 	/**
-	 * The method returns a collection of ItemCollections referred by a
-	 * $uniqueid.
+	 * The method returns a collection of ItemCollections referred by a $uniqueid.
 	 * <p>
 	 * The method returns only ItemCollections which are readable by the
-	 * CallerPrincipal. With the pageSize and pageNumber it is possible to
-	 * paginate.
+	 * CallerPrincipal. With the pageSize and pageNumber it is possible to paginate.
 	 * 
 	 * 
 	 * @param uniqueIdRef
@@ -735,16 +762,16 @@ public class DocumentService {
 			}
 		}
 
-		logger.fine("getDocumentsByQuery - found " + documentList.size() + " documents in " + (System.currentTimeMillis() - l) + " ms");
+		logger.fine("getDocumentsByQuery - found " + documentList.size() + " documents in "
+				+ (System.currentTimeMillis() - l) + " ms");
 		return result;
 	}
 
 	/**
-	 * This method creates a backup of the result set form a Lucene search
-	 * query. The document list will be stored into the file system. The method
-	 * stores the Map from the ItemCollection to be independent from version
-	 * upgrades. To manage large dataSets the method reads the documents in
-	 * smaller blocks
+	 * This method creates a backup of the result set form a Lucene search query.
+	 * The document list will be stored into the file system. The method stores the
+	 * Map from the ItemCollection to be independent from version upgrades. To
+	 * manage large dataSets the method reads the documents in smaller blocks
 	 * 
 	 * @param entities
 	 * @throws IOException
@@ -792,8 +819,8 @@ public class DocumentService {
 	}
 
 	/**
-	 * This method restores a backup from the file system and imports the
-	 * Documents into the database.
+	 * This method restores a backup from the file system and imports the Documents
+	 * into the database.
 	 * 
 	 * @param filepath
 	 * @throws IOException
@@ -846,8 +873,7 @@ public class DocumentService {
 	}
 
 	/**
-	 * This method checks if the Caller Principal has read access for the
-	 * document.
+	 * This method checks if the Caller Principal has read access for the document.
 	 * 
 	 * @return true if user has readaccess
 	 */
@@ -926,8 +952,8 @@ public class DocumentService {
 			return false;
 
 		/**
-		 * 2.) org.imixs.ACCESSLEVEL.MANAGERACCESS or
-		 * org.imixs.ACCESSLEVEL.EDITOR Always true - grant writeaccess.
+		 * 2.) org.imixs.ACCESSLEVEL.MANAGERACCESS or org.imixs.ACCESSLEVEL.EDITOR
+		 * Always true - grant writeaccess.
 		 */
 		if (ctx.isCallerInRole(ACCESSLEVEL_MANAGERACCESS) || ctx.isCallerInRole(ACCESSLEVEL_EDITORACCESS))
 			return true;
@@ -962,11 +988,10 @@ public class DocumentService {
 	 * This method read the param USER_GROUP_LIST from the EJB ContextData. This
 	 * context data object can provide a string array with application specific
 	 * dynamic user groups. These groups are used to grant access to an entity
-	 * independent from the static User-Role settings. The method returns null
-	 * if no ContextData is set
+	 * independent from the static User-Role settings. The method returns null if no
+	 * ContextData is set
 	 * 
-	 * @return - list of user group names or null if not USER_GROUP_LIST is
-	 *         defined
+	 * @return - list of user group names or null if not USER_GROUP_LIST is defined
 	 */
 	private String[] getUserGroupList() {
 		// read dynamic user roles from the ContextData (if provided) ....
@@ -975,7 +1000,7 @@ public class DocumentService {
 		if (applicationUserGroupList != null)
 			// trim entries....
 			for (int i = 0; i < applicationUserGroupList.length; i++) {
-			applicationUserGroupList[i] = applicationUserGroupList[i].trim();
+				applicationUserGroupList[i] = applicationUserGroupList[i].trim();
 			}
 
 		return applicationUserGroupList;

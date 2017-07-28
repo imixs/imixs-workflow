@@ -61,7 +61,6 @@ import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.xml.DocumentCollection;
-import org.imixs.workflow.xml.XMLCount;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
@@ -126,7 +125,6 @@ public class DocumentRestService {
 
 	}
 
-	
 	/**
 	 * returns a single document defined by $uniqueid
 	 * 
@@ -138,7 +136,7 @@ public class DocumentRestService {
 	public XMLItemCollection getDocument(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
 
 		ItemCollection document;
-		try { 
+		try {
 			document = documentService.load(uniqueid);
 			return XMLItemCollectionAdapter.putItemCollection(document, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
@@ -146,9 +144,9 @@ public class DocumentRestService {
 			return null;
 		}
 	}
-	
+
 	/**
-	 * Returns a result set by lucene Search Query
+	 * Returns a resultset for a lucene Search Query
 	 * 
 	 * @param query
 	 * @param pageSize
@@ -175,28 +173,47 @@ public class DocumentRestService {
 	}
 
 	/**
-	 * Returns the size of a result set by Query
+	 * Returns a total hits for a lucene Search Query
 	 * 
 	 * @param query
+	 * @param pageSize
+	 * @param pageIndex
+	 * @param items
 	 * @return
 	 */
 	@GET
 	@Path("/count/{query}")
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public XMLCount countEntitiesByQuery(@PathParam("query") String query) {
-		logger.fine("Query=" + query);
-		XMLCount result = new XMLCount();
-		result.count = (long) -1;
+	public int countTotalHitsByQuery(@PathParam("query") String query,
+			@DefaultValue("-1") @QueryParam("maxResult") int maxResult) {
 		try {
-			// decode query...
 			String decodedQuery = URLDecoder.decode(query, "UTF-8");
-
-			int size = documentService.count(decodedQuery);
-			result.count = (long) size;
+			return documentService.count(decodedQuery, maxResult);
 		} catch (Exception e) {
 			e.printStackTrace();
+			return 0;
 		}
-		return result;
+	}
+
+	/**
+	 * Returns the total pages for a lucene Search Query and a given page size.
+	 * 
+	 * @param query
+	 * @param pageSize
+	 * @param pageIndex
+	 * @param items
+	 * @return
+	 */
+	@GET
+	@Path("/countpages/{query}")
+	public int countTotalPagesByQuery(@PathParam("query") String query,
+			@DefaultValue("-1") @QueryParam("pageSize") int pageSize) {
+		try {
+			String decodedQuery = URLDecoder.decode(query, "UTF-8");
+			return documentService.countPages(decodedQuery, pageSize);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
 	}
 
 	/**
@@ -205,9 +222,9 @@ public class DocumentRestService {
 	 * 
 	 * Note: the method merges the content of the given document into an existing
 	 * one because the DocumentService method save() did not merge an entity. But
-	 * the rest service typically consumes only a subset of attributes. So this
-	 * is the reason why we merge the entity here. In different to the behavior
-	 * of the DocumentService the WorkflowService method process() did this merge
+	 * the rest service typically consumes only a subset of attributes. So this is
+	 * the reason why we merge the entity here. In different to the behavior of the
+	 * DocumentService the WorkflowService method process() did this merge
 	 * automatically.
 	 * 
 	 * @param xmlworkitem
@@ -287,9 +304,9 @@ public class DocumentRestService {
 	}
 
 	/**
-	 * This method creates a backup of the result set form a JQPL query. The
-	 * entity list will be stored into the file system. The backup can be
-	 * restored by calling the restore method
+	 * This method creates a backup of the result set form a JQPL query. The entity
+	 * list will be stored into the file system. The backup can be restored by
+	 * calling the restore method
 	 * 
 	 * 
 	 * @param query
@@ -358,18 +375,17 @@ public class DocumentRestService {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
 			return null;
 		}
-	
+
 		ItemCollection config = lucenUpdateService.getConfiguration();
-	
+
 		return XMLItemCollectionAdapter.putItemCollection(config);
-	
+
 	}
 
-
 	/**
-	 * This method returns a List object from a given comma separated string.
-	 * The method returns null if no elements are found. The provided parameter
-	 * looks typical like this: <code>
+	 * This method returns a List object from a given comma separated string. The
+	 * method returns null if no elements are found. The provided parameter looks
+	 * typical like this: <code>
 	 *   txtWorkflowStatus,numProcessID,txtName
 	 * </code>
 	 * 
@@ -388,8 +404,8 @@ public class DocumentRestService {
 
 	/**
 	 * This helper method adds a error message to the given entity, based on the
-	 * data in a Exception. This kind of error message can be displayed in a
-	 * page evaluating the properties '$error_code' and '$error_message'. These
+	 * data in a Exception. This kind of error message can be displayed in a page
+	 * evaluating the properties '$error_code' and '$error_message'. These
 	 * attributes will not be stored.
 	 * 
 	 * @param pe
