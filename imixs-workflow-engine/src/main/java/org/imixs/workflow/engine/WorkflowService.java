@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -553,6 +552,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	@SuppressWarnings("unchecked")
 	public ItemCollection processWorkItem(ItemCollection workitem)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+		
+		long l=System.currentTimeMillis();
 
 		if (workitem == null)
 			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
@@ -610,8 +611,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			// aPlugin=null;
 			if (aPlugin != null) {
 				// register injected CDI Plugin
-				if (logger.isLoggable(Level.FINE))
-					logger.info("[WorkflowService] register CDI plugin class: " + aPluginClassName + "...");
+				logger.fine("register CDI plugin class: " + aPluginClassName + "...");
 				workflowkernel.registerPlugin(aPlugin);
 			} else {
 				// register plugin by class name
@@ -651,10 +651,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		workitem.replaceItemValue("namcurrenteditor", nameEditor);
 
 		// now process the workitem
-		workitem = workflowkernel.process(workitem);
-
-		if (logger.isLoggable(Level.FINE))
-			logger.info("[WorkflowManager] workitem processed sucessfull");
+		try {
+			workitem = workflowkernel.process(workitem);
+		} catch (PluginException pe) {
+			// if a plugin exception occurs we roll back the transaction.
+			logger.severe("processing workitem '" + workitem.getItemValueString(UNIQUEID) + " failed, rollback transaction...");
+			ctx.setRollbackOnly();
+			throw pe;			
+		}
+		logger.fine("workitem '" + workitem.getItemValueString(UNIQUEID) + "' processed in " + (System.currentTimeMillis()-l) + "ms");
 
 		return documentService.save(workitem);
 
