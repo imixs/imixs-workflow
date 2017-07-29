@@ -213,12 +213,17 @@ public class LuceneSearchService {
 			TopDocsCollector<?> collector = null;
 			int startIndex = pageIndex * pageSize;
 
-			// test it pageindex is above th DEFAULT_MAX_SEARCH_RESULT
-			int maxSerachresult = DEFAULT_MAX_SEARCH_RESULT;
+			// test it pageindex is above the DEFAULT_MAX_SEARCH_RESULT
+			// if the pageindex is above the method will extend the
+			// maxSearchResult by 3*pageSize. This behavior is than
+			// simmilar to the google search which is also adjusting the 
+			// search scope after paging.
+			int maxSearchResult = DEFAULT_MAX_SEARCH_RESULT;
 			if ((startIndex + pageSize) > DEFAULT_MAX_SEARCH_RESULT) {
-				maxSerachresult = startIndex + (3 * pageSize);
+				// adjust maxSearchResult
+				maxSearchResult = startIndex + (3 * pageSize);
 				logger.warning("PageIndex (" + pageSize + "x" + pageIndex + ") exeeded DEFAULT_MAX_SEARCH_RESULT("
-						+ DEFAULT_MAX_SEARCH_RESULT + ") -> new MAX_SEARCH_RESULT set to " + maxSerachresult);
+						+ DEFAULT_MAX_SEARCH_RESULT + ") -> new MAX_SEARCH_RESULT is set to " + maxSearchResult);
 			}
 
 			Query query = parser.parse(sSearchTerm);
@@ -226,13 +231,13 @@ public class LuceneSearchService {
 				// sorted by sortoder
 				logger.finest("lucene result sorted by sortOrder= '" + sortOrder + "' ");
 				// MAX_SEARCH_RESULT is limiting the total number of hits
-				collector = TopFieldCollector.create(sortOrder, maxSerachresult, false, false, false);
+				collector = TopFieldCollector.create(sortOrder, maxSearchResult, false, false, false);
 
 			} else {
 				// sorted by score
 				logger.finest("lucene result sorted by score ");
 				// MAX_SEARCH_RESULT is limiting the total number of hits
-				collector = TopScoreDocCollector.create(maxSerachresult);
+				collector = TopScoreDocCollector.create(maxSearchResult);
 			}
 
 			// - ignore time limiting for now
