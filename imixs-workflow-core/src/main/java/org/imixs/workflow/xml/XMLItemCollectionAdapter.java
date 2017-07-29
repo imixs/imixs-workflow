@@ -60,10 +60,9 @@ public class XMLItemCollectionAdapter {
 	private static Logger logger = Logger.getLogger(XMLItemCollectionAdapter.class.getName());
 
 	/**
-	 * This Method converts a
-	 * <code>org.imixs.workflow.xml.XMLItemCollection</code> into a
-	 * <code> org.imixs.workflow.ItemCollection</code> Returns null if entity ==
-	 * null
+	 * This Method converts a <code>org.imixs.workflow.xml.XMLItemCollection</code>
+	 * into a <code> org.imixs.workflow.ItemCollection</code> Returns null if entity
+	 * == null
 	 * 
 	 * @param entity
 	 * @return ItemCollection
@@ -71,42 +70,35 @@ public class XMLItemCollectionAdapter {
 	@SuppressWarnings({ "rawtypes" })
 	public static ItemCollection getItemCollection(final XMLItemCollection entity) {
 		ItemCollection itemCol = new ItemCollection();
-		if (entity == null)
+		if (entity == null) {
 			return itemCol;
-
-		try {
-			XMLItem items[] = entity.getItem();
-			if (items != null)
-				for (int i = 0; i < items.length; i++) {
-					XMLItem it = items[i];
-					if (it == null)
-						continue;
-					String key = it.getName();
-					if (it.getValue() == null) {
-						// no value found
-						itemCol.replaceItemValue(key, new Vector());
-					} else {
-						// force migration of embedded XMLItem elements!
-						// create a mutable list
-						List valueList = new ArrayList<>(Arrays.asList(it.getValue(true)));
-						// we can not use Arrays.asList() in this content
-						// because list need to be modified
-						itemCol.replaceItemValue(key, valueList);
-					}
-				}
-		} catch (Exception e) {
-			logger.warning("getItemCollection - can't convert XMLItem value - error: "
-					+ e.toString());
-			itemCol = null;
 		}
 
+		XMLItem items[] = entity.getItem();
+		if (items != null)
+			for (int i = 0; i < items.length; i++) {
+				XMLItem it = items[i];
+				if (it == null)
+					continue;
+				String key = it.getName();
+				if (it.getValue() == null) {
+					// no value found
+					itemCol.replaceItemValue(key, new Vector());
+				} else {
+					// force migration of embedded XMLItem elements!
+					// create a mutable list
+					List valueList = new ArrayList<>(Arrays.asList(it.getValue(true)));
+					// we can not use Arrays.asList() in this content
+					// because list need to be modified
+					itemCol.replaceItemValue(key, valueList);
+				}
+			}
 		return itemCol;
 	}
-	
+
 	/**
-	 * This Method converts a
-	 * <code>org.imixs.workflow.xml.DocumentCollection</code> into a
-	 * List of  <code>org.imixs.workflow.ItemCollection</code> 
+	 * This Method converts a <code>org.imixs.workflow.xml.DocumentCollection</code>
+	 * into a List of <code>org.imixs.workflow.ItemCollection</code>
 	 * 
 	 * The method returns an empty list if the collection is empty or null
 	 * 
@@ -114,9 +106,9 @@ public class XMLItemCollectionAdapter {
 	 * @return ItemCollection
 	 */
 	public static List<ItemCollection> getCollection(DocumentCollection doccol) {
-		List<ItemCollection> result=new ArrayList<ItemCollection>();
-		
-		if (doccol != null && doccol.getDocument()!=null) {
+		List<ItemCollection> result = new ArrayList<ItemCollection>();
+
+		if (doccol != null && doccol.getDocument() != null) {
 			for (int i = 0; i < doccol.getDocument().length; i++) {
 				XMLItemCollection xmlItemCol = doccol.getDocument()[i];
 				result.add(getItemCollection(xmlItemCol));
@@ -126,148 +118,138 @@ public class XMLItemCollectionAdapter {
 	}
 
 	/**
-	 * This Method converts a <code> org.imixs.workflow.ItemCollection</code>
-	 * into a <code>XMLItemCollection</code>
+	 * This Method converts a <code> org.imixs.workflow.ItemCollection</code> into a
+	 * <code>XMLItemCollection</code>
 	 * 
 	 * <p>
-	 * The method verifies if the values stored are basic java types. If not
-	 * these values will not be converted!
+	 * The method verifies if the values stored are basic java types. If not these
+	 * values will not be converted!
 	 * 
 	 * @param sourceItemCollection
 	 *            ItemCollection Object to be converted
 	 * @param itemNames
-	 *            - optional list of item names to be converted. If null all
-	 *            items will be converted
+	 *            - optional list of item names to be converted. If null all items
+	 *            will be converted
 	 */
 	@SuppressWarnings({ "unchecked" })
 	public static XMLItemCollection putItemCollection(final ItemCollection sourceItemCollection,
-			final List<String> itemNames) throws Exception {
-		
+			final List<String> itemNames) {
+
 		// create a deep copy of the source
 		ItemCollection aItemCollection = (ItemCollection) sourceItemCollection.clone();
-		
+
 		String itemName = null;
 		XMLItemCollection entity = new XMLItemCollection();
 		int i = 0;
 		XMLItem[] items = null;
-		try {
-			if (aItemCollection != null) {
-				// test if only a sublist of items should be converted
-				if (itemNames != null && itemNames.size() > 0) {
-					items = new XMLItem[itemNames.size()];
-					for (String aField : itemNames) {
-						// this code block guarantees that the order of items
-						// returned
-						itemName = aField;
-						XMLItem item = new XMLItem();
-						// test the ItemValue
-						List<?> vOrg = aItemCollection.getItemValue(aField);
-						item.setName(itemName);
-						item.setValue(vOrg.toArray());
 
-						items[i] = item;
-						i++;
-					}
+		if (aItemCollection != null) {
+			// test if only a sublist of items should be converted
+			if (itemNames != null && itemNames.size() > 0) {
+				items = new XMLItem[itemNames.size()];
+				for (String aField : itemNames) {
+					// this code block guarantees that the order of items
+					// returned
+					itemName = aField;
+					XMLItem item = new XMLItem();
+					// test the ItemValue
+					List<?> vOrg = aItemCollection.getItemValue(aField);
+					item.setName(itemName);
+					item.setValue(vOrg.toArray());
 
-				} else {
-					// convert all items (no itemname list is provided)
-					Iterator<?> it = aItemCollection.getAllItems().entrySet().iterator();
-					int max = aItemCollection.getAllItems().entrySet().size();
-					items = new XMLItem[max];
-
-					// iterate over all items if no itemNames are provided
-					while (it.hasNext()) {
-						Map.Entry<String, List<?>> entry = (Entry<String, List<?>>) it.next();
-						itemName=entry.getKey();
-						XMLItem item = null;
-						item = new XMLItem();
-						item.setName(itemName);
-						if (entry.getValue()!=null) {
-							item.setValue(entry.getValue().toArray());
-							if (item != null) {
-								items[i] = item;
-								i++;
-							}
-						} else {
-							logger.warning("putItemCollection - itemName=" + itemName + " has null value");
-						}
-					}
+					items[i] = item;
+					i++;
 				}
 
-				entity.setItem(items);
+			} else {
+				// convert all items (no itemname list is provided)
+				Iterator<?> it = aItemCollection.getAllItems().entrySet().iterator();
+				int max = aItemCollection.getAllItems().entrySet().size();
+				items = new XMLItem[max];
+
+				// iterate over all items if no itemNames are provided
+				while (it.hasNext()) {
+					Map.Entry<String, List<?>> entry = (Entry<String, List<?>>) it.next();
+					itemName = entry.getKey();
+					XMLItem item = null;
+					item = new XMLItem();
+					item.setName(itemName);
+					if (entry.getValue() != null) {
+						item.setValue(entry.getValue().toArray());
+						if (item != null) {
+							items[i] = item;
+							i++;
+						}
+					} else {
+						logger.warning("putItemCollection - itemName=" + itemName + " has null value");
+					}
+				}
 			}
 
-		} catch (Exception e) {
-			logger.severe("putItemCollection - itemName=" + itemName + " : "+e.getMessage());
-			throw e;
+			entity.setItem(items);
 		}
 
-		entity=sortItemsByName(entity);
-		
+		entity = sortItemsByName(entity);
+
 		return entity;
 	}
-	
-	
+
 	/**
 	 * This method sorts all items of a XMLItemCollection by item name.
+	 * 
 	 * @param xmlItemCol
 	 * @return
 	 */
 	public static XMLItemCollection sortItemsByName(XMLItemCollection xmlItemCol) {
-		
+
 		XMLItem[] items = xmlItemCol.getItem();
-		Arrays.sort(items,new XMLItemComparator());
-		
+		Arrays.sort(items, new XMLItemComparator());
+
 		xmlItemCol.setItem(items);
-		
+
 		return xmlItemCol;
 	}
 
 	/**
-	 * This Method converts a <code> org.imixs.workflow.ItemCollection</code>
-	 * into a <code>Entity</code>
+	 * This Method converts a <code> org.imixs.workflow.ItemCollection</code> into a
+	 * <code>Entity</code>
 	 * 
 	 * <p>
-	 * The method verifies if the values stored are basic java types. If not
-	 * these values will not be converted!
+	 * The method verifies if the values stored are basic java types. If not these
+	 * values will not be converted!
 	 * 
 	 * @param aItemCollection
 	 *            Collection Object to be converted
 	 */
-	public static XMLItemCollection putItemCollection(final ItemCollection aItemCollection) throws Exception {
+	public static XMLItemCollection putItemCollection(final ItemCollection aItemCollection) {
 		return putItemCollection(aItemCollection, null);
 	}
 
 	/**
-	 * This method transforms a Collection<ItemCollection> into a
-	 * EntityCollection
+	 * This method transforms a Collection<ItemCollection> into a EntityCollection
 	 * 
 	 * @param col
 	 * @return
-	 * @throws Exception
 	 */
-	public static DocumentCollection putCollection(final Collection<ItemCollection> col) throws Exception {
+	public static DocumentCollection putCollection(final Collection<ItemCollection> col) {
 
 		return putCollection(col, null);
 	}
 
 	/**
-	 * This method transforms a Collection<ItemCollection> into a
-	 * EntityCollection
+	 * This method transforms a Collection<ItemCollection> into a EntityCollection
 	 * 
-	 * If the attribute List is provided only the corresponding properties will
-	 * be returned.
+	 * If the attribute List is provided only the corresponding properties will be
+	 * returned.
 	 * 
 	 * @param col
 	 *            - collection of ItemCollection objects to be converted
 	 * @param itemNames
-	 *            - optional list of item names to be converted. If null all
-	 *            items will be converted
+	 *            - optional list of item names to be converted. If null all items
+	 *            will be converted
 	 * @return
-	 * @throws Exception
 	 */
-	public static DocumentCollection putCollection(final Collection<ItemCollection> col, final List<String> itemNames)
-			throws Exception {
+	public static DocumentCollection putCollection(final Collection<ItemCollection> col, final List<String> itemNames) {
 		DocumentCollection entiCol = new DocumentCollection();
 		Iterator<ItemCollection> it = col.iterator();
 		int max = col.size();
@@ -286,8 +268,8 @@ public class XMLItemCollectionAdapter {
 
 	/**
 	 * This method imports an xml entity data stream and returns a List of
-	 * ItemCollection objects. The method can import any kind of entity data
-	 * like model or configuration data an xml export of workitems.
+	 * ItemCollection objects. The method can import any kind of entity data like
+	 * model or configuration data an xml export of workitems.
 	 * 
 	 * @param inputStream
 	 *            xml input stream
@@ -309,8 +291,8 @@ public class XMLItemCollectionAdapter {
 
 	/**
 	 * This method imports an xml entity data byte array and returns a List of
-	 * ItemCollection objects. The method can import any kind of entity data
-	 * like model or configuration data an xml export of workitems.
+	 * ItemCollection objects. The method can import any kind of entity data like
+	 * model or configuration data an xml export of workitems.
 	 * 
 	 * @param inputStream
 	 *            xml input stream
@@ -334,8 +316,7 @@ public class XMLItemCollectionAdapter {
 		ByteArrayInputStream input = new ByteArrayInputStream(byteInput);
 		Object jaxbObject = m.unmarshal(input);
 		if (jaxbObject == null) {
-			throw new RuntimeException(
-					"readCollection error - wrong xml file format - unable to read content!");
+			throw new RuntimeException("readCollection error - wrong xml file format - unable to read content!");
 		}
 
 		ecol = (DocumentCollection) jaxbObject;
@@ -352,8 +333,8 @@ public class XMLItemCollectionAdapter {
 	}
 
 	/**
-	 * This method imports a single XMLItemCollection and returns the
-	 * ItemCollection object.
+	 * This method imports a single XMLItemCollection and returns the ItemCollection
+	 * object.
 	 * 
 	 * @param inputStream
 	 *            xml input stream
@@ -375,8 +356,7 @@ public class XMLItemCollectionAdapter {
 		ByteArrayInputStream input = new ByteArrayInputStream(byteInput);
 		Object jaxbObject = m.unmarshal(input);
 		if (jaxbObject == null) {
-			throw new RuntimeException(
-					"readItemCollection error - wrong xml file format - unable to read content!");
+			throw new RuntimeException("readItemCollection error - wrong xml file format - unable to read content!");
 		}
 
 		ecol = (XMLItemCollection) jaxbObject;
