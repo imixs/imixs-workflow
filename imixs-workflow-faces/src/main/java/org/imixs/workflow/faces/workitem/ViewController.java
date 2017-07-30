@@ -283,7 +283,7 @@ public class ViewController implements Serializable {
 			endOfList = true;
 		} else {
 			// look ahead if we have more entries...
-			int iAhead = (getPageSize() * getPageIndex()) + 1;
+			int iAhead = (getPageSize() * (getPageIndex() + 1)) + 1;
 			if (getDocumentService().count(_query, iAhead) < iAhead) {
 				// there is no more data
 				endOfList = true;
