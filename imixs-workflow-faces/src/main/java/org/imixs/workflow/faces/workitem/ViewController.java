@@ -30,6 +30,7 @@ package org.imixs.workflow.faces.workitem;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -68,6 +69,8 @@ public class ViewController implements Serializable {
 
 	/* result */
 	private List<ItemCollection> workitems = null;
+	@SuppressWarnings("unused")
+	private static Logger logger = Logger.getLogger(ViewController.class.getName());
 
 	@EJB
 	DocumentService documentService;
@@ -111,8 +114,8 @@ public class ViewController implements Serializable {
 	}
 
 	/**
-	 * defines the type attribute of a workitem to be generated or search by
-	 * this controller
+	 * defines the type attribute of a workitem to be generated or search by this
+	 * controller
 	 * 
 	 * Subclasses may overwrite the type
 	 * 
@@ -193,8 +196,8 @@ public class ViewController implements Serializable {
 	}
 
 	/**
-	 * refreshes the current workitem list. so the list will be loaded again.
-	 * but start pos will not be changed!
+	 * refreshes the current workitem list. so the list will be loaded again. but
+	 * start pos will not be changed!
 	 */
 	public void doRefresh() {
 		workitems = null;
@@ -241,12 +244,11 @@ public class ViewController implements Serializable {
 	 * Returns the current view result. The request is delegated to an
 	 * implementation of IViewAdapter.
 	 * 
-	 * The method implements a lazy loading mechanism and caches the result
-	 * locally.
+	 * The method implements a lazy loading mechanism and caches the result locally.
 	 * 
-	 * The returned result set is defined by the current view definition. The
-	 * view definition can be set by the property view. All view definitions are
-	 * stored in the property views.
+	 * The returned result set is defined by the current view definition. The view
+	 * definition can be set by the property view. All view definitions are stored
+	 * in the property views.
 	 * 
 	 * The ViewAdapter implements the behavior to return a collection of
 	 * ItemCollections based on the current view type
@@ -267,6 +269,7 @@ public class ViewController implements Serializable {
 			return workitems;
 		}
 
+		// load data
 		workitems = getDocumentService().find(_query, getPageSize(), getPageIndex(), getSortBy(), isSortReverse());
 
 		// if no result is defined return an empty list.
@@ -276,7 +279,18 @@ public class ViewController implements Serializable {
 
 		// The end of a list is reached when the size is below or equal the
 		// pageSize. See issue #287
-		endOfList = (workitems.size() <= pageSize);
+		if (workitems.size() < pageSize) {
+			endOfList = true;
+		} else {
+			// look ahead if we have more entries...
+			int iAhead = (getPageSize() * getPageIndex()) + 1;
+			if (getDocumentService().count(_query, iAhead) < iAhead) {
+				// there is no more data
+				endOfList = true;
+			} else {
+				endOfList = false;
+			}
+		}
 
 		return workitems;
 	}
