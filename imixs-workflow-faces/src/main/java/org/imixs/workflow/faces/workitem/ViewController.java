@@ -223,7 +223,9 @@ public class ViewController implements Serializable {
 
 	public void doLoadPrev() {
 		pageIndex--;
-		pageIndex = 0;
+		if (pageIndex < 0) {
+			pageIndex = 0;
+		}
 		workitems = null;
 	}
 
@@ -250,17 +252,17 @@ public class ViewController implements Serializable {
 	 * ItemCollections based on the current view type
 	 * 
 	 * @return view result
-	 * @throws QueryException 
+	 * @throws QueryException
 	 */
 	public List<ItemCollection> getWorkitems() throws QueryException {
 		// return a cached result set?
 		if (workitems != null)
 			return workitems;
-		
+
 		workitems = new ArrayList<ItemCollection>();
 
-		String _query=getQuery();
-		if (_query==null || _query.isEmpty()) {
+		String _query = getQuery();
+		if (_query == null || _query.isEmpty()) {
 			// no query defined
 			return workitems;
 		}
@@ -271,9 +273,10 @@ public class ViewController implements Serializable {
 		if (workitems == null) {
 			workitems = new ArrayList<ItemCollection>();
 		}
-		
-		// compute end of file
-		endOfList = (workitems.size() < pageSize);
+
+		// The end of a list is reached when the size is below or equal the
+		// pageSize. See issue #287
+		endOfList = (workitems.size() <= pageSize);
 
 		return workitems;
 	}
