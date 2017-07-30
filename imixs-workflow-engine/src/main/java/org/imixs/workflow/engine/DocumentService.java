@@ -536,7 +536,7 @@ public class DocumentService {
 
 	/**
 	 * Returns the total hits for a given search query. The provided search term
-	 * will we extended with a users roles to test the read access level of each
+	 * will be extended with a users roles to test the read access level of each
 	 * workitem matching the search term. The usernames and user roles will be
 	 * search lowercase!
 	 * 
@@ -554,7 +554,7 @@ public class DocumentService {
 	
 	/**
 	 * Returns the total hits for a given search query. The provided search term
-	 * will we extended with a users roles to test the read access level of each
+	 * will be extended with a users roles to test the read access level of each
 	 * workitem matching the search term. The usernames and user roles will be
 	 * search lowercase!
 	 * 

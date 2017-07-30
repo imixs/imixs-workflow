@@ -65,7 +65,7 @@ public class DocumentController implements Serializable {
 
 	@EJB
 	DocumentService documentService;
-	private static Logger logger = Logger.getLogger("org.imixs.workflow");
+	private static Logger logger = Logger.getLogger(DocumentController.class.getName());
 
 	public DocumentController() {
 		super();
