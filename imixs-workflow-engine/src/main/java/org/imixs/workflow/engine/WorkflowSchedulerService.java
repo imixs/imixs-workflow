@@ -375,7 +375,7 @@ public class WorkflowSchedulerService {
 			logger.finest(suniqueid + " offset =" + iOffset + " " + sDelayUnit);
 
 			iCompareType = docActivity.getItemValueInteger("keyScheduledBaseObject");
-
+			
 			// get current time for compare....
 			Date dateTimeNow = Calendar.getInstance().getTime();
 
@@ -457,8 +457,10 @@ public class WorkflowSchedulerService {
 				} else
 					return false;
 			}
-			default:
+			default: {
+				logger.warning("Time Base is not defined, verify model!");
 				return false;
+				}
 			}
 
 		} catch (Exception e) {
