@@ -374,7 +374,7 @@ public class WorkflowSchedulerService {
 
 			logger.finest(suniqueid + " offset =" + iOffset + " " + sDelayUnit);
 
-			iCompareType = Integer.parseInt(docActivity.getItemValueString("keyScheduledBaseObject"));
+			iCompareType = docActivity.getItemValueInteger("keyScheduledBaseObject");
 
 			// get current time for compare....
 			Date dateTimeNow = Calendar.getInstance().getTime();
