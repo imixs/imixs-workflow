@@ -29,6 +29,7 @@ package org.imixs.workflow.jaxrs;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.List;
@@ -61,6 +62,7 @@ import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.xml.DocumentCollection;
+import org.imixs.workflow.xml.XMLCount;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
@@ -183,15 +185,19 @@ public class DocumentRestService {
 	 */
 	@GET
 	@Path("/count/{query}")
-	public int countTotalHitsByQuery(@PathParam("query") String query,
+	public XMLCount countTotalHitsByQuery(@PathParam("query") String query,
 			@DefaultValue("-1") @QueryParam("maxResult") int maxResult) {
+		XMLCount xmlcount = new XMLCount();
+		String decodedQuery;
 		try {
-			String decodedQuery = URLDecoder.decode(query, "UTF-8");
-			return documentService.count(decodedQuery, maxResult);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return 0;
+			decodedQuery = URLDecoder.decode(query, "UTF-8");
+			xmlcount.count = (long) documentService.count(decodedQuery, maxResult);
+		} catch (UnsupportedEncodingException | QueryException e) {
+			xmlcount.count = 0l;
+			logger.severe(e.getMessage());
+			return xmlcount;
 		}
+		return xmlcount;
 	}
 
 	/**
@@ -205,14 +211,18 @@ public class DocumentRestService {
 	 */
 	@GET
 	@Path("/countpages/{query}")
-	public int countTotalPagesByQuery(@PathParam("query") String query,
+	public XMLCount countTotalPagesByQuery(@PathParam("query") String query,
 			@DefaultValue("-1") @QueryParam("pageSize") int pageSize) {
+		XMLCount xmlcount = new XMLCount();
+		String decodedQuery;
 		try {
-			String decodedQuery = URLDecoder.decode(query, "UTF-8");
-			return documentService.countPages(decodedQuery, pageSize);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return 0;
+			decodedQuery = URLDecoder.decode(query, "UTF-8");
+			xmlcount.count = (long) documentService.countPages(decodedQuery, pageSize);
+			return xmlcount;
+		} catch (UnsupportedEncodingException | QueryException e) {
+			xmlcount.count = 0l;
+			logger.severe(e.getMessage());
+			return xmlcount;
 		}
 	}
 
