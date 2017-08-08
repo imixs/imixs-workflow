@@ -39,6 +39,7 @@ import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -69,22 +70,15 @@ public class RestClient {
 
 	private CookieManager cookieManager = null;
 
-	// private String NAME_SPACE = "http://imixs.org/workflow/services";
-
 	private String serviceEndpoint;
-
 	private String user = null;
-
 	private String password = null;
-
+	private Map<String, String> requestProperties = null;
 	private String encoding = "UTF-8";
-
 	private int iLastHTTPResult = 0;
-
 	private String content = null;
 
-	private final static Logger logger = Logger.getLogger(RestClient.class
-			.getName());
+	private final static Logger logger = Logger.getLogger(RestClient.class.getName());
 
 	// Sets credentials
 	public void setCredentials(String auser, String apw) {
@@ -132,6 +126,16 @@ public class RestClient {
 		this.password = password;
 	}
 
+	/**
+	 * Set a single header request property
+	 */
+	public void setRequestProperty(String key, String value) {
+		if (requestProperties == null) {
+			requestProperties = new HashMap<String, String>();
+		}
+		requestProperties.put(key, value);
+	}
+
 	public String getContent() {
 		return content;
 	}
@@ -151,8 +155,7 @@ public class RestClient {
 	 *            - an Entity Collection
 	 * @return HTTPResult
 	 */
-	public int postEntity(String uri, XMLItemCollection aItemCol)
-			throws Exception {
+	public int postEntity(String uri, XMLItemCollection aItemCol) throws Exception {
 		PrintWriter printWriter = null;
 
 		HttpURLConnection urlConnection = null;
@@ -160,8 +163,7 @@ public class RestClient {
 			serviceEndpoint = uri;
 			iLastHTTPResult = 500;
 
-			urlConnection = (HttpURLConnection) new URL(serviceEndpoint)
-					.openConnection();
+			urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
 			urlConnection.setRequestMethod("POST");
 			urlConnection.setDoOutput(true);
 			urlConnection.setDoInput(true);
@@ -169,17 +171,14 @@ public class RestClient {
 
 			// Authorization
 			if (user != null) {
-				urlConnection.setRequestProperty("Authorization", "Basic "
-						+ this.getAccessByUser());
+				urlConnection.setRequestProperty("Authorization", "Basic " + this.getAccessByUser());
 			}
 			/** * HEADER ** */
-			urlConnection.setRequestProperty("Content-Type",
-					"application/xml; charset=" + encoding);
+			urlConnection.setRequestProperty("Content-Type", "application/xml; charset=" + encoding);
 
 			StringWriter writer = new StringWriter();
 
-			JAXBContext context = JAXBContext
-					.newInstance(XMLItemCollection.class);
+			JAXBContext context = JAXBContext.newInstance(XMLItemCollection.class);
 			Marshaller m = context.createMarshaller();
 			m.marshal(aItemCol, writer);
 
@@ -187,17 +186,15 @@ public class RestClient {
 			urlConnection.setRequestProperty("Content-Length",
 					"" + Integer.valueOf(writer.toString().getBytes().length));
 
-			printWriter = new PrintWriter(new BufferedWriter(
-					new OutputStreamWriter(urlConnection.getOutputStream(),
-							encoding)));
+			printWriter = new PrintWriter(
+					new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), encoding)));
 
 			printWriter.write(writer.toString());
 			printWriter.close();
 
 			String sHTTPResponse = urlConnection.getHeaderField(0);
 			try {
-				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9,
-						12));
+				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
 			} catch (Exception eNumber) {
 				// eNumber.printStackTrace();
 				iLastHTTPResult = 500;
@@ -229,8 +226,7 @@ public class RestClient {
 	 *            - an Entity Collection
 	 * @return HTTPResult
 	 */
-	public int postCollection(String uri, DocumentCollection aEntityCol)
-			throws Exception {
+	public int postCollection(String uri, DocumentCollection aEntityCol) throws Exception {
 		PrintWriter printWriter = null;
 
 		HttpURLConnection urlConnection = null;
@@ -238,8 +234,7 @@ public class RestClient {
 			serviceEndpoint = uri;
 			iLastHTTPResult = 500;
 
-			urlConnection = (HttpURLConnection) new URL(serviceEndpoint)
-					.openConnection();
+			urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
 			urlConnection.setRequestMethod("POST");
 			urlConnection.setDoOutput(true);
 			urlConnection.setDoInput(true);
@@ -247,18 +242,15 @@ public class RestClient {
 
 			// Authorization
 			if (user != null) {
-				urlConnection.setRequestProperty("Authorization", "Basic "
-						+ this.getAccessByUser());
+				urlConnection.setRequestProperty("Authorization", "Basic " + this.getAccessByUser());
 			}
 
 			/** * HEADER ** */
-			urlConnection.setRequestProperty("Content-Type",
-					"application/xml; charset=" + encoding);
+			urlConnection.setRequestProperty("Content-Type", "application/xml; charset=" + encoding);
 
 			StringWriter writer = new StringWriter();
 
-			JAXBContext context = JAXBContext
-					.newInstance(DocumentCollection.class);
+			JAXBContext context = JAXBContext.newInstance(DocumentCollection.class);
 			Marshaller m = context.createMarshaller();
 			m.marshal(aEntityCol, writer);
 
@@ -266,16 +258,14 @@ public class RestClient {
 			urlConnection.setRequestProperty("Content-Length",
 					"" + Integer.valueOf(writer.toString().getBytes().length));
 
-			printWriter = new PrintWriter(new BufferedWriter(
-					new OutputStreamWriter(urlConnection.getOutputStream(),
-							encoding)));
+			printWriter = new PrintWriter(
+					new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), encoding)));
 
 			printWriter.write(writer.toString());
 			printWriter.close();
 			String sHTTPResponse = urlConnection.getHeaderField(0);
 			try {
-				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9,
-						12));
+				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
 			} catch (Exception eNumber) {
 				// eNumber.printStackTrace();
 				iLastHTTPResult = 500;
@@ -297,8 +287,8 @@ public class RestClient {
 	}
 
 	/**
-	 * This method posts an JSON String in the Imixs ItemCollection Format to a
-	 * Rest Service URI Endpoint.
+	 * This method posts an JSON String in the Imixs ItemCollection Format to a Rest
+	 * Service URI Endpoint.
 	 * 
 	 * 
 	 * @param uri
@@ -307,8 +297,7 @@ public class RestClient {
 	 *            - an Entity Collection
 	 * @return HTTPResult
 	 */
-	public int postJsonEntity(String uri, String aItemColString)
-			throws Exception {
+	public int postJsonEntity(String uri, String aItemColString) throws Exception {
 		PrintWriter printWriter = null;
 
 		HttpURLConnection urlConnection = null;
@@ -316,8 +305,7 @@ public class RestClient {
 			serviceEndpoint = uri;
 			iLastHTTPResult = 500;
 
-			urlConnection = (HttpURLConnection) new URL(serviceEndpoint)
-					.openConnection();
+			urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
 			urlConnection.setRequestMethod("POST");
 			urlConnection.setDoOutput(true);
 			urlConnection.setDoInput(true);
@@ -325,12 +313,10 @@ public class RestClient {
 
 			// Authorization
 			if (user != null) {
-				urlConnection.setRequestProperty("Authorization", "Basic "
-						+ this.getAccessByUser());
+				urlConnection.setRequestProperty("Authorization", "Basic " + this.getAccessByUser());
 			}
 			/** * HEADER ** */
-			urlConnection.setRequestProperty("Content-Type",
-					"application/json; charset=" + encoding);
+			urlConnection.setRequestProperty("Content-Type", "application/json; charset=" + encoding);
 
 			StringWriter writer = new StringWriter();
 
@@ -341,18 +327,15 @@ public class RestClient {
 			urlConnection.setRequestProperty("Content-Length",
 					"" + Integer.valueOf(writer.toString().getBytes().length));
 
-			printWriter = new PrintWriter(new BufferedWriter(
-					new OutputStreamWriter(urlConnection.getOutputStream(),
-							encoding)));
+			printWriter = new PrintWriter(
+					new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), encoding)));
 
-			
 			printWriter.write(writer.toString());
 			printWriter.close();
 
 			String sHTTPResponse = urlConnection.getHeaderField(0);
 			try {
-				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9,
-						12));
+				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
 			} catch (Exception eNumber) {
 				// eNumber.printStackTrace();
 				iLastHTTPResult = 500;
@@ -372,15 +355,11 @@ public class RestClient {
 
 		return iLastHTTPResult;
 	}
-	
-	
-	
-	
-	
+
 	/**
-	 * This method posts a String data object with a specific Content-Type to a
-	 * Rest Service URI Endpoint.
-	 * This method can be used to simulate different post scenarios.
+	 * This method posts a String data object with a specific Content-Type to a Rest
+	 * Service URI Endpoint. This method can be used to simulate different post
+	 * scenarios.
 	 * 
 	 * 
 	 * 
@@ -390,11 +369,10 @@ public class RestClient {
 	 *            - an Entity Collection
 	 * @return HTTPResult
 	 */
-	public int postString(String uri, String dataString, String contentType)
-			throws Exception {
+	public int postString(String uri, String dataString, String contentType) throws Exception {
 		PrintWriter printWriter = null;
-		if (contentType==null || contentType.isEmpty()) {
-			contentType="application/xml";
+		if (contentType == null || contentType.isEmpty()) {
+			contentType = "application/xml";
 		}
 
 		HttpURLConnection urlConnection = null;
@@ -402,8 +380,7 @@ public class RestClient {
 			serviceEndpoint = uri;
 			iLastHTTPResult = 500;
 
-			urlConnection = (HttpURLConnection) new URL(serviceEndpoint)
-					.openConnection();
+			urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
 			urlConnection.setRequestMethod("POST");
 			urlConnection.setDoOutput(true);
 			urlConnection.setDoInput(true);
@@ -411,15 +388,11 @@ public class RestClient {
 
 			// Authorization
 			if (user != null) {
-				urlConnection.setRequestProperty("Authorization", "Basic "
-						+ this.getAccessByUser());
+				urlConnection.setRequestProperty("Authorization", "Basic " + this.getAccessByUser());
 			}
 			/** * HEADER ** */
-			urlConnection.setRequestProperty("Content-Type",
-					contentType + "; charset=" + encoding);
+			urlConnection.setRequestProperty("Content-Type", contentType + "; charset=" + encoding);
 
-			
-			
 			StringWriter writer = new StringWriter();
 
 			writer.write(dataString);
@@ -429,21 +402,15 @@ public class RestClient {
 			urlConnection.setRequestProperty("Content-Length",
 					"" + Integer.valueOf(writer.toString().getBytes().length));
 
-			printWriter = new PrintWriter(new BufferedWriter(
-					new OutputStreamWriter(urlConnection.getOutputStream(),
-							encoding)));
+			printWriter = new PrintWriter(
+					new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), encoding)));
 
-			
 			printWriter.write(writer.toString());
 			printWriter.close();
 
-			
-
-
 			String sHTTPResponse = urlConnection.getHeaderField(0);
 			try {
-				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9,
-						12));
+				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
 			} catch (Exception eNumber) {
 				// eNumber.printStackTrace();
 				iLastHTTPResult = 500;
@@ -504,6 +471,13 @@ public class RestClient {
 		urlConnection.setDoInput(true);
 		urlConnection.setAllowUserInteraction(false);
 
+		if (requestProperties!=null) {
+			for (Map.Entry<String, String> entry : requestProperties.entrySet()) {
+				urlConnection.setRequestProperty(entry.getKey() , entry.getValue());
+			}
+		}
+	
+		
 		// Authorization
 		if (user != null) {
 			urlConnection.setRequestProperty("Authorization",
@@ -521,8 +495,7 @@ public class RestClient {
 		return responseCode;
 	}
 
-	public void readCookies(HttpURLConnection connection)
-			throws URISyntaxException {
+	public void readCookies(HttpURLConnection connection) throws URISyntaxException {
 		String COOKIES_HEADER = "Set-Cookie";
 		cookieManager = new java.net.CookieManager();
 
@@ -533,8 +506,7 @@ public class RestClient {
 			for (String cookie : cookiesHeader) {
 				HttpCookie ding = HttpCookie.parse(cookie).get(0);
 
-				cookieManager.getCookieStore().add(connection.getURL().toURI(),
-						ding);
+				cookieManager.getCookieStore().add(connection.getURL().toURI(), ding);
 			}
 		}
 	}
@@ -575,11 +547,9 @@ public class RestClient {
 
 			// if an encoding is provided read stream with encoding.....
 			if (sContentEncoding != null && !sContentEncoding.isEmpty())
-				in = new BufferedReader(new InputStreamReader(
-						urlConnection.getInputStream(), sContentEncoding));
+				in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), sContentEncoding));
 			else
-				in = new BufferedReader(new InputStreamReader(
-						urlConnection.getInputStream()));
+				in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 			String inputLine;
 			while ((inputLine = in.readLine()) != null) {
 				logger.fine(inputLine);
@@ -597,8 +567,8 @@ public class RestClient {
 	}
 
 	/**
-	 * Diese Methode setzt fÃ¼r den Zugriff auf eine URL eine Definierte UserID
-	 * + Passwort
+	 * Diese Methode setzt fÃ¼r den Zugriff auf eine URL eine Definierte UserID +
+	 * Passwort
 	 */
 	private String getAccessByUser() {
 		String sURLAccess = "";
