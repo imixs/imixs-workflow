@@ -340,7 +340,9 @@ public class XMLItem implements java.io.Serializable {
 			}
 			// test raw array types first
 			if (o instanceof byte[] || o instanceof boolean[] || o instanceof short[] || o instanceof char[]
-					|| o instanceof int[] || o instanceof long[] || o instanceof float[] || o instanceof double[]) {
+					|| o instanceof int[] || o instanceof long[] || o instanceof float[] || o instanceof double[]
+				    || o instanceof XMLItem[]		
+					) {
 				continue;
 			}
 

@@ -289,6 +289,32 @@ public class XMLItemCollectionAdapter {
 
 	}
 
+	
+	
+	/**
+	 * This method imports an xml entity data stream containing a singel document and returns the
+	 * ItemCollection. 
+	 * 
+	 * @param inputStream
+	 *            xml input stream
+	 * @throws JAXBException
+	 * @throws IOException
+	 * @return List of ItemCollection objects
+	 */
+	public static ItemCollection readItemCollectionFromInputStream(InputStream inputStream)
+			throws JAXBException, IOException {
+		byte[] byteInput = null;
+
+		if (inputStream == null) {
+			return null;
+		}
+		byteInput = getBytesFromStream(inputStream);
+		return readItemCollection(byteInput);
+
+	}
+
+	
+	
 	/**
 	 * This method imports an xml entity data byte array and returns a List of
 	 * ItemCollection objects. The method can import any kind of entity data like
