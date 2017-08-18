@@ -1,6 +1,7 @@
 package org.imixs.workflow.xml;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -13,7 +14,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.imixs.workflow.ItemCollection;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -166,15 +166,9 @@ public class TestXMLItemCollectionAdapter {
 		Assert.assertTrue(some instanceof Map);
 
 	}
-	
-	
-	
-	
-	
-	
+
 	/**
-	 * Test conversion of a ItemCollection containing a Item which value is a
-	 * List 
+	 * Test conversion of a ItemCollection containing a Item which value is a List
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
@@ -188,15 +182,14 @@ public class TestXMLItemCollectionAdapter {
 		list1.add("Berlin");
 		list1.add("Munich");
 		valueList.add(list1);
-		
+
 		List<String> list2 = new ArrayList<String>();
 		list2.add("John");
 		list2.add("Sam");
 		valueList.add(list2);
-		
+
 		itemColSource.replaceItemValue("_listdata", valueList);
-				
-		
+
 		XMLItemCollection xmlItemCollection = null;
 		try {
 			xmlItemCollection = XMLItemCollectionAdapter.putItemCollection(itemColSource);
@@ -213,8 +206,6 @@ public class TestXMLItemCollectionAdapter {
 		List listOfList = itemColTest.getItemValue("_listdata");
 		Assert.assertEquals(2, listOfList.size());
 
-
-		
 		// test list1
 		Object o1 = listOfList.get(0);
 		Assert.assertTrue(o1 instanceof List);
@@ -228,26 +219,12 @@ public class TestXMLItemCollectionAdapter {
 		List<String> resultlist2 = (List<String>) o2;
 		Assert.assertEquals("John", resultlist2.get(0));
 		Assert.assertEquals("Sam", resultlist2.get(1));
-		
-		
+
 	}
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
 	/**
-	 * Test conversion of a ItemCollection containing a Item which value is a
-	 * single Map object
+	 * Test conversion of a ItemCollection containing a Item which value is a single
+	 * Map object
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
@@ -289,19 +266,14 @@ public class TestXMLItemCollectionAdapter {
 
 	}
 
-	
-	
-
 	/**
-	 * Test conversion of a ItemCollection containing a $file Item 
+	 * Test conversion of a ItemCollection containing a $file Item
 	 */
-	@SuppressWarnings({ "rawtypes" })
 	@Test
-	//@Ignore
 	public void testItemCollectionContainingFiles() {
 		ItemCollection itemColSource = new ItemCollection();
 		itemColSource.replaceItemValue("txtTitel", "Hello");
-		
+
 		byte[] empty = { 0 };
 		// add the file name (with empty data) into the
 		// parentWorkitem.
@@ -320,26 +292,19 @@ public class TestXMLItemCollectionAdapter {
 
 		Assert.assertEquals(itemColTest.getItemValueString("txttitel"), "Hello");
 
-		
+		// test file
 		Map<String, List<Object>> files = itemColTest.getFiles();
-		for (Map.Entry<String, List<Object>> entry : files.entrySet()) {
-		    String key = entry.getKey();
-		    Assert.assertEquals("test.txt", key);
+		List<Object> testFile = files.get("test.txt");
+		Assert.assertEquals(2, testFile.size());
+		Assert.assertEquals("png", testFile.get(0).toString());
+		// compare content
+		Assert.assertTrue(Arrays.equals(empty, (byte[]) testFile.get(1)));
 
-		    Object value = entry.getValue();
-		    ArrayList list=(ArrayList)value;
-		    // ...
-		}
-		
-	
 	}
 
-	
-	
 	/**
-	 * Test conversion of a ItemCollection containing a Item which value is a
-	 * list of Map objects. The map objects where constructed from
-	 * ItemCollection objects
+	 * Test conversion of a ItemCollection containing a Item which value is a list
+	 * of Map objects. The map objects where constructed from ItemCollection objects
 	 * 
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
