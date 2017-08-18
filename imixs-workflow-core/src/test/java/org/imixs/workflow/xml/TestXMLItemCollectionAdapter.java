@@ -13,6 +13,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.imixs.workflow.ItemCollection;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -288,6 +289,53 @@ public class TestXMLItemCollectionAdapter {
 
 	}
 
+	
+	
+
+	/**
+	 * Test conversion of a ItemCollection containing a $file Item 
+	 */
+	@SuppressWarnings({ "rawtypes" })
+	@Test
+	//@Ignore
+	public void testItemCollectionContainingFiles() {
+		ItemCollection itemColSource = new ItemCollection();
+		itemColSource.replaceItemValue("txtTitel", "Hello");
+		
+		byte[] empty = { 0 };
+		// add the file name (with empty data) into the
+		// parentWorkitem.
+		itemColSource.addFile(empty, "test.txt", "png");
+
+		XMLItemCollection xmlItemCollection = null;
+		try {
+			xmlItemCollection = XMLItemCollectionAdapter.putItemCollection(itemColSource);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// now reconstruct the xmlItemCollection into a ItemCollection...
+		ItemCollection itemColTest = XMLItemCollectionAdapter.getItemCollection(xmlItemCollection);
+
+		Assert.assertEquals(itemColTest.getItemValueString("txttitel"), "Hello");
+
+		
+		Map<String, List<Object>> files = itemColTest.getFiles();
+		for (Map.Entry<String, List<Object>> entry : files.entrySet()) {
+		    String key = entry.getKey();
+		    Assert.assertEquals("test.txt", key);
+
+		    Object value = entry.getValue();
+		    ArrayList list=(ArrayList)value;
+		    // ...
+		}
+		
+	
+	}
+
+	
+	
 	/**
 	 * Test conversion of a ItemCollection containing a Item which value is a
 	 * list of Map objects. The map objects where constructed from
