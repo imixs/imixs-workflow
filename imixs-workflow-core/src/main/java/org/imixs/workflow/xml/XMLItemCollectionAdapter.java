@@ -30,6 +30,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,6 +43,7 @@ import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.imixs.workflow.ItemCollection;
@@ -394,6 +396,33 @@ public class XMLItemCollectionAdapter {
 
 	}
 
+	
+	
+	/**
+	 * This method writes a ItemCollection into a Byte array
+	 * 
+	 * @param inputStream
+	 *            xml input stream
+	 * @throws JAXBException
+	 * @throws IOException
+	 * @return List of ItemCollection objects
+	 */
+	public static byte[] writeItemCollection(ItemCollection document) throws JAXBException, IOException {
+
+		if (document == null) {
+			return null;
+		}
+
+		XMLItemCollection ecol = putItemCollection(document);
+		StringWriter writer = new StringWriter();
+		JAXBContext context = JAXBContext.newInstance(XMLItemCollection.class);
+		Marshaller m = context.createMarshaller();
+		m.marshal(ecol, writer);
+		return writer.toString().getBytes();
+	}
+
+	
+	
 	private static byte[] getBytesFromStream(InputStream is) throws IOException {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		int nRead;
