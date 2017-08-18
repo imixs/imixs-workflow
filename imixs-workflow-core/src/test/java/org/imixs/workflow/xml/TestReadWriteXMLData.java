@@ -1,4 +1,4 @@
-package org.imixs.workflow.util;
+package org.imixs.workflow.xml;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +18,10 @@ import org.junit.Test;
 import junit.framework.Assert;
 
 /**
- * Test class reads and writes a model from the file system
+ * Test class reads the "/document-example.xml" file via the
+ * XMLItemCollectionAdapter and verifies the content. Than the test case writes
+ * the data back into a new file "/document-example.xml" on the same file
+ * system.
  * 
  * 
  * @author rsoika
@@ -35,14 +38,16 @@ public class TestReadWriteXMLData {
 
 	}
 
+	/**
+	 * Read /document-example.xml
+	 */
 	@Test
 	public void testRead() {
 		List<ItemCollection> col = null;
 
 		try {
 			col = XMLItemCollectionAdapter
-					.readCollectionFromInputStream(getClass()
-							.getResourceAsStream("/document-example.xml"));
+					.readCollectionFromInputStream(getClass().getResourceAsStream("/document-example.xml"));
 		} catch (JAXBException e) {
 			Assert.fail();
 		} catch (IOException e) {
@@ -53,17 +58,16 @@ public class TestReadWriteXMLData {
 	}
 
 	/**
-	 * reads a xml input file and writes the jaxb object back into a new xml file
+	 * reads /document-example.xml input file and writes the jaxb object back into a new xml file
 	 */
 	@Test
-	//@Ignore
+	// @Ignore
 	public void testWrite() {
 		List<ItemCollection> col = null;
 		// read default content
 		try {
 			col = XMLItemCollectionAdapter
-					.readCollectionFromInputStream(getClass()
-							.getResourceAsStream("/document-example.xml"));
+					.readCollectionFromInputStream(getClass().getResourceAsStream("/document-example.xml"));
 		} catch (JAXBException e) {
 			Assert.fail();
 		} catch (IOException e) {
@@ -85,8 +89,7 @@ public class TestReadWriteXMLData {
 		try {
 
 			file = new File("src/test/resources/export-test.xml");
-			JAXBContext jaxbContext = JAXBContext
-					.newInstance(DocumentCollection.class);
+			JAXBContext jaxbContext = JAXBContext.newInstance(DocumentCollection.class);
 			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
 			// output pretty printed
