@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.CookieManager;
 import java.net.HttpCookie;
@@ -39,17 +40,22 @@ import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
+import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.util.Base64;
 import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
+import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 
 /**
  * This ServiceClient is a WebService REST Client which encapsulate the
@@ -461,8 +467,7 @@ public class RestClient {
 	 */
 	public int get(String uri) throws Exception {
 		URL obj = new URL(uri);
-		HttpURLConnection urlConnection = (HttpURLConnection) obj
-				.openConnection();
+		HttpURLConnection urlConnection = (HttpURLConnection) obj.openConnection();
 
 		// optional default is GET
 		urlConnection.setRequestMethod("GET");
@@ -471,17 +476,15 @@ public class RestClient {
 		urlConnection.setDoInput(true);
 		urlConnection.setAllowUserInteraction(false);
 
-		if (requestProperties!=null) {
+		if (requestProperties != null) {
 			for (Map.Entry<String, String> entry : requestProperties.entrySet()) {
-				urlConnection.setRequestProperty(entry.getKey() , entry.getValue());
+				urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
 			}
 		}
-	
-		
+
 		// Authorization
 		if (user != null) {
-			urlConnection.setRequestProperty("Authorization",
-					"Basic " + this.getAccessByUser());
+			urlConnection.setRequestProperty("Authorization", "Basic " + this.getAccessByUser());
 		}
 
 		addCookies(urlConnection);
@@ -493,6 +496,52 @@ public class RestClient {
 		readResponse(urlConnection);
 
 		return responseCode;
+	}
+
+	/**
+	 * Returns a list of ItemCollections from a XML data source
+	 * 
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<ItemCollection> getDocumentCollection(String url) throws Exception {
+		this.setRequestProperty("Accept", MediaType.APPLICATION_XML);
+		this.get(url);
+		String xmlResult = this.getContent();
+
+		// convert into ItemCollection list
+		JAXBContext context = JAXBContext.newInstance(DocumentCollection.class);
+        Unmarshaller u = context.createUnmarshaller();
+		StringReader reader = new StringReader(xmlResult);
+		DocumentCollection xmlDocuments = (DocumentCollection) u.unmarshal(reader);
+
+		List<ItemCollection> documents = XMLItemCollectionAdapter.getCollection(xmlDocuments);
+		return documents;
+
+	}
+	
+	/**
+	 * Returns a list of ItemCollections from a XML data source
+	 * 
+	 * @return
+	 * @throws Exception 
+	 */
+	public ItemCollection getDocument(String url) throws Exception {
+		this.setRequestProperty("Accept", MediaType.APPLICATION_XML);
+		this.get(url);
+		String xmlResult = this.getContent();
+
+		// convert into ItemCollection list
+		JAXBContext context = JAXBContext.newInstance(XMLItemCollection.class);
+		//JAXBContext context = JAXBContext.newInstance( "org.imixs.workflow.xml" );
+		
+		Unmarshaller u = context.createUnmarshaller();
+		StringReader reader = new StringReader(xmlResult);
+		XMLItemCollection xmlDocument = (XMLItemCollection) u.unmarshal(reader);
+
+		ItemCollection document = XMLItemCollectionAdapter.getItemCollection(xmlDocument);
+		return document;
+
 	}
 
 	public void readCookies(HttpURLConnection connection) throws URISyntaxException {
