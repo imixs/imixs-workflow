@@ -536,6 +536,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * property $workitemList. If this property holds a list of entities these
 	 * entities will be saved and the property will be removed automatically.
 	 * 
+	 * 
+	 * The method provides a observer pattern for plugins to get called during the
+	 * processing phase.
+	 * 
 	 * @param workitem
 	 *            - the workItem to be processed
 	 * @return updated version of the processed workItem
@@ -558,6 +562,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		if (workitem == null)
 			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
 					ProcessingErrorException.INVALID_WORKITEM, "WorkflowService: error - workitem is null");
+
+		// initalize listenerRegistry
+		List<ListenerPlugin> listenerRegistry = new ArrayList<ListenerPlugin>();
 
 		// load current instance of this workitem
 		ItemCollection currentInstance = this.getWorkItem(workitem.getItemValueString(WorkflowKernel.UNIQUEID));
@@ -617,7 +624,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 				// register plugin by class name
 				workflowkernel.registerPlugin(aPluginClassName);
 			}
+
+			// register ListenerPlugin?
+			if (aPlugin instanceof ListenerPlugin) {
+				listenerRegistry.add((ListenerPlugin) aPlugin);
+			}
 		}
+
+		// fire observer Plugins...
+		workitem = fireAfterRegistration(listenerRegistry, workitem);
 
 		// identify Caller and update CurrentEditor
 		String nameEditor;
@@ -650,6 +665,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		// deprecated
 		workitem.replaceItemValue("namcurrenteditor", nameEditor);
 
+		// fire observer Plugins...
+		workitem = fireBeforeProcess(listenerRegistry, workitem);
+
 		// now process the workitem
 		try {
 			workitem = workflowkernel.process(workitem);
@@ -660,6 +678,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			throw pe;			
 		}
 		logger.fine("workitem '" + workitem.getItemValueString(UNIQUEID) + "' processed in " + (System.currentTimeMillis()-l) + "ms");
+
+		// fire observer Plugins...
+		workitem = fireAfterProcess(listenerRegistry, workitem);
 
 		return documentService.save(workitem);
 
@@ -776,4 +797,57 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 		return null;
 	}
+
+	// Livecycle Methods
+
+	/**
+	 * called immediately after the plugin registration phase was completed
+	 * 
+	 * @param listenerRegistry
+	 * @param workitem
+	 * @return
+	 * @throws PluginException
+	 */
+	private ItemCollection fireAfterRegistration(List<ListenerPlugin> listenerRegistry, ItemCollection workitem)
+			throws PluginException {
+		for (ListenerPlugin observer : listenerRegistry) {
+			workitem = observer.afterRegistration(workitem);
+		}
+		return workitem;
+	}
+
+	/**
+	 * called before the method workflowkernel.process(workitem) is called and the
+	 * workitem is completely prepared for processing.
+	 * 
+	 * @param listenerRegistry
+	 * @param workitem
+	 * @return
+	 * @throws PluginException
+	 */
+	private ItemCollection fireBeforeProcess(List<ListenerPlugin> listenerRegistry, ItemCollection workitem)
+			throws PluginException {
+		for (ListenerPlugin observer : listenerRegistry) {
+			workitem = observer.beforeProcess(workitem);
+		}
+		return workitem;
+	}
+
+	/**
+	 * called immediately after the method workflowkernel.process(workitem) was called and before the method _documentService.save(workitem) is called.
+	 * @param listenerRegistry
+	 * @param workitem
+	 * @return
+	 * @throws PluginException
+	 */
+	private ItemCollection fireAfterProcess(List<ListenerPlugin> listenerRegistry, ItemCollection workitem)
+			throws PluginException {
+		for (ListenerPlugin observer : listenerRegistry) {
+			workitem = observer.afterProcess(workitem);
+		}
+		return workitem;
+	}
+
+	
+
 }
