@@ -78,7 +78,7 @@ public class WorkflowKernel {
 	public static final int MAXIMUM_ACTIVITYLOGENTRIES = 30;
 
 	/** Plugin objects **/
-	private List<Plugin> pluginList = null;
+	private List<Plugin> pluginRegistry = null;
 	private WorkflowContext ctx = null;
 	private Vector<String> vectorEdgeHistory = new Vector<String>();
 
@@ -89,7 +89,7 @@ public class WorkflowKernel {
 	 */
 	public WorkflowKernel(final WorkflowContext actx) {
 		ctx = actx;
-		pluginList = new ArrayList<Plugin>();
+		pluginRegistry = new ArrayList<Plugin>();
 
 	}
 
@@ -122,7 +122,7 @@ public class WorkflowKernel {
 			List<String> dependencies = ((PluginDependency) plugin).dependsOn();
 			for (String dependency : dependencies) {
 				boolean found = false;
-				for (Plugin regiseredPlugin : pluginList) {
+				for (Plugin regiseredPlugin : pluginRegistry) {
 					if (regiseredPlugin.getClass().getName().equals(dependency)) {
 						found = true;
 						break;
@@ -135,7 +135,7 @@ public class WorkflowKernel {
 			}
 		}
 		plugin.init(ctx);
-		pluginList.add(plugin);
+		pluginRegistry.add(plugin);
 	}
 
 	/**
@@ -182,9 +182,9 @@ public class WorkflowKernel {
 	 */
 	public void unregisterPlugin(final String pluginClass) throws PluginException {
 		logger.fine("unregisterPlugin " + pluginClass);
-		for (Plugin plugin : pluginList) {
+		for (Plugin plugin : pluginRegistry) {
 			if (plugin.getClass().getName().equals(pluginClass)) {
-				pluginList.remove(plugin);
+				pluginRegistry.remove(plugin);
 				return;
 			}
 		}
@@ -201,7 +201,16 @@ public class WorkflowKernel {
 	 */
 	public void unregisterAllPlugins() {
 		logger.fine("unregisterAllPlugins");
-		pluginList = new ArrayList<Plugin>();
+		pluginRegistry = new ArrayList<Plugin>();
+	}
+
+	
+	/**
+	 * Returns a registry containing all registered plugin instances. 
+	 * @return
+	 */
+	public List<Plugin> getPluginRegistry() {
+		return pluginRegistry;
 	}
 
 	/**
@@ -558,7 +567,7 @@ public class WorkflowKernel {
 		List<String> localPluginLog = new Vector<String>();
 
 		try {
-			for (Plugin plugin : pluginList) {
+			for (Plugin plugin : pluginRegistry) {
 
 				sPluginName = plugin.getClass().getName();
 				if (logger.isLoggable(Level.FINE))
@@ -597,8 +606,8 @@ public class WorkflowKernel {
 	}
 
 	private void closePlugins(boolean rollbackTransaction) throws PluginException {
-		for (int i = 0; i < pluginList.size(); i++) {
-			Plugin plugin = (Plugin) pluginList.get(i);
+		for (int i = 0; i < pluginRegistry.size(); i++) {
+			Plugin plugin = (Plugin) pluginRegistry.get(i);
 			if (logger.isLoggable(Level.FINE))
 				logger.info("closing Plugin: " + plugin.getClass().getName() + "...");
 			plugin.close(rollbackTransaction);

@@ -563,9 +563,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
 					ProcessingErrorException.INVALID_WORKITEM, "WorkflowService: error - workitem is null");
 
-		// initalize listenerRegistry
-		List<ListenerPlugin> listenerRegistry = new ArrayList<ListenerPlugin>();
-
+	
 		// load current instance of this workitem
 		ItemCollection currentInstance = this.getWorkItem(workitem.getItemValueString(WorkflowKernel.UNIQUEID));
 
@@ -625,14 +623,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 				workflowkernel.registerPlugin(aPluginClassName);
 			}
 
-			// register ListenerPlugin?
-			if (aPlugin instanceof ListenerPlugin) {
-				listenerRegistry.add((ListenerPlugin) aPlugin);
-			}
 		}
-
+		
 		// fire observer Plugins...
-		workitem = fireAfterRegistration(listenerRegistry, workitem);
+		workitem = fireAfterRegistration(workflowkernel,workitem);
 
 		// identify Caller and update CurrentEditor
 		String nameEditor;
@@ -666,7 +660,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		workitem.replaceItemValue("namcurrenteditor", nameEditor);
 
 		// fire observer Plugins...
-		workitem = fireBeforeProcess(listenerRegistry, workitem);
+		workitem = fireBeforeProcess(workflowkernel, workitem);
 
 		// now process the workitem
 		try {
@@ -680,7 +674,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		logger.fine("workitem '" + workitem.getItemValueString(UNIQUEID) + "' processed in " + (System.currentTimeMillis()-l) + "ms");
 
 		// fire observer Plugins...
-		workitem = fireAfterProcess(listenerRegistry, workitem);
+		workitem = fireAfterProcess(workflowkernel, workitem);
 
 		return documentService.save(workitem);
 
@@ -808,10 +802,14 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return
 	 * @throws PluginException
 	 */
-	private ItemCollection fireAfterRegistration(List<ListenerPlugin> listenerRegistry, ItemCollection workitem)
+	private ItemCollection fireAfterRegistration(WorkflowKernel workflowKernel,ItemCollection workitem)
 			throws PluginException {
-		for (ListenerPlugin observer : listenerRegistry) {
-			workitem = observer.afterRegistration(workitem);
+		// interate plugin regestry
+		List<Plugin> regestry = workflowKernel.getPluginRegistry();
+		for (Plugin plugin : regestry) {
+			if (plugin instanceof ObserverPlugin) {
+				workitem = ((ObserverPlugin) plugin).afterRegistration(workitem);
+			}
 		}
 		return workitem;
 	}
@@ -825,10 +823,14 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return
 	 * @throws PluginException
 	 */
-	private ItemCollection fireBeforeProcess(List<ListenerPlugin> listenerRegistry, ItemCollection workitem)
+	private ItemCollection fireBeforeProcess(WorkflowKernel workflowKernel, ItemCollection workitem)
 			throws PluginException {
-		for (ListenerPlugin observer : listenerRegistry) {
-			workitem = observer.beforeProcess(workitem);
+		// interate plugin regestry
+		List<Plugin> regestry = workflowKernel.getPluginRegistry();
+		for (Plugin plugin : regestry) {
+			if (plugin instanceof ObserverPlugin) {
+				workitem = ((ObserverPlugin) plugin).beforeProcess(workitem);
+			}
 		}
 		return workitem;
 	}
@@ -840,10 +842,14 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return
 	 * @throws PluginException
 	 */
-	private ItemCollection fireAfterProcess(List<ListenerPlugin> listenerRegistry, ItemCollection workitem)
+	private ItemCollection fireAfterProcess(WorkflowKernel workflowKernel, ItemCollection workitem)
 			throws PluginException {
-		for (ListenerPlugin observer : listenerRegistry) {
-			workitem = observer.afterProcess(workitem);
+		// interate plugin regestry
+		List<Plugin> regestry = workflowKernel.getPluginRegistry();
+		for (Plugin plugin : regestry) {
+			if (plugin instanceof ObserverPlugin) {
+				workitem = ((ObserverPlugin) plugin).afterProcess(workitem);
+			}
 		}
 		return workitem;
 	}

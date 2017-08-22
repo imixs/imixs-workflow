@@ -31,17 +31,29 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * A Interface ListenerPlugin defines an extension interface for plugins to
- * observer the processing lifecycle of the WorkflowService EJB. A
- * ListenerPlugin will be automatically registered by the WorkflowService after
- * registration.
+ * The interface <i>ObserverPlugin</i> extends the Imixs Plugin API with an
+ * observer pattern. A Plugin can implement the ObserverPlugin interface to
+ * listen to the processing lifecycle of the WorkflowService EJB. A
+ * ObserverPlugin will automatically be registered by the WorkflowService after
+ * the plugin registration phase.
+ * 
+ * The ObserverPlugin defines the following callback methods:
+ * <ul>
+ * <li>afterRegistration - called immediately after the plugin registration
+ * phase was completed
+ * <li>beforeProcess - called before the method workflowkernel.process(workitem)
+ * is called and the workitem is completely prepared for processing.
+ * <li>afterProcess - called immediately after the method
+ * workflowkernel.process(workitem) was called and before the method
+ * _documentService.save(workitem) is called.
+ * </ul>
  * 
  * @author Ralph Soika
  * @version 1.0
  * @see org.imixs.workflow.engine.WorkflowService
  */
 
-public interface ListenerPlugin {
+public interface ObserverPlugin {
 
 	/**
 	 * This method is called immediately after the plugin registration phase was
