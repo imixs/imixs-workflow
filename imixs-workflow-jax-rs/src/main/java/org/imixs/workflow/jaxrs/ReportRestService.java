@@ -110,9 +110,7 @@ public class ReportRestService {
 
 	@GET
 	@Produces("text/html")
-	@Path("/help")
 	public StreamingOutput getHelpHTML() {
-
 		return new StreamingOutput() {
 			public void write(OutputStream out) throws IOException, WebApplicationException {
 
@@ -135,18 +133,16 @@ public class ReportRestService {
 				out.write("</head><body>".getBytes());
 
 				// body
-				out.write("<h1>Imixs Workflow Report Service</h1>".getBytes());
+				out.write("<h1>Imixs-Workflow REST Service</h1>".getBytes());
 				out.write(
-						"<p>Read the Imixs REST Service <a href=\"http://doc.imixs.org/xml/restservice.html\">Online Help</a> for a detailed description of this Service.</p>"
-								.getBytes());
-				out.write(
-						"<p>See the <a href=\"http://www.imixs.org\">Imixs Workflow Project Site</a> for general informations.</p>"
+						"<p>See the <a href=\"http://www.imixs.org/doc/restapi/reportservice.html\" target=\"_blank\">Imixs-Workflow REST API</a> for more information about this Service.</p>"
 								.getBytes());
 
 				// end
 				out.write("</body></html>".getBytes());
 			}
 		};
+
 
 	}
 
