@@ -787,6 +787,22 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
+	 * Returns a data object for a attached file. The data object is a list
+	 * containing the contentType (String) and the content (byte[])
+	 * 
+	 * @param filename
+	 * @return file data contentType (String) and the content (byte[])
+	 */
+	public List<Object> getFile(String filename) {
+		Map<String, List<Object>> files = this.getFiles();
+		if (files != null) {
+			return files.get(filename);
+		} else {
+			return null;
+		}
+	}
+
+	/**
 	 * This method removes a single file attachment from the BlobWorkitem
 	 * 
 	 */
