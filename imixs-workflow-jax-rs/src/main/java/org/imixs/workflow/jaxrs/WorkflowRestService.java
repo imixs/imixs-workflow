@@ -97,7 +97,6 @@ public class WorkflowRestService {
 
 	@GET
 	@Produces("text/html")
-	@Path("/help")
 	public StreamingOutput getHelpHTML() {
 
 		return new StreamingOutput() {

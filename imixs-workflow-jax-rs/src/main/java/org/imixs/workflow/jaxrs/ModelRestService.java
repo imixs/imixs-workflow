@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -91,6 +92,10 @@ public class ModelRestService {
 
 	@EJB
 	ModelService modelService;
+	
+	@javax.ws.rs.core.Context
+	private static HttpServletRequest servletRequest;
+
 
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
@@ -138,8 +143,12 @@ public class ModelRestService {
 	private void printVersionTable(OutputStream out) {
 		try {
 			StringBuffer buffer = new StringBuffer();
+
 			List<String> modelVersionList = modelService.getVersions();
 
+			// compute rootContext:
+			String rootContext= servletRequest.getContextPath()+servletRequest.getServletPath() ;
+			
 			buffer.append("<table>");
 			buffer.append("<tr><th>Version</th><th>Uploaded</th><th>Workflow Groups</th></tr>");
 			for (String modelVersion : modelVersionList) {
@@ -153,7 +162,9 @@ public class ModelRestService {
 				buffer.append("<tr>");
 
 				if (modelEntity != null) {
-					buffer.append("<td><a href=\"./model/" + modelVersion + "/bpmn\">" + modelVersion + "</a></td>");
+					
+					
+					buffer.append("<td><a href=\"" + rootContext+ "/model/" + modelVersion + "/bpmn\">" + modelVersion + "</a></td>");
 
 					// print upload date...
 					if (modelEntity != null) {
