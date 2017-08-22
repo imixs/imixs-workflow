@@ -551,7 +551,6 @@ public class DocumentService {
 		return count(searchTerm, 0);
 	}
 
-	
 	/**
 	 * Returns the total hits for a given search query. The provided search term
 	 * will be extended with a users roles to test the read access level of each
@@ -574,7 +573,7 @@ public class DocumentService {
 	 *             in case the searchterm is not understandable.
 	 */
 	public int count(String sSearchTerm, int maxResult) throws QueryException {
-		return luceneSearchService.getTotalHits(sSearchTerm, maxResult,null);
+		return luceneSearchService.getTotalHits(sSearchTerm, maxResult, null);
 	}
 
 	/**
@@ -583,7 +582,7 @@ public class DocumentService {
 	 * @see count(String sSearchTerm)
 	 * 
 	 * @param searchTerm
-	 * @param pageSize 
+	 * @param pageSize
 	 * @return total pages of search result
 	 * @throws QueryException
 	 *             in case the searchterm is not understandable.
@@ -596,7 +595,6 @@ public class DocumentService {
 		}
 		return ((int) pages);
 	}
-	
 
 	/**
 	 * The method returns a list of ItemCollections by calling the
@@ -718,8 +716,28 @@ public class DocumentService {
 	 * 
 	 */
 	public List<ItemCollection> getDocumentsByQuery(String query) {
+		return getDocumentsByQuery(query, -1);
+
+	}
+
+	/**
+	 * Returns all documents of by JPQL statement.
+	 * 
+	 * @param query
+	 *            - JPQL statement
+	 * @param maxResult
+	 *            - maximum result set
+	 * @return
+	 * 
+	 */
+	public List<ItemCollection> getDocumentsByQuery(String query, int maxResult) {
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
 		Query q = manager.createQuery(query);
+
+		// setMaxResults ?
+		if (maxResult > 0) {
+			q.setMaxResults(maxResult);
+		}
 
 		long l = System.currentTimeMillis();
 		@SuppressWarnings("unchecked")
