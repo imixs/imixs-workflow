@@ -170,7 +170,7 @@ public class DocumentService {
 	private LuceneSearchService luceneSearchService;
 
 	/**
-	 * Returns additional AccessRoles defined for the EJB instance
+	 * Returns a comma separated list of additional Access-Roles defined for this service
 	 * 
 	 * @return
 	 */
@@ -237,7 +237,7 @@ public class DocumentService {
 	/**
 	 * This method returns true, if at least one element of the current
 	 * UserNameList is contained in a given name list.
-	 * The comparison takes place ignoring case considerations.
+	 * The comparison is case sensitive!
 	 * 
 	 * @param nameList
 	 * @return
@@ -250,7 +250,7 @@ public class DocumentService {
 		// check each element of the given nameList
 		for (String aName : nameList) {
 			if (aName != null && !aName.isEmpty()) {
-				if (userNameList.stream().anyMatch(aName::equalsIgnoreCase)) {
+				if (userNameList.stream().anyMatch(aName::equals)) {
 					return true;
 				}
 			}
@@ -925,7 +925,7 @@ public class DocumentService {
 		ItemCollection itemcol = new ItemCollection(document.getData());
 
 		@SuppressWarnings("unchecked")
-		List<String> readAccessList = itemcol.getItemValue("$readaccess");
+		List<String> readAccessList = itemcol.getItemValue(READACCESS);
 
 		/**
 		 * 1.) org.imixs.ACCESSLEVEL.NOACCESS
@@ -969,7 +969,7 @@ public class DocumentService {
 		ItemCollection itemcol = new ItemCollection(document.getData());
 
 		@SuppressWarnings("unchecked")
-		List<String> writeAccessList = itemcol.getItemValue("$writeaccess");
+		List<String> writeAccessList = itemcol.getItemValue(WRITEACCESS);
 
 		/**
 		 * 1.) org.imixs.ACCESSLEVEL.NOACCESS allways false - now write access!
