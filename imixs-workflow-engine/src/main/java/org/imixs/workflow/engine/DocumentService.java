@@ -235,6 +235,31 @@ public class DocumentService {
 	}
 
 	/**
+	 * This method returns true, if at least one element of the current
+	 * UserNameList is contained in a given name list.
+	 * The comparison takes place ignoring case considerations.
+	 * 
+	 * @param nameList
+	 * @return
+	 */
+	public boolean isUserContained(List<String> nameList) {
+		if (nameList==null) {
+			return false;
+		}
+		List<String> userNameList = getUserNameList();
+		// check each element of the given nameList
+		for (String aName : nameList) {
+			if (aName != null && !aName.isEmpty()) {
+				if (userNameList.stream().anyMatch(aName::equalsIgnoreCase)) {
+					return true;
+				}
+			}
+		}
+		// not found
+		return false;
+	}
+
+	/**
 	 * Test if the caller has a given security role.
 	 * 
 	 * @param rolename
@@ -926,31 +951,14 @@ public class DocumentService {
 		 * 
 		 * check read access
 		 */
-		if (readAccessList == null || readAccessList.size() == 0) {
-			// no restriction found
+		if (isEmptyList(readAccessList) || isUserContained(readAccessList)) {
 			return true;
 		}
-
-		boolean notemptyfield = false;
-
-		// get user name list
-		List<String> auserNameList = getUserNameList();
-
-		// check each read access
-		for (String aReadAccess : readAccessList) {
-			if (aReadAccess != null && !aReadAccess.isEmpty()) {
-				notemptyfield = true;
-				if (auserNameList.indexOf(aReadAccess) > -1)
-					return true;
-
-			}
-		}
-		if (!notemptyfield)
-			return true;
 
 		return false;
 	}
 
+	
 	/**
 	 * Verifies if the caller has write access to the current document
 	 * 
@@ -983,23 +991,30 @@ public class DocumentService {
 		 */
 
 		if (ctx.isCallerInRole(ACCESSLEVEL_AUTHORACCESS)) {
-			if (writeAccessList == null || writeAccessList.size() == 0) {
-				// now write access
-				return false;
-			}
-
-			// get user name list
-			List<String> auserNameList = getUserNameList();
-
-			// check each read access
-			for (String aWriteAccess : writeAccessList) {
-				if (aWriteAccess != null && !aWriteAccess.isEmpty()) {
-					if (auserNameList.indexOf(aWriteAccess) > -1)
-						return true; // user role known - grant access
-				}
+			if (isUserContained(writeAccessList)) {
+				// user role known - grant access
+				return true;
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * This method returns true if the given list is empty or contains only null or '' values. 
+	 * @param aList
+	 * @return
+	 */
+	private boolean isEmptyList(List<String> aList) {
+		if (aList==null || aList.size()==0) {
+			return true;
+		}
+		// check each element
+		for (String aEntry : aList) {
+			if (aEntry != null && !aEntry.isEmpty()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
