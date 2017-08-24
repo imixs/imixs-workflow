@@ -114,8 +114,7 @@ public class LuceneSearchService {
 	/**
 	 * Returns a collection of documents matching the provided search term. The
 	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term. The usernames and
-	 * user roles will be search lowercase!
+	 * access level of each workitem matching the search term. 
 	 * 
 	 * @param sSearchTerm
 	 * @return collection of search result
@@ -129,8 +128,7 @@ public class LuceneSearchService {
 	/**
 	 * Returns a collection of documents matching the provided search term. The
 	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term. The usernames and
-	 * user roles will be search lowercase!
+	 * access level of each workitem matching the search term. 
 	 * 
 	 * @param pageSize
 	 *            - docs per page
@@ -148,8 +146,7 @@ public class LuceneSearchService {
 	/**
 	 * Returns a collection of documents matching matching the provided search term.
 	 * The provided search term will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term. The usernames and
-	 * user roles will be search lowercase!
+	 * access level of each workitem matching the search term.
 	 * 
 	 * The optional param 'searchOrder' can be set to force lucene to sort the
 	 * search result by any search order.
@@ -297,7 +294,7 @@ public class LuceneSearchService {
 	 * Returns the total hits for a given search term from the lucene index. The
 	 * method did not load any data. The provided search term will we extended with
 	 * a users roles to test the read access level of each workitem matching the
-	 * search term. The usernames and user roles will be search lowercase!
+	 * search term.
 	 * 
 	 * The optional param 'maxResult' can be set to overwrite the
 	 * DEFAULT_MAX_SEARCH_RESULT.
@@ -372,8 +369,7 @@ public class LuceneSearchService {
 	/**
 	 * Returns the extended search term for a given query. The search term will we
 	 * extended with a users roles to test the read access level of each workitem
-	 * matching the search term. The usernames and user roles will be search
-	 * lowercase!
+	 * matching the search term. 
 	 * 
 	 * The optional param 'defaultOperator' can be set to Operator.AND
 	 * 
