@@ -184,3 +184,16 @@ The resource-ref section in a Sun Java System specific deployment descriptor, fo
  
 The JNDI name in the Sun Java System specific deployment descriptor must match the JNDI name  you assigned to the resource when you created and configured it.
  
+
+## The ObserverPlugin  
+ 
+The interface <i>ObserverPlugin</i> extends the Imixs Plugin API with an observer pattern. A Plugin can implement the ObserverPlugin interface to
+listen to the processing lifecycle of the WorkflowService EJB. A ObserverPlugin will automatically be registered by the WorkflowService after   the plugin registration phase.
+  
+The ObserverPlugin defines the following callback methods:
+  
+ * afterRegistration - called immediately after the plugin registration phase was completed
+ * beforeProcess - called before the method workflowkernel.process(workitem) is called and the workitem is completely prepared for processing.
+ * afterProcess - called immediately after the method workflowkernel.process(workitem) was called and before the method documentService.save(workitem) is called.
+
+ The ObserverPlugin allows a Plugin to access and modify the workitem attributes during the current processing phase. 

@@ -536,6 +536,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * property $workitemList. If this property holds a list of entities these
 	 * entities will be saved and the property will be removed automatically.
 	 * 
+	 * 
+	 * The method provides a observer pattern for plugins to get called during the
+	 * processing phase.
+	 * 
 	 * @param workitem
 	 *            - the workItem to be processed
 	 * @return updated version of the processed workItem
@@ -559,6 +563,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
 					ProcessingErrorException.INVALID_WORKITEM, "WorkflowService: error - workitem is null");
 
+	
 		// load current instance of this workitem
 		ItemCollection currentInstance = this.getWorkItem(workitem.getItemValueString(WorkflowKernel.UNIQUEID));
 
@@ -617,7 +622,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 				// register plugin by class name
 				workflowkernel.registerPlugin(aPluginClassName);
 			}
+
 		}
+		
+		// fire observer Plugins...
+		workitem = fireAfterRegistration(workflowkernel,workitem);
 
 		// identify Caller and update CurrentEditor
 		String nameEditor;
@@ -650,6 +659,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		// deprecated
 		workitem.replaceItemValue("namcurrenteditor", nameEditor);
 
+		// fire observer Plugins...
+		workitem = fireBeforeProcess(workflowkernel, workitem);
+
 		// now process the workitem
 		try {
 			workitem = workflowkernel.process(workitem);
@@ -660,6 +672,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			throw pe;			
 		}
 		logger.fine("workitem '" + workitem.getItemValueString(UNIQUEID) + "' processed in " + (System.currentTimeMillis()-l) + "ms");
+
+		// fire observer Plugins...
+		workitem = fireAfterProcess(workflowkernel, workitem);
 
 		return documentService.save(workitem);
 
@@ -776,4 +791,69 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 		return null;
 	}
+
+	// Livecycle Methods
+
+	/**
+	 * called immediately after the plugin registration phase was completed
+	 * 
+	 * @param listenerRegistry
+	 * @param workitem
+	 * @return
+	 * @throws PluginException
+	 */
+	private ItemCollection fireAfterRegistration(WorkflowKernel workflowKernel,ItemCollection workitem)
+			throws PluginException {
+		// interate plugin regestry
+		List<Plugin> regestry = workflowKernel.getPluginRegistry();
+		for (Plugin plugin : regestry) {
+			if (plugin instanceof ObserverPlugin) {
+				workitem = ((ObserverPlugin) plugin).afterRegistration(workitem);
+			}
+		}
+		return workitem;
+	}
+
+	/**
+	 * called before the method workflowkernel.process(workitem) is called and the
+	 * workitem is completely prepared for processing.
+	 * 
+	 * @param listenerRegistry
+	 * @param workitem
+	 * @return
+	 * @throws PluginException
+	 */
+	private ItemCollection fireBeforeProcess(WorkflowKernel workflowKernel, ItemCollection workitem)
+			throws PluginException {
+		// interate plugin regestry
+		List<Plugin> regestry = workflowKernel.getPluginRegistry();
+		for (Plugin plugin : regestry) {
+			if (plugin instanceof ObserverPlugin) {
+				workitem = ((ObserverPlugin) plugin).beforeProcess(workitem);
+			}
+		}
+		return workitem;
+	}
+
+	/**
+	 * called immediately after the method workflowkernel.process(workitem) was called and before the method _documentService.save(workitem) is called.
+	 * @param listenerRegistry
+	 * @param workitem
+	 * @return
+	 * @throws PluginException
+	 */
+	private ItemCollection fireAfterProcess(WorkflowKernel workflowKernel, ItemCollection workitem)
+			throws PluginException {
+		// interate plugin regestry
+		List<Plugin> regestry = workflowKernel.getPluginRegistry();
+		for (Plugin plugin : regestry) {
+			if (plugin instanceof ObserverPlugin) {
+				workitem = ((ObserverPlugin) plugin).afterProcess(workitem);
+			}
+		}
+		return workitem;
+	}
+
+	
+
 }
