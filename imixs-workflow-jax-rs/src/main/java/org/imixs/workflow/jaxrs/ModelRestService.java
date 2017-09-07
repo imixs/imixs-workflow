@@ -183,7 +183,7 @@ public class ModelRestService {
 					// build a link for each group to get the Tasks
 
 					buffer.append(
-							"<a href=\"./model/" + modelVersion + "/groups/" + group + "\">" + group + "</a></br>");
+							"<a href=\"" + rootContext + "/model/" + modelVersion + "/groups/" + group + "\">" + group + "</a></br>");
 				}
 				buffer.append("</td>");
 				buffer.append("</tr>");
