@@ -1,6 +1,7 @@
 package org.imixs.workflow.xml;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -140,8 +141,19 @@ public class TestWriteXMLData {
 	
 
 		try {
+			FileInputStream fis = null;
+
+			fis = new FileInputStream(file);
+
+			
+//			ItemCollection resultItemCollection = XMLItemCollectionAdapter
+//					.readItemCollectionFromInputStream(getClass().getResourceAsStream("/write-example.xml"));
+			
 			ItemCollection resultItemCollection = XMLItemCollectionAdapter
-					.readItemCollectionFromInputStream(getClass().getResourceAsStream("/write-example.xml"));
+					.readItemCollectionFromInputStream(fis);
+			
+			
+			
 			System.out.println("Phase 1");
 			
 			Assert.assertNotNull(resultItemCollection);
