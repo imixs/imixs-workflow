@@ -132,6 +132,7 @@ public class TestWriteXMLData {
 			e.printStackTrace();
 			Assert.fail();
 		}
+	
 		Assert.assertNotNull(file);
 
 		// PHASE III.
@@ -141,24 +142,32 @@ public class TestWriteXMLData {
 		try {
 			ItemCollection resultItemCollection = XMLItemCollectionAdapter
 					.readItemCollectionFromInputStream(getClass().getResourceAsStream("/write-example.xml"));
+			System.out.println("Phase 1");
+			
 			Assert.assertNotNull(resultItemCollection);
+			System.out.println("Phase 2");
 			
 			Assert.assertEquals(itemColSource.getItemValue("_name"), resultItemCollection.getItemValue("_name"));
 			Assert.assertEquals(itemColSource.getItemValue("_listdata"), resultItemCollection.getItemValue("_listdata"));
 			Assert.assertEquals(itemColSource.getItemValue("_mapdata"), resultItemCollection.getItemValue("_mapdata"));
+			System.out.println("Phase 3");
 			
 			List<String> fileNames = itemColSource.getFileNames();
 			Assert.assertNotNull(fileNames);
 			Assert.assertEquals(1,fileNames.size());
 			Map<String, List<Object>> files = itemColSource.getFiles();
+			System.out.println("Phase 4");
+			
 			Assert.assertNotNull(files);
 			List<Object> testFile = files.get("test.txt");
 			Assert.assertEquals(2,testFile.size());
 			Assert.assertEquals("application/unknown",testFile.get(0).toString());			
 			Assert.assertEquals(empty,testFile.get(1));
+			System.out.println("Phase 5");
 			
 			
 		} catch (JAXBException e) {
+			e.printStackTrace();
 			Assert.fail();
 		} catch (IOException e) {
 			Assert.fail();
