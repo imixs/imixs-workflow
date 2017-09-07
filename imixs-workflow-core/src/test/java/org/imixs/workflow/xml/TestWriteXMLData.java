@@ -96,12 +96,10 @@ public class TestWriteXMLData {
 		mapList.add(i2.getAllItems());
 		itemColSource.replaceItemValue("_mapdata", mapList);
 
-		
 		// add a file
-		
+
 		itemColSource.addFile(empty, "test.txt", null);
-		
-		
+
 		// PHASE II.
 		// write the write-example.xml....
 
@@ -133,51 +131,36 @@ public class TestWriteXMLData {
 			e.printStackTrace();
 			Assert.fail();
 		}
-	
+
 		Assert.assertNotNull(file);
 
 		// PHASE III.
 		// Read the write-example.xml....
-	
 
 		try {
 			FileInputStream fis = null;
 
 			fis = new FileInputStream(file);
+			ItemCollection resultItemCollection = XMLItemCollectionAdapter.readItemCollectionFromInputStream(fis);
 
-			
-//			ItemCollection resultItemCollection = XMLItemCollectionAdapter
-//					.readItemCollectionFromInputStream(getClass().getResourceAsStream("/write-example.xml"));
-			
-			ItemCollection resultItemCollection = XMLItemCollectionAdapter
-					.readItemCollectionFromInputStream(fis);
-			
-			
-			
-			System.out.println("Phase 1");
-			
 			Assert.assertNotNull(resultItemCollection);
-			System.out.println("Phase 2");
-			
+
 			Assert.assertEquals(itemColSource.getItemValue("_name"), resultItemCollection.getItemValue("_name"));
-			Assert.assertEquals(itemColSource.getItemValue("_listdata"), resultItemCollection.getItemValue("_listdata"));
+			Assert.assertEquals(itemColSource.getItemValue("_listdata"),
+					resultItemCollection.getItemValue("_listdata"));
 			Assert.assertEquals(itemColSource.getItemValue("_mapdata"), resultItemCollection.getItemValue("_mapdata"));
-			System.out.println("Phase 3");
-			
+
 			List<String> fileNames = itemColSource.getFileNames();
 			Assert.assertNotNull(fileNames);
-			Assert.assertEquals(1,fileNames.size());
+			Assert.assertEquals(1, fileNames.size());
 			Map<String, List<Object>> files = itemColSource.getFiles();
-			System.out.println("Phase 4");
-			
+
 			Assert.assertNotNull(files);
 			List<Object> testFile = files.get("test.txt");
-			Assert.assertEquals(2,testFile.size());
-			Assert.assertEquals("application/unknown",testFile.get(0).toString());			
-			Assert.assertEquals(empty,testFile.get(1));
-			System.out.println("Phase 5");
-			
-			
+			Assert.assertEquals(2, testFile.size());
+			Assert.assertEquals("application/unknown", testFile.get(0).toString());
+			Assert.assertEquals(empty, testFile.get(1));
+
 		} catch (JAXBException e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -185,8 +168,6 @@ public class TestWriteXMLData {
 			Assert.fail();
 		}
 
-		
-		
 	}
 
 }
