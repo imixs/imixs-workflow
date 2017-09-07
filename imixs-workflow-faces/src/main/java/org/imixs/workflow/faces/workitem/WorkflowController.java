@@ -129,7 +129,7 @@ public class WorkflowController extends DocumentController {
 							+ workitem.getItemValueString(WorkflowKernel.MODELVERSION) + " for ID="
 							+ workitem.getItemValueInteger(WorkflowKernel.PROCESSID));
 
-		// update processId and WriteAccess
+		// update $WriteAccess
 		workitem.replaceItemValue("$WriteAccess", workitem.getItemValue("namCreator"));
 
 		// assign WorkflowGroup and editor
