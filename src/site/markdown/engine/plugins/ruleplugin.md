@@ -102,12 +102,13 @@ The result object can also be constructed with a JSON string:
 ##How to control the process flow 
 To control the process flow by the result of an evaluated business rule a script can set the following result properties:
  
-|Name      |Type       | Description                                   |
-|----------|-----------|-----------------------------------------------| 
-| followUp | integer   | Defines a followUp event assigned to the next task, which will be called after the current event is completed.      |
-| isValid  | boolean   | If false the current processing live-cycle will stop and a PluginException will be thrown.     |
-| errorCode| String    | The errorCode of the PluginException if _isValid_ is set to 'false'. The default errorCode is 'VALIDATION_ERROR'    |
-|errorMessage | String | A String value or String array which contains error messages provided to the PluginException    |
+|Name      |Type        | Description                                   |
+|----------|------------|-----------------------------------------------| 
+| followUp | integer    | Defines a followUp event assigned to the next task, which will be called after the current event is completed.      |
+| isValid  | boolean    | If false the current processing live-cycle will stop and a PluginException will be thrown.     |
+| nextTask | integer    | Defines the outgoing Task                     |
+| errorCode| String     | The errorCode of the PluginException if _isValid_ is set to 'false'. The default errorCode is 'VALIDATION_ERROR'    |
+| errorMessage | String | A String value or String array which contains error messages provided to the PluginException    |
 
 
 If a script can not be evaluated by the scriptEngin a PluginExcpetion with the errorCode 'INVALID_SCRIPT' will be thrown.
