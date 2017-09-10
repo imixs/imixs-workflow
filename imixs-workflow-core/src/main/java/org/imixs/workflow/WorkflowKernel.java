@@ -428,10 +428,13 @@ public class WorkflowKernel {
 						logger.fine("matching conditional event: " + expression);
 						itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getModelVersion())
 								.getTask(taskID);
+						if (itemColNextTask!=null) {
+							return itemColNextTask;
+						}
 					}
 				}
 			}
-			
+			logger.fine("conditional event: no matching condition");
 			
 		}
 
