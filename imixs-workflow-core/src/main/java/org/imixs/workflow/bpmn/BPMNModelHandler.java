@@ -49,6 +49,10 @@ public class BPMNModelHandler extends DefaultHandler {
 	boolean bLinkCatchEvent = false;
 	boolean bItemValue = false;
 	boolean bdocumentation = false;
+	boolean bSequenceFlow = false;
+
+	boolean bconditionExpression = false;
+
 	ItemCollection currentEntity = null;
 	String currentItemName = null;
 	String currentItemType = null;
@@ -56,6 +60,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	String currentMessageName = null;
 	String currentAnnotationName = null;
 	String currentLinkName = null;
+
 	String bpmnID = null;
 	StringBuilder characterStream = null;
 
@@ -72,7 +77,10 @@ public class BPMNModelHandler extends DefaultHandler {
 	Map<String, String> messageCache = null;
 	Map<String, String> annotationCache = null;
 
+	Map<String, String> conditionCache = null;
+
 	List<String> startEvents = null;
+	List<String> conditionalGatewayCache = null;
 
 	ItemCollection definition = null;
 
@@ -86,9 +94,12 @@ public class BPMNModelHandler extends DefaultHandler {
 		eventCache = new HashMap<String, ItemCollection>();
 		messageCache = new HashMap<String, String>();
 		annotationCache = new HashMap<String, String>();
+		conditionCache = new HashMap<String, String>();
 
 		linkThrowEventCache = new HashMap<String, String>();
 		linkCatchEventCache = new HashMap<String, String>();
+
+		conditionalGatewayCache = new ArrayList<String>();
 
 		startEvents = new ArrayList<String>();
 
@@ -201,6 +212,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		// bpmn2:sequenceFlow - cache all sequenceFlows...
 		if (qName.equalsIgnoreCase("bpmn2:sequenceFlow")) {
 			bpmnID = attributes.getValue("id");
+			bSequenceFlow = true;
 			String source = attributes.getValue("sourceRef");
 			String target = attributes.getValue("targetRef");
 			sequenceCache.put(bpmnID, new SequenceFlow(source, target));
@@ -243,6 +255,18 @@ public class BPMNModelHandler extends DefaultHandler {
 		if (qName.equalsIgnoreCase("bpmn2:message")) {
 			bMessage = true;
 			currentMessageName = attributes.getValue("name");
+		}
+
+		if (qName.equalsIgnoreCase("bpmn2:exclusiveGateway") || qName.equalsIgnoreCase("bpmn2:inclusiveGateway")
+				|| qName.equalsIgnoreCase("bpmn2:eventBasedGateway")) {
+			// Put conditona Gateway ID into th gateway cache...
+			conditionalGatewayCache.add(attributes.getValue("id"));
+		}
+
+		// test for conditional Expression...
+		if (qName.equalsIgnoreCase("bpmn2:conditionExpression")) {
+			bconditionExpression = true;
+			characterStream = new StringBuilder();
 		}
 
 		if (qName.equalsIgnoreCase("bpmn2:textAnnotation")) {
@@ -346,13 +370,21 @@ public class BPMNModelHandler extends DefaultHandler {
 			linkCatchEventCache.put(currentLinkName, bpmnID);
 		}
 
+		// test conditional sequence flow...
+		if (bSequenceFlow && bconditionExpression && qName.equalsIgnoreCase("bpmn2:conditionExpression")) {
+			String svalue = characterStream.toString();
+			logger.fine("conditional SequenceFlow:" + bpmnID + "=" + svalue);
+			bconditionExpression = false;
+			conditionCache.put(bpmnID, svalue);
+		}
+
 	}
 
 	// @SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void characters(char ch[], int start, int length) throws SAXException {
 
-		if (bdocumentation) {
+		if (bdocumentation || bconditionExpression) {
 			characterStream = characterStream.append(new String(ch, start, length));
 		}
 
@@ -367,19 +399,19 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	/**
 	 * This method builds the model from the information parsed by the handler.
-	 * First all task elements were adds as unique process entities into the
-	 * model. In the second step the method adds the Activity elements to the
-	 * assigned Task. We look also for activities with no incoming SequenceFlow.
+	 * First all task elements were adds as unique process entities into the model.
+	 * In the second step the method adds the Activity elements to the assigned
+	 * Task. We look also for activities with no incoming SequenceFlow.
 	 * 
-	 * The builder verifies the ProcessIDs for each task element to guaranty
-	 * that the numProcessID is unique
+	 * The builder verifies the ProcessIDs for each task element to guaranty that
+	 * the numProcessID is unique
 	 * 
 	 * The build connects pairs of Catch and Throw LinkEvents with a virtual
 	 * SequenceFlow to support the same behavior as if those elements where
 	 * connected directly in the model.
 	 * 
-	 * The method tests the model for bpmn2:message elements and replace links
-	 * in Activity elements attribute 'rtfMailBody'
+	 * The method tests the model for bpmn2:message elements and replace links in
+	 * Activity elements attribute 'rtfMailBody'
 	 * 
 	 * @throws ModelException
 	 */
@@ -487,13 +519,13 @@ public class BPMNModelHandler extends DefaultHandler {
 	}
 
 	/**
-	 * This method returns all SourceTask Elements connected to a given eventID.
-	 * The method takes care about loop events and follow up events. Later ones
-	 * are handled by the method addImixsEvent(). For that reason, the result of
-	 * this method can be also an empty list.
+	 * This method returns all SourceTask Elements connected to a given eventID. The
+	 * method takes care about loop events and follow up events. Later ones are
+	 * handled by the method addImixsEvent(). For that reason, the result of this
+	 * method can be also an empty list.
 	 * 
-	 * An event can be a shared event so it is possible that more than one
-	 * source tasks are found
+	 * An event can be a shared event so it is possible that more than one source
+	 * tasks are found
 	 * 
 	 * @param eventID
 	 * @throws ModelException
@@ -578,16 +610,16 @@ public class BPMNModelHandler extends DefaultHandler {
 	}
 
 	/**
-	 * This method computes the target for an event and adds the event to a
-	 * source task. The method call recursive if the target is a followUp Event.
+	 * This method computes the target for an event and adds the event to a source
+	 * task. The method call recursive if the target is a followUp Event.
 	 * 
 	 * If a event has no target the method throws an exception
 	 * 
-	 * If a event has more than one targets (task or event elements) then the
-	 * event is handled as a loop event.
+	 * If a event has more than one targets (task or event elements) then the event
+	 * is handled as a loop event.
 	 * 
-	 * If a event is already assigned to the sourceTask, the method returns
-	 * without adding the event.
+	 * If a event is already assigned to the sourceTask, the method returns without
+	 * adding the event.
 	 * 
 	 * @param sourceTask
 	 * @param event
@@ -644,6 +676,36 @@ public class BPMNModelHandler extends DefaultHandler {
 			event.removeItem("keyFollowUp");
 			event.replaceItemValue("numNextProcessID", sourceTask.getItemValue("numProcessID"));
 
+			// test if this is a conditional event - search for gateway...
+			List<SequenceFlow> outgoingList = this.findOutgoingFlows(eventID);
+			if (outgoingList != null && outgoingList.size() > 0) {
+				Map<Integer,String> conditions=new HashMap<Integer,String>();
+				for (SequenceFlow flow : outgoingList) {
+					if (conditionalGatewayCache.contains(flow.target)) {
+						
+						String conditionalGatewayID = flow.target;
+						// get all outgoing flows from this gateway
+						List<SequenceFlow> conditionalFlows = this.findOutgoingFlows(conditionalGatewayID);
+						for (SequenceFlow condFlow : conditionalFlows) {
+							ItemCollection targetTask = new ElementResolver().findImixsTargetTask(condFlow);
+							// build the condition
+							if (targetTask != null) {
+								String sExpression =  findConditionBySquenceFlow(condFlow);
+								logger.fine("add condition: " +targetTask.getItemValueInteger("numProcessid") + "="+ sExpression);
+								conditions.put(targetTask.getItemValueInteger("numProcessid"), sExpression);
+							}
+						}
+
+					}
+
+				}
+				// add the attribute 'keyConditions' if available...
+				if (!conditions.isEmpty()) {
+					event.replaceItemValue("keyConditions", conditions);
+				}
+
+			}
+
 			// here we need to check if one of the targets is an event - this
 			// need to be handled in a recursive call
 			for (String elementID : targetList) {
@@ -673,9 +735,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			if (followUpEventID != null) {
 				// recursive call!
 				addImixsEvent(followUpEventID, sourceTask);
-
 				ItemCollection followUpEvent = eventCache.get(followUpEventID);
-
 				event.replaceItemValue("keyFollowUp", "1");
 				event.replaceItemValue("numNextActivityID", followUpEvent.getItemValue("numactivityid"));
 
@@ -709,9 +769,8 @@ public class BPMNModelHandler extends DefaultHandler {
 	}
 
 	/**
-	 * This helper method verifies if the activity of the event is still unique
-	 * for the task element. If not the method computes a new one and updates
-	 * the event
+	 * This helper method verifies if the activity of the event is still unique for
+	 * the task element. If not the method computes a new one and updates the event
 	 * 
 	 * @param event
 	 * @param task
@@ -788,8 +847,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	}
 
 	/**
-	 * This method returns all incoming Associations flows for a given element
-	 * ID
+	 * This method returns all incoming Associations flows for a given element ID
 	 * 
 	 * @param elementID
 	 * @return
@@ -808,8 +866,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	}
 
 	/**
-	 * This method returns all outgoing Associations flows for a given element
-	 * ID
+	 * This method returns all outgoing Associations flows for a given element ID
 	 * 
 	 * @param elementID
 	 * @return
@@ -824,6 +881,30 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * This method returns an optional condition for a given sequenceFlow object.
+	 * The method iterates the conditionCache to lookup the condition
+	 * 
+	 * @param flow
+	 * @return the condition if available or null
+	 */
+	private String findConditionBySquenceFlow(SequenceFlow flow) {
+		if (conditionCache == null) {
+			return null;
+		}
+		// first we need do figure out the squenceFlowID for the flow object
+		String sequenceID = null;
+		for (Map.Entry<String, SequenceFlow> entry : sequenceCache.entrySet()) {
+			String key = entry.getKey();
+			SequenceFlow value = entry.getValue();
+			if (value == flow) {
+				sequenceID = key;
+				break;
+			}
+		}
+		return conditionCache.get(sequenceID);
 	}
 
 	/**
@@ -877,9 +958,8 @@ public class BPMNModelHandler extends DefaultHandler {
 	}
 
 	/**
-	 * This helper class provides methods to resolve the connected Imixs
-	 * elements to a flow element. The constructor is used to initialize a
-	 * loopDetection cache
+	 * This helper class provides methods to resolve the connected Imixs elements to
+	 * a flow element. The constructor is used to initialize a loopDetection cache
 	 * 
 	 * @author rsoika
 	 *
@@ -893,9 +973,9 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 
 		/**
-		 * This method searches a Imixs Task Element connected to the given
-		 * SequenceFlow element. If the Sequence Flow is not connected to a
-		 * Imixs Task element the method returns null.
+		 * This method searches a Imixs Task Element connected to the given SequenceFlow
+		 * element. If the Sequence Flow is not connected to a Imixs Task element the
+		 * method returns null.
 		 * 
 		 * 
 		 * @return the Imixs Task element or null if no Task Element was found.
@@ -943,12 +1023,11 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		/**
 		 * This method searches a Imixs Event Element connected to the given
-		 * SequenceFlow element. If the Sequence Flow is not connected to a
-		 * Imixs Event element the method returns null.
+		 * SequenceFlow element. If the Sequence Flow is not connected to a Imixs Event
+		 * element the method returns null.
 		 * 
 		 * 
-		 * @return the Imixs event element or null if no event Element was
-		 *         found.
+		 * @return the Imixs event element or null if no event Element was found.
 		 * @return
 		 */
 		public ItemCollection findImixsSourceEvent(SequenceFlow flow) {
@@ -992,8 +1071,8 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		/**
 		 * This method searches a Imixs Task Element targeted from the given
-		 * SequenceFlow element. If the Sequence Flow is not connected to a
-		 * Imixs Task element the method returns null.
+		 * SequenceFlow element. If the Sequence Flow is not connected to a Imixs Task
+		 * element the method returns null.
 		 * 
 		 * If the target is a Event (FollowUp Event) the method returns null.
 		 * 
@@ -1038,12 +1117,12 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 
 		/**
-		 * This method searches the id for a Imixs follow-Up activity. This is
-		 * the case if the target is another Imixs Event element. The method
-		 * returns the id of the followup event
+		 * This method searches the id for a Imixs follow-Up activity. This is the case
+		 * if the target is another Imixs Event element. The method returns the id of
+		 * the followup event
 		 * 
-		 * @return the ID of the Imixs Event element or null if no Event Element
-		 *         was found.
+		 * @return the ID of the Imixs Event element or null if no Event Element was
+		 *         found.
 		 * @return
 		 */
 		public String findImixsTargetEventID(SequenceFlow flow) {
@@ -1082,12 +1161,12 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 
 		/**
-		 * This method searches for all target events or task for a outgoing
-		 * sequence flow. The method returns a List of possible target elemetns.
+		 * This method searches for all target events or task for a outgoing sequence
+		 * flow. The method returns a List of possible target elemetns.
 		 * 
 		 * 
-		 * @return the ID of the Imixs Event element or null if no Event Element
-		 *         was found.
+		 * @return the ID of the Imixs Event element or null if no Event Element was
+		 *         found.
 		 * @return
 		 */
 		public List<String> findAllImixsTargetIDs(SequenceFlow flow, List<String> targetList) {
@@ -1133,12 +1212,12 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 
 		/**
-		 * This method searches for all target tasks for a outgoing sequence
-		 * flow. The method returns a List of possible imixs task elements.
+		 * This method searches for all target tasks for a outgoing sequence flow. The
+		 * method returns a List of possible imixs task elements.
 		 * 
 		 * 
-		 * @return the ID of the Imixs Event element or null if no Event Element
-		 *         was found.
+		 * @return the ID of the Imixs Event element or null if no Event Element was
+		 *         found.
 		 * @return
 		 */
 		public List<String> findAllImixsTargetTaskIDs(SequenceFlow flow, List<String> targetList) {
