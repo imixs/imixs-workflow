@@ -175,6 +175,41 @@ public class RuleEngine {
 
 		return result;
 	}
+	
+	
+	/**
+	 * This method evaluates a boolean expression. The method takes a documentContext 
+	 * as argument.
+	 * 
+	 * @param adocumentContext
+	 * @return ScriptEngine instance
+	 * @throws PluginException
+	 */
+	public boolean evaluateBooleanExpression(String script, ItemCollection documentContext)
+			throws PluginException {
+
+		// test if a business rule is defined
+		if ("".equals(script.trim()))
+			return false; // nothing to do
+
+		// set activity properties into engine
+		scriptEngine.put("workitem", convertItemCollection(documentContext));
+
+		logger.fine("SCRIPT:" + script);
+		Object result=null;
+		try {
+			result=scriptEngine.eval(script);
+		} catch (ScriptException e) {
+			// script not valid
+			throw new PluginException(RuleEngine.class.getSimpleName(), INVALID_SCRIPT,
+					"BusinessRule contains invalid script:" + e.getMessage(), e);
+		}
+		if (result instanceof Boolean) {
+			return (boolean) result;
+		} else {
+			return false;
+		}
+	}
 
 	/**
 	 * This method evaluates a script variable as an native Script array from the

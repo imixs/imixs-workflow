@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -399,15 +400,42 @@ public class WorkflowKernel {
 	 * This method computes the next task based on a Model Event element. If the
 	 * event did not point to a new task, the current task will be returned.
 	 * 
+	 * The method supports the 'conditional-events'. A conditional-event contains the 
+	 * attribute 'keyConditions' defining conditional targets.
+	 * 
 	 * @return Task entity
 	 * @throws ModelException
+	 * @throws PluginException 
 	 */
-	private ItemCollection getNextTask(ItemCollection documentContext, ItemCollection event) throws ModelException {
+	@SuppressWarnings("unchecked")
+	private ItemCollection getNextTask(ItemCollection documentContext, ItemCollection event) throws ModelException, PluginException {
+		ItemCollection itemColNextTask = null;
 		int iNewProcessID = event.getItemValueInteger("numnextprocessid");
 		logger.fine("next $processid=" + iNewProcessID + "");
+		
+		// test if we have an conditional event
+		if (event.hasItem("keyConditions")) {
+			RuleEngine ruleEngine=new RuleEngine();
+			// evaluate all conditions and return the fist match...
+			Map<String,String> conditions=(Map<String, String>) event.getItemValue("keyConditions").get(0);
+			for (Map.Entry<String, String> entry : conditions.entrySet()) {
+				String key = entry.getKey();
+				String expression = entry.getValue();
+				if (key.startsWith("task=")) {
+					int taskID=Integer.parseInt(key.substring(4));
+					boolean bmatch=ruleEngine.evaluateBooleanExpression(expression, documentContext);
+					if (bmatch) {
+						logger.fine("matching conditional event: " + expression);
+						itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getModelVersion())
+								.getTask(taskID);
+					}
+				}
+			}
+			
+			
+		}
 
-		// NextProcessID will only be set if NextTask>0
-		ItemCollection itemColNextTask = null;
+		// default behavior 
 		if (iNewProcessID > 0) {
 			itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getModelVersion())
 					.getTask(iNewProcessID);
