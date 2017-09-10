@@ -679,7 +679,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			// test if this is a conditional event - search for gateway...
 			List<SequenceFlow> outgoingList = this.findOutgoingFlows(eventID);
 			if (outgoingList != null && outgoingList.size() > 0) {
-				Map<Integer,String> conditions=new HashMap<Integer,String>();
+				Map<String,String> conditions=new HashMap<String,String>();
 				for (SequenceFlow flow : outgoingList) {
 					if (conditionalGatewayCache.contains(flow.target)) {
 						
@@ -692,7 +692,17 @@ public class BPMNModelHandler extends DefaultHandler {
 							if (targetTask != null) {
 								String sExpression =  findConditionBySquenceFlow(condFlow);
 								logger.fine("add condition: " +targetTask.getItemValueInteger("numProcessid") + "="+ sExpression);
-								conditions.put(targetTask.getItemValueInteger("numProcessid"), sExpression);
+								conditions.put("task="+targetTask.getItemValueInteger("numProcessid"), sExpression);
+							} else {
+								// test for an event....
+								String targetEventID=new ElementResolver().findImixsTargetEventID(condFlow);
+								ItemCollection targetEvent=eventCache.get(targetEventID);
+								if (targetEvent != null) {
+									String sExpression =  findConditionBySquenceFlow(condFlow);
+									logger.fine("add condition: " +targetEvent.getItemValueInteger("numActivityid") + "="+ sExpression);
+									conditions.put("event="+targetEvent.getItemValueInteger("numActivityid"), sExpression);
+								} 
+								
 							}
 						}
 

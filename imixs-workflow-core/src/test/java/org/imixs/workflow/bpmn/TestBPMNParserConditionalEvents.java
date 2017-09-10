@@ -84,16 +84,16 @@ public class TestBPMNParserConditionalEvents {
 		// Now we need to evaluate if the Event is marked as an conditional Event with
 		// the condition list copied from the gateway.
 		Assert.assertTrue(activity.hasItem("keyConditions"));
-		Map<Integer,String> conditions=(Map<Integer, String>) activity.getItemValue("keyConditions").get(0);
+		Map<String,String> conditions=(Map<String,String>) activity.getItemValue("keyConditions").get(0);
 		Assert.assertNotNull(conditions);
-		Assert.assertEquals("(workitem._budget && workitem._budget[0]>100)", conditions.get(1100));
-		Assert.assertEquals("(workitem._budget && workitem._budget[0]<=100)", conditions.get(1200));
+		Assert.assertEquals("(workitem._budget && workitem._budget[0]>100)", conditions.get("task=1100"));
+		Assert.assertEquals("(workitem._budget && workitem._budget[0]<=100)", conditions.get("task=1200"));
 	}
 	
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked" })
 	@Test
-	@Ignore
+	//@Ignore
 	public void testFollowUp()
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
@@ -138,10 +138,10 @@ public class TestBPMNParserConditionalEvents {
 		// Now we need to evaluate if the Event is marked as an conditional Event with
 		// the condition list copied from the gateway.
 		Assert.assertTrue(activity.hasItem("keyConditions"));
-		Map<Integer,String> conditions=(Map<Integer, String>) activity.getItemValue("keyConditions").get(0);
+		Map<String,String> conditions=(Map<String, String>) activity.getItemValue("keyConditions").get(0);
 		Assert.assertNotNull(conditions);
-		Assert.assertEquals("(workitem._budget && workitem._budget[0]>100)", conditions.get(1100));
-		Assert.assertEquals("(workitem._budget && workitem._budget[0]<=100)", conditions.get(1200));
+		Assert.assertEquals("(workitem._budget && workitem._budget[0]>100)", conditions.get("task=1100"));
+		Assert.assertEquals("(workitem._budget && workitem._budget[0]<=100)", conditions.get("event=20"));
 
 	}
 
