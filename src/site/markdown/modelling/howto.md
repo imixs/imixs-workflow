@@ -9,7 +9,7 @@ This example contains two workflow states: 'New Ticket' and 'Open'. The Workflow
 
 A 'Workflow Event' is an instance of a BPMN Intermediate Catch Event. A Catch Event should always have an outgoing sequence flow. The outgoing sequence flow of a Workflow Event point to the Workflow Task assigned to a process instance after the Event was processed. 
 
-##Event Gateways
+## Event Gateways
 If a Workflow Task have more than one Workflow Event, the BPMN element "Event Gateway" can be used to model alternative process flows: 
 
 <img src="../images/modelling/example_02.png"/>
@@ -30,7 +30,7 @@ In this case the Workflow Event can have an outgoing sequence flow pointing to t
 In this example the Loop Event has one incoming and one outgoing sequence flow.  
 
 
-##Follow-Up Events
+## Follow-Up Events
 
 A Workflow Event can also point to another Workflow Event. This is called a 'Follow-Up Event'. 
 
@@ -44,8 +44,32 @@ Follow-Up Events are typically used in more complex scenarios where additional b
 
 In this example a business rule is applied after the new order was accepted. In case the amount is below 100,- EUR the order is processed by the sales team. In case the amount is greater than 100,- EUR the order will be forwarded to the management by the follow-up event 'forward'. The follow-up event can be used to change the properties of the workitem like ACL settings or additional notifications. A follow-up event is typically not visible. See the [section Event Properties](./activities.html) for further details. 
  
+ 
+## Conditional Events
 
-##Link Events
+A conditional-event is used to evaluate the output of a event during the processing life-cycle. A conditional-event
+can be placed before a _ExclusiveGateway_, an _inclusiveGateway_ or an _eventBasedGateway_. Each output of the event must define a boolean rule expression.
+
+<img src="../images/modelling/example_08.png"/>
+ 
+In this example two conditions are added to the ExclusiveGateway output evaluating the attribute "_budet" to continue with either 'Task 2' or 'Task 3'. 
+A boolean expression can look like the following example, which is evaluating the attribute '_budget':
+
+    (workitem._budget && workitem._budget[0]>100)
+
+**Note:** To add conditional sequence flows the Full BPMN profile must be activated in the Imixs-BPMN Modeler. 
+
+A conditional Event can define conditions for either a Task element or an Event element. See the next example:
+ 
+<img src="../images/modelling/example_09.png"/>
+ 
+The second condition defines a Follow-Up Event in case the '_budget' is <= 100:     
+
+    (workitem._budget && workitem._budget[0]<=100) 
+
+The script language for the boolean expression is 'JavaScript'. See the [RulePlugin](../engine/plugins/ruleplugin.html) for further details about business rules in Imixs-Workflow. 
+
+## Link Events
 
 In a complex process model, it can be helpful to avoid too many overlapping sequence flows. Therefor the BPMN Link Events can be used. The link event describes a connection between two elements. 
 
