@@ -433,6 +433,30 @@ public class WorkflowKernel {
 						}
 					}
 				}
+				
+				if (key.startsWith("event=")) {
+					int eventID=Integer.parseInt(key.substring(6));
+					boolean bmatch=ruleEngine.evaluateBooleanExpression(expression, documentContext);
+					if (bmatch) {
+						logger.fine("matching conditional event: " + expression);
+						// we update the documentContext....
+						 ItemCollection itemColEvent = this.ctx.getModelManager().getModel(documentContext.getModelVersion()).
+								getEvent(documentContext.getProcessID(), eventID);
+						if (itemColEvent!=null) {
+							// create follow up event....
+							
+							
+							event.replaceItemValue("keyFollowUp", "1");
+							event.replaceItemValue("numNextActivityID", eventID);
+							
+							// get current task...
+							itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getItemValueString(MODELVERSION))
+									.getTask(documentContext.getProcessID());
+							
+							return itemColNextTask;
+						}
+					}
+				}
 			}
 			logger.fine("conditional event: no matching condition");
 			

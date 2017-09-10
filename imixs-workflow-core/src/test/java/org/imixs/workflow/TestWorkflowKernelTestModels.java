@@ -125,7 +125,9 @@ public class TestWorkflowKernelTestModels {
 	}
 
 	/**
-	 * Test conditional-event models.
+	 * Test model conditional_event1.bpmn.
+	 * 
+	 * Here we have two conditions: both to a task.
 	 * 
 	 * @throws IOException
 	 * @throws SAXException
@@ -135,7 +137,7 @@ public class TestWorkflowKernelTestModels {
 	 */
 	@Test
 	@Category(org.imixs.workflow.WorkflowKernel.class)
-	public void testConditionalEventModel() {
+	public void testConditionalEventModel1() {
 		try {
 			// provide a mock modelManger class
 			when(workflowContext.getModelManager()).thenReturn(new MokModelManager("/bpmn/conditional_event1.bpmn"));
@@ -166,6 +168,59 @@ public class TestWorkflowKernelTestModels {
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 
 			Assert.assertEquals(1100, itemCollection.getProcessID());
+
+		} catch (Exception e) {
+			Assert.fail();
+			e.printStackTrace();
+
+		}
+
+	}
+
+	/**
+	 * Test model conditional_event2.bpmn.
+	 * 
+	 * Here we have two conditions: one to a task, the other to a event.
+	 * 
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws ParseException
+	 * @throws ModelException
+	 */
+	@Test
+	@Category(org.imixs.workflow.WorkflowKernel.class)
+	public void testConditionalEventModel2() {
+		try {
+			// provide a mock modelManger class
+			when(workflowContext.getModelManager()).thenReturn(new MokModelManager("/bpmn/conditional_event2.bpmn"));
+
+			// test Condition 1
+			ItemCollection itemCollection = new ItemCollection();
+			itemCollection.replaceItemValue("txtTitel", "Hello");
+			itemCollection.replaceItemValue("$processid", 1000);
+			itemCollection.replaceItemValue("$activityid", 10);
+			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
+
+			itemCollection.replaceItemValue("_budget", 9999);
+
+			itemCollection = kernel.process(itemCollection);
+			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+			Assert.assertEquals(1100, itemCollection.getProcessID());
+
+			// test Condition 2
+			itemCollection = new ItemCollection();
+			itemCollection.replaceItemValue("txtTitel", "Hello");
+			itemCollection.replaceItemValue("$processid", 1000);
+			itemCollection.replaceItemValue("$activityid", 10);
+			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
+
+			itemCollection.replaceItemValue("_budget", 99);
+
+			itemCollection = kernel.process(itemCollection);
+			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+
+			Assert.assertEquals(1200, itemCollection.getProcessID());
 
 		} catch (Exception e) {
 			Assert.fail();
