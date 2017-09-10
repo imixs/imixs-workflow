@@ -9,15 +9,14 @@ import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import junit.framework.Assert;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import junit.framework.Assert;
 
 /**
  * Test class test the Imixs BPMNParser.

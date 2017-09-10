@@ -24,17 +24,18 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 /**
- * Test class for workflow kernel
+ * Test class for Imixs WorkflowKernel using a static default model. The test
+ * class verifies basic functionality. See the test class
+ * TestWorklfowKernelTestModels for more complex model tests.
  * 
  * @author rsoika
- * 
  */
-public class KernelTest {
+public class TestWorkflowKernelDefaultModel {
 
 	WorkflowKernel kernel = null;
 	protected SessionContext ctx;
 	protected WorkflowContext workflowContext;
-	private static Logger logger = Logger.getLogger(KernelTest.class.getName());
+	private static Logger logger = Logger.getLogger(TestWorkflowKernelDefaultModel.class.getName());
 
 	@Before
 	public void setup() throws PluginException {
@@ -70,7 +71,7 @@ public class KernelTest {
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
 		try {
-			itemCollection=kernel.process(itemCollection);
+			itemCollection = kernel.process(itemCollection);
 		} catch (PluginException e) {
 			Assert.fail();
 			e.printStackTrace();
@@ -85,7 +86,6 @@ public class KernelTest {
 		Assert.assertEquals(1, itemCollection.getItemValueInteger("runs"));
 		Assert.assertEquals(100, itemCollection.getItemValueInteger("$processid"));
 	}
-
 
 	/**
 	 * This if a plugin which returns null influences the workitem
@@ -107,14 +107,14 @@ public class KernelTest {
 
 			MokPluginNull mokPlugin = new MokPluginNull();
 			kernel.registerPlugin(mokPlugin);
-			itemCollection.replaceItemValue("txtname","test");
-			
+			itemCollection.replaceItemValue("txtname", "test");
+
 			kernel.process(itemCollection);
 			// kernel should throw exception...
 			Assert.fail();
 		} catch (PluginException e) {
-			Assert.assertEquals(WorkflowKernel.PLUGIN_ERROR,e.getErrorCode());
-			
+			Assert.assertEquals(WorkflowKernel.PLUGIN_ERROR, e.getErrorCode());
+
 		} catch (ProcessingErrorException e) {
 			Assert.fail();
 			e.printStackTrace();
@@ -126,8 +126,7 @@ public class KernelTest {
 		Assert.assertEquals("test", itemCollection.getItemValueString("txtname"));
 		Assert.assertEquals(100, itemCollection.getItemValueInteger("$processid"));
 	}
-	
-	
+
 	@Test
 	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testForward() {
@@ -140,7 +139,7 @@ public class KernelTest {
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
 		try {
-			itemCollection=kernel.process(itemCollection);
+			itemCollection = kernel.process(itemCollection);
 		} catch (PluginException e) {
 			Assert.fail();
 			e.printStackTrace();
@@ -169,7 +168,7 @@ public class KernelTest {
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
 		try {
-			itemCollection=kernel.process(itemCollection);
+			itemCollection = kernel.process(itemCollection);
 		} catch (PluginException e) {
 			Assert.fail();
 			e.printStackTrace();
@@ -235,13 +234,13 @@ public class KernelTest {
 		try {
 			// simulate two steps
 			itemCollection.replaceItemValue("$activityid", 10);
-			itemCollection=kernel.process(itemCollection);
+			itemCollection = kernel.process(itemCollection);
 
 			itemCollection.replaceItemValue("$activityid", 20);
 			// sumulate a Log Comment...
 			itemCollection.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
 
-			itemCollection=kernel.process(itemCollection);
+			itemCollection = kernel.process(itemCollection);
 
 		} catch (PluginException e) {
 			Assert.fail();
@@ -311,8 +310,8 @@ public class KernelTest {
 	}
 
 	/**
-	 * This method tests the generation of the txtworkflowactivitylog entries
-	 * and the restriction to a maximum length of 30 entries.
+	 * This method tests the generation of the txtworkflowactivitylog entries and
+	 * the restriction to a maximum length of 30 entries.
 	 * 
 	 * Issue https://github.com/imixs/imixs-workflow/issues/179
 	 * 
@@ -337,13 +336,13 @@ public class KernelTest {
 		try {
 			// simulate two steps
 			itemCollection.replaceItemValue("$activityid", 10);
-			itemCollection=kernel.process(itemCollection);
+			itemCollection = kernel.process(itemCollection);
 
 			itemCollection.replaceItemValue("$activityid", 20);
 			// sumulate a Log Comment...
 			itemCollection.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
 
-			itemCollection=kernel.process(itemCollection);
+			itemCollection = kernel.process(itemCollection);
 
 		} catch (PluginException e) {
 			Assert.fail();

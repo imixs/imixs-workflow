@@ -422,7 +422,7 @@ public class WorkflowKernel {
 				String key = entry.getKey();
 				String expression = entry.getValue();
 				if (key.startsWith("task=")) {
-					int taskID=Integer.parseInt(key.substring(4));
+					int taskID=Integer.parseInt(key.substring(5));
 					boolean bmatch=ruleEngine.evaluateBooleanExpression(expression, documentContext);
 					if (bmatch) {
 						logger.fine("matching conditional event: " + expression);

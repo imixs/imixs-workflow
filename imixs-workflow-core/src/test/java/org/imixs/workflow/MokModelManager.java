@@ -1,6 +1,14 @@
 package org.imixs.workflow;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.exceptions.ModelException;
+import org.xml.sax.SAXException;
 
 /**
  * Static mokup model
@@ -31,6 +39,21 @@ public class MokModelManager implements ModelManager {
 		model=new MokModel();
 	}
 
+	
+
+	/** 
+	 * Load a test model by filename
+	 * @throws IOException 
+	 * @throws SAXException 
+	 * @throws ParserConfigurationException 
+	 * @throws ParseException 
+	 * @throws ModelException 
+	 **/
+	public MokModelManager(String sModelPath) throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+		InputStream inputStream = getClass().getResourceAsStream(sModelPath);
+		model = BPMNParser.parseModel(inputStream, "UTF-8");
+	}
+	
 	
 	@Override
 	public Model getModel(String version) throws ModelException {
