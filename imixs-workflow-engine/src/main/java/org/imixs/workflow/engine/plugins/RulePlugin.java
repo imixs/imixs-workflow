@@ -27,25 +27,15 @@
 
 package org.imixs.workflow.engine.plugins;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.RuleEngine;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -118,55 +108,51 @@ public class RulePlugin extends AbstractPlugin {
 	 * The run method evaluates a script provided by an activityEntity with the
 	 * specified scriptEngine.
 	 * 
-	 * After successful evaluation the method verifies the object value
-	 * 'isValid'. If isValid is false then the method throws a PluginException.
-	 * In addition the method evaluates the object values 'errorCode' and
-	 * 'errorMessage' which will be part of the PluginException.
+	 * After successful evaluation the method verifies the object value 'isValid'.
+	 * If isValid is false then the method throws a PluginException. In addition the
+	 * method evaluates the object values 'errorCode' and 'errorMessage' which will
+	 * be part of the PluginException.
 	 * 
 	 * If 'isValid' is true or undefined the method evaluates the object value
-	 * 'followUp'. If a followUp value is defined by the script the method
-	 * update the model follow up definition.
+	 * 'followUp'. If a followUp value is defined by the script the method update
+	 * the model follow up definition.
 	 * 
 	 * If a script changes properties of the activity entity the method will
-	 * evaluate these changes and update the ItemCollection for further
-	 * processing.
+	 * evaluate these changes and update the ItemCollection for further processing.
 	 * 
 	 */
 	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
 			throws PluginException {
 
-		ScriptEngine engine = evaluateBusinessRule(adocumentContext, adocumentActivity);
-		if (engine != null) {
+		// test if a business rule is defined
+		String script = adocumentActivity.getItemValueString("txtBusinessRule");
+		if ("".equals(script.trim()))
+			return adocumentContext; // nothing to do
 
-			// get the optional result object
-			ItemCollection result = convertScriptVariableToItemCollection(engine, "result");
+		String sEngineType = adocumentActivity.getItemValueString("txtBusinessRuleEngine");
+		RuleEngine ruleEngine = new RuleEngine(sEngineType);
 
+		ItemCollection result = ruleEngine.evaluateBusinessRule(script, adocumentContext, adocumentActivity);
+
+		// support deprecated scripts without a 'result' JSON object ...
+		if (result == null) {
+			evaluateDeprecatedScript(ruleEngine, adocumentActivity);
+		} else {
 			// first we test for the isValid variable
 			Boolean isValidActivity = true;
 			// first test result object
-			if (result != null && result.hasItem("isValid")) {
+			if (result.hasItem("isValid")) {
 				isValidActivity = result.getItemValueBoolean("isValid");
 				result.removeItem("isValid");
-			} else {
-				// if isValid is not provided by result then we look for a
-				// direct var definition (this is for backward compatibility of
-				// older scripts)
-				isValidActivity = (Boolean) engine.get("isValid");
 			}
-
 			// if isValid==false then throw a PluginException
 			if (isValidActivity != null && !isValidActivity) {
 				// test if a error code is provided!
 				String sErrorCode = VALIDATION_ERROR;
 				Object oErrorCode = null;
-				if (result != null && result.hasItem("errorCode")) {
+				if (result.hasItem("errorCode")) {
 					oErrorCode = result.getItemValueString("errorCode");
 					result.removeItem("errorCode");
-				} else {
-					// if errorCode is not provided by result then we look for a
-					// direct var definition (this is for backward compatibility
-					// of older scripts)
-					oErrorCode = engine.get("errorCode");
 				}
 				if (oErrorCode != null && oErrorCode instanceof String) {
 					sErrorCode = oErrorCode.toString();
@@ -175,34 +161,21 @@ public class RulePlugin extends AbstractPlugin {
 				// next test for errorMessage (this can be a string or an array
 				// of strings
 				Object[] params = null;
-				if (result != null && result.hasItem("errorMessage")) {
+				if (result.hasItem("errorMessage")) {
 					params = result.getItemValue("errorMessage").toArray();
 					result.removeItem("errorMessage");
-				} else {
-					params = this.evaluateNativeScriptArray(engine, "errorMessage");
 				}
-
 				// finally we throw the Plugin Exception
 				throw new PluginException(RulePlugin.class.getName(), sErrorCode,
 						"BusinessRule: validation failed - ErrorCode=" + sErrorCode, params);
 			}
 
-			// Next update the Activity entity. Values can be provided optional
-			// by the script variable 'activity'...
-			updateEvent(engine, adocumentActivity);
-
 			// now test the variable 'followUp'
 			Object followUp = null;
 			// first test result object
-			if (result != null && result.hasItem("followUp")) {
+			if (result.hasItem("followUp")) {
 				followUp = result.getItemValueString("followUp");
 				result.removeItem("followUp");
-			} else {
-				// if followUp is not provided by result then we look for a
-				// direct
-				// var definition (this is for backward compatibility of older
-				// scripts)
-				followUp = engine.get("followUp");
 			}
 
 			// If followUp is defined we update now the activityEntity....
@@ -213,21 +186,15 @@ public class RulePlugin extends AbstractPlugin {
 				if (followUpActivity != null && followUpActivity > 0) {
 					adocumentActivity.replaceItemValue("keyFollowUp", "1");
 					adocumentActivity.replaceItemValue("numNextActivityID", followUpActivity);
-
 				}
 			}
 
 			// now test the variable 'nextTask'
 			Object nextTask = null;
 			// first test result object
-			if (result != null && result.hasItem("nextTask")) {
+			if (result.hasItem("nextTask")) {
 				nextTask = result.getItemValueString("nextTask");
 				result.removeItem("nextTask");
-			} else {
-				// if nextTask is not provided by the result var, then we look
-				// for a direct var definition (this is for backward
-				// compatibility of older scripts)
-				nextTask = engine.get("nextTask");
 			}
 			if (nextTask != null) {
 				// try to get double value...
@@ -235,289 +202,149 @@ public class RulePlugin extends AbstractPlugin {
 				Long lNextTask = d.longValue();
 				if (lNextTask != null && lNextTask > 0) {
 					adocumentActivity.replaceItemValue("numNextProcessID", lNextTask);
-
 				}
 			}
 
 			// if result has item values then we update now the current
 			// workitem iterate over all entries
-			if (result != null) {
-				for (Map.Entry<String, List<Object>> entry : result.getAllItems().entrySet()) {
-					String itemName = entry.getKey();
-					// skip fieldnames starting with '$'
-					if (!itemName.startsWith("$")) {
-						logger.fine("Update item '" + itemName + "'");
-						adocumentContext.replaceItemValue(itemName, entry.getValue());
-					}
+
+			for (Map.Entry<String, List<Object>> entry : result.getAllItems().entrySet()) {
+				String itemName = entry.getKey();
+				// skip fieldnames starting with '$'
+				if (!itemName.startsWith("$")) {
+					logger.fine("Update item '" + itemName + "'");
+					adocumentContext.replaceItemValue(itemName, entry.getValue());
 				}
 			}
-
-			return adocumentContext;
-		} else {
-			// no business rule is defined
-			return adocumentContext; // nothing to do
 		}
+
+		// Finally update the Activity entity. Values can be provided optional
+		// by the script variable 'event'...
+		updateEvent(ruleEngine, adocumentActivity);
+
+		return adocumentContext;
+
 	}
 
 	/**
-	 * This method evaluates the business rule defined by the provided activity.
-	 * The method returns the instance of the script engine which can be used to
-	 * continue evaluation. If a rule evaluation was not successful, the method
-	 * returns null.
+	 * This method evaluates the script result without a 'result' JSON object. This
+	 * kind of scripts is marked as deprecated.
 	 * 
-	 * @param adocumentContext
+	 * @param ruleEngine
 	 * @param adocumentActivity
-	 * @return ScriptEngine instance
 	 * @throws PluginException
 	 */
-	public ScriptEngine evaluateBusinessRule(ItemCollection documentContext, ItemCollection activity)
+	private void evaluateDeprecatedScript(RuleEngine ruleEngine, ItemCollection adocumentActivity)
 			throws PluginException {
+		// deprecated evaluation:
+		logger.warning("Script is deprecated - use JSON object 'result'");
+		// first we test for the isValid variable
+		Boolean isValidActivity = true;
 
-		// test if a business rule is defined
-		String script = activity.getItemValueString("txtBusinessRule");
-		if ("".equals(script.trim()))
-			return null; // nothing to do
 
-		// initialize the script engine...
-		ScriptEngineManager manager = new ScriptEngineManager();
-		String sEngineType = activity.getItemValueString("txtBusinessRuleEngine");
-		// set default engine to javascript if no engine is specified
-		if ("".equals(sEngineType))
-			sEngineType = "javascript";
+		// if isValid is not provided by result then we look for a
+		// direct var definition (this is for backward compatibility of
+		// older scripts)
+		isValidActivity = (Boolean) ruleEngine.getScriptEngine().get("isValid");
 
-		ScriptEngine engine = manager.getEngineByName(sEngineType);
+		// if isValid==false then throw a PluginException....
+		if (isValidActivity != null && !isValidActivity) {
+			// test if a error code is provided!
+			String sErrorCode = VALIDATION_ERROR;
+			Object oErrorCode = null;
 
-		// set activity properties into engine
-		engine.put("event", convertItemCollection(activity));
-		engine.put("workitem", convertItemCollection(documentContext));
+			// if errorCode is not provided by result then we look for a
+			// direct var definition (this is for backward compatibility
+			// of older scripts)
+			oErrorCode = ruleEngine.getScriptEngine().get("errorCode");
 
-		logger.fine("SCRIPT:" + script);
-		try {
-			engine.eval(script);
-		} catch (ScriptException e) {
-			// script not valid
-			throw new PluginException(RulePlugin.class.getSimpleName(), INVALID_SCRIPT,
-					"BusinessRule contains invalid script:" + e.getMessage(), e);
-		}
-
-		return engine;
-	}
-
-	/**
-	 * This method evaluates a script variable as an native Script array from
-	 * the script engine. The method returns a Object array with the variable
-	 * values. If the javaScript var is a String a new Array will be created. If
-	 * the javaScript var is a NativeArray the method tries to create a java
-	 * List object.
-	 * 
-	 * See the following examples used by the Rhino JavaScript engine bundled
-	 * with Java 6. http://www.rgagnon.com/javadetails/java-0640.html
-	 * 
-	 * @return
-	 */
-	public Object[] evaluateNativeScriptArray(ScriptEngine engine, String expression) {
-		Object[] params = null;
-
-		if (engine == null) {
-			logger.severe("RulePlugin evaluateScritpObject error: no script engine! - call run()");
-			return null;
-		}
-
-		// first test if expression is a basic string var
-		Object objectResult = engine.get(expression);
-		if (objectResult != null && objectResult instanceof String) {
-			// just return a simple array with one value
-			params = new String[1];
-			params[0] = objectResult.toString();
-			return params;
-		}
-
-		// now try to pass the object to engine and convert it into a
-		// ArryList....
-		try {
-			// Nashorn: check for importClass function and then load if missing
-			// See: issue #124
-			String jsNashorn = " if (typeof importClass != 'function') { load('nashorn:mozilla_compat.js');}";
-
-			String jsCode = "importPackage(java.util);" + "var _evaluateScriptParam = Arrays.asList(" + expression
-					+ "); ";
-			// pass a collection from javascript to java;
-			engine.eval(jsNashorn + jsCode);
-
-			@SuppressWarnings("unchecked")
-			List<Object> resultList = (List<Object>) engine.get("_evaluateScriptParam");
-			if (resultList == null) {
-				return null;
-			}
-			if ("[undefined]".equals(resultList.toString())) {
-				return null;
-			}
-			// logging
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("evalueateScript object to Java");
-				for (Object val : resultList) {
-					logger.fine(val.toString());
-				}
+			if (oErrorCode != null && oErrorCode instanceof String) {
+				sErrorCode = oErrorCode.toString();
 			}
 
-			return resultList.toArray();
-		} catch (ScriptException se) {
-			// not convertable!
-			// se.printStackTrace();
-			logger.fine("[RulePlugin] error evaluating " + expression + " - " + se.getMessage());
-			return null;
+			// next test for errorMessage (this can be a string or an array
+			// of strings
+			Object[] params = null;
+
+			params = ruleEngine.evaluateNativeScriptArray("errorMessage");
+
+			// finally we throw the Plugin Exception
+			throw new PluginException(RulePlugin.class.getName(), sErrorCode,
+					"BusinessRule: validation failed - ErrorCode=" + sErrorCode, params);
+		}
+
+		// now test the variable 'followUp'
+		Object followUp = null;
+		// first test result object
+
+		// if followUp is not provided by result then we look for a
+		// direct
+		// var definition (this is for backward compatibility of older
+		// scripts)
+		followUp = ruleEngine.getScriptEngine().get("followUp");
+
+		// If followUp is defined we update now the activityEntity....
+		if (followUp != null) {
+			// try to get double value...
+			Double d = Double.valueOf(followUp.toString());
+			Long followUpActivity = d.longValue();
+			if (followUpActivity != null && followUpActivity > 0) {
+				adocumentActivity.replaceItemValue("keyFollowUp", "1");
+				adocumentActivity.replaceItemValue("numNextActivityID", followUpActivity);
+
+			}
+		}
+
+		// now test the variable 'nextTask'
+		Object nextTask = null;
+		// first test result object
+
+		// if nextTask is not provided by the result var, then we look
+		// for a direct var definition (this is for backward
+		// compatibility of older scripts)
+		nextTask = ruleEngine.getScriptEngine().get("nextTask");
+
+		if (nextTask != null) {
+			// try to get double value...
+			Double d = Double.valueOf(nextTask.toString());
+			Long lNextTask = d.longValue();
+			if (lNextTask != null && lNextTask > 0) {
+				adocumentActivity.replaceItemValue("numNextProcessID", lNextTask);
+
+			}
 		}
 
 	}
 
 	/**
-	 * This method compares the properties of the script element 'activity' with
-	 * the values of the current ActivityEntity. If a value has changed, then
-	 * the method will update the Activity ItemCollection which can be used for
-	 * further processing.
+	 * This method compares the properties of the script element 'event' with the
+	 * values of the current ActivityEntity. If a value has changed, then the method
+	 * will update the Activity ItemCollection which can be used for further
+	 * processing.
 	 * 
 	 * @param engine
 	 * @param event
 	 * @throws ScriptException
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void updateEvent(ScriptEngine engine, ItemCollection event) {
+	@SuppressWarnings({ "rawtypes" })
+	private void updateEvent(RuleEngine ruleEngine, ItemCollection event) {
 
-		Map<String, Object[]> orginalActivity = convertItemCollection(event);
-		// get activity from engine
-		Map<String, Object[]> scriptActivity = (Map) engine.get("event");
+		ItemCollection newEvent = ruleEngine.convertScriptVariableToItemCollection("event");
 
-		// iterate over all entries
-		for (Map.Entry<String, Object[]> entry : scriptActivity.entrySet()) {
+		for (Map.Entry<String, List<Object>> entry : event.getAllItems().entrySet()) {
+			String key = entry.getKey();
+			List<Object> value = entry.getValue();
+			if (newEvent.hasItem(key)) {
+				List newValue = newEvent.getItemValue(key);
 
-			String expression = "event.get('" + entry.getKey() + "')";
-
-			Object[] oScript = evaluateNativeScriptArray(engine, expression);
-			if (oScript == null) {
-				continue;
-			}
-			Object[] oActivity = orginalActivity.get(entry.getKey());
-			if (oActivity == null) {
-				continue;
-			}
-
-			// compare object arrays with deepEquals....
-			if (!Arrays.deepEquals(oScript, oActivity)) {
-				logger.fine("update event property " + entry.getKey());
-				List<?> list = new ArrayList(Arrays.asList(oScript));
-				event.replaceItemValue(entry.getKey(), list);
-			}
-
-		}
-
-	}
-
-	/**
-	 * This method converts a JSON variable by name into a ItemCollection. The
-	 * variable is expected as a JSON object holding single values or arrays in
-	 * the following format
-	 * 
-	 * <code>
-	 * 
-	 * {'single_item':'Hello World', 'multi_item':[ 'Hello World', 'Hello Imixs'
-	 * ] };
-	 * 
-	 * <code>
-	 * 
-	 * The converted object is expected as an Map interface.
-	 * 
-	 * @param engine
-	 * @return ItemCollection holding the item values of the variable or null if
-	 *         no variable with the given name exists or the variable has not
-	 *         properties.
-	 * @throws ScriptException
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private ItemCollection convertScriptVariableToItemCollection(ScriptEngine engine, String variable) {
-		ItemCollection result = null;
-		// get result object from engine
-		Map<String, Object> scriptResult = (Map) engine.get(variable);
-		// test if the json object exists and has child objects...
-		if (scriptResult != null && scriptResult.entrySet().size() > 0) {
-			result = new ItemCollection();
-
-			// iterate over all entries
-			for (Map.Entry<String, Object> entry : scriptResult.entrySet()) {
-
-				// test if the entry value is a single object or an array....
-				if (isBasicObjectType(entry.getValue().getClass())) {
-					// single value - build array....
-					logger.fine("adding " + variable + " property " + entry.getKey());
-					List<Object> list = new ArrayList();
-					list.add(entry.getValue());
-					result.replaceItemValue(entry.getKey(), list);
-				} else {
-					// test if array...
-					String expression = "result['" + entry.getKey() + "']";
-					Object[] oScript = evaluateNativeScriptArray(engine, expression);
-					if (oScript == null) {
-						continue;
-					}
-					logger.fine("adding " + variable + " property " + entry.getKey());
-					List<?> list = new ArrayList(Arrays.asList(oScript));
-					result.replaceItemValue(entry.getKey(), list);
+				// compare object arrays with deepEquals....
+				if (!Arrays.deepEquals(newValue.toArray(), value.toArray())) {
+					logger.fine("update event property " + entry.getKey());
+					event.replaceItemValue(key, newValue);
 				}
 			}
 		}
-		return result;
+
 	}
 
-	/**
-	 * This method converts the values of an ItemCollection into a Map Object
-	 * with Arrays of Objects for each value
-	 * 
-	 * @param itemCol
-	 * @return
-	 */
-	private Map<String, Object[]> convertItemCollection(ItemCollection itemCol) {
-		Map<String, Object[]> result = new HashMap<String, Object[]>();
-		Map<String, List<Object>> itemList = itemCol.getAllItems();
-		for (Map.Entry<String, List<Object>> entry : itemList.entrySet()) {
-			String key = entry.getKey().toLowerCase();
-			List<?> value = (List<?>) entry.getValue();
-			// do only put basic values
-			if (value.size() > 0) {
-				if (isBasicObjectType(value.get(0).getClass())) {
-					result.put(key, value.toArray());
-				}
-
-			}
-		}
-		return result;
-	}
-
-	private static final HashSet<Class<?>> BASIC_OBJECT_TYPES = getBasicObjectTypes();
-
-	private static boolean isBasicObjectType(Class<?> clazz) {
-		return BASIC_OBJECT_TYPES.contains(clazz);
-	}
-
-	private static HashSet<Class<?>> getBasicObjectTypes() {
-		HashSet<Class<?>> ret = new HashSet<Class<?>>();
-		ret.add(Boolean.class);
-		ret.add(Character.class);
-		ret.add(Byte.class);
-		ret.add(Short.class);
-		ret.add(Integer.class);
-		ret.add(Long.class);
-		ret.add(Float.class);
-		ret.add(Double.class);
-		ret.add(Void.class);
-
-		ret.add(BigDecimal.class);
-		ret.add(BigInteger.class);
-
-		ret.add(String.class);
-		ret.add(Object.class);
-		ret.add(Date.class);
-		ret.add(Calendar.class);
-		ret.add(GregorianCalendar.class);
-
-		return ret;
-	}
 }
