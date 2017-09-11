@@ -127,11 +127,11 @@ The Imixs Report rest service provides the option to generate PDF Reports based 
 
 
 ###Apache FOP / PDF Report Plugin
-Reports can also be computed during the processing life cycle by adding the following plug-in into the process model:
+Reports can also be computed during the processing life cycle by adding the following plugin into the process model:
 
     org.imixs.workflow.jee.plugins.ReportPlugin
  
-The Report Plug-in can compute dynamic collections of workitems based on a JPQL statement as explained before.  As the Plugin runs in the phase of workflow processing the current workitem is typical not selectable with JPQL. Therefore the Report Plug-in replaces the result-set with a new instance of the current workitem if the workitem is included in the result-set.
+The Report Plug-in can compute dynamic collections of workitems based on a JPQL statement as explained before.  As the Plugin runs in the phase of workflow processing the current workitem is typical not selectable with JPQL. Therefore the Report Plugin replaces the result-set with a new instance of the current workitem if the workitem is included in the result-set.
  
 
 ## The /report resources DELETE

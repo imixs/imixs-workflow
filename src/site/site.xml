@@ -29,12 +29,12 @@
 				<item name="Workflow Engine" href="quickstart/workflowengine.html" />
 			</item>
 
-			<item name="BPMN Modeling" href="modelling/index.html" collapse="true">
+			<item name="BPMN 2.0" href="modelling/index.html" collapse="true">
 				<item name="Overview" href="modelling/overview.html" />
 				<item name="Installation" href="modelling/install.html" />
 				<item name="Eclipse Workbench" href="modelling/eclipse_workbench.html" />
 				<item name="Creating a Model" href="modelling/create_model.html" />
-				<item name="How to Model a Workflow" href="modelling/howto.html" />
+				<item name="How to Model..." href="modelling/howto.html" />
 				<item name="Process Properties" href="modelling/main_editor.html" />
 				<item name="Task Properties" href="modelling/process.html" />
 				<item name="Event Properties" href="modelling/activities.html" />
@@ -43,21 +43,7 @@
 				<item name="Deployment" href="modelling/deployment.html" />
 
 			</item>
-
-
-			<item name="Core API" href="core/index.html" collapse="true">
-				<item name="ItemCollection" href="core/itemcollection.html" />
-				<item name="Model" href="core/model.html" />
-				<item name="Plug-in API" href="core/plugin-api.html" />
-				<item name="WorkflowKernel" href="core/workflowkernel.html" />
-				<item name="WorkflowManager" href="core/workflowmanager.html" />
-				<item name="XML" href="core/xml/index.html" collapse="true">
-					<item name="Transform data" href="core/xml/transform_xml.html" />
-					<item name="Post data" href="core/xml/post_xml.html" />
-					<item name="Marshaling" href="core/xml/marshal.html" />
-				</item>
-			</item>
-
+			
 			<item name="Workflow Engine" href="./engine/index.html"
 				collapse="true">
 				<item name="DocumentService" href="./engine/documentservice.html"
@@ -69,7 +55,30 @@
 				<item name="ModelService" href="./engine/modelservice.html" />
 				<item name="WorkflowService" href="./engine/workflowservice.html" />
 				
-				<item name="Plugins" href="./engine/plugins/index.html"
+				
+
+				<item name="Scheduler" href="./engine/scheduler.html" />
+				<item name="PropertyService" href="./engine/propertyservice.html" />
+				<item name="Remote EJB Lookup" href="./engine/remote_lookup.html" />
+
+			</item>
+			
+
+
+			<item name="Core API" href="core/index.html" collapse="true">
+				<item name="ItemCollection" href="core/itemcollection.html" />
+				<item name="Model" href="core/model.html" />
+				<item name="Plugins" href="core/plugin-api.html" />
+				<item name="WorkflowKernel" href="core/workflowkernel.html" />
+				<item name="WorkflowManager" href="core/workflowmanager.html" />
+				<item name="XML" href="core/xml/index.html" collapse="true">
+					<item name="Transform data" href="core/xml/transform_xml.html" />
+					<item name="Post data" href="core/xml/post_xml.html" />
+					<item name="Marshaling" href="core/xml/marshal.html" />
+				</item>
+			</item>
+			
+			<item name="Plugin API" href="./engine/plugins/index.html"
 					collapse="true">
 					<item name="Application Plugin" href="./engine/plugins/applicationplugin.html" />
 					<item name="Result Plugin" href="./engine/plugins/resultplugin.html" />
@@ -83,14 +92,9 @@
 					<item name="Version Plugin" href="./engine/plugins/versionplugin.html" />
 					<item name="Exception handling" href="./engine/plugins/exception_handling.html" />
 				</item>
+			
 
-
-				<item name="Scheduler" href="./engine/scheduler.html" />
-				<item name="PropertyService" href="./engine/propertyservice.html" />
-				<item name="Remote EJB Lookup" href="./engine/remote_lookup.html" />
-
-			</item>
-
+			
 			<item name="REST API" href="./restapi/index.html" collapse="true">
 				<item name="Workflow Service" href="./restapi/workflowservice.html" />
 				<item name="Model Service" href="./restapi/modelservice.html" />

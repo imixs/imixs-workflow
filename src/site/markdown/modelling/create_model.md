@@ -8,7 +8,7 @@ The Eclipse New File wizard is used to create a new BPMN2 file. From the Main Me
 
 <img src="../images/modelling/bpmn_screen_06.png"/>
 
- The second entry in the BPMN2 category, Generic BPMN 2.0 Diagram, is contributed by the BPMN2 Modeler plug-in, and can be used to create a new, properly initialized Diagram file. This wizard creates a file that is not intended for deployment to any particular BPM process engine (see Target Runtime Extensions for a detailed discussion). Selecting this entry displays the first page of the wizard, as shown here:
+ The second entry in the BPMN2 category, Generic BPMN 2.0 Diagram, is contributed by the BPMN2 Modeler plugin, and can be used to create a new, properly initialized Diagram file. This wizard creates a file that is not intended for deployment to any particular BPM process engine (see Target Runtime Extensions for a detailed discussion). Selecting this entry displays the first page of the wizard, as shown here:
 
 <img src="../images/modelling/bpmn_screen_07.png"/>
 

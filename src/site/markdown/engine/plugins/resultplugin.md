@@ -1,12 +1,12 @@
 #The ResultPlugin
 
-The Imixs-Workflow Result Plug-In is used to provide model based processing information. These information is provided by additional property values assigned to an Imixs BPMN Event. The plug-in evaluates these processing information which can be used by different modules. 
+The Imixs-Workflow Result Plugin is used to provide model based processing information. These information is provided by additional property values assigned to an Imixs BPMN Event. The plugin evaluates these processing information which can be used by different modules. 
 
 _Plugin Class Name:_
 
     org.imixs.workflow.plugins.ResultPlugin
 
-The Result Plug-in should run in the first place, so that processing information can be provided to following plug-ins.
+The Result plugin should run in the first place, so that processing information can be provided to following plugins.
 With the [Imixs-BPMN modeler](../../modelling/activities.html) the Workflow Result can be edited in the 'Workflow' section of an event. 
 
 
@@ -49,7 +49,7 @@ See the following example:
  
 	<item name="comment" ignore="true">some data</item> 
 
-The Result Plug-in provides the static method evaluateWorkflowResult() returning a ItemCollection with all item names and there attributes. In the example the ItemCollection 'result' will contain a item with the name 'comment' storing the value 'some data' and also a item value with the name 'comment.ignore' storing the value 'true'	
+The Result plugin provides the static method evaluateWorkflowResult() returning a ItemCollection with all item names and there attributes. In the example the ItemCollection 'result' will contain a item with the name 'comment' storing the value 'some data' and also a item value with the name 'comment.ignore' storing the value 'true'	
 	
 	
 	ItemCollection result = ResultPlugin.evaluateWorkflowResult(activityEntity, workitem);

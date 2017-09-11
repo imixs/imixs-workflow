@@ -1,16 +1,16 @@
-# Plug-in API - Overview
+# Plugin-API - Overview
 
-The [Imixs Plug-in API](../../core/plugin-api.html) is an extension concept provided by the Imixs-Workflow Engine. The business logic of an application as also technical interfaces can be implemented by plug-ins which can easily be activated through the workflow model. 
-Read more about plug-in concept in the [section Core API](../../core/plugin-api.html). 
+The [Imixs Plugin-API](../../core/plugin-api.html) is an extension concept provided by the Imixs-Workflow Engine. The business logic of an application as also technical interfaces can be implemented by plugins which can easily be activated through the workflow model. 
+Read more about plugin concept in the [section Core API](../../core/plugin-api.html). 
 
-The Imixs-Workflow Engine provides a set of plug-ins providing different workflow functionality like email notification, access control, versioning or process documentation.  
+The Imixs-Workflow Engine provides a set of plugins providing different workflow functionality like email notification, access control, versioning or process documentation.  
   
-## The Abstract Plug-in Class
-Most plug-ins provided by the Imixs-Workflow engine are extending the AbstractPlugin class. This class provides a set of convenient methods to access the Imixs-Workflow environment and processing logic. For custom implementation this is a good starting point to subclass from the class:
+## The Abstract Plugin Class
+Most plugins provided by the Imixs-Workflow engine are extending the AbstractPlugin class. This class provides a set of convenient methods to access the Imixs-Workflow environment and processing logic. For custom implementation this is a good starting point to subclass from the class:
   
     org.imixs.workflow.engine.plugins.AbstractPlugin
    
-This abstract Plug-in class provides the following methods:
+This abstract plugin class provides the following methods:
 
  * getWorkflowService - returns an instance of the Workflow Engine
  * replaceDynamicValues - replacing string values
@@ -54,7 +54,7 @@ the preferred locale. See the following example to format a date value in german
 	
 ##Replacing static Strings with properties values
 
-In addition to the possibility replacing text blocks with workitem values​​, the Plug-in also provides the ability  to replace text blocks with values stored in the imixs.property file.
+In addition to the possibility replacing text blocks with workitem values​​, the plugin also provides the ability  to replace text blocks with values stored in the imixs.property file.
 A static message text will be automatically  replaced with the values ​​from the imixs.property file if the tag "propertyvalue" is used.
  
     Please use the following Link to open the Application: 
@@ -77,10 +77,10 @@ The values from the imixs.prperties file are accessed by the [PropertyService](.
 	... 
  
  
-##How to access the WorkflowService EJB from a Plug-in
-Implementing a Imixs-Workflow Plug-in is an easy way to extend the behavior of the Imixs-Workflow engine. A plug-in is a simple Java Class (POJO) which makes it easy to implement. The WorkflowKernel provides a plug-in with informations about the environment the plug-in runs in. Each Plug-in class gets an instance of the interface WorkflowContext during the initialization of the plug-in. This interface represents the context the Plug-in currently runs in.  The context depends on the concrete WorkflowManager implementation which is calling a plug-in to process a workitem. 
+##How to access the WorkflowService EJB from a plugin
+Implementing a Imixs-Workflow plugin is an easy way to extend the behavior of the Imixs-Workflow engine. A plugin is a simple Java Class (POJO) which makes it easy to implement. The WorkflowKernel provides a plugin with informations about the environment the plugin runs in. Each plugin class gets an instance of the interface WorkflowContext during the initialization of the plugin. This interface represents the context the plugin currently runs in.  The context depends on the concrete WorkflowManager implementation which is calling a plugin to process a workitem. 
  
-If a plug-in runs in the Imixs-Workflow Engine, the WorkflowContext is an instance of the  WorkflowService EJB. This behavior makes it easy to access the functionality provided by the WorkflowEngine  directly through a Plug-in. The following example shows how to access the WorkflowService and ModelService EJBs to determine the latest model version used in the WorkflowInstance: 
+If a plugin runs in the Imixs-Workflow Engine, the WorkflowContext is an instance of the  WorkflowService EJB. This behavior makes it easy to access the functionality provided by the WorkflowEngine  directly through a plugin. The following example shows how to access the WorkflowService and ModelService EJBs to determine the latest model version used in the WorkflowInstance: 
 
 	public void init(WorkflowContext actx) throws Exception {
 		super.init(actx);
@@ -97,7 +97,7 @@ If a plug-in runs in the Imixs-Workflow Engine, the WorkflowContext is an instan
 
 
 ## CDI Support 
-Imixs-Workflow supports CDI for the plug-in API. So an EJB or Resource can be injected into a Plug-in class by the corresponding annotation. See the following example:
+Imixs-Workflow supports CDI for the plugin API. So an EJB or Resource can be injected into a plugin class by the corresponding annotation. See the following example:
 
 	public class DemoPlugin extends AbstractPlugin {
 		// inject services...
@@ -106,9 +106,9 @@ Imixs-Workflow supports CDI for the plug-in API. So an EJB or Resource can be in
 		...
 	}
 
-## How to lookup a EJB from a Plug-in
-An alternative way to get a reference to an existing EJB in a Plug-in Class, is to use a JNDI Lookup. The JNDI
-Lookup fetches the EJB from the EJB Container provided by the application server. So this way it is possible to get an EJB Instance inside a POJO Class without CDI support. The following example shows how to lookup an EJB during the init() method of a Plug-in:
+## How to lookup a EJB from a plugin
+An alternative way to get a reference to an existing EJB in a plugin Class, is to use a JNDI Lookup. The JNDI
+Lookup fetches the EJB from the EJB Container provided by the application server. So this way it is possible to get an EJB Instance inside a POJO Class without CDI support. The following example shows how to lookup an EJB during the init() method of a plugin:
 
 	@Override
 	public void init(WorkflowContext actx) throws PluginException {
@@ -123,7 +123,7 @@ Lookup fetches the EJB from the EJB Container provided by the application server
 		}
 	}
 
-In this case a reference to the MyService Interface was created by JNDI Lookup. The Lookup fetches an EJB Reference with the name "ejb/MyServiceBean". To get this Interface returned from the JNDI Context it is necessary to add this reference to the WorkflowService EJB which is calling the Plug-in. This can be done in the ejb-jar.xml file: 
+In this case a reference to the MyService Interface was created by JNDI Lookup. The Lookup fetches an EJB Reference with the name "ejb/MyServiceBean". To get this Interface returned from the JNDI Context it is necessary to add this reference to the WorkflowService EJB which is calling the plugin. This can be done in the ejb-jar.xml file: 
 
 		<session>
 			<ejb-name>WorkflowService</ejb-name>
@@ -137,8 +137,8 @@ In this case a reference to the MyService Interface was created by JNDI Lookup. 
 		</session>
 
 
-##How to lookup a JDBC Resource from a Plug-in
-Similar to a EJB JNDI Lookup a Plug-in class can also lookup an existing JDBC Resource  to query a database using SQL statements. The same principle explained in this section is applicable to all resources (such as JMS destinations, JavaMail sessions, and so on). The resource-ref element in the sun-ejb-jar.xml deployment descriptor file maps the JNDI name of a resource reference to the resource-ref element in the ejb-jar.xml J2EE deployment descriptor file. This is similar to a EJB lookup explained before. The resource lookup in the Plug-in code looks like this:
+##How to lookup a JDBC Resource from a plugin
+Similar to a EJB JNDI Lookup a plugin class can also lookup an existing JDBC Resource  to query a database using SQL statements. The same principle explained in this section is applicable to all resources (such as JMS destinations, JavaMail sessions, and so on). The resource-ref element in the sun-ejb-jar.xml deployment descriptor file maps the JNDI name of a resource reference to the resource-ref element in the ejb-jar.xml J2EE deployment descriptor file. This is similar to a EJB lookup explained before. The resource lookup in the plugin code looks like this:
 
 		public void init(WorkflowContext actx) throws Exception {
 			super.init(actx);

@@ -31,12 +31,12 @@ are evaluated by the Workflow Engine while a WorkItem is processed
 <img src="../images/modelling/bpmn_screen_20.png" width="600px" />  
   
  
-###ID 
+### ID 
 Every Workflow Event assigned to a Workflow Task has an unambiguously ID. The Event ID is used  by the Workflow Engine to identify the Event.
  
  
-###Result
-The 'Result' defines application specific processing information evaluated by the Workflow Engine. These information are evaluated by plug-ins and applications. See the section [ResultPlugin](../engine/plugins/resultplugin.html) for further information.
+### Result
+The 'Result' defines application specific processing information evaluated by the Workflow Engine. These information are evaluated by plugins and applications. See the section [ResultPlugin](../engine/plugins/resultplugin.html) for further information.
 
  
 ###Visiblity

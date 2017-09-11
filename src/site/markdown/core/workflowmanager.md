@@ -1,15 +1,15 @@
 #The WorkflowManager
 The WorkflowManager is the central interface for each implementation of an Imixs-Workflow Engine. This interface provides the general functionality to create, process and search Workitems. 
-The WorkflowManager instantiates the [WorkflowKernel](./workflowkernel.html) to process a WorkItem and provides the implementation of a Model. The WorkflowManager can be used by an application to process and search Workitems and provide the environment for the business logic implemented by the plug-ins.
+The WorkflowManager instantiates the [WorkflowKernel](./workflowkernel.html) to process a WorkItem and provides the implementation of a Model. The WorkflowManager can be used by an application to process and search Workitems and provide the environment for the business logic implemented by the plugins.
 The [WorkflowManager Service](../engine/workflowservice.html) implements the WorkflowManager based on the JEE architecture.
  
-##Workflow Plug-Ins
-The general workflow functions and also application specific business logic is provided by [plug-in api](./plugin-api.html). The WorkflowManager can register a specific set of plug-ins to be called by the WorkflowKernel when processing a Workitem.  A typical code example is structured as follows:
+## The Plugin-API
+The general workflow functions and also application specific business logic is provided by [Plugin API](./plugin-api.html). The WorkflowManager can register a specific set of plugins to be called by the WorkflowKernel when processing a Workitem.  A typical code example is structured as follows:
 
     ....
     // init WorkflowKernel 
     WorkflowKernel workflowKernel =new org.imixs.workflow.WorkflowKernel(workflowContext);
-    // register Plug-ins.....
+    // register plugins.....
     workflowKernel.registerPlugin("org.imixs.workflow.plugins.AccessPlugin");
     workflowKernel.registerPlugin("org.imixs.workflow.plugins.HistoryPlugin");
     // processing workitem...
@@ -24,7 +24,7 @@ The method 'processWorkItem()' is used to create or update a Workitem. The Workf
     public void processWorkItem(ItemCollection aWorkItem)throws Exception {
        // ...instantiate workflowKernel...
        
-       // ...register plug-ins to workflowKernel...
+       // ...register plugins to workflowKernel...
        
        aWorkItem=workflowKernel.process(itemCol);
        

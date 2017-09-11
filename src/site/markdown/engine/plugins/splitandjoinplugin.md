@@ -1,11 +1,11 @@
 #Split & Joins 
-The Imixs Split & Join Plug-in provides the functionality to create and update sub-process instances from an existing process instance (origin process),  or to update the origin process instance based on the processing instruction of a subprocess instance. 
+The Imixs Split & Join plugin provides the functionality to create and update sub-process instances from an existing process instance (origin process),  or to update the origin process instance based on the processing instruction of a subprocess instance. 
 
 	org.imixs.workflow.plugins.jee.SplitAndJoinPlugin
 
 A 'split' means that a new subprocess instance will be created and linked to the current process instance (origin process). A 'join' means that a subprocess instance will update the origin process instance. The Split & Join definition is defined in the workflow result of a Imixs-BPMN Event definition using the [Imixs-BPMN modelling tool](../../modelling/index.html).   
 
-The plug-in evaluates the following items definition of a workflow result ("txtactivityResult"):
+The plugin evaluates the following items definition of a workflow result ("txtactivityResult"):
  
  * <strong>subprocess_create</strong> = create a new subprocess assigned to the current workitem 
  * <strong>subprocess_update</strong> = update an existing subprocess assigned to the current workitem

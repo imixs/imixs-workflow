@@ -8,7 +8,7 @@ You can install Imixs-BPMN directly from the Eclipse Marketplace by dragging the
 <a href="http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=2309267" class="drag" title="Drag to your running Eclipse workspace to install Imixs-BPMN"><img class="img-responsive" src="https://marketplace.eclipse.org/sites/all/themes/solstice/public/images/marketplace/btn-install.png" alt="Drag to your running Eclipse workspace to install Imixs-BPMN" /></a>
  
 ### Installation from the Updatesite 
-Imixs-BPMN is installed the same way as any other Eclipse plug-in.To install the Imixs-BPMN plug-in select from the Eclipse Workbench main menu:  *Help -> Install New Software*. 
+Imixs-BPMN is installed the same way as any other Eclipse plugin.To install the Imixs-BPMN plugin select from the Eclipse Workbench main menu:  *Help -> Install New Software*. 
  
 Enter the following update site URL:
  
@@ -26,7 +26,7 @@ If those dependencies are missing you can install the Eclipse BPMN2 Plugin manua
     http://download.eclipse.org/bpmn2-modeler/updates/neon/1.3.2
 
 You will find additional information about the Eclipse BPMN2 Modeler 
-plug-in at: https://www.eclipse.org/bpmn2-modeler/
+plugin at: https://www.eclipse.org/bpmn2-modeler/
 
 
 ###Installation of Imixs-BPMN in Eclipse Mars
@@ -41,5 +41,5 @@ If you run Imixs-BPMN in earlier version of Eclipse (e.g. Eclipse Luna) you firs
     http://download.eclipse.org/graphiti/updates/0.12.0/
 
 You will find additional information about the Eclipse BPMN2 Modeler 
-plug-in at: https://www.eclipse.org/bpmn2-modeler/
+plugin at: https://www.eclipse.org/bpmn2-modeler/
 

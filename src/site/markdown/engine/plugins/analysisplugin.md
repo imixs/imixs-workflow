@@ -1,10 +1,10 @@
 #Analysis Plugin 
-To analyze different phases of a workflow process the ImixsAnalysis Plug-In can be added into a process model:
+To analyze different phases of a workflow process the ImixsAnalysis PlugIn can be added into a process model:
 
 
     org.imixs.workflow.plugins.AnalysisPlugin
     
-The plug-in is used to measure the processing time of the different phases during the life cycle of a process instance. Several individual measuring points can be configured in the workflow result of a BPMN event:
+The plugin is used to measure the processing time of the different phases during the life cycle of a process instance. Several individual measuring points can be configured in the workflow result of a BPMN event:
 
 
 ###Example:

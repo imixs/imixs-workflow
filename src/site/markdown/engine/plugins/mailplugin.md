@@ -1,6 +1,6 @@
 # MailPlugin 
 The Imixs-MailPlugin provides a convenient way to send e-mail messages through a corresponding BPMN event.
-The Imixs-MailPlugin is based on the Java Mail API and can be activated by adding the plug-in class to the corresponding model definition:
+The Imixs-MailPlugin is based on the Java Mail API and can be activated by adding the plugin class to the corresponding model definition:
 
     org.imixs.workflow.engine.plugins.MailPlugin
 
@@ -96,7 +96,7 @@ Further configuration is supported by the Imixs-MailPlugin.
 
 
 ### Default Sender Address
-The default sender address will be set with the current user name.  The sender address can be changed by the imixs property 'mail.defaultSender'. If the property is defined, the plug-in overwrites the 'From' attribute of every mail with the DefaultSender address.  If no value is set the mail will be send from the current users mail address.
+The default sender address will be set with the current user name.  The sender address can be changed by the imixs property 'mail.defaultSender'. If the property is defined, the plugin overwrites the 'From' attribute of every mail with the DefaultSender address.  If no value is set the mail will be send from the current users mail address.
  
 Example (imixs.properties):
 
@@ -133,7 +133,7 @@ Example (imixs.properties):
 
 ### Cancel e-mail
 
-Sending a e-mail message can be canceled by the application or another plug-in by setting the attribute 'keyMailInactive' to 'true'. The attribute is part of the corresponding BPMN event. 
+Sending a e-mail message can be canceled by the application or another plugin by setting the attribute 'keyMailInactive' to 'true'. The attribute is part of the corresponding BPMN event. 
 
     keyMailInactive=true
 

@@ -22,7 +22,7 @@ The WorkflowController is a subclass from the DataController and provides method
 This method initializes a new created WorkItem based  on the workflow model definition    
 
 ###process()
-The process method processes the current workItem and returns an action result.  The method expects that the current workItem provides a valid $ActiviytID.  The method returns the value of the property 'action' if provided by the workflow model or a plug-in. The 'action' property is typically evaluated from the ResultPlugin. Alternatively the property can be provided by an application. If no 'action' property is provided the method evaluates the default property 'txtworkflowResultmessage' from the model as an action result.	 
+The process method processes the current workItem and returns an action result.  The method expects that the current workItem provides a valid $ActiviytID.  The method returns the value of the property 'action' if provided by the workflow model or a plugin. The 'action' property is typically evaluated from the ResultPlugin. Alternatively the property can be provided by an application. If no 'action' property is provided the method evaluates the default property 'txtworkflowResultmessage' from the model as an action result.	 
 
 ###process(activityID)
 This ActionListener processes the current workItem with the provided activityID. The method can be used as a ActionListener for a ajax events.

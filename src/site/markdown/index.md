@@ -44,7 +44,7 @@ Imixs Workflow provides an [XML schema](core/xml/index.html) to translate all wo
 The process model (or workflow model) defines what state a process instance can present during its life-cycle. Each time a workitem is processed, the workflow management system synchronizes the status (Task) with the process instance based on the BPMN model.
 
 ### The Workflow Engine
-The Imixs-Workflow engine persists and controls the process instance into a database. The Workflow Engine ensures that a workitem is always in sync with the process model. The Imixs-Workflow engine provides a Plug-In concept to implement different function blocks of a workflow management system. 
+The Imixs-Workflow engine persists and controls the process instance into a database. The Workflow Engine ensures that a workitem is always in sync with the process model. The Imixs-Workflow engine supports a Plugin-API to implement different function blocks of a workflow management system. 
 This includes, for example: 
 
 * Access Controll

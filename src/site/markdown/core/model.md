@@ -40,7 +40,7 @@ The Interface '_org.imixs.workflow.Model_' defines the following methods:
 |Method              		 | Description 				 |
 |----------------------------|---------------------------|
 |getVersion()| returns the workflow model version |
-|getDefinition()| returns a ItemCollection holding general model information (e.g. the plug-in list) |
+|getDefinition()| returns a ItemCollection holding general model information (e.g. the plugin list) |
 |getTask(taskId)| returns a task by its id |
 |getEvent(taskId,eventId)| returns an event by its id |
 |getGroups()| returns a list of all workflow groups defined in the model |
