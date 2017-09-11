@@ -6,13 +6,13 @@ Read more about plug-in concept in the [section Core API](../../core/plugin-api.
 The Imixs-Workflow Engine provides a set of plug-ins providing different workflow functionality like email notification, access control, versioning or process documentation.  
   
 ## The Abstract Plug-in Class
-Most plug-ins provided by the Imixs-Workflow engine are extending the AbstractPlugin class. This class provides a set of convenient methods to access the Imixs-Worklfow environment and processing logic. For custom implementation this is a good starting point to subclass from the class:
+Most plug-ins provided by the Imixs-Workflow engine are extending the AbstractPlugin class. This class provides a set of convenient methods to access the Imixs-Workflow environment and processing logic. For custom implementation this is a good starting point to subclass from the class:
   
     org.imixs.workflow.engine.plugins.AbstractPlugin
    
 This abstract Plug-in class provides the following methods:
 
- * getWorklfowService - returns an instance of the Worklfow Engine
+ * getWorkflowService - returns an instance of the Workflow Engine
  * replaceDynamicValues - replacing string values
  * formatItemValues - formats a string object depending of an attribute type
  * getCtx - returns the current workflow context

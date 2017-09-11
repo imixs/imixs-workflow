@@ -1,5 +1,5 @@
 # Deployment
-The Imixs-Workflow engine can be deployed in various ways depending on the kind of the application and server environment. As the Imixs-Workflow engine is based on Java EE, the components are typically deployed into a container (EJB or Web Container). The deployment descriptors can be used to configure various details and the behavior of the Imixs-Worklfow engine. This concept gives the flexibility to setup the Imixs-Workflow engine individually for custom environments and infrastructure. 
+The Imixs-Workflow engine can be deployed in various ways depending on the kind of the application and server environment. As the Imixs-Workflow engine is based on Java EE, the components are typically deployed into a container (EJB or Web Container). The deployment descriptors can be used to configure various details and the behavior of the Imixs-Workflow engine. This concept gives the flexibility to setup the Imixs-Workflow engine individually for custom environments and infrastructure. 
 
 ## Maven
 All components of Imixs-Workflow are build with Maven which makes it easy to add them into a Maven based project. The following example adds the Imixs-Workflow Engine and the Imixs REST API into a maven based project:

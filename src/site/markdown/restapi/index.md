@@ -17,7 +17,7 @@ The different resources provided by Imixs-Workflow are divided in the following 
 <strong>Note:</strong> The root context of the REST Service is defined by the web application (web.xml) containing the REST Service. The default root context is "/rest-service/".
 
 ## The Representation of Business Objects
-Each resource published by the Imixs-Workfow REST API is represented by common response and request object format. This format reflects a representation of the internal Business Object [ItemCollection](../core/itemcollection.html). Business objects can be represented in XML or JSON format. 
+Each resource published by the Imixs-Workflow REST API is represented by common response and request object format. This format reflects a representation of the internal Business Object [ItemCollection](../core/itemcollection.html). Business objects can be represented in XML or JSON format. 
 
 ### XML Business Object
 

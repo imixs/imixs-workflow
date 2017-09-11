@@ -3,7 +3,7 @@ Imixs-Faces is a component library based on JSF and jQuery, which makes developm
  
 <img src="../images/webtools/imixs-architecture_web.png"/>
  
-Since Java EE6 the lightweight Web Profiles simplifies the deployment of Java EE applications. In case of a Web application the Imixs-Faces components can be deployed together with the Imixs-Worklfow engine. See the following maven depencency configuration 
+Since Java EE6 the lightweight Web Profiles simplifies the deployment of Java EE applications. In case of a Web application the Imixs-Faces components can be deployed together with the Imixs-Workflow engine. See the following maven depencency configuration 
 
 
 	....

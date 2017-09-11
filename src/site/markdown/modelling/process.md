@@ -25,13 +25,13 @@ The documentation can also be created by assigning a TextAnnotation element to t
   
 ##Workflow Properties
 The Tab 'Workflow' contains Processing Information of a Task element. These information will be
-updated after a WorkItem was processed by the Worklfow Engine.
+updated after a WorkItem was processed by the Workflow Engine.
  
 <img src="../images/modelling/bpmn_screen_17.png"/>
 
 
 ###ID 
-Every Workflow Task has an unambiguously ID. The Process ID is assigned by the Workfow Engine
+Every Workflow Task has an unambiguously ID. The Process ID is assigned by the Workflow Engine
 after a WorkItem was processed. The Process ID is used to identify the status of a WorkItem controlled by the Workflow Engine.
  
 

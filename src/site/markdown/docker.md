@@ -1,6 +1,6 @@
 # Imixs Docker
 
-The Imixs-Workflow project supports several Docker Images to run Imixs-Workfow in a containerized infrastructure. 
+The Imixs-Workflow project supports several Docker Images to run Imixs-Workflow in a containerized infrastructure. 
 The Imixs Docker Images are hosted on [Docker Hub](https://hub.docker.com/r/imixs/) and can be installed and extended in various ways.
 
 

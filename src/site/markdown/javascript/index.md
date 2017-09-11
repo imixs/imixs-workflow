@@ -7,7 +7,7 @@ Imixs-Script is a JavaScript Framework to build business applications using the 
 ##Get started....
 
 Imixs-Script is a JavaScritp library based on [jQuery](www.jquery.com), which interacts through the [Imixs Rest API](../restapi/index.html) with the Imixs-Workflow engine.
-Imixs script can be used together with any other JavaScript library to build Single-Page-Applications based on the Imixs-Worklfow einge (e.g.  [Ben.JS](http://www.benjs.org), EmberJS, Angular or React). 
+Imixs script can be used together with any other JavaScript library to build Single-Page-Applications based on the Imixs-Workflow einge (e.g.  [Ben.JS](http://www.benjs.org), EmberJS, Angular or React). 
 
 <img src="../images/script/architecture.png"/>
 

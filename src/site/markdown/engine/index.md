@@ -14,7 +14,7 @@ The Imixs-Workflow Engine is based on the [Imixs-Workflow Core-API](../core/inde
  * The Analysis -> [ReportService](./reportservice.html)
  
 ### The DocumentService
-The _DocumentService_ is the general persistence layer of the Imixs-Worklfow engine and provides an interface to store, load and query data objects (_Documents_) within a database. 
+The _DocumentService_ is the general persistence layer of the Imixs-Workflow engine and provides an interface to store, load and query data objects (_Documents_) within a database. 
 The _DocumentService_ is independent from the workflow engine and can not only be used to persist a process instance (_workitem_), but also any other kind of business data, not necessarily associated with the workflow engine (e.g configuration data). Each document managed by the _DocumentService_ is assigned to a access control list (ACL). The ACL protects the document from unauthorized  access. 
 
 The _DocumentService_ creates a [Lucene Search Index](https://lucene.apache.org/) over all documents and provides methods to query documents by a search term. This is a power full feature to navigate easily through the workitems managed by the Imixs-Workflow engine.  

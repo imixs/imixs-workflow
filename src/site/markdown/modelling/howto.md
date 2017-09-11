@@ -1,20 +1,20 @@
 #How to Create a Workflow Model?
-The Imixs-BPMN Plugin is based on the BPMN 2.0 standard. This means every BPMN 2.0 model can be used to be extended with workflow elements provided by the Imixs-BPMN Plugin. A BPMN model containing Imixs-Workflow elements can be executed within the Imixs-Worklfow Engine.
+The Imixs-BPMN Plugin is based on the BPMN 2.0 standard. This means every BPMN 2.0 model can be used to be extended with workflow elements provided by the Imixs-BPMN Plugin. A BPMN model containing Imixs-Workflow elements can be executed within the Imixs-Workflow Engine.
 
-An Imixs-Workflow Model can contain the elements "Workflow Task" and "Workflow Event". The Workflow-Task element is used to describe a state in a process. The "Workflow Event" describes the  transition from one state to another.
+An Imixs-Workflow model can contain the elements "Workflow Task" and "Workflow Event". The Workflow-Task element is used to describe a state in a process. The "Workflow Event" describes the  transition from one state to another.
 
 <img src="../images/modelling/example_01.png"/>
 
-This example contains two workflow states: 'New Ticket' and 'Open'. The Workflow Event 'Submit' changes the state of the process instance form 'New Ticket' to 'Open'.
+This example contains two workflow states: 'New Ticket' and 'Open'. The workflow event 'Submit' changes the state of the process instance form 'New Ticket' to 'Open'.
 
-A 'Workflow Event' is an instance of a BPMN Intermediate Catch Event. A Catch Event should always have an outgoing sequence flow. The outgoing sequence flow of a Workflow Event point to the Workflow Task assigned to a process instance after the Event was processed. 
+A 'Workflow Event' is an instance of a BPMN Intermediate Catch Event. A Catch Event should always have an outgoing sequence flow. The outgoing sequence flow of a workflow event points to the Workflow Task assigned to a process instance after the event was processed. 
 
 ## Event Gateways
 If a Workflow Task have more than one Workflow Event, the BPMN element "Event Gateway" can be used to model alternative process flows: 
 
 <img src="../images/modelling/example_02.png"/>
 
-A BPMN "Event Gateway" is an exclusive gateway and should always have the gateway direction 'Diverging'. This means that the Gateway has only one incoming sequence flow but can have one ore many outgoing sequence flows. The Gateway direction can be changed in Eclipse-BPMN after the feature 'Show Advanced Property Tabs' is activated in the general workspace preferences. 
+A BPMN "Event Gateway" is an exclusive gateway and should always have the gateway direction 'Diverging'. This means that the Gateway has only one incoming sequence flow but can have one or many outgoing sequence flows. The gateway direction can be changed in Eclipse-BPMN after the feature 'Show Advanced Property Tabs' is activated in the general workspace preferences. 
 
 
 ##Loop Events
@@ -36,7 +36,7 @@ A Workflow Event can also point to another Workflow Event. This is called a 'Fol
 
 <img src="../images/modelling/example_05.png"/>
 
-In this example the Event 'Submit' triggers the follow-up event 'Send E-Mail' which finally completes the transition into the new process state 'Open'.
+In this example the event 'Submit' triggers the follow-up event 'Send E-Mail' which finally completes the transition into the new process state 'Open'.
 
 Follow-Up Events are typically used in more complex scenarios where additional business rules need to be evaluated:
 
@@ -47,19 +47,18 @@ In this example a business rule is applied after the new order was accepted. In 
  
 ## Conditional Events
 
-A conditional-event is used to evaluate the output of a event during the processing life-cycle. A conditional-event
-can be placed before a _ExclusiveGateway_, an _inclusiveGateway_ or an _eventBasedGateway_. Each output of the event must define a boolean rule expression.
+A conditional event is used to evaluate the output of an event during the processing life-cycle. A conditional-event can be placed before a _ExclusiveGateway_, an _InclusiveGateway_ or an _EventBasedGateway_. Each output of the event must define a boolean rule expression.
 
 <img src="../images/modelling/example_08.png"/>
  
-In this example two conditions are added to the ExclusiveGateway output evaluating the attribute "_budet" to continue with either 'Task 2' or 'Task 3'. 
+In this example two conditions are added to the ExclusiveGateway output evaluating the attribute "_budget" to continue with either 'Task 2' or 'Task 3'. 
 A boolean expression can look like the following example, which is evaluating the attribute '_budget':
 
     (workitem._budget && workitem._budget[0]>100)
 
-**Note:** To add conditional sequence flows the Full BPMN profile must be activated in the Imixs-BPMN Modeler. 
+**Note:** To add conditional sequence flows the full BPMN profile must be activated in the Imixs-BPMN Modeler. 
 
-A conditional Event can define conditions for either a Task element or an Event element. See the next example:
+A conditional event can define conditions for either a Task element or an Event element. See the next example:
  
 <img src="../images/modelling/example_09.png"/>
  
@@ -71,7 +70,7 @@ The script language for the boolean expression is 'JavaScript'. See the [RulePlu
 
 ## Link Events
 
-In a complex process model, it can be helpful to avoid too many overlapping sequence flows. Therefor the BPMN Link Events can be used. The link event describes a connection between two elements. 
+In a complex process model, it can be helpful to avoid too many overlapping sequence flows. Therefore the BPMN Link Events can be used. The link event describes a connection between two elements. 
 
 <img src="../images/modelling/example_07.png"/>
 

@@ -13,7 +13,7 @@ The property tab 'General' defines basic informations for an Imixs-BPMN Event el
 
 ###Name 
 
-The name of the Event element is used to identify the processing action. The name typical describes the activity triggered by the user to process a WorkItem. E.g. "submit", "approve" "close". The event name can be used by applications to display event based worflow actions. 
+The name of the Event element is used to identify the processing action. The name typical describes the activity triggered by the user to process a WorkItem. E.g. "submit", "approve" "close". The event name can be used by applications to display event based workflow actions. 
 
 <center><img src="../images/modelling/bpmn_screen_30.png" width="200px" /></center>
 
@@ -26,13 +26,13 @@ The documentation of the Event element can be used to provide the user with addi
  
 ##Workflow Properties
 The Tab 'Workflow' contains Processing Information for an Event element. These information
-are evaluated by the Worklfow Engine while a WorkItem is processed 
+are evaluated by the Workflow Engine while a WorkItem is processed 
  
 <img src="../images/modelling/bpmn_screen_20.png" width="600px" />  
   
  
 ###ID 
-Every Workflow Event assigned to a Workflow Task has an unambiguously ID. The Event ID is used  by the Workfow Engine to identify the Event.
+Every Workflow Event assigned to a Workflow Task has an unambiguously ID. The Event ID is used  by the Workflow Engine to identify the Event.
  
  
 ###Result

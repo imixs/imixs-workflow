@@ -1,6 +1,6 @@
 # The Imixs-Workflow Plug-in API
 
-The Imixs Plug-in API introduces an extensibility mechanism that allows to extend the standard functionality of the Imixs-Worklfow engine. A plug-in can provide business logic to influence the processing life-cycle of a process instance, as also platform specific technical functionality, to exchange data with its surrounding environment. 
+The Imixs Plug-in API introduces an extensibility mechanism that allows to extend the standard functionality of the Imixs-Workflow engine. A plug-in can provide business logic to influence the processing life-cycle of a process instance, as also platform specific technical functionality, to exchange data with its surrounding environment. 
 
 For example a plug-in can apply a business rule, send an E-Mail notification, or import business data from an external datasource. The Imixs-Workflow project already provides a set of plug-ins which covers a lot of standard functionality of a workflow engine. See the section [Engine->Plug-Ins](../engine/plugins/index.html) for further details about existing plug-ins. 
 
@@ -12,7 +12,7 @@ Read more about modelling in the [Imixs-BPMN user guide](../modelling/index.html
  
 ## The Plug-In Architecture
 Each plug-in represents an individual building block inside a Imixs-Workflow application. A plug-in can be reused in different workflow models for different applications.
-A plug-in, added to a workflow model, is controlled and executed by the [WorkflowKernel](./workflowkernel.html). The _WorkflowKernel_ calls the plug-in during the processing life-cycle and provides information about the running process instance and the worklfow event processed by the workflow engine.
+A plug-in, added to a workflow model, is controlled and executed by the [WorkflowKernel](./workflowkernel.html). The _WorkflowKernel_ calls the plug-in during the processing life-cycle and provides information about the running process instance and the workflow event processed by the workflow engine.
 
 This concept makes it easy to implement plug-ins providing additional business logic and custom functionality. 
 A plug-in can validate a process instance and may also manipulate the business data. A plug-in can also interrupt the processing phase by throwing a [PluginException](../engine/plugins/exception_handling.html) - for example in case of a validation error.
