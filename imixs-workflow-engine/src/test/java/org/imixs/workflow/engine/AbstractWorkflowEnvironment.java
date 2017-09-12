@@ -65,12 +65,11 @@ public class AbstractWorkflowEnvironment {
 	@Spy
 	protected ModelService modelService;
 	protected SessionContext ctx;
-	
-	
+
 	protected WorkflowContext workflowContext;
 	private BPMNModel model = null;
 
-	private String modelPath = "/bpmn/plugin-test.bpmn";
+	private String modelPath = null;// "/bpmn/plugin-test.bpmn";
 
 	public String getModelPath() {
 		return modelPath;
@@ -123,8 +122,8 @@ public class AbstractWorkflowEnvironment {
 
 		// Mock modelService (using the @spy) annotation
 		Mockito.doNothing().when(modelService).init();
-		
-		// load default model
+
+		// load model
 		loadModel();
 
 		// Mock modelManager
@@ -136,12 +135,10 @@ public class AbstractWorkflowEnvironment {
 			e.printStackTrace();
 		}
 
-		
 		// Mock context
 		workflowContext = Mockito.mock(WorkflowContext.class);
 		when(workflowContext.getModelManager()).thenReturn(modelManager);
 
-		
 		// Mock WorkflowService
 		workflowService = Mockito.mock(WorkflowService.class);
 		workflowService.documentService = documentService;
@@ -168,7 +165,7 @@ public class AbstractWorkflowEnvironment {
 				return result;
 			}
 		});
-		
+
 		when(workflowService.processWorkItem(Mockito.any(ItemCollection.class))).thenCallRealMethod();
 		when(workflowService.getUserName()).thenCallRealMethod();
 		when(workflowService.getWorkItem(Mockito.anyString())).thenCallRealMethod();
@@ -212,14 +209,31 @@ public class AbstractWorkflowEnvironment {
 		return model;
 	}
 
-	public void loadModel() {
-		InputStream inputStream = getClass().getResourceAsStream(this.modelPath);
-		try {
-			model = BPMNParser.parseModel(inputStream, "UTF-8");
+	/**
+	 * loads a model from the given path
+	 * 
+	 * @param modelPath
+	 */
+	public void loadModel(String modelPath) {
+		setModelPath(modelPath);
+		loadModel();
+	}
 
-			this.modelService.addModel(model);
-		} catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e) {
-			e.printStackTrace();
+	/**
+	 * loads the current model
+	 */
+	public void loadModel() {
+		if (this.modelPath != null) {
+			InputStream inputStream = getClass().getResourceAsStream(this.modelPath);
+			try {
+				logger.info("loading model: " + this.modelPath + "....");
+				model = BPMNParser.parseModel(inputStream, "UTF-8");
+
+				this.modelService.addModel(model);
+			} catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e) {
+				e.printStackTrace();
+			}
+
 		}
 
 	}
