@@ -1,33 +1,34 @@
-#The Document Service
- The main resource /documents is uses to read documents through the Imixs Rest Service Interface.
+# The Document Service
+The resource _/documents_ provides methods to create, modify and read documents through the Imixs-Rest API.
  
  
-## The /documents GET resources
-The /documents resources are used to get direct access to the documentService EJB:
+## GET Documents
+The GET method is used to read and search for documents:
 
-| URI                     | Description                                                        | 
-|-------------------------|--------------------------------------------------------------------|
-| /{uniqueid}             | returns a single document defined by $uniqueid                     |
-| /search/{query}         | Returns a result set of documents by a lucene search query         |
-| /count/query/{query}    | the total hits of lucene search query                              |
-| /countpages/query/{query}?pagesize= | the total pages of lucene search query for a given page size |
+
+| URI                     | Method | Description                                                        | 
+|-------------------------|--------|------------------------------------------------------------|
+| /{uniqueid}             | GET    | returns a single document defined by $uniqueid                     |
+| /search/{query}         | GET    | Returns a result set of documents by a lucene search query         |
+| /count/query/{query}    | GET    | the total hits of lucene search query                              |
+| /countpages/query/{query}?pagesize= | GET    | the total pages of lucene search query for a given page size |
 
  
 
 
-## POST/DELETE Document
-The following resource URIs are used to PUT and POST a document:
+## POST/DELETE a Document
+The methods PUT, POST and DELETE allow to create, modify and delete a document:
 
 
-| URI                          | Description                               | 
-|------------------------------|-------------------------------------------|
-| /        | posts a document to be stored by the  DocumentService. The post data can be x-www-form-urlencoded or in xml format   |
-| /{uniqueid}  | deletes a document  |
+| URI          | Method      | Description                               | 
+|--------------|-------------|------------|
+| /            | POST, PUT   | posts a document to be stored by the  DocumentService. The post data can be x-www-form-urlencoded or in xml format   |
+| /{uniqueid}  | POST, DELTE | updates ore deletes a document  |
 
 
 
 ## Resource Options
-You can specify additional URI parameters to filter the result-set  or to navigate through a sub list of entities. Append optional arguments to define the number of entities returned by a URL, the starting point inside the list or the sort order. Combine any of the following arguments for the desired result. 
+With the following optional URI parameters a request can be filtered and sorted:
 
 | option      | description                       | example               |
 |-------------|---------------- ------------------|-----------------------|
@@ -36,7 +37,7 @@ You can specify additional URI parameters to filter the result-set  or to naviga
 | sortBy	  | sort item 					      | ..&sortBy=txtworkflowstatus        |
 | sortReverse | sort direction 				      | |
  
-<strong>Note:</strong> Imixs-Workflow controls the access for each document by individual access lists.  The result of a query contains only documents which are not read protected and the current user has sufficient read access. 
+<strong>Note:</strong> Imixs-Workflow controls the access for each document by individual access lists (see section ACL](/engine/acl.html). The result of a query contains only documents which are not read protected or the current user has sufficient read access. 
         
 
 ##Administrative resource URIs
