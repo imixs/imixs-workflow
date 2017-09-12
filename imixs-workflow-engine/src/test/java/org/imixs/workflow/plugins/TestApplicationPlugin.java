@@ -33,6 +33,7 @@ public class TestApplicationPlugin extends AbstractWorkflowEnvironment {
 	@Before
 	public void setup() throws PluginException, ModelException {
 
+		this.setModelPath("/bpmn/plugin-test.bpmn");
 		super.setup();
 
 		applicationPlugin = new ApplicationPlugin();
