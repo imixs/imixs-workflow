@@ -17,6 +17,7 @@ If a Workflow Task have more than one Workflow Event, the BPMN element "Event Ga
 A BPMN "Event Gateway" is an exclusive gateway and should always have the gateway direction 'Diverging'. This means that the Gateway has only one incoming sequence flow but can have one or many outgoing sequence flows. The gateway direction can be changed in Eclipse-BPMN after the feature 'Show Advanced Property Tabs' is activated in the general workspace preferences. 
 
 
+
 ##Loop Events
 
 In some cases a Workflow Event is used to update a process instance without changing the workflow state. For example if a user added new information to a workitem the status of the process instance did not change: 
@@ -67,6 +68,23 @@ The second condition defines a Follow-Up Event in case the '_budget' is <= 100:
     (workitem._budget && workitem._budget[0]<=100) 
 
 The script language for the boolean expression is 'JavaScript'. See the [RulePlugin](../engine/plugins/ruleplugin.html) for further details about business rules in Imixs-Workflow. 
+
+
+
+## Split Events
+
+In Imixs-Workflow an event followed by a _Parallel Gateway_ is used to create new versions of the current process instance. 
+The _Parallel Gateway_ creates a new version for each outcome path without checking any conditions.
+As a Split Event is creating a new independent version of the current process instance, a join is typically not modeled. This means that the current process instance will not wait for all incoming flows of parallel versions. This is the default behavior in Imixs-Workflow because versioning is mainly used to archive a certain state of processing.
+
+### Master Version 
+Conditions are typically not evaluated by a parallel gateway. However, in Imixs-Workflow, conditions can be used to determine which path is to be tracked by the current process instance. This process instance is called the 'Master Version'. 
+
+
+
+
+
+
 
 ## Link Events
 

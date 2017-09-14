@@ -82,8 +82,8 @@ public class TestBPMNParserConditionalEvents {
 
 		// Now we need to evaluate if the Event is marked as an conditional Event with
 		// the condition list copied from the gateway.
-		Assert.assertTrue(activity.hasItem("keyConditions"));
-		Map<String,String> conditions=(Map<String,String>) activity.getItemValue("keyConditions").get(0);
+		Assert.assertTrue(activity.hasItem("keyExclusiveConditions"));
+		Map<String,String> conditions=(Map<String,String>) activity.getItemValue("keyExclusiveConditions").get(0);
 		Assert.assertNotNull(conditions);
 		Assert.assertEquals("(workitem._budget && workitem._budget[0]>100)", conditions.get("task=1100"));
 		Assert.assertEquals("(workitem._budget && workitem._budget[0]<=100)", conditions.get("task=1200"));
@@ -136,8 +136,8 @@ public class TestBPMNParserConditionalEvents {
 
 		// Now we need to evaluate if the Event is marked as an conditional Event with
 		// the condition list copied from the gateway.
-		Assert.assertTrue(activity.hasItem("keyConditions"));
-		Map<String,String> conditions=(Map<String, String>) activity.getItemValue("keyConditions").get(0);
+		Assert.assertTrue(activity.hasItem("keyExclusiveConditions"));
+		Map<String,String> conditions=(Map<String, String>) activity.getItemValue("keyExclusiveConditions").get(0);
 		Assert.assertNotNull(conditions);
 		Assert.assertEquals("(workitem._budget && workitem._budget[0]>100)", conditions.get("task=1100"));
 		Assert.assertEquals("(workitem._budget && workitem._budget[0]<=100)", conditions.get("event=20"));
