@@ -115,6 +115,10 @@ public class AbstractWorkflowEnvironment {
 			public ItemCollection answer(InvocationOnMock invocation) throws Throwable {
 				Object[] args = invocation.getArguments();
 				ItemCollection entity = (ItemCollection) args[0];
+				// test if uniqueid is available 
+				if (entity.getUniqueID().isEmpty()) {
+					entity.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
+				}
 				database.put(entity.getItemValueString(WorkflowKernel.UNIQUEID), entity);
 				return entity;
 			}
