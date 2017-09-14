@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.security.Principal;
 import java.text.ParseException;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.ejb.SessionContext;
@@ -229,5 +230,114 @@ public class TestWorkflowKernelTestModels {
 		}
 
 	}
+	
+	
+	
+	
+	
+	/**
+	 * Test model split_event1.bpmn.
+	 * 
+	 * Here we have two conditions: both to a task.
+	 * 
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws ParseException
+	 * @throws ModelException
+	 */
+	@Test
+	@Category(org.imixs.workflow.WorkflowKernel.class)
+	public void testSplitEventModel1() {
+		try {
+			// provide a mock modelManger class
+			when(workflowContext.getModelManager()).thenReturn(new MokModelManager("/bpmn/split_event1.bpmn"));
+
+			// test Condition 1
+			ItemCollection itemCollection = new ItemCollection();
+			itemCollection.replaceItemValue("txtTitel", "Hello");
+			itemCollection.replaceItemValue("$processid", 1000);
+			itemCollection.replaceItemValue("$activityid", 10);
+			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
+
+			
+			itemCollection = kernel.process(itemCollection);
+			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+			Assert.assertEquals(1100, itemCollection.getProcessID());
+			Assert.assertEquals(10, itemCollection.getItemValueInteger("$lastEvent"));
+			
+			// test new version...
+			List<ItemCollection> versions = kernel.getSplitWorkitems();
+			Assert.assertNotNull(versions);
+			Assert.assertTrue(versions.size()==1);
+			ItemCollection version=versions.get(0);
+			
+			Assert.assertEquals("Hello", version.getItemValueString("txttitel"));
+			Assert.assertEquals(1200, version.getProcessID());
+
+		} catch (Exception e) {
+			Assert.fail();
+			e.printStackTrace();
+
+		}
+
+	}
+	
+	
+	
+	/**
+	 * Test model split_event1.bpmn.
+	 * 
+	 * Here we have two conditions: both to a task.
+	 * 
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws ParseException
+	 * @throws ModelException
+	 */
+	@Test
+	@Category(org.imixs.workflow.WorkflowKernel.class)
+	public void testSplitEventModel2() {
+		try {
+			// provide a mock modelManger class
+			when(workflowContext.getModelManager()).thenReturn(new MokModelManager("/bpmn/split_event2.bpmn"));
+
+			// test Condition 1
+			ItemCollection itemCollection = new ItemCollection();
+			itemCollection.replaceItemValue("txtTitel", "Hello");
+			itemCollection.replaceItemValue("$processid", 1000);
+			itemCollection.replaceItemValue("$activityid", 10);
+			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
+
+			
+			itemCollection = kernel.process(itemCollection);
+			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+			Assert.assertEquals(1100, itemCollection.getProcessID());
+			Assert.assertEquals(10, itemCollection.getItemValueInteger("$lastEvent"));
+			
+			// test new version...
+			List<ItemCollection> versions = kernel.getSplitWorkitems();
+			Assert.assertNotNull(versions);
+			Assert.assertTrue(versions.size()==1);
+			ItemCollection version=versions.get(0);
+			
+			Assert.assertEquals("Hello", version.getItemValueString("txttitel"));
+			Assert.assertEquals(1200, version.getProcessID());
+			// $lastEvent should be 20
+			Assert.assertEquals(20, version.getItemValueInteger("$lastEvent"));
+				
+			
+			// Master $unqiueid must not match the version $uniqueid
+			Assert.assertFalse(itemCollection.getUniqueID().equals(version.getUniqueID()));
+
+		} catch (Exception e) {
+			Assert.fail();
+			e.printStackTrace();
+
+		}
+
+	}
+
 
 }

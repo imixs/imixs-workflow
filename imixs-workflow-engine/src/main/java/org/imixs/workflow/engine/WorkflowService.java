@@ -675,6 +675,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 		// fire observer Plugins...
 		workitem = fireAfterProcess(workflowkernel, workitem);
+		
+		
+		// Now firew also all split versions.....
+		List<ItemCollection> splitWorkitems=workflowkernel.getSplitWorkitems();
+		for (ItemCollection splitWorkitemm: splitWorkitems) {
+			fireAfterProcess(workflowkernel, splitWorkitemm);
+			documentService.save(splitWorkitemm);
+		}
+		
 
 		return documentService.save(workitem);
 

@@ -81,6 +81,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	List<String> startEvents = null;
 	List<String> conditionalGatewayCache = null;
+	List<String> parallelGatewayCache = null;
 
 	ItemCollection definition = null;
 
@@ -100,6 +101,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		linkCatchEventCache = new HashMap<String, String>();
 
 		conditionalGatewayCache = new ArrayList<String>();
+		parallelGatewayCache = new ArrayList<String>();
 
 		startEvents = new ArrayList<String>();
 
@@ -257,10 +259,17 @@ public class BPMNModelHandler extends DefaultHandler {
 			currentMessageName = attributes.getValue("name");
 		}
 
+		// parallel gateway
 		if (qName.equalsIgnoreCase("bpmn2:exclusiveGateway") || qName.equalsIgnoreCase("bpmn2:inclusiveGateway")
 				|| qName.equalsIgnoreCase("bpmn2:eventBasedGateway")) {
-			// Put conditona Gateway ID into th gateway cache...
+			// Put conditional Gateway ID into the gateway cache...
 			conditionalGatewayCache.add(attributes.getValue("id"));
+		}
+
+		// conditional gateway
+		if (qName.equalsIgnoreCase("bpmn2:parallelGateway")) {
+			// Put parallel Gateway ID into the gateway cache...
+			parallelGatewayCache.add(attributes.getValue("id"));
 		}
 
 		// test for conditional Expression...
@@ -676,13 +685,13 @@ public class BPMNModelHandler extends DefaultHandler {
 			event.removeItem("keyFollowUp");
 			event.replaceItemValue("numNextProcessID", sourceTask.getItemValue("numProcessID"));
 
-			// test if this is a conditional event - search for gateway...
+			// test if this is a conditional event - search for conditional gateway...
 			List<SequenceFlow> outgoingList = this.findOutgoingFlows(eventID);
 			if (outgoingList != null && outgoingList.size() > 0) {
-				Map<String,String> conditions=new HashMap<String,String>();
+				Map<String, String> conditions = new HashMap<String, String>();
 				for (SequenceFlow flow : outgoingList) {
 					if (conditionalGatewayCache.contains(flow.target)) {
-						
+
 						String conditionalGatewayID = flow.target;
 						// get all outgoing flows from this gateway
 						List<SequenceFlow> conditionalFlows = this.findOutgoingFlows(conditionalGatewayID);
@@ -690,28 +699,95 @@ public class BPMNModelHandler extends DefaultHandler {
 							ItemCollection targetTask = new ElementResolver().findImixsTargetTask(condFlow);
 							// build the condition
 							if (targetTask != null) {
-								String sExpression =  findConditionBySquenceFlow(condFlow);
-								logger.fine("add condition: " +targetTask.getItemValueInteger("numProcessid") + "="+ sExpression);
-								conditions.put("task="+targetTask.getItemValueInteger("numProcessid"), sExpression);
+								String sExpression = findConditionBySquenceFlow(condFlow);
+								if (sExpression!=null && !sExpression.trim().isEmpty()) {
+									logger.fine("add condition: " + targetTask.getItemValueInteger("numProcessid") + "="
+											+ sExpression);
+									conditions.put("task=" + targetTask.getItemValueInteger("numProcessid"), sExpression);
+								}
 							} else {
 								// test for an event....
-								String targetEventID=new ElementResolver().findImixsTargetEventID(condFlow);
-								ItemCollection targetEvent=eventCache.get(targetEventID);
+								String targetEventID = new ElementResolver().findImixsTargetEventID(condFlow);
+								ItemCollection targetEvent = eventCache.get(targetEventID);
 								if (targetEvent != null) {
-									String sExpression =  findConditionBySquenceFlow(condFlow);
-									logger.fine("add condition: " +targetEvent.getItemValueInteger("numActivityid") + "="+ sExpression);
-									conditions.put("event="+targetEvent.getItemValueInteger("numActivityid"), sExpression);
-								} 
-								
+									String sExpression = findConditionBySquenceFlow(condFlow);
+									if (sExpression!=null && !sExpression.trim().isEmpty()) {
+										logger.fine("add condition: " + targetEvent.getItemValueInteger("numActivityid")
+												+ "=" + sExpression);
+										conditions.put("event=" + targetEvent.getItemValueInteger("numActivityid"),
+												sExpression);
+									}
+								}
+
 							}
 						}
 
 					}
 
 				}
-				// add the attribute 'keyConditions' if available...
+				// add the attribute 'keyExclusiveConditions' if available...
 				if (!conditions.isEmpty()) {
-					event.replaceItemValue("keyConditions", conditions);
+					event.replaceItemValue("keyExclusiveConditions", conditions);
+				}
+
+			}
+
+			// test if this is a split event - search for parallel gateway...
+			outgoingList = this.findOutgoingFlows(eventID);
+			if (outgoingList != null && outgoingList.size() > 0) {
+				Map<String, String> conditions = new HashMap<String, String>();
+				for (SequenceFlow flow : outgoingList) {
+					if (parallelGatewayCache.contains(flow.target)) {
+
+						boolean foundConditionForMasterVersion=false;
+						String parallelGatewayID = flow.target;
+						// get all outgoing flows from this gateway
+						List<SequenceFlow> parallelFlows = this.findOutgoingFlows(parallelGatewayID);
+						for (SequenceFlow parallelFlow : parallelFlows) {
+							ItemCollection targetTask = new ElementResolver().findImixsTargetTask(parallelFlow);
+							// build the condition
+							if (targetTask != null) {
+								String sExpression = findConditionBySquenceFlow(parallelFlow);
+								if (sExpression!=null && !sExpression.trim().isEmpty()) {
+									logger.fine("add condition: " + targetTask.getItemValueInteger("numProcessid") + "="
+											+ sExpression);
+									conditions.put("task=" + targetTask.getItemValueInteger("numProcessid"), sExpression);
+									
+									if (foundConditionForMasterVersion) {
+										logger.warning("ParallelGateway does not uniquely define an outcome for the Master Version! Multiple condition defined!");
+									}
+									foundConditionForMasterVersion=true;
+								}
+							} else {
+								// test for an event....
+								String targetEventID = new ElementResolver().findImixsTargetEventID(parallelFlow);
+								ItemCollection targetEvent = eventCache.get(targetEventID);
+								if (targetEvent != null) {
+									String sExpression = findConditionBySquenceFlow(parallelFlow);
+									if (sExpression!=null && !sExpression.trim().isEmpty()) {
+										logger.fine("add condition: " + targetEvent.getItemValueInteger("numActivityid")
+												+ "=" + sExpression);
+										conditions.put("event=" + targetEvent.getItemValueInteger("numActivityid"),
+												sExpression);
+										if (foundConditionForMasterVersion) {
+											logger.warning("ParallelGateway does not uniquely define an outcome for the Master Version! Multiple condition defined!");
+										}
+										foundConditionForMasterVersion=true;
+									}
+								}
+
+							}
+						}
+						if (!foundConditionForMasterVersion) {
+							logger.warning("ParallelGateway dose not uniquely define an outcome for the Master Version! Master condition is missing");
+						}
+
+					}
+
+				}
+				// add the attribute 'keySplitConditions' if available...
+				if (!conditions.isEmpty()) {
+					event.replaceItemValue("keySplitConditions", conditions);
 				}
 
 			}

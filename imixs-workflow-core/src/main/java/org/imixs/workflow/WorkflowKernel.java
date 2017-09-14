@@ -82,6 +82,7 @@ public class WorkflowKernel {
 	private List<Plugin> pluginRegistry = null;
 	private WorkflowContext ctx = null;
 	private Vector<String> vectorEdgeHistory = new Vector<String>();
+	private List<ItemCollection> splitWorkitems = null;
 
 	private static Logger logger = Logger.getLogger(WorkflowKernel.class.getName());
 
@@ -91,7 +92,17 @@ public class WorkflowKernel {
 	public WorkflowKernel(final WorkflowContext actx) {
 		ctx = actx;
 		pluginRegistry = new ArrayList<Plugin>();
+		splitWorkitems = new ArrayList<ItemCollection>();
+	}
 
+	/**
+	 * This method returns new SplitWorkitems evaluated during the last processing
+	 * life-cycle.
+	 * 
+	 * @return
+	 */
+	public List<ItemCollection> getSplitWorkitems() {
+		return splitWorkitems;
 	}
 
 	/**
@@ -205,9 +216,9 @@ public class WorkflowKernel {
 		pluginRegistry = new ArrayList<Plugin>();
 	}
 
-	
 	/**
-	 * Returns a registry containing all registered plugin instances. 
+	 * Returns a registry containing all registered plugin instances.
+	 * 
 	 * @return
 	 */
 	public List<Plugin> getPluginRegistry() {
@@ -261,7 +272,7 @@ public class WorkflowKernel {
 		while (documentResult.getItemValueInteger(ACTIVITYID) > 0) {
 			// load event...
 			ItemCollection event = loadEvent(documentResult);
-			documentResult = processActivity(documentResult, event);
+			documentResult = processEvent(documentResult, event);
 			documentResult = updateActivityList(documentResult);
 		}
 
@@ -327,7 +338,7 @@ public class WorkflowKernel {
 	 * 
 	 * @throws PluginException,ModelException
 	 */
-	private ItemCollection processActivity(final ItemCollection documentContext, final ItemCollection event)
+	private ItemCollection processEvent(final ItemCollection documentContext, final ItemCollection event)
 			throws PluginException, ModelException {
 		ItemCollection documentResult = documentContext;
 		// log the general processing message
@@ -342,7 +353,7 @@ public class WorkflowKernel {
 		logger.info(msg);
 
 		// compute next task..
-		ItemCollection itemColNextTask = getNextTask(documentContext, event);
+		ItemCollection itemColNextTask = findNextTask(documentContext, event);
 
 		// update the type attribute if defined.
 		// the type attribute can be overwritten by a plug-in
@@ -373,6 +384,10 @@ public class WorkflowKernel {
 		vectorEdgeHistory.addElement(
 				event.getItemValueInteger("numprocessid") + "." + event.getItemValueInteger("numactivityid"));
 
+		// evaluate a split-event and create new versions of the current process
+		// instance.
+		evaluateSplitEvent(event, documentResult);
+
 		// Update the attributes $ProcessID and $WorkflowStatus
 		documentResult.replaceItemValue(PROCESSID,
 				Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
@@ -400,69 +415,40 @@ public class WorkflowKernel {
 	 * This method computes the next task based on a Model Event element. If the
 	 * event did not point to a new task, the current task will be returned.
 	 * 
-	 * The method supports the 'conditional-events'. A conditional-event contains the 
-	 * attribute 'keyConditions' defining conditional targets.
+	 * The method supports the 'conditional-events' and 'split-events'.
+	 * 
+	 * A conditional-event contains the attribute 'keyExclusiveConditions' defining
+	 * conditional targets (tasks) or adds conditional follow up events
+	 * 
+	 * A split-event contains the attribute 'keySplitConditions' defining the target
+	 * for the current master version (condition evaluates to 'true')
+	 * 
+	 * 
 	 * 
 	 * @return Task entity
 	 * @throws ModelException
-	 * @throws PluginException 
+	 * @throws PluginException
 	 */
-	@SuppressWarnings("unchecked")
-	private ItemCollection getNextTask(ItemCollection documentContext, ItemCollection event) throws ModelException, PluginException {
+	private ItemCollection findNextTask(ItemCollection documentContext, ItemCollection event)
+			throws ModelException, PluginException {
+
 		ItemCollection itemColNextTask = null;
+
 		int iNewProcessID = event.getItemValueInteger("numnextprocessid");
 		logger.fine("next $processid=" + iNewProcessID + "");
-		
-		// test if we have an conditional event
-		if (event.hasItem("keyConditions")) {
-			RuleEngine ruleEngine=new RuleEngine();
-			// evaluate all conditions and return the fist match...
-			Map<String,String> conditions=(Map<String, String>) event.getItemValue("keyConditions").get(0);
-			for (Map.Entry<String, String> entry : conditions.entrySet()) {
-				String key = entry.getKey();
-				String expression = entry.getValue();
-				if (key.startsWith("task=")) {
-					int taskID=Integer.parseInt(key.substring(5));
-					boolean bmatch=ruleEngine.evaluateBooleanExpression(expression, documentContext);
-					if (bmatch) {
-						logger.fine("matching conditional event: " + expression);
-						itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getModelVersion())
-								.getTask(taskID);
-						if (itemColNextTask!=null) {
-							return itemColNextTask;
-						}
-					}
-				}
-				
-				if (key.startsWith("event=")) {
-					int eventID=Integer.parseInt(key.substring(6));
-					boolean bmatch=ruleEngine.evaluateBooleanExpression(expression, documentContext);
-					if (bmatch) {
-						logger.fine("matching conditional event: " + expression);
-						// we update the documentContext....
-						 ItemCollection itemColEvent = this.ctx.getModelManager().getModel(documentContext.getModelVersion()).
-								getEvent(documentContext.getProcessID(), eventID);
-						if (itemColEvent!=null) {
-							// create follow up event....
-							
-							
-							event.replaceItemValue("keyFollowUp", "1");
-							event.replaceItemValue("numNextActivityID", eventID);
-							
-							// get current task...
-							itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getItemValueString(MODELVERSION))
-									.getTask(documentContext.getProcessID());
-							
-							return itemColNextTask;
-						}
-					}
-				}
-			}
-			logger.fine("conditional event: no matching condition");
-			
+
+		// test if we have an conditional exclusive Task exits...
+		itemColNextTask = findConditionalExclusiveTask(event, documentContext);
+		if (itemColNextTask != null) {
+			return itemColNextTask;
 		}
 
-		// default behavior 
+		itemColNextTask = findConditionalSplitTask(event, documentContext);
+		if (itemColNextTask != null) {
+			return itemColNextTask;
+		}
+
+		// default behavior
 		if (iNewProcessID > 0) {
 			itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getModelVersion())
 					.getTask(iNewProcessID);
@@ -472,6 +458,272 @@ public class WorkflowKernel {
 					.getTask(documentContext.getProcessID());
 		}
 		return itemColNextTask;
+	}
+
+	/**
+	 * This method returns the first conditional Task or Event of a given Event
+	 * object. The method evaluates conditional expressions to 'true'. If no
+	 * conditional expression exists or no expression evaluates to true the the
+	 * method returns null
+	 * 
+	 * @param conditions
+	 * @param documentContext
+	 * @return conditional Task or Event object or null if no condition exits.
+	 * @throws PluginException
+	 * @throws ModelException
+	 */
+	@SuppressWarnings("unchecked")
+	private ItemCollection findConditionalExclusiveTask(ItemCollection event, ItemCollection documentContext)
+			throws PluginException, ModelException {
+
+		Map<String, String> conditions = null;
+		// test if we have an split event
+		if (event.hasItem("keyExclusiveConditions")) {
+			// get first element
+			conditions = (Map<String, String>) event.getItemValue("keyExclusiveConditions").get(0);
+
+			if (conditions != null && conditions.size() > 0) {
+
+				RuleEngine ruleEngine = new RuleEngine();
+				// evaluate all conditions and return the fist match...
+				for (Map.Entry<String, String> entry : conditions.entrySet()) {
+					String key = entry.getKey();
+					String expression = entry.getValue();
+					if (key.startsWith("task=")) {
+						int taskID = Integer.parseInt(key.substring(5));
+						boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
+						if (bmatch) {
+							logger.fine("matching conditional event: " + expression);
+							ItemCollection conditionslTask = this.ctx.getModelManager()
+									.getModel(documentContext.getModelVersion()).getTask(taskID);
+							if (conditionslTask != null) {
+								return conditionslTask;
+							}
+						}
+					}
+
+					if (key.startsWith("event=")) {
+						int eventID = Integer.parseInt(key.substring(6));
+						boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
+						if (bmatch) {
+							logger.fine("matching conditional event: " + expression);
+							// we update the documentContext....
+							ItemCollection itemColEvent = this.ctx.getModelManager()
+									.getModel(documentContext.getModelVersion())
+									.getEvent(documentContext.getProcessID(), eventID);
+							if (itemColEvent != null) {
+								// create follow up event....
+
+								event.replaceItemValue("keyFollowUp", "1");
+								event.replaceItemValue("numNextActivityID", eventID);
+
+								// get current task...
+								ItemCollection itemColNextTask = this.ctx.getModelManager()
+										.getModel(documentContext.getItemValueString(MODELVERSION))
+										.getTask(documentContext.getProcessID());
+
+								return itemColNextTask;
+							}
+						}
+					}
+				}
+				logger.fine("split event: no matching condition");
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * This method returns the first conditional Split Task or Event of a given
+	 * Event object. The method evaluates conditional expressions to 'true'. If no
+	 * conditional expression exists or no expression evaluates to true the the
+	 * method returns null
+	 * 
+	 * @param conditions
+	 * @param documentContext
+	 * @return conditional Task or Event object or null if no condition exits.
+	 * @throws PluginException
+	 * @throws ModelException
+	 */
+	@SuppressWarnings("unchecked")
+	private ItemCollection findConditionalSplitTask(ItemCollection event, ItemCollection documentContext)
+			throws PluginException, ModelException {
+
+		// test if we have an split event
+		Map<String, String> conditions = null;
+		// test if we have an split event
+		if (event.hasItem("keySplitConditions")) {
+			// get first element
+			conditions = (Map<String, String>) event.getItemValue("keySplitConditions").get(0);
+
+			if (conditions != null) {
+
+				RuleEngine ruleEngine = new RuleEngine();
+
+				// evaluate all conditions and return the fist match evaluating to true (this is
+				// the flow for the master version)...
+				for (Map.Entry<String, String> entry : conditions.entrySet()) {
+					String key = entry.getKey();
+					String expression = entry.getValue();
+					if (key.startsWith("task=")) {
+						int taskID = Integer.parseInt(key.substring(5));
+						boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
+						if (bmatch) {
+							logger.fine("matching split event: " + expression);
+							ItemCollection itemColNextTask = this.ctx.getModelManager()
+									.getModel(documentContext.getModelVersion()).getTask(taskID);
+							if (itemColNextTask != null) {
+								return itemColNextTask;
+							}
+						}
+					}
+
+					if (key.startsWith("event=")) {
+						int eventID = Integer.parseInt(key.substring(6));
+						boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
+						if (bmatch) {
+							logger.fine("matching conditional event: " + expression);
+							// we update the documentContext....
+							ItemCollection itemColEvent = this.ctx.getModelManager()
+									.getModel(documentContext.getModelVersion())
+									.getEvent(documentContext.getProcessID(), eventID);
+							if (itemColEvent != null) {
+								// create follow up event....
+
+								event.replaceItemValue("keyFollowUp", "1");
+								event.replaceItemValue("numNextActivityID", eventID);
+
+								// get current task...
+								ItemCollection itemColNextTask = this.ctx.getModelManager()
+										.getModel(documentContext.getItemValueString(MODELVERSION))
+										.getTask(documentContext.getProcessID());
+
+								return itemColNextTask;
+							}
+						}
+					}
+				}
+				logger.fine("split event: no matching condition");
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * This method evaluates conditional split expressions to 'false'. for each
+	 * condition a new process instance will be created. In case of a followUp
+	 * event, the process instance will be processed by the current kernel instance.
+	 * 
+	 * @param conditions
+	 * @param documentContext
+	 * @return conditional Task or Event object or null if no condition exits.
+	 * @throws PluginException
+	 * @throws ModelException
+	 */
+	@SuppressWarnings("unchecked")
+	private void evaluateSplitEvent(ItemCollection event, ItemCollection documentContext)
+			throws PluginException, ModelException {
+
+		// test if we have an split event
+		Map<String, String> conditions = null;
+		// test if we have an split event
+		if (event.hasItem("keySplitConditions")) {
+			// get first element
+			conditions = (Map<String, String>) event.getItemValue("keySplitConditions").get(0);
+
+			if (conditions != null) {
+
+				RuleEngine ruleEngine = new RuleEngine();
+
+				// evaluate all conditions and return the fist match evaluating to true (this is
+				// the flow for the master version)...
+				for (Map.Entry<String, String> entry : conditions.entrySet()) {
+					String key = entry.getKey();
+					String expression = entry.getValue();
+					if (key.startsWith("task=")) {
+						int taskID = Integer.parseInt(key.substring(5));
+						boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
+						if (!bmatch) {
+							logger.fine("matching split event: " + expression);
+							ItemCollection itemColNextTask = this.ctx.getModelManager()
+									.getModel(documentContext.getModelVersion()).getTask(taskID);
+							if (itemColNextTask != null) {
+
+								// aktuelles Object klonen.....
+								ItemCollection cloned = createVersion(documentContext);
+								// set new $processid
+								cloned.replaceItemValue(PROCESSID,
+										Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
+								// add to cache...
+								splitWorkitems.add(cloned);
+							}
+						}
+					}
+
+					if (key.startsWith("event=")) {
+						int eventID = Integer.parseInt(key.substring(6));
+						boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
+						if (!bmatch) {
+							logger.fine("matching conditional event: " + expression);
+							// we update the documentContext....
+							ItemCollection itemColEvent = this.ctx.getModelManager()
+									.getModel(documentContext.getModelVersion())
+									.getEvent(documentContext.getProcessID(), eventID);
+							if (itemColEvent != null) {
+								// get current task...
+								ItemCollection itemColNextTask = this.ctx.getModelManager()
+										.getModel(documentContext.getItemValueString(MODELVERSION))
+										.getTask(documentContext.getProcessID());
+
+								// aktuelles Object klonen.....
+								ItemCollection cloned = createVersion(documentContext);
+								// set new $processid
+								cloned.replaceItemValue(PROCESSID,
+										Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
+
+								cloned.replaceItemValue(ACTIVITYID, eventID);
+								cloned = this.process(cloned);
+
+								// add to cache...
+								splitWorkitems.add(cloned);
+
+							}
+						}
+					}
+				}
+				logger.fine("split event: no matching condition");
+			}
+		}
+
+	}
+
+	/**
+	 * This method creates a new instance of a exiting workitem. The method did not
+	 * save the workitem!. The method can be subclassed to modify the new created
+	 * version.
+	 * 
+	 * The new property $WorkitemIDRef will be added which points to the $uniqueID
+	 * of the sourceWorkitem.
+	 * 
+	 * @param sourceItemCollection
+	 *            the ItemCollection which should be versioned
+	 * @return new version of the source ItemCollection
+	 * 
+	 * @throws PluginException
+	 * @throws Exception
+	 */
+	private ItemCollection createVersion(ItemCollection sourceItemCollection) throws PluginException {
+		ItemCollection itemColNewVersion = (ItemCollection) sourceItemCollection.clone();
+		String id = sourceItemCollection.getItemValueString("$uniqueid");
+		// remove $Uniqueid to force the generation of a new Entity Instance.
+		itemColNewVersion.getAllItems().remove("$uniqueid");
+
+		// update $WorkItemIDRef to current worktiemID
+		itemColNewVersion.replaceItemValue("$WorkItemIDRef", id);
+
+		return itemColNewVersion;
+
 	}
 
 	/**
@@ -648,8 +900,8 @@ public class WorkflowKernel {
 
 		} catch (PluginException e) {
 			// log plugin stack!....
-			logger.severe("Plugin-Error at " + e.getErrorContext() + ": " + e.getErrorCode() + " ("
-					+ e.getMessage() + ")");
+			logger.severe(
+					"Plugin-Error at " + e.getErrorContext() + ": " + e.getErrorCode() + " (" + e.getMessage() + ")");
 			if (logger.isLoggable(Level.FINE)) {
 				logger.severe("Last Plugins run successfull:");
 				for (String sLogEntry : localPluginLog)

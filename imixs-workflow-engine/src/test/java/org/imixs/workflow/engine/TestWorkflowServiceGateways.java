@@ -21,11 +21,6 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestWorkflowServiceGateways extends AbstractWorkflowEnvironment {
-	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
-
-	
-
-
 
 	/**
 	 * This test tests the conditional event gateways....
@@ -69,6 +64,41 @@ public class TestWorkflowServiceGateways extends AbstractWorkflowEnvironment {
 		workitem = workflowService.processWorkItem(workitem);
 		Assert.assertEquals(1100, workitem.getProcessID());
 
+	}
+	
+	
+	
+	/**
+	 * This test tests the conditional event gateways....
+	 * 
+	 * This is just a simple simulation...
+	 * 
+	 * @throws ProcessingErrorException
+	 * @throws AccessDeniedException
+	 * @throws ModelException 
+	 * 
+	 */
+	@Test
+	public void testSplitEvent1() throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+		
+		loadModel("/bpmn/split_event1.bpmn");
+		
+		
+		// load test workitem
+		ItemCollection workitem = database.get("W0000-00001");
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);
+		
+		
+		// test none condition ...
+		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
+		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
+		workitem = workflowService.processWorkItem(workitem);
+		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
+		Assert.assertEquals(1100, workitem.getProcessID());
+		
+
+		// TODO lookup the version.....
+		
 	}
 
 }
