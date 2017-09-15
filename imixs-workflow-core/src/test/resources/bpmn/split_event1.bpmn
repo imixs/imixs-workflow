@@ -49,13 +49,13 @@
     <bpmn2:sequenceFlow id="SequenceFlow_4" sourceRef="Task_3" targetRef="IntermediateCatchEvent_3"/>
     <bpmn2:sequenceFlow id="SequenceFlow_11" sourceRef="Task_4" targetRef="EndEvent_1"/>
     <bpmn2:sequenceFlow id="SequenceFlow_12" sourceRef="Task_5" targetRef="EndEvent_1"/>
-    <bpmn2:parallelGateway id="ParallelGateway_1" name="Parallel Gateway 1" gatewayDirection="Diverging">
+    <bpmn2:parallelGateway id="ParallelGateway_1" name="split" gatewayDirection="Diverging">
       <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
       <bpmn2:outgoing>SequenceFlow_6</bpmn2:outgoing>
     </bpmn2:parallelGateway>
     <bpmn2:sequenceFlow id="SequenceFlow_2" sourceRef="IntermediateCatchEvent_3" targetRef="ParallelGateway_1"/>
-    <bpmn2:sequenceFlow id="SequenceFlow_3" name="Default (true)" sourceRef="ParallelGateway_1" targetRef="Task_4">
+    <bpmn2:sequenceFlow id="SequenceFlow_3" name="Master (true)" sourceRef="ParallelGateway_1" targetRef="Task_4">
       <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_6">true</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="SequenceFlow_6" name="Version (false)" sourceRef="ParallelGateway_1" targetRef="Task_5">
@@ -103,7 +103,7 @@
       <bpmndi:BPMNShape id="BPMNShape_ParallelGateway_1" bpmnElement="ParallelGateway_1" isMarkerVisible="true">
         <dc:Bounds height="50.0" width="50.0" x="360.0" y="51.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_3">
-          <dc:Bounds height="28.0" width="57.0" x="357.0" y="101.0"/>
+          <dc:Bounds height="14.0" width="23.0" x="373.0" y="101.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_1" bpmnElement="SequenceFlow_1" sourceElement="BPMNShape_1" targetElement="BPMNShape_Task_3">
@@ -141,7 +141,7 @@
         <di:waypoint xsi:type="dc:Point" x="480.0" y="76.0"/>
         <di:waypoint xsi:type="dc:Point" x="550.0" y="76.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_6">
-          <dc:Bounds height="14.0" width="71.0" x="445.0" y="77.0"/>
+          <dc:Bounds height="14.0" width="69.0" x="446.0" y="77.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_6" bpmnElement="SequenceFlow_6" sourceElement="BPMNShape_ParallelGateway_1" targetElement="BPMNShape_Task_5">
