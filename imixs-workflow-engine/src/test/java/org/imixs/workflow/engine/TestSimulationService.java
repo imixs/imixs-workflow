@@ -18,7 +18,7 @@ import junit.framework.Assert;
  * 
  * @author rsoika
  */
-public class TestSimulationService { // extends WorkflowSimulationEnvironment {
+public class TestSimulationService { 
 
 	/**
 	 * This test tests the conditional event gateways....
