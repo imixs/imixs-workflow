@@ -54,6 +54,7 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 
 public class WorkflowKernel {
 
+	public static final String MISSING_WORKFLOWCONTEXT = "MISSING_WORKFLOWCONTEXT";
 	public static final String UNDEFINED_PROCESSID = "UNDEFINED_PROCESSID";
 	public static final String UNDEFINED_ACTIVITYID = "UNDEFINED_ACTIVITYID";
 	public static final String UNDEFINED_WORKITEM = "UNDEFINED_WORKITEM";
@@ -74,7 +75,7 @@ public class WorkflowKernel {
 	public static final String WORKFLOWGROUP = "$workflowgroup";
 	public static final String WORKFLOWSTATUS = "$workflowstatus";
 	public static final String WORKITEMIDREF = "$WorkItemIDRef";
-	
+
 	public static final String TYPE = "type";
 
 	public static final int MAXIMUM_ACTIVITYLOGENTRIES = 30;
@@ -84,7 +85,7 @@ public class WorkflowKernel {
 	private WorkflowContext ctx = null;
 	private Vector<String> vectorEdgeHistory = new Vector<String>();
 	private List<ItemCollection> splitWorkitems = null;
-	private RuleEngine ruleEngine=null;
+	private RuleEngine ruleEngine = null;
 
 	private static Logger logger = Logger.getLogger(WorkflowKernel.class.getName());
 
@@ -92,6 +93,12 @@ public class WorkflowKernel {
 	 * Constructor initialize the contextObject and plugin vectors
 	 */
 	public WorkflowKernel(final WorkflowContext actx) {
+		// check workflow context
+		if (actx == null) {
+			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MISSING_WORKFLOWCONTEXT,
+					"WorkflowKernel can not be initialized: workitemContext is null!");
+		}
+
 		ctx = actx;
 		pluginRegistry = new ArrayList<Plugin>();
 		splitWorkitems = new ArrayList<ItemCollection>();
@@ -132,6 +139,7 @@ public class WorkflowKernel {
 	 * @throws PluginException
 	 */
 	public void registerPlugin(final Plugin plugin) throws PluginException {
+
 		// validate dependencies
 		if (plugin instanceof PluginDependency) {
 			List<String> dependencies = ((PluginDependency) plugin).dependsOn();
