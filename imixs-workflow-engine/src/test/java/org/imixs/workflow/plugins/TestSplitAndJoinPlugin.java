@@ -1,5 +1,7 @@
 package org.imixs.workflow.plugins;
 
+import static org.mockito.Mockito.when;
+
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -7,12 +9,13 @@ import java.util.regex.Pattern;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.engine.AbstractWorkflowEnvironment;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.SplitAndJoinPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import junit.framework.Assert;
 
@@ -22,7 +25,7 @@ import junit.framework.Assert;
  * @author rsoika
  * 
  */
-public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
+public class TestSplitAndJoinPlugin {
 
 	private final static Logger logger = Logger.getLogger(TestSplitAndJoinPlugin.class.getName());
 
@@ -31,20 +34,25 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 	ItemCollection documentActivity, documentProcess;
 
 	/**
-	 * We use the provided test workflow model form the
-	 * AbstractWorkflowServiceTest
-	 * @throws ModelException 
-	 */ 
+	 * We use the provided test workflow model form the AbstractWorkflowServiceTest
+	 * 
+	 * @throws ModelException
+	 */
+	WorkflowMockEnvironment workflowMockEnvironment;
+
 	@Before
 	public void setup() throws PluginException, ModelException {
 
-		this.setModelPath("/bpmn/TestSplitAndJoinPlugin.bpmn");
-		
-		super.setup();
+		workflowMockEnvironment = new WorkflowMockEnvironment();
+		workflowMockEnvironment.setModelPath("/bpmn/TestSplitAndJoinPlugin.bpmn");
 
-		splitAndJoinPlugin = new SplitAndJoinPlugin();
+		workflowMockEnvironment.setup();
+
+		// mock abstract plugin class for the plitAndJoinPlugin
+		splitAndJoinPlugin = Mockito.mock(SplitAndJoinPlugin.class, Mockito.CALLS_REAL_METHODS);
+		when(splitAndJoinPlugin.getWorkflowService()).thenReturn(workflowMockEnvironment.getWorkflowService());
 		try {
-			splitAndJoinPlugin.init(workflowService);
+			splitAndJoinPlugin.init(workflowMockEnvironment.getWorkflowContext());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
@@ -58,24 +66,24 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		list.add("anna");
 		documentContext.replaceItemValue("namTeam", list);
 		documentContext.replaceItemValue("namCreator", "ronny");
-		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);
+		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 		documentContext.replaceItemValue(WorkflowKernel.PROCESSID, 100);
 		documentContext.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
-		documentService.save(documentContext);
+		workflowMockEnvironment.getDocumentService().save(documentContext);
 
 	}
 
 	/**
 	 * Test creation of subprocess
-	 * @throws ModelException 
+	 * 
+	 * @throws ModelException
 	 ***/
 	@SuppressWarnings("unchecked")
-	@Test 
+	@Test
 	public void testCreateSubProcess() throws ModelException {
 
-	
 		try {
-			documentActivity = this.getModel().getEvent(100, 20);
+			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
 
@@ -92,14 +100,15 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		String subprocessUniqueid = workitemRefList.get(0);
 
 		// get the subprocess...
-		ItemCollection subprocess = this.documentService.load(subprocessUniqueid);
+		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
 
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
 
 		// test the new action result based on the new subprocess uniqueid....
-		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + subprocessUniqueid ,documentContext.getItemValueString("action"));
-		
+		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + subprocessUniqueid,
+				documentContext.getItemValueString("action"));
+
 		Assert.assertEquals(100, subprocess.getProcessID());
 
 		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
@@ -114,58 +123,60 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 
 	/**
 	 * Test creation of subprocess
-	 * @throws ModelException 
+	 * 
+	 * @throws ModelException
 	 ***/
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testCreateSubProcessTargetFieldName() throws ModelException {
-	
+
 		try {
-			documentActivity = this.getModel().getEvent(100, 60);
+			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 60);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
-	
+
 			e.printStackTrace();
 			Assert.fail();
 		}
-	
+
 		Assert.assertNotNull(documentContext);
-	
+
 		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-	
+
 		Assert.assertEquals(1, workitemRefList.size());
-	
+
 		String subprocessUniqueid = workitemRefList.get(0);
-	
+
 		// get the subprocess...
-		ItemCollection subprocess = this.documentService.load(subprocessUniqueid);
-	
+		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
+
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
-	
+
 		Assert.assertEquals(100, subprocess.getProcessID());
-	
+
 		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
-	
+
 		// test if the field namTeam is available
 		List<String> team = subprocess.getItemValue("_sub_Team");
 		Assert.assertEquals(2, team.size());
 		Assert.assertTrue(team.contains("manfred"));
 		Assert.assertTrue(team.contains("anna"));
-	
+
 	}
 
 	/**
 	 * Test multi creation of subprocesses
-	 * @throws ModelException 
+	 * 
+	 * @throws ModelException
 	 * 
 	 ***/
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testCreateMultiSubProcess() throws ModelException {
-		
+
 		try {
-			documentActivity = this.getModel().getEvent(100, 30);
+			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 30);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
 
@@ -182,14 +193,14 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 
 		// test first subprocess instance...
 		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = this.documentService.load(subprocessUniqueid);
+		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getProcessID());
 		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
 
 		// test second subprocess instance... 100.20 -> $processId=200
 		subprocessUniqueid = workitemRefList.get(1);
-		subprocess = this.documentService.load(subprocessUniqueid);
+		subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getProcessID());
 		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
@@ -199,13 +210,14 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 	/**
 	 * Test if the plugin exception in case of wrong xml content for create
 	 * subprocess...
-	 * @throws ModelException 
+	 * 
+	 * @throws ModelException
 	 **/
 	// @Ignore
 	@Test
 	public void testCreateSubProcessParsingError() throws ModelException {
 		try {
-			documentActivity = this.getModel().getEvent(100, 40);
+			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 40);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 
 			Assert.fail();
@@ -222,9 +234,10 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 	/**
 	 * Test update origin
 	 * 
-	 * First we create a subprocess and in a secon step we test if the
-	 * subprocess can update the origin workitem.
-	 * @throws ModelException 
+	 * First we create a subprocess and in a secon step we test if the subprocess
+	 * can update the origin workitem.
+	 * 
+	 * @throws ModelException
 	 * 
 	 **/
 	@SuppressWarnings("unchecked")
@@ -237,7 +250,7 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		 * 1.) create test result for new subprcoess.....
 		 */
 		try {
-			documentActivity = this.getModel().getEvent(100, 20);
+			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
 			e.printStackTrace();
@@ -248,45 +261,45 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		// now load the subprocess
 		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = this.documentService.load(subprocessUniqueid);
+		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
 
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getProcessID());
 
 		/*
-		 * 2.) process the subprocess to test if the origin process will be
-		 * updated correctly
+		 * 2.) process the subprocess to test if the origin process will be updated
+		 * correctly
 		 */
 		// add some custom data
 		subprocess.replaceItemValue("_sub_data", "some test data");
 		// now we process the subprocess
 		try {
-			documentActivity = this.getModel().getEvent(100, 50);
+			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 50);
 			splitAndJoinPlugin.run(subprocess, documentActivity);
 		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		
+
 		// test the new action result based on the origin process uniqueid....
-		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" +orignUniqueID,subprocess.getItemValueString("action"));
-				
+		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + orignUniqueID,
+				subprocess.getItemValueString("action"));
+
 		// load origin document
-		documentContext = documentService.load(orignUniqueID);
+		documentContext = workflowMockEnvironment.getDocumentService().load(orignUniqueID);
 		Assert.assertNotNull(documentContext);
 
 		// test data.... (new $processId=200 and _sub_data from subprocess
 		Assert.assertEquals(100, documentContext.getProcessID());
 		Assert.assertEquals("some test data", documentContext.getItemValueString("_sub_data"));
 
-		
-		
 	}
 
 	/**
 	 * Test update of an existing subprocess
-	 * @throws ModelException 
+	 * 
+	 * @throws ModelException
 	 ***/
 	@SuppressWarnings("unchecked")
 	@Test
@@ -294,7 +307,7 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 
 		// 1.) create test subprocess.....
 		try {
-			documentActivity = this.getModel().getEvent(100, 20);
+			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
 
@@ -308,13 +321,13 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		Assert.assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = this.documentService.load(subprocessUniqueid);
+		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getProcessID());
 
 		// 2.) now update the subprocess
 		try {
-			documentActivity = this.getModel().getEvent(200, 20);
+			documentActivity = workflowMockEnvironment.getModel().getEvent(200, 20);
 			// set new team member
 			documentContext.replaceItemValue("namTeam", "Walter");
 			splitAndJoinPlugin.run(documentContext, documentActivity);
@@ -329,15 +342,12 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 
 		Assert.assertNotNull(documentContext);
 
-		subprocess = this.documentService.load(subprocessUniqueid);
+		subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getProcessID());
 		Assert.assertEquals("Walter", subprocess.getItemValueString("namTEAM"));
 
 	}
-	
-	
-	
 
 	/**
 	 * Test the regex evuating the execution conditions
@@ -345,54 +355,34 @@ public class TestSplitAndJoinPlugin extends AbstractWorkflowEnvironment {
 	@Test
 	public void testRegex() {
 
-		
-		
-		
 		Assert.assertTrue(Pattern.compile("(^1000$|^1020$|^1050$)").matcher("1050").find());
-		
-		
+
 		Assert.assertTrue(Pattern.compile("").matcher("1050").find());
-		
-		
-		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)").matcher("abc-rechnungsausgang-1.0.0").find());
-		
-		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)").matcher("abc-rechnungseingang-1.0.0").find());
-		
-		
-	
-		
-		
+
+		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)")
+				.matcher("abc-rechnungsausgang-1.0.0").find());
+
+		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)")
+				.matcher("abc-rechnungseingang-1.0.0").find());
+
 		// model
-		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)").matcher("abc-rechnungseingang-1.0.0").find());
+		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)")
+				.matcher("abc-rechnungseingang-1.0.0").find());
 		// processid
 		Assert.assertTrue(Pattern.compile("(^1000$|^1010$)").matcher("1000").find());
 
 		Assert.assertTrue(Pattern.compile("(1\\d{3})").matcher("1456").find());
 		Assert.assertFalse(Pattern.compile("(1\\d{3})").matcher("2456").find());
-		
+
 		Assert.assertTrue(Pattern.compile("(1\\d{3})").matcher("14566").find());
 
-		
-		
-		
-		
 		Assert.assertFalse(Pattern.compile("(^1\\d{3}$)").matcher("21123").find());
-		
+
 		Assert.assertTrue(Pattern.compile("(^1\\d{3}$)").matcher("1123").find());
 		Assert.assertFalse(Pattern.compile("(^1\\d{3}$)").matcher("11123").find());
-		
-		
-		
+
 		Assert.assertTrue(Pattern.compile("1000").matcher("11000").find());
-		
 
 	}
 
-	
-	
-	
-	
-	
-	
-	
 }

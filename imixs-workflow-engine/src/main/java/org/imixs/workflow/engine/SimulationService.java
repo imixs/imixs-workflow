@@ -42,7 +42,6 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Model;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;

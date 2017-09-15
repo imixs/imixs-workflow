@@ -255,14 +255,14 @@ public class TestWorkflowKernelTestModels {
 
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
-			itemCollection.replaceItemValue("txtTitel", "Hello");
+			itemCollection.replaceItemValue("_subject", "Hello");
 			itemCollection.replaceItemValue("$processid", 1000);
 			itemCollection.replaceItemValue("$activityid", 10);
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 			
 			itemCollection = kernel.process(itemCollection);
-			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+			Assert.assertEquals("Hello", itemCollection.getItemValueString("_subject"));
 			Assert.assertEquals(1100, itemCollection.getProcessID());
 			Assert.assertEquals(10, itemCollection.getItemValueInteger("$lastEvent"));
 			
@@ -272,7 +272,7 @@ public class TestWorkflowKernelTestModels {
 			Assert.assertTrue(versions.size()==1);
 			ItemCollection version=versions.get(0);
 			
-			Assert.assertEquals("Hello", version.getItemValueString("txttitel"));
+			Assert.assertEquals("Hello", version.getItemValueString("_subject"));
 			Assert.assertEquals(1200, version.getProcessID());
 
 		} catch (Exception e) {
@@ -305,14 +305,14 @@ public class TestWorkflowKernelTestModels {
 
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
-			itemCollection.replaceItemValue("txtTitel", "Hello");
+			itemCollection.replaceItemValue("_subject", "Hello");
 			itemCollection.replaceItemValue("$processid", 1000);
 			itemCollection.replaceItemValue("$activityid", 10);
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 			
 			itemCollection = kernel.process(itemCollection);
-			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+			Assert.assertEquals("Hello", itemCollection.getItemValueString("_subject"));
 			Assert.assertEquals(1100, itemCollection.getProcessID());
 			Assert.assertEquals(10, itemCollection.getItemValueInteger("$lastEvent"));
 			
@@ -322,7 +322,7 @@ public class TestWorkflowKernelTestModels {
 			Assert.assertTrue(versions.size()==1);
 			ItemCollection version=versions.get(0);
 			
-			Assert.assertEquals("Hello", version.getItemValueString("txttitel"));
+			Assert.assertEquals("Hello", version.getItemValueString("_subject"));
 			Assert.assertEquals(1200, version.getProcessID());
 			// $lastEvent should be 20
 			Assert.assertEquals(20, version.getItemValueInteger("$lastEvent"));

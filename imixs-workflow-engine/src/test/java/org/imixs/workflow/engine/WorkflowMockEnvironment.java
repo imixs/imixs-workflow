@@ -23,8 +23,10 @@ import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
+import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -34,7 +36,8 @@ import org.mockito.stubbing.Answer;
 import org.xml.sax.SAXException;
 
 /**
- * Abstract base class for jUnit tests using the WorkflowService.
+ * The WorkflowMockEnvironment provides a mocked database environment for jUnit
+ * tests. The WorkflowMockEnvironment can be used to test the WorkflowService.
  * 
  * This test class mocks a complete workflow environment without the class
  * WorkflowService
@@ -54,8 +57,8 @@ import org.xml.sax.SAXException;
  * @see AbstractPluginTest, TestWorkflowService, ModelPluginMock
  * @author rsoika
  */
-public class AbstractWorkflowEnvironment {
-	private final static Logger logger = Logger.getLogger(AbstractWorkflowEnvironment.class.getName());
+public class WorkflowMockEnvironment {
+	private final static Logger logger = Logger.getLogger(WorkflowMockEnvironment.class.getName());
 	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 
 	Map<String, ItemCollection> database = null;
@@ -77,6 +80,22 @@ public class AbstractWorkflowEnvironment {
 
 	public void setModelPath(String modelPath) {
 		this.modelPath = modelPath;
+	}
+
+	public WorkflowContext getWorkflowContext() {
+		return workflowContext;
+	}
+
+	public WorkflowService getWorkflowService() {
+		return workflowService;
+	}
+
+	public ModelService getModelService() {
+		return modelService;
+	}
+
+	public DocumentService getDocumentService() {
+		return documentService;
 	}
 
 	@Before
@@ -115,7 +134,7 @@ public class AbstractWorkflowEnvironment {
 			public ItemCollection answer(InvocationOnMock invocation) throws Throwable {
 				Object[] args = invocation.getArguments();
 				ItemCollection entity = (ItemCollection) args[0];
-				// test if uniqueid is available 
+				// test if uniqueid is available
 				if (entity.getUniqueID().isEmpty()) {
 					entity.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
 				}
@@ -246,4 +265,19 @@ public class AbstractWorkflowEnvironment {
 		return database;
 	}
 
+	/**
+	 * Mocks a processing life cycle
+	 * 
+	 * @param workitem
+	 * @return
+	 * @throws ModelException
+	 * @throws PluginException
+	 * @throws ProcessingErrorException
+	 * @throws AccessDeniedException
+	 */
+	public ItemCollection processWorkItem(ItemCollection workitem)
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+		workitem = workflowService.processWorkItem(workitem);
+		return workitem;
+	}
 }

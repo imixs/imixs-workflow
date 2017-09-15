@@ -73,7 +73,8 @@ public class WorkflowKernel {
 	public static final String ACTIVITYIDLIST = "$activityidlist";
 	public static final String WORKFLOWGROUP = "$workflowgroup";
 	public static final String WORKFLOWSTATUS = "$workflowstatus";
-
+	public static final String WORKITEMIDREF = "$WorkItemIDRef";
+	
 	public static final String TYPE = "type";
 
 	public static final int MAXIMUM_ACTIVITYLOGENTRIES = 30;
@@ -83,6 +84,7 @@ public class WorkflowKernel {
 	private WorkflowContext ctx = null;
 	private Vector<String> vectorEdgeHistory = new Vector<String>();
 	private List<ItemCollection> splitWorkitems = null;
+	private RuleEngine ruleEngine=null;
 
 	private static Logger logger = Logger.getLogger(WorkflowKernel.class.getName());
 
@@ -93,6 +95,7 @@ public class WorkflowKernel {
 		ctx = actx;
 		pluginRegistry = new ArrayList<Plugin>();
 		splitWorkitems = new ArrayList<ItemCollection>();
+		ruleEngine = new RuleEngine();
 	}
 
 	/**
@@ -484,7 +487,6 @@ public class WorkflowKernel {
 
 			if (conditions != null && conditions.size() > 0) {
 
-				RuleEngine ruleEngine = new RuleEngine();
 				// evaluate all conditions and return the fist match...
 				for (Map.Entry<String, String> entry : conditions.entrySet()) {
 					String key = entry.getKey();
@@ -557,8 +559,6 @@ public class WorkflowKernel {
 			conditions = (Map<String, String>) event.getItemValue("keySplitConditions").get(0);
 
 			if (conditions != null) {
-
-				RuleEngine ruleEngine = new RuleEngine();
 
 				// evaluate all conditions and return the fist match evaluating to true (this is
 				// the flow for the master version)...
@@ -633,8 +633,6 @@ public class WorkflowKernel {
 			conditions = (Map<String, String>) event.getItemValue("keySplitConditions").get(0);
 
 			if (conditions != null) {
-
-				RuleEngine ruleEngine = new RuleEngine();
 
 				// evaluate all conditions and return the fist match evaluating to true (this is
 				// the flow for the master version)...
@@ -715,12 +713,12 @@ public class WorkflowKernel {
 	 */
 	private ItemCollection createVersion(ItemCollection sourceItemCollection) throws PluginException {
 		ItemCollection itemColNewVersion = (ItemCollection) sourceItemCollection.clone();
-		String id = sourceItemCollection.getItemValueString("$uniqueid");
+		String id = sourceItemCollection.getUniqueID();
 		// remove $Uniqueid to force the generation of a new Entity Instance.
-		itemColNewVersion.getAllItems().remove("$uniqueid");
+		itemColNewVersion.getAllItems().remove(UNIQUEID);
 
 		// update $WorkItemIDRef to current worktiemID
-		itemColNewVersion.replaceItemValue("$WorkItemIDRef", id);
+		itemColNewVersion.replaceItemValue(WORKITEMIDREF, id);
 
 		return itemColNewVersion;
 

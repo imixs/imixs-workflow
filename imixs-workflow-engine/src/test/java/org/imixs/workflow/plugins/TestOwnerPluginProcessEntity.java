@@ -5,7 +5,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.AbstractWorkflowEnvironment;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -39,7 +39,7 @@ import junit.framework.Assert;
  * @author rsoika
  * 
  */
-public class TestOwnerPluginProcessEntity extends AbstractWorkflowEnvironment {
+public class TestOwnerPluginProcessEntity {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPluginProcessEntity.class.getName());
 
@@ -47,15 +47,20 @@ public class TestOwnerPluginProcessEntity extends AbstractWorkflowEnvironment {
 	ItemCollection documentContext;
 	ItemCollection documentActivity, documentProcess;
 
+	WorkflowMockEnvironment workflowMockEnvironment;
+
 	@Before
 	public void setup() throws PluginException, ModelException {
 
-		this.setModelPath("/bpmn/acl-test.bpmn");
-		super.setup();
-
+		workflowMockEnvironment=new WorkflowMockEnvironment();
+		workflowMockEnvironment.setModelPath("/bpmn/acl-test.bpmn");
+		
+		workflowMockEnvironment.setup();
+		
+	
 		ownerPlugin = new OwnerPlugin();
 		try {
-			ownerPlugin.init(workflowContext);
+			ownerPlugin.init(workflowMockEnvironment.getWorkflowContext());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
@@ -87,7 +92,7 @@ public class TestOwnerPluginProcessEntity extends AbstractWorkflowEnvironment {
 		documentContext.replaceItemValue("namowner", list);
 		documentContext.replaceItemValue("$processid", 100);
 
-		documentActivity = this.getModel().getEvent(100, 10);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -114,7 +119,7 @@ public class TestOwnerPluginProcessEntity extends AbstractWorkflowEnvironment {
 	@Test
 	public void testOwnerfromActivityEntity() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(100, 20);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -142,7 +147,7 @@ public class TestOwnerPluginProcessEntity extends AbstractWorkflowEnvironment {
 	@Test
 	public void testOwnerfromProcessEntity() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(300, 10);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 10);
 		documentContext.replaceItemValue("$processid", 300);
 
 		try {
@@ -180,7 +185,7 @@ public class TestOwnerPluginProcessEntity extends AbstractWorkflowEnvironment {
 		documentContext.replaceItemValue("namOwner", list);
 		documentContext.replaceItemValue("$processid", 300);
 
-		documentActivity = this.getModel().getEvent(300, 20);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 20);
 
 		try {
 			ownerPlugin.run(documentContext, documentActivity);

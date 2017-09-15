@@ -4,7 +4,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.AbstractWorkflowEnvironment;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.ApplicationPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -21,7 +21,7 @@ import junit.framework.Assert;
  * @author rsoika 
  * 
  */
-public class TestApplicationPlugin extends AbstractWorkflowEnvironment {
+public class TestApplicationPlugin  {
 
 	private final static Logger logger = Logger
 			.getLogger(TestApplicationPlugin.class.getName());
@@ -29,16 +29,21 @@ public class TestApplicationPlugin extends AbstractWorkflowEnvironment {
 	ApplicationPlugin applicationPlugin = null;
 	ItemCollection documentContext;
 	ItemCollection documentActivity, documentProcess;
+	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setup() throws PluginException, ModelException {
 
-		this.setModelPath("/bpmn/plugin-test.bpmn");
-		super.setup();
+		workflowMockEnvironment=new WorkflowMockEnvironment();
+		workflowMockEnvironment.setModelPath("/bpmn/plugin-test.bpmn");
+		
+		workflowMockEnvironment.setup();
 
+		
+	
 		applicationPlugin = new ApplicationPlugin();
 		try {
-			applicationPlugin.init(workflowContext);
+			applicationPlugin.init(workflowMockEnvironment.getWorkflowContext());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
@@ -64,7 +69,7 @@ public class TestApplicationPlugin extends AbstractWorkflowEnvironment {
 	@Test
 	public void simpleTest() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(100, 10);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
 		documentActivity.replaceItemValue("numnextprocessid", 200);
 
 

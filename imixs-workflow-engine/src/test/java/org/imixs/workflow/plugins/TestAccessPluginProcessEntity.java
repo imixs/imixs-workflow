@@ -5,7 +5,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.AbstractWorkflowEnvironment;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.AccessPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -39,7 +39,7 @@ import junit.framework.Assert;
  * @author rsoika
  * 
  */
-public class TestAccessPluginProcessEntity extends AbstractWorkflowEnvironment {
+public class TestAccessPluginProcessEntity extends WorkflowMockEnvironment {
 
 	private final static Logger logger = Logger.getLogger(TestAccessPluginProcessEntity.class.getName());
 

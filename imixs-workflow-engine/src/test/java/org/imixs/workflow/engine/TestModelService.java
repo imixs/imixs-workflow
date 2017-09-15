@@ -19,7 +19,7 @@ import junit.framework.Assert;
  * 
  * @author rsoika
  */
-public class TestModelService extends AbstractWorkflowEnvironment {
+public class TestModelService extends WorkflowMockEnvironment {
 	public static final String DEFAULT_MODEL_VERSION="1.0.0";
 
 	@Before

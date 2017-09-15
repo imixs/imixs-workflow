@@ -5,7 +5,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.AbstractWorkflowEnvironment;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.AccessPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -22,23 +22,26 @@ import junit.framework.Assert;
  * @author rsoika
  * 
  */
-public class TestAccessPlugin extends AbstractWorkflowEnvironment {
+public class TestAccessPlugin  {
 
 	private final static Logger logger = Logger.getLogger(TestAccessPlugin.class.getName());
 
 	AccessPlugin accessPlugin = null;
 	ItemCollection documentContext;
 	ItemCollection documentActivity;
+	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setup() throws PluginException, ModelException {
-		this.setModelPath("/bpmn/TestAccessPlugin.bpmn");
 		
-		super.setup();
+		workflowMockEnvironment=new WorkflowMockEnvironment();
+		workflowMockEnvironment.setModelPath("/bpmn/TestAccessPlugin.bpmn");
+		
+		workflowMockEnvironment.setup();
 
 		accessPlugin = new AccessPlugin();
 		try {
-			accessPlugin.init(workflowContext);
+			accessPlugin.init(workflowMockEnvironment.getWorkflowContext());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
@@ -54,7 +57,7 @@ public class TestAccessPlugin extends AbstractWorkflowEnvironment {
 	@Test
 	public void simpleTest() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(100, 10);	
+		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);	
 		try {
 			accessPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -73,7 +76,7 @@ public class TestAccessPlugin extends AbstractWorkflowEnvironment {
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void testNoUpdate() throws ModelException {
-		documentActivity = this.getModel().getEvent(100, 20);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
 		
 		
 		try {
@@ -93,7 +96,7 @@ public class TestAccessPlugin extends AbstractWorkflowEnvironment {
 	@Test
 	public void fieldMappingTest() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(100, 10);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
 		
 		logger.info("[TestAccessPlugin] setup test data...");
 		Vector<String> list = new Vector<String>();
@@ -129,7 +132,7 @@ public class TestAccessPlugin extends AbstractWorkflowEnvironment {
 	@Test
 	public void staticUserGroupMappingTest() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(100, 30);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 30);
 		try {
 			accessPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -151,7 +154,7 @@ public class TestAccessPlugin extends AbstractWorkflowEnvironment {
 	@Test
 	public void fallbackTest() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(100, 10);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
 		
 		
 		

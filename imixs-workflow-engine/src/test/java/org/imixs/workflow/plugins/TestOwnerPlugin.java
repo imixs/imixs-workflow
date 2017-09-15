@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.engine.AbstractWorkflowEnvironment;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -23,7 +23,7 @@ import junit.framework.Assert;
  * @author rsoika
  * 
  */
-public class TestOwnerPlugin extends AbstractWorkflowEnvironment {
+public class TestOwnerPlugin  {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPlugin.class.getName());
 
@@ -31,16 +31,20 @@ public class TestOwnerPlugin extends AbstractWorkflowEnvironment {
 	ItemCollection documentContext;
 	ItemCollection documentActivity;
 
+	WorkflowMockEnvironment workflowMockEnvironment;
+
 	@Before
 	public void setup() throws PluginException, ModelException {
+
+		workflowMockEnvironment=new WorkflowMockEnvironment();
+		workflowMockEnvironment.setModelPath("/bpmn/TestOwnerPlugin.bpmn");
 		
-		this.setModelPath("/bpmn/TestOwnerPlugin.bpmn");
+		workflowMockEnvironment.setup();
 		
-		super.setup();
 
 		ownerPlugin = new OwnerPlugin();
 		try {
-			ownerPlugin.init(workflowContext);
+			ownerPlugin.init(workflowMockEnvironment.getWorkflowContext());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
@@ -56,7 +60,7 @@ public class TestOwnerPlugin extends AbstractWorkflowEnvironment {
 
 		documentContext.replaceItemValue("namCreator", "ronny");
 		
-		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);
+		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -134,7 +138,7 @@ public class TestOwnerPlugin extends AbstractWorkflowEnvironment {
 	@Test
 	public void staticUserGroupMappingTest() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(100, 10);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 		documentActivity.replaceItemValue("keyOwnershipFields", "[sam, tom,  anna ,]"); // 3
 																						// values
@@ -160,7 +164,7 @@ public class TestOwnerPlugin extends AbstractWorkflowEnvironment {
 	@Test
 	public void testNoUpdate() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(100, 20);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
 		
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
