@@ -803,7 +803,7 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * This method removes a single file attachment from the BlobWorkitem
+	 * This method removes a single file attachment from the workitem
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
@@ -853,7 +853,7 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns a list of file names attached to the current BlobWorkitem. File
+	 * Returns a list of file names attached to the current workitem. File
 	 * Attachments can be added using the method addFile().
 	 * 
 	 * @return
