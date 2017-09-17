@@ -192,7 +192,7 @@ public class ModelRestService {
 
 			buffer.append("</table>");
 			out.write(buffer.toString().getBytes());
-		} catch (Exception e) {
+		} catch (ModelException | IOException e) {
 			// no opp!
 			try {
 				out.write("No model definition found.".getBytes());
