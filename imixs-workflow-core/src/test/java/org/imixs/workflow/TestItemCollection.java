@@ -270,7 +270,6 @@ public class TestItemCollection {
 		ItemCollection itemCollection1 = new ItemCollection();
 		ItemCollection itemCollection2 = new ItemCollection();
 		ItemCollection child1 = new ItemCollection();
-		ItemCollection child2 = new ItemCollection();
 
 		itemCollection1.replaceItemValue("txtName", "Manfred");
 		itemCollection1.replaceItemValue("numID", new Integer(20));
@@ -391,14 +390,13 @@ public class TestItemCollection {
 	 * here we can see that a map is copied by reference!
 	 * 
 	 */
-	@SuppressWarnings({ "unused", "unchecked", "rawtypes" })
+	@SuppressWarnings({"unchecked", "rawtypes" })
 	@Test
 	public void testCopyValuesWithEmbeddedMap() {
 
 		ItemCollection itemCollection1 = new ItemCollection();
 		ItemCollection itemCollection2 = new ItemCollection();
 		Map child1 = new HashMap();
-		Map child2 = new HashMap();
 
 		itemCollection1.replaceItemValue("txtName", "Manfred");
 		itemCollection1.replaceItemValue("numID", new Integer(20));
@@ -510,6 +508,7 @@ public class TestItemCollection {
 		if (itemCol1 instanceof Cloneable) {
 			itemCol3 = (ItemCollection) itemCol1.clone();
 		}
+		Assert.assertNotNull(itemCol3);
 		Assert.assertEquals(1, itemCol3.getItemValueInteger("a"));
 		Assert.assertEquals("hello", itemCol3.getItemValueString("b"));
 		Assert.assertEquals("world", itemCol3.getItemValueString("c"));

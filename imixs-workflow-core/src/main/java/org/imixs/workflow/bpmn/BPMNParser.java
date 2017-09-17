@@ -60,9 +60,6 @@ public class BPMNParser {
 
 		// copy stream into byte array to store content later in BMPMModel object
 		byte[] rawData = streamToByteArray(bpmnInputStream);
-		// create new InputStream...
-		bpmnInputStream = new ByteArrayInputStream(rawData);
-
 		// Parse XML....
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
