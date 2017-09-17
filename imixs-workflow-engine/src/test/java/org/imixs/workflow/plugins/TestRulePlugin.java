@@ -59,8 +59,7 @@ public class TestRulePlugin {
 		Assert.assertEquals("Anna", adocumentContext.getItemValueString("txtName"));
 
 	}
-	
-	
+
 	/**
 	 * This test verifies the evaluation of a simple script unsing the json objects.
 	 * 
@@ -74,7 +73,7 @@ public class TestRulePlugin {
 		adocumentContext.replaceItemValue("txtName", "Anna");
 		ItemCollection adocumentActivity = new ItemCollection();
 
-		// access single value 
+		// access single value
 		String script = "var result={}; if (workitem.txtname && workitem.txtname[0]==='Anna') result.numage=50;";
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
@@ -85,9 +84,6 @@ public class TestRulePlugin {
 		Assert.assertEquals("Anna", adocumentContext.getItemValueString("txtName"));
 		Assert.assertEquals(50, adocumentContext.getItemValueInteger("numage"));
 
-
-		
-	
 	}
 
 	/**
@@ -105,40 +101,34 @@ public class TestRulePlugin {
 	 * 
 	 * // 1) test without any script:
 	 * adocumentActivity.replaceItemValue("txtBusinessRUle", null);
-	 * Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-	 * adocumentActivity));
+	 * Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 	 * 
 	 * // 2) test with an empty script:
 	 * adocumentActivity.replaceItemValue("txtBusinessRUle", "");
-	 * Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-	 * adocumentActivity));
+	 * Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 	 * 
 	 * // 3) test script without isValid variable String script =
 	 * "var a=1;var b=2;"; System.out.println("Script=" + script);
 	 * adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-	 * Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-	 * adocumentActivity));
+	 * Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 	 * 
 	 * // 2) test true case script =
 	 * "var a=1;var b=2;var isValid = ((a<b) && 'Anna'==txtname[0]);";
 	 * System.out.println("Script=" + script);
 	 * adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-	 * Assert.assertTrue(rulePlugin.isValid(adocumentContext,
-	 * adocumentActivity));
+	 * Assert.assertTrue(rulePlugin.isValid(adocumentContext, adocumentActivity));
 	 * 
 	 * // 2) test false case script =
 	 * "var a=1;var b=2;var isValid = ((a>b) && 'Anna'==txtname[0]);";
 	 * System.out.println("Script=" + script);
 	 * adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-	 * Assert.assertFalse(rulePlugin.isValid(adocumentContext,
-	 * adocumentActivity));
+	 * Assert.assertFalse(rulePlugin.isValid(adocumentContext, adocumentActivity));
 	 * 
 	 * }
 	 */
 
 	/**
-	 * This test verifies if in case of isValid==false a PluginExeption is
-	 * thrown
+	 * This test verifies if in case of isValid==false a PluginExeption is thrown
 	 * 
 	 * @throws ScriptException
 	 * @throws PluginException
@@ -158,7 +148,7 @@ public class TestRulePlugin {
 		Assert.fail();
 
 	}
-	
+
 	@Test(expected = PluginException.class)
 	public void testResultObjectPluginException() throws ScriptException, PluginException {
 
@@ -176,9 +166,9 @@ public class TestRulePlugin {
 	}
 
 	/**
-	 * This test verifies if in case of isValid==false a PluginExeption is
-	 * thrown and evalues the data contained in the Exception. There for the
-	 * script adds an errorCode and a errorMessage
+	 * This test verifies if in case of isValid==false a PluginExeption is thrown
+	 * and evalues the data contained in the Exception. There for the script adds an
+	 * errorCode and a errorMessage
 	 * 
 	 * @throws ScriptException
 	 * @throws PluginException
@@ -358,9 +348,8 @@ public class TestRulePlugin {
 	 * (result != null) { Assert.assertEquals("Manfred", result[0]); } else
 	 * Assert.fail();
 	 * 
-	 * result = rulePlugin.evaluateScriptObject(engine, "someData"); if (result
-	 * != null) { Assert.assertEquals("Eddy", result[0]); } else Assert.fail();
-	 * }
+	 * result = rulePlugin.evaluateScriptObject(engine, "someData"); if (result !=
+	 * null) { Assert.assertEquals("Eddy", result[0]); } else Assert.fail(); }
 	 */
 
 	/**
@@ -430,7 +419,7 @@ public class TestRulePlugin {
 		System.out.println("Script=" + script);
 
 		ItemCollection adocumentContext = new ItemCollection();
-		adocumentContext.replaceItemValue("_amount_brutto", new BigDecimal(5000.51));
+		adocumentContext.replaceItemValue("_amount_brutto", BigDecimal.valueOf(5000.51d));
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -491,8 +480,8 @@ public class TestRulePlugin {
 	}
 
 	/**
-	 * This test test if a the properties of an activity entity can be evaluated
-	 * by a script
+	 * This test test if a the properties of an activity entity can be evaluated by
+	 * a script
 	 * 
 	 * @throws ScriptException
 	 * @throws PluginException
@@ -518,12 +507,10 @@ public class TestRulePlugin {
 		Assert.assertNotNull(adocumentContext);
 
 	}
-	
-	
 
 	/**
-	 * This test test if a the properties of an activity entity can be evaluated
-	 * by a script
+	 * This test test if a the properties of an activity entity can be evaluated by
+	 * a script
 	 * 
 	 * @throws ScriptException
 	 * @throws PluginException
@@ -547,14 +534,14 @@ public class TestRulePlugin {
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
 		Assert.assertNotNull(adocumentContext);
-		
+
 		Assert.assertEquals("0", adocumentActivity.getItemValueString("keyMailEnabled"));
 
 	}
 
 	/**
-	 * This test test if a the properties of an workitem entity can be evaluated
-	 * by a script
+	 * This test test if a the properties of an workitem entity can be evaluated by
+	 * a script
 	 * 
 	 * @throws ScriptException
 	 * @throws PluginException
@@ -740,8 +727,8 @@ public class TestRulePlugin {
 	}
 
 	/**
-	 * following script should not throw an exception because of the fact that
-	 * the errorCode is undefined.
+	 * following script should not throw an exception because of the fact that the
+	 * errorCode is undefined.
 	 * 
 	 * @see issue #108
 	 * 
@@ -807,7 +794,6 @@ public class TestRulePlugin {
 	 * 
 	 */
 
-	
 	/**
 	 * This test verifies a json result object
 	 * 
@@ -830,14 +816,12 @@ public class TestRulePlugin {
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
 		Assert.assertNotNull(adocumentContext);
 
-
 		Assert.assertEquals("Hello World", adocumentContext.getItemValueString("someitem"));
-		
+
 		Assert.assertEquals(1, adocumentContext.getItemValueInteger("somenumber"));
 
 	}
-	
-	
+
 	/**
 	 * This test verifies the nextTask behavior. If set then keyFollowUp and
 	 * numnextprocessid should be overwritten by the RulePlugin
@@ -885,10 +869,10 @@ public class TestRulePlugin {
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		
+
 		// run plugin
-				adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-				Assert.assertNotNull(adocumentContext);
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
 
 		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
 		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
@@ -994,8 +978,8 @@ public class TestRulePlugin {
 	}
 
 	/**
-	 * This test verifies setting a new value list via the result object as an
-	 * JSON object
+	 * This test verifies setting a new value list via the result object as an JSON
+	 * object
 	 * 
 	 * @throws ScriptException
 	 * @throws PluginException
@@ -1030,8 +1014,8 @@ public class TestRulePlugin {
 	}
 
 	/**
-	 * This test tests if the workitem object can be used as an JSON object -
-	 * using the nahorn javascript engine
+	 * This test tests if the workitem object can be used as an JSON object - using
+	 * the nahorn javascript engine
 	 * 
 	 * This test is only runable on JDK-8
 	 * 
@@ -1065,8 +1049,7 @@ public class TestRulePlugin {
 	}
 
 	/**
-	 * This test tests if an activity ItemCollection can be updated by the
-	 * script
+	 * This test tests if an activity ItemCollection can be updated by the script
 	 * 
 	 * @throws ScriptException
 	 * @throws PluginException

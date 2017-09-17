@@ -247,7 +247,7 @@ public class WorkflowMockEnvironment {
 	 */
 	public void loadModel() {
 		if (this.modelPath != null) {
-			InputStream inputStream = getClass().getResourceAsStream(this.modelPath);
+			InputStream inputStream = WorkflowMockEnvironment.class.getResourceAsStream(this.modelPath);
 			try {
 				logger.info("loading model: " + this.modelPath + "....");
 				model = BPMNParser.parseModel(inputStream, "UTF-8");
