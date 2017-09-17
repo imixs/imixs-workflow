@@ -365,8 +365,10 @@ public class ItemCollection implements Cloneable {
 				if (o instanceof Float)
 					return (Float) o;
 
-				if (o instanceof Double)
-					return (Float) o;
+				if (o instanceof Double) {
+					Double d=(Double)o;
+					return (float)d.doubleValue();
+				}	
 
 				if (o instanceof Long)
 					return (Long) o;

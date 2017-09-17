@@ -111,6 +111,15 @@ public class TestItemCollection {
 		// Assert.assertEquals(9.723,
 		// itemCollection.getItemValueFloat("string"),
 		// 0);
+		
+		
+		// test Double to Float...
+		double d=50.777;
+		itemCollection.replaceItemValue("double", d);
+		Assert.assertEquals(d, itemCollection.getItemValueDouble("double"),0);
+		// test float ...
+		float f1=itemCollection.getItemValueFloat("double");
+		Assert.assertEquals("50.777", ""+f1);
 
 	}
 
