@@ -6,6 +6,11 @@ Imixs-Workflow is an open source project and we sincerely invite you to particip
 
 ## Coding Guidelines
 
-We use Eclipse as the main development platform. Also the code style of Imixs-Workflow is based on the Eclipse Code Style rules. You can import the file 'imixs-code-style.xml' into the Eclipse IDE to get the actual formating rules (_Preferences -> Java-Code-Style Formatter Profile_).
+We use Eclipse as the main development platform. Also the code style of Imixs-Workflow is based on the Eclipse Code Style rules. 
+
+- tab is used for indention
+- line length is set to 120
+
+You can import the file 'imixs-code-style.xml' into the Eclipse IDE to get the actual formating rules (_Preferences -> Java-Code-Style Formatter Profile_).
 
 Please do not reformat existing code. If you use an other IDE like Eclipse we recommend to import an appropriate formatting style rule. 
