@@ -1,6 +1,6 @@
 #The Workflow Kernel
 
-The class _org.imxis.workflow.WorkflowKernel_ is the core component of the Imixs-Workflow API. The _WorkflowKernel_ controls the processing life cycle of a process instance according to the BPMN process model. 
+The class _org.imxis.workflow.WorkflowKernel_ is the core component of the Imixs-Workflow API. The _WorkflowKernel_ controls the processing life cycle of a process instance (Workitem) according to an Imixs-BPMN process model. 
 The processing life cycle is defined by a BPMN _Event_ describing the transition between two BPMN _Task_ elements.
 
 <img src="../images/modelling/example_01.png"/>
@@ -24,9 +24,9 @@ The _WorkflowKernel_ controls the following attributes of a process instance:
 
 
 ## The Processing Phase
-By calling the method process() from the _WorkflowKernel_ the processing phase or a WorkItem is started. During the processing phase the _WorkflowKernel_ loads the assigned BPMN event and triggers all registered plugins to be executed.
+By calling the method _process()_ from the _WorkflowKernel_ the processing phase for a WorkItem is started. During the processing phase the _WorkflowKernel_ loads the assigned BPMN event and triggers all registered plugins to be executed.
 During the processing phase additional BPMN Events can be triggered according to the model definition. See the section ['How to model'](../modelling/howto.html) for further details. 
-After the processing phase is completed the _WorkflowKernel_ applies the new BPMN Task element to the WorkItem as defined by the process model.
+When the processing phase is completed the _WorkflowKernel_ applies the new BPMN Task element to the workitem as defined by the process model.
  
 ### Conditional Events
 
@@ -35,24 +35,27 @@ A conditional-event can be placed before an _ExclusiveGateway_ where each output
 
 <img src="../images/modelling/example_08.png"/>
  
-The expressions are evaluated by teh _WorkflowKernel_ to compute the output of a BPMN  Gateway element. 
+The expressions are evaluated by the _WorkflowKernel_ to compute the output of a BPMN  Gateway element. 
 See the section ['How to model'](../modelling/howto.html) for further details about modeling Conditional Events.  
 
 
 
 ### Split Events
 
-In Imixs-Workflow a BPMN _Event_ followed by a _Parallel Gateway_ is called a _split_ or _fork_ event and used to create new versions of the current process instance during the processing phase.
+In Imixs-Workflow a BPMN _Event_ followed by a _Parallel Gateway_ is called a _split-event_ and used to create new versions of the current process instance during the processing phase.
 
-<img src="../images/modelling/example_10.png"/>
+<img src="../images/modelling/example_11.png"/>
 
-The WorkflowKernel returns new versions of the current process instance by the method _getSplitWorkitems()_ and stores the IDs of these versions into the attribute '$uniqueidVersions'. A process instance and all its vesions will have the same $workitemid. A version holds a reference to the source workitem in the attribute '$workitemidRef'.
+The WorkflowKernel returns new versions of the current process instance by the method _getSplitWorkitems()_ and stores the IDs of these versions into the attribute '$uniqueidVersions'. A process instance and all its versions will have the same $workitemID. A version holds a reference to the source workitem in the attribute '$workitemidRef'.
 
-|Attriubte      	| Source | Version | Description 				 						|
+|Attribute      	| Source | Version | Description 				 						|
 |-------------------|:------:|:-------:|----------------------------------------------------|
 |$workitemID    	| x      | x       |A shared key across all versions and the source workitem.					|
-|$workitemIDRef		|        | x       |A reference to the UnqiueID of the Source workitem	| 
+|$workitemIDRef		|        | x       |A reference to the UnqiueID of the Source workitem	|  	 	
 |$unqiueIDVersions	| x      |         |A list of UnqiueIDs to all created versions 		|
+
+
+**Note:** The _WorklfowKernel_ expects that each outcome of a _Parallel Gateway_ creating a new version is followed by an Event element. If not, a _ModelException_ is thrown. 
 
 See the section ['How to model'](../modelling/howto.html) for details about modeling Split Events.  
 
@@ -66,7 +69,7 @@ In the processing phase of a WorkItem the _WorkflowKernel_ calls the plug-ins re
 
 Plugins registered by the _WorkflowManager_ will be executed during the processing phase of a workitem. See the section [Plugin API](./plugin-api.html) for further details about the plugin concept. 
  
-The registration of a plugin can be done by an instance of a plugin class or by the class name. Plugins can also be injected by a CDI mechanism. 
+The registration of a plugin can be done by an instance of a plugin class or by the class name. Plugins are also supporting the the injection mechanism of CDI. 
 
     kernel = new WorkflowKernel(ctx);
     // register plugin by name
