@@ -106,7 +106,6 @@ To control the process flow by the result of an evaluated business rule a script
 |----------|------------|-----------------------------------------------| 
 | followUp | integer    | Defines a followUp event assigned to the next task, which will be called after the current event is completed.      |
 | isValid  | boolean    | If false the current processing live-cycle will stop and a PluginException will be thrown.     |
-| nextTask | integer    | Defines the outgoing Task                     |
 | errorCode| String     | The errorCode of the PluginException if _isValid_ is set to 'false'. The default errorCode is 'VALIDATION_ERROR'    |
 | errorMessage | String | A String value or String array which contains error messages provided to the PluginException    |
 
@@ -126,15 +125,6 @@ If the script sets the variable 'followUp' an optional workflow event can be tri
 	    result.followUp=30;
 
 This rule evaluates the property 'budget' from the current workItem. If the value is higher than 10.000 EUR the activity with the ID=20 will be processed in the next step.  If the budget is lower than 10.000 EUR the activity with the ID=30 will be processed.
-
-### result.nextTask
-Another way to influence the flow of the process is to set the variable 'nextTask'. This variable can be used to change the outgoing flow of a workflow event, which is normally defined by the workflow model. 
- 
-	 var result={};
-	 if (workitem.budget[0]>10000)
-	    result.nextTask=2100;
-	 else
-	    result.nextTask=3100; 
 
 ### result.isValid 
 The variable 'isValid' can be used in a business rule to validate the data of a workitem. If the script set the variable 'isValid' to 'false' then the plugin throws a PluginExcpetion. The Plugin evaluates the optional variables 'errorCode' and errorMessage. If these variables are set by the Script then the Plugin 

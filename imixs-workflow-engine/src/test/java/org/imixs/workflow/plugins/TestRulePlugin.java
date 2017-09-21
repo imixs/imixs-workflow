@@ -249,108 +249,9 @@ public class TestRulePlugin {
 
 	}
 
-	/**
-	 * This test verifies the nextTask behavior. If set then keyFollowUp and
-	 * numnextprocessid should be overwritten by the RulePlugin
-	 * 
-	 * @throws ScriptException
-	 * @throws PluginException
-	 */
-	@Test
-	public void testNextTask() throws ScriptException, PluginException {
+	
 
-		ItemCollection adocumentContext = new ItemCollection();
-		ItemCollection adocumentActivity = new ItemCollection();
 
-		// set a business rule
-		String script = "var a=1.0;var b=2;var nextTask =a+b;";
-
-		System.out.println("Script=" + script);
-		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-
-		// run plugin
-		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
-
-		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
-		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
-
-		int nextTask = adocumentActivity.getItemValueInteger("numNextprocessiD");
-
-		Assert.assertTrue(!"1".equals(sFllowUp));
-
-		Assert.assertEquals(followUp, 0);
-		Assert.assertEquals(3, nextTask);
-
-	}
-
-	/**
-	 * This test verifies a combination of nextActivity and nextTask behavior.
-	 * 
-	 * @throws ScriptException
-	 * @throws PluginException
-	 */
-	@Test
-	public void testFollowUpAndNextTask() throws ScriptException, PluginException {
-
-		ItemCollection adocumentContext = new ItemCollection();
-		ItemCollection adocumentActivity = new ItemCollection();
-
-		// set a business rule
-		String script = "var a=1.0;var b=2;var nextTask =a+b;var followUp =a+b;";
-
-		System.out.println("Script=" + script);
-		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-
-		// run plugin
-		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
-
-		int nextTask = adocumentActivity.getItemValueInteger("numNextprocessiD");
-
-		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
-		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
-
-		Assert.assertEquals("1", sFllowUp);
-
-		Assert.assertEquals(followUp, 3);
-
-		Assert.assertEquals(3, nextTask);
-
-	}
-
-	/**
-	 * This Test tests if we can evaluate any value provided in the script
-	 * 
-	 * @throws ScriptException
-	 * @throws PluginException
-	 */
-	/*
-	 * @Test public void testValueEvaluation() throws ScriptException,
-	 * PluginException {
-	 * 
-	 * ItemCollection adocumentContext = new ItemCollection(); ItemCollection
-	 * adocumentActivity = new ItemCollection();
-	 * 
-	 * adocumentContext.replaceItemValue("txtName", "Anna");
-	 * adocumentContext.replaceItemValue("type", "workitem");
-	 * 
-	 * // set a business rule String script =
-	 * "if ('Anna'==txtname[0]) txtname[0]='Manfred';" + "var someData='Eddy';";
-	 * 
-	 * System.out.println("Script=" + script);
-	 * adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-	 * 
-	 * ScriptEngine engine = rulePlugin.evaluateBusinessRule(adocumentContext,
-	 * adocumentActivity);
-	 * 
-	 * Object[] result = rulePlugin.evaluateScriptObject(engine, "txtname"); if
-	 * (result != null) { Assert.assertEquals("Manfred", result[0]); } else
-	 * Assert.fail();
-	 * 
-	 * result = rulePlugin.evaluateScriptObject(engine, "someData"); if (result !=
-	 * null) { Assert.assertEquals("Eddy", result[0]); } else Assert.fail(); }
-	 */
 
 	/**
 	 * only to evaluate some behavior
@@ -822,35 +723,7 @@ public class TestRulePlugin {
 
 	}
 
-	/**
-	 * This test verifies the nextTask behavior. If set then keyFollowUp and
-	 * numnextprocessid should be overwritten by the RulePlugin
-	 * 
-	 * @throws ScriptException
-	 * @throws PluginException
-	 */
-	@Test
-	public void testResultObjectNextTask() throws ScriptException, PluginException {
-
-		ItemCollection adocumentContext = new ItemCollection();
-		ItemCollection adocumentActivity = new ItemCollection();
-
-		// set a business rule
-		String script = "var a=1.0;var b=2;var result={}; result.nextTask =a+b;";
-
-		System.out.println("Script=" + script);
-		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-
-		// run plugin
-		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
-
-		int nextTask = adocumentActivity.getItemValueInteger("numNextprocessiD");
-
-		Assert.assertEquals(3, nextTask);
-
-	}
-
+	
 	/**
 	 * This test verifies the follUp behavior. If set then keyFollowUp and
 	 * numNextActivity should be overwritten by the RulePlugin
@@ -883,40 +756,7 @@ public class TestRulePlugin {
 
 	}
 
-	/**
-	 * This test verifies a combination of nextActivity and nextTask behavior.
-	 * 
-	 * @throws ScriptException
-	 * @throws PluginException
-	 */
-	@Test
-	public void testResultObjectFollowUpAndNextTask() throws ScriptException, PluginException {
-
-		ItemCollection adocumentContext = new ItemCollection();
-		ItemCollection adocumentActivity = new ItemCollection();
-
-		// set a business rule
-		String script = "var a=1.0;var b=2;var result={}; result.nextTask =a+b;result.followUp =a+b;";
-
-		System.out.println("Script=" + script);
-		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-
-		// run plugin
-		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
-
-		int nextTask = adocumentActivity.getItemValueInteger("numNextprocessiD");
-
-		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
-		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
-
-		Assert.assertEquals("1", sFllowUp);
-
-		Assert.assertEquals(followUp, 3);
-
-		Assert.assertEquals(3, nextTask);
-
-	}
+	
 
 	/**
 	 * This test verifies setting a new value via the result object

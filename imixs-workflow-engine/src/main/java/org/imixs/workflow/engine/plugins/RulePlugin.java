@@ -189,22 +189,6 @@ public class RulePlugin extends AbstractPlugin {
 				}
 			}
 
-			// now test the variable 'nextTask'
-			Object nextTask = null;
-			// first test result object
-			if (result.hasItem("nextTask")) {
-				nextTask = result.getItemValueString("nextTask");
-				result.removeItem("nextTask");
-			}
-			if (nextTask != null) {
-				// try to get double value...
-				Double d = Double.valueOf(nextTask.toString());
-				Long lNextTask = d.longValue();
-				if (lNextTask != null && lNextTask > 0) {
-					adocumentActivity.replaceItemValue("numNextProcessID", lNextTask);
-				}
-			}
-
 			// if result has item values then we update now the current
 			// workitem iterate over all entries
 
@@ -240,7 +224,6 @@ public class RulePlugin extends AbstractPlugin {
 		logger.warning("Script is deprecated - use JSON object 'result'");
 		// first we test for the isValid variable
 		Boolean isValidActivity = true;
-
 
 		// if isValid is not provided by result then we look for a
 		// direct var definition (this is for backward compatibility of
@@ -291,25 +274,6 @@ public class RulePlugin extends AbstractPlugin {
 			if (followUpActivity != null && followUpActivity > 0) {
 				adocumentActivity.replaceItemValue("keyFollowUp", "1");
 				adocumentActivity.replaceItemValue("numNextActivityID", followUpActivity);
-
-			}
-		}
-
-		// now test the variable 'nextTask'
-		Object nextTask = null;
-		// first test result object
-
-		// if nextTask is not provided by the result var, then we look
-		// for a direct var definition (this is for backward
-		// compatibility of older scripts)
-		nextTask = ruleEngine.getScriptEngine().get("nextTask");
-
-		if (nextTask != null) {
-			// try to get double value...
-			Double d = Double.valueOf(nextTask.toString());
-			Long lNextTask = d.longValue();
-			if (lNextTask != null && lNextTask > 0) {
-				adocumentActivity.replaceItemValue("numNextProcessID", lNextTask);
 
 			}
 		}
