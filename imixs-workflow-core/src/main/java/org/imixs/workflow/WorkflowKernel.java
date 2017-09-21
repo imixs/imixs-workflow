@@ -435,8 +435,6 @@ public class WorkflowKernel {
 	 * A split-event contains the attribute 'keySplitConditions' defining the target
 	 * for the current master version (condition evaluates to 'true')
 	 * 
-	 * 
-	 * 
 	 * @return Task entity
 	 * @throws ModelException
 	 * @throws PluginException
@@ -489,7 +487,7 @@ public class WorkflowKernel {
 			throws PluginException, ModelException {
 
 		Map<String, String> conditions = null;
-		// test if we have an split event
+		// test if we have an exclusive condition
 		if (event.hasItem("keyExclusiveConditions")) {
 			// get first element
 			conditions = (Map<String, String>) event.getItemValue("keyExclusiveConditions").get(0);
@@ -538,7 +536,7 @@ public class WorkflowKernel {
 						}
 					}
 				}
-				logger.fine("split event: no matching condition");
+				logger.fine("conditional event: no matching condition found.");
 			}
 		}
 		return null;
@@ -578,10 +576,11 @@ public class WorkflowKernel {
 						int taskID = Integer.parseInt(key.substring(5));
 						boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
 						if (bmatch) {
-							logger.fine("matching split event: " + expression);
+							logger.fine("matching split Task found: " + expression);
 							ItemCollection itemColNextTask = this.ctx.getModelManager()
 									.getModel(documentContext.getModelVersion()).getTask(taskID);
 							if (itemColNextTask != null) {
+								// Conditional Target Task evaluated to 'true' was found!
 								return itemColNextTask;
 							}
 						}
@@ -591,28 +590,27 @@ public class WorkflowKernel {
 						int eventID = Integer.parseInt(key.substring(6));
 						boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
 						if (bmatch) {
-							logger.fine("matching conditional event: " + expression);
+							logger.fine("matching split Event found: " + expression);
 							// we update the documentContext....
 							ItemCollection itemColEvent = this.ctx.getModelManager()
 									.getModel(documentContext.getModelVersion())
 									.getEvent(documentContext.getProcessID(), eventID);
 							if (itemColEvent != null) {
 								// create follow up event....
-
 								event.replaceItemValue("keyFollowUp", "1");
 								event.replaceItemValue("numNextActivityID", eventID);
-
 								// get current task...
 								ItemCollection itemColNextTask = this.ctx.getModelManager()
 										.getModel(documentContext.getItemValueString(MODELVERSION))
 										.getTask(documentContext.getProcessID());
-
 								return itemColNextTask;
 							}
 						}
 					}
 				}
-				logger.fine("split event: no matching condition");
+				// we found not condition evaluated to 'true', so the workitem will not leave
+				// the current task.
+				logger.fine("split event: no matching condition, current Task will not change.");
 			}
 		}
 
@@ -620,9 +618,11 @@ public class WorkflowKernel {
 	}
 
 	/**
-	 * This method evaluates conditional split expressions to 'false'. for each
-	 * condition a new process instance will be created. In case of a followUp
-	 * event, the process instance will be processed by the current kernel instance.
+	 * This method evaluates conditional split expressions to 'false'. For each
+	 * condition a new process instance will be created and processed by the
+	 * expected follow-up event. The expression evaluated to 'false' MUST be
+	 * followed by an Event. If not, a ModelExcption is thrown to indicate that the
+	 * new version can not be processed correctly!
 	 * 
 	 * @param conditions
 	 * @param documentContext
@@ -649,22 +649,15 @@ public class WorkflowKernel {
 					String key = entry.getKey();
 					String expression = entry.getValue();
 					if (key.startsWith("task=")) {
-						int taskID = Integer.parseInt(key.substring(5));
+						// if a task evaluated to false, the model is invalid.
 						boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
 						if (!bmatch) {
-							logger.fine("matching split event: " + expression);
-							ItemCollection itemColNextTask = this.ctx.getModelManager()
-									.getModel(documentContext.getModelVersion()).getTask(taskID);
-							if (itemColNextTask != null) {
+							String sErrorMessage = "Outcome of Split-Event " + event.getItemValueInteger("numProcessid")
+									+ "." + +event.getItemValueInteger("numActivityid") + " (" + event.getModelVersion()
+									+ ") evaluate to false must not be connected to a task. ";
 
-								// aktuelles Object klonen.....
-								ItemCollection cloned = createVersion(documentContext);
-								// set new $processid
-								cloned.replaceItemValue(PROCESSID,
-										Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
-								// add to cache...
-								splitWorkitems.add(cloned);
-							}
+							logger.warning(sErrorMessage + " Condition = " + expression);
+							throw new ModelException(ModelException.INVALID_MODEL, sErrorMessage);
 						}
 					}
 
@@ -683,8 +676,9 @@ public class WorkflowKernel {
 										.getModel(documentContext.getItemValueString(MODELVERSION))
 										.getTask(documentContext.getProcessID());
 
-								// aktuelles Object klonen.....
+								// clone current instance to a new version...
 								ItemCollection cloned = createVersion(documentContext);
+								logger.info("created new version=" + cloned.getUniqueID());
 								// set new $processid
 								cloned.replaceItemValue(PROCESSID,
 										Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
