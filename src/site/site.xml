@@ -139,7 +139,7 @@
 			<item name="Testing" href="./testing.html" />
 			<item name="Docker" href="./docker.html" />
 			<item name="Maven" href="./maven.html" />
-			<item name="Contribute" href="./contribute.html" />
+			<item name="Contribute" href="./contributing.html" />
 			<item name="JavaDocs" target="_blank" href="./apidocs/index.html" />
 		</menu>
 
