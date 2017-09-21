@@ -27,12 +27,12 @@ import org.xml.sax.SAXException;
  * @author rsoika
  * 
  */
-public class TestWorkflowKernelTestModels {
+public class TestWorkflowKernelModels {
 
 	WorkflowKernel kernel = null;
 	protected SessionContext ctx;
 	protected WorkflowContext workflowContext;
-	private static Logger logger = Logger.getLogger(TestWorkflowKernelTestModels.class.getName());
+	private static Logger logger = Logger.getLogger(TestWorkflowKernelModels.class.getName());
 
 	@Before
 	public void setup() throws PluginException, ModelException, ParseException, ParserConfigurationException,
@@ -230,11 +230,7 @@ public class TestWorkflowKernelTestModels {
 		}
 
 	}
-	
-	
-	
-	
-	
+
 	/**
 	 * Test model split_event1.bpmn.
 	 * 
@@ -260,20 +256,27 @@ public class TestWorkflowKernelTestModels {
 			itemCollection.replaceItemValue("$activityid", 10);
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
-			
 			itemCollection = kernel.process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("_subject"));
 			Assert.assertEquals(1100, itemCollection.getProcessID());
 			Assert.assertEquals(10, itemCollection.getItemValueInteger("$lastEvent"));
-			
+
 			// test new version...
 			List<ItemCollection> versions = kernel.getSplitWorkitems();
 			Assert.assertNotNull(versions);
-			Assert.assertTrue(versions.size()==1);
-			ItemCollection version=versions.get(0);
-			
+			Assert.assertTrue(versions.size() == 1);
+			ItemCollection version = versions.get(0);
+
 			Assert.assertEquals("Hello", version.getItemValueString("_subject"));
 			Assert.assertEquals(1200, version.getProcessID());
+
+			// verify attribute $UNIQUEIDVERSIONS in source and version worktiem
+			Assert.assertFalse(version.hasItem(WorkflowKernel.UNIQUEIDVERSIONS));
+			Assert.assertTrue(itemCollection.hasItem(WorkflowKernel.UNIQUEIDVERSIONS));
+
+			String sVersionID = itemCollection.getItemValueString(WorkflowKernel.UNIQUEIDVERSIONS);
+			// versionid must be equal to source workitem
+			Assert.assertEquals(version.getUniqueID(), sVersionID);
 
 		} catch (Exception e) {
 			Assert.fail();
@@ -282,9 +285,7 @@ public class TestWorkflowKernelTestModels {
 		}
 
 	}
-	
-	
-	
+
 	/**
 	 * Test model split_event1.bpmn.
 	 * 
@@ -310,24 +311,22 @@ public class TestWorkflowKernelTestModels {
 			itemCollection.replaceItemValue("$activityid", 10);
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
-			
 			itemCollection = kernel.process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("_subject"));
 			Assert.assertEquals(1100, itemCollection.getProcessID());
 			Assert.assertEquals(10, itemCollection.getItemValueInteger("$lastEvent"));
-			
+
 			// test new version...
 			List<ItemCollection> versions = kernel.getSplitWorkitems();
 			Assert.assertNotNull(versions);
-			Assert.assertTrue(versions.size()==1);
-			ItemCollection version=versions.get(0);
-			
+			Assert.assertTrue(versions.size() == 1);
+			ItemCollection version = versions.get(0);
+
 			Assert.assertEquals("Hello", version.getItemValueString("_subject"));
 			Assert.assertEquals(1200, version.getProcessID());
 			// $lastEvent should be 20
 			Assert.assertEquals(20, version.getItemValueInteger("$lastEvent"));
-				
-			
+
 			// Master $unqiueid must not match the version $uniqueid
 			Assert.assertFalse(itemCollection.getUniqueID().equals(version.getUniqueID()));
 
@@ -338,6 +337,5 @@ public class TestWorkflowKernelTestModels {
 		}
 
 	}
-
 
 }

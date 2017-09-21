@@ -30,12 +30,12 @@ import org.mockito.Mockito;
  * 
  * @author rsoika
  */
-public class TestWorkflowKernelDefaultModel {
+public class TestWorkflowKernel {
 
 	WorkflowKernel kernel = null;
 	protected SessionContext ctx;
 	protected WorkflowContext workflowContext;
-	private static Logger logger = Logger.getLogger(TestWorkflowKernelDefaultModel.class.getName());
+	private static Logger logger = Logger.getLogger(TestWorkflowKernel.class.getName());
 
 	@Before
 	public void setup() throws PluginException {
