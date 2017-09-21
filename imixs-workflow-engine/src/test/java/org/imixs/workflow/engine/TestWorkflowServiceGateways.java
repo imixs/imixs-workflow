@@ -123,6 +123,7 @@ public class TestWorkflowServiceGateways {
 
 		Assert.assertEquals("Hello", version.getItemValueString("_subject"));
 		Assert.assertEquals(1200, version.getProcessID());
+		Assert.assertEquals(20, version.getItemValueInteger("$lastevent"));
 
 	}
 
