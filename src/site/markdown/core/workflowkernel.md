@@ -1,17 +1,72 @@
-#The WorkflowKernel
+#The Workflow Kernel
 
-The WorkflowKernel is the core component of the Imixs-Workflow API. The WorkflowKernel controls the flow of a process instance according to the process model definition. The WorkflowKernel is initialized by the [Workflowmanager](./workflowmanager.html) which provides the Model definition and also the plugins applied to the process model. To process a single Workitem the _WorkflowKernel_ provides the public method process().
+The class _org.imxis.workflow.WorkflowKernel_ is the core component of the Imixs-Workflow API. The _WorkflowKernel_ controls the processing life cycle of a process instance according to the BPMN process model. 
+The processing life cycle is defined by a BPMN _Event_ describing the transition between two BPMN _Task_ elements.
+
+<img src="../images/modelling/example_01.png"/>
+
+The _WorkflowKernel_ is initialized by the _[Workflowmanager](./workflowmanager.html)_ which is providing the _WorkflowContext_ and the _BPMN 2.0 Model definition_. 
+To process a single Workitem the _WorkflowKernel_ provides the method _process()_:
  
     process(ItemCollection workitem) 
 
+
+The _WorkflowKernel_ controls the following attributes of a process instance:
+
+|Attribute      	| Description 				 						|
+|-------------------|---------------------------------------------------|
+|$UniqueID    	    | A unique key to access the process instance    	|
+|$WorkitemID        | A unique process instance id of this workitem     |
+|$ModelVersion      | The Version of the model the workitem belongs to  |
+|$ProcessID         | The current BPMN Task ID of the workItem          |
+|$lastEvent         | The last processed BPMN Event element             |
+|$lastTask          | The last assigned BPMN Task element   			|
+
+
+## The Processing Phase
+By calling the method process() from the _WorkflowKernel_ the processing phase or a WorkItem is started. During the processing phase the _WorkflowKernel_ loads the assigned BPMN event and triggers all registered plugins to be executed.
+During the processing phase additional BPMN Events can be triggered according to the model definition. See the section ['How to model'](../modelling/howto.html) for further details. 
+After the processing phase is completed the _WorkflowKernel_ applies the new BPMN Task element to the WorkItem as defined by the process model.
+ 
+### Conditional Events
+
+A conditional event is used by the _WorkflowKernel_ to evaluate the output of an event during the processing life-cycle. 
+A conditional-event can be placed before an _ExclusiveGateway_ where each output of the event defines a boolean expression.
+
+<img src="../images/modelling/example_08.png"/>
+ 
+The expressions are evaluated by teh _WorkflowKernel_ to compute the output of a BPMN  Gateway element. 
+See the section ['How to model'](../modelling/howto.html) for further details about modeling Conditional Events.  
+
+
+
+### Split Events
+
+In Imixs-Workflow a BPMN _Event_ followed by a _Parallel Gateway_ is called a _split_ or _fork_ event and used to create new versions of the current process instance during the processing phase.
+
+<img src="../images/modelling/example_10.png"/>
+
+The WorkflowKernel returns new versions of the current process instance by the method _getSplitWorkitems()_ and stores the IDs of these versions into the attribute '$uniqueidVersions'. A process instance and all its vesions will have the same $workitemid. A version holds a reference to the source workitem in the attribute '$workitemidRef'.
+
+|Attriubte      	| Source | Version | Description 				 						|
+|-------------------|:------:|:-------:|----------------------------------------------------|
+|$workitemID    	| x      | x       |A shared key across all versions and the source workitem.					|
+|$workitemIDRef		|        | x       |A reference to the UnqiueID of the Source workitem	| 
+|$unqiueIDVersions	| x      |         |A list of UnqiueIDs to all created versions 		|
+
+See the section ['How to model'](../modelling/howto.html) for details about modeling Split Events.  
+
+
+
+
 ## Registration of Workflow Plugins
-In the processing phase of a WorkItem the _WorkflowKernel_ calls the plug-ins registered by the _WorkflowManager_. To register a plug-in class the WorkflowKernel provides the method :
+In the processing phase of a WorkItem the _WorkflowKernel_ calls the plug-ins registered by the _WorkflowManager_. To register a plug-in  the _WorkflowKernel_ provides the method :
 
     registerPlugin(String) 
 
-Plugins registered by the _WorkflowManager_ will be called during the processing phase of a workitem. See the section [Plugin API](./plugin-api.html) for further details about the plugin concept. 
+Plugins registered by the _WorkflowManager_ will be executed during the processing phase of a workitem. See the section [Plugin API](./plugin-api.html) for further details about the plugin concept. 
  
-The registration of a plugin can be done ba instance of a plugin class or by the class name. 
+The registration of a plugin can be done by an instance of a plugin class or by the class name. Plugins can also be injected by a CDI mechanism. 
 
     kernel = new WorkflowKernel(ctx);
     // register plugin by name
@@ -21,21 +76,15 @@ The registration of a plugin can be done ba instance of a plugin class or by the
     // process workitem
     workitem=kernel.process(workitem);
     
-A plugin can also be injected by a CDI mechanism. 
-Registered plugins are always each processing phase of a workitem. To unregister a single workItem the method unregisterPlugin can be called
+To unregister a single plugin, the method _unregisterPlugin()_ can be called:
  
     // unregister plugin by name
     kernel.unregisterPlugin(MyPlugin.class.getName());
 
 
-## The Processing Phase
-By calling the method process() from the WorkflowKernel the processing phase or a WorkItem can be started. During the processing phase the WorkflowKernel loads all activity entities assigned to the current process status and performs a call-back life-cycle for all registered plugins. A plugin can extend the the processing phase by adding additional activities on the activity stack which is defined by the property '$activityidlist' of the process instance. 
-After the processing phase is finished the WorkflowKernel applies the new process status to the WorkItem depending on the process definition.
-
- 
 
 ## The WorkflowContext
-The Interface _org.imixs.workflow.WorkflowContext_ defines an abstraction of the workflow management system. The WorkflowContext is used by the WorkflowKernel to provide the runtime-environment information to registered plugins.
+The Interface _org.imixs.workflow.WorkflowContext_ defines an abstraction of the workflow management system. The WorkflowContext is used by the _WorkflowKernel_ to provide the runtime-environment information to registered plugins.
 
 The WorkflowContext provides the following methods:
 
@@ -44,12 +93,12 @@ The WorkflowContext provides the following methods:
 |getSessionContext()| returns a session object (e.g. EJB Context or Web Session) |
 |getModelManager()	| returns an instance of the model manager	| 
 
-The session context is platform specific, for example a surrounding EJB Context, a Web Module or a Spring Context. As the WorkflowKernel is part of the Imixs-Workflow core API it is a platform independent building block. Therefor the WorkflowContext builds a bridge between the Workflow System and the processing engine. For details about the concrete implementation see the [WorkflowService implementation](../engine/workflowservice.html). 
+The session context is platform specific, for example a surrounding EJB Context, a Web Module or a Spring Context. As the _WorkflowKernel_ is part of the Imixs-Workflow core API it is a platform independent building block. Therefor the WorkflowContext builds a bridge between the Workflow System and the processing engine. For details about the concrete implementation see the [WorkflowService implementation](../engine/workflowservice.html). 
  
  
 ##The Workflow Log
 
-The Imixs WorkflowKernel generates a log entry during each processing phase with information about the current model version, the process entity and the processed workflow event. The log is stored in the property 'txtWorkflowActivityLog'. 
+The Imixs _WorkflowKernel_ generates a log entry during each processing phase with information about the current model version, the process entity and the processed workflow event. The log is stored in the property 'txtWorkflowActivityLog'. 
 The log entry has the following format:
  
     ISO8601 Time | Model Version | Process.ActivityID |  NewProcessID | comment /optional)

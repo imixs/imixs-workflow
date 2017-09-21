@@ -68,6 +68,7 @@ public class WorkflowKernel {
 	public static final String ISO8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
 	public static final String UNIQUEID = "$uniqueid";
+	public static final String UNIQUEIDVERSIONS = "$uniqueidversions";
 	public static final String MODELVERSION = "$modelversion";
 	public static final String PROCESSID = "$processid";
 	public static final String ACTIVITYID = "$activityid";
@@ -705,12 +706,14 @@ public class WorkflowKernel {
 	}
 
 	/**
-	 * This method creates a new instance of a exiting workitem. The method did not
-	 * save the workitem!. The method can be subclassed to modify the new created
-	 * version.
-	 * 
-	 * The new property $WorkitemIDRef will be added which points to the $uniqueID
-	 * of the sourceWorkitem.
+	 * This method creates a new instance of a sourceWorkitem. The method did not
+	 * save the workitem!.
+	 * <p>
+	 * The new property $WorkitemIDRef will be added to the new version, which
+	 * points to the $uniqueID of the sourceWorkitem.
+	 * <p>
+	 * The new property $UniqueIDVersions will be added to the sourceWorktiem which
+	 * points to the id of the new version.
 	 * 
 	 * @param sourceItemCollection
 	 *            the ItemCollection which should be versioned
@@ -722,11 +725,18 @@ public class WorkflowKernel {
 	private ItemCollection createVersion(ItemCollection sourceItemCollection) throws PluginException {
 		ItemCollection itemColNewVersion = (ItemCollection) sourceItemCollection.clone();
 		String id = sourceItemCollection.getUniqueID();
-		// remove $Uniqueid to force the generation of a new Entity Instance.
-		itemColNewVersion.getAllItems().remove(UNIQUEID);
+
+		// create a new $Uniqueid to force the generation of a new Entity Instance.
+		itemColNewVersion.replaceItemValue(UNIQUEID, WorkflowKernel.generateUniqueID());
 
 		// update $WorkItemIDRef to current worktiemID
 		itemColNewVersion.replaceItemValue(WORKITEMIDREF, id);
+
+		// remove $UniqueIDVersions
+		itemColNewVersion.removeItem(UNIQUEIDVERSIONS);
+
+		// append the version uniqueid to the source ItemCollection
+		sourceItemCollection.appendItemValue(UNIQUEIDVERSIONS, itemColNewVersion.getUniqueID());
 
 		return itemColNewVersion;
 
