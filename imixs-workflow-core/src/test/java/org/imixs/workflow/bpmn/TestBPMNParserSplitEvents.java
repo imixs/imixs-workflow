@@ -71,7 +71,7 @@ public class TestBPMNParserSplitEvents {
 		// test events for task 1000
 		List<ItemCollection> events = model.findAllEventsByTask(1000);
 		Assert.assertNotNull(events);
-		Assert.assertEquals(1, events.size());
+		Assert.assertEquals(2, events.size());
 
 		// test activity 1000.10 submit
 		ItemCollection activity = model.getEvent(1000, 10);
@@ -83,12 +83,11 @@ public class TestBPMNParserSplitEvents {
 		// Now we need to evaluate if the Event is marked as an conditional Event with
 		// the condition list copied from the gateway.
 		Assert.assertTrue(activity.hasItem("keySplitConditions"));
-		Map<String,String> conditions=(Map<String,String>) activity.getItemValue("keySplitConditions").get(0);
+		Map<String, String> conditions = (Map<String, String>) activity.getItemValue("keySplitConditions").get(0);
 		Assert.assertNotNull(conditions);
 		Assert.assertEquals("true", conditions.get("task=1100"));
 	}
-	
-	
-	
+
+
 
 }

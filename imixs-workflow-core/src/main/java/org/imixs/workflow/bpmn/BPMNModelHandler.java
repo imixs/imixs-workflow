@@ -700,10 +700,11 @@ public class BPMNModelHandler extends DefaultHandler {
 							// build the condition
 							if (targetTask != null) {
 								String sExpression = findConditionBySquenceFlow(condFlow);
-								if (sExpression!=null && !sExpression.trim().isEmpty()) {
+								if (sExpression != null && !sExpression.trim().isEmpty()) {
 									logger.fine("add condition: " + targetTask.getItemValueInteger("numProcessid") + "="
 											+ sExpression);
-									conditions.put("task=" + targetTask.getItemValueInteger("numProcessid"), sExpression);
+									conditions.put("task=" + targetTask.getItemValueInteger("numProcessid"),
+											sExpression);
 								}
 							} else {
 								// test for an event....
@@ -711,7 +712,7 @@ public class BPMNModelHandler extends DefaultHandler {
 								ItemCollection targetEvent = eventCache.get(targetEventID);
 								if (targetEvent != null) {
 									String sExpression = findConditionBySquenceFlow(condFlow);
-									if (sExpression!=null && !sExpression.trim().isEmpty()) {
+									if (sExpression != null && !sExpression.trim().isEmpty()) {
 										logger.fine("add condition: " + targetEvent.getItemValueInteger("numActivityid")
 												+ "=" + sExpression);
 										conditions.put("event=" + targetEvent.getItemValueInteger("numActivityid"),
@@ -739,7 +740,6 @@ public class BPMNModelHandler extends DefaultHandler {
 				for (SequenceFlow flow : outgoingList) {
 					if (parallelGatewayCache.contains(flow.target)) {
 
-						boolean foundConditionForMasterVersion=false;
 						String parallelGatewayID = flow.target;
 						// get all outgoing flows from this gateway
 						List<SequenceFlow> parallelFlows = this.findOutgoingFlows(parallelGatewayID);
@@ -748,15 +748,11 @@ public class BPMNModelHandler extends DefaultHandler {
 							// build the condition
 							if (targetTask != null) {
 								String sExpression = findConditionBySquenceFlow(parallelFlow);
-								if (sExpression!=null && !sExpression.trim().isEmpty()) {
+								if (sExpression != null && !sExpression.trim().isEmpty()) {
 									logger.fine("add condition: " + targetTask.getItemValueInteger("numProcessid") + "="
 											+ sExpression);
-									conditions.put("task=" + targetTask.getItemValueInteger("numProcessid"), sExpression);
-									
-									if (foundConditionForMasterVersion) {
-										logger.warning("ParallelGateway does not uniquely define an outcome for the Master Version! Multiple condition defined!");
-									}
-									foundConditionForMasterVersion=true;
+									conditions.put("task=" + targetTask.getItemValueInteger("numProcessid"),
+											sExpression);
 								}
 							} else {
 								// test for an event....
@@ -764,22 +760,14 @@ public class BPMNModelHandler extends DefaultHandler {
 								ItemCollection targetEvent = eventCache.get(targetEventID);
 								if (targetEvent != null) {
 									String sExpression = findConditionBySquenceFlow(parallelFlow);
-									if (sExpression!=null && !sExpression.trim().isEmpty()) {
+									if (sExpression != null && !sExpression.trim().isEmpty()) {
 										logger.fine("add condition: " + targetEvent.getItemValueInteger("numActivityid")
 												+ "=" + sExpression);
 										conditions.put("event=" + targetEvent.getItemValueInteger("numActivityid"),
 												sExpression);
-										if (foundConditionForMasterVersion) {
-											logger.warning("ParallelGateway does not uniquely define an outcome for the Master Version! Multiple condition defined!");
-										}
-										foundConditionForMasterVersion=true;
 									}
 								}
-
 							}
-						}
-						if (!foundConditionForMasterVersion) {
-							logger.warning("ParallelGateway dose not uniquely define an outcome for the Master Version! Master condition is missing");
 						}
 
 					}
