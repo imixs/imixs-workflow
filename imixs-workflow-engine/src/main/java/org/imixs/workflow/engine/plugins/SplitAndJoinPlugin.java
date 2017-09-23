@@ -191,8 +191,12 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				// now clone the field list...
 				copyItemList(processData.getItemValueString("items"), originWorkitem, workitemSubProcess);
 
-				workitemSubProcess.replaceItemValue(WorkflowKernel.MODELVERSION,
-						processData.getItemValueString("modelversion"));
+				// check model version
+				String sModelVersion=processData.getItemValueString("modelversion");
+				if (sModelVersion.isEmpty()) {
+					sModelVersion=originWorkitem.getModelVersion();
+				}
+				workitemSubProcess.replaceItemValue(WorkflowKernel.MODELVERSION,sModelVersion);
 				workitemSubProcess.replaceItemValue(WorkflowKernel.PROCESSID,
 						Integer.valueOf(processData.getItemValueString("processid")));
 				workitemSubProcess.replaceItemValue(WorkflowKernel.ACTIVITYID,
