@@ -47,8 +47,8 @@ The following table provides an overview about the data of a process instance ma
 |$ModelVersion    |String  |yes   | The Version of the model the workitem belongs to  |
 |$ProcessID       |Integer |yes   | The current ProcessID of the workItem         |
 |$ActivityID      |Integer |yes   | The next activity to be processed by the workflow engine    |
-|$workflowGroup   |String  |no    |The name of the current process group          |
-|$workflowStatus  |String  |no    |The name of the current workflow status            |
+|$workflowGroup   |String  |no    | The name of the current process group          |
+|$workflowStatus  |String  |no    | The name of the current workflow status            |
 |$Created         |Date    |no    | Date of creation                              |
 |$Modified        |Date    |no    | Date of last modification                     |
 |$IsAuthor        |Boolean |no    | Indicates if the current user has write access|
@@ -56,14 +56,16 @@ The following table provides an overview about the data of a process instance ma
 |$WriteAccess     |List    |no    | String list of User/Roles with write access   |
 |$uniqueId        |String  |no    | The unique ID of this workItem                |
 |$uniqueIdRef     |String  |yes   | A reference to a connected workItem (child process) |
-|$workitemid      |String  |no    | The process instance id of this workitem      |
-|$lastEvent       |Integer |no    |The last processed event ID           |
-|$lastTask        |Integer |no    |The last assigned Task ID (processid)          |
-|$lastProcessingDate |Date|no     |The timestamp of the last processing action    |
-|$creator         |String  |no    |The user who created the workItem.             |
-|$editor          |String  |no    |The user who invoked the processWorkitem() method.       |
-|$lasteditor      |String  |no    |The last user, that invoked the process method before the $editor |
-|namOwner         |List    |no    |String list of User/Roles, that are owners of that WorkItem. |
+|$workitemid      |String  |no    | A unique process instance id of a workitem ad all its versions      |
+|$unqiueIDSource  |String  |no    | The UnqiueID of the Source workitem for a version (See [Workflow Kernel split-events](../core/workflowkernel.html))     |
+|$unqiueIDVersions|String  |no    | A list of UnqiueIDs to all created versions of this workitem  (See [Workflow Kernel split-events](../core/workflowkernel.html))|
+|$lastEvent       |Integer |no    | The last processed event ID           |
+|$lastTask        |Integer |no    | The last assigned Task ID (processid)          |
+|$lastProcessingDate |Date|no     | The timestamp of the last processing action    |
+|$creator         |String  |no    | The user who created the workItem.             |
+|$editor          |String  |no    | The user who invoked the processWorkitem() method.       |
+|$lasteditor      |String  |no    | The last user, that invoked the process method before the $editor |
+|namOwner         |List    |no    | String list of User/Roles, that are owners of that WorkItem. |
 |txtworkflowsummary |String|no |A short description of the current status      |
 |txtworkflowabstract|String|no |A long description of the current status       |
 |txtworkflowimageurl|String|no |A link to an image which displays the current status |

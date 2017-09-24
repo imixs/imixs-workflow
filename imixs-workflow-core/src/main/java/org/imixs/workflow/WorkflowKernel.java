@@ -68,6 +68,7 @@ public class WorkflowKernel {
 	public static final String ISO8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
 	public static final String UNIQUEID = "$uniqueid";
+	public static final String UNIQUEIDSOURCE = "$uniqueidsource";
 	public static final String UNIQUEIDVERSIONS = "$uniqueidversions";
 	public static final String MODELVERSION = "$modelversion";
 	public static final String PROCESSID = "$processid";
@@ -75,7 +76,6 @@ public class WorkflowKernel {
 	public static final String ACTIVITYIDLIST = "$activityidlist";
 	public static final String WORKFLOWGROUP = "$workflowgroup";
 	public static final String WORKFLOWSTATUS = "$workflowstatus";
-	public static final String WORKITEMIDREF = "$WorkItemIDRef";
 
 	public static final String TYPE = "type";
 
@@ -724,7 +724,7 @@ public class WorkflowKernel {
 		itemColNewVersion.replaceItemValue(UNIQUEID, WorkflowKernel.generateUniqueID());
 
 		// update $WorkItemIDRef to current worktiemID
-		itemColNewVersion.replaceItemValue(WORKITEMIDREF, id);
+		itemColNewVersion.replaceItemValue(UNIQUEIDSOURCE, id);
 
 		// remove $UniqueIDVersions
 		itemColNewVersion.removeItem(UNIQUEIDVERSIONS);

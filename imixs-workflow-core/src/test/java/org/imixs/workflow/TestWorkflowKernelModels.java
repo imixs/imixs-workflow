@@ -274,6 +274,14 @@ public class TestWorkflowKernelModels {
 
 			// Master $unqiueid must not match the version $uniqueid
 			Assert.assertFalse(itemCollection.getUniqueID().equals(version.getUniqueID()));
+			
+			
+			// $uniqueidSource must match $unqiueid of master
+			Assert.assertEquals(itemCollection.getUniqueID(),version.getItemValueString(WorkflowKernel.UNIQUEIDSOURCE));
+			
+			// $unqiueidVirsions must mach $unqiueid of version
+			Assert.assertEquals(version.getUniqueID(),itemCollection.getItemValueString(WorkflowKernel.UNIQUEIDVERSIONS));
+			
 
 		} catch (Exception e) {
 			Assert.fail();

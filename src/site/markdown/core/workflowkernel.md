@@ -42,23 +42,22 @@ See the section ['How to model'](../modelling/howto.html) for further details ab
 
 ### Split Events
 
-In Imixs-Workflow a BPMN _Event_ followed by a _Parallel Gateway_ is called a _split-event_ and used to create new versions of the current process instance during the processing phase.
+In Imixs-Workflow a BPMN _Event_ followed by a _Parallel Gateway_ is called a _split-event_ and used to create a new version of the current process instance during the processing phase.
 
 <img src="../images/modelling/example_11.png"/>
 
-The WorkflowKernel returns new versions of the current process instance by the method _getSplitWorkitems()_ and stores the IDs of these versions into the attribute '$uniqueidVersions'. A process instance and all its versions will have the same $workitemID. A version holds a reference to the source workitem in the attribute '$workitemidRef'.
+The current process instance is called the _Source Workitem_. The _Source Workitem_ and all versions have the same _'$workitemID'_. In addition, the  _'$UniqueID'_ of a new version is stored into the attribute _'$uniqueidVersions'_ of the current process instance. A version holds a reference to the _Source Workitem_ in the attribute '$workitemidRef'.
 
-|Attribute      	| Source | Version | Description 				 						|
-|-------------------|:------:|:-------:|----------------------------------------------------|
-|$workitemID    	| x      | x       |A shared key across all versions and the source workitem.					|
-|$workitemIDRef		|        | x       |A reference to the UnqiueID of the Source workitem	|  	 	
-|$unqiueIDVersions	| x      |         |A list of UnqiueIDs to all created versions 		|
+|Attribute      	| Source | Version | Description 				 										|
+|-------------------|:------:|:-------:|--------------------------------------------------------------------|
+|$workitemID    	| x      | x       |A unique shared key across all versions and the source workitem.	|
+|$unqiueIDSource	|        | x       |A reference to the $UnqiueID of the Source workitem.				|  	 	
+|$unqiueIDVersions	| x      |         |A list of $UnqiueIDs to all created versions of a source workitem.	|
 
 
-**Note:** The _WorklfowKernel_ expects that each outcome of a _Parallel Gateway_ creating a new version is followed by an Event element. If not, a _ModelException_ is thrown. 
+During the processing life-cyle, the _WorkflowKernel_ returns new versions of the current process instance by the method _getSplitWorkitems()_ 
 
-See the section ['How to model'](../modelling/howto.html) for details about modeling Split Events.  
-
+**Note:** The _WorklfowKernel_ expects that each outcome of a _Parallel Gateway_ creating a new version is followed by an Event element. If not, a _ModelException_ is thrown. See the section ['How to model'](../modelling/howto.html) for details about modeling Split Events.  
 
 
 
