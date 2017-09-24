@@ -36,29 +36,30 @@ A conditional-event can be placed before an _ExclusiveGateway_ where each output
 <img src="../images/modelling/example_08.png"/>
  
 The expressions are evaluated by the _WorkflowKernel_ to compute the output of a BPMN  Gateway element. 
-See the section ['How to model'](../modelling/howto.html) for further details about modeling Conditional Events.  
+See the section ['How to model'](../modelling/howto.html#Conditional_Events) for further details about modeling Conditional Events.  
 
 
 
 ### Split Events
 
-In Imixs-Workflow a BPMN _Event_ followed by a _Parallel Gateway_ is called a _split-event_ and used to create a new version of the current process instance during the processing phase.
+In Imixs-Workflow a BPMN _Event_ followed by a _Parallel Gateway_ is called a _split-event_ and forces the _WorkflowKernel_ to create a new version of the current process instance.
 
 <img src="../images/modelling/example_11.png"/>
+
+**Note:** The _WorklfowKernel_ expects that each outcome of a _Parallel Gateway_ creating a new version is followed by an Event element. If not, a _ModelException_ is thrown. See the section ['How to model'](../modelling/howto.html#Split_Events) for details about modeling Split Events.  
 
 The current process instance is called the _Source Workitem_. The _Source Workitem_ and all versions have the same _'$workitemID'_. In addition, the  _'$UniqueID'_ of a new version is stored into the attribute _'$uniqueidVersions'_ of the current process instance. A version holds a reference to the _Source Workitem_ in the attribute '$workitemidRef'.
 
 |Attribute      	| Source | Version | Description 				 										|
 |-------------------|:------:|:-------:|--------------------------------------------------------------------|
 |$workitemID    	| x      | x       |A unique shared key across all versions and the source workitem.	|
-|$unqiueIDSource	|        | x       |A reference to the $UnqiueID of the Source workitem.				|  	 	
-|$unqiueIDVersions	| x      |         |A list of $UnqiueIDs to all created versions of a source workitem.	|
+|$uniqueIDSource	|        | x       |A reference to the $UniqueID of the Source workitem.				|  	 	
+|$uniqueIDVersions	| x      |         |A list of $UniqueIDs to all created versions of a source workitem.	|
+|$isVersion			| 		 | x	   |This temporary attribute indicates that the current instance is a version. | 
+ 
+The temporary attribute _'$isVersion'_ flags the version during the processing phase and can be used by Plugins to handle these workitems. See also the section: [Workflow Data](../quickstart/workitem.html#Temporary_Attributes).
 
-
-During the processing life-cyle, the _WorkflowKernel_ returns new versions of the current process instance by the method _getSplitWorkitems()_ 
-
-**Note:** The _WorklfowKernel_ expects that each outcome of a _Parallel Gateway_ creating a new version is followed by an Event element. If not, a _ModelException_ is thrown. See the section ['How to model'](../modelling/howto.html) for details about modeling Split Events.  
-
+The _WorkflowKernel_ returns new created versions of the current process instance by the method _getSplitWorkitems()_. This method is used by the Workflow Engine to store the versions into a database.   
 
 
 ## Registration of Workflow Plugins

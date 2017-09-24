@@ -684,8 +684,11 @@ public class WorkflowKernel {
 										Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
 
 								cloned.replaceItemValue(ACTIVITYID, eventID);
+								// add temporary attribute $isversion...
+								cloned.replaceItemValue("$isversion", true);
 								cloned = this.process(cloned);
-
+								// remove temporary attribute $isversion...
+								cloned.removeItem("$isversion");
 								// add to cache...
 								splitWorkitems.add(cloned);
 
