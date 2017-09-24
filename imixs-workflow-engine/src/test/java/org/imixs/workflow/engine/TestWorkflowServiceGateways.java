@@ -111,7 +111,7 @@ public class TestWorkflowServiceGateways {
 		// lookup the version.....
 		List<ItemCollection> versions = new ArrayList<ItemCollection>();
 		for (ItemCollection doc : workflowMockEnvironment.database.values()) {
-			if (workitem.getUniqueID().equals(doc.getItemValueString(WorkflowKernel.WORKITEMIDREF))) {
+			if (workitem.getUniqueID().equals(doc.getItemValueString(WorkflowKernel.UNIQUEIDSOURCE))) {
 				versions.add(doc);
 			}
 		}

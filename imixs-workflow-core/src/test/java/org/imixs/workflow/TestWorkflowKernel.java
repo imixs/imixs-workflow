@@ -62,6 +62,7 @@ public class TestWorkflowKernel {
 	@Test
 	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testProcess() {
+		ItemCollection itemCollectionProcessed=null; 
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
 		itemCollection.replaceItemValue("$processid", 100);
@@ -71,7 +72,7 @@ public class TestWorkflowKernel {
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
 		try {
-			itemCollection = kernel.process(itemCollection);
+			itemCollectionProcessed = kernel.process(itemCollection);
 		} catch (PluginException e) {
 			Assert.fail();
 			e.printStackTrace();
@@ -83,8 +84,12 @@ public class TestWorkflowKernel {
 			e.printStackTrace();
 		}
 
-		Assert.assertEquals(1, itemCollection.getItemValueInteger("runs"));
-		Assert.assertEquals(100, itemCollection.getItemValueInteger("$processid"));
+		Assert.assertEquals(1, itemCollectionProcessed.getItemValueInteger("runs"));
+		Assert.assertEquals(100, itemCollectionProcessed.getItemValueInteger("$processid"));
+		
+		// initial and processed workitems are not the same and not equals! 
+		Assert.assertNotSame(itemCollection, itemCollectionProcessed);
+		Assert.assertFalse(itemCollection.equals(itemCollectionProcessed));
 	}
 
 	/**
