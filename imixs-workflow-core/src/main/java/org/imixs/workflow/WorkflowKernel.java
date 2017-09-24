@@ -76,6 +76,7 @@ public class WorkflowKernel {
 	public static final String ACTIVITYIDLIST = "$activityidlist";
 	public static final String WORKFLOWGROUP = "$workflowgroup";
 	public static final String WORKFLOWSTATUS = "$workflowstatus";
+	public static final String ISVERSION = "$isversion";
 
 	public static final String TYPE = "type";
 
@@ -685,10 +686,10 @@ public class WorkflowKernel {
 
 								cloned.replaceItemValue(ACTIVITYID, eventID);
 								// add temporary attribute $isversion...
-								cloned.replaceItemValue("$isversion", true);
+								cloned.replaceItemValue(ISVERSION, true);
 								cloned = this.process(cloned);
 								// remove temporary attribute $isversion...
-								cloned.removeItem("$isversion");
+								cloned.removeItem(ISVERSION);
 								// add to cache...
 								splitWorkitems.add(cloned);
 
