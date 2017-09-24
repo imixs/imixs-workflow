@@ -173,7 +173,7 @@ public class ResultPlugin extends AbstractPlugin {
 	 * 		<somedata>ABC<itemValue>$uniqueid</itemValue></somedata>
 	 * </code>
 	 * 
-	 * This example will result in a new item 'somedata' with the $unqiueid
+	 * This example will result in a new item 'somedata' with the $uniqueid
 	 * prafixed with 'ABC'
 	 * 
 	 * @see http://ganeshtiwaridotcomdotnp.blogspot.de/2011/12/htmlxml-tag-
@@ -293,7 +293,7 @@ public class ResultPlugin extends AbstractPlugin {
 	 * 		<somedata>ABC<itemValue>$uniqueid</itemValue></somedata>
 	 * </code>
 	 * 
-	 * This example will result in a new item 'somedata' with the $unqiueid
+	 * This example will result in a new item 'somedata' with the $uniqueid
 	 * prafixed with 'ABC'
 	 * 
 	 * @see evaluateWorkflowResult(ItemCollection activityEntity, ItemCollection

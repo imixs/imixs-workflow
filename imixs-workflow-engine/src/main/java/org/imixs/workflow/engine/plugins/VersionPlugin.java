@@ -52,7 +52,7 @@ import org.imixs.workflow.exceptions.QueryException;
  * activity property 'keyVersion')
  * <p>
  * mode=1 indicates that the plugin should create a new version of the current
- * workitem. The two workitems are identically except the attributes $unqiueid
+ * workitem. The two workitems are identically except the attributes $uniqueid
  * and $workitemidRef. The attribute workitemidRef points to the $uniqueid form
  * the source workitem. So the availability of this property indicates that the
  * workitem is a version of source workitem with this $uniqueid. The source

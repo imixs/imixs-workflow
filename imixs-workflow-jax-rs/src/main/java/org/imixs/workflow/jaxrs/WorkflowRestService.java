@@ -565,7 +565,7 @@ public class WorkflowRestService {
 		ItemCollection workitem;
 		workitem = XMLItemCollectionAdapter.getItemCollection(xmlworkitem);
 
-		// validate given unqiueid....
+		// validate given uniqueid....
 		if (!workitem.getUniqueID().isEmpty() && !uniqueid.equals(workitem.getUniqueID())) {
 			logger.warning("postXMLWorkitemByUniqueID @POST /workitem/" + uniqueid + "  $UNIQUEID did not match!");
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -728,7 +728,7 @@ public class WorkflowRestService {
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
 
-		// validate given unqiueid....
+		// validate given uniqueid....
 		if (!workitem.getUniqueID().isEmpty() && !uniqueid.equals(workitem.getUniqueID())) {
 			logger.warning("postJSONWorkitemByUniqueID @POST /workitem/" + uniqueid + "  $UNIQUEID did not match!");
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -817,7 +817,7 @@ public class WorkflowRestService {
 	 * extract the provides field/value pairs. NOTE: The method did not(!)
 	 * assume that the put/post request contains a complete workItem. For this
 	 * reason the method loads the existing instance of the corresponding
-	 * workItem (identified by the $unqiueid) and adds the values provided by
+	 * workItem (identified by the $uniqueid) and adds the values provided by
 	 * the put/post request into the existing instance.
 	 * 
 	 * The following kind of lines which can be included in the InputStream will

@@ -571,7 +571,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			// test author access
 			if (!currentInstance.getItemValueBoolean(ISAUTHOR))
 				throw new AccessDeniedException(AccessDeniedException.OPERATION_NOTALLOWED,
-						"WorkflowService: error - $UnqiueID (" + workitem.getItemValueInteger(WorkflowKernel.UNIQUEID)
+						"WorkflowService: error - $UniqueID (" + workitem.getItemValueInteger(WorkflowKernel.UNIQUEID)
 								+ ") no Author Access!");
 
 			// test if $ProcessID matches current instance

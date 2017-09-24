@@ -5,7 +5,7 @@ The Imixs Version-Plugin handles the creation and the management from versions o
 The [Imixs-BPMN Modeller](../../modelling/index.html) provides two different modes in which the Version-Plugin can run.
  
 ##Create a new Version from a source workitem
-In this mode the Version-Plugin creates a new version of the current workitem. The two workitems are identically except the attributes $unqiueID and $workitemidRef. The attribute $workitemidRef points to the $uniqueid form the source workitem. So the availability of this property indicates that the workitem is a version of the source workitem. The source workitem has typically no $workitemidRef attribute - except if the source worktitem itself is a version from another worktiem. The Source Workitem is also named Master Version. 
+In this mode the Version-Plugin creates a new version of the current workitem. The two workitems are identically except the attributes $uniqueID and $workitemidRef. The attribute $workitemidRef points to the $uniqueid form the source workitem. So the availability of this property indicates that the workitem is a version of the source workitem. The source workitem has typically no $workitemidRef attribute - except if the source worktitem itself is a version from another worktiem. The Source Workitem is also named Master Version. 
  
 After the new version is created the Version-Plugin processes the version with the activity provided by the model (numVersionActivityID). This step is optional.
 

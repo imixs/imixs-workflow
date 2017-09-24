@@ -101,7 +101,7 @@ public class AdminPService {
 	@EJB
 	JobHandlerMigration3X jobHandlerMigration3X;
 
-	// private String lastUnqiueID = null;
+	// private String lastUniqueID = null;
 	// private static int MAX_COUNT = 300;
 	private static Logger logger = Logger.getLogger(AdminPService.class.getName());
 

@@ -462,7 +462,7 @@ public class DocumentService {
 
 	/**
 	 * This method loads an ItemCollection from the Database. The method expects a
-	 * valid $unqiueID to identify the Document entity saved before into the
+	 * valid $uniqueID to identify the Document entity saved before into the
 	 * database. The method returns null if no Document with the corresponding ID
 	 * exists.
 	 * <p>
@@ -486,7 +486,7 @@ public class DocumentService {
 	 * document get lost in a long running transaction with save and load calls.
 	 * 
 	 * @param id
-	 *            - the $unqiueid of the ItemCollection to be loaded
+	 *            - the $uniqueid of the ItemCollection to be loaded
 	 * @return ItemCollection object or null if the Document dose not exist or the
 	 *         CallerPrincipal hat insufficient read access.
 	 * 

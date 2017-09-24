@@ -755,7 +755,7 @@ public class WorkflowRestServiceV3 {
 	 * extract the provides field/value pairs. NOTE: The method did not(!)
 	 * assume that the put/post request contains a complete workItem. For this
 	 * reason the method loads the existing instance of the corresponding
-	 * workItem (identified by the $unqiueid) and adds the values provided by
+	 * workItem (identified by the $uniqueid) and adds the values provided by
 	 * the put/post request into the existing instance.
 	 * 
 	 * The following kind of lines which can be included in the InputStream will
