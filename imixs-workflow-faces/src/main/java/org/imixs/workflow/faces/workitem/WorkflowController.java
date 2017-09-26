@@ -141,9 +141,8 @@ public class WorkflowController extends DocumentController {
 	}
 
 	/**
-	 * This method processes the current workItem and returns an action result.
-	 * The method expects that the current workItem provides a valid
-	 * $ActiviytID.
+	 * This method processes the current workItem and returns an action result. The
+	 * method expects that the current workItem provides a valid $ActiviytID.
 	 * 
 	 * The method returns the value of the property 'action' if provided by the
 	 * workflow model or a plug-in. The 'action' property is typically evaluated
@@ -152,15 +151,14 @@ public class WorkflowController extends DocumentController {
 	 * default property 'txtworkflowResultmessage' from the model as an action
 	 * result.
 	 * 
-	 * The method resets the current ActivityList after the workitem was
-	 * processed.
+	 * The method resets the current ActivityList after the workitem was processed.
 	 * 
-	 * @return the action result provided in the 'action' property or evaluated
-	 *         from the default property 'txtworkflowResultmessage' from the
+	 * @return the action result provided in the 'action' property or evaluated from
+	 *         the default property 'txtworkflowResultmessage' from the
 	 *         ActivityEntity
 	 * @throws AccessDeniedException
 	 * @throws PluginException
-	 * @throws ModelException 
+	 * @throws ModelException
 	 */
 	public String process() throws PluginException, ModelException {
 		if (workitem == null) {
@@ -183,19 +181,18 @@ public class WorkflowController extends DocumentController {
 	}
 
 	/**
-	 * This method processes the current workItem with the provided activityID.
-	 * The method can be used as an actionListener.
+	 * This method processes the current workItem with the provided activityID. The
+	 * method can be used as an actionListener.
 	 * 
 	 * @param id
 	 *            - activityID to be processed
 	 * @param resetWorkitem
 	 *            - boolean indicates if the workitem should be reset
 	 * @throws PluginException
-	 * @throws ModelException 
+	 * @throws ModelException
 	 * @see process()
 	 */
-	public String process(int id, boolean resetWorkitem)
-			throws  PluginException, ModelException {
+	public String process(int id, boolean resetWorkitem) throws PluginException, ModelException {
 		// update the property $ActivityID
 		this.getWorkitem().replaceItemValue("$ActivityID", id);
 		String result = process();
@@ -204,8 +201,8 @@ public class WorkflowController extends DocumentController {
 	}
 
 	/**
-	 * This method processes the current workItem with the provided activityID.
-	 * The meethod can be used as an actionListener.
+	 * This method processes the current workItem with the provided activityID. The
+	 * meethod can be used as an actionListener.
 	 * 
 	 * @param id
 	 *            - activityID to be processed
@@ -219,16 +216,18 @@ public class WorkflowController extends DocumentController {
 	}
 
 	/**
-	 * This method returns a List of workflow events assigned to the
-	 * corresponding '$processid' and '$modelversion' of the current WorkItem.
+	 * This method returns a List of workflow events assigned to the corresponding
+	 * '$processid' and '$modelversion' of the current WorkItem.
 	 * 
 	 * @return
 	 */
 	public List<ItemCollection> getEvents() {
 		List<ItemCollection> activityList = new ArrayList<ItemCollection>();
 
-		if (getWorkitem() == null)
+		if (getWorkitem() == null || (getWorkitem().getModelVersion().isEmpty()
+				&& getWorkitem().getItemValueString(WorkflowKernel.WORKFLOWGROUP).isEmpty())) {
 			return activityList;
+		}
 
 		// get Events form workflowService
 		try {
@@ -239,6 +238,5 @@ public class WorkflowController extends DocumentController {
 
 		return activityList;
 	}
-
 
 }
