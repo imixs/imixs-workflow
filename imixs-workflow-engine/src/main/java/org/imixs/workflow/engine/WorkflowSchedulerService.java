@@ -382,13 +382,17 @@ public class WorkflowSchedulerService {
 			switch (iCompareType) {
 			// last process -
 			case 1: {
-				logger.finest(suniqueid + ": CompareType = last process");
+				logger.finest(suniqueid + ": CompareType = last event");
 
-				if (!doc.hasItem("$lastProcessingDate"))
+				// support deprecated field $lastProcessingDate
+				if (!doc.hasItem("$lastEventDate") && !doc.hasItem("$lastProcessingDate"))
 					return false;
 
-				dateTimeCompare = doc.getItemValueDate("$lastProcessingDate");
-				logger.finest(suniqueid + ": $lastProcessingDate=" + dateTimeCompare);
+				if (doc.hasItem("$lastEventDate"))
+					dateTimeCompare = doc.getItemValueDate("$lastEventDate");
+				else // support deprecated field name
+					dateTimeCompare = doc.getItemValueDate("$lastProcessingDate");
+				logger.finest(suniqueid + ": $lastEventDate=" + dateTimeCompare);
 
 				// scheduled time
 				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);

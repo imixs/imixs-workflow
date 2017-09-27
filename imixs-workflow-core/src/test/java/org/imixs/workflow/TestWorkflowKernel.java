@@ -223,7 +223,7 @@ public class TestWorkflowKernel {
 	}
 
 	/**
-	 * This method tests the generation of the txtworkflowactivitylog entries.
+	 * This method tests the generation of the $eventlog entries.
 	 */
 	@SuppressWarnings("rawtypes")
 	@Test
@@ -263,12 +263,12 @@ public class TestWorkflowKernel {
 		Assert.assertEquals(200, itemCollection.getItemValueInteger("$processid"));
 
 		// test log
-		List log = itemCollection.getItemValue("txtworkflowactivitylog");
+		List log = itemCollection.getItemValue("$eventlog");
 
 		Assert.assertNotNull(log);
 		Assert.assertEquals(2, log.size());
 
-		logger.info("'txtworkflowactivitylog'=" + log);
+		logger.info("'$eventlog'=" + log);
 
 		// test log entries
 		// Format: timestamp|model-version|1000.10|1000|userid|
@@ -315,7 +315,7 @@ public class TestWorkflowKernel {
 	}
 
 	/**
-	 * This method tests the generation of the txtworkflowactivitylog entries and
+	 * This method tests the generation of the $eventlog entries and
 	 * the restriction to a maximum length of 30 entries.
 	 * 
 	 * Issue https://github.com/imixs/imixs-workflow/issues/179
@@ -336,7 +336,7 @@ public class TestWorkflowKernel {
 		for (int i = 1; i <= 40; i++) {
 			v.add(dummyEntry);
 		}
-		itemCollection.replaceItemValue("txtworkflowactivitylog", v);
+		itemCollection.replaceItemValue("$eventlog", v);
 
 		try {
 			// simulate two steps
@@ -365,12 +365,12 @@ public class TestWorkflowKernel {
 		Assert.assertEquals(200, itemCollection.getItemValueInteger("$processid"));
 
 		// test log
-		List log = itemCollection.getItemValue("txtworkflowactivitylog");
+		List log = itemCollection.getItemValue("$eventlog");
 
 		Assert.assertNotNull(log);
 		Assert.assertEquals(30, log.size());
 
-		logger.info("'txtworkflowactivitylog'=" + log);
+		logger.info("'$eventlog'=" + log);
 
 		// test log entries
 		// Format: timestamp|model-version|1000.10|1000|userid|

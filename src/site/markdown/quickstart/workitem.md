@@ -60,17 +60,16 @@ The following table provides an overview about the data of a process instance ma
 |$uniqueIDVersions|String  |no    		| A list of UniqueIDs to all created versions of this workitem  (See [Workflow Kernel split-events](../core/workflowkernel.html))|
 |$lastEvent       |Integer |no    		| The last processed event ID           						|
 |$lastTask        |Integer |no    		| The last assigned Task ID (processid)          				|
-|$lastProcessingDate |Date|no     		| The timestamp of the last processing action    				|
+|$lastEventDate   |Date    |no     		| The timestamp of the last processing action    				|
 |$creator         |String  |no    		| The user who created the workItem.             				|
 |$editor          |String  |no    		| The user who invoked the processWorkitem() method.       		|
 |$lasteditor      |String  |no    		| The last user, that invoked the process method before the $editor |
+|$processingLog   |List    |no    	    | Log of processed workflow events    						|
 |namOwner         |List    |no    		| String list of User/Roles, that are owners of that WorkItem. 	|
-|txtworkflowsummary |String|no 			|A short description of the current status      				|
-|txtworkflowabstract|String|no 			|A long description of the current status       				|
-|txtworkflowimageurl|String|no 			|A link to an image which displays the current status 			|
-|txtworkflowhistorylog|List|no			|History of all processed activities            				|
-|txtworkflowresultmessage  |String |no  |The result message of last process step 						|
-|txtworkflowactivitylog  |List  |no    	|Log of processed workflow activities    						|
+|txtworkflowsummary |String|no 			| A short description of the current status      				|
+|txtworkflowabstract|String|no 			| A long description of the current status       				|
+|txtworkflowimageurl|String|no 			| A link to an image which displays the current status 			|
+|txtworkflowresultmessage  |String |no  | The result message of last process step 						|
  
 
 ### Temporary Attributes 
