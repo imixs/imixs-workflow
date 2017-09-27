@@ -58,13 +58,13 @@ The following table provides an overview about the data of a process instance ma
 |$workitemId      |String  |no    		| A unique process instance id of a workitem ad all its versions|
 |$uniqueIDSource  |String  |no    		| The UniqueID of the Source workitem for a version (See [Workflow Kernel split-events](../core/workflowkernel.html))     |
 |$uniqueIDVersions|String  |no    		| A list of UniqueIDs to all created versions of this workitem  (See [Workflow Kernel split-events](../core/workflowkernel.html))|
-|$lastEvent       |Integer |no    		| The last processed event ID           						|
 |$lastTask        |Integer |no    		| The last assigned Task ID (processid)          				|
+|$lastEvent       |Integer |no    		| The last processed event ID           						|
 |$lastEventDate   |Date    |no     		| The timestamp of the last processing action    				|
+|$eventLog        |List    |no    	    | Log of processed workflow events    						|
 |$creator         |String  |no    		| The user who created the workItem.             				|
 |$editor          |String  |no    		| The user who invoked the processWorkitem() method.       		|
 |$lasteditor      |String  |no    		| The last user, that invoked the process method before the $editor |
-|$processingLog   |List    |no    	    | Log of processed workflow events    						|
 |namOwner         |List    |no    		| String list of User/Roles, that are owners of that WorkItem. 	|
 |txtworkflowsummary |String|no 			| A short description of the current status      				|
 |txtworkflowabstract|String|no 			| A long description of the current status       				|
