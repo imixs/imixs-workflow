@@ -71,7 +71,6 @@ The following table provides an overview about the data of a process instance ma
 |txtworkflowhistorylog|List|no			|History of all processed activities            				|
 |txtworkflowresultmessage  |String |no  |The result message of last process step 						|
 |txtworkflowactivitylog  |List  |no    	|Log of processed workflow activities    						|
-|txtworkflowpluginlog |List|no 			|The plugin execution log                       				|
  
 
 ### Temporary Attributes 

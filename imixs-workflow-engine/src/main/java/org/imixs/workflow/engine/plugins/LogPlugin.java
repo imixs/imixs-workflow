@@ -58,24 +58,19 @@ public class LogPlugin extends AbstractPlugin {
 	 */
 	public ItemCollection run(ItemCollection documentContext,
 			ItemCollection adocumentActivity) throws PluginException {
-		List<?> vPluginLog, vActivityLog;
+		List<?> vActivityLog;
 
-		vPluginLog = documentContext.getItemValue("txtWorkflowPluginLog");
 		vActivityLog = documentContext.getItemValue("txtWorkflowActivityLog");
 
 		// check if maximum length is defined
 		int iMaxLogLength = documentContext
 				.getItemValueInteger("numWorkflowLogLength");
 		if (iMaxLogLength > 0) {
-			while (vPluginLog.size() >= iMaxLogLength)
-				vPluginLog.remove(0);
 
 			while (vActivityLog.size() >= iMaxLogLength)
 				vActivityLog.remove(0);
 
 			// update Log entries now...
-			documentContext
-					.replaceItemValue("txtWorkflowPluginLog", vPluginLog);
 			documentContext.replaceItemValue("txtWorkflowActivityLog",
 					vActivityLog);
 		}
