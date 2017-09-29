@@ -182,6 +182,42 @@ public class TestAbstractPlugin {
 		Assert.assertEquals(expectedString, resultString);
 
 	}
+	
+	/**
+	 * Test format string of multi value with out separator:
+	 * 
+	 * <code>
+	 * 
+	 * <itemvalue>_numbers</itemvalue>
+	 * 
+	 * </code>
+	 * @throws PluginException 
+	 * 
+	 */
+	@Test
+	public void testMultiValueWithNoSeparator() throws PluginException {
+
+		String testString = "The Valuelist is: <itemvalue>_numbers</itemvalue>.";
+		String expectedString = "The Valuelist is: 1.";
+
+		TestPlugin applicationPlugin = new TestPlugin();
+
+		// prepare data
+		documentContext = new ItemCollection();
+		logger.info("[TestHisotryPlugin] setup test data...");
+
+		Vector<Integer> value = new Vector<Integer>();
+		value.add(1);
+		value.add(20);
+		value.add(300);
+		documentContext.replaceItemValue("_numbers", value);
+
+		String resultString = applicationPlugin.replaceDynamicValues(testString, documentContext);
+
+		// we expect that only the first value is given, because no separator was defined. 
+		Assert.assertEquals(expectedString, resultString);
+
+	}
 
 	/**
 	 * This is a test plugin extending the AbstractPlugion to be used for

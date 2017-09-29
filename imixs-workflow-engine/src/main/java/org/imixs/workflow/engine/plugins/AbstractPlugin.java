@@ -275,8 +275,14 @@ public abstract class AbstractPlugin implements Plugin {
 	}
 
 	/**
-	 * this method formats a string object depending of an attribute type.
-	 * MultiValues will be separated by the provided separator
+	 * This method returns a formated a string object.
+	 * 
+	 * In case a Separator is provided, multiValues will be separated by the provided separator. 
+	 * 
+	 * If no separator is provide, only the first value will returned.
+	 * 
+	 * The format and locale attributes can be used to format number and date values.
+	 *    
 	 */
 	public static String formatItemValues(Collection<?> aItem, String aSeparator, String sFormat, Locale locale) {
 
@@ -291,6 +297,9 @@ public abstract class AbstractPlugin implements Plugin {
 			// append delimiter
 			if (aSeparator != null) {
 				sBuffer.append(aSeparator);
+			} else {
+				// no separator, exit
+				break;
 			}
 		}
 
