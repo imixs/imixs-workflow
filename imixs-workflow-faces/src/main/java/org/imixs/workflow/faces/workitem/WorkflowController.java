@@ -147,11 +147,8 @@ public class WorkflowController extends DocumentController {
 	 * The method returns the value of the property 'action' if provided by the
 	 * workflow model or a plug-in. The 'action' property is typically evaluated
 	 * from the ResultPlugin. Alternatively the property can be provided by an
-	 * application. If no 'action' property is provided the method evaluates the
-	 * default property 'txtworkflowResultmessage' from the model as an action
-	 * result.
+	 * application. If no 'action' property is provided the method returns null.
 	 * 
-	 * The method resets the current ActivityList after the workitem was processed.
 	 * 
 	 * @return the action result provided in the 'action' property or evaluated from
 	 *         the default property 'txtworkflowResultmessage' from the
@@ -174,9 +171,7 @@ public class WorkflowController extends DocumentController {
 
 		// test if the property 'action' is provided
 		String action = workitem.getItemValueString("action");
-		if ("".equals(action))
-			// get default workflowResult message
-			action = workitem.getItemValueString("txtworkflowresultmessage");
+		
 		return ("".equals(action) ? null : action);
 	}
 
