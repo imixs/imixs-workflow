@@ -101,7 +101,7 @@ The session context is platform specific, for example a surrounding EJB Context,
  
 ##The Workflow Log
 
-The Imixs _WorkflowKernel_ generates a log entry during each processing phase with information about the current model version, the process entity and the processed workflow event. The log is stored in the property 'txtWorkflowActivityLog'. 
+The Imixs _WorkflowKernel_ generates a log entry during each processing phase with information about the current model version, the process entity and the processed workflow event. The log is stored in the property '$EventLog'. 
 The log entry has the following format:
  
     ISO8601 Time | Model Version | Process.ActivityID |  NewProcessID | comment /optional)

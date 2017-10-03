@@ -88,6 +88,7 @@ As a Split Event is creating a new independent version of the current process in
 
 The script language for the boolean expression is 'JavaScript'. See the [RulePlugin](../engine/plugins/ruleplugin.html) for further details about business rules in Imixs-Workflow. 
 
+See the section [WorkflowKernel](../core/workflowkernel.html#Split_Events) for further information about how Split Events are handled internally. 
 
 ## Link Events
 
