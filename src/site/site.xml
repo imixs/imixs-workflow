@@ -48,10 +48,10 @@
 				collapse="true">
 				<item name="DocumentService" href="./engine/documentservice.html"
 					collapse="true">
-					<item name="Access Control" href="./engine/acl.html" />
 					<item name="Lucene" href="./engine/luceneservice.html" />
 					<item name="Query Syntax" href="./engine/queries.html" />
 				</item>
+				<item name="Access Control (ACL)" href="./engine/acl.html" />
 				<item name="ModelService" href="./engine/modelservice.html" />
 				<item name="WorkflowService" href="./engine/workflowservice.html" />
 				
@@ -59,7 +59,7 @@
 
 				<item name="Scheduler" href="./engine/scheduler.html" />
 				<item name="PropertyService" href="./engine/propertyservice.html" />
-				<item name="Remote EJB Lookup" href="./engine/remote_lookup.html" />
+				<item name="CDI and JNDI Lookup" href="./engine/remote_lookup.html" />
 
 			</item>
 			

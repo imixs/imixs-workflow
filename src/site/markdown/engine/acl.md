@@ -61,4 +61,19 @@ A protected workitem means that the workitem is protected by a read/ or write ac
 
 The read and write access for a workitem can be defined by the BPMN model with the [ACL Properties of the Imixs-BPMN modeler](../modelling/process.html#ACL_Properties) and the [Access Plugin](./plugins/accessplugin.html)
 
+## The AccessDeniedException
+
+In the case a user tries to process or update a workitem with insufficient write access a _AccessDeniedException_ is thrown:
+
+    org.imixs.workflow.exceptions.AccessDeniedException
+
+For example, an application can use this exception to display an appropriate error message.
+
+To avoid this exception, an application can test the temporary attribute '_$IsAuthor_'. This attribute is computed by the [DocumentService](documentservice.html) immediately after a workitem is loaded.
+
+    $IsAuthor==true // indicates that the user has write access
+
+However, if a user with insufficient read access attempts to load a workitem, no _AccessDeniedException_ will be thrown. In this case, the _DocumentService_ returns _null_. This behavior prevents possible attacks where an attacker tries to randomly spy on protected data.
+
+
 
