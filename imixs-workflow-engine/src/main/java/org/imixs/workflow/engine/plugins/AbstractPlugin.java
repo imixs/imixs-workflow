@@ -31,7 +31,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -114,8 +113,8 @@ public abstract class AbstractPlugin implements Plugin {
 	 * 
 	 * </code>
 	 * 
-	 * If the itemValue is a multiValue object the single values can be
-	 * spearated by a separator
+	 * If the itemValue is a multiValue object the single values can be spearated by
+	 * a separator
 	 * 
 	 * <code>
 	 *  
@@ -134,6 +133,7 @@ public abstract class AbstractPlugin implements Plugin {
 
 		String sFormat = "";
 		String sSeparator = " ";
+		String sPosition=null;
 		String sItemValue;
 		String sPropertyKey;
 
@@ -239,6 +239,10 @@ public abstract class AbstractPlugin implements Plugin {
 			// next we check if the start tag contains a 'separator' attribute
 			sSeparator = extractAttribute(aString.substring(0, iContentEndPos), "separator");
 
+			// next we check if the start tag contains a 'position' attribute
+			sPosition = extractAttribute(aString.substring(0, iContentEndPos), "position");
+
+			
 			// extract locale...
 			Locale locale = null;
 			String sLocale = extractAttribute(aString.substring(0, iContentEndPos), "locale");
@@ -264,7 +268,7 @@ public abstract class AbstractPlugin implements Plugin {
 			// format field value
 			List<?> vValue = documentContext.getItemValue(sItemValue);
 
-			String sResult = formatItemValues(vValue, sSeparator, sFormat, locale);
+			String sResult = formatItemValues(vValue, sSeparator, sFormat, locale,sPosition);
 
 			// now replace the tag with the result string
 			aString = aString.substring(0, iTagStartPos) + sResult + aString.substring(iTagEndPos);
@@ -277,30 +281,46 @@ public abstract class AbstractPlugin implements Plugin {
 	/**
 	 * This method returns a formated a string object.
 	 * 
-	 * In case a Separator is provided, multiValues will be separated by the provided separator. 
+	 * In case a Separator is provided, multiValues will be separated by the
+	 * provided separator.
 	 * 
 	 * If no separator is provide, only the first value will returned.
 	 * 
-	 * The format and locale attributes can be used to format number and date values.
-	 *    
+	 * The format and locale attributes can be used to format number and date
+	 * values.
+	 * 
 	 */
-	public static String formatItemValues(Collection<?> aItem, String aSeparator, String sFormat, Locale locale) {
+	public static String formatItemValues(List<?> aItem, String aSeparator, String sFormat, Locale locale,
+			String sPosition) {
 
 		StringBuffer sBuffer = new StringBuffer();
 
-		if (aItem == null)
+		if (aItem == null|| aItem.size()==0)
 			return "";
 
-		for (Object aSingleValue : aItem) {
-			String aValue = formatObjectValue(aSingleValue, sFormat, locale);
-			sBuffer.append(aValue);
-			// append delimiter
-			if (aSeparator != null) {
-				sBuffer.append(aSeparator);
-			} else {
-				// no separator, exit
-				break;
+		// test if a position was defined?
+		if (sPosition == null || sPosition.isEmpty()) {
+			// no - we iterate over all...
+			for (Object aSingleValue : aItem) {
+				String aValue = formatObjectValue(aSingleValue, sFormat, locale);
+				sBuffer.append(aValue);
+				// append delimiter only if a separator is defined
+				if (aSeparator != null) {
+					sBuffer.append(aSeparator);
+				} else {
+					// no separator, so we can exit with the first value
+					break;
+				}
 			}
+		} else {
+			// evaluate position
+			if ("last".equalsIgnoreCase(sPosition)) {
+				sBuffer.append(aItem.get(aItem.size()-1));
+			} else {
+				// default first poistion
+				sBuffer.append(aItem.get(0));
+			}
+			
 		}
 
 		String sString = sBuffer.toString();
@@ -318,19 +338,30 @@ public abstract class AbstractPlugin implements Plugin {
 	 * this method formats a string object depending of an attribute type.
 	 * MultiValues will be separated by the provided separator
 	 */
-	public static String formatItemValues(Collection<?> aItem, String aSeparator, String sFormat) {
-		return formatItemValues(aItem, aSeparator, sFormat, null);
+	public static String formatItemValues(List<?> aItem, String aSeparator, String sFormat) {
+		return formatItemValues(aItem, aSeparator, sFormat, null,null);
 	}
 
+	
+
 	/**
-	 * This helper method test the type of an object provided by a
-	 * itemcollection and formats the object into a string value.
+	 * this method formats a string object depending of an attribute type.
+	 * MultiValues will be separated by the provided separator
+	 */
+	public static String formatItemValues(List<?> aItem, String aSeparator,String sFormat, Locale alocale) {
+		return formatItemValues(aItem, aSeparator, sFormat, alocale,null);
+	}
+
+	
+	
+	/**
+	 * This helper method test the type of an object provided by a itemcollection
+	 * and formats the object into a string value.
 	 * 
 	 * Only Date Objects will be formated into a modified representation. other
 	 * objects will be returned using the toString() method.
 	 * 
-	 * If an optional format is provided this will be used to format date
-	 * objects.
+	 * If an optional format is provided this will be used to format date objects.
 	 * 
 	 * @param o
 	 * @return
@@ -394,8 +425,8 @@ public abstract class AbstractPlugin implements Plugin {
 	}
 
 	/**
-	 * This method merges the values from a SourceList into a valueList and
-	 * removes duplicates.
+	 * This method merges the values from a SourceList into a valueList and removes
+	 * duplicates.
 	 * 
 	 * @param valueList
 	 * @param sourceList
@@ -417,14 +448,14 @@ public abstract class AbstractPlugin implements Plugin {
 	 * If an entry of the fieldList is a single key value, than the values to be
 	 * merged are read from the corresponding documentContext property
 	 * 
-	 * e.g. 'namTeam' -> maps the values of the documentContext property
-	 * 'namteam' into the valueList
+	 * e.g. 'namTeam' -> maps the values of the documentContext property 'namteam'
+	 * into the valueList
 	 * 
-	 * If an entry of the fieldList is in square brackets, than the comma
-	 * separated elements are mapped into the valueList
+	 * If an entry of the fieldList is in square brackets, than the comma separated
+	 * elements are mapped into the valueList
 	 * 
-	 * e.g. '[user1,user2]' - maps the values 'user1' and 'user2' int the
-	 * valueList. Also Curly brackets are allowed '{user1,user2}'
+	 * e.g. '[user1,user2]' - maps the values 'user1' and 'user2' int the valueList.
+	 * Also Curly brackets are allowed '{user1,user2}'
 	 * 
 	 * 
 	 * @param valueList
@@ -493,8 +524,8 @@ public abstract class AbstractPlugin implements Plugin {
 	}
 
 	/**
-	 * This method returns the next Task of the current processing call based on
-	 * the BPMN model.
+	 * This method returns the next Task of the current processing call based on the
+	 * BPMN model.
 	 * 
 	 * @return
 	 * @throws ModelException
@@ -506,7 +537,7 @@ public abstract class AbstractPlugin implements Plugin {
 		String aModelVersion = adocumentActivity.getItemValueString("$modelVersion");
 		int iNextProcessID = adocumentActivity.getItemValueInteger("numNextProcessID");
 		if (iNextProcessID > 0) {
-			// now get the next task 
+			// now get the next task
 			itemColNextProcess = getCtx().getModelManager().getModel(aModelVersion)
 					.getTask(adocumentActivity.getItemValueInteger("numNextProcessID"));
 

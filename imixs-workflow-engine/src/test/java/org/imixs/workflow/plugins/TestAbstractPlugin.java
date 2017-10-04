@@ -32,7 +32,8 @@ public class TestAbstractPlugin {
 	 * Test replacement of dynamic item values
 	 * 
 	 * <itemvalue>xxx</itemvalue>
-	 * @throws PluginException 
+	 * 
+	 * @throws PluginException
 	 * 
 	 */
 	@Test
@@ -53,7 +54,7 @@ public class TestAbstractPlugin {
 		Assert.assertEquals(expectedString, resultString);
 
 	}
-	
+
 	/**
 	 * Test replacement of dynamic item values with a format error
 	 * 
@@ -73,7 +74,7 @@ public class TestAbstractPlugin {
 		documentContext = new ItemCollection();
 		documentContext.replaceItemValue("txtName", "Anna");
 
-		String resultString=null;
+		String resultString = null;
 		try {
 			resultString = applicationPlugin.replaceDynamicValues(testString, documentContext);
 			Assert.fail();
@@ -81,11 +82,10 @@ public class TestAbstractPlugin {
 			// expected
 			Assert.assertNull(resultString);
 		}
-		
-		// test wrong embeded tags... 
+
+		// test wrong embeded tags...
 
 	}
-	
 
 	/**
 	 * Test format string:
@@ -95,7 +95,8 @@ public class TestAbstractPlugin {
 	 * <itemvalue format="EEEE, d. MMMM yyyy">datdate</itemvalue>
 	 * 
 	 * </code>
-	 * @throws PluginException 
+	 * 
+	 * @throws PluginException
 	 * 
 	 */
 	@Test
@@ -156,7 +157,8 @@ public class TestAbstractPlugin {
 	 * <itemvalue separator="/">_numbers</itemvalue>
 	 * 
 	 * </code>
-	 * @throws PluginException 
+	 * 
+	 * @throws PluginException
 	 * 
 	 */
 	@Test
@@ -182,7 +184,7 @@ public class TestAbstractPlugin {
 		Assert.assertEquals(expectedString, resultString);
 
 	}
-	
+
 	/**
 	 * Test format string of multi value with out separator:
 	 * 
@@ -191,7 +193,8 @@ public class TestAbstractPlugin {
 	 * <itemvalue>_numbers</itemvalue>
 	 * 
 	 * </code>
-	 * @throws PluginException 
+	 * 
+	 * @throws PluginException
 	 * 
 	 */
 	@Test
@@ -214,14 +217,66 @@ public class TestAbstractPlugin {
 
 		String resultString = applicationPlugin.replaceDynamicValues(testString, documentContext);
 
-		// we expect that only the first value is given, because no separator was defined. 
+		// we expect that only the first value is given, because no separator was
+		// defined.
 		Assert.assertEquals(expectedString, resultString);
 
 	}
 
 	/**
-	 * This is a test plugin extending the AbstractPlugion to be used for
-	 * several tests in this jUnit test only
+	 * Test position tag:
+	 * 
+	 * <code>
+	 * 
+	 * <itemvalue position="last">_numbers</itemvalue>
+	 * 
+	 * </code>
+	 * 
+	 * @throws PluginException
+	 * 
+	 */
+	@Test
+	public void testMultiValuePosition() throws PluginException {
+
+		String testString = "The Valuelist is: <itemvalue position=\"LAST\">_numbers</itemvalue>.";
+		String expectedStringLast = "The Valuelist is: 300.";
+
+		TestPlugin applicationPlugin = new TestPlugin();
+
+		// prepare data
+		documentContext = new ItemCollection();
+		logger.info("[TestHisotryPlugin] setup test data...");
+
+		Vector<Integer> values = new Vector<Integer>();
+		values.add(1);
+		values.add(20);
+		values.add(300);
+		documentContext.replaceItemValue("_numbers", values);
+
+		String resultString = applicationPlugin.replaceDynamicValues(testString, documentContext);
+
+		Assert.assertEquals(expectedStringLast, resultString);
+
+		// test first....
+		testString = "The Valuelist is: <itemvalue position=\"FIRST\">_numbers</itemvalue>.";
+		String expectedStringFirst = "The Valuelist is: 1.";
+
+		applicationPlugin = new TestPlugin();
+		// prepare data
+		documentContext = new ItemCollection();
+		logger.info("[TestHisotryPlugin] setup test data...");
+
+		documentContext.replaceItemValue("_numbers", values);
+
+		resultString = applicationPlugin.replaceDynamicValues(testString, documentContext);
+
+		Assert.assertEquals(expectedStringFirst, resultString);
+
+	}
+
+	/**
+	 * This is a test plugin extending the AbstractPlugion to be used for several
+	 * tests in this jUnit test only
 	 * 
 	 * @author rsoika
 	 *
@@ -229,7 +284,8 @@ public class TestAbstractPlugin {
 	class TestPlugin extends AbstractPlugin {
 
 		@Override
-		public ItemCollection run(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
+		public ItemCollection run(ItemCollection documentContext, ItemCollection documentActivity)
+				throws PluginException {
 			return documentContext;
 		}
 
