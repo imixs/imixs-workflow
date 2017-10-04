@@ -51,6 +51,8 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
@@ -142,7 +144,6 @@ public class DocumentService {
 
 	public static final String USER_GROUP_LIST = "org.imixs.USER.GROUPLIST";
 
-	// private static Logger logger = Logger.getLogger("org.imixs.workflow");
 	private final static Logger logger = Logger.getLogger(DocumentService.class.getName());
 
 	public static final String OPERATION_NOTALLOWED = "OPERATION_NOTALLOWED";
@@ -152,11 +153,9 @@ public class DocumentService {
 	@Resource
 	SessionContext ctx;
 
-	// @Resource
-	// EntityContext ectx;
-
 	@Resource(name = "ACCESS_ROLES")
 	private String accessRoles = "";
+
 	@Resource(name = "DISABLE_OPTIMISTIC_LOCKING")
 	private Boolean disableOptimisticLocking = false;
 
@@ -168,6 +167,9 @@ public class DocumentService {
 
 	@EJB
 	private LuceneSearchService luceneSearchService;
+
+	@Inject
+	protected Event<DocumentEvent> events;
 
 	/**
 	 * Returns a comma separated list of additional Access-Roles defined for this service
@@ -321,6 +323,9 @@ public class DocumentService {
 	 */
 	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
 
+		// fire event
+		events.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_SAVE));
+
 		logger.finest("save - ID=" + document.getUniqueID() + " provided version="
 				+ document.getItemValueInteger("$version"));
 		Document persistedDocument = null;
@@ -437,7 +442,7 @@ public class DocumentService {
 		 * flag this entity which is still managed
 		 */
 		persistedDocument.setPending(true);
-
+				
 		// return the updated document
 		return document;
 	}
@@ -520,7 +525,10 @@ public class DocumentService {
 
 			// update the $isauthor flag
 			result.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
-
+			
+			// fire event
+			events.fire(new DocumentEvent(result, DocumentEvent.ON_DOCUMENT_LOAD));
+						
 			return result;
 		} else
 			return null;

@@ -40,6 +40,7 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
@@ -116,6 +117,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	@Resource
 	SessionContext ctx;
 
+	@Inject
+	protected Event<ProcessingEvent> events;
+
 	private static Logger logger = Logger.getLogger(WorkflowService.class.getName());
 
 	/**
@@ -127,20 +131,20 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * Returns a collection of workitems containing a namOwner property
-	 * belonging to a specified username. The namOwner property can be
-	 * controlled by the plug-in {@code org.imixs.workflow.plugins.OwnerPlugin}
+	 * Returns a collection of workitems containing a namOwner property belonging to
+	 * a specified username. The namOwner property can be controlled by the plug-in
+	 * {@code org.imixs.workflow.plugins.OwnerPlugin}
 	 * 
 	 * @param name
-	 *            = username for property namOwner - if null current username
-	 *            will be used
+	 *            = username for property namOwner - if null current username will
+	 *            be used
 	 * @param startpos
 	 *            = optional start position
 	 * @param count
 	 *            = optional count - default = -1
 	 * @param type
-	 *            = defines the type property of the workitems to be returnd.
-	 *            can be null
+	 *            = defines the type property of the workitems to be returnd. can be
+	 *            null
 	 * @param sortorder
 	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
 	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
@@ -170,12 +174,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * Returns a collection of workItems belonging to a specified username. The
-	 * name is a username or role contained in the $WriteAccess attribute of the
+	 * Returns a collection of workItems belonging to a specified username. The name
+	 * is a username or role contained in the $WriteAccess attribute of the
 	 * workItem.
 	 * 
-	 * The method returns only workitems the call has sufficient read access
-	 * for.
+	 * The method returns only workitems the call has sufficient read access for.
 	 * 
 	 * @param name
 	 *            = username or role contained in $writeAccess - if null current
@@ -185,8 +188,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @param count
 	 *            = optional count - default = -1
 	 * @param type
-	 *            = defines the type property of the workitems to be returnd.
-	 *            can be null
+	 *            = defines the type property of the workitems to be returnd. can be
+	 *            null
 	 * @param sortorder
 	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
 	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
@@ -216,20 +219,20 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * Returns a collection of workitems created by a specified user
-	 * (namCreator). The behaivor is simmilar to the method getWorkList.
+	 * Returns a collection of workitems created by a specified user (namCreator).
+	 * The behaivor is simmilar to the method getWorkList.
 	 * 
 	 * 
 	 * @param name
-	 *            = username for property namCreator - if null current username
-	 *            will be used
+	 *            = username for property namCreator - if null current username will
+	 *            be used
 	 * @param startpos
 	 *            = optional start position
 	 * @param count
 	 *            = optional count - default = -1
 	 * @param type
-	 *            = defines the type property of the workitems to be returnd.
-	 *            can be null
+	 *            = defines the type property of the workitems to be returnd. can be
+	 *            null
 	 * @param sortorder
 	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
 	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
@@ -259,9 +262,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * Returns a collection of workitems where the current user has a
-	 * writeAccess. This means the either the username or one of the userroles
-	 * is contained in the $writeaccess property
+	 * Returns a collection of workitems where the current user has a writeAccess.
+	 * This means the either the username or one of the userroles is contained in
+	 * the $writeaccess property
 	 * 
 	 * 
 	 * @param startpos
@@ -269,8 +272,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @param count
 	 *            = optional count - default = -1
 	 * @param type
-	 *            = defines the type property of the workitems to be returnd.
-	 *            can be null
+	 *            = defines the type property of the workitems to be returnd. can be
+	 *            null
 	 * @param sortorder
 	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
 	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
@@ -315,7 +318,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		}
 	}
 
-	
 	/**
 	 * Returns a list of workitems filtered by the field $workflowgroup
 	 * 
@@ -328,7 +330,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @param sortorder
 	 * @return
 	 */
-	
+
 	public List<ItemCollection> getWorkListByGroup(String name, String type, int pageSize, int pageIndex,
 			int sortorder) {
 
@@ -349,9 +351,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * Returns a collection of workitems belonging to a specified $processID
-	 * defined by the workflow model. The behaivor is simmilar to the method
-	 * getWorkList.
+	 * Returns a collection of workitems belonging to a specified $processID defined
+	 * by the workflow model. The behaivor is simmilar to the method getWorkList.
 	 * 
 	 * @param aID
 	 *            = $ProcessID for the workitems to be returned.
@@ -360,8 +361,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @param count
 	 *            = optional count - default = -1
 	 * @param type
-	 *            = defines the type property of the workitems to be returnd.
-	 *            can be null
+	 *            = defines the type property of the workitems to be returnd. can be
+	 *            null
 	 * @param sortorder
 	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
 	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
@@ -400,8 +401,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @param count
 	 *            = optional count - default = -1
 	 * @param type
-	 *            = defines the type property of the workitems to be returnd.
-	 *            can be null
+	 *            = defines the type property of the workitems to be returnd. can be
+	 *            null
 	 * @param sortorder
 	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
 	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
@@ -436,15 +437,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 	/**
 	 * This returns a list of workflow events assigned to a given workitem. The
-	 * method evaluates the events for the current $modelversion and $processid.
-	 * The result list is filtered by the properties 'keypublicresult' and
+	 * method evaluates the events for the current $modelversion and $processid. The
+	 * result list is filtered by the properties 'keypublicresult' and
 	 * 'keyRestrictedVisibility'.
 	 * 
-	 * If the property keyRestrictedVisibility exits the method test if the
-	 * current username is listed in one of the namefields.
+	 * If the property keyRestrictedVisibility exits the method test if the current
+	 * username is listed in one of the namefields.
 	 * 
-	 * If the current user is in the role 'org.imixs.ACCESSLEVEL.MANAGERACCESS'
-	 * the property keyRestrictedVisibility will be ignored.
+	 * If the current user is in the role 'org.imixs.ACCESSLEVEL.MANAGERACCESS' the
+	 * property keyRestrictedVisibility will be ignored.
 	 * 
 	 * @see imixs-bpmn
 	 * @param workitem
@@ -522,19 +523,17 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * This method processes a workItem by the WorkflowKernel and saves the
-	 * workitem after the processing was finished successful. The workitem have
-	 * to provide at least the properties '$modelversion', '$processid' and
-	 * '$activityid'
+	 * This method processes a workItem by the WorkflowKernel and saves the workitem
+	 * after the processing was finished successful. The workitem have to provide at
+	 * least the properties '$modelversion', '$processid' and '$activityid'
 	 * 
-	 * Before the method starts processing the workitem, the method load the
-	 * current instance of the given workitem and compares the property
-	 * $processID. If it is not equal the method throws an
-	 * ProcessingErrorException.
+	 * Before the method starts processing the workitem, the method load the current
+	 * instance of the given workitem and compares the property $processID. If it is
+	 * not equal the method throws an ProcessingErrorException.
 	 * 
-	 * After the workitem was processed successful, the method verifies the
-	 * property $workitemList. If this property holds a list of entities these
-	 * entities will be saved and the property will be removed automatically.
+	 * After the workitem was processed successful, the method verifies the property
+	 * $workitemList. If this property holds a list of entities these entities will
+	 * be saved and the property will be removed automatically.
 	 * 
 	 * 
 	 * The method provides a observer pattern for plugins to get called during the
@@ -551,19 +550,21 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 *             workflowKernel
 	 * @throws PluginException
 	 *             - thrown if processing by a plugin fails
-	 * @throws ModelException 
+	 * @throws ModelException
 	 */
 	@SuppressWarnings("unchecked")
 	public ItemCollection processWorkItem(ItemCollection workitem)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
-		
-		long l=System.currentTimeMillis();
+
+		long l = System.currentTimeMillis();
 
 		if (workitem == null)
 			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
 					ProcessingErrorException.INVALID_WORKITEM, "WorkflowService: error - workitem is null");
 
-	
+		// fire event
+		events.fire(new ProcessingEvent(workitem, ProcessingEvent.BEFORE_PROCESS));
+
 		// load current instance of this workitem
 		ItemCollection currentInstance = this.getWorkItem(workitem.getItemValueString(WorkflowKernel.UNIQUEID));
 
@@ -624,9 +625,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			}
 
 		}
-		
-		// fire observer Plugins...
-		workitem = fireAfterRegistration(workflowkernel,workitem);
 
 		// identify Caller and update CurrentEditor
 		String nameEditor;
@@ -637,7 +635,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		if (workitem.getItemValueString("$creator").isEmpty() && !workitem.getItemValueString("namCreator").isEmpty()) {
 			workitem.replaceItemValue("$creator", workitem.getItemValue("namCreator"));
 		}
-		
+
 		if (workitem.getItemValueString("$creator").isEmpty()) {
 			workitem.replaceItemValue("$creator", nameEditor);
 			// support deprecated fieldname
@@ -647,43 +645,41 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		// update namLastEditor only if current editor has changed
 		if (!nameEditor.equals(workitem.getItemValueString("$editor"))
 				&& !workitem.getItemValueString("$editor").isEmpty()) {
-			
+
 			workitem.replaceItemValue("$lasteditor", workitem.getItemValueString("$editor"));
 			// deprecated
 			workitem.replaceItemValue("namlasteditor", workitem.getItemValueString("$editor"));
 		}
 
 		// update $editor
-		
+
 		workitem.replaceItemValue("$editor", nameEditor);
 		// deprecated
 		workitem.replaceItemValue("namcurrenteditor", nameEditor);
-
-		// fire observer Plugins...
-		workitem = fireBeforeProcess(workflowkernel, workitem);
 
 		// now process the workitem
 		try {
 			workitem = workflowkernel.process(workitem);
 		} catch (PluginException pe) {
 			// if a plugin exception occurs we roll back the transaction.
-			logger.severe("processing workitem '" + workitem.getItemValueString(UNIQUEID) + " failed, rollback transaction...");
+			logger.severe("processing workitem '" + workitem.getItemValueString(UNIQUEID)
+					+ " failed, rollback transaction...");
 			ctx.setRollbackOnly();
-			throw pe;			
+			throw pe;
 		}
-		logger.fine("workitem '" + workitem.getItemValueString(UNIQUEID) + "' processed in " + (System.currentTimeMillis()-l) + "ms");
+		logger.fine("workitem '" + workitem.getItemValueString(UNIQUEID) + "' processed in "
+				+ (System.currentTimeMillis() - l) + "ms");
 
-		// fire observer Plugins...
-		workitem = fireAfterProcess(workflowkernel, workitem);
-		
-		
-		// Now firew also all split versions.....
-		List<ItemCollection> splitWorkitems=workflowkernel.getSplitWorkitems();
-		for (ItemCollection splitWorkitemm: splitWorkitems) {
-			fireAfterProcess(workflowkernel, splitWorkitemm);
+		// fire event
+		events.fire(new ProcessingEvent(workitem, ProcessingEvent.AFTER_PROCESS));
+
+		// Now fire also events for all split versions.....
+		List<ItemCollection> splitWorkitems = workflowkernel.getSplitWorkitems();
+		for (ItemCollection splitWorkitemm : splitWorkitems) {
+			// fire event
+			events.fire(new ProcessingEvent(splitWorkitemm, ProcessingEvent.AFTER_PROCESS));
 			documentService.save(splitWorkitemm);
 		}
-		
 
 		return documentService.save(workitem);
 
@@ -694,9 +690,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * This Method returns the modelManager Instance. The current ModelVersion
-	 * is automatically updated during the Method updateProfileEntity which is
-	 * called from the processWorktiem method.
+	 * This Method returns the modelManager Instance. The current ModelVersion is
+	 * automatically updated during the Method updateProfileEntity which is called
+	 * from the processWorktiem method.
 	 * 
 	 */
 	public ModelManager getModelManager() {
@@ -740,8 +736,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * Obtain the java.security.Principal that identifies the caller and returns
-	 * the name of this principal.
+	 * Obtain the java.security.Principal that identifies the caller and returns the
+	 * name of this principal.
 	 * 
 	 * @return the user name
 	 */
@@ -766,8 +762,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * This method returns a list of user names, roles and application groups
-	 * the caller belongs to.
+	 * This method returns a list of user names, roles and application groups the
+	 * caller belongs to.
 	 * 
 	 * @return
 	 */
@@ -776,8 +772,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * This method returns a n injected Plugin by name or null if not plugin
-	 * with the requested class name is injected.
+	 * This method returns a n injected Plugin by name or null if not plugin with
+	 * the requested class name is injected.
 	 * 
 	 * @param pluginClassName
 	 * @return plugin class or null if not found
@@ -800,69 +796,5 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 		return null;
 	}
-
-	// Livecycle Methods
-
-	/**
-	 * called immediately after the plugin registration phase was completed
-	 * 
-	 * @param listenerRegistry
-	 * @param workitem
-	 * @return
-	 * @throws PluginException
-	 */
-	private ItemCollection fireAfterRegistration(WorkflowKernel workflowKernel,ItemCollection workitem)
-			throws PluginException {
-		// interate plugin regestry
-		List<Plugin> regestry = workflowKernel.getPluginRegistry();
-		for (Plugin plugin : regestry) {
-			if (plugin instanceof ObserverPlugin) {
-				workitem = ((ObserverPlugin) plugin).afterRegistration(workitem);
-			}
-		}
-		return workitem;
-	}
-
-	/**
-	 * called before the method workflowkernel.process(workitem) is called and the
-	 * workitem is completely prepared for processing.
-	 * 
-	 * @param listenerRegistry
-	 * @param workitem
-	 * @return
-	 * @throws PluginException
-	 */
-	private ItemCollection fireBeforeProcess(WorkflowKernel workflowKernel, ItemCollection workitem)
-			throws PluginException {
-		// interate plugin regestry
-		List<Plugin> regestry = workflowKernel.getPluginRegistry();
-		for (Plugin plugin : regestry) {
-			if (plugin instanceof ObserverPlugin) {
-				workitem = ((ObserverPlugin) plugin).beforeProcess(workitem);
-			}
-		}
-		return workitem;
-	}
-
-	/**
-	 * called immediately after the method workflowkernel.process(workitem) was called and before the method _documentService.save(workitem) is called.
-	 * @param listenerRegistry
-	 * @param workitem
-	 * @return
-	 * @throws PluginException
-	 */
-	private ItemCollection fireAfterProcess(WorkflowKernel workflowKernel, ItemCollection workitem)
-			throws PluginException {
-		// interate plugin regestry
-		List<Plugin> regestry = workflowKernel.getPluginRegistry();
-		for (Plugin plugin : regestry) {
-			if (plugin instanceof ObserverPlugin) {
-				workitem = ((ObserverPlugin) plugin).afterProcess(workitem);
-			}
-		}
-		return workitem;
-	}
-
-	
 
 }

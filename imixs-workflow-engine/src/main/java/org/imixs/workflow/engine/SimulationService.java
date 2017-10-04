@@ -37,6 +37,7 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
@@ -76,9 +77,11 @@ public class SimulationService implements WorkflowContext {
 	@EJB
 	ModelService modelService;
 
-
 	@Resource
 	SessionContext ctx;
+
+	@Inject
+	protected Event<ProcessingEvent> events;
 
 	private static Logger logger = Logger.getLogger(SimulationService.class.getName());
 
@@ -108,7 +111,10 @@ public class SimulationService implements WorkflowContext {
 			throw new ProcessingErrorException(SimulationService.class.getSimpleName(),
 					ProcessingErrorException.INVALID_WORKITEM, "WorkflowService: error - workitem is null");
 
-			// Fetch the current Profile Entity for this version.
+		// fire event
+		events.fire(new ProcessingEvent(workitem, ProcessingEvent.BEFORE_PROCESS));
+
+		// Fetch the current Profile Entity for this version.
 		WorkflowKernel workflowkernel = new WorkflowKernel(this);
 		// register plugins defined in the environment.profile ....
 		if (vPlugins != null && vPlugins.size() > 0) {
@@ -128,11 +134,6 @@ public class SimulationService implements WorkflowContext {
 
 			}
 		}
-		// fire observer Plugins...
-		workitem = fireAfterRegistration(workflowkernel, workitem);
-
-		// fire observer Plugins...
-		workitem = fireBeforeProcess(workflowkernel, workitem);
 
 		// now process the workitem
 		try {
@@ -146,8 +147,15 @@ public class SimulationService implements WorkflowContext {
 		logger.fine("workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID) + "' simulated in "
 				+ (System.currentTimeMillis() - l) + "ms");
 
-		// fire observer Plugins...
-		workitem = fireAfterProcess(workflowkernel, workitem);
+		// fire event
+		events.fire(new ProcessingEvent(workitem, ProcessingEvent.AFTER_PROCESS));
+
+		// Now fire also events for all split versions.....
+		List<ItemCollection> splitWorkitems = workflowkernel.getSplitWorkitems();
+		for (ItemCollection splitWorkitemm : splitWorkitems) {
+			// fire event
+			events.fire(new ProcessingEvent(splitWorkitemm, ProcessingEvent.AFTER_PROCESS));
+		}
 
 		return workitem;
 
@@ -196,70 +204,6 @@ public class SimulationService implements WorkflowContext {
 		}
 
 		return null;
-	}
-
-	// Livecycle Methods
-
-	/**
-	 * called immediately after the plugin registration phase was completed
-	 * 
-	 * @param listenerRegistry
-	 * @param workitem
-	 * @return
-	 * @throws PluginException
-	 */
-	private ItemCollection fireAfterRegistration(WorkflowKernel workflowKernel, ItemCollection workitem)
-			throws PluginException {
-		// interate plugin regestry
-		List<Plugin> regestry = workflowKernel.getPluginRegistry();
-		for (Plugin plugin : regestry) {
-			if (plugin instanceof ObserverPlugin) {
-				workitem = ((ObserverPlugin) plugin).afterRegistration(workitem);
-			}
-		}
-		return workitem;
-	}
-
-	/**
-	 * called before the method workflowkernel.process(workitem) is called and the
-	 * workitem is completely prepared for processing.
-	 * 
-	 * @param listenerRegistry
-	 * @param workitem
-	 * @return
-	 * @throws PluginException
-	 */
-	private ItemCollection fireBeforeProcess(WorkflowKernel workflowKernel, ItemCollection workitem)
-			throws PluginException {
-		// interate plugin regestry
-		List<Plugin> regestry = workflowKernel.getPluginRegistry();
-		for (Plugin plugin : regestry) {
-			if (plugin instanceof ObserverPlugin) {
-				workitem = ((ObserverPlugin) plugin).beforeProcess(workitem);
-			}
-		}
-		return workitem;
-	}
-
-	/**
-	 * called immediately after the method workflowkernel.process(workitem) was
-	 * called and before the method _documentService.save(workitem) is called.
-	 * 
-	 * @param listenerRegistry
-	 * @param workitem
-	 * @return
-	 * @throws PluginException
-	 */
-	private ItemCollection fireAfterProcess(WorkflowKernel workflowKernel, ItemCollection workitem)
-			throws PluginException {
-		// interate plugin regestry
-		List<Plugin> regestry = workflowKernel.getPluginRegistry();
-		for (Plugin plugin : regestry) {
-			if (plugin instanceof ObserverPlugin) {
-				workitem = ((ObserverPlugin) plugin).afterProcess(workitem);
-			}
-		}
-		return workitem;
 	}
 
 }
