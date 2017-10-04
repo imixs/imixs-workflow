@@ -175,18 +175,16 @@ public class RuleEngine {
 
 		return result;
 	}
-	
-	
+
 	/**
-	 * This method evaluates a boolean expression. The method takes a documentContext 
-	 * as argument.
+	 * This method evaluates a boolean expression. The method takes a
+	 * documentContext as argument.
 	 * 
 	 * @param adocumentContext
 	 * @return ScriptEngine instance
 	 * @throws PluginException
 	 */
-	public boolean evaluateBooleanExpression(String script, ItemCollection documentContext)
-			throws PluginException {
+	public boolean evaluateBooleanExpression(String script, ItemCollection documentContext) throws PluginException {
 
 		// test if a business rule is defined
 		if ("".equals(script.trim()))
@@ -196,9 +194,9 @@ public class RuleEngine {
 		scriptEngine.put("workitem", convertItemCollection(documentContext));
 
 		logger.fine("SCRIPT:" + script);
-		Object result=null;
+		Object result = null;
 		try {
-			result=scriptEngine.eval(script);
+			result = scriptEngine.eval(script);
 		} catch (ScriptException e) {
 			// script not valid
 			throw new PluginException(RuleEngine.class.getSimpleName(), INVALID_SCRIPT,
@@ -327,29 +325,31 @@ public class RuleEngine {
 		// get result object from engine
 		Map<String, Object> scriptResult = (Map) scriptEngine.get(variable);
 		// test if the json object exists and has child objects...
-		if (scriptResult != null && scriptResult.entrySet().size() > 0) {
+		if (scriptResult != null) {
 			result = new ItemCollection();
+			// evaluate values if available...
+			if (scriptResult.entrySet().size() > 0) {
+				// iterate over all entries
+				for (Map.Entry<String, Object> entry : scriptResult.entrySet()) {
 
-			// iterate over all entries
-			for (Map.Entry<String, Object> entry : scriptResult.entrySet()) {
-
-				// test if the entry value is a single object or an array....
-				if (isBasicObjectType(entry.getValue().getClass())) {
-					// single value - build array....
-					logger.fine("adding " + variable + " property " + entry.getKey());
-					List<Object> list = new ArrayList();
-					list.add(entry.getValue());
-					result.replaceItemValue(entry.getKey(), list);
-				} else {
-					// test if array...
-					String expression = "result['" + entry.getKey() + "']";
-					Object[] oScript = evaluateNativeScriptArray(expression);
-					if (oScript == null) {
-						continue;
+					// test if the entry value is a single object or an array....
+					if (isBasicObjectType(entry.getValue().getClass())) {
+						// single value - build array....
+						logger.fine("adding " + variable + " property " + entry.getKey());
+						List<Object> list = new ArrayList();
+						list.add(entry.getValue());
+						result.replaceItemValue(entry.getKey(), list);
+					} else {
+						// test if array...
+						String expression = "result['" + entry.getKey() + "']";
+						Object[] oScript = evaluateNativeScriptArray(expression);
+						if (oScript == null) {
+							continue;
+						}
+						logger.fine("adding " + variable + " property " + entry.getKey());
+						List<?> list = new ArrayList(Arrays.asList(oScript));
+						result.replaceItemValue(entry.getKey(), list);
 					}
-					logger.fine("adding " + variable + " property " + entry.getKey());
-					List<?> list = new ArrayList(Arrays.asList(oScript));
-					result.replaceItemValue(entry.getKey(), list);
 				}
 			}
 		}
