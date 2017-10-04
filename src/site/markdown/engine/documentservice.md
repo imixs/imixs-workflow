@@ -118,3 +118,24 @@ For further details read the [section ACL](./acl.html).
 __Note:__ There is no need to set the Read- and Writeaccess programmatic because the ACL of a _workitem_ can be managed model definition in a transparent way.  
  
   
+## CDI Events
+
+The DocumentService EJB provides an Observer Pattern based on CDI Events. The events are fired when a document was loaded or is saved.
+The Event is defined by the class:
+
+    org.imixs.workflow.engine.DocumentEvent
+
+The class _DocumentEvent_ defines the following event types:
+- ON\_DOCUMENT\_SAVE - send immediately before a document will be saved 
+- ON\_DOCUMENT\_LOAD - send immediately after a document was loaded
+
+This event can be consumed by another Session Bean or managed bean implementing the @Observes annotation: 
+
+	@Stateless
+	public class DocumentServiceListener {
+	    public void onEvent(@Observes DocumentEvent documentEvent){
+	        ItemCollection document=documentEvent.getDocument();
+	        System.out.println("Received DocumentEvent Type = " + documentEvent.getType());
+    	}
+	}
+ 

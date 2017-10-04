@@ -125,3 +125,25 @@ Each time a running process instance is updated, the WorkflowService compares  t
 It is also possible to handle different versions of a model at the same time.   In this case each process instance is processed by the model version from which  it was started.
   
  
+   
+## CDI Events
+
+The WorkflowService EJB provides an Observer Pattern based on CDI Events. The events are fired when a workitem is processed.
+The Event is defined by the class:
+
+    org.imixs.workflow.engine.ProcessingEvent
+
+The class _ProcessingEvent_ defines the following event types:
+- BEFORE\_PROCESS - is send immediately before a workitem will be processed 
+- AFTER\_PROCESS - is send immediately after a workitem was processed
+
+This event can be consumed by another Session Bean or managed bean implementing the @Observes annotation: 
+
+	@Stateless
+	public class WorkflowServiceListener {
+	    public void onEvent(@Observes ProcessingEvent processingEvent){
+	        ItemCollection workitem=processingEvent.getDocument();
+	        System.out.println("Received ProcessingEvent Type = " + processingEvent.getType());
+    	}
+	}
+ 
