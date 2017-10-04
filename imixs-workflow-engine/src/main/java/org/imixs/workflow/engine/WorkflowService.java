@@ -563,8 +563,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 					ProcessingErrorException.INVALID_WORKITEM, "WorkflowService: error - workitem is null");
 
 		// fire event
-		events.fire(new ProcessingEvent(workitem, ProcessingEvent.BEFORE_PROCESS));
-
+		if (events!=null) {
+			events.fire(new ProcessingEvent(workitem, ProcessingEvent.BEFORE_PROCESS));
+		} else {
+			logger.warning("CDI Support is missing - ProcessingEvent wil not be fired");
+		}
 		// load current instance of this workitem
 		ItemCollection currentInstance = this.getWorkItem(workitem.getItemValueString(WorkflowKernel.UNIQUEID));
 
@@ -671,13 +674,16 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 				+ (System.currentTimeMillis() - l) + "ms");
 
 		// fire event
-		events.fire(new ProcessingEvent(workitem, ProcessingEvent.AFTER_PROCESS));
-
+		if (events!=null) {
+			events.fire(new ProcessingEvent(workitem, ProcessingEvent.AFTER_PROCESS));
+		}
 		// Now fire also events for all split versions.....
 		List<ItemCollection> splitWorkitems = workflowkernel.getSplitWorkitems();
 		for (ItemCollection splitWorkitemm : splitWorkitems) {
 			// fire event
-			events.fire(new ProcessingEvent(splitWorkitemm, ProcessingEvent.AFTER_PROCESS));
+			if (events!=null) {
+				events.fire(new ProcessingEvent(splitWorkitemm, ProcessingEvent.AFTER_PROCESS));
+			}
 			documentService.save(splitWorkitemm);
 		}
 
