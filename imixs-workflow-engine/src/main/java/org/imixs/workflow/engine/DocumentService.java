@@ -141,7 +141,9 @@ public class DocumentService {
 	public static final String READACCESS = "$readaccess";
 	public static final String WRITEACCESS = "$writeaccess";
 	public static final String ISAUTHOR = "$isAuthor";
+	public static final String LUCENEIGNORE = "$luceneignore";
 
+	
 	public static final String USER_GROUP_LIST = "org.imixs.USER.GROUPLIST";
 
 	private final static Logger logger = Logger.getLogger(DocumentService.class.getName());
@@ -433,7 +435,9 @@ public class DocumentService {
 		document.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
 
 		// add/update document into lucene index
-		luceneUpdateService.updateDocument(document);
+		if (!document.getItemValueBoolean(LUCENEIGNORE)) {
+			luceneUpdateService.updateDocument(document);
+		}
 
 		/*
 		 * issue #230
