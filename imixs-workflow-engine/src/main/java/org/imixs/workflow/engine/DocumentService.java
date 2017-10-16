@@ -323,9 +323,6 @@ public class DocumentService {
 	 */
 	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
 
-		// fire event
-		events.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_SAVE));
-
 		logger.finest("save - ID=" + document.getUniqueID() + " provided version="
 				+ document.getItemValueInteger("$version"));
 		Document persistedDocument = null;
@@ -334,7 +331,7 @@ public class DocumentService {
 
 		// check if a $uniqueid is available
 		String sID = document.getItemValueString(UNIQUEID);
-		if (!"".equals(sID)) {
+		if (!sID.isEmpty()) {
 			// yes so we can try to find the Entity by its primary key
 			persistedDocument = manager.find(Document.class, sID);
 			if (persistedDocument == null) {
@@ -353,7 +350,7 @@ public class DocumentService {
 			// create new one with the provided id
 			persistedDocument = new Document(sID);
 			// if $Created is provided than overtake this information
-			Date datCreated = document.getItemValueDate("$Created");
+			Date datCreated = document.getItemValueDate("$created");
 			if (datCreated != null) {
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(datCreated);
@@ -394,7 +391,9 @@ public class DocumentService {
 		document.replaceItemValue("$uniqueid", persistedDocument.getId());
 		document.replaceItemValue("$modified", cal.getTime());
 		document.replaceItemValue("$created", persistedDocument.getCreated().getTime());
-
+		
+		// Now prepare document for persisting......
+		
 		// update current version number into managed entity!
 		if (disableOptimisticLocking) {
 			// in case of optimistic locking is disabled we remove $version
@@ -442,6 +441,9 @@ public class DocumentService {
 		 * flag this entity which is still managed
 		 */
 		persistedDocument.setPending(true);
+		
+		// Finally we fire the DocumentEvent ON_DOCUMENT_SAVE
+		events.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_SAVE));
 				
 		// return the updated document
 		return document;

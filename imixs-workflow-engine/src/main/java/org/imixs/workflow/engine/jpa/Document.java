@@ -114,8 +114,10 @@ public class Document implements java.io.Serializable {
 	 */
 	public Document(String aID) {
 		this();
-		if (aID != null && !"".equals(aID))
+		if (aID != null && !aID.isEmpty()) {
+			// overwrite $UNIQUEID
 			id = aID;
+		}
 	}
 
 	/**

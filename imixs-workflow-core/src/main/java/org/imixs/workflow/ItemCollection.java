@@ -939,7 +939,7 @@ public class ItemCollection implements Cloneable {
 	 * @return $UniqueID
 	 */
 	public String getUniqueID() {
-		return getItemValueString("$UniqueID");
+		return getItemValueString(WorkflowKernel.UNIQUEID);
 	}
 
 	/**

@@ -120,16 +120,17 @@ __Note:__ There is no need to set the Read- and Writeaccess programmatic because
   
 ## CDI Events
 
-The DocumentService EJB provides an Observer Pattern based on CDI Events. The events are fired when a document was loaded or is saved.
+The DocumentService EJB provides an Observer Pattern based on CDI Events. The events are fired when a document is loaded or saved.
 The Event is defined by the class:
 
     org.imixs.workflow.engine.DocumentEvent
 
 The class _DocumentEvent_ defines the following event types:
-- ON\_DOCUMENT\_SAVE - send immediately before a document will be saved 
-- ON\_DOCUMENT\_LOAD - send immediately after a document was loaded
 
-This event can be consumed by another Session Bean or managed bean implementing the @Observes annotation: 
+ * **ON\_DOCUMENT\_SAVE** - send immediately before a document will be persisted. The document is already managed by JPA and indexed by Lucene, but the transaction is not closed. So a EJB-Exception can roll back the changes. This event should be handled in the same transaction context. 
+ * **ON\_DOCUMENT\_LOAD** - send immediately after a document was loaded. The document may already be managed by JPA (attached) if the document was saved in the same transaction. 
+
+This _DocumentEvent_ can be consumed by another Session Bean or managed bean implementing the @Observes annotation: 
 
 	@Stateless
 	public class DocumentServiceListener {
