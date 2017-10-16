@@ -134,8 +134,9 @@ The Event is defined by the class:
     org.imixs.workflow.engine.ProcessingEvent
 
 The class _ProcessingEvent_ defines the following event types:
-- BEFORE\_PROCESS - is send immediately before a workitem will be processed 
-- AFTER\_PROCESS - is send immediately after a workitem was processed
+
+ * **BEFORE\_PROCESS** - is send immediately before a workitem will be processed 
+ * **AFTER\_PROCESS** - is send immediately after a workitem was processed
 
 This event can be consumed by another Session Bean or managed bean implementing the @Observes annotation: 
 
