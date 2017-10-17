@@ -142,8 +142,8 @@ public class DocumentService {
 	public static final String WRITEACCESS = "$writeaccess";
 	public static final String ISAUTHOR = "$isAuthor";
 	public static final String LUCENEIGNORE = "$luceneignore";
+	public static final String IMMUTABLE = "$immutable";
 
-	
 	public static final String USER_GROUP_LIST = "org.imixs.USER.GROUPLIST";
 
 	private final static Logger logger = Logger.getLogger(DocumentService.class.getName());
@@ -174,7 +174,8 @@ public class DocumentService {
 	protected Event<DocumentEvent> events;
 
 	/**
-	 * Returns a comma separated list of additional Access-Roles defined for this service
+	 * Returns a comma separated list of additional Access-Roles defined for this
+	 * service
 	 * 
 	 * @return
 	 */
@@ -239,15 +240,14 @@ public class DocumentService {
 	}
 
 	/**
-	 * This method returns true, if at least one element of the current
-	 * UserNameList is contained in a given name list.
-	 * The comparison is case sensitive!
+	 * This method returns true, if at least one element of the current UserNameList
+	 * is contained in a given name list. The comparison is case sensitive!
 	 * 
 	 * @param nameList
 	 * @return
 	 */
 	public boolean isUserContained(List<String> nameList) {
-		if (nameList==null) {
+		if (nameList == null) {
 			return false;
 		}
 		List<String> userNameList = getUserNameList();
@@ -369,6 +369,11 @@ public class DocumentService {
 			if (!isCallerAuthor(persistedDocument) || !isCallerReader(persistedDocument)) {
 				throw new AccessDeniedException(OPERATION_NOTALLOWED, "You are not allowed to perform this operation");
 			}
+			
+			// test if persistedDocument is IMMUTABLE
+			if (new ItemCollection(persistedDocument.getData()).getItemValueBoolean(IMMUTABLE)) {
+				throw new AccessDeniedException(OPERATION_NOTALLOWED, "Operation not allowed, document is immutable!");
+			}
 			// there is no need to merge the persistedDocument because it is
 			// already managed by JPA!
 		}
@@ -393,9 +398,17 @@ public class DocumentService {
 		document.replaceItemValue("$uniqueid", persistedDocument.getId());
 		document.replaceItemValue("$modified", cal.getTime());
 		document.replaceItemValue("$created", persistedDocument.getCreated().getTime());
-		
+
+		// Finally we fire the DocumentEvent ON_DOCUMENT_SAVE
+		events.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_SAVE));
+		// check consistency of $uniqueid and $created after event was processed.
+		if ( (!persistedDocument.getId().equals(document.getUniqueID()))
+				|| (!persistedDocument.getCreated().getTime().equals(document.getItemValueDate("$created")))) {
+			throw new InvalidAccessException(InvalidAccessException.INVALID_ID, "Invalid data after DocumentEvent 'ON_DOCUMENT_SAVE'.");
+		}
+
 		// Now prepare document for persisting......
-		
+
 		// update current version number into managed entity!
 		if (disableOptimisticLocking) {
 			// in case of optimistic locking is disabled we remove $version
@@ -445,10 +458,7 @@ public class DocumentService {
 		 * flag this entity which is still managed
 		 */
 		persistedDocument.setPending(true);
-		
-		// Finally we fire the DocumentEvent ON_DOCUMENT_SAVE
-		events.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_SAVE));
-				
+
 		// return the updated document
 		return document;
 	}
@@ -531,10 +541,10 @@ public class DocumentService {
 
 			// update the $isauthor flag
 			result.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
-			
+
 			// fire event
 			events.fire(new DocumentEvent(result, DocumentEvent.ON_DOCUMENT_LOAD));
-						
+
 			return result;
 		} else
 			return null;
@@ -972,7 +982,6 @@ public class DocumentService {
 		return false;
 	}
 
-	
 	/**
 	 * Verifies if the caller has write access to the current document
 	 * 
@@ -1014,12 +1023,14 @@ public class DocumentService {
 	}
 
 	/**
-	 * This method returns true if the given list is empty or contains only null or '' values. 
+	 * This method returns true if the given list is empty or contains only null or
+	 * '' values.
+	 * 
 	 * @param aList
 	 * @return
 	 */
 	private boolean isEmptyList(List<String> aList) {
-		if (aList==null || aList.size()==0) {
+		if (aList == null || aList.size() == 0) {
 			return true;
 		}
 		// check each element

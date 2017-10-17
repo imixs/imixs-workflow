@@ -3,7 +3,7 @@
 The _DocumentService_ provides the interface to store, load and query data objects (_documents_) within a database. The service EJB is based on the Java Persistence API (JPA) to store a _document_ into a SQL database and provides also a [Lucene Search Index](https://lucene.apache.org/) to query documents by a search term.  In addition the _DocumentService_ assigns each document with an access control list (ACL). The ACL protects a document from unauthorized access. In case the _CallerPrincipal_ has insufficient rights to access or modify a specific document, the _DocumentService_ throws an _AccessDeniedException_. 
 
 
-##How to Store and Load a Document 
+## How to Store and Load a Document 
 
 A Document in the Imixs-Workflow systems is represented by the [ItemCollection class](../core/itemcollection.html), which presents a generic value object used by all methods of the Imixs-Workflow engine. The _DocumentService_ provides methods to save and load a document.
  
@@ -46,7 +46,13 @@ The _DocumentService_ also creates TimeStamps to mark the creation and last modi
 	  Date created=myDocument.getItemValueDate("$Created");
 	  Date modified=myDocument.getItemValueDate("$Modified");
 
+### Immutable Documents
 
+A document can be marked as immutable with the flag
+
+	$immutable=true
+
+In this case the document will be protected from further changes. The flag can not be removed once the document was created or updated with this flag. Though deleting a document with the immutable flag is allowed. 
 
 ## Query Documents
 
@@ -68,7 +74,7 @@ To query for a specific subset of documents, it is also possible to add individu
 See the [Lucene QueryParser description](https://lucene.apache.org/core/6_2_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description) for further details about the usage of lucene search terms. 
  
 
-###Pagination
+### Pagination
 The _DocumentService_ finder method can also be called by providing a pagesize and a pageindex. With these parameters navigate by pages through a search result. See the following example: 
 
     String serachTerm="(imixs*)";
@@ -77,7 +83,7 @@ The _DocumentService_ finder method can also be called by providing a pagesize a
 
 Note that the pageindex starts with 0. 
 
-###Sorting
+### Sorting
 
 Per default the search result is sorted by the lucene internal score of each document returned by the index. To sort the documents by a specific attribute a sortItem and a sort direction can be given:
 
@@ -130,8 +136,9 @@ The Event is defined by the class:
 
 The class _DocumentEvent_ defines the following event types:
 
- * **ON\_DOCUMENT\_SAVE** - send immediately before a document will be persisted. The document is already managed by JPA and indexed by Lucene, but the transaction is not closed. So a EJB-Exception can roll back the changes. This event should be handled in the same transaction context. 
+ * **ON\_DOCUMENT\_SAVE** - send immediately before a document will be persisted. The document is already managed by JPA but the transaction is not closed and the lucene index is not updated. So a EJB-Exception can roll back the changes. This event should be handled in the same transaction context.  
  * **ON\_DOCUMENT\_LOAD** - send immediately after a document was loaded. The document may already be managed by JPA (attached) if the document was saved in the same transaction. 
+
 
 This _DocumentEvent_ can be consumed by another Session Bean or managed bean implementing the @Observes annotation: 
 
@@ -142,4 +149,5 @@ This _DocumentEvent_ can be consumed by another Session Bean or managed bean imp
 	        System.out.println("Received DocumentEvent Type = " + documentEvent.getType());
     	}
 	}
- 
+
+In both event types, an observer client can change the data of the document.  
