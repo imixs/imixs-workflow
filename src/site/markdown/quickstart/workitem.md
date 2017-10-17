@@ -65,7 +65,8 @@ The following table provides an overview about the data of a process instance ma
 |$creator         |String  |no    		| The user who created the workItem.             				|
 |$editor          |String  |no    		| The user who invoked the processWorkitem() method.       		|
 |$lasteditor      |String  |no    		| The last user, that invoked the process method before the $editor |
-|$luceneignore    |String  |yes    		| If set to 'true' no lucene index will be created              |
+|$luceneignore    |Boolean |yes    		| If set to 'true' no lucene index will be created. (See [DocumentService](../engine/documentservice.html) for details.)   |
+|$immutable    	  |Boolean |yes    		| If set to 'true' updateing the workitem is no longer allowed. (See [DocumentService](../engine/documentservice.html) for details.) |
 |namOwner         |List    |no    		| String list of User/Roles, that are owners of that WorkItem. 	|
 |txtworkflowsummary |String|no 			| A short description of the current status      				|
 |txtworkflowabstract|String|no 			| A long description of the current status       				|
