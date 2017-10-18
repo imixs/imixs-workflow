@@ -99,8 +99,8 @@ The method *count(String)* can be used to compute the total hits of a  specific 
 The method *countPages(String,int)* can be used to compute the total pages of a  specific search term by a given page size.  The method expects the same search term as for the find() method but returns only the count of documents. The method counts only ItemCollections which are accessible by the CallerPrincipal.
 
 
-### Ignore Lucene Index
-The DocumentService adds a document automatically into the Lucene index. This default behavior can be deactivated on document level. To skip a document from indexing the item '$luceneIgnore' can be set to 'true'. In this case the document will not be added/updated in the lucene index. To remove an document already added to the lucene index, the method _removeDocument(id)_ must be called from the _LuceneUpdateService_.  
+### Ignore Index
+The DocumentService adds a document automatically into the Lucene search index. This default behavior can be deactivated on document level. To skip a document from indexing the item '$noindex' can be set to 'true'. In this case the document will not be added/updated in the lucene index. If the document is already indexed it will be removed from the index. 
  
 ## The Access Control List of a Document
 Additional the _DocumentService_ allows to restrict the read- and write access for a document by providing a [ACL](.acl.html). The items '$readaccess' and '$writeaccess' can be added into a document to restrict the access. The items can provide a list of UserIds or Roles. 

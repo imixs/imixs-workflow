@@ -141,7 +141,7 @@ public class DocumentService {
 	public static final String READACCESS = "$readaccess";
 	public static final String WRITEACCESS = "$writeaccess";
 	public static final String ISAUTHOR = "$isAuthor";
-	public static final String LUCENEIGNORE = "$luceneignore";
+	public static final String NOINDEX = "$noindex";
 	public static final String IMMUTABLE = "$immutable";
 
 	public static final String USER_GROUP_LIST = "org.imixs.USER.GROUPLIST";
@@ -448,8 +448,11 @@ public class DocumentService {
 		document.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
 
 		// add/update document into lucene index
-		if (!document.getItemValueBoolean(LUCENEIGNORE)) {
+		if (!document.getItemValueBoolean(NOINDEX)) {
 			luceneUpdateService.updateDocument(document);
+		} else {
+			// remove from index
+			luceneUpdateService.removeDocument(document.getUniqueID());
 		}
 
 		/*
