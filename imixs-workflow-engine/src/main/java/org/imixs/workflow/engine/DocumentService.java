@@ -371,7 +371,7 @@ public class DocumentService {
 			}
 			
 			// test if persistedDocument is IMMUTABLE
-			if (new ItemCollection(persistedDocument.getData()).getItemValueBoolean(IMMUTABLE)) {
+			if (ItemCollection.createByReference(persistedDocument.getData()).getItemValueBoolean(IMMUTABLE)) {
 				throw new AccessDeniedException(OPERATION_NOTALLOWED, "Operation not allowed, document is immutable!");
 			}
 			// there is no need to merge the persistedDocument because it is
@@ -949,7 +949,7 @@ public class DocumentService {
 	 */
 	private boolean isCallerReader(Document document) {
 
-		ItemCollection itemcol = new ItemCollection(document.getData());
+		ItemCollection itemcol = ItemCollection.createByReference(document.getData());
 
 		@SuppressWarnings("unchecked")
 		List<String> readAccessList = itemcol.getItemValue(READACCESS);
@@ -992,7 +992,7 @@ public class DocumentService {
 	 */
 	private boolean isCallerAuthor(Document document) {
 
-		ItemCollection itemcol = new ItemCollection(document.getData());
+		ItemCollection itemcol = ItemCollection.createByReference(document.getData());
 
 		@SuppressWarnings("unchecked")
 		List<String> writeAccessList = itemcol.getItemValue(WRITEACCESS);

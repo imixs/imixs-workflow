@@ -95,6 +95,8 @@ public class ItemCollection implements Cloneable {
 		super();
 		this.replaceAllItems(map);
 	}
+	
+	
 
 	/**
 	 * Creates a new ItemCollection and makes a deep copy from a given
@@ -108,6 +110,22 @@ public class ItemCollection implements Cloneable {
 		this.replaceAllItems(itemCol.hash);
 	}
 
+	/**
+	 * Creates a new ItemCollection by a reference to a given value Map. This method
+	 * does not make a deep copy of the given map and sets the value map by
+	 * reference. This method can be used in cases where values are only read. In
+	 * all other cases, the constructor method 'ItemCollection(Map<String,
+	 * List<Object>> map)' should be used.
+	 * 
+	 * @param map
+	 *            - reference with item values
+	 */
+	public static ItemCollection createByReference(final Map<String, List<Object>> map) {
+		ItemCollection reference = new ItemCollection();
+		reference.hash=map;
+		return reference;
+	}
+	
 	/**
 	 * This method clones the current ItemCollection. The method makes a deep
 	 * copy of the current instance.
