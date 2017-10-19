@@ -14,7 +14,7 @@ Each Workitem processed by the Imixs-Workflow engine is represented by an instan
 The method _replaceItemValue_ adds a new Item or replaces the value of an existing item. This code example creates a new empty ItemCollection and adds three new items. The first Item with the name "FirstName" contains a String value and the second item "CostCenter" contains an Integer value. 
 For the third item 'team' the  method _appendItemValue_ is used, which allows to add multiple values into one item.  
 
-###Getter Methods
+### Getter Methods
 The ItemCollection provides different methods to access items values. Some of the  methods are type-save and allow to access a value of a specific type. See the following example:
   
     String name=myItemCollection.getItemValueString("FirstName");
@@ -124,4 +124,23 @@ The ItemCollection provides convenience methods to access typical attributes of 
 |getModelVersion()	| returns the $modelversion attribute of a workitem |
 |getUniqueID()		| returns the $uniqueid attribute of a workitem 	|
 
-For more information see the javaDoc.
+
+### Create an ItemCollection by Reference
+
+The ItemCollection provides constructor methods to create or clone an existing ItemCollection:
+
+	// create a ItemCollection from an existing instance
+	ItemCollection myItemCollection=new ItemCollection(origin);
+
+This method call is equal to clone an instance:
+
+	// clone ItemCollection from an existing instance
+	ItemCollection myItemCollection = (ItemCollection)origin.clone();
+
+In both cases a deep copy of the given value map is created. A deep copy avoids write conflicts with value references. Particular in cases of embedded value arrays a deep copy is recommended. In cases where the values of a map are only read, a given value map can also be copied by reference. The method call _createByReference()_ has a better performance but copies the values by reference.
+
+	// create a ItemCollection by reference
+	ItemCollection myItemCollection = ItemCollection.createByReference(origin);
+ 	
+It is recommended to use the constructor methods if the origin of the reference is not clear. 	
+For more information see the [javaDoc](http://www.imixs.org/doc/apidocs/org/imixs/workflow/ItemCollection.html).
