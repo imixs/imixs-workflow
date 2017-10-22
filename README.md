@@ -72,7 +72,10 @@ The Imixs-Workflow engine is also available as a Docker Image running Imixs-Work
 
 ## Joining the Project
 
-If you have any questions post them into the [issue tracker](https://github.com/imixs/imixs-workflow/issues)
+If you have any questions post them into the [issue tracker](https://github.com/imixs/imixs-workflow/issues).
+If you have a bug or an idea, browse the [open issues](https://github.com/imixs/imixs-workflow/issues) before opening a new one. You can also take a look at the [Open Source Guide](https://opensource.guide/).
+
+
 
 ## License
 
