@@ -33,7 +33,7 @@ This message text will be automatically replaced with the workitem properties 'n
      at Wed, Jul 4, 2010
 
  
-### Format multi-value lists
+### Format multi-value Items
 If a item contains a multi-value list, all the values can be separated by a character sequence defined by the tag 'separator'. 
 For example the following message text based on an item '_parts' with the values {"pants", "shirt", "jacket"} and a separator ', ': 
  
@@ -44,6 +44,12 @@ will be replaced with:
     The following item has been ordered: pants, shirt, jacket
     
 **Note:** If no separator is defined, only the first value will be returned. 
+
+To get the last value of a multi-value list the tag 'position' can be set to 'last'
+
+    The last order item was: <itemValue position="last">_parts</itemValue>
+
+This example extract the last value of the mulit-value item  '_parts'. 
 
 ### Format date/number values by locale
 To format a date or number value into a language specific format the tags '_format_' and '_locale_' can be used. The following example shows how to format a date value into the German date format:
