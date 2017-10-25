@@ -16,8 +16,8 @@ import java.util.regex.Pattern;
 public class XMLParser {
 
 	/**
-	 * This method parses a xml tag for attributes. The method returns a Map
-	 * with all attributes found in the content string
+	 * This method parses a xml tag for attributes. The method returns a Map with
+	 * all attributes found in the content string
 	 * 
 	 * e.g. <item data="abc" value="def" />
 	 * 
@@ -38,8 +38,8 @@ public class XMLParser {
 	}
 
 	/**
-	 * This method parses a xml tag for a singel named attribute. The method
-	 * returns the value of the attribute found in the content string
+	 * This method parses a xml tag for a singel named attribute. The method returns
+	 * the value of the attribute found in the content string
 	 * 
 	 * e.g. <item data="abc" />
 	 * 
@@ -54,8 +54,8 @@ public class XMLParser {
 	}
 
 	/**
-	 * This method find specific tags inside a string and returns a list with
-	 * all tags.
+	 * This method find specific tags inside a string and returns a list with all
+	 * tags.
 	 * 
 	 * e.g. <date field="abc" />
 	 * 
@@ -81,10 +81,9 @@ public class XMLParser {
 		}
 		return result;
 	}
-	
-	
+
 	/**
-	 * This method returns the tag values of a  specific xml tag
+	 * This method returns the tag values of a specific xml tag
 	 * 
 	 * e.g. <date field="abc">2016-12-31</date>
 	 * 
@@ -95,16 +94,44 @@ public class XMLParser {
 	 */
 	public static List<String> findTagValues(String content, String tag) {
 		List<String> result = new ArrayList<String>();
-		List<String> tags = findTags(content,tag);
+		List<String> tags = findTags(content, tag);
 		// opening tag can contain optional attributes
-		String regex="(<" + tag + ".+?>|<" + tag + ">)(.+?)(</"+tag+")";
-		for (String singleTag:tags) {
+		String regex = "(<" + tag + ".+?>|<" + tag + ">)(.+?)(</" + tag + ")";
+		for (String singleTag : tags) {
 			Pattern p = Pattern.compile(regex);
 			Matcher m = p.matcher(singleTag);
 			while (m.find()) {
-				result.add(m.group(2));	
+				result.add(m.group(2));
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * This method returns the tag value of a single tag. The method returns the
+	 * first match! Use findTagValues to parse multiple tags in one string. e.g.
+	 * <date field="abc">2016-12-31</date>
+	 * 
+	 * returns 2016-12-31
+	 * 
+	 * @param content
+	 * @return
+	 */
+	public static String findTagValue(String content, String tag) {
+		// opening tag can contain optional attributes
+		List<String> tags = findTags(content, tag);
+		if (tags.size() > 0) {
+			// only first tag...
+			content = tags.get(0);
+		}
+		String regex = "(<" + tag + ".+?>|<" + tag + ">)(.+?)(</" + tag + ")";
+		Pattern p = Pattern.compile(regex);
+		Matcher m = p.matcher(content);
+		if (m.find()) {
+			return m.group(2);
+		}
+
+		// no result
+		return "";
 	}
 }
