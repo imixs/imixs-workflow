@@ -2,8 +2,6 @@ package org.imixs.workflow.plugins;
 
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.script.ScriptException;
 
@@ -15,8 +13,8 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.imixs.workflow.util.XMLParser;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import junit.framework.Assert;
@@ -40,14 +38,14 @@ public class TestResultPlugin {
 	@Before
 	public void setup() throws PluginException, ModelException {
 
-		workflowMockEnvironment=new WorkflowMockEnvironment();
+		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestResultPlugin.bpmn");
-		
+
 		workflowMockEnvironment.setup();
-		
+
 		resultPlugin = new ResultPlugin();
 		try {
-			resultPlugin.init(workflowMockEnvironment.getWorkflowContext());
+			resultPlugin.init(workflowMockEnvironment.getWorkflowService());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
@@ -152,8 +150,7 @@ public class TestResultPlugin {
 	}
 
 	/**
-	 * This test verifies if a pluginException is thronw if the format was
-	 * invalid
+	 * This test verifies if a pluginException is thronw if the format was invalid
 	 * 
 	 * @throws PluginException
 	 */
@@ -190,7 +187,6 @@ public class TestResultPlugin {
 		try {
 			// run plugin
 			adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-
 			Assert.fail();
 
 		} catch (PluginException e) {
@@ -217,7 +213,8 @@ public class TestResultPlugin {
 
 		// expeced txtname= Manfred,Anna,Sam
 		ItemCollection evalItemCollection = new ItemCollection();
-		evalItemCollection = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
+		evalItemCollection = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+				new ItemCollection());
 
 		Assert.assertTrue(evalItemCollection.hasItem("txtName"));
 
@@ -244,7 +241,7 @@ public class TestResultPlugin {
 				+ "<activityid>10</activityid>" + "<items>namTeam</items>";
 
 		try {
-			ItemCollection result = ResultPlugin.parseItemStructure(activityResult);
+			ItemCollection result = XMLParser.parseItemStructure(activityResult);
 
 			Assert.assertEquals("1.0.0", result.getItemValueString("modelversion"));
 			Assert.assertEquals("1000", result.getItemValueString("processID"));
@@ -263,7 +260,8 @@ public class TestResultPlugin {
 		try {
 			activityEntity.replaceItemValue("txtActivityResult",
 					"<item ignore=\"true\" name=\"comment\" >some data</item>");
-			ItemCollection result = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
+			ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+					new ItemCollection());
 			Assert.assertNotNull(result);
 			Assert.assertTrue(result.hasItem("comment"));
 			Assert.assertEquals("some data", result.getItemValueString("comment"));
@@ -276,7 +274,8 @@ public class TestResultPlugin {
 		// test an empty item tag
 		try {
 			activityEntity.replaceItemValue("txtActivityResult", "<item ignore=\"true\" name=\"comment\" />");
-			ItemCollection result = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
+			ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+					new ItemCollection());
 			Assert.assertNotNull(result);
 			Assert.assertTrue(result.hasItem("comment"));
 			Assert.assertEquals("", result.getItemValueString("comment"));
@@ -288,8 +287,8 @@ public class TestResultPlugin {
 	}
 
 	/**
-	 * This test evaluates an embedded xml content with newline chars used by
-	 * the split plugin
+	 * This test evaluates an embedded xml content with newline chars used by the
+	 * split plugin
 	 * 
 	 * <code>
 	 * <item name="subprocess_create">
@@ -314,7 +313,8 @@ public class TestResultPlugin {
 					+ "	</item>";
 
 			activityEntity.replaceItemValue("txtActivityResult", activityResult);
-			ItemCollection result = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
+			ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+					new ItemCollection());
 			Assert.assertNotNull(result);
 			Assert.assertTrue(result.hasItem("subprocess_create"));
 			String xmlContent = result.getItemValueString("subprocess_create");
@@ -327,7 +327,8 @@ public class TestResultPlugin {
 					+ "	    <items>_subject,_sender,_receipients,$file</items>\n" + "	</item>";
 
 			activityEntity.replaceItemValue("txtActivityResult", activityResult);
-			result = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
+			result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+					new ItemCollection());
 			Assert.assertNotNull(result);
 			Assert.assertTrue(result.hasItem("subprocess_create"));
 			xmlContent = result.getItemValueString("subprocess_create");
@@ -341,7 +342,8 @@ public class TestResultPlugin {
 					+ "	    <items>_subject,_sender,_receipients,$file</items>\r\n" + "	</item>";
 
 			activityEntity.replaceItemValue("txtActivityResult", activityResult);
-			result = ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
+			result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+					new ItemCollection());
 			Assert.assertNotNull(result);
 			Assert.assertTrue(result.hasItem("subprocess_create"));
 			xmlContent = result.getItemValueString("subprocess_create");
@@ -365,7 +367,7 @@ public class TestResultPlugin {
 			// test no name attribute
 			activityEntity.replaceItemValue("txtActivityResult",
 					"<item ignore=\"true\" noname=\"comment\" >some data</item>");
-			ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
+			workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, new ItemCollection());
 			Assert.fail();
 		} catch (PluginException e) {
 			// ok
@@ -375,10 +377,10 @@ public class TestResultPlugin {
 			// test wrong closing tag
 			activityEntity.replaceItemValue("txtActivityResult",
 					"<item ignore=\"true\" name=\"comment\" >some data</xitem>");
-			ResultPlugin.evaluateWorkflowResult(activityEntity, new ItemCollection());
+			workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, new ItemCollection());
 			Assert.fail();
 		} catch (PluginException e) {
-			// ok
+			// exception expected
 		}
 
 	}
@@ -388,8 +390,8 @@ public class TestResultPlugin {
 	 * 
 	 * The test validates the update of the type attribute
 	 * 
-	 * event 10 - no type defined - empty event 20 - type = "workitem" event 30
-	 * - type = "workitemeleted"
+	 * event 10 - no type defined - empty event 20 - type = "workitem" event 30 -
+	 * type = "workitemeleted"
 	 * 
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
@@ -403,29 +405,27 @@ public class TestResultPlugin {
 		workitem.removeItem("type");
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);
 		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 100);
-	
+
 		// case 1 - no type attribute
 		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
 		workitem = workflowMockEnvironment.processWorkItem(workitem);
 		Assert.assertEquals(100, workitem.getProcessID());
 		Assert.assertEquals("", workitem.getType());
-	
+
 		// case 2 - workitem
 		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 20);
 		workitem = workflowMockEnvironment.processWorkItem(workitem);
 		Assert.assertEquals(200, workitem.getProcessID());
 		Assert.assertEquals("workitem", workitem.getType());
-	
+
 		// case 3 - workitemdeleted
 		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 30);
 		workitem = workflowMockEnvironment.processWorkItem(workitem);
 		Assert.assertEquals(200, workitem.getProcessID());
 		Assert.assertEquals("workitemdeleted", workitem.getType());
-	
+
 	}
-	
-	
-	
+
 	/**
 	 * This test verifies white space in the result (e.g. newline)
 	 * 
@@ -449,45 +449,6 @@ public class TestResultPlugin {
 		Assert.assertNotNull(adocumentContext);
 
 		Assert.assertEquals("workitemdeleted", adocumentContext.getItemValueString("Type"));
-
-	}
-	
-	
-	
-
-	/*
-	 * Just for development
-	 */
-	@Ignore
-	@Test
-	public void manualTestRegex() {
-
-		// pattern = <(item)(.*?)>(.*?)</item>
-		Pattern pattern = Pattern.compile("<item(.*?)>(.*?)</item>|<item(.*?)./>");
-
-		String yourString = "<dummy>nix</dummy> " + " <item ignore=\"true\" name=\"item1\" >content2</item> "
-				+ " <item name=\"item2\">content2</item> <item>dummy</item> "
-				+ " <item name=\"empty\" ignore=\"true\" />";
-		Matcher matcher = pattern.matcher(yourString);
-		while (matcher.find()) {
-			System.out.println("Tag Only   : " + matcher.group(0));
-			System.out.println("Attributes : " + matcher.group(1));
-			System.out.println("Content    : " + matcher.group(2));
-			System.out.println("Content2    : " + matcher.group(3));
-		}
-	}
-
-	@Ignore
-	@Test
-	public void manualTestAttributesRegex() {
-		String spattern = "(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?";
-		Pattern attributePattern = Pattern.compile(spattern);
-		Matcher attributeMatcher = attributePattern.matcher(" ignore=\"true\" name=\"comment\"");
-		while (attributeMatcher.find()) {
-			System.out.println(attributeMatcher.group(0));
-			System.out.println(attributeMatcher.group(1));
-			System.out.println(attributeMatcher.group(2));
-		}
 
 	}
 

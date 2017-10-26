@@ -302,7 +302,7 @@ public class MailPlugin extends AbstractPlugin {
 	 * @throws PluginException
 	 */
 	public String getSubject(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
-		String subject = replaceDynamicValues(documentActivity.getItemValueString("txtMailSubject"), documentContext);
+		String subject = getWorkflowService().adaptText(documentActivity.getItemValueString("txtMailSubject"), documentContext);
 		logger.fine("Subject: " + subject);
 
 		return subject;
@@ -411,7 +411,7 @@ public class MailPlugin extends AbstractPlugin {
 	 */
 	public String getBody(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
 		// build mail body and replace dynamic values...
-		String aBodyText = replaceDynamicValues(documentActivity.getItemValueString("rtfMailBody"), documentContext);
+		String aBodyText = getWorkflowService().adaptText(documentActivity.getItemValueString("rtfMailBody"), documentContext);
 
 		// Test if mail body contains HTML content and updates the flag
 		// 'isHTMLMail'.

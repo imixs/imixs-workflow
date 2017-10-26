@@ -39,6 +39,7 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.imixs.workflow.util.XMLParser;
 
 /**
  * The Imixs Split&Join Plugin provides functionality to create and update
@@ -96,7 +97,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
 			throws PluginException, AccessDeniedException, ProcessingErrorException {
 
-		ItemCollection evalItemCollection = ResultPlugin.evaluateWorkflowResult(adocumentActivity, adocumentContext,false);
+		ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(adocumentActivity, adocumentContext,false);
 
 		if (evalItemCollection == null)
 			return adocumentContext;
@@ -182,7 +183,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				continue;
 			}
 			// evaluate the item content (XML format expected here!)
-			ItemCollection processData = ResultPlugin.parseItemStructure(processValue);
+			ItemCollection processData = XMLParser.parseItemStructure(processValue);
 
 			if (processData != null) {
 				// create new process instance
@@ -219,7 +220,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				if (processData.hasItem("action")) {
 					String workflowResult=processData.getItemValueString("action");
 					if (!workflowResult.isEmpty()) {
-						workflowResult = new ResultPlugin().replaceDynamicValues(workflowResult, workitemSubProcess);
+						workflowResult = getWorkflowService().adaptText(workflowResult, workitemSubProcess);
 						originWorkitem.replaceItemValue("action", workflowResult);
 					}
 					
@@ -270,7 +271,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				continue;
 			}
 			// evaluate the item content (XML format expected here!)
-			ItemCollection processData = ResultPlugin.parseItemStructure(processValue);
+			ItemCollection processData = XMLParser.parseItemStructure(processValue);
 
 			if (processData != null) {
 				// we need to lookup all subprocess instances which are matching
@@ -305,7 +306,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 						if (processData.hasItem("action")) {
 							String workflowResult=processData.getItemValueString("action");
 							if (!workflowResult.isEmpty()) {
-								workflowResult = new ResultPlugin().replaceDynamicValues(workflowResult, workitemSubProcess);
+								workflowResult = getWorkflowService().adaptText(workflowResult, workitemSubProcess);
 								originWorkitem.replaceItemValue("action", workflowResult);
 							}
 						}
@@ -318,7 +319,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 					if (processData.hasItem("action")) {
 						String workflowResult=processData.getItemValueString("action");
 						if (!workflowResult.isEmpty()) {
-							workflowResult = new ResultPlugin().replaceDynamicValues(workflowResult, workitemSubProcess);
+							workflowResult = getWorkflowService().adaptText(workflowResult, workitemSubProcess);
 							originWorkitem.replaceItemValue("action", workflowResult);
 						}
 						
@@ -365,7 +366,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 		}
 
 		// evaluate the item content (XML format expected here!)
-		ItemCollection processData = ResultPlugin.parseItemStructure(originProcessDefinition);
+		ItemCollection processData = XMLParser.parseItemStructure(originProcessDefinition);
 
 		String model_pattern = processData.getItemValueString("modelversion");
 		String process_pattern = processData.getItemValueString("processid");
@@ -400,7 +401,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 					if (processData.hasItem("action")) {
 						String workflowResult=processData.getItemValueString("action");
 						if (!workflowResult.isEmpty()) {
-							workflowResult = new ResultPlugin().replaceDynamicValues(workflowResult, originWorkitem);
+							workflowResult = getWorkflowService().adaptText(workflowResult, originWorkitem);
 							subprocessWorkitem.replaceItemValue("action", workflowResult);
 						}
 						

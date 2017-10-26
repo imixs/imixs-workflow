@@ -108,12 +108,12 @@ public class ApplicationPlugin extends AbstractPlugin {
 		// fetch workflow Abstract
 		sAbstract = itemColNextProcess.getItemValueString("txtworkflowabstract");
 		if (!"".equals(sAbstract))
-			sAbstract = this.replaceDynamicValues(sAbstract, documentContext);
+			sAbstract = getWorkflowService().adaptText(sAbstract, documentContext);
 
 		// fetch workflow Abstract
 		sSummary = itemColNextProcess.getItemValueString("txtworkflowsummary");
 		if (!"".equals(sSummary))
-			sSummary = this.replaceDynamicValues(sSummary, documentContext);
+			sSummary = getWorkflowService().adaptText(sSummary, documentContext);
 
 		// submit data now into documentcontext
 	

@@ -7,7 +7,7 @@ import org.imixs.workflow.ItemCollection;
  * by the WorkflowService EJB. An event observer can react on a phased of a processing life cycle.
  * 
  * 
- * The DocumentEvent defines the following event types:
+ * The ProcessingEvent defines the following event types:
  * <ul>
  * <li>BEFORE_PROCESS - is send immediately before a workitem will be processed 
  * <li>AFTER_PROCESS - is send immediately after a workitem was processed

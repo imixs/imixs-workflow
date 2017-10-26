@@ -94,7 +94,7 @@ public class HistoryPlugin extends AbstractPlugin {
 		if (rtfItemLog.isEmpty())
 			return documentContext;
 
-		rtfItemLog = replaceDynamicValues(rtfItemLog, documentContext);
+		rtfItemLog = getWorkflowService().adaptText(rtfItemLog, documentContext);
 
 		List<?> temp = documentContext.getItemValue("txtworkflowhistory");
 		historyList = new Vector();

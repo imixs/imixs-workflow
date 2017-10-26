@@ -5,7 +5,10 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.plugins.AccessPlugin;
 import org.imixs.workflow.engine.plugins.MailPlugin;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,10 +24,29 @@ public class TestMailPlugin {
 	MailPlugin mailPlugin = null;
 	private final static Logger logger = Logger.getLogger(TestMailPlugin.class.getName());
 
+	
+	
+	WorkflowMockEnvironment workflowMockEnvironment;
+
 	@Before
-	public void setup() {
+	public void setup() throws PluginException, ModelException {
+		
+		workflowMockEnvironment=new WorkflowMockEnvironment();
+		workflowMockEnvironment.setModelPath("/bpmn/TestAccessPlugin.bpmn");
+		
+		workflowMockEnvironment.setup();
+
 		mailPlugin = new MailPlugin();
+		try {
+			mailPlugin.init(workflowMockEnvironment.getWorkflowService());
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+		}
+
+		
 	}
+	
 
 	/**
 	 * Test getBody, getSubject replace dynamic values

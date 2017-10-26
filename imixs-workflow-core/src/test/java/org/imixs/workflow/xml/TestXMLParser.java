@@ -18,7 +18,7 @@ public class TestXMLParser {
 	@Test
 	public void testAllAttributes() {
 
-		String test = "<date field=\"a\"   number=1 />";
+		String test = "<date field=\"a\"   number='1' />";
 
 		Map<String, String> result = XMLParser.findAttributes(test);
 
@@ -36,7 +36,7 @@ public class TestXMLParser {
 	@Test
 	public void testSingleAttribute() {
 
-		String test = "<date field=\"a\"   number=1 />";
+		String test = "<date field=\"a\"   number='1' />";
 
 		String result = XMLParser.findAttribute(test, "field");
 		Assert.assertNotNull(result);
@@ -47,9 +47,40 @@ public class TestXMLParser {
 		Assert.assertEquals("1", result);
 	}
 
+	
+	@Test
+	public void testAttributeWithDoubleQuotation() {
+	
+		String test = "<item name=\"txtName\" type=\"x\">true</item>";
+	
+		// verify attribute
+		String result = XMLParser.findAttribute(test, "name");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("txtName", result);
+		
+		result = XMLParser.findAttribute(test, "type");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("x", result);
+	}
+	
+	@Test
+	public void testAttributeWithSingleQuotation() {
+	
+		String test = "<item name='txtName' type='x'>true</item>";
+	
+		// verify attribute
+		String result = XMLParser.findAttribute(test, "name");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("txtName", result);
+		
+		result = XMLParser.findAttribute(test, "type");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("x", result);
+	}
+
 	@Test
 	public void testSingleAttributeUppercase() {
-		String test = "<date FIELD=\"a\"   nUMBER=1 />";
+		String test = "<date FIELD=\"a\"   nUMBER='1' />";
 		String result = XMLParser.findAttribute(test, "FIELD");
 		Assert.assertNotNull(result);
 		Assert.assertEquals("a", result);
@@ -80,6 +111,29 @@ public class TestXMLParser {
 
 	}
 
+	@Test
+	public void testBooleanAttribute() {
+
+		String test = "<item name=\"txtName\" type=\"boolean\">true</item>";
+
+		// verify attribute
+		String result = XMLParser.findAttribute(test, "name");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("txtName", result);
+
+		result = XMLParser.findAttribute(test, "type");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("boolean", result);
+
+		// verify attribute
+		List<String> values = XMLParser.findTagValues(test, "item");
+		Assert.assertNotNull(values);
+		Assert.assertEquals(1, values.size());
+		Assert.assertEquals("true", values.get(0));
+
+	}
+	
+	
 	@Test
 	public void testSingelTags() {
 
@@ -139,7 +193,7 @@ public class TestXMLParser {
 	}
 
 	@Test
-	public void testFindTagValue() {
+	public void testFindTagValues() {
 
 		String test = "<date field=\"a\"   number=1 >2016-12-31</date>";
 
@@ -155,6 +209,52 @@ public class TestXMLParser {
 		Assert.assertEquals(2, result.size());
 		Assert.assertEquals("2016-12-31", result.get(0));
 		Assert.assertEquals("2016-11-30", result.get(1));
+
+	}
+
+	/**
+	 * Find the value of a single tag
+	 */
+	@Test
+	public void testFindTag1() {
+		String test = "<itemvalue>namcreator</itemvalue>";
+		String result = XMLParser.findTagValue(test, "itemvalue");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("namcreator", result);
+
+	}
+
+	/**
+	 * Find the value of a single tag
+	 */
+	@Test
+	public void testFindTag2() {
+
+		String test = "<itemvalue name=\"txtname\">anna</itemvalue>";
+		String result = XMLParser.findTagValue(test, "itemvalue");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("anna", result);
+
+	}
+
+	/**
+	 * Find the value of a single tag
+	 */
+	@Test
+	public void testFindTag3() {
+
+		String test = "<date field=\"a\"   number=1 >2016-12-31</date>";
+
+		String result = XMLParser.findTagValue(test, "date");
+		Assert.assertNotNull(result);
+		Assert.assertEquals("2016-12-31", result);
+
+		test = "<date>2016-12-31</date>  <date>2016-11-30</date>";
+
+		result = XMLParser.findTagValue(test, "date");
+		Assert.assertNotNull(result);
+		// we expect the first value
+		Assert.assertEquals("2016-12-31", result);
 
 	}
 

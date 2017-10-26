@@ -189,6 +189,31 @@ public class WorkflowMockEnvironment {
 			}
 		});
 
+		
+		// AdaptText
+		when(workflowService.adaptText(Mockito.anyString(),Mockito.any(ItemCollection.class))).thenAnswer(new Answer<String>(){
+			@Override
+			public String answer(InvocationOnMock invocation) throws Throwable, PluginException {
+				
+				Object[] args = invocation.getArguments();
+				String text=(String) args[0];
+				ItemCollection document = (ItemCollection) args[1];
+
+				TextEvent textEvent=new TextEvent(text, document);
+				
+				TextItemValueAdapter tiva=new TextItemValueAdapter();
+				tiva.onEvent(textEvent);
+				
+				
+				return textEvent.getText();
+			}
+		});
+		
+		
+		
+		
+		when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class),Mockito.any(ItemCollection.class))).thenCallRealMethod();
+		when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class),Mockito.any(ItemCollection.class),Mockito.anyBoolean())).thenCallRealMethod();
 		when(workflowService.processWorkItem(Mockito.any(ItemCollection.class))).thenCallRealMethod();
 		when(workflowService.getUserName()).thenCallRealMethod();
 		when(workflowService.getWorkItem(Mockito.anyString())).thenCallRealMethod();
@@ -202,6 +227,7 @@ public class WorkflowMockEnvironment {
 
 	}
 
+	
 	/**
 	 * Create a test database with some workItems and a simple model
 	 */

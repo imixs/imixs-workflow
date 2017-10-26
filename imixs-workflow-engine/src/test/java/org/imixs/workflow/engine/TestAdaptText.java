@@ -1,11 +1,13 @@
-package org.imixs.workflow.plugins;
+package org.imixs.workflow.engine;
 
 import java.util.Calendar;
 import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.TextItemValueAdapter;
 import org.imixs.workflow.engine.plugins.AbstractPlugin;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,20 +15,30 @@ import org.junit.Test;
 import junit.framework.Assert;
 
 /**
- * Test the replaceDynamicValues method of abstractPugin
+ * Test the WorkflowService method 'adaptText'
  * 
  * @author rsoika
  * 
  */
-public class TestAbstractPlugin {
+public class TestAdaptText {
 	public ItemCollection documentContext;
 	public ItemCollection documentActivity;
-	private final static Logger logger = Logger.getLogger(TestAbstractPlugin.class.getName());
+	private final static Logger logger = Logger.getLogger(TestAdaptText.class.getName());
+
+	
+	
+	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setup() throws PluginException {
+	public void setup() throws PluginException, ModelException {
+
+		workflowMockEnvironment = new WorkflowMockEnvironment();
+		workflowMockEnvironment.setup();
+
+		//workflowMockEnvironment.loadModel("/bpmn/TestWorkflowService.bpmn");
 
 	}
+	
 
 	/**
 	 * Test replacement of dynamic item values
@@ -42,14 +54,13 @@ public class TestAbstractPlugin {
 		String testString = "Hello <itemvalue>txtname</itemvalue>!";
 		String expectedString = "Hello Anna!";
 
-		TestPlugin applicationPlugin = new TestPlugin();
-
+	
 		// prepare data
 		logger.info("[TestAbstractPlugin] setup test data...");
 		documentContext = new ItemCollection();
 		documentContext.replaceItemValue("txtName", "Anna");
 
-		String resultString = applicationPlugin.replaceDynamicValues(testString, documentContext);
+		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
 
@@ -67,8 +78,7 @@ public class TestAbstractPlugin {
 		String testString = "Hello <itemvalue>txtname!";
 		String expectedString = "Hello Anna!";
 
-		TestPlugin applicationPlugin = new TestPlugin();
-
+	
 		// prepare data
 		logger.info("[TestAbstractPlugin] setup test data...");
 		documentContext = new ItemCollection();
@@ -76,11 +86,11 @@ public class TestAbstractPlugin {
 
 		String resultString = null;
 		try {
-			resultString = applicationPlugin.replaceDynamicValues(testString, documentContext);
-			Assert.fail();
+			resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+			Assert.assertNotNull(resultString);
+			Assert.assertEquals(testString, resultString);
 		} catch (PluginException e) {
-			// expected
-			Assert.assertNull(resultString);
+			Assert.fail();
 		}
 
 		// test wrong embeded tags...
@@ -105,9 +115,7 @@ public class TestAbstractPlugin {
 		String testString = "The Date is: <itemvalue format=\"EEEE, d. MMMM yyyy\" locale=\"de_DE\">datdate</itemvalue>.";
 		String expectedString = "The Date is: Sonntag, 27. April 2014.";
 
-		TestPlugin applicationPlugin = new TestPlugin();
-
-		// prepare data
+			// prepare data
 		documentContext = new ItemCollection();
 		logger.info("[TestHisotryPlugin] setup test data...");
 
@@ -118,7 +126,7 @@ public class TestAbstractPlugin {
 
 		documentContext.replaceItemValue("datDate", cal.getTime());
 
-		String resultString = applicationPlugin.replaceDynamicValues(testString, documentContext);
+		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
 
@@ -130,8 +138,6 @@ public class TestAbstractPlugin {
 		String testString = "The Date is: <itemvalue locale=\"en_EN\" format=\"EEEE, d. MMMM yyyy\">datdate</itemvalue>.";
 		String expectedString = "The Date is: Sunday, 27. April 2014.";
 
-		TestPlugin applicationPlugin = new TestPlugin();
-
 		// prepare data
 		documentContext = new ItemCollection();
 		logger.info("[TestHisotryPlugin] setup test data...");
@@ -143,7 +149,7 @@ public class TestAbstractPlugin {
 
 		documentContext.replaceItemValue("datDate", cal.getTime());
 
-		String resultString = applicationPlugin.replaceDynamicValues(testString, documentContext);
+		String resultString =workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
 
@@ -167,8 +173,7 @@ public class TestAbstractPlugin {
 		String testString = "The Valuelist is: <itemvalue separator=\"/\">_numbers</itemvalue>.";
 		String expectedString = "The Valuelist is: 1/20/300.";
 
-		TestPlugin applicationPlugin = new TestPlugin();
-
+	
 		// prepare data
 		documentContext = new ItemCollection();
 		logger.info("[TestHisotryPlugin] setup test data...");
@@ -179,7 +184,7 @@ public class TestAbstractPlugin {
 		value.add(300);
 		documentContext.replaceItemValue("_numbers", value);
 
-		String resultString = applicationPlugin.replaceDynamicValues(testString, documentContext);
+		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
 
@@ -203,8 +208,7 @@ public class TestAbstractPlugin {
 		String testString = "The Valuelist is: <itemvalue>_numbers</itemvalue>.";
 		String expectedString = "The Valuelist is: 1.";
 
-		TestPlugin applicationPlugin = new TestPlugin();
-
+		
 		// prepare data
 		documentContext = new ItemCollection();
 		logger.info("[TestHisotryPlugin] setup test data...");
@@ -215,7 +219,7 @@ public class TestAbstractPlugin {
 		value.add(300);
 		documentContext.replaceItemValue("_numbers", value);
 
-		String resultString = applicationPlugin.replaceDynamicValues(testString, documentContext);
+		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
 
 		// we expect that only the first value is given, because no separator was
 		// defined.
@@ -241,8 +245,7 @@ public class TestAbstractPlugin {
 		String testString = "The Valuelist is: <itemvalue position=\"LAST\">_numbers</itemvalue>.";
 		String expectedStringLast = "The Valuelist is: 300.";
 
-		TestPlugin applicationPlugin = new TestPlugin();
-
+		
 		// prepare data
 		documentContext = new ItemCollection();
 		logger.info("[TestHisotryPlugin] setup test data...");
@@ -253,7 +256,7 @@ public class TestAbstractPlugin {
 		values.add(300);
 		documentContext.replaceItemValue("_numbers", values);
 
-		String resultString = applicationPlugin.replaceDynamicValues(testString, documentContext);
+		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedStringLast, resultString);
 
@@ -261,14 +264,13 @@ public class TestAbstractPlugin {
 		testString = "The Valuelist is: <itemvalue position=\"FIRST\">_numbers</itemvalue>.";
 		String expectedStringFirst = "The Valuelist is: 1.";
 
-		applicationPlugin = new TestPlugin();
 		// prepare data
 		documentContext = new ItemCollection();
 		logger.info("[TestHisotryPlugin] setup test data...");
 
 		documentContext.replaceItemValue("_numbers", values);
 
-		resultString = applicationPlugin.replaceDynamicValues(testString, documentContext);
+		resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedStringFirst, resultString);
 

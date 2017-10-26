@@ -30,9 +30,6 @@ package org.imixs.workflow.engine.plugins;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.StringWriter;
-import java.util.Collection;
-import java.util.List;
-import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
@@ -81,10 +78,9 @@ public class ReportPlugin extends AbstractPlugin {
 	 * Executes a report defined defined by the event in the attribute
 	 * 'txtReportName'.
 	 * <p>
-	 * The XML Source used by this method is the XML representation of the
-	 * current document. The Query Statement will not be evaluated
+	 * The XML Source used by this method is the XML representation of the current
+	 * document. The Query Statement will not be evaluated
 	 * <p>
-	 * 
 	 * 
 	 */
 	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
@@ -96,7 +92,7 @@ public class ReportPlugin extends AbstractPlugin {
 			reportFilePath = reportName;
 
 		// replace dynamic field values
-		reportFilePath = this.replaceDynamicValues(reportFilePath, adocumentContext);
+		reportFilePath = getWorkflowService().adaptText(reportFilePath, adocumentContext);
 
 		String reportTarget = adocumentActivity.getItemValueString("txtReportTarget");
 
@@ -126,8 +122,9 @@ public class ReportPlugin extends AbstractPlugin {
 			encoding = "UTF-8";
 
 		try {
-			// TODO : we need to clarify if the method call unescapeXMLContent() is necessary
-			
+			// TODO : we need to clarify if the method call unescapeXMLContent() is
+			// necessary
+
 			XMLItemCollection xml = XMLItemCollectionAdapter.putItemCollection(adocumentContext);
 			StringWriter writer = new StringWriter();
 
@@ -185,118 +182,8 @@ public class ReportPlugin extends AbstractPlugin {
 		}
 	}
 
-	/**
-	 * The method replaces the value tags of xml and html elements (starting
-	 * with xml and html)
-	 * 
-	 * 
-	 * Example
-	 * 
-	 * <code>
-	    <item><name>htmlanswer</name>
-	          <value xsi:type="xs:string">&lt;p&gt;Some conent&lt;/p&gt;</value>
-	    </item>
-	 * 
-	 * </code>
-	 * 
-	 * We need to iterate over the EntityCollection to replace each entity tag
-	 * with the corresponding original values
-	 * 
-	 * @param aContent
-	 *            - xml conent
-	 * @param vAttributList
-	 *            - list of items to replace content in unescaped format
-	 * @param xmlCol
-	 *            - xml EntityCollection containing the original values
-	 */
-	private String unescapeXMLContent(String aContent, List<String> vAttributList, Collection<ItemCollection> col) {
-
-		int entityPos = aContent.indexOf("<document>");
-		// iterate over all entities ...
-		for (ItemCollection entity : col) {
-
-			for (String fieldname : vAttributList) {
-
-				if (fieldname.toLowerCase().startsWith("html") || fieldname.toLowerCase().startsWith("xml")) {
-
-					// find <name>field</name>
-					String tag = "<name>" + fieldname + "</name>";
-					String sOriginValue = entity.getItemValueString(fieldname);
-					// process only if not an empty value
-					if (!sOriginValue.isEmpty()) {
-						int iPos = aContent.indexOf(tag, entityPos);
-						if (iPos > -1) {
-							// find value start pos and end pos
-							int start = aContent.indexOf('>', iPos + tag.length());
-							if (start > -1) {
-								// if empty tag it ends with /> instead of
-								// </value>. But we skipt empty values before.
-								// So we need not to care about this
-								int end = aContent.indexOf("</value>", start);
-
-								if (end > -1) {
-									// replace conent with origiaal value...
-
-									aContent = aContent.substring(0, start + 1) + sOriginValue
-											+ aContent.substring(end);
-								}
-
-							}
-						}
-					}
-				}
-			}
-
-			// now we need to forward to the next <entity> element in the xml
-			// structure...
-			entityPos = aContent.indexOf("<document>", entityPos + 1);
-		}
-
-		return aContent;
-	}
-
 	public void close(int status) throws PluginException {
 
-	}
-
-	/**
-	 * This method parses the query Params of a Request URL and adds params to a
-	 * given EQL Query.
-	 * 
-	 * The Query params are provided in the attribute txtReportParams from the
-	 * Activity Entity in the following format<br>
-	 * 
-	 * <code>
-	      param1=xxx&param2=xxx&param3=xxx
-	 * </code>
-	 * 
-	 * @param uriInfo
-	 * @return
-	 */
-	private String computeEQLParams(String aQuery, String sParamString) {
-
-		// cut prafix ? or & if available
-		if (sParamString.startsWith("?") || sParamString.startsWith("&"))
-			sParamString = sParamString.substring(1);
-
-		// split params
-		StringTokenizer tokenizer = new StringTokenizer(sParamString, "&");
-
-		while (tokenizer.hasMoreTokens()) {
-
-			String aToken = tokenizer.nextToken();
-			// if no '=' contained - continue...
-			if (aToken.indexOf('=') == -1)
-				continue;
-
-			String sKeyName = aToken.substring(0, aToken.indexOf('='));
-			String sParamValue = aToken.substring(aToken.indexOf('=') + 1);
-			// test if key is contained in query
-			if (aQuery.indexOf("?" + sKeyName) > -1)
-				aQuery = aQuery.replace("?" + sKeyName, sParamValue);
-
-		}
-		return aQuery;
 	}
 
 }
