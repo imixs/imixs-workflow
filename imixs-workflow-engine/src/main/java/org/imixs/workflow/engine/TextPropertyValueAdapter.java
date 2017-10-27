@@ -40,8 +40,12 @@ public class TextPropertyValueAdapter {
 	public void onEvent(@Observes TextEvent event) {
 		String text = event.getText();
 
-		// lower case <itemValue> into <itemvalue>
-		text = text.replace("<propertyValue", "<propertyvalue");
+		// lower case <propertyValue> into <propertyvalue>
+		if (text.contains("<propertyValue") || text.contains("</propertyValue>")) {
+			logger.warning("Deprecated <propertyValue> tag should be lowercase <propertyvalue> !");
+			text = text.replace("<propertyValue", "<propertyvalue");
+			text = text.replace("</propertyValue>", "</propertyvalue>");
+		}
 
 		List<String> tagList = XMLParser.findTags(text, "propertyvalue");
 		logger.finest(tagList.size() + " tags found");
