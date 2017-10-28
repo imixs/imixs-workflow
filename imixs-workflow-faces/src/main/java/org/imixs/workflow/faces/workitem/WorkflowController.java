@@ -132,11 +132,14 @@ public class WorkflowController extends DocumentController {
 		workitem.replaceItemValue("$WriteAccess", workitem.getItemValue("namCreator"));
 
 		// assign WorkflowGroup and editor
-		workitem.replaceItemValue("txtworkflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
-		workitem.replaceItemValue("txtworkflowStatus", startProcessEntity.getItemValueString("txtname"));
+		workitem.replaceItemValue("$workflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
+		workitem.replaceItemValue("$workflowStatus", startProcessEntity.getItemValueString("txtname"));
 		workitem.replaceItemValue("txtWorkflowImageURL", startProcessEntity.getItemValueString("txtimageurl"));
 		workitem.replaceItemValue("txtWorkflowEditorid", startProcessEntity.getItemValueString("txteditorid"));
 
+		// deprecated field
+		workitem.replaceItemValue("txtworkflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
+		workitem.replaceItemValue("txtworkflowStatus", startProcessEntity.getItemValueString("txtname"));
 		return action;
 	}
 
