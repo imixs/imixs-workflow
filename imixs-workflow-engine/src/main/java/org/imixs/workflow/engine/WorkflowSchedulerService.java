@@ -115,9 +115,8 @@ public class WorkflowSchedulerService {
 	List<String> unprocessedIDs = null;
 
 	/**
-	 * This method loads the current scheduler configuration. If no
-	 * configuration entity yet exists the method returns an empty
-	 * ItemCollection.
+	 * This method loads the current scheduler configuration. If no configuration
+	 * entity yet exists the method returns an empty ItemCollection.
 	 * 
 	 * The method updates the timer details for a running timer.
 	 * 
@@ -191,9 +190,9 @@ public class WorkflowSchedulerService {
 	/**
 	 * This Method starts the TimerService.
 	 * 
-	 * The Timer can be started based on a Calendar setting stored in the
-	 * property txtConfiguration, or by interval based on the properties
-	 * datStart, datStop, numIntervall.
+	 * The Timer can be started based on a Calendar setting stored in the property
+	 * txtConfiguration, or by interval based on the properties datStart, datStop,
+	 * numIntervall.
 	 * 
 	 * 
 	 * The method loads the configuration entity and evaluates the timer
@@ -211,8 +210,8 @@ public class WorkflowSchedulerService {
 	 * numInterval - Integer Object (interval in seconds)
 	 * 
 	 * 
-	 * The method throws an exception if the configuration entity contains
-	 * invalid attributes or values.
+	 * The method throws an exception if the configuration entity contains invalid
+	 * attributes or values.
 	 * 
 	 * After the timer was started the configuration is updated with the latest
 	 * statusmessage
@@ -321,15 +320,15 @@ public class WorkflowSchedulerService {
 	}
 
 	/**
-	 * This method checks if a workitem (doc) is in due. There are 4 different
-	 * cases which will be compared: The case is determined by the
-	 * keyScheduledBaseObject of the activity entity
+	 * This method checks if a workitem (doc) is in due. There are 4 different cases
+	 * which will be compared: The case is determined by the keyScheduledBaseObject
+	 * of the activity entity
 	 * 
 	 * Basis : keyScheduledBaseObject "last process"=1, "last Modification"=2
 	 * "Creation"=3 "Field"=4
 	 * 
-	 * The logic is not the best one but it works. So we are open for any kind
-	 * of improvements
+	 * The logic is not the best one but it works. So we are open for any kind of
+	 * improvements
 	 * 
 	 * @return true if workitem is is due
 	 */
@@ -375,7 +374,7 @@ public class WorkflowSchedulerService {
 			logger.finest(suniqueid + " offset =" + iOffset + " " + sDelayUnit);
 
 			iCompareType = docActivity.getItemValueInteger("keyScheduledBaseObject");
-			
+
 			// get current time for compare....
 			Date dateTimeNow = Calendar.getInstance().getTime();
 
@@ -384,19 +383,24 @@ public class WorkflowSchedulerService {
 			case 1: {
 				logger.finest(suniqueid + ": CompareType = last event");
 
-				// support deprecated field $lastProcessingDate
-				if (!doc.hasItem("$lastEventDate") && !doc.hasItem("$lastProcessingDate"))
+				// support deprecated fields $lastProcessingDate and timWorkflowLastAccess
+				if (!doc.hasItem("$lastEventDate")) {
+					logger.info("migrating $lasteventdate...");
+					if (doc.hasItem("$lastProcessingDate")) {
+						doc.replaceItemValue("$lastEventDate", doc.getItemValue("$lastProcessingDate"));
+					} else {
+						doc.replaceItemValue("$lastEventDate", doc.getItemValue("timWorkflowLastAccess"));
+					}
+				}
+				dateTimeCompare = doc.getItemValueDate("$lastEventDate");
+				if (dateTimeCompare == null) {
+					logger.warning(suniqueid + ": item '$lastEventDate' is missing!");
 					return false;
+				}
 
-				if (doc.hasItem("$lastEventDate"))
-					dateTimeCompare = doc.getItemValueDate("$lastEventDate");
-				else // support deprecated field name
-					dateTimeCompare = doc.getItemValueDate("$lastProcessingDate");
+				// compute scheduled time
 				logger.finest(suniqueid + ": $lastEventDate=" + dateTimeCompare);
-
-				// scheduled time
 				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
-
 				if (dateTimeCompare != null)
 					return dateTimeCompare.before(dateTimeNow);
 				else
@@ -464,7 +468,7 @@ public class WorkflowSchedulerService {
 			default: {
 				logger.warning("Time Base is not defined, verify model!");
 				return false;
-				}
+			}
 			}
 
 		} catch (Exception e) {
@@ -476,9 +480,9 @@ public class WorkflowSchedulerService {
 	}
 
 	/**
-	 * This method adds workdays (MONDAY - FRIDAY) to a given calendar object.
-	 * If the number of days is negative than this method subtracts the working
-	 * days from the calendar object.
+	 * This method adds workdays (MONDAY - FRIDAY) to a given calendar object. If
+	 * the number of days is negative than this method subtracts the working days
+	 * from the calendar object.
 	 * 
 	 * 
 	 * @param cal
@@ -617,9 +621,8 @@ public class WorkflowSchedulerService {
 		configItemCollection.replaceItemValue("numWorkItemsUnprocessed", unprocessedIDs.size());
 
 		/*
-		 * Check if Timer should be canceled now? - only by interval
-		 * configuration. In case of calenderBasedTimer the timer will stop
-		 * automatically.
+		 * Check if Timer should be canceled now? - only by interval configuration. In
+		 * case of calenderBasedTimer the timer will stop automatically.
 		 */
 		String sConfiguation = configItemCollection.getItemValueString("txtConfiguration");
 
@@ -644,9 +647,8 @@ public class WorkflowSchedulerService {
 	}
 
 	/**
-	 * Create an interval timer whose first expiration occurs at a given point
-	 * in time and whose subsequent expirations occur after a specified
-	 * interval.
+	 * Create an interval timer whose first expiration occurs at a given point in
+	 * time and whose subsequent expirations occur after a specified interval.
 	 **/
 	Timer createTimerOnInterval(ItemCollection configItemCollection) {
 		// Create an interval timer
@@ -758,8 +760,8 @@ public class WorkflowSchedulerService {
 	}
 
 	/**
-	 * collects all scheduled workflow activities. An scheduled workflow
-	 * activity is identified by the attribute keyScheduledActivity="1"
+	 * collects all scheduled workflow activities. An scheduled workflow activity is
+	 * identified by the attribute keyScheduledActivity="1"
 	 * 
 	 * The method goes through the latest or a specific Model Version
 	 * 
@@ -812,8 +814,8 @@ public class WorkflowSchedulerService {
 	}
 
 	/**
-	 * This method processes all workitems for a specific processID. the
-	 * processID is identified by the activityEntity Object (numprocessid)
+	 * This method processes all workitems for a specific processID. the processID
+	 * is identified by the activityEntity Object (numprocessid)
 	 * 
 	 * If the ActivityEntity has defined a EQL statement (attribute
 	 * txtscheduledview) then the method selects the workitems by this query.
@@ -877,7 +879,7 @@ public class WorkflowSchedulerService {
 	 * @throws PluginException
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
-	 * @throws ModelException 
+	 * @throws ModelException
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public void processSingleWorkitem(ItemCollection aWorkitem)
@@ -886,9 +888,9 @@ public class WorkflowSchedulerService {
 	}
 
 	/**
-	 * Update the timer details of a running timer service. The method updates
-	 * the properties netxtTimeout and timeRemaining and store them into the
-	 * timer configuration.
+	 * Update the timer details of a running timer service. The method updates the
+	 * properties netxtTimeout and timeRemaining and store them into the timer
+	 * configuration.
 	 * 
 	 * @param configuration
 	 */
@@ -917,8 +919,8 @@ public class WorkflowSchedulerService {
 	}
 
 	/**
-	 * Returns true if the param 'imixsDayOfWeek' is provided and the current
-	 * week day did not match.
+	 * Returns true if the param 'imixsDayOfWeek' is provided and the current week
+	 * day did not match.
 	 * 
 	 * @see https://java.net/jira/browse/GLASSFISH-20673
 	 * @param configItemCollection
