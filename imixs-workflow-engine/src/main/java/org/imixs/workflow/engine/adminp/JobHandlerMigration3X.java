@@ -120,6 +120,9 @@ public class JobHandlerMigration3X implements JobHandler {
 			if (migratedEntity == null) {
 				// create log entry....
 				oldEntiy.appendItemValue("txtAdminpLog", new Date(System.currentTimeMillis()) + " Migrated from Imixs-Workflow 3.X");
+				// migrate deprecated fields
+				oldEntiy.replaceItemValue("$workflowGroup", oldEntiy.getItemValue("txtworkflowGroup"));
+				oldEntiy.replaceItemValue("$workflowStatus", oldEntiy.getItemValue("txtworkflowStatus"));
 				// save as new Document
 				documentService.save(oldEntiy);
 				logger.info("  -> Entity '" + uid + "' migrated.");
