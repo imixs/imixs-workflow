@@ -38,33 +38,28 @@ import org.imixs.workflow.exceptions.PluginException;
 
 /**
  * This plug-in implements a generic access management control (ACL) by
- * evaluating the configuration of a Activity Entity. The plug-in updates the
+ * evaluating the configuration of a BPMN Event or BPMN Task. The plug-in updates the
  * WorkItem attributes $ReadAccess and $WriteAccess depending on the provided
  * information.
  * 
  * <p>
- * These attributes defined in Activity Entity are evaluated by the plugin:
+ * The following attributes defined in the model element are evaluated by the plugin:
  * <ul>
- * <li>keyupdateacl (Boolean): if false no changes are necessary
- * <li>keyaddreadfields (Vector): Properties of the current WorkItem
- * <li>keyaddwritefields (Vector): Properties of the current WorkItem
- * <li>namaddreadaccess (Vector): Names & Groups to be added /replaced
- * <li>namaddwriteaccess (Vector): Names & Groups to be added/replaced
+ * <li>keyupdateacl (Boolean): if false the ACL will not be changed
+ * <li>keyaddreadfields (Vector): a list of items of the current WorkItem to be applied to the read access
+ * <li>keyaddwritefields (Vector): a list of items of the current WorkItem to be applied to the write access
+ * <li>namaddreadaccess (Vector): Names & Groups to be applied to the read access
+ * <li>namaddwriteaccess (Vector): Names & Groups to be applied to the write access
+ * </ul>
+ * 
+ * The AccessPlugin evaluates the ACL settings of the current Event element as also the 
+ * ACL settings of the next Task element. If the current Event Element provides a ACL setting,
+ * the next Task element will be ignored. 
  * 
  * 
- * 
- * #Issue 90: Extend access plugin to resolve ACL settings in process entity
- * 
- * The AccessPlugin also evaluates the ACL settings in the next ProcessEntity
- * which is supported by newer versions of the imixs-bpmn modeler.
- * 
- * 
- * 
- * 
- * 
- * 
+ * <p>
  * Fallback Mode:
- * 
+ * <p>
  * NOTE: Models generated with the first version of the Imixs-Workflow Modeler
  * provide a different set of attributes. Therefore the plugin implements a
  * fallback method to support deprecated models. The fallback method evaluate
@@ -79,7 +74,7 @@ import org.imixs.workflow.exceptions.PluginException;
  * there values
  * <li>keyaddwritefields (Vector): Attributes of the processd workitem to add
  * therevalues
- * 
+ * </ul>
  * 
  * 
  * @author Ralph Soika
