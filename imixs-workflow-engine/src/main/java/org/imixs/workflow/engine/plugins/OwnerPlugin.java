@@ -79,32 +79,29 @@ import org.imixs.workflow.exceptions.PluginException;
 public class OwnerPlugin extends AbstractPlugin {
 	ItemCollection documentContext;
 	ItemCollection documentActivity, documentNextProcessEntity;
-	
+
 	private static Logger logger = Logger.getLogger(AccessPlugin.class.getName());
 
 	/**
-	 * changes the namOwner attribue
-	 * depending to the activityentity or processEntity
+	 * changes the namOwner attribue depending to the activityentity or
+	 * processEntity
 	 * 
-	 * The method prevents the field 'namowner' of the documentcontext in case that 
-	 * namowner is part of the 
+	 * The method prevents the field 'namowner' of the documentcontext in case that
+	 * namowner is part of the
 	 */
-	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+			throws PluginException {
 
 		documentContext = adocumentContext;
 		documentActivity = adocumentActivity;
 
-		
-
 		// get next process entity
-		int iNextProcessID = adocumentActivity.getItemValueInteger("numNextProcessID");
-		String aModelVersion = adocumentActivity.getItemValueString("$modelVersion");
 		try {
-			documentNextProcessEntity = getCtx().getModelManager().getModel(aModelVersion).getTask(iNextProcessID);
+			documentNextProcessEntity = this.getWorkflowService().evalNextTask(adocumentContext, adocumentActivity);
 		} catch (ModelException e) {
-			// no next task defined (follow up)
-			return documentContext;
+			throw new PluginException(AccessPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
 		}
+
 		// in case the activity is connected to a followup activity the
 		// nextProcess can be null!
 
@@ -128,8 +125,8 @@ public class OwnerPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * This method updates the owner of a workitem depending on a given model
-	 * entity The model entity should provide the following attributes:
+	 * This method updates the owner of a workitem depending on a given model entity
+	 * The model entity should provide the following attributes:
 	 * 
 	 * keyupdateacl, namOwnershipNames,keyOwnershipFields
 	 * 
@@ -145,7 +142,8 @@ public class OwnerPlugin extends AbstractPlugin {
 		}
 
 		List newOwnerList;
-		newOwnerList =new ArrayList<String>();;
+		newOwnerList = new ArrayList<String>();
+		;
 		// add names
 		mergeValueList(newOwnerList, modelEntity.getItemValue("namOwnershipNames"));
 		// add Mapped Fields
@@ -163,7 +161,4 @@ public class OwnerPlugin extends AbstractPlugin {
 
 	}
 
-
-
-	
 }

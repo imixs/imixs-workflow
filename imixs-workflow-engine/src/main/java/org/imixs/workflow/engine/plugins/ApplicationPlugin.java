@@ -61,7 +61,8 @@ import org.imixs.workflow.exceptions.PluginException;
  * so other plugins can access the new properties for further operations
  * http://java.net/jira/browse/IMIXS_WORKFLOW-81
  * 
- * Version 1.3: type, workflowgroup and workfowstatus are handled by the WorkflowKernel
+ * Version 1.3: type, workflowgroup and workfowstatus are handled by the
+ * WorkflowKernel
  * 
  * @author Ralph Soika
  * @version 1.3
@@ -78,9 +79,11 @@ public class ApplicationPlugin extends AbstractPlugin {
 	private String sImageURL;
 	private String sAbstract;
 	private String sSummary;
+	@SuppressWarnings("unused")
 	private static Logger logger = Logger.getLogger(ApplicationPlugin.class.getName());
 
-	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+			throws PluginException {
 
 		documentContext = adocumentContext;
 
@@ -88,18 +91,14 @@ public class ApplicationPlugin extends AbstractPlugin {
 		sImageURL = null;
 		sAbstract = null;
 		sSummary = null;
+		ItemCollection itemColNextProcess = null;
 
-		// try to get next ProcessEntity
-		ItemCollection itemColNextProcess =null;
+		// get next process entity
 		try {
-		// now get the next ProcessEntity from ctx
-			itemColNextProcess = this.getNextTask(adocumentContext, adocumentActivity);
+			itemColNextProcess = this.getWorkflowService().evalNextTask(adocumentContext, adocumentActivity);
 		} catch (ModelException e) {
-			logger.warning(
-					"Warning - unable to fetch next Task for current model '" + adocumentContext.getModelVersion() + "' : "+e.getMessage());
-			return documentContext;
+			throw new PluginException(AccessPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
 		}
-
 
 		// fetch Editor and Image
 		sEditorID = itemColNextProcess.getItemValueString("txtEditorID");
@@ -116,7 +115,7 @@ public class ApplicationPlugin extends AbstractPlugin {
 			sSummary = getWorkflowService().adaptText(sSummary, documentContext);
 
 		// submit data now into documentcontext
-	
+
 		// set Editor if value is defined
 		if (sEditorID != null && !"".equals(sEditorID))
 			documentContext.replaceItemValue("txtWorkflowEditorID", sEditorID);
@@ -125,9 +124,9 @@ public class ApplicationPlugin extends AbstractPlugin {
 		if (sImageURL != null && !"".equals(sImageURL))
 			documentContext.replaceItemValue("txtWorkflowImageURL", sImageURL);
 
-	
-		/* We still support the deprecated fields here - see issue #265 
-		 * can be removed with version 4.3.0
+		/*
+		 * We still support the deprecated fields here - see issue #265 can be removed
+		 * with version 4.3.0
 		 */
 		// set Abstract
 		if (sAbstract != null) {
@@ -141,7 +140,5 @@ public class ApplicationPlugin extends AbstractPlugin {
 		}
 		return documentContext;
 	}
-
-	
 
 }

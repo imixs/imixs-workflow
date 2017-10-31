@@ -296,6 +296,53 @@ public class WorkflowKernel {
 	}
 
 	/**
+	 * This method computes the next task based on a Model Event element. If the
+	 * event did not point to a new task, the current task will be returned.
+	 * 
+	 * The method supports the 'conditional-events' and 'split-events'.
+	 * 
+	 * A conditional-event contains the attribute 'keyExclusiveConditions' defining
+	 * conditional targets (tasks) or adds conditional follow up events
+	 * 
+	 * A split-event contains the attribute 'keySplitConditions' defining the target
+	 * for the current master version (condition evaluates to 'true')
+	 * 
+	 * @return Task entity
+	 * @throws ModelException
+	 * @throws PluginException
+	 */
+	public ItemCollection findNextTask(ItemCollection documentContext, ItemCollection event)
+			throws ModelException, PluginException {
+	
+		ItemCollection itemColNextTask = null;
+	
+		int iNewProcessID = event.getItemValueInteger("numnextprocessid");
+		logger.fine("next $processid=" + iNewProcessID + "");
+	
+		// test if we have an conditional exclusive Task exits...
+		itemColNextTask = findConditionalExclusiveTask(event, documentContext);
+		if (itemColNextTask != null) {
+			return itemColNextTask;
+		}
+	
+		itemColNextTask = findConditionalSplitTask(event, documentContext);
+		if (itemColNextTask != null) {
+			return itemColNextTask;
+		}
+	
+		// default behavior
+		if (iNewProcessID > 0) {
+			itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getModelVersion())
+					.getTask(iNewProcessID);
+		} else {
+			// get current task...
+			itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getItemValueString(MODELVERSION))
+					.getTask(documentContext.getProcessID());
+		}
+		return itemColNextTask;
+	}
+
+	/**
 	 * This method controls the Evnet-Chain. If the attribute $activityidlist has
 	 * more valid ActivityIDs the next activiytID will be loaded into $activity.
 	 * 
@@ -422,53 +469,6 @@ public class WorkflowKernel {
 		}
 
 		return documentResult;
-	}
-
-	/**
-	 * This method computes the next task based on a Model Event element. If the
-	 * event did not point to a new task, the current task will be returned.
-	 * 
-	 * The method supports the 'conditional-events' and 'split-events'.
-	 * 
-	 * A conditional-event contains the attribute 'keyExclusiveConditions' defining
-	 * conditional targets (tasks) or adds conditional follow up events
-	 * 
-	 * A split-event contains the attribute 'keySplitConditions' defining the target
-	 * for the current master version (condition evaluates to 'true')
-	 * 
-	 * @return Task entity
-	 * @throws ModelException
-	 * @throws PluginException
-	 */
-	private ItemCollection findNextTask(ItemCollection documentContext, ItemCollection event)
-			throws ModelException, PluginException {
-
-		ItemCollection itemColNextTask = null;
-
-		int iNewProcessID = event.getItemValueInteger("numnextprocessid");
-		logger.fine("next $processid=" + iNewProcessID + "");
-
-		// test if we have an conditional exclusive Task exits...
-		itemColNextTask = findConditionalExclusiveTask(event, documentContext);
-		if (itemColNextTask != null) {
-			return itemColNextTask;
-		}
-
-		itemColNextTask = findConditionalSplitTask(event, documentContext);
-		if (itemColNextTask != null) {
-			return itemColNextTask;
-		}
-
-		// default behavior
-		if (iNewProcessID > 0) {
-			itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getModelVersion())
-					.getTask(iNewProcessID);
-		} else {
-			// get current task...
-			itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getItemValueString(MODELVERSION))
-					.getTask(documentContext.getProcessID());
-		}
-		return itemColNextTask;
 	}
 
 	/**

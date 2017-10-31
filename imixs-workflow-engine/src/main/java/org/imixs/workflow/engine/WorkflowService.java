@@ -961,6 +961,28 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			throws PluginException {
 		return evalWorkflowResult(activityEntity, documentContext, true);
 	}
+	
+	/**
+	 * This method evaluates the next task based on a Model Event element. If the
+	 * event did not point to a new task, the current task will be returned.
+	 * 
+	 * The method supports the 'conditional-events' and 'split-events'.
+	 * 
+	 * A conditional-event contains the attribute 'keyExclusiveConditions' defining
+	 * conditional targets (tasks) or adds conditional follow up events
+	 * 
+	 * A split-event contains the attribute 'keySplitConditions' defining the target
+	 * for the current master version (condition evaluates to 'true')
+	 * 
+	 * @return Task entity
+	 * @throws PluginException
+	 * @throws ModelException 
+	 */
+	public ItemCollection evalNextTask(ItemCollection documentContext, ItemCollection event)
+			throws  PluginException, ModelException {
+		WorkflowKernel workflowkernel = new WorkflowKernel(this);
+		return workflowkernel.findNextTask(documentContext, event);
+	}
 
 	/**
 	 * This method returns a n injected Plugin by name or null if not plugin with

@@ -44,7 +44,7 @@ public class TestOwnerPlugin  {
 
 		ownerPlugin = new OwnerPlugin();
 		try {
-			ownerPlugin.init(workflowMockEnvironment.getWorkflowContext());
+			ownerPlugin.init(workflowMockEnvironment.getWorkflowService());
 		} catch (PluginException e) {
 
 			e.printStackTrace();

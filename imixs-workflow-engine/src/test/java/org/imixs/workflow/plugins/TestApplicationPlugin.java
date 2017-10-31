@@ -43,7 +43,7 @@ public class TestApplicationPlugin  {
 	
 		applicationPlugin = new ApplicationPlugin();
 		try {
-			applicationPlugin.init(workflowMockEnvironment.getWorkflowContext());
+			applicationPlugin.init(workflowMockEnvironment.getWorkflowService());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
@@ -58,7 +58,7 @@ public class TestApplicationPlugin  {
 		documentContext.replaceItemValue("namTeam", list);
 
 		documentContext.replaceItemValue("namCreator", "ronny");
-
+		documentContext.replaceItemValue("$modelversion", "1.0.0");
 	}
 
 	/**
@@ -70,8 +70,13 @@ public class TestApplicationPlugin  {
 	public void simpleTest() throws ModelException {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
-		documentActivity.replaceItemValue("numnextprocessid", 200);
+		try {
+			applicationPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
 
+			e.printStackTrace();
+			Assert.fail();
+		}
 
 		try {
 			applicationPlugin.run(documentContext, documentActivity);

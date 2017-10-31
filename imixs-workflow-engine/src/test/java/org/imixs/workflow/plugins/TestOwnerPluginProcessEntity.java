@@ -5,6 +5,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
@@ -60,7 +61,7 @@ public class TestOwnerPluginProcessEntity {
 	
 		ownerPlugin = new OwnerPlugin();
 		try {
-			ownerPlugin.init(workflowMockEnvironment.getWorkflowContext());
+			ownerPlugin.init(workflowMockEnvironment.getWorkflowService());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
@@ -75,7 +76,7 @@ public class TestOwnerPluginProcessEntity {
 		documentContext.replaceItemValue("namTeam", list);
 
 		documentContext.replaceItemValue("namCreator", "ronny");
-
+		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 	}
 
 	/**

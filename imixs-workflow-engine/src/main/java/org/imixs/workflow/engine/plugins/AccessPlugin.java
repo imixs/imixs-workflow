@@ -38,23 +38,28 @@ import org.imixs.workflow.exceptions.PluginException;
 
 /**
  * This plug-in implements a generic access management control (ACL) by
- * evaluating the configuration of a BPMN Event or BPMN Task. The plug-in updates the
- * WorkItem attributes $ReadAccess and $WriteAccess depending on the provided
- * information.
+ * evaluating the configuration of a BPMN Event or BPMN Task. The plug-in
+ * updates the WorkItem attributes $ReadAccess and $WriteAccess depending on the
+ * provided information.
  * 
  * <p>
- * The following attributes defined in the model element are evaluated by the plugin:
+ * The following attributes defined in the model element are evaluated by the
+ * plugin:
  * <ul>
  * <li>keyupdateacl (Boolean): if false the ACL will not be changed
- * <li>keyaddreadfields (Vector): a list of items of the current WorkItem to be applied to the read access
- * <li>keyaddwritefields (Vector): a list of items of the current WorkItem to be applied to the write access
- * <li>namaddreadaccess (Vector): Names & Groups to be applied to the read access
- * <li>namaddwriteaccess (Vector): Names & Groups to be applied to the write access
+ * <li>keyaddreadfields (Vector): a list of items of the current WorkItem to be
+ * applied to the read access
+ * <li>keyaddwritefields (Vector): a list of items of the current WorkItem to be
+ * applied to the write access
+ * <li>namaddreadaccess (Vector): Names & Groups to be applied to the read
+ * access
+ * <li>namaddwriteaccess (Vector): Names & Groups to be applied to the write
+ * access
  * </ul>
  * 
- * The AccessPlugin evaluates the ACL settings of the current Event element as also the 
- * ACL settings of the next Task element. If the current Event Element provides a ACL setting,
- * the next Task element will be ignored. 
+ * The AccessPlugin evaluates the ACL settings of the current Event element as
+ * also the ACL settings of the next Task element. If the current Event Element
+ * provides a ACL setting, the next Task element will be ignored.
  * 
  * 
  * <p>
@@ -85,12 +90,12 @@ import org.imixs.workflow.exceptions.PluginException;
 public class AccessPlugin extends AbstractPlugin {
 	ItemCollection documentContext;
 	ItemCollection documentActivity, documentNextProcessEntity;
-	
+
 	private static Logger logger = Logger.getLogger(AccessPlugin.class.getName());
 
 	/**
-	 * This method updates the $readAccess and $writeAccess attributes of a
-	 * WorkItem depending to the configuration of a Activity Entity.
+	 * This method updates the $readAccess and $writeAccess attributes of a WorkItem
+	 * depending to the configuration of a Activity Entity.
 	 * 
 	 * The method evaluates the new model flag keyupdateacl. If 'false' then acl
 	 * will not be updated.
@@ -98,19 +103,18 @@ public class AccessPlugin extends AbstractPlugin {
 	 * 
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+			throws PluginException {
 		documentContext = adocumentContext;
 		documentActivity = adocumentActivity;
 
 		// get next process entity
-		int iNextProcessID = adocumentActivity.getItemValueInteger("numNextProcessID");
-		String aModelVersion = adocumentActivity.getItemValueString("$modelVersion");
 		try {
-			documentNextProcessEntity = getCtx().getModelManager().getModel(aModelVersion).getTask(iNextProcessID);
+			documentNextProcessEntity = this.getWorkflowService().evalNextTask(adocumentContext, adocumentActivity);
 		} catch (ModelException e) {
-			// no next task defined (follow up)
-			return documentContext;
+			throw new PluginException(AccessPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
 		}
+
 		// in case the activity is connected to a followup activity the
 		// nextProcess can be null!
 
@@ -137,16 +141,14 @@ public class AccessPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * This method updates the read/write access of a workitem depending on a
-	 * given model entity The model entity should provide the following
-	 * attributes:
+	 * This method updates the read/write access of a workitem depending on a given
+	 * model entity The model entity should provide the following attributes:
 	 * 
 	 * keyupdateacl,
 	 * namaddreadaccess,keyaddreadfields,keyaddwritefields,namaddwriteaccess
 	 * 
 	 * 
-	 * The method did not clear the exiting values of $writeAccess and
-	 * $readAccess
+	 * The method did not clear the exiting values of $writeAccess and $readAccess
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void updateACLByItemCollection(ItemCollection modelEntity) {
@@ -192,6 +194,4 @@ public class AccessPlugin extends AbstractPlugin {
 
 	}
 
-	
-	
 }

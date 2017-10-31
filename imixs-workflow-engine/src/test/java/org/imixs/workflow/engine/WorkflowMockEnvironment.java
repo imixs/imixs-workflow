@@ -212,6 +212,7 @@ public class WorkflowMockEnvironment {
 		
 		
 		
+		when(workflowService.evalNextTask(Mockito.any(ItemCollection.class),Mockito.any(ItemCollection.class))).thenCallRealMethod();
 		when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class),Mockito.any(ItemCollection.class))).thenCallRealMethod();
 		when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class),Mockito.any(ItemCollection.class),Mockito.anyBoolean())).thenCallRealMethod();
 		when(workflowService.processWorkItem(Mockito.any(ItemCollection.class))).thenCallRealMethod();

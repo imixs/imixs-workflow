@@ -5,6 +5,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.AccessPlugin;
 import org.imixs.workflow.exceptions.ModelException;
@@ -39,23 +40,26 @@ import junit.framework.Assert;
  * @author rsoika
  * 
  */
-public class TestAccessPluginProcessEntity extends WorkflowMockEnvironment {
+public class TestAccessPluginProcessEntity {
 
 	private final static Logger logger = Logger.getLogger(TestAccessPluginProcessEntity.class.getName());
 
 	AccessPlugin accessPlugin = null;
 	ItemCollection documentContext;
 	ItemCollection documentActivity, documentProcess;
+	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setup() throws PluginException, ModelException {
-		this.setModelPath("/bpmn/acl-test.bpmn");
 
-		super.setup();
+		workflowMockEnvironment = new WorkflowMockEnvironment();
+		workflowMockEnvironment.setModelPath("/bpmn/acl-test.bpmn");
+
+		workflowMockEnvironment.setup();
 
 		accessPlugin = new AccessPlugin();
 		try {
-			accessPlugin.init(workflowContext);
+			accessPlugin.init(workflowMockEnvironment.getWorkflowService());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
@@ -70,12 +74,13 @@ public class TestAccessPluginProcessEntity extends WorkflowMockEnvironment {
 		documentContext.replaceItemValue("namTeam", list);
 
 		documentContext.replaceItemValue("namCreator", "ronny");
+		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 
 	}
 
 	/**
-	 * Test if the ACL settings will not be changed if no ACL is set be process
-	 * or activity
+	 * Test if the ACL settings will not be changed if no ACL is set be process or
+	 * activity
 	 * 
 	 * @throws ModelException
 	 ***/
@@ -86,7 +91,7 @@ public class TestAccessPluginProcessEntity extends WorkflowMockEnvironment {
 		list.add("Julian");
 		documentContext.replaceItemValue("$writeaccess", list);
 
-		documentActivity = this.getModel().getEvent(100, 10);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
 
 		try {
 			accessPlugin.run(documentContext, documentActivity);
@@ -106,15 +111,15 @@ public class TestAccessPluginProcessEntity extends WorkflowMockEnvironment {
 	}
 
 	/**
-	 * Test if the ACL settings from the next processEntity are injected into
-	 * the workitem
+	 * Test if the ACL settings from the next processEntity are injected into the
+	 * workitem
 	 * 
 	 * @throws ModelException
 	 **/
 	@Test
 	public void testACLfromProcessEntity() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(300, 10);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 10);
 		documentContext.replaceItemValue("$processid", 300);
 
 		try {
@@ -143,7 +148,7 @@ public class TestAccessPluginProcessEntity extends WorkflowMockEnvironment {
 	@Test
 	public void testACLfromActivityEntity() throws ModelException {
 
-		documentActivity = this.getModel().getEvent(100, 20);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
 
 		try {
 			accessPlugin.run(documentContext, documentActivity);
@@ -164,8 +169,8 @@ public class TestAccessPluginProcessEntity extends WorkflowMockEnvironment {
 	}
 
 	/**
-	 * Test if the ACL settings from the next processEntity are ignored in case
-	 * the ActivityEnttiy provides settings. Merge is not supported!
+	 * Test if the ACL settings from the next processEntity are ignored in case the
+	 * ActivityEnttiy provides settings. Merge is not supported!
 	 * 
 	 * @throws ModelException
 	 **/
@@ -180,7 +185,7 @@ public class TestAccessPluginProcessEntity extends WorkflowMockEnvironment {
 		documentContext.replaceItemValue("namOwner", list);
 		documentContext.replaceItemValue("$processid", 300);
 
-		documentActivity = this.getModel().getEvent(300, 20);
+		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 20);
 		try {
 			accessPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
