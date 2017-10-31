@@ -108,16 +108,6 @@ public class WorkflowKernel {
 	}
 
 	/**
-	 * This method returns new SplitWorkitems evaluated during the last processing
-	 * life-cycle.
-	 * 
-	 * @return
-	 */
-	public List<ItemCollection> getSplitWorkitems() {
-		return splitWorkitems;
-	}
-
-	/**
 	 * This method generates an immutable universally unique identifier (UUID). A
 	 * UUID represents a 128-bit value.
 	 * 
@@ -286,7 +276,7 @@ public class WorkflowKernel {
 			// load event...
 			ItemCollection event = loadEvent(documentResult);
 			documentResult = processEvent(documentResult, event);
-			documentResult = updateActivityList(documentResult);
+			documentResult = updateEventList(documentResult);
 		}
 
 		// set $lastEventDate
@@ -343,11 +333,21 @@ public class WorkflowKernel {
 	}
 
 	/**
+	 * This method returns new SplitWorkitems evaluated during the last processing
+	 * life-cycle.
+	 * 
+	 * @return
+	 */
+	public List<ItemCollection> getSplitWorkitems() {
+		return splitWorkitems;
+	}
+
+	/**
 	 * This method controls the Evnet-Chain. If the attribute $activityidlist has
 	 * more valid ActivityIDs the next activiytID will be loaded into $activity.
 	 * 
 	 **/
-	private ItemCollection updateActivityList(final ItemCollection documentContext) {
+	private ItemCollection updateEventList(final ItemCollection documentContext) {
 		ItemCollection documentResult = documentContext;
 
 		// is $activityid already provided?
