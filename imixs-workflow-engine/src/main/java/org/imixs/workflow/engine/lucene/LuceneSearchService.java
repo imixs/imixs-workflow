@@ -45,7 +45,9 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.ClassicAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser.Operator;
@@ -114,7 +116,7 @@ public class LuceneSearchService {
 	/**
 	 * Returns a collection of documents matching the provided search term. The
 	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term. 
+	 * access level of each workitem matching the search term.
 	 * 
 	 * @param sSearchTerm
 	 * @return collection of search result
@@ -128,7 +130,7 @@ public class LuceneSearchService {
 	/**
 	 * Returns a collection of documents matching the provided search term. The
 	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term. 
+	 * access level of each workitem matching the search term.
 	 * 
 	 * @param pageSize
 	 *            - docs per page
@@ -213,7 +215,7 @@ public class LuceneSearchService {
 			// test it pageindex is above the DEFAULT_MAX_SEARCH_RESULT
 			// if the pageindex is above the method will extend the
 			// maxSearchResult by 3*pageSize. This behavior is than
-			// simmilar to the google search which is also adjusting the 
+			// simmilar to the google search which is also adjusting the
 			// search scope after paging.
 			int maxSearchResult = DEFAULT_MAX_SEARCH_RESULT;
 			if ((startIndex + pageSize) > DEFAULT_MAX_SEARCH_RESULT) {
@@ -288,8 +290,6 @@ public class LuceneSearchService {
 		return workitems;
 	}
 
-
-
 	/**
 	 * Returns the total hits for a given search term from the lucene index. The
 	 * method did not load any data. The provided search term will we extended with
@@ -303,7 +303,7 @@ public class LuceneSearchService {
 	 * 
 	 * @param sSearchTerm
 	 * @param maxResult
-	 *            - max search result 
+	 *            - max search result
 	 * @return total hits of search result
 	 * @throws QueryException
 	 *             in case the searchterm is not understandable.
@@ -369,7 +369,7 @@ public class LuceneSearchService {
 	/**
 	 * Returns the extended search term for a given query. The search term will we
 	 * extended with a users roles to test the read access level of each workitem
-	 * matching the search term. 
+	 * matching the search term.
 	 * 
 	 * The optional param 'defaultOperator' can be set to Operator.AND
 	 * 
@@ -424,7 +424,10 @@ public class LuceneSearchService {
 	}
 
 	/**
-	 * returns a IndexSearcher instance
+	 * Returns a IndexSearcher instance.
+	 * <p>
+	 * In case no index yet exits, the method tries to create a new index. This
+	 * typically is necessary after first deployment.
 	 * 
 	 * @param prop
 	 * @return
@@ -432,12 +435,33 @@ public class LuceneSearchService {
 	 * @throws Exception
 	 */
 	IndexSearcher createIndexSearcher(Properties prop) throws IOException {
+		IndexReader reader = null;
 		logger.finest("lucene createIndexSearcher...");
 
 		Directory indexDir = createIndexDirectory(prop);
-		IndexReader reader = DirectoryReader.open(indexDir);
-		IndexSearcher searcher = new IndexSearcher(reader);
 
+		// if the index dose not yet exits we got a IO Exception (issue #329)
+		try {
+			reader = DirectoryReader.open(indexDir);
+		} catch (IOException ioe) {
+			// verify if the index is missing. In this case we try to fix the issue by
+			// creating a new index dir...
+			if (!DirectoryReader.indexExists(indexDir)) {
+				logger.warning("Lucene index does not yet exist. Trying to initialize the index....");
+				// create a IndexWriter Instance
+				IndexWriterConfig indexWriterConfig;
+				indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
+				indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+				IndexWriter indexWriter = new IndexWriter(indexDir, indexWriterConfig);
+				indexWriter.close();
+				// now try to reopen once again.
+				// If this dose not work we really have a IO problem
+				reader = DirectoryReader.open(indexDir);
+				logger.info("Lucene index successfull created.");
+			}
+		}
+
+		IndexSearcher searcher = new IndexSearcher(reader);
 		return searcher;
 	}
 
