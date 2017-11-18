@@ -447,7 +447,7 @@ public class LuceneSearchService {
 			// verify if the index is missing. In this case we try to fix the issue by
 			// creating a new index dir...
 			if (!DirectoryReader.indexExists(indexDir)) {
-				logger.warning("Lucene index does not yet exist. Trying to initialize the index....");
+				logger.fine("Lucene index does not yet exist. Trying to initialize the index....");
 				// create a IndexWriter Instance
 				IndexWriterConfig indexWriterConfig;
 				indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
@@ -458,6 +458,9 @@ public class LuceneSearchService {
 				// If this dose not work we really have a IO problem
 				reader = DirectoryReader.open(indexDir);
 				logger.info("Lucene index successfull created.");
+			} else {
+				// throw the origin exception....
+				throw ioe;
 			}
 		}
 
