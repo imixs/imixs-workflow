@@ -29,10 +29,23 @@ The Imixs Admin Client provides an administration process (AdminP) which can be 
 
 <img src="images/imixs-admin-client-04.png" /> 
 
-The administration process can be used update the lucene index. There is also a feature to migrate a business application from Imixs-Workflow version 3.x to 4.x.
+### Rebuild the Lucene Index
+
+With the function 'Rebuild Index' the lucene index can be updated. After the job is started the existing documents will be re-indexed. The blocksize
+defines the maximum number of workflow documents to be processed in one run. After the blocksize was updated, the job will pause for a given interval specified in minutes.  
 
 
-##Backup & Restore
+### Rename User
+
+The function 'Rename User' updates name files (starting with 'nam') and the ACL for existing documents. This feature can be used if a userID changed in a running workflow environment. The new userId can either be replaced with the old one or be appended. The blocksize
+defines the maximum number of workflow documents to be processed in one run. After the blocksize was updated, the job will pause for a given interval specified in minutes.  
+
+### Migration
+
+The administration process provides a feature to migrate a business application from Imixs-Workflow version 3.x to 4.x. This feature is for migration purpose only. 
+
+
+## Backup & Restore
 With the Backup feature it is also possible to export entities into a file system and later re-import them into any exiting workflow instance.
 
 <img src="images/imixs-admin-client-05.png" /> 

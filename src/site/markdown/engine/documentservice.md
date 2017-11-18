@@ -70,8 +70,9 @@ To query for a specific subset of documents, it is also possible to add individu
     String serachTerm="(type:'workitem')(imixs*)";
     result=documentService.find(serachTerm);
         
-    
-See the [Lucene QueryParser description](https://lucene.apache.org/core/6_2_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description) for further details about the usage of lucene search terms. 
+
+See the section [Query Syntax](queries.html) for details about how to search for documents.
+
  
 
 ### Pagination

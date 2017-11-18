@@ -1,7 +1,9 @@
-#The LuceneService 
-This _LuceneService_ is used by the Imixs-Workflow engine to provide a [Lucene Search Index](https://lucene.apache.org/). The Imixs-Workflow engine is currently supporting Lucene version 6.2.1. For details how to search for documents see the [DocumentService section](./documentservice.html).
+# The LuceneService 
+This _LuceneService_ is used by the Imixs-Workflow engine to provide a full-text index based on [Lucene Search Technology](https://lucene.apache.org/). The Imixs-Workflow engine is currently supporting Lucene version 6.6.1. The lucene search feature is part of the [DocumentService section](./documentservice.html).
 
-## The Index default configuration
+See the section [Query Syntax](queries.html) for details about how to search for documents.
+
+## The Configuration
 The lucene index is written by default into the folder 
 
 	/imixs-workflow-index/
@@ -12,13 +14,14 @@ If no further configuration exists, the content of the document items  "txtworkf
 
 In addition the following list of items in a document are indexed by the _LuceneService_ without using an analyser. 
 
-	"$modelversion", "$processid","$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator",	"txtworkflowgroup", "txtname", "namowner", "txtworkitemref");
+	"$modelversion", "$processid", "$workitemid", "$uniqueidref", "type", 
+	"$writeaccess", "$modified", "$created", "namcreator", "txtworkflowgroup", "txtname", "namowner", "txtworkitemref"
 
 These items can be used in a search term. 
 
     (type:"workitem") and ($modelversion:"1.0.0")
 
-##Custom Configuration
+## Custom Configuration
 The custom configuration of the _LuceneService_ can be provided in the file _imixs.properties_. The following example shows custom configuration for the _LuceneService_:
  
 	##############################
@@ -33,22 +36,54 @@ The custom configuration of the _LuceneService_ can be provided in the file _imi
 	lucence.indexFieldListNoAnalyze=type,$UniqueIDRef,$created,$modified,$ModelVersion,namCreator,$ProcessID,datDate,txtWorkflowGroup,txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername,
 
 
-###IndexDir
+### IndexDir
  
 This is the directory on the servers file system the lucene index will be created. Make sure that 
 the server has sufficient write access for this location. Using Glassfish Server the example above will  create a directory named 'my-index' into the location GLASSFISH_INSTALL/domains/domain1/config/
  
-###FulltextFieldList
+### FulltextFieldList
 The property 'lucene.fulltextFieldList' defines a comma separated list of fields which will be indexed by the LucenePlugin. The content of these fields will be stored into the lucene field name 'content'. The values will be analyzed  with the lucene standard analyzer.
  
-###IndexFieldListAnalyze
+### IndexFieldListAnalyze
 The property 'lucene.indexFieldListAnalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will be analyzed by the  lucene standard analyzer. 
  
-###IndexFieldListNoAnalyze
+### IndexFieldListNoAnalyze
 The property 'lucene.indexFieldListNoAnalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here.
  
  
-## Keyword Search
+
+## How to Initialize the Lucene Index
+
+The lucene index is automatically written into the Index Directory by the Imixs-Workflow engine.
+However, it some cases it can be necessary to create or update the lucene index manually. For example, this can be the case after a Database restore. 
+
+### Initialize the Index with the Imixs-Admin Client 
+The [Imixs-Admin Client](../administration.html) provides a web interface to build a new index. 
+
+### Initialize the Index via a Rest API call
+
+It is also possible to trigger the build process for the lucene index via the Rest API. See the following example with a curl command:
+
+	curl --user admin:adminpassword -H "Content-Type: text/xml" -d \
+       '<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema"> \
+           <item name="type"><value xsi:type="xs:string">adminp</value></item> \
+           <item name="job"><value xsi:type="xs:string">REBUILD_LUCENE_INDEX</value></item> \
+           <item name="numblocksize"><value xsi:type="xs:int">1000</value></item> \
+           <item name="numindex"><value xsi:type="xs:int">0</value></item> \
+           <item name="numinterval"><value xsi:type="xs:int">1</value></item> \
+        </document>' \
+    http://localhost:8080/workflow/rest-service/adminp/jobs
+
+ 
+This call starts the Job 'REBUILD\_LUCENE\_INDEX' on the workflow application located at
+
+    http://localhost:8080/workflow/rest-service
+  
+The user must have manager-access to be allowed to trigger this build job. 
+
+
+
+## The Lucene KeywordAnalyzer 
 
 The Imixs LuceneSearchService uses the Lucene KeywordAnalyzer to parse a given search term. This means that a search phrase is taken as is. For example:
 
@@ -85,4 +120,8 @@ will result in
 	europe berlin rs/82550/201618
 
 and will return all workitems containing the keywords 'europe', 'berlin' and 'rs/82550/201618'
+ 
+ 
+See the section [Query Syntax](queries.html) for more details about the lucene search syntax.  
+ 
  
