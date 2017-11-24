@@ -3,7 +3,7 @@ The HistoryPlugin generates a workflow history for each process instance dependi
 
     org.imixs.workflow.plugins.HistoryPlugin
 
-For each workflow step the HistoryPlugin generates a separate entry which is added into the history list (txtworkflowhistorylog) of the WorkItem. Each history entry provides the following entries:
+For each workflow step the HistoryPlugin generates a separate entry which is added into the history list (txtworkflowhistory) of the WorkItem. Each history entry provides the following entries:
  
   * date of creation (Date)
   * comment (String)
