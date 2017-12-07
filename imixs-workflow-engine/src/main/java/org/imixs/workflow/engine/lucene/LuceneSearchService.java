@@ -565,6 +565,8 @@ public class LuceneSearchService {
 
 		ClassicAnalyzer analyzer = new ClassicAnalyzer();
 		QueryParser parser = new QueryParser("content", analyzer);
+		// issue #331
+		parser.setAllowLeadingWildcard(true);
 		try {
 			Query result = parser.parse(escapeSearchTerm(searchTerm, false));
 			searchTerm = result.toString("content");
