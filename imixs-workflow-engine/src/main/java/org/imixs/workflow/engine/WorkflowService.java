@@ -149,22 +149,23 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @param name
 	 *            = username for property namOwner - if null current username will
 	 *            be used
-	 * @param startpos
+	 * @param pageSize
+	 *            = optional page count (default 20)
+	 * @param pageIndex
 	 *            = optional start position
-	 * @param count
-	 *            = optional count - default = -1
 	 * @param type
 	 *            = defines the type property of the workitems to be returnd. can be
 	 *            null
-	 * @param sortorder
-	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
-	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
-	 *            SORT_ORDER_MODIFIED_ASC = 3)
+	 * @param sortBy
+	 *            -optional field to sort the result
+	 * @param sortReverse
+	 *            - optional sort direction
+	 * 
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByOwner(String name, String type, int pageSize, int pageIndex,
-			int sortorder) {
+	public List<ItemCollection> getWorkListByOwner(String name, String type, int pageSize, int pageIndex, String sortBy,
+			boolean sortReverse) {
 
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
@@ -174,10 +175,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			searchTerm += " type:\"" + type + "\" AND ";
 		}
 		searchTerm += " namowner:\"" + name + "\" )";
-		logger.warning("Sortorder " + sortorder + " not implemented!");
-
 		try {
-			return documentService.find(searchTerm, pageSize, pageIndex);
+			return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
 		} catch (QueryException e) {
 			logger.severe("getWorkListByOwner - invalid param: " + e.getMessage());
 			return null;
@@ -194,22 +193,23 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @param name
 	 *            = username or role contained in $writeAccess - if null current
 	 *            username will be used
-	 * @param startpos
+	 * @param pageSize
+	 *            = optional page count (default 20)
+	 * @param pageIndex
 	 *            = optional start position
-	 * @param count
-	 *            = optional count - default = -1
 	 * @param type
 	 *            = defines the type property of the workitems to be returnd. can be
 	 *            null
-	 * @param sortorder
-	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
-	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
-	 *            SORT_ORDER_MODIFIED_ASC = 3)
+	 * @param sortBy
+	 *            -optional field to sort the result
+	 * @param sortReverse
+	 *            - optional sort direction
+	 * 
 	 * @return List of workitems
 	 * 
 	 */
 	public List<ItemCollection> getWorkListByAuthor(String name, String type, int pageSize, int pageIndex,
-			int sortorder) {
+			String sortBy, boolean sortReverse) {
 
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
@@ -219,10 +219,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			searchTerm += " type:\"" + type + "\" AND ";
 		}
 		searchTerm += " $writeaccess:\"" + name + "\" )";
-		logger.warning("Sortorder " + sortorder + " not implemented!");
 
 		try {
-			return documentService.find(searchTerm, pageSize, pageIndex);
+			return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
 		} catch (QueryException e) {
 			logger.severe("getWorkListByAuthor - invalid param: " + e.getMessage());
 			return null;
@@ -237,22 +236,23 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @param name
 	 *            = username for property namCreator - if null current username will
 	 *            be used
-	 * @param startpos
+	 * @param pageSize
+	 *            = optional page count (default 20)
+	 * @param pageIndex
 	 *            = optional start position
-	 * @param count
-	 *            = optional count - default = -1
 	 * @param type
 	 *            = defines the type property of the workitems to be returnd. can be
 	 *            null
-	 * @param sortorder
-	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
-	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
-	 *            SORT_ORDER_MODIFIED_ASC = 3)
+	 * @param sortBy
+	 *            -optional field to sort the result
+	 * @param sortReverse
+	 *            - optional sort direction
+	 * 
 	 * @return List of workitems
 	 * 
 	 */
 	public List<ItemCollection> getWorkListByCreator(String name, String type, int pageSize, int pageIndex,
-			int sortorder) {
+			String sortBy, boolean sortReverse) {
 
 		if (name == null || "".equals(name))
 			name = ctx.getCallerPrincipal().getName();
@@ -262,10 +262,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			searchTerm += " type:\"" + type + "\" AND ";
 		}
 		searchTerm += " namcreator:\"" + name + "\" )";
-		logger.warning("Sortorder " + sortorder + " not implemented!");
-
 		try {
-			return documentService.find(searchTerm, pageSize, pageIndex);
+			return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
 		} catch (QueryException e) {
 			logger.severe("getWorkListByCreator - invalid param: " + e.getMessage());
 			return null;
@@ -278,10 +276,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * the $writeaccess property
 	 * 
 	 * 
-	 * @param startpos
+	 * @param pageSize
+	 *            = optional page count (default 20)
+	 * @param pageIndex
 	 *            = optional start position
-	 * @param count
-	 *            = optional count - default = -1
 	 * @param type
 	 *            = defines the type property of the workitems to be returnd. can be
 	 *            null
@@ -289,10 +287,16 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
 	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
 	 *            SORT_ORDER_MODIFIED_ASC = 3)
+	 * @param sortBy
+	 *            -optional field to sort the result
+	 * @param sortReverse
+	 *            - optional sort direction
+	 * 
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByWriteAccess(String type, int pageSize, int pageIndex, int sortorder) {
+	public List<ItemCollection> getWorkListByWriteAccess(String type, int pageSize, int pageIndex, String sortBy,
+			boolean sortReverse) {
 		StringBuffer nameListBuffer = new StringBuffer();
 
 		String name = ctx.getCallerPrincipal().getName();
@@ -319,10 +323,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			searchTerm += " type:\"" + type + "\" AND " + nameListBuffer.toString();
 		}
 		searchTerm += " $writeaccess:\"" + name + "\" )";
-		logger.warning("Sortorder " + sortorder + " not implemented!");
-
 		try {
-			return documentService.find(searchTerm, pageSize, pageIndex);
+			return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
 		} catch (QueryException e) {
 			logger.severe("getWorkListByWriteAccess - invalid param: " + e.getMessage());
 			return null;
@@ -337,13 +339,19 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @param name
 	 * @param type
 	 * @param pageSize
+	 *            = optional page count (default 20)
 	 * @param pageIndex
-	 * @param sortorder
+	 *            = optional start position
+	 * @param sortBy
+	 *            -optional field to sort the result
+	 * @param sortReverse
+	 *            - optional sort direction
+	 * 
 	 * @return
 	 */
 
-	public List<ItemCollection> getWorkListByGroup(String name, String type, int pageSize, int pageIndex,
-			int sortorder) {
+	public List<ItemCollection> getWorkListByGroup(String name, String type, int pageSize, int pageIndex, String sortBy,
+			boolean sortReverse) {
 
 		String searchTerm = "(";
 		if (type != null && !"".equals(type)) {
@@ -351,10 +359,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		}
 		// we support still the deprecated txtworkflowgroup
 		searchTerm += " ($workflowgroup:\"" + name + "\" OR txtworkflowgroup:\"" + name + "\") )";
-		logger.warning("Sortorder " + searchTerm + " not implemented!");
-
 		try {
-			return documentService.find(searchTerm, pageSize, pageIndex);
+			return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
 		} catch (QueryException e) {
 			logger.severe("getWorkListByGroup - invalid param: " + e.getMessage());
 			return null;
@@ -367,32 +373,31 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * 
 	 * @param aID
 	 *            = $ProcessID for the workitems to be returned.
-	 * @param startpos
+	 * @param pageSize
+	 *            = optional page count (default 20)
+	 * @param pageIndex
 	 *            = optional start position
-	 * @param count
-	 *            = optional count - default = -1
 	 * @param type
 	 *            = defines the type property of the workitems to be returnd. can be
 	 *            null
-	 * @param sortorder
-	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
-	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
-	 *            SORT_ORDER_MODIFIED_ASC = 3)
+	 * @param sortBy
+	 *            -optional field to sort the result
+	 * @param sortReverse
+	 *            - optional sort direction
+	 * 
 	 * @return List of workitems
 	 * 
 	 */
-	public List<ItemCollection> getWorkListByProcessID(int aid, String type, int pageSize, int pageIndex,
-			int sortorder) {
+	public List<ItemCollection> getWorkListByProcessID(int aid, String type, int pageSize, int pageIndex, String sortBy,
+			boolean sortReverse) {
 
 		String searchTerm = "(";
 		if (type != null && !"".equals(type)) {
 			searchTerm += " type:\"" + type + "\" AND ";
 		}
 		searchTerm += " $processid:\"" + aid + "\" )";
-		logger.warning("Sortorder " + searchTerm + " not implemented!");
-
 		try {
-			return documentService.find(searchTerm, pageSize, pageIndex);
+			return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
 		} catch (QueryException e) {
 			logger.severe("getWorkListByProcessID - invalid param: " + e.getMessage());
 			return null;
@@ -407,29 +412,30 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * 
 	 * @param aref
 	 *            A unique reference to another workitem inside a database *
-	 * @param startpos
+	 * @param pageSize
+	 *            = optional page count (default 20)
+	 * @param pageIndex
 	 *            = optional start position
-	 * @param count
-	 *            = optional count - default = -1
 	 * @param type
 	 *            = defines the type property of the workitems to be returnd. can be
 	 *            null
-	 * @param sortorder
-	 *            = defines sortorder (SORT_ORDER_CREATED_DESC = 0
-	 *            SORT_ORDER_CREATED_ASC = 1 SORT_ORDER_MODIFIED_DESC = 2
-	 *            SORT_ORDER_MODIFIED_ASC = 3)
+	 * @param sortBy
+	 *            -optional field to sort the result
+	 * @param sortReverse
+	 *            - optional sort direction
+	 * 
 	 * @return List of workitems
 	 */
-	public List<ItemCollection> getWorkListByRef(String aref, String type, int pageSize, int pageIndex, int sortorder) {
+	public List<ItemCollection> getWorkListByRef(String aref, String type, int pageSize, int pageIndex, String sortBy,
+			boolean sortReverse) {
 
 		String searchTerm = "(";
 		if (type != null && !"".equals(type)) {
 			searchTerm += " type:\"" + type + "\" AND ";
 		}
 		searchTerm += " $uniqueidref:\"" + aref + "\" )";
-		logger.warning("Sortorder " + searchTerm + " not implemented!");
 		try {
-			return documentService.find(searchTerm, pageSize, pageIndex);
+			return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
 		} catch (QueryException e) {
 			logger.severe("getWorkListByRef - invalid param: " + e.getMessage());
 			return null;
@@ -443,7 +449,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @return List of workitems
 	 */
 	public List<ItemCollection> getWorkListByRef(String aref) {
-		return getWorkListByRef(aref, null, -1, 0, 0);
+		return getWorkListByRef(aref, null, 0, 0, null, false);
 	}
 
 	/**
@@ -801,9 +807,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	public String adaptText(String text, ItemCollection documentContext) throws PluginException {
 		// fire event
 		if (textEvents != null) {
-			TextEvent event = new TextEvent(text, documentContext);			
+			TextEvent event = new TextEvent(text, documentContext);
 			textEvents.fire(event);
-			text=event.getText();
+			text = event.getText();
 		} else {
 			logger.warning("CDI Support is missing - TextEvent wil not be fired");
 		}
@@ -851,8 +857,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		if (resolveItemValues) {
 			workflowResult = adaptText(workflowResult, documentContext);
 		}
-		// Extract all <item> tags with attributes using regex (including empty item tags)
-		// The XMLParser class is not suited in this scenario.  
+		// Extract all <item> tags with attributes using regex (including empty item
+		// tags)
+		// The XMLParser class is not suited in this scenario.
 		Pattern pattern = Pattern.compile("<item(.*?)>(.*?)</item>|<item(.*?)./>", Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(workflowResult);
 		while (matcher.find()) {
@@ -961,7 +968,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			throws PluginException {
 		return evalWorkflowResult(activityEntity, documentContext, true);
 	}
-	
+
 	/**
 	 * This method evaluates the next task based on a Model Event element. If the
 	 * event did not point to a new task, the current task will be returned.
@@ -976,10 +983,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * 
 	 * @return Task entity
 	 * @throws PluginException
-	 * @throws ModelException 
+	 * @throws ModelException
 	 */
 	public ItemCollection evalNextTask(ItemCollection documentContext, ItemCollection event)
-			throws  PluginException, ModelException {
+			throws PluginException, ModelException {
 		WorkflowKernel workflowkernel = new WorkflowKernel(this);
 		return workflowkernel.findNextTask(documentContext, event);
 	}
