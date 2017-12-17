@@ -96,7 +96,7 @@ public class LuceneSearchService {
 	public static final int DEFAULT_MAX_SEARCH_RESULT = 9999; // limiting the
 																// total
 	// number of hits
-	public static final int DEFAULT_PAGE_SIZE = 20; // default docs in one page
+	public static final int DEFAULT_PAGE_SIZE = 100; // default docs in one page
 
 	@EJB
 	PropertyService propertyService;
