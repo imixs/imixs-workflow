@@ -296,7 +296,7 @@ public class WorkflowRestServiceV3 {
 			if (owner != null)
 				owner = URLDecoder.decode(owner, "UTF-8");
 	
-			col = workflowService.getWorkListByOwner(owner,type,count, start, sortorder);
+			col = workflowService.getWorkListByOwner(owner,type,count, start, null,false);
 		
 			return XMLItemCollectionAdapter.putCollection(col, EntityRestServiceV3.getItemList(items));
 		} catch (Exception e) {
@@ -329,7 +329,7 @@ public class WorkflowRestServiceV3 {
 			if (user != null)
 				user = URLDecoder.decode(user, "UTF-8");
 
-			col = workflowService.getWorkListByAuthor(user,type, count,start, sortorder);
+			col = workflowService.getWorkListByAuthor(user,type, count,start, null,false);
 			
 						
 			return XMLItemCollectionAdapter.putCollection(col, EntityRestServiceV3.getItemList(items));
@@ -357,7 +357,7 @@ public class WorkflowRestServiceV3 {
 				creator = URLDecoder.decode(creator, "UTF-8");
 
 			
-			col = workflowService.getWorkListByCreator(creator,type,  count, start, sortorder);
+			col = workflowService.getWorkListByCreator(creator,type,  count, start, null,false);
 			return XMLItemCollectionAdapter.putCollection(col, EntityRestServiceV3.getItemList(items));
 
 		} catch (Exception e) {
@@ -376,7 +376,7 @@ public class WorkflowRestServiceV3 {
 			@QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
-			col = workflowService.getWorkListByProcessID(processid, type,count,start, sortorder);
+			col = workflowService.getWorkListByProcessID(processid, type,count,start, null,false);
 						return XMLItemCollectionAdapter.putCollection(col, EntityRestServiceV3.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -398,7 +398,7 @@ public class WorkflowRestServiceV3 {
 			if (processgroup != null)
 				processgroup = URLDecoder.decode(processgroup, "UTF-8");
 
-			col = workflowService.getWorkListByGroup(processgroup, type,count,start,sortorder);
+			col = workflowService.getWorkListByGroup(processgroup, type,count,start, null,false);
 						return XMLItemCollectionAdapter.putCollection(col, EntityRestServiceV3.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -415,7 +415,7 @@ public class WorkflowRestServiceV3 {
 			@QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
-			col = workflowService.getWorkListByRef(uniqueid,type,count, start,sortorder);
+			col = workflowService.getWorkListByRef(uniqueid,type,count, start, null,false);
 						
 			return XMLItemCollectionAdapter.putCollection(col, EntityRestServiceV3.getItemList(items));
 		} catch (Exception e) {

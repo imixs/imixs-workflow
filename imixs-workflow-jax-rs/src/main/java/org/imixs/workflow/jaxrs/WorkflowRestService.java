@@ -150,7 +150,9 @@ public class WorkflowRestService {
 				// workitem not found
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
-			return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem, DocumentRestService.getItemList(items))).build();
+			return Response
+					.ok(XMLItemCollectionAdapter.putItemCollection(workitem, DocumentRestService.getItemList(items)))
+					.build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -161,9 +163,8 @@ public class WorkflowRestService {
 	 * Returns a file attachment located in the property $file of the specified
 	 * workitem
 	 * 
-	 * The file name will be encoded. With a URLDecode the filename is decoded
-	 * in different formats and searched in the file list. This is not a nice
-	 * solution.
+	 * The file name will be encoded. With a URLDecode the filename is decoded in
+	 * different formats and searched in the file list. This is not a nice solution.
 	 * 
 	 * @param uniqueid
 	 * @return
@@ -267,8 +268,8 @@ public class WorkflowRestService {
 	}
 
 	/**
-	 * Returns a collection of workitems representing the worklist by the
-	 * current user
+	 * Returns a collection of workitems representing the worklist by the current
+	 * user
 	 * 
 	 * @param start
 	 * @param count
@@ -280,9 +281,10 @@ public class WorkflowRestService {
 	public DocumentCollection getWorkList(@QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
-			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
+			@DefaultValue("") @QueryParam("sortBy") String sortBy,
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
 
-		return getTaskListByOwner(null, type, pageSize, pageIndex, sortorder, items);
+		return getTaskListByOwner(null, type, pageSize, pageIndex, sortBy, sortReverse, items);
 	}
 
 	@GET
@@ -290,7 +292,8 @@ public class WorkflowRestService {
 	public DocumentCollection getTaskListByOwner(@PathParam("owner") String owner, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
-			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
+			@DefaultValue("") @QueryParam("sortBy") String sortBy,
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
 			if ("null".equalsIgnoreCase(owner))
@@ -300,7 +303,7 @@ public class WorkflowRestService {
 			if (owner != null)
 				owner = URLDecoder.decode(owner, "UTF-8");
 
-			col = workflowService.getWorkListByOwner(owner, type, pageSize, pageIndex, sortorder);
+			col = workflowService.getWorkListByOwner(owner, type, pageSize, pageIndex, sortBy, sortReverse);
 			return XMLItemCollectionAdapter.putCollection(col, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -309,8 +312,8 @@ public class WorkflowRestService {
 	}
 
 	/**
-	 * Returns a collection of workitems representing the worklist by the
-	 * current user
+	 * Returns a collection of workitems representing the worklist by the current
+	 * user
 	 * 
 	 * @param start
 	 * @param count
@@ -322,7 +325,8 @@ public class WorkflowRestService {
 	public DocumentCollection getTaskListByAuthor(@PathParam("user") String user, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
-			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
+			@DefaultValue("") @QueryParam("sortBy") String sortBy,
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
 			if ("null".equalsIgnoreCase(user))
@@ -332,7 +336,7 @@ public class WorkflowRestService {
 			if (user != null)
 				user = URLDecoder.decode(user, "UTF-8");
 
-			col = workflowService.getWorkListByAuthor(user, type, pageSize, pageIndex, sortorder);
+			col = workflowService.getWorkListByAuthor(user, type, pageSize, pageIndex, sortBy, sortReverse);
 			return XMLItemCollectionAdapter.putCollection(col, DocumentRestService.getItemList(items));
 
 		} catch (Exception e) {
@@ -346,7 +350,8 @@ public class WorkflowRestService {
 	public DocumentCollection getTaskListByCreator(@PathParam("creator") String creator,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
-			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
+			@DefaultValue("") @QueryParam("sortBy") String sortBy,
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
 			if ("null".equalsIgnoreCase(creator))
@@ -356,7 +361,7 @@ public class WorkflowRestService {
 			if (creator != null)
 				creator = URLDecoder.decode(creator, "UTF-8");
 
-			col = workflowService.getWorkListByCreator(creator, type, pageSize, pageIndex, sortorder);
+			col = workflowService.getWorkListByCreator(creator, type, pageSize, pageIndex, sortBy, sortReverse);
 			return XMLItemCollectionAdapter.putCollection(col, DocumentRestService.getItemList(items));
 
 		} catch (Exception e) {
@@ -370,10 +375,11 @@ public class WorkflowRestService {
 	public DocumentCollection getTaskListByProcessID(@PathParam("processid") int processid,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
-			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
+			@DefaultValue("") @QueryParam("sortBy") String sortBy,
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
-			col = workflowService.getWorkListByProcessID(processid, type, pageSize, pageIndex, sortorder);
+			col = workflowService.getWorkListByProcessID(processid, type, pageSize, pageIndex, sortBy, sortReverse);
 			return XMLItemCollectionAdapter.putCollection(col, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -386,7 +392,8 @@ public class WorkflowRestService {
 	public DocumentCollection getTaskListByGroup(@PathParam("processgroup") String processgroup,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
-			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
+			@DefaultValue("") @QueryParam("sortBy") String sortBy,
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
 
@@ -394,7 +401,7 @@ public class WorkflowRestService {
 			if (processgroup != null)
 				processgroup = URLDecoder.decode(processgroup, "UTF-8");
 
-			col = workflowService.getWorkListByGroup(processgroup, type, pageSize, pageIndex, sortorder);
+			col = workflowService.getWorkListByGroup(processgroup, type, pageSize, pageIndex, sortBy, sortReverse);
 			return XMLItemCollectionAdapter.putCollection(col, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -407,10 +414,11 @@ public class WorkflowRestService {
 	public DocumentCollection getTaskListByRef(@PathParam("uniqueid") String uniqueid, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
-			@DefaultValue("0") @QueryParam("sortorder") int sortorder, @QueryParam("items") String items) {
+			@DefaultValue("") @QueryParam("sortBy") String sortBy,
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
 		try {
-			col = workflowService.getWorkListByRef(uniqueid, type, pageSize, pageIndex, sortorder);
+			col = workflowService.getWorkListByRef(uniqueid, type, pageSize, pageIndex, sortBy, sortReverse);
 			return XMLItemCollectionAdapter.putCollection(col, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -420,9 +428,9 @@ public class WorkflowRestService {
 
 	/**
 	 * This method expects a form post and processes the WorkItem by the
-	 * WorkflowService EJB. After the workItem was processed the method redirect
-	 * the request to the provided action URI. The action URI can also be
-	 * computed by the Imixs Workflow ResutlPlugin
+	 * WorkflowService EJB. After the workItem was processed the method redirect the
+	 * request to the provided action URI. The action URI can also be computed by
+	 * the Imixs Workflow ResutlPlugin
 	 * 
 	 * @param requestBodyStream
 	 *            - form content
@@ -494,9 +502,9 @@ public class WorkflowRestService {
 	 * WorkflowManager. The method test for the properties $processid and
 	 * $activityid
 	 * 
-	 * NOTE!! - this method did not update an existing instance of a workItem.
-	 * The behavior is different to the method putWorkitem(). It need to be
-	 * discussed if the behavior is wrong or not.
+	 * NOTE!! - this method did not update an existing instance of a workItem. The
+	 * behavior is different to the method putWorkitem(). It need to be discussed if
+	 * the behavior is wrong or not.
 	 * 
 	 * @param workitem
 	 *            - new workItem data
@@ -616,9 +624,9 @@ public class WorkflowRestService {
 	 * The Method returns a JSON object with the new data. If a processException
 	 * Occurs the method returns a JSON object with the error code
 	 * 
-	 * The JSON result is computed by the service because JSON is not
-	 * standardized and differs between different jax-rs implementations. For
-	 * that reason it can not be directly re-converted XMLItemCollection
+	 * The JSON result is computed by the service because JSON is not standardized
+	 * and differs between different jax-rs implementations. For that reason it can
+	 * not be directly re-converted XMLItemCollection
 	 * 
 	 * generated by this method Output format: <code>
 	 * ... value":{"@type":"xs:int","$":"10"}
@@ -774,8 +782,8 @@ public class WorkflowRestService {
 	}
 
 	/**
-	 * This method post a collection of ItemCollection objects to be processed
-	 * by the WorkflowManager.
+	 * This method post a collection of ItemCollection objects to be processed by
+	 * the WorkflowManager.
 	 * 
 	 * @param worklist
 	 *            - workitem list data
@@ -814,14 +822,14 @@ public class WorkflowRestService {
 
 	/**
 	 * This method expects a form post. The method parses the input stream to
-	 * extract the provides field/value pairs. NOTE: The method did not(!)
-	 * assume that the put/post request contains a complete workItem. For this
-	 * reason the method loads the existing instance of the corresponding
-	 * workItem (identified by the $uniqueid) and adds the values provided by
-	 * the put/post request into the existing instance.
+	 * extract the provides field/value pairs. NOTE: The method did not(!) assume
+	 * that the put/post request contains a complete workItem. For this reason the
+	 * method loads the existing instance of the corresponding workItem (identified
+	 * by the $uniqueid) and adds the values provided by the put/post request into
+	 * the existing instance.
 	 * 
-	 * The following kind of lines which can be included in the InputStream will
-	 * be skipped
+	 * The following kind of lines which can be included in the InputStream will be
+	 * skipped
 	 * 
 	 * <code>
 	 * 	------------------------------1a26f3661ff7
@@ -842,13 +850,13 @@ public class WorkflowRestService {
 		BufferedReader in = new BufferedReader(new InputStreamReader(requestBodyStream));
 		String inputLine;
 		ItemCollection workitem = new ItemCollection();
-	
+
 		logger.fine("[WorkflowRestService] parseWorkitem....");
-	
+
 		try {
 			while ((inputLine = in.readLine()) != null) {
 				// System.out.println(inputLine);
-	
+
 				// split params separated by &
 				StringTokenizer st = new StringTokenizer(inputLine, "&", false);
 				while (st.hasMoreTokens()) {
@@ -856,22 +864,22 @@ public class WorkflowRestService {
 					logger.finest("[WorkflowRestService] parse line:" + fieldValue + "");
 					try {
 						fieldValue = URLDecoder.decode(fieldValue, "UTF-8");
-	
+
 						if (!fieldValue.contains("=")) {
 							logger.finest("[WorkflowRestService] line will be skipped");
 							continue;
 						}
-	
+
 						// get fieldname
 						String fieldName = fieldValue.substring(0, fieldValue.indexOf('='));
-	
+
 						// if fieldName contains blank or : or --- we skipp the
 						// line
 						if (fieldName.contains(":") || fieldName.contains(" ") || fieldName.contains(";")) {
 							logger.finest("[WorkflowRestService] line will be skipped");
 							continue;
 						}
-	
+
 						// test for value...
 						if (fieldValue.indexOf('=') == fieldValue.length()) {
 							// no value
@@ -884,7 +892,7 @@ public class WorkflowRestService {
 							// field....?
 							fieldName = fieldName.toLowerCase();
 							if (vMultiValueFieldNames.indexOf(fieldName) > -1) {
-	
+
 								List v = workitem.getItemValue(fieldName);
 								v.add(fieldValue);
 								logger.fine("[WorkflowRestService] multivalue for '" + fieldName + "' = '" + fieldValue
@@ -898,14 +906,14 @@ public class WorkflowRestService {
 								vMultiValueFieldNames.add(fieldName);
 							}
 						}
-	
+
 					} catch (NumberFormatException e) {
 						e.printStackTrace();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				}
-	
+
 			}
 		} catch (IOException e1) {
 			logger.severe("[WorkflowRestService] Unable to parse workitem data!");
@@ -917,9 +925,9 @@ public class WorkflowRestService {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-	
+
 		}
-	
+
 		return workitem;
 	}
 
@@ -950,14 +958,14 @@ public class WorkflowRestService {
 	}
 
 	/**
-	 * This helper method adds a error message to the given workItem, based on
-	 * the data in a WorkflowException. This kind of error message can be
-	 * displayed in a page evaluating the properties '$error_code' and
-	 * '$error_message'. These attributes will not be stored.
+	 * This helper method adds a error message to the given workItem, based on the
+	 * data in a WorkflowException. This kind of error message can be displayed in a
+	 * page evaluating the properties '$error_code' and '$error_message'. These
+	 * attributes will not be stored.
 	 * 
 	 * 
-	 * If a PluginException or ValidationException contains an optional object
-	 * array the message is parsed for params to be replaced
+	 * If a PluginException or ValidationException contains an optional object array
+	 * the message is parsed for params to be replaced
 	 * 
 	 * Example:
 	 * 
