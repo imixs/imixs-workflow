@@ -102,6 +102,7 @@
 				<item name="Document Service" href="./restapi/documentservice.html" />
 				<item name="JSON" href="./restapi/json.html" />
 				<item name="RestClient" href="./restapi/restclient.html" />
+				<item name="AdminP Service" href="./restapi/adminp.html" />
 			</item>
 
 		

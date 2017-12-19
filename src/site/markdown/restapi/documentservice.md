@@ -23,7 +23,7 @@ The methods PUT, POST and DELETE allow to create, modify and delete a document:
 | URI          | Method      | Description                               | 
 |--------------|-------------|------------|
 | /            | POST, PUT   | posts a document to be stored by the  DocumentService. The post data can be x-www-form-urlencoded or in xml format   |
-| /{uniqueid}  | POST, DELTE | updates ore deletes a document  |
+| /{uniqueid}  | POST, DELETE | updates ore deletes a document  |
 
 
 
