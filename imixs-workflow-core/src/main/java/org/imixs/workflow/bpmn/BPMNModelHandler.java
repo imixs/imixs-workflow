@@ -39,6 +39,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	boolean bDefinitions = false;
 	boolean bMessage = false;
 	boolean bAnnotation = false;
+	boolean bDataObject = false;
 	boolean bExtensionElements = false;
 	boolean bImixsProperty = false;
 	boolean bImixsTask = false;
@@ -59,6 +60,8 @@ public class BPMNModelHandler extends DefaultHandler {
 	String currentWorkflowGroup = null;
 	String currentMessageName = null;
 	String currentAnnotationName = null;
+	String currentDataObjectName = null;
+	String currentDataObjectID = null;
 	String currentLinkName = null;
 
 	String bpmnID = null;
@@ -76,6 +79,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	Map<String, SequenceFlow> associationCache = null;
 	Map<String, String> messageCache = null;
 	Map<String, String> annotationCache = null;
+	Map<String, String[]> dataObjectCache = null;
 
 	Map<String, String> conditionCache = null;
 
@@ -95,6 +99,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		eventCache = new HashMap<String, ItemCollection>();
 		messageCache = new HashMap<String, String>();
 		annotationCache = new HashMap<String, String>();
+		dataObjectCache = new HashMap<String, String[]>();
 		conditionCache = new HashMap<String, String>();
 
 		linkThrowEventCache = new HashMap<String, String>();
@@ -283,6 +288,12 @@ public class BPMNModelHandler extends DefaultHandler {
 			currentAnnotationName = attributes.getValue("id");
 		}
 
+		if (qName.equalsIgnoreCase("bpmn2:dataObject")) {
+			bDataObject = true;
+			currentDataObjectID = attributes.getValue("id");
+			currentDataObjectName = attributes.getValue("name");
+		}
+
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -359,6 +370,16 @@ public class BPMNModelHandler extends DefaultHandler {
 				// cache the annotation
 				annotationCache.put(currentAnnotationName, characterStream.toString());
 				bAnnotation = false;
+			}
+
+			// bpmn2:dataObject?
+			if (bDataObject) {
+				// cache the dataObject
+				String[] dataobject = new String[2];
+				dataobject[0] = currentDataObjectName;
+				dataobject[1] = characterStream.toString();
+				dataObjectCache.put(currentDataObjectID, dataobject);
+				bDataObject = false;
 			}
 
 			characterStream = null;
@@ -473,6 +494,13 @@ public class BPMNModelHandler extends DefaultHandler {
 				task.replaceItemValue("rtfdescription", annotationText);
 			}
 
+			// look for optional dataObjects...
+			List<String[]> dataObjectList = getDataObjectsForElement(key);
+			if (dataObjectList != null) {
+				// we take the annotation as the new documentation
+				task.replaceItemValue("dataObjects", dataObjectList);
+			}
+
 			model.addTask(task);
 
 			// add id and resort
@@ -494,8 +522,8 @@ public class BPMNModelHandler extends DefaultHandler {
 	}
 
 	/**
-	 * This method returns the documentation of connected annotations to a given
-	 * Element
+	 * This method returns the documentation of connected objects (e.g. annotations
+	 * or dataObjects) to a given Element
 	 * 
 	 * @param elementID
 	 *            - BPMN element linked with an annotation
@@ -521,6 +549,41 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		if (builder.length() > 0) {
 			return builder.toString();
+		} else {
+			return null;
+		}
+
+	}
+
+	/**
+	 * This method returns the documentations of connected dataObjects to a given
+	 * Element
+	 * 
+	 * @param elementID
+	 *            - BPMN element linked with an annotation
+	 * @return - a list of arrays containing the dataObjectID and the documentation
+	 **/
+	private List<String[]> getDataObjectsForElement(String elementID) {
+		List<String[]> result = new ArrayList<String[]>();
+
+		// check all annotations....
+		for (Map.Entry<String, String[]> entry : dataObjectCache.entrySet()) {
+			String id = entry.getKey();
+			String[] dataobject = entry.getValue();
+			if (dataobject == null || dataobject.length == 0) {
+				continue;
+			}
+			// test if the elementID is connected to this annotation....
+			List<SequenceFlow> resultList = findIncomingAssociations(elementID);
+			for (SequenceFlow flow : resultList) {
+				if (flow.source.equals(id)) {
+					result.add(dataobject);
+				}
+			}
+		}
+
+		if (result.size() > 0) {
+			return result;
 		} else {
 			return null;
 		}
