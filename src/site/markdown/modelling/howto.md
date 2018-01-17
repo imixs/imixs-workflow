@@ -73,22 +73,28 @@ The script language for the boolean expression is 'JavaScript'. See the [RulePlu
 
 ## Split Events
 
-In Imixs-Workflow an event followed by a _Parallel Gateway_ is used to create new versions of the current process instance. This is also called a _split-event_. 
+A _split-event_ is used to create a new version of the current process instance. 
+A _split-event_ is always followed by a _Parallel Gateway_. This is also called a  _parallel-workflow_. 
 
 <img src="../images/modelling/example_11.png"/>
 
-Conditions are typically not evaluated by a parallel gateway in BPMN 2.0. However, Imixs-Workflow evaluates these conditions to determine which outcome defines the flow for the current process instance (Master) and which outcome is describing a new version. 
 
-The outcome path evaluated to 'true' is the flow for the current process instance (Master).
-Each outcome path evaluating to 'false' triggers the creation of a new version. 
+Imixs-Workflow evaluates the conditions assigned to the outcome of the _Parallel Gateway_. The conditions are either evaluated to the boolean value _true_ or _false_. 
+If the condition evaluates to '_true_', this outcome is followed by the current process instance (Source).
+If the condition evaluates to '_false_', then a new version of the current process instance is created.  
+
+ 
+| Condition 	| Type              | Description                               						|
+|:-------------:|:-----------------:|-------------------------------------------------------------------|
+|true           | Source            | describes the outcome for the  current process instance.			|
+|false          | Version           | triggers the creation of a new version. 							|
+
 
 **Note:** The outcome path for a new version must be followed by an Event element! 
  
-As a Split Event is creating a new independent version of the current process instance, a join is typically not modeled. This means that the current process instance will not wait for all incoming flows of parallel versions. This is the default behavior in Imixs-Workflow because versioning is typically used to archive or end a certain state of processing.
+As a Split Event is creating a new independent version of the current process instance, a join is typically not modeled. This means that the current process instance will not wait for all incoming flows of parallel versions. This is the default behavior in Imixs-Workflow. Split-Events are typically used to archive or end a certain state of processing.
 
-The script language for the boolean expression is 'JavaScript'. See the [RulePlugin](../engine/plugins/ruleplugin.html) for further details about business rules in Imixs-Workflow. 
-
-See the section [WorkflowKernel](../core/workflowkernel.html#Split_Events) for further information about how Split Events are handled internally. 
+The script language for the boolean expression is 'JavaScript'. See the [RulePlugin](../engine/plugins/ruleplugin.html) for further details about business rules in Imixs-Workflow. See the section [WorkflowKernel](../core/workflowkernel.html#Split_Events) for further information about how Split Events are handled internally. 
 
 ## Link Events
 
