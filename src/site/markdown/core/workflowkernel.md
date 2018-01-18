@@ -60,13 +60,13 @@ This event will be processed by the new created version. If an outcome evaluated
 |false          | Version           | triggers the creation of a new version. 							|
  
 
-The current process instance is called the _Source Workitem_. The _Source Workitem_ and all versions have the same _'$workitemID'_. In addition, the  _'$UniqueID'_ of a new version is stored into the attribute _'$uniqueidVersions'_ of the current process instance. A version holds a reference to the _Source Workitem_ in the attribute '$workitemidRef'.
+The current process instance is called the _Source Workitem_. The _Source Workitem_ and all versions have the same _'$workitemID'_. In addition, the  _'$UniqueID'_ of a new version is stored into the attribute _'$uniqueidVersions'_ of the current process instance. A version holds a reference to the _Source Workitem_ in the attribute _'$uniqueIdSource'_.
 
 |Attribute      	| Source | Version | Description 				 										|
 |-------------------|:------:|:-------:|--------------------------------------------------------------------|
-|$workitemID    	| x      | x       |A unique shared key across all versions and the source workitem.	|
-|$uniqueIDSource	|        | x       |A reference to the $UniqueID of the Source workitem.				|  	 	
-|$uniqueIDVersions	| x      |         |A list of $UniqueIDs to all created versions of a source workitem.	|
+|$workitemId    	| x      | x       |A unique shared key across all versions and the source workitem.	|
+|$uniqueIdSource	|        | x       |A reference to the $UniqueID of the Source workitem.				|  	 	
+|$uniqueIdVersions	| x      |         |A list of $UniqueIDs of all created versions.	|
 |$isVersion			| 		 | x	   |This temporary attribute indicates that the current instance is a version. | 
  
 The temporary attribute _'$isVersion'_ flags the version during the processing phase and can be used by Plugins to handle these workitems. See also the section: [Workflow Data](../quickstart/workitem.html#Temporary_Attributes).
