@@ -940,8 +940,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		// test for general invalid format
 		if (invalidPattern) {
 			throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_ITEM_FORMAT,
-					"invalid <item> tag format - expected <item name=\"...\" ...></item>  -> workflowResult="
-							+ workflowResult);
+					"invalid <item> tag format in workflowResult: "
+							+ workflowResult + "  , expected format is <item name=\"...\">...</item> ");
 		}
 		return result;
 	}
