@@ -4,7 +4,7 @@ The Imixs Admin Client is a Web Front-End to administrate an instance of the Imi
 ##Installation & Deployment
 The sources of the Imixs Admin Client can be download form [GitHub](https://github.com/imixs/imixs-admin/releases). The maven based client supports different web server profiles for GlassFish and JBoss/Wildfly. After the deployment, the Imixs Admin is accessible using the following url:
 
-	http://localhost:8080/adminclient 
+	http://localhost:8080/imixsadmin 
 
 The Imixs Admin Client requires the user to authenticate with a valid security realm. The authenticated user (Administrator) needs at least the the Role "IMIXS-WORKFLOW-Manager". The default security realm used by the Imixs Admin Client is "imixsrealm" which can to be configured on the Application Server. 
 
