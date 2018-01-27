@@ -96,11 +96,15 @@ public class AdminPService {
 	@EJB
 	JobHandlerRebuildIndex jobHandlerRebuildIndex;
 
+	@EJB 
+	JobHandlerUpgradeWorkitems jobHandlerUpgradeWorkitems;
+
 	@EJB
 	JobHandlerRenameUser jobHandlerRenameUser;
 
 	@EJB
 	JobHandlerMigration3X jobHandlerMigration3X;
+	
 
 	// private String lastUniqueID = null;
 	// private static int MAX_COUNT = 300;
@@ -109,8 +113,8 @@ public class AdminPService {
 	/**
 	 * This Method starts a new TimerService for a given job.
 	 * 
-	 * The method loads configuration from a ItemCollection (timerdescription)
-	 * with the following informations:
+	 * The method loads configuration from a ItemCollection (timerdescription) with
+	 * the following informations:
 	 * 
 	 * datstart - Date Object
 	 * 
@@ -120,10 +124,10 @@ public class AdminPService {
 	 * 
 	 * id - String - unique identifier for the schedule Service.
 	 * 
-	 * The param 'id' should contain a unique identifier (e.g. the EJB Name) as
-	 * only one scheduled Workflow should run inside a WorkflowInstance. If a
-	 * timer with the id is already running the method stops this timer object
-	 * first and reschedules the timer.
+	 * The param 'id' should contain a unique identifier (e.g. the EJB Name) as only
+	 * one scheduled Workflow should run inside a WorkflowInstance. If a timer with
+	 * the id is already running the method stops this timer object first and
+	 * reschedules the timer.
 	 * 
 	 * The method throws an exception if the timerdescription contains invalid
 	 * attributes or values.
@@ -134,7 +138,7 @@ public class AdminPService {
 
 		String jobtype = adminp.getItemValueString("job");
 		if (!jobtype.equals(JOB_RENAME_USER) && !jobtype.equals(JOB_REBUILD_LUCENE_INDEX)
-				&& !jobtype.equals(JOB_MIGRATION)) {
+				&& !jobtype.equals(JOB_UPGRADE) && !jobtype.equals(JOB_MIGRATION)) {
 			throw new InvalidAccessException(ProcessingErrorException.INVALID_WORKITEM,
 					"AdminPService: error - invalid job type");
 		}
@@ -146,7 +150,7 @@ public class AdminPService {
 		int interval = adminp.getItemValueInteger("numInterval");
 		if (interval <= 0) {
 			interval = DEFAULT_INTERVAL;
-			adminp.replaceItemValue("numInterval",Long.valueOf(interval));
+			adminp.replaceItemValue("numInterval", Long.valueOf(interval));
 		}
 
 		// startdatum und enddatum manuell festlegen
@@ -162,7 +166,7 @@ public class AdminPService {
 		Timer timer = timerService.createTimer(terminationDate, (60 * interval * 1000),
 				adminp.getItemValueString(WorkflowKernel.UNIQUEID));
 
-		logger.info("Job " + jobtype+ " (" + timer.getInfo().toString()+ ") started... ");
+		logger.info("Job " + jobtype + " (" + timer.getInfo().toString() + ") started... ");
 		return adminp;
 	}
 
@@ -181,9 +185,9 @@ public class AdminPService {
 	}
 
 	/**
-	 * This method processes the timeout event. The method loads the
-	 * corresponding job description (adminp entity) and delegates the
-	 * processing to the corresponding JobHandler.
+	 * This method processes the timeout event. The method loads the corresponding
+	 * job description (adminp entity) and delegates the processing to the
+	 * corresponding JobHandler.
 	 * 
 	 * @param timer
 	 */
@@ -209,21 +213,22 @@ public class AdminPService {
 			}
 
 			String job = adminp.getItemValueString("job");
-			logger.info("Job " + job + " ("+ adminp.getUniqueID() + ")  processing...");
+			logger.info("Job " + job + " (" + adminp.getUniqueID() + ")  processing...");
 
 			boolean jobfound = false;
 			if (job.equals(JOB_RENAME_USER)) {
 				jobfound = true;
 				if (jobHandlerRenameUser.run(adminp)) {
 					timer.cancel();
-					logger.info("Job " + JOB_RENAME_USER + " ("+ adminp.getUniqueID() + ") completed - timer stopped");
+					logger.info("Job " + JOB_RENAME_USER + " (" + adminp.getUniqueID() + ") completed - timer stopped");
 				}
 			}
 			if (job.equals(JOB_REBUILD_LUCENE_INDEX)) {
 				jobfound = true;
 				if (jobHandlerRebuildIndex.run(adminp)) {
 					timer.cancel();
-					logger.info("Job " + JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") completed - timer stopped");
+					logger.info("Job " + JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID()
+							+ ") completed - timer stopped");
 				}
 			}
 
@@ -231,7 +236,15 @@ public class AdminPService {
 				jobfound = true;
 				if (jobHandlerMigration3X.run(adminp)) {
 					timer.cancel();
-					logger.info("Job " +JOB_MIGRATION + " (" + adminp.getUniqueID() + ") completed - timer stopped");
+					logger.info("Job " + JOB_MIGRATION + " (" + adminp.getUniqueID() + ") completed - timer stopped");
+				}
+			}
+			
+			if (job.equals(JOB_UPGRADE)) {
+				jobfound = true;
+				if (jobHandlerUpgradeWorkitems.run(adminp)) {
+					timer.cancel();
+					logger.info("Job " + JOB_UPGRADE + " (" + adminp.getUniqueID() + ") completed - timer stopped");
 				}
 			}
 
@@ -265,8 +278,8 @@ public class AdminPService {
 	}
 
 	/**
-	 * This method cancels a timer by ID. If a timer configuration exits, the
-	 * method returns the document entity.
+	 * This method cancels a timer by ID. If a timer configuration exits, the method
+	 * returns the document entity.
 	 * 
 	 * @param id
 	 * @return

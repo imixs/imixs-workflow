@@ -84,7 +84,7 @@ public class JobHandlerMigration3X implements JobHandler {
 		}
 
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
-
+		int iProcessed = adminp.getItemValueInteger("numProcessed");
 		adminp.replaceItemValue("txtworkflowStatus", "Processing");
 		// save it...
 		// adminp = entityService.save(adminp);
@@ -102,16 +102,16 @@ public class JobHandlerMigration3X implements JobHandler {
 
 		} catch (Exception eerror) {
 			// prepare for rerun
-			logger.severe("Job " + AdminPService.JOB_MIGRATION + " (" + adminp.getUniqueID() + ") - error at: index=" + iIndex + " blocksize=" + iBlockSize
-					+ " : " + eerror.getMessage());
+			logger.severe("Job " + AdminPService.JOB_MIGRATION + " (" + adminp.getUniqueID() + ") - error at: index="
+					+ iIndex + " blocksize=" + iBlockSize + " : " + eerror.getMessage());
 			adminp.replaceItemValue("txtworkflowStatus", "Error (" + iIndex + "-" + (iIndex + iBlockSize) + ")");
 			adminp = ctx.getBusinessObject(JobHandlerMigration3X.class).saveJobEntity(adminp);
 			return true;
 		}
 		int colSize = col.size();
 		// Update index
-		logger.info("Job " + AdminPService.JOB_MIGRATION + " (" + adminp.getUniqueID() + ") - verifying " + col.size() + " Entity objects for migration. ("
-				+ iUpdates + " Entity objects already migrated) ...");
+		logger.info("Job " + AdminPService.JOB_MIGRATION + " (" + adminp.getUniqueID() + ") - verifying " + col.size()
+				+ " Entity objects for migration. (" + iUpdates + " Entity objects already migrated) ...");
 
 		for (ItemCollection oldEntiy : col) {
 			// test if we already have migrated this entity
@@ -119,7 +119,8 @@ public class JobHandlerMigration3X implements JobHandler {
 			ItemCollection migratedEntity = documentService.load(uid);
 			if (migratedEntity == null) {
 				// create log entry....
-				oldEntiy.appendItemValue("txtAdminpLog", new Date(System.currentTimeMillis()) + " Migrated from Imixs-Workflow 3.X");
+				oldEntiy.appendItemValue("txtAdminpLog",
+						new Date(System.currentTimeMillis()) + " Migrated from Imixs-Workflow 3.X");
 				// migrate deprecated fields
 				oldEntiy.replaceItemValue("$workflowGroup", oldEntiy.getItemValue("txtworkflowGroup"));
 				oldEntiy.replaceItemValue("$workflowStatus", oldEntiy.getItemValue("txtworkflowStatus"));
@@ -132,14 +133,17 @@ public class JobHandlerMigration3X implements JobHandler {
 
 		iIndex = iIndex + col.size();
 
+		iProcessed = iProcessed + col.size();
+
 		// adjust start pos and update count
 		adminp.replaceItemValue("numUpdates", iUpdates);
 		adminp.replaceItemValue("numIndex", iIndex);
+		adminp.replaceItemValue("numProcessed", iProcessed);
 
 		long time = (System.currentTimeMillis() - lProfiler) / 1000;
 
-		logger.info("Job " + AdminPService.JOB_MIGRATION + " (" + adminp.getUniqueID() + ") - finished, " + col.size() + " Entity objects verified in " + time
-				+ " sec. (" + iUpdates + " Entity objects total migrated)");
+		logger.info("Job " + AdminPService.JOB_MIGRATION + " (" + adminp.getUniqueID() + ") - finished, " + col.size()
+				+ " Entity objects verified in " + time + " sec. (" + iUpdates + " Entity objects total migrated)");
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {

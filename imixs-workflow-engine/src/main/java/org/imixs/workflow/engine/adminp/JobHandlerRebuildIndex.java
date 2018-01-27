@@ -49,7 +49,7 @@ import org.imixs.workflow.exceptions.PluginException;
 @LocalBean
 public class JobHandlerRebuildIndex implements JobHandler {
 
-	private static final int DEFAULT_BLOCK_SIZE = 100;
+	private static final int DEFAULT_BLOCK_SIZE = 500;
 
 	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
@@ -67,20 +67,20 @@ public class JobHandlerRebuildIndex implements JobHandler {
 
 	/**
 	 * This method runs the RebuildLuceneIndexJob. The adminp job description
-	 * contains the start position (numIndex) and the number of documents to
-	 * read (numBlockSize).
+	 * contains the start position (numIndex) and the number of documents to read
+	 * (numBlockSize).
 	 * 
-	 * The method updates the index for all affected documents which can be
-	 * filtered by 'type' and '$created'.
+	 * The method updates the index for all affected documents which can be filtered
+	 * by 'type' and '$created'.
 	 * 
 	 * An existing lucene index must be deleted manually by the administrator.
 	 * 
 	 * After the run method is finished, the properties numIndex, numUpdates and
 	 * numProcessed are updated.
 	 * 
-	 * If the number of documents returned from the DocumentService is less the
-	 * the BlockSize, the method returns true to indicate that the Timer should
-	 * be canceled.
+	 * If the number of documents returned from the DocumentService is less the the
+	 * BlockSize, the method returns true to indicate that the Timer should be
+	 * canceled.
 	 * 
 	 * @param adminp
 	 * @return true if no more unprocessed documents exist.
@@ -102,6 +102,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		}
 
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
+		int iProcessed = adminp.getItemValueInteger("numProcessed");
 
 		adminp.replaceItemValue("$workflowStatus", "Processing");
 		// save it...
@@ -127,20 +128,27 @@ public class JobHandlerRebuildIndex implements JobHandler {
 
 		int colSize = col.size();
 		// Update index
-		logger.info("Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") - reindexing " + col.size() + " documents...");
+		logger.info("Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") - reindexing "
+				+ col.size() + " documents...");
 		luceneService.updateDocuments(col);
 
 		iUpdates = iUpdates + colSize;
 		iIndex = iIndex + col.size();
+		iProcessed = iProcessed + colSize;
 
 		// adjust start pos and update count
 		adminp.replaceItemValue("numUpdates", iUpdates);
+		adminp.replaceItemValue("numProcessed", iProcessed);
 		adminp.replaceItemValue("numIndex", iIndex);
 
 		long time = (System.currentTimeMillis() - lProfiler) / 1000;
+		if (time == 0) {
+			time = 1;
+		}
 
-		logger.info("Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") - " + col.size() + " documents reindexed in " + time
-				+ " sec.  (" + iUpdates + " documents have been processed in total) ");
+		logger.info("Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") - " + col.size()
+				+ " documents reindexed in " + time + " sec.  (" + iUpdates
+				+ " documents have been processed in total) ");
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {

@@ -1,5 +1,6 @@
 package org.imixs.workflow.engine.adminp;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -91,6 +92,9 @@ public class JobHandlerRenameUser implements JobHandler {
 			iBlockSize = DEFAULT_COUNT;
 			adminp.replaceItemValue("numBlockSize", iBlockSize);
 		}
+		Date datFilterFrom = adminp.getItemValueDate("datfrom");
+		Date datFilterTo = adminp.getItemValueDate("datto");
+		
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
 		int iProcessed = adminp.getItemValueInteger("numProcessed");
 		String fromUserID = adminp.getItemValueString("namFrom").trim();
@@ -130,6 +134,14 @@ public class JobHandlerRenameUser implements JobHandler {
 		sQuery += " AND ($writeaccess:\"" + fromUserID + "\" OR $readaccess:\"" + fromUserID + "\" OR namowner:\""
 				+ fromUserID + "\" OR $creator:\"" + fromUserID + "\" OR namcreator:\"" + fromUserID + "\" )";
 
+		
+		if (datFilterFrom!=null && datFilterTo!=null ) {
+			SimpleDateFormat luceneFormat = new SimpleDateFormat("yyyyMMdd");
+			sQuery += " AND ($created:["+luceneFormat.format(datFilterFrom)+ " TO " + luceneFormat.format(datFilterTo) + "])";
+		}
+		
+		adminp.replaceItemValue("txtQuery", sQuery);
+	
 		Collection<ItemCollection> col;
 		try {
 			// ASC sorting is important here!
@@ -197,6 +209,10 @@ public class JobHandlerRenameUser implements JobHandler {
 		if (entity == null)
 			return false;
 
+		if (entity.getItemValueBoolean("$immutable")) {
+			return false;
+		}
+		
 		// Verify Fields
 		if (updateList(entity.getItemValue("$ReadAccess"), from, to, replace))
 			bUpdate = true;

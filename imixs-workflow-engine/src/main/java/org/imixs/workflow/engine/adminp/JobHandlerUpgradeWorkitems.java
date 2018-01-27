@@ -40,7 +40,7 @@ import org.imixs.workflow.exceptions.PluginException;
 @LocalBean
 public class JobHandlerUpgradeWorkitems implements JobHandler {
 
-	private static final int DEFAULT_BLOCK_SIZE = 500;
+	private static final int DEFAULT_BLOCK_SIZE = 100;
 
 	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
@@ -93,11 +93,12 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 		}
 
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
+		int iProcessed = adminp.getItemValueInteger("numProcessed");
 
 		adminp.replaceItemValue("$workflowStatus", "Processing");
 		// save it...
 		// adminp = entityService.save(adminp);
-		adminp = ctx.getBusinessObject(JobHandlerRebuildIndex.class).saveJobEntity(adminp);
+		adminp = ctx.getBusinessObject(JobHandlerUpgradeWorkitems.class).saveJobEntity(adminp);
 
 		String query = buildQuery(adminp);
 		logger.fine("JQPL query: " + query);
@@ -121,31 +122,36 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 		}
 		iIndex = iIndex + colSize;
 		iUpdates = iUpdates + iCount;
+		iProcessed=iProcessed+colSize;
 
 		// adjust start pos and update count
 		adminp.replaceItemValue("numUpdates", iUpdates);
+		adminp.replaceItemValue("numProcessed", iProcessed);
 		adminp.replaceItemValue("numIndex", iIndex);
 
 		long time = (System.currentTimeMillis() - lProfiler) / 1000;
+		if (time==0) {
+			time=1;
+		}
 
 		logger.info("Job " + AdminPService.JOB_UPGRADE + " (" + adminp.getUniqueID() + ") - " + iCount
 				+ " workitems upgraded");
 		
 		logger.info("Job " + AdminPService.JOB_UPGRADE + " (" + adminp.getUniqueID() + ") - " + colSize
 				+ " documents verified in " + time + " sec.  ("+iUpdates
-				+ " documents have been processed in total) ");
+				+ " updates, " + iProcessed + " documents verified in total)");
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {
 			// prepare for rerun
 			adminp.replaceItemValue("$workflowStatus", "Finished");
-			adminp = ctx.getBusinessObject(JobHandlerRebuildIndex.class).saveJobEntity(adminp);
+			adminp = ctx.getBusinessObject(JobHandlerUpgradeWorkitems.class).saveJobEntity(adminp);
 			return true;
 
 		} else {
 			// prepare for rerun
 			adminp.replaceItemValue("$workflowStatus", "Waiting");
-			adminp = ctx.getBusinessObject(JobHandlerRebuildIndex.class).saveJobEntity(adminp);
+			adminp = ctx.getBusinessObject(JobHandlerUpgradeWorkitems.class).saveJobEntity(adminp);
 			return false;
 		}
 	}
@@ -173,28 +179,32 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 	private boolean upgradeWorkitem(ItemCollection workitem) {
 		boolean bUpgrade=false;
 		
-		if (workitem.hasItem("$workflowGroup")) {
+		if (workitem.getItemValueBoolean("$immutable")) {
+			return false;
+		}
+		
+		if (!workitem.hasItem("$workflowGroup")) {
 			workitem.replaceItemValue("$workflowGroup", "txtworkflowgroup");
 			bUpgrade=true;
 		}
 		
-		if (workitem.hasItem("$workflowStatus")) {
+		if (!workitem.hasItem("$workflowStatus")) {
 			workitem.replaceItemValue("$workflowStatus", "txtworkflowstatus");
 			bUpgrade=true;
 		}
 		
-		if (workitem.hasItem("$lastEvent")) {
+		if (!workitem.hasItem("$lastEvent")) {
 			workitem.replaceItemValue("$lastEvent", "numlastactivityid");
 			bUpgrade=true;
 		}
 
 		
-		if (workitem.hasItem("$lastEventDate")) {
+		if (!workitem.hasItem("$lastEventDate")) {
 			workitem.replaceItemValue("$lastEventDate", "timworkflowlastaccess");
 			bUpgrade=true;
 		}
 		
-		if (workitem.hasItem("$lasteditor")) {
+		if (!workitem.hasItem("$lasteditor")) {
 			workitem.replaceItemValue("$lasteditor", "namcurrenteditor");
 			bUpgrade=true;
 		}
