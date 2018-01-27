@@ -80,6 +80,7 @@ public class AdminPService {
 
 	public static final String JOB_RENAME_USER = "RENAME_USER";
 	public static final String JOB_REBUILD_LUCENE_INDEX = "REBUILD_LUCENE_INDEX";
+	public static final String JOB_UPGRADE = "UPGRADE";
 	public static final String JOB_MIGRATION = "MIGRATION";
 	private static final int DEFAULT_INTERVAL = 1;
 

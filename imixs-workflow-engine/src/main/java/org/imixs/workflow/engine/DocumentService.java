@@ -772,6 +772,7 @@ public class DocumentService {
 
 	}
 
+	
 	/**
 	 * Returns all documents of by JPQL statement.
 	 * 
@@ -783,12 +784,31 @@ public class DocumentService {
 	 * 
 	 */
 	public List<ItemCollection> getDocumentsByQuery(String query, int maxResult) {
+		return getDocumentsByQuery(query, 0, maxResult);
+	}
+	
+	
+	/**
+	 * Returns all documents of by JPQL statement.
+	 * 
+	 * @param query
+	 *            - JPQL statement
+	 * @param maxResult
+	 *            - maximum result set
+	 * @return
+	 * 
+	 */
+	public List<ItemCollection> getDocumentsByQuery(String query, int firstResult, int maxResult) {
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
 		Query q = manager.createQuery(query);
 
 		// setMaxResults ?
 		if (maxResult > 0) {
 			q.setMaxResults(maxResult);
+		}
+		
+		if (firstResult > 0) {
+			q.setFirstResult(firstResult);
 		}
 
 		long l = System.currentTimeMillis();
