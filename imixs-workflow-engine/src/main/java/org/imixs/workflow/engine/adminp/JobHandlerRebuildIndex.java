@@ -146,9 +146,8 @@ public class JobHandlerRebuildIndex implements JobHandler {
 			time = 1;
 		}
 
-		logger.info("Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") - " + col.size()
-				+ " documents reindexed in " + time + " sec.  (" + iUpdates
-				+ " documents have been processed in total) ");
+		logger.info("Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") - " + colSize
+				+ " documents reindexed in " + time + " sec.  (in total: " + iProcessed);
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {

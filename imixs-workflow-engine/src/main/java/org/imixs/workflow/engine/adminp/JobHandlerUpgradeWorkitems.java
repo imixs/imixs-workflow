@@ -103,13 +103,13 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 		String query = buildQuery(adminp);
 		logger.fine("JQPL query: " + query);
 		adminp.replaceItemValue("txtQuery", query);
-		
-		List<ItemCollection> workitemList=documentService.getDocumentsByQuery(query, iIndex, iBlockSize);
+
+		List<ItemCollection> workitemList = documentService.getDocumentsByQuery(query, iIndex, iBlockSize);
 		int colSize = workitemList.size();
 		// Update index
-		logger.info("Job " + AdminPService.JOB_UPGRADE + " (" + adminp.getUniqueID() + ") - verifeing "
-				+ colSize + " wrokitems...");
-		int iCount=0;
+		logger.info("Job " + AdminPService.JOB_UPGRADE + " (" + adminp.getUniqueID() + ") - verifeing " + colSize
+				+ " workitems...");
+		int iCount = 0;
 		for (ItemCollection workitem : workitemList) {
 			// only look into documents with a model version...
 			if (workitem.hasItem(WorkflowKernel.MODELVERSION)) {
@@ -122,7 +122,7 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 		}
 		iIndex = iIndex + colSize;
 		iUpdates = iUpdates + iCount;
-		iProcessed=iProcessed+colSize;
+		iProcessed = iProcessed + colSize;
 
 		// adjust start pos and update count
 		adminp.replaceItemValue("numUpdates", iUpdates);
@@ -130,16 +130,13 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 		adminp.replaceItemValue("numIndex", iIndex);
 
 		long time = (System.currentTimeMillis() - lProfiler) / 1000;
-		if (time==0) {
-			time=1;
+		if (time == 0) {
+			time = 1;
 		}
 
-		logger.info("Job " + AdminPService.JOB_UPGRADE + " (" + adminp.getUniqueID() + ") - " + iCount
-				+ " workitems upgraded");
-		
 		logger.info("Job " + AdminPService.JOB_UPGRADE + " (" + adminp.getUniqueID() + ") - " + colSize
-				+ " documents verified in " + time + " sec.  ("+iUpdates
-				+ " updates, " + iProcessed + " documents verified in total)");
+				+ " documents processed, " + iCount + " updates in " + time + " sec.  (in total: " + iProcessed
+				+ " processed, " + iUpdates + " updates)");
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {
@@ -164,10 +161,9 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 		logger.fine("saveJobEntity " + adminp.getUniqueID());
 		adminp = documentService.save(adminp);
 		return adminp;
-	
+
 	}
 
-	
 	/**
 	 * This method upgrades missign fields in a workitem
 	 * 
@@ -177,36 +173,35 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 	 * @return
 	 */
 	private boolean upgradeWorkitem(ItemCollection workitem) {
-		boolean bUpgrade=false;
-		
+		boolean bUpgrade = false;
+
 		if (workitem.getItemValueBoolean("$immutable")) {
 			return false;
 		}
-		
+
 		if (!workitem.hasItem("$workflowGroup")) {
 			workitem.replaceItemValue("$workflowGroup", "txtworkflowgroup");
-			bUpgrade=true;
-		}
-		
-		if (!workitem.hasItem("$workflowStatus")) {
-			workitem.replaceItemValue("$workflowStatus", "txtworkflowstatus");
-			bUpgrade=true;
-		}
-		
-		if (!workitem.hasItem("$lastEvent")) {
-			workitem.replaceItemValue("$lastEvent", "numlastactivityid");
-			bUpgrade=true;
+			bUpgrade = true;
 		}
 
-		
+		if (!workitem.hasItem("$workflowStatus")) {
+			workitem.replaceItemValue("$workflowStatus", "txtworkflowstatus");
+			bUpgrade = true;
+		}
+
+		if (!workitem.hasItem("$lastEvent")) {
+			workitem.replaceItemValue("$lastEvent", "numlastactivityid");
+			bUpgrade = true;
+		}
+
 		if (!workitem.hasItem("$lastEventDate")) {
 			workitem.replaceItemValue("$lastEventDate", "timworkflowlastaccess");
-			bUpgrade=true;
+			bUpgrade = true;
 		}
-		
+
 		if (!workitem.hasItem("$lasteditor")) {
 			workitem.replaceItemValue("$lasteditor", "namcurrenteditor");
-			bUpgrade=true;
+			bUpgrade = true;
 		}
 
 		return bUpgrade;

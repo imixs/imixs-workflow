@@ -172,9 +172,14 @@ public class JobHandlerRenameUser implements JobHandler {
 		adminp.replaceItemValue("numIndex", iIndex);
 
 		long time = (System.currentTimeMillis() - lProfiler) / 1000;
+		if (time==0) {
+			time=1;
+		}
 
-		logger.info("Job " + AdminPService.JOB_RENAME_USER + " (" + adminp.getUniqueID() + ") - " + col.size()
-				+ " workitems processed in " + time + " sec.");
+		logger.info("Job " + AdminPService.JOB_RENAME_USER + " (" + adminp.getUniqueID() + ") - " + colSize
+				+ " documents processed, " + iUpdates + " updates in " + time + " sec.  (in total: " + iProcessed
+				+ " processed, " + iUpdates + " updates)");
+
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {
