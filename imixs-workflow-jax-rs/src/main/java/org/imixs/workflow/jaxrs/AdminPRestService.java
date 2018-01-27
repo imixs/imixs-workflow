@@ -51,6 +51,8 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.InvalidAccessException;
+import org.imixs.workflow.exceptions.WorkflowException;
 import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLItemCollection;
 import org.imixs.workflow.xml.XMLItemCollectionAdapter;
@@ -68,7 +70,7 @@ public class AdminPRestService {
 
 	@EJB
 	private DocumentService documentService;
-	
+
 	@EJB
 	private AdminPService adminPService;
 
@@ -138,17 +140,14 @@ public class AdminPRestService {
 		return new DocumentCollection();
 	}
 
-	
-
-
 	/**
 	 * This method saves a entity provided in xml format
 	 * 
-	 * Note: the method merges the content of the given entity into an existing
-	 * one because the EntityService method save() did not merge an entity. But
-	 * the rest service typically consumes only a subset of attributes. So this
-	 * is the reason why we merge the entity here. In different to the behavior
-	 * of the EntityService the WorkflowService method process() did this merge
+	 * Note: the method merges the content of the given entity into an existing one
+	 * because the EntityService method save() did not merge an entity. But the rest
+	 * service typically consumes only a subset of attributes. So this is the reason
+	 * why we merge the entity here. In different to the behavior of the
+	 * EntityService the WorkflowService method process() did this merge
 	 * automatically.
 	 * 
 	 * @param xmlworkitem
@@ -208,25 +207,27 @@ public class AdminPRestService {
 		return Response.status(Response.Status.OK).build();
 	}
 
-	
-
-
 	/**
 	 * This helper method adds a error message to the given entity, based on the
-	 * data in a Exception. This kind of error message can be displayed in a
-	 * page evaluating the properties '$error_code' and '$error_message'. These
+	 * data in a Exception. This kind of error message can be displayed in a page
+	 * evaluating the properties '$error_code' and '$error_message'. These
 	 * attributes will not be stored.
 	 * 
 	 * @param pe
 	 */
 	private ItemCollection addErrorMessage(Exception pe, ItemCollection aworkitem) {
-
 		if (pe instanceof RuntimeException && pe.getCause() != null) {
 			pe = (RuntimeException) pe.getCause();
 		}
 
-		if (pe instanceof AccessDeniedException) {
-			aworkitem.replaceItemValue("$error_code", ((AccessDeniedException) pe).getErrorCode());
+		if (pe instanceof InvalidAccessException) {
+			aworkitem.replaceItemValue("$error_code", ((InvalidAccessException) pe).getErrorCode());
+			aworkitem.replaceItemValue("$error_message", pe.getMessage());
+		} else if (pe instanceof WorkflowException) {
+			aworkitem.replaceItemValue("$error_code", ((WorkflowException) pe).getErrorCode());
+			aworkitem.replaceItemValue("$error_message", pe.getMessage());
+		} else {
+			aworkitem.replaceItemValue("$error_code", "INTERNAL ERROR");
 			aworkitem.replaceItemValue("$error_message", pe.getMessage());
 		}
 

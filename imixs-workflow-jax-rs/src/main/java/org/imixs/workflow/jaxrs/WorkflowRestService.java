@@ -66,9 +66,9 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.WorkflowException;
 import org.imixs.workflow.util.JSONParser;
 import org.imixs.workflow.xml.DocumentCollection;
@@ -995,11 +995,11 @@ public class WorkflowRestService {
 			}
 			aworkitem.replaceItemValue("$error_code", ((WorkflowException) pe).getErrorCode());
 			aworkitem.replaceItemValue("$error_message", message);
-		} else if (pe instanceof AccessDeniedException) {
-			aworkitem.replaceItemValue("$error_code", ((AccessDeniedException) pe).getErrorCode());
+		} else if (pe instanceof InvalidAccessException) {
+			aworkitem.replaceItemValue("$error_code", ((InvalidAccessException) pe).getErrorCode());
 			aworkitem.replaceItemValue("$error_message", pe.getMessage());
-		} else if (pe instanceof ProcessingErrorException) {
-			aworkitem.replaceItemValue("$error_code", ((ProcessingErrorException) pe).getErrorCode());
+		} else {
+			aworkitem.replaceItemValue("$error_code", "INTERNAL ERROR");
 			aworkitem.replaceItemValue("$error_message", pe.getMessage());
 		}
 

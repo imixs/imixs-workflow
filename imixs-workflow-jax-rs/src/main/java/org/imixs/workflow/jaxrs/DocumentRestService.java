@@ -60,6 +60,7 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.xml.DocumentCollection;
 import org.imixs.workflow.xml.XMLCount;
@@ -426,8 +427,11 @@ public class DocumentRestService {
 			pe = (RuntimeException) pe.getCause();
 		}
 
-		if (pe instanceof AccessDeniedException) {
-			aworkitem.replaceItemValue("$error_code", ((AccessDeniedException) pe).getErrorCode());
+		if (pe instanceof InvalidAccessException) {
+			aworkitem.replaceItemValue("$error_code", ((InvalidAccessException) pe).getErrorCode());
+			aworkitem.replaceItemValue("$error_message", pe.getMessage());
+		} else {
+			aworkitem.replaceItemValue("$error_code", "INTERNAL ERROR");
 			aworkitem.replaceItemValue("$error_message", pe.getMessage());
 		}
 
