@@ -6,6 +6,7 @@ To follow us in this project, please join GitHub by [creating an account](https:
 
 You will find more detailed information how to work with Imixs-Workflow on the [Project Home](http://www.imixs.org). 
 
+[![Build Status](https://travis-ci.org/imixs/imixs-workflow.svg?branch=master)](https://travis-ci.org/imixs/imixs-workflow)
 
 ## Imixs-BPMN
 Imixs-BPMN is an Eclipse modeling tool to design a business process based on the BPMN 2.0 standard. These models can be executed by the Imixs-Workflow engine. 
