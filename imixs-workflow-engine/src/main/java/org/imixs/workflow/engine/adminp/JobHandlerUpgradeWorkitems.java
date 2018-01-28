@@ -180,27 +180,27 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 		}
 
 		if (!workitem.hasItem("$workflowGroup")) {
-			workitem.replaceItemValue("$workflowGroup", "txtworkflowgroup");
+			workitem.replaceItemValue("$workflowGroup", workitem.getItemValue("txtworkflowgroup"));
 			bUpgrade = true;
 		}
 
 		if (!workitem.hasItem("$workflowStatus")) {
-			workitem.replaceItemValue("$workflowStatus", "txtworkflowstatus");
+			workitem.replaceItemValue("$workflowStatus", workitem.getItemValue("txtworkflowstatus"));
 			bUpgrade = true;
 		}
 
 		if (!workitem.hasItem("$lastEvent")) {
-			workitem.replaceItemValue("$lastEvent", "numlastactivityid");
+			workitem.replaceItemValue("$lastEvent",workitem.getItemValue("numlastactivityid"));
 			bUpgrade = true;
 		}
 
 		if (!workitem.hasItem("$lastEventDate")) {
-			workitem.replaceItemValue("$lastEventDate", "timworkflowlastaccess");
+			workitem.replaceItemValue("$lastEventDate", workitem.getItemValue("timworkflowlastaccess"));
 			bUpgrade = true;
 		}
 
 		if (!workitem.hasItem("$lasteditor")) {
-			workitem.replaceItemValue("$lasteditor", "namcurrenteditor");
+			workitem.replaceItemValue("$lasteditor", workitem.getItemValue("namcurrenteditor"));
 			bUpgrade = true;
 		}
 
