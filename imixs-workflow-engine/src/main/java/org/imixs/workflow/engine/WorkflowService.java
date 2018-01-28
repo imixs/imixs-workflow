@@ -84,18 +84,8 @@ import org.imixs.workflow.exceptions.QueryException;
 @LocalBean
 public class WorkflowService implements WorkflowManager, WorkflowContext {
 
-	// entity properties
-	public static final String UNIQUEID = "$uniqueid";
-	public static final String UNIQUEIDREF = "$uniqueidref";
-	public static final String READACCESS = "$readaccess";
-	public static final String WRITEACCESS = "$writeaccess";
-	public static final String ISAUTHOR = "$isAuthor";
-
 	// workitem properties
-	public static final String WORKITEMID = "$workitemid";
-	public static final String PROCESSID = "$processid";
-	public static final String MODELVERSION = "$modelversion";
-	public static final String ACTIVITYID = "$activityid";
+	public static final String UNIQUEIDREF = "$uniqueidref";
 
 	// view properties
 	public static final int SORT_ORDER_CREATED_DESC = 0;
@@ -590,7 +580,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 		if (currentInstance != null) {
 			// test author access
-			if (!currentInstance.getItemValueBoolean(ISAUTHOR))
+			if (!currentInstance.getItemValueBoolean(DocumentService.ISAUTHOR))
 				throw new AccessDeniedException(AccessDeniedException.OPERATION_NOTALLOWED,
 						"WorkflowService: error - $UniqueID (" + workitem.getItemValueInteger(WorkflowKernel.UNIQUEID)
 								+ ") no Author Access!");
@@ -682,12 +672,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			workitem = workflowkernel.process(workitem);
 		} catch (PluginException pe) {
 			// if a plugin exception occurs we roll back the transaction.
-			logger.severe("processing workitem '" + workitem.getItemValueString(UNIQUEID)
+			logger.severe("processing workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
 					+ " failed, rollback transaction...");
 			ctx.setRollbackOnly();
 			throw pe;
 		}
-		logger.fine("workitem '" + workitem.getItemValueString(UNIQUEID) + "' processed in "
+		logger.fine("workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID) + "' processed in "
 				+ (System.currentTimeMillis() - l) + "ms");
 
 		// fire event

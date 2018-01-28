@@ -122,7 +122,7 @@ public class WorkflowMockEnvironment {
 				ItemCollection result = database.get(id);
 				if (result != null) {
 					// set author access=true
-					result.replaceItemValue(WorkflowService.ISAUTHOR, true);
+					result.replaceItemValue(DocumentService.ISAUTHOR, true);
 				}
 				return result;
 			}
@@ -249,7 +249,7 @@ public class WorkflowMockEnvironment {
 			entity.replaceItemValue("$ModelVersion", "1.0.0");
 			entity.replaceItemValue("$ProcessID", 100);
 			entity.replaceItemValue("$ActivityID", 10);
-			entity.replaceItemValue(WorkflowService.ISAUTHOR, true);
+			entity.replaceItemValue(DocumentService.ISAUTHOR, true);
 			database.put(entity.getItemValueString(WorkflowKernel.UNIQUEID), entity);
 		}
 

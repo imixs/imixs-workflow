@@ -54,7 +54,7 @@ The following table provides an overview about the data of a process instance ma
 |$WriteAccess     |List    |no    		| yes 	  | String list of User/Roles with write access   				|
 |$uniqueId        |String  |no    		| yes 	  | The unique ID of this workItem                				|
 |$uniqueIdRef     |String  |yes   		| yes 	  | A reference to a connected workItem (child process) 			|
-|$workitemId      |String  |no    		| yes 	  | A unique process instance id of a workitem ad all its versions|
+|$workitemId      |String  |no    		| yes 	  | A unique process instance id of a workitem and all its versions|
 |$uniqueIDSource  |String  |no    		| yes 	  | The UniqueID of the Source workitem for a version (See [Workflow Kernel split-events](../core/workflowkernel.html))     |
 |$uniqueIDVersions|String  |no    		| yes 	  | A list of UniqueIDs to all created versions of this workitem  (See [Workflow Kernel split-events](../core/workflowkernel.html))|
 |$lastTask        |Integer |no    		| yes 	  | The last assigned Task ID (processid)          				|

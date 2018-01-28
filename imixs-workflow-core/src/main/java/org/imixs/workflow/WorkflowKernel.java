@@ -70,6 +70,7 @@ public class WorkflowKernel {
 	public static final String UNIQUEID = "$uniqueid";
 	public static final String UNIQUEIDSOURCE = "$uniqueidsource";
 	public static final String UNIQUEIDVERSIONS = "$uniqueidversions";
+	public static final String WORKITEMID = "$workitemid";
 	public static final String MODELVERSION = "$modelversion";
 	public static final String PROCESSID = "$processid";
 	public static final String ACTIVITYID = "$activityid";
@@ -267,8 +268,8 @@ public class WorkflowKernel {
 		documentResult.replaceItemValue("$lastTask", workitem.getProcessID());
 
 		// Check if $WorkItemID is available
-		if ("".equals(workitem.getItemValueString("$WorkItemID"))) {
-			documentResult.replaceItemValue("$WorkItemID", generateUniqueID());
+		if ("".equals(workitem.getItemValueString(WorkflowKernel.WORKITEMID))) {
+			documentResult.replaceItemValue(WorkflowKernel.WORKITEMID, generateUniqueID());
 		}
 
 		// now process all events defined by the model
@@ -707,7 +708,7 @@ public class WorkflowKernel {
 	 * This method creates a new instance of a sourceWorkitem. The method did not
 	 * save the workitem!.
 	 * <p>
-	 * The new property $WorkitemIDRef will be added to the new version, which
+	 * The new property $UniqueIDSource will be added to the new version, which
 	 * points to the $uniqueID of the sourceWorkitem.
 	 * <p>
 	 * The new property $UniqueIDVersions will be added to the sourceWorktiem which
@@ -721,13 +722,15 @@ public class WorkflowKernel {
 	 * @throws Exception
 	 */
 	private ItemCollection createVersion(ItemCollection sourceItemCollection) throws PluginException {
+		
+		// clone the source workitem with its '$workitemid'
 		ItemCollection itemColNewVersion = (ItemCollection) sourceItemCollection.clone();
 		String id = sourceItemCollection.getUniqueID();
 
 		// create a new $Uniqueid to force the generation of a new Entity Instance.
 		itemColNewVersion.replaceItemValue(UNIQUEID, WorkflowKernel.generateUniqueID());
 
-		// update $WorkItemIDRef to current worktiemID
+		// update $unqiueIDSource 
 		itemColNewVersion.replaceItemValue(UNIQUEIDSOURCE, id);
 
 		// remove $UniqueIDVersions

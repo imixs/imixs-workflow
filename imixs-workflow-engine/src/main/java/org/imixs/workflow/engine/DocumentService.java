@@ -62,6 +62,7 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.jpa.Document;
 import org.imixs.workflow.engine.lucene.LuceneSearchService;
 import org.imixs.workflow.engine.lucene.LuceneUpdateService;
@@ -136,8 +137,6 @@ public class DocumentService {
 
 	public static final String ACCESSLEVEL_MANAGERACCESS = "org.imixs.ACCESSLEVEL.MANAGERACCESS";
 
-	public static final String UNIQUEID = "$uniqueid";
-	public static final String UNIQUEIDREF = "$uniqueidref";
 	public static final String READACCESS = "$readaccess";
 	public static final String WRITEACCESS = "$writeaccess";
 	public static final String ISAUTHOR = "$isAuthor";
@@ -332,7 +331,7 @@ public class DocumentService {
 		manager.setFlushMode(FlushModeType.COMMIT);
 
 		// check if a $uniqueid is available
-		String sID = document.getItemValueString(UNIQUEID);
+		String sID = document.getItemValueString(WorkflowKernel.UNIQUEID);
 		if (!sID.isEmpty()) {
 			// yes so we can try to find the Entity by its primary key
 			persistedDocument = manager.find(Document.class, sID);

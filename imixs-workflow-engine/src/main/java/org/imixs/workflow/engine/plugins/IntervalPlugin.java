@@ -33,7 +33,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowService;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -75,7 +75,7 @@ public class IntervalPlugin extends AbstractPlugin {
 		Calendar calNow = Calendar.getInstance();
 
 		logger.fine("[IntervalPlugin] compute next interval dates for workitem "
-				+ documentContext.getItemValueString(WorkflowService.UNIQUEID));
+				+ documentContext.getItemValueString(WorkflowKernel.UNIQUEID));
 
 		Set<String> fieldNames = documentContext.getAllItems().keySet();
 		for (String fieldName : fieldNames) {
