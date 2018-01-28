@@ -46,10 +46,10 @@
 			
 			<item name="Workflow Engine" href="./engine/index.html"
 				collapse="true">
-				<item name="DocumentService" href="./engine/documentservice.html"
+				<item name="DocumentService" href="./engine/documentservice.html" />
+				<item name="Search Index" href="./engine/luceneservice.html"
 					collapse="true">
-					<item name="Lucene" href="./engine/luceneservice.html" />
-					<item name="Query Syntax" href="./engine/queries.html" />
+					<item name="How to Search" href="./engine/queries.html" />
 				</item>
 				<item name="Access Control (ACL)" href="./engine/acl.html" />
 				<item name="ModelService" href="./engine/modelservice.html" />
@@ -58,7 +58,6 @@
 				<item name="Scheduler" href="./engine/scheduler.html" />
 				<item name="PropertyService" href="./engine/propertyservice.html" />
 				<item name="CDI and JNDI Lookup" href="./engine/remote_lookup.html" />
-
 			</item>
 			
 
