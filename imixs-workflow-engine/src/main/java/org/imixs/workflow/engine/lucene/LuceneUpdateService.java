@@ -110,7 +110,7 @@ public class LuceneUpdateService {
 	private static List<String> DEFAULT_NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$processid",
 			"$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator",
 			"$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "txtname", "namowner",
-			"txtworkitemref");
+			"txtworkitemref","$uniqueidsource","$uniqueidversions","$lasttask","$lastevent","$lasteventdate");
 
 	@EJB
 	PropertyService propertyService;

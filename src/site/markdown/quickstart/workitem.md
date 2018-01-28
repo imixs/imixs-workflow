@@ -36,42 +36,41 @@ As explained before, a workitem can not only contain business data, but also inf
     int processID=workitem.getItemValueInteger("$ProcessID");
     Date created=workitem.getItemValueDate("$created");
     Date modified=workitem.getItemValueDate("$modified");
-    String status=workitem.getItemValueString("txtWorkflowStatus");
-    Vector history=workitem.getItemValue("txtWorkflowHistory");
+    String status=workitem.getItemValueString("$WorkflowStatus");
   
-The following table provides an overview about the data of a process instance managed by the Imixs-Workflow Engine. The column 'read/write' indicates if the property can be controlled by an application:
+The following table provides an overview about the data of a process instance managed by the Imixs-Workflow Engine. The column '_read/write_' indicates if the property can be controlled by an application. The column '_indexed_' indicates if the date item can be searched by the [search index](../engine/queries.html#Query_Items):
  
  
-| Property        | Type   |read/write  | Description												 	|
-|-----------------|--------|------------|---------------------------------------------------------------|
-|$ModelVersion    |String  |yes   		| The Version of the model the workitem belongs to  			|
-|$ProcessID       |Integer |yes   		| The current ProcessID of the workItem         				|
-|$ActivityID      |Integer |yes   		| The next activity to be processed by the workflow engine  	|
-|$workflowGroup   |String  |no    		| The name of the current process group   						|
-|$workflowStatus  |String  |no   		| The name of the current workflow status      					|
-|$Created         |Date    |no    		| Date of creation                              				|
-|$Modified        |Date    |no    		| Date of last modification                     				|
-|$ReadAccess      |List    |no    		| String list of User/Roles with read access    				|
-|$WriteAccess     |List    |no    		| String list of User/Roles with write access   				|
-|$uniqueId        |String  |no    		| The unique ID of this workItem                				|
-|$uniqueIdRef     |String  |yes   		| A reference to a connected workItem (child process) 			|
-|$workitemId      |String  |no    		| A unique process instance id of a workitem ad all its versions|
-|$uniqueIDSource  |String  |no    		| The UniqueID of the Source workitem for a version (See [Workflow Kernel split-events](../core/workflowkernel.html))     |
-|$uniqueIDVersions|String  |no    		| A list of UniqueIDs to all created versions of this workitem  (See [Workflow Kernel split-events](../core/workflowkernel.html))|
-|$lastTask        |Integer |no    		| The last assigned Task ID (processid)          				|
-|$lastEvent       |Integer |no    		| The last processed event ID           						|
-|$lastEventDate   |Date    |no     		| The timestamp of the last processing action    				|
-|$eventLog        |List    |no    	    | Log of processed workflow events    					     	|
-|$creator         |String  |no    		| The user who created the workItem.             				|
-|$editor          |String  |no    		| The user who invoked the processWorkitem() method.       		|
-|$lasteditor      |String  |no    		| The last user, that invoked the process method before the $editor |
-|$noindex    	  |Boolean |yes    		| If set to 'true', the document will not be added into the index. (See [DocumentService](../engine/documentservice.html) for details.)   |
-|$immutable    	  |Boolean |yes    		| If set to 'true' updateing the workitem is no longer allowed. (See [DocumentService](../engine/documentservice.html) for details.) |
-|namOwner         |List    |no    		| String list of User/Roles, that are owners of that WorkItem. 	|
-|txtworkflowsummary |String|no 			| A short description of the current status      				|
-|txtworkflowabstract|String|no 			| A long description of the current status       				|
-|txtworkflowimageurl|String|no 			| A link to an image which displays the current status 			|
-|txtworkflowresultmessage  |String |no  | The result message of last process step 						|
+| Property        | Type   |read/write  | indexed | Description												 	|
+|-----------------|--------|------------|-----------------------------------------------------------------------|
+|$ModelVersion    |String  |yes   		| yes 	  | The Version of the model the workitem belongs to  			|
+|$ProcessID       |Integer |yes   		| yes 	  | The current ProcessID of the workItem         				|
+|$ActivityID      |Integer |yes   		| yes 	  | The next activity to be processed by the workflow engine  	|
+|$workflowGroup   |String  |no    		| yes 	  | The name of the current process group   					|
+|$workflowStatus  |String  |no   		| yes 	  | The name of the current workflow status      				|
+|$Created         |Date    |no    		| yes 	  | Date of creation                              				|
+|$Modified        |Date    |no    		| yes 	  | Date of last modification                     				|
+|$ReadAccess      |List    |no    		| yes 	  | String list of User/Roles with read access    				|
+|$WriteAccess     |List    |no    		| yes 	  | String list of User/Roles with write access   				|
+|$uniqueId        |String  |no    		| yes 	  | The unique ID of this workItem                				|
+|$uniqueIdRef     |String  |yes   		| yes 	  | A reference to a connected workItem (child process) 			|
+|$workitemId      |String  |no    		| yes 	  | A unique process instance id of a workitem ad all its versions|
+|$uniqueIDSource  |String  |no    		| yes 	  | The UniqueID of the Source workitem for a version (See [Workflow Kernel split-events](../core/workflowkernel.html))     |
+|$uniqueIDVersions|String  |no    		| yes 	  | A list of UniqueIDs to all created versions of this workitem  (See [Workflow Kernel split-events](../core/workflowkernel.html))|
+|$lastTask        |Integer |no    		| yes 	  | The last assigned Task ID (processid)          				|
+|$lastEvent       |Integer |no    		| yes 	  | The last processed event ID           						|
+|$lastEventDate   |Date    |no     		| yes 	  | The timestamp of the last processing action    				|
+|$eventLog        |List    |no    	    | no 	  | Log of processed workflow events    					     	|
+|$creator         |String  |no    		| yes 	  | The user who created the workItem.             				|
+|$editor          |String  |no    		| yes 	  | The user who invoked the processWorkitem() method.       		|
+|$lasteditor      |String  |no    		| yes 	  | The last user, that invoked the process method before the $editor |
+|$noindex    	  |Boolean |yes    		| no 	  | If set to 'true', the document will not be added into the index. (See [DocumentService](../engine/documentservice.html) for details.)   |
+|$immutable    	  |Boolean |yes    		| no 	  | If set to 'true' updateing the workitem is no longer allowed. (See [DocumentService](../engine/documentservice.html) for details.) |
+|namOwner         |List    |no    		| yes 	  | String list of User/Roles, that are owners of that WorkItem. 	|
+|txtworkflowsummary |String|no 			| yes 	  | A short description of the current status      				|
+|txtworkflowabstract|String|no 			| yes 	  | A long description of the current status       				|
+|txtworkflowimageurl|String|no 			| no 	  | A link to an image which displays the current status 			|
+|txtworkflowresultmessage  |String |no  | no 	  | The result message of last process step 						|
  
 
 ### Temporary Attributes 
