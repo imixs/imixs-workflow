@@ -1,4 +1,4 @@
-#The ResultPlugin
+# The ResultPlugin
 
 The Imixs-Workflow Result Plugin is used to provide model based processing information. These information is provided by additional property values assigned to an Imixs BPMN Event. The plugin evaluates these processing information which can be used by different modules. 
 
@@ -13,7 +13,7 @@ With the [Imixs-BPMN modeler](../../modelling/activities.html) the Workflow Resu
 <img src="../../images/modelling/bpmn_screen_20.png"/>
 
 
-##The Item Tag
+## The Item Tag
 
 The ResultPlugin evaluates the tag _'item'_. This tag can be used to set or change a item value of the current workitem. The  tag _'item'_ has the following XML format: 
  
@@ -42,10 +42,18 @@ With the optional attribute 'type' the item value type can be specified. The fol
 
 * boolean - results in type Boolean
 * integer - results in type Integer
-
+ 
 	<item name="count" type="integer">55</item>
 	
 This will store the integer value 55 into the item 'count'.  
+
+### Clear an Item Value
+It is also possible to clear an existing item value:
+
+	<item name="txtName"></item> 
+
+This will reset the item 'txtname' with an empty string. It is not possible to set a null value. 
+
 
 ### Custom Attributes
 A item definition can also contain optional custom attributes. These attributes can be used for extended plugin computation: 
