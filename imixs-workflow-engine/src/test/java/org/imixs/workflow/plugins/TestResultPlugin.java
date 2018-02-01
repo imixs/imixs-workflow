@@ -452,4 +452,35 @@ public class TestResultPlugin {
 
 	}
 
+	
+	/**
+	 * This test verifies the evaluation of an empty item tag.
+	 * Expected result: item will be cleard.
+	 * 
+	 * issue #339
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testEmptyTag() throws PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("txtName", "Anna");
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		// clear value...
+		String sResult = "<item name=\"txtName\"></item>";
+		logger.info("txtActivityResult=" + sResult);
+		
+		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+		// run plugin
+		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
+
+		// item should be empty
+		Assert.assertEquals("", adocumentContext.getItemValueString("txtName"));
+
+		
+	}
 }
