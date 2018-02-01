@@ -838,7 +838,7 @@ public class WorkflowSchedulerService {
 		logger.info("processing " + iProcessID + "." + iActivityID + " (" + sModelVersion + ") ...");
 
 		// now we need to select by type, $ProcessID and by $modelVersion!
-		String searchTerm = "(type:\"workitem\" AND $processid:\"" + iProcessID + "\" AND $modelversion:\""
+		String searchTerm = "($processid:\"" + iProcessID + "\" AND $modelversion:\""
 				+ sModelVersion + "\")";
 
 		logger.fine("select: " + searchTerm);
@@ -850,7 +850,7 @@ public class WorkflowSchedulerService {
 			// verify due date
 			if (workItemInDue(workitem, activityEntity)) {
 				String sID = workitem.getItemValueString(WorkflowKernel.UNIQUEID);
-				logger.fine("workitem " + sID + "is in due");
+				logger.fine("document " + sID + "is in due");
 				workitem.replaceItemValue("$activityid", iActivityID);
 				try {
 					logger.finest("getBusinessObject.....");
