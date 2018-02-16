@@ -127,6 +127,13 @@ For further details read the [section ACL](./acl.html).
 
 __Note:__ There is no need to set the Read- and Writeaccess programmatic because the ACL of a _workitem_ can be managed model definition in a transparent way.  
  
+## The UserNameList
+The _DocumentService_ provides the method _getUserNameList()_ which returns a list of user names, roles and application groups the
+current user belongs to.
+
+	List<String> userNames = documentService.getUserNameList();
+
+The UserNameList can be extended with custom application groups. Application groups are roles or group names computed by an application. This can be for example a list of groups fetched from an external directory (e.g. LDAP). or a list of groups computed by the workflow application based on a specific business rule. An Application can adapt the  UserNameList by implementing an EJB Intercepter class. A good example for this kind of interceptor is the *org.imixs.marty.ejb.TeamIntercepter* provided by the Imixs-Marty project. 
   
 ## CDI Events
 
