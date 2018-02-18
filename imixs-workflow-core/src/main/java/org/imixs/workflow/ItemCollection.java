@@ -32,6 +32,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,6 +47,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Logger;
+
+import org.imixs.workflow.exceptions.InvalidAccessException;
+import org.imixs.workflow.xml.XMLItem;
+import org.imixs.workflow.xml.XMLItemCollection;
 
 /**
  * This Class defines a ValueObject to be used to exchange data structures used
@@ -95,8 +100,6 @@ public class ItemCollection implements Cloneable {
 		super();
 		this.replaceAllItems(map);
 	}
-	
-	
 
 	/**
 	 * Creates a new ItemCollection and makes a deep copy from a given
@@ -122,13 +125,13 @@ public class ItemCollection implements Cloneable {
 	 */
 	public static ItemCollection createByReference(final Map<String, List<Object>> map) {
 		ItemCollection reference = new ItemCollection();
-		reference.hash=map;
+		reference.hash = map;
 		return reference;
 	}
-	
+
 	/**
-	 * This method clones the current ItemCollection. The method makes a deep
-	 * copy of the current instance.
+	 * This method clones the current ItemCollection. The method makes a deep copy
+	 * of the current instance.
 	 */
 	@Override
 	public Object clone() {
@@ -162,8 +165,8 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * This method compares the values of two item collections by comparing the
-	 * hash maps. This did not garantie that also embedded arrays are equal.
+	 * This method compares the values of two item collections by comparing the hash
+	 * maps. This did not garantie that also embedded arrays are equal.
 	 */
 	public boolean equals(Object o) {
 		if (!(o instanceof ItemCollection))
@@ -172,16 +175,16 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * returns the Value of a single Item inside the ItemCollection. If the item
-	 * has no value, this method returns an empty vector. If no item with the
-	 * specified name exists, this method returns an empty vector. It does not
-	 * throw an exception. The ItemName is not case sensitive. Use hasItem to
-	 * verify the existence of an item.
+	 * returns the Value of a single Item inside the ItemCollection. If the item has
+	 * no value, this method returns an empty vector. If no item with the specified
+	 * name exists, this method returns an empty vector. It does not throw an
+	 * exception. The ItemName is not case sensitive. Use hasItem to verify the
+	 * existence of an item.
 	 * 
 	 * @param aName
 	 *            The name of an item.
-	 * @return The value or values contained in the item. The data type of the
-	 *         value depends on the data type of the item.
+	 * @return The value or values contained in the item. The data type of the value
+	 *         depends on the data type of the item.
 	 * 
 	 */
 	@SuppressWarnings("rawtypes")
@@ -234,12 +237,12 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns the value of an item with a single numeric value. If the item has
-	 * no value or the value is no Integer, or empty, this method returns 0. If
-	 * no item with the specified name exists, this method returns 0. It does
-	 * not throw an exception. If the item has multiple values, this method
-	 * returns the first value. The ItemName is not case sensitive. Use hasItem
-	 * to verify the existence of an item.
+	 * Returns the value of an item with a single numeric value. If the item has no
+	 * value or the value is no Integer, or empty, this method returns 0. If no item
+	 * with the specified name exists, this method returns 0. It does not throw an
+	 * exception. If the item has multiple values, this method returns the first
+	 * value. The ItemName is not case sensitive. Use hasItem to verify the
+	 * existence of an item.
 	 * 
 	 * @param aName
 	 * @return integer value
@@ -261,12 +264,12 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns the value of an item with a long value. If the item has no value
-	 * or the value is no number, or empty, this method returns 0. If no item
-	 * with the specified name exists, this method returns 0. It does not throw
-	 * an exception. If the item has multiple values, this method returns the
-	 * first value. The ItemName is not case sensitive. Use hasItem to verify
-	 * the existence of an item.
+	 * Returns the value of an item with a long value. If the item has no value or
+	 * the value is no number, or empty, this method returns 0. If no item with the
+	 * specified name exists, this method returns 0. It does not throw an exception.
+	 * If the item has multiple values, this method returns the first value. The
+	 * ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
 	 * 
 	 * @param aName
 	 * @return integer value
@@ -289,11 +292,11 @@ public class ItemCollection implements Cloneable {
 
 	/**
 	 * Returns the value of an item with a single Date value. If the item has no
-	 * value or the value is no Date, or empty, this method returns null. If no
-	 * item with the specified name exists, this method returns null. It does
-	 * not throw an exception. If the item has multiple values, this method
-	 * returns the first value. The ItemName is not case sensitive. Use hasItem
-	 * to verify the existence of an item.
+	 * value or the value is no Date, or empty, this method returns null. If no item
+	 * with the specified name exists, this method returns null. It does not throw
+	 * an exception. If the item has multiple values, this method returns the first
+	 * value. The ItemName is not case sensitive. Use hasItem to verify the
+	 * existence of an item.
 	 * 
 	 * @param aName
 	 * @return Date value
@@ -316,12 +319,11 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns the value of an item with a single numeric value. If the item has
-	 * no value, this method returns 0.0. If no item with the specified name
-	 * exists, this method returns 0.0. It does not throw an exception. If the
-	 * item has multiple values, this method returns the first value. The
-	 * Itemname is not case sensetive. Use hasItem to verify the existence of an
-	 * item.
+	 * Returns the value of an item with a single numeric value. If the item has no
+	 * value, this method returns 0.0. If no item with the specified name exists,
+	 * this method returns 0.0. It does not throw an exception. If the item has
+	 * multiple values, this method returns the first value. The Itemname is not
+	 * case sensetive. Use hasItem to verify the existence of an item.
 	 * 
 	 * @param aName
 	 * @return double value
@@ -360,12 +362,11 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns the value of an item with a single numeric value. If the item has
-	 * no value, this method returns 0.0. If no item with the specified name
-	 * exists, this method returns 0.0. It does not throw an exception. If the
-	 * item has multiple values, this method returns the first value. The
-	 * Itemname is not case sensetive. Use hasItem to verify the existence of an
-	 * item.
+	 * Returns the value of an item with a single numeric value. If the item has no
+	 * value, this method returns 0.0. If no item with the specified name exists,
+	 * this method returns 0.0. It does not throw an exception. If the item has
+	 * multiple values, this method returns the first value. The Itemname is not
+	 * case sensetive. Use hasItem to verify the existence of an item.
 	 * 
 	 * @param aName
 	 * @return float value
@@ -384,9 +385,9 @@ public class ItemCollection implements Cloneable {
 					return (Float) o;
 
 				if (o instanceof Double) {
-					Double d=(Double)o;
-					return (float)d.doubleValue();
-				}	
+					Double d = (Double) o;
+					return (float) d.doubleValue();
+				}
 
 				if (o instanceof Long)
 					return (Long) o;
@@ -408,12 +409,12 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns the boolean value of an item. If the item has no value or the
-	 * value is no boolean, or empty, this method returns false. If no item with
-	 * the specified name exists, this method returns false. It does not throw
-	 * an exception. If the item has multiple values, this method returns the
-	 * first value. The Itemname is not case sensitive. Use hasItem to verify
-	 * the existence of an item.
+	 * Returns the boolean value of an item. If the item has no value or the value
+	 * is no boolean, or empty, this method returns false. If no item with the
+	 * specified name exists, this method returns false. It does not throw an
+	 * exception. If the item has multiple values, this method returns the first
+	 * value. The Itemname is not case sensitive. Use hasItem to verify the
+	 * existence of an item.
 	 * 
 	 * @param aName
 	 * @return boolean value
@@ -437,8 +438,8 @@ public class ItemCollection implements Cloneable {
 	 * 
 	 * @param aName
 	 *            The name of an item.
-	 * @return true if an item with name exists in the document, false if no
-	 *         item with name exists in the document
+	 * @return true if an item with name exists in the document, false if no item
+	 *         with name exists in the document
 	 * 
 	 */
 	public boolean hasItem(String aName) {
@@ -450,8 +451,8 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns true if the value of an item with a single numeric value is from
-	 * type 'Integer'
+	 * Returns true if the value of an item with a single numeric value is from type
+	 * 'Integer'
 	 * 
 	 * @param aName
 	 * @return boolean true if object is from type Double
@@ -469,8 +470,8 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns true if the value of an item with a single numeric value is from
-	 * type 'Long'
+	 * Returns true if the value of an item with a single numeric value is from type
+	 * 'Long'
 	 * 
 	 * @param aName
 	 * @return boolean true if object is from type Double
@@ -488,8 +489,8 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns true if the value of an item with a single numeric value is from
-	 * type 'Double'
+	 * Returns true if the value of an item with a single numeric value is from type
+	 * 'Double'
 	 * 
 	 * @param aName
 	 * @return boolean true if object is from type Double
@@ -507,8 +508,8 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns true if the value of an item with a single numeric value is from
-	 * type 'Float'
+	 * Returns true if the value of an item with a single numeric value is from type
+	 * 'Float'
 	 * 
 	 * @param aName
 	 * @return boolean true if object is from type Double
@@ -554,9 +555,8 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * replaces the current map object. In different to the method
-	 * replaceAllItems this method overwrites the hash object and did not copy
-	 * the values
+	 * replaces the current map object. In different to the method replaceAllItems
+	 * this method overwrites the hash object and did not copy the values
 	 * 
 	 * @param aHash
 	 */
@@ -566,17 +566,17 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Replaces the value of an item. If the ItemCollection does not contain an
-	 * item with the specified name, the method creates a new item and adds it
-	 * to the ItemCollection. The ItemName is not case sensitive. Use hasItem to
-	 * verify the existence of an item. All item names will be lower cased.
+	 * Replaces the value of an item. If the ItemCollection does not contain an item
+	 * with the specified name, the method creates a new item and adds it to the
+	 * ItemCollection. The ItemName is not case sensitive. Use hasItem to verify the
+	 * existence of an item. All item names will be lower cased.
 	 * 
-	 * Each item can contain a list of values (multivalue item). If a single
-	 * value is provided the method creates a List with one single value
-	 * (singlevalue item).
+	 * Each item can contain a list of values (multivalue item). If a single value
+	 * is provided the method creates a List with one single value (singlevalue
+	 * item).
 	 * 
-	 * If the value is null the method will remove the item. This is equal to
-	 * the method call removeItem()
+	 * If the value is null the method will remove the item. This is equal to the
+	 * method call removeItem()
 	 * 
 	 * If the ItemValue is not serializable the item will be removed.
 	 * 
@@ -584,25 +584,24 @@ public class ItemCollection implements Cloneable {
 	 * @param itemName
 	 *            The name of the item or items you want to replace.
 	 * @param itemValue
-	 *            The value of the new item. The data type of the item depends
-	 *            upon the data type of value, and does not need to match the
-	 *            data type of the old item.
+	 *            The value of the new item. The data type of the item depends upon
+	 *            the data type of value, and does not need to match the data type
+	 *            of the old item.
 	 */
 	public void replaceItemValue(String itemName, Object itemValue) {
 		setItemValue(itemName, itemValue, false);
 	}
 
 	/**
-	 * Appends a value to an existing item. If the ItemCollection does not
-	 * contain an item with the specified name, the method creates a new item
-	 * and adds it to the ItemCollection. The ItemName is not case sensitive.
-	 * Use hasItem to verify the existence of an item. All item names will be
-	 * lower cased.
+	 * Appends a value to an existing item. If the ItemCollection does not contain
+	 * an item with the specified name, the method creates a new item and adds it to
+	 * the ItemCollection. The ItemName is not case sensitive. Use hasItem to verify
+	 * the existence of an item. All item names will be lower cased.
 	 * 
 	 * If a value list is provided the method appends each single value.
 	 * 
-	 * If the value is null the method will remove the item. This is equal to
-	 * the method call removeItem()
+	 * If the value is null the method will remove the item. This is equal to the
+	 * method call removeItem()
 	 * 
 	 * If the ItemValue is not serializable the item will be removed.
 	 * 
@@ -610,9 +609,9 @@ public class ItemCollection implements Cloneable {
 	 * @param itemName
 	 *            The name of the item or items you want to replace.
 	 * @param itemValue
-	 *            The value of the new item. The data type of the item depends
-	 *            upon the data type of value, and does not need to match the
-	 *            data type of the old item.
+	 *            The value of the new item. The data type of the item depends upon
+	 *            the data type of value, and does not need to match the data type
+	 *            of the old item.
 	 */
 	public void appendItemValue(String itemName, Object itemValue) {
 		setItemValue(itemName, itemValue, true);
@@ -678,6 +677,12 @@ public class ItemCollection implements Cloneable {
 		}
 
 		// now itemValue is of instance List
+		if (!validateItemValue(itemValueList)) {
+			String message = "setItemValue failed for item '" + itemName
+					+ "', the value is a non supported object type: " + itemValueList;
+			logger.warning(message);
+			throw new InvalidAccessException(message);
+		}
 
 		// replace item value?
 		if (append) {
@@ -686,9 +691,6 @@ public class ItemCollection implements Cloneable {
 
 			oldValueList.addAll(itemValueList);
 
-			// for (Object o : itemValueList) {
-			// oldValueList.add(o);
-			// }
 			hash.put(itemName, (List<Object>) oldValueList);
 		} else
 			hash.put(itemName, itemValueList);
@@ -696,13 +698,91 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Replaces all items specified in the map with new items, which are
-	 * assigned to the specified values inside the map.
+	 * This method validates of a itemValue is acceptable for the ItemCollection.
+	 * Only basic types are supported.
 	 * 
-	 * The method makes a deep copy of the source map using serialization. This
-	 * is to make sure, that no object reference is copied. Other wise for
-	 * example embedded arrays are not cloned. This is also important for JPA to
-	 * avoid changes of attached entity beans with references in the data of an
+	 * @param itemValue
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	private boolean validateItemValue(Object itemValue) {
+
+		// array?
+		if (itemValue != null && itemValue.getClass().isArray()) {
+			for (int i = 0; i < Array.getLength(itemValue); i++) {
+				Object singleValue = Array.get(itemValue, i);
+				if (!validateItemValue(singleValue)) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		// list?
+		if ((itemValue instanceof List)) {
+			for (Object singleValue : (List) itemValue) {
+				if (!validateItemValue(singleValue)) {
+					return false;
+				}
+			}
+			return true;
+		} else
+
+		// map
+		if ((itemValue instanceof Map)) {
+			Map map = (Map) itemValue;
+			for (Object value : map.values()) {
+				if (!validateItemValue(value)) {
+					return false;
+				}
+			}
+			return true;
+		} else {
+			return (isBasicType(itemValue));
+		}
+	}
+
+	/**
+	 * This helper method test if an object is a basic type which can be stored in
+	 * an ItemCollection.
+	 * 
+	 * Validate for raw objects and class types java.lang.*, java.math.*
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	private static boolean isBasicType(java.lang.Object o) {
+
+		if (o == null) {
+			return true;
+		}
+		// test raw array types first
+		if (o instanceof byte[] || o instanceof boolean[] || o instanceof short[] || o instanceof char[]
+				|| o instanceof int[] || o instanceof long[] || o instanceof float[] || o instanceof double[]
+				|| o instanceof XMLItem[] || o instanceof XMLItemCollection[]) {
+			return true;
+		}
+
+		// test package name
+		Class c = o.getClass();
+		String name = c.getName();
+		if (!name.startsWith("java.lang.") && !name.startsWith("java.math.") && !"java.util.Date".equals(name)
+				&& !"org.imixs.workflow.xml.XMLItem".equals(name)
+				&& !"org.imixs.workflow.xml.XMLItemCollection".equals(name)) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Replaces all items specified in the map with new items, which are assigned to
+	 * the specified values inside the map.
+	 * 
+	 * The method makes a deep copy of the source map using serialization. This is
+	 * to make sure, that no object reference is copied. Other wise for example
+	 * embedded arrays are not cloned. This is also important for JPA to avoid
+	 * changes of attached entity beans with references in the data of an
 	 * ItemCollection.
 	 * 
 	 * @see deepCopyOfMap
@@ -762,8 +842,8 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * This method adds a single file to the ItemCollection. files will be
-	 * stored into the property $file.
+	 * This method adds a single file to the ItemCollection. files will be stored
+	 * into the property $file.
 	 * 
 	 * @param data
 	 *            - byte array with file data
@@ -840,10 +920,10 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns files stored in the property '$file'. The files are returned in a
-	 * Map interface where the key is the filename and the value is a list with
-	 * two elements - the ContenType and the file content (byte[]). s Files can
-	 * be added into a ItemCollection using the method addFile().
+	 * Returns files stored in the property '$file'. The files are returned in a Map
+	 * interface where the key is the filename and the value is a list with two
+	 * elements - the ContenType and the file content (byte[]). s Files can be added
+	 * into a ItemCollection using the method addFile().
 	 * 
 	 * @return
 	 */
@@ -961,8 +1041,8 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * This class helps to adapt the behavior of a single value item to be used
-	 * in a jsf page using a expression language like this:
+	 * This class helps to adapt the behavior of a single value item to be used in a
+	 * jsf page using a expression language like this:
 	 * 
 	 * #{mybean.item['txtMyItem']}
 	 * 
@@ -986,8 +1066,8 @@ public class ItemCollection implements Cloneable {
 		}
 
 		/**
-		 * returns a single value out of the ItemCollection if the key does not
-		 * exist the method will create a value automatically
+		 * returns a single value out of the ItemCollection if the key does not exist
+		 * the method will create a value automatically
 		 */
 		public Object get(Object key) {
 			// check if a value for this key is available...
@@ -1064,8 +1144,8 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * This class helps to addapt the behavior of a multivalue item to be used
-	 * in a jsf page using a expression language like this:
+	 * This class helps to addapt the behavior of a multivalue item to be used in a
+	 * jsf page using a expression language like this:
 	 * 
 	 * #{mybean.item['txtMyList']}
 	 * 
@@ -1080,8 +1160,8 @@ public class ItemCollection implements Cloneable {
 		}
 
 		/**
-		 * returns a multi value out of the ItemCollection if the key dos not
-		 * exist the method will create a value automatical
+		 * returns a multi value out of the ItemCollection if the key dos not exist the
+		 * method will create a value automatical
 		 */
 		public Object get(Object key) {
 			// check if a value for this key is available...
@@ -1101,8 +1181,8 @@ public class ItemCollection implements Cloneable {
 		}
 
 		/**
-		 * returns a multi value out of the ItemCollection if the key dos not
-		 * exist the method will create a value automatical
+		 * returns a multi value out of the ItemCollection if the key dos not exist the
+		 * method will create a value automatical
 		 */
 		@SuppressWarnings("rawtypes")
 		public Object get(Object key) {

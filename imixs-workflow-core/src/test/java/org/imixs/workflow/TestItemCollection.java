@@ -1,5 +1,6 @@
 package org.imixs.workflow;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -111,15 +112,14 @@ public class TestItemCollection {
 		// Assert.assertEquals(9.723,
 		// itemCollection.getItemValueFloat("string"),
 		// 0);
-		
-		
+
 		// test Double to Float...
-		double d=50.777;
+		double d = 50.777;
 		itemCollection.replaceItemValue("double", d);
-		Assert.assertEquals(d, itemCollection.getItemValueDouble("double"),0);
+		Assert.assertEquals(d, itemCollection.getItemValueDouble("double"), 0);
 		// test float ...
-		float f1=itemCollection.getItemValueFloat("double");
-		Assert.assertEquals("50.777", ""+f1);
+		float f1 = itemCollection.getItemValueFloat("double");
+		Assert.assertEquals("50.777", "" + f1);
 
 	}
 
@@ -390,7 +390,7 @@ public class TestItemCollection {
 	 * here we can see that a map is copied by reference!
 	 * 
 	 */
-	@SuppressWarnings({"unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void testCopyValuesWithEmbeddedMap() {
 
@@ -531,8 +531,8 @@ public class TestItemCollection {
 	}
 
 	/**
-	 * This method verifies the clone interface in conjunction with byte arrays
-	 * as used in the $file field
+	 * This method verifies the clone interface in conjunction with byte arrays as
+	 * used in the $file field
 	 */
 	@Test
 	public void testCloningByteArrays() {
@@ -633,9 +633,7 @@ public class TestItemCollection {
 
 		Assert.assertFalse(itemCol1.hasItem(null));
 	}
-	
-	
-	
+
 	/**
 	 * Test the append method
 	 */
@@ -646,17 +644,39 @@ public class TestItemCollection {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
-		
+
 		itemCollection.appendItemValue("txttitel", "World");
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 		List values = itemCollection.getItemValue("txtTitel");
 		Assert.assertEquals(2, values.size());
-				
+
 		itemCollection.appendItemValue("txttitel", "World");
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 		values = itemCollection.getItemValue("txtTitel");
 		Assert.assertEquals(3, values.size());
-		
+
+	}
+
+	/**
+	 * Test no basic type
+	 */
+	@Test
+	@Category(org.imixs.workflow.ItemCollection.class)
+	public void testItemCollectionNoBasictype() {
+		ItemCollection itemCollection = new ItemCollection();
+		itemCollection.replaceItemValue("txtTitel", "Hello");
+		try {
+			itemCollection.replaceItemValue("color", new Color(1, 1, 1));
+			Assert.fail();
+		} catch (Exception e) {
+			if (e instanceof RuntimeException) {
+				// expected
+			} else {
+				Assert.fail();
+
+			}
+		}
+
 	}
 
 }
