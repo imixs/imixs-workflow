@@ -35,6 +35,7 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -707,6 +708,15 @@ public class ItemCollection implements Cloneable {
 	@SuppressWarnings("rawtypes")
 	private boolean validateItemValue(Object itemValue) {
 
+		if (itemValue==null) {
+			return true;
+		}
+		
+		// convert Calendar instance into Date! issue #52
+		if (itemValue instanceof Calendar) {
+			itemValue=((Calendar)itemValue).getTime();
+		}
+		
 		// array?
 		if (itemValue != null && itemValue.getClass().isArray()) {
 			for (int i = 0; i < Array.getLength(itemValue); i++) {
