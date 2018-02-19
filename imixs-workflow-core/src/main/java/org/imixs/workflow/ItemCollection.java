@@ -708,23 +708,13 @@ public class ItemCollection implements Cloneable {
 	@SuppressWarnings("rawtypes")
 	private boolean validateItemValue(Object itemValue) {
 
-		if (itemValue==null) {
-			return true;
-		}
-		
 		// convert Calendar instance into Date! issue #52
 		if (itemValue instanceof Calendar) {
-			itemValue=((Calendar)itemValue).getTime();
+			itemValue = ((Calendar) itemValue).getTime();
 		}
 		
-		// array?
-		if (itemValue != null && itemValue.getClass().isArray()) {
-			for (int i = 0; i < Array.getLength(itemValue); i++) {
-				Object singleValue = Array.get(itemValue, i);
-				if (!validateItemValue(singleValue)) {
-					return false;
-				}
-			}
+		// first we test if basic type?
+		if (isBasicType(itemValue)) {
 			return true;
 		}
 
@@ -738,7 +728,18 @@ public class ItemCollection implements Cloneable {
 			return true;
 		} else
 
-		// map
+		// array?
+		if (itemValue != null && itemValue.getClass().isArray()) {
+			for (int i = 0; i < Array.getLength(itemValue); i++) {
+				Object singleValue = Array.get(itemValue, i);
+				if (!validateItemValue(singleValue)) {
+					return false;
+				}
+			}
+			return true;
+		} else
+
+		// map?
 		if ((itemValue instanceof Map)) {
 			Map map = (Map) itemValue;
 			for (Object value : map.values()) {
@@ -747,9 +748,10 @@ public class ItemCollection implements Cloneable {
 				}
 			}
 			return true;
-		} else {
-			return (isBasicType(itemValue));
 		}
+
+		// unknown type
+		return false;
 	}
 
 	/**
@@ -776,13 +778,14 @@ public class ItemCollection implements Cloneable {
 		// test package name
 		Class c = o.getClass();
 		String name = c.getName();
-		if (!name.startsWith("java.lang.") && !name.startsWith("java.math.") && !"java.util.Date".equals(name)
-				&& !"org.imixs.workflow.xml.XMLItem".equals(name)
-				&& !"org.imixs.workflow.xml.XMLItemCollection".equals(name)) {
-			return false;
+		if (name.startsWith("java.lang.") || name.startsWith("java.math.") || "java.util.Date".equals(name)
+				|| "org.imixs.workflow.xml.XMLItem".equals(name)
+				|| "org.imixs.workflow.xml.XMLItemCollection".equals(name)) {
+			return true;
 		}
 
-		return true;
+		// no basic type
+		return false;
 	}
 
 	/**

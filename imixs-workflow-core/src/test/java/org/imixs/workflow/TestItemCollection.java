@@ -679,4 +679,21 @@ public class TestItemCollection {
 
 	}
 
+	/**
+	 * Test raw type int, double, boolean
+	 */
+	@Test
+	@Category(org.imixs.workflow.ItemCollection.class)
+	public void testItemCollectionRawtype() {
+		ItemCollection itemCollection = new ItemCollection();
+		itemCollection.replaceItemValue("txtTitel", "Hello");
+		double d=5.20;
+		itemCollection.replaceItemValue("price", d);
+		
+		byte[] bytes="Some Data".getBytes();
+		itemCollection.replaceItemValue("data", bytes);
+		
+		Assert.assertNotNull(itemCollection);
+
+	}
 }
