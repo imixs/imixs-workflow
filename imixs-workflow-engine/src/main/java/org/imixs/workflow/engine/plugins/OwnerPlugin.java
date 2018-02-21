@@ -132,9 +132,10 @@ public class OwnerPlugin extends AbstractPlugin {
 	 * 
 	 * 
 	 * The method did not clear the exiting values of namowner
+	 * @throws PluginException 
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void updateOwnerByItemCollection(ItemCollection modelEntity) {
+	private void updateOwnerByItemCollection(ItemCollection modelEntity) throws PluginException {
 
 		if (modelEntity == null || modelEntity.getItemValueBoolean("keyupdateacl") == false) {
 			// no update necessary
@@ -143,9 +144,9 @@ public class OwnerPlugin extends AbstractPlugin {
 
 		List newOwnerList;
 		newOwnerList = new ArrayList<String>();
-		;
+
 		// add names
-		mergeValueList(newOwnerList, modelEntity.getItemValue("namOwnershipNames"));
+		mergeRoles(newOwnerList, modelEntity.getItemValue("namOwnershipNames"),documentContext);
 		// add Mapped Fields
 		mergeFieldList(documentContext, newOwnerList, modelEntity.getItemValue("keyOwnershipFields"));
 		// clean Vector

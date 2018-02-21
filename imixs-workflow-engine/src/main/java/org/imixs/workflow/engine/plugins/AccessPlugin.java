@@ -149,9 +149,10 @@ public class AccessPlugin extends AbstractPlugin {
 	 * 
 	 * 
 	 * The method did not clear the exiting values of $writeAccess and $readAccess
+	 * @throws PluginException 
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void updateACLByItemCollection(ItemCollection modelEntity) {
+	private void updateACLByItemCollection(ItemCollection modelEntity) throws PluginException {
 
 		if (modelEntity == null || modelEntity.getItemValueBoolean("keyupdateacl") == false) {
 			// no update necessary
@@ -160,8 +161,8 @@ public class AccessPlugin extends AbstractPlugin {
 
 		List vectorAccess;
 		vectorAccess = documentContext.getItemValue("$readAccess");
-		// add names
-		mergeValueList(vectorAccess, modelEntity.getItemValue("namaddreadaccess"));
+		// add roles
+		mergeRoles(vectorAccess, modelEntity.getItemValue("namaddreadaccess"),documentContext);
 		// add Mapped Fields
 		mergeFieldList(documentContext, vectorAccess, modelEntity.getItemValue("keyaddreadfields"));
 		// clean Vector
@@ -178,7 +179,7 @@ public class AccessPlugin extends AbstractPlugin {
 		// update WriteAccess
 		vectorAccess = documentContext.getItemValue("$writeAccess");
 		// add Names
-		mergeValueList(vectorAccess, modelEntity.getItemValue("namaddwriteaccess"));
+		mergeRoles(vectorAccess, modelEntity.getItemValue("namaddwriteaccess"),documentContext);
 		// add Mapped Fields
 		mergeFieldList(documentContext, vectorAccess, modelEntity.getItemValue("keyaddwritefields"));
 		// clean Vector
