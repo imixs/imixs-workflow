@@ -31,14 +31,36 @@ The Imixs Admin Client provides an administration process (AdminP) which can be 
 
 ### Rebuild the Lucene Index
 
-With the function 'Rebuild Index' the lucene index can be updated. After the job is started the existing documents will be re-indexed. The blocksize
+With the function '_Rebuild Index_' the lucene index can be updated. After the job is started the existing documents will be re-indexed. The blocksize
 defines the maximum number of workflow documents to be processed in one run. After the blocksize was updated, the job will pause for a given interval specified in minutes.  
 
 
 ### Rename User
 
-The function 'Rename User' updates name files (starting with 'nam') and the ACL for existing documents. This feature can be used if a userID changed in a running workflow environment. The new userId can either be replaced with the old one or be appended. The blocksize
+The function '_Rename User_' is used if a userID must be replaced or a deputy userid must be added into the ACL of a workitem.
+The function updates the workitem items:
+
+ * $ReadAccess
+ * $WriteAccess
+ * namOwner
+ 
+The new userId can either be replaced with the old one or be appended. The blocksize
 defines the maximum number of workflow documents to be processed in one run. After the blocksize was updated, the job will pause for a given interval specified in minutes.  
+
+Example of a a Job Description:
+
+
+	<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	       <item name="type"><value xsi:type="xs:string">adminp</value></item> 
+	       <item name="job"><value xsi:type="xs:string">RENAME_USER</value></item> 
+	       <item name="typelist"><value xsi:type="xs:string">workitem</value></item> 
+	       <item name="namfrom"><value xsi:type="xs:string">FROM USER ID</value></item> 
+	       <item name="namto"><value xsi:type="xs:string">NEW USER ID</value></item> 
+	</document>
+
+
+If a workitem has the item '_$private_" set to _true_ the workitem will be ignored by the job. This is useful for personal workitems which should not be delegated to the deputy. E.g. 'personnel file' or a 'application for leave'.
+
 
 ### Migration
 
