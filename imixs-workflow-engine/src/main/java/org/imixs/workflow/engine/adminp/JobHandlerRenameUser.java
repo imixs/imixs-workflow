@@ -217,6 +217,11 @@ public class JobHandlerRenameUser implements JobHandler {
 			return false;
 		}
 
+		if (entity.getItemValueBoolean("private")) {
+			return false;
+		}
+
+		
 		// Verify Fields
 		if (updateList(entity.getItemValue("$ReadAccess"), from, to, replace))
 			bUpdate = true;

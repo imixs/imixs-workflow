@@ -56,10 +56,13 @@ Example of a a Job Description:
 	       <item name="typelist"><value xsi:type="xs:string">workitem</value></item> 
 	       <item name="namfrom"><value xsi:type="xs:string">FROM USER ID</value></item> 
 	       <item name="namto"><value xsi:type="xs:string">NEW USER ID</value></item> 
+	       <item name="keyreplace"><value xsi:type="xs:boolean">false</value></item> 
 	</document>
 
 
-If a workitem has the item '_$private_" set to _true_ the workitem will be ignored by the job. This is useful for personal workitems which should not be delegated to the deputy. E.g. 'personnel file' or a 'application for leave'.
+If the job item 'keyReplace' is set to 'true' then the old user id will be removed.  
+
+If a workitem has the item '_private_" set to _true_ the workitem will be ignored by the job. This is useful for personal workitems which should not be delegated to the deputy. E.g. 'personnel file' or a 'application for leave'.
 
 
 ### Migration
