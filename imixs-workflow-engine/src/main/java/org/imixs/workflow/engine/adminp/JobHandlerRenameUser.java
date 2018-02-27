@@ -94,7 +94,7 @@ public class JobHandlerRenameUser implements JobHandler {
 		}
 		Date datFilterFrom = adminp.getItemValueDate("datfrom");
 		Date datFilterTo = adminp.getItemValueDate("datto");
-		
+
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
 		int iProcessed = adminp.getItemValueInteger("numProcessed");
 		String fromUserID = adminp.getItemValueString("namFrom").trim();
@@ -134,14 +134,14 @@ public class JobHandlerRenameUser implements JobHandler {
 		sQuery += " AND ($writeaccess:\"" + fromUserID + "\" OR $readaccess:\"" + fromUserID + "\" OR namowner:\""
 				+ fromUserID + "\" OR $creator:\"" + fromUserID + "\" OR namcreator:\"" + fromUserID + "\" )";
 
-		
-		if (datFilterFrom!=null && datFilterTo!=null ) {
+		if (datFilterFrom != null && datFilterTo != null) {
 			SimpleDateFormat luceneFormat = new SimpleDateFormat("yyyyMMdd");
-			sQuery += " AND ($created:["+luceneFormat.format(datFilterFrom)+ " TO " + luceneFormat.format(datFilterTo) + "])";
+			sQuery += " AND ($created:[" + luceneFormat.format(datFilterFrom) + " TO "
+					+ luceneFormat.format(datFilterTo) + "])";
 		}
-		
+
 		adminp.replaceItemValue("txtQuery", sQuery);
-	
+
 		Collection<ItemCollection> col;
 		try {
 			// ASC sorting is important here!
@@ -172,14 +172,13 @@ public class JobHandlerRenameUser implements JobHandler {
 		adminp.replaceItemValue("numIndex", iIndex);
 
 		long time = (System.currentTimeMillis() - lProfiler) / 1000;
-		if (time==0) {
-			time=1;
+		if (time == 0) {
+			time = 1;
 		}
 
 		logger.info("Job " + AdminPService.JOB_RENAME_USER + " (" + adminp.getUniqueID() + ") - " + colSize
 				+ " documents processed, " + iUpdates + " updates in " + time + " sec.  (in total: " + iProcessed
 				+ " processed, " + iUpdates + " updates)");
-
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {
@@ -217,7 +216,7 @@ public class JobHandlerRenameUser implements JobHandler {
 		if (entity.getItemValueBoolean("$immutable")) {
 			return false;
 		}
-		
+
 		// Verify Fields
 		if (updateList(entity.getItemValue("$ReadAccess"), from, to, replace))
 			bUpdate = true;
@@ -228,12 +227,13 @@ public class JobHandlerRenameUser implements JobHandler {
 		if (updateList(entity.getItemValue("namOwner"), from, to, replace))
 			bUpdate = true;
 
-		// !! We do not replace the creator!! - we only allow additions here!
-		if (updateList(entity.getItemValue("$Creator"), from, to, false))
-			bUpdate = true;
-		if (updateList(entity.getItemValue("namCreator"), from, to, false))
-			bUpdate = true;
-
+		// !! We do not replace the creator!! - see issue #350
+		/*
+		 * if (updateList(entity.getItemValue("$Creator"), from, to, false)) bUpdate =
+		 * true;
+		 */
+		
+		
 		if (bUpdate) {
 			// create log entry....
 			String summary = "Rename: " + from + " -> " + to + " (replace=" + replace + ")";
