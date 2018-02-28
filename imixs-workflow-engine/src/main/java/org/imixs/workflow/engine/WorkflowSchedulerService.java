@@ -847,6 +847,11 @@ public class WorkflowSchedulerService {
 
 		logger.fine("[WorkflowSchedulerService] " + worklist.size() + " workitems found");
 		for (ItemCollection workitem : worklist) {
+			
+			// skip $immutable Workitems
+			if (workitem.getItemValueBoolean("$immutable")) {
+				continue;
+			}
 			// verify due date
 			if (workItemInDue(workitem, activityEntity)) {
 				String sID = workitem.getItemValueString(WorkflowKernel.UNIQUEID);
