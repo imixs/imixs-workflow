@@ -445,7 +445,7 @@ public class WorkflowSchedulerService {
 				logger.finest(suniqueid + ": CompareType = field: '" + sNameOfField + "'");
 
 				if (!doc.hasItem(sNameOfField)) {
-					logger.finest("[WorkflowSchedulerService] " + suniqueid + ": CompareType =" + sNameOfField
+					logger.finest(suniqueid + ": CompareType =" + sNameOfField
 							+ " no value found!");
 					return false;
 				}
@@ -845,13 +845,20 @@ public class WorkflowSchedulerService {
 
 		Collection<ItemCollection> worklist = documentService.find(searchTerm, 1000, 0);
 
-		logger.fine("[WorkflowSchedulerService] " + worklist.size() + " workitems found");
+		logger.fine(worklist.size() + " workitems found");
 		for (ItemCollection workitem : worklist) {
+			
+			String type=workitem.getType();
+			// skip deleted....
+			if (type.endsWith("deleted")) {
+				continue;
+			}			
 			
 			// skip $immutable Workitems
 			if (workitem.getItemValueBoolean("$immutable")) {
 				continue;
-			}
+			}						
+			
 			// verify due date
 			if (workItemInDue(workitem, activityEntity)) {
 				String sID = workitem.getItemValueString(WorkflowKernel.UNIQUEID);
