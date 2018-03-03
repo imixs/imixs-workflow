@@ -91,7 +91,7 @@ public class WorkflowRestService {
 	private WorkflowService workflowService;
 
 	@javax.ws.rs.core.Context
-	private static HttpServletRequest servletRequest;
+	private HttpServletRequest servletRequest;
 
 	private static Logger logger = Logger.getLogger(WorkflowRestService.class.getName());
 

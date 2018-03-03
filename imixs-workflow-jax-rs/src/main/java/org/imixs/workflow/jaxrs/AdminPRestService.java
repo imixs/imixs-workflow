@@ -75,7 +75,7 @@ public class AdminPRestService {
 	private AdminPService adminPService;
 
 	@javax.ws.rs.core.Context
-	private static HttpServletRequest servletRequest;
+	private HttpServletRequest servletRequest;
 
 	private static Logger logger = Logger.getLogger(AdminPRestService.class.getName());
 

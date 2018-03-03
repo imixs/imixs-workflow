@@ -86,7 +86,7 @@ public class DocumentRestService {
 	private LuceneUpdateService lucenUpdateService;
 
 	@javax.ws.rs.core.Context
-	private static HttpServletRequest servletRequest;
+	private HttpServletRequest servletRequest;
 
 	private static Logger logger = Logger.getLogger(DocumentRestService.class.getName());
 

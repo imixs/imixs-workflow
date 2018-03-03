@@ -94,7 +94,7 @@ public class ModelRestService {
 	ModelService modelService;
 	
 	@javax.ws.rs.core.Context
-	private static HttpServletRequest servletRequest;
+	private HttpServletRequest servletRequest;
 
 
 	@GET
