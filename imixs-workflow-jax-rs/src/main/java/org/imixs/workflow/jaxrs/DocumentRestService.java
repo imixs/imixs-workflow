@@ -58,6 +58,7 @@ import javax.ws.rs.core.StreamingOutput;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.lucene.LuceneSearchService;
 import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
@@ -88,6 +89,23 @@ public class DocumentRestService {
 	private static HttpServletRequest servletRequest;
 
 	private static Logger logger = Logger.getLogger(DocumentRestService.class.getName());
+
+	@GET
+	@Produces(MediaType.APPLICATION_XHTML_XML)
+	@Path("/")
+	public StreamingOutput getRoot() {
+
+		return new StreamingOutput() {
+			public void write(OutputStream out) throws IOException, WebApplicationException {
+
+				out.write("<div class=\"root\">".getBytes());
+				out.write("<a href=\"/{uniqueid}\" type=\"application/xml\" rel=\"{uniqueid}\"/>".getBytes());
+
+				out.write("</div>".getBytes());
+			}
+		};
+
+	}
 
 	@GET
 	@Produces("text/html")
@@ -176,6 +194,35 @@ public class DocumentRestService {
 	}
 
 	/**
+	 * Returns a resultset for a JPQL statement
+	 * 
+	 * @param query
+	 * @param pageSize
+	 * @param pageIndex
+	 * @param items
+	 * @return
+	 */
+	@GET
+	@Path("/jpql/{query}")
+	public DocumentCollection findDocumentsByJPQL(@PathParam("query") String query,
+			@DefaultValue("" + LuceneSearchService.DEFAULT_PAGE_SIZE) @QueryParam("pageSize") int pageSize,
+			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("items") String items) {
+		Collection<ItemCollection> col = null;
+		try {
+			// decode query...
+			String decodedQuery = URLDecoder.decode(query, "UTF-8");
+			// compute first result....
+			int firstResult = pageIndex * pageSize;
+
+			col = documentService.getDocumentsByQuery(decodedQuery, firstResult, pageSize);
+			return XMLItemCollectionAdapter.putCollection(col, getItemList(items));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new DocumentCollection();
+	}
+
+	/**
 	 * Returns a total hits for a lucene Search Query
 	 * 
 	 * @param query
@@ -243,6 +290,7 @@ public class DocumentRestService {
 	 * @return
 	 */
 	@POST
+	@PUT
 	@Path("/")
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })

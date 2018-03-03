@@ -1,32 +1,71 @@
 # The Document Service
-The resource _/documents_ provides methods to read, create and modify documents through the Imixs-Rest API.
+The resource _/documents_ provides methods to read, create and modify documents.
  
+Imixs-Workflow controls the access for each document by individual access list. The result of a GET request will return only documents which are not read protected or the current user has sufficient read access. 
+A POST/PUT request will be rejected if the current user has insufficient write access.
+See the section [ACL](../engine/acl.html) for details.  
  
 ## GET Document
-The GET method is used to read a document resource:
+The GET method can be used to read a single document resource by its UniqueID:
 
 
 | URI                     | Method | Description                                                        | 
-|-------------------------|--------|------------------------------------------------------------|
-| /{uniqueid}             | GET    | returns a single document defined by $uniqueid                     |
+|-------------------------|--------|--------------------------------------------------------------------|
+| /{uniqueid}             | GET    | returns a single document resource defined by its $uniqueid        |
 
-## GET Documents by a Search Phrase 
-The GET method is used to read and search for a document resource or a set of documents:
+**Example:**
+
+	/rest-service/documents/ed8ad2c7-f460-113d-a9b5-bb71bf61cf09
+
+## GET Document Collection
+The sub-resource _/search/_ can be used to search for a set of documents using the [search index](../engine/luceneservice.html):
+
+
+| URI                     | Method | Description                                                        | 
+|-------------------------|--------|--------------------------------------------------------------------|
+| /search/{query}         | GET    | Returns a result set of documents by a lucene search query         |
+
+
+**Example:**
+
+	/rest-service/documents/search/type:"workitem"
+
+
 
 ### Resource Options
 With the following optional URI parameters the GET request can be filtered and sorted:
 
 | option      | description                       | example             		|
 |-------------|---------------- ------------------|-----------------------------|
-| pagesize    | number of documents returned      | ..?pagesize=10           	|
-| pageindex   | page index to start               | ..?pageindex=5&pagesize=10  |
+| pageSize    | number of documents returned      | ..?pagesize=10           	|
+| pageIndex   | page index to start               | ..?pageindex=5&pagesize=10  |
 | sortBy	  | sort item 					      | ..&sortBy=txtworkflowstatus |
 | sortReverse | sort direction (ascending/descending)   | ..&sourtReverse=true		|
  
+ 
+**Example:**
+
+	/rest-service/documents/search/type:"workitem"?pageSize=10&pageIndex=2
+ 
 See details about the search in the section [Search Index](../engine/luceneservice.html).
 
-## GET Documents by JPQL
-Optional the  resource _/documents_ provides the sub-resource _/jpql_ to select a set of documents  selected by a JPQL statement:
+
+
+### Count documents
+
+With the _sub-resouces_ '/count/' and '/countpages/' the result size can be requested:
+
+| URI                     | Method | Description                                                        | 
+|-------------------------|--------|--------------------------------------------------------------------|
+| /count/{query}    | GET    | the total hits of lucene search query                        		    |
+| /countpages/{query}?pagesize= | GET    | the total pages of lucene search query for a given page size |
+
+
+
+
+
+### GET Documents by Java Persistence Query Language
+Optional the  resource _/documents_ provides the sub-resource _/jpql_ to select a set of documents using the Java Persistence Query Language (JPQL). JPQL can be used to select documents independent from the existence of the Lucene search index.
 
 
 | URI                     | Method | Description                                                | 
@@ -34,28 +73,25 @@ Optional the  resource _/documents_ provides the sub-resource _/jpql_ to select 
 | /jpql/{query}           | GET    | Returns a result set of documents by a JQPL statement      |
 
 
-### Resource Options
-With the following optional URI parameters a sub result can be selected:
 
-| option      | description                             | example               |
-|-------------|---------------- ------------------------|-----------------------|
-| firstResult | 1st element of the query to be returned | ..?firstResult=10     |
-| maxResult   | maximum number of documents returned    | ..?maxResult=5  		|
- 
+Example:
+
+	/rest-service/documents/jpql/SELECT document FROM Document AS document WHERE document.type='workitem'
  
 See the [Document Service](../engine/documentservice.html) for details.
 
 
 
 
-## POST/DELETE a Document
-The methods PUT, POST and DELETE allow to create, modify and delete a document:
+## POST/PUT/DELETE a Document
+The methods POST, PUT and DELETE allow to create, modify and delete a document:
 
 
-| URI          | Method      | Description                               | 
-|--------------|-------------|------------|
-| /            | POST, PUT   | posts a document to be stored by the  DocumentService. The post data can be x-www-form-urlencoded or in xml format   |
-| /{uniqueid}  | POST, DELETE | updates ore deletes a document  |
+| URI          | Method | Description                              | 
+|--------------|--------|------------|-----------------------------|
+| /            | POST   | posts a new document to be stored by the  DocumentService. The post data can be x-www-form-urlencoded or in xml format   |
+| /{uniqueid}  | PUT	| updates  a document. The post data can be x-www-form-urlencoded or in xml format  					|
+| /{uniqueid}  | DELETE | deletes a document  						|
 
 
 
@@ -72,9 +108,5 @@ The Document Rest Service provides resource URIs for administrative purpose. To 
 
 
 
-## The Access Control 
-
-
-Imixs-Workflow controls the access for each document by individual access lists see the section [ACL](../engine/acl.html). The result of a GET request will return only documents which are not read protected or the current user has sufficient read access. 
      
    

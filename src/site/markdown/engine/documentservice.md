@@ -54,7 +54,7 @@ A document can be marked as immutable with the flag
 
 In this case the document will be protected from further changes. The flag can not be removed once the document was created or updated with this flag. Though deleting a document with the immutable flag is allowed. 
 
-## Query Documents
+## Search Documents
 
 The _DocumentService_ provides a [Lucene Index](https://lucene.apache.org/) to query documents by an individual search query. A document is automatically added into the index when the document is saved. 
 The find() method of the _DocumentService_ can be used to query documents by a Lucene search term. 
@@ -103,6 +103,25 @@ The method *countPages(String,int)* can be used to compute the total pages of a 
 ### Ignore Index
 The DocumentService adds a document automatically into the Lucene search index. This default behavior can be deactivated on document level. To skip a document from indexing the item '$noindex' can be set to 'true'. In this case the document will not be added/updated in the lucene index. If the document is already indexed it will be removed from the index. 
  
+ 
+ 
+ 
+ 
+ 
+## Query Documents 
+ 
+All documents are managed by the Java Persistece API (JPA). The Java Persistence Query Language (JPQL) can be used to select documents by the Document entity schema independent from the existence of the Lucene search index. The following example selects all documents from the type='workitem': 
+
+	SELECT document FROM Document AS document 
+	WHERE document.type='workitem' 
+ 
+ JPQL can be used to sort documents by one of the attributes 'id', 'type', 'modified' or 'created'. These are the attributtes of the Document Entity Bean. The following example sorts the result by the creation date:
+ 
+	SELECT document FROM Document AS document 
+	WHERE document.type='workitem' 
+	ORDER BY document.created DESC
+
+
 ## The Access Control List of a Document
 Additional the _DocumentService_ allows to restrict the read- and write access for a document by providing a [ACL](.acl.html). The items '$readaccess' and '$writeaccess' can be added into a document to restrict the access. The items can provide a list of UserIds or Roles. 
 
