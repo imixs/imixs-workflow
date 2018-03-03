@@ -566,6 +566,7 @@ public class WorkflowRestService {
 	}
 
 	@POST
+	@PUT
 	@Path("/workitem/{uniqueid}")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
 	public Response postXMLWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, XMLItemCollection xmlworkitem) {
@@ -639,6 +640,7 @@ public class WorkflowRestService {
 	 * @throws Exception
 	 */
 	@POST
+	@PUT
 	@Path("/workitem")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response postJSONWorkitem(InputStream requestBodyStream, @QueryParam("error") String error,
@@ -705,7 +707,7 @@ public class WorkflowRestService {
 	}
 
 	@POST
-	// @Path("/workitem.json/{uniqueid}")
+	@PUT
 	@Path("/workitem/{uniqueid}")
 	@Consumes({ MediaType.APPLICATION_JSON })
 	public Response postJSONWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, InputStream requestBodyStream,
