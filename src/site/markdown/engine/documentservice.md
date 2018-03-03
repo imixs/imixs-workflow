@@ -37,6 +37,21 @@ The next example shows how to use the $uniqueid of a stored ItemCollection to lo
  
 __Note:__ The method load() checks if the CallerPrincipal has read access to a document. If not, the method returns null. The method doesn't throw an AccessDeniedException if the user is not allowed to read the document. This is to prevent an aggressor with informations about the existence of that specific document.
 
+### The Document Type
+A document is categorized by the item 'type'. The type attribute can be used to group document or select documents by its type.
+
+
+	  ItemCollection myDocument=new ItemCollection;
+	  myDocument.replaceItemValue("type","product");
+	  ....
+	  // save ItemCollection
+	  myDocument=documentService.save(myDocument);
+	  
+	  // select documents by type...
+	  List<ItemCollection> products=documentService.getDocumentsByType("product");
+
+
+
 ### Creation and Modified Date 
 The _DocumentService_ also creates TimeStamps to mark the creation and last modified date of a document. These properties are also part of the document returned by the save method. The items are named "$created" and "$modified".
  

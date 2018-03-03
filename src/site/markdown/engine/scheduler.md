@@ -1,24 +1,34 @@
-#The Workflow Scheduler
-The Imixs WorkflowScheduler provides a JEE TimerService, which can schedule  workitems based on scheduled Workflow Activities.  A scheduled Workflow Activity can be defined using the [Imixs-BPM Modeler](../modelling/index.html) in the property tab 'Schedule'. If a workitem is in a stage with scheduled activities, the WorkflowScheduler will process  this workitem automatically in a defined interval. This is useful for automatic  workflow tasks like reminder or escalation tasks.
+# The Workflow Scheduler
+The Imixs WorkflowScheduler provides a TimerService to schedule  workitems based on scheduled Workflow Events.  A scheduled Workflow Event can be defined using the [Imixs-BPM Modeler](../modelling/index.html) by the property tab 'Timer'. If a workitem is in a status where scheduled events are defined, the WorkflowScheduler will process  this workitem automatically based on the model definition.  The Workflow Scheduler can be used to automatically process workflow tasks - e.g. a reminder or a escalation task.
  
-##The WorkflowSchedulerService EJB
-The  WorkflowSchedulerService expects the scheduling configuration in a entity with the name 'org.imixs.workflow.scheduler' from  type 'configuration'. The configuration entity is used to start the timer service and confgure the intervall the timer should schedule the workflow activities. The WorkflowSchedulerService implements the following methods:
+<center><img src="../images/modelling/bpmn_screen_35.png" style="max-width: 750px;" /></center>
  
-	public ItemCollection loadConfiguration() ;
-	
-	public ItemCollection saveConfiguration(ItemCollection configItemCollection)
-			throws AccessDeniedException;
+ 
+## The Configuration
 
-	public ItemCollection start() throws AccessDeniedException;
-	
-	public ItemCollection stop() throws AccessDeniedException ;
-	
-	public boolean isRunning();
+The  _WorkflowSchedulerService_ expects the scheduling configuration document. The scheduling configuration defines the timer interval to run the workflow scheduler. 
 
-The methods "loadConfiguration()" and "saveConfiguration()" can be used to lookup
-or update the current workflow scheduler configuration entity.  The methods "start()" and "stop()" can be used to start or stop the timer service. The method "isRunning()" returns true if the TimerService was started. If the workflowScheduler was started the timerService can be identified by the $UniqueID of the scheduler configuration entity.
- 
-##The WorkflowScheduler configuration
+A timer configuration can be created with the following item definitions:
+
+	<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	       <item name="type">
+	       		<value xsi:type="xs:string">configuration</value>
+	       	</item> 
+	       <item name="txtname">
+	       		<value xsi:type="xs:string">org.imixs.workflow.scheduler</value>
+	       	</item> 
+	       <item name="txtconfiguration">
+	       		<value xsi:type="xs:string">hour=*</value>
+	       		<value xsi:type="xs:string">minute=30</value>
+	       	</item>
+	       	<item name="_enabled">
+	       		<value xsi:type="xs:boolean">true</value>
+	       	</item>  
+	</document>
+
+
+## Scheduling
+
 The Imixs WorkflowSchedulerService uses a calendar-based syntax for scheduling based on  the EJB 3.1 Timer Service specification. The syntax takes its roots from the Unix cron utility.
 The following attributes can be stored in the txtConfiguration property of the workflowScheulderSercice  configuration:
   
@@ -90,8 +100,38 @@ The configuration entity for the WorkflowSchedulerService holds the following ad
 <strong>Note:</strong> The properties "statusmessage", "schedule", "nextTimeout" and "timeRemaining" are read only and will be updated computed if the method findConfiguration() was called.
  
   
+## Ignored Workitems
+The _WorkflowSchedulerService_ processes all kinds of workitems which are assigned to a valid workflow model definition with scheduled events. 
+A workitem is ignored by the _WorkflowSchedulerService_  only in case the workitem type ends with the sufix 'deleted' 
 
-## Security & Deployment
+	type=workitemdeleted
+
+or the workitem is marked as immutable 
+
+	$immutable=true
+
+See the [DocumentService](./documentservice.html) for details. 
+  
+
+## The WorkflowSchedulerService EJB
+The WorkflowSchedulerService EJB implements the following methods:
+ 
+	public ItemCollection loadConfiguration() ;
+	
+	public ItemCollection saveConfiguration(ItemCollection configItemCollection)
+			throws AccessDeniedException;
+
+	public ItemCollection start() throws AccessDeniedException;
+	
+	public ItemCollection stop() throws AccessDeniedException ;
+	
+	public boolean isRunning();
+
+The methods "_loadConfiguration()_" and "_saveConfiguration()_" can be used to lookup
+or update the current workflow scheduler configuration entity.  The methods "_start()_" and "_stop()_" can be used to start or stop the timer service. The method "_isRunning()_" returns true if the TimerService was started. If the workflowScheduler was started the timerService can be identified by the $UniqueID of the scheduler configuration entity.
+
+
+### Security & Deployment
 The ScheduledWorkflowService EJB is embedded into the security concepts of the Imixs  Workflow Engine. As the ScheduledWorkflowService needs full access rights to all workitems 
 to perform a scheduled activity the EJB is annotated with the @RunAs declaration:
 
