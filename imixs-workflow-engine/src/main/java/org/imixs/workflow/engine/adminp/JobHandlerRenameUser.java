@@ -131,8 +131,9 @@ public class JobHandlerRenameUser implements JobHandler {
 		}
 		sQuery = sQuery.substring(0, sQuery.length() - 4);
 		sQuery += ")";
+		// !! We do ignore the creator!! - see issue #350
 		sQuery += " AND ($writeaccess:\"" + fromUserID + "\" OR $readaccess:\"" + fromUserID + "\" OR namowner:\""
-				+ fromUserID + "\" OR $creator:\"" + fromUserID + "\" OR namcreator:\"" + fromUserID + "\" )";
+				+ fromUserID + "\")";
 
 		if (datFilterFrom != null && datFilterTo != null) {
 			SimpleDateFormat luceneFormat = new SimpleDateFormat("yyyyMMdd");
