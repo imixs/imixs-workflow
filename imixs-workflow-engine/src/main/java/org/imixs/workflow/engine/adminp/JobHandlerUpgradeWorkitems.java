@@ -101,7 +101,7 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 		adminp = ctx.getBusinessObject(JobHandlerUpgradeWorkitems.class).saveJobEntity(adminp);
 
 		String query = buildQuery(adminp);
-		logger.fine("JQPL query: " + query);
+		logger.finest("......JQPL query: " + query);
 		adminp.replaceItemValue("txtQuery", query);
 
 		List<ItemCollection> workitemList = documentService.getDocumentsByQuery(query, iIndex, iBlockSize);
@@ -158,7 +158,7 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public ItemCollection saveJobEntity(ItemCollection adminp) throws AccessDeniedException {
-		logger.fine("saveJobEntity " + adminp.getUniqueID());
+		logger.finest("......saveJobEntity " + adminp.getUniqueID());
 		adminp = documentService.save(adminp);
 		return adminp;
 

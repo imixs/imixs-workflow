@@ -64,7 +64,7 @@ public abstract class AbstractPlugin implements Plugin {
 		ctx = actx;
 		// get WorkflowService by check for an instance of WorkflowService
 		if (actx instanceof WorkflowService) {
-			logger.finest("adapt workflowService EJB");
+			logger.finest("......adapt workflowService EJB");
 			// yes we are running in a WorkflowService EJB
 			workflowService = (WorkflowService) actx;
 		}

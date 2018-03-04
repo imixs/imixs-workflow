@@ -51,7 +51,7 @@ public class JSONParser {
 
 		// default encoding?
 		if (encoding==null || encoding.isEmpty()) {
-			logger.fine("parseWorkitem - switch to default encoding 'UTF-8'");
+			logger.finest("......parseWorkitem - switch to default encoding 'UTF-8'");
 			encoding="UTF-8";
 		}
 		
@@ -72,13 +72,13 @@ public class JSONParser {
 			// first we concat all lines
 			while ((inputLine = in.readLine()) != null) {
 				stringBuffer.append(inputLine);
-				logger.finest("parseWorkitem - read line:" + inputLine + "");
+				logger.finest("......parseWorkitem - read line:" + inputLine + "");
 			}
 			content = stringBuffer.toString();
 
 			// find start ...."item":[...
 			content = content.substring(content.indexOf('[') + 0);
-			logger.finest("parseWorkitem - start parsing...");
+			logger.finest("......parseWorkitem - start parsing...");
 			while (content != null) {
 
 				// find name => "name" : "$isauthor" ,
@@ -203,36 +203,36 @@ public class JSONParser {
 		// convert value to Object Type
 		if ("xs:boolean".equalsIgnoreCase(type)) {
 			value = Boolean.getBoolean(stringValue);
-			logger.fine("[JSONParser] storeValue - datatype=xs:boolean");
+			logger.finest("......storeValue - datatype=xs:boolean");
 		}
 		if ("xs:integer".equalsIgnoreCase(type)) {
 			value = Integer.getInteger(stringValue);
-			logger.fine("[JSONParser] storeValue - datatype=xs:integer");
+			logger.finest("......storeValue - datatype=xs:integer");
 		}
 		if ("xs:long".equalsIgnoreCase(type)) {
 			value = Long.getLong(stringValue);
-			logger.fine("[JSONParser] storeValue - datatype=xs:long");
+			logger.finest("......storeValue - datatype=xs:long");
 		}
 		if ("xs:float".equalsIgnoreCase(type)) {
 			value = new Float(stringValue);
-			logger.fine("[JSONParser] storeValue - datatype=xs:float");
+			logger.finest("......storeValue - datatype=xs:float");
 		}
 		if ("xs:double".equalsIgnoreCase(type)) {
 			value = new Double(stringValue);
-			logger.fine("[JSONParser] storeValue - datatype=xs:double");
+			logger.finest("......storeValue - datatype=xs:double");
 		}
 
 		// store value
 		if (!workitem.hasItem(name)) {
 			// frist value
 			workitem.replaceItemValue(name, value);
-			logger.fine("[JSONParser] storeValue: '" + name + "' = '" + value + "'");
+			logger.finest("......storeValue: '" + name + "' = '" + value + "'");
 		} else {
 			// add value
 			List valueList = workitem.getItemValue(name);
 			valueList.add(value);
 			workitem.replaceItemValue(name, valueList);
-			logger.fine("[JSONParser] store multivalue: '" + name + "' = '" + value + "'");
+			logger.finest("......store multivalue: '" + name + "' = '" + value + "'");
 		}
 
 	}

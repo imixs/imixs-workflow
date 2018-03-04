@@ -110,7 +110,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		adminp = ctx.getBusinessObject(JobHandlerRebuildIndex.class).saveJobEntity(adminp);
 
 		String query = buildQuery(adminp);
-		logger.fine("JQPL query: " + query);
+		logger.finest("......JQPL query: " + query);
 		adminp.replaceItemValue("txtQuery", query);
 		// query documents by direct access to the EntityManager - skip read
 		// access verification here because we are still running with
@@ -169,7 +169,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public ItemCollection saveJobEntity(ItemCollection adminp) throws AccessDeniedException {
-		logger.fine("saveJobEntity " + adminp.getUniqueID());
+		logger.finest("......saveJobEntity " + adminp.getUniqueID());
 		adminp = documentService.save(adminp);
 		return adminp;
 

@@ -141,10 +141,10 @@ public class WorkflowSchedulerService {
 		}
 
 		if (col.size() == 1) {
-			logger.fine("loading existing timer configuration...");
+			logger.finest("......loading existing timer configuration...");
 			configItemCollection = col.iterator().next();
 		} else {
-			logger.fine("creating new timer configuration...");
+			logger.finest("......creating new timer configuration...");
 			// create default values
 			configItemCollection = new ItemCollection();
 			configItemCollection.replaceItemValue("type", TYPE_CONFIGURATION);
@@ -371,7 +371,7 @@ public class WorkflowSchedulerService {
 			if ("4".equals(sDelayUnit))
 				sDelayUnit = "workdays";
 
-			logger.finest(suniqueid + " offset =" + iOffset + " " + sDelayUnit);
+			logger.finest("......"+suniqueid + " offset =" + iOffset + " " + sDelayUnit);
 
 			iCompareType = docActivity.getItemValueInteger("keyScheduledBaseObject");
 
@@ -381,7 +381,7 @@ public class WorkflowSchedulerService {
 			switch (iCompareType) {
 			// last process -
 			case 1: {
-				logger.finest(suniqueid + ": CompareType = last event");
+				logger.finest("......"+suniqueid + ": CompareType = last event");
 
 				// support deprecated fields $lastProcessingDate and timWorkflowLastAccess
 				if (!doc.hasItem("$lastEventDate")) {
@@ -399,7 +399,7 @@ public class WorkflowSchedulerService {
 				}
 
 				// compute scheduled time
-				logger.finest(suniqueid + ": $lastEventDate=" + dateTimeCompare);
+				logger.finest("......"+suniqueid + ": $lastEventDate=" + dateTimeCompare);
 				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
 				if (dateTimeCompare != null)
 					return dateTimeCompare.before(dateTimeNow);
@@ -409,11 +409,11 @@ public class WorkflowSchedulerService {
 
 			// last modification
 			case 2: {
-				logger.finest(suniqueid + ": CompareType = last modify");
+				logger.finest("......"+suniqueid + ": CompareType = last modify");
 
 				dateTimeCompare = doc.getItemValueDate("$modified");
 
-				logger.finest(suniqueid + ": modified=" + dateTimeCompare);
+				logger.finest("......"+suniqueid + ": modified=" + dateTimeCompare);
 
 				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
 
@@ -425,10 +425,10 @@ public class WorkflowSchedulerService {
 
 			// creation
 			case 3: {
-				logger.finest(suniqueid + ": CompareType = creation");
+				logger.finest("......"+suniqueid + ": CompareType = creation");
 
 				dateTimeCompare = doc.getItemValueDate("$created");
-				logger.fine(suniqueid + ": doc.getCreated() =" + dateTimeCompare);
+				logger.finest("......"+suniqueid + ": doc.getCreated() =" + dateTimeCompare);
 
 				// Nein -> Creation date ist masstab
 				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
@@ -442,24 +442,24 @@ public class WorkflowSchedulerService {
 			// field
 			case 4: {
 				String sNameOfField = docActivity.getItemValueString("keyTimeCompareField");
-				logger.finest(suniqueid + ": CompareType = field: '" + sNameOfField + "'");
+				logger.finest("......"+suniqueid + ": CompareType = field: '" + sNameOfField + "'");
 
 				if (!doc.hasItem(sNameOfField)) {
-					logger.finest(suniqueid + ": CompareType =" + sNameOfField
+					logger.finest("......"+suniqueid + ": CompareType =" + sNameOfField
 							+ " no value found!");
 					return false;
 				}
 
 				dateTimeCompare = doc.getItemValueDate(sNameOfField);
 
-				logger.finest(suniqueid + ": " + sNameOfField + "=" + dateTimeCompare);
+				logger.finest("......"+suniqueid + ": " + sNameOfField + "=" + dateTimeCompare);
 
 				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
 				if (dateTimeCompare != null) {
-					logger.finest(suniqueid + ": Compare " + dateTimeCompare + " <-> " + dateTimeNow);
+					logger.finest("......"+suniqueid + ": Compare " + dateTimeCompare + " <-> " + dateTimeNow);
 
 					if (dateTimeCompare.before(dateTimeNow)) {
-						logger.finest(suniqueid + " isInDue!");
+						logger.finest("......"+suniqueid + " isInDue!");
 					}
 					return dateTimeCompare.before(dateTimeNow);
 				} else
@@ -544,7 +544,7 @@ public class WorkflowSchedulerService {
 			}
 		}
 		if (resultDate != null) {
-			logger.finest("addWorkDays (" + baseDate.getTime() + ") + " + days + " = (" + resultDate.getTime() + ")");
+			logger.finest("......addWorkDays (" + baseDate.getTime() + ") + " + days + " = (" + resultDate.getTime() + ")");
 		}
 		return resultDate;
 	}
@@ -775,12 +775,12 @@ public class WorkflowSchedulerService {
 		for (ItemCollection aprocessentity : colProcessList) {
 			// select all activities for this process entity...
 			int processid = aprocessentity.getItemValueInteger("numprocessid");
-			logger.fine("Analyse processentity '" + processid + "'");
+			logger.finest("......analyse processentity '" + processid + "'");
 			Collection<ItemCollection> aActivityList = modelService.getModel(aModelVersion)
 					.findAllEventsByTask(processid);
 
 			for (ItemCollection aactivityEntity : aActivityList) {
-				logger.fine("Analyse acitity '" + aactivityEntity.getItemValueString("txtname") + "'");
+				logger.finest("......analyse acitity '" + aactivityEntity.getItemValueString("txtname") + "'");
 
 				// check if activity is scheduled
 				if ("1".equals(aactivityEntity.getItemValueString("keyScheduledActivity")))
@@ -841,11 +841,11 @@ public class WorkflowSchedulerService {
 		String searchTerm = "($processid:\"" + iProcessID + "\" AND $modelversion:\""
 				+ sModelVersion + "\")";
 
-		logger.fine("select: " + searchTerm);
+		logger.finest("......select: " + searchTerm);
 
 		Collection<ItemCollection> worklist = documentService.find(searchTerm, 1000, 0);
 
-		logger.fine(worklist.size() + " workitems found");
+		logger.finest("......"+worklist.size() + " workitems found");
 		for (ItemCollection workitem : worklist) {
 			
 			String type=workitem.getType();
@@ -862,10 +862,10 @@ public class WorkflowSchedulerService {
 			// verify due date
 			if (workItemInDue(workitem, activityEntity)) {
 				String sID = workitem.getItemValueString(WorkflowKernel.UNIQUEID);
-				logger.fine("document " + sID + "is in due");
+				logger.finest("......document " + sID + "is in due");
 				workitem.replaceItemValue("$activityid", iActivityID);
 				try {
-					logger.finest("getBusinessObject.....");
+					logger.finest("......getBusinessObject.....");
 					// call from new instance because of transaction new...
 					// see: http://blog.imixs.org/?p=155
 					// see: https://www.java.net/node/705304

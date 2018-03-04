@@ -106,7 +106,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			// 1.) test for items with name subprocess_create and create the
 			// defined suprocesses
 			if (evalItemCollection.hasItem(SUBPROCESS_CREATE)) {
-				logger.fine("processing " + SUBPROCESS_CREATE);
+				logger.finest("......processing " + SUBPROCESS_CREATE);
 				// extract the create subprocess definitions...
 				List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_CREATE);
 				createSubprocesses(processValueList, adocumentContext);
@@ -115,7 +115,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			// 2.) test for items with name subprocess_update and create the
 			// defined suprocesses
 			if (evalItemCollection.hasItem(SUBPROCESS_UPDATE)) {
-				logger.fine("processing " + SUBPROCESS_UPDATE);
+				logger.finest("......sprocessing " + SUBPROCESS_UPDATE);
 				// extract the create subprocess definitions...
 				List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_UPDATE);
 				updateSubprocesses(processValueList, adocumentContext);
@@ -124,7 +124,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			// 3.) test for items with name origin_update and update the
 			// origin workitem
 			if (evalItemCollection.hasItem(ORIGIN_UPDATE)) {
-				logger.fine("processing " + ORIGIN_UPDATE);
+				logger.finest("......processing " + ORIGIN_UPDATE);
 				// extract the create subprocess definitions...
 				String processValue = evalItemCollection.getItemValueString(ORIGIN_UPDATE);
 				updateOrigin(processValue, adocumentContext);
@@ -211,7 +211,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				// process the new subprocess...
 				workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
 
-				logger.fine("[SplitAndJoinPlugin] successful created new subprocess.");
+				logger.finest("...... successful created new subprocess.");
 				// finally add the new workitemRef into the origin
 				// documentContext
 				addWorkitemRef(workitemSubProcess.getUniqueID(), originWorkitem);
@@ -292,7 +292,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 					if (Pattern.compile(model_pattern).matcher(subModelVersion).find()
 							&& Pattern.compile(process_pattern).matcher(subProcessID).find()) {
 
-						logger.fine("[SplitAndJoinPlugin] subprocess matches criteria.");
+						logger.finest("...... subprocess matches criteria.");
 						// now clone the field list...
 						copyItemList(processData.getItemValueString("items"), originWorkitem, workitemSubProcess);
 
@@ -311,7 +311,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 							}
 						}
 
-						logger.fine("[SplitAndJoinPlugin] successful updated subprocess.");
+						logger.finest("...... successful updated subprocess.");
 					}
 					
 					
@@ -385,7 +385,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				if (Pattern.compile(model_pattern).matcher(subModelVersion).find()
 						&& Pattern.compile(process_pattern).matcher(subProcessID).find()) {
 
-					logger.fine("[SplitAndJoinPlugin] origin matches criteria.");
+					logger.finest("...... origin matches criteria.");
 
 					// process the origin workitem
 					originWorkitem.replaceItemValue(WorkflowKernel.ACTIVITYID,
@@ -406,7 +406,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 						}
 						
 					}
-					logger.fine("[SplitAndJoinPlugin] successful processed originprocess.");
+					logger.finest("...... successful processed originprocess.");
 
 				}
 

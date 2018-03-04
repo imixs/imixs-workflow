@@ -167,7 +167,7 @@ public class JobHandlerMigration3X implements JobHandler {
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public ItemCollection saveJobEntity(ItemCollection adminp) throws AccessDeniedException {
-		logger.fine("saveJobEntity " + adminp.getUniqueID());
+		logger.finest("......saveJobEntity " + adminp.getUniqueID());
 		adminp = documentService.save(adminp);
 		return adminp;
 

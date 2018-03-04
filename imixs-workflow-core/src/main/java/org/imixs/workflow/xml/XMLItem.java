@@ -148,7 +148,7 @@ public class XMLItem implements java.io.Serializable {
 		} else {
 
 			// now test if the values are from type Map?
-			logger.fine("[XMLItem] test values for map intefaces");
+			logger.finest("......test values for map intefaces");
 			if (isListOfMap(values)) {
 				// map - convert to XMLItem
 				List<XMLItem[]> listOfXMLItems = new ArrayList<XMLItem[]>();

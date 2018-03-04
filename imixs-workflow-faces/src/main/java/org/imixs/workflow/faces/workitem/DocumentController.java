@@ -139,7 +139,7 @@ public class DocumentController implements Serializable {
 		ExternalContext externalContext = context.getExternalContext();
 		String sUser = externalContext.getRemoteUser();
 		workitem.replaceItemValue("namCreator", sUser);
-		logger.fine("ItemCollection created");
+		logger.finest("......ItemCollection created");
 	}
 
 	/**
@@ -163,7 +163,7 @@ public class DocumentController implements Serializable {
 	public void save() throws AccessDeniedException {
 		// save workItem ...
 		workitem = getDocumentService().save(workitem);
-		logger.fine("ItemCollection saved");
+		logger.finest("......ItemCollection saved");
 	}
 
 	/**
@@ -198,9 +198,9 @@ public class DocumentController implements Serializable {
 		reset();
 		setWorkitem(getDocumentService().load(uniqueID));
 		if (workitem != null) {
-			logger.fine("workitem '" + uniqueID + "' loaded");
+			logger.finest("......workitem '" + uniqueID + "' loaded");
 		} else {
-			logger.fine("workitem '" + uniqueID + "' not found (null)");
+			logger.finest("......workitem '" + uniqueID + "' not found (null)");
 		}
 	}
 

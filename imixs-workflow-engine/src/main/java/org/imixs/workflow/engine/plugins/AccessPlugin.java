@@ -171,9 +171,9 @@ public class AccessPlugin extends AbstractPlugin {
 		// update accesslist....
 		documentContext.replaceItemValue("$readAccess", vectorAccess);
 		if ((logger.isLoggable(Level.FINE)) && (vectorAccess.size() > 0)) {
-			logger.fine("[AccessPlugin] ReadAccess:");
+			logger.finest("......[AccessPlugin] ReadAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.fine("               '" + (String) vectorAccess.get(j) + "'");
+				logger.finest("               '" + (String) vectorAccess.get(j) + "'");
 		}
 
 		// update WriteAccess
@@ -188,9 +188,9 @@ public class AccessPlugin extends AbstractPlugin {
 		// update accesslist....
 		documentContext.replaceItemValue("$writeAccess", vectorAccess);
 		if ((logger.isLoggable(Level.FINE)) && (vectorAccess.size() > 0)) {
-			logger.fine("[AccessPlugin] WriteAccess:");
+			logger.finest("......[AccessPlugin] WriteAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
-				logger.fine("               '" + (String) vectorAccess.get(j) + "'");
+				logger.finest("               '" + (String) vectorAccess.get(j) + "'");
 		}
 
 	}

@@ -337,7 +337,7 @@ public class XMLItemCollectionAdapter {
 		}
 
 		DocumentCollection ecol = null;
-		logger.fine("readCollection importXmlEntityData - verifing  content....");
+		logger.finest("......readCollection importXmlEntityData - verifing  content....");
 		JAXBContext context = JAXBContext.newInstance(DocumentCollection.class);
 		Unmarshaller m = context.createUnmarshaller();
 
@@ -377,7 +377,7 @@ public class XMLItemCollectionAdapter {
 		}
 
 		XMLItemCollection ecol = null;
-		logger.fine("importXmlEntityData - verifing content....");
+		logger.finest("......importXmlEntityData - verifing content....");
 		JAXBContext context = JAXBContext.newInstance(XMLItemCollection.class);
 		Unmarshaller m = context.createUnmarshaller();
 

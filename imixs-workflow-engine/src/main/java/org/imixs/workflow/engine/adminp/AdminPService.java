@@ -273,7 +273,7 @@ public class AdminPService {
 			}
 		}
 
-		logger.fine("timer call finished successfull after " + ((System.currentTimeMillis()) - lProfiler) + " ms");
+		logger.fine("...timer call finished successfull after " + ((System.currentTimeMillis()) - lProfiler) + " ms");
 
 	}
 
@@ -286,7 +286,7 @@ public class AdminPService {
 	 */
 	private ItemCollection cancelTimer(String id) {
 
-		logger.fine("cancelTimer - id:" + id + " ....");
+		logger.finest("......cancelTimer - id:" + id + " ....");
 		ItemCollection adminp = documentService.load(id);
 		if (adminp == null) {
 			logger.warning("failed to load timer data ID:" + id + " ");

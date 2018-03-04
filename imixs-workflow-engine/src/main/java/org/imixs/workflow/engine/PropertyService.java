@@ -70,7 +70,7 @@ public class PropertyService {
 	 * resets and reload the property file
 	 */
 	public void reset() {
-		logger.fine("reset properties....");
+		logger.finest("......reset properties....");
 
 		properties = null;
 		loadProperties();

@@ -76,7 +76,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 
 		if (isPostFileUploadRequest(httpRequest)) {
 			List<FileData> fileDataList = getFileList(httpRequest);
-			logger.fine("[MultipartRequestFilter] add files...");
+			logger.finest("......add files...");
 			addFiles(httpRequest);
 			// store file content into session
 			setFileList(httpRequest, fileDataList);
@@ -146,7 +146,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	 */
 	private boolean isPostFileUploadRequest(HttpServletRequest httpRequest) {
 		String sContentType = httpRequest.getContentType();
-		logger.fine("[MulitpartRequestFilter]  contentType=" + sContentType);
+		logger.finest("......contentType=" + sContentType);
 
 		return (REQUEST_METHOD_POST.equalsIgnoreCase(httpRequest.getMethod()) && httpRequest.getContentType() != null
 				&& sContentType.toLowerCase().startsWith(CONTENT_TYPE_MULTIPART));
@@ -193,7 +193,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	 * @throws IOException
 	 */
 	private void writeFileContent(ServletResponse response, FileData fileData) throws IOException {
-		logger.fine("[MulitpartRequestFilter] write file content...");
+		logger.finest("......write file content...");
 		ServletOutputStream output = response.getOutputStream();
 		output.write(fileData.getData());
 		// now return json string of uploaded files....
@@ -203,7 +203,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 
 	private void writeJsonContent(HttpServletRequest httpRequest, ServletResponse response, String context_url)
 			throws IOException {
-		logger.fine("[MulitpartRequestFilter] return JSON content...");
+		logger.finest("......return JSON content...");
 		// now return json string of uploaded files....
 		response.setContentType("application/json;charset=UTF-8");
 		PrintWriter out = response.getWriter();
@@ -250,7 +250,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 		}
 		// found?
 		if (pos > -1) {
-			logger.fine("[MultipartRequestWrapper] remove file '" + file + "'");
+			logger.finest("......remove file '" + file + "'");
 			fileDataList.remove(pos);
 
 			// store file content into session
@@ -267,7 +267,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	 * @param httpRequest
 	 */
 	private void addFiles(HttpServletRequest httpRequest) {
-		logger.fine("[MultipartRequestWrapper] Looping parts");
+		logger.finest("......Looping parts");
 
 		try {
 			for (Part p : httpRequest.getParts()) {
@@ -291,13 +291,13 @@ public class AjaxFileUploadServlet extends HttpServlet {
 					String fileNameUTF8 = new String(fileNameISOBytes, "UTF-8");
 					if (fileName.length() != fileNameUTF8.length()) {
 						// convert to utf-8
-						logger.fine("filename seems to be ISO-8859-1 encoded");
+						logger.finest("......filename seems to be ISO-8859-1 encoded");
 						fileName = new String(fileName.getBytes("iso-8859-1"), "utf-8");
 					}
 
 					// extract the file content...
 					FileData fileData = null;
-					logger.fine("Filename : " + fileName + ", contentType " + p.getContentType());
+					logger.finest("......filename : " + fileName + ", contentType " + p.getContentType());
 					fileData = new FileData(fileName, p.getContentType(), b);
 					if (fileData != null) {
 						// remove existing file

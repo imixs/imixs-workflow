@@ -193,7 +193,7 @@ public class XMLParser {
 	 * @throws PluginException
 	 */
 	public static ItemCollection parseItemStructure(String xmlContent) throws PluginException {
-		logger.fine("parseItemStructure...");
+		logger.finest("......parseItemStructure...");
 		ItemCollection result = new ItemCollection();
 		if (xmlContent.length() > 0) {
 			// surround with a root element
@@ -221,7 +221,7 @@ public class XMLParser {
 						String value = innerXml(childNode);
 
 						result.replaceItemValue(name, value);
-						logger.fine("[ResultPlugin] parsing item '" + name + "' value=" + value);
+						logger.finest("......parsing item '" + name + "' value=" + value);
 					}
 				}
 

@@ -79,7 +79,7 @@ public class TextItemValueAdapter {
 		
 
 		List<String> tagList = XMLParser.findTags(text, "itemvalue");
-		logger.finest(tagList.size() + " tags found");
+		logger.finest("......"+tagList.size() + " tags found");
 		// test if a <value> tag exists...
 		for (String tag : tagList) {
 

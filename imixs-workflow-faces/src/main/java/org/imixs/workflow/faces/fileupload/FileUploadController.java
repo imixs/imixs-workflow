@@ -41,7 +41,7 @@ public class FileUploadController implements Serializable {
 	public void updateWorkitem(ItemCollection workitem) {
 		if (workitem == null)
 			return; 
-		logger.fine("[MultiFileController] updateWorkitem '"
+		logger.finest("...... updateWorkitem '"
 				+ workitem.getItemValueString(WorkflowKernel.UNIQUEID));
 		HttpServletRequest httpRequest = (HttpServletRequest) (FacesContext
 				.getCurrentInstance().getExternalContext().getRequest());

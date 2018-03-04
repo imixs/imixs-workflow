@@ -74,7 +74,7 @@ public class IntervalPlugin extends AbstractPlugin {
 		
 		Calendar calNow = Calendar.getInstance();
 
-		logger.fine("[IntervalPlugin] compute next interval dates for workitem "
+		logger.finest("......compute next interval dates for workitem "
 				+ documentContext.getItemValueString(WorkflowKernel.UNIQUEID));
 
 		Set<String> fieldNames = documentContext.getAllItems().keySet();
@@ -96,7 +96,7 @@ public class IntervalPlugin extends AbstractPlugin {
 						Calendar calDate = Calendar.getInstance();
 						calDate.setTime(date);
 						if (calNow.after(calDate)) {
-							logger.fine("[IntervalPlugin] compute next interval for " + sDateField);
+							logger.finest("......compute next interval for " + sDateField);
 
 							// first set day month and year to now
 							calDate.set(Calendar.YEAR, calNow.get(Calendar.YEAR));

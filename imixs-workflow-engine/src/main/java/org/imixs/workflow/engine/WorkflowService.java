@@ -563,7 +563,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	public ItemCollection processWorkItem(ItemCollection workitem)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
-		long l = System.currentTimeMillis();
+		long lStartTime = System.currentTimeMillis();
 
 		if (workitem == null)
 			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
@@ -627,7 +627,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			// aPlugin=null;
 			if (aPlugin != null) {
 				// register injected CDI Plugin
-				logger.fine("register CDI plugin class: " + aPluginClassName + "...");
+				logger.finest("......register CDI plugin class: " + aPluginClassName + "...");
 				workflowkernel.registerPlugin(aPlugin);
 			} else {
 				// register plugin by class name
@@ -669,7 +669,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 		// now process the workitem
 		try {
+			long lKernelTime = System.currentTimeMillis();
 			workitem = workflowkernel.process(workitem);
+			logger.fine("...WorkflowKernel processing time=" + (System.currentTimeMillis() - lKernelTime) + "ms");
 		} catch (PluginException pe) {
 			// if a plugin exception occurs we roll back the transaction.
 			logger.severe("processing workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
@@ -677,8 +679,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			ctx.setRollbackOnly();
 			throw pe;
 		}
-		logger.fine("workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID) + "' processed in "
-				+ (System.currentTimeMillis() - l) + "ms");
 
 		// fire event
 		if (processingEvents != null) {
@@ -694,8 +694,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			documentService.save(splitWorkitemm);
 		}
 
-		return documentService.save(workitem);
+		workitem = documentService.save(workitem);
+		
+		logger.fine("...total processing time="
+				+ (System.currentTimeMillis() - lStartTime) + "ms");
 
+		return workitem;
 	}
 
 	public void removeWorkItem(ItemCollection aworkitem) throws AccessDeniedException {
@@ -993,13 +997,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			return null;
 
 		if (plugins == null || !plugins.iterator().hasNext()) {
-			logger.fine("[WorkflowService] no CDI plugins injected");
+			logger.finest("......no CDI plugins injected");
 			return null;
 		}
 		// iterate over all injected plugins....
 		for (Plugin plugin : this.plugins) {
 			if (plugin.getClass().getName().equals(pluginClassName)) {
-				logger.fine("[WorkflowService] CDI plugin '" + pluginClassName + "' successful injected");
+				logger.finest("......CDI plugin '" + pluginClassName + "' successful injected");
 				return plugin;
 			}
 		}

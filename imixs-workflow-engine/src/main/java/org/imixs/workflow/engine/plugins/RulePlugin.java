@@ -196,7 +196,7 @@ public class RulePlugin extends AbstractPlugin {
 				String itemName = entry.getKey();
 				// skip fieldnames starting with '$'
 				if (!itemName.startsWith("$")) {
-					logger.fine("Update item '" + itemName + "'");
+					logger.finest("......Update item '" + itemName + "'");
 					adocumentContext.replaceItemValue(itemName, entry.getValue());
 				}
 			}
@@ -303,7 +303,7 @@ public class RulePlugin extends AbstractPlugin {
 
 				// compare object arrays with deepEquals....
 				if (!Arrays.deepEquals(newValue.toArray(), value.toArray())) {
-					logger.fine("update event property " + entry.getKey());
+					logger.finest("......update event property " + entry.getKey());
 					event.replaceItemValue(key, newValue);
 				}
 			}

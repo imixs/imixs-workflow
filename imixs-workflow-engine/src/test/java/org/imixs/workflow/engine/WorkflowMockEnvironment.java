@@ -274,12 +274,14 @@ public class WorkflowMockEnvironment {
 	 */
 	public void loadModel() {
 		if (this.modelPath != null) {
+			long lLoadTime = System.currentTimeMillis();
 			InputStream inputStream = WorkflowMockEnvironment.class.getResourceAsStream(this.modelPath);
 			try {
 				logger.info("loading model: " + this.modelPath + "....");
 				model = BPMNParser.parseModel(inputStream, "UTF-8");
 
 				this.modelService.addModel(model);
+				logger.fine("...loadModel processing time=" + (System.currentTimeMillis() - lLoadTime) + "ms");	
 			} catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e) {
 				e.printStackTrace();
 			}

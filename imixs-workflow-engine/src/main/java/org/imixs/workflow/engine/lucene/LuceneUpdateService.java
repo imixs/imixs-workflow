@@ -138,10 +138,10 @@ public class LuceneUpdateService {
 		String sIndexFieldListAnalyse = properties.getProperty("lucence.indexFieldListAnalyze");
 		String sIndexFieldListNoAnalyse = properties.getProperty("lucence.indexFieldListNoAnalyze");
 
-		logger.finest("lucene IndexDir=" + indexDirectoryPath);
-		logger.finest("lucene FulltextFieldList=" + sFulltextFieldList);
-		logger.finest("lucene IndexFieldListAnalyse=" + sIndexFieldListAnalyse);
-		logger.finest("lucene IndexFieldListNoAnalyse=" + sIndexFieldListNoAnalyse);
+		logger.finest("......lucene IndexDir=" + indexDirectoryPath);
+		logger.finest("......lucene FulltextFieldList=" + sFulltextFieldList);
+		logger.finest("......lucene IndexFieldListAnalyse=" + sIndexFieldListAnalyse);
+		logger.finest("......lucene IndexFieldListNoAnalyse=" + sIndexFieldListNoAnalyse);
 
 		// compute search field list
 		searchFieldList = new ArrayList<String>();
@@ -234,7 +234,7 @@ public class LuceneUpdateService {
 				// create term
 				Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
 
-				logger.finest("lucene add/update workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
+				logger.finest("......lucene add/update workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
 						+ "' to index...");
 				awriter.updateDocument(term, createDocument(workitem));
 			}
@@ -244,7 +244,7 @@ public class LuceneUpdateService {
 		} finally {
 			// close writer!
 			if (awriter != null) {
-				logger.finest("lucene close IndexWriter...");
+				logger.finest("......lucene close IndexWriter...");
 				try {
 					awriter.close();
 				} catch (CorruptIndexException e) {
@@ -256,7 +256,7 @@ public class LuceneUpdateService {
 		}
 
 		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("lucene update worklist in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
+			logger.fine("... update worklist in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
 					+ " worktiems total)");
 		}
 	}
@@ -287,7 +287,7 @@ public class LuceneUpdateService {
 		} finally {
 			// close writer!
 			if (awriter != null) {
-				logger.finest("lucene close IndexWriter...");
+				logger.finest("......close IndexWriter...");
 				try {
 					awriter.close();
 				} catch (CorruptIndexException e) {
@@ -298,7 +298,7 @@ public class LuceneUpdateService {
 			}
 		}
 
-		logger.fine("lucene removeDocument in " + (System.currentTimeMillis() - ltime) + " ms");
+		logger.fine("...removed Document in " + (System.currentTimeMillis() - ltime) + " ms");
 
 	}
 
@@ -366,11 +366,11 @@ public class LuceneUpdateService {
 					sValue += o.toString() + ",";
 			}
 			if (sValue != null) {
-				logger.finest("lucene add SearchField: " + aFieldname + "=" + sValue);
+				logger.finest("......lucene add SearchField: " + aFieldname + "=" + sValue);
 				sContent += sValue + ",";
 			}
 		}
-		logger.finest("add lucene field content=" + sContent);
+		logger.finest("......add lucene field content=" + sContent);
 		doc.add(new TextField("content", sContent, Store.NO));
 
 		// add each field from the indexFieldList into the lucene document
@@ -455,7 +455,7 @@ public class LuceneUpdateService {
 				sValue = singleValue.toString();
 			}
 
-			logger.finest("lucene add IndexField (analyse=" + analyzeValue + "): " + itemName + "=" + sValue);
+			logger.finest("......lucene add IndexField (analyse=" + analyzeValue + "): " + itemName + "=" + sValue);
 			if (analyzeValue) {
 				doc.add(new TextField(itemName, sValue, Store.NO));
 			} else {

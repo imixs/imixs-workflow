@@ -118,7 +118,7 @@ public class ModelService implements ModelManager {
 				while (entries.hasNext()) {
 					Map.Entry<String, List<Object>> entry = entries.next();
 					String fileName = entry.getKey();
-					logger.fine("loading file:" + fileName);
+					logger.finest("......loading file:" + fileName);
 					List<Object> fileData = entry.getValue();
 					byte[] rawData = (byte[]) fileData.get(1);
 					InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
@@ -145,7 +145,7 @@ public class ModelService implements ModelManager {
 			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Version not provided! ");
 		}
 		
-		logger.fine("add BPMNModel '" + modelVersion + "'...");
+		logger.finest("......add BPMNModel '" + modelVersion + "'...");
 		getModelStore().put(modelVersion, model);
 	}
 
@@ -157,7 +157,7 @@ public class ModelService implements ModelManager {
 	 */
 	public void removeModel(String modelversion) {
 		getModelStore().remove(modelversion);
-		logger.fine("removed BPMNModel '" + modelversion + "'...");
+		logger.finest("......removed BPMNModel '" + modelversion + "'...");
 	}
 
 	/**
@@ -195,7 +195,7 @@ public class ModelService implements ModelManager {
 		try {
 			model = getModel(modelVersion);
 		} catch (ModelException me) {
-			logger.fine(me.getMessage());
+			logger.finest(me.getMessage());
 			if (!workflowGroup.isEmpty()) {
 				// find latest version
 				List<String> versions = findVersionsByGroup(workflowGroup);
@@ -246,7 +246,7 @@ public class ModelService implements ModelManager {
 	 */
 	public List<String> findVersionsByGroup(String group) {
 		List<String> result = new ArrayList<String>();
-		logger.fine("searching model versions for workflowgroup '" + group + "'...");
+		logger.finest("......searching model versions for workflowgroup '" + group + "'...");
 		// try to find matching model version by group
 		Collection<Model> models = getModelStore().values();
 		for (Model amodel : models) {
@@ -335,7 +335,7 @@ public class ModelService implements ModelManager {
 			if (col != null && col.size() > 0) {
 				return col.iterator().next();
 			}
-			logger.fine("BPMNModel Entity '" + version + "' not found!");
+			logger.finest("......BPMNModel Entity '" + version + "' not found!");
 		}
 		return null;
 	}

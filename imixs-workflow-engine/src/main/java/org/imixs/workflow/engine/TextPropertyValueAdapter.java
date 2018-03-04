@@ -48,7 +48,7 @@ public class TextPropertyValueAdapter {
 		}
 
 		List<String> tagList = XMLParser.findTags(text, "propertyvalue");
-		logger.finest(tagList.size() + " tags found");
+		logger.finest("......"+tagList.size() + " tags found");
 		// test if a <value> tag exists...
 		for (String tag : tagList) {
 

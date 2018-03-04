@@ -161,7 +161,7 @@ public class RuleEngine {
 		scriptEngine.put("event", convertItemCollection(event));
 		scriptEngine.put("workitem", convertItemCollection(documentContext));
 
-		logger.fine("SCRIPT:" + script);
+		logger.finest("......SCRIPT:" + script);
 		try {
 			scriptEngine.eval(script);
 		} catch (ScriptException e) {
@@ -193,7 +193,7 @@ public class RuleEngine {
 		// set activity properties into engine
 		scriptEngine.put("workitem", convertItemCollection(documentContext));
 
-		logger.fine("SCRIPT:" + script);
+		logger.finest("......SCRIPT:" + script);
 		Object result = null;
 		try {
 			result = scriptEngine.eval(script);
@@ -259,9 +259,9 @@ public class RuleEngine {
 			}
 			// logging
 			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("evalueateScript object to Java");
+				logger.finest("......evalueateScript object to Java");
 				for (Object val : resultList) {
-					logger.fine(val.toString());
+					logger.finest("        "+val.toString());
 				}
 			}
 
@@ -269,7 +269,7 @@ public class RuleEngine {
 		} catch (ScriptException se) {
 			// not convertable!
 			// se.printStackTrace();
-			logger.fine("error evaluating " + expression + " - " + se.getMessage());
+			logger.finest("......error evaluating " + expression + " - " + se.getMessage());
 			return null;
 		}
 
@@ -335,7 +335,7 @@ public class RuleEngine {
 					// test if the entry value is a single object or an array....
 					if (isBasicObjectType(entry.getValue().getClass())) {
 						// single value - build array....
-						logger.fine("adding " + variable + " property " + entry.getKey());
+						logger.finest("......adding " + variable + " property " + entry.getKey());
 						List<Object> list = new ArrayList();
 						list.add(entry.getValue());
 						result.replaceItemValue(entry.getKey(), list);
@@ -346,7 +346,7 @@ public class RuleEngine {
 						if (oScript == null) {
 							continue;
 						}
-						logger.fine("adding " + variable + " property " + entry.getKey());
+						logger.finest("......adding " + variable + " property " + entry.getKey());
 						List<?> list = new ArrayList(Arrays.asList(oScript));
 						result.replaceItemValue(entry.getKey(), list);
 					}

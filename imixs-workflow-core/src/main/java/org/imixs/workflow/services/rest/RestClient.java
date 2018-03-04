@@ -489,8 +489,8 @@ public class RestClient {
 		addCookies(urlConnection);
 
 		int responseCode = urlConnection.getResponseCode();
-		logger.fine("[RestClient] Sending 'GET' request to URL : " + uri);
-		logger.fine("[RestClient] Response Code : " + responseCode);
+		logger.finest("......Sending 'GET' request to URL : " + uri);
+		logger.finest("......Response Code : " + responseCode);
 
 		readResponse(urlConnection);
 
@@ -581,7 +581,7 @@ public class RestClient {
 	 */
 	private void readResponse(URLConnection urlConnection) throws IOException {
 		// get content of result
-		logger.fine("[RestClient] readResponse....");
+		logger.finest("...... readResponse....");
 		StringWriter writer = new StringWriter();
 		BufferedReader in = null;
 		try {
@@ -600,7 +600,7 @@ public class RestClient {
 				in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 			String inputLine;
 			while ((inputLine = in.readLine()) != null) {
-				logger.fine(inputLine);
+				logger.finest("......"+inputLine);
 				writer.write(inputLine);
 			}
 		} catch (IOException e) {

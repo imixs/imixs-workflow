@@ -190,7 +190,7 @@ public class ReportService {
 		List<ItemCollection> clonedResult = new ArrayList<ItemCollection>();
 
 		long l = System.currentTimeMillis();
-		logger.fine("executeReport: " + reportName);
+		logger.finest("......executeReport: " + reportName);
 
 		// Load Query Object
 		ItemCollection reportEntity = findReport(reportName);
@@ -207,7 +207,7 @@ public class ReportService {
 				if (query.indexOf("?" + sKeyName) > -1) {
 					String sParamValue = params.get(sKeyName);
 					query = query.replace("?" + sKeyName, sParamValue);
-					logger.fine("executeReport set param " + sKeyName + "=" + sParamValue);
+					logger.finest("......executeReport set param " + sKeyName + "=" + sParamValue);
 				}
 			}
 		}
@@ -216,7 +216,7 @@ public class ReportService {
 		query = replaceDateString(query);
 
 		// execute query
-		logger.fine("executeReport query=" + query);
+		logger.finest("......executeReport query=" + query);
 		List<ItemCollection> result = documentService.find(query, pageSize, pageIndex, sortBy, sortReverse);
 
 		// test if a itemList is provided or defined in the reportEntity...
@@ -245,7 +245,7 @@ public class ReportService {
 				clonedResult.add(clone);
 			}
 		}
-		logger.fine("executed report '" + reportName + "' in " + (System.currentTimeMillis() - l) + "ms");
+		logger.fine("...executed report '" + reportName + "' in " + (System.currentTimeMillis() - l) + "ms");
 		return clonedResult;
 
 	}

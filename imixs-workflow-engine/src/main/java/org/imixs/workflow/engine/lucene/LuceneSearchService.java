@@ -181,7 +181,7 @@ public class LuceneSearchService {
 			pageIndex = 0;
 		}
 
-		logger.finest("lucene search: pageNumber=" + pageIndex + " pageSize=" + pageSize);
+		logger.finest("......lucene search: pageNumber=" + pageIndex + " pageSize=" + pageSize);
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
@@ -228,13 +228,13 @@ public class LuceneSearchService {
 			Query query = parser.parse(sSearchTerm);
 			if (sortOrder != null) {
 				// sorted by sortoder
-				logger.finest("lucene result sorted by sortOrder= '" + sortOrder + "' ");
+				logger.finest("......lucene result sorted by sortOrder= '" + sortOrder + "' ");
 				// MAX_SEARCH_RESULT is limiting the total number of hits
 				collector = TopFieldCollector.create(sortOrder, maxSearchResult, false, false, false);
 
 			} else {
 				// sorted by score
-				logger.finest("lucene result sorted by score ");
+				logger.finest("......lucene result sorted by score ");
 				// MAX_SEARCH_RESULT is limiting the total number of hits
 				collector = TopScoreDocCollector.create(maxSearchResult);
 			}
@@ -252,7 +252,7 @@ public class LuceneSearchService {
 			// Get an array of references to matched documents
 			ScoreDoc[] scoreDosArray = topDocs.scoreDocs;
 
-			logger.fine("lucene returned " + scoreDosArray.length + " documents in "
+			logger.fine("...returned " + scoreDosArray.length + " documents in "
 					+ (System.currentTimeMillis() - lsearchtime) + " ms - total hits=" + topDocs.totalHits);
 
 			for (ScoreDoc scoredoc : scoreDosArray) {
@@ -260,7 +260,7 @@ public class LuceneSearchService {
 				Document doc = searcher.doc(scoredoc.doc);
 
 				String sID = doc.get("$uniqueid");
-				logger.finest("lucene lookup $uniqueid=" + sID);
+				logger.finest("......lucene lookup $uniqueid=" + sID);
 				ItemCollection itemCol = documentService.load(sID);
 				if (itemCol != null) {
 					workitems.add(itemCol);
@@ -276,7 +276,7 @@ public class LuceneSearchService {
 
 			searcher.getIndexReader().close();
 
-			logger.fine("lucene search result computed in " + (System.currentTimeMillis() - ltime) + " ms");
+			logger.fine("...search result computed in " + (System.currentTimeMillis() - ltime) + " ms");
 		} catch (IOException e) {
 			// in case of an IOException we just print an error message and
 			// return an empty result
@@ -352,7 +352,7 @@ public class LuceneSearchService {
 			searcher.search(query, collector);
 			result = collector.getTotalHits();
 
-			logger.fine("lucene count result = " + result);
+			logger.finest("......lucene count result = " + result);
 		} catch (IOException e) {
 			// in case of an IOException we just print an error message and
 			// return an empty result
@@ -400,7 +400,7 @@ public class LuceneSearchService {
 			sAccessTerm += ") AND ";
 			sSearchTerm = sAccessTerm + sSearchTerm;
 		}
-		logger.fine("lucene final searchTerm=" + sSearchTerm);
+		logger.finest("......lucene final searchTerm=" + sSearchTerm);
 
 		return sSearchTerm;
 	}
@@ -415,7 +415,7 @@ public class LuceneSearchService {
 	 * @throws IOException
 	 */
 	Directory createIndexDirectory(Properties prop) throws IOException {
-		logger.finest("lucene createIndexDirectory...");
+		logger.finest("......createIndexDirectory...");
 		// read configuration
 		String sIndexDir = prop.getProperty("lucence.indexDir", LuceneUpdateService.DEFAULT_INDEX_DIRECTORY);
 		Directory indexDir;
@@ -436,7 +436,7 @@ public class LuceneSearchService {
 	 */
 	IndexSearcher createIndexSearcher(Properties prop) throws IOException {
 		IndexReader reader = null;
-		logger.finest("lucene createIndexSearcher...");
+		logger.finest("......createIndexSearcher...");
 
 		Directory indexDir = createIndexDirectory(prop);
 
@@ -447,7 +447,7 @@ public class LuceneSearchService {
 			// verify if the index is missing. In this case we try to fix the issue by
 			// creating a new index dir...
 			if (!DirectoryReader.indexExists(indexDir)) {
-				logger.fine("Lucene index does not yet exist. Trying to initialize the index....");
+				logger.finest("......index does not yet exist, trying to initialize the index....");
 				// create a IndexWriter Instance
 				IndexWriterConfig indexWriterConfig;
 				indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
@@ -457,7 +457,7 @@ public class LuceneSearchService {
 				// now try to reopen once again.
 				// If this dose not work we really have a IO problem
 				reader = DirectoryReader.open(indexDir);
-				logger.info("Lucene index successfull created.");
+				logger.finest("......index successfull created.");
 			} else {
 				// throw the origin exception....
 				throw ioe;
@@ -483,10 +483,10 @@ public class LuceneSearchService {
 		// set default operator to 'AND' if not defined by property setting
 		String defaultOperator = prop.getProperty("lucene.defaultOperator");
 		if (defaultOperator != null && "OR".equals(defaultOperator.toUpperCase())) {
-			logger.finest("lucene DefaultOperator: OR");
+			logger.finest("......DefaultOperator: OR");
 			parser.setDefaultOperator(Operator.OR);
 		} else {
-			logger.finest("lucene DefaultOperator: AND");
+			logger.finest("......DefaultOperator: AND");
 			parser.setDefaultOperator(Operator.AND);
 		}
 

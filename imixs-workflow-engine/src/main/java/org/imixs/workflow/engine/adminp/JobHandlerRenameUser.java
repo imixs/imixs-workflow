@@ -245,7 +245,7 @@ public class JobHandlerRenameUser implements JobHandler {
 			String summary = "Rename: " + from + " -> " + to + " (replace=" + replace + ")";
 			entity.appendItemValue("txtAdminpLog", new Date(System.currentTimeMillis()) + " " + summary);
 			documentService.save(entity);
-			logger.fine("updated: " + entity.getItemValueString(WorkflowKernel.UNIQUEID));
+			logger.finest("......updated: " + entity.getItemValueString(WorkflowKernel.UNIQUEID));
 		}
 		return bUpdate;
 	}
@@ -291,7 +291,7 @@ public class JobHandlerRenameUser implements JobHandler {
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public ItemCollection saveJobEntity(ItemCollection adminp) throws AccessDeniedException {
-		logger.fine("saveJobEntity " + adminp.getUniqueID());
+		logger.finest("......saveJobEntity " + adminp.getUniqueID());
 		adminp = documentService.save(adminp);
 		return adminp;
 

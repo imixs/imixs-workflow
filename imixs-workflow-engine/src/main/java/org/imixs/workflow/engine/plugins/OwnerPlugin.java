@@ -155,9 +155,9 @@ public class OwnerPlugin extends AbstractPlugin {
 		// update ownerlist....
 		documentContext.replaceItemValue("namowner", newOwnerList);
 		if ((logger.isLoggable(Level.FINE)) && (newOwnerList.size() > 0)) {
-			logger.fine("[OwnerPlugin] Owners:");
+			logger.finest("......Owners:");
 			for (int j = 0; j < newOwnerList.size(); j++)
-				logger.fine("               '" + (String) newOwnerList.get(j) + "'");
+				logger.finest("               '" + (String) newOwnerList.get(j) + "'");
 		}
 
 	}

@@ -72,7 +72,7 @@ public class XSLHandler {
 			}
 			TransformerFactory transFact = TransformerFactory.newInstance();
 
-			logger.fine("xslTransformation: encoding=" + encoding);
+			logger.finest("......xslTransformation: encoding=" + encoding);
 			// generate XML InputStream Reader with encoding
 			ByteArrayInputStream baisXML = new ByteArrayInputStream(xmlSource.getBytes());
 			InputStreamReader isreaderXML;

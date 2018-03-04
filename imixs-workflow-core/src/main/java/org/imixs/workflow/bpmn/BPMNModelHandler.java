@@ -121,7 +121,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		logger.finest("Start Element :" + qName);
+		logger.finest("......Start Element :" + qName);
 
 		// bpmn2:definitions
 		if (qName.equalsIgnoreCase("bpmn2:definitions")) {
@@ -403,7 +403,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		// test conditional sequence flow...
 		if (bSequenceFlow && bconditionExpression && qName.equalsIgnoreCase("bpmn2:conditionExpression")) {
 			String svalue = characterStream.toString();
-			logger.fine("conditional SequenceFlow:" + bpmnID + "=" + svalue);
+			logger.finest("......conditional SequenceFlow:" + bpmnID + "=" + svalue);
 			bconditionExpression = false;
 			conditionCache.put(bpmnID, svalue);
 		}
@@ -677,7 +677,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 		}
 
-		logger.fine("Imixs BPMN Event '" + eventID + "' is directly assigend to " + result.size() + " task elements");
+		logger.finest("......Imixs BPMN Event '" + eventID + "' is directly assigend to " + result.size() + " task elements");
 		return result;
 	}
 
@@ -721,14 +721,14 @@ public class BPMNModelHandler extends DefaultHandler {
 		try {
 			if (model.getEvent(sourceTask.getItemValueInteger("numProcessID"),
 					event.getItemValueInteger("numactivityid")) != null) {
-				logger.fine("Imixs BPMN Event '" + eventName + "' is already assigned tosource task!");
+				logger.finest("......Imixs BPMN Event '" + eventName + "' is already assigned tosource task!");
 				return;
 			}
 		} catch (ModelException me1) {
 			// ok we need to add the event....
 		}
 
-		logger.finest("adding event '" + eventName + "'");
+		logger.finest("......adding event '" + eventName + "'");
 
 		List<SequenceFlow> outFlows = findOutgoingFlows(eventID);
 		if (outFlows == null || outFlows.size() == 0) {
@@ -764,7 +764,7 @@ public class BPMNModelHandler extends DefaultHandler {
 							if (targetTask != null) {
 								String sExpression = findConditionBySquenceFlow(condFlow);
 								if (sExpression != null && !sExpression.trim().isEmpty()) {
-									logger.fine("add condition: " + targetTask.getItemValueInteger("numProcessid") + "="
+									logger.finest("......add condition: " + targetTask.getItemValueInteger("numProcessid") + "="
 											+ sExpression);
 									conditions.put("task=" + targetTask.getItemValueInteger("numProcessid"),
 											sExpression);
@@ -776,7 +776,7 @@ public class BPMNModelHandler extends DefaultHandler {
 								if (targetEvent != null) {
 									String sExpression = findConditionBySquenceFlow(condFlow);
 									if (sExpression != null && !sExpression.trim().isEmpty()) {
-										logger.fine("add condition: " + targetEvent.getItemValueInteger("numActivityid")
+										logger.finest("......add condition: " + targetEvent.getItemValueInteger("numActivityid")
 												+ "=" + sExpression);
 										conditions.put("event=" + targetEvent.getItemValueInteger("numActivityid"),
 												sExpression);
@@ -812,7 +812,7 @@ public class BPMNModelHandler extends DefaultHandler {
 							if (targetTask != null) {
 								String sExpression = findConditionBySquenceFlow(parallelFlow);
 								if (sExpression != null && !sExpression.trim().isEmpty()) {
-									logger.fine("add condition: " + targetTask.getItemValueInteger("numProcessid") + "="
+									logger.finest("......add condition: " + targetTask.getItemValueInteger("numProcessid") + "="
 											+ sExpression);
 									conditions.put("task=" + targetTask.getItemValueInteger("numProcessid"),
 											sExpression);
@@ -824,7 +824,7 @@ public class BPMNModelHandler extends DefaultHandler {
 								if (targetEvent != null) {
 									String sExpression = findConditionBySquenceFlow(parallelFlow);
 									if (sExpression != null && !sExpression.trim().isEmpty()) {
-										logger.fine("add condition: " + targetEvent.getItemValueInteger("numActivityid")
+										logger.finest("......add condition: " + targetEvent.getItemValueInteger("numActivityid")
 												+ "=" + sExpression);
 										conditions.put("event=" + targetEvent.getItemValueInteger("numActivityid"),
 												sExpression);

@@ -323,8 +323,8 @@ public class DocumentService {
 	 * @throws AccessDeniedException
 	 */
 	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
-
-		logger.finest("save - ID=" + document.getUniqueID() + " provided version="
+		long lSaveTime = System.currentTimeMillis();
+		logger.finest("......save - ID=" + document.getUniqueID() + " provided version="
 				+ document.getItemValueInteger("$version"));
 		Document persistedDocument = null;
 		// Now set flush Mode to COMMIT
@@ -336,7 +336,7 @@ public class DocumentService {
 			// yes so we can try to find the Entity by its primary key
 			persistedDocument = manager.find(Document.class, sID);
 			if (persistedDocument == null) {
-				logger.fine("Document '" + sID + "' not found!");
+				logger.finest("......Document '" + sID + "' not found!");
 			}
 		}
 
@@ -359,7 +359,7 @@ public class DocumentService {
 				persistedDocument.setCreated(cal);
 			}
 			// now persist the new EntityBean!
-			logger.finest("persist activeEntity");
+			logger.finest("......persist activeEntity");
 			manager.persist(persistedDocument);
 
 		} else {
@@ -378,7 +378,7 @@ public class DocumentService {
 		}
 
 		// after all the persistedDocument is now managed through JPA!
-		logger.finest("save - ID=" + document.getUniqueID() + " managed version=" + persistedDocument.getVersion());
+		logger.finest("......save - ID=" + document.getUniqueID() + " managed version=" + persistedDocument.getVersion());
 
 		// remove the property $isauthor
 		document.removeItem("$isauthor");
@@ -461,6 +461,7 @@ public class DocumentService {
 		 */
 		persistedDocument.setPending(true);
 
+		logger.fine("...'" + document.getUniqueID() +"' saved in " + (System.currentTimeMillis() - lSaveTime) + "ms");
 		// return the updated document
 		return document;
 	}
@@ -515,6 +516,7 @@ public class DocumentService {
 	 * 
 	 */
 	public ItemCollection load(String id) {
+		long lLoadTime = System.currentTimeMillis();
 		Document persistedDocument = null;
 		persistedDocument = manager.find(Document.class, id);
 
@@ -524,7 +526,7 @@ public class DocumentService {
 			ItemCollection result = null;// new ItemCollection();
 			if (persistedDocument.isPending()) {
 				// we clone but do not detach
-				logger.fine("clone manged entity '" + id + "' pending status=" + persistedDocument.isPending());
+				logger.finest("......clone manged entity '" + id + "' pending status=" + persistedDocument.isPending());
 				result = new ItemCollection(persistedDocument.getData());
 			} else {
 				// the document is not managed, so we detach it
@@ -546,7 +548,7 @@ public class DocumentService {
 
 			// fire event
 			events.fire(new DocumentEvent(result, DocumentEvent.ON_DOCUMENT_LOAD));
-
+			logger.fine("...'" + result.getUniqueID()+"' loaded in " + (System.currentTimeMillis() - lLoadTime) + "ms");
 			return result;
 		} else
 			return null;
@@ -697,7 +699,7 @@ public class DocumentService {
 	 */
 	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy, boolean sortReverse)
 			throws QueryException {
-		logger.fine("find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber=" + pageIndex
+		logger.finest("......find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber=" + pageIndex
 				+ " , sortBy=" + sortBy + " reverse=" + sortReverse);
 
 		// create sort object
@@ -815,7 +817,7 @@ public class DocumentService {
 		Collection<Document> documentList = q.getResultList();
 
 		if (documentList == null) {
-			logger.fine("getDocumentsByQuery - no ducuments found.");
+			logger.finest("......getDocumentsByQuery - no ducuments found.");
 			return result;
 		}
 
@@ -827,7 +829,7 @@ public class DocumentService {
 
 				if (doc.isPending()) {
 					// we clone but do not detach
-					logger.fine("clone manged entity '" + doc.getId() + "' pending status=" + doc.isPending());
+					logger.finest("......clone manged entity '" + doc.getId() + "' pending status=" + doc.isPending());
 					_tmp = new ItemCollection(doc.getData());
 				} else {
 					// the document is not managed, so we detach it
@@ -851,7 +853,7 @@ public class DocumentService {
 			}
 		}
 
-		logger.fine("getDocumentsByQuery - found " + documentList.size() + " documents in "
+		logger.fine("...getDocumentsByQuery - found " + documentList.size() + " documents in "
 				+ (System.currentTimeMillis() - l) + " ms");
 		return result;
 	}
@@ -901,7 +903,7 @@ public class DocumentService {
 				out.writeObject(hmap);
 				icount++;
 			}
-			logger.fine(totalcount + " documents backuped....");
+			logger.finest("......"+totalcount + " documents backuped....");
 		}
 		out.close();
 		logger.info("Backup finished - " + icount + " documents read totaly.");
