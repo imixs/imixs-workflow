@@ -134,6 +134,7 @@
 
 			<item name="Sample Application" href="./sampleapplication.html" />
 			<item name="Administration" href="./administration.html" />
+			<item name="Logging" href="./logging.html" />
 			<item name="Testing" href="./testing.html" />
 			<item name="Docker" href="./docker.html" />
 			<item name="Maven" href="./maven.html" />
