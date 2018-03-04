@@ -8,6 +8,7 @@ Loglevel INFO shows general information about the WorkflowService.
 
 **Example:**
 
+	[org.imixs.workflow.bpmn.BPMNParser] (default task-3) BPMN Model 'system-en-1.0.0' parsed in 21ms
 	[org.imixs.workflow.WorkflowKernel] (default task-27) processing=85676103-43d9-4193-a8ce-30c96f0f7b31, MODELVERSION=2.0.0, $processid=1100, $activityid=10
 	
 
