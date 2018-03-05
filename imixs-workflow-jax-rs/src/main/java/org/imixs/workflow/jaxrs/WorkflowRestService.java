@@ -557,6 +557,11 @@ public class WorkflowRestService {
 
 	}
 
+	/**
+	 * Delegater
+	 * @param workitem
+	 * @return
+	 */
 	@PUT
 	@Path("/workitem")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
@@ -566,7 +571,6 @@ public class WorkflowRestService {
 	}
 
 	@POST
-	@PUT
 	@Path("/workitem/{uniqueid}")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
 	public Response postXMLWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, XMLItemCollection xmlworkitem) {
@@ -618,6 +622,24 @@ public class WorkflowRestService {
 		}
 	}
 
+	
+	
+
+	/**
+	 * Delegater for PUT postXMLWorkitemByUniqueID
+	 * @param workitem
+	 * @return
+	 */
+	@PUT
+	@Path("/workitem/{uniqueid}")
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
+	public Response putXMLWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, XMLItemCollection xmlworkitem) {
+		logger.fine("putXMLWorkitem @PUT /workitem/{uniqueid}  delegate to POST....");
+		return postXMLWorkitemByUniqueID(uniqueid,xmlworkitem);
+	}
+	
+	
+	
 	/**
 	 * This method expects a form post and processes the WorkItem by the
 	 * WorkflowService EJB.
@@ -640,7 +662,6 @@ public class WorkflowRestService {
 	 * @throws Exception
 	 */
 	@POST
-	@PUT
 	@Path("/workitem")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response postJSONWorkitem(InputStream requestBodyStream, @QueryParam("error") String error,
@@ -705,9 +726,29 @@ public class WorkflowRestService {
 		}
 
 	}
+	
+	
+
+	/**
+	 * Delegater for PUT postXMLWorkitemByUniqueID
+	 * @param workitem
+	 * @return
+	 */
+	@PUT
+	@Path("/workitem")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response putJSONWorkitem(InputStream requestBodyStream, @QueryParam("error") String error,
+			@QueryParam("encoding") String encoding) {
+
+		logger.fine("putJSONWorkitem @PUT /workitem/{uniqueid}  delegate to POST....");
+		return postJSONWorkitem(requestBodyStream,error,encoding);
+	}
+	
+	
+	
+	
 
 	@POST
-	@PUT
 	@Path("/workitem/{uniqueid}")
 	@Consumes({ MediaType.APPLICATION_JSON })
 	public Response postJSONWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, InputStream requestBodyStream,
@@ -783,6 +824,27 @@ public class WorkflowRestService {
 
 	}
 
+	
+	/**
+	 * Delegater for PUT postJSONWorkitemByUniqueID
+	 * @param workitem
+	 * @return
+	 */
+	@PUT
+	@Path("/workitem/{uniqueid}")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	public Response putJSONWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, InputStream requestBodyStream,
+			@QueryParam("error") String error, @QueryParam("encoding") String encoding) {
+
+		logger.fine("postJSONWorkitemByUniqueID @PUT /workitem/{uniqueid}  delegate to POST....");
+		return postJSONWorkitemByUniqueID(uniqueid,requestBodyStream,error,encoding);
+	}
+	
+	
+	
+	
+	
+	
 	/**
 	 * This method post a collection of ItemCollection objects to be processed by
 	 * the WorkflowManager.

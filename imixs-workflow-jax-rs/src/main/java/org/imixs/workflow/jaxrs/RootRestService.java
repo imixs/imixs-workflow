@@ -52,7 +52,7 @@ public class RootRestService {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_XHTML_XML)
-	@Path("/")
+	//@Path("/") generates jersey warning
 	public StreamingOutput getRoot() {
 
 		return new StreamingOutput() {

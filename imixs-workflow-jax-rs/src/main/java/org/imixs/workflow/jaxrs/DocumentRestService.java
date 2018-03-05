@@ -90,9 +90,10 @@ public class DocumentRestService {
 
 	private static Logger logger = Logger.getLogger(DocumentRestService.class.getName());
 
+	
 	@GET
 	@Produces(MediaType.APPLICATION_XHTML_XML)
-	@Path("/")
+	//@Path("/") generates jersey warning
 	public StreamingOutput getRoot() {
 
 		return new StreamingOutput() {
@@ -106,6 +107,7 @@ public class DocumentRestService {
 		};
 
 	}
+
 
 	@GET
 	@Produces("text/html")
@@ -290,11 +292,10 @@ public class DocumentRestService {
 	 * @return
 	 */
 	@POST
-	@PUT
-	@Path("/")
+	//@Path("/") generates jersey warning
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-	public Response putEntity(XMLItemCollection xmlworkitem) {
+	public Response postEntity(XMLItemCollection xmlworkitem) {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
@@ -344,6 +345,26 @@ public class DocumentRestService {
 		}
 	}
 
+	
+	
+	/**
+	 * Delegater putEntity @PUT
+	 * 
+	 * @see putWorkitemDefault
+	 * @param requestBodyStream
+	 * @return
+	 */
+	@PUT
+	//@Path("/") generates jersey warning
+	@Produces(MediaType.APPLICATION_XML)
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
+	public Response putEntity(XMLItemCollection xmlworkitem) {
+		logger.finest("putEntity @PUT /  delegate to POST....");
+		return postEntity(xmlworkitem);
+	}
+	
+	
+	
 	/**
 	 * This method deletes an entity
 	 * 
