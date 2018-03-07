@@ -271,7 +271,7 @@ public class ModelService implements ModelManager {
 			// first delete existing model entities
 			deleteModel(model.getVersion());
 			// store model into database
-			logger.info("save BPMNModel '" + model.getVersion() + "'...");
+			logger.finest("......save BPMNModel '" + model.getVersion() + "'...");
 			BPMNModel bpmnModel = (BPMNModel) model;
 			addModel(model);
 			ItemCollection modelItemCol = new ItemCollection();
@@ -294,7 +294,7 @@ public class ModelService implements ModelManager {
 	 */
 	public void deleteModel(String version) {
 		if (version != null) {
-			logger.info("delete BPMNModel '" + version + "'...");
+			logger.finest("......delete BPMNModel '" + version + "'...");
 
 			// first remove existing model entities
 			String searchTerm = "(type:\"model\" AND txtname:\"" + version + "\")";
@@ -321,8 +321,7 @@ public class ModelService implements ModelManager {
 	 */
 	public ItemCollection loadModelEntity(String version) {
 		if (version != null) {
-			logger.info("load BPMNModel '" + version + "'...");
-			
+			long loadTime=System.currentTimeMillis();
 			// find model by version
 			String searchTerm = "(type:\"model\" AND txtname:\"" + version + "\")";
 			Collection<ItemCollection> col;
@@ -333,7 +332,9 @@ public class ModelService implements ModelManager {
 				return null;
 			}
 			if (col != null && col.size() > 0) {
-				return col.iterator().next();
+				ItemCollection model=col.iterator().next();
+				logger.fine("...load BPMNModel '" + version + "' in " + (System.currentTimeMillis() - loadTime) + "ms");
+				return model;
 			}
 			logger.finest("......BPMNModel Entity '" + version + "' not found!");
 		}
