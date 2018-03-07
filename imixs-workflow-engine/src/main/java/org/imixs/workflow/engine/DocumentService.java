@@ -324,7 +324,7 @@ public class DocumentService {
 	 */
 	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
 		long lSaveTime = System.currentTimeMillis();
-		logger.finest("......save - ID=" + document.getUniqueID() + " provided version="
+		logger.finest("......save - ID=" + document.getUniqueID() + ", provided version="
 				+ document.getItemValueInteger("$version"));
 		Document persistedDocument = null;
 		// Now set flush Mode to COMMIT
@@ -399,7 +399,12 @@ public class DocumentService {
 		document.replaceItemValue("$created", persistedDocument.getCreated().getTime());
 
 		// Finally we fire the DocumentEvent ON_DOCUMENT_SAVE
-		events.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_SAVE));
+
+		if (events!=null) {
+			events.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_SAVE));
+		} else {
+			logger.warning("Missing CDI support for Event<DocumentEvent> !");
+		}
 		// check consistency of $uniqueid and $created after event was processed.
 		if ( (!persistedDocument.getId().equals(document.getUniqueID()))
 				|| (!persistedDocument.getCreated().getTime().equals(document.getItemValueDate("$created")))) {
@@ -547,7 +552,11 @@ public class DocumentService {
 			result.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
 
 			// fire event
-			events.fire(new DocumentEvent(result, DocumentEvent.ON_DOCUMENT_LOAD));
+			if (events!=null) {
+				events.fire(new DocumentEvent(result, DocumentEvent.ON_DOCUMENT_LOAD));
+			} else {
+				logger.warning("Missing CDI support for Event<DocumentEvent> !");
+			}
 			logger.fine("...'" + result.getUniqueID()+"' loaded in " + (System.currentTimeMillis() - lLoadTime) + "ms");
 			return result;
 		} else
