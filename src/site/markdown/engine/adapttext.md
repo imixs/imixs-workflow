@@ -43,7 +43,7 @@ This example extract the last value of the mulit-value item  '_parts'.
 ### Format date/number values by locale
 To format a date or number value into a language specific format the tags '_format_' and '_locale_' can be used. The following example shows how to format a date value into the German date format:
  
-	 The Date in german format is: <itemvalue format=\"EEEE, d. MMMM yyyy\" locale=\"de_DE\">datdate</itemvalue>.";
+	 The Date in german format is: <itemvalue format="EEEE, d. MMMM yyyy" locale="de_DE">datdate</itemvalue>.";
 
 	
 ## Adapting Property Values

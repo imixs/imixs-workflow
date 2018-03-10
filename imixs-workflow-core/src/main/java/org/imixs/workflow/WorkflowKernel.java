@@ -274,14 +274,14 @@ public class WorkflowKernel {
 
 		// now process all events defined by the model
 		while (documentResult.getItemValueInteger(ACTIVITYID) > 0) {
+			// set $lastEventDate
+			documentResult.replaceItemValue("$lastEventDate", new Date());
 			// load event...
 			ItemCollection event = loadEvent(documentResult);
 			documentResult = processEvent(documentResult, event);
 			documentResult = updateEventList(documentResult);
 		}
 
-		// set $lastEventDate
-		documentResult.replaceItemValue("$lastEventDate", new Date());
 
 		return documentResult;
 	}
