@@ -602,7 +602,7 @@ public class MailPlugin extends AbstractPlugin {
 			ic = new InitialContext();
 			// add java: prafix if not defined in jndi ref
 			if (!sMailSession.startsWith("java:")) {
-				sJNDINName = "java:comp/env/mail/" + sMailSession;
+				sJNDINName = "java:comp/env/" + sMailSession;
 			} else {
 				sJNDINName = sMailSession;
 			}
