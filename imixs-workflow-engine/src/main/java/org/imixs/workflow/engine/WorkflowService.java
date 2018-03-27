@@ -938,7 +938,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 								}
 								result.appendItemValue(itemName, dateResult);
 							} catch (ParseException e) {
-								logger.warning("failed to convert string into date object: " + e.getMessage());
+								logger.finer("failed to convert string into date object: " + e.getMessage());
 							}
 						}
 
