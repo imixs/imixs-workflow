@@ -42,10 +42,37 @@ With the optional attribute 'type' the item value type can be specified. The fol
 
 * boolean - results in type Boolean
 * integer - results in type Integer
+* date - results in type java.util.Date
+ 
+Example Boolean: 
+ 
+	<item name="isManager" type="boolean">true</item>
+	
+This will store the boolean value true into the item 'isManager'.  
+
+
+
+Example Integer: 
  
 	<item name="count" type="integer">55</item>
 	
 This will store the integer value 55 into the item 'count'.  
+
+
+Example Date: 
+ 
+	<item name="reminder" type="date" format="yyyy-MM-dd" >2018-12-31</item>
+	
+This will store a date value into the item 'reminder'. The attribute "format" must match the given string value.
+
+The date value can also be taken from an existing itemvalue: 
+
+	<item name="reminder" type="date" ><itemvalue>$modified</itemvalue></item>
+  
+In this case formating is not necessary. 
+
+
+
 
 ### Clear an Item Value
 It is also possible to clear an existing item value:

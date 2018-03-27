@@ -1,5 +1,7 @@
 package org.imixs.workflow.plugins;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -122,6 +124,86 @@ public class TestResultPlugin {
 		Assert.assertNotNull(adocumentContext);
 
 		Assert.assertEquals(47, adocumentContext.getItemValueInteger("numValue"));
+
+	}
+
+	@Test
+	public void testBasicWithTypeDate() throws PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		String sResult = "<item name='datValue' type='date' format='yyyy-MM-dd'>2017-12-31</item>";
+
+		logger.info("txtActivityResult=" + sResult);
+		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+
+		// run plugin
+		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
+
+		Date dateTest = adocumentContext.getItemValueDate("datvalue");
+		Assert.assertNotNull(dateTest);
+
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(dateTest);
+
+		Assert.assertEquals(2017, cal.get(Calendar.YEAR));
+		Assert.assertEquals(11, cal.get(Calendar.MONTH));
+		Assert.assertEquals(31, cal.get(Calendar.DAY_OF_MONTH));
+
+		System.out.println(dateTest + "");
+	}
+
+	@Test
+	public void testBasicWithTypeDateWithEmptyValue() throws PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		String sResult = "<item name='datValue' type='date' format='yyyy-MM-dd'></item>";
+
+		logger.info("txtActivityResult=" + sResult);
+		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+
+		// run plugin
+		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
+
+		Date dateTest = adocumentContext.getItemValueDate("datvalue");
+		Assert.assertNull(dateTest);
+
+	}
+
+	@Test
+	public void testBasicWithTypeDateWithExistingDateValue() throws PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		Date datTest = new Date();
+		adocumentContext.replaceItemValue("$lastEventDate", datTest);
+
+		String sResult = "<item name='datValue' type='date'><itemvalue>$lastEventDate</itemvalue></item>";
+
+		logger.info("txtActivityResult=" + sResult);
+		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+		// run plugin
+		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
+
+		Date datResult = adocumentContext.getItemValueDate("datvalue");
+		Assert.assertNotNull(datResult);
+
+		Calendar calResult = Calendar.getInstance();
+		calResult.setTime(datResult);
+
+		Calendar calTest = Calendar.getInstance();
+		calResult.setTime(datTest);
+
+		Assert.assertEquals(calTest.get(Calendar.YEAR), calResult.get(Calendar.YEAR));
+		Assert.assertEquals(calTest.get(Calendar.MONTH), calResult.get(Calendar.MONTH));
+		Assert.assertEquals(calTest.get(Calendar.DAY_OF_MONTH), calResult.get(Calendar.DAY_OF_MONTH));
 
 	}
 
@@ -452,10 +534,9 @@ public class TestResultPlugin {
 
 	}
 
-	
 	/**
-	 * This test verifies the evaluation of an empty item tag.
-	 * Expected result: item will be cleard.
+	 * This test verifies the evaluation of an empty item tag. Expected result: item
+	 * will be cleard.
 	 * 
 	 * issue #339
 	 * 
@@ -472,7 +553,7 @@ public class TestResultPlugin {
 		// clear value...
 		String sResult = "<item name=\"txtName\"></item>";
 		logger.info("txtActivityResult=" + sResult);
-		
+
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 		// run plugin
 		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
@@ -481,6 +562,5 @@ public class TestResultPlugin {
 		// item should be empty
 		Assert.assertEquals("", adocumentContext.getItemValueString("txtName"));
 
-		
 	}
 }

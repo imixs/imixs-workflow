@@ -27,8 +27,12 @@
 
 package org.imixs.workflow.engine;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -695,9 +699,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		}
 
 		workitem = documentService.save(workitem);
-		
-		logger.fine("...total processing time="
-				+ (System.currentTimeMillis() - lStartTime) + "ms");
+
+		logger.fine("...total processing time=" + (System.currentTimeMillis() - lStartTime) + "ms");
 
 		return workitem;
 	}
@@ -907,6 +910,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 				// test if the type attribute was provided to convert content?
 				String sType = result.getItemValueString(itemName + ".type");
+				String sFormat = result.getItemValueString(itemName + ".format");
 				if (!sType.isEmpty()) {
 					// convert content type
 					if ("boolean".equalsIgnoreCase(sType)) {
@@ -915,6 +919,29 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 						result.appendItemValue(itemName, Integer.valueOf(content));
 					} else if ("double".equalsIgnoreCase(sType)) {
 						result.appendItemValue(itemName, Double.valueOf(content));
+					} else if ("date".equalsIgnoreCase(sType)) {
+						if (content == null || content.isEmpty()) {
+							// no value available - no op!
+							logger.finer("......can not convert empty string into date object");
+						} else {
+							// convert content value to date object
+							try {
+								logger.finer("......convert string into date object");
+								Date dateResult = null;
+								if (sFormat == null || sFormat.isEmpty()) {
+									// use standard formate short/short
+									dateResult = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).parse(content);
+								} else {
+									// use given formatter (see: TextItemValueAdapter)
+									DateFormat dateFormat = new SimpleDateFormat(sFormat);
+									dateResult = dateFormat.parse(content);
+								}
+								result.appendItemValue(itemName, dateResult);
+							} catch (ParseException e) {
+								logger.warning("failed to convert string into date object: " + e.getMessage());
+							}
+						}
+
 					} else
 						// no type conversion
 						result.appendItemValue(itemName, content);
@@ -934,8 +961,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		// test for general invalid format
 		if (invalidPattern) {
 			throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_ITEM_FORMAT,
-					"invalid <item> tag format in workflowResult: "
-							+ workflowResult + "  , expected format is <item name=\"...\">...</item> ");
+					"invalid <item> tag format in workflowResult: " + workflowResult
+							+ "  , expected format is <item name=\"...\">...</item> ");
 		}
 		return result;
 	}
