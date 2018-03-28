@@ -29,3 +29,7 @@ Loglevel FINE prints processing information and can be used to analyse performan
 ## Loglevel FINEST
 
 Loglevel FINEST shows detailed processing information and is used to debug the workflow engine. 
+
+**Example:**
+
+	logger.finest("......updated entity: " + entity.getUnqiueID);
