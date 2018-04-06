@@ -40,11 +40,10 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.InvalidAccessException;
-import org.imixs.workflow.exceptions.ProcessingErrorException;
 
 /**
  * The AmdinPService provides a mechanism to start long running jobs. Those jobs
@@ -111,6 +110,11 @@ public class AdminPService {
 	@Inject
 	@Any
 	private Instance<JobHandler> jobHandlers;
+	
+	@Inject
+	@Any
+	private Instance<Plugin> plugins;
+
 
 	private static Logger logger = Logger.getLogger(AdminPService.class.getName());
 
@@ -141,12 +145,7 @@ public class AdminPService {
 	public ItemCollection createJob(ItemCollection adminp) throws AccessDeniedException {
 
 		String jobtype = adminp.getItemValueString("job");
-		if (!jobtype.equals(JOB_RENAME_USER) && !jobtype.equals(JOB_REBUILD_LUCENE_INDEX)
-				&& !jobtype.equals(JOB_UPGRADE) && !jobtype.equals(JOB_MIGRATION)) {
-			throw new InvalidAccessException(ProcessingErrorException.INVALID_WORKITEM,
-					"AdminPService: error - invalid job type");
-		}
-
+	
 		// generate new UniqueID...
 		adminp.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
 
@@ -302,6 +301,14 @@ public class AdminPService {
 		if (jobHandlerClassName == null || jobHandlerClassName.isEmpty())
 			return null;
 
+		if (plugins == null || !plugins.iterator().hasNext()) {
+			logger.finest("......nicht mal plugisn sind da :-(");
+			return null;
+		}
+		
+		
+		
+		
 		if (jobHandlers == null || !jobHandlers.iterator().hasNext()) {
 			logger.finest("......no CDI jobHandlers injected");
 			return null;
