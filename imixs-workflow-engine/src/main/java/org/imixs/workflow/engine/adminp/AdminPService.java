@@ -35,6 +35,9 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -96,7 +99,7 @@ public class AdminPService {
 	@EJB
 	JobHandlerRebuildIndex jobHandlerRebuildIndex;
 
-	@EJB 
+	@EJB
 	JobHandlerUpgradeWorkitems jobHandlerUpgradeWorkitems;
 
 	@EJB
@@ -104,10 +107,11 @@ public class AdminPService {
 
 	@EJB
 	JobHandlerMigration3X jobHandlerMigration3X;
-	
 
-	// private String lastUniqueID = null;
-	// private static int MAX_COUNT = 300;
+	@Inject
+	@Any
+	private Instance<JobHandler> jobHandlers;
+
 	private static Logger logger = Logger.getLogger(AdminPService.class.getName());
 
 	/**
@@ -239,7 +243,7 @@ public class AdminPService {
 					logger.info("Job " + JOB_MIGRATION + " (" + adminp.getUniqueID() + ") completed - timer stopped");
 				}
 			}
-			
+
 			if (job.equals(JOB_UPGRADE)) {
 				jobfound = true;
 				if (jobHandlerUpgradeWorkitems.run(adminp)) {
@@ -249,9 +253,19 @@ public class AdminPService {
 			}
 
 			if (!jobfound) {
-				logger.warning("Unable to start jobtype '" + job + "' -  not defined!");
-				timer.cancel();
-				logger.info("Job " + adminp.getUniqueID() + " - timer stopped");
+
+				// try to find the jobHandler by CDI .....
+				JobHandler aJobHandler = findJobHandlerByName(job);
+				if (aJobHandler != null) {
+					if (jobHandlerUpgradeWorkitems.run(adminp)) {
+						timer.cancel();
+						logger.info("Job " + job + " (" + adminp.getUniqueID() + ") completed - timer stopped");
+					}
+				} else {
+					logger.warning("Unable to start jobtype '" + job + "' -  not defined!");
+					timer.cancel();
+					logger.info("Job " + adminp.getUniqueID() + " - timer stopped");
+				}
 			}
 
 		} catch (Exception e) {
@@ -275,6 +289,32 @@ public class AdminPService {
 
 		logger.fine("...timer call finished successfull after " + ((System.currentTimeMillis()) - lProfiler) + " ms");
 
+	}
+
+	/**
+	 * This method returns a n injected JobHandler by name or null if no JobHandler
+	 * with the requested class name is injected.
+	 * 
+	 * @param jobHandlerClassName
+	 * @return jobHandler class or null if not found
+	 */
+	private JobHandler findJobHandlerByName(String jobHandlerClassName) {
+		if (jobHandlerClassName == null || jobHandlerClassName.isEmpty())
+			return null;
+
+		if (jobHandlers == null || !jobHandlers.iterator().hasNext()) {
+			logger.finest("......no CDI jobHandlers injected");
+			return null;
+		}
+		// iterate over all injected plugins....
+		for (JobHandler jobHandler : this.jobHandlers) {
+			if (jobHandler.getClass().getName().equals(jobHandlerClassName)) {
+				logger.finest("......CDI JobHandler '" + jobHandlerClassName + "' successful injected");
+				return jobHandler;
+			}
+		}
+
+		return null;
 	}
 
 	/**
