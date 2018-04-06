@@ -153,9 +153,19 @@
 				</configuration>
 			</plugin>
 
-			<!-- release management <plugin> <groupId>org.apache.maven.plugins</groupId> 
-				<artifactId>maven-release-plugin</artifactId> <version>2.3.2</version> </plugin> -->
-			<!-- release management to release to Maven central -->
+			<!-- release management -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<useReleaseProfile>false</useReleaseProfile>
+					<releaseProfiles>release</releaseProfiles>
+					<goals>deploy</goals>
+				</configuration>
+			</plugin>
+			<!-- release to Maven central -->
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
