@@ -110,11 +110,10 @@ public class AdminPService {
 	@Inject
 	@Any
 	private Instance<JobHandler> jobHandlers;
-	
+
 	@Inject
 	@Any
 	private Instance<Plugin> plugins;
-
 
 	private static Logger logger = Logger.getLogger(AdminPService.class.getName());
 
@@ -145,7 +144,7 @@ public class AdminPService {
 	public ItemCollection createJob(ItemCollection adminp) throws AccessDeniedException {
 
 		String jobtype = adminp.getItemValueString("job");
-	
+
 		// generate new UniqueID...
 		adminp.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
 
@@ -254,14 +253,14 @@ public class AdminPService {
 			if (!jobfound) {
 
 				// try to find the jobHandler by CDI .....
-				JobHandler aJobHandler = findJobHandlerByName(job);
-				if (aJobHandler != null) {
-					if (jobHandlerUpgradeWorkitems.run(adminp)) {
+				JobHandler cdiJobHandler = findJobHandlerByName(job);
+				if (cdiJobHandler != null) {
+					if (cdiJobHandler.run(adminp)) {
 						timer.cancel();
 						logger.info("Job " + job + " (" + adminp.getUniqueID() + ") completed - timer stopped");
 					}
 				} else {
-					logger.warning("Unable to start jobtype '" + job + "' -  not defined!");
+					logger.warning("Unable to start job. JobHandler class '" + job + "' -  not defined!");
 					timer.cancel();
 					logger.info("Job " + adminp.getUniqueID() + " - timer stopped");
 				}
@@ -301,19 +300,11 @@ public class AdminPService {
 		if (jobHandlerClassName == null || jobHandlerClassName.isEmpty())
 			return null;
 
-		if (plugins == null || !plugins.iterator().hasNext()) {
-			logger.finest("......nicht mal plugisn sind da :-(");
-			return null;
-		}
-		
-		
-		
-		
 		if (jobHandlers == null || !jobHandlers.iterator().hasNext()) {
 			logger.finest("......no CDI jobHandlers injected");
 			return null;
 		}
-		// iterate over all injected plugins....
+		// iterate over all injected JobHandlers....
 		for (JobHandler jobHandler : this.jobHandlers) {
 			if (jobHandler.getClass().getName().equals(jobHandlerClassName)) {
 				logger.finest("......CDI JobHandler '" + jobHandlerClassName + "' successful injected");
