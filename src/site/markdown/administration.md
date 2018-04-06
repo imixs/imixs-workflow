@@ -25,9 +25,12 @@ The Imixs Admin Client provides a interface to update or delete entities (Workit
 <img src="images/imixs-admin-client-03.png" /> 
 
 ## The Administration Process
-The Imixs Admin Client provides an administration process (AdminP) which can be used to maintain the documents and process instances managed by the Imixs-Workflow engine. 
+The Imixs-Workflow engine provides the [administration process 'AdminP'](./engine/adminp.html) which can be used to maintain the documents and process instances managed by the Imixs-Workflow engine. This process can be monitored by the Admin Client
 
 <img src="images/imixs-admin-client-04.png" /> 
+
+
+The Imixs-Workflow engine provides a set of standard AdminP Job Handlers which can be triggered directly form the Admin UI: 
 
 ### Rebuild the Lucene Index
 
@@ -46,23 +49,6 @@ The function updates the workitem items:
  
 The new userId can either be replaced with the old one or be appended. The blocksize
 defines the maximum number of workflow documents to be processed in one run. After the blocksize was updated, the job will pause for a given interval specified in minutes.  
-
-Example of a a Job Description:
-
-
-	<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	       <item name="type"><value xsi:type="xs:string">adminp</value></item> 
-	       <item name="job"><value xsi:type="xs:string">RENAME_USER</value></item> 
-	       <item name="typelist"><value xsi:type="xs:string">workitem</value></item> 
-	       <item name="namfrom"><value xsi:type="xs:string">FROM USER ID</value></item> 
-	       <item name="namto"><value xsi:type="xs:string">NEW USER ID</value></item> 
-	       <item name="keyreplace"><value xsi:type="xs:boolean">false</value></item> 
-	</document>
-
-
-If the job item 'keyReplace' is set to 'true' then the old user id will be removed.  
-
-If a workitem has the item '_private_" set to _true_ the workitem will be ignored by the job. This is useful for personal workitems which should not be delegated to the deputy. E.g. 'personnel file' or a 'application for leave'.
 
 
 ### Migration
