@@ -77,7 +77,7 @@ public class TestReadWriteXMLData {
 		// create JAXB object
 		DocumentCollection xmlCol = null;
 		try {
-			xmlCol = XMLItemCollectionAdapter.putCollection(col);
+			xmlCol = XMLItemCollectionAdapter.putDocuments(col);
 		} catch (Exception e1) {
 
 			e1.printStackTrace();

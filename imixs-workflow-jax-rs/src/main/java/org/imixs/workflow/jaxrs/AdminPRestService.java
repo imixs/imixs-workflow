@@ -133,7 +133,7 @@ public class AdminPRestService {
 		Collection<ItemCollection> col = null;
 		try {
 			col = documentService.getDocumentsByType("adminp");
-			return XMLItemCollectionAdapter.putCollection(col);
+			return XMLItemCollectionAdapter.putDocuments(col);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

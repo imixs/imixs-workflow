@@ -153,7 +153,7 @@ public class ReportRestService {
 
 			Collection<ItemCollection> col = null;
 			col = reportService.getReportList();
-			return XMLItemCollectionAdapter.putCollection(col);
+			return XMLItemCollectionAdapter.putDocuments(col);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -234,13 +234,13 @@ public class ReportRestService {
 
 			// if no XSL is provided return standard html format...?
 			if ("".equals(sXSL)) {
-				Response.ResponseBuilder builder = Response.ok(XMLItemCollectionAdapter.putCollection(col),
+				Response.ResponseBuilder builder = Response.ok(XMLItemCollectionAdapter.putDocuments(col),
 						"text/html");
 				return builder.build();
 			}
 
 			// Transform XML per XSL and generate output
-			DocumentCollection xmlCol = XMLItemCollectionAdapter.putCollection(col);
+			DocumentCollection xmlCol = XMLItemCollectionAdapter.putDocuments(col);
 
 			StringWriter writer = new StringWriter();
 
@@ -344,7 +344,7 @@ public class ReportRestService {
 			Map<String, String> params = getQueryParams(uriInfo);
 			col = reportService.executeReport(reportName, pageSize, pageIndex, sortBy, sortReverse, params);
 
-			DocumentCollection documentCollection = XMLItemCollectionAdapter.putCollection(col);
+			DocumentCollection documentCollection = XMLItemCollectionAdapter.putDocuments(col);
 			DocumentTable documentTable = new DocumentTable(documentCollection.getDocument(), items, labels);
 			// documentTable.setDocument(documentCollection.getDocument());
 
@@ -401,7 +401,7 @@ public class ReportRestService {
 			logger.fine("set encoding :" + encoding);
 			servlerResponse.setContentType(MediaType.APPLICATION_XML + "; charset=" + encoding);
 
-			return XMLItemCollectionAdapter.putCollection(col);
+			return XMLItemCollectionAdapter.putDocuments(col);
 
 		} catch (Exception e) {
 			e.printStackTrace();

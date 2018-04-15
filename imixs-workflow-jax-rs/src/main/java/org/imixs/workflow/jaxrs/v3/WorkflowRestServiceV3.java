@@ -79,6 +79,7 @@ import org.imixs.workflow.util.JSONParser;
  * @author rsoika
  * 
  */
+@Deprecated
 @Path("/v3/workflow")
 @Produces({ MediaType.TEXT_HTML, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, MediaType.TEXT_XML })
 @Stateless

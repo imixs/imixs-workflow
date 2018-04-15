@@ -229,7 +229,7 @@ public class ModelRestService {
 		try {
 
 			col = modelService.getModel(version).findAllTasks();
-			return XMLItemCollectionAdapter.putCollection(col, getItemList(items));
+			return XMLItemCollectionAdapter.putDocuments(col, getItemList(items));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -271,7 +271,7 @@ public class ModelRestService {
 		Collection<ItemCollection> col = null;
 		try {
 			col = modelService.getModel(version).findAllEventsByTask(processid);
-			return XMLItemCollectionAdapter.putCollection(col, getItemList(items));
+			return XMLItemCollectionAdapter.putDocuments(col, getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -312,7 +312,7 @@ public class ModelRestService {
 		Collection<ItemCollection> col = null;
 		try {
 			col = modelService.getModel(version).findTasksByGroup(group);
-			return XMLItemCollectionAdapter.putCollection(col, getItemList(items));
+			return XMLItemCollectionAdapter.putDocuments(col, getItemList(items));
 
 		} catch (Exception e) {
 			e.printStackTrace();

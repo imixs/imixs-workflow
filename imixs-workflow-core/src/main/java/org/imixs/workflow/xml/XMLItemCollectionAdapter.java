@@ -228,18 +228,18 @@ public class XMLItemCollectionAdapter {
 	}
 
 	/**
-	 * This method transforms a Collection<ItemCollection> into a EntityCollection
+	 * This method transforms a Collection<ItemCollection> into a DocumentCollection
 	 * 
 	 * @param col
 	 * @return
 	 */
-	public static DocumentCollection putCollection(final Collection<ItemCollection> col) {
+	public static DocumentCollection putDocuments(final Collection<ItemCollection> col) {
 
-		return putCollection(col, null);
+		return putDocuments(col, null);
 	}
 
 	/**
-	 * This method transforms a Collection<ItemCollection> into a EntityCollection
+	 * This method transforms a Collection<ItemCollection> into a DocumentCollection
 	 * 
 	 * If the attribute List is provided only the corresponding properties will be
 	 * returned.
@@ -251,7 +251,7 @@ public class XMLItemCollectionAdapter {
 	 *            will be converted
 	 * @return
 	 */
-	public static DocumentCollection putCollection(final Collection<ItemCollection> col, final List<String> itemNames) {
+	public static DocumentCollection putDocuments(final Collection<ItemCollection> col, final List<String> itemNames) {
 		DocumentCollection entiCol = new DocumentCollection();
 		Iterator<ItemCollection> it = col.iterator();
 		int max = col.size();
@@ -268,6 +268,57 @@ public class XMLItemCollectionAdapter {
 		return entiCol;
 	}
 
+	
+	
+	/**
+	 * This method transforms a single ItemCollection into a DocumentCollection with one element. 
+	 * 
+	 * If the attribute List is provided only the corresponding properties will be
+	 * returned.
+	 * 
+	 * @param col
+	 *            - collection of ItemCollection objects to be converted
+	 * @param itemNames
+	 *            - optional list of item names to be converted. If null all items
+	 *            will be converted
+	 * @return
+	 */
+	public static DocumentCollection putDocuments(final ItemCollection doc, final List<String> itemNames) {
+		DocumentCollection entiCol = new DocumentCollection();
+		List<ItemCollection> col=new ArrayList<ItemCollection>();
+		col.add(doc);
+		
+		Iterator<ItemCollection> it = col.iterator();
+		int max = col.size();
+		int i = 0;
+		XMLItemCollection[] entities = new XMLItemCollection[max];
+		while (it.hasNext()) {
+			ItemCollection icw = (ItemCollection) it.next();
+			XMLItemCollection entity = putItemCollection(icw, itemNames);
+			entities[i] = entity;
+			i++;
+		}
+		if (max > 0)
+			entiCol.setDocument(entities);
+		return entiCol;
+	}
+
+	/**
+	 * This method transforms single ItemCollection into a DocumentCollection with one element. 
+	 * 
+	 * @param doc
+	 * @return
+	 */
+	public static DocumentCollection putDocuments(final ItemCollection doc) {
+		return putDocuments(doc, null);
+	}
+
+	
+	
+	
+	
+	
+	
 	/**
 	 * This method imports an xml entity data stream and returns a List of
 	 * ItemCollection objects. The method can import any kind of entity data like

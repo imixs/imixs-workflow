@@ -69,6 +69,7 @@ import org.imixs.workflow.exceptions.ModelException;
  * @author rsoika
  * 
  */
+@Deprecated
 @Path("/v3/model")
 @Produces({ MediaType.TEXT_HTML, MediaType.APPLICATION_XHTML_XML, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON,
 		MediaType.TEXT_XML })

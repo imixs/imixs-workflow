@@ -90,10 +90,9 @@ public class DocumentRestService {
 
 	private static Logger logger = Logger.getLogger(DocumentRestService.class.getName());
 
-	
 	@GET
 	@Produces(MediaType.APPLICATION_XHTML_XML)
-	//@Path("/") generates jersey warning
+	// @Path("/") generates jersey warning
 	public StreamingOutput getRoot() {
 
 		return new StreamingOutput() {
@@ -107,7 +106,6 @@ public class DocumentRestService {
 		};
 
 	}
-
 
 	@GET
 	@Produces("text/html")
@@ -156,12 +154,13 @@ public class DocumentRestService {
 	 */
 	@GET
 	@Path("/{uniqueid}")
-	public XMLItemCollection getDocument(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
+	public DocumentCollection getDocument(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
 
 		ItemCollection document;
 		try {
 			document = documentService.load(uniqueid);
-			return XMLItemCollectionAdapter.putItemCollection(document, DocumentRestService.getItemList(items));
+			return XMLItemCollectionAdapter.putDocuments(document,DocumentRestService.getItemList(items));					
+			//	return	XMLItemCollectionAdapter.putItemCollection(document, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -188,7 +187,7 @@ public class DocumentRestService {
 			// decode query...
 			String decodedQuery = URLDecoder.decode(query, "UTF-8");
 			col = documentService.find(decodedQuery, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putCollection(col, getItemList(items));
+			return XMLItemCollectionAdapter.putDocuments(col, getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -217,7 +216,7 @@ public class DocumentRestService {
 			int firstResult = pageIndex * pageSize;
 
 			col = documentService.getDocumentsByQuery(decodedQuery, firstResult, pageSize);
-			return XMLItemCollectionAdapter.putCollection(col, getItemList(items));
+			return XMLItemCollectionAdapter.putDocuments(col, getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -292,7 +291,7 @@ public class DocumentRestService {
 	 * @return
 	 */
 	@POST
-	//@Path("/") generates jersey warning
+	// @Path("/") generates jersey warning
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
 	public Response postEntity(XMLItemCollection xmlworkitem) {
@@ -345,8 +344,6 @@ public class DocumentRestService {
 		}
 	}
 
-	
-	
 	/**
 	 * Delegater putEntity @PUT
 	 * 
@@ -355,16 +352,14 @@ public class DocumentRestService {
 	 * @return
 	 */
 	@PUT
-	//@Path("/") generates jersey warning
+	// @Path("/") generates jersey warning
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
 	public Response putEntity(XMLItemCollection xmlworkitem) {
 		logger.finest("putEntity @PUT /  delegate to POST....");
 		return postEntity(xmlworkitem);
 	}
-	
-	
-	
+
 	/**
 	 * This method deletes an entity
 	 * 
@@ -451,14 +446,14 @@ public class DocumentRestService {
 	@GET
 	@Path("/configuration")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public XMLItemCollection getConfiguration() throws Exception {
+	public DocumentCollection getConfiguration() throws Exception {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
 			return null;
 		}
 
 		ItemCollection config = lucenUpdateService.getConfiguration();
 
-		return XMLItemCollectionAdapter.putItemCollection(config);
+		return XMLItemCollectionAdapter.putDocuments(config);
 
 	}
 

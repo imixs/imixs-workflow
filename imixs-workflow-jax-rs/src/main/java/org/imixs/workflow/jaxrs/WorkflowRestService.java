@@ -259,7 +259,7 @@ public class WorkflowRestService {
 		Collection<ItemCollection> eventList = null;
 		try {
 			eventList = workflowService.getEvents(this.workflowService.getDocumentService().load(uniqueid));
-			return XMLItemCollectionAdapter.putCollection(eventList);
+			return XMLItemCollectionAdapter.putDocuments(eventList);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -304,7 +304,7 @@ public class WorkflowRestService {
 				owner = URLDecoder.decode(owner, "UTF-8");
 
 			col = workflowService.getWorkListByOwner(owner, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putCollection(col, DocumentRestService.getItemList(items));
+			return XMLItemCollectionAdapter.putDocuments(col, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -337,7 +337,7 @@ public class WorkflowRestService {
 				user = URLDecoder.decode(user, "UTF-8");
 
 			col = workflowService.getWorkListByAuthor(user, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putCollection(col, DocumentRestService.getItemList(items));
+			return XMLItemCollectionAdapter.putDocuments(col, DocumentRestService.getItemList(items));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -362,7 +362,7 @@ public class WorkflowRestService {
 				creator = URLDecoder.decode(creator, "UTF-8");
 
 			col = workflowService.getWorkListByCreator(creator, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putCollection(col, DocumentRestService.getItemList(items));
+			return XMLItemCollectionAdapter.putDocuments(col, DocumentRestService.getItemList(items));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -380,7 +380,7 @@ public class WorkflowRestService {
 		Collection<ItemCollection> col = null;
 		try {
 			col = workflowService.getWorkListByProcessID(processid, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putCollection(col, DocumentRestService.getItemList(items));
+			return XMLItemCollectionAdapter.putDocuments(col, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -402,7 +402,7 @@ public class WorkflowRestService {
 				processgroup = URLDecoder.decode(processgroup, "UTF-8");
 
 			col = workflowService.getWorkListByGroup(processgroup, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putCollection(col, DocumentRestService.getItemList(items));
+			return XMLItemCollectionAdapter.putDocuments(col, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -419,7 +419,7 @@ public class WorkflowRestService {
 		Collection<ItemCollection> col = null;
 		try {
 			col = workflowService.getWorkListByRef(uniqueid, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putCollection(col, DocumentRestService.getItemList(items));
+			return XMLItemCollectionAdapter.putDocuments(col, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
