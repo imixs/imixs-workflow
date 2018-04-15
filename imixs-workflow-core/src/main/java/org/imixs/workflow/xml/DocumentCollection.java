@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author rsoika
  * @version 0.0.1
  */
-@XmlRootElement(name="collection")
+@XmlRootElement(name="data")
 public class DocumentCollection implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;

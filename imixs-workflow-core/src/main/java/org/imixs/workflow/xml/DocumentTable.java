@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author rsoika
  * @version 2.0.0
  */
-@XmlRootElement(name = "collection")
+@XmlRootElement(name = "data")
 public class DocumentTable implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
