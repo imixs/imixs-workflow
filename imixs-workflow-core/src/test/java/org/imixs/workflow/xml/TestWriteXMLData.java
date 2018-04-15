@@ -12,8 +12,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.xml.XMLItemCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -104,9 +102,9 @@ public class TestWriteXMLData {
 		// write the write-example.xml....
 
 		// create JAXB object
-		XMLItemCollection xmlCol = null;
+		XMLDocument xmlCol = null;
 		try {
-			xmlCol = XMLItemCollectionAdapter.putItemCollection(itemColSource);
+			xmlCol = XMLDocumentAdapter.getDocument(itemColSource);
 		} catch (Exception e1) {
 
 			e1.printStackTrace();
@@ -118,7 +116,7 @@ public class TestWriteXMLData {
 		try {
 
 			file = new File("src/test/resources/write-example.xml");
-			JAXBContext jaxbContext = JAXBContext.newInstance(XMLItemCollection.class);
+			JAXBContext jaxbContext = JAXBContext.newInstance(XMLDocument.class);
 			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
 			// output pretty printed
@@ -141,7 +139,7 @@ public class TestWriteXMLData {
 			FileInputStream fis = null;
 
 			fis = new FileInputStream(file);
-			ItemCollection resultItemCollection = XMLItemCollectionAdapter.readItemCollectionFromInputStream(fis);
+			ItemCollection resultItemCollection = XMLDocumentAdapter.readItemCollectionFromInputStream(fis);
 
 			Assert.assertNotNull(resultItemCollection);
 

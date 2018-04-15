@@ -79,10 +79,11 @@ import org.apache.fop.apps.MimeConstants;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.ReportService;
-import org.imixs.workflow.xml.DocumentCollection;
+import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.DocumentTable;
-import org.imixs.workflow.xml.XMLItemCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XSLHandler;
 
 /**
@@ -148,16 +149,16 @@ public class ReportRestService {
 
 	@GET
 	@Path("/definitions")
-	public DocumentCollection getReportsDefinitions() {
+	public XMLDataCollection getReportsDefinitions() {
 		try {
 
 			Collection<ItemCollection> col = null;
 			col = reportService.getReportList();
-			return XMLItemCollectionAdapter.putDocuments(col);
+			return XMLDataCollectionAdapter.getDataCollection(col);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new DocumentCollection();
+		return new XMLDataCollection();
 	}
 
 	/**
@@ -169,10 +170,10 @@ public class ReportRestService {
 	 */
 	@GET
 	@Path("/definitions/{name}")
-	public XMLItemCollection getReportDefinition(@PathParam("name") String name) {
+	public XMLDataCollection getReportDefinition(@PathParam("name") String name) {
 		try {
 			ItemCollection itemCol = reportService.getReport(name);
-			return XMLItemCollectionAdapter.putItemCollection(itemCol);
+			return XMLDataCollectionAdapter.getDataCollection(itemCol);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -234,17 +235,17 @@ public class ReportRestService {
 
 			// if no XSL is provided return standard html format...?
 			if ("".equals(sXSL)) {
-				Response.ResponseBuilder builder = Response.ok(XMLItemCollectionAdapter.putDocuments(col),
+				Response.ResponseBuilder builder = Response.ok(XMLDataCollectionAdapter.getDataCollection(col),
 						"text/html");
 				return builder.build();
 			}
 
 			// Transform XML per XSL and generate output
-			DocumentCollection xmlCol = XMLItemCollectionAdapter.putDocuments(col);
+			XMLDataCollection xmlCol = XMLDataCollectionAdapter.getDataCollection(col);
 
 			StringWriter writer = new StringWriter();
 
-			JAXBContext context = JAXBContext.newInstance(DocumentCollection.class);
+			JAXBContext context = JAXBContext.newInstance(XMLDataCollection.class);
 
 			Marshaller m = context.createMarshaller();
 			m.setProperty("jaxb.encoding", encoding);
@@ -344,7 +345,7 @@ public class ReportRestService {
 			Map<String, String> params = getQueryParams(uriInfo);
 			col = reportService.executeReport(reportName, pageSize, pageIndex, sortBy, sortReverse, params);
 
-			DocumentCollection documentCollection = XMLItemCollectionAdapter.putDocuments(col);
+			XMLDataCollection documentCollection = XMLDataCollectionAdapter.getDataCollection(col);
 			DocumentTable documentTable = new DocumentTable(documentCollection.getDocument(), items, labels);
 			// documentTable.setDocument(documentCollection.getDocument());
 
@@ -381,7 +382,7 @@ public class ReportRestService {
 	@GET
 	@Produces({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
 	@Path("/{name}.xml")
-	public DocumentCollection getXMLResult(@PathParam("name") String reportName,
+	public XMLDataCollection getXMLResult(@PathParam("name") String reportName,
 			@DefaultValue("100") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
 			@QueryParam("sortReverse") boolean sortReverse, @DefaultValue("") @QueryParam("encoding") String encoding,
@@ -401,7 +402,7 @@ public class ReportRestService {
 			logger.fine("set encoding :" + encoding);
 			servlerResponse.setContentType(MediaType.APPLICATION_XML + "; charset=" + encoding);
 
-			return XMLItemCollectionAdapter.putDocuments(col);
+			return XMLDataCollectionAdapter.getDataCollection(col);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -426,7 +427,7 @@ public class ReportRestService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{name}.json")
-	public DocumentCollection getJSONResult(@PathParam("name") String name,
+	public XMLDataCollection getJSONResult(@PathParam("name") String name,
 
 			@DefaultValue("-1") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
@@ -435,7 +436,7 @@ public class ReportRestService {
 			@DefaultValue("") @QueryParam("encoding") String encoding, @Context UriInfo uriInfo,
 			@Context HttpServletResponse servlerResponse) throws Exception {
 
-		DocumentCollection result = getXMLResult(name, pageSize, pageIndex, sortBy, sortReverse, encoding, uriInfo,
+		XMLDataCollection result = getXMLResult(name, pageSize, pageIndex, sortBy, sortReverse, encoding, uriInfo,
 				servlerResponse);
 
 		// set content type and character encoding
@@ -478,10 +479,10 @@ public class ReportRestService {
 	@PUT
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN,
 			MediaType.TEXT_XML })
-	public void putReport(XMLItemCollection reportCol) {
+	public void putReport(XMLDocument reportCol) {
 		ItemCollection itemCollection;
 		try {
-			itemCollection = XMLItemCollectionAdapter.getItemCollection(reportCol);
+			itemCollection = XMLDocumentAdapter.putDocument(reportCol);
 			reportService.updateReport(itemCollection);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -491,7 +492,7 @@ public class ReportRestService {
 	@POST
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN,
 			MediaType.TEXT_XML })
-	public void postReport(XMLItemCollection reportCol) {
+	public void postReport(XMLDocument reportCol) {
 		putReport(reportCol);
 	}
 

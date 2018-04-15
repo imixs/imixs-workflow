@@ -44,8 +44,8 @@ import javax.ws.rs.ext.Provider;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.xml.DocumentTable;
-import org.imixs.workflow.xml.XMLItemCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 /**
  * This MessageBodyWriter generates an HTML representation from a EntityTable.
@@ -97,7 +97,7 @@ public class DocumentTableWriter implements MessageBodyWriter<DocumentTable> {
 		// print table body
 		try {
 
-			for (XMLItemCollection xmlworkItem : documentTable.getDocument()) {
+			for (XMLDocument xmlworkItem : documentTable.getDocument()) {
 				/* Print row */
 				if (trClass)
 					bw.write("<tr class=\"a\">");
@@ -105,7 +105,7 @@ public class DocumentTableWriter implements MessageBodyWriter<DocumentTable> {
 					bw.write("<tr class=\"b\">");
 				trClass = !trClass;
 
-				ItemCollection itemCol = XMLItemCollectionAdapter.getItemCollection(xmlworkItem);
+				ItemCollection itemCol = XMLDocumentAdapter.putDocument(xmlworkItem);
 				for (String itemName : documentTable.getItems()) {
 					// test if item name contains format or converter definition
 					List vValues = itemCol.getItemValue(itemName);

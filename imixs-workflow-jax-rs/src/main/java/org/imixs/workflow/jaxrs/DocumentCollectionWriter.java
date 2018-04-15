@@ -41,8 +41,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import org.imixs.workflow.xml.DocumentCollection;
-import org.imixs.workflow.xml.XMLItemCollection;
+import org.imixs.workflow.xml.XMLDataCollection;
+import org.imixs.workflow.xml.XMLDocument;
 
 /**
  * This MessageBodyWriter generates an HTML representation from a DocumetCollection
@@ -52,14 +52,14 @@ import org.imixs.workflow.xml.XMLItemCollection;
  */
 @Provider
 @Produces("text/html")
-public class DocumentCollectionWriter implements MessageBodyWriter<DocumentCollection> {
+public class DocumentCollectionWriter implements MessageBodyWriter<XMLDataCollection> {
 
 	public boolean isWriteable(Class<?> type, Type genericType,
 			Annotation[] annotations, MediaType mediaType) {
-		return DocumentCollection.class.isAssignableFrom(type);
+		return XMLDataCollection.class.isAssignableFrom(type);
 	}
 
-	public void writeTo(DocumentCollection entityCollection, Class<?> type, Type genericType,
+	public void writeTo(XMLDataCollection entityCollection, Class<?> type, Type genericType,
 			Annotation[] annotations, MediaType mediaType,
 			MultivaluedMap<String, Object> httpHeaders,
 			OutputStream entityStream) throws IOException,
@@ -76,7 +76,7 @@ public class DocumentCollectionWriter implements MessageBodyWriter<DocumentColle
 			bw.write("<h1>EntityCollection</h1>");
 			bw.write("<h2>" + entityCollection.getDocument().length + " Entries</h2>");
 
-			for (XMLItemCollection xmlworkItem : entityCollection.getDocument()) {
+			for (XMLDocument xmlworkItem : entityCollection.getDocument()) {
 				XMLItemCollectionWriter.printXMLItemCollectionHTML(bw, xmlworkItem);
 
 			}
@@ -92,7 +92,7 @@ public class DocumentCollectionWriter implements MessageBodyWriter<DocumentColle
 		bw.flush();
 	}
 
-	public long getSize(DocumentCollection arg0, Class<?> arg1, Type arg2,
+	public long getSize(XMLDataCollection arg0, Class<?> arg1, Type arg2,
 			Annotation[] arg3, MediaType arg4) {
 		return -1;
 	}

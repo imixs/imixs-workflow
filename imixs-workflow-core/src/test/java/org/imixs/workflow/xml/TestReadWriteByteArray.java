@@ -82,7 +82,7 @@ public class TestReadWriteByteArray {
 		// write into byte[]
 		byte[] data = null;
 		try {
-			data = XMLItemCollectionAdapter.writeItemCollection(itemColSource);
+			data = XMLDocumentAdapter.writeItemCollection(itemColSource);
 			// test if we found some data
 			Assert.assertTrue(data.length > 100);
 		} catch (JAXBException | IOException e) {
@@ -93,7 +93,7 @@ public class TestReadWriteByteArray {
 		// PHASE III.
 		// read from byte[]
 		try {
-			ItemCollection resultItemCollection = XMLItemCollectionAdapter.readItemCollection(data);
+			ItemCollection resultItemCollection = XMLDocumentAdapter.readItemCollection(data);
 			Assert.assertNotNull(resultItemCollection);
 			Assert.assertNotSame(itemColSource, resultItemCollection);
 			// verify content

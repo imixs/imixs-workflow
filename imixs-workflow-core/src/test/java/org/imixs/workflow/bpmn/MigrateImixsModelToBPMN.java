@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 
 /**
  * This utility class can be used to convert a old .ixm model into a new imixs
@@ -53,7 +53,7 @@ public class MigrateImixsModelToBPMN {
 
 		try {
  
-			modelItemCollection = XMLItemCollectionAdapter
+			modelItemCollection = XMLDataCollectionAdapter
 					.readCollectionFromInputStream(MigrateImixsModelToBPMN.class
 							.getClass().getResourceAsStream(sourceModelFile));
 			logger.info("Model contains " + modelItemCollection.size()

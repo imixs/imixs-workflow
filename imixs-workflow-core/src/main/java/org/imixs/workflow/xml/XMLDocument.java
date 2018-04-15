@@ -38,12 +38,12 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @version 0.0.1
  */
 @XmlRootElement(name = "document")
-public class XMLItemCollection implements java.io.Serializable {
+public class XMLDocument implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private org.imixs.workflow.xml.XMLItem[] item;
 
-	public XMLItemCollection() {
+	public XMLDocument() {
 		this.setItem(new XMLItem[] {});
 	}
 
@@ -59,9 +59,9 @@ public class XMLItemCollection implements java.io.Serializable {
 	 * This method compares the item array
 	 */
 	public boolean equals(Object o) {
-		if (!(o instanceof XMLItemCollection))
+		if (!(o instanceof XMLDocument))
 			return false;
-		return Arrays.equals(item,((XMLItemCollection)o).item);
+		return Arrays.equals(item,((XMLDocument)o).item);
 	}
 	
 }

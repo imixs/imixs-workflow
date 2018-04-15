@@ -53,9 +53,10 @@ import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.WorkflowException;
-import org.imixs.workflow.xml.DocumentCollection;
-import org.imixs.workflow.xml.XMLItemCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XMLDataCollection;
+import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 
 /**
  * The AdminPRestService provides methods to access the AdminPService EJB
@@ -129,15 +130,15 @@ public class AdminPRestService {
 	 */
 	@GET
 	@Path("/jobs")
-	public DocumentCollection getAllJobs() {
+	public XMLDataCollection getAllJobs() {
 		Collection<ItemCollection> col = null;
 		try {
 			col = documentService.getDocumentsByType("adminp");
-			return XMLItemCollectionAdapter.putDocuments(col);
+			return XMLDataCollectionAdapter.getDataCollection(col);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new DocumentCollection();
+		return new XMLDataCollection();
 	}
 
 	/**
@@ -158,12 +159,12 @@ public class AdminPRestService {
 	@Path("/jobs/")
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
-	public Response putJob(XMLItemCollection xmlworkitem) {
+	public Response putJob(XMLDocument xmlworkitem) {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 		ItemCollection workitem;
-		workitem = XMLItemCollectionAdapter.getItemCollection(xmlworkitem);
+		workitem = XMLDocumentAdapter.putDocument(xmlworkitem);
 
 		if (workitem == null) {
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -182,10 +183,10 @@ public class AdminPRestService {
 		// return workitem
 		try {
 			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_XML)
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem), MediaType.APPLICATION_XML)
 						.status(Response.Status.NOT_ACCEPTABLE).build();
 			else
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_XML)
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem), MediaType.APPLICATION_XML)
 						.build();
 		} catch (Exception e) {
 			e.printStackTrace();

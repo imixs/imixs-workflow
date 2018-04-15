@@ -57,9 +57,8 @@ import javax.xml.bind.Marshaller;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.xml.DocumentCollection;
-import org.imixs.workflow.xml.XMLItemCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.imixs.workflow.xml.XSLHandler;
 
 /**
@@ -447,12 +446,12 @@ public class MailPlugin extends AbstractPlugin {
 
 		logger.finest("......transfor mail body based on XSL template....");
 		// Transform XML per XSL and generate output
-		XMLItemCollection xml;
+		XMLDocument xml;
 		try {
-			xml = XMLItemCollectionAdapter.putItemCollection(documentContext);
+			xml = XMLDocumentAdapter.getDocument(documentContext);
 			StringWriter writer = new StringWriter();
 
-			JAXBContext context = JAXBContext.newInstance(DocumentCollection.class);
+			JAXBContext context = JAXBContext.newInstance(XMLDocument.class);
 			Marshaller m = context.createMarshaller();
 			m.setProperty("jaxb.encoding", encoding);
 			m.marshal(xml, writer);

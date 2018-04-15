@@ -37,9 +37,9 @@ import javax.xml.bind.Marshaller;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.xml.DocumentCollection;
-import org.imixs.workflow.xml.XMLItemCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XMLDataCollection;
+import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.imixs.workflow.xml.XSLHandler;
 
 /**
@@ -125,10 +125,10 @@ public class ReportPlugin extends AbstractPlugin {
 			// TODO : we need to clarify if the method call unescapeXMLContent() is
 			// necessary
 
-			XMLItemCollection xml = XMLItemCollectionAdapter.putItemCollection(adocumentContext);
+			XMLDocument xml = XMLDocumentAdapter.getDocument(adocumentContext);
 			StringWriter writer = new StringWriter();
 
-			JAXBContext context = JAXBContext.newInstance(DocumentCollection.class);
+			JAXBContext context = JAXBContext.newInstance(XMLDataCollection.class);
 			Marshaller m = context.createMarshaller();
 			m.setProperty("jaxb.encoding", encoding);
 			m.marshal(xml, writer);

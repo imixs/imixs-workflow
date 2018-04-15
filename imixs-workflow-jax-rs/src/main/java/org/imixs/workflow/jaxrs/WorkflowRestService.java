@@ -71,9 +71,10 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.WorkflowException;
 import org.imixs.workflow.util.JSONParser;
-import org.imixs.workflow.xml.DocumentCollection;
-import org.imixs.workflow.xml.XMLItemCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XMLDataCollection;
+import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 
 /**
  * The WorkflowService Handler supports methods to process different kind of
@@ -151,7 +152,7 @@ public class WorkflowRestService {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
 			return Response
-					.ok(XMLItemCollectionAdapter.putItemCollection(workitem, DocumentRestService.getItemList(items)))
+					.ok(XMLDataCollectionAdapter.getDataCollection(workitem, DocumentRestService.getItemList(items)))
 					.build();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -255,16 +256,16 @@ public class WorkflowRestService {
 	 */
 	@GET
 	@Path("/workitem/events/{uniqueid}")
-	public DocumentCollection getEvents(@PathParam("uniqueid") String uniqueid) {
+	public XMLDataCollection getEvents(@PathParam("uniqueid") String uniqueid) {
 		Collection<ItemCollection> eventList = null;
 		try {
 			eventList = workflowService.getEvents(this.workflowService.getDocumentService().load(uniqueid));
-			return XMLItemCollectionAdapter.putDocuments(eventList);
+			return XMLDataCollectionAdapter.getDataCollection(eventList);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new DocumentCollection();
+		return new XMLDataCollection();
 	}
 
 	/**
@@ -278,7 +279,7 @@ public class WorkflowRestService {
 	 */
 	@GET
 	@Path("/worklist")
-	public DocumentCollection getWorkList(@QueryParam("type") String type,
+	public XMLDataCollection getWorkList(@QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
@@ -289,7 +290,7 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/tasklist/owner/{owner}")
-	public DocumentCollection getTaskListByOwner(@PathParam("owner") String owner, @QueryParam("type") String type,
+	public XMLDataCollection getTaskListByOwner(@PathParam("owner") String owner, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
@@ -304,11 +305,11 @@ public class WorkflowRestService {
 				owner = URLDecoder.decode(owner, "UTF-8");
 
 			col = workflowService.getWorkListByOwner(owner, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putDocuments(col, DocumentRestService.getItemList(items));
+			return XMLDataCollectionAdapter.getDataCollection(col, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new DocumentCollection();
+		return new XMLDataCollection();
 	}
 
 	/**
@@ -322,7 +323,7 @@ public class WorkflowRestService {
 	 */
 	@GET
 	@Path("/tasklist/author/{user}")
-	public DocumentCollection getTaskListByAuthor(@PathParam("user") String user, @QueryParam("type") String type,
+	public XMLDataCollection getTaskListByAuthor(@PathParam("user") String user, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
@@ -337,17 +338,17 @@ public class WorkflowRestService {
 				user = URLDecoder.decode(user, "UTF-8");
 
 			col = workflowService.getWorkListByAuthor(user, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putDocuments(col, DocumentRestService.getItemList(items));
+			return XMLDataCollectionAdapter.getDataCollection(col, DocumentRestService.getItemList(items));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new DocumentCollection();
+		return new XMLDataCollection();
 	}
 
 	@GET
 	@Path("/tasklist/creator/{creator}")
-	public DocumentCollection getTaskListByCreator(@PathParam("creator") String creator,
+	public XMLDataCollection getTaskListByCreator(@PathParam("creator") String creator,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
@@ -362,17 +363,17 @@ public class WorkflowRestService {
 				creator = URLDecoder.decode(creator, "UTF-8");
 
 			col = workflowService.getWorkListByCreator(creator, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putDocuments(col, DocumentRestService.getItemList(items));
+			return XMLDataCollectionAdapter.getDataCollection(col, DocumentRestService.getItemList(items));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new DocumentCollection();
+		return new XMLDataCollection();
 	}
 
 	@GET
 	@Path("/tasklist/processid/{processid}")
-	public DocumentCollection getTaskListByProcessID(@PathParam("processid") int processid,
+	public XMLDataCollection getTaskListByProcessID(@PathParam("processid") int processid,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
@@ -380,16 +381,16 @@ public class WorkflowRestService {
 		Collection<ItemCollection> col = null;
 		try {
 			col = workflowService.getWorkListByProcessID(processid, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putDocuments(col, DocumentRestService.getItemList(items));
+			return XMLDataCollectionAdapter.getDataCollection(col, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new DocumentCollection();
+		return new XMLDataCollection();
 	}
 
 	@GET
 	@Path("/tasklist/group/{processgroup}")
-	public DocumentCollection getTaskListByGroup(@PathParam("processgroup") String processgroup,
+	public XMLDataCollection getTaskListByGroup(@PathParam("processgroup") String processgroup,
 			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
@@ -402,16 +403,16 @@ public class WorkflowRestService {
 				processgroup = URLDecoder.decode(processgroup, "UTF-8");
 
 			col = workflowService.getWorkListByGroup(processgroup, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putDocuments(col, DocumentRestService.getItemList(items));
+			return XMLDataCollectionAdapter.getDataCollection(col, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new DocumentCollection();
+		return new XMLDataCollection();
 	}
 
 	@GET
 	@Path("/tasklist/ref/{uniqueid}")
-	public DocumentCollection getTaskListByRef(@PathParam("uniqueid") String uniqueid, @QueryParam("type") String type,
+	public XMLDataCollection getTaskListByRef(@PathParam("uniqueid") String uniqueid, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
@@ -419,11 +420,11 @@ public class WorkflowRestService {
 		Collection<ItemCollection> col = null;
 		try {
 			col = workflowService.getWorkListByRef(uniqueid, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putDocuments(col, DocumentRestService.getItemList(items));
+			return XMLDataCollectionAdapter.getDataCollection(col, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new DocumentCollection();
+		return new XMLDataCollection();
 	}
 
 	/**
@@ -470,10 +471,10 @@ public class WorkflowRestService {
 		// return workitem
 		try {
 			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem))
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
 						.status(Response.Status.NOT_ACCEPTABLE).build();
 			else
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem)).build();
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem)).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -512,12 +513,12 @@ public class WorkflowRestService {
 	@POST
 	@Path("/workitem")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-	public Response postXMLWorkitem(XMLItemCollection xmlworkitem) {
+	public Response postXMLWorkitem(XMLDocument xmlworkitem) {
 
 		logger.fine("postXMLWorkitem @POST /workitem  method:postWorkitemXML....");
 
 		ItemCollection workitem;
-		workitem = XMLItemCollectionAdapter.getItemCollection(xmlworkitem);
+		workitem = XMLDocumentAdapter.putDocument(xmlworkitem);
 
 		if (workitem == null) {
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -546,10 +547,10 @@ public class WorkflowRestService {
 		// return workitem
 		try {
 			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem))
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
 						.status(Response.Status.NOT_ACCEPTABLE).build();
 			else
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem)).build();
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem)).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -565,7 +566,7 @@ public class WorkflowRestService {
 	@PUT
 	@Path("/workitem")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-	public Response putXMLWorkitem(XMLItemCollection workitem) {
+	public Response putXMLWorkitem(XMLDocument workitem) {
 		logger.fine("putXMLWorkitem @PUT /workitem  delegate to POST....");
 		return postXMLWorkitem(workitem);
 	}
@@ -573,10 +574,10 @@ public class WorkflowRestService {
 	@POST
 	@Path("/workitem/{uniqueid}")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-	public Response postXMLWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, XMLItemCollection xmlworkitem) {
+	public Response postXMLWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, XMLDocument xmlworkitem) {
 		logger.fine("postXMLWorkitemByUniqueID @POST /workitem/" + uniqueid + "  method:postWorkitemXML....");
 		ItemCollection workitem;
-		workitem = XMLItemCollectionAdapter.getItemCollection(xmlworkitem);
+		workitem = XMLDocumentAdapter.putDocument(xmlworkitem);
 
 		// validate given uniqueid....
 		if (!workitem.getUniqueID().isEmpty() && !uniqueid.equals(workitem.getUniqueID())) {
@@ -612,10 +613,10 @@ public class WorkflowRestService {
 		// return workitem
 		try {
 			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem))
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
 						.status(Response.Status.NOT_ACCEPTABLE).build();
 			else
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem)).build();
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem)).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -633,7 +634,7 @@ public class WorkflowRestService {
 	@PUT
 	@Path("/workitem/{uniqueid}")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-	public Response putXMLWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, XMLItemCollection xmlworkitem) {
+	public Response putXMLWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, XMLDocument xmlworkitem) {
 		logger.fine("putXMLWorkitem @PUT /workitem/{uniqueid}  delegate to POST....");
 		return postXMLWorkitemByUniqueID(uniqueid,xmlworkitem);
 	}
@@ -716,10 +717,10 @@ public class WorkflowRestService {
 		// return workitem
 		try {
 			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem))
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
 						.status(Response.Status.NOT_ACCEPTABLE).build();
 			else
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem)).build();
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem)).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -813,10 +814,10 @@ public class WorkflowRestService {
 		// return workitem
 		try {
 			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem))
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
 						.status(Response.Status.NOT_ACCEPTABLE).build();
 			else
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem)).build();
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem)).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -855,17 +856,17 @@ public class WorkflowRestService {
 	@POST
 	@Path("/workitems")
 	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
-	public Response postWorkitems_XML(DocumentCollection worklist) {
+	public Response postWorkitems_XML(XMLDataCollection worklist) {
 
 		logger.fine("postWorkitems_XML @POST /workitems  method:postWorkitemsXML....");
 
-		XMLItemCollection entity;
+		XMLDocument entity;
 		ItemCollection itemCollection;
 		try {
 			// save new entities into database and update modelversion.....
 			for (int i = 0; i < worklist.getDocument().length; i++) {
 				entity = worklist.getDocument()[i];
-				itemCollection = XMLItemCollectionAdapter.getItemCollection(entity);
+				itemCollection = XMLDocumentAdapter.putDocument(entity);
 				// process entity
 				workflowService.processWorkItem(itemCollection);
 			}
@@ -879,7 +880,7 @@ public class WorkflowRestService {
 	@PUT
 	@Path("/workitems")
 	@Consumes({ MediaType.APPLICATION_XML, "text/xml" })
-	public Response putWorkitems_XML(DocumentCollection worklist) {
+	public Response putWorkitems_XML(XMLDataCollection worklist) {
 		logger.fine("pupWorkitems_XML @PUT /workitems  delegate to @POST....");
 		return postWorkitems_XML(worklist);
 	}

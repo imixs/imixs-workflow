@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.imixs.workflow.xml.XMLItemCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -278,7 +278,7 @@ public class TestItemCollection {
 		child1.replaceItemValue("numID", new Integer(2));
 
 		try {
-			itemCollection1.replaceItemValue("child", XMLItemCollectionAdapter.putItemCollection(child1));
+			itemCollection1.replaceItemValue("child", XMLDocumentAdapter.getDocument(child1));
 		} catch (Exception e) {
 
 			Assert.fail();
@@ -290,9 +290,9 @@ public class TestItemCollection {
 
 		Assert.assertNotSame(itemCollection1, itemCollection2);
 
-		XMLItemCollection xmlChild = (XMLItemCollection) itemCollection1.getItemValue("child").get(0);
+		XMLDocument xmlChild = (XMLDocument) itemCollection1.getItemValue("child").get(0);
 
-		ItemCollection testChild = XMLItemCollectionAdapter.getItemCollection(xmlChild);
+		ItemCollection testChild = XMLDocumentAdapter.putDocument(xmlChild);
 		Assert.assertEquals(2, testChild.getItemValueInteger("numID"));
 
 		// manipulate child1 and repeat the test!
@@ -304,9 +304,9 @@ public class TestItemCollection {
 		Assert.assertNotSame(child1, testChild);
 
 		// test child1 form itemcol1
-		xmlChild = (XMLItemCollection) itemCollection1.getItemValue("child").get(0);
+		xmlChild = (XMLDocument) itemCollection1.getItemValue("child").get(0);
 
-		testChild = XMLItemCollectionAdapter.getItemCollection(xmlChild);
+		testChild = XMLDocumentAdapter.putDocument(xmlChild);
 
 		// expected id is not 3!
 		Assert.assertEquals(2, testChild.getItemValueInteger("numID"));
@@ -344,8 +344,8 @@ public class TestItemCollection {
 		child2.replaceItemValue("numID", new Integer(3));
 		List childs = new ArrayList<>();
 		try {
-			childs.add(XMLItemCollectionAdapter.putItemCollection(child1));
-			childs.add(XMLItemCollectionAdapter.putItemCollection(child2));
+			childs.add(XMLDocumentAdapter.getDocument(child1));
+			childs.add(XMLDocumentAdapter.getDocument(child2));
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -366,15 +366,15 @@ public class TestItemCollection {
 
 		// get child 1 from itemcol2
 		List v = itemCollection2.getItemValue("childs");
-		XMLItemCollection xmlct1 = (XMLItemCollection) v.get(0);
-		ItemCollection ct1 = XMLItemCollectionAdapter.getItemCollection(xmlct1);
+		XMLDocument xmlct1 = (XMLDocument) v.get(0);
+		ItemCollection ct1 = XMLDocumentAdapter.putDocument(xmlct1);
 		Assert.assertEquals("Thor", ct1.getItemValueString("txtName"));
 		Assert.assertEquals(2, ct1.getItemValueInteger("numID"));
 
 		Assert.assertEquals(101, child1.getItemValueInteger("numID"));
 
-		XMLItemCollection xmlct2 = (XMLItemCollection) v.get(1);
-		ItemCollection ct2 = XMLItemCollectionAdapter.getItemCollection(xmlct2);
+		XMLDocument xmlct2 = (XMLDocument) v.get(1);
+		ItemCollection ct2 = XMLDocumentAdapter.putDocument(xmlct2);
 		Assert.assertEquals("Ilias", ct2.getItemValueString("txtName"));
 		Assert.assertEquals(3, ct2.getItemValueInteger("numID"));
 

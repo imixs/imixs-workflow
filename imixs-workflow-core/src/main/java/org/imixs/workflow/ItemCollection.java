@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.xml.XMLItem;
-import org.imixs.workflow.xml.XMLItemCollection;
+import org.imixs.workflow.xml.XMLDocument;
 
 /**
  * This Class defines a ValueObject to be used to exchange data structures used
@@ -771,7 +771,7 @@ public class ItemCollection implements Cloneable {
 		// test raw array types first
 		if (o instanceof byte[] || o instanceof boolean[] || o instanceof short[] || o instanceof char[]
 				|| o instanceof int[] || o instanceof long[] || o instanceof float[] || o instanceof double[]
-				|| o instanceof XMLItem[] || o instanceof XMLItemCollection[]) {
+				|| o instanceof XMLItem[] || o instanceof XMLDocument[]) {
 			return true;
 		}
 
@@ -780,7 +780,7 @@ public class ItemCollection implements Cloneable {
 		String name = c.getName();
 		if (name.startsWith("java.lang.") || name.startsWith("java.math.") || "java.util.Date".equals(name)
 				|| "org.imixs.workflow.xml.XMLItem".equals(name)
-				|| "org.imixs.workflow.xml.XMLItemCollection".equals(name)) {
+				|| "org.imixs.workflow.xml.XMLDocument".equals(name)) {
 			return true;
 		}
 

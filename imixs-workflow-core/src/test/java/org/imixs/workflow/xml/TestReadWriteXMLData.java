@@ -9,8 +9,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.xml.DocumentCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XMLDataCollection;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +46,7 @@ public class TestReadWriteXMLData {
 		List<ItemCollection> col = null;
 
 		try {
-			col = XMLItemCollectionAdapter
+			col = XMLDataCollectionAdapter
 					.readCollectionFromInputStream(getClass().getResourceAsStream("/document-example.xml"));
 		} catch (JAXBException e) {
 			Assert.fail();
@@ -66,7 +66,7 @@ public class TestReadWriteXMLData {
 		List<ItemCollection> col = null;
 		// read default content
 		try {
-			col = XMLItemCollectionAdapter
+			col = XMLDataCollectionAdapter
 					.readCollectionFromInputStream(getClass().getResourceAsStream("/document-example.xml"));
 		} catch (JAXBException e) {
 			Assert.fail();
@@ -75,9 +75,9 @@ public class TestReadWriteXMLData {
 		}
 
 		// create JAXB object
-		DocumentCollection xmlCol = null;
+		XMLDataCollection xmlCol = null;
 		try {
-			xmlCol = XMLItemCollectionAdapter.putDocuments(col);
+			xmlCol = XMLDataCollectionAdapter.getDataCollection(col);
 		} catch (Exception e1) {
 
 			e1.printStackTrace();
@@ -89,7 +89,7 @@ public class TestReadWriteXMLData {
 		try {
 
 			file = new File("src/test/resources/export-test.xml");
-			JAXBContext jaxbContext = JAXBContext.newInstance(DocumentCollection.class);
+			JAXBContext jaxbContext = JAXBContext.newInstance(XMLDataCollection.class);
 			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
 			// output pretty printed

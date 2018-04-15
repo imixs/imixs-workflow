@@ -8,7 +8,8 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.services.rest.RestClient;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 /**
  * The Imixs WorkflowTestSuite provides a test framework for testing business
@@ -131,7 +132,7 @@ public class WorkflowTestSuite {
 			int result = client.get(url);
 			if (result >= 200 && result <= 299) {
 				String content = client.getContent();
-				resultList = XMLItemCollectionAdapter.readCollection(content
+				resultList = XMLDataCollectionAdapter.readCollection(content
 						.getBytes());
 			}
 
@@ -168,10 +169,10 @@ public class WorkflowTestSuite {
 
 		try {
 			int result = client.postEntity(getHost() + "workflow/workitem",
-					XMLItemCollectionAdapter.putItemCollection(workitem));
+					XMLDocumentAdapter.getDocument(workitem));
 			if (result >= 200 && result <= 299) {
 				String content = client.getContent();
-				resultWorkitem = XMLItemCollectionAdapter
+				resultWorkitem = XMLDocumentAdapter
 						.readItemCollection(content.getBytes());
 			}
 

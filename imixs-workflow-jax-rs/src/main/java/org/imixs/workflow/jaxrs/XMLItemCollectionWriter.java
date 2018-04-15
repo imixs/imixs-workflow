@@ -50,19 +50,19 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.xml.XMLItemCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 @Provider
 @Produces("text/html")
-public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollection> {
+public class XMLItemCollectionWriter implements MessageBodyWriter<XMLDocument> {
 
 	public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
 
-		return XMLItemCollection.class.isAssignableFrom(type);
+		return XMLDocument.class.isAssignableFrom(type);
 	}
 
-	public void writeTo(XMLItemCollection xmlItemCollection, Class<?> type, Type genericType, Annotation[] annotations,
+	public void writeTo(XMLDocument xmlItemCollection, Class<?> type, Type genericType, Annotation[] annotations,
 			MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
 			throws IOException, WebApplicationException {
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(entityStream));
@@ -86,7 +86,7 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollect
 		bw.flush();
 	}
 
-	public long getSize(XMLItemCollection arg0, Class<?> arg1, Type arg2, Annotation[] arg3, MediaType arg4) {
+	public long getSize(XMLDocument arg0, Class<?> arg1, Type arg2, Annotation[] arg3, MediaType arg4) {
 		return -1;
 	}
 
@@ -99,10 +99,10 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLItemCollect
 	 * @throws IOException
 	 */
 	@SuppressWarnings("rawtypes")
-	public static void printXMLItemCollectionHTML(BufferedWriter bw, XMLItemCollection xmlworkItem) throws IOException {
+	public static void printXMLItemCollectionHTML(BufferedWriter bw, XMLDocument xmlworkItem) throws IOException {
 		boolean trClass = false;
 
-		ItemCollection workItem = XMLItemCollectionAdapter.getItemCollection(xmlworkItem);
+		ItemCollection workItem = XMLDocumentAdapter.putDocument(xmlworkItem);
 		bw.write("<table><tbody>");
 
 		bw.write("<tr class=\"a\">");

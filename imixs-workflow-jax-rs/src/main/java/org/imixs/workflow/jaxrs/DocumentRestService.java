@@ -63,10 +63,11 @@ import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
-import org.imixs.workflow.xml.DocumentCollection;
+import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLCount;
-import org.imixs.workflow.xml.XMLItemCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 
 /**
  * The DocumentService provides methods to access the DocumentService EJB
@@ -154,12 +155,12 @@ public class DocumentRestService {
 	 */
 	@GET
 	@Path("/{uniqueid}")
-	public DocumentCollection getDocument(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
+	public XMLDataCollection getDocument(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
 
 		ItemCollection document;
 		try {
 			document = documentService.load(uniqueid);
-			return XMLItemCollectionAdapter.putDocuments(document,DocumentRestService.getItemList(items));					
+			return XMLDataCollectionAdapter.getDataCollection(document,DocumentRestService.getItemList(items));					
 			//	return	XMLItemCollectionAdapter.putItemCollection(document, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -178,7 +179,7 @@ public class DocumentRestService {
 	 */
 	@GET
 	@Path("/search/{query}")
-	public DocumentCollection findDocumentsByQuery(@PathParam("query") String query,
+	public XMLDataCollection findDocumentsByQuery(@PathParam("query") String query,
 			@DefaultValue("-1") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
 			@QueryParam("sortReverse") boolean sortReverse, @QueryParam("items") String items) {
@@ -187,11 +188,11 @@ public class DocumentRestService {
 			// decode query...
 			String decodedQuery = URLDecoder.decode(query, "UTF-8");
 			col = documentService.find(decodedQuery, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLItemCollectionAdapter.putDocuments(col, getItemList(items));
+			return XMLDataCollectionAdapter.getDataCollection(col, getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new DocumentCollection();
+		return new XMLDataCollection();
 	}
 
 	/**
@@ -205,7 +206,7 @@ public class DocumentRestService {
 	 */
 	@GET
 	@Path("/jpql/{query}")
-	public DocumentCollection findDocumentsByJPQL(@PathParam("query") String query,
+	public XMLDataCollection findDocumentsByJPQL(@PathParam("query") String query,
 			@DefaultValue("" + LuceneSearchService.DEFAULT_PAGE_SIZE) @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("items") String items) {
 		Collection<ItemCollection> col = null;
@@ -216,11 +217,11 @@ public class DocumentRestService {
 			int firstResult = pageIndex * pageSize;
 
 			col = documentService.getDocumentsByQuery(decodedQuery, firstResult, pageSize);
-			return XMLItemCollectionAdapter.putDocuments(col, getItemList(items));
+			return XMLDataCollectionAdapter.getDataCollection(col, getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new DocumentCollection();
+		return new XMLDataCollection();
 	}
 
 	/**
@@ -294,12 +295,12 @@ public class DocumentRestService {
 	// @Path("/") generates jersey warning
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-	public Response postEntity(XMLItemCollection xmlworkitem) {
+	public Response postEntity(XMLDocument xmlworkitem) {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 		ItemCollection workitem;
-		workitem = XMLItemCollectionAdapter.getItemCollection(xmlworkitem);
+		workitem = XMLDocumentAdapter.putDocument(xmlworkitem);
 
 		if (workitem == null) {
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -333,10 +334,10 @@ public class DocumentRestService {
 		// return workitem
 		try {
 			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_XML)
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem), MediaType.APPLICATION_XML)
 						.status(Response.Status.NOT_ACCEPTABLE).build();
 			else
-				return Response.ok(XMLItemCollectionAdapter.putItemCollection(workitem), MediaType.APPLICATION_XML)
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem), MediaType.APPLICATION_XML)
 						.build();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -355,7 +356,7 @@ public class DocumentRestService {
 	// @Path("/") generates jersey warning
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-	public Response putEntity(XMLItemCollection xmlworkitem) {
+	public Response putEntity(XMLDocument xmlworkitem) {
 		logger.finest("putEntity @PUT /  delegate to POST....");
 		return postEntity(xmlworkitem);
 	}
@@ -446,14 +447,14 @@ public class DocumentRestService {
 	@GET
 	@Path("/configuration")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public DocumentCollection getConfiguration() throws Exception {
+	public XMLDataCollection getConfiguration() throws Exception {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
 			return null;
 		}
 
 		ItemCollection config = lucenUpdateService.getConfiguration();
 
-		return XMLItemCollectionAdapter.putDocuments(config);
+		return XMLDataCollectionAdapter.getDataCollection(config);
 
 	}
 

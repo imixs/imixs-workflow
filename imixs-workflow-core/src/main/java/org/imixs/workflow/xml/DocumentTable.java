@@ -43,25 +43,25 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class DocumentTable implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private XMLItemCollection[] document;
+	private XMLDocument[] document;
 	private List<String> items;
 	private List<String> labels;
 
 	public DocumentTable() {
-		setDocument(new XMLItemCollection[] {});
+		setDocument(new XMLDocument[] {});
 	}
 	
-	public DocumentTable(XMLItemCollection[] documents,List<String> items,List<String> labels) {
+	public DocumentTable(XMLDocument[] documents,List<String> items,List<String> labels) {
 		setDocument(documents);
 		setItems(items);
 		setLabels(labels);
 	}
 
-	public XMLItemCollection[] getDocument() {
+	public XMLDocument[] getDocument() {
 		return document;
 	}
 
-	public void setDocument(XMLItemCollection[] document) {
+	public void setDocument(XMLDocument[] document) {
 		this.document = document;
 	}
 

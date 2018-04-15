@@ -29,31 +29,28 @@ package org.imixs.workflow.xml;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * The DocumentCollection represents a list of XMLItemCollections to be used by
- * JAXB api
+ * The XMLDataCollection represents a list of XMLItemCollections. This root element
+ * is used by JAXB api
  * 
  * @author rsoika
  * @version 0.0.1
  */
-@XmlRootElement(name="data")
-public class DocumentCollection implements java.io.Serializable {
+@XmlRootElement(name = "data")
+public class XMLDataCollection implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private XMLItemCollection[] document;
+	private XMLDocument[] document;
 
-	public DocumentCollection() {
-		setDocument(new XMLItemCollection[] {});
+	public XMLDataCollection() {
+		setDocument(new XMLDocument[] {});
 	}
 
-	public XMLItemCollection[] getDocument() {
+	public XMLDocument[] getDocument() {
 		return document;
 	}
 
-	public void setDocument(XMLItemCollection[] entity) {
+	public void setDocument(XMLDocument[] entity) {
 		this.document = entity;
 	}
 
-	
-	
-	
 }

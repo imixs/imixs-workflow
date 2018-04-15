@@ -52,9 +52,10 @@ import javax.xml.bind.Unmarshaller;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.util.Base64;
-import org.imixs.workflow.xml.DocumentCollection;
-import org.imixs.workflow.xml.XMLItemCollection;
-import org.imixs.workflow.xml.XMLItemCollectionAdapter;
+import org.imixs.workflow.xml.XMLDataCollection;
+import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 
 /**
  * This ServiceClient is a WebService REST Client which encapsulate the
@@ -160,7 +161,7 @@ public class RestClient {
 	 *            - an Entity Collection
 	 * @return HTTPResult
 	 */
-	public int postEntity(String uri, XMLItemCollection aItemCol) throws Exception {
+	public int postEntity(String uri, XMLDocument aItemCol) throws Exception {
 		PrintWriter printWriter = null;
 
 		HttpURLConnection urlConnection = null;
@@ -183,7 +184,7 @@ public class RestClient {
 
 			StringWriter writer = new StringWriter();
 
-			JAXBContext context = JAXBContext.newInstance(XMLItemCollection.class);
+			JAXBContext context = JAXBContext.newInstance(XMLDocument.class);
 			Marshaller m = context.createMarshaller();
 			m.marshal(aItemCol, writer);
 
@@ -231,7 +232,7 @@ public class RestClient {
 	 *            - an Entity Collection
 	 * @return HTTPResult
 	 */
-	public int postCollection(String uri, DocumentCollection aEntityCol) throws Exception {
+	public int postCollection(String uri, XMLDataCollection aEntityCol) throws Exception {
 		PrintWriter printWriter = null;
 
 		HttpURLConnection urlConnection = null;
@@ -255,7 +256,7 @@ public class RestClient {
 
 			StringWriter writer = new StringWriter();
 
-			JAXBContext context = JAXBContext.newInstance(DocumentCollection.class);
+			JAXBContext context = JAXBContext.newInstance(XMLDataCollection.class);
 			Marshaller m = context.createMarshaller();
 			m.marshal(aEntityCol, writer);
 
@@ -509,12 +510,12 @@ public class RestClient {
 		String xmlResult = this.getContent();
 
 		// convert into ItemCollection list
-		JAXBContext context = JAXBContext.newInstance(DocumentCollection.class);
+		JAXBContext context = JAXBContext.newInstance(XMLDataCollection.class);
         Unmarshaller u = context.createUnmarshaller();
 		StringReader reader = new StringReader(xmlResult);
-		DocumentCollection xmlDocuments = (DocumentCollection) u.unmarshal(reader);
+		XMLDataCollection xmlDocuments = (XMLDataCollection) u.unmarshal(reader);
 
-		List<ItemCollection> documents = XMLItemCollectionAdapter.getCollection(xmlDocuments);
+		List<ItemCollection> documents = XMLDataCollectionAdapter.putDataCollection(xmlDocuments);
 		return documents;
 
 	}
@@ -531,14 +532,14 @@ public class RestClient {
 		String xmlResult = this.getContent();
 
 		// convert into ItemCollection list
-		JAXBContext context = JAXBContext.newInstance(XMLItemCollection.class);
+		JAXBContext context = JAXBContext.newInstance(XMLDocument.class);
 		//JAXBContext context = JAXBContext.newInstance( "org.imixs.workflow.xml" );
 		
 		Unmarshaller u = context.createUnmarshaller();
 		StringReader reader = new StringReader(xmlResult);
-		XMLItemCollection xmlDocument = (XMLItemCollection) u.unmarshal(reader);
+		XMLDocument xmlDocument = (XMLDocument) u.unmarshal(reader);
 
-		ItemCollection document = XMLItemCollectionAdapter.getItemCollection(xmlDocument);
+		ItemCollection document = XMLDocumentAdapter.putDocument(xmlDocument);
 		return document;
 
 	}
