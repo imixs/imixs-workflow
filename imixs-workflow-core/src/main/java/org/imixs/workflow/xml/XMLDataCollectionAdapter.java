@@ -65,12 +65,12 @@ public class XMLDataCollectionAdapter {
 	 * @param entity
 	 * @return ItemCollection
 	 */
-	public static List<ItemCollection> putDataCollection(XMLDataCollection doccol) {
+	public static List<ItemCollection> putDataCollection(XMLDataCollection xmlDocuments) {
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
 
-		if (doccol != null && doccol.getDocument() != null) {
-			for (int i = 0; i < doccol.getDocument().length; i++) {
-				XMLDocument xmlItemCol = doccol.getDocument()[i];
+		if (xmlDocuments != null && xmlDocuments.getDocument() != null) {
+			for (int i = 0; i < xmlDocuments.getDocument().length; i++) {
+				XMLDocument xmlItemCol = xmlDocuments.getDocument()[i];
 				result.add(XMLDocumentAdapter.putDocument(xmlItemCol));
 			}
 		}
@@ -84,11 +84,11 @@ public class XMLDataCollectionAdapter {
 	/**
 	 * This method transforms a Collection<ItemCollection> into a DocumentCollection
 	 * 
-	 * @param col
+	 * @param documents
 	 * @return
 	 */
-	public static XMLDataCollection getDataCollection(final Collection<ItemCollection> col) {
-		return getDataCollection(col, null);
+	public static XMLDataCollection getDataCollection(final Collection<ItemCollection> documents) {
+		return getDataCollection(documents, null);
 	}
 
 	/**
@@ -97,17 +97,17 @@ public class XMLDataCollectionAdapter {
 	 * If the attribute List is provided only the corresponding properties will be
 	 * returned.
 	 * 
-	 * @param col
+	 * @param documents
 	 *            - collection of ItemCollection objects to be converted
 	 * @param itemNames
 	 *            - optional list of item names to be converted. If null all items
 	 *            will be converted
 	 * @return
 	 */
-	public static XMLDataCollection getDataCollection(final Collection<ItemCollection> col, final List<String> itemNames) {
+	public static XMLDataCollection getDataCollection(final Collection<ItemCollection> documents, final List<String> itemNames) {
 		XMLDataCollection entiCol = new XMLDataCollection();
-		Iterator<ItemCollection> it = col.iterator();
-		int max = col.size();
+		Iterator<ItemCollection> it = documents.iterator();
+		int max = documents.size();
 		int i = 0;
 		XMLDocument[] entities = new XMLDocument[max];
 		while (it.hasNext()) {
@@ -126,9 +126,9 @@ public class XMLDataCollectionAdapter {
 	 * This method transforms a single ItemCollection into a XMLDocumentCollection
 	 * 
 	*/
-	public static XMLDataCollection getDataCollection(final ItemCollection doc) {
+	public static XMLDataCollection getDataCollection(final ItemCollection document) {
 		List<ItemCollection> col=new ArrayList<ItemCollection>();
-		col.add(doc);
+		col.add(document);
 		return getDataCollection(col,null);
 	}
 	
@@ -137,9 +137,9 @@ public class XMLDataCollectionAdapter {
 	 * This method transforms a single ItemCollection into a XMLDocumentCollection
 	 * 
 	*/
-	public static XMLDataCollection getDataCollection(final ItemCollection doc, final List<String> itemNames) {
+	public static XMLDataCollection getDataCollection(final ItemCollection document, final List<String> itemNames) {
 		List<ItemCollection> col=new ArrayList<ItemCollection>();
-		col.add(doc);
+		col.add(document);
 		return getDataCollection(col,itemNames);
 	}
 	

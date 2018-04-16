@@ -101,11 +101,11 @@ public class XMLDocumentAdapter {
 	 * This Method converts a <code> org.imixs.workflow.ItemCollection</code> into a
 	 * <code>XMLDocument</code>
 	 * 
-	 * @param aItemCollection
-	 *            Collection Object to be converted
+	 * @param document
+	 *            instance of a ItemCollection to be converted
 	 */
-	public static XMLDocument getDocument(final ItemCollection aItemCollection) {
-		return getDocument(aItemCollection, null);
+	public static XMLDocument getDocument(final ItemCollection document) {
+		return getDocument(document, null);
 	}
 
 	/**
@@ -116,18 +116,18 @@ public class XMLDocumentAdapter {
 	 * The method verifies if the values stored are basic java types. If not these
 	 * values will not be converted!
 	 * 
-	 * @param sourceItemCollection
-	 *            ItemCollection Object to be converted
+	 * @param document
+	 *            instance of a ItemCollection to be converted
 	 * @param itemNames
 	 *            - optional list of item names to be converted. If null all items
 	 *            will be converted
 	 */
 	@SuppressWarnings({ "unchecked" })
-	public static XMLDocument getDocument(final ItemCollection sourceItemCollection,
+	public static XMLDocument getDocument(final ItemCollection document,
 			final List<String> itemNames) {
 
 		// create a deep copy of the source
-		ItemCollection aItemCollection = (ItemCollection) sourceItemCollection.clone();
+		ItemCollection aItemCollection = (ItemCollection) document.clone();
 
 		String itemName = null;
 		XMLDocument entity = new XMLDocument();
@@ -188,17 +188,17 @@ public class XMLDocumentAdapter {
 	/**
 	 * This method sorts all items of a XMLItemCollection by item name.
 	 * 
-	 * @param xmlItemCol
+	 * @param xmlDocument
 	 * @return
 	 */
-	public static XMLDocument sortItemsByName(XMLDocument xmlItemCol) {
+	public static XMLDocument sortItemsByName(XMLDocument xmlDocument) {
 
-		XMLItem[] items = xmlItemCol.getItem();
+		XMLItem[] items = xmlDocument.getItem();
 		Arrays.sort(items, new XMLItemComparator());
 
-		xmlItemCol.setItem(items);
+		xmlDocument.setItem(items);
 
-		return xmlItemCol;
+		return xmlDocument;
 	}
 
 	
