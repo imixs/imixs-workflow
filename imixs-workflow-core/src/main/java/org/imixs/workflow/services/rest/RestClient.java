@@ -492,9 +492,10 @@ public class RestClient {
 		int responseCode = urlConnection.getResponseCode();
 		logger.finest("......Sending 'GET' request to URL : " + uri);
 		logger.finest("......Response Code : " + responseCode);
-
-		readResponse(urlConnection);
-
+		// read response if response was successful  
+		if (responseCode>=200 && responseCode<=299) {
+			readResponse(urlConnection);
+		}
 		return responseCode;
 	}
 
@@ -582,7 +583,7 @@ public class RestClient {
 	 */
 	private void readResponse(URLConnection urlConnection) throws IOException {
 		// get content of result
-		logger.finest("...... readResponse....");
+		logger.finest("......readResponse....");
 		StringWriter writer = new StringWriter();
 		BufferedReader in = null;
 		try {
