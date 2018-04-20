@@ -36,7 +36,7 @@ public class TestBPMNParserDataObject {
 
 	}
 
-	@SuppressWarnings("unused")
+	@SuppressWarnings({ "unused", "unchecked" })
 	@Test
 	public void testSimple() throws ParseException,
 			ParserConfigurationException, SAXException, IOException, ModelException {
@@ -78,11 +78,11 @@ public class TestBPMNParserDataObject {
 		
 		Assert.assertNotNull(dataObjects);
 		Assert.assertEquals(1,dataObjects.size());
-		String[] data=(String[]) dataObjects.get(0);
+		List<String> data=(List<String>) dataObjects.get(0);
 		Assert.assertNotNull(data);
-		Assert.assertEquals(2,data.length);
-		Assert.assertEquals("Invoice Template",data[0]);
-		Assert.assertEquals("Some data ...",data[1]);
+		Assert.assertEquals(2,data.size());
+		Assert.assertEquals("Invoice Template",data.get(0));
+		Assert.assertEquals("Some data ...",data.get(1));
 		
 
 	}
