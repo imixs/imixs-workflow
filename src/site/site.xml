@@ -81,6 +81,7 @@
 					<item name="Access Plugin" href="./engine/plugins/accessplugin.html" />
 					<item name="Analysis Plugin" href="./engine/plugins/analysisplugin.html" />
 					<item name="Application Plugin" href="./engine/plugins/applicationplugin.html" />
+					<item name="DocumentComposer Plugin" href="./engine/plugins/documentcomposerplugin.html" />
 					<item name="History Plugin" href="./engine/plugins/historyplugin.html" />
 					<item name="Interval Plugin" href="./engine/plugins/intervalplugin.html" />
 					<item name="Mail Plugin" href="./engine/plugins/mailplugin.html" />

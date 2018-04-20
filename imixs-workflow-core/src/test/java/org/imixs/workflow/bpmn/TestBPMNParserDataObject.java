@@ -44,7 +44,7 @@ public class TestBPMNParserDataObject {
 		String VERSION = "1.0.0";
 
 		InputStream inputStream = getClass().getResourceAsStream(
-				"/bpmn/dataobject_example.bpmn");
+				"/bpmn/dataobject_example1.bpmn");
 
 		BPMNModel model = null;
 		try {
