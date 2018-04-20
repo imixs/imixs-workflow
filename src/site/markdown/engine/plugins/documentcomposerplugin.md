@@ -2,7 +2,7 @@
 
 The DocumentComposerPlugin provides functionality to create html output stored in an item of the current process instance.
 
-    org.imixs.marty.plugins.DocumentComposerPlugin
+    org.imixs.workflow.engine.plugins.DocumentComposerPlugin
  
 The Plugin uses XSL transformation based on a XSL templage proivded by an BPMN DataObject assigned to the target task.
 
