@@ -79,7 +79,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	Map<String, SequenceFlow> associationCache = null;
 	Map<String, String> messageCache = null;
 	Map<String, String> annotationCache = null;
-	Map<String, String[]> dataObjectCache = null;
+	Map<String, List<String>> dataObjectCache = null;
 
 	Map<String, String> conditionCache = null;
 
@@ -99,7 +99,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		eventCache = new HashMap<String, ItemCollection>();
 		messageCache = new HashMap<String, String>();
 		annotationCache = new HashMap<String, String>();
-		dataObjectCache = new HashMap<String, String[]>();
+		dataObjectCache = new HashMap<String, List<String>>();
 		conditionCache = new HashMap<String, String>();
 
 		linkThrowEventCache = new HashMap<String, String>();
@@ -375,9 +375,9 @@ public class BPMNModelHandler extends DefaultHandler {
 			// bpmn2:dataObject?
 			if (bDataObject) {
 				// cache the dataObject
-				String[] dataobject = new String[2];
-				dataobject[0] = currentDataObjectName;
-				dataobject[1] = characterStream.toString();
+				List<String> dataobject = new ArrayList<String>();
+				dataobject.add(currentDataObjectName);
+				dataobject.add(characterStream.toString());
 				dataObjectCache.put(currentDataObjectID, dataobject);
 				bDataObject = false;
 			}
@@ -495,7 +495,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 
 			// look for optional dataObjects...
-			List<String[]> dataObjectList = getDataObjectsForElement(key);
+			List<List<String>> dataObjectList = getDataObjectsForElement(key);
 			if (dataObjectList != null) {
 				// we take the annotation as the new documentation
 				task.replaceItemValue("dataObjects", dataObjectList);
@@ -563,14 +563,14 @@ public class BPMNModelHandler extends DefaultHandler {
 	 *            - BPMN element linked with an annotation
 	 * @return - a list of arrays containing the dataObjectID and the documentation
 	 **/
-	private List<String[]> getDataObjectsForElement(String elementID) {
-		List<String[]> result = new ArrayList<String[]>();
+	private List<List<String>> getDataObjectsForElement(String elementID) {
+		List<List<String>> result = new ArrayList<List<String>>();
 
 		// check all annotations....
-		for (Map.Entry<String, String[]> entry : dataObjectCache.entrySet()) {
+		for (Map.Entry<String, List<String>> entry : dataObjectCache.entrySet()) {
 			String id = entry.getKey();
-			String[] dataobject = entry.getValue();
-			if (dataobject == null || dataobject.length == 0) {
+			List<String> dataobject = entry.getValue();
+			if (dataobject == null || dataobject.size() == 0) {
 				continue;
 			}
 			// test if the elementID is connected to this annotation....
