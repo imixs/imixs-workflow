@@ -29,16 +29,6 @@ The subresource _/workflow/tasklist/_ provides GET methods to read collections o
 
 
 
-## PUT/POST a Workitem or Task List
-The methods PUT, POST allow to create and process a workitem or a task list:
-
-
-| URI                          | Method  | Description                               | 
-|------------------------------|---------|----------------------------------|
-| /workflow/workitem           | POST    | posts a workitem, to be processed by the  workflow manager. To update an existing workitem, the attribute $uniqueid must be provided as part of the data structure. The media types application/xml, application/json and x-www-form-urlencoded are supported.   |
-| /workflow/workitem/{uniqueid}| POST    | posts a workitem by uniqueid, to be processed by the  workflow manager. The media types application/xml, application/json and x-www-form-urlencoded are supported.   |
-| /workflow/tasklist           | POST    | posts a list of workitems to be processed by the  workflow manager. The media type application/xml is supported.   |
-
 
 ### Resource Options
 With the following optional URI parameters the GET request can be filtered and sorted:
@@ -65,3 +55,27 @@ See details about the search in the section [Search Index](../engine/luceneservi
 <strong>Note:</strong> The Imixs-Workflow manages the access to workitems by individual access lists per each entity. The result of a collection of workitems depends on the current user access-level and read access permissions for a workitem. Read also the section [Access Control](/engine/acl.html) for further information. 
   
    
+   
+
+## PUT/POST a Workitem or Task List
+The methods PUT, POST allow to create and process a workitem or a task list:
+
+
+| URI                          | Method  | Description                               | 
+|------------------------------|---------|----------------------------------|
+| /workflow/workitem           | POST    | posts a workitem, to be processed by the  workflow manager. To update an existing workitem, the attribute $uniqueid must be provided as part of the data structure. The media types application/xml, application/json and x-www-form-urlencoded are supported.   |
+| /workflow/workitem/{uniqueid}| POST    | posts a workitem by uniqueid, to be processed by the  workflow manager. The media types application/xml, application/json and x-www-form-urlencoded are supported.   |
+| /workflow/tasklist           | POST    | posts a list of workitems to be processed by the  workflow manager. The media type application/xml is supported.   |
+
+
+
+
+
+## GET Events by Workitem
+
+The subresource _/workflow/events/_ provides a GETer method to read the current workflow events for a running instance:
+
+
+| URI                                           | Method | Description                               | 
+|-----------------------------------------------|--------|-----------------------------------|
+| /workitem/events/{uniqueid}                | GET    | Returns a collection of events of a workitem, visible to the current user
