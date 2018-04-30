@@ -40,17 +40,27 @@ The methods PUT, POST allow to create and process a workitem or a task list:
 | /workflow/tasklist           | POST    | posts a list of workitems to be processed by the  workflow manager. The media type application/xml is supported.   |
 
 
+### Resource Options
+With the following optional URI parameters the GET request can be filtered and sorted:
 
-## Resource Options
-With the following optional URI parameters a request can be filtered: 
+| option      | description                       | example             		|
+|-------------|---------------- ------------------|-----------------------------|
+| pageSize    | number of documents returned      | ..&pagesize=10           	|
+| pageIndex   | page index to start               | ..&pageindex=5&pagesize=10  |
+| sortBy	  | sort item 					      | ..&sortBy=txtworkflowstatus |
+| sortReverse | sort direction (ascending/descending)   | ..&sourtReverse=true		|
+| type        | filter workitems by the 'type' property | ..&type=workitem      | 
+| items       | filter item values to be returned | ..&items=$processid,$modellversion
+ 
+ 
+**Example:**
+
+	/rest-service/workflow/tasklistbycreator/admin?type=workitem&pageSize=10&pageIndex=2
+ 
+See details about the search in the section [Search Index](../engine/luceneservice.html).
 
 
-| option      | description                                         | example               |
-|-------------|-----------------------------------------------------|-----------------------|
-| pagesize    | number of documents returned                        | ..?pagesize=10           |
-| pageindex   | page index to start                                 | ..?pageindex=5&pagesize=10   |
-| type        | filter workitems by the 'type' property             | ..?type=workitem      | 
-		
+	
 
 <strong>Note:</strong> The Imixs-Workflow manages the access to workitems by individual access lists per each entity. The result of a collection of workitems depends on the current user access-level and read access permissions for a workitem. Read also the section [Access Control](/engine/acl.html) for further information. 
   

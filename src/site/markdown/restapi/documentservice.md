@@ -41,6 +41,7 @@ With the following optional URI parameters the GET request can be filtered and s
 | pageIndex   | page index to start               | ..?pageindex=5&pagesize=10  |
 | sortBy	  | sort item 					      | ..&sortBy=txtworkflowstatus |
 | sortReverse | sort direction (ascending/descending)   | ..&sourtReverse=true		|
+| items       | filter item values to be returned | ..&items=$processid,$modellversion
  
  
 **Example:**
