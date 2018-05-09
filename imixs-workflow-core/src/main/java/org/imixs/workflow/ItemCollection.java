@@ -712,7 +712,7 @@ public class ItemCollection implements Cloneable {
 		if (itemValue instanceof Calendar) {
 			itemValue = ((Calendar) itemValue).getTime();
 		}
-		
+
 		// first we test if basic type?
 		if (isBasicType(itemValue)) {
 			return true;
@@ -779,8 +779,7 @@ public class ItemCollection implements Cloneable {
 		Class c = o.getClass();
 		String name = c.getName();
 		if (name.startsWith("java.lang.") || name.startsWith("java.math.") || "java.util.Date".equals(name)
-				|| "org.imixs.workflow.xml.XMLItem".equals(name)
-				|| "org.imixs.workflow.xml.XMLDocument".equals(name)) {
+				|| "org.imixs.workflow.xml.XMLItem".equals(name) || "org.imixs.workflow.xml.XMLDocument".equals(name)) {
 			return true;
 		}
 
@@ -855,6 +854,17 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
+	 * This method adds a fileData object to the ItemCollection. filesData object
+	 * will be stored into the property $file.
+	 * 
+	 * @param filedata
+	 *            - a file data object
+	 */
+	public void addFileData(FileData filedata) {
+		this.addFile(filedata.content, filedata.name, filedata.contentType);
+	}
+
+	/**
 	 * This method adds a single file to the ItemCollection. files will be stored
 	 * into the property $file.
 	 * 
@@ -900,7 +910,7 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns a data object for a attached file. The data object is a list
+	 * Returns a data object for an attached file. The data object is a list
 	 * containing the contentType (String) and the content (byte[])
 	 * 
 	 * @param filename
@@ -910,6 +920,21 @@ public class ItemCollection implements Cloneable {
 		Map<String, List<Object>> files = this.getFiles();
 		if (files != null) {
 			return files.get(filename);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Returns a FileData object for an attached file.
+	 * 
+	 * @param filename
+	 * @return FileData object
+	 */
+	public FileData getFileData(String filename) {
+		List<Object> content = getFile(filename);
+		if (content != null) {
+			return new FileData(filename, (byte[]) content.get(1), content.get(0).toString());
 		} else {
 			return null;
 		}

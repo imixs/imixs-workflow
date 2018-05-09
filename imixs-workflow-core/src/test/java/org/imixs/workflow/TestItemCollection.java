@@ -687,13 +687,50 @@ public class TestItemCollection {
 	public void testItemCollectionRawtype() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
-		double d=5.20;
+		double d = 5.20;
 		itemCollection.replaceItemValue("price", d);
-		
-		byte[] bytes="Some Data".getBytes();
+
+		byte[] bytes = "Some Data".getBytes();
 		itemCollection.replaceItemValue("data", bytes);
-		
+
 		Assert.assertNotNull(itemCollection);
+
+	}
+
+	/**
+	 * Test the fileData methods
+	 */
+	@Test
+	@Category(org.imixs.workflow.ItemCollection.class)
+	public void testFileData() {
+		ItemCollection itemColSource = new ItemCollection();
+
+		// add a dummy file
+		byte[] empty = { 0 };
+		itemColSource.addFile(empty, "test1.txt", "application/xml");
+
+		ItemCollection itemColTarget = new ItemCollection();
+
+		itemColTarget.addFileData(itemColSource.getFileData("test1.txt"));
+
+		FileData filedata = itemColTarget.getFileData("test1.txt");
+		Assert.assertNotNull(filedata);
+		Assert.assertEquals("test1.txt", filedata.getName());
+		Assert.assertEquals("application/xml", filedata.getContentType());
+
+		// test the byte content of itemColSource
+		Map<String, List<Object>> conedFiles1 = itemColSource.getFiles();
+		List<Object> fileContent1 = conedFiles1.get("test1.txt");
+		byte[] file1Data1 = (byte[]) fileContent1.get(1);
+		// we expect the new dummy array { 1, 2, 3 }
+		Assert.assertArrayEquals(empty, file1Data1);
+
+		// test the byte content of itemColTarget
+		conedFiles1 = itemColTarget.getFiles();
+		fileContent1 = conedFiles1.get("test1.txt");
+		file1Data1 = (byte[]) fileContent1.get(1);
+		// we expect the new dummy array { 1, 2, 3 }
+		Assert.assertArrayEquals(empty, file1Data1);
 
 	}
 }
