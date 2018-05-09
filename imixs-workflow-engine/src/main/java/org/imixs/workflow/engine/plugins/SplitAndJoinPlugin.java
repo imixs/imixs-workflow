@@ -168,7 +168,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * @throws PluginException
 	 * @throws ModelException
 	 */
-	private void createSubprocesses(final List<String> subProcessDefinitions, final ItemCollection originWorkitem)
+	protected void createSubprocesses(final List<String> subProcessDefinitions, final ItemCollection originWorkitem)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
 		if (subProcessDefinitions == null || subProcessDefinitions.size() == 0) {
@@ -256,7 +256,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * @throws PluginException
 	 * @throws ModelException
 	 */
-	private void updateSubprocesses(final List<String> subProcessDefinitions, final ItemCollection originWorkitem)
+	protected void updateSubprocesses(final List<String> subProcessDefinitions, final ItemCollection originWorkitem)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
 		if (subProcessDefinitions == null || subProcessDefinitions.size() == 0) {
@@ -355,7 +355,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * @throws ModelException
 	 */
 	@SuppressWarnings("unchecked")
-	private void updateOrigin(final String originProcessDefinition, final ItemCollection subprocessWorkitem)
+	protected void updateOrigin(final String originProcessDefinition, final ItemCollection subprocessWorkitem)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
 		ItemCollection originWorkitem = null;
@@ -423,7 +423,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * In case a item name contains '|' the target field name will become the
 	 * right part of the item name.
 	 */
-	private void copyItemList(String items, ItemCollection source, ItemCollection target) {
+	protected void copyItemList(String items, ItemCollection source, ItemCollection target) {
 		// clone the field list...
 		StringTokenizer st = new StringTokenizer(items, ",");
 		while (st.hasMoreTokens()) {
@@ -442,7 +442,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	/**
 	 * This methods adds a new workItem reference into a workitem
 	 */
-	private void addWorkitemRef(String aUniqueID, ItemCollection workitem) {
+	protected void addWorkitemRef(String aUniqueID, ItemCollection workitem) {
 
 		logger.fine("LinkController add workitem reference: " + aUniqueID);
 
