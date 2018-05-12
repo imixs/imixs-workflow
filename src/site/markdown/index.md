@@ -13,7 +13,7 @@ The [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) pr
 ## BPMN 2.0
 
 Imixs-Workflow is based on the [BPMN 2.0 modeling standard](http://www.bpmn.org/). To create a Imixs-Workflow model the
-powerful Eclipse based modeling tool [Imixs-BPMN](./modelling/install.html) can be used. To install Imixs-BPMN see the [installation guide](https://www.imixs.org/doc/modelling/install.html).
+powerful Eclipse based modeling tool [Imixs-BPMN](./modelling/) can be used. To install Imixs-BPMN see the [installation guide](./modelling/install.html).
 
 With BPMN 2.0 a business process can be described from different perspectives.
 In Imixs-Workflow the process status is described with the BPMN element '_Task_'. 
