@@ -1,22 +1,35 @@
 # How Imixs-Workflow works
 
 Imixs-Workflow is an **open source workflow engine** for a human-centric business process management (BPM). Human-centric BPM means to support human skills and activities in a task oriented and event driven way. The **Imixs-Workflow project** provides a powerful framework to model business logic for Business Applications and BPM Solutions. 
-The Imixs-Workflow engine can be either be embedded into a Java Enterprise Application, or can be run as a service in a microservice architecture.
+The Imixs-Workflow engine can either be embedded into a Java Enterprise Application, or can be run as a service in a microservice architecture.
+
+## Imixs Microservice
+
+Imixs-Workflow provides a Rest Service API to encapsulates the Imixs-Workflow Engine into a microservice. In this architectural style the workflow engine can be bound to any business application, independent from the technology behind. Business logic can be changed without changing a single line of code.
+
+The [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) provides a Docker Container to start a Imixs-Workflow instance with a single command. 
+
 
 ## BPMN 2.0
 
-Imixs-Workflow is based on the [BPMN 2.0 standard](http://www.bpmn.org/). With BPMN 2.0 a business process can be described from different perspectives. In Imixs-Workflow the process status is described with the BPMN element '_Task_' and events that lead to a status change with the BPMN element '_Event_'.
+Imixs-Workflow is based on the [BPMN 2.0 modeling standard](http://www.bpmn.org/). To create a Imixs-Workflow model the
+powerful Eclipse based modeling tool [Imixs-BPMN](./modelling/install.html) can be used. To install Imixs-BPMN see the [installation guide](https://www.imixs.org/doc/modelling/install.html).
+
+With BPMN 2.0 a business process can be described from different perspectives.
+In Imixs-Workflow the process status is described with the BPMN element '_Task_'. 
+The status change between the Task elements is defined by BPMN element '_Event_'.
 
 <img src="./images/bpmn-example01.png"  />
 
 This type of modeling is also known as event-driven modeling. You can find more examples in the section "[How to Model](.//modelling/howto.html)".
 
-With Imixs-Workflow users are guided through the business process. A process instance can be assigned to different actors. All events triggered during the processing livecycle are logged and transparently documented by Imixs-Workflow. 
 
 
 ## The Actors
 
-The main objective of a  human-centric workflow engine is to support the human actors with relevant information about the business process and to ensure that the business process is aligned to predetermined business rules:
+Imixs-Workflow is supporting human skills, activities and relieves collaboration in a task-oriented manner.
+Each process instance can be assigned to different actors. 
+The main objective is to support the human actors and provide them with relevant information about the business process. The workflow engine ensures that the business process is aligned to predetermined business rules:
  
   * Who is the owner of a business process
   * Who is allowed to access and modify the data
