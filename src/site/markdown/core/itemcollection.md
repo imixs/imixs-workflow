@@ -97,7 +97,27 @@ As an ItemCollection is not serializable it is not recommanded to store a ItemCo
     project.replaceItemValue("projectManager", teamMember.getAllItems());
 		
 In this code example the values of the ItemCollection "teamMemer" are stored as a HashMap into the ItemCollection "project" with is mapped to the item "projectManager".
-   
+
+
+### Working with FileData
+
+The class _org.imixs.workflow.FileData_ can be used to transfere files into a ItemCollection. A FileData object contains the following attributes:
+
+ * name - the file name
+ * content - a byte array of the file data
+ * contentType - the file content type.
+
+To attach a file into a ItemColleciton the method addFileData can be used:
+
+
+	FileData fileData=new FileData("test.jpg",  content, "image/jpg");
+	myItemCollection.addFileData(fileData);
+
+To get an attached file form a ItemCollection the method getFileData can be used:
+
+
+	myFileData=myItemCollection.getFileData("test.jpg");
+	    
   
 ### Get and Set all Items
 With the methods setAllItems() and getAllItems() it is possible to set and get the internal Map ValueObject. See the following example:
