@@ -3,6 +3,8 @@ package org.imixs.workflow.xml;
 import java.util.List;
 import java.util.Map;
 
+import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.util.XMLParser;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,32 +49,31 @@ public class TestXMLParser {
 		Assert.assertEquals("1", result);
 	}
 
-	
 	@Test
 	public void testAttributeWithDoubleQuotation() {
-	
+
 		String test = "<item name=\"txtName\" type=\"x\">true</item>";
-	
+
 		// verify attribute
 		String result = XMLParser.findAttribute(test, "name");
 		Assert.assertNotNull(result);
 		Assert.assertEquals("txtName", result);
-		
+
 		result = XMLParser.findAttribute(test, "type");
 		Assert.assertNotNull(result);
 		Assert.assertEquals("x", result);
 	}
-	
+
 	@Test
 	public void testAttributeWithSingleQuotation() {
-	
+
 		String test = "<item name='txtName' type='x'>true</item>";
-	
+
 		// verify attribute
 		String result = XMLParser.findAttribute(test, "name");
 		Assert.assertNotNull(result);
 		Assert.assertEquals("txtName", result);
-		
+
 		result = XMLParser.findAttribute(test, "type");
 		Assert.assertNotNull(result);
 		Assert.assertEquals("x", result);
@@ -132,8 +133,7 @@ public class TestXMLParser {
 		Assert.assertEquals("true", values.get(0));
 
 	}
-	
-	
+
 	@Test
 	public void testSingelTags() {
 
@@ -256,6 +256,29 @@ public class TestXMLParser {
 		// we expect the first value
 		Assert.assertEquals("2016-12-31", result);
 
+	}
+
+	/**
+	 * Test a typical string used by the evaluateWorkflowResutl method.
+	 ***/
+	@Test
+	public void testItemXMLContent() {
+
+		// create test result.....
+		String activityResult = "<modelversion>1.0.0</modelversion>" + "<processid>1000</processid>"
+				+ "<activityid>10</activityid>" + "<items>namTeam</items>";
+
+		try {
+			ItemCollection result = XMLParser.parseItemStructure(activityResult);
+
+			Assert.assertEquals("1.0.0", result.getItemValueString("modelversion"));
+			Assert.assertEquals("1000", result.getItemValueString("processID"));
+			Assert.assertEquals("10", result.getItemValueString("activityID"));
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
 	}
 
 }

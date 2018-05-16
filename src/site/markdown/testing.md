@@ -54,7 +54,7 @@ The Test class 'WorkflowSimulationEnvironment' can be used in jUnit Tests to sim
 
 ## WorkflowMockEnvironment
 
-The Test class 'WorkflowMockEnvironment' mocks a full wokflow environment including a in-memory-database. The WorkflowMockEnvironment can be used for more complex integration tests. 
+The Test class 'WorkflowMockEnvironment' mocks a full workflow environment including a in-memory-database. The WorkflowMockEnvironment can be used for more complex integration tests. 
 
 	
 	public class TestWorkflow {

@@ -847,7 +847,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 		ItemCollection result = new ItemCollection();
 		String workflowResult = event.getItemValueString("txtActivityResult");
-		if (workflowResult.isEmpty()) {
+		if (workflowResult.trim().isEmpty()) {
 			return null;
 		}
 		// replace dynamic values?
