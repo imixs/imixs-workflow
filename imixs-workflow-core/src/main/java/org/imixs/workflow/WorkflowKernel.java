@@ -78,6 +78,13 @@ public class WorkflowKernel {
 	public static final String WORKFLOWGROUP = "$workflowgroup";
 	public static final String WORKFLOWSTATUS = "$workflowstatus";
 	public static final String ISVERSION = "$isversion";
+	public static final String LASTTASK = "$lasttask";
+	public static final String LASTEVENT = "$lastevent";
+	public static final String LASTEVENTDATE = "$lasteventdate";
+	public static final String CREATOR = "$creator";
+	public static final String EDITOR = "$editor";
+	public static final String LASTEDITOR = "$lasteditor";
+	
 
 	public static final String TYPE = "type";
 
