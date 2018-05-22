@@ -69,7 +69,20 @@ The administration process provides a feature to upgrade exsiting workitems to t
 
 An application can provide custom AdminP jobs. An AminP job must implement the interface _'org.imixs.workflow.engine.adminp.JobHandler'_.
 
-The JobHandler is injected by CDI. This means that the custom implementation must be an plain java bean and no EJB service. See the following example of a JobHandler implementation:
+The JobHandler is injected by CDI. This means that the custom implementation must be an plain java bean and no EJB service.
+The AdminP Service calls the run method of the custom JobHandler and provides the job description in an ItemCollection object. The JobHandler must return the job description with the predefined field _isCompleted_ to signal the current status. If the field _isCompleted_ is set to true, the AdminP Service will terminate the Job. Otherwise the AdminPServcie will wait for the next timeout to call the run method again. 
+
+The following fields part of the Job description are defined by the AdminP service: 
+
+ * type - fixed to value 'adminp'
+ * job - the job type/name, defined by handler
+ * $WorkflowStatus - status controlled by AdminP Service
+ * $WorkflowSummary - summary of job description 
+ * isCompleted - boolean indicates if job is completed - controlled by job handler
+ 
+**Note:** The AdminPService will not call the JobHandler if the job description field 'isCompleted==true'
+ 
+A JobHandler may throw a AdminPException if something went wrong. See the following example of a JobHandler implementation:
 
 
 	public class JobHandlerDemo implements JobHandler {
@@ -77,17 +90,22 @@ The JobHandler is injected by CDI. This means that the custom implementation mus
 		DocumentService documentService;
 		
 		@Override
-		public boolean run(ItemCollection adminp) throws AdminPException {
+		public ItemCollection run(ItemCollection adminp) throws AdminPException {
 			// find documents...
 			List<ItemCollection> result=documentService.fine("type:'workitem'",0,100);
 			// do something...
+			try {
+			    ....
+		   } catch (Exception e) {
+		    	// throw exception if something went wrong
+			    throw new AdminPException("ERROR", "Error...", e);
+		   }
 			....
 			// more work to do?
-			if (... more work ...)
-			  return false
-			else
-		     	// complete job	
-			   return true;
+			if (... more work ...) {
+			   adminp.replaceItemValue(JobHandler.ISCOMPLETED, true);
+			}
+			return adminp;
 		}
 	}
 

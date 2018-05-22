@@ -32,5 +32,5 @@ public interface JobHandler {
 	 *            description
 	 * @return updated job description
 	 */
-	public ItemCollection run(ItemCollection job);
+	public ItemCollection run(ItemCollection job) throws AdminPException;
 }
