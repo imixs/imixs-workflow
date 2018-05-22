@@ -15,8 +15,6 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -88,7 +86,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 	 * @throws PluginException
 	 */
 	@Override
-	public boolean run(ItemCollection adminp) throws AdminPException {
+	public ItemCollection run(ItemCollection adminp) throws AdminPException {
 
 		long lProfiler = System.currentTimeMillis();
 		int iIndex = adminp.getItemValueInteger("numIndex");
@@ -104,11 +102,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
 		int iProcessed = adminp.getItemValueInteger("numProcessed");
 
-		adminp.replaceItemValue("$workflowStatus", "Processing");
-		// save it...
-		// adminp = entityService.save(adminp);
-		adminp = ctx.getBusinessObject(JobHandlerRebuildIndex.class).saveJobEntity(adminp);
-
+		
 		String query = buildQuery(adminp);
 		logger.finest("......JQPL query: " + query);
 		adminp.replaceItemValue("txtQuery", query);
@@ -151,29 +145,14 @@ public class JobHandlerRebuildIndex implements JobHandler {
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {
-			// prepare for rerun
-			adminp.replaceItemValue("$workflowStatus", "Finished");
-			adminp = ctx.getBusinessObject(JobHandlerRebuildIndex.class).saveJobEntity(adminp);
-			return true;
-
-		} else {
-			// prepare for rerun
-			adminp.replaceItemValue("$workflowStatus", "Waiting");
-			adminp = ctx.getBusinessObject(JobHandlerRebuildIndex.class).saveJobEntity(adminp);
-			return false;
+			// iscompleted = true
+			adminp.replaceItemValue(JobHandler.ISCOMPLETED, true);
 		}
-	}
-
-	/**
-	 * Save AdminP Entity
-	 */
-	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-	public ItemCollection saveJobEntity(ItemCollection adminp) throws AccessDeniedException {
-		logger.finest("......saveJobEntity " + adminp.getUniqueID());
-		adminp = documentService.save(adminp);
+		
 		return adminp;
-
 	}
+
+	
 
 	/**
 	 * This method builds the query statemetn based on the filter criteria.

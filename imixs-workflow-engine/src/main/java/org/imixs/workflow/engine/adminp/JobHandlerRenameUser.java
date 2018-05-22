@@ -84,7 +84,7 @@ public class JobHandlerRenameUser implements JobHandler {
 	 * @throws AccessDeniedException
 	 */
 	@Override
-	public boolean run(ItemCollection adminp) throws AdminPException {
+	public ItemCollection run(ItemCollection adminp) throws AdminPException {
 		long lProfiler = System.currentTimeMillis();
 		int iIndex = adminp.getItemValueInteger("numIndex");
 		int iBlockSize = adminp.getItemValueInteger("numBlockSize");
@@ -111,9 +111,6 @@ public class JobHandlerRenameUser implements JobHandler {
 		logger.info(summary);
 
 		adminp.replaceItemValue("$WorkflowSummary", summary);
-		adminp.replaceItemValue("$workflowStatus", "Processing");
-		// update status...
-		adminp = ctx.getBusinessObject(JobHandlerRenameUser.class).saveJobEntity(adminp);
 
 		// build search query
 
@@ -183,16 +180,10 @@ public class JobHandlerRenameUser implements JobHandler {
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {
-			// prepare for rerun
-			adminp.replaceItemValue("$workflowStatus", "Finished");
-			adminp = ctx.getBusinessObject(JobHandlerRenameUser.class).saveJobEntity(adminp);
-			return true;
-		} else {
-			// prepare for rerun
-			adminp.replaceItemValue("$workflowStatus", "Waiting");
-			adminp = ctx.getBusinessObject(JobHandlerRenameUser.class).saveJobEntity(adminp);
-			return false;
+			// iscompleted = true
+			adminp.replaceItemValue(JobHandler.ISCOMPLETED, true);
 		}
+		return adminp;
 	}
 
 	/**
@@ -222,7 +213,6 @@ public class JobHandlerRenameUser implements JobHandler {
 			return false;
 		}
 
-		
 		// Verify Fields
 		if (updateList(entity.getItemValue("$ReadAccess"), from, to, replace))
 			bUpdate = true;
@@ -238,8 +228,7 @@ public class JobHandlerRenameUser implements JobHandler {
 		 * if (updateList(entity.getItemValue("$Creator"), from, to, false)) bUpdate =
 		 * true;
 		 */
-		
-		
+
 		if (bUpdate) {
 			// create log entry....
 			String summary = "Rename: " + from + " -> " + to + " (replace=" + replace + ")";
@@ -286,14 +275,5 @@ public class JobHandlerRenameUser implements JobHandler {
 		return update;
 	}
 
-	/**
-	 * Save AdminP Entity
-	 */
-	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-	public ItemCollection saveJobEntity(ItemCollection adminp) throws AccessDeniedException {
-		logger.finest("......saveJobEntity " + adminp.getUniqueID());
-		adminp = documentService.save(adminp);
-		return adminp;
-
-	}
+	
 }

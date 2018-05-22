@@ -11,8 +11,6 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
@@ -33,6 +31,7 @@ import org.imixs.workflow.jee.ejb.EntityService;
  * @author rsoika
  *
  */
+@SuppressWarnings("deprecation")
 @DeclareRoles({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @RunAs("org.imixs.ACCESSLEVEL.MANAGERACCESS")
@@ -70,7 +69,7 @@ public class JobHandlerMigration3X implements JobHandler {
 	 * @throws PluginException
 	 */
 	@Override
-	public boolean run(ItemCollection adminp) throws AdminPException {
+	public ItemCollection run(ItemCollection adminp) throws AdminPException {
 
 		long lProfiler = System.currentTimeMillis();
 		int iIndex = adminp.getItemValueInteger("numIndex");
@@ -85,10 +84,6 @@ public class JobHandlerMigration3X implements JobHandler {
 
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
 		int iProcessed = adminp.getItemValueInteger("numProcessed");
-		adminp.replaceItemValue("txtworkflowStatus", "Processing");
-		// save it...
-		// adminp = entityService.save(adminp);
-		adminp = ctx.getBusinessObject(JobHandlerMigration3X.class).saveJobEntity(adminp);
 
 		String query = "SELECT entity FROM Entity AS entity  ORDER BY entity.created";
 
@@ -104,9 +99,10 @@ public class JobHandlerMigration3X implements JobHandler {
 			// prepare for rerun
 			logger.severe("Job " + AdminPService.JOB_MIGRATION + " (" + adminp.getUniqueID() + ") - error at: index="
 					+ iIndex + " blocksize=" + iBlockSize + " : " + eerror.getMessage());
-			adminp.replaceItemValue("txtworkflowStatus", "Error (" + iIndex + "-" + (iIndex + iBlockSize) + ")");
-			adminp = ctx.getBusinessObject(JobHandlerMigration3X.class).saveJobEntity(adminp);
-			return true;
+
+			// throw exception
+			throw new AdminPException("ERROR", "Error (" + iIndex + "-" + (iIndex + iBlockSize) + ")", eerror);
+
 		}
 		int colSize = col.size();
 		// Update index
@@ -147,30 +143,10 @@ public class JobHandlerMigration3X implements JobHandler {
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {
-			// prepare for rerun
-			adminp.replaceItemValue("txtworkflowStatus", "Finished");
-			adminp.replaceItemValue("$workflowStatus", "Finished");
-			adminp = ctx.getBusinessObject(JobHandlerMigration3X.class).saveJobEntity(adminp);
-			return true;
-
-		} else {
-			// prepare for rerun
-			adminp.replaceItemValue("txtworkflowStatus", "Waiting");
-			adminp.replaceItemValue("$workflowStatus", "Waiting");
-			adminp = ctx.getBusinessObject(JobHandlerMigration3X.class).saveJobEntity(adminp);
-			return false;
+			// iscompleted = true
+			adminp.replaceItemValue(JobHandler.ISCOMPLETED, true);
 		}
-	}
-
-	/**
-	 * Save AdminP Entity
-	 */
-	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-	public ItemCollection saveJobEntity(ItemCollection adminp) throws AccessDeniedException {
-		logger.finest("......saveJobEntity " + adminp.getUniqueID());
-		adminp = documentService.save(adminp);
 		return adminp;
-
 	}
 
 }

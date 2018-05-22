@@ -217,70 +217,71 @@ public class AdminPService {
 			String job = adminp.getItemValueString("job");
 			logger.info("Job " + job + " (" + adminp.getUniqueID() + ")  processing...");
 
-			boolean jobfound = false;
+			// boolean jobfound = false;
+
+			// find the corresponding job handler....
+			JobHandler jobHandler = null;
 			if (job.equals(JOB_RENAME_USER)) {
-				jobfound = true;
-				if (jobHandlerRenameUser.run(adminp)) {
-					timer.cancel();
-					logger.info("Job " + JOB_RENAME_USER + " (" + adminp.getUniqueID() + ") completed - timer stopped");
-				}
+				jobHandler = jobHandlerRenameUser;
 			}
 			if (job.equals(JOB_REBUILD_LUCENE_INDEX)) {
-				jobfound = true;
-				if (jobHandlerRebuildIndex.run(adminp)) {
-					timer.cancel();
-					logger.info("Job " + JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID()
-							+ ") completed - timer stopped");
-				}
+				jobHandler = jobHandlerRebuildIndex;
 			}
 
 			if (job.equals(JOB_MIGRATION)) {
-				jobfound = true;
-				if (jobHandlerMigration3X.run(adminp)) {
-					timer.cancel();
-					logger.info("Job " + JOB_MIGRATION + " (" + adminp.getUniqueID() + ") completed - timer stopped");
-				}
+				jobHandler = jobHandlerMigration3X;
 			}
 
 			if (job.equals(JOB_UPGRADE)) {
-				jobfound = true;
-				if (jobHandlerUpgradeWorkitems.run(adminp)) {
-					timer.cancel();
-					logger.info("Job " + JOB_UPGRADE + " (" + adminp.getUniqueID() + ") completed - timer stopped");
-				}
+				jobHandler = jobHandlerUpgradeWorkitems;
 			}
 
-			if (!jobfound) {
-
+			if (jobHandler == null) {
 				// try to find the jobHandler by CDI .....
-				JobHandler cdiJobHandler = findJobHandlerByName(job);
-				if (cdiJobHandler != null) {
-					if (cdiJobHandler.run(adminp)) {
-						timer.cancel();
-						logger.info("Job " + job + " (" + adminp.getUniqueID() + ") completed - timer stopped");
-					}
-				} else {
-					logger.warning("Unable to start job. JobHandler class '" + job + "' -  not defined!");
-					timer.cancel();
-					logger.info("Job " + adminp.getUniqueID() + " - timer stopped");
-				}
+				jobHandler = findJobHandlerByName(job);
 			}
 
-		} catch (Exception e) {
+			// run the job handler...
+			if (jobHandler != null) {
+				// update status
+				adminp.replaceItemValue("$workflowStatus", "PROCESSING");
+				adminp = documentService.save(adminp);
+
+				adminp = jobHandler.run(adminp);
+				if (adminp.getItemValueBoolean("iscompleted")) {
+					timer.cancel();
+					adminp.replaceItemValue("$workflowStatus", "COMPLETED");
+					logger.info("Job " + job + " (" + adminp.getUniqueID() + ") completed - timer stopped");
+				} else {
+					adminp.replaceItemValue("$workflowStatus", "WAITING");
+				}
+
+			} else {
+				logger.warning("Unable to start AdminP Job. JobHandler class '" + job + "' not defined!");
+				timer.cancel();
+				adminp.replaceItemValue("$workflowStatus", "FAILED");
+				logger.info("Job " + adminp.getUniqueID() + " - timer stopped");
+			}
+
+		} catch (AdminPException e) {
 			e.printStackTrace();
 			// stop timer!
 			timer.cancel();
-			logger.severe("Timeout sevice stopped: " + sTimerID);
-
+			logger.severe("AdminP job '" + sTimerID + "' failed - " + e.getMessage());
+			if (adminp != null) {
+				adminp.replaceItemValue("$workflowStatus", "FAILED");
+				adminp.replaceItemValue("errormessage", e.getMessage());
+			}
+		} finally {
+			// try to update the amdinp document...
 			try {
 				if (adminp != null) {
-					adminp.replaceItemValue("$workflowStatus", "Error");
-					adminp.replaceItemValue("errormessage", e.toString());
-					// adminp = entityService.save(adminp);
 					adminp = documentService.save(adminp);
+				} else {
+					logger.warning("Unable to update adminp job status - adminp document is null!");
 				}
 			} catch (Exception e2) {
-				logger.warning("Unable to update status: " + e.getMessage());
+				logger.warning("Unable to update adminp job status: " + e2.getMessage());
 				e2.printStackTrace();
 			}
 		}

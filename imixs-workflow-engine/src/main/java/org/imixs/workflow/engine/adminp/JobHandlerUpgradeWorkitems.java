@@ -13,8 +13,6 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -79,7 +77,7 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 	 * @throws PluginException
 	 */
 	@Override
-	public boolean run(ItemCollection adminp) throws AdminPException {
+	public ItemCollection run(ItemCollection adminp) throws AdminPException {
 
 		long lProfiler = System.currentTimeMillis();
 		int iIndex = adminp.getItemValueInteger("numIndex");
@@ -94,11 +92,6 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
 		int iProcessed = adminp.getItemValueInteger("numProcessed");
-
-		adminp.replaceItemValue("$workflowStatus", "Processing");
-		// save it...
-		// adminp = entityService.save(adminp);
-		adminp = ctx.getBusinessObject(JobHandlerUpgradeWorkitems.class).saveJobEntity(adminp);
 
 		String query = buildQuery(adminp);
 		logger.finest("......JQPL query: " + query);
@@ -140,34 +133,15 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 
 		// if colSize<numBlockSize we can stop the timer
 		if (colSize < iBlockSize) {
-			// prepare for rerun
-			adminp.replaceItemValue("$workflowStatus", "Finished");
-			adminp = ctx.getBusinessObject(JobHandlerUpgradeWorkitems.class).saveJobEntity(adminp);
-			return true;
-
-		} else {
-			// prepare for rerun
-			adminp.replaceItemValue("$workflowStatus", "Waiting");
-			adminp = ctx.getBusinessObject(JobHandlerUpgradeWorkitems.class).saveJobEntity(adminp);
-			return false;
+			// iscompleted = true
+			adminp.replaceItemValue(JobHandler.ISCOMPLETED, true);
 		}
-	}
 
-	/**
-	 * Save AdminP Entity
-	 */
-	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-	public ItemCollection saveJobEntity(ItemCollection adminp) throws AccessDeniedException {
-		logger.finest("......saveJobEntity " + adminp.getUniqueID());
-		adminp = documentService.save(adminp);
 		return adminp;
-
 	}
 
 	/**
-	 * This method upgrades missign fields in a workitem
-	 * 
-	 * 
+	 * This method upgrades missing fields in a workitem
 	 * 
 	 * @param worktem
 	 * @return
@@ -190,7 +164,7 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 		}
 
 		if (!workitem.hasItem("$lastEvent")) {
-			workitem.replaceItemValue("$lastEvent",workitem.getItemValue("numlastactivityid"));
+			workitem.replaceItemValue("$lastEvent", workitem.getItemValue("numlastactivityid"));
 			bUpgrade = true;
 		}
 
