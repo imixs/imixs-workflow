@@ -95,8 +95,8 @@ public class Document implements java.io.Serializable {
 	private boolean pending;
 
 	/**
-	 * A Document will be automatically initialized with a unique id and a
-	 * creation date.
+	 * A Document will be automatically initialized with a unique id and a creation
+	 * date.
 	 */
 	public Document() {
 		// Generate a new uniqueId
@@ -107,8 +107,8 @@ public class Document implements java.io.Serializable {
 	}
 
 	/**
-	 * This constructor allows the creation of an Document Instance with a
-	 * default uniqueID
+	 * This constructor allows the creation of an Document Instance with a default
+	 * uniqueID
 	 * 
 	 * @param aID
 	 */
@@ -122,8 +122,8 @@ public class Document implements java.io.Serializable {
 
 	/**
 	 * This transient flag indicates if the document was just saved and is still
-	 * managed by the entityManager. In this case the entity may not be detached
-	 * by other methods during the same transaction. See issue #230.
+	 * managed by the entityManager. In this case the entity may not be detached by
+	 * other methods during the same transaction. See issue #230.
 	 * 
 	 * @return save status
 	 */
@@ -161,8 +161,8 @@ public class Document implements java.io.Serializable {
 
 	/**
 	 * returns the type property of the entity instance. This property can be
-	 * provided by an itemColleciton in the attribute 'type'. Values will be
-	 * case sensitive!
+	 * provided by an itemColleciton in the attribute 'type'. Values will be case
+	 * sensitive!
 	 * 
 	 * @see org.imixs.workflow.jee.ejb.EntityService
 	 * @return
@@ -190,7 +190,11 @@ public class Document implements java.io.Serializable {
 	}
 
 	/**
-	 * returns the last modification point of time
+	 * Returns the last modification point of time
+	 * 
+	 * <p>
+	 * <strong>Note:</strong> The field 'modified' is only a complement and is not
+	 * used by the DocumentService.
 	 * 
 	 * @return time of modification
 	 */
@@ -199,13 +203,22 @@ public class Document implements java.io.Serializable {
 		return modified;
 	}
 
+	/**
+	 * Set the modification point of time
+	 * <p>
+	 * <strong>Note:</strong> The field 'modified' is only a complement and is not
+	 * used by the DocumentService.
+	 */
 	public void setModified(Calendar modified) {
 		this.modified = modified;
 	}
 
 	/**
-	 * updates the modification time before a update by a persistence manager is
+	 * Updates the modification time before a update by a persistence manager is
 	 * performed.
+	 * <p>
+	 * <strong>Note:</strong> The field 'modified' is only a complement and is not
+	 * used by the DocumentService.
 	 */
 	@PrePersist
 	@PreUpdate
@@ -216,9 +229,8 @@ public class Document implements java.io.Serializable {
 
 	/**
 	 * returns the data object part of the Entity represented by a java.util.Map
-	 * 
-	 * Data is loaded eager because it is read in any case by the
-	 * DocumentService.
+	 * <p>
+	 * Data is loaded eager because it is read in any case by the DocumentService.
 	 * 
 	 * @return Map
 	 */
