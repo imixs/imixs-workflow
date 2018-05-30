@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 
@@ -162,7 +163,7 @@ public class AccessPlugin extends AbstractPlugin {
 		List vectorAccess;
 		vectorAccess = documentContext.getItemValue("$readAccess");
 		// add roles
-		mergeRoles(vectorAccess, modelEntity.getItemValue("namaddreadaccess"),documentContext);
+		AccessPlugin.mergeRoles(vectorAccess, modelEntity.getItemValue("namaddreadaccess"),documentContext,getWorkflowService());
 		// add Mapped Fields
 		mergeFieldList(documentContext, vectorAccess, modelEntity.getItemValue("keyaddreadfields"));
 		// clean Vector
@@ -179,7 +180,7 @@ public class AccessPlugin extends AbstractPlugin {
 		// update WriteAccess
 		vectorAccess = documentContext.getItemValue("$writeAccess");
 		// add Names
-		mergeRoles(vectorAccess, modelEntity.getItemValue("namaddwriteaccess"),documentContext);
+		AccessPlugin.mergeRoles(vectorAccess, modelEntity.getItemValue("namaddwriteaccess"),documentContext,getWorkflowService());
 		// add Mapped Fields
 		mergeFieldList(documentContext, vectorAccess, modelEntity.getItemValue("keyaddwritefields"));
 		// clean Vector
@@ -193,6 +194,37 @@ public class AccessPlugin extends AbstractPlugin {
 				logger.finest("               '" + (String) vectorAccess.get(j) + "'");
 		}
 
+	}
+
+	
+	
+	
+	
+	/**
+	 * This method merges the role names from a SourceList into a valueList and removes
+	 * duplicates.
+	 * 
+	 * The AddaptText event is fired so a client can adapt a role name. 
+	 * 
+	 * @param valueList
+	 * @param sourceList
+	 * @throws PluginException 
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static void mergeRoles(List valueList, List sourceList, ItemCollection documentContext, WorkflowService workflowService) throws PluginException {
+		if ((sourceList != null) && (sourceList.size() > 0)) {
+			for (Object o : sourceList) {
+				if (valueList.indexOf(o) == -1) {
+					if (o instanceof String) {
+						// addapt textList
+						List<String> adaptedRoles=workflowService.adaptTextList((String)o, documentContext);
+						valueList.addAll(adaptedRoles);//.add(getWorkflowService().adaptText((String)o, documentContext));	
+					} else  {
+						valueList.add(o);	
+					}
+				}
+			}
+		}
 	}
 
 }

@@ -88,32 +88,7 @@ public abstract class AbstractPlugin implements Plugin {
 		return workflowService;
 	}
 
-	/**
-	 * This method merges the role names from a SourceList into a valueList and removes
-	 * duplicates.
-	 * 
-	 * The AddaptText event is fired so a client can adapt a role name. 
-	 * 
-	 * @param valueList
-	 * @param sourceList
-	 * @throws PluginException 
-	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void mergeRoles(List valueList, List sourceList, ItemCollection documentContext) throws PluginException {
-		if ((sourceList != null) && (sourceList.size() > 0)) {
-			for (Object o : sourceList) {
-				if (valueList.indexOf(o) == -1) {
-					if (o instanceof String) {
-						// addapt text
-						valueList.add(getWorkflowService().adaptText((String)o, documentContext));	
-					} else  {
-						valueList.add(o);	
-					}
-				}
-			}
-		}
-	}
-
+	
 	/**
 	 * This method merges the values of fieldList into valueList and test for
 	 * duplicates.

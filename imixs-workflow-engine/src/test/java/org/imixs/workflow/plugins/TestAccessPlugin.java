@@ -59,7 +59,7 @@ public class TestAccessPlugin {
 	@Test
 	public void simpleTest() throws ModelException {
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
+ 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
 		try {
 			accessPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {

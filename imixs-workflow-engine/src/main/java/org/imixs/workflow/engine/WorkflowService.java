@@ -813,6 +813,34 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		return text;
 	}
 
+	
+	/**
+	 * The method adaptTextList can be called to replace  a text with custom values. The method fires a CDI event to inform
+	 * TextAdapterServices to parse and adapt a given text fragment.
+	 * The method expects a textList result.
+	 * 
+	 * @param text
+	 * @param documentContext
+	 * @return
+	 * @throws PluginException 
+	 */
+	public List<String> adaptTextList(String text, ItemCollection documentContext) throws PluginException {
+		// fire event
+		if (textEvents != null) {
+			TextEvent event = new TextEvent(text, documentContext);
+			textEvents.fire(event);
+			return event.getTextList();
+		} else {
+			logger.warning("CDI Support is missing - TextEvent wil not be fired");
+		}
+		// no result return default
+		List<String> textList=new ArrayList<String>();
+		textList.add(text);
+		return textList;
+	}
+
+	
+	
 	/**
 	 * The method evaluates the WorkflowResult for a given BPMN event and returns a
 	 * ItemColleciton containing all item definitions. Each item definition of a

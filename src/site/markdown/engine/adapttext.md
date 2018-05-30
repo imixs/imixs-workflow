@@ -70,3 +70,7 @@ A application can extend the AdaptText method by implementing a service with the
 			event.setText(text);
 		}
 	}
+
+## Adapt a TestList
+
+A custom adapter can also adapt a text into a text list. For example a Custom Adapter can compute a list of values based on a text pattern. The custom adapter can set the result test list with the method 'setTextList(List<String>)'. This feature is for example used from the AccessPlugin method mergeRoles. The method expects that the adapter provide a list with roles.

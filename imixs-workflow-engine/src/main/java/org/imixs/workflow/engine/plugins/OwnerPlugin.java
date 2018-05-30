@@ -146,7 +146,7 @@ public class OwnerPlugin extends AbstractPlugin {
 		newOwnerList = new ArrayList<String>();
 
 		// add names
-		mergeRoles(newOwnerList, modelEntity.getItemValue("namOwnershipNames"),documentContext);
+		AccessPlugin.mergeRoles(newOwnerList, modelEntity.getItemValue("namOwnershipNames"),documentContext,getWorkflowService());
 		// add Mapped Fields
 		mergeFieldList(documentContext, newOwnerList, modelEntity.getItemValue("keyOwnershipFields"));
 		// clean Vector

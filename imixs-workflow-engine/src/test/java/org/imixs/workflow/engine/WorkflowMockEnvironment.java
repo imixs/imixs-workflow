@@ -208,7 +208,27 @@ public class WorkflowMockEnvironment {
 				return textEvent.getText();
 			}
 		});
+
 		
+		// AdaptText
+		when(workflowService.adaptTextList(Mockito.anyString(),Mockito.any(ItemCollection.class))).thenAnswer(new Answer<List<String>>(){
+			@Override
+			public List<String> answer(InvocationOnMock invocation) throws Throwable, PluginException {
+				
+				Object[] args = invocation.getArguments();
+				String text=(String) args[0];
+				ItemCollection document = (ItemCollection) args[1];
+
+				TextEvent textEvent=new TextEvent(text, document);
+				
+				TextItemValueAdapter tiva=new TextItemValueAdapter();
+				tiva.onEvent(textEvent);
+				
+				
+				return textEvent.getTextList();
+			}
+		});
+
 		
 		
 		
