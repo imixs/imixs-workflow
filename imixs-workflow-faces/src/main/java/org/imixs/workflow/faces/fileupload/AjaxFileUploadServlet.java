@@ -37,13 +37,12 @@ public class AjaxFileUploadServlet extends HttpServlet {
 
 	private static Logger logger = Logger.getLogger(AjaxFileUploadServlet.class.getName());
 
-	
-	@Inject 
+	@Inject
 	FileUploadController fileUploadController;
-	
+
 	/**
-	 * This method gets the current fileList form the current user session. In
-	 * case no fileList is yet stored, the method creates a new empty one.
+	 * This method gets the current fileList form the current user session. In case
+	 * no fileList is yet stored, the method creates a new empty one.
 	 * 
 	 * @param httpRequest
 	 * @return
@@ -83,26 +82,25 @@ public class AjaxFileUploadServlet extends HttpServlet {
 		if (isPostFileUploadRequest(httpRequest)) {
 			List<FileData> fileDataList = getFileList(httpRequest);
 			logger.finest("......add files...");
-			
-			
-			
-			
+
 			addFilesold(httpRequest);
 			// store file content into session
 			setFileList(httpRequest, fileDataList);
-			String contextURL = httpRequest.getRequestURI();
-			writeJsonContent(httpRequest, response, contextURL);
-			
 			
 			// now update the workitem....
-			if (fileUploadController!=null) {
+			if (fileUploadController != null) {
 				logger.info("conversation id=" + fileUploadController.getCID());
-				// check workitem... issue 
-				if (fileUploadController.getWorkitem()!=null) {
+				// check workitem... issue
+				if (fileUploadController.getWorkitem() != null) {
 					logger.info("alles rogger in cambocha");
 					fileUploadController.updateWorkitem(fileDataList);
 				}
 			}
+			
+			
+			
+			writeJsonMetadata(fileDataList, response, httpRequest.getRequestURI());
+
 		}
 	}
 
@@ -124,12 +122,12 @@ public class AjaxFileUploadServlet extends HttpServlet {
 		String contextURL = httpRequest.getRequestURI();
 		// cut last /....
 		contextURL = contextURL.substring(0, contextURL.lastIndexOf('/') + 1);
-		writeJsonContent(httpRequest, response, contextURL);
+		writeJsonMetadata(fileDataList, response, contextURL);
 	}
 
 	/**
-	 * Getter method to return the file content from the fileData list stored in
-	 * the current user
+	 * Getter method to return the file content from the fileData list stored in the
+	 * current user
 	 */
 	@Override
 	protected void doGet(HttpServletRequest httpRequest, HttpServletResponse httpResponse)
@@ -155,7 +153,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 		// request just the currently uploaded files in json format
 		if (isGetRefreshFileUploadRequest(httpRequest)) {
 			String contextURL = httpRequest.getRequestURI();
-			writeJsonContent(httpRequest, httpResponse, contextURL);
+			writeJsonMetadata(this.getFileList(httpRequest), httpResponse, contextURL);
 		}
 	}
 
@@ -205,9 +203,8 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	 * Returns a file attachment located in the property $file of the specified
 	 * workitem
 	 * 
-	 * The file name will be encoded. With a URLDecode the filename is decoded
-	 * in different formats and searched in the file list. This is not a nice
-	 * solution.
+	 * The file name will be encoded. With a URLDecode the filename is decoded in
+	 * different formats and searched in the file list. This is not a nice solution.
 	 * 
 	 * @param uniqueid
 	 * @return
@@ -220,17 +217,6 @@ public class AjaxFileUploadServlet extends HttpServlet {
 		// now return json string of uploaded files....
 		response.setContentType(fileData.getContentType());
 		output.close();
-	}
-
-	private void writeJsonContent(HttpServletRequest httpRequest, ServletResponse response, String context_url)
-			throws IOException {
-		logger.finest("......return JSON content...");
-		// now return json string of uploaded files....
-		response.setContentType("application/json;charset=UTF-8");
-		PrintWriter out = response.getWriter();
-		out.write(getJson(httpRequest, context_url));
-		out.close();
-
 	}
 
 	/**
@@ -280,19 +266,17 @@ public class AjaxFileUploadServlet extends HttpServlet {
 
 		return fileDataList;
 	}
-	
-	
-	
+
 	/**
-	 * This method converts mulitple files from the httpRequest into 
-	 * FileData objects.
+	 * This method converts mulitple files from the httpRequest into FileData
+	 * objects.
 	 * 
 	 * @param httpRequest
 	 */
 	private List<FileData> getFilesFromRequest(HttpServletRequest httpRequest) {
 		logger.finest("......Looping parts");
 
-		List<FileData> fileDataList =new ArrayList<FileData>();
+		List<FileData> fileDataList = new ArrayList<FileData>();
 		try {
 			for (Part p : httpRequest.getParts()) {
 				byte[] b = new byte[(int) p.getSize()];
@@ -337,11 +321,9 @@ public class AjaxFileUploadServlet extends HttpServlet {
 		return fileDataList;
 	}
 
-	
-
 	/**
-	 * This method adds mulitple files into the FileDataList stored in the
-	 * current user session
+	 * This method adds mulitple files into the FileDataList stored in the current
+	 * user session
 	 * 
 	 * @param httpRequest
 	 */
@@ -421,13 +403,13 @@ public class AjaxFileUploadServlet extends HttpServlet {
 		return result;
 	}
 
+
 	/**
-	 * returns a JSON structure for uploaded files from the current user
-	 * session.
+	 * This method write a JSON meta data structure for uploaded files into the
+	 * httpResponse.
 	 * 
-	 * @see https://github.com/blueimp/jQuery-File-Upload/wiki/JSON-Response
 	 * 
-	 *      <code>
+	 * <code>
 			{
 			    "files": [
 			        {
@@ -442,10 +424,19 @@ public class AjaxFileUploadServlet extends HttpServlet {
 			    ]
 			}
 	 *  </code>
-	 * @return
+	 * 
+	 * 
+	 * 
+	 * 
+	 * * @see https://github.com/blueimp/jQuery-File-Upload/wiki/JSON-Response
+	 * @throws IOException 
+	 * 
 	 */
-	private String getJson(HttpServletRequest httpRequest, String context_url) {
-		List<FileData> fileDataList = getFileList(httpRequest);
+	private void writeJsonMetadata(List<FileData> fileDataList, ServletResponse response,String context_url) throws IOException {
+		logger.finest("......write JSON meta data...");
+		response.setContentType("application/json;charset=UTF-8");
+		PrintWriter out = response.getWriter();
+		
 		String result = "{ \"files\":[";
 		for (int i = 0; i < fileDataList.size(); i++) {
 
@@ -468,7 +459,10 @@ public class AjaxFileUploadServlet extends HttpServlet {
 
 		result += "]}";
 
-		return result;
+		out.write(result);
+		out.close();
+		
+		
 	}
 
 }
