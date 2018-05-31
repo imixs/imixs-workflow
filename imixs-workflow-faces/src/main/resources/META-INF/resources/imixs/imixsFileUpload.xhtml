@@ -20,6 +20,9 @@
  -->
 <cc:implementation>
 
+	<!-- We inject the workitem into the fileUploadController to receive new file data from the AjaxFileUploadServlet
+			 	#{fileUploadController.setWorkitem(cc.attrs.workitem)}"
+		-->
 	<h:panelGroup class="imixsFileUpload">
 		<div class="imixsFileUpload_control">
 			<button id="imixsFileUpload_button" style="float: left;">File
