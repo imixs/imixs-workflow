@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletResponse;
@@ -17,6 +18,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
+
+import org.imixs.workflow.FileData;
 
 @WebServlet(urlPatterns = { "/fileupload/*" })
 // configure Servlet 3.0 multipart. Limit file size to 100MB, 500MB Request Size
@@ -34,6 +37,10 @@ public class AjaxFileUploadServlet extends HttpServlet {
 
 	private static Logger logger = Logger.getLogger(AjaxFileUploadServlet.class.getName());
 
+	
+	@Inject 
+	FileUploadController fileUploadController;
+	
 	/**
 	 * This method gets the current fileList form the current user session. In
 	 * case no fileList is yet stored, the method creates a new empty one.
@@ -73,10 +80,15 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest httpRequest, HttpServletResponse response)
 			throws ServletException, IOException {
-
 		if (isPostFileUploadRequest(httpRequest)) {
 			List<FileData> fileDataList = getFileList(httpRequest);
 			logger.finest("......add files...");
+			
+			if (fileUploadController!=null) {
+				// check workitem... issue 
+			}
+			
+			
 			addFiles(httpRequest);
 			// store file content into session
 			setFileList(httpRequest, fileDataList);
@@ -195,7 +207,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	private void writeFileContent(ServletResponse response, FileData fileData) throws IOException {
 		logger.finest("......write file content...");
 		ServletOutputStream output = response.getOutputStream();
-		output.write(fileData.getData());
+		output.write(fileData.getContent());
 		// now return json string of uploaded files....
 		response.setContentType(fileData.getContentType());
 		output.close();
@@ -298,7 +310,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 					// extract the file content...
 					FileData fileData = null;
 					logger.finest("......filename : " + fileName + ", contentType " + p.getContentType());
-					fileData = new FileData(fileName, p.getContentType(), b);
+					fileData = new FileData(fileName, b, p.getContentType());
 					if (fileData != null) {
 						// remove existing file
 						List<FileData> fileDataList = removeFile(httpRequest, fileData.getName());
@@ -376,7 +388,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 			result += "\"thumbnail_url\": \"\",";
 			result += "\"name\": \"" + fileData.getName() + "\",";
 			result += "\"type\": \"" + fileData.getContentType() + "\",";
-			result += "\"size\": " + fileData.getSize() + ",";
+			result += "\"size\": " + fileData.getContent().length + ",";
 			result += "\"delete_url\": \"\",";
 			result += "\"delete_type\": \"DELETE\"";
 

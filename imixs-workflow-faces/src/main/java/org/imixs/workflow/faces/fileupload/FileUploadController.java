@@ -9,6 +9,7 @@ import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
+import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 
@@ -56,7 +57,7 @@ public class FileUploadController implements Serializable {
 
 		for (FileData aFile : fileDataList) {
 			// now add the file content into blobWorkitem
-			workitem.addFile(aFile.getData(), aFile.getName(),
+			workitem.addFile(aFile.getContent(), aFile.getName(),
 					aFile.getContentType());
 		}
 
