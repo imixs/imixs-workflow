@@ -21,12 +21,12 @@
 <cc:implementation>
 
 	<h:panelGroup class="imixsFileUpload">
-
 		<div class="imixsFileUpload_control">
 			<button id="imixsFileUpload_button" style="float: left;">File
 				Upload</button>
+			<!-- we need to append the converstaion id to the AjaxFileUploadServlet url here -->
 			<input id="imixsFileUpload_input" type="file" name="files[]"
-				data-url="#{facesContext.externalContext.requestContextPath}/fileupload/"
+				data-url="#{facesContext.externalContext.requestContextPath}/fileupload/?cid=#{fileUploadController.getCID()}"
 				multiple="multiple" />
 			<div class="imixsFileUpload_help">drop files here...</div>
 		</div>

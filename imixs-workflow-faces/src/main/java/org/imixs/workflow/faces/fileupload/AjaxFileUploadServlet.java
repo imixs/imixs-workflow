@@ -84,16 +84,25 @@ public class AjaxFileUploadServlet extends HttpServlet {
 			List<FileData> fileDataList = getFileList(httpRequest);
 			logger.finest("......add files...");
 			
-			if (fileUploadController!=null) {
-				// check workitem... issue 
-			}
 			
 			
-			addFiles(httpRequest);
+			
+			addFilesold(httpRequest);
 			// store file content into session
 			setFileList(httpRequest, fileDataList);
 			String contextURL = httpRequest.getRequestURI();
 			writeJsonContent(httpRequest, response, contextURL);
+			
+			
+			// now update the workitem....
+			if (fileUploadController!=null) {
+				logger.info("conversation id=" + fileUploadController.getCID());
+				// check workitem... issue 
+				if (fileUploadController.getWorkitem()!=null) {
+					logger.info("alles rogger in cambocha");
+					fileUploadController.updateWorkitem(fileDataList);
+				}
+			}
 		}
 	}
 
@@ -271,6 +280,64 @@ public class AjaxFileUploadServlet extends HttpServlet {
 
 		return fileDataList;
 	}
+	
+	
+	
+	/**
+	 * This method converts mulitple files from the httpRequest into 
+	 * FileData objects.
+	 * 
+	 * @param httpRequest
+	 */
+	private List<FileData> getFilesFromRequest(HttpServletRequest httpRequest) {
+		logger.finest("......Looping parts");
+
+		List<FileData> fileDataList =new ArrayList<FileData>();
+		try {
+			for (Part p : httpRequest.getParts()) {
+				byte[] b = new byte[(int) p.getSize()];
+				p.getInputStream().read(b);
+				p.getInputStream().close();
+				// params.put(p.getName(), new String[] { new String(b) });
+
+				// test if part contains a file
+				String fileName = getFilename(p);
+				if (fileName != null) {
+
+					/*
+					 * issue #106
+					 * 
+					 * https://developer.jboss.org/message/941661#941661
+					 * 
+					 * Here we test of the encoding and try to convert to utf-8.
+					 */
+					byte fileNameISOBytes[] = fileName.getBytes("iso-8859-1");
+					String fileNameUTF8 = new String(fileNameISOBytes, "UTF-8");
+					if (fileName.length() != fileNameUTF8.length()) {
+						// convert to utf-8
+						logger.finest("......filename seems to be ISO-8859-1 encoded");
+						fileName = new String(fileName.getBytes("iso-8859-1"), "utf-8");
+					}
+
+					// extract the file content...
+					FileData fileData = null;
+					logger.finest("......filename : " + fileName + ", contentType " + p.getContentType());
+					fileData = new FileData(fileName, b, p.getContentType());
+					fileDataList.add(fileData);
+
+				}
+			}
+
+		} catch (IOException ex) {
+			logger.log(Level.SEVERE, null, ex);
+		} catch (ServletException ex) {
+			logger.log(Level.SEVERE, null, ex);
+		}
+
+		return fileDataList;
+	}
+
+	
 
 	/**
 	 * This method adds mulitple files into the FileDataList stored in the
@@ -278,7 +345,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	 * 
 	 * @param httpRequest
 	 */
-	private void addFiles(HttpServletRequest httpRequest) {
+	private void addFilesold(HttpServletRequest httpRequest) {
 		logger.finest("......Looping parts");
 
 		try {
