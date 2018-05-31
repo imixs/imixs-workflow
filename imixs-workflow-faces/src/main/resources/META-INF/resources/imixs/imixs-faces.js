@@ -356,7 +356,12 @@ function updateFileUpload() {
 function cancelFileUpload(file) {	
 	// upload url
 	var base_url=$('#imixsFileUpload_input').attr( 'data-url' );	
-	$.ajax({url:base_url+file,
+	
+	var cidPos=base_url.indexOf("?cid=");
+	
+	var target_url=base_url.substring(0,cidPos) + file + base_url.substring(cidPos);
+	
+	$.ajax({url:target_url,
 		type: 'DELETE',
 		dataType: "json",
 		success:function(data){

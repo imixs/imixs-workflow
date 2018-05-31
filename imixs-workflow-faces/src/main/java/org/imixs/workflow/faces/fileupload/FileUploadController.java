@@ -1,6 +1,10 @@
 package org.imixs.workflow.faces.fileupload;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -31,6 +35,8 @@ public class FileUploadController implements Serializable {
 
 	private ItemCollection workitem = null;
 
+	private List<FileData> _tmpFiles = null; // temporarly file list.
+
 	private static Logger logger = Logger.getLogger(FileUploadController.class.getName());
 
 	@Inject
@@ -58,6 +64,7 @@ public class FileUploadController implements Serializable {
 
 		if (workitem != null) {
 			// start new conversation...
+			_tmpFiles = new ArrayList<FileData>();
 			if (conversation.isTransient()) {
 				conversation.setTimeout(
 						((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
@@ -65,10 +72,7 @@ public class FileUploadController implements Serializable {
 				conversation.begin();
 				logger.finest("......starting new conversation, id=" + conversation.getId());
 			}
-		} else {
-
-			logger.info("oh was ist da los ich bekomme ein null workitem :-(");
-		}
+		} 
 	}
 
 	/**
@@ -88,15 +92,95 @@ public class FileUploadController implements Serializable {
 	}
 
 	/**
-	 * Removes a attached file object from the workitem.
+	 * This method is called by the AjaxFileUpload Servlet. The method adds the file
+	 * to the workitem but also updates the list of temporary files, which are not
+	 * yet persisted.
+	 * 
+	 * @param workitem
+	 * @param aFilename
+	 */
+	public void addAttachedFile(FileData filedata) {
+		if (workitem != null) {
+			_tmpFiles.add(filedata);
+			workitem.addFileData(filedata);
+		}
+	}
+
+	/**
+	 * Removes a attached file object from the tmp list of uploaded files.
 	 * 
 	 * @param sFilename
 	 *            - filename to be removed
 	 * @return - null
 	 */
-	public void removeAttachedFile(ItemCollection workitem, String aFilename) {
-		workitem.removeFile(aFilename);
+	public void removeAttachedFile(String aFilename) {
+		if (workitem != null) {
+			workitem.removeFile(aFilename);
+			// remove from tmp list
+			for (Iterator<FileData> iterator = _tmpFiles.iterator(); iterator.hasNext();) {
+				FileData tmp = iterator.next();
+				if (tmp.getName().equals(aFilename)) {
+					iterator.remove();
+				}
+			}
+		}
 
+	}
+
+	/**
+	 * Removes a file object from a given workitem. Here we operate on a given
+	 * workitem as the imixsFileUpload.xhtml has no idea of he current conversation
+	 * scoped controller.
+	 * 
+	 * @param sFilename
+	 *            - filename to be removed
+	 * @return - null
+	 */
+	public void removeFile(ItemCollection _workitem, String aFilename) {
+		if (_workitem != null) {
+			_workitem.removeFile(aFilename);
+		}
+	}
+
+	
+	/**
+	 * returns the list of currently new attached files. This list is not equal the
+	 * $file item!
+	 * 
+	 * @return
+	 */
+	public List<FileData> getAttachedFiles() {
+		if (_tmpFiles == null) {
+			_tmpFiles = new ArrayList<FileData>();
+		}
+		return _tmpFiles;
+	}
+
+	/**
+	 * get the file size for a given filename
+	 * 
+	 * @param sFilename
+	 *            - filename to be removed
+	 * @return - filsize in human readable string
+	 */
+	public String getFileSize(String aFilename) {
+		if (workitem != null) {
+			FileData fileData = workitem.getFileData(aFilename);
+			double bytes = fileData.getContent().length;
+			if (bytes >= 1000000000) {
+				bytes = (bytes / 1000000000);
+				return round(bytes) + " GB";
+			} else if (bytes >= 1000000) {
+				bytes = (bytes / 1000000);
+				return round(bytes) + " MB";
+			} else if (bytes >= 1000) {
+				bytes = (bytes / 1000);
+				return round(bytes) + " KB";
+			} else {
+				return round(bytes) + " bytes";
+			}
+		}
+		return "";
 	}
 
 	/**
@@ -111,6 +195,19 @@ public class FileUploadController implements Serializable {
 		List<FileData> fileDataList = (List<FileData>) httpRequest.getSession()
 				.getAttribute(AjaxFileUploadServlet.IMIXS_FILEDATA_LIST);
 		return fileDataList;
+	}
+
+	/**
+	 * helper method to round for 2 digits.
+	 * 
+	 * @param value
+	 * @param places
+	 * @return
+	 */
+	public static double round(double value) {
+		BigDecimal bd = new BigDecimal(value);
+		bd = bd.setScale(2, RoundingMode.HALF_UP);
+		return bd.doubleValue();
 	}
 
 }

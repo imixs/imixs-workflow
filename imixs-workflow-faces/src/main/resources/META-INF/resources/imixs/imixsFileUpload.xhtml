@@ -42,6 +42,7 @@
 			<!-- show no attachments from workitem -->
 			<ui:fragment rendered="#{!cc.attrs.hideatachments}">
 				<!-- attached files -->
+				
 				<h:dataTable value="#{cc.attrs.workitem.fileNames}" var="attachment"
 					styleClass="imixsFileUpload_uploadlist">
 
@@ -56,13 +57,13 @@
 					</h:column>
 
 					<h:column>
+							#{fileUploadController.getFileSize(attachment)}
 					</h:column>
-					<!--  Loeschen  -->
+					<!--  delete stored file  -->
 					<h:column>
 						<h:commandLink value="#{global.delete}"
 							styleClass="imixsFileUpload_delete"
-							action="#{fileUploadController.removeAttachedFile(cc.attrs.workitem,attachment)}">
-
+							action="#{fileUploadController.removeFile(cc.attrs.workitem,attachment)}">
 							<f:ajax
 								render=":#{component.parent.parent.parent.parent.clientId}"
 								onevent="function(data) { $('.imixsFileUpload').imixsLayout();updateFileUpload(); }" />

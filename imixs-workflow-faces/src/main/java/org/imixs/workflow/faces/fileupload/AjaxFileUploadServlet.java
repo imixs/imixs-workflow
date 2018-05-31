@@ -60,12 +60,11 @@ public class AjaxFileUploadServlet extends HttpServlet {
 			List<FileData> fileDataList = getFilesFromRequest(httpRequest);
 			// now update the workitem....
 			if (fileUploadController != null) {
-				logger.info("conversation id=" + fileUploadController.getCID());
 				// check workitem... issue
 				if (fileUploadController.getWorkitem() != null) {
 					logger.finest("......add new fileData object...");
 					for (FileData filedata : fileDataList) {
-						fileUploadController.getWorkitem().addFileData(filedata);
+						fileUploadController.addAttachedFile(filedata);
 					}
 				}
 			}
@@ -85,13 +84,9 @@ public class AjaxFileUploadServlet extends HttpServlet {
 		int iCancel = httpRequest.getRequestURI().indexOf("/fileupload/");
 		String filename = httpRequest.getRequestURI().substring(iCancel + 12);
 
-		// now update the workitem....
+		// now update the fileUploadController and the list of uploaded files....
 		if (fileUploadController != null) {
-			logger.info("conversation id=" + fileUploadController.getCID());
-			// check workitem... issue
-			if (fileUploadController.getWorkitem() != null) {
-				fileUploadController.getWorkitem().removeFile(filename);
-			}
+			fileUploadController.removeAttachedFile(filename);
 		}
 
 		String contextURL = httpRequest.getRequestURI();
@@ -116,10 +111,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 			// urldecoding...
 			filename = URLDecoder.decode(filename, "UTF-8");
 
-			// FileData fileData = getFile(httpRequest, filename);
-
 			if (fileUploadController != null) {
-				logger.info("conversation id=" + fileUploadController.getCID());
 				// check workitem... issue
 				if (fileUploadController.getWorkitem() != null) {
 					FileData fileData = fileUploadController.getWorkitem().getFileData(filename);
@@ -277,6 +269,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	/**
 	 * This method write a JSON meta data structure for uploaded files into the
 	 * httpResponse.
+	 * This structure is used by the ajax jquery file control. (see the imixs-faces.js file)
 	 * 
 	 * 
 	 * <code>
@@ -310,11 +303,11 @@ public class AjaxFileUploadServlet extends HttpServlet {
 
 		// look if we have a worktiem with filedata....
 		if (fileUploadController != null) {
-			logger.info("conversation id=" + fileUploadController.getCID());
 			// check workitem... issue
 			if (fileUploadController.getWorkitem() != null) {
-				List<FileData> fileDataList = fileUploadController.getWorkitem().getFileData();// .removeFile(filename);
+				//List<FileData> fileDataList = fileUploadController.getWorkitem().getFileData();// .removeFile(filename);
 
+				List<FileData> fileDataList=fileUploadController.getAttachedFiles();
 				logger.finest("......write JSON meta data...");
 
 				String result = "{ \"files\":[";
