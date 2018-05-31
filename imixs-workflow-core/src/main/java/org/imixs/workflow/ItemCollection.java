@@ -939,6 +939,21 @@ public class ItemCollection implements Cloneable {
 			return null;
 		}
 	}
+	
+	/**
+	 * Returns a list of all FileData objects.
+	 * 
+	 *
+	 * @return list of FileData objects 
+	 */
+	public List<FileData> getFileData() {
+		List<FileData> result=new ArrayList<FileData>();
+		List<String> fileNames=this.getFileNames();
+		for (String filename: fileNames) {
+			result.add(this.getFileData(filename));
+		}
+		return result;
+	}
 
 	/**
 	 * This method removes a single file attachment from the workitem

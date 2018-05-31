@@ -10,11 +10,9 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
 
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowKernel;
 
 /**
  * The FileUploadController is a conversation scoped bean and used to hold the
@@ -26,7 +24,6 @@ import org.imixs.workflow.WorkflowKernel;
  * 
  */
 @Named
-// @RequestScoped
 @ConversationScoped
 public class FileUploadController implements Serializable {
 
@@ -38,13 +35,6 @@ public class FileUploadController implements Serializable {
 
 	@Inject
 	private Conversation conversation;
-	
-//	@Context
-//	private HttpServletRequest httpRequest;
-
-	public FileUploadController() {
-		super();
-	}
 
 	/**
 	 * Setter method to get an instance of the current workitem the FileData should
@@ -98,40 +88,6 @@ public class FileUploadController implements Serializable {
 	}
 
 	/**
-	 * The method adds all new uploaded files into the WorkItem property '$file'.
-	 * 
-	 * @param workitem
-	 *            - workItem to store the uploaded files
-	 */
-	//@SuppressWarnings("unchecked")
-	public void updateWorkitem(List<FileData> fileDataList) {
-		if (workitem == null)
-			return;
-		logger.finest("...... updateWorkitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID));
-		
-		
-//		HttpServletRequest httpRequest = (HttpServletRequest) (FacesContext.getCurrentInstance().getExternalContext()
-//				.getRequest());
-
-//		List<FileData> fileDataList = (List<FileData>) httpRequest.getSession()
-//				.getAttribute(AjaxFileUploadServlet.IMIXS_FILEDATA_LIST);
-//		if (fileDataList == null) {
-//			return;
-//		}
-
-		// add all new uploaded files into the workitem
-
-		for (FileData filedata : fileDataList) {
-			// now add the file content into blobWorkitem
-			workitem.addFileData(filedata);
-			//.addFile(aFile.getContent(), aFile.getName(), aFile.getContentType());
-		}
-
-		// reset session IMIXS_FILEDATA_LIST
-		reset();
-	}
-
-	/**
 	 * Removes a attached file object from the workitem.
 	 * 
 	 * @param sFilename
@@ -155,16 +111,6 @@ public class FileUploadController implements Serializable {
 		List<FileData> fileDataList = (List<FileData>) httpRequest.getSession()
 				.getAttribute(AjaxFileUploadServlet.IMIXS_FILEDATA_LIST);
 		return fileDataList;
-	}
-
-	/**
-	 * clears the current uploaded files from the session param IMIXS_FILEDATA_LIST
-	 */
-	public void reset() {
-//		HttpServletRequest httpRequest = (HttpServletRequest) (FacesContext.getCurrentInstance().getExternalContext()
-//				.getRequest());
-//		httpRequest.getSession().removeAttribute(AjaxFileUploadServlet.IMIXS_FILEDATA_LIST);
-
 	}
 
 }

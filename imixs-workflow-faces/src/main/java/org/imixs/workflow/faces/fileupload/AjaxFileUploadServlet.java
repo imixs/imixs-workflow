@@ -21,8 +21,17 @@ import javax.servlet.http.Part;
 
 import org.imixs.workflow.FileData;
 
+/**
+ * The AjaxFileUploadServlet is a Multipart-Servlet 3.0. It is used by the
+ * imixsFileUplad widget. The widget is using a jQuery component to handle the
+ * upload of multiple files and supports drag & drop functionality.
+ * 
+ * The servlet is configurered . Limit file size to 100MB, 500MB Request Size
+ * 
+ * @author rsoika
+ *
+ */
 @WebServlet(urlPatterns = { "/fileupload/*" })
-// configure Servlet 3.0 multipart. Limit file size to 100MB, 500MB Request Size
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 100, maxRequestSize = 1024 * 1024 * 100
 		* 5)
 public class AjaxFileUploadServlet extends HttpServlet {
@@ -41,70 +50,26 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	FileUploadController fileUploadController;
 
 	/**
-	 * This method gets the current fileList form the current user session. In case
-	 * no fileList is yet stored, the method creates a new empty one.
-	 * 
-	 * @param httpRequest
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	private List<FileData> getFileList(HttpServletRequest httpRequest) {
-		List<FileData> fileDataList = (List<FileData>) httpRequest.getSession().getAttribute(IMIXS_FILEDATA_LIST);
-		if (fileDataList == null) {
-			fileDataList = new ArrayList<FileData>();
-			// store file content into session
-			httpRequest.getSession().setAttribute(IMIXS_FILEDATA_LIST, fileDataList);
-		}
-		return fileDataList;
-	}
-
-	/**
-	 * Stores a fileDataList into the current user session
-	 * 
-	 * @param httpRequest
-	 * @param fileDataList
-	 */
-	private void setFileList(HttpServletRequest httpRequest, List<FileData> fileDataList) {
-
-		if (fileDataList == null) {
-			fileDataList = new ArrayList<FileData>();
-		}
-		// store file content into session
-		httpRequest.getSession().setAttribute(IMIXS_FILEDATA_LIST, fileDataList);
-	}
-
-	/**
 	 * Upload files to stored in the current user session
 	 */
 	@Override
 	protected void doPost(HttpServletRequest httpRequest, HttpServletResponse response)
 			throws ServletException, IOException {
 		if (isPostFileUploadRequest(httpRequest)) {
-			List<FileData> fileDataList = getFileList(httpRequest);
 			logger.finest("......add files...");
-
-			//addFilesold(httpRequest);
-			
-			List<FileData> newFIles = getFilesFromRequest(httpRequest);
-			fileDataList.addAll(newFIles);
-			
-			// store file content into session
-			setFileList(httpRequest, fileDataList);
-			
+			List<FileData> fileDataList = getFilesFromRequest(httpRequest);
 			// now update the workitem....
 			if (fileUploadController != null) {
 				logger.info("conversation id=" + fileUploadController.getCID());
 				// check workitem... issue
 				if (fileUploadController.getWorkitem() != null) {
-					logger.info("alles rogger in cambocha");
-					fileUploadController.updateWorkitem(fileDataList);
+					logger.finest("......add new fileData object...");
+					for (FileData filedata : fileDataList) {
+						fileUploadController.getWorkitem().addFileData(filedata);
+					}
 				}
 			}
-			
-			
-			
-			writeJsonMetadata(fileDataList, response, httpRequest.getRequestURI());
-
+			writeJsonMetadata(response, httpRequest.getRequestURI());
 		}
 	}
 
@@ -116,17 +81,23 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	protected void doDelete(HttpServletRequest httpRequest, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		List<FileData> fileDataList = getFileList(httpRequest);
+		// List<FileData> fileDataList = getFileList(httpRequest);
 		int iCancel = httpRequest.getRequestURI().indexOf("/fileupload/");
 		String filename = httpRequest.getRequestURI().substring(iCancel + 12);
-		removeFile(httpRequest, filename);
-		// store file content into session
-		setFileList(httpRequest, fileDataList);
-		// get context url from request uri
+
+		// now update the workitem....
+		if (fileUploadController != null) {
+			logger.info("conversation id=" + fileUploadController.getCID());
+			// check workitem... issue
+			if (fileUploadController.getWorkitem() != null) {
+				fileUploadController.getWorkitem().removeFile(filename);
+			}
+		}
+
 		String contextURL = httpRequest.getRequestURI();
 		// cut last /....
 		contextURL = contextURL.substring(0, contextURL.lastIndexOf('/') + 1);
-		writeJsonMetadata(fileDataList, response, contextURL);
+		writeJsonMetadata(response, contextURL);
 	}
 
 	/**
@@ -145,19 +116,28 @@ public class AjaxFileUploadServlet extends HttpServlet {
 			// urldecoding...
 			filename = URLDecoder.decode(filename, "UTF-8");
 
-			FileData fileData = getFile(httpRequest, filename);
-			// write contenremoveFile(filename);
-			if (fileData != null) {
-				writeFileContent(httpResponse, fileData);
-			} else {
-				httpResponse.sendError(HttpServletResponse.SC_NOT_FOUND);
+			// FileData fileData = getFile(httpRequest, filename);
+
+			if (fileUploadController != null) {
+				logger.info("conversation id=" + fileUploadController.getCID());
+				// check workitem... issue
+				if (fileUploadController.getWorkitem() != null) {
+					FileData fileData = fileUploadController.getWorkitem().getFileData(filename);
+					// write contenremoveFile(filename);
+					if (fileData != null) {
+						writeFileContent(httpResponse, fileData);
+					} else {
+						httpResponse.sendError(HttpServletResponse.SC_NOT_FOUND);
+					}
+				}
 			}
+
 		}
 
 		// request just the currently uploaded files in json format
 		if (isGetRefreshFileUploadRequest(httpRequest)) {
 			String contextURL = httpRequest.getRequestURI();
-			writeJsonMetadata(this.getFileList(httpRequest), httpResponse, contextURL);
+			writeJsonMetadata(httpResponse, contextURL);
 		}
 	}
 
@@ -240,40 +220,8 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	}
 
 	/**
-	 * removes an uploaded file from the fileDataList...
-	 * 
-	 * @param file
-	 *            - filename to be removed
-	 */
-	private List<FileData> removeFile(HttpServletRequest httpRequest, String file) {
-		int pos = -1;
-
-		List<FileData> fileDataList = getFileList(httpRequest);
-		if (file == null)
-			return fileDataList;
-
-		for (int i = 0; i < fileDataList.size(); i++) {
-			FileData fileData = fileDataList.get(i);
-			if (file.equals(fileData.getName())) {
-				pos = i;
-				break;
-			}
-		}
-		// found?
-		if (pos > -1) {
-			logger.finest("......remove file '" + file + "'");
-			fileDataList.remove(pos);
-
-			// store file content into session
-			setFileList(httpRequest, fileDataList);
-		}
-
-		return fileDataList;
-	}
-
-	/**
-	 * This method converts mulitple files from the httpRequest into a list of FileData
-	 * objects.
+	 * This method converts mulitple files from the httpRequest into a list of
+	 * FileData objects.
 	 * 
 	 * @param httpRequest
 	 * @return list of FileData objects
@@ -327,30 +275,6 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	}
 
 	/**
-	 * gets an uploaded fileData from the fileDataList stored in the crrent user
-	 * session...
-	 * 
-	 * @param file
-	 *            - filename to be searched for
-	 */
-	private FileData getFile(HttpServletRequest httpRequest, String file) {
-		List<FileData> fileDataList = getFileList(httpRequest);
-
-		FileData result = null;
-		if (file == null)
-			return null;
-		for (int i = 0; i < fileDataList.size(); i++) {
-			FileData fileData = fileDataList.get(i);
-			if (file.equals(fileData.getName())) {
-				result = fileData;
-				break;
-			}
-		}
-		return result;
-	}
-
-
-	/**
 	 * This method write a JSON meta data structure for uploaded files into the
 	 * httpResponse.
 	 * 
@@ -375,40 +299,50 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	 * 
 	 * 
 	 * * @see https://github.com/blueimp/jQuery-File-Upload/wiki/JSON-Response
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 * 
 	 */
-	private void writeJsonMetadata(List<FileData> fileDataList, ServletResponse response,String context_url) throws IOException {
-		logger.finest("......write JSON meta data...");
+	private void writeJsonMetadata(ServletResponse response, String context_url) throws IOException {
+
 		response.setContentType("application/json;charset=UTF-8");
 		PrintWriter out = response.getWriter();
-		
-		String result = "{ \"files\":[";
-		for (int i = 0; i < fileDataList.size(); i++) {
 
-			FileData fileData = fileDataList.get(i);
+		// look if we have a worktiem with filedata....
+		if (fileUploadController != null) {
+			logger.info("conversation id=" + fileUploadController.getCID());
+			// check workitem... issue
+			if (fileUploadController.getWorkitem() != null) {
+				List<FileData> fileDataList = fileUploadController.getWorkitem().getFileData();// .removeFile(filename);
 
-			result += "{ \"url\": \"" + context_url + fileData.getName() + "\",";
-			result += "\"thumbnail_url\": \"\",";
-			result += "\"name\": \"" + fileData.getName() + "\",";
-			result += "\"type\": \"" + fileData.getContentType() + "\",";
-			result += "\"size\": " + fileData.getContent().length + ",";
-			result += "\"delete_url\": \"\",";
-			result += "\"delete_type\": \"DELETE\"";
+				logger.finest("......write JSON meta data...");
 
-			// last element?
-			if (i < fileDataList.size() - 1)
-				result += "},";
-			else
-				result += "}";
+				String result = "{ \"files\":[";
+				for (int i = 0; i < fileDataList.size(); i++) {
+
+					FileData fileData = fileDataList.get(i);
+					// we construct a temp file url with the current converstion id....
+					result += "{ \"url\": \"" + context_url + fileData.getName() +"?cid="+ fileUploadController.getCID() +"\",";
+					result += "\"thumbnail_url\": \"\",";
+					result += "\"name\": \"" + fileData.getName() + "\",";
+					result += "\"type\": \"" + fileData.getContentType() + "\",";
+					result += "\"size\": " + fileData.getContent().length + ",";
+					result += "\"delete_url\": \"\",";
+					result += "\"delete_type\": \"DELETE\"";
+
+					// last element?
+					if (i < fileDataList.size() - 1)
+						result += "},";
+					else
+						result += "}";
+				}
+				result += "]}";
+				out.write(result);
+			}
 		}
 
-		result += "]}";
-
-		out.write(result);
 		out.close();
-		
-		
+
 	}
 
 }
