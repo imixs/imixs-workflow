@@ -83,7 +83,11 @@ public class AjaxFileUploadServlet extends HttpServlet {
 			List<FileData> fileDataList = getFileList(httpRequest);
 			logger.finest("......add files...");
 
-			addFilesold(httpRequest);
+			//addFilesold(httpRequest);
+			
+			List<FileData> newFIles = getFilesFromRequest(httpRequest);
+			fileDataList.addAll(newFIles);
+			
 			// store file content into session
 			setFileList(httpRequest, fileDataList);
 			
@@ -268,10 +272,11 @@ public class AjaxFileUploadServlet extends HttpServlet {
 	}
 
 	/**
-	 * This method converts mulitple files from the httpRequest into FileData
+	 * This method converts mulitple files from the httpRequest into a list of FileData
 	 * objects.
 	 * 
 	 * @param httpRequest
+	 * @return list of FileData objects
 	 */
 	private List<FileData> getFilesFromRequest(HttpServletRequest httpRequest) {
 		logger.finest("......Looping parts");
@@ -319,65 +324,6 @@ public class AjaxFileUploadServlet extends HttpServlet {
 		}
 
 		return fileDataList;
-	}
-
-	/**
-	 * This method adds mulitple files into the FileDataList stored in the current
-	 * user session
-	 * 
-	 * @param httpRequest
-	 */
-	private void addFilesold(HttpServletRequest httpRequest) {
-		logger.finest("......Looping parts");
-
-		try {
-			for (Part p : httpRequest.getParts()) {
-				byte[] b = new byte[(int) p.getSize()];
-				p.getInputStream().read(b);
-				p.getInputStream().close();
-				// params.put(p.getName(), new String[] { new String(b) });
-
-				// test if part contains a file
-				String fileName = getFilename(p);
-				if (fileName != null) {
-
-					/*
-					 * issue #106
-					 * 
-					 * https://developer.jboss.org/message/941661#941661
-					 * 
-					 * Here we test of the encoding and try to convert to utf-8.
-					 */
-					byte fileNameISOBytes[] = fileName.getBytes("iso-8859-1");
-					String fileNameUTF8 = new String(fileNameISOBytes, "UTF-8");
-					if (fileName.length() != fileNameUTF8.length()) {
-						// convert to utf-8
-						logger.finest("......filename seems to be ISO-8859-1 encoded");
-						fileName = new String(fileName.getBytes("iso-8859-1"), "utf-8");
-					}
-
-					// extract the file content...
-					FileData fileData = null;
-					logger.finest("......filename : " + fileName + ", contentType " + p.getContentType());
-					fileData = new FileData(fileName, b, p.getContentType());
-					if (fileData != null) {
-						// remove existing file
-						List<FileData> fileDataList = removeFile(httpRequest, fileData.getName());
-						// add new fileData..
-						fileDataList.add(fileData);
-						// store file content into session
-						setFileList(httpRequest, fileDataList);
-					}
-
-				}
-			}
-
-		} catch (IOException ex) {
-			logger.log(Level.SEVERE, null, ex);
-		} catch (ServletException ex) {
-			logger.log(Level.SEVERE, null, ex);
-		}
-
 	}
 
 	/**
