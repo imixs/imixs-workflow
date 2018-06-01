@@ -36,11 +36,13 @@ public class FileUploadController implements Serializable {
 	private ItemCollection workitem = null;
 
 	private List<FileData> _tmpFiles = null; // temporarly file list.
-
+	private List<FileData> _persistedFiles = null; // persisted file list.
+	
 	private static Logger logger = Logger.getLogger(FileUploadController.class.getName());
 
 	@Inject
 	private Conversation conversation;
+
 
 	/**
 	 * Setter method to get an instance of the current workitem the FileData should
@@ -64,13 +66,17 @@ public class FileUploadController implements Serializable {
 
 		if (workitem != null) {
 			// start new conversation...
-			_tmpFiles = new ArrayList<FileData>();
 			if (conversation.isTransient()) {
 				conversation.setTimeout(
 						((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
 								.getSession().getMaxInactiveInterval() * 1000);
 				conversation.begin();
 				logger.finest("......starting new conversation, id=" + conversation.getId());
+			}
+			_tmpFiles = new ArrayList<FileData>();
+			_persistedFiles=new ArrayList<FileData>();
+			for (FileData fileData: workitem.getFileData()) {
+				_persistedFiles.add(fileData);
 			}
 		} 
 	}
@@ -136,9 +142,16 @@ public class FileUploadController implements Serializable {
 	 *            - filename to be removed
 	 * @return - null
 	 */
-	public void removeFile(ItemCollection _workitem, String aFilename) {
-		if (_workitem != null) {
-			_workitem.removeFile(aFilename);
+	public void removePersistedFile(String aFilename) {
+		if (workitem != null) {
+			workitem.removeFile(aFilename);
+		}
+		// remove from persisted list
+		for (Iterator<FileData> iterator = _persistedFiles.iterator(); iterator.hasNext();) {
+			FileData tmp = iterator.next();
+			if (tmp.getName().equals(aFilename)) {
+				iterator.remove();
+			}
 		}
 	}
 
@@ -155,9 +168,27 @@ public class FileUploadController implements Serializable {
 		}
 		return _tmpFiles;
 	}
+	
+	
+	/**
+	 * returns the list of already persisted files. This list is not equal the
+	 * $file item!
+	 * 
+	 * @return
+	 */
+	public List<FileData> getPersistedFiles() {
+		if (_persistedFiles == null) {
+			_persistedFiles = new ArrayList<FileData>();
+		}
+		return _persistedFiles;
+	}
+	
+	
+	
+	
 
 	/**
-	 * get the file size for a given filename
+	 * get the file size for a given filename in human readable format
 	 * 
 	 * @param sFilename
 	 *            - filename to be removed
@@ -183,19 +214,6 @@ public class FileUploadController implements Serializable {
 		return "";
 	}
 
-	/**
-	 * returns the list of uploaded files
-	 * 
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	public List<FileData> getUploades() {
-		HttpServletRequest httpRequest = (HttpServletRequest) (FacesContext.getCurrentInstance().getExternalContext()
-				.getRequest());
-		List<FileData> fileDataList = (List<FileData>) httpRequest.getSession()
-				.getAttribute(AjaxFileUploadServlet.IMIXS_FILEDATA_LIST);
-		return fileDataList;
-	}
 
 	/**
 	 * helper method to round for 2 digits.

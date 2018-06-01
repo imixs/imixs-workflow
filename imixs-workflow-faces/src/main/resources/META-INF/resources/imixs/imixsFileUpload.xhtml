@@ -46,40 +46,34 @@
 			<ui:fragment rendered="#{!cc.attrs.hideatachments}">
 				<!-- attached files -->
 				
-				<h:dataTable value="#{cc.attrs.workitem.fileNames}" var="attachment"
+				<h:dataTable value="#{fileUploadController.persistedFiles}" var="fileData"
 					styleClass="imixsFileUpload_uploadlist">
-
-					<ui:param name="fileData"
-						value="#{cc.attrs.workitem.files[attachemnt]}"></ui:param>
 
 					<h:column>
 						<h:outputText escape="false" value="&lt;a target='_balnk' href='" />
 						<h:outputText escape="false"
-							value="#{cc.attrs.context_url}/file/#{attachment}" />
-						<h:outputText escape="false" value="'&gt;#{attachment}&lt;/a&gt;" />
+							value="#{cc.attrs.context_url}/file/#{fileData.name}" />
+						<h:outputText escape="false" value="'&gt;#{fileData.name}&lt;/a&gt;" />
 					</h:column>
 
 					<h:column>
-							#{fileUploadController.getFileSize(attachment)}
+							#{fileUploadController.getFileSize(fileData.name)}
 					</h:column>
 					<!--  delete stored file  -->
 					<h:column>
 						<h:commandLink value="#{global.delete}"
 							styleClass="imixsFileUpload_delete"
-							action="#{fileUploadController.removeFile(cc.attrs.workitem,attachment)}">
+							actionListener="#{fileUploadController.removePersistedFile(fileData.name)}">
 							<f:ajax
 								render=":#{component.parent.parent.parent.parent.clientId}"
 								onevent="function(data) { $('.imixsFileUpload').imixsLayout();updateFileUpload(); }" />
+							<f:param name="cid" value="#{fileUploadController.getCID()}" />
 						</h:commandLink>
 					</h:column>
 
 				</h:dataTable>
 			</ui:fragment>
 		</h:panelGroup>
-
-
-
-
 
 
 	</h:panelGroup>
