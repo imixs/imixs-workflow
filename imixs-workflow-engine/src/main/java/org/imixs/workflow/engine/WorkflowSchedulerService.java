@@ -606,7 +606,7 @@ public class WorkflowSchedulerService {
 		logger.info(iProcessWorkItems + " workitems processed");
 
 		if (unprocessedIDs.size() > 0) {
-			logger.warning(unprocessedIDs.size() + " workitems could be processed!");
+			logger.warning(unprocessedIDs.size() + " workitems could not be processed:");
 			for (String aid : unprocessedIDs) {
 				logger.warning("          " + aid);
 			}
