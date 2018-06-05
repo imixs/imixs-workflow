@@ -939,17 +939,17 @@ public class ItemCollection implements Cloneable {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Returns a list of all FileData objects.
 	 * 
 	 *
-	 * @return list of FileData objects 
+	 * @return list of FileData objects
 	 */
 	public List<FileData> getFileData() {
-		List<FileData> result=new ArrayList<FileData>();
-		List<String> fileNames=this.getFileNames();
-		for (String filename: fileNames) {
+		List<FileData> result = new ArrayList<FileData>();
+		List<String> fileNames = this.getFileNames();
+		for (String filename : fileNames) {
 			result.add(this.getFileData(filename));
 		}
 		return result;
@@ -1066,8 +1066,9 @@ public class ItemCollection implements Cloneable {
 	/**
 	 * @return current $ActivityID
 	 */
+	@Deprecated
 	public int getActivityID() {
-		return getItemValueInteger(WorkflowKernel.ACTIVITYID);
+		return getItemValueInteger("$activityid");
 	}
 
 	/**
@@ -1075,8 +1076,36 @@ public class ItemCollection implements Cloneable {
 	 * 
 	 * @param activityID
 	 */
+	@Deprecated
 	public void setActivityID(int activityID) {
-		replaceItemValue(WorkflowKernel.ACTIVITYID, activityID);
+		replaceItemValue("$activityid", activityID);
+	}
+
+	/**
+	 * @return current $EventID
+	 */
+	public int getEventID() {
+		// test for deprecated version
+		int result = getItemValueInteger(WorkflowKernel.EVENTID);
+		if (result == 0 && getItemValueInteger("$activityid") != 0) {
+			logger.warning("The field $activityid is deprecated. Please use $eventid instead. "
+					+ "Processing a workitem with an deprecated $activityid is still supported.");
+			result=getItemValueInteger("$activityid");
+			// update eventID
+			replaceItemValue(WorkflowKernel.EVENTID, result);
+			// reset deprecated item!
+			replaceItemValue("$activityid", 0);
+		} 
+		return result;
+	}
+
+	/**
+	 * set $eventID
+	 * 
+	 * @param eventID
+	 */
+	public void setEventID(int eventID) {
+		replaceItemValue(WorkflowKernel.EVENTID, eventID);
 	}
 
 	/**
