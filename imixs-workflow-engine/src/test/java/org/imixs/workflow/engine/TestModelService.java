@@ -40,7 +40,7 @@ public class TestModelService extends WorkflowMockEnvironment {
 		ItemCollection workitem = database.get("W0000-00001");
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION,"0.9.0");
 		workitem.replaceItemValue(WorkflowKernel.PROCESSID,100);
-		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID,10);
+		workitem.setEventID(10);
 		workitem.replaceItemValue("txtWorkflowGroup","Ticket");
 	
 		Model amodel=null;

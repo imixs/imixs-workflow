@@ -189,7 +189,7 @@ public class TestAccessPlugin {
 		// case I.
 		
 		documentContext.replaceItemValue(WorkflowKernel.PROCESSID, 200);
-		documentContext.replaceItemValue(WorkflowKernel.ACTIVITYID, 20);
+		documentContext.setEventID(20);
 		documentContext.replaceItemValue("_budget", 50);
 		try {
 			documentContext = workflowMockEnvironment.processWorkItem(documentContext);
@@ -209,7 +209,7 @@ public class TestAccessPlugin {
 		// case II.
 
 		documentContext.replaceItemValue(WorkflowKernel.PROCESSID, 200);
-		documentContext.replaceItemValue(WorkflowKernel.ACTIVITYID, 20);
+		documentContext.setEventID(20);
 		documentContext.replaceItemValue("_budget", 570);
 		try {
 			documentContext = workflowMockEnvironment.processWorkItem(documentContext);

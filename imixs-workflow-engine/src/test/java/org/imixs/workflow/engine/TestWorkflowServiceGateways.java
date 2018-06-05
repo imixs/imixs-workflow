@@ -59,7 +59,7 @@ public class TestWorkflowServiceGateways {
 
 		// test none condition ...
 		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
-		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
+		workitem.setEventID(10);
 		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
 		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
 		Assert.assertEquals(1000, workitem.getProcessID());
@@ -67,14 +67,14 @@ public class TestWorkflowServiceGateways {
 		// test _budget<100
 		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
 		workitem.replaceItemValue("_budget", 99);
-		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
+		workitem.setEventID(10);
 		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
 		Assert.assertEquals(1200, workitem.getProcessID());
 
 		// test _budget>100
 		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
 		workitem.replaceItemValue("_budget", 9999);
-		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
+		workitem.setEventID(10);
 		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
 		Assert.assertEquals(1100, workitem.getProcessID());
 
@@ -103,7 +103,7 @@ public class TestWorkflowServiceGateways {
 		// test none condition ...
 		workitem.replaceItemValue("_subject", "Hello");
 		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
-		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
+		workitem.setEventID(10);
 		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
 		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
 		Assert.assertEquals(1100, workitem.getProcessID());

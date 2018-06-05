@@ -297,19 +297,19 @@ public class TestResultPlugin {
 		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 100);
 
 		// case 1 - no type attribute
-		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
+		workitem.setEventID(10);
 		workitem = workflowMockEnvironment.processWorkItem(workitem);
 		Assert.assertEquals(100, workitem.getProcessID());
 		Assert.assertEquals("", workitem.getType());
 
 		// case 2 - workitem
-		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 20);
+		workitem.setEventID(20);
 		workitem = workflowMockEnvironment.processWorkItem(workitem);
 		Assert.assertEquals(200, workitem.getProcessID());
 		Assert.assertEquals("workitem", workitem.getType());
 
 		// case 3 - workitemdeleted
-		workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 30);
+		workitem.setEventID(30);
 		workitem = workflowMockEnvironment.processWorkItem(workitem);
 		Assert.assertEquals(200, workitem.getProcessID());
 		Assert.assertEquals("workitemdeleted", workitem.getType());
