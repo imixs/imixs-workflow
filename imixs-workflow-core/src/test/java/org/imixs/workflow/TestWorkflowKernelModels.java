@@ -74,7 +74,7 @@ public class TestWorkflowKernelModels {
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
 			itemCollection.replaceItemValue("$processid", 1000);
-			itemCollection.replaceItemValue("$activityid", 10);
+			itemCollection.setEventID(10);
 
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
@@ -109,7 +109,7 @@ public class TestWorkflowKernelModels {
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
 			itemCollection.replaceItemValue("$processid", 1100);
-			itemCollection.replaceItemValue("$activityid", 20);
+			itemCollection.setEventID(20);
 
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
@@ -147,7 +147,7 @@ public class TestWorkflowKernelModels {
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
 			itemCollection.replaceItemValue("$processid", 1000);
-			itemCollection.replaceItemValue("$activityid", 10);
+			itemCollection.setEventID(10);
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 			itemCollection.replaceItemValue("_budget", 99);
@@ -160,7 +160,7 @@ public class TestWorkflowKernelModels {
 			itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
 			itemCollection.replaceItemValue("$processid", 1000);
-			itemCollection.replaceItemValue("$activityid", 10);
+			itemCollection.setEventID(10);
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 			itemCollection.replaceItemValue("_budget", 9999);
@@ -200,7 +200,7 @@ public class TestWorkflowKernelModels {
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
 			itemCollection.replaceItemValue("$processid", 1000);
-			itemCollection.replaceItemValue("$activityid", 10);
+			itemCollection.setEventID(10);
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 			itemCollection.replaceItemValue("_budget", 9999);
@@ -213,7 +213,7 @@ public class TestWorkflowKernelModels {
 			itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
 			itemCollection.replaceItemValue("$processid", 1000);
-			itemCollection.replaceItemValue("$activityid", 10);
+			itemCollection.setEventID(10);
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 			itemCollection.replaceItemValue("_budget", 99);
@@ -253,7 +253,7 @@ public class TestWorkflowKernelModels {
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("_subject", "Hello");
 			itemCollection.replaceItemValue("$processid", 1000);
-			itemCollection.replaceItemValue("$activityid", 10);
+			itemCollection.setEventID(10);
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 			itemCollection = kernel.process(itemCollection);
@@ -319,7 +319,7 @@ public class TestWorkflowKernelModels {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("_subject", "Hello");
 		itemCollection.replaceItemValue("$processid", 1000);
-		itemCollection.replaceItemValue("$activityid", 10);
+		itemCollection.setEventID(10);
 		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 		// model exception expected!

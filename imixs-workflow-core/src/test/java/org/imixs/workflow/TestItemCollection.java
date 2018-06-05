@@ -434,12 +434,12 @@ public class TestItemCollection {
 
 		itemCollection1.replaceItemValue(WorkflowKernel.MODELVERSION, "1.0.0");
 		itemCollection1.replaceItemValue(WorkflowKernel.PROCESSID, 100);
-		itemCollection1.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
+		itemCollection1.replaceItemValue(WorkflowKernel.EVENTID, 10);
 		itemCollection1.replaceItemValue(WorkflowKernel.TYPE, "workitem_test");
 		itemCollection1.replaceItemValue(WorkflowKernel.UNIQUEID, "ABC-123");
 
 		Assert.assertEquals("1.0.0", itemCollection1.getModelVersion());
-		Assert.assertEquals(10, itemCollection1.getActivityID());
+		Assert.assertEquals(10, itemCollection1.getEventID());
 		Assert.assertEquals(100, itemCollection1.getProcessID());
 		Assert.assertEquals("workitem_test", itemCollection1.getType());
 		Assert.assertEquals("ABC-123", itemCollection1.getUniqueID());

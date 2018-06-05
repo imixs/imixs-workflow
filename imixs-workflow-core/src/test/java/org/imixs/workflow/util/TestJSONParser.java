@@ -79,7 +79,7 @@ public class TestJSONParser {
 
 		Assert.assertNotNull(itemCol);
 
-		Assert.assertEquals(10, itemCol.getActivityID());
+		Assert.assertEquals(10, itemCol.getEventID());
 		Assert.assertEquals(100, itemCol.getProcessID());
 	}
 

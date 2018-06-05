@@ -66,7 +66,46 @@ public class TestWorkflowKernel {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
 		itemCollection.replaceItemValue("$processid", 100);
-		itemCollection.replaceItemValue("$activityid", 10);
+		itemCollection.setEventID(10);
+		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
+
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+
+		try {
+			itemCollectionProcessed = kernel.process(itemCollection);
+		} catch (PluginException e) {
+			Assert.fail();
+			e.printStackTrace();
+		} catch (ProcessingErrorException e) {
+			Assert.fail();
+			e.printStackTrace();
+		} catch (ModelException e) {
+			Assert.fail();
+			e.printStackTrace();
+		}
+
+		Assert.assertEquals(1, itemCollectionProcessed.getItemValueInteger("runs"));
+		Assert.assertEquals(100, itemCollectionProcessed.getItemValueInteger("$processid"));
+		
+		// initial and processed workitems are not the same and not equals! 
+		Assert.assertNotSame(itemCollection, itemCollectionProcessed);
+		Assert.assertFalse(itemCollection.equals(itemCollectionProcessed));
+	}
+	
+
+	/**
+	 * This test verifies if the deprecated fileds "$processid" and $activityID are still working.
+	 * 
+	 * see issue #381
+	 */
+	@Test
+	@Category(org.imixs.workflow.WorkflowKernel.class)
+	public void testProcessWithDeprecatedField() {
+		ItemCollection itemCollectionProcessed=null; 
+		ItemCollection itemCollection = new ItemCollection();
+		itemCollection.replaceItemValue("txtTitel", "Hello");
+		itemCollection.replaceItemValue("$processid", 100);
+		itemCollection.setEventID(10);
 		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
@@ -101,7 +140,7 @@ public class TestWorkflowKernel {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
 		itemCollection.replaceItemValue("$processid", 100);
-		itemCollection.replaceItemValue("$activityid", 10);
+		itemCollection.setEventID(10);
 		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
@@ -138,7 +177,7 @@ public class TestWorkflowKernel {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
 		itemCollection.replaceItemValue("$processid", 100);
-		itemCollection.replaceItemValue("$activityid", 20);
+		itemCollection.setEventID(20);
 		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
@@ -167,7 +206,7 @@ public class TestWorkflowKernel {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
 		itemCollection.replaceItemValue("$processid", 100);
-		itemCollection.replaceItemValue("$activityid", 11);
+		itemCollection.setEventID(11);
 		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
@@ -238,10 +277,10 @@ public class TestWorkflowKernel {
 
 		try {
 			// simulate two steps
-			itemCollection.replaceItemValue("$activityid", 10);
+			itemCollection.setEventID(10);
 			itemCollection = kernel.process(itemCollection);
 
-			itemCollection.replaceItemValue("$activityid", 20);
+			itemCollection.setEventID(20);
 			// sumulate a Log Comment...
 			itemCollection.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
 
@@ -340,10 +379,10 @@ public class TestWorkflowKernel {
 
 		try {
 			// simulate two steps
-			itemCollection.replaceItemValue("$activityid", 10);
+			itemCollection.setEventID(10);
 			itemCollection = kernel.process(itemCollection);
 
-			itemCollection.replaceItemValue("$activityid", 20);
+			itemCollection.setEventID(20);
 			// sumulate a Log Comment...
 			itemCollection.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
 
