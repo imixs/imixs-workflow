@@ -1064,21 +1064,25 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
+	 * This method is deprecated. Use instead getEventID()
+	 * 
 	 * @return current $ActivityID
 	 */
 	@Deprecated
 	public int getActivityID() {
-		return getItemValueInteger("$activityid");
+		return getEventID();
 	}
 
 	/**
-	 * set $ActivityID
+	 * set $ActivityID. This method is deprecated. Use instead setEventID()
 	 * 
 	 * @param activityID
 	 */
 	@Deprecated
 	public void setActivityID(int activityID) {
 		replaceItemValue("$activityid", activityID);
+		// set new field $eventID
+		setEventID(activityID);
 	}
 
 	/**
@@ -1087,15 +1091,13 @@ public class ItemCollection implements Cloneable {
 	public int getEventID() {
 		// test for deprecated version
 		int result = getItemValueInteger(WorkflowKernel.EVENTID);
-		if (result == 0 && getItemValueInteger("$activityid") != 0) {
+		if (result == 0 &&  hasItem("$activityid") && getItemValueInteger("$activityid") != 0) {
 			logger.warning("The field $activityid is deprecated. Please use $eventid instead. "
 					+ "Processing a workitem with an deprecated $activityid is still supported.");
-			result=getItemValueInteger("$activityid");
+			result = getItemValueInteger("$activityid");
 			// update eventID
 			replaceItemValue(WorkflowKernel.EVENTID, result);
-			// reset deprecated item!
-			replaceItemValue("$activityid", 0);
-		} 
+		}
 		return result;
 	}
 
@@ -1106,6 +1108,11 @@ public class ItemCollection implements Cloneable {
 	 */
 	public void setEventID(int eventID) {
 		replaceItemValue(WorkflowKernel.EVENTID, eventID);
+		
+		// if deprectaed ActivityID exists we must still support it
+		if  (hasItem("$activityid")) {
+			replaceItemValue("$activityid", eventID);
+		}
 	}
 
 	/**

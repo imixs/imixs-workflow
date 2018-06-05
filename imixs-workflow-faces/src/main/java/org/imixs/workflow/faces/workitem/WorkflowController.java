@@ -183,7 +183,7 @@ public class WorkflowController extends DocumentController {
 	 * method can be used as an actionListener.
 	 * 
 	 * @param id
-	 *            - activityID to be processed
+	 *            - eventID to be processed
 	 * @param resetWorkitem
 	 *            - boolean indicates if the workitem should be reset
 	 * @throws PluginException
@@ -192,7 +192,7 @@ public class WorkflowController extends DocumentController {
 	 */
 	public String process(int id, boolean resetWorkitem) throws PluginException, ModelException {
 		// update the property $ActivityID
-		this.getWorkitem().replaceItemValue("$ActivityID", id);
+		this.getWorkitem().setEventID(id);
 		String result = process();
 
 		return result;

@@ -501,7 +501,7 @@ public class WorkflowRestService {
 	/**
 	 * This method post a ItemCollection object to be processed by the
 	 * WorkflowManager. The method test for the properties $processid and
-	 * $activityid
+	 * $eventid
 	 * 
 	 * NOTE!! - this method did not update an existing instance of a workItem. The
 	 * behavior is different to the method putWorkitem(). It need to be discussed if

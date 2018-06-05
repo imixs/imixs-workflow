@@ -10,7 +10,7 @@ The Model Interface
  A Process Entity is typically represented as a Node inside a graphical workflow model. 
  On the contrary, an Activity Entity contains all information required for process
  control. An Activity Entity is typical represented as an edge inside a graphical workflow model. 
- An Activty Entity can be assigend to a workitem by the property "$ActivityID". 
+ An Event Entity can be assigend to a workitem by the property "$eventID". 
  The WorkflowKernel determine the associated ActivityEntity and 
  forwards the activity together with the WorkItem to the registered plugins.
 

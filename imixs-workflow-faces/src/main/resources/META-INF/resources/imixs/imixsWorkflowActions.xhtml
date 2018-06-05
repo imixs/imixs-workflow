@@ -22,7 +22,7 @@
 			class="imixs-workflow-action" title=""
 			value="#{event.item['txtname']}">
 			<f:setPropertyActionListener
-				target="#{cc.attrs.workflowController.workitem.item['$ActivityID']}"
+				target="#{cc.attrs.workflowController.workitem.item['$eventid']}"
 				value="#{event.item['numactivityid']}" />
 			<h:panelGroup rendered="#{!cc.attrs.disabletooltip}"
 				class="imixs-tooltip">
