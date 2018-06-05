@@ -72,8 +72,13 @@ public class WorkflowKernel {
 	public static final String UNIQUEIDVERSIONS = "$uniqueidversions";
 	public static final String WORKITEMID = "$workitemid";
 	public static final String MODELVERSION = "$modelversion";
+
 	public static final String PROCESSID = "$processid";
-	public static final String ACTIVITYID = "$activityid";
+	//public static final String ACTIVITYID = "$activityid";
+
+	public static final String TASKID = "$taskid";
+	public static final String EVENTID = "$eventid";
+
 	public static final String ACTIVITYIDLIST = "$activityidlist";
 	public static final String WORKFLOWGROUP = "$workflowgroup";
 	public static final String WORKFLOWSTATUS = "$workflowstatus";
@@ -252,19 +257,22 @@ public class WorkflowKernel {
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_WORKITEM,
 					"processing error: workitem is null");
 
-		ItemCollection documentResult = new ItemCollection(workitem);
-		vectorEdgeHistory = new Vector<String>();
-
 		// check $processID
 		if (workitem.getItemValueInteger(PROCESSID) <= 0)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_PROCESSID,
 					"processing error: $processid undefined (" + workitem.getItemValueInteger(PROCESSID) + ")");
 
-		// check $activityid
-		if (workitem.getItemValueInteger(ACTIVITYID) <= 0)
+		
+		// check $eventId
+		if (workitem.getEventID() <= 0)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_ACTIVITYID,
-					"processing error: $activityid undefined (" + workitem.getItemValueInteger(ACTIVITYID) + ")");
+					"processing error: $eventid undefined (" + workitem.getEventID() + ")");
 
+		
+		ItemCollection documentResult = new ItemCollection(workitem);
+		vectorEdgeHistory = new Vector<String>();
+
+		
 		// Check if $UniqueID is available
 		if ("".equals(workitem.getItemValueString(UNIQUEID))) {
 			// generating a new one
@@ -280,7 +288,7 @@ public class WorkflowKernel {
 		}
 
 		// now process all events defined by the model
-		while (documentResult.getItemValueInteger(ACTIVITYID) > 0) {
+		while (documentResult.getEventID() > 0) {
 			// set $lastEventDate
 			documentResult.replaceItemValue("$lastEventDate", new Date());
 			// load event...
@@ -351,16 +359,16 @@ public class WorkflowKernel {
 	}
 
 	/**
-	 * This method controls the Evnet-Chain. If the attribute $activityidlist has
+	 * This method controls the Event-Chain. If the attribute $activityidlist has
 	 * more valid ActivityIDs the next activiytID will be loaded into $activity.
 	 * 
 	 **/
 	private ItemCollection updateEventList(final ItemCollection documentContext) {
 		ItemCollection documentResult = documentContext;
 
-		// is $activityid already provided?
-		if ((documentContext.getItemValueInteger(ACTIVITYID) <= 0)) {
-			// no $activityID provided, so we test for property $ActivityIDList
+		// is $eventid already provided?
+		if ((documentContext.getEventID() <= 0)) {
+			// no $eventID provided, so we test for property $ActivityIDList
 			List<?> vActivityList = documentContext.getItemValue(ACTIVITYIDLIST);
 
 			// remove 0 values if contained!
@@ -384,7 +392,7 @@ public class WorkflowKernel {
 							+ " -> loading next activityID = " + iNextID);
 					vActivityList.remove(0);
 					// update document context
-					documentResult.replaceItemValue(ACTIVITYID, Integer.valueOf(iNextID));
+					documentResult.setEventID(Integer.valueOf(iNextID));
 					documentResult.replaceItemValue(ACTIVITYIDLIST, vActivityList);
 				}
 			}
@@ -412,8 +420,8 @@ public class WorkflowKernel {
 		// log the general processing message
 		String msg = "processing=" + documentContext.getItemValueString(UNIQUEID) + ", MODELVERSION="
 				+ documentContext.getItemValueString(MODELVERSION) + ", $processid="
-				+ documentContext.getItemValueInteger(PROCESSID) + ", $activityid="
-				+ documentContext.getItemValueInteger(ACTIVITYID);
+				+ documentContext.getItemValueInteger(PROCESSID) + ", $eventid="
+				+ documentContext.getEventID();
 
 		if (ctx == null) {
 			logger.warning("no WorkflowContext defined!");
@@ -467,7 +475,7 @@ public class WorkflowKernel {
 		documentResult.replaceItemValue("txtworkflowGroup", documentResult.getItemValueString(WORKFLOWGROUP));
 
 		// clear ActivityID
-		documentResult.replaceItemValue(ACTIVITYID, Integer.valueOf(0));
+		documentResult.setEventID(Integer.valueOf(0));
 
 		// test if a FollowUp event is defined...
 		String sFollowUp = event.getItemValueString("keyFollowUp");
@@ -692,7 +700,7 @@ public class WorkflowKernel {
 								cloned.replaceItemValue(PROCESSID,
 										Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
 
-								cloned.replaceItemValue(ACTIVITYID, eventID);
+								cloned.setEventID(eventID);
 								// add temporary attribute $isversion...
 								cloned.replaceItemValue(ISVERSION, true);
 								cloned = this.process(cloned);
@@ -858,7 +866,7 @@ public class WorkflowKernel {
 	private ItemCollection loadEvent(final ItemCollection documentContext) {
 		ItemCollection event = null;
 		int aProcessID = documentContext.getItemValueInteger(PROCESSID);
-		int aActivityID = documentContext.getItemValueInteger(ACTIVITYID);
+		int aActivityID = documentContext.getEventID();
 
 		// determine model version
 		String version = documentContext.getItemValueString(MODELVERSION);
