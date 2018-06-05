@@ -96,10 +96,10 @@ public class MailPlugin extends AbstractPlugin {
 	private static Logger logger = Logger.getLogger(MailPlugin.class.getName());
 
 	/**
-	 * The run method creates a mailMessage object if recipients are defined by
-	 * the corresponding BPMN event. The mail message will finally be send in
-	 * the close method. This mechanism avoids that a mail is send before all
-	 * plug-ins were processed correctly.
+	 * The run method creates a mailMessage object if recipients are defined by the
+	 * corresponding BPMN event. The mail message will finally be send in the close
+	 * method. This mechanism avoids that a mail is send before all plug-ins were
+	 * processed correctly.
 	 * 
 	 */
 	@SuppressWarnings({ "rawtypes" })
@@ -239,6 +239,8 @@ public class MailPlugin extends AbstractPlugin {
 
 				mailMessage.saveChanges();
 				trans.sendMessage(mailMessage, mailMessage.getAllRecipients());
+
+				logger.info("...send mail: MessageID=" + mailMessage.getMessageID());
 				trans.close();
 
 			} catch (Exception esend) {
@@ -271,8 +273,8 @@ public class MailPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * Computes the replyTo address from current workflow activity. This method
-	 * can be overwritten by subclasses.
+	 * Computes the replyTo address from current workflow activity. This method can
+	 * be overwritten by subclasses.
 	 * 
 	 * @param documentContext
 	 * @param documentActivity
@@ -292,8 +294,8 @@ public class MailPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * Computes the mail subject from the current workflow activity. This method
-	 * can be overwritten by subclasses.
+	 * Computes the mail subject from the current workflow activity. This method can
+	 * be overwritten by subclasses.
 	 * 
 	 * @param documentContext
 	 * @param documentActivity
@@ -301,15 +303,16 @@ public class MailPlugin extends AbstractPlugin {
 	 * @throws PluginException
 	 */
 	public String getSubject(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
-		String subject = getWorkflowService().adaptText(documentActivity.getItemValueString("txtMailSubject"), documentContext);
+		String subject = getWorkflowService().adaptText(documentActivity.getItemValueString("txtMailSubject"),
+				documentContext);
 		logger.finest("......Subject: " + subject);
 
 		return subject;
 	}
 
 	/**
-	 * Computes the mail Recipients from the current workflow activity. This
-	 * method can be overwritten by subclasses.
+	 * Computes the mail Recipients from the current workflow activity. This method
+	 * can be overwritten by subclasses.
 	 * 
 	 * @param documentContext
 	 * @param documentActivity
@@ -329,7 +332,7 @@ public class MailPlugin extends AbstractPlugin {
 
 		// write debug Log
 		if (logger.isLoggable(Level.FINE)) {
-			logger.finest("......"+vectorRecipients.size() + " Receipients: ");
+			logger.finest("......" + vectorRecipients.size() + " Receipients: ");
 			for (String rez : vectorRecipients)
 				logger.finest("     " + rez);
 		}
@@ -358,7 +361,7 @@ public class MailPlugin extends AbstractPlugin {
 
 		// write debug Log
 		if (logger.isLoggable(Level.FINE)) {
-			logger.finest("......"+vectorRecipients.size() + " ReceipientsCC: ");
+			logger.finest("......" + vectorRecipients.size() + " ReceipientsCC: ");
 			for (String rez : vectorRecipients)
 				logger.finest("     " + rez);
 		}
@@ -386,7 +389,7 @@ public class MailPlugin extends AbstractPlugin {
 
 		// write debug Log
 		if (logger.isLoggable(Level.FINE)) {
-			logger.finest("......"+vectorRecipients.size() + " ReceipientsBCC: ");
+			logger.finest("......" + vectorRecipients.size() + " ReceipientsBCC: ");
 			for (String rez : vectorRecipients)
 				logger.finest("     " + rez);
 		}
@@ -395,11 +398,11 @@ public class MailPlugin extends AbstractPlugin {
 
 	/**
 	 * Computes the mail body from the current workflow event. The method also
-	 * updates the internal flag HTMLMail to indicate if the mail is send as
-	 * HTML mail.
+	 * updates the internal flag HTMLMail to indicate if the mail is send as HTML
+	 * mail.
 	 * 
-	 * In case the content contains a XSL Template, the template will be
-	 * processed with the current document structure.
+	 * In case the content contains a XSL Template, the template will be processed
+	 * with the current document structure.
 	 * 
 	 * The method can be overwritten by subclasses.
 	 * 
@@ -410,7 +413,8 @@ public class MailPlugin extends AbstractPlugin {
 	 */
 	public String getBody(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
 		// build mail body and replace dynamic values...
-		String aBodyText = getWorkflowService().adaptText(documentActivity.getItemValueString("rtfMailBody"), documentContext);
+		String aBodyText = getWorkflowService().adaptText(documentActivity.getItemValueString("rtfMailBody"),
+				documentContext);
 
 		// Test if mail body contains HTML content and updates the flag
 		// 'isHTMLMail'.
@@ -541,8 +545,8 @@ public class MailPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * This method transforms a vector of E-Mail addresses into an
-	 * InternetAddress Array. Null values will be removed from list
+	 * This method transforms a vector of E-Mail addresses into an InternetAddress
+	 * Array. Null values will be removed from list
 	 * 
 	 * @param String
 	 *            List of adresses
@@ -580,9 +584,9 @@ public class MailPlugin extends AbstractPlugin {
 	/**
 	 * This method initializes a new instance of a MailSession.
 	 * 
-	 * The MailSession is received from the current jndi context. The Default
-	 * name of the Mail Session is 'org.imixs.workflow.jee.mailsession' The name
-	 * can be overwritten by the EJB Properties of the workflowmanager
+	 * The MailSession is received from the current jndi context. The Default name
+	 * of the Mail Session is 'org.imixs.workflow.jee.mailsession' The name can be
+	 * overwritten by the EJB Properties of the workflowmanager
 	 * 
 	 * @return MailSession object or null if no MailSession is bound to the
 	 *         WorkflowContext.
@@ -610,7 +614,7 @@ public class MailPlugin extends AbstractPlugin {
 			logger.finest("...... Lookup MailSession '" + sJNDINName + "' successful");
 
 		} catch (NamingException e) {
-			logger.warning(" Lookup MailSession '" + sJNDINName + "' failed: "+e.getMessage());
+			logger.warning(" Lookup MailSession '" + sJNDINName + "' failed: " + e.getMessage());
 			logger.warning(" Unable to send mails! Verify server resources -> mail session.");
 			noMailSessionBound = true;
 		}
@@ -664,9 +668,9 @@ public class MailPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * This method returns a string representing the mail content type. The
-	 * content type depends on the content of the mail body (html or plaintext)
-	 * and contains optional the character set.
+	 * This method returns a string representing the mail content type. The content
+	 * type depends on the content of the mail body (html or plaintext) and contains
+	 * optional the character set.
 	 * 
 	 * If the mail is a HTML mail then the returned string contains 'text/html'
 	 * otherwise it will contain 'text/plain'.
