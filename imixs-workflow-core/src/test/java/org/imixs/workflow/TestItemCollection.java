@@ -440,7 +440,7 @@ public class TestItemCollection {
 
 		Assert.assertEquals("1.0.0", itemCollection1.getModelVersion());
 		Assert.assertEquals(10, itemCollection1.getEventID());
-		Assert.assertEquals(100, itemCollection1.getProcessID());
+		Assert.assertEquals(100, itemCollection1.getTaskID());
 		Assert.assertEquals("workitem_test", itemCollection1.getType());
 		Assert.assertEquals("ABC-123", itemCollection1.getUniqueID());
 
@@ -733,4 +733,38 @@ public class TestItemCollection {
 		Assert.assertArrayEquals(empty, file1Data1);
 
 	}
+
+	/**
+	 * Test issue #383, #384
+	 */
+	@Test
+	@Category(org.imixs.workflow.ItemCollection.class)
+	public void testDeprecatedFieldProcessID() {
+		
+		Assert.assertEquals("$processid", WorkflowKernel.PROCESSID);
+		Assert.assertEquals("$taskid", WorkflowKernel.TASKID);
+		
+		ItemCollection itemColSource = new ItemCollection();
+
+		itemColSource.replaceItemValue("$processid", 42);
+		Assert.assertEquals(42, itemColSource.getTaskID());
+		Assert.assertEquals(42, itemColSource.getProcessID());
+		Assert.assertEquals(42, itemColSource.getItemValueInteger("$processid"));
+
+		// test setter
+		itemColSource = new ItemCollection();
+		itemColSource.setTaskID(43);
+		Assert.assertEquals(43, itemColSource.getTaskID());
+		Assert.assertEquals(43, itemColSource.getProcessID());
+		Assert.assertEquals(43, itemColSource.getItemValueInteger("$processid"));
+		
+		// test direct setting
+		itemColSource = new ItemCollection();
+		itemColSource.replaceItemValue("$taskid",44);
+		Assert.assertEquals(44, itemColSource.getTaskID());
+		Assert.assertEquals(44, itemColSource.getProcessID());
+		// !!!
+		Assert.assertEquals(0, itemColSource.getItemValueInteger("$processid"));
+	}
+
 }

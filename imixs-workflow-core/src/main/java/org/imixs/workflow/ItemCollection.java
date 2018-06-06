@@ -1057,10 +1057,49 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
+	 * This method is deprecated. Use instead getTaskID()
+	 * 
 	 * @return current $processID
 	 */
+	@Deprecated
 	public int getProcessID() {
-		return getItemValueInteger(WorkflowKernel.PROCESSID);
+		int result= getItemValueInteger(WorkflowKernel.PROCESSID);
+		if (result == 0 && hasItem("$taskid")) {
+			result = getTaskID();
+		}	
+		return result;
+	}
+
+	/**
+	 * @return current $TaskID
+	 */
+	public int getTaskID() {
+		int result = getItemValueInteger(WorkflowKernel.TASKID);
+		// test for deprecated version
+		if (result == 0 && hasItem("$processid") && getItemValueInteger("$processid") != 0) {
+			// see issue #384
+			/*
+			 * logger.
+			 * warning("The field $processid is deprecated. Please use $taskid instead. "
+			 * +
+			 * "Processing a workitem with an deprecated $processid is still supported.");
+			 */
+			result = getItemValueInteger("$processid");
+			// update eventID
+			replaceItemValue(WorkflowKernel.TASKID, result);
+		}
+		return result;
+	}
+
+	/**
+	 * set $taskID
+	 * 
+	 * @param taskID
+	 */
+	public void setTaskID(int taskID) {
+		replaceItemValue(WorkflowKernel.TASKID, taskID);
+		// if deprectaed processID must still be supported. See issue #382
+		replaceItemValue("$processid", taskID);
 	}
 
 	/**
@@ -1091,7 +1130,7 @@ public class ItemCollection implements Cloneable {
 	public int getEventID() {
 		// test for deprecated version
 		int result = getItemValueInteger(WorkflowKernel.EVENTID);
-		if (result == 0 &&  hasItem("$activityid") && getItemValueInteger("$activityid") != 0) {
+		if (result == 0 && hasItem("$activityid") && getItemValueInteger("$activityid") != 0) {
 			logger.warning("The field $activityid is deprecated. Please use $eventid instead. "
 					+ "Processing a workitem with an deprecated $activityid is still supported.");
 			result = getItemValueInteger("$activityid");
@@ -1108,9 +1147,9 @@ public class ItemCollection implements Cloneable {
 	 */
 	public void setEventID(int eventID) {
 		replaceItemValue(WorkflowKernel.EVENTID, eventID);
-		
+
 		// if deprectaed ActivityID exists we must still support it
-		if  (hasItem("$activityid")) {
+		if (hasItem("$activityid")) {
 			replaceItemValue("$activityid", eventID);
 		}
 	}

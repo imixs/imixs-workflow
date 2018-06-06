@@ -173,6 +173,14 @@ public class LuceneSearchService {
 			Operator defaultOperator) throws QueryException {
 
 		long ltime = System.currentTimeMillis();
+
+		// see issue #382
+		/*
+		 * if (sSearchTerm.toLowerCase().contains("$processid")) { logger.
+		 * warning("The field $processid is deprecated. Please use $taskid instead. " +
+		 * "searching a workitem with an deprecated $processid is still supported."); }
+		 */
+
 		if (pageSize <= 0) {
 			pageSize = DEFAULT_PAGE_SIZE;
 		}
