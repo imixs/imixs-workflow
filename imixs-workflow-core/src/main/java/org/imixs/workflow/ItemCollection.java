@@ -1063,10 +1063,10 @@ public class ItemCollection implements Cloneable {
 	 */
 	@Deprecated
 	public int getProcessID() {
-		int result= getItemValueInteger(WorkflowKernel.PROCESSID);
+		int result = getItemValueInteger(WorkflowKernel.PROCESSID);
 		if (result == 0 && hasItem("$taskid")) {
 			result = getTaskID();
-		}	
+		}
 		return result;
 	}
 
@@ -1080,8 +1080,7 @@ public class ItemCollection implements Cloneable {
 			// see issue #384
 			/*
 			 * logger.
-			 * warning("The field $processid is deprecated. Please use $taskid instead. "
-			 * +
+			 * warning("The field $processid is deprecated. Please use $taskid instead. " +
 			 * "Processing a workitem with an deprecated $processid is still supported.");
 			 */
 			result = getItemValueInteger("$processid");
@@ -1098,7 +1097,7 @@ public class ItemCollection implements Cloneable {
 	 */
 	public void setTaskID(int taskID) {
 		replaceItemValue(WorkflowKernel.TASKID, taskID);
-		// if deprectaed processID must still be supported. See issue #382
+		// deprecated processID is still supported for a long period. See issue #384
 		replaceItemValue("$processid", taskID);
 	}
 
