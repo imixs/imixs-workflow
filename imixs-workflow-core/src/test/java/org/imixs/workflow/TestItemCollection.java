@@ -734,16 +734,35 @@ public class TestItemCollection {
 
 	}
 
+	/*
+	 * Test the fluent code interface.
+	 */
+	@Test
+	@Category(org.imixs.workflow.ItemCollection.class)
+	public void testFluentInterface() {
+		ItemCollection itemCollection = new ItemCollection().model("1.0.0").task(1).event(10);
+
+		Assert.assertEquals("1.0.0", itemCollection.getModelVersion());
+		Assert.assertEquals(1, itemCollection.getTaskID());
+		Assert.assertEquals(10, itemCollection.getEventID());
+
+		// set group
+		itemCollection = new ItemCollection().workflowGroup("Ticket").task(1).event(10);
+		Assert.assertEquals("Ticket", itemCollection.getWorkflowGroup());
+		Assert.assertEquals(1, itemCollection.getTaskID());
+		Assert.assertEquals(10, itemCollection.getEventID());
+	}
+
 	/**
 	 * Test issue #383, #384
 	 */
 	@Test
 	@Category(org.imixs.workflow.ItemCollection.class)
 	public void testDeprecatedFieldProcessID() {
-		
+
 		Assert.assertEquals("$processid", WorkflowKernel.PROCESSID);
 		Assert.assertEquals("$taskid", WorkflowKernel.TASKID);
-		
+
 		ItemCollection itemColSource = new ItemCollection();
 
 		itemColSource.replaceItemValue("$processid", 42);
@@ -757,10 +776,10 @@ public class TestItemCollection {
 		Assert.assertEquals(43, itemColSource.getTaskID());
 		Assert.assertEquals(43, itemColSource.getProcessID());
 		Assert.assertEquals(43, itemColSource.getItemValueInteger("$processid"));
-		
+
 		// test direct setting
 		itemColSource = new ItemCollection();
-		itemColSource.replaceItemValue("$taskid",44);
+		itemColSource.replaceItemValue("$taskid", 44);
 		Assert.assertEquals(44, itemColSource.getTaskID());
 		Assert.assertEquals(44, itemColSource.getProcessID());
 		// !!!

@@ -1100,6 +1100,11 @@ public class ItemCollection implements Cloneable {
 		// deprecated processID is still supported for a long period. See issue #384
 		replaceItemValue("$processid", taskID);
 	}
+	
+	public ItemCollection task(int taskID) {
+		setTaskID(taskID);
+		return this;
+	}
 
 	/**
 	 * This method is deprecated. Use instead getEventID()
@@ -1152,6 +1157,11 @@ public class ItemCollection implements Cloneable {
 			replaceItemValue("$activityid", eventID);
 		}
 	}
+	
+	public ItemCollection event(int eventID) {
+		setEventID(eventID);
+		return this;
+	}
 
 	/**
 	 * @return current $ModelVersion
@@ -1159,6 +1169,41 @@ public class ItemCollection implements Cloneable {
 	public String getModelVersion() {
 		return getItemValueString(WorkflowKernel.MODELVERSION);
 	}
+	
+	/**
+	 * set the $ModelVersion
+	 */
+	public void setModelVersion(String modelversion) {
+		replaceItemValue(WorkflowKernel.MODELVERSION,modelversion);
+	}
+	
+	public ItemCollection model(String modelversion) {
+		setModelVersion(modelversion);
+		return this;
+	}
+	
+	
+	
+	/**
+	 * @return current $ModelVersion
+	 */
+	public String getWorkflowGroup() {
+		return getItemValueString(WorkflowKernel.WORKFLOWGROUP);
+	}
+	
+	/**
+	 * set the $ModelVersion
+	 */
+	public void setWorkflowGroup(String group) {
+		replaceItemValue(WorkflowKernel.WORKFLOWGROUP, group);
+	}
+	
+	public ItemCollection workflowGroup(String group) {
+		setWorkflowGroup(group);
+		return this;
+	}
+	
+
 
 	/**
 	 * @return $UniqueID
