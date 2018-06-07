@@ -266,8 +266,8 @@ public class WorkflowMockEnvironment {
 			entity.replaceItemValue("type", "workitem");
 			entity.replaceItemValue(WorkflowKernel.UNIQUEID, "W0000-0000" + i);
 			entity.replaceItemValue("txtName", "Workitem " + i);
-			entity.replaceItemValue("$ModelVersion", "1.0.0");
-			entity.replaceItemValue("$ProcessID", 100);
+			entity.setModelVersion("1.0.0");
+			entity.setTaskID(100);
 			entity.setEventID(10);
 			entity.replaceItemValue(DocumentService.ISAUTHOR, true);
 			database.put(entity.getItemValueString(WorkflowKernel.UNIQUEID), entity);

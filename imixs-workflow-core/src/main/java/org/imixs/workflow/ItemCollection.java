@@ -1084,7 +1084,7 @@ public class ItemCollection implements Cloneable {
 			 * "Processing a workitem with an deprecated $processid is still supported.");
 			 */
 			result = getItemValueInteger("$processid");
-			// update eventID
+			// update missing taskID
 			replaceItemValue(WorkflowKernel.TASKID, result);
 		}
 		return result;

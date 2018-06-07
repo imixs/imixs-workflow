@@ -2,7 +2,6 @@ package org.imixs.workflow.engine;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
@@ -38,8 +37,8 @@ public class TestModelService extends WorkflowMockEnvironment {
 		
 		// load test workitem
 		ItemCollection workitem = database.get("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.MODELVERSION,"0.9.0");
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID,100);
+		workitem.setModelVersion("0.9.0");
+		workitem.setTaskID(100);
 		workitem.setEventID(10);
 		workitem.replaceItemValue("txtWorkflowGroup","Ticket");
 	

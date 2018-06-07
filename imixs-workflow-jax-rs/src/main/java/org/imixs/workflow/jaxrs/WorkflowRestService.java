@@ -500,7 +500,7 @@ public class WorkflowRestService {
 
 	/**
 	 * This method post a ItemCollection object to be processed by the
-	 * WorkflowManager. The method test for the properties $processid and
+	 * WorkflowManager. The method test for the properties $taskidid and
 	 * $eventid
 	 * 
 	 * NOTE!! - this method did not update an existing instance of a workItem. The

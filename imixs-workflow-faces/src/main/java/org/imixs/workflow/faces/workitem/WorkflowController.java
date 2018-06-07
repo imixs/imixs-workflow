@@ -106,27 +106,27 @@ public class WorkflowController extends DocumentController {
 		}
 		ItemCollection startProcessEntity = null;
 		// if not process id was set fetch the first start workitem
-		if (workitem.getItemValueInteger(WorkflowKernel.PROCESSID) <= 0) {
+		if (workitem.getTaskID() <= 0) {
 			// get ProcessEntities by version
 			List<ItemCollection> col;
 			col = modelService.getModelByWorkitem(getWorkitem()).findAllTasks();
 			if (!col.isEmpty()) {
 				startProcessEntity = col.iterator().next();
-				getWorkitem().replaceItemValue(WorkflowKernel.PROCESSID,
+				getWorkitem().setTaskID(
 						startProcessEntity.getItemValueInteger("numProcessID"));
 			}
 		}
 
 		// find the ProcessEntity
 		startProcessEntity = modelService.getModelByWorkitem(workitem)
-				.getTask(workitem.getItemValueInteger(WorkflowKernel.PROCESSID));
+				.getTask(workitem.getTaskID());
 
 		// ProcessEntity found?
 		if (startProcessEntity == null)
 			throw new InvalidAccessException(ModelException.INVALID_MODEL_ENTRY,
 					"unable to find ProcessEntity in model version "
-							+ workitem.getItemValueString(WorkflowKernel.MODELVERSION) + " for ID="
-							+ workitem.getItemValueInteger(WorkflowKernel.PROCESSID));
+							+ workitem.getModelVersion() + " for ID="
+							+ workitem.getTaskID());
 
 		// update $WriteAccess
 		workitem.replaceItemValue("$WriteAccess", workitem.getItemValue("namCreator"));
@@ -215,7 +215,7 @@ public class WorkflowController extends DocumentController {
 
 	/**
 	 * This method returns a List of workflow events assigned to the corresponding
-	 * '$processid' and '$modelversion' of the current WorkItem.
+	 * '$taskid' and '$modelversion' of the current WorkItem.
 	 * 
 	 * @return
 	 */

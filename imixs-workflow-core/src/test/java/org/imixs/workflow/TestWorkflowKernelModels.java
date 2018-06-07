@@ -73,7 +73,7 @@ public class TestWorkflowKernelModels {
 
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
-			itemCollection.replaceItemValue("$processid", 1000);
+			itemCollection.setTaskID(1000);
 			itemCollection.setEventID(10);
 
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
@@ -249,7 +249,7 @@ public class TestWorkflowKernelModels {
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("_subject", "Hello");
-			itemCollection.replaceItemValue("$processid", 1000);
+			itemCollection.setTaskID(1000);
 			itemCollection.setEventID(10);
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 

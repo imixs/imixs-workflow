@@ -94,7 +94,7 @@ public class TestWorkflowKernel {
 	
 
 	/**
-	 * This test verifies if the deprecated fileds "$processid" and $activityID are still working.
+	 * This test verifies if the deprecated fileds "$taskid" and $activityID are still working.
 	 * 
 	 * see issue #381
 	 */
@@ -104,7 +104,7 @@ public class TestWorkflowKernel {
 		ItemCollection itemCollectionProcessed=null; 
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
-		itemCollection.replaceItemValue("$processid", 100);
+		itemCollection.setTaskID(100);
 		itemCollection.setEventID(10);
 		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
@@ -124,7 +124,7 @@ public class TestWorkflowKernel {
 		}
 
 		Assert.assertEquals(1, itemCollectionProcessed.getItemValueInteger("runs"));
-		Assert.assertEquals(100, itemCollectionProcessed.getItemValueInteger("$processid"));
+		Assert.assertEquals(100, itemCollectionProcessed.getTaskID());
 		
 		// initial and processed workitems are not the same and not equals! 
 		Assert.assertNotSame(itemCollection, itemCollectionProcessed);
@@ -168,7 +168,7 @@ public class TestWorkflowKernel {
 		}
 
 		Assert.assertEquals("test", itemCollection.getItemValueString("txtname"));
-		Assert.assertEquals(100, itemCollection.getItemValueInteger("$processid"));
+		Assert.assertEquals(100, itemCollection.getTaskID());
 	}
 
 	@Test
@@ -197,7 +197,7 @@ public class TestWorkflowKernel {
 
 		Assert.assertEquals(1, itemCollection.getItemValueInteger("runs"));
 		// test next state
-		Assert.assertEquals(200, itemCollection.getItemValueInteger("$processid"));
+		Assert.assertEquals(200, itemCollection.getTaskID());
 	}
 
 	@Test
@@ -227,7 +227,7 @@ public class TestWorkflowKernel {
 		// runs should be 2
 		Assert.assertEquals(2, itemCollection.getItemValueInteger("runs"));
 		// test next state
-		Assert.assertEquals(200, itemCollection.getItemValueInteger("$processid"));
+		Assert.assertEquals(200, itemCollection.getTaskID());
 	}
 
 	@Test
@@ -271,7 +271,7 @@ public class TestWorkflowKernel {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("$modelversion", "1.0.0");
 		itemCollection.replaceItemValue("txtTitel", "Hello");
-		itemCollection.replaceItemValue("$processid", 100);
+		itemCollection.setTaskID(100);
 
 		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
@@ -401,7 +401,7 @@ public class TestWorkflowKernel {
 
 		Assert.assertEquals(2, itemCollection.getItemValueInteger("runs"));
 		// test next state
-		Assert.assertEquals(200, itemCollection.getItemValueInteger("$processid"));
+		Assert.assertEquals(200, itemCollection.getTaskID());
 
 		// test log
 		List log = itemCollection.getItemValue("$eventlog");

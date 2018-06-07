@@ -57,6 +57,7 @@ public class VectorConverter implements Converter {
 
 	String separator = "\n";
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object getAsObject(FacesContext context, UIComponent component,
 			String value) throws ConverterException {
 
@@ -70,6 +71,7 @@ public class VectorConverter implements Converter {
 
 	}
 
+	@SuppressWarnings("rawtypes")
 	public String getAsString(FacesContext context, UIComponent component,
 			Object value) throws ConverterException {
 
