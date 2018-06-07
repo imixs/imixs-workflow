@@ -80,7 +80,7 @@ public class TestJSONParser {
 		Assert.assertNotNull(itemCol);
 
 		Assert.assertEquals(10, itemCol.getEventID());
-		Assert.assertEquals(100, itemCol.getProcessID());
+		Assert.assertEquals(100, itemCol.getTaskID());
 	}
 
 	@Test(expected = ParseException.class)
@@ -114,7 +114,7 @@ public class TestJSONParser {
 
 		Assert.assertNotNull(itemCol);
 
-		Assert.assertEquals(20, itemCol.getProcessID());
+		Assert.assertEquals(20, itemCol.getTaskID());
 
 		Assert.assertEquals("worklist", itemCol.getItemValueString("txtworkflowresultmessage"));
 

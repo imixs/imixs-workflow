@@ -756,6 +756,7 @@ public class TestItemCollection {
 	/**
 	 * Test issue #383, #384
 	 */
+	@SuppressWarnings("deprecation")
 	@Test
 	@Category(org.imixs.workflow.ItemCollection.class)
 	public void testDeprecatedFieldProcessID() {

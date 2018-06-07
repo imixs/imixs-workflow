@@ -280,7 +280,7 @@ public class WorkflowKernel {
 		}
 
 		// store last $lastTask
-		documentResult.replaceItemValue("$lastTask", workitem.getProcessID());
+		documentResult.replaceItemValue("$lastTask", workitem.getTaskID());
 
 		// Check if $WorkItemID is available
 		if ("".equals(workitem.getItemValueString(WorkflowKernel.WORKITEMID))) {
@@ -343,7 +343,7 @@ public class WorkflowKernel {
 		} else {
 			// get current task...
 			itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getItemValueString(MODELVERSION))
-					.getTask(documentContext.getProcessID());
+					.getTask(documentContext.getTaskID());
 		}
 		return itemColNextTask;
 	}
@@ -467,7 +467,7 @@ public class WorkflowKernel {
 		// Update the attributes $ProcessID and $WorkflowStatus
 		documentResult.replaceItemValue(PROCESSID,
 				Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
-		logger.finest("......new $processid=" + documentResult.getProcessID());
+		logger.finest("......new $processid=" + documentResult.getTaskID());
 		documentResult.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString("txtname"));
 		logger.finest("......new $workflowStatus=" + documentResult.getItemValueString(WORKFLOWSTATUS));
 		// update deprecated attributes txtworkflowStatus and txtworkflowGroup
@@ -536,7 +536,7 @@ public class WorkflowKernel {
 							// we update the documentContext....
 							ItemCollection itemColEvent = this.ctx.getModelManager()
 									.getModel(documentContext.getModelVersion())
-									.getEvent(documentContext.getProcessID(), eventID);
+									.getEvent(documentContext.getTaskID(), eventID);
 							if (itemColEvent != null) {
 								// create follow up event....
 
@@ -546,7 +546,7 @@ public class WorkflowKernel {
 								// get current task...
 								ItemCollection itemColNextTask = this.ctx.getModelManager()
 										.getModel(documentContext.getItemValueString(MODELVERSION))
-										.getTask(documentContext.getProcessID());
+										.getTask(documentContext.getTaskID());
 
 								return itemColNextTask;
 							}
@@ -611,7 +611,7 @@ public class WorkflowKernel {
 							// we update the documentContext....
 							ItemCollection itemColEvent = this.ctx.getModelManager()
 									.getModel(documentContext.getModelVersion())
-									.getEvent(documentContext.getProcessID(), eventID);
+									.getEvent(documentContext.getTaskID(), eventID);
 							if (itemColEvent != null) {
 								// create follow up event....
 								event.replaceItemValue("keyFollowUp", "1");
@@ -619,7 +619,7 @@ public class WorkflowKernel {
 								// get current task...
 								ItemCollection itemColNextTask = this.ctx.getModelManager()
 										.getModel(documentContext.getItemValueString(MODELVERSION))
-										.getTask(documentContext.getProcessID());
+										.getTask(documentContext.getTaskID());
 								return itemColNextTask;
 							}
 						}
@@ -686,12 +686,12 @@ public class WorkflowKernel {
 							// we update the documentContext....
 							ItemCollection itemColEvent = this.ctx.getModelManager()
 									.getModel(documentContext.getModelVersion())
-									.getEvent(documentContext.getProcessID(), eventID);
+									.getEvent(documentContext.getTaskID(), eventID);
 							if (itemColEvent != null) {
 								// get current task...
 								ItemCollection itemColNextTask = this.ctx.getModelManager()
 										.getModel(documentContext.getItemValueString(MODELVERSION))
-										.getTask(documentContext.getProcessID());
+										.getTask(documentContext.getTaskID());
 
 								// clone current instance to a new version...
 								ItemCollection cloned = createVersion(documentContext);
