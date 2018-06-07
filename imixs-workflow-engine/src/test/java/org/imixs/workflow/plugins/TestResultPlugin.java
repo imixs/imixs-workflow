@@ -294,24 +294,24 @@ public class TestResultPlugin {
 		ItemCollection workitem = workflowMockEnvironment.getDatabase().get("W0000-00001");
 		workitem.removeItem("type");
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 100);
+		workitem.setTaskID(100);
 
 		// case 1 - no type attribute
 		workitem.setEventID(10);
 		workitem = workflowMockEnvironment.processWorkItem(workitem);
-		Assert.assertEquals(100, workitem.getProcessID());
+		Assert.assertEquals(100, workitem.getTaskID());
 		Assert.assertEquals("", workitem.getType());
 
 		// case 2 - workitem
 		workitem.setEventID(20);
 		workitem = workflowMockEnvironment.processWorkItem(workitem);
-		Assert.assertEquals(200, workitem.getProcessID());
+		Assert.assertEquals(200, workitem.getTaskID());
 		Assert.assertEquals("workitem", workitem.getType());
 
 		// case 3 - workitemdeleted
 		workitem.setEventID(30);
 		workitem = workflowMockEnvironment.processWorkItem(workitem);
-		Assert.assertEquals(200, workitem.getProcessID());
+		Assert.assertEquals(200, workitem.getTaskID());
 		Assert.assertEquals("workitemdeleted", workitem.getType());
 
 	}

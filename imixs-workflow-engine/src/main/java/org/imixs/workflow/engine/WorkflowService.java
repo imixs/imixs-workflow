@@ -362,11 +362,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * Returns a collection of workitems belonging to a specified $processID defined
+	 * Returns a collection of workitems belonging to a specified $taskID defined
 	 * by the workflow model. The behaivor is simmilar to the method getWorkList.
 	 * 
 	 * @param aID
-	 *            = $ProcessID for the workitems to be returned.
+	 *            = $taskID for the workitems to be returned.
 	 * @param pageSize
 	 *            = optional page count (default 20)
 	 * @param pageIndex
@@ -389,6 +389,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		if (type != null && !"".equals(type)) {
 			searchTerm += " type:\"" + type + "\" AND ";
 		}
+		// need to be fixed during slow migration issue #384
 		searchTerm += " $processid:\"" + aid + "\" )";
 		try {
 			return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
@@ -448,7 +449,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 	/**
 	 * This returns a list of workflow events assigned to a given workitem. The
-	 * method evaluates the events for the current $modelversion and $processid. The
+	 * method evaluates the events for the current $modelversion and $taskid. The
 	 * result list is filtered by the properties 'keypublicresult' and
 	 * 'keyRestrictedVisibility'.
 	 * 
@@ -466,7 +467,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	@SuppressWarnings("unchecked")
 	public List<ItemCollection> getEvents(ItemCollection workitem) throws ModelException {
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
-		int processID = workitem.getProcessID();
+		int processID = workitem.getTaskID();
 		// verify if version is valid
 		Model model = modelService.getModelByWorkitem(workitem);
 
@@ -536,10 +537,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	/**
 	 * This method processes a workItem by the WorkflowKernel and saves the workitem
 	 * after the processing was finished successful. The workitem have to provide at
-	 * least the properties '$modelversion', '$processid' and '$activityid'
+	 * least the properties '$modelversion', '$taskid' and '$eventid'
 	 * 
 	 * Before the method starts processing the workitem, the method load the current
-	 * instance of the given workitem and compares the property $processID. If it is
+	 * instance of the given workitem and compares the property $taskID. If it is
 	 * not equal the method throws an ProcessingErrorException.
 	 * 
 	 * After the workitem was processed successful, the method verifies the property
@@ -589,14 +590,14 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 						"WorkflowService: error - $UniqueID (" + workitem.getItemValueInteger(WorkflowKernel.UNIQUEID)
 								+ ") no Author Access!");
 
-			// test if $ProcessID matches current instance
-			if (workitem.getItemValueInteger("$ProcessID") > 0
-					&& currentInstance.getItemValueInteger("$ProcessID") != workitem.getItemValueInteger("$ProcessID"))
+			// test if $taskID matches current instance
+			if (workitem.getTaskID() > 0
+					&& currentInstance.getTaskID() != workitem.getTaskID())
 				throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
 						ProcessingErrorException.INVALID_PROCESSID,
-						"WorkflowService: error - $ProcesssID (" + workitem.getItemValueInteger("$ProcessID")
+						"WorkflowService: error - $taskID (" + workitem.getTaskID()
 								+ ") did not match expected $ProcesssID ("
-								+ currentInstance.getItemValueInteger("$ProcessID") + ")");
+								+ currentInstance.getTaskID() + ")");
 
 			// merge workitem into current instance (issue #86)
 			// an instance of this WorkItem still exists! so we update the new
