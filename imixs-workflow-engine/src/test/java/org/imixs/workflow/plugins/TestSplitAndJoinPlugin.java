@@ -109,7 +109,7 @@ public class TestSplitAndJoinPlugin {
 		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + subprocessUniqueid,
 				documentContext.getItemValueString("action"));
 
-		Assert.assertEquals(100, subprocess.getProcessID());
+		Assert.assertEquals(100, subprocess.getTaskID());
 
 		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
 
@@ -153,7 +153,7 @@ public class TestSplitAndJoinPlugin {
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
 
-		Assert.assertEquals(100, subprocess.getProcessID());
+		Assert.assertEquals(100, subprocess.getTaskID());
 
 		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
 
@@ -195,14 +195,14 @@ public class TestSplitAndJoinPlugin {
 		String subprocessUniqueid = workitemRefList.get(0);
 		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getProcessID());
+		Assert.assertEquals(100, subprocess.getTaskID());
 		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
 
 		// test second subprocess instance... 100.20 -> $processId=200
 		subprocessUniqueid = workitemRefList.get(1);
 		subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getProcessID());
+		Assert.assertEquals(100, subprocess.getTaskID());
 		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
 
 	}
@@ -265,7 +265,7 @@ public class TestSplitAndJoinPlugin {
 
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getProcessID());
+		Assert.assertEquals(100, subprocess.getTaskID());
 
 		/*
 		 * 2.) process the subprocess to test if the origin process will be updated
@@ -291,7 +291,7 @@ public class TestSplitAndJoinPlugin {
 		Assert.assertNotNull(documentContext);
 
 		// test data.... (new $processId=200 and _sub_data from subprocess
-		Assert.assertEquals(100, documentContext.getProcessID());
+		Assert.assertEquals(100, documentContext.getTaskID());
 		Assert.assertEquals("some test data", documentContext.getItemValueString("_sub_data"));
 
 	}
@@ -323,7 +323,7 @@ public class TestSplitAndJoinPlugin {
 		String subprocessUniqueid = workitemRefList.get(0);
 		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getProcessID());
+		Assert.assertEquals(100, subprocess.getTaskID());
 
 		// 2.) now update the subprocess
 		try {
@@ -344,7 +344,7 @@ public class TestSplitAndJoinPlugin {
 
 		subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getProcessID());
+		Assert.assertEquals(100, subprocess.getTaskID());
 		Assert.assertEquals("Walter", subprocess.getItemValueString("namTEAM"));
 
 	}

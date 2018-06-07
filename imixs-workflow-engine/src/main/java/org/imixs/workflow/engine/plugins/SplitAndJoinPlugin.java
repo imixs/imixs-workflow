@@ -287,7 +287,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 					// test if process matches
 					String subModelVersion = workitemSubProcess.getModelVersion();
-					String subProcessID = "" + workitemSubProcess.getProcessID();
+					String subProcessID = "" + workitemSubProcess.getTaskID();
 
 					if (Pattern.compile(model_pattern).matcher(subModelVersion).find()
 							&& Pattern.compile(process_pattern).matcher(subProcessID).find()) {
@@ -380,7 +380,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 				// test if process matches
 				String subModelVersion = originWorkitem.getModelVersion();
-				String subProcessID = "" + originWorkitem.getProcessID();
+				String subProcessID = "" + originWorkitem.getTaskID();
 
 				if (Pattern.compile(model_pattern).matcher(subModelVersion).find()
 						&& Pattern.compile(process_pattern).matcher(subProcessID).find()) {
