@@ -67,7 +67,7 @@ public class TestSplitAndJoinPlugin {
 		documentContext.replaceItemValue("namTeam", list);
 		documentContext.replaceItemValue("namCreator", "ronny");
 		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
-		documentContext.replaceItemValue(WorkflowKernel.PROCESSID, 100);
+		documentContext.setTaskID(100);
 		documentContext.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
 		workflowMockEnvironment.getDocumentService().save(documentContext);
 

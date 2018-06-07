@@ -198,7 +198,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 					sModelVersion=originWorkitem.getModelVersion();
 				}
 				workitemSubProcess.replaceItemValue(WorkflowKernel.MODELVERSION,sModelVersion);
-				workitemSubProcess.replaceItemValue(WorkflowKernel.PROCESSID,
+				workitemSubProcess.setTaskID(
 						Integer.valueOf(processData.getItemValueString("processid")));
 				workitemSubProcess.setEventID(
 						Integer.valueOf(processData.getItemValueString("activityid")));

@@ -58,25 +58,25 @@ public class TestWorkflowServiceGateways {
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 
 		// test none condition ...
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
+		workitem.setTaskID(1000);
 		workitem.setEventID(10);
 		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
 		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
-		Assert.assertEquals(1000, workitem.getProcessID());
+		Assert.assertEquals(1000, workitem.getTaskID());
 
 		// test _budget<100
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
+		workitem.setTaskID(1000);
 		workitem.replaceItemValue("_budget", 99);
 		workitem.setEventID(10);
 		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
-		Assert.assertEquals(1200, workitem.getProcessID());
+		Assert.assertEquals(1200, workitem.getTaskID());
 
 		// test _budget>100
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
+		workitem.setTaskID(1000);
 		workitem.replaceItemValue("_budget", 9999);
 		workitem.setEventID(10);
 		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
-		Assert.assertEquals(1100, workitem.getProcessID());
+		Assert.assertEquals(1100, workitem.getTaskID());
 
 	}
 
@@ -102,11 +102,11 @@ public class TestWorkflowServiceGateways {
 
 		// test none condition ...
 		workitem.replaceItemValue("_subject", "Hello");
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
+		workitem.setTaskID(1000);
 		workitem.setEventID(10);
 		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
 		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
-		Assert.assertEquals(1100, workitem.getProcessID());
+		Assert.assertEquals(1100, workitem.getTaskID());
 
 		// lookup the version.....
 		List<ItemCollection> versions = new ArrayList<ItemCollection>();
@@ -122,7 +122,7 @@ public class TestWorkflowServiceGateways {
 		Assert.assertNotNull(version);
 
 		Assert.assertEquals("Hello", version.getItemValueString("_subject"));
-		Assert.assertEquals(1200, version.getProcessID());
+		Assert.assertEquals(1200, version.getTaskID());
 		Assert.assertEquals(20, version.getItemValueInteger("$lastevent"));
 
 	}

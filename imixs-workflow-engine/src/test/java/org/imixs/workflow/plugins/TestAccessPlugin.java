@@ -5,7 +5,6 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.AccessPlugin;
 import org.imixs.workflow.exceptions.ModelException;
@@ -188,7 +187,7 @@ public class TestAccessPlugin {
 
 		// case I.
 		
-		documentContext.replaceItemValue(WorkflowKernel.PROCESSID, 200);
+		documentContext.setTaskID(200);
 		documentContext.setEventID(20);
 		documentContext.replaceItemValue("_budget", 50);
 		try {
@@ -201,14 +200,14 @@ public class TestAccessPlugin {
 
 		List writeAccess = documentContext.getItemValue("$WriteAccess");
 
-		Assert.assertEquals(300, documentContext.getProcessID());
+		Assert.assertEquals(300, documentContext.getTaskID());
 		Assert.assertEquals(2, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
 		Assert.assertTrue(writeAccess.contains("sam"));
 
 		// case II.
 
-		documentContext.replaceItemValue(WorkflowKernel.PROCESSID, 200);
+		documentContext.setTaskID(200);
 		documentContext.setEventID(20);
 		documentContext.replaceItemValue("_budget", 570);
 		try {
@@ -221,7 +220,7 @@ public class TestAccessPlugin {
 
 		writeAccess = documentContext.getItemValue("$WriteAccess");
 
-		Assert.assertEquals(400, documentContext.getProcessID());
+		Assert.assertEquals(400, documentContext.getTaskID());
 		Assert.assertEquals(1, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("tom"));
 

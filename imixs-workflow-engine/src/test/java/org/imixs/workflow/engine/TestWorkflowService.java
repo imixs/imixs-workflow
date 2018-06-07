@@ -58,7 +58,7 @@ public class TestWorkflowService {
 		// load test workitem
 		ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 100);
+		workitem.setTaskID(100);
 
 		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
 
@@ -74,7 +74,7 @@ public class TestWorkflowService {
 
 		// get workitem
 		ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 200);
+		workitem.setTaskID(200);
 
 		List<ItemCollection> eventList = null;
 		try {
@@ -96,7 +96,7 @@ public class TestWorkflowService {
 
 		// get workitem
 		ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 100);
+		workitem.setTaskID(100);
 
 		Vector<String> members = new Vector<String>();
 		members.add("jo");
@@ -126,7 +126,7 @@ public class TestWorkflowService {
 
 		// get workitem
 		ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 100);
+		workitem.setTaskID(100);
 
 		Vector<String> members = new Vector<String>();
 		members.add("jo");
@@ -167,7 +167,7 @@ public class TestWorkflowService {
 
 		// get workitem
 		ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 300);
+		workitem.setTaskID(300);
 
 		Vector<String> members = new Vector<String>();
 		members.add("jo");
@@ -208,7 +208,7 @@ public class TestWorkflowService {
 
 		// get workitem
 		ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 300);
+		workitem.setTaskID(300);
 
 		Vector<String> members = new Vector<String>();
 		members.add("jo");

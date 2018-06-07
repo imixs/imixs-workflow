@@ -43,25 +43,25 @@ public class TestSimulationService {
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowSimulationEnvironment.DEFAULT_MODEL_VERSION);
 
 		// test none condition ...
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
+		workitem.setTaskID(1000);
 		workitem.setEventID(10);
 		workitem = wse.processWorkItem(workitem);
 		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
-		Assert.assertEquals(1000, workitem.getProcessID());
+		Assert.assertEquals(1000, workitem.getTaskID());
 
 		// test _budget<100
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
+		workitem.setTaskID(1000);
 		workitem.replaceItemValue("_budget", 99);
 		workitem.setEventID(10);
 		workitem = wse.simulationService.processWorkItem(workitem, null);
-		Assert.assertEquals(1200, workitem.getProcessID());
+		Assert.assertEquals(1200, workitem.getTaskID());
 
 		// test _budget>100
-		workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
+		workitem.setTaskID(1000);
 		workitem.replaceItemValue("_budget", 9999);
 		workitem.setEventID(10);
 		workitem = wse.simulationService.processWorkItem(workitem, null);
-		Assert.assertEquals(1100, workitem.getProcessID());
+		Assert.assertEquals(1100, workitem.getTaskID());
 
 	}
 
