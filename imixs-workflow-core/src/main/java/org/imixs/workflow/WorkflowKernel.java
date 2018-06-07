@@ -73,8 +73,8 @@ public class WorkflowKernel {
 	public static final String WORKITEMID = "$workitemid";
 	public static final String MODELVERSION = "$modelversion";
 
+	@Deprecated
 	public static final String PROCESSID = "$processid";
-	//public static final String ACTIVITYID = "$activityid";
 
 	public static final String TASKID = "$taskid";
 	public static final String EVENTID = "$eventid";
@@ -257,16 +257,16 @@ public class WorkflowKernel {
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_WORKITEM,
 					"processing error: workitem is null");
 
-		// check $processID
-		if (workitem.getItemValueInteger(PROCESSID) <= 0)
+		// check $TaskID
+		if (workitem.getTaskID() <= 0)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_PROCESSID,
-					"processing error: $processid undefined (" + workitem.getItemValueInteger(PROCESSID) + ")");
+					"processing error: $taskID undefined (" + workitem.getTaskID() + ")");
 
 		
 		// check $eventId
 		if (workitem.getEventID() <= 0)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_ACTIVITYID,
-					"processing error: $eventid undefined (" + workitem.getEventID() + ")");
+					"processing error: $eventID undefined (" + workitem.getEventID() + ")");
 
 		
 		ItemCollection documentResult = new ItemCollection(workitem);
@@ -323,7 +323,7 @@ public class WorkflowKernel {
 		ItemCollection itemColNextTask = null;
 	
 		int iNewProcessID = event.getItemValueInteger("numnextprocessid");
-		logger.finest("......next $processid=" + iNewProcessID + "");
+		logger.finest("......next $taskID=" + iNewProcessID + "");
 	
 		// test if we have an conditional exclusive Task exits...
 		itemColNextTask = findConditionalExclusiveTask(event, documentContext);
@@ -406,7 +406,7 @@ public class WorkflowKernel {
 	 * Before a plug-in is called the method updates the 'type' attribute defined by
 	 * the next Task.
 	 * 
-	 * After all plug-ins are processed, the attributes $processid, $workflowstatus
+	 * After all plug-ins are processed, the attributes $taskID, $workflowstatus
 	 * and $workflowgroup are updated.
 	 * 
 	 * If an FollowUp Activity is defined (keyFollowUp="1" & numNextActivityID>0)
@@ -419,8 +419,8 @@ public class WorkflowKernel {
 		ItemCollection documentResult = documentContext;
 		// log the general processing message
 		String msg = "processing=" + documentContext.getItemValueString(UNIQUEID) + ", MODELVERSION="
-				+ documentContext.getItemValueString(MODELVERSION) + ", $processid="
-				+ documentContext.getItemValueInteger(PROCESSID) + ", $eventid="
+				+ documentContext.getItemValueString(MODELVERSION) + ", $taskID="
+				+ documentContext.getTaskID() + ", $eventID="
 				+ documentContext.getEventID();
 
 		if (ctx == null) {
@@ -464,10 +464,9 @@ public class WorkflowKernel {
 		// instance.
 		evaluateSplitEvent(event, documentResult);
 
-		// Update the attributes $ProcessID and $WorkflowStatus
-		documentResult.replaceItemValue(PROCESSID,
-				Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
-		logger.finest("......new $processid=" + documentResult.getTaskID());
+		// Update the attributes $taskID and $WorkflowStatus
+		documentResult.setTaskID(Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
+		logger.finest("......new $taskID=" + documentResult.getTaskID());
 		documentResult.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString("txtname"));
 		logger.finest("......new $workflowStatus=" + documentResult.getItemValueString(WORKFLOWSTATUS));
 		// update deprecated attributes txtworkflowStatus and txtworkflowGroup
@@ -696,10 +695,8 @@ public class WorkflowKernel {
 								// clone current instance to a new version...
 								ItemCollection cloned = createVersion(documentContext);
 								logger.finest("......created new version=" + cloned.getUniqueID());
-								// set new $processid
-								cloned.replaceItemValue(PROCESSID,
-										Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
-
+								// set new $taskID
+								cloned.setTaskID(Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
 								cloned.setEventID(eventID);
 								// add temporary attribute $isversion...
 								cloned.replaceItemValue(ISVERSION, true);

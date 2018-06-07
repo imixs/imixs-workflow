@@ -48,18 +48,18 @@ public interface WorkflowManager {
 
 	/**
 	 * This method processes a workItem. The workItem needs at least provide the
-	 * valid attributes $ProcessID and $EventID (integer values) to identify
+	 * valid attributes $taskID and $EventID (integer values) to identify
 	 * the current processEntity the workItem belongs to and the concrete
 	 * activtyEntity which should be processed by the wokflowManager
 	 * implementation. If the workItem is new the method creates a new instance
-	 * for the corresoponding process.
+	 * for the corresponding process.
 	 * 
 	 * The method is responsible to persist the workItem after successfully
 	 * processing. The method returns the workItem with additional workflow
 	 * informations defined by the workfowManager Implementation.
 	 * 
 	 * The Method throws an InvalidWorkitemException if the provided workItem is
-	 * invalid or the provided attributes $ProcessID and $EventID (integer)
+	 * invalid or the provided attributes $taskID and $EventID (integer)
 	 * did not match an valid modelEntity the workItem can be processed to.
 	 * 
 	 * @param workitem

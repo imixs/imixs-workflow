@@ -81,7 +81,7 @@ public class TestWorkflowKernelModels {
 			itemCollection = kernel.process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 
-			Assert.assertEquals(1100, itemCollection.getProcessID());
+			Assert.assertEquals(1100, itemCollection.getTaskID());
 
 		} catch (Exception e) {
 			Assert.fail();
@@ -108,7 +108,7 @@ public class TestWorkflowKernelModels {
 
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
-			itemCollection.replaceItemValue("$processid", 1100);
+			itemCollection.setTaskID(1100);
 			itemCollection.setEventID(20);
 
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
@@ -116,7 +116,7 @@ public class TestWorkflowKernelModels {
 			itemCollection = kernel.process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 
-			Assert.assertEquals(1200, itemCollection.getProcessID());
+			Assert.assertEquals(1200, itemCollection.getTaskID());
 
 		} catch (Exception e) {
 			Assert.fail();
@@ -146,7 +146,7 @@ public class TestWorkflowKernelModels {
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
-			itemCollection.replaceItemValue("$processid", 1000);
+			itemCollection.setTaskID(1000);
 			itemCollection.setEventID(10);
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
@@ -154,12 +154,12 @@ public class TestWorkflowKernelModels {
 
 			itemCollection = kernel.process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
-			Assert.assertEquals(1200, itemCollection.getProcessID());
+			Assert.assertEquals(1200, itemCollection.getTaskID());
 
 			// test Condition 2
 			itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
-			itemCollection.replaceItemValue("$processid", 1000);
+			itemCollection.setTaskID(1000);
 			itemCollection.setEventID(10);
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
@@ -168,7 +168,7 @@ public class TestWorkflowKernelModels {
 			itemCollection = kernel.process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 
-			Assert.assertEquals(1100, itemCollection.getProcessID());
+			Assert.assertEquals(1100, itemCollection.getTaskID());
 
 		} catch (Exception e) {
 			Assert.fail();
@@ -199,7 +199,7 @@ public class TestWorkflowKernelModels {
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
-			itemCollection.replaceItemValue("$processid", 1000);
+			itemCollection.setTaskID(1000);
 			itemCollection.setEventID(10);
 			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
@@ -207,21 +207,18 @@ public class TestWorkflowKernelModels {
 
 			itemCollection = kernel.process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
-			Assert.assertEquals(1100, itemCollection.getProcessID());
+			Assert.assertEquals(1100, itemCollection.getTaskID());
 
 			// test Condition 2
-			itemCollection = new ItemCollection();
+			itemCollection = new ItemCollection().model(MokModel.DEFAULT_MODEL_VERSION).task(1000).event(10);
 			itemCollection.replaceItemValue("txtTitel", "Hello");
-			itemCollection.replaceItemValue("$processid", 1000);
-			itemCollection.setEventID(10);
-			itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
 			itemCollection.replaceItemValue("_budget", 99);
 
 			itemCollection = kernel.process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 
-			Assert.assertEquals(1200, itemCollection.getProcessID());
+			Assert.assertEquals(1200, itemCollection.getTaskID());
 
 		} catch (Exception e) {
 			Assert.fail();
@@ -258,7 +255,7 @@ public class TestWorkflowKernelModels {
 
 			itemCollection = kernel.process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("_subject"));
-			Assert.assertEquals(1100, itemCollection.getProcessID());
+			Assert.assertEquals(1100, itemCollection.getTaskID());
 			Assert.assertEquals(10, itemCollection.getItemValueInteger("$lastEvent"));
 
 			// test new version...
@@ -268,7 +265,7 @@ public class TestWorkflowKernelModels {
 			ItemCollection version = versions.get(0);
 
 			Assert.assertEquals("Hello", version.getItemValueString("_subject"));
-			Assert.assertEquals(1200, version.getProcessID());
+			Assert.assertEquals(1200, version.getTaskID());
 			// $lastEvent should be 20
 			Assert.assertEquals(20, version.getItemValueInteger("$lastEvent"));
 

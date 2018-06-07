@@ -65,7 +65,7 @@ public class TestWorkflowKernel {
 		ItemCollection itemCollectionProcessed=null; 
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
-		itemCollection.replaceItemValue("$processid", 100);
+		itemCollection.setTaskID(100);
 		itemCollection.setEventID(10);
 		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
@@ -85,7 +85,7 @@ public class TestWorkflowKernel {
 		}
 
 		Assert.assertEquals(1, itemCollectionProcessed.getItemValueInteger("runs"));
-		Assert.assertEquals(100, itemCollectionProcessed.getItemValueInteger("$processid"));
+		Assert.assertEquals(100, itemCollectionProcessed.getTaskID());
 		
 		// initial and processed workitems are not the same and not equals! 
 		Assert.assertNotSame(itemCollection, itemCollectionProcessed);
@@ -139,7 +139,7 @@ public class TestWorkflowKernel {
 	public void testProcessNullPlugin() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
-		itemCollection.replaceItemValue("$processid", 100);
+		itemCollection.setTaskID(100);
 		itemCollection.setEventID(10);
 		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
@@ -205,7 +205,7 @@ public class TestWorkflowKernel {
 	public void testFollowup() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
-		itemCollection.replaceItemValue("$processid", 100);
+		itemCollection.setTaskID(100);
 		itemCollection.setEventID(11);
 		itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 

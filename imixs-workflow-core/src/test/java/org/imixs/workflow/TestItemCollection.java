@@ -433,7 +433,7 @@ public class TestItemCollection {
 		ItemCollection itemCollection1 = new ItemCollection();
 
 		itemCollection1.replaceItemValue(WorkflowKernel.MODELVERSION, "1.0.0");
-		itemCollection1.replaceItemValue(WorkflowKernel.PROCESSID, 100);
+		itemCollection1.replaceItemValue(WorkflowKernel.TASKID, 100);
 		itemCollection1.replaceItemValue(WorkflowKernel.EVENTID, 10);
 		itemCollection1.replaceItemValue(WorkflowKernel.TYPE, "workitem_test");
 		itemCollection1.replaceItemValue(WorkflowKernel.UNIQUEID, "ABC-123");
