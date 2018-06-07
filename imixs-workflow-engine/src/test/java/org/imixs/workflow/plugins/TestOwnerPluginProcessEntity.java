@@ -91,7 +91,7 @@ public class TestOwnerPluginProcessEntity {
 		list.add("Kevin");
 		list.add("Julian");
 		documentContext.replaceItemValue("namowner", list);
-		documentContext.replaceItemValue("$processid", 100);
+		documentContext.setTaskID(100);
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
 		try {
@@ -149,7 +149,7 @@ public class TestOwnerPluginProcessEntity {
 	public void testOwnerfromProcessEntity() throws ModelException {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 10);
-		documentContext.replaceItemValue("$processid", 300);
+		documentContext.setTaskID(300);
 
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
@@ -184,7 +184,7 @@ public class TestOwnerPluginProcessEntity {
 		list.add("Kevin");
 		list.add("Julian");
 		documentContext.replaceItemValue("namOwner", list);
-		documentContext.replaceItemValue("$processid", 300);
+		documentContext.setTaskID(300);
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 20);
 

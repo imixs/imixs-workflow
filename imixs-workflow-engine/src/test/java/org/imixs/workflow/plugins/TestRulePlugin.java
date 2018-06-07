@@ -452,7 +452,32 @@ public class TestRulePlugin {
 
 		ItemCollection adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtName", "Anna");
-		adocumentContext.replaceItemValue("$ProcessID", 1000);
+		adocumentContext.setTaskID(1000);
+		// simulate an activity
+		ItemCollection adocumentActivity = new ItemCollection();
+		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
+
+		// set a business rule
+		String script = "var isValid =  1000==workitem.get('$taskid')[0];";
+
+		System.out.println("Script=" + script);
+		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
+
+	}
+	
+	/**
+	 * Same test as before but using the deprected item $processid
+	 */
+	@Test
+	public void testSimpleWorkitemScriptWithDeprecatedField() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("txtName", "Anna");
+		adocumentContext.setTaskID(1000);
 		// simulate an activity
 		ItemCollection adocumentActivity = new ItemCollection();
 		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
@@ -899,14 +924,14 @@ public class TestRulePlugin {
 
 		ItemCollection adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtName", "Anna");
-		adocumentContext.replaceItemValue("$ProcessID", 1000);
+		adocumentContext.setTaskID(1000);
 		// simulate an activity
 		ItemCollection adocumentActivity = new ItemCollection();
 		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
 
 		// set a business rule
 		String script = "";
-		script += "var isValid =  1000==workitem['$processid'][0];";
+		script += "var isValid =  1000==workitem['$taskid'][0];";
 		// now add a manipulation!
 		script += " event.keymailenabled='0';";
 
@@ -919,7 +944,7 @@ public class TestRulePlugin {
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
 		Assert.assertNotNull(adocumentContext);
 
-		Assert.assertEquals(1000, adocumentContext.getItemValueInteger("$ProcessID"));
+		Assert.assertEquals(1000, adocumentContext.getTaskID());
 
 		// test manipulation of activity
 		Assert.assertEquals("0", adocumentActivity.getItemValueString("keyMailEnabled"));

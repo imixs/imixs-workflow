@@ -120,7 +120,7 @@ public class TestAccessPluginProcessEntity {
 	public void testACLfromProcessEntity() throws ModelException {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 10);
-		documentContext.replaceItemValue("$processid", 300);
+		documentContext.setTaskID(300);
 
 		try {
 			accessPlugin.run(documentContext, documentActivity);
@@ -183,7 +183,7 @@ public class TestAccessPluginProcessEntity {
 		list.add("Kevin");
 		list.add("Julian");
 		documentContext.replaceItemValue("namOwner", list);
-		documentContext.replaceItemValue("$processid", 300);
+		documentContext.setTaskID(300);
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 20);
 		try {
