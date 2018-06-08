@@ -14,8 +14,8 @@ If no further configuration exists, the content of the document items  "txtworkf
 
 In addition the following list of items in a document are indexed by the _LuceneService_ without using an analyser. 
 
-	"$modelversion", "$processid", "$workitemid", "$uniqueidref", "type", 
-	"$writeaccess", "$modified", "$created", "namcreator", "txtworkflowgroup", "txtname", "namowner", "txtworkitemref"
+	"$modelversion", "$taskid", "$workitemid", "$uniqueidref", "type", 
+	"$writeaccess", "$modified", "$created", "namcreator", "txtworkflowgroup", "txtname", "namowner", "txtworkitemref", "$processid"
 
 These items can be used in a search term. 
 
@@ -33,7 +33,7 @@ The custom configuration of the _LuceneService_ can be provided in the file _imi
 	# Fields to be added into the searchindex
 	lucence.fulltextFieldList=txtsearchstring,txtSubject,txtname,txtEmail,txtWorkflowAbstract,txtWorkflowSummary
 	lucence.indexFieldListAnalyze=
-	lucence.indexFieldListNoAnalyze=type,$UniqueIDRef,$created,$modified,$ModelVersion,namCreator,$ProcessID,datDate,txtWorkflowGroup,txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername,
+	lucence.indexFieldListNoAnalyze=datDate,txtWorkflowGroup,txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername,
 
 
 ### IndexDir

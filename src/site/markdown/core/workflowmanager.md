@@ -32,9 +32,9 @@ The method 'processWorkItem()' is used to create or update a Workitem. The Workf
     ....
     }
 
-The WorkflowKernel can throw a ProcessingErrorException if the Workitem did not match the model status.  Therefore the WorkflowManager implementation have to verify if the Workitem provides valid values for the properties '$processID' and '$ActivityID'.  
+The WorkflowKernel can throw a ProcessingErrorException if the Workitem did not match the model status.  Therefore the WorkflowManager implementation have to verify if the Workitem provides valid values for the properties '$taskID' and '$eventID'.  
  
-##Find Workitems
+## Find Workitems
 
 The property "$uniqueid" identifies the workitem controlled by the workflowManager. This ID can be used to load a workitem from the WorkflowManager:
   

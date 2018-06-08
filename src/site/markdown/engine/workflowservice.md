@@ -5,8 +5,8 @@ The WorkflowService is the Java EE implementation of the [WorkflowManager interf
 Before a workitem can be processed by the WorkflowService, a process model need to be defined and deployed together with the workflow engine. See the section [Imixs-BPMN Modeler](../modelling/index.html) for details about  how to create a model and upload it into the workflow server. The following example shows how a workitem can be processed using the WorkflowService component. A workitem must provide at least the following properties:
 
    * $ModelVersion
-   * $ProcessID 
-   * $ActivityID 
+   * $TaskID 
+   * $EventID 
    
 These properties are defining the workflow activity which should be processed by the workflowManager.
 

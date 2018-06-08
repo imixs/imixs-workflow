@@ -10,7 +10,7 @@ See the following example:
 	{"item":[
 	   {"name":"$uniqueid","value":{"@type":"xs:string","$":"141cb98aecc-18544f1b"}},
 	   {"name":"$modelversion","value":{"@type":"xs:string","$":"bestandspflege-de-0.0.2"}},
-	   {"name":"$processid","value":{"@type":"xs:int","$":"2000"}},
+	   {"name":"$taskid","value":{"@type":"xs:int","$":"2000"}},
 	   {"name":"namcreator","value":{"@type":"xs:string","$":"admin"}}, 
 	   {"name":"$isauthor","value":{"@type":"xs:boolean","$":"true"}},
 	   {"name":"_subject","value":{"@type":"xs:string","$":"JUnit Test-6476"}}, 
@@ -36,8 +36,8 @@ To create a new process instance with a JSON request object, the POST method of 
 
 	  {"item":[
 	     {"name":"$modelversion","value":{"@type":"xs:string","$":"bestandspflege-de-0.0.2"}},
-	     {"name":"$processid","value":{"@type":"xs:int","$":"2000"}}, 
-	     {"name":"$activityid","value":{"@type":"xs:int","$":"1"}}, 
+	     {"name":"$taskid","value":{"@type":"xs:int","$":"2000"}}, 
+	     {"name":"$eventid","value":{"@type":"xs:int","$":"1"}}, 
 	     {"name":"_subject","value":{"@type":"xs:string","$":"JUnit Test-6476"}}
 	   ]}  
 
@@ -71,8 +71,8 @@ Using the RestClient provided by the Imixs-Workflow Core API the creation of a n
 	
 			// create a json test string
 			String json = "{\"item\":["
-					+ "	{\"name\":\"$processid\",\"value\":{\"@type\":\"xs:int\",\"$\":\"10\"}},"
-					+ "	{\"name\":\"$activityid\",\"value\":{\"@type\":\"xs:int\",\"$\":\"10\"}},"
+					+ "	{\"name\":\"$taskid\",\"value\":{\"@type\":\"xs:int\",\"$\":\"10\"}},"
+					+ "	{\"name\":\"$eventid\",\"value\":{\"@type\":\"xs:int\",\"$\":\"10\"}},"
 					+ "	{\"name\":\"txtList\",\"value\":[{\"@type\":\"xs:string\",\"$\":\"A\"},{\"@type\":\"xs:string\",\"$\":\"B\"}]},"
 					+ "	{\"name\":\"txtname\",\"value\":{\"@type\":\"xs:string\",\"$\":\"workitem json test\"}}"
 					+ "]}";

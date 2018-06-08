@@ -136,11 +136,8 @@ To create a new workitem the  WorkflowTestSuite provides method to create and pr
  
 	@Test
 	public void createNewWorkitemTest() throws Exception {
-	 	ItemCollection registration=new ItemCollection();
+	 	ItemCollection registration=new ItemCollection().model("system-de-0.0.1").task(200).event(10);
 		registration.replaceItemValue("type", "profile");
-		registration.replaceItemValue("$ModelVersion", "system-de-0.0.1");
-		registration.replaceItemValue("$processid", 200);
-		registration.replaceItemValue("$activityid", 10);
 		registration.replaceItemValue("txtName","Test");
 
 		registration=testSuite.processWorkitem(registration, "anna");

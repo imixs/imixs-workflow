@@ -32,7 +32,7 @@ An 'Event Element' is assigned to a 'Task'. The ID of each 'Event' must be uniqu
  
  
 ### The Process Flow
-When a Workitem is processed by the Imixs-Workflow engine, the properties '$modelVersion', '$ProcessID' and '$ActivityID' are verified against the current workflow model. Depending on the information of the assigned 'Event' the _WorkflowKernel_ updates the status of the Workitem ('$ProcessID') after a Workitem was processed successful.
+When a Workitem is processed by the Imixs-Workflow engine, the properties '$modelVersion', '$TaskID' and '$EventID' are verified against the current workflow model. Depending on the information of the assigned 'Event' the _WorkflowKernel_ updates the status of the Workitem ('$taskID') after a Workitem was processed successful.
 
 ##The Model Interface
 The Interface '_org.imixs.workflow.Model_' defines the following methods:

@@ -29,10 +29,10 @@ The following example shows a business object in XML representation used for req
 		<item name="$modelversion">
 			<value xsi:type="xs:string">1.0.1</value>
 		</item>
-		<item name="$processid">
+		<item name="$taskid">
 			<value xsi:type="xs:int">1000</value>
 		</item>
-		<item name="$activityid">
+		<item name="$eventid">
 			<value xsi:type="xs:int">10</value>
 		</item>
 		<item name="_subject">
@@ -47,8 +47,8 @@ The following example shows a business object in JSON representation used for re
 
     {"item":[
      {"name":"$modelversion","value":{"@type":"xs:string","$":"1.0.1"}},
-     {"name":"$processid","value":{"@type":"xs:int","$":"1000"}}, 
-     {"name":"$activityid","value":{"@type":"xs:int","$":"10"}}, 
+     {"name":"$taskid","value":{"@type":"xs:int","$":"1000"}}, 
+     {"name":"$eventid","value":{"@type":"xs:int","$":"10"}}, 
      {"name":"_subject","value":{"@type":"xs:string","$":"Hello World"}}
     ]}  
 
@@ -56,8 +56,8 @@ Depending on the Rest Service Implementation the JSON format for response object
 
     {"item": [
         {"name": "$modelversion", "value": ["1.0.1"] },
-        {"name": "$processid", "value": [2000] },
-        {"name": "$activityid", "value": [10] },
+        {"name": "$taskid", "value": [2000] },
+        {"name": "$eventid", "value": [10] },
         {"name": "_subject", "value": ["Hello World"] }
      ]}
 

@@ -89,9 +89,9 @@ The next example shows how to post a new Workitem in JSON Format. The request po
 	       '{"item":[ \
 	                 {"name":"type","value":{"@type":"xs:string","$":"workitem"}}, \
 	                 {"name":"$modelversion","value":{"@type":"xs:string","$":"1.0.0"}}, \
-	                 {"name":"txtworkflowgroup","value":{"@type":"xs:string","$":"Ticket"}}, \
-	                 {"name":"$processid","value":{"@type":"xs:int","$":"1000"}}, \
-	                 {"name":"$activityid","value":{"@type":"xs:int","$":"10"}}, \
+	                 {"name":"$workflowgroup","value":{"@type":"xs:string","$":"Ticket"}}, \
+	                 {"name":"$taskid","value":{"@type":"xs:int","$":"1000"}}, \
+	                 {"name":"$eventid","value":{"@type":"xs:int","$":"10"}}, \
 	                 {"name":"txtname","value":{"@type":"xs:string","$":"test-json"}}\
 	         ]}' \
 	         http://localhost:8080/imixs-microservice/workflow/workitem.json

@@ -138,9 +138,9 @@ The ItemCollection provides convenience methods to access typical attributes of 
 |Method				| Return 	  										|
 |-------------------|---------------------------------------------------|
 |getType()			| returns the type attribute of a workitem 			|
-|getProcessID()		| returns the $processID attribute of a workitem 	|
-|getActivityID()	| returns the $activityID attribute of an workitem 	|
-|setActivityID(id)	| set the $activityID attribute of a workitem 		|
+|getTaskID()		| returns the $taskID attribute of a workitem 	|
+|getEventID()	| returns the $eventID attribute of an workitem 	|
+|setEventID(id)	| set the $eventID attribute of a workitem 		|
 |getModelVersion()	| returns the $modelversion attribute of a workitem |
 |getUniqueID()		| returns the $uniqueid attribute of a workitem 	|
 

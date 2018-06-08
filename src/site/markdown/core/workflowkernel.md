@@ -18,7 +18,7 @@ The _WorkflowKernel_ controls the following attributes of a process instance:
 |$UniqueID    	    | A unique key to access the process instance    	|
 |$WorkitemID        | A unique process instance id of this workitem     |
 |$ModelVersion      | The Version of the model the workitem belongs to  |
-|$ProcessID         | The current BPMN Task ID of the workItem          |
+|$TaskID         | The current BPMN Task ID of the workItem          |
 |$lastEvent         | The last processed BPMN Event element             |
 |$lastTask          | The last assigned BPMN Task element   			|
 

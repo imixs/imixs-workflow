@@ -15,13 +15,13 @@ The DataController is a managed bean controlling the data of a single  WorkItem.
 
 All action methods accept a String param 'action' with the default action result. (Can be 'null')
  
-##The WorkflowController
-The WorkflowController is a subclass from the DataController and provides methods to process a  workitem based on a specific workflow model.  The workflow model version can be defined by the WorkItem property '$modelversion'. To process a WorkItem the properties '$processid' and '$activityid' need to be defined. The WorkflowController provides the following addition Action and ActionListener methods:
+## The WorkflowController
+The WorkflowController is a subclass from the DataController and provides methods to process a  workitem based on a specific workflow model.  The workflow model version can be defined by the WorkItem property '$modelversion'. To process a WorkItem the properties '$taskid' and '$eventid' need to be defined. The WorkflowController provides the following addition Action and ActionListener methods:
  
-###init(actiion) 
+### init(actiion) 
 This method initializes a new created WorkItem based  on the workflow model definition    
 
-###process()
+### process()
 The process method processes the current workItem and returns an action result.  The method expects that the current workItem provides a valid $ActiviytID.  The method returns the value of the property 'action' if provided by the workflow model or a plugin. The 'action' property is typically evaluated from the ResultPlugin. Alternatively the property can be provided by an application. If no 'action' property is provided the method evaluates the default property 'txtworkflowResultmessage' from the model as an action result.	 
 
 ###process(activityID)

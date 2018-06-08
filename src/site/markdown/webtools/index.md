@@ -59,7 +59,7 @@ The WorkflowController extends the DataController, and provides an interface to 
 					target="#{workflowController.workitem.item['$ModelVersion']}"
 					value="1.0.1" />
 				<f:setPropertyActionListener
-					target="#{workflowController.workitem.item['$ProcessID']}"
+					target="#{workflowController.workitem.item['$taskID']}"
 					value="1000" />
 	</h:commandButton>
 
