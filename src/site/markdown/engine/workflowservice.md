@@ -13,16 +13,12 @@ These properties are defining the workflow activity which should be processed by
 	  @EJB
 	  org.imixs.workflow.jee.ejb.WorkflowService workflowService;
 	  //...
-	  // create an empty workitem
-	  ItemCollection workitem=new ItemCollection();
-	  workitem.replaceItemValue("type", "workitem");
-	  workitem.replaceItemValue("name", "Anna");
-	  workitem.replaceItemValue("txtTitel", "My first workflow example");
+	  // create an empty workitem assigend to a model
+	  ItemCollection workitem=new ItemCollection().model("1.0.0").task(100).event(10);
+	  // assign business data
+	  workitem.replaceItemValue("_name", "M. Alex");
+	  workitem.replaceItemValue("_Titel", "My first workflow example");
 			
-	  // set workflow status based on a supported model
-	  workitem.replaceItemValue(WorkflowKernel.MODELVERSION, "1.0.0");
-	  workitem.replaceItemValue(WorkflowKernel.PROCESSID, 10);
-	  workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
 	  // process the workitem
 	  workitem=workflowService.processWorkItem(workitem);
 

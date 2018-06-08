@@ -32,11 +32,11 @@ Each item stored into a ItemCollection has a item-name and a item-value. The ite
 As explained before, a workitem can not only contain business data, but also information about the process instance which is controlled by the workflow system. This workflow data of a process instance contains for example data like the creation date or the processing status. This is an example how to access this kind of data:
  
    
-    String uniqueID=workitem.getItemValueInteger("$UniqueID");
-    int processID=workitem.getItemValueInteger("$ProcessID");
+    String uniqueID=workitem.getUnqiueID();
+    int processID=workitem.getTask();
+    String status=workitem.getItemValueString(WorkflowKernle.WORKFLOWSTATUS);
     Date created=workitem.getItemValueDate("$created");
     Date modified=workitem.getItemValueDate("$modified");
-    String status=workitem.getItemValueString("$WorkflowStatus");
   
 The following table provides an overview about the data of a process instance managed by the Imixs-Workflow Engine. The column '_read/write_' indicates if the property can be controlled by an application. The column '_indexed_' indicates if the date item can be searched by the [search index](../engine/queries.html#Query_Items):
  
@@ -44,8 +44,8 @@ The following table provides an overview about the data of a process instance ma
 | Property        | Type   |read/write  | indexed | Description												 	|
 |-----------------|--------|------------|-----------------------------------------------------------------------|
 |$ModelVersion    |String  |yes   		| yes 	  | The Version of the model the workitem belongs to  			|
-|$ProcessID       |Integer |yes   		| yes 	  | The current ProcessID of the workItem         				|
-|$ActivityID      |Integer |yes   		| yes 	  | The next activity to be processed by the workflow engine  	|
+|$TaskID       	  |Integer |yes   		| yes 	  | The current taskID of the workitem							|
+|$EventID         |Integer |yes   		| yes 	  | The next event to be processed by the workflow engine  		|
 |$workflowGroup   |String  |no    		| yes 	  | The name of the current process group   					|
 |$workflowStatus  |String  |no   		| yes 	  | The name of the current workflow status      				|
 |$Created         |Date    |no    		| yes 	  | Date of creation                              				|

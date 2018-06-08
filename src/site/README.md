@@ -4,12 +4,12 @@ The pages are written using markdown.
 
 ## Generate Site
 
-    mvn clean site 
+    $ mvn clean site
 
 
 To skip the report generation:
 
-    mvn clean site -DgenerateReports=false
+    $ mvn clean site -DgenerateReports=false
 
 
 
