@@ -177,6 +177,11 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 			workitem.replaceItemValue("$lasteditor", workitem.getItemValue("namcurrenteditor"));
 			bUpgrade = true;
 		}
+		
+		if (!workitem.hasItem("$taskid")) {
+			workitem.replaceItemValue("$taskid", workitem.getItemValue("$processid"));
+			bUpgrade = true;
+		}
 
 		return bUpgrade;
 	}
