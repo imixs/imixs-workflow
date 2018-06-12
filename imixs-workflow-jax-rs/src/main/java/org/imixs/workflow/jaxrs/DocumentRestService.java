@@ -150,18 +150,24 @@ public class DocumentRestService {
 	/**
 	 * returns a single document defined by $uniqueid
 	 * 
+	 * Regex for
+	 * 
+	 * UID - e.g: bcc776f9-4e5a-4272-a613-9f5ebf35354d
+	 * 
+	 * Snapshot: bcc776f9-4e5a-4272-a613-9f5ebf35354d-9b6655
+	 * 
+	 * deprecated format : 132d37bfd51-9a7868
+	 * 
 	 * @param uniqueid
 	 * @return
 	 */
 	@GET
-	@Path("/{uniqueid}")
+	@Path("/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
 	public XMLDataCollection getDocument(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
-
 		ItemCollection document;
 		try {
 			document = documentService.load(uniqueid);
-			return XMLDataCollectionAdapter.getDataCollection(document,DocumentRestService.getItemList(items));					
-			//	return	XMLItemCollectionAdapter.putItemCollection(document, DocumentRestService.getItemList(items));
+			return XMLDataCollectionAdapter.getDataCollection(document, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -453,9 +459,7 @@ public class DocumentRestService {
 		}
 
 		ItemCollection config = lucenUpdateService.getConfiguration();
-
 		return XMLDataCollectionAdapter.getDataCollection(config);
-
 	}
 
 	/**
