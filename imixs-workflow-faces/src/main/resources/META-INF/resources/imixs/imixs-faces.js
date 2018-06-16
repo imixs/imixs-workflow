@@ -107,8 +107,8 @@ function addDatetimePickerMinuteOptions(input) {
 $.fn.imixsLayout = function(options) {
 	return this.each(function() {
 
-		$('input:submit,input:reset,input:button,button', this).button();
-
+		$('input:submit,input:reset,input:button,button,.button', this).button();
+		
 		// disable default layout for input
 		// $('input,select,textarea', this).addClass('ui-state-default');
 
