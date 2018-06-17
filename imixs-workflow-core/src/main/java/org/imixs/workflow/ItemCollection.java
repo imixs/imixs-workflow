@@ -567,6 +567,19 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
+	 * Returns a sorted list of all item names stored in the current ItemCollection.
+	 * 
+	 * @return
+	 */
+	public List<String> getItemNames() {
+		List<String> result = new ArrayList<String>();
+		result.addAll(hash.keySet());
+		// sort result
+		Collections.sort(result);
+		return result;
+	}
+
+	/**
 	 * Replaces the value of an item. If the ItemCollection does not contain an item
 	 * with the specified name, the method creates a new item and adds it to the
 	 * ItemCollection. The ItemName is not case sensitive. Use hasItem to verify the
@@ -1045,10 +1058,6 @@ public class ItemCollection implements Cloneable {
 		return new ItemListArrayAdapter(this);
 	}
 
-	/*
-	 * convenience methods
-	 */
-
 	/**
 	 * @return current type
 	 */
@@ -1100,7 +1109,7 @@ public class ItemCollection implements Cloneable {
 		// deprecated processID is still supported for a long period. See issue #384
 		replaceItemValue("$processid", taskID);
 	}
-	
+
 	public ItemCollection task(int taskID) {
 		setTaskID(taskID);
 		return this;
@@ -1157,7 +1166,7 @@ public class ItemCollection implements Cloneable {
 			replaceItemValue("$activityid", eventID);
 		}
 	}
-	
+
 	public ItemCollection event(int eventID) {
 		setEventID(eventID);
 		return this;
@@ -1169,41 +1178,37 @@ public class ItemCollection implements Cloneable {
 	public String getModelVersion() {
 		return getItemValueString(WorkflowKernel.MODELVERSION);
 	}
-	
+
 	/**
 	 * set the $ModelVersion
 	 */
 	public void setModelVersion(String modelversion) {
-		replaceItemValue(WorkflowKernel.MODELVERSION,modelversion);
+		replaceItemValue(WorkflowKernel.MODELVERSION, modelversion);
 	}
-	
+
 	public ItemCollection model(String modelversion) {
 		setModelVersion(modelversion);
 		return this;
 	}
-	
-	
-	
+
 	/**
 	 * @return current $ModelVersion
 	 */
 	public String getWorkflowGroup() {
 		return getItemValueString(WorkflowKernel.WORKFLOWGROUP);
 	}
-	
+
 	/**
 	 * set the $ModelVersion
 	 */
 	public void setWorkflowGroup(String group) {
 		replaceItemValue(WorkflowKernel.WORKFLOWGROUP, group);
 	}
-	
+
 	public ItemCollection workflowGroup(String group) {
 		setWorkflowGroup(group);
 		return this;
 	}
-	
-
 
 	/**
 	 * @return $UniqueID
