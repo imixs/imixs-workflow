@@ -477,6 +477,25 @@ public class TestItemCollection {
 		Assert.assertEquals(0, l2.size());
 
 	}
+	
+	
+	@Test
+	@Category(org.imixs.workflow.ItemCollection.class)
+	public void testItemCollectionItemNameList() {
+		ItemCollection itemCollection = new ItemCollection();
+		itemCollection.replaceItemValue("_subject", "Hello");
+		itemCollection.replaceItemValue("_dummy", "Hello");
+		itemCollection.replaceItemValue("_title", "Hello");
+		
+		List<String> itemNames=itemCollection.getItemNames();
+		Assert.assertEquals(3,itemNames.size());
+		
+		itemCollection.removeItem("_dummy");
+		itemNames=itemCollection.getItemNames();
+		Assert.assertEquals(2,itemNames.size());
+		
+	}
+
 
 	/**
 	 * This method verifies the clone interface
