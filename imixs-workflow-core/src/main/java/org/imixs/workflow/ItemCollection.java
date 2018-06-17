@@ -569,7 +569,7 @@ public class ItemCollection implements Cloneable {
 	/**
 	 * Returns a sorted list of all item names stored in the current ItemCollection.
 	 * 
-	 * @return
+	 * @return sorted list of item names
 	 */
 	public List<String> getItemNames() {
 		List<String> result = new ArrayList<String>();
