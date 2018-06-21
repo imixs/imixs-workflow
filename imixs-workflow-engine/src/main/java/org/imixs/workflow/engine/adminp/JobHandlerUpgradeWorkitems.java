@@ -146,7 +146,7 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 	 * @param worktem
 	 * @return
 	 */
-	private boolean upgradeWorkitem(ItemCollection workitem) {
+	public static boolean upgradeWorkitem(ItemCollection workitem) {
 		boolean bUpgrade = false;
 
 		if (workitem.getItemValueBoolean("$immutable")) {
