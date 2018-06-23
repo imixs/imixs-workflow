@@ -9,6 +9,7 @@ import javax.script.ScriptException;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -300,7 +301,7 @@ public class TestResultPlugin {
 		workitem.setEventID(10);
 		workitem = workflowMockEnvironment.processWorkItem(workitem);
 		Assert.assertEquals(100, workitem.getTaskID());
-		Assert.assertEquals("", workitem.getType());
+		Assert.assertEquals(WorkflowService.DEFAULT_TYPE, workitem.getType());
 
 		// case 2 - workitem
 		workitem.setEventID(20);
