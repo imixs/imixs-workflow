@@ -90,7 +90,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 	// workitem properties
 	public static final String UNIQUEIDREF = "$uniqueidref";
-
+	public static final String DEFAULT_TYPE = "workitem";
+	
 	// view properties
 	public static final int SORT_ORDER_CREATED_DESC = 0;
 	public static final int SORT_ORDER_CREATED_ASC = 1;
@@ -606,6 +607,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			currentInstance.replaceAllItems(workitem.getAllItems());
 			workitem = currentInstance;
 
+		}
+		
+		// verify type attribute
+		if ("".equals(workitem.getType())) {
+			workitem.replaceItemValue("type", DEFAULT_TYPE);
 		}
 
 		/*
