@@ -4,7 +4,7 @@
 	<artifactId>imixs-workflow</artifactId>
 	<name>Imixs Workflow</name>
 	<packaging>pom</packaging>
-	<version>4.3.3</version>
+	<version>4.3.4-SNAPSHOT</version>
 
 	<modules>
 		<module>imixs-workflow-core</module>
@@ -67,7 +67,7 @@
 		<connection>scm:git:https://github.com/imixs/imixs-workflow.git</connection>
 		<developerConnection>scm:git:https://github.com/imixs/imixs-workflow.git</developerConnection>
 		<url>https://github.com/imixs/imixs-workflow/</url>
-		<tag>imixs-workflow-4.3.3</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<issueManagement>
