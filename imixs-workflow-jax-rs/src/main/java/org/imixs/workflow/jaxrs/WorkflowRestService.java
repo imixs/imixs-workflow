@@ -348,8 +348,8 @@ public class WorkflowRestService {
 
 	@GET
 	@Path("/tasklist/creator/{creator}")
-	public XMLDataCollection getTaskListByCreator(@PathParam("creator") String creator,
-			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
+	public XMLDataCollection getTaskListByCreator(@PathParam("creator") String creator, @QueryParam("type") String type,
+			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
 			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
@@ -443,43 +443,32 @@ public class WorkflowRestService {
 	@Path("/workitem")
 	@Consumes({ MediaType.APPLICATION_FORM_URLENCODED })
 	public Response postFormWorkitem(InputStream requestBodyStream) {
-
 		logger.fine("postFormWorkitem @POST /workitem  method:postWorkitem....");
 		// parse the workItem.
 		ItemCollection workitem = parseWorkitem(requestBodyStream);
+		return processWorkitem(workitem,null);
+	}
 
-		if (workitem == null) {
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-		}
-
-		try {
-			workitem.removeItem("$error_code");
-			workitem.removeItem("$error_message");
-			// now lets try to process the workitem...
-			workitem = workflowService.processWorkItem(workitem);
-
-		} catch (AccessDeniedException e) {
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (PluginException e) {
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (RuntimeException e) {
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (ModelException e) {
-			workitem = this.addErrorMessage(e, workitem);
-		}
-
-		// return workitem
-		try {
-			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
-						.status(Response.Status.NOT_ACCEPTABLE).build();
-			else
-				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem)).build();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-		}
-
+	/**
+	 * This method expects a form post and processes the WorkItem by the
+	 * WorkflowService EJB. After the workItem was processed the method redirect the
+	 * request to the provided action URI. The action URI can also be computed by
+	 * the Imixs Workflow ResutlPlugin
+	 * 
+	 * @param requestBodyStream
+	 *            - form content
+	 * @param action
+	 *            - return URI
+	 * @return
+	 */
+	@POST
+	@Path("/workitem/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
+	@Consumes({ MediaType.APPLICATION_FORM_URLENCODED })
+	public Response postFormWorkitemByUnqiueID(@PathParam("uniqueid") String uid, InputStream requestBodyStream) {
+		logger.finest("......postFormWorkitem @POST /workitem  method:postWorkitem....");
+		// parse the workItem.
+		ItemCollection workitem = parseWorkitem(requestBodyStream);
+		return processWorkitem(workitem,uid);
 	}
 
 	/**
@@ -494,14 +483,12 @@ public class WorkflowRestService {
 	@Consumes({ MediaType.APPLICATION_FORM_URLENCODED })
 	public Response putFormWorkitem(InputStream requestBodyStream) {
 		logger.fine("putFormWorkitem @POST /workitem  delegate to POST....");
-
 		return postFormWorkitem(requestBodyStream);
 	}
 
 	/**
 	 * This method post a ItemCollection object to be processed by the
-	 * WorkflowManager. The method test for the properties $taskidid and
-	 * $eventid
+	 * WorkflowManager. The method test for the properties $taskidid and $eventid
 	 * 
 	 * NOTE!! - this method did not update an existing instance of a workItem. The
 	 * behavior is different to the method putWorkitem(). It need to be discussed if
@@ -514,52 +501,14 @@ public class WorkflowRestService {
 	@Path("/workitem")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
 	public Response postXMLWorkitem(XMLDocument xmlworkitem) {
-
 		logger.fine("postXMLWorkitem @POST /workitem  method:postWorkitemXML....");
-
-		ItemCollection workitem;
-		workitem = XMLDocumentAdapter.putDocument(xmlworkitem);
-
-		if (workitem == null) {
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-		}
-
-		// process workitem
-		try {
-			workitem.removeItem("$error_code");
-			workitem.removeItem("$error_message");
-			// now lets try to process the workitem...
-			workitem = workflowService.processWorkItem(workitem);
-
-		} catch (AccessDeniedException e) {
-			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (PluginException e) {
-			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (RuntimeException e) {
-			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (ModelException e) {
-			workitem = this.addErrorMessage(e, workitem);
-		}
-
-		// return workitem
-		try {
-			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
-						.status(Response.Status.NOT_ACCEPTABLE).build();
-			else
-				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem)).build();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-		}
-
+		ItemCollection workitem = XMLDocumentAdapter.putDocument(xmlworkitem);
+		return processWorkitem(workitem,null);
 	}
 
 	/**
 	 * Delegater
+	 * 
 	 * @param workitem
 	 * @return
 	 */
@@ -572,75 +521,29 @@ public class WorkflowRestService {
 	}
 
 	@POST
-	@Path("/workitem/{uniqueid}")
+	@Path("/workitem/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
 	public Response postXMLWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, XMLDocument xmlworkitem) {
 		logger.fine("postXMLWorkitemByUniqueID @POST /workitem/" + uniqueid + "  method:postWorkitemXML....");
 		ItemCollection workitem;
 		workitem = XMLDocumentAdapter.putDocument(xmlworkitem);
-
-		// validate given uniqueid....
-		if (!workitem.getUniqueID().isEmpty() && !uniqueid.equals(workitem.getUniqueID())) {
-			logger.warning("postXMLWorkitemByUniqueID @POST /workitem/" + uniqueid + "  $UNIQUEID did not match!");
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-		}
-
-		// set uniqueId if not available
-		if (workitem.getUniqueID().isEmpty()) {
-			workitem.replaceItemValue(WorkflowKernel.UNIQUEID, uniqueid);
-		}
-
-		// process workitem
-		try {
-			workitem.removeItem("$error_code");
-			workitem.removeItem("$error_message");
-			// now lets try to process the workitem...
-			workitem = workflowService.processWorkItem(workitem);
-
-		} catch (AccessDeniedException e) {
-			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (PluginException e) {
-			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (RuntimeException e) {
-			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (ModelException e) {
-			workitem = this.addErrorMessage(e, workitem);
-		}
-
-		// return workitem
-		try {
-			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
-						.status(Response.Status.NOT_ACCEPTABLE).build();
-			else
-				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem)).build();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-		}
+		return processWorkitem(workitem,uniqueid);
 	}
-
-	
-	
 
 	/**
 	 * Delegater for PUT postXMLWorkitemByUniqueID
+	 * 
 	 * @param workitem
 	 * @return
 	 */
 	@PUT
-	@Path("/workitem/{uniqueid}")
+	@Path("/workitem/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
 	public Response putXMLWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, XMLDocument xmlworkitem) {
 		logger.fine("putXMLWorkitem @PUT /workitem/{uniqueid}  delegate to POST....");
-		return postXMLWorkitemByUniqueID(uniqueid,xmlworkitem);
+		return postXMLWorkitemByUniqueID(uniqueid, xmlworkitem);
 	}
-	
-	
-	
+
 	/**
 	 * This method expects a form post and processes the WorkItem by the
 	 * WorkflowService EJB.
@@ -694,44 +597,12 @@ public class WorkflowRestService {
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
 
-		// process workitem
-		try {
-			workitem.removeItem("$error_code");
-			workitem.removeItem("$error_message");
-			// now lets try to process the workitem...
-			workitem = workflowService.processWorkItem(workitem);
-
-		} catch (AccessDeniedException e) {
-			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (PluginException e) {
-			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (RuntimeException e) {
-			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (ModelException e) {
-			workitem = this.addErrorMessage(e, workitem);
-		}
-
-		// return workitem
-		try {
-			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
-						.status(Response.Status.NOT_ACCEPTABLE).build();
-			else
-				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem)).build();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-		}
-
+		return processWorkitem(workitem,null);
 	}
-	
-	
 
 	/**
 	 * Delegater for PUT postXMLWorkitemByUniqueID
+	 * 
 	 * @param workitem
 	 * @return
 	 */
@@ -742,15 +613,11 @@ public class WorkflowRestService {
 			@QueryParam("encoding") String encoding) {
 
 		logger.fine("putJSONWorkitem @PUT /workitem/{uniqueid}  delegate to POST....");
-		return postJSONWorkitem(requestBodyStream,error,encoding);
+		return postJSONWorkitem(requestBodyStream, error, encoding);
 	}
-	
-	
-	
-	
 
 	@POST
-	@Path("/workitem/{uniqueid}")
+	@Path("/workitem/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
 	@Consumes({ MediaType.APPLICATION_JSON })
 	public Response postJSONWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, InputStream requestBodyStream,
 			@QueryParam("error") String error, @QueryParam("encoding") String encoding) {
@@ -776,76 +643,25 @@ public class WorkflowRestService {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
-		if (workitem == null) {
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-		}
-
-		// validate given uniqueid....
-		if (!workitem.getUniqueID().isEmpty() && !uniqueid.equals(workitem.getUniqueID())) {
-			logger.warning("postJSONWorkitemByUniqueID @POST /workitem/" + uniqueid + "  $UNIQUEID did not match!");
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-		}
-
-		// set uniqueId if not available
-		if (workitem.getUniqueID().isEmpty()) {
-			workitem.replaceItemValue(WorkflowKernel.UNIQUEID, uniqueid);
-		}
-
-		// process workitem
-		try {
-			workitem.removeItem("$error_code");
-			workitem.removeItem("$error_message");
-			// now lets try to process the workitem...
-			workitem = workflowService.processWorkItem(workitem);
-
-		} catch (AccessDeniedException e) {
-			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (PluginException e) {
-			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (RuntimeException e) {
-			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (ModelException e) {
-			workitem = this.addErrorMessage(e, workitem);
-		}
-
-		// return workitem
-		try {
-			if (workitem.hasItem("$error_code"))
-				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
-						.status(Response.Status.NOT_ACCEPTABLE).build();
-			else
-				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem)).build();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-		}
-
+		return processWorkitem(workitem,uniqueid);
 	}
 
-	
 	/**
 	 * Delegater for PUT postJSONWorkitemByUniqueID
+	 * 
 	 * @param workitem
 	 * @return
 	 */
 	@PUT
-	@Path("/workitem/{uniqueid}")
+	@Path("/workitem/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
 	@Consumes({ MediaType.APPLICATION_JSON })
 	public Response putJSONWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, InputStream requestBodyStream,
 			@QueryParam("error") String error, @QueryParam("encoding") String encoding) {
 
 		logger.fine("postJSONWorkitemByUniqueID @PUT /workitem/{uniqueid}  delegate to POST....");
-		return postJSONWorkitemByUniqueID(uniqueid,requestBodyStream,error,encoding);
+		return postJSONWorkitemByUniqueID(uniqueid, requestBodyStream, error, encoding);
 	}
-	
-	
-	
-	
-	
-	
+
 	/**
 	 * This method post a collection of ItemCollection objects to be processed by
 	 * the WorkflowManager.
@@ -1020,6 +836,69 @@ public class WorkflowRestService {
 	public Response postWorkitemJSONDeprecated(InputStream requestBodyStream, @QueryParam("error") String error,
 			@QueryParam("encoding") String encoding) {
 		return postJSONWorkitem(requestBodyStream, error, encoding);
+	}
+
+	/**
+	 * This helper method processes a workitem. The response code of the response
+	 * object is set to 200 if case the processing was successful. In case of an
+	 * Exception a error message is generated and the status NOT_ACCEPTABLE is
+	 * returned.
+	 * <p>
+	 * The param 'uid' is optional and will be validated against the workitem data
+	 * <p>
+	 * This method is called by the POST/PUT methods.
+	 * 
+	 * @param workitem
+	 * @param uid - optional $uniqueid, will be validated. 
+	 * @return
+	 */
+	private Response processWorkitem(ItemCollection workitem,String uid) {
+
+		// test for null values
+		if (workitem == null) {
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
+		
+		// validate optional uniqueId
+		if (uid!=null && !uid.equals(workitem.getUniqueID())) {
+			logger.severe("@POST/@PUT workitem/" + uid + " : $UNIQUEID did not match, remove $uniqueid to create a new instnace!");
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
+		
+		if (uid != null && !uid.isEmpty()) {
+			// set provided uniqueid
+			workitem.replaceItemValue(WorkflowKernel.UNIQUEID, uid);
+		}
+
+		try {
+			// remove old error code and message
+			workitem.removeItem("$error_code");
+			workitem.removeItem("$error_message");
+			// now lets try to process the workitem...
+			workitem = workflowService.processWorkItem(workitem);
+
+		} catch (AccessDeniedException e) {
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (PluginException e) {
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (RuntimeException e) {
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (ModelException e) {
+			workitem = this.addErrorMessage(e, workitem);
+		}
+
+		// return workitem
+		try {
+			if (workitem.hasItem("$error_code"))
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
+						.status(Response.Status.NOT_ACCEPTABLE).build();
+			else
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem)).build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
+
 	}
 
 	/**
