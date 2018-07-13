@@ -250,17 +250,23 @@ public class MailPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * Computes the sender name. This method can be overwritten by subclasses.
+	 * Computes the sender name. A sender can be defined by the event property
+	 * 'namMailFrom' or by the system property 'mail.defaultSender'. If no sender is
+	 * defined, the method takes the current username.
+	 * 
+	 * This method can be overwritten by subclasses.
 	 * 
 	 * @param documentContext
 	 * @param documentActivity
-	 * @return String - mail subject
+	 * @return String - mail seder 
 	 */
 	public String getFrom(ItemCollection documentContext, ItemCollection documentActivity) {
 
-		String sFrom = null;
-		// test if default sender is defined
-		if (getWorkflowService().getPropertyService() != null) {
+		// test if namMailReplyToUser is defined by event
+		String sFrom = documentActivity.getItemValueString("namMailFrom");
+
+		// if no from was defined by teh event, we test if a default sender is defined
+		if (sFrom.isEmpty() && getWorkflowService().getPropertyService() != null) {
 			sFrom = (String) getWorkflowService().getPropertyService().getProperties().get("mail.defaultSender");
 		}
 		// if no default sender take the current username
@@ -518,8 +524,7 @@ public class MailPlugin extends AbstractPlugin {
 	 * The method can be overwritten by subclasses to return a different
 	 * mail-address name or lookup a mail attribute in a directory.
 	 * 
-	 * @param aAddr
-	 *            string
+	 * @param aAddr string
 	 * @return InternetAddress
 	 * @throws AddressException
 	 */
@@ -548,8 +553,7 @@ public class MailPlugin extends AbstractPlugin {
 	 * This method transforms a vector of E-Mail addresses into an InternetAddress
 	 * Array. Null values will be removed from list
 	 * 
-	 * @param String
-	 *            List of adresses
+	 * @param String List of adresses
 	 * @return array of InternetAddresses
 	 */
 	@SuppressWarnings("rawtypes")

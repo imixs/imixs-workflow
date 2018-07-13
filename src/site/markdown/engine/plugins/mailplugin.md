@@ -149,9 +149,9 @@ The following event properties are supported:
 |Name                  |Type       | Description                                   |
 |----------------------|-----------|-----------------------------------------------| 
 | txtMailSubject       | String    | Mail Subject                                  |
-| rtfMailBody          | String    | Mail Body (can be plain text or HTML          |
+| rtfMailBody          | String    | Mail Body (can be plain text or HTML)          |
 | namMailReplyToUser   | String    | Reply To address. If not set the reply address is the sender address |
-| namMailReceiver      | String (list)   | Receiver list (TO)                      |
+| namMailFrom          | String    | Sender (default is the current user)          |
 | namMailReceiver      | String (list)   | Receiver list (TO)                      |
 | namMailReceiverCC    | String (list)   | Receiver list (CC)                      |
 | namMailReceiverBCC   | String (list)   | Receiver list (BCC)                     |
