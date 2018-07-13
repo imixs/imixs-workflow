@@ -1,4 +1,4 @@
-#Imixs Fileupload
+# Imixs Fileupload
 Imixs Fileuplaod is a custom component to provide a fileUpload widget.  The component consists of the follwing parts
  
   * a MulitpartRequestFilter which is wrapping the servlet request
@@ -28,14 +28,36 @@ The FileUpload component provides a set of style classes which can be used to cu
 |.imixsfileuploadtable  | general table layout                                  |
 
 
-##The FileUploadConroller 
+## The FileUploadConroller 
 The FileUploadConroller provides methods to extract a file from a mulitpart http request. So the controller can be used in JSF pages to provide a fileUpload feature. The controller provides a build-in functionality to store the uploaded files into a ItemCollection. A client can set a target WorkItem by calling setWorkitem(). If the WorkItem contains a property "$BlobWorkitem" than the controller stores and adds files into the WorkItem referenced by this property. (The property "$BlobWorkitem" than contains then the $UniqueID of the blobWorkItem)  The list of all currently uploaded files will be stored into the property $file.
  
-  
-###Lazy loading
-In case a BlobWorkitem was defined the file content of the property $file will be empty and the files are only stored physically into the corresponding BlobWorkitem. This mechanism provides a lazy loading for file attachments. In this case the BlobWorkitem will only be loaded by the Controller if a new Attachment need to to be stored. All other information can be read from the property $File stored in the parent WorkItem. The property 'RestServiceURI' allows the fileUploadController also to provide a download url which is pointing directly to the RestService interface of the Imixs Workflow.
 
- 
 ### Ajax support
 The component can not be wrapped with an f:ajax tag because of the restriction that   ajax requests can not deal with "multipart/form-data" forms. For that reason the component imixsFileUploadFrame is provided and included into a iFrame. 
  
+ 
+### File Size
+The AjaxFileUploadServlet is a Multipart-Servlet 3.0. It is used by the imixsFileUplad widget. The widget is using a jQuery component to handle the upload of multiple files and supports drag & drop functionality.
+The servlet is configurered with a max file size to 10MB, and a max request size of 50MB.
+
+These settings can be overwritten with the following web.xml settings:
+
+
+	....
+		<!-- Fileupload servlet -->
+		<servlet>
+			<servlet-name>FileuploadServlet</servlet-name>
+			<servlet-class>org.imixs.workflow.faces.fileupload.AjaxFileUploadServlet</servlet-class>
+			<load-on-startup>0</load-on-startup>		
+			<multipart-config>
+		      <location>/tmp</location>
+		      <max-file-size>5242880</max-file-size>
+		      <max-request-size>5242880</max-request-size>
+		      <file-size-threshold>1048576</file-size-threshold>
+			</multipart-config>
+		</servlet>
+		<servlet-mapping>
+			<servlet-name>FileuploadServlet</servlet-name>
+			<url-pattern>/fileupload/*</url-pattern>
+		</servlet-mapping>
+	....

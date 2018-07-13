@@ -24,16 +24,14 @@ import org.imixs.workflow.FileData;
 /**
  * The AjaxFileUploadServlet is a Multipart-Servlet 3.0. It is used by the
  * imixsFileUplad widget. The widget is using a jQuery component to handle the
- * upload of multiple files and supports drag & drop functionality.
- * 
- * The servlet is configurered . Limit file size to 100MB, 500MB Request Size
+ * upload of multiple files and supports drag & drop functionality. The servlet
+ * is configurered with a max file size to 10MB, and a max request size of 50MB.
  * 
  * @author rsoika
  *
  */
 @WebServlet(urlPatterns = { "/fileupload/*" })
-@MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 100, maxRequestSize = 1024 * 1024 * 100
-		* 5)
+@MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 10, maxRequestSize = 1024 * 1024 * 50)
 public class AjaxFileUploadServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
@@ -268,8 +266,8 @@ public class AjaxFileUploadServlet extends HttpServlet {
 
 	/**
 	 * This method write a JSON meta data structure for uploaded files into the
-	 * httpResponse.
-	 * This structure is used by the ajax jquery file control. (see the imixs-faces.js file)
+	 * httpResponse. This structure is used by the ajax jquery file control. (see
+	 * the imixs-faces.js file)
 	 * 
 	 * 
 	 * <code>
@@ -305,9 +303,10 @@ public class AjaxFileUploadServlet extends HttpServlet {
 		if (fileUploadController != null) {
 			// check workitem... issue
 			if (fileUploadController.getWorkitem() != null) {
-				//List<FileData> fileDataList = fileUploadController.getWorkitem().getFileData();// .removeFile(filename);
+				// List<FileData> fileDataList =
+				// fileUploadController.getWorkitem().getFileData();// .removeFile(filename);
 
-				List<FileData> fileDataList=fileUploadController.getAttachedFiles();
+				List<FileData> fileDataList = fileUploadController.getAttachedFiles();
 				logger.finest("......write JSON meta data...");
 
 				String result = "{ \"files\":[";
@@ -315,7 +314,8 @@ public class AjaxFileUploadServlet extends HttpServlet {
 
 					FileData fileData = fileDataList.get(i);
 					// we construct a temp file url with the current converstion id....
-					result += "{ \"url\": \"" + context_url + fileData.getName() +"?cid="+ fileUploadController.getCID() +"\",";
+					result += "{ \"url\": \"" + context_url + fileData.getName() + "?cid="
+							+ fileUploadController.getCID() + "\",";
 					result += "\"thumbnail_url\": \"\",";
 					result += "\"name\": \"" + fileData.getName() + "\",";
 					result += "\"type\": \"" + fileData.getContentType() + "\",";
