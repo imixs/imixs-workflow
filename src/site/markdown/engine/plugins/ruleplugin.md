@@ -58,8 +58,9 @@ The script object 'event' provides all item values of the BPMN event object curr
 It is possible to change an item value of the event object to influence the behavior of the event.
 
 
-	// set keymailenabled to 1
-	event.keymailenabled='0';
+	// set mail-reply-to item...
+	var result={}; 
+	event.nammailreplytouser='test@me.com';
 	....
 
 

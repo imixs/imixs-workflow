@@ -381,7 +381,7 @@ public class TestRulePlugin {
 	}
 
 	/**
-	 * This test test if a the properties of an activity entity can be evaluated by
+	 * This test tests if a the properties of an activity entity can be evaluated by
 	 * a script
 	 * 
 	 * @throws ScriptException
@@ -406,6 +406,36 @@ public class TestRulePlugin {
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
 		Assert.assertNotNull(adocumentContext);
+
+	}
+	
+	
+	/**
+	 * This test tests if a a scipt can inject new properties into the current activity entity 
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testInjectItemIntoEventObjectByScript() throws ScriptException, PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("txtName", "Anna");
+
+		// simulate an activity
+		ItemCollection event = new ItemCollection();
+		
+		// set a business rule
+		String script = "var result={}; event.nammailreplytouser='test@me.com';";
+
+		System.out.println("Script=" + script);
+		event.replaceItemValue("txtBusinessRUle", script);
+
+		// run plugin
+		adocumentContext = rulePlugin.run(adocumentContext, event);
+		Assert.assertNotNull(adocumentContext);
+		
+		Assert.assertEquals("test@me.com", event.getItemValueString("nammailReplytoUser"));
 
 	}
 

@@ -27,7 +27,6 @@
 
 package org.imixs.workflow.engine.plugins;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -274,39 +273,27 @@ public class RulePlugin extends AbstractPlugin {
 			if (followUpActivity != null && followUpActivity > 0) {
 				adocumentActivity.replaceItemValue("keyFollowUp", "1");
 				adocumentActivity.replaceItemValue("numNextActivityID", followUpActivity);
-
 			}
 		}
 
 	}
 
 	/**
-	 * This method compares the properties of the script element 'event' with the
-	 * values of the current ActivityEntity. If a value has changed, then the method
-	 * will update the Activity ItemCollection which can be used for further
+	 * This method injects new properties provided by the script element 'event'
+	 * into the current ActivityEntity. The new value can be used for further
 	 * processing.
 	 * 
 	 * @param engine
 	 * @param event
 	 * @throws ScriptException
 	 */
-	@SuppressWarnings({ "rawtypes" })
 	private void updateEvent(RuleEngine ruleEngine, ItemCollection event) {
-
 		ItemCollection newEvent = ruleEngine.convertScriptVariableToItemCollection("event");
-
-		for (Map.Entry<String, List<Object>> entry : event.getAllItems().entrySet()) {
+		for (Map.Entry<String, List<Object>> entry : newEvent.getAllItems().entrySet()) {
 			String key = entry.getKey();
-			List<Object> value = entry.getValue();
-			if (newEvent.hasItem(key)) {
-				List newValue = newEvent.getItemValue(key);
-
-				// compare object arrays with deepEquals....
-				if (!Arrays.deepEquals(newValue.toArray(), value.toArray())) {
-					logger.finest("......update event property " + entry.getKey());
-					event.replaceItemValue(key, newValue);
-				}
-			}
+			List<Object> newValue = entry.getValue();
+			logger.finest("......update event property " + entry.getKey());
+			event.replaceItemValue(key, newValue);
 		}
 
 	}
