@@ -23,7 +23,14 @@ Example of a a Job Description:
            <item name="numblocksize"><value xsi:type="xs:int">1000</value></item> 
            <item name="numindex"><value xsi:type="xs:int">0</value></item> 
            <item name="numinterval"><value xsi:type="xs:int">1</value></item> 
+	       <item name="typelist"><value xsi:type="xs:string">workitem</value></item> 
+	       <item name="datfrom"><value xsi:type="xs:string">2018-01-01</value></item> 
+	       <item name="datto"><value xsi:type="xs:string">2018-12-31</value></item> 
 	</document>
+	
+The item 'typelist' is optional to restrict the type of documents to be updated by the job. 
+
+The items 'datfrom' and 'datto' are optional and can be used to restrict the update to a timerange of creation. 
 
 ### Rename User
 
