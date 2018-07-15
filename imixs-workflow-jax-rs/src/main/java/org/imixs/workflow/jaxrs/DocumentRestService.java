@@ -293,8 +293,7 @@ public class DocumentRestService {
 	 * DocumentService the WorkflowService method process() did this merge
 	 * automatically.
 	 * 
-	 * @param xmlworkitem
-	 *            - entity to be saved
+	 * @param xmlworkitem - entity to be saved
 	 * @return
 	 */
 	@POST
@@ -372,7 +371,7 @@ public class DocumentRestService {
 	 * 
 	 */
 	@DELETE
-	@Path("/{uniqueid}")
+	@Path("/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
 	public Response deleteEntity(@PathParam("uniqueid") String uniqueid) {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -394,8 +393,7 @@ public class DocumentRestService {
 	 * @param query
 	 * @param start
 	 * @param count
-	 * @param filepath
-	 *            - path in server filesystem
+	 * @param filepath - path in server filesystem
 	 * @return
 	 */
 	@PUT
@@ -422,8 +420,7 @@ public class DocumentRestService {
 	/**
 	 * This method restores a backup from the fileSystem
 	 * 
-	 * @param filepath
-	 *            - path in server fileSystem
+	 * @param filepath - path in server fileSystem
 	 * @return
 	 */
 	@GET
