@@ -144,7 +144,7 @@ public class AdminPService {
 	public ItemCollection createJob(ItemCollection adminp) throws AccessDeniedException {
 
 		// set default type
-		adminp.replaceItemValue("type", "job");
+		adminp.replaceItemValue("type", "adminp");
 		
 		String jobtype = adminp.getItemValueString("job");
 
