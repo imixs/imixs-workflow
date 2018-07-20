@@ -822,7 +822,7 @@ public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote 
 		// now we need to select by type, $ProcessID and by $modelVersion!
 		String sQuery = "SELECT wi FROM Entity as wi "
 				+ " JOIN wi.integerItems AS i " + " JOIN wi.textItems as t "
-				+ " WHERE wi.type='workitem' ";
+				+ " WHERE wi.type IN ('workitem','workitemarchive') ";
 		sQuery += " AND i.itemName = '$processid' AND i.itemValue = '"
 				+ iProcessID + "'"
 				+ " AND t.itemName = '$modelversion' AND t.itemValue = '"
