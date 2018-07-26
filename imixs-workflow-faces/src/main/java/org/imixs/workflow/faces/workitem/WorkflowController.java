@@ -87,8 +87,8 @@ public class WorkflowController extends DocumentController {
 	}
 
 	/**
-	 * This action method is used to initialize a new workitem with the inital
-	 * values of the assigend workflow task. The method updates the Workflow
+	 * This action method is used to initialize a new workitem with the initial
+	 * values of the assigned workflow task. The method updates the Workflow
 	 * attributes '$WriteAccess','$workflowgroup', '$workflowStatus',
 	 * 'txtWorkflowImageURL' and 'txtWorkflowEditorid'.
 	 * 
