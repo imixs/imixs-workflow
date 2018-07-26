@@ -534,6 +534,8 @@ public class ReportService {
 	 * @return
 	 */
 	private boolean isValidAttributeName(String aName) {
+		if ("$creator".equalsIgnoreCase(aName))
+			return false;
 		if ("namcreator".equalsIgnoreCase(aName))
 			return false;
 		if ("$created".equalsIgnoreCase(aName))

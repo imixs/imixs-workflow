@@ -224,12 +224,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * Returns a collection of workitems created by a specified user (namCreator).
+	 * Returns a collection of workitems created by a specified user ($Creator).
 	 * The behaivor is simmilar to the method getWorkList.
 	 * 
 	 * 
 	 * @param name
-	 *            = username for property namCreator - if null current username will
+	 *            = username for property $Creator - if null current username will
 	 *            be used
 	 * @param pageSize
 	 *            = optional page count (default 20)
@@ -256,7 +256,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		if (type != null && !"".equals(type)) {
 			searchTerm += " type:\"" + type + "\" AND ";
 		}
-		searchTerm += " namcreator:\"" + name + "\" )";
+		searchTerm += " $creator:\"" + name + "\" )";
 		try {
 			return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
 		} catch (QueryException e) {
@@ -652,7 +652,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		nameEditor = ctx.getCallerPrincipal().getName();
 
 		// add namCreator if empty
-		// migrate $creator
+		// migrate $creator (Backward compatibility)
 		if (workitem.getItemValueString("$creator").isEmpty() && !workitem.getItemValueString("namCreator").isEmpty()) {
 			workitem.replaceItemValue("$creator", workitem.getItemValue("namCreator"));
 		}

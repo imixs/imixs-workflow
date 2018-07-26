@@ -127,7 +127,7 @@ public class DocumentController implements Serializable {
 
 	/**
 	 * This method creates an empty workItem with the default type property and
-	 * the property 'namCreator' holding the current RemoteUser This method
+	 * the property '$Creator' holding the current RemoteUser This method
 	 * should be overwritten to add additional Business logic here.
 	 * 
 	 */
@@ -138,7 +138,8 @@ public class DocumentController implements Serializable {
 		FacesContext context = FacesContext.getCurrentInstance();
 		ExternalContext externalContext = context.getExternalContext();
 		String sUser = externalContext.getRemoteUser();
-		workitem.replaceItemValue("namCreator", sUser);
+		workitem.replaceItemValue("$Creator", sUser);
+		workitem.replaceItemValue("namCreator", sUser); // backward compatibility
 		logger.finest("......ItemCollection created");
 	}
 

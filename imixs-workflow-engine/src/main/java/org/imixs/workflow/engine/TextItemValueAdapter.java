@@ -35,7 +35,7 @@ public class TextItemValueAdapter {
 	 * 
 	 * <code>
 	 *   
-	 *   hello <itemvalue>namCreator</itemvalue>
+	 *   hello <itemvalue>$Creator</itemvalue>
 	 *   
 	 *   
 	 * </code>

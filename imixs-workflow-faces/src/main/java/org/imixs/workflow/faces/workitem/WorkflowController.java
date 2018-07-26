@@ -129,7 +129,8 @@ public class WorkflowController extends DocumentController {
 							+ workitem.getTaskID());
 
 		// update $WriteAccess
-		workitem.replaceItemValue("$WriteAccess", workitem.getItemValue("namCreator"));
+		workitem.replaceItemValue("$writeaccess", workitem.getItemValue("$creator"));
+		
 
 		// assign WorkflowGroup and editor
 		workitem.replaceItemValue("$workflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
