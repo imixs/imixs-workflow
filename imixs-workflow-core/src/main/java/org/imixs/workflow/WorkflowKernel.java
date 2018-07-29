@@ -90,6 +90,10 @@ public class WorkflowKernel {
 	public static final String EDITOR = "$editor";
 	public static final String LASTEDITOR = "$lasteditor";
 	
+	public static final String CREATED = "$created";
+	public static final String MODIFIED = "$modified";
+	
+	
 
 	public static final String TYPE = "type";
 

@@ -91,7 +91,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	// workitem properties
 	public static final String UNIQUEIDREF = "$uniqueidref";
 	public static final String DEFAULT_TYPE = "workitem";
-	
+
 	// view properties
 	public static final int SORT_ORDER_CREATED_DESC = 0;
 	public static final int SORT_ORDER_CREATED_ASC = 1;
@@ -224,8 +224,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * Returns a collection of workitems created by a specified user ($Creator).
-	 * The behaivor is simmilar to the method getWorkList.
+	 * Returns a collection of workitems created by a specified user ($Creator). The
+	 * behaivor is simmilar to the method getWorkList.
 	 * 
 	 * 
 	 * @param name
@@ -363,8 +363,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * Returns a collection of workitems belonging to a specified $taskID defined
-	 * by the workflow model. The behaivor is simmilar to the method getWorkList.
+	 * Returns a collection of workitems belonging to a specified $taskID defined by
+	 * the workflow model. The behaivor is simmilar to the method getWorkList.
 	 * 
 	 * @param aID
 	 *            = $taskID for the workitems to be returned.
@@ -592,13 +592,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 								+ ") no Author Access!");
 
 			// test if $taskID matches current instance
-			if (workitem.getTaskID() > 0
-					&& currentInstance.getTaskID() != workitem.getTaskID())
+			if (workitem.getTaskID() > 0 && currentInstance.getTaskID() != workitem.getTaskID())
 				throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
 						ProcessingErrorException.INVALID_PROCESSID,
 						"WorkflowService: error - $taskID (" + workitem.getTaskID()
-								+ ") did not match expected $ProcesssID ("
-								+ currentInstance.getTaskID() + ")");
+								+ ") did not match expected $ProcesssID (" + currentInstance.getTaskID() + ")");
 
 			// merge workitem into current instance (issue #86)
 			// an instance of this WorkItem still exists! so we update the new
@@ -608,7 +606,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			workitem = currentInstance;
 
 		}
-		
+
 		// verify type attribute
 		if ("".equals(workitem.getType())) {
 			workitem.replaceItemValue("type", DEFAULT_TYPE);
@@ -710,6 +708,33 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		logger.fine("...total processing time=" + (System.currentTimeMillis() - lStartTime) + "ms");
 
 		return workitem;
+	}
+
+	/**
+	 * This method processes a workItem based on a given event.
+	 * 
+	 * @see method ItemCollection processWorkItem(ItemCollection workitem)
+	 * 
+	 * @param workitem
+	 *            - the workItem to be processed
+	 * @param event
+	 *            - event object
+	 * @return updated version of the processed workItem
+	 * @throws AccessDeniedException
+	 *             - thrown if the user has insufficient access to update the
+	 *             workItem
+	 * @throws ProcessingErrorException
+	 *             - thrown if the workitem could not be processed by the
+	 *             workflowKernel
+	 * @throws PluginException
+	 *             - thrown if processing by a plugin fails
+	 * @throws ModelException
+	 **/
+	public ItemCollection processWorkItem(ItemCollection workitem, ItemCollection event)
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+
+		workitem.setEventID(event.getItemValueInteger("numactivityid"));
+		return processWorkItem(workitem);
 	}
 
 	public void removeWorkItem(ItemCollection aworkitem) throws AccessDeniedException {
@@ -820,16 +845,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		return text;
 	}
 
-	
 	/**
-	 * The method adaptTextList can be called to replace  a text with custom values. The method fires a CDI event to inform
-	 * TextAdapterServices to parse and adapt a given text fragment.
-	 * The method expects a textList result.
+	 * The method adaptTextList can be called to replace a text with custom values.
+	 * The method fires a CDI event to inform TextAdapterServices to parse and adapt
+	 * a given text fragment. The method expects a textList result.
 	 * 
 	 * @param text
 	 * @param documentContext
 	 * @return
-	 * @throws PluginException 
+	 * @throws PluginException
 	 */
 	public List<String> adaptTextList(String text, ItemCollection documentContext) throws PluginException {
 		// fire event
@@ -841,13 +865,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			logger.warning("CDI Support is missing - TextEvent wil not be fired");
 		}
 		// no result return default
-		List<String> textList=new ArrayList<String>();
+		List<String> textList = new ArrayList<String>();
 		textList.add(text);
 		return textList;
 	}
 
-	
-	
 	/**
 	 * The method evaluates the WorkflowResult for a given BPMN event and returns a
 	 * ItemColleciton containing all item definitions. Each item definition of a
@@ -965,7 +987,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 								Date dateResult = null;
 								if (sFormat == null || sFormat.isEmpty()) {
 									// use standard formate short/short
-									dateResult = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).parse(content);
+									dateResult = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+											.parse(content);
 								} else {
 									// use given formatter (see: TextItemValueAdapter)
 									DateFormat dateFormat = new SimpleDateFormat(sFormat);
