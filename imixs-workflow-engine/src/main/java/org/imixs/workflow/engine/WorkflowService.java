@@ -733,7 +733,33 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	public ItemCollection processWorkItem(ItemCollection workitem, ItemCollection event)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
-		workitem.setEventID(event.getItemValueInteger("numactivityid"));
+		return processWorkItem(workitem,event.getItemValueInteger("numactivityid"));
+	}
+	
+	/**
+	 * This method processes a workItem based on a given event.
+	 * 
+	 * @see method ItemCollection processWorkItem(ItemCollection workitem)
+	 * 
+	 * @param workitem
+	 *            - the workItem to be processed
+	 * @param event
+	 *            - event object
+	 * @return updated version of the processed workItem
+	 * @throws AccessDeniedException
+	 *             - thrown if the user has insufficient access to update the
+	 *             workItem
+	 * @throws ProcessingErrorException
+	 *             - thrown if the workitem could not be processed by the
+	 *             workflowKernel
+	 * @throws PluginException
+	 *             - thrown if processing by a plugin fails
+	 * @throws ModelException
+	 **/
+	public ItemCollection processWorkItem(ItemCollection workitem, int eventID)
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+
+		workitem.setEventID(eventID);
 		return processWorkItem(workitem);
 	}
 
