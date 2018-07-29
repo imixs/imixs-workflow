@@ -29,7 +29,7 @@ To start a new order process with the embedded mode all you have to do is to cre
 	private org.imixs.workflow.engine.WorkflowService workflowService;
 	....
 	// create a new workitem assigned to a workflow model
-	ItemCollection workitem=new ItemCollection().model("1.0.0").task(100).event(10);
+	ItemCollection workitem=new ItemCollection().model("1.0.0").task(1000).event(10);
 	// assign business data
 	workitem.replaceItemValue("_customer","M. Melman");
 	workitem.replaceItemValue("_ordernumber",20051234);
