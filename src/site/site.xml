@@ -23,7 +23,8 @@
 
 
 		<menu name="Documentation">
-			<item name="Quick Start" href="index.html" collapse="true">
+			<item name="Overview" href="index.html" collapse="true">
+				<item name="Quick Start" href="quickstart.html" />
 				<item name="Business Data" href="quickstart/workitem.html" />
 				<item name="Business Process" href="quickstart/businessprocess.html" />
 				<item name="Workflow Engine" href="quickstart/workflowengine.html" />
