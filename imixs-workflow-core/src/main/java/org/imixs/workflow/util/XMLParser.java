@@ -29,6 +29,8 @@ import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -55,18 +57,18 @@ public class XMLParser {
 	 */
 	public static Map<String, String> findAttributes(String content) {
 		Map<String, String> result = new HashMap<String, String>();
-		 Pattern p=null;
+		Pattern p = null;
 		// short version of [A-Za-z0-9\-]
-		//Pattern p = Pattern.compile("([\\w\\-]+)=\"*((?<=\")[^\"]+(?=\")|([^\\s]+))\"*");
-		//  Pattern p = Pattern.compile("([\\w\\-]+)=\"*((?<=\")[^\"]+(?=\")|([^\\s]+))\"*");
-		  
-		  
-		 // Pattern p = Pattern.compile("(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?");
-		  
-		   p = Pattern.compile("(\\S+)\\s*=\\s*[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))?[^\"']*)[\"']?");
+		// Pattern p =
+		// Pattern.compile("([\\w\\-]+)=\"*((?<=\")[^\"]+(?=\")|([^\\s]+))\"*");
+		// Pattern p =
+		// Pattern.compile("([\\w\\-]+)=\"*((?<=\")[^\"]+(?=\")|([^\\s]+))\"*");
 
-		  
-		  
+		// Pattern p =
+		// Pattern.compile("(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?");
+
+		p = Pattern.compile("(\\S+)\\s*=\\s*[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))?[^\"']*)[\"']?");
+
 		Matcher m = p.matcher(content);
 		while (m.find()) {
 			result.put(m.group(1), m.group(2));
@@ -74,8 +76,8 @@ public class XMLParser {
 		return result;
 	}
 //[\"']   [\"']
-	//   /^\s?([^=]+)\s?=\s?("([^"]+)"|\'([^\']+)\')\s?/
-	
+	// /^\s?([^=]+)\s?=\s?("([^"]+)"|\'([^\']+)\')\s?/
+
 	/**
 	 * This method parses a xml tag for a singel named attribute. The method returns
 	 * the value of the attribute found in the content string
@@ -225,8 +227,8 @@ public class XMLParser {
 					}
 				}
 
-			} catch (ParserConfigurationException | TransformerFactoryConfigurationError | TransformerException
-					| SAXException | IOException e) {
+			} catch (ParserConfigurationException | TransformerFactoryConfigurationError | SAXException
+					| IOException e) {
 				throw new PluginException(XMLParser.class.getName(), "INVALID_FORMAT",
 						"Parsing item content failed: " + e.getMessage());
 
@@ -238,12 +240,31 @@ public class XMLParser {
 	/**
 	 * This method extracts the content of a XML node and prevents inner XML tags
 	 * 
+	 * @see https://stackoverflow.com/questions/3300839/get-a-nodes-inner-xml-as-string-in-java-dom?noredirect=1#comment90136258_42456679
 	 * @param node
 	 * @return
 	 * @throws TransformerFactoryConfigurationError
 	 * @throws TransformerException
 	 */
-	private static String innerXml(Node node) throws TransformerFactoryConfigurationError, TransformerException {
+	private static String innerXml(Node node) {
+		DOMImplementationLS lsImpl = (DOMImplementationLS) node.getOwnerDocument().getImplementation().getFeature("LS",
+				"3.0");
+		LSSerializer lsSerializer = lsImpl.createLSSerializer();
+		NodeList childNodes = node.getChildNodes();
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < childNodes.getLength(); i++) {
+			sb.append(lsSerializer.writeToString(childNodes.item(i)));
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * @see https://stackoverflow.com/questions/3300839/get-a-nodes-inner-xml-as-string-in-java-dom?noredirect=1#comment90136258_42456679
+	 */
+	@SuppressWarnings("unused")
+	@Deprecated
+	private static String oldinnerXml(Node node) throws TransformerFactoryConfigurationError, TransformerException {
+		long l = System.currentTimeMillis();
 		StringWriter writer = new StringWriter();
 		String xml = null;
 		Transformer transformer;
@@ -253,6 +274,7 @@ public class XMLParser {
 		// now we remove the outer tag....
 		xml = writer.toString();
 		xml = xml.substring(xml.indexOf(">") + 1, xml.lastIndexOf("</"));
+		System.out.println(" ....time= " + (System.currentTimeMillis() - l));
 		return xml;
 	}
 
