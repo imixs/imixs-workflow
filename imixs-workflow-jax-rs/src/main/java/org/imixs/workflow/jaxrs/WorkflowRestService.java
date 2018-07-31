@@ -726,7 +726,7 @@ public class WorkflowRestService {
 	 * @return a workitem
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public final static ItemCollection parseWorkitem(InputStream requestBodyStream) {
+	public static ItemCollection parseWorkitem(InputStream requestBodyStream) {
 		Vector<String> vMultiValueFieldNames = new Vector<String>();
 		BufferedReader in = new BufferedReader(new InputStreamReader(requestBodyStream));
 		String inputLine;
