@@ -178,6 +178,11 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 			bUpgrade = true;
 		}
 		
+		if (!workitem.hasItem("$creator")) {
+			workitem.replaceItemValue("$creator", workitem.getItemValue("namcreator"));
+			bUpgrade = true;
+		}
+		
 		if (!workitem.hasItem("$taskid")) {
 			workitem.replaceItemValue("$taskid", workitem.getItemValue("$processid"));
 			bUpgrade = true;
