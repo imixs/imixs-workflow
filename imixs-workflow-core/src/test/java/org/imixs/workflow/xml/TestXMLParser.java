@@ -281,4 +281,23 @@ public class TestXMLParser {
 		}
 	}
 
+	/**
+	 * Test a special xml string containing whitespace
+	 ***/
+	@Test
+	public void testItemXMLContentWhitespace() {
+		// create test result.....
+		String activityResult = "\n" + 
+				"    <processid>2000</processid>\n" + 
+				"    <items>_subject|_parentsubject,$workflowsummary|_parentworkflowsummary</items>\n" + 
+				"    <activityid>100</activityid>";
+		try {
+			ItemCollection result = XMLParser.parseItemStructure(activityResult);
+			String s = result.getItemValueString("processid");
+			Assert.assertFalse(s.isEmpty());
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+	}
 }

@@ -254,7 +254,17 @@ public class XMLParser {
 		NodeList childNodes = node.getChildNodes();
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < childNodes.getLength(); i++) {
-			sb.append(lsSerializer.writeToString(childNodes.item(i)));
+			Node innerNode = childNodes.item(i);
+			// verify innerNode...
+			if (innerNode!=null) {
+				if (innerNode.hasChildNodes()) {
+					// lets do the stuff by the LSSerializer...
+					sb.append(lsSerializer.writeToString(innerNode));
+				} else {
+					// just write the node value...
+					sb.append(innerNode.getNodeValue());
+				}
+			}
 		}
 		return sb.toString();
 	}
