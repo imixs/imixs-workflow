@@ -108,7 +108,10 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 			if (workitem.hasItem(WorkflowKernel.MODELVERSION)) {
 				if (upgradeWorkitem(workitem)) {
 					// update workitem...
-					documentService.save(workitem);
+					// documentService.save(workitem);
+					// issue #408 - call new transaction context...
+					workitem = ctx.getBusinessObject(DocumentService.class).saveByNewTransaction(workitem);
+
 					iCount++;
 				}
 			}
@@ -177,12 +180,12 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 			workitem.replaceItemValue("$lasteditor", workitem.getItemValue("namcurrenteditor"));
 			bUpgrade = true;
 		}
-		
+
 		if (!workitem.hasItem("$creator")) {
 			workitem.replaceItemValue("$creator", workitem.getItemValue("namcreator"));
 			bUpgrade = true;
 		}
-		
+
 		if (!workitem.hasItem("$taskid")) {
 			workitem.replaceItemValue("$taskid", workitem.getItemValue("$processid"));
 			bUpgrade = true;
