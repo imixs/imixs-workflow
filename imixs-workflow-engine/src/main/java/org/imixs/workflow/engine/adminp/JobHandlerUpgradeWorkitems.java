@@ -108,10 +108,7 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 			if (workitem.hasItem(WorkflowKernel.MODELVERSION)) {
 				if (upgradeWorkitem(workitem)) {
 					// update workitem...
-					// documentService.save(workitem);
-					// issue #408 - call new transaction context...
-					workitem = ctx.getBusinessObject(DocumentService.class).saveByNewTransaction(workitem);
-
+					documentService.save(workitem);
 					iCount++;
 				}
 			}
