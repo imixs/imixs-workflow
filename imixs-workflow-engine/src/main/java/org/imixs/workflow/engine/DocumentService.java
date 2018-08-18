@@ -368,7 +368,7 @@ public class DocumentService {
 			if (!isCallerAuthor(persistedDocument) || !isCallerReader(persistedDocument)) {
 				throw new AccessDeniedException(OPERATION_NOTALLOWED, "You are not allowed to perform this operation");
 			}
-			
+
 			// test if persistedDocument is IMMUTABLE
 			if (ItemCollection.createByReference(persistedDocument.getData()).getItemValueBoolean(IMMUTABLE)) {
 				throw new AccessDeniedException(OPERATION_NOTALLOWED, "Operation not allowed, document is immutable!");
@@ -378,7 +378,8 @@ public class DocumentService {
 		}
 
 		// after all the persistedDocument is now managed through JPA!
-		logger.finest("......save - ID=" + document.getUniqueID() + " managed version=" + persistedDocument.getVersion());
+		logger.finest(
+				"......save - ID=" + document.getUniqueID() + " managed version=" + persistedDocument.getVersion());
 
 		// remove the property $isauthor
 		document.removeItem("$isauthor");
@@ -400,15 +401,16 @@ public class DocumentService {
 
 		// Finally we fire the DocumentEvent ON_DOCUMENT_SAVE
 
-		if (events!=null) {
+		if (events != null) {
 			events.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_SAVE));
 		} else {
 			logger.warning("Missing CDI support for Event<DocumentEvent> !");
 		}
 		// check consistency of $uniqueid and $created after event was processed.
-		if ( (!persistedDocument.getId().equals(document.getUniqueID()))
+		if ((!persistedDocument.getId().equals(document.getUniqueID()))
 				|| (!persistedDocument.getCreated().getTime().equals(document.getItemValueDate("$created")))) {
-			throw new InvalidAccessException(InvalidAccessException.INVALID_ID, "Invalid data after DocumentEvent 'ON_DOCUMENT_SAVE'.");
+			throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
+					"Invalid data after DocumentEvent 'ON_DOCUMENT_SAVE'.");
 		}
 
 		// Now prepare document for persisting......
@@ -466,7 +468,7 @@ public class DocumentService {
 		 */
 		persistedDocument.setPending(true);
 
-		logger.fine("...'" + document.getUniqueID() +"' saved in " + (System.currentTimeMillis() - lSaveTime) + "ms");
+		logger.fine("...'" + document.getUniqueID() + "' saved in " + (System.currentTimeMillis() - lSaveTime) + "ms");
 		// return the updated document
 		return document;
 	}
@@ -477,7 +479,7 @@ public class DocumentService {
 	 * 
 	 * To call this method a EJB session context is necessary: <code>
 	 * 		workitem= sessionContext.getBusinessObject(EntityService.class)
-						.saveNewTransaction(workitem);
+						.saveByNewTransaction(workitem);
 	 * </code>
 	 * 
 	 * @param itemcol
@@ -552,12 +554,13 @@ public class DocumentService {
 			result.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
 
 			// fire event
-			if (events!=null) {
+			if (events != null) {
 				events.fire(new DocumentEvent(result, DocumentEvent.ON_DOCUMENT_LOAD));
 			} else {
 				logger.warning("Missing CDI support for Event<DocumentEvent> !");
 			}
-			logger.fine("...'" + result.getUniqueID()+"' loaded in " + (System.currentTimeMillis() - lLoadTime) + "ms");
+			logger.fine(
+					"...'" + result.getUniqueID() + "' loaded in " + (System.currentTimeMillis() - lLoadTime) + "ms");
 			return result;
 		} else
 			return null;
@@ -782,7 +785,6 @@ public class DocumentService {
 
 	}
 
-	
 	/**
 	 * Returns all documents of by JPQL statement.
 	 * 
@@ -796,8 +798,7 @@ public class DocumentService {
 	public List<ItemCollection> getDocumentsByQuery(String query, int maxResult) {
 		return getDocumentsByQuery(query, 0, maxResult);
 	}
-	
-	
+
 	/**
 	 * Returns all documents of by JPQL statement.
 	 * 
@@ -816,7 +817,7 @@ public class DocumentService {
 		if (maxResult > 0) {
 			q.setMaxResults(maxResult);
 		}
-		
+
 		if (firstResult > 0) {
 			q.setFirstResult(firstResult);
 		}
@@ -900,7 +901,7 @@ public class DocumentService {
 
 			Collection<ItemCollection> col = find(query, JUNK_SIZE, pageIndex);
 			totalcount = totalcount + col.size();
-			logger.info("backup - processing...... "+col.size() + " documents read....");
+			logger.info("backup - processing...... " + col.size() + " documents read....");
 
 			if (col.size() < JUNK_SIZE) {
 				hasMoreData = false;
@@ -938,7 +939,8 @@ public class DocumentService {
 
 		FileInputStream fis = new FileInputStream(filePath);
 		ObjectInputStream in = new ObjectInputStream(fis);
-
+		logger.info("...starting restor form file " + filePath + "...");
+		long l = System.currentTimeMillis();
 		while (true) {
 			try {
 				// read one more object
@@ -947,25 +949,28 @@ public class DocumentService {
 				// remove the $version property!
 				itemCol.removeItem("$Version");
 				// now save imported data
-				save(itemCol);
+				// issue #407 - call new transaction context...
+				itemCol = ctx.getBusinessObject(DocumentService.class).saveByNewTransaction(itemCol);
+
 				totalcount++;
 				icount++;
 				if (icount >= JUNK_SIZE) {
 					icount = 0;
-					logger.info("[EntityService] Restored " + totalcount + " entities....");
-
+					logger.info("...restored " + totalcount + " document in " + (System.currentTimeMillis() - l)
+							+ "ms....");
+					l = System.currentTimeMillis();
 				}
 
 			} catch (java.io.EOFException eofe) {
 				break;
 			} catch (ClassNotFoundException e) {
 				errorCount++;
-				logger.warning("[EntityService] error importing workitem at position " + (totalcount + errorCount)
-						+ " Error: " + e.getMessage());
+				logger.warning("...error importing workitem at position " + (totalcount + errorCount) + " Error: "
+						+ e.getMessage());
 			} catch (AccessDeniedException e) {
 				errorCount++;
-				logger.warning("[EntityService] error importing workitem at position " + (totalcount + errorCount)
-						+ " Error: " + e.getMessage());
+				logger.warning("...error importing workitem at position " + (totalcount + errorCount) + " Error: "
+						+ e.getMessage());
 			}
 		}
 		in.close();
