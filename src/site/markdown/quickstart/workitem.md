@@ -16,8 +16,8 @@ To manage the data of a workitem, the Imixs Workflow project provides the simple
     import org.imixs.workflow.ItemCollection;
     .....
     ItemCollection workitem=new ItemCollection();
-    workitem.replaceItemValue("name","Anna");
-    workitem.replaceItemValue("age",new Integer(32));
+    workitem.setItemValue("name","Anna");
+    workitem.setItemValue("age",new Integer(32));
  
 Each item stored into a ItemCollection has a item-name and a item-value. The item-name identifies a specific part of data contained in a ItemCollection. You can access a item-value by its name:
   

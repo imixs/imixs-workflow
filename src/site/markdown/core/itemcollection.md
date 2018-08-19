@@ -6,20 +6,23 @@ Each Workitem processed by the Imixs-Workflow engine is represented by an instan
     import org.imixs.workflow.ItemCollection;
      
     ItemCollection myItemCollection=new ItemCollection;
-    myItemCollection.replaceItemValue("FirstName","Anna");
-    myItemCollection.replaceItemValue("CostCenter",new Integer(4010));
+    myItemCollection.setItemValue("FirstName","Anna");
+    myItemCollection.setItemValue("CostCenter",new Integer(4010));
     myItemCollection.appendItemValue("team","mark");
     myItemCollection.appendItemValue("team","anna");
 
-The method _replaceItemValue_ adds a new Item or replaces the value of an existing item. This code example creates a new empty ItemCollection and adds three new items. The first Item with the name "FirstName" contains a String value and the second item "CostCenter" contains an Integer value. 
+The method _setItemValue_ adds a new Item or replaces the value of an existing item. This code example creates a new empty ItemCollection and adds three new items. The first Item with the name "FirstName" contains a String value and the second item "CostCenter" contains an Integer value. 
 For the third item 'team' the  method _appendItemValue_ is used, which allows to add multiple values into one item.  
 
 ### Getter Methods
-The ItemCollection provides different methods to access items values. Some of the  methods are type-save and allow to access a value of a specific type. See the following example:
+The ItemCollection provides different methods to access items values. The  methods are type-save and allow to access a value of a specific type. See the following example:
   
     String name=myItemCollection.getItemValueString("FirstName");
     int costcenter=myItemCollection.getItemValueInteger("CostCenter");
-
+    // equals to 
+    String name=myItemCollection.getItemValue("FirstName",String.class);
+    int costcenter=myItemCollection.getItemValue("CostCenter",Integer.class);
+    
 The following table gives an overview about the getter methods:
 
 
@@ -32,6 +35,7 @@ The following table gives an overview about the getter methods:
 |getItemValueLong(name)		| Long				|
 |getItemValueBoolean(name)	| Boolean (true/false)|
 |getItemValueDate(name)		| Date Object		|
+|getItemValue(name,Class<T>)| Object of a specific type |
     
 ### Remove Attributes
 With the method removeItem an existing Item can be removed from a ItemCollection:
@@ -58,7 +62,7 @@ The value of an Item can also be a value list (multi-value). Multi-values can be
     List<String> multiValue=new ArrayList<String>();
     multiValue.add("Anna");
     multiValue.add("John");
-    myItemCollection.replaceItemValue("team", multiValue);
+    myItemCollection.setItemValue("team", multiValue);
 
 The method _appendItemValue_ creates the same list:
 
@@ -79,7 +83,7 @@ Using the ItemCollection it is possible to store not only basic data types but a
     hashMap.put( "Two", new Integer(2) );
     hashMap.put( "Three", new Integer(3) );
     // put data object into ItemCollection
-    myItemCollection.replaceItemValue("MyData", hashMap);
+    myItemCollection.setItemValue("MyData", hashMap);
     //....
    
     // read hashMap form itemCollection
@@ -88,13 +92,13 @@ Using the ItemCollection it is possible to store not only basic data types but a
 As an ItemCollection is not serializable it is not recommanded to store a ItemCollection as a value into another ItemCollection. Instead use the method getAllItems() which returns a serializable Map interface:
   
     ItemCollection teamMember=new ItemCollection();
-    teamMember.replaceItemValue("name", "Ralph");
-    teamMember.replaceItemValue("city", "munich");
+    teamMember.setItemValue("name", "Ralph");
+    teamMember.setItemValue("city", "munich");
     
     ItemCollection project=new ItemCollection();
-    project.replaceItemValue("projectname", "my first workflow project");
+    project.setItemValue("projectname", "my first workflow project");
     // get value map....
-    project.replaceItemValue("projectManager", teamMember.getAllItems());
+    project.setItemValue("projectManager", teamMember.getAllItems());
 		
 In this code example the values of the ItemCollection "teamMemer" are stored as a HashMap into the ItemCollection "project" with is mapped to the item "projectManager".
 

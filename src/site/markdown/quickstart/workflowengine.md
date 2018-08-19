@@ -17,8 +17,8 @@ and process the workitem by calling the method processWorkItem() from the Workfl
     // create a new workitem assigned to a workflow model
     ItemCollection workitem=new ItemCollection().model("1.0.0").task(100).event(10);
     // assign business data
-    workitem.replaceItemValue("_customer","M. Melman");
-    workitem.replaceItemValue("_ordernumber",20051234);
+    workitem.setItemValue("_customer","M. Melman");
+    workitem.setItemValue("_ordernumber",20051234);
     // process the workitem
     workitem = workflowService.processWorkItem(workitem);
   

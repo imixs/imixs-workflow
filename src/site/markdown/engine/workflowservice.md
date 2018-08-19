@@ -16,8 +16,8 @@ These properties are defining the workflow activity which should be processed by
 	  // create an empty workitem assigend to a model
 	  ItemCollection workitem=new ItemCollection().model("1.0.0").task(100).event(10);
 	  // assign business data
-	  workitem.replaceItemValue("_name", "M. Alex");
-	  workitem.replaceItemValue("_Titel", "My first workflow example");
+	  workitem.setItemValue("_name", "M. Alex");
+	  workitem.setItemValue("_Titel", "My first workflow example");
 			
 	  // process the workitem
 	  workitem=workflowService.processWorkItem(workitem);
