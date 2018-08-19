@@ -50,8 +50,8 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.exceptions.InvalidAccessException;
-import org.imixs.workflow.xml.XMLItem;
 import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLItem;
 
 /**
  * This Class defines a ValueObject to be used to exchange data structures used
@@ -206,6 +206,40 @@ public class ItemCollection implements Cloneable {
 			}
 			return v;
 		}
+	}
+
+	/**
+	 * Returns the resolved item value of the specified type. If the item value
+	 * contains a list of values the first resolved value of the specified type will
+	 * be returned.
+	 * <p>
+	 * If the item isn't present in the itemCollection the method returns null.
+	 * <p>
+	 * If the item contains no value with the specified type, the method returns
+	 * null.
+	 * 
+	 * @param <T>
+	 *            The item type
+	 * @param itemName
+	 *            The item Name.
+	 * @param itemType
+	 *            The type into which the resolve item value should get converted
+	 * @return the resolved item value as an object of the requested type.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T getItemValue(String itemName, Class<T> itemType) {
+
+		List<T> values = getItemValue(itemName);
+		if (values == null || values.size() == 0) {
+			return null;
+		}
+		// find first value of specified type
+		for (T firstValue : values) {
+			if (firstValue.getClass() == itemType) {
+				return  firstValue;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -603,6 +637,33 @@ public class ItemCollection implements Cloneable {
 	 *            of the old item.
 	 */
 	public void replaceItemValue(String itemName, Object itemValue) {
+		setItemValue(itemName, itemValue, false);
+	}
+
+	/**
+	 * Set the value of an item. If the ItemCollection does not contain an item with
+	 * the specified name, the method creates a new item and adds it to the
+	 * ItemCollection. The ItemName is not case sensitive. Use hasItem to verify the
+	 * existence of an item. All item names will be lower cased.
+	 * <p>
+	 * Each item can contain a list of values (multivalue item). If a single value
+	 * is provided the method creates a List with one single value (singlevalue
+	 * item).
+	 * <p>
+	 * If the value is null the method will remove the item. This is equal to the
+	 * method call removeItem()
+	 * <p>
+	 * If the ItemValue is not serializable the item will be removed.
+	 * <p>
+	 * 
+	 * @param itemName
+	 *            The name of the item or items you want to replace.
+	 * @param itemValue
+	 *            The value of the new item. The data type of the item depends upon
+	 *            the data type of value, and does not need to match the data type
+	 *            of the old item.
+	 */
+	public void setItemValue(String itemName, Object itemValue) {
 		setItemValue(itemName, itemValue, false);
 	}
 
