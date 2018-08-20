@@ -866,31 +866,31 @@ public class WorkflowKernel {
 	 */
 	private ItemCollection loadEvent(final ItemCollection documentContext) {
 		ItemCollection event = null;
-		int aProcessID = documentContext.getItemValueInteger(PROCESSID);
-		int aActivityID = documentContext.getEventID();
+		int taskID = documentContext.getTaskID();
+		int eventID = documentContext.getEventID();
 
 		// determine model version
 		String version = documentContext.getItemValueString(MODELVERSION);
 
 		try {
 			Model model = ctx.getModelManager().getModelByWorkitem(documentContext);
-			event = model.getEvent(aProcessID, aActivityID);
+			event = model.getEvent(taskID, eventID);
 		} catch (ModelException e) {
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MODEL_ERROR, e.getMessage());
 		}
 
 		if (event == null)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), ACTIVITY_NOT_FOUND,
-					"[loadEvent] model entry " + aProcessID + "." + aActivityID + " not found for model version '"
+					"[loadEvent] model entry " + taskID + "." + eventID + " not found for model version '"
 							+ version + "'");
 
-		logger.finest(".......event: " + aProcessID + "." + aActivityID + " loaded");
+		logger.finest(".......event: " + taskID + "." + eventID + " loaded");
 
 		// Check for loop in edge history
 		if (vectorEdgeHistory != null) {
-			if (vectorEdgeHistory.indexOf((aProcessID + "." + aActivityID)) != -1)
+			if (vectorEdgeHistory.indexOf((taskID + "." + eventID)) != -1)
 				throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MODEL_ERROR,
-						"[loadEvent] loop detected " + aProcessID + "." + aActivityID + ","
+						"[loadEvent] loop detected " + taskID + "." + eventID + ","
 								+ vectorEdgeHistory.toString());
 		}
 
