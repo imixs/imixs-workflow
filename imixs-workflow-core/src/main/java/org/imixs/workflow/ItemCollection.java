@@ -243,6 +243,12 @@ public class ItemCollection implements Cloneable {
 		}
 		return null;
 	}
+	
+	public <T> List<T> getItemValueList(String itemName, Class<T> itemType) {
+		// @see https://stackoverflow.com/questions/51937821/how-to-define-a-generic-list-of-types-in-java?noredirect=1#comment90825856_51937821
+		logger.warning("method getItemValueList not yet implemented!");
+		return null;
+	}
 
 	/**
 	 * Returns the resolved String value of the specified item. The method converts

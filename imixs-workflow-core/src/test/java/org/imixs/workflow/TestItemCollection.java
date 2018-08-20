@@ -855,5 +855,19 @@ public class TestItemCollection {
 		Assert.assertEquals(47.55, f, 0.01);
 
 	}
+	
+	
+	/**
+	 * Test the method getItemValueList. 
+	 */
+	@Test
+	public void testGetItemValueListType() {
+		ItemCollection itemCol = new ItemCollection();
+		itemCol.setItemValue("txtname", "hello");
+		itemCol.appendItemValue("txtname", "world");
 
+		List<String> slist = itemCol.getItemValueList("txtname", String.class);
+		
+		Assert.assertNull(slist);
+	}
 }
