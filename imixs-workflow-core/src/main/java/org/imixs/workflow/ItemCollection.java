@@ -50,8 +50,8 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.exceptions.InvalidAccessException;
-import org.imixs.workflow.xml.XMLItem;
 import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLItem;
 
 /**
  * This Class defines a ValueObject to be used to exchange data structures used
@@ -176,11 +176,11 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * returns the Value of a single Item inside the ItemCollection. If the item has
-	 * no value, this method returns an empty vector. If no item with the specified
-	 * name exists, this method returns an empty vector. It does not throw an
-	 * exception. The ItemName is not case sensitive. Use hasItem to verify the
-	 * existence of an item.
+	 * Returns the list of values of an Item. If the item has no value, this method
+	 * returns an empty List.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
 	 * 
 	 * @param aName
 	 *            The name of an item.
@@ -209,52 +209,90 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns the value of an item with a single text value. If the item has no
-	 * value or the value is numeric or non text, this method returns an empty
-	 * String. If no item with the specified name exists, this method returns an
-	 * empty String. It does not throw an exception. If the item has multiple
-	 * values, this method returns the first value. The ItemName is not case
-	 * sensitive. Use hasItem to verify the existence of an item.
+	 * Returns the resolved item value of the specified type. If the item value
+	 * contains a list of multiple values the first resolved value of the specified
+	 * type will be returned. This method did not convert the item value to the
+	 * specified type.
+	 * <p>
+	 * If the item isn't present in the itemCollection the method returns null.
+	 * <p>
+	 * If the item contains no value with the specified type, the method returns
+	 * null. The ItemName is not case sensitive. Use hasItem to verify the existence
+	 * of an item.
 	 * 
-	 * @param aName
+	 * @param <T>
+	 *            The item type
+	 * @param itemName
+	 *            The item Name.
+	 * @param itemType
+	 *            The type into which the resolve item value should get converted
+	 * @return the resolved item value as an object of the requested type.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T getItemValue(String itemName, Class<T> itemType) {
+
+		List<T> values = getItemValue(itemName);
+		if (values == null || values.size() == 0) {
+			return null;
+		}
+		// find first value of specified type
+		for (T firstValue : values) {
+			if (firstValue.getClass() == itemType) {
+				return firstValue;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Returns the resolved String value of the specified item. The method converts
+	 * the stored value to a String. If the item has no value, the method returns an
+	 * empty String. If the item has multiple values, this method returns the first
+	 * value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
+	 * 
+	 * @param itemName
 	 *            The name of an item.
-	 * @return The value of the item
+	 * @return the String value of the item
 	 * 
 	 */
-	public String getItemValueString(String aName) {
-		List<?> v = (List<?>) getItemValue(aName);
-		if (v.size() == 0)
+	public String getItemValueString(String itemName) {
+		List<?> v = (List<?>) getItemValue(itemName);
+		if (v.size() == 0) {
 			return "";
-		else {
+		} else {
 			// verify if value is null
 			Object o = v.get(0);
-			if (o == null)
+			if (o == null) {
 				return "";
-			else
-				// changed from (String)o -> o.toString()
+			} else {
 				return o.toString();
+			}
 		}
 
 	}
 
 	/**
-	 * Returns the value of an item with a single numeric value. If the item has no
-	 * value or the value is no Integer, or empty, this method returns 0. If no item
-	 * with the specified name exists, this method returns 0. It does not throw an
-	 * exception. If the item has multiple values, this method returns the first
-	 * value. The ItemName is not case sensitive. Use hasItem to verify the
-	 * existence of an item.
+	 * Returns the resolved Integer value of the specified item. The method converts
+	 * the stored value to an Integer. If the item has no value or the value is not
+	 * convertible to an Integer, the method returns 0. If the item has multiple
+	 * values, this method returns the first value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
 	 * 
-	 * @param aName
-	 * @return integer value
-	 * 
+	 * @param itemName
+	 *            The name of an item.
+	 * @return the integer value of the item
 	 */
-	public int getItemValueInteger(String aName) {
+	public int getItemValueInteger(String itemName) {
 		try {
-			List<?> v = getItemValue(aName);
-			if (v.size() == 0)
+			List<?> v = getItemValue(itemName);
+			if (v.size() == 0) {
 				return 0;
-
+			}
 			String sValue = v.get(0).toString();
 			return new Double(sValue).intValue();
 		} catch (NumberFormatException e) {
@@ -265,23 +303,24 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns the value of an item with a long value. If the item has no value or
-	 * the value is no number, or empty, this method returns 0. If no item with the
-	 * specified name exists, this method returns 0. It does not throw an exception.
-	 * If the item has multiple values, this method returns the first value. The
-	 * ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * Returns the resolved Long value of the specified item. The method converts
+	 * the stored value to long. If the item has no value or the value is not
+	 * convertible to a Long, the method returns 0. If the item has multiple values,
+	 * this method returns the first value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
 	 * item.
 	 * 
-	 * @param aName
-	 * @return integer value
-	 * 
+	 * @param itemName
+	 *            The name of an item.
+	 * @return the Long value of the item
 	 */
-	public long getItemValueLong(String aName) {
+	public long getItemValueLong(String itemName) {
 		try {
-			List<?> v = getItemValue(aName);
-			if (v.size() == 0)
+			List<?> v = getItemValue(itemName);
+			if (v.size() == 0) {
 				return 0;
-
+			}
 			String sValue = v.get(0).toString();
 			return new Long(sValue).longValue();
 		} catch (NumberFormatException e) {
@@ -292,27 +331,27 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns the value of an item with a single Date value. If the item has no
-	 * value or the value is no Date, or empty, this method returns null. If no item
-	 * with the specified name exists, this method returns null. It does not throw
-	 * an exception. If the item has multiple values, this method returns the first
-	 * value. The ItemName is not case sensitive. Use hasItem to verify the
-	 * existence of an item.
+	 * Returns the resolved Date value of the specified item. If the item has no
+	 * value or the value is not of the type Date, the method returns null. If the
+	 * item has multiple values, this method returns the first value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
 	 * 
-	 * @param aName
-	 * @return Date value
-	 * 
+	 * @param itemName
+	 *            The name of an item.
+	 * @return the Date value of the item
 	 */
 	public Date getItemValueDate(String aName) {
 		try {
 			List<?> v = getItemValue(aName);
-			if (v.size() == 0)
+			if (v.size() == 0) {
 				return null;
-
+			}
 			Object o = v.get(0);
-			if (!(o instanceof Date))
+			if (!(o instanceof Date)) {
 				return null;
-
+			}
 			return (Date) o;
 		} catch (ClassCastException e) {
 			return null;
@@ -320,19 +359,21 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns the value of an item with a single numeric value. If the item has no
-	 * value, this method returns 0.0. If no item with the specified name exists,
-	 * this method returns 0.0. It does not throw an exception. If the item has
-	 * multiple values, this method returns the first value. The Itemname is not
-	 * case sensetive. Use hasItem to verify the existence of an item.
+	 * Returns the resolved Double value of the specified item. The method converts
+	 * the stored value to double. If the item has no value or the value is not
+	 * convertible to a Double, the method returns 0.0. If the item has multiple
+	 * values, this method returns the first value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
 	 * 
-	 * @param aName
-	 * @return double value
-	 * 
+	 * @param itemName
+	 *            The name of an item.
+	 * @return the double value of the item
 	 */
-	public double getItemValueDouble(String aName) {
+	public double getItemValueDouble(String itemName) {
 		try {
-			List<?> v = getItemValue(aName);
+			List<?> v = getItemValue(itemName);
 			if (v.size() == 0)
 				return 0.0;
 			else {
@@ -363,19 +404,21 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns the value of an item with a single numeric value. If the item has no
-	 * value, this method returns 0.0. If no item with the specified name exists,
-	 * this method returns 0.0. It does not throw an exception. If the item has
-	 * multiple values, this method returns the first value. The Itemname is not
-	 * case sensetive. Use hasItem to verify the existence of an item.
+	 * Returns the resolved Float value of the specified item. The method converts
+	 * the stored value to float. If the item has no value or the value is not
+	 * convertible to a Float, the method returns 0.0. If the item has multiple
+	 * values, this method returns the first value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
 	 * 
-	 * @param aName
-	 * @return float value
-	 * 
+	 * @param itemName
+	 *            The name of an item.
+	 * @return the float value of the item
 	 */
-	public float getItemValueFloat(String aName) {
+	public float getItemValueFloat(String itemName) {
 		try {
-			List<?> v = getItemValue(aName);
+			List<?> v = getItemValue(itemName);
 			if (v.size() == 0)
 				return (float) 0.0;
 			else {
@@ -410,24 +453,25 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns the boolean value of an item. If the item has no value or the value
-	 * is no boolean, or empty, this method returns false. If no item with the
-	 * specified name exists, this method returns false. It does not throw an
-	 * exception. If the item has multiple values, this method returns the first
-	 * value. The Itemname is not case sensitive. Use hasItem to verify the
-	 * existence of an item.
+	 * Returns the resolved Boolean value of the specified item. The method converts
+	 * the stored value to Boolean. If the item has no value or the value is not
+	 * convertible to a Boolean, the method returns false. If the item has multiple
+	 * values, this method returns the first value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
 	 * 
-	 * @param aName
-	 * @return boolean value
-	 * 
+	 * @param itemName
+	 *            The name of an item.
+	 * @return the boolean value of the item
 	 */
-	public boolean getItemValueBoolean(String aName) {
+	public boolean getItemValueBoolean(String itemName) {
 		try {
-			List<?> v = getItemValue(aName);
-			if (v.size() == 0)
+			List<?> v = getItemValue(itemName);
+			if (v.size() == 0) {
 				return false;
-			Object sValue = v.get(0);// .firstElement().toString();
-			// return new Boolean(sValue).booleanValue();
+			}
+			Object sValue = v.get(0);
 			return Boolean.valueOf(sValue.toString());
 		} catch (ClassCastException e) {
 			return false;
@@ -603,6 +647,33 @@ public class ItemCollection implements Cloneable {
 	 *            of the old item.
 	 */
 	public void replaceItemValue(String itemName, Object itemValue) {
+		setItemValue(itemName, itemValue, false);
+	}
+
+	/**
+	 * Set the value of an item. If the ItemCollection does not contain an item with
+	 * the specified name, the method creates a new item and adds it to the
+	 * ItemCollection. The ItemName is not case sensitive. Use hasItem to verify the
+	 * existence of an item. All item names will be lower cased.
+	 * <p>
+	 * Each item can contain a list of values (multivalue item). If a single value
+	 * is provided the method creates a List with one single value (singlevalue
+	 * item).
+	 * <p>
+	 * If the value is null the method will remove the item. This is equal to the
+	 * method call removeItem()
+	 * <p>
+	 * If the ItemValue is not serializable the item will be removed.
+	 * <p>
+	 * 
+	 * @param itemName
+	 *            The name of the item or items you want to replace.
+	 * @param itemValue
+	 *            The value of the new item. The data type of the item depends upon
+	 *            the data type of value, and does not need to match the data type
+	 *            of the old item.
+	 */
+	public void setItemValue(String itemName, Object itemValue) {
 		setItemValue(itemName, itemValue, false);
 	}
 

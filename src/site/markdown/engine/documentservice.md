@@ -14,9 +14,9 @@ The following example shows how an instance of an ItemCollection can be saved us
 	  //...
 	
 	  ItemCollection myDocument=new ItemCollection;
-	  myDocument.replaceItemValue("type","product");
-	  myDocument.replaceItemValue("name","coffee");
-	  myDocument.replaceItemValue("weight",new Integer(500));
+	  myDocument.setItemValue("type","product");
+	  myDocument.setItemValue("name","coffee");
+	  myDocument.setItemValue("weight",new Integer(500));
 	  	
 	  // save ItemCollection
 	  myDocument=documentService.save(myDocument);
@@ -42,7 +42,7 @@ A document is categorized by the item 'type'. The type attribute can be used to 
 
 
 	  ItemCollection myDocument=new ItemCollection;
-	  myDocument.replaceItemValue("type","product");
+	  myDocument.settemValue("type","product");
 	  ....
 	  // save ItemCollection
 	  myDocument=documentService.save(myDocument);
@@ -145,14 +145,14 @@ Additional the _DocumentService_ allows to restrict the read- and write access f
 	  //...
 	
 	  ItemCollection myDocument=new ItemCollection;
-	  myDocument.replaceItemValue("type","product");
-	  myDocument.replaceItemValue("name","coffee");
-	  myDocument.replaceItemValue("weight",new Integer(500));
+	  myDocument.setItemValue("type","product");
+	  myDocument.setItemValue("name","coffee");
+	  myDocument.setItemValue("weight",new Integer(500));
 	  
 	  // restrict read access to 'bob'
-	  myDocument.replaceItemValue("$readaccess","bob");
+	  myDocument.setItemValue("$readaccess","bob");
 	  // restrict write access to 'anna'
-	  myDocument.replaceItemValue("$readaccess","anna");
+	  myDocument.setItemValue("$readaccess","anna");
 	  	
 	  // save ItemCollection
 	  myDocument=documentService.save(myDocument);

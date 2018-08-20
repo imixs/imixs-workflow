@@ -477,8 +477,7 @@ public class TestItemCollection {
 		Assert.assertEquals(0, l2.size());
 
 	}
-	
-	
+
 	@Test
 	@Category(org.imixs.workflow.ItemCollection.class)
 	public void testItemCollectionItemNameList() {
@@ -486,16 +485,15 @@ public class TestItemCollection {
 		itemCollection.replaceItemValue("_subject", "Hello");
 		itemCollection.replaceItemValue("_dummy", "Hello");
 		itemCollection.replaceItemValue("_title", "Hello");
-		
-		List<String> itemNames=itemCollection.getItemNames();
-		Assert.assertEquals(3,itemNames.size());
-		
-		itemCollection.removeItem("_dummy");
-		itemNames=itemCollection.getItemNames();
-		Assert.assertEquals(2,itemNames.size());
-		
-	}
 
+		List<String> itemNames = itemCollection.getItemNames();
+		Assert.assertEquals(3, itemNames.size());
+
+		itemCollection.removeItem("_dummy");
+		itemNames = itemCollection.getItemNames();
+		Assert.assertEquals(2, itemNames.size());
+
+	}
 
 	/**
 	 * This method verifies the clone interface
@@ -804,6 +802,58 @@ public class TestItemCollection {
 		Assert.assertEquals(44, itemColSource.getProcessID());
 		// !!!
 		Assert.assertEquals(0, itemColSource.getItemValueInteger("$processid"));
+	}
+
+	/**
+	 * Test the methods setItemValue and getItemValue
+	 */
+	@Test
+	public void testGetItemValueType() {
+
+		ItemCollection itemCol = new ItemCollection();
+		itemCol.setItemValue("txtname", "hello");
+		itemCol.setItemValue("numage", 7);
+
+		String s = itemCol.getItemValue("txtname", String.class);
+		Assert.assertEquals("hello", s);
+
+		int i = itemCol.getItemValue("numage", Integer.class);
+
+		Assert.assertEquals(7, i);
+
+		// test non existing value
+		s = itemCol.getItemValue("txtname2", String.class);
+		if (s != null) {
+			Assert.fail();
+		}
+		Assert.assertNull(s);
+
+	}
+
+	/**
+	 * Test the methods setItemValue and getItemValue. The method tests a mixed
+	 * value list
+	 */
+	@Test
+	public void testGetItemValueTypeMixedValues() {
+
+		ItemCollection itemCol = new ItemCollection();
+		itemCol.setItemValue("txtname", 7);
+		itemCol.appendItemValue("txtname", "hello");
+		itemCol.appendItemValue("txtname", new Float(47.55));
+
+		// test first string value....
+		String s = itemCol.getItemValue("txtname", String.class);
+		Assert.assertEquals("hello", s);
+
+		// test first int value
+		int i = itemCol.getItemValue("txtname", Integer.class);
+		Assert.assertEquals(7, i);
+
+		// test first Float value
+		float f = itemCol.getItemValue("txtname", Float.class);
+		Assert.assertEquals(47.55, f, 0.01);
+
 	}
 
 }
