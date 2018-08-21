@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.exceptions.InvalidAccessException;
@@ -95,8 +94,7 @@ public class ItemCollection implements Cloneable {
 	/**
 	 * Creates a new ItemCollection and makes a deep copy from a given value Map
 	 * 
-	 * @param map
-	 *            - with item values
+	 * @param map - with item values
 	 */
 	public ItemCollection(Map<String, List<Object>> map) {
 		super();
@@ -107,8 +105,7 @@ public class ItemCollection implements Cloneable {
 	 * Creates a new ItemCollection and makes a deep copy from a given
 	 * ItemCollection
 	 * 
-	 * @param itemCol
-	 *            - ItemCollection with values
+	 * @param itemCol - ItemCollection with values
 	 */
 	public ItemCollection(ItemCollection itemCol) {
 		super();
@@ -122,8 +119,7 @@ public class ItemCollection implements Cloneable {
 	 * all other cases, the constructor method 'ItemCollection(Map<String,
 	 * List<Object>> map)' should be used.
 	 * 
-	 * @param map
-	 *            - reference with item values
+	 * @param map - reference with item values
 	 */
 	public static ItemCollection createByReference(final Map<String, List<Object>> map) {
 		ItemCollection reference = new ItemCollection();
@@ -146,8 +142,7 @@ public class ItemCollection implements Cloneable {
 	 * method makes a deep copy of the current instance and removes items not
 	 * defined by the list of itemNames.
 	 * 
-	 * @param itemNames
-	 *            - list of properties to be copied into the clone
+	 * @param itemNames - list of properties to be copied into the clone
 	 * @return new ItemCollection
 	 */
 	@SuppressWarnings("unchecked")
@@ -177,35 +172,88 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns the list of values of an Item. If the item has no value, this method
-	 * returns an empty List.
+	 * Set the value of an item. If the ItemCollection does not contain an item with
+	 * the specified name, the method creates a new item and adds it to the
+	 * ItemCollection. The ItemName is not case sensitive. Use hasItem to verify the
+	 * existence of an item. All item names will be lower cased.
+	 * <p>
+	 * Each item can contain a list of values (multivalue item). If a single value
+	 * is provided the method creates a List with one single value (singlevalue
+	 * item).
+	 * <p>
+	 * If the value is null the method will remove the item. This is equal to the
+	 * method call removeItem()
+	 * <p>
+	 * If the ItemValue is not serializable the item will be removed.
+	 * <p>
+	 * 
+	 * @param itemName  The name of the item or items you want to replace.
+	 * @param itemValue The value of the new item. The data type of the item depends
+	 *                  upon the data type of value, and does not need to match the
+	 *                  data type of the old item.
+	 */
+
+	public ItemCollection setItemValue(String itemName, Object itemValue) {
+		setItemValue(itemName, itemValue, false);
+		return this;
+	}
+
+	/**
+	 * Appends a value to an existing item. If the ItemCollection does not contain
+	 * an item with the specified name, the method creates a new item and adds it to
+	 * the ItemCollection. The ItemName is not case sensitive. Use hasItem to verify
+	 * the existence of an item. All item names will be lower cased.
+	 * 
+	 * If a value list is provided the method appends each single value.
+	 * 
+	 * If the value is null the method will remove the item. This is equal to the
+	 * method call removeItem()
+	 * 
+	 * If the ItemValue is not serializable the item will be removed.
+	 * 
+	 * 
+	 * @param itemName  The name of the item or items you want to replace.
+	 * @param itemValue The value of the new item. The data type of the item depends
+	 *                  upon the data type of value, and does not need to match the
+	 *                  data type of the old item.
+	 */
+	public ItemCollection appendItemValue(String itemName, Object itemValue) {
+		setItemValue(itemName, itemValue, true);
+		return this;
+	}
+
+	/**
+	 * Returns the value list for the specified Item. The returned list is untyped
+	 * and the values contained in the list are not converted to a specific type.
+	 * The values have the same object type as set by calling the method
+	 * <code>setItemValue(String itemName, Object itemValue)</code>. To get a typed
+	 * value list, see the method
+	 * <code>getItemValue(String itemName, Class<T> itemType)</code> .
+	 * 
+	 * <p>
+	 * If the item does not exist or has no values, the method returns an empty
+	 * List.
 	 * <p>
 	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
 	 * item.
 	 * 
-	 * @param aName
-	 *            The name of an item.
-	 * @return The value or values contained in the item. The data type of the value
-	 *         depends on the data type of the item.
+	 * @param itemName The name of an item.
+	 * @return an untyped list of values contained by the item.
 	 * 
 	 */
 	@SuppressWarnings("rawtypes")
-	public List getItemValue(String aName) {
-		if (aName == null) {
+	public List getItemValue(String itemName) {
+		if (itemName == null) {
 			return null;
 		}
-		aName = aName.toLowerCase().trim();
-		List<Object> o = hash.get(aName);
+		itemName = itemName.toLowerCase().trim();
+		List<?> o = hash.get(itemName);
 		if (o == null)
-			return new Vector<Object>();
+			return new ArrayList<>();
 		else {
-			List<Object> v = o;
-			// scan vector for null values
-			for (int i = 0; i < v.size(); i++) {
-				if (v.get(i) == null)
-					v.remove(i);
-			}
-			return v;
+			// remove null values
+			o.removeAll(Collections.singleton(null));
+			return o;
 		}
 	}
 
@@ -220,334 +268,62 @@ public class ItemCollection implements Cloneable {
 	 * null. The ItemName is not case sensitive. Use hasItem to verify the existence
 	 * of an item.
 	 * 
-	 * @param <T>
-	 *            The item type
-	 * @param itemName
-	 *            The item Name.
-	 * @param itemType
-	 *            The type into which the resolve item value should get converted
+	 * @param itemName The item Name.
+	 * @param itemType The type into which the resolve item value should get
+	 *                 converted
 	 * @return the resolved item value as an object of the requested type.
 	 */
-	@SuppressWarnings("unchecked")
-	//public <T> T getItemValue(String itemName, Type itemType) {
-	public <T> T getItemValue(String itemName, Class<T> itemType)  {
-	
-		List<T> values = getItemValue(itemName);
+	public <T> T getItemValue(String itemName, Class<T> itemType) {
+		List<?> values = getItemValue(itemName);
 		if (values == null || values.size() == 0) {
 			return null;
 		}
-
 		// find first value of specified type
 		return convertValue(values.get(0), itemType);
 	}
 
 	/**
-	 * This method converts the raw java types String, int, long, float and double.
+	 * Returns the resolved list of item values of the specified type. The method
+	 * converts the values of the list to the specified type if possible.
+	 * <p>
+	 * If the item isn't present in the itemCollection the method returns an empty
+	 * list.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
 	 * 
-	 * The method returns null if the type is no raw type. 
-	 * 
-	 * @param value
-	 * @param type
-	 * @return
+	 * @param itemName The item Name.
+	 * @param itemType The type into which the resolved item values should get
+	 *                 converted
+	 * @return the resolved list of item values of the requested type.
 	 */
+
 	@SuppressWarnings("unchecked")
-	private <T> T convertValue(Object value, Type type) {
-
-		// test String
-		if (type == String.class) {
-			if (value == null) {
-				// return empty if not present
-				return (T) "";
-			} else {
-				return (T) value.toString();
-			}
-		}
-
-		// test  Integer/int
-		if (type == Integer.class || type == int.class) {
-			try {
-				if (value == null) {
-					// return 0 if not present
-					return (T) Integer.valueOf(0);
-				}
-				int intvalue = new Double(value.toString()).intValue();
-				return (T) Integer.valueOf(intvalue);
-			} catch (NumberFormatException e) {
-				return (T) Integer.valueOf(0);
-			} catch (ClassCastException e) {
-				return (T) Integer.valueOf(0);
-			}
-		}
-		
-		// test  Long/long
-		if (type == Long.class || type == long.class) {
-			try {
-				if (value == null) {
-					// return 0 if not present
-					return (T) Long.valueOf(0);
-				}
-				long longvalue = new Long(value.toString()).longValue();
-				return (T) Long.valueOf(longvalue);
-			} catch (NumberFormatException e) {
-				return (T) Long.valueOf(0);
-			} catch (ClassCastException e) {
-				return (T) Long.valueOf(0);
-			}
-		}
-		
-		
-		
-
-		return null;
-	}
-	
-	
 	public <T> List<T> getItemValueList(String itemName, Class<T> itemType) {
-		// @see
+		List<?> values = getItemValue(itemName);
+		// convert values...
+		values.replaceAll(s -> convertValue(s, itemType));
+		return (List<T>) values;
+		// @see details here:
 		// https://stackoverflow.com/questions/51937821/how-to-define-a-generic-list-of-types-in-java?noredirect=1#comment90825856_51937821
-		logger.warning("method getItemValueList not yet implemented!");
-		return null;
 	}
 
 	/**
-	 * Returns the resolved String value of the specified item. The method converts
-	 * the stored value to a String. If the item has no value, the method returns an
-	 * empty String. If the item has multiple values, this method returns the first
-	 * value.
-	 * <p>
-	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
-	 * item.
+	 * removes a attribute from the item collection
 	 * 
-	 * @param itemName
-	 *            The name of an item.
-	 * @return the String value of the item
-	 * 
+	 * @param name
 	 */
-	public String getItemValueString(String itemName) {
-		List<?> v = (List<?>) getItemValue(itemName);
-		if (v.size() == 0) {
-			return "";
-		} else {
-			// verify if value is null
-			Object o = v.get(0);
-			if (o == null) {
-				return "";
-			} else {
-				return o.toString();
-			}
-		}
-
-	}
-
-	/**
-	 * Returns the resolved Integer value of the specified item. The method converts
-	 * the stored value to an Integer. If the item has no value or the value is not
-	 * convertible to an Integer, the method returns 0. If the item has multiple
-	 * values, this method returns the first value.
-	 * <p>
-	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
-	 * item.
-	 * 
-	 * @param itemName
-	 *            The name of an item.
-	 * @return the integer value of the item
-	 */
-	public int getItemValueInteger(String itemName) {
-		try {
-			List<?> v = getItemValue(itemName);
-			if (v.size() == 0) {
-				return 0;
-			}
-			String sValue = v.get(0).toString();
-			return new Double(sValue).intValue();
-		} catch (NumberFormatException e) {
-			return 0;
-		} catch (ClassCastException e) {
-			return 0;
-		}
-	}
-
-	/**
-	 * Returns the resolved Long value of the specified item. The method converts
-	 * the stored value to long. If the item has no value or the value is not
-	 * convertible to a Long, the method returns 0. If the item has multiple values,
-	 * this method returns the first value.
-	 * <p>
-	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
-	 * item.
-	 * 
-	 * @param itemName
-	 *            The name of an item.
-	 * @return the Long value of the item
-	 */
-	public long getItemValueLong(String itemName) {
-		try {
-			List<?> v = getItemValue(itemName);
-			if (v.size() == 0) {
-				return 0;
-			}
-			String sValue = v.get(0).toString();
-			return new Long(sValue).longValue();
-		} catch (NumberFormatException e) {
-			return 0;
-		} catch (ClassCastException e) {
-			return 0;
-		}
-	}
-
-	/**
-	 * Returns the resolved Date value of the specified item. If the item has no
-	 * value or the value is not of the type Date, the method returns null. If the
-	 * item has multiple values, this method returns the first value.
-	 * <p>
-	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
-	 * item.
-	 * 
-	 * @param itemName
-	 *            The name of an item.
-	 * @return the Date value of the item
-	 */
-	public Date getItemValueDate(String aName) {
-		try {
-			List<?> v = getItemValue(aName);
-			if (v.size() == 0) {
-				return null;
-			}
-			Object o = v.get(0);
-			if (!(o instanceof Date)) {
-				return null;
-			}
-			return (Date) o;
-		} catch (ClassCastException e) {
-			return null;
-		}
-	}
-
-	/**
-	 * Returns the resolved Double value of the specified item. The method converts
-	 * the stored value to double. If the item has no value or the value is not
-	 * convertible to a Double, the method returns 0.0. If the item has multiple
-	 * values, this method returns the first value.
-	 * <p>
-	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
-	 * item.
-	 * 
-	 * @param itemName
-	 *            The name of an item.
-	 * @return the double value of the item
-	 */
-	public double getItemValueDouble(String itemName) {
-		try {
-			List<?> v = getItemValue(itemName);
-			if (v.size() == 0)
-				return 0.0;
-			else {
-				// test for object type...
-				Object o = v.get(0);
-				if (o instanceof Double)
-					return (Double) o;
-
-				if (o instanceof Float)
-					return (Float) o;
-
-				if (o instanceof Long)
-					return (Long) o;
-
-				if (o instanceof Integer)
-					return (Integer) o;
-
-				// try to parse string.....
-				try {
-					return Double.valueOf(v.get(0).toString());
-				} catch (ClassCastException e) {
-					return 0;
-				}
-			}
-		} catch (ClassCastException e) {
-			return 0.0;
-		}
-	}
-
-	/**
-	 * Returns the resolved Float value of the specified item. The method converts
-	 * the stored value to float. If the item has no value or the value is not
-	 * convertible to a Float, the method returns 0.0. If the item has multiple
-	 * values, this method returns the first value.
-	 * <p>
-	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
-	 * item.
-	 * 
-	 * @param itemName
-	 *            The name of an item.
-	 * @return the float value of the item
-	 */
-	public float getItemValueFloat(String itemName) {
-		try {
-			List<?> v = getItemValue(itemName);
-			if (v.size() == 0)
-				return (float) 0.0;
-			else {
-				// test for object type...
-				Object o = v.get(0);
-
-				if (o instanceof Float)
-					return (Float) o;
-
-				if (o instanceof Double) {
-					Double d = (Double) o;
-					return (float) d.doubleValue();
-				}
-
-				if (o instanceof Long)
-					return (Long) o;
-
-				if (o instanceof Integer)
-					return (Integer) o;
-
-				// try to parse string.....
-				try {
-					return Float.valueOf(v.get(0).toString());
-				} catch (ClassCastException e) {
-					return 0;
-				}
-
-			}
-		} catch (ClassCastException e) {
-			return (float) 0.0;
-		}
-	}
-
-	/**
-	 * Returns the resolved Boolean value of the specified item. The method converts
-	 * the stored value to Boolean. If the item has no value or the value is not
-	 * convertible to a Boolean, the method returns false. If the item has multiple
-	 * values, this method returns the first value.
-	 * <p>
-	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
-	 * item.
-	 * 
-	 * @param itemName
-	 *            The name of an item.
-	 * @return the boolean value of the item
-	 */
-	public boolean getItemValueBoolean(String itemName) {
-		try {
-			List<?> v = getItemValue(itemName);
-			if (v.size() == 0) {
-				return false;
-			}
-			Object sValue = v.get(0);
-			return Boolean.valueOf(sValue.toString());
-		} catch (ClassCastException e) {
-			return false;
+	public void removeItem(String name) {
+		if (name != null) {
+			name = name.toLowerCase().trim();
+			this.hash.remove(name);
 		}
 	}
 
 	/**
 	 * Indicates whether an item exists in the document.
 	 * 
-	 * @param aName
-	 *            The name of an item.
+	 * @param aName The name of an item.
 	 * @return true if an item with name exists in the document, false if no item
 	 *         with name exists in the document
 	 * 
@@ -693,250 +469,253 @@ public class ItemCollection implements Cloneable {
 	 * with the specified name, the method creates a new item and adds it to the
 	 * ItemCollection. The ItemName is not case sensitive. Use hasItem to verify the
 	 * existence of an item. All item names will be lower cased.
-	 * 
+	 * <p>
 	 * Each item can contain a list of values (multivalue item). If a single value
 	 * is provided the method creates a List with one single value (singlevalue
 	 * item).
-	 * 
+	 * <p>
 	 * If the value is null the method will remove the item. This is equal to the
 	 * method call removeItem()
+	 * <p>
+	 * If the ItemValue is not serializable the item will be removed. This method is
+	 * deprecated and should be replaced by the method setItemvValue.
 	 * 
-	 * If the ItemValue is not serializable the item will be removed.
-	 * 
-	 * 
-	 * @param itemName
-	 *            The name of the item or items you want to replace.
-	 * @param itemValue
-	 *            The value of the new item. The data type of the item depends upon
-	 *            the data type of value, and does not need to match the data type
-	 *            of the old item.
+	 * @see method setItemValue.
+	 * @param itemName  The name of the item or items you want to replace.
+	 * @param itemValue The value of the new item. The data type of the item depends
+	 *                  upon the data type of value, and does not need to match the
+	 *                  data type of the old item.
 	 */
 	public void replaceItemValue(String itemName, Object itemValue) {
 		setItemValue(itemName, itemValue, false);
+
 	}
 
 	/**
-	 * Set the value of an item. If the ItemCollection does not contain an item with
-	 * the specified name, the method creates a new item and adds it to the
-	 * ItemCollection. The ItemName is not case sensitive. Use hasItem to verify the
-	 * existence of an item. All item names will be lower cased.
+	 * Returns the resolved String value of the specified item. The method converts
+	 * the stored value to a String. If the item has no value, the method returns an
+	 * empty String. If the item has multiple values, this method returns the first
+	 * value.
 	 * <p>
-	 * Each item can contain a list of values (multivalue item). If a single value
-	 * is provided the method creates a List with one single value (singlevalue
-	 * item).
-	 * <p>
-	 * If the value is null the method will remove the item. This is equal to the
-	 * method call removeItem()
-	 * <p>
-	 * If the ItemValue is not serializable the item will be removed.
-	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
 	 * 
-	 * @param itemName
-	 *            The name of the item or items you want to replace.
-	 * @param itemValue
-	 *            The value of the new item. The data type of the item depends upon
-	 *            the data type of value, and does not need to match the data type
-	 *            of the old item.
+	 * @param itemName The name of an item.
+	 * @return the String value of the item
+	 * 
 	 */
-
-	public ItemCollection setItemValue(String itemName, Object itemValue) {
-		setItemValue(itemName, itemValue, false);
-		return this;
-	}
-
-	/**
-	 * Appends a value to an existing item. If the ItemCollection does not contain
-	 * an item with the specified name, the method creates a new item and adds it to
-	 * the ItemCollection. The ItemName is not case sensitive. Use hasItem to verify
-	 * the existence of an item. All item names will be lower cased.
-	 * 
-	 * If a value list is provided the method appends each single value.
-	 * 
-	 * If the value is null the method will remove the item. This is equal to the
-	 * method call removeItem()
-	 * 
-	 * If the ItemValue is not serializable the item will be removed.
-	 * 
-	 * 
-	 * @param itemName
-	 *            The name of the item or items you want to replace.
-	 * @param itemValue
-	 *            The value of the new item. The data type of the item depends upon
-	 *            the data type of value, and does not need to match the data type
-	 *            of the old item.
-	 */
-	public ItemCollection appendItemValue(String itemName, Object itemValue) {
-		setItemValue(itemName, itemValue, true);
-		return this;
-	}
-
-	/**
-	 * Helper method to replace an ItemValue.
-	 * 
-	 * @param itemName
-	 *            - name of the value
-	 * @param itemValue
-	 *            - value
-	 * @param append
-	 *            - true if the value should be appended to an existing list
-	 */
-	@SuppressWarnings("unchecked")
-	private void setItemValue(String itemName, Object itemValue, boolean append) {
-		List<Object> itemValueList = null;
-
-		if (itemName == null)
-			return;
-		// lower case itemname
-		itemName = itemName.toLowerCase().trim();
-
-		// test if value is null
-		if (itemValue == null) {
-			// remove the item
-			this.removeItem(itemName);
-			return;
-		}
-
-		// test if value is ItemCollection
-		if (itemValue instanceof ItemCollection) {
-			// just warn - do not remove
-			logger.warning("replaceItemValue '" + itemName
-					+ "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
-		}
-
-		// test if value is serializable
-		if (!(itemValue instanceof java.io.Serializable)) {
-			logger.warning("replaceItemValue '" + itemName + "': object is not serializable!");
-			this.removeItem(itemName);
-			return;
-		}
-
-		// test if value is a list and remove null values
-		if (itemValue instanceof List) {
-			itemValueList = (List<Object>) itemValue;
-			itemValueList.removeAll(Collections.singleton(null));
-			// scan List for null values and remove them
-			for (int i = 0; i < itemValueList.size(); i++) {
-				// test if ItemCollection
-				if (itemValueList.get(i) instanceof ItemCollection) {
-					// just warn - do not remove
-					logger.warning("replaceItemValue '" + itemName
-							+ "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
-				}
-			}
+	public String getItemValueString(String itemName) {
+		List<?> v = (List<?>) getItemValue(itemName);
+		if (v.size() == 0) {
+			return "";
 		} else {
-			// create an instance of Vector
-			itemValueList = new Vector<Object>();
-			itemValueList.add(itemValue);
+			// verify if value is null
+			Object o = v.get(0);
+			if (o == null) {
+				return "";
+			} else {
+				return o.toString();
+			}
 		}
-
-		// now itemValue is of instance List
-		if (!validateItemValue(itemValueList)) {
-			String message = "setItemValue failed for item '" + itemName
-					+ "', the value is a non supported object type: " + itemValueList;
-			logger.warning(message);
-			throw new InvalidAccessException(message);
-		}
-
-		// replace item value?
-		if (append) {
-			// append item value
-			List<Object> oldValueList = (List<Object>) getItemValue(itemName);
-
-			oldValueList.addAll(itemValueList);
-
-			hash.put(itemName, (List<Object>) oldValueList);
-		} else
-			hash.put(itemName, itemValueList);
 
 	}
 
 	/**
-	 * This method validates of a itemValue is acceptable for the ItemCollection.
-	 * Only basic types are supported.
+	 * Returns the resolved Integer value of the specified item. The method converts
+	 * the stored value to an Integer. If the item has no value or the value is not
+	 * convertible to an Integer, the method returns 0. If the item has multiple
+	 * values, this method returns the first value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
 	 * 
-	 * @param itemValue
-	 * @return
+	 * @param itemName The name of an item.
+	 * @return the integer value of the item
 	 */
-	@SuppressWarnings("rawtypes")
-	private boolean validateItemValue(Object itemValue) {
-
-		// convert Calendar instance into Date! issue #52
-		if (itemValue instanceof Calendar) {
-			itemValue = ((Calendar) itemValue).getTime();
-		}
-
-		// first we test if basic type?
-		if (isBasicType(itemValue)) {
-			return true;
-		}
-
-		// list?
-		if ((itemValue instanceof List)) {
-			for (Object singleValue : (List) itemValue) {
-				if (!validateItemValue(singleValue)) {
-					return false;
-				}
+	public int getItemValueInteger(String itemName) {
+		try {
+			List<?> v = getItemValue(itemName);
+			if (v.size() == 0) {
+				return 0;
 			}
-			return true;
-		} else
-
-		// array?
-		if (itemValue != null && itemValue.getClass().isArray()) {
-			for (int i = 0; i < Array.getLength(itemValue); i++) {
-				Object singleValue = Array.get(itemValue, i);
-				if (!validateItemValue(singleValue)) {
-					return false;
-				}
-			}
-			return true;
-		} else
-
-		// map?
-		if ((itemValue instanceof Map)) {
-			Map map = (Map) itemValue;
-			for (Object value : map.values()) {
-				if (!validateItemValue(value)) {
-					return false;
-				}
-			}
-			return true;
+			String sValue = v.get(0).toString();
+			return new Double(sValue).intValue();
+		} catch (NumberFormatException e) {
+			return 0;
+		} catch (ClassCastException e) {
+			return 0;
 		}
-
-		// unknown type
-		return false;
 	}
 
 	/**
-	 * This helper method test if an object is a basic type which can be stored in
-	 * an ItemCollection.
+	 * Returns the resolved Long value of the specified item. The method converts
+	 * the stored value to long. If the item has no value or the value is not
+	 * convertible to a Long, the method returns 0. If the item has multiple values,
+	 * this method returns the first value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
 	 * 
-	 * Validate for raw objects and class types java.lang.*, java.math.*
-	 * 
-	 * @return
+	 * @param itemName The name of an item.
+	 * @return the Long value of the item
 	 */
-	@SuppressWarnings("rawtypes")
-	private static boolean isBasicType(java.lang.Object o) {
-
-		if (o == null) {
-			return true;
+	public long getItemValueLong(String itemName) {
+		try {
+			List<?> v = getItemValue(itemName);
+			if (v.size() == 0) {
+				return 0;
+			}
+			String sValue = v.get(0).toString();
+			return new Long(sValue).longValue();
+		} catch (NumberFormatException e) {
+			return 0;
+		} catch (ClassCastException e) {
+			return 0;
 		}
-		// test raw array types first
-		if (o instanceof byte[] || o instanceof boolean[] || o instanceof short[] || o instanceof char[]
-				|| o instanceof int[] || o instanceof long[] || o instanceof float[] || o instanceof double[]
-				|| o instanceof XMLItem[] || o instanceof XMLDocument[]) {
-			return true;
-		}
+	}
 
-		// test package name
-		Class c = o.getClass();
-		String name = c.getName();
-		if (name.startsWith("java.lang.") || name.startsWith("java.math.") || "java.util.Date".equals(name)
-				|| "org.imixs.workflow.xml.XMLItem".equals(name) || "org.imixs.workflow.xml.XMLDocument".equals(name)) {
-			return true;
+	/**
+	 * Returns the resolved Date value of the specified item. If the item has no
+	 * value or the value is not of the type Date, the method returns null. If the
+	 * item has multiple values, this method returns the first value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
+	 * 
+	 * @param itemName The name of an item.
+	 * @return the Date value of the item
+	 */
+	public Date getItemValueDate(String aName) {
+		try {
+			List<?> v = getItemValue(aName);
+			if (v.size() == 0) {
+				return null;
+			}
+			Object o = v.get(0);
+			if (!(o instanceof Date)) {
+				return null;
+			}
+			return (Date) o;
+		} catch (ClassCastException e) {
+			return null;
 		}
+	}
 
-		// no basic type
-		return false;
+	/**
+	 * Returns the resolved Double value of the specified item. The method converts
+	 * the stored value to double. If the item has no value or the value is not
+	 * convertible to a Double, the method returns 0.0. If the item has multiple
+	 * values, this method returns the first value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
+	 * 
+	 * @param itemName The name of an item.
+	 * @return the double value of the item
+	 */
+	public double getItemValueDouble(String itemName) {
+		try {
+			List<?> v = getItemValue(itemName);
+			if (v.size() == 0)
+				return 0.0;
+			else {
+				// test for object type...
+				Object o = v.get(0);
+				if (o instanceof Double)
+					return (Double) o;
+
+				if (o instanceof Float)
+					return (Float) o;
+
+				if (o instanceof Long)
+					return (Long) o;
+
+				if (o instanceof Integer)
+					return (Integer) o;
+
+				// try to parse string.....
+				try {
+					return Double.valueOf(v.get(0).toString());
+				} catch (ClassCastException e) {
+					return 0;
+				}
+			}
+		} catch (ClassCastException e) {
+			return 0.0;
+		}
+	}
+
+	/**
+	 * Returns the resolved Float value of the specified item. The method converts
+	 * the stored value to float. If the item has no value or the value is not
+	 * convertible to a Float, the method returns 0.0. If the item has multiple
+	 * values, this method returns the first value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
+	 * 
+	 * @param itemName The name of an item.
+	 * @return the float value of the item
+	 */
+	public float getItemValueFloat(String itemName) {
+		try {
+			List<?> v = getItemValue(itemName);
+			if (v.size() == 0)
+				return (float) 0.0;
+			else {
+				// test for object type...
+				Object o = v.get(0);
+
+				if (o instanceof Float)
+					return (Float) o;
+
+				if (o instanceof Double) {
+					Double d = (Double) o;
+					return (float) d.doubleValue();
+				}
+
+				if (o instanceof Long)
+					return (Long) o;
+
+				if (o instanceof Integer)
+					return (Integer) o;
+
+				// try to parse string.....
+				try {
+					return Float.valueOf(v.get(0).toString());
+				} catch (ClassCastException e) {
+					return 0;
+				}
+
+			}
+		} catch (ClassCastException e) {
+			return (float) 0.0;
+		}
+	}
+
+	/**
+	 * Returns the resolved Boolean value of the specified item. The method converts
+	 * the stored value to Boolean. If the item has no value or the value is not
+	 * convertible to a Boolean, the method returns false. If the item has multiple
+	 * values, this method returns the first value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
+	 * 
+	 * @param itemName The name of an item.
+	 * @return the boolean value of the item
+	 */
+	public boolean getItemValueBoolean(String itemName) {
+		try {
+			List<?> v = getItemValue(itemName);
+			if (v.size() == 0) {
+				return false;
+			}
+			Object sValue = v.get(0);
+			return Boolean.valueOf(sValue.toString());
+		} catch (ClassCastException e) {
+			return false;
+		}
 	}
 
 	/**
@@ -964,53 +743,10 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * This helper method makes a deep copy of a map by serializing and
-	 * deserializing.
-	 * 
-	 * It is assumed that all elements in the object's source graph are
-	 * serializable.
-	 * 
-	 * @see http://www.javaworld.com/article/2077578/learn-java/java-tip-76--an-alternative-to-the-deep-copy-technique.html
-	 * @param map
-	 * @return
-	 */
-	private Object deepCopyOfMap(Map<String, List<Object>> map) {
-		try {
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			ObjectOutputStream oos = new ObjectOutputStream(bos);
-			// serialize and pass the object
-			oos.writeObject(map);
-			oos.flush();
-			ByteArrayInputStream bais = new ByteArrayInputStream(bos.toByteArray());
-			ObjectInputStream ois = new ObjectInputStream(bais);
-			return ois.readObject();
-		} catch (IOException e) {
-			logger.warning("Unable to clone values of ItemCollection - " + e);
-			return null;
-		} catch (ClassNotFoundException e) {
-			logger.warning("Unable to clone values of ItemCollection - " + e);
-			return null;
-		}
-	}
-
-	/**
-	 * removes a attribute from the item collection
-	 * 
-	 * @param name
-	 */
-	public void removeItem(String name) {
-		if (name != null) {
-			name = name.toLowerCase().trim();
-			this.hash.remove(name);
-		}
-	}
-
-	/**
 	 * This method adds a fileData object to the ItemCollection. filesData object
 	 * will be stored into the property $file.
 	 * 
-	 * @param filedata
-	 *            - a file data object
+	 * @param filedata - a file data object
 	 */
 	public void addFileData(FileData filedata) {
 		this.addFile(filedata.content, filedata.name, filedata.contentType);
@@ -1020,12 +756,9 @@ public class ItemCollection implements Cloneable {
 	 * This method adds a single file to the ItemCollection. files will be stored
 	 * into the property $file.
 	 * 
-	 * @param data
-	 *            - byte array with file data
-	 * @param fileName
-	 *            - name of the file attachment
-	 * @param contentType
-	 *            - the contenttype (e.g. 'Text/HTML')
+	 * @param data        - byte array with file data
+	 * @param fileName    - name of the file attachment
+	 * @param contentType - the contenttype (e.g. 'Text/HTML')
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
@@ -1166,7 +899,7 @@ public class ItemCollection implements Cloneable {
 	@SuppressWarnings("unchecked")
 	public List<String> getFileNames() {
 		// File attachments...
-		List<String> files = new Vector<String>();
+		List<String> files = new ArrayList<String>();
 
 		Map<String, List<Object>> mapFiles = null;
 		List<?> vFiles = getItemValue("$file");
@@ -1184,15 +917,29 @@ public class ItemCollection implements Cloneable {
 		return files;
 	}
 
-	// @SuppressWarnings("unchecked")
+	/**
+	 * Returns an ItemAdapter for this instance.
+	 * 
+	 * @return
+	 */
 	public Map<String, ?> getItem() {
 		return new ItemAdapter(this);
 	}
 
+	/**
+	 * Returns an ItemListAdapter for this instance.
+	 * 
+	 * @return
+	 */
 	public Map<String, ?> getItemList() {
 		return new ItemListAdapter(this);
 	}
 
+	/**
+	 * Returns an ItemListArrayAdapter for this instance.
+	 * 
+	 * @return
+	 */
 	public Map<String, ?> getItemListArray() {
 		return new ItemListArrayAdapter(this);
 	}
@@ -1202,20 +949,6 @@ public class ItemCollection implements Cloneable {
 	 */
 	public String getType() {
 		return getItemValueString(WorkflowKernel.TYPE);
-	}
-
-	/**
-	 * This method is deprecated. Use instead getTaskID()
-	 * 
-	 * @return current $processID
-	 */
-	@Deprecated
-	public int getProcessID() {
-		int result = getItemValueInteger(WorkflowKernel.PROCESSID);
-		if (result == 0 && hasItem("$taskid")) {
-			result = getTaskID();
-		}
-		return result;
 	}
 
 	/**
@@ -1252,28 +985,6 @@ public class ItemCollection implements Cloneable {
 	public ItemCollection task(int taskID) {
 		setTaskID(taskID);
 		return this;
-	}
-
-	/**
-	 * This method is deprecated. Use instead getEventID()
-	 * 
-	 * @return current $ActivityID
-	 */
-	@Deprecated
-	public int getActivityID() {
-		return getEventID();
-	}
-
-	/**
-	 * set $ActivityID. This method is deprecated. Use instead setEventID()
-	 * 
-	 * @param activityID
-	 */
-	@Deprecated
-	public void setActivityID(int activityID) {
-		replaceItemValue("$activityid", activityID);
-		// set new field $eventID
-		setEventID(activityID);
 	}
 
 	/**
@@ -1354,6 +1065,297 @@ public class ItemCollection implements Cloneable {
 	 */
 	public String getUniqueID() {
 		return getItemValueString(WorkflowKernel.UNIQUEID);
+	}
+
+	/**
+	 * This method is deprecated. Use instead getTaskID()
+	 * 
+	 * @return current $processID
+	 */
+	@Deprecated
+	public int getProcessID() {
+		int result = getItemValueInteger(WorkflowKernel.PROCESSID);
+		if (result == 0 && hasItem("$taskid")) {
+			result = getTaskID();
+		}
+		return result;
+	}
+
+	/**
+	 * This method is deprecated. Use instead getEventID()
+	 * 
+	 * @return current $ActivityID
+	 */
+	@Deprecated
+	public int getActivityID() {
+		return getEventID();
+	}
+
+	/**
+	 * set $ActivityID. This method is deprecated. Use instead setEventID()
+	 * 
+	 * @param activityID
+	 */
+	@Deprecated
+	public void setActivityID(int activityID) {
+		replaceItemValue("$activityid", activityID);
+		// set new field $eventID
+		setEventID(activityID);
+	}
+
+	/**
+	 * This method converts the raw java types String, int, long, float and double.
+	 * 
+	 * The method returns null if the type is no raw type.
+	 * 
+	 * @param value
+	 * @param type
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private <T> T convertValue(Object value, Type type) {
+
+		// test String
+		if (type == String.class) {
+			if (value == null) {
+				// return empty if not present
+				return (T) "";
+			} else {
+				return (T) value.toString();
+			}
+		}
+
+		// test Integer/int
+		if (type == Integer.class || type == int.class) {
+			try {
+				if (value == null) {
+					// return 0 if not present
+					return (T) Integer.valueOf(0);
+				}
+				int intvalue = new Double(value.toString()).intValue();
+				return (T) Integer.valueOf(intvalue);
+			} catch (NumberFormatException e) {
+				return (T) Integer.valueOf(0);
+			} catch (ClassCastException e) {
+				return (T) Integer.valueOf(0);
+			}
+		}
+
+		// test Long/long
+		if (type == Long.class || type == long.class) {
+			try {
+				if (value == null) {
+					// return 0 if not present
+					return (T) Long.valueOf(0);
+				}
+				long longvalue = new Long(value.toString()).longValue();
+				return (T) Long.valueOf(longvalue);
+			} catch (NumberFormatException e) {
+				return (T) Long.valueOf(0);
+			} catch (ClassCastException e) {
+				return (T) Long.valueOf(0);
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Helper method to replace an ItemValue.
+	 * 
+	 * @param itemName  - name of the value
+	 * @param itemValue - value
+	 * @param append    - true if the value should be appended to an existing list
+	 */
+	@SuppressWarnings("unchecked")
+	private void setItemValue(String itemName, Object itemValue, boolean append) {
+		List<Object> itemValueList = null;
+
+		if (itemName == null)
+			return;
+		// lower case itemname
+		itemName = itemName.toLowerCase().trim();
+
+		// test if value is null
+		if (itemValue == null) {
+			// remove the item?
+			if (!append) {
+				this.removeItem(itemName);
+			}
+			return;
+		}
+
+		// test if value is ItemCollection
+		if (itemValue instanceof ItemCollection) {
+			// just warn - do not remove
+			logger.warning("replaceItemValue '" + itemName
+					+ "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
+		}
+
+		// test if value is serializable
+		if (!(itemValue instanceof java.io.Serializable)) {
+			logger.warning("replaceItemValue '" + itemName + "': object is not serializable!");
+			this.removeItem(itemName);
+			return;
+		}
+
+		// test if value is a list and remove null values
+		if (itemValue instanceof List) {
+			itemValueList = (List<Object>) itemValue;
+			itemValueList.removeAll(Collections.singleton(null));
+			// scan List for null values and remove them
+			for (int i = 0; i < itemValueList.size(); i++) {
+				// test if ItemCollection
+				if (itemValueList.get(i) instanceof ItemCollection) {
+					// just warn - do not remove
+					logger.warning("replaceItemValue '" + itemName
+							+ "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
+				}
+			}
+		} else {
+			// create an instance of an ArrayList
+			itemValueList = new ArrayList<Object>();
+			itemValueList.add(itemValue);
+		}
+
+		// now itemValue is of instance List
+		if (!validateItemValue(itemValueList)) {
+			String message = "setItemValue failed for item '" + itemName
+					+ "', the value is a non supported object type: " + itemValueList;
+			logger.warning(message);
+			throw new InvalidAccessException(message);
+		}
+
+		// replace item value?
+		if (append) {
+			// append item value
+			List<Object> oldValueList = (List<Object>) getItemValue(itemName);
+
+			oldValueList.addAll(itemValueList);
+
+			hash.put(itemName, (List<Object>) oldValueList);
+		} else
+			hash.put(itemName, itemValueList);
+
+	}
+
+	/**
+	 * This method validates of a itemValue is acceptable for the ItemCollection.
+	 * Only basic types are supported.
+	 * 
+	 * @param itemValue
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	private boolean validateItemValue(Object itemValue) {
+
+		// convert Calendar instance into Date! issue #52
+		if (itemValue instanceof Calendar) {
+			itemValue = ((Calendar) itemValue).getTime();
+		}
+
+		// first we test if basic type?
+		if (isBasicType(itemValue)) {
+			return true;
+		}
+
+		// list?
+		if ((itemValue instanceof List)) {
+			for (Object singleValue : (List) itemValue) {
+				if (!validateItemValue(singleValue)) {
+					return false;
+				}
+			}
+			return true;
+		} else
+
+		// array?
+		if (itemValue != null && itemValue.getClass().isArray()) {
+			for (int i = 0; i < Array.getLength(itemValue); i++) {
+				Object singleValue = Array.get(itemValue, i);
+				if (!validateItemValue(singleValue)) {
+					return false;
+				}
+			}
+			return true;
+		} else
+
+		// map?
+		if ((itemValue instanceof Map)) {
+			Map map = (Map) itemValue;
+			for (Object value : map.values()) {
+				if (!validateItemValue(value)) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		// unknown type
+		return false;
+	}
+
+	/**
+	 * This helper method test if an object is a basic type which can be stored in
+	 * an ItemCollection.
+	 * 
+	 * Validate for raw objects and class types java.lang.*, java.math.*
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	private static boolean isBasicType(java.lang.Object o) {
+
+		if (o == null) {
+			return true;
+		}
+		// test raw array types first
+		if (o instanceof byte[] || o instanceof boolean[] || o instanceof short[] || o instanceof char[]
+				|| o instanceof int[] || o instanceof long[] || o instanceof float[] || o instanceof double[]
+				|| o instanceof XMLItem[] || o instanceof XMLDocument[]) {
+			return true;
+		}
+
+		// test package name
+		Class c = o.getClass();
+		String name = c.getName();
+		if (name.startsWith("java.lang.") || name.startsWith("java.math.") || "java.util.Date".equals(name)
+				|| "org.imixs.workflow.xml.XMLItem".equals(name) || "org.imixs.workflow.xml.XMLDocument".equals(name)) {
+			return true;
+		}
+
+		// no basic type
+		return false;
+	}
+
+	/**
+	 * This helper method makes a deep copy of a map by serializing and
+	 * deserializing.
+	 * 
+	 * It is assumed that all elements in the object's source graph are
+	 * serializable.
+	 * 
+	 * @see http://www.javaworld.com/article/2077578/learn-java/java-tip-76--an-alternative-to-the-deep-copy-technique.html
+	 * @param map
+	 * @return
+	 */
+	private Object deepCopyOfMap(Map<String, List<Object>> map) {
+		try {
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(bos);
+			// serialize and pass the object
+			oos.writeObject(map);
+			oos.flush();
+			ByteArrayInputStream bais = new ByteArrayInputStream(bos.toByteArray());
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			return ois.readObject();
+		} catch (IOException e) {
+			logger.warning("Unable to clone values of ItemCollection - " + e);
+			return null;
+		} catch (ClassNotFoundException e) {
+			logger.warning("Unable to clone values of ItemCollection - " + e);
+			return null;
+		}
 	}
 
 	/**
@@ -1526,12 +1528,12 @@ public class ItemCollection implements Cloneable {
 
 			// skipp null values
 			if (value == null) {
-				itemCollection.replaceItemValue(key.toString(), new Vector());
+				itemCollection.replaceItemValue(key.toString(), new ArrayList());
 				return null;
 			}
 			// convert List into Vector object
 			if (value instanceof List || value instanceof Object[]) {
-				Vector v = new Vector();
+				List v = new ArrayList();
 				// check type of list (array and list are supported but need
 				// to be read in different ways
 				if (value instanceof List)

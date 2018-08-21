@@ -1,7 +1,6 @@
 package org.imixs.workflow;
 
 import java.awt.Color;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +12,6 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
 
 /**
  * Test class for itemCollection object
@@ -819,12 +817,12 @@ public class TestItemCollection {
 		// test String values
 		String s = itemCol.getItemValue("txtname", String.class);
 		Assert.assertEquals("hello", s);
-		
+
 		// test non existing value
 		Assert.assertNull(itemCol.getItemValue("txtname2", String.class));
 
 	}
-	
+
 	/**
 	 * Test the methods setItemValue and getItemValue with type Integer/int
 	 */
@@ -838,19 +836,18 @@ public class TestItemCollection {
 		// test int values....
 		int i1 = itemCol.getItemValue("numage", Integer.class);
 		Assert.assertEquals(7, i1);
-		
+
 		int i2 = itemCol.getItemValue("numage", int.class);
 		Assert.assertEquals(7, i2);
-		
+
 		Integer i3 = itemCol.getItemValue("numage", Integer.class);
 		Assert.assertEquals(7, i3.intValue());
-		
+
 		// test non existing value
 		Assert.assertNull(itemCol.getItemValue("txtname2", String.class));
-		
 
 	}
-	
+
 	/**
 	 * Test the methods setItemValue and getItemValue with type Long/long
 	 */
@@ -864,23 +861,18 @@ public class TestItemCollection {
 		// test int values....
 		long l1 = itemCol.getItemValue("numage", Long.class);
 		Assert.assertEquals(7, l1);
-		
+
 		long l2 = itemCol.getItemValue("numage", long.class);
 		Assert.assertEquals(7, l2);
-	
+
 		Long l3 = itemCol.getItemValue("numage", long.class);
 		Assert.assertEquals(7, l3.longValue());
-	
-		
+
 		// test non existing value
 		Assert.assertNull(itemCol.getItemValue("txtname2", String.class));
-		
 
-	} 
+	}
 
-	
-	
-	
 	/**
 	 * Test the fluent code interface for the method setItemValue.
 	 */
@@ -890,7 +882,7 @@ public class TestItemCollection {
 		ItemCollection itemCol = new ItemCollection();
 		itemCol.setItemValue("team", "Anna").appendItemValue("team", "Mark").appendItemValue("team", "Jo");
 
-		String s = itemCol.getItemValue("team",  String.class);
+		String s = itemCol.getItemValue("team", String.class);
 		Assert.assertEquals("Anna", s);
 
 		@SuppressWarnings("unchecked")
@@ -912,20 +904,18 @@ public class TestItemCollection {
 		// number as string
 		itemCol.setItemValue("_a", "5");
 		itemCol.setItemValue("_b", 7); // int
-		
+
 		// test string
 		String s = itemCol.getItemValue("_a", String.class);
 		Assert.assertEquals("5", s);
 
 		// test int
-		int i=itemCol.getItemValue("_a", int.class);
-		Assert.assertEquals(5,i);
+		int i = itemCol.getItemValue("_a", int.class);
+		Assert.assertEquals(5, i);
 
-		
 		// test long
-		long l=itemCol.getItemValue("_a", long.class);
-		Assert.assertEquals(5,l);
-
+		long l = itemCol.getItemValue("_a", long.class);
+		Assert.assertEquals(5, l);
 
 		// test string of _b
 		s = itemCol.getItemValue("_b", String.class);
@@ -933,17 +923,85 @@ public class TestItemCollection {
 	}
 
 	/**
-	 * Test the method getItemValueList.
+	 * Test the method getItemValueList. Test mixed types and the convertion into
+	 * the expected object type.
 	 */
 	@Test
 	public void testGetItemValueListType() {
 		ItemCollection itemCol = new ItemCollection();
 		itemCol.setItemValue("txtname", "hello");
 		itemCol.appendItemValue("txtname", "world");
+		itemCol.appendItemValue("txtname", new Integer(47));
+
+		// test String list...
+		List<String> slist = itemCol.getItemValueList("txtname", String.class);
+		Assert.assertEquals(3, slist.size());
+		Assert.assertEquals("hello", slist.get(0));
+		Assert.assertEquals("world", slist.get(1));
+		Assert.assertEquals("47", slist.get(2));
+
+		// test int list
+		List<Integer> integerlist = itemCol.getItemValueList("txtname", Integer.class);
+		Assert.assertEquals(3, integerlist.size());
+		Assert.assertEquals(new Integer(0), integerlist.get(0));
+		Assert.assertEquals(new Integer(0), integerlist.get(1));
+		Assert.assertEquals(new Integer(47), integerlist.get(2));
+
+		// test int list
+		List<Integer> intlist = itemCol.getItemValueList("txtname", int.class);
+		Assert.assertEquals(3, intlist.size());
+		Assert.assertEquals(new Integer(0), intlist.get(0));
+		Assert.assertEquals(new Integer(0), intlist.get(1));
+		Assert.assertEquals(new Integer(47), intlist.get(2));
+
+	}
+
+	/**
+	 * Test the method getItemValueList with an empty list
+	 */
+	@Test
+	public void testGetItemValueListEmpty() {
+		ItemCollection itemCol = new ItemCollection();
 
 		List<String> slist = itemCol.getItemValueList("txtname", String.class);
+		// we expect an empty list
+		Assert.assertNotNull(slist);
+		Assert.assertEquals(0, slist.size());
+	}
 
-		Assert.assertNull(slist);
+	/**
+	 * Test the method getItemValueList with a non convertible type.
+	 */
+	@Test
+	public void testGetItemValueListNonConvertable() {
+		ItemCollection itemCol = new ItemCollection();
+		itemCol.setItemValue("txtname", "hello");
+		itemCol.appendItemValue("txtname", new Integer(47));
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("_subject", "some data");
+		itemCol.appendItemValue("txtname", map);
+
+		// test String list...
+		List<String> slist = itemCol.getItemValueList("txtname", String.class);
+		Assert.assertEquals(3, slist.size());
+		Assert.assertEquals("hello", slist.get(0));
+		Assert.assertEquals("47", slist.get(1));
+		Assert.assertEquals("{_subject=some data}", slist.get(2)); // map toString
+
+		// test int list
+		List<Integer> integerlist = itemCol.getItemValueList("txtname", Integer.class);
+		Assert.assertEquals(3, integerlist.size());
+		Assert.assertEquals(new Integer(0), integerlist.get(0));
+		Assert.assertEquals(new Integer(47), integerlist.get(1));
+		Assert.assertEquals(new Integer(0), integerlist.get(2));
+
+		// test int list
+		List<Integer> intlist = itemCol.getItemValueList("txtname", int.class);
+		Assert.assertEquals(3, intlist.size());
+		Assert.assertEquals(new Integer(0), intlist.get(0));
+		Assert.assertEquals(new Integer(47), intlist.get(1));
+		Assert.assertEquals(new Integer(0), intlist.get(2));
+
 	}
 
 }
