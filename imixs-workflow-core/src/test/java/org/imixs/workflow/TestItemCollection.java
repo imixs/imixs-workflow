@@ -807,7 +807,6 @@ public class TestItemCollection {
 	/**
 	 * Test the methods setItemValue and getItemValue
 	 */
-	/*
 	@Test
 	public void testGetItemValueType() {
 
@@ -830,13 +829,32 @@ public class TestItemCollection {
 		Assert.assertNull(s);
 
 	}
-	*/
+
+	/**
+	 * Test the fluent code interface for the method setItemValue.
+	 */
+	@Test
+	public void testSetItemValueFluent() {
+
+		ItemCollection itemCol = new ItemCollection();
+		itemCol.setItemValue("team", "Anna").appendItemValue("team", "Mark").appendItemValue("team", "Jo");
+
+		String s = itemCol.getItemValue("team", String.class);
+		Assert.assertEquals("Anna", s);
+
+		@SuppressWarnings("unchecked")
+		List<String> vaules = itemCol.getItemValue("team");
+
+		Assert.assertEquals(3, vaules.size());
+		Assert.assertEquals("Mark", vaules.get(1));
+		Assert.assertEquals("Jo", vaules.get(2));
+
+	}
 
 	/**
 	 * Test the methods setItemValue and getItemValue. The method tests a mixed
 	 * value list
 	 */
-	/*
 	@Test
 	public void testGetItemValueTypeMixedValues() {
 
@@ -858,13 +876,10 @@ public class TestItemCollection {
 		Assert.assertEquals(47.55, f, 0.01);
 
 	}
-	*/
-	
-	
+
 	/**
-	 * Test the method getItemValueList. 
+	 * Test the method getItemValueList.
 	 */
-	/*
 	@Test
 	public void testGetItemValueListType() {
 		ItemCollection itemCol = new ItemCollection();
@@ -872,8 +887,8 @@ public class TestItemCollection {
 		itemCol.appendItemValue("txtname", "world");
 
 		List<String> slist = itemCol.getItemValueList("txtname", String.class);
-		
+
 		Assert.assertNull(slist);
 	}
-	*/
+
 }

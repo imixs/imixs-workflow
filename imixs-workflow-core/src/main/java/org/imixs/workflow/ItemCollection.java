@@ -228,7 +228,6 @@ public class ItemCollection implements Cloneable {
 	 *            The type into which the resolve item value should get converted
 	 * @return the resolved item value as an object of the requested type.
 	 */
-	/*
 	@SuppressWarnings("unchecked")
 	public <T> T getItemValue(String itemName, Class<T> itemType) {
 
@@ -244,15 +243,15 @@ public class ItemCollection implements Cloneable {
 		}
 		return null;
 	}
-	*/
+
 	
-	/*
+
 	public <T> List<T> getItemValueList(String itemName, Class<T> itemType) {
 		// @see https://stackoverflow.com/questions/51937821/how-to-define-a-generic-list-of-types-in-java?noredirect=1#comment90825856_51937821
 		logger.warning("method getItemValueList not yet implemented!");
 		return null;
 	}
-	*/
+
 
 	/**
 	 * Returns the resolved String value of the specified item. The method converts
@@ -683,11 +682,12 @@ public class ItemCollection implements Cloneable {
 	 *            the data type of value, and does not need to match the data type
 	 *            of the old item.
 	 */
-	/*
-	public void setItemValue(String itemName, Object itemValue) {
+
+	public ItemCollection setItemValue(String itemName, Object itemValue) {
 		setItemValue(itemName, itemValue, false);
+		return this;
 	}
-	*/
+
 
 	/**
 	 * Appends a value to an existing item. If the ItemCollection does not contain
@@ -710,8 +710,9 @@ public class ItemCollection implements Cloneable {
 	 *            the data type of value, and does not need to match the data type
 	 *            of the old item.
 	 */
-	public void appendItemValue(String itemName, Object itemValue) {
+	public ItemCollection appendItemValue(String itemName, Object itemValue) {
 		setItemValue(itemName, itemValue, true);
+		return this;
 	}
 
 	/**

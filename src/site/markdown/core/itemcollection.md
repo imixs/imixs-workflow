@@ -5,14 +5,19 @@ Each Workitem processed by the Imixs-Workflow engine is represented by an instan
 
     import org.imixs.workflow.ItemCollection;
      
-    ItemCollection myItemCollection=new ItemCollection;
+    ItemCollection myItemCollection=new ItemCollection();
     myItemCollection.setItemValue("FirstName","Anna");
     myItemCollection.setItemValue("CostCenter",new Integer(4010));
     myItemCollection.appendItemValue("team","mark");
     myItemCollection.appendItemValue("team","anna");
 
 The method _setItemValue_ adds a new Item or replaces the value of an existing item. This code example creates a new empty ItemCollection and adds three new items. The first Item with the name "FirstName" contains a String value and the second item "CostCenter" contains an Integer value. 
-For the third item 'team' the  method _appendItemValue_ is used, which allows to add multiple values into one item.  
+For the third item 'team' the  method _appendItemValue_ is used, which allows to add multiple values into one item. 
+
+The method  _setItemValue_ and _appendItemValue_ also support the fluent api:
+
+    ItemCollection myItemCollection=new ItemCollection();
+    myItemCollection.setItemValue("team","Anna").appendItemValue("team","Mark").appendItemValue("team","Jo");
 
 ### Getter Methods
 The ItemCollection provides different methods to access items values. The  methods are type-save and allow to access a value of a specific type. See the following example:
