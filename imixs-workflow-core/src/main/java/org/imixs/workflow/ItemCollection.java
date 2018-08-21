@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -209,10 +210,9 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * Returns the resolved item value of the specified type. If the item value
-	 * contains a list of multiple values the first resolved value of the specified
-	 * type will be returned. This method did not convert the item value to the
-	 * specified type.
+	 * Returns the resolved item value of the specified type. The method converts
+	 * the value to the specified type if possible, otherwise the method returns
+	 * null. If the item has multiple values, this method returns the first value.
 	 * <p>
 	 * If the item isn't present in the itemCollection the method returns null.
 	 * <p>
@@ -229,29 +229,85 @@ public class ItemCollection implements Cloneable {
 	 * @return the resolved item value as an object of the requested type.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T getItemValue(String itemName, Class<T> itemType) {
-
+	//public <T> T getItemValue(String itemName, Type itemType) {
+	public <T> T getItemValue(String itemName, Class<T> itemType)  {
+	
 		List<T> values = getItemValue(itemName);
 		if (values == null || values.size() == 0) {
 			return null;
 		}
+
 		// find first value of specified type
-		for (T firstValue : values) {
-			if (firstValue.getClass() == itemType) {
-				return firstValue;
-			}
-		}
-		return null;
+		return convertValue(values.get(0), itemType);
 	}
 
-	
+	/**
+	 * This method converts the raw java types String, int, long, float and double.
+	 * 
+	 * The method returns null if the type is no raw type. 
+	 * 
+	 * @param value
+	 * @param type
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private <T> T convertValue(Object value, Type type) {
 
+		// test String
+		if (type == String.class) {
+			if (value == null) {
+				// return empty if not present
+				return (T) "";
+			} else {
+				return (T) value.toString();
+			}
+		}
+
+		// test  Integer/int
+		if (type == Integer.class || type == int.class) {
+			try {
+				if (value == null) {
+					// return 0 if not present
+					return (T) Integer.valueOf(0);
+				}
+				int intvalue = new Double(value.toString()).intValue();
+				return (T) Integer.valueOf(intvalue);
+			} catch (NumberFormatException e) {
+				return (T) Integer.valueOf(0);
+			} catch (ClassCastException e) {
+				return (T) Integer.valueOf(0);
+			}
+		}
+		
+		// test  Long/long
+		if (type == Long.class || type == long.class) {
+			try {
+				if (value == null) {
+					// return 0 if not present
+					return (T) Long.valueOf(0);
+				}
+				long longvalue = new Long(value.toString()).longValue();
+				return (T) Long.valueOf(longvalue);
+			} catch (NumberFormatException e) {
+				return (T) Long.valueOf(0);
+			} catch (ClassCastException e) {
+				return (T) Long.valueOf(0);
+			}
+		}
+		
+		
+		
+
+		return null;
+	}
+	
+	
 	public <T> List<T> getItemValueList(String itemName, Class<T> itemType) {
-		// @see https://stackoverflow.com/questions/51937821/how-to-define-a-generic-list-of-types-in-java?noredirect=1#comment90825856_51937821
+		// @see
+		// https://stackoverflow.com/questions/51937821/how-to-define-a-generic-list-of-types-in-java?noredirect=1#comment90825856_51937821
 		logger.warning("method getItemValueList not yet implemented!");
 		return null;
 	}
-
 
 	/**
 	 * Returns the resolved String value of the specified item. The method converts
@@ -687,7 +743,6 @@ public class ItemCollection implements Cloneable {
 		setItemValue(itemName, itemValue, false);
 		return this;
 	}
-
 
 	/**
 	 * Appends a value to an existing item. If the ItemCollection does not contain

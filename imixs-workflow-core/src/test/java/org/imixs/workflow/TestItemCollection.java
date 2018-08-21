@@ -1,6 +1,7 @@
 package org.imixs.workflow;
 
 import java.awt.Color;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
 
 /**
  * Test class for itemCollection object
@@ -805,31 +807,80 @@ public class TestItemCollection {
 	}
 
 	/**
-	 * Test the methods setItemValue and getItemValue
+	 * Test the methods setItemValue and getItemValue with type String
 	 */
 	@Test
-	public void testGetItemValueType() {
+	public void testGetItemValueTypeString() {
 
 		ItemCollection itemCol = new ItemCollection();
 		itemCol.setItemValue("txtname", "hello");
 		itemCol.setItemValue("numage", 7);
 
+		// test String values
 		String s = itemCol.getItemValue("txtname", String.class);
 		Assert.assertEquals("hello", s);
-
-		int i = itemCol.getItemValue("numage", Integer.class);
-
-		Assert.assertEquals(7, i);
-
+		
 		// test non existing value
-		s = itemCol.getItemValue("txtname2", String.class);
-		if (s != null) {
-			Assert.fail();
-		}
-		Assert.assertNull(s);
+		Assert.assertNull(itemCol.getItemValue("txtname2", String.class));
 
 	}
+	
+	/**
+	 * Test the methods setItemValue and getItemValue with type Integer/int
+	 */
+	@Test
+	public void testGetItemValueTypeInt() {
 
+		ItemCollection itemCol = new ItemCollection();
+		itemCol.setItemValue("txtname", "hello");
+		itemCol.setItemValue("numage", 7);
+
+		// test int values....
+		int i1 = itemCol.getItemValue("numage", Integer.class);
+		Assert.assertEquals(7, i1);
+		
+		int i2 = itemCol.getItemValue("numage", int.class);
+		Assert.assertEquals(7, i2);
+		
+		Integer i3 = itemCol.getItemValue("numage", Integer.class);
+		Assert.assertEquals(7, i3.intValue());
+		
+		// test non existing value
+		Assert.assertNull(itemCol.getItemValue("txtname2", String.class));
+		
+
+	}
+	
+	/**
+	 * Test the methods setItemValue and getItemValue with type Long/long
+	 */
+	@Test
+	public void testGetItemValueTypeLong() {
+
+		ItemCollection itemCol = new ItemCollection();
+		itemCol.setItemValue("txtname", "hello");
+		itemCol.setItemValue("numage", new Long(7));
+
+		// test int values....
+		long l1 = itemCol.getItemValue("numage", Long.class);
+		Assert.assertEquals(7, l1);
+		
+		long l2 = itemCol.getItemValue("numage", long.class);
+		Assert.assertEquals(7, l2);
+	
+		Long l3 = itemCol.getItemValue("numage", long.class);
+		Assert.assertEquals(7, l3.longValue());
+	
+		
+		// test non existing value
+		Assert.assertNull(itemCol.getItemValue("txtname2", String.class));
+		
+
+	} 
+
+	
+	
+	
 	/**
 	 * Test the fluent code interface for the method setItemValue.
 	 */
@@ -839,7 +890,7 @@ public class TestItemCollection {
 		ItemCollection itemCol = new ItemCollection();
 		itemCol.setItemValue("team", "Anna").appendItemValue("team", "Mark").appendItemValue("team", "Jo");
 
-		String s = itemCol.getItemValue("team", String.class);
+		String s = itemCol.getItemValue("team",  String.class);
 		Assert.assertEquals("Anna", s);
 
 		@SuppressWarnings("unchecked")
@@ -852,29 +903,33 @@ public class TestItemCollection {
 	}
 
 	/**
-	 * Test the methods setItemValue and getItemValue. The method tests a mixed
-	 * value list
+	 * Test the methods getItemValue with convertign type
 	 */
 	@Test
 	public void testGetItemValueTypeMixedValues() {
 
 		ItemCollection itemCol = new ItemCollection();
-		itemCol.setItemValue("txtname", 7);
-		itemCol.appendItemValue("txtname", "hello");
-		itemCol.appendItemValue("txtname", new Float(47.55));
+		// number as string
+		itemCol.setItemValue("_a", "5");
+		itemCol.setItemValue("_b", 7); // int
+		
+		// test string
+		String s = itemCol.getItemValue("_a", String.class);
+		Assert.assertEquals("5", s);
 
-		// test first string value....
-		String s = itemCol.getItemValue("txtname", String.class);
-		Assert.assertEquals("hello", s);
+		// test int
+		int i=itemCol.getItemValue("_a", int.class);
+		Assert.assertEquals(5,i);
 
-		// test first int value
-		int i = itemCol.getItemValue("txtname", Integer.class);
-		Assert.assertEquals(7, i);
+		
+		// test long
+		long l=itemCol.getItemValue("_a", long.class);
+		Assert.assertEquals(5,l);
 
-		// test first Float value
-		float f = itemCol.getItemValue("txtname", Float.class);
-		Assert.assertEquals(47.55, f, 0.01);
 
+		// test string of _b
+		s = itemCol.getItemValue("_b", String.class);
+		Assert.assertEquals("7", s);
 	}
 
 	/**
