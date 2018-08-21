@@ -1,8 +1,11 @@
 # The ItemCollection
 The Imixs ItemCollection is a generic value object used by the Imixs-Workflow API. You can see an ItemCollection as a kind of document which contains a set of properties (called _Items_). Each Item of an ItemCollection consists of a name and a value. The value of an Item can be any serializeable data object. So an ItemCollection is a very flexible data structure. 
 
-Each Workitem processed by the Imixs-Workflow engine is represented by an instance of an ItemCollection. But also other Entities used by the Imixs-Workflow - like the Model Entities - are represented in the same object structure. The ItemCollection provides methods which makes it very easy to create, access or modify the properties of an ItemCollection. See the following example:  
+Each Workitem processed by the Imixs-Workflow engine is represented by an instance of an ItemCollection. But also other Entities used by the Imixs-Workflow - like the Model Entities - are represented in the same object structure. The ItemCollection provides methods which makes it very easy to create, access or modify the properties of an ItemCollection.
 
+### Setter Methods
+The ItemCollection provides different methods to set or update items values. Any seralizable object can be set as a value. Internally a value is always represented as a List. See the following example:
+ 
     import org.imixs.workflow.ItemCollection;
      
     ItemCollection myItemCollection=new ItemCollection();
@@ -14,6 +17,16 @@ Each Workitem processed by the Imixs-Workflow engine is represented by an instan
 The method _setItemValue_ adds a new Item or replaces the value of an existing item. This code example creates a new empty ItemCollection and adds three new items. The first Item with the name "FirstName" contains a String value and the second item "CostCenter" contains an Integer value. 
 For the third item 'team' the  method _appendItemValue_ is used, which allows to add multiple values into one item. 
 
+The following table gives an overview about the setter methods:
+
+
+|Method						| Return Type  		|
+|---------------------------|-------------------|
+|setItemValue(String, Object)| sets an object as a new item value |
+|appendItemValueString(name, Object)	| adds an object to an existing item value			|
+
+
+
 The method  _setItemValue_ and _appendItemValue_ also support the fluent api:
 
     ItemCollection myItemCollection=new ItemCollection();
@@ -22,17 +35,18 @@ The method  _setItemValue_ and _appendItemValue_ also support the fluent api:
 ### Getter Methods
 The ItemCollection provides different methods to access items values. The  methods are type-save and allow to access a value of a specific type. See the following example:
   
-    String name=myItemCollection.getItemValueString("FirstName");
-    int costcenter=myItemCollection.getItemValueInteger("CostCenter");
-    // equals to 
     String name=myItemCollection.getItemValue("FirstName",String.class);
     int costcenter=myItemCollection.getItemValue("CostCenter",Integer.class);
+    // equals to 
+    String name=myItemCollection.getItemValueString("FirstName");
+    int costcenter=myItemCollection.getItemValue("CostCenter");
     
 The following table gives an overview about the getter methods:
 
 
 |Method						| Return Type  		|
 |---------------------------|-------------------|
+|getItemValue(name,Class<T>)| Object of a specific type |
 |getItemValueString(name)	| String			|
 |getItemValueInteger(name)	| Integer			|
 |getItemValueDouble(name)	| Double			|
@@ -40,7 +54,6 @@ The following table gives an overview about the getter methods:
 |getItemValueLong(name)		| Long				|
 |getItemValueBoolean(name)	| Boolean (true/false)|
 |getItemValueDate(name)		| Date Object		|
-|getItemValue(name,Class<T>)| Object of a specific type |
     
 ### Remove Attributes
 With the method removeItem an existing Item can be removed from a ItemCollection:
