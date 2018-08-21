@@ -807,6 +807,7 @@ public class TestItemCollection {
 	/**
 	 * Test the methods setItemValue and getItemValue
 	 */
+	/*
 	@Test
 	public void testGetItemValueType() {
 
@@ -829,11 +830,13 @@ public class TestItemCollection {
 		Assert.assertNull(s);
 
 	}
+	*/
 
 	/**
 	 * Test the methods setItemValue and getItemValue. The method tests a mixed
 	 * value list
 	 */
+	/*
 	@Test
 	public void testGetItemValueTypeMixedValues() {
 
@@ -855,11 +858,13 @@ public class TestItemCollection {
 		Assert.assertEquals(47.55, f, 0.01);
 
 	}
+	*/
 	
 	
 	/**
 	 * Test the method getItemValueList. 
 	 */
+	/*
 	@Test
 	public void testGetItemValueListType() {
 		ItemCollection itemCol = new ItemCollection();
@@ -870,4 +875,5 @@ public class TestItemCollection {
 		
 		Assert.assertNull(slist);
 	}
+	*/
 }
