@@ -64,6 +64,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.PropertyService;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -101,7 +102,8 @@ public class LuceneUpdateService {
 	protected static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
 	protected static final String ANONYMOUS = "ANONYMOUS";
 
-	protected static final String EVENTLOG_ENTRY_TYPE = "eventlogentry";
+	protected static final String EVENTLOG_ENTRY_TYPE_ADD = "eventlogentry_add";
+	protected static final String EVENTLOG_ENTRY_TYPE_REMOVE = "eventlogentry_remove";
 	protected static final String EVENTLOG_ENTRY_SUFIX = "_EVENTLOG_ENTRY";
 	protected static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
 
@@ -238,12 +240,12 @@ public class LuceneUpdateService {
 		long ltime = System.currentTimeMillis();
 		// write a new EventLog entry for each document....
 		for (ItemCollection workitem : documents) {
-			writeEventLogEntry(workitem.getUniqueID());
+			writeEventLogEntry(workitem.getUniqueID(), EVENTLOG_ENTRY_TYPE_ADD);
 		}
 
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime) + " ms ("
-					+ documents.size() + " eventlog entries total)");
+					+ documents.size() + " documents to be index)");
 		}
 	}
 
@@ -259,7 +261,7 @@ public class LuceneUpdateService {
 	 */
 	public void removeDocument(String uniqueID) {
 		long ltime = System.currentTimeMillis();
-		writeEventLogEntry(uniqueID);
+		writeEventLogEntry(uniqueID, EVENTLOG_ENTRY_TYPE_REMOVE);
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime)
 					+ " ms (1 document to be removed)");
@@ -288,30 +290,30 @@ public class LuceneUpdateService {
 	 * The identifier of an eventLogEnty is sufixed with "_EVENT_LOG_ENTRY". The
 	 * type of the document entity will be set to 'eventlogentry'.
 	 * 
-	 * @param id - uniqueid of the document to update
+	 * @param id   - uniqueid of the document to update
+	 * @param type EVENTLOG_ENTRY_TYPE_ADD or EVENTLOG_ENTRY_TYPE_REMOVE
 	 */
-	void writeEventLogEntry(String id) {
+	void writeEventLogEntry(String id, String type) {
 		org.imixs.workflow.engine.jpa.Document eventLogEntry = null;
 		if (id == null || id.isEmpty()) {
 			logger.warning("WriteEventLog failed - given id is empty!");
 			return;
 		}
 
-		// sufix uniqueid
-		id = id + EVENTLOG_ENTRY_SUFIX;
 		// check if a eventLog entry already exists in the event log cache...
-		eventLogEntry = manager.find(org.imixs.workflow.engine.jpa.Document.class, id);
+		eventLogEntry = manager.find(org.imixs.workflow.engine.jpa.Document.class, id + EVENTLOG_ENTRY_SUFIX);
 		if (eventLogEntry == null) {
 			// no - create new one with the provided id
-			eventLogEntry = new org.imixs.workflow.engine.jpa.Document(id);
-			logger.finest("......create new eventLogEntry '" + id + "' ");
+			eventLogEntry = new org.imixs.workflow.engine.jpa.Document(id + EVENTLOG_ENTRY_SUFIX);
+			logger.finest("......create new eventLogEntry '" + id + "' => " + type);
 			manager.persist(eventLogEntry);
 		} else {
 			// Overwrite Creation Date
-			logger.finest("......update existing eventLogEntry '" + id + "' ");
+			logger.finest("......update existing eventLogEntry '" + id + "' => " + type);
 			eventLogEntry.setCreated(Calendar.getInstance());
 		}
-		eventLogEntry.setType(EVENTLOG_ENTRY_TYPE);
+
+		eventLogEntry.setType(type);
 	}
 
 	/**
@@ -328,8 +330,7 @@ public class LuceneUpdateService {
 		logger.finest("......flush eventlog cache....");
 
 		String query = "SELECT document FROM Document AS document ";
-		query += " WHERE document.type = '" + EVENTLOG_ENTRY_TYPE + "'";
-		query += " ORDER BY document.created DESC";
+		query += " WHERE document.type IN ('" + EVENTLOG_ENTRY_TYPE_ADD + "','" + EVENTLOG_ENTRY_TYPE_REMOVE + "')";
 
 		// find all eventLogEntries....
 		Query q = manager.createQuery(query);
@@ -355,17 +356,21 @@ public class LuceneUpdateService {
 
 					// if the document was found we add/update the index. Otherwise we remove the
 					// document form the index.
-					if (doc != null) {
+					if (doc != null && EVENTLOG_ENTRY_TYPE_ADD.equals(eventLogEntry.getType())) {
 						// add workitem to search index....
-						logger.finest("......lucene add/update workitem '" + id + "' to index...");
+						long l2 = System.currentTimeMillis();
 						ItemCollection workitem = new ItemCollection();
 						workitem.setAllItems(doc.getData());
-						indexWriter.updateDocument(term, createDocument(workitem));
-
+						if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
+							indexWriter.updateDocument(term, createDocument(workitem));
+							logger.finest("......lucene add/update workitem '" + id + "' to index in "
+									+ (System.currentTimeMillis() - l2) + "ms");
+						}
 					} else {
-						logger.finest("......lucene remove workitem '" + id + "' from index...");
-
+						long l2 = System.currentTimeMillis();
 						indexWriter.deleteDocuments(term);
+						logger.finest("......lucene remove workitem '" + id + "' from index in "
+								+ (System.currentTimeMillis() - l2) + "ms");
 					}
 
 					// remove the eventLogEntry.
@@ -400,8 +405,8 @@ public class LuceneUpdateService {
 			}
 		}
 
-		logger.fine("...flushEventLog - " + documentList.size() + " documents indexed in "
-				+ (System.currentTimeMillis() - l) + " ms");
+		logger.fine("...flushEventLog - " + documentList.size() + " documents in " + (System.currentTimeMillis() - l)
+				+ " ms");
 
 		return cacheIsEmpty;
 
@@ -452,7 +457,6 @@ public class LuceneUpdateService {
 					sValue += o.toString() + ",";
 			}
 			if (sValue != null) {
-				logger.finest("......lucene add SearchField: " + aFieldname + "=" + sValue);
 				sContent += sValue + ",";
 			}
 		}
