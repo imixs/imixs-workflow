@@ -113,6 +113,7 @@ public class LuceneUpdateService {
 	private String indexDirectoryPath = null;
 	private String analyserClass = null;
 	private Properties properties = null;
+	private boolean dirtyIndex = true;
 
 	// default field lists
 	private static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
@@ -272,14 +273,13 @@ public class LuceneUpdateService {
 	 * Flush the EventLog cache. This method is called by the LuceneSerachService.
 	 * <p>
 	 * The method flushes the cache in smaller blocks to avoid a heap size problem.
-	 * The default flush size is 10.
+	 * The default flush size is 16. The eventLog cache is tracked by the flag
+	 * 'dirtyIndex'.
 	 * 
 	 */
 	public void flushEventLog() {
-		while (true) {
-			if (flushEventLogByCount(EVENTLOG_ENTRY_FLUSH_COUNT)) {
-				break;
-			}
+		while (dirtyIndex) {
+			dirtyIndex = !flushEventLogByCount(EVENTLOG_ENTRY_FLUSH_COUNT);
 		}
 	}
 
@@ -314,6 +314,7 @@ public class LuceneUpdateService {
 		}
 
 		eventLogEntry.setType(type);
+		dirtyIndex = true;
 	}
 
 	/**
@@ -321,6 +322,7 @@ public class LuceneUpdateService {
 	 * if no more eventLogEntries exist.
 	 * 
 	 * @param count the max size of a eventLog engries to remove.
+	 * @return true if the cache was totally flushed.
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	boolean flushEventLogByCount(int count) {
