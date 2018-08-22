@@ -581,9 +581,9 @@ public class DocumentService {
 	 *            to be removed
 	 * @throws AccessDeniedException
 	 */
-	public void remove(ItemCollection itemcol) throws AccessDeniedException {
+	public void remove(ItemCollection document) throws AccessDeniedException {
 		Document persistedDocument = null;
-		String sID = itemcol.getItemValueString("$uniqueid");
+		String sID = document.getItemValueString("$uniqueid");
 		persistedDocument = manager.find(Document.class, sID);
 
 		if (persistedDocument != null) {
@@ -593,8 +593,10 @@ public class DocumentService {
 
 			// remove document...
 			manager.remove(persistedDocument);
-			// remove document form index
-			luceneUpdateService.removeDocument(itemcol.getUniqueID());
+			// remove document form index - @see issue #412
+			if (!document.getItemValueBoolean(NOINDEX)) {
+				luceneUpdateService.removeDocument(document.getUniqueID());
+			}
 		} else
 			throw new AccessDeniedException(INVALID_UNIQUEID, "remove - invalid $uniqueid");
 	}
