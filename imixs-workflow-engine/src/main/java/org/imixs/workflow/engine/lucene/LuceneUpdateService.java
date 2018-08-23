@@ -113,7 +113,6 @@ public class LuceneUpdateService {
 	private String indexDirectoryPath = null;
 	private String analyserClass = null;
 	private Properties properties = null;
-	private boolean dirtyIndex = true;
 
 	// default field lists
 	private static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
@@ -278,6 +277,7 @@ public class LuceneUpdateService {
 	 * 
 	 */
 	public void flushEventLog() {
+		boolean dirtyIndex=true;
 		while (dirtyIndex) {
 			dirtyIndex = !flushEventLogByCount(EVENTLOG_ENTRY_FLUSH_COUNT);
 		}
@@ -314,7 +314,6 @@ public class LuceneUpdateService {
 		}
 
 		eventLogEntry.setType(type);
-		dirtyIndex = true;
 	}
 
 	/**
