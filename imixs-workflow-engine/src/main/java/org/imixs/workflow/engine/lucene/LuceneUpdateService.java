@@ -104,7 +104,7 @@ public class LuceneUpdateService {
 
 	protected static final String EVENTLOG_ENTRY_TYPE_ADD = "eventlogentry_add";
 	protected static final String EVENTLOG_ENTRY_TYPE_REMOVE = "eventlogentry_remove";
-	protected static final String EVENTLOG_ENTRY_SUFIX = "_EVENTLOG_ENTRY";
+	protected static final String EVENTLOG_ENTRY_ID_PRAFIX = "EVENTLOG_ENTRY_";
 	protected static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
 
 	private List<String> searchFieldList = null;
@@ -301,10 +301,10 @@ public class LuceneUpdateService {
 		}
 
 		// check if a eventLog entry already exists in the event log cache...
-		eventLogEntry = manager.find(org.imixs.workflow.engine.jpa.Document.class, id + EVENTLOG_ENTRY_SUFIX);
+		eventLogEntry = manager.find(org.imixs.workflow.engine.jpa.Document.class, EVENTLOG_ENTRY_ID_PRAFIX + id );
 		if (eventLogEntry == null) {
 			// no - create new one with the provided id
-			eventLogEntry = new org.imixs.workflow.engine.jpa.Document(id + EVENTLOG_ENTRY_SUFIX);
+			eventLogEntry = new org.imixs.workflow.engine.jpa.Document(EVENTLOG_ENTRY_ID_PRAFIX + id);
 			logger.finest("......create new eventLogEntry '" + id + "' => " + type);
 			manager.persist(eventLogEntry);
 		} else {
@@ -349,7 +349,7 @@ public class LuceneUpdateService {
 
 					String id = eventLogEntry.getId();
 					// cut prafix...
-					id = id.substring(0, id.length() - EVENTLOG_ENTRY_SUFIX.length());
+					id = id.substring(EVENTLOG_ENTRY_ID_PRAFIX.length());
 					// lookup the workitem...
 					org.imixs.workflow.engine.jpa.Document doc = manager
 							.find(org.imixs.workflow.engine.jpa.Document.class, id);
