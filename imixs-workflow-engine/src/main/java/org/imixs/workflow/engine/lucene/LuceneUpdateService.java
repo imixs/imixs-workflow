@@ -44,6 +44,11 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.apache.lucene.analysis.standard.ClassicAnalyzer;
 import org.apache.lucene.document.Document;
@@ -57,10 +62,9 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.BytesRef;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.PropertyService;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -98,6 +102,11 @@ public class LuceneUpdateService {
 	protected static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
 	protected static final String ANONYMOUS = "ANONYMOUS";
 
+	protected static final String EVENTLOG_TYPE_ADD =    "lucene_event_add";
+	protected static final String EVENTLOG_TYPE_REMOVE = "lucene_event_remove";
+	protected static final String EVENTLOG_ID_PRAFIX =   "lucene_event_id_";
+	protected static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
+
 	private List<String> searchFieldList = null;
 	private List<String> indexFieldListAnalyse = null;
 	private List<String> indexFieldListNoAnalyse = null;
@@ -110,17 +119,20 @@ public class LuceneUpdateService {
 	private static List<String> DEFAULT_NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
 			"$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator",
 			"$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "txtname", "namowner",
-			"txtworkitemref","$uniqueidsource","$uniqueidversions","$lasttask","$lastevent","$lasteventdate");
+			"txtworkitemref", "$uniqueidsource", "$uniqueidversions", "$lasttask", "$lastevent", "$lasteventdate");
 
 	@EJB
 	PropertyService propertyService;
 
+	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
+	private EntityManager manager;
+
 	private static Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
 
 	/**
-	 * PostContruct event - The method loads the lucene index properties from
-	 * the imixs.properties file from the classpath. If no properties are
-	 * defined the method terminates.
+	 * PostContruct event - The method loads the lucene index properties from the
+	 * imixs.properties file from the classpath. If no properties are defined the
+	 * method terminates.
 	 * 
 	 */
 	@PostConstruct
@@ -217,114 +229,194 @@ public class LuceneUpdateService {
 	}
 
 	/**
-	 * This method updates the search index for a collection of Documents.
+	 * This method adds for each document in a given selection a new eventLogEntry.
+	 * The documents will be indexed after the method fluschEventLog is called. This
+	 * method is called by the LuceneSearchService finder method only.
 	 * 
-	 * @param documents
-	 *            of ItemCollections to be indexed
+	 * @param documents to be indexed
 	 * @throws IndexException
 	 */
 	public void updateDocuments(Collection<ItemCollection> documents) {
-
-		IndexWriter awriter = null;
 		long ltime = System.currentTimeMillis();
-		try {
-			awriter = createIndexWriter();
-			// add workitem to search index....
-			for (ItemCollection workitem : documents) {
-				// create term
-				Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
-
-				logger.finest("......lucene add/update workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
-						+ "' to index...");
-				awriter.updateDocument(term, createDocument(workitem));
-			}
-		} catch (IOException luceneEx) {
-			logger.warning("lucene error: " + luceneEx.getMessage());
-			throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index", luceneEx);
-		} finally {
-			// close writer!
-			if (awriter != null) {
-				logger.finest("......lucene close IndexWriter...");
-				try {
-					awriter.close();
-				} catch (CorruptIndexException e) {
-					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
-				} catch (IOException e) {
-					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
-				}
-			}
+		// write a new EventLog entry for each document....
+		for (ItemCollection workitem : documents) {
+			writeEventLogEntry(workitem.getUniqueID(), EVENTLOG_TYPE_ADD);
 		}
 
 		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("... update worklist in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
-					+ " worktiems total)");
+			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime) + " ms ("
+					+ documents.size() + " documents to be index)");
 		}
 	}
 
 	/**
-	 * This method removes a single Document from the search index.
+	 * This method adds a new eventLogEntry for a document to be deleted from the
+	 * index. The document will be removed from the index after the method
+	 * fluschEventLog is called. This method is called by the LuceneSearchService
+	 * finder method only.
 	 * 
-	 * @param uniqueID
-	 *            of the workitem to be removed
+	 * 
+	 * @param uniqueID of the workitem to be removed
 	 * @throws PluginException
 	 */
 	public void removeDocument(String uniqueID) {
-		IndexWriter awriter = null;
 		long ltime = System.currentTimeMillis();
-		try {
-			awriter = createIndexWriter();
-			Term term = new Term("$uniqueid", uniqueID);
-			awriter.deleteDocuments(term);
-		} catch (CorruptIndexException e) {
-			throw new IndexException(IndexException.INVALID_INDEX,
-					"Unable to remove workitem '" + uniqueID + "' from search index", e);
-		} catch (LockObtainFailedException e) {
-			throw new IndexException(IndexException.INVALID_INDEX,
-					"Unable to remove workitem '" + uniqueID + "' from search index", e);
-		} catch (IOException e) {
-			throw new IndexException(IndexException.INVALID_INDEX,
-					"Unable to remove workitem '" + uniqueID + "' from search index", e);
-		} finally {
-			// close writer!
-			if (awriter != null) {
-				logger.finest("......close IndexWriter...");
-				try {
-					awriter.close();
-				} catch (CorruptIndexException e) {
-					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
-				} catch (IOException e) {
-					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+		writeEventLogEntry(uniqueID, EVENTLOG_TYPE_REMOVE);
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime)
+					+ " ms (1 document to be removed)");
+		}
+	}
+
+	/**
+	 * Flush the EventLog cache. This method is called by the LuceneSerachService.
+	 * <p>
+	 * The method flushes the cache in smaller blocks to avoid a heap size problem.
+	 * The default flush size is 16. The eventLog cache is tracked by the flag
+	 * 'dirtyIndex'.
+	 * 
+	 */
+	public void flushEventLog() {
+		boolean dirtyIndex=true;
+		while (dirtyIndex) {
+			dirtyIndex = !flushEventLogByCount(EVENTLOG_ENTRY_FLUSH_COUNT);
+		}
+	}
+
+	/**
+	 * This method creates/updates an event log entry to indicate an uncommitted
+	 * index update. This method is called by "updateDocuments".
+	 * 
+	 * The identifier of an eventLogEnty is sufixed with "_EVENT_LOG_ENTRY". The
+	 * type of the document entity will be set to 'eventlogentry'.
+	 * 
+	 * @param id   - uniqueid of the document to update
+	 * @param type EVENTLOG_ENTRY_TYPE_ADD or EVENTLOG_ENTRY_TYPE_REMOVE
+	 */
+	void writeEventLogEntry(String id, String type) {
+		org.imixs.workflow.engine.jpa.Document eventLogEntry = null;
+		if (id == null || id.isEmpty()) {
+			logger.warning("WriteEventLog failed - given id is empty!");
+			return;
+		}
+
+		// check if a eventLog entry already exists in the event log cache...
+		eventLogEntry = manager.find(org.imixs.workflow.engine.jpa.Document.class, EVENTLOG_ID_PRAFIX + id );
+		if (eventLogEntry == null) {
+			// no - create new one with the provided id
+			eventLogEntry = new org.imixs.workflow.engine.jpa.Document(EVENTLOG_ID_PRAFIX + id);
+			logger.finest("......create new eventLogEntry '" + id + "' => " + type);
+			manager.persist(eventLogEntry);
+		} else {
+			// Overwrite Creation Date
+			logger.finest("......update existing eventLogEntry '" + id + "' => " + type);
+			eventLogEntry.setCreated(Calendar.getInstance());
+		}
+
+		eventLogEntry.setType(type);
+	}
+
+	/**
+	 * This method flushes a given count of eventLogEntries. The method return true
+	 * if no more eventLogEntries exist.
+	 * 
+	 * @param count the max size of a eventLog engries to remove.
+	 * @return true if the cache was totally flushed.
+	 */
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
+	boolean flushEventLogByCount(int count) {
+		boolean cacheIsEmpty = true;
+		IndexWriter indexWriter = null;
+		long l = System.currentTimeMillis();
+		logger.finest("......flush eventlog cache....");
+
+		String query = "SELECT document FROM Document AS document ";
+		query += " WHERE document.type IN ('" + EVENTLOG_TYPE_ADD + "','" + EVENTLOG_TYPE_REMOVE + "')";
+
+		// find all eventLogEntries....
+		Query q = manager.createQuery(query);
+		// we try to search one more log entry as requested to see if the cache is
+		// empty...
+		q.setMaxResults(count + 1);
+
+		@SuppressWarnings("unchecked")
+		Collection<org.imixs.workflow.engine.jpa.Document> documentList = q.getResultList();
+		if (documentList != null && documentList.size() > 0) {
+			try {
+				indexWriter = createIndexWriter();
+				int _counter = 0;
+				for (org.imixs.workflow.engine.jpa.Document eventLogEntry : documentList) {
+
+					String id = eventLogEntry.getId();
+					// cut prafix...
+					id = id.substring(EVENTLOG_ID_PRAFIX.length());
+					// lookup the workitem...
+					org.imixs.workflow.engine.jpa.Document doc = manager
+							.find(org.imixs.workflow.engine.jpa.Document.class, id);
+					Term term = new Term("$uniqueid", id);
+
+					// if the document was found we add/update the index. Otherwise we remove the
+					// document form the index.
+					if (doc != null && EVENTLOG_TYPE_ADD.equals(eventLogEntry.getType())) {
+						// add workitem to search index....
+						long l2 = System.currentTimeMillis();
+						ItemCollection workitem = new ItemCollection();
+						workitem.setAllItems(doc.getData());
+						if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
+							indexWriter.updateDocument(term, createDocument(workitem));
+							logger.finest("......lucene add/update workitem '" + id + "' to index in "
+									+ (System.currentTimeMillis() - l2) + "ms");
+						}
+					} else {
+						long l2 = System.currentTimeMillis();
+						indexWriter.deleteDocuments(term);
+						logger.finest("......lucene remove workitem '" + id + "' from index in "
+								+ (System.currentTimeMillis() - l2) + "ms");
+					}
+
+					// remove the eventLogEntry.
+					manager.remove(eventLogEntry);
+
+					// break?
+					_counter++;
+					if (_counter >= count) {
+						// we skipp the last one if the maximum was reached.
+						cacheIsEmpty = false;
+						break;
+					}
+				}
+			} catch (IOException luceneEx) {
+				logger.warning("lucene error: " + luceneEx.getMessage());
+				throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index",
+						luceneEx);
+			} finally {
+				// close writer!
+				if (indexWriter != null) {
+					logger.finest("......lucene close IndexWriter...");
+					try {
+						indexWriter.close();
+					} catch (CorruptIndexException e) {
+						throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ",
+								e);
+					} catch (IOException e) {
+						throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ",
+								e);
+					}
 				}
 			}
 		}
 
-		logger.fine("...removed Document in " + (System.currentTimeMillis() - ltime) + " ms");
+		logger.fine("...flushEventLog - " + documentList.size() + " documents in " + (System.currentTimeMillis() - l)
+				+ " ms");
+
+		return cacheIsEmpty;
 
 	}
 
 	/**
-	 * This method creates a new instance of a lucene IndexWriter.
-	 * 
-	 * The location of the lucene index in the filesystem is read from the
-	 * imixs.properties
-	 * 
-	 * @return
-	 * @throws IOException
-	 * @throws Exception
-	 */
-	IndexWriter createIndexWriter() throws IOException {
-		// create a IndexWriter Instance
-		Directory indexDir = FSDirectory.open(Paths.get(indexDirectoryPath));
-		IndexWriterConfig indexWriterConfig;
-		indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
-
-		return new IndexWriter(indexDir, indexWriterConfig);
-	}
-
-	/**
-	 * This method creates a lucene document based on a ItemCollection. The
-	 * Method creates for each field specified in the FieldList a separate index
-	 * field for the lucene document.
+	 * This method creates a lucene document based on a ItemCollection. The Method
+	 * creates for each field specified in the FieldList a separate index field for
+	 * the lucene document.
 	 * 
 	 * The property 'AnalyzeIndexFields' defines if a indexfield value should by
 	 * analyzed by the Lucene Analyzer (default=false)
@@ -366,7 +458,6 @@ public class LuceneUpdateService {
 					sValue += o.toString() + ",";
 			}
 			if (sValue != null) {
-				logger.finest("......lucene add SearchField: " + aFieldname + "=" + sValue);
 				sContent += sValue + ",";
 			}
 		}
@@ -407,14 +498,10 @@ public class LuceneUpdateService {
 	/**
 	 * adds a field value into a lucene document
 	 * 
-	 * @param doc
-	 *            an existing lucene document
-	 * @param workitem
-	 *            the workitem containg the values
-	 * @param itemName
-	 *            the Fieldname inside the workitem
-	 * @param analyzeValue
-	 *            indicates if the value should be parsed by the analyzer
+	 * @param doc          an existing lucene document
+	 * @param workitem     the workitem containg the values
+	 * @param itemName     the Fieldname inside the workitem
+	 * @param analyzeValue indicates if the value should be parsed by the analyzer
 	 */
 	void addItemValues(Document doc, ItemCollection workitem, String itemName, boolean analyzeValue) {
 		String sValue = null;
@@ -478,4 +565,22 @@ public class LuceneUpdateService {
 
 	}
 
+	/**
+	 * This method creates a new instance of a lucene IndexWriter.
+	 * 
+	 * The location of the lucene index in the filesystem is read from the
+	 * imixs.properties
+	 * 
+	 * @return
+	 * @throws IOException
+	 * @throws Exception
+	 */
+	IndexWriter createIndexWriter() throws IOException {
+		// create a IndexWriter Instance
+		Directory indexDir = FSDirectory.open(Paths.get(indexDirectoryPath));
+		IndexWriterConfig indexWriterConfig;
+		indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
+
+		return new IndexWriter(indexDir, indexWriterConfig);
+	}
 }

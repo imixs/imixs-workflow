@@ -103,6 +103,9 @@ public class LuceneSearchService {
 
 	@EJB
 	DocumentService documentService;
+	
+	@EJB
+	LuceneUpdateService luceneUpdateService;
 
 	private static Logger logger = Logger.getLogger(LuceneSearchService.class.getName());
 
@@ -173,6 +176,9 @@ public class LuceneSearchService {
 			Operator defaultOperator) throws QueryException {
 
 		long ltime = System.currentTimeMillis();
+		
+		// flush eventlog (see issue #411)
+		luceneUpdateService.flushEventLog();
 
 		// see issue #382
 		/*
