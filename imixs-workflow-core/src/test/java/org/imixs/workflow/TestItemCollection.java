@@ -1004,4 +1004,57 @@ public class TestItemCollection {
 
 	}
 
+	
+	/**
+	 * Test the method getItemValue for number types null
+	 */
+	@Test
+	public void testGetItemValueNumberNull() {
+		ItemCollection itemCol=new ItemCollection();
+		
+		// integer
+		Integer i=itemCol.getItemValue("unkonw", Integer.class);
+		Assert.assertNotNull(i);
+		Assert.assertEquals(0, i.intValue());
+		
+		// int
+		int ii=itemCol.getItemValue("unkonw", int.class);
+		Assert.assertNotNull(ii);
+		Assert.assertEquals(0, ii);
+		
+		
+		
+		// Float
+		Float f=itemCol.getItemValue("unkonw", Float.class);
+		Assert.assertNotNull(f);
+		Assert.assertEquals(0, f.intValue());
+		
+		// float
+		float ff=itemCol.getItemValue("unkonw", float.class);
+		Assert.assertNotNull(ff);
+		Assert.assertEquals(0, ff,0);
+		
+		// Long
+		Long l=itemCol.getItemValue("unkonw", Long.class);
+		Assert.assertNotNull(l);
+		Assert.assertEquals(0, l.intValue());
+		
+		// long
+		long ll=itemCol.getItemValue("unkonw", long.class);
+		Assert.assertNotNull(ll);
+		Assert.assertEquals(0, ll);
+		
+		
+		// Double
+		Double d=itemCol.getItemValue("unkonw", Double.class);
+		Assert.assertNotNull(d);
+		Assert.assertEquals(0, d.intValue());
+		
+		// double
+		double dd=itemCol.getItemValue("unkonw", double.class);
+		Assert.assertNotNull(dd);
+		Assert.assertEquals(0, dd,0);
+		
+		
+	}
 }

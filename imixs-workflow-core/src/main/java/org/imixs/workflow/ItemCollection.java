@@ -264,6 +264,9 @@ public class ItemCollection implements Cloneable {
 	 * <p>
 	 * If the item isn't present in the itemCollection the method returns null.
 	 * <p>
+	 * If the specified type is int, float, long, double, Integer, Float, Long or
+	 * Double, the method returns 0 instead of null
+	 * <p>
 	 * If the item contains no value with the specified type, the method returns
 	 * null. The ItemName is not case sensitive. Use hasItem to verify the existence
 	 * of an item.
@@ -273,9 +276,30 @@ public class ItemCollection implements Cloneable {
 	 *                 converted
 	 * @return the resolved item value as an object of the requested type.
 	 */
+	@SuppressWarnings("unchecked")
 	public <T> T getItemValue(String itemName, Class<T> itemType) {
 		List<?> values = getItemValue(itemName);
 		if (values == null || values.size() == 0) {
+
+			// test for Integer
+			if (itemType == Integer.class || itemType == int.class) {
+				return (T) new Integer(0);
+			}
+			// test for Float
+			if (itemType == Float.class || itemType == float.class) {
+				return (T) new Float(0);
+			}
+
+			// test for Long
+			if (itemType == Long.class || itemType == long.class) {
+				return (T) new Long(0);
+			}
+
+			// test for Double
+			if (itemType == Double.class || itemType == double.class) {
+				return (T) new Double(0);
+			}
+
 			return null;
 		}
 		// find first value of specified type
