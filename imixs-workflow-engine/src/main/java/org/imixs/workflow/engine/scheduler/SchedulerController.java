@@ -54,7 +54,9 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 public class SchedulerController implements Serializable {
 
 	private ItemCollection configuration = null;
-private String name;
+	private String name;
+	private String schedulerClass;
+
 	@EJB
 	private SchedulerService schedulerService;
 
@@ -62,12 +64,9 @@ private String name;
 
 	private static Logger logger = Logger.getLogger(SchedulerController.class.getName());
 
-	
-	
-
 	/**
-	 * This method load the config entity after postContstruct. If no Entity
-	 * exists than the ConfigService EJB creates a new config entity.
+	 * This method load the config entity after postContstruct. If no Entity exists
+	 * than the ConfigService EJB creates a new config entity.
 	 * 
 	 */
 	@PostConstruct
@@ -75,7 +74,6 @@ private String name;
 		configuration = schedulerService.loadConfiguration(getName());
 	}
 
-	
 	public String getName() {
 		return name;
 	}
@@ -84,12 +82,41 @@ private String name;
 		this.name = name;
 	}
 
+	public String getSchedulerClass() {
+		return schedulerClass;
+	}
+
+	public void setSchedulerClass(String schedulerClass) {
+		this.schedulerClass = schedulerClass;
+	}
+
 	public ItemCollection getConfiguration() {
+		if (configuration == null) {
+			configuration = new ItemCollection();
+			configuration.setItemValue(Scheduler.ITEM_SCHEDULER_NAME, getName());
+		}
 		return configuration;
 	}
 
 	public void setConfiguration(ItemCollection configuration) {
 		this.configuration = configuration;
+	}
+
+	/**
+	 * Saves the current scheduler configuration.
+	 */
+	public void saveConfiguration() {
+		configuration.setItemValue(Scheduler.ITEM_SCHEDULER_CLASS, getSchedulerClass());
+		getSchedulerService().saveConfiguration(getConfiguration());
+	}
+
+	/**
+	 * This method updates the scheduler configuration with the current timer
+	 * information
+	 * 
+	 */
+	public void refresh() {
+		getSchedulerService().updateTimerDetails(getConfiguration());
 	}
 
 	public SchedulerService getSchedulerService() {
@@ -105,11 +132,13 @@ private String name;
 	 * @throws Exception
 	 */
 	public void startScheduler() throws AccessDeniedException, ParseException {
-		schedulerService.start(getConfiguration());
+		configuration=schedulerService.start(getConfiguration());
+		schedulerService.saveConfiguration(configuration);
 	}
 
 	public void stopScheduler() {
-		schedulerService.stop(getConfiguration());
+		configuration=schedulerService.stop(getConfiguration());
+		schedulerService.saveConfiguration(configuration);
 	}
 
 	public void restartScheduler(ActionEvent event) throws Exception {

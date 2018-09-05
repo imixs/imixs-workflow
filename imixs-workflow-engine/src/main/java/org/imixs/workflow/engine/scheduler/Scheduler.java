@@ -4,15 +4,17 @@ import org.imixs.workflow.ItemCollection;
 
 public interface Scheduler {
 
+	public final static String ITEM_SCHEDULER_NAME = "txtname";
 	public final static String ITEM_SCHEDULER_ENABLED = "_scheduler_enabled";
 	public final static String ITEM_SCHEDULER_CLASS = "_scheduler_class";
+	public final static String ITEM_SCHEDULER_DEFINITION = "_scheduler_definition";
 
 	/**
 	 * Called by the Timeout event. The scheduler configuration object contains
 	 * information for the processor of a concrete implementation:
 	 * <ul>
 	 * <li>type - fixed to value 'scheduler'</li>
-	 * <li>_scheduler_description - the chron/calendar description for the Java EE
+	 * <li>_scheduler_definition - the chron/calendar definition for the Java EE
 	 * timer service.</li>
 	 * <li>_scheduler_enabled - boolean indicates if the scheduler is
 	 * enabled/disabled</li>

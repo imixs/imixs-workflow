@@ -50,7 +50,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.WorkflowService;
-import org.imixs.workflow.engine.adminp.AdminPException;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.QueryException;
 
@@ -174,12 +173,12 @@ public class SchedulerService {
 	 * The Timer can be started based on a Calendar setting stored in the property
 	 * txtConfiguration, or by interval based on the properties datStart, datStop,
 	 * numIntervall.
-	 * 
+	 * <p>
 	 * 
 	 * The method loads the configuration entity and evaluates the timer
 	 * configuration. THe $UniqueID of the configuration entity is the id of the
 	 * timer to be controlled.
-	 * 
+	 * <p>
 	 * $uniqueid - String - identifier for the Timer Service.
 	 * 
 	 * txtConfiguration - calendarBasedTimer configuration
@@ -190,36 +189,40 @@ public class SchedulerService {
 	 * 
 	 * numInterval - Integer Object (interval in seconds)
 	 * 
-	 * 
+	 * <p>
 	 * The method throws an exception if the configuration entity contains invalid
 	 * attributes or values.
-	 * 
+	 * <p>
 	 * After the timer was started the configuration is updated with the latest
 	 * statusmessage
+	 * <p>
+	 * The method returns the current configuration. The configuration will not be
+	 * saved!
 	 * 
-	 * The method returns the current configuration
 	 * 
+	 * @param configuration - scheduler configuration
+	 * @return updated configuration
 	 * @throws AccessDeniedException
 	 * @throws ParseException
 	 */
-	public ItemCollection start(ItemCollection configItemCollection) throws AccessDeniedException, ParseException {
+	public ItemCollection start(ItemCollection configuration) throws AccessDeniedException, ParseException {
 		Timer timer = null;
-		if (configItemCollection == null)
+		if (configuration == null)
 			return null;
 
-		String id = configItemCollection.getUniqueID();
+		String id = configuration.getUniqueID();
 
 		// try to cancel an existing timer for this workflowinstance
 		while (this.findTimer(id) != null) {
 			this.findTimer(id).cancel();
 		}
 
-		logger.info("...Scheduler Service " + configItemCollection.getUniqueID() + " will be started...");
-		String sConfiguation = configItemCollection.getItemValueString("txtConfiguration");
+		logger.info("...Scheduler Service " + configuration.getUniqueID() + " will be started...");
+		String schedulerDescription = configuration.getItemValueString(Scheduler.ITEM_SCHEDULER_DEFINITION);
 
-		if (!sConfiguation.isEmpty()) {
+		if (!schedulerDescription.isEmpty()) {
 			// New timer will be started on calendar confiugration
-			timer = createTimerOnCalendar(configItemCollection);
+			timer = createTimerOnCalendar(configuration);
 		}
 		// start and set statusmessage
 		if (timer != null) {
@@ -228,37 +231,39 @@ public class SchedulerService {
 			SimpleDateFormat dateFormatDE = new SimpleDateFormat("dd.MM.yy hh:mm:ss");
 			String msg = "started at " + dateFormatDE.format(calNow.getTime()) + " by "
 					+ ctx.getCallerPrincipal().getName();
-			configItemCollection.replaceItemValue("statusmessage", msg);
+			configuration.replaceItemValue("statusmessage", msg);
 
 			if (timer.isCalendarTimer()) {
-				configItemCollection.replaceItemValue("Schedule", timer.getSchedule().toString());
+				configuration.replaceItemValue("Schedule", timer.getSchedule().toString());
 			} else {
-				configItemCollection.replaceItemValue("Schedule", "");
+				configuration.replaceItemValue("Schedule", "");
 
 			}
-			logger.info("" + configItemCollection.getItemValueString("txtName") + " started: " + id);
+			logger.info("" + configuration.getItemValueString("txtName") + " started: " + id);
 		}
-		configItemCollection.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, true);
-		configItemCollection.replaceItemValue("errormessage", "");
-		configItemCollection = saveConfiguration(configItemCollection);
-
-		return configItemCollection;
+		configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, true);
+		configuration.replaceItemValue("errormessage", "");
+		return configuration;
 	}
 
 	/**
 	 * Cancels a running timer instance. After cancel a timer the corresponding
-	 * timerDescripton (ItemCollection) is no longer valid
+	 * timerDescripton (ItemCollection) is no longer valid.
+	 * <p>
+	 * The method returns the current configuration. The configuration will not be
+	 * saved!
+	 * 
 	 * 
 	 */
-	public ItemCollection stop(ItemCollection config) {
-		String id = config.getItemValueString(WorkflowKernel.UNIQUEID);
+	public ItemCollection stop(ItemCollection configuration) {
+		String id = configuration.getItemValueString(WorkflowKernel.UNIQUEID);
 		boolean found = false;
 		while (this.findTimer(id) != null) {
 			this.findTimer(id).cancel();
 			found = true;
 		}
+
 		if (found) {
-			ItemCollection configuration = workflowService.getWorkItem(id);
 			Calendar calNow = Calendar.getInstance();
 			SimpleDateFormat dateFormatDE = new SimpleDateFormat("dd.MM.yy hh:mm:ss");
 
@@ -268,13 +273,15 @@ public class SchedulerService {
 
 			logger.info("" + configuration.getItemValueString("txtName") + " stopped: " + id);
 
-			configuration.removeItem("nextTimeout");
-			configuration.removeItem("timeRemaining");
-			configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, false);
-			configuration = saveConfiguration(configuration);
-			return configuration;
+		} else {
+			String msg = "stopped";
+			configuration.replaceItemValue("statusmessage", msg);
+
 		}
-		return config;
+		configuration.removeItem("nextTimeout");
+		configuration.removeItem("timeRemaining");
+		configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, false);
+		return configuration;
 	}
 
 	/**
@@ -379,7 +386,7 @@ public class SchedulerService {
 		// iterate over all injected JobHandlers....
 		for (Scheduler scheduler : this.schedulerHandlers) {
 			if (scheduler.getClass().getName().equals(schedulerClassName)) {
-				logger.finest("......CDI Scheduler '" + schedulerClassName + "' successful injected");
+				logger.finest("......CDI Scheduler class '" + schedulerClassName + "' successful injected");
 				return scheduler;
 			}
 		}
@@ -398,16 +405,15 @@ public class SchedulerService {
 	 */
 	@Timeout
 	void onTimeout(javax.ejb.Timer timer) throws Exception {
-
+		String errorMes = "";
 		// starttime....
 		long lProfiler = System.currentTimeMillis();
+		String id = timer.getInfo().toString();
 
-		logger.info("processing scheduler....");
-		ItemCollection configuration = documentService.load(timer.getInfo().toString());
+		ItemCollection configuration = documentService.load(id);
 
 		if (configuration == null) {
 			logger.severe("...failed to load scheduler configuration for current timer. Timer will be stopped...");
-			timer.cancel();
 			return;
 		}
 
@@ -417,14 +423,20 @@ public class SchedulerService {
 
 			Scheduler scheduler = findSchedulerByName(schedulerClassName);
 			if (scheduler != null) {
+				logger.info("...running scheduler '" + id + "' scheduler class='" + schedulerClassName + "'....");
 				configuration = scheduler.run(configuration);
 				if (configuration.getItemValueBoolean(Scheduler.ITEM_SCHEDULER_ENABLED) == false) {
-					logger.info("... timer will be stopped");
-					timer.cancel();
+					logger.info("...scheduler '" + id + "' disabled, timer will be stopped...");
+					stop(configuration);
 				}
-				logger.info("Scheduler finished successfull: " + ((System.currentTimeMillis()) - lProfiler) + " ms");
+				logger.info("...finished scheduler  '" + id + "' successfull in: "
+						+ ((System.currentTimeMillis()) - lProfiler) + " ms");
 			} else {
-				logger.warning("...scheduler '" + schedulerClassName + "' not found");
+				errorMes = " scheduler class='" + schedulerClassName + "' not found!";
+				logger.warning("...scheduler '" + id + "' scheduler class='" + schedulerClassName
+						+ "' not found, timer will be stopped...");
+				configuration.setItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, false);
+				stop(configuration);
 			}
 		} catch (RuntimeException e) {
 			// in case of an exception we did not cancel the Timer service
@@ -432,15 +444,16 @@ public class SchedulerService {
 				e.printStackTrace();
 			}
 
-			String errorMes = e.getMessage();
+			errorMes = e.getMessage();
 			if (errorMes == null) {
 				errorMes = "NullPointerException";
 			}
 			logger.severe("Scheduler failed: " + errorMes);
-			configuration.replaceItemValue("errormessage", errorMes);
+
 		} finally {
 			// Save statistic in configuration
 			if (configuration != null) {
+				configuration.replaceItemValue("errormessage", errorMes);
 				saveConfiguration(configuration);
 			}
 		}
