@@ -55,7 +55,6 @@ import org.imixs.workflow.ItemCollection;
 public class XMLDataCollectionAdapter {
 	private static Logger logger = Logger.getLogger(XMLDataCollectionAdapter.class.getName());
 
-
 	/**
 	 * This Method converts a <code>org.imixs.workflow.xml.DocumentCollection</code>
 	 * into a List of <code>org.imixs.workflow.ItemCollection</code>
@@ -77,10 +76,6 @@ public class XMLDataCollectionAdapter {
 		return result;
 	}
 
-	
-
-	
-
 	/**
 	 * This method transforms a Collection<ItemCollection> into a DocumentCollection
 	 * 
@@ -92,7 +87,8 @@ public class XMLDataCollectionAdapter {
 	}
 
 	/**
-	 * This method transforms a Collection<ItemCollection> into a XMLDocumentCollection
+	 * This method transforms a Collection<ItemCollection> into a
+	 * XMLDocumentCollection
 	 * 
 	 * If the attribute List is provided only the corresponding properties will be
 	 * returned.
@@ -104,7 +100,8 @@ public class XMLDataCollectionAdapter {
 	 *            will be converted
 	 * @return
 	 */
-	public static XMLDataCollection getDataCollection(final Collection<ItemCollection> documents, final List<String> itemNames) {
+	public static XMLDataCollection getDataCollection(final Collection<ItemCollection> documents,
+			final List<String> itemNames) {
 		XMLDataCollection entiCol = new XMLDataCollection();
 		Iterator<ItemCollection> it = documents.iterator();
 		int max = documents.size();
@@ -112,38 +109,37 @@ public class XMLDataCollectionAdapter {
 		XMLDocument[] entities = new XMLDocument[max];
 		while (it.hasNext()) {
 			ItemCollection icw = (ItemCollection) it.next();
-			XMLDocument entity = XMLDocumentAdapter.getDocument(icw, itemNames);
-			entities[i] = entity;
-			i++;
+			if (icw != null) {
+				XMLDocument entity = XMLDocumentAdapter.getDocument(icw, itemNames);
+				entities[i] = entity;
+				i++;
+			}
 		}
 		if (max > 0)
 			entiCol.setDocument(entities);
 		return entiCol;
 	}
-	
 
 	/**
 	 * This method transforms a single ItemCollection into a XMLDocumentCollection
 	 * 
-	*/
+	 */
 	public static XMLDataCollection getDataCollection(final ItemCollection document) {
-		List<ItemCollection> col=new ArrayList<ItemCollection>();
+		List<ItemCollection> col = new ArrayList<ItemCollection>();
 		col.add(document);
-		return getDataCollection(col,null);
+		return getDataCollection(col, null);
 	}
-	
 
 	/**
 	 * This method transforms a single ItemCollection into a XMLDocumentCollection
 	 * 
-	*/
+	 */
 	public static XMLDataCollection getDataCollection(final ItemCollection document, final List<String> itemNames) {
-		List<ItemCollection> col=new ArrayList<ItemCollection>();
+		List<ItemCollection> col = new ArrayList<ItemCollection>();
 		col.add(document);
-		return getDataCollection(col,itemNames);
+		return getDataCollection(col, itemNames);
 	}
-	
-	
+
 	/**
 	 * This method imports an xml entity data stream and returns a List of
 	 * ItemCollection objects. The method can import any kind of entity data like
@@ -167,11 +163,6 @@ public class XMLDataCollectionAdapter {
 
 	}
 
-	
-	
-
-	
-	
 	/**
 	 * This method imports an xml entity data byte array and returns a List of
 	 * ItemCollection objects. The method can import any kind of entity data like
@@ -215,12 +206,6 @@ public class XMLDataCollectionAdapter {
 
 	}
 
-	
-	
-	
-	
-	
-	
 	private static byte[] getBytesFromStream(InputStream is) throws IOException {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		int nRead;
