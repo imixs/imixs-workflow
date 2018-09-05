@@ -42,6 +42,9 @@ import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -85,7 +88,7 @@ import org.imixs.workflow.exceptions.QueryException;
 @LocalBean
 @DeclareRoles({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @RunAs("org.imixs.ACCESSLEVEL.MANAGERACCESS")
-public abstract class GenericSchedulerService {
+public class SchedulerService {
 
 	public static final String DOCUMENT_TYPE = "scheduler";
 
@@ -101,7 +104,11 @@ public abstract class GenericSchedulerService {
 	@Resource
 	javax.ejb.TimerService timerService;
 
-	private static Logger logger = Logger.getLogger(GenericSchedulerService.class.getName());
+	@Inject
+	@Any
+	private Instance<Scheduler> schedulerHandlers;
+
+	private static Logger logger = Logger.getLogger(SchedulerService.class.getName());
 
 	/**
 	 * Loads the scheduler configuration entity by name. The method returns null if
@@ -143,7 +150,7 @@ public abstract class GenericSchedulerService {
 		// validate
 		String name = configItemCollection.getItemValueString("txtname");
 		if (name == null || name.isEmpty()) {
-			throw new SchedulerException(GenericSchedulerService.class.getName(), SchedulerException.INVALID_WORKITEM,
+			throw new SchedulerException(SchedulerService.class.getName(), SchedulerException.INVALID_WORKITEM,
 					" scheduler configuraiton must contain the item 'txtname'");
 
 		}
@@ -207,6 +214,7 @@ public abstract class GenericSchedulerService {
 			this.findTimer(id).cancel();
 		}
 
+		logger.info("...Scheduler Service " + configItemCollection.getUniqueID() + " will be started...");
 		String sConfiguation = configItemCollection.getItemValueString("txtConfiguration");
 
 		if (!sConfiguation.isEmpty()) {
@@ -230,6 +238,7 @@ public abstract class GenericSchedulerService {
 			}
 			logger.info("" + configItemCollection.getItemValueString("txtName") + " started: " + id);
 		}
+		configItemCollection.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, true);
 		configItemCollection.replaceItemValue("errormessage", "");
 		configItemCollection = saveConfiguration(configItemCollection);
 
@@ -241,7 +250,7 @@ public abstract class GenericSchedulerService {
 	 * timerDescripton (ItemCollection) is no longer valid
 	 * 
 	 */
-	public ItemCollection stop(ItemCollection config) throws Exception {
+	public ItemCollection stop(ItemCollection config) {
 		String id = config.getItemValueString(WorkflowKernel.UNIQUEID);
 		boolean found = false;
 		while (this.findTimer(id) != null) {
@@ -261,11 +270,44 @@ public abstract class GenericSchedulerService {
 
 			configuration.removeItem("nextTimeout");
 			configuration.removeItem("timeRemaining");
-
+			configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, false);
 			configuration = saveConfiguration(configuration);
 			return configuration;
 		}
 		return config;
+	}
+
+	/**
+	 * This method will start all schedulers which are not yet started. The method
+	 * is called for example by the SchedulerStartupServlet.
+	 * 
+	 */
+	public void startAllSchedulers() {
+		logger.info("...starting Imixs Schedulers....");
+		try {
+			String sQuery = "(type:\"" + SchedulerService.DOCUMENT_TYPE + "\" )";
+			Collection<ItemCollection> col = documentService.find(sQuery, 1, 0);
+			// check if we found a scheduler configuration
+			for (ItemCollection schedulerConfig : col) {
+				// is timmer running?
+				if (schedulerConfig != null && schedulerConfig.getItemValueBoolean(Scheduler.ITEM_SCHEDULER_ENABLED)
+						&& findTimer(schedulerConfig.getUniqueID()) == null) {
+					try {
+						start(schedulerConfig);
+
+					} catch (Exception e) {
+						logger.severe("...start of Scheduler Service " + schedulerConfig.getUniqueID() + " failed! - "
+								+ e.getMessage());
+						e.printStackTrace();
+					}
+				} else {
+					logger.info("...Scheduler Service " + schedulerConfig.getUniqueID() + " is disabled. ");
+				}
+
+			}
+		} catch (QueryException e1) {
+			e1.printStackTrace();
+		}
 	}
 
 	/**
@@ -319,27 +361,31 @@ public abstract class GenericSchedulerService {
 	}
 
 	/**
-	 * Called by the Timeout event. The scheduler configuration object contains
-	 * information for the processor of a concrete implementation:
-	 * <ul>
-	 * <li>type - fixed to value 'scheduler'</li>
-	 * <li>_scheduler_description - the chron/calendar description for the Java EE
-	 * timer service.</li>
-	 * <li>_enabled - boolean indicates if the scheduler is enabled/disabled</li>
-	 * </ul>
+	 * This method returns a n injected JobHandler by name or null if no JobHandler
+	 * with the requested class name is injected.
 	 * 
-	 * After the run method is finished the genericScheduelrService will save the
-	 * scheduler configuration if a configuration object is returned. In case of an
-	 * exception the Timer service will not be canceled. To cancel the timer, an
-	 * implementation must set the item _enabled to 'false'.
-	 * <p>
-	 * To start or stop the timer service the method start() and stop() can be
-	 * called.
-	 * 
-	 * @param scheduler the scheduler configuration
-	 * @return updated scheduler configuration
+	 * @param jobHandlerClassName
+	 * @return jobHandler class or null if not found
 	 */
-	public abstract ItemCollection run(ItemCollection scheduler) throws AdminPException;
+	Scheduler findSchedulerByName(String schedulerClassName) {
+		if (schedulerClassName == null || schedulerClassName.isEmpty())
+			return null;
+
+		if (schedulerHandlers == null || !schedulerHandlers.iterator().hasNext()) {
+			logger.finest("......no CDI schedulers injected");
+			return null;
+		}
+		logger.finest("......injecting CDI Scheduler '" + schedulerClassName + "'...");
+		// iterate over all injected JobHandlers....
+		for (Scheduler scheduler : this.schedulerHandlers) {
+			if (scheduler.getClass().getName().equals(schedulerClassName)) {
+				logger.finest("......CDI Scheduler '" + schedulerClassName + "' successful injected");
+				return scheduler;
+			}
+		}
+
+		return null;
+	}
 
 	/**
 	 * This is the method which processes the timeout event depending on the running
@@ -367,12 +413,19 @@ public abstract class GenericSchedulerService {
 
 		try {
 			// ..start processing
-			configuration = run(configuration);
-			if (configuration.getItemValueBoolean("_enabled") == false) {
-				logger.info("... timer will be stopped");
-				timer.cancel();
+			String schedulerClassName = configuration.getItemValueString(Scheduler.ITEM_SCHEDULER_CLASS);
+
+			Scheduler scheduler = findSchedulerByName(schedulerClassName);
+			if (scheduler != null) {
+				configuration = scheduler.run(configuration);
+				if (configuration.getItemValueBoolean(Scheduler.ITEM_SCHEDULER_ENABLED) == false) {
+					logger.info("... timer will be stopped");
+					timer.cancel();
+				}
+				logger.info("Scheduler finished successfull: " + ((System.currentTimeMillis()) - lProfiler) + " ms");
+			} else {
+				logger.warning("...scheduler '" + schedulerClassName + "' not found");
 			}
-			logger.info("Scheduler finished successfull: " + ((System.currentTimeMillis()) - lProfiler) + " ms");
 		} catch (RuntimeException e) {
 			// in case of an exception we did not cancel the Timer service
 			if (logger.isLoggable(Level.FINE)) {
@@ -469,5 +522,4 @@ public abstract class GenericSchedulerService {
 		return timer;
 
 	}
-
 }
