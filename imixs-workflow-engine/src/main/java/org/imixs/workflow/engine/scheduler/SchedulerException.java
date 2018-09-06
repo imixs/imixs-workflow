@@ -44,6 +44,11 @@ public class SchedulerException extends InvalidAccessException {
 	public static final String INVALID_WORKITEM = "INVALID_WORKITEM";
 	public static final String INVALID_PROCESSID = "INVALID_PROCESSID";
 
+	
+	public SchedulerException(String message,Exception e) {
+		super(message,e);
+	}
+	
 	public SchedulerException(String aErrorCode, String message) {
 		super(aErrorCode, message);
 	}
