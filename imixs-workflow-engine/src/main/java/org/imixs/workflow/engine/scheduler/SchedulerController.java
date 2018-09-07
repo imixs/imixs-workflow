@@ -95,7 +95,7 @@ public class SchedulerController implements Serializable {
 			configuration = new ItemCollection();
 			configuration.setItemValue(Scheduler.ITEM_SCHEDULER_NAME, getName());
 		}
-		return configuration;
+		return configuration; 
 	}
 
 	public void setConfiguration(ItemCollection configuration) {

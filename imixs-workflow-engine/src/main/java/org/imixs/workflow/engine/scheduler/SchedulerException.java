@@ -27,7 +27,7 @@
 
 package org.imixs.workflow.engine.scheduler;
 
-import org.imixs.workflow.exceptions.InvalidAccessException;
+import org.imixs.workflow.exceptions.WorkflowException;
 
 /**
  * The SchedulerException is thrown from the generic scheduler service
@@ -36,7 +36,36 @@ import org.imixs.workflow.exceptions.InvalidAccessException;
  * @author rsoika
  * 
  */
-public class SchedulerException extends InvalidAccessException {
+public class SchedulerException extends WorkflowException {
+
+
+	public SchedulerException(String aErrorCode, String message) {
+		super(aErrorCode,message);
+		
+
+	}
+
+	public SchedulerException(String aErrorContext, String aErrorCode,
+			String message) {
+		super(aErrorContext,aErrorCode,message);
+		
+	}
+
+	public SchedulerException(String aErrorContext, String aErrorCode,
+			String message, Exception e) {
+		super(aErrorContext,aErrorCode,message, e);
+		
+
+	}
+	
+
+	public SchedulerException(String aErrorCode, String message, Exception e) {
+		super(aErrorCode,message, e);
+
+
+	}
+
+
 
 	private static final long serialVersionUID = 1L;
 
@@ -45,27 +74,14 @@ public class SchedulerException extends InvalidAccessException {
 	public static final String INVALID_PROCESSID = "INVALID_PROCESSID";
 
 	
-	public SchedulerException(String message,Exception e) {
-		super(message,e);
-	}
+	protected String errorContext = "UNDEFINED";
+	protected String errorCode = "UNDEFINED";
+
 	
-	public SchedulerException(String aErrorCode, String message) {
-		super(aErrorCode, message);
-	}
 	
-	public SchedulerException(String aErrorContext, String aErrorCode,
-			String message) {
-		super(message);
-		errorContext = aErrorContext;
-		errorCode = aErrorCode;
 
+	public void setErrorCode(String errorCode) {
+		this.errorCode = errorCode;
 	}
 
-	public SchedulerException(String aErrorContext, String aErrorCode,
-			String message, Exception e) {
-		super(message, e);
-		errorContext = aErrorContext;
-		errorCode = aErrorCode;
-
-	}
 }

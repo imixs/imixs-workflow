@@ -56,9 +56,10 @@
 				<item name="ModelService" href="./engine/modelservice.html" />
 				<item name="WorkflowService" href="./engine/workflowservice.html" />
 				<item name="Adapt Text" href="./engine/adapttext.html" />
-				<item name="Scheduler" href="./engine/scheduler.html" />
+				<item name="Workflow Scheduler" href="./engine/workflowscheduler.html" />
 				<item name="PropertyService" href="./engine/propertyservice.html" />
 				<item name="AdminP" href="./engine/adminp.html" />
+				<item name="Scheduler" href="./engine/scheduler.html" />
 				<item name="CDI and JNDI Lookup" href="./engine/remote_lookup.html" />
 			</item>
 			
