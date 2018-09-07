@@ -233,7 +233,8 @@ public class SchedulerService {
 				configuration.replaceItemValue("Schedule", "");
 
 			}
-			logger.info("" + configuration.getItemValueString("txtName") + " started: " + id);
+			logger.info("...Scheduler Service" + id + " (" + configuration.getItemValueString("txtName")
+					+ ") successfull started.");
 		}
 		configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, true);
 		configuration.replaceItemValue("errormessage", "");
@@ -274,7 +275,8 @@ public class SchedulerService {
 			}
 			configuration.replaceItemValue("statusmessage", message);
 
-			logger.info("... scheduler " + configuration.getItemValueString("txtName") + " stopped: " + configuration.getUniqueID());
+			logger.info("... scheduler " + configuration.getItemValueString("txtName") + " stopped: "
+					+ configuration.getUniqueID());
 		} else {
 			String msg = "stopped";
 			configuration.replaceItemValue("statusmessage", msg);
@@ -380,7 +382,7 @@ public class SchedulerService {
 			logger.finest("......no CDI schedulers injected");
 			return null;
 		}
-		
+
 		logger.finest("......injecting CDI Scheduler '" + schedulerClassName + "'...");
 		// iterate over all injected JobHandlers....
 		for (Scheduler scheduler : this.schedulerHandlers) {
@@ -423,13 +425,12 @@ public class SchedulerService {
 			if (scheduler != null) {
 				logger.info("...run scheduler '" + id + "' scheduler class='" + schedulerClassName + "'....");
 				configuration = scheduler.run(configuration);
-				logger.info("...run scheduler  '" + id + "' finished in: "
-						+ ((System.currentTimeMillis()) - lProfiler) + " ms");
+				logger.info("...run scheduler  '" + id + "' finished in: " + ((System.currentTimeMillis()) - lProfiler)
+						+ " ms");
 				if (configuration.getItemValueBoolean(Scheduler.ITEM_SCHEDULER_ENABLED) == false) {
 					logger.info("...scheduler '" + id + "' disabled -> timer will be stopped...");
 					stop(configuration);
 				}
-				
 			} else {
 				errorMes = "Scheduler class='" + schedulerClassName + "' not found!";
 				logger.warning("...scheduler '" + id + "' scheduler class='" + schedulerClassName
@@ -437,14 +438,6 @@ public class SchedulerService {
 				configuration.setItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, false);
 				stop(configuration);
 			}
-
-			// Save statistic in configuration
-			if (configuration != null) {
-				configuration.replaceItemValue("errormessage", errorMes);
-				saveConfiguration(configuration);
-			}
-
-			// } catch (SchedulerException e) {
 		} catch (RuntimeException | SchedulerException e) {
 			// in case of an exception we did not cancel the Timer service
 			if (logger.isLoggable(Level.FINEST)) {
