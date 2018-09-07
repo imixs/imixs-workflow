@@ -59,7 +59,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 	DocumentService documentService;
 
 	@EJB
-	LuceneUpdateService luceneService;
+	LuceneUpdateService luceneUpdateService;
 
 	private static Logger logger = Logger.getLogger(JobHandlerRebuildIndex.class.getName());
 
@@ -102,7 +102,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
 		int iProcessed = adminp.getItemValueInteger("numProcessed");
 
-		
+		// buidl query...
 		String query = buildQuery(adminp);
 		logger.finest("......JQPL query: " + query);
 		adminp.replaceItemValue("txtQuery", query);
@@ -117,15 +117,17 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		// collect ItemCollection elements
 		List<ItemCollection> col = new ArrayList<ItemCollection>();
 		for (Document doc : documentList) {
-			col.add(new ItemCollection(doc.getData()));
+			if (doc.getData() != null) {
+				col.add(new ItemCollection(doc.getData()));
+			}
 		}
 
 		int colSize = col.size();
 		// Update index
 		logger.info("Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") - reindexing "
 				+ col.size() + " documents...");
-		luceneService.updateDocuments(col);
-
+		luceneUpdateService.updateDocuments(col);
+		
 		iUpdates = iUpdates + colSize;
 		iIndex = iIndex + col.size();
 		iProcessed = iProcessed + colSize;
@@ -148,11 +150,9 @@ public class JobHandlerRebuildIndex implements JobHandler {
 			// iscompleted = true
 			adminp.replaceItemValue(JobHandler.ISCOMPLETED, true);
 		}
-		
+
 		return adminp;
 	}
-
-	
 
 	/**
 	 * This method builds the query statemetn based on the filter criteria.
@@ -166,13 +166,13 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		String typeFilter = adminp.getItemValueString("typelist");
 		SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-		boolean bAddAnd = false;
 		String query = "SELECT document FROM Document AS document ";
-
-		if (datFilterFrom != null || datFilterTo != null || (typeFilter != null && !typeFilter.isEmpty())) {
-			query += " WHERE ";
-
-		}
+		// ignore lucene event log entries
+		query += "WHERE document.type NOT IN ('" + LuceneUpdateService.EVENTLOG_TYPE_ADD + "','"
+				+ LuceneUpdateService.EVENTLOG_TYPE_REMOVE + "') ";
+		
+		// ignore imixs-archive snapshots
+		query +="AND document.type NOT LIKE 'snapshot%'";
 
 		if (typeFilter != null && !typeFilter.isEmpty()) {
 			// convert type list into comma separated list
@@ -182,24 +182,16 @@ public class JobHandlerRebuildIndex implements JobHandler {
 				sType += "'" + aValue.trim() + "',";
 			}
 			sType = sType.substring(0, sType.length() - 1);
-			query += " document.type IN(" + sType + ")";
-			bAddAnd = true;
+			query += " AND document.type IN(" + sType + ")";
+
 		}
 
 		if (datFilterFrom != null) {
-			if (bAddAnd) {
-				query += " AND ";
-			}
-			query += " document.created>='" + isoFormat.format(datFilterFrom) + "' ";
-			bAddAnd = true;
+			query += " AND document.created>='" + isoFormat.format(datFilterFrom) + "' ";
 		}
 
 		if (datFilterTo != null) {
-			if (bAddAnd) {
-				query += " AND ";
-			}
-			query += " document.created<='" + isoFormat.format(datFilterTo) + "' ";
-			bAddAnd = true;
+			query += " AND document.created<='" + isoFormat.format(datFilterTo) + "' ";
 		}
 
 		query += " ORDER BY document.created";

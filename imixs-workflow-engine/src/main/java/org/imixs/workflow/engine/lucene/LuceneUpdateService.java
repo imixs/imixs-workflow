@@ -102,9 +102,9 @@ public class LuceneUpdateService {
 	protected static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
 	protected static final String ANONYMOUS = "ANONYMOUS";
 
-	protected static final String EVENTLOG_TYPE_ADD =    "lucene_event_add";
-	protected static final String EVENTLOG_TYPE_REMOVE = "lucene_event_remove";
-	protected static final String EVENTLOG_ID_PRAFIX =   "lucene_event_id_";
+	public static final String EVENTLOG_TYPE_ADD = "lucene_event_add";
+	public static final String EVENTLOG_TYPE_REMOVE = "lucene_event_remove";
+	protected static final String EVENTLOG_ID_PRAFIX = "lucene_event_id_";
 	protected static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
 
 	private List<String> searchFieldList = null;
@@ -240,7 +240,10 @@ public class LuceneUpdateService {
 		long ltime = System.currentTimeMillis();
 		// write a new EventLog entry for each document....
 		for (ItemCollection workitem : documents) {
-			writeEventLogEntry(workitem.getUniqueID(), EVENTLOG_TYPE_ADD);
+			// skipp if noindex flag = true
+			if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
+				writeEventLogEntry(workitem.getUniqueID(), EVENTLOG_TYPE_ADD);
+			}
 		}
 
 		if (logger.isLoggable(Level.FINE)) {
@@ -276,8 +279,8 @@ public class LuceneUpdateService {
 	 * 'dirtyIndex'.
 	 * 
 	 */
-	public void flushEventLog() {
-		boolean dirtyIndex=true;
+	public void flushEventLog() {		
+		boolean dirtyIndex = true;
 		while (dirtyIndex) {
 			dirtyIndex = !flushEventLogByCount(EVENTLOG_ENTRY_FLUSH_COUNT);
 		}
@@ -301,18 +304,18 @@ public class LuceneUpdateService {
 		}
 
 		// check if a eventLog entry already exists in the event log cache...
-		eventLogEntry = manager.find(org.imixs.workflow.engine.jpa.Document.class, EVENTLOG_ID_PRAFIX + id );
-		if (eventLogEntry == null) {
-			// no - create new one with the provided id
-			eventLogEntry = new org.imixs.workflow.engine.jpa.Document(EVENTLOG_ID_PRAFIX + id);
-			logger.finest("......create new eventLogEntry '" + id + "' => " + type);
-			manager.persist(eventLogEntry);
-		} else {
-			// Overwrite Creation Date
-			logger.finest("......update existing eventLogEntry '" + id + "' => " + type);
-			eventLogEntry.setCreated(Calendar.getInstance());
+		eventLogEntry = manager.find(org.imixs.workflow.engine.jpa.Document.class, EVENTLOG_ID_PRAFIX + id);
+		// check if already exists...
+		if (eventLogEntry != null) {
+			// remove deprecated event log entry....
+			logger.finest("......create deprecated eventLogEntry '" + id + "' => " + type);
+			manager.remove(eventLogEntry);
+			eventLogEntry = null;	
 		}
-
+		// now create new one with the provided id
+		eventLogEntry = new org.imixs.workflow.engine.jpa.Document(EVENTLOG_ID_PRAFIX + id);
+		logger.finest("......create new eventLogEntry '" + id + "' => " + type);
+		manager.persist(eventLogEntry);
 		eventLogEntry.setType(type);
 	}
 
@@ -331,7 +334,7 @@ public class LuceneUpdateService {
 		logger.finest("......flush eventlog cache....");
 
 		String query = "SELECT document FROM Document AS document ";
-		query += " WHERE document.type IN ('" + EVENTLOG_TYPE_ADD + "','" + EVENTLOG_TYPE_REMOVE + "')";
+		query += "WHERE document.type IN ('" + EVENTLOG_TYPE_ADD + "','" + EVENTLOG_TYPE_REMOVE + "')";
 
 		// find all eventLogEntries....
 		Query q = manager.createQuery(query);
