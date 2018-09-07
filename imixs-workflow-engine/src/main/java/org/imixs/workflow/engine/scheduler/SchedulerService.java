@@ -205,10 +205,17 @@ public class SchedulerService {
 			return null;
 
 		String id = configuration.getUniqueID();
-
 		// try to cancel an existing timer for this workflowinstance
-		while (this.findTimer(id) != null) {
-			this.findTimer(id).cancel();
+		timer=findTimer(id);
+		if (timer!= null) {
+			try {
+				timer.cancel();
+				timer=null;
+			} catch (Exception e) {
+				logger.warning("...failed to stop existing timer for '" + configuration.getUniqueID() + "'!");
+				throw new InvalidAccessException(SchedulerService.class.getName(), SchedulerException.INVALID_WORKITEM,
+						" failed to cancle existing timer!");
+			}
 		}
 
 		logger.info("...Scheduler Service " + configuration.getUniqueID() + " will be started...");
