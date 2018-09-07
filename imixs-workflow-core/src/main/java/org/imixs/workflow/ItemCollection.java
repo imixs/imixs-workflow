@@ -123,7 +123,9 @@ public class ItemCollection implements Cloneable {
 	 */
 	public static ItemCollection createByReference(final Map<String, List<Object>> map) {
 		ItemCollection reference = new ItemCollection();
-		reference.hash = map;
+		if (map != null) {
+			reference.hash = map;
+		}
 		return reference;
 	}
 
@@ -757,12 +759,17 @@ public class ItemCollection implements Cloneable {
 	 */
 	@SuppressWarnings("unchecked")
 	public void replaceAllItems(Map<String, List<Object>> map) {
+		if (map == null) {
+			return;
+		}
 		// make a deep copy of the map
 		Map<String, List<Object>> clonedMap = (Map<String, List<Object>>) deepCopyOfMap(map);
-		Iterator<?> it = clonedMap.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, List<Object>> entry = (Map.Entry<String, List<Object>>) it.next();
-			replaceItemValue(entry.getKey().toString(), entry.getValue());
+		if (clonedMap != null) {
+			Iterator<?> it = clonedMap.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<String, List<Object>> entry = (Map.Entry<String, List<Object>>) it.next();
+				replaceItemValue(entry.getKey().toString(), entry.getValue());
+			}
 		}
 	}
 
@@ -773,7 +780,9 @@ public class ItemCollection implements Cloneable {
 	 * @param filedata - a file data object
 	 */
 	public void addFileData(FileData filedata) {
-		this.addFile(filedata.content, filedata.name, filedata.contentType);
+		if (filedata != null) {
+			addFile(filedata.content, filedata.name, filedata.contentType);
+		}
 	}
 
 	/**
