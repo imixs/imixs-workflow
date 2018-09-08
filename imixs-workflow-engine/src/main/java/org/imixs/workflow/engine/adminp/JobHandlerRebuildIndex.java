@@ -16,6 +16,7 @@ import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -102,6 +103,8 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
 		int iProcessed = adminp.getItemValueInteger("numProcessed");
 
+		// Now set flush Mode to COMMIT
+		manager.setFlushMode(FlushModeType.COMMIT);
 		// buidl query...
 		String query = buildQuery(adminp);
 		logger.finest("......JQPL query: " + query);
@@ -127,11 +130,9 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		logger.info("Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") - reindexing "
 				+ col.size() + " documents...");
 
-		// first we can flush the eventlog.....
-		luceneUpdateService.flushEventLog();
 		// write lucen event log....
 		luceneUpdateService.updateDocuments(col);
-
+		
 		iUpdates = iUpdates + colSize;
 		iIndex = iIndex + col.size();
 		iProcessed = iProcessed + colSize;
@@ -158,6 +159,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		return adminp;
 	}
 
+	
 	/**
 	 * This method builds the query statemetn based on the filter criteria.
 	 * 
