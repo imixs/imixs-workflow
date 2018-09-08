@@ -47,6 +47,7 @@ import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
+import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -238,7 +239,7 @@ public class LuceneUpdateService {
 	 */
 	public void updateDocuments(Collection<ItemCollection> documents) {
 		long ltime = System.currentTimeMillis();
-		
+
 		// write a new EventLog entry for each document....
 		for (ItemCollection workitem : documents) {
 			// skipp if noindex flag = true
@@ -287,15 +288,21 @@ public class LuceneUpdateService {
 		long l = System.currentTimeMillis();
 
 		while (dirtyIndex) {
-			dirtyIndex = !flushEventLogByCount(EVENTLOG_ENTRY_FLUSH_COUNT);
-			if (dirtyIndex) {
-				total = total + EVENTLOG_ENTRY_FLUSH_COUNT;
-				count = count + EVENTLOG_ENTRY_FLUSH_COUNT;
-				if (count >= 160) {
-					logger.info("...flush event log: " + total + " entries in " + (System.currentTimeMillis() - l)
-							+ "ms...");
-					count = 0;
+			try {
+				dirtyIndex = !flushEventLogByCount(EVENTLOG_ENTRY_FLUSH_COUNT);
+				if (dirtyIndex) {
+					total = total + EVENTLOG_ENTRY_FLUSH_COUNT;
+					count = count + EVENTLOG_ENTRY_FLUSH_COUNT;
+					if (count >= 160) {
+						logger.info("...flush event log: " + total + " entries in " + (System.currentTimeMillis() - l)
+								+ "ms...");
+						count = 0;
+					}
 				}
+
+			} catch (IndexException e) {
+				logger.warning("...unable to flush lucene event log: " + e.getMessage());
+				break;
 			}
 		}
 	}
@@ -316,6 +323,9 @@ public class LuceneUpdateService {
 			logger.warning("WriteEventLog failed - given id is empty!");
 			return;
 		}
+
+		// Now set flush Mode to COMMIT
+		manager.setFlushMode(FlushModeType.COMMIT);
 
 		// check if a eventLog entry already exists in the event log cache...
 		eventLogEntry = manager.find(org.imixs.workflow.engine.jpa.Document.class, EVENTLOG_ID_PRAFIX + id);
@@ -403,12 +413,9 @@ public class LuceneUpdateService {
 					}
 				}
 			} catch (IOException luceneEx) {
-				logger.warning("lucene error: " + luceneEx.getMessage());
-				throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index",
-						luceneEx);
+				logger.warning("...unable to flush lucene event log: " + luceneEx.getMessage());
+				return true;
 			} finally {
-				// flush enties...
-				manager.flush();
 				// close writer!
 				if (indexWriter != null) {
 					logger.finest("......lucene close IndexWriter...");
