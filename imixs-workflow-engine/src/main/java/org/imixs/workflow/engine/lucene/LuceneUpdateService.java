@@ -238,6 +238,7 @@ public class LuceneUpdateService {
 	 */
 	public void updateDocuments(Collection<ItemCollection> documents) {
 		long ltime = System.currentTimeMillis();
+		
 		// write a new EventLog entry for each document....
 		for (ItemCollection workitem : documents) {
 			// skipp if noindex flag = true
@@ -283,15 +284,15 @@ public class LuceneUpdateService {
 		long total = 0;
 		long count = 0;
 		boolean dirtyIndex = true;
+		long l = System.currentTimeMillis();
 
 		while (dirtyIndex) {
-			long l = System.currentTimeMillis();
 			dirtyIndex = !flushEventLogByCount(EVENTLOG_ENTRY_FLUSH_COUNT);
 			if (dirtyIndex) {
 				total = total + EVENTLOG_ENTRY_FLUSH_COUNT;
 				count = count + EVENTLOG_ENTRY_FLUSH_COUNT;
 				if (count >= 160) {
-					logger.info("..." + total + " event log entries flushed in " + (System.currentTimeMillis() - l)
+					logger.info("...flush event log: " + total + " entries in " + (System.currentTimeMillis() - l)
 							+ "ms...");
 					count = 0;
 				}
@@ -406,6 +407,8 @@ public class LuceneUpdateService {
 				throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index",
 						luceneEx);
 			} finally {
+				// flush enties...
+				manager.flush();
 				// close writer!
 				if (indexWriter != null) {
 					logger.finest("......lucene close IndexWriter...");
