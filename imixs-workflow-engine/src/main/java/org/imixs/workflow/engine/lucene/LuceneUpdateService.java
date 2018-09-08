@@ -445,6 +445,13 @@ public class LuceneUpdateService {
 				}
 			} catch (IOException luceneEx) {
 				logger.warning("...unable to flush lucene event log: " + luceneEx.getMessage());
+				// We just log a warning here and close the flush mode to no longer block the
+				// writer.
+				// NOTE: maybe throwing a IndexException would be an alternative:
+				//
+				// throw new IndexException(IndexException.INVALID_INDEX, "Unable to update
+				// lucene search index",
+				// luceneEx);
 				return true;
 			} finally {
 				// close writer!

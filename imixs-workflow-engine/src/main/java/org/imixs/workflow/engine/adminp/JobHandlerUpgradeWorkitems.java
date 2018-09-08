@@ -13,8 +13,6 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -39,9 +37,6 @@ import org.imixs.workflow.exceptions.PluginException;
 public class JobHandlerUpgradeWorkitems implements JobHandler {
 
 	private static final int DEFAULT_BLOCK_SIZE = 100;
-
-	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
-	private EntityManager manager;
 
 	@Resource
 	SessionContext ctx;
