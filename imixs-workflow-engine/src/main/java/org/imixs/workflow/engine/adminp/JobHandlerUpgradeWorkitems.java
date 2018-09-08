@@ -205,11 +205,13 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 
 		boolean bAddAnd = false;
 		String query = "SELECT document FROM Document AS document ";
+		// ignore lucene event log entries
+		query += "WHERE document.type NOT IN ('" + LuceneUpdateService.EVENTLOG_TYPE_ADD + "','"
+				+ LuceneUpdateService.EVENTLOG_TYPE_REMOVE + "') ";
 
-		if (datFilterFrom != null || datFilterTo != null || (typeFilter != null && !typeFilter.isEmpty())) {
-			query += " WHERE ";
+		// ignore imixs-archive snapshots
+		query += "AND document.type NOT LIKE 'snapshot%'";
 
-		}
 
 		if (typeFilter != null && !typeFilter.isEmpty()) {
 			// convert type list into comma separated list
@@ -219,7 +221,7 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 				sType += "'" + aValue.trim() + "',";
 			}
 			sType = sType.substring(0, sType.length() - 1);
-			query += " document.type IN(" + sType + ")";
+			query += " AND document.type IN(" + sType + ")";
 			bAddAnd = true;
 		}
 
