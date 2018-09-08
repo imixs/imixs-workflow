@@ -308,42 +308,6 @@ public class LuceneUpdateService {
 	}
 
 	/**
-	 * This method creates/updates an event log entry to indicate an uncommitted
-	 * index update. This method is called by "updateDocuments".
-	 * 
-	 * The identifier of an eventLogEnty is sufixed with "_EVENT_LOG_ENTRY". The
-	 * type of the document entity will be set to 'eventlogentry'.
-	 * 
-	 * @param id   - uniqueid of the document to update
-	 * @param type EVENTLOG_ENTRY_TYPE_ADD or EVENTLOG_ENTRY_TYPE_REMOVE
-	 */
-	void writeEventLogEntry(String id, String type) {
-		org.imixs.workflow.engine.jpa.Document eventLogEntry = null;
-		if (id == null || id.isEmpty()) {
-			logger.warning("WriteEventLog failed - given id is empty!");
-			return;
-		}
-
-		// Now set flush Mode to COMMIT
-		manager.setFlushMode(FlushModeType.COMMIT);
-
-		// check if a eventLog entry already exists in the event log cache...
-		eventLogEntry = manager.find(org.imixs.workflow.engine.jpa.Document.class, EVENTLOG_ID_PRAFIX + id);
-		// check if already exists...
-		if (eventLogEntry != null) {
-			// remove deprecated event log entry....
-			logger.finest("......create deprecated eventLogEntry '" + id + "' => " + type);
-			manager.remove(eventLogEntry);
-			eventLogEntry = null;
-		}
-		// now create new one with the provided id
-		eventLogEntry = new org.imixs.workflow.engine.jpa.Document(EVENTLOG_ID_PRAFIX + id);
-		logger.finest("......create new eventLogEntry '" + id + "' => " + type);
-		manager.persist(eventLogEntry);
-		eventLogEntry.setType(type);
-	}
-
-	/**
 	 * This method flushes a given count of eventLogEntries. The method return true
 	 * if no more eventLogEntries exist.
 	 * 
@@ -358,8 +322,9 @@ public class LuceneUpdateService {
 		logger.finest("......flush eventlog cache....");
 
 		String query = "SELECT document FROM Document AS document ";
-		query += "WHERE document.type IN ('" + EVENTLOG_TYPE_ADD + "','" + EVENTLOG_TYPE_REMOVE + "')";
+		query += "WHERE document.type IN ('" + EVENTLOG_TYPE_ADD + "','" + EVENTLOG_TYPE_REMOVE + "') ORDER BY document.created ASC";
 
+		
 		// find all eventLogEntries....
 		Query q = manager.createQuery(query);
 		// we try to search one more log entry as requested to see if the cache is
@@ -377,6 +342,7 @@ public class LuceneUpdateService {
 					String id = eventLogEntry.getId();
 					// cut prafix...
 					id = id.substring(EVENTLOG_ID_PRAFIX.length());
+					id = id .substring(id.indexOf("]_")+2);
 					// lookup the workitem...
 					org.imixs.workflow.engine.jpa.Document doc = manager
 							.find(org.imixs.workflow.engine.jpa.Document.class, id);
@@ -437,6 +403,35 @@ public class LuceneUpdateService {
 
 		return cacheIsEmpty;
 
+	}
+
+	/**
+	 * This method creates/updates an event log entry to indicate an uncommitted
+	 * index update. This method is called by "updateDocuments".
+	 * 
+	 * The identifier of an eventLogEnty is sufixed with "_EVENT_LOG_ENTRY". The
+	 * type of the document entity will be set to 'eventlogentry'.
+	 * 
+	 * @param id   - uniqueid of the document to update
+	 * @param type EVENTLOG_ENTRY_TYPE_ADD or EVENTLOG_ENTRY_TYPE_REMOVE
+	 */
+	void writeEventLogEntry(String id, String type) {
+		org.imixs.workflow.engine.jpa.Document eventLogEntry = null;
+		if (id == null || id.isEmpty()) {
+			logger.warning("WriteEventLog failed - given id is empty!");
+			return;
+		}
+	
+		// Now set flush Mode to COMMIT
+		manager.setFlushMode(FlushModeType.COMMIT);
+	
+		// now create a new event log entry
+		id =EVENTLOG_ID_PRAFIX + "["+System.currentTimeMillis() + "]_" + id;
+		//id =EVENTLOG_ID_PRAFIX + "["+System.nanoTime() + "]_" + id;
+		eventLogEntry = new org.imixs.workflow.engine.jpa.Document(id);
+		eventLogEntry.setType(type);
+		logger.finest("......create new eventLogEntry '" + id + "' => " + type);
+		manager.persist(eventLogEntry);
 	}
 
 	/**
