@@ -152,10 +152,10 @@ public class LuceneSearchService {
 	 * Returns a collection of documents matching matching the provided search term.
 	 * The provided search term will we extended with a users roles to test the read
 	 * access level of each workitem matching the search term.
-	 * 
+	 * <p>
 	 * The optional param 'searchOrder' can be set to force lucene to sort the
 	 * search result by any search order.
-	 * 
+	 * <p>
 	 * The optional param 'defaultOperator' can be set to Operator.AND
 	 * 
 	 * @param sSearchTerm
