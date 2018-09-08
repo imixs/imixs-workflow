@@ -107,7 +107,7 @@ public class SchedulerController implements Serializable {
 	 */
 	public void saveConfiguration() {
 		configuration.setItemValue(Scheduler.ITEM_SCHEDULER_CLASS, getSchedulerClass());
-		getSchedulerService().saveConfiguration(getConfiguration());
+		schedulerService.saveConfiguration(getConfiguration());
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class SchedulerController implements Serializable {
 	 * 
 	 */
 	public void refresh() {
-		getSchedulerService().updateTimerDetails(getConfiguration());
+		configuration = schedulerService.loadConfiguration(getName());
 	}
 
 	public SchedulerService getSchedulerService() {

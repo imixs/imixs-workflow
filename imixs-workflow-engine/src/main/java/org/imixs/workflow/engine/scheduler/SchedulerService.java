@@ -103,9 +103,6 @@ public class SchedulerService {
 	SessionContext ctx;
 
 	@EJB
-	WorkflowService workflowService;
-
-	@EJB
 	DocumentService documentService;
 
 	@Resource
@@ -132,7 +129,10 @@ public class SchedulerService {
 			Collection<ItemCollection> col = documentService.find(sQuery, 1, 0);
 			// check if we found a scheduler configuration
 			if (col.size() > 0) {
-				return col.iterator().next();
+				ItemCollection configuration=col.iterator().next();
+				// refresh timer details
+				updateTimerDetails(configuration);
+				return configuration;
 			}
 		} catch (QueryException e1) {
 			e1.printStackTrace();
@@ -168,10 +168,10 @@ public class SchedulerService {
 		configItemCollection.replaceItemValue("$writeAccess", "org.imixs.ACCESSLEVEL.MANAGERACCESS");
 		configItemCollection.replaceItemValue("$readAccess", "org.imixs.ACCESSLEVEL.MANAGERACCESS");
 
-		// configItemCollection =
+		// refesh timer details
 		updateTimerDetails(configItemCollection);
 		// save entity in new transaction
-		configItemCollection = workflowService.getDocumentService().save(configItemCollection);
+		configItemCollection = documentService.save(configItemCollection);
 
 		return configItemCollection;
 	}
