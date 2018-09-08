@@ -65,6 +65,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.PropertyService;
 import org.imixs.workflow.exceptions.IndexException;
@@ -217,7 +218,14 @@ public class LuceneUpdateService {
 	}
 
 	/**
-	 * This method adds a single document into the search index.
+	 * This method adds a single document into the to the Lucene index. Before the
+	 * document is added to the index, a new eventLogEntry is created. The document
+	 * will be indexed after the method flushEventLog is called. This method is
+	 * called by the LuceneSearchService finder methods.
+	 * <p>
+	 * The method supports committed read. This means that a running transaction
+	 * will not read an uncommitted document from the Lucene index.
+	 * 
 	 * 
 	 * @param documentContext
 	 */
@@ -230,10 +238,15 @@ public class LuceneUpdateService {
 	}
 
 	/**
-	 * This method adds for each document in a given selection a new eventLogEntry.
-	 * The documents will be indexed after the method fluschEventLog is called. This
-	 * method is called by the LuceneSearchService finder method only.
+	 * This method adds a collection of documents to the Lucene index. For each
+	 * document in a given selection a new eventLogEntry is created. The documents
+	 * will be indexed after the method flushEventLog is called. This method is
+	 * called by the LuceneSearchService finder methods.
+	 * <p>
+	 * The method supports committed read. This means that a running transaction
+	 * will not read uncommitted documents from the Lucene index.
 	 * 
+	 * @see updateDocumentsUncommitted
 	 * @param documents to be indexed
 	 * @throws IndexException
 	 */
@@ -242,7 +255,7 @@ public class LuceneUpdateService {
 
 		// write a new EventLog entry for each document....
 		for (ItemCollection workitem : documents) {
-			// skipp if noindex flag = true
+			// skip if the flag 'noindex' = true
 			if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
 				writeEventLogEntry(workitem.getUniqueID(), EVENTLOG_TYPE_ADD);
 			}
@@ -251,6 +264,58 @@ public class LuceneUpdateService {
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime) + " ms ("
 					+ documents.size() + " documents to be index)");
+		}
+	}
+
+	/**
+	 * This method adds a collection of documents to the Lucene index. The documents
+	 * are added immediately to the index. Calling this method within a running
+	 * transaction leads to a uncommitted reads in the index. For transaction
+	 * control, it is recommended to use instead the the method updateDocumetns()
+	 * which takes care of uncommitted reads.
+	 * <p>
+	 * This method is used by the JobHandlerRebuildIndex only.
+	 * 
+	 * @param documents of ItemCollections to be indexed
+	 * @throws IndexException
+	 */
+	public void updateDocumentsUncommitted(Collection<ItemCollection> documents) {
+
+		IndexWriter awriter = null;
+		long ltime = System.currentTimeMillis();
+		try {
+			awriter = createIndexWriter();
+			// add workitem to search index....
+			for (ItemCollection workitem : documents) {
+
+				if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
+					// create term
+					Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
+					logger.finest("......lucene add/update uncommitted workitem '"
+							+ workitem.getItemValueString(WorkflowKernel.UNIQUEID) + "' to index...");
+					awriter.updateDocument(term, createDocument(workitem));
+				}
+			}
+		} catch (IOException luceneEx) {
+			logger.warning("lucene error: " + luceneEx.getMessage());
+			throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index", luceneEx);
+		} finally {
+			// close writer!
+			if (awriter != null) {
+				logger.finest("......lucene close IndexWriter...");
+				try {
+					awriter.close();
+				} catch (CorruptIndexException e) {
+					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+				} catch (IOException e) {
+					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+				}
+			}
+		}
+
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("... update worklist in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
+					+ " worktiems total)");
 		}
 	}
 
@@ -322,9 +387,9 @@ public class LuceneUpdateService {
 		logger.finest("......flush eventlog cache....");
 
 		String query = "SELECT document FROM Document AS document ";
-		query += "WHERE document.type IN ('" + EVENTLOG_TYPE_ADD + "','" + EVENTLOG_TYPE_REMOVE + "') ORDER BY document.created ASC";
+		query += "WHERE document.type IN ('" + EVENTLOG_TYPE_ADD + "','" + EVENTLOG_TYPE_REMOVE
+				+ "') ORDER BY document.created ASC";
 
-		
 		// find all eventLogEntries....
 		Query q = manager.createQuery(query);
 		// we try to search one more log entry as requested to see if the cache is
@@ -342,7 +407,7 @@ public class LuceneUpdateService {
 					String id = eventLogEntry.getId();
 					// cut prafix...
 					id = id.substring(EVENTLOG_ID_PRAFIX.length());
-					id = id .substring(id.indexOf("]_")+2);
+					id = id.substring(id.indexOf("]_") + 2);
 					// lookup the workitem...
 					org.imixs.workflow.engine.jpa.Document doc = manager
 							.find(org.imixs.workflow.engine.jpa.Document.class, id);
@@ -421,13 +486,13 @@ public class LuceneUpdateService {
 			logger.warning("WriteEventLog failed - given id is empty!");
 			return;
 		}
-	
+
 		// Now set flush Mode to COMMIT
 		manager.setFlushMode(FlushModeType.COMMIT);
-	
+
 		// now create a new event log entry
-		id =EVENTLOG_ID_PRAFIX + "["+System.currentTimeMillis() + "]_" + id;
-		//id =EVENTLOG_ID_PRAFIX + "["+System.nanoTime() + "]_" + id;
+		id = EVENTLOG_ID_PRAFIX + "[" + System.currentTimeMillis() + "]_" + id;
+		// id =EVENTLOG_ID_PRAFIX + "["+System.nanoTime() + "]_" + id;
 		eventLogEntry = new org.imixs.workflow.engine.jpa.Document(id);
 		eventLogEntry.setType(type);
 		logger.finest("......create new eventLogEntry '" + id + "' => " + type);

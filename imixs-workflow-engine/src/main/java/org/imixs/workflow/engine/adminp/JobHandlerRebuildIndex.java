@@ -16,7 +16,6 @@ import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
-import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -103,8 +102,6 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		int iUpdates = adminp.getItemValueInteger("numUpdates");
 		int iProcessed = adminp.getItemValueInteger("numProcessed");
 
-		// Now set flush Mode to COMMIT
-		manager.setFlushMode(FlushModeType.COMMIT);
 		// buidl query...
 		String query = buildQuery(adminp);
 		logger.finest("......JQPL query: " + query);
@@ -131,7 +128,8 @@ public class JobHandlerRebuildIndex implements JobHandler {
 				+ col.size() + " documents...");
 
 		// write lucen event log....
-		luceneUpdateService.updateDocuments(col);
+		//luceneUpdateService.updateDocuments(col);
+		luceneUpdateService.updateDocumentsUncommitted(col);
 		
 		iUpdates = iUpdates + colSize;
 		iIndex = iIndex + col.size();
@@ -147,7 +145,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 			time = 1;
 		}
 
-		logger.info("Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") - " + colSize
+		logger.info("...Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") - " + colSize
 				+ " documents reindexed in " + time + " sec.  (in total: " + iProcessed);
 
 		// if colSize<numBlockSize we can stop the timer
