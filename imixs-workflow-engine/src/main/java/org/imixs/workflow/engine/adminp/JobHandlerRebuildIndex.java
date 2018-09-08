@@ -67,15 +67,15 @@ public class JobHandlerRebuildIndex implements JobHandler {
 	 * This method runs the RebuildLuceneIndexJob. The adminp job description
 	 * contains the start position (numIndex) and the number of documents to read
 	 * (numBlockSize).
-	 * 
+	 * <p>
 	 * The method updates the index for all affected documents which can be filtered
 	 * by 'type' and '$created'.
-	 * 
+	 * <p>
 	 * An existing lucene index must be deleted manually by the administrator.
-	 * 
+	 * <p>
 	 * After the run method is finished, the properties numIndex, numUpdates and
 	 * numProcessed are updated.
-	 * 
+	 * <p>
 	 * If the number of documents returned from the DocumentService is less the the
 	 * BlockSize, the method returns true to indicate that the Timer should be
 	 * canceled.
@@ -126,13 +126,17 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		// Update index
 		logger.info("Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") - reindexing "
 				+ col.size() + " documents...");
+
+		// first we can flush the eventlog.....
+		luceneUpdateService.flushEventLog();
+		// write lucen event log....
 		luceneUpdateService.updateDocuments(col);
-		
+
 		iUpdates = iUpdates + colSize;
 		iIndex = iIndex + col.size();
 		iProcessed = iProcessed + colSize;
 
-		// adjust start pos and update count
+		// adjust start pos and update count for next run
 		adminp.replaceItemValue("numUpdates", iUpdates);
 		adminp.replaceItemValue("numProcessed", iProcessed);
 		adminp.replaceItemValue("numIndex", iIndex);
@@ -170,9 +174,9 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		// ignore lucene event log entries
 		query += "WHERE document.type NOT IN ('" + LuceneUpdateService.EVENTLOG_TYPE_ADD + "','"
 				+ LuceneUpdateService.EVENTLOG_TYPE_REMOVE + "') ";
-		
+
 		// ignore imixs-archive snapshots
-		query +="AND document.type NOT LIKE 'snapshot%'";
+		query += "AND document.type NOT LIKE 'snapshot%'";
 
 		if (typeFilter != null && !typeFilter.isEmpty()) {
 			// convert type list into comma separated list
