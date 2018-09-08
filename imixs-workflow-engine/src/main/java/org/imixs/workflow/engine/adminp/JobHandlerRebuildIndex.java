@@ -127,8 +127,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		logger.info("Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") - reindexing "
 				+ col.size() + " documents...");
 
-		// write lucen event log....
-		//luceneUpdateService.updateDocuments(col);
+		// write lucene index immediately (see issue #419)....
 		luceneUpdateService.updateDocumentsUncommitted(col);
 		
 		iUpdates = iUpdates + colSize;
