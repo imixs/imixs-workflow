@@ -279,10 +279,23 @@ public class LuceneUpdateService {
 	 * 'dirtyIndex'.
 	 * 
 	 */
-	public void flushEventLog() {		
+	public void flushEventLog() {
+		long total = 0;
+		long count = 0;
 		boolean dirtyIndex = true;
+
 		while (dirtyIndex) {
+			long l = System.currentTimeMillis();
 			dirtyIndex = !flushEventLogByCount(EVENTLOG_ENTRY_FLUSH_COUNT);
+			if (dirtyIndex) {
+				total = total + EVENTLOG_ENTRY_FLUSH_COUNT;
+				count = count + EVENTLOG_ENTRY_FLUSH_COUNT;
+				if (count >= 160) {
+					logger.info("..." + total + " event log entries flushed in " + (System.currentTimeMillis() - l)
+							+ "ms...");
+					count = 0;
+				}
+			}
 		}
 	}
 
@@ -310,7 +323,7 @@ public class LuceneUpdateService {
 			// remove deprecated event log entry....
 			logger.finest("......create deprecated eventLogEntry '" + id + "' => " + type);
 			manager.remove(eventLogEntry);
-			eventLogEntry = null;	
+			eventLogEntry = null;
 		}
 		// now create new one with the provided id
 		eventLogEntry = new org.imixs.workflow.engine.jpa.Document(EVENTLOG_ID_PRAFIX + id);
