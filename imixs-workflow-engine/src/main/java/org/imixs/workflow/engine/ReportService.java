@@ -157,16 +157,15 @@ public class ReportService {
 	 * This method executes the JQPL statement of a Report Entity. The values of
 	 * the returned entities will be cloned and formated in case a itemList is
 	 * provided.
-	 * 
-	 * issue #144
-	 * 
+	 * <p>
 	 * The method parses the attribute txtname for a formating expression to format
 	 * the item value. E.g.:
+	 * <p>
+	 * {@code
 	 * 
+	 *  datDate<format locale="de" label="Date">yy-dd-mm</format>
 	 * 
-	 * datDate<format locale="de" label="Date">yy-dd-mm</format>
-	 * 
-	 * 
+	 * }
 	 * 
 	 * @param reportName
 	 *            - name of the report to be executed
