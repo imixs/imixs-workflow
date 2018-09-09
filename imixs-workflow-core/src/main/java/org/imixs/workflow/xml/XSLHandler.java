@@ -27,15 +27,26 @@
 package org.imixs.workflow.xml;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
 import java.util.logging.Logger;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+
+import org.imixs.workflow.ItemCollection;
 
 /**
  * This class can be used to transform xml by XSL template.
@@ -51,21 +62,19 @@ public class XSLHandler {
 	private static Logger logger = Logger.getLogger(XSLHandler.class.getName());
 
 	/**
-	 * This method transforms an xml source with a provided xsl template.
+	 * This method transforms an XML source with a provided XSL template. The result
+	 * will be written into a output stream.
 	 * 
-	 * The result will be written into a output stream. .
-	 * 
-	 * 
-	 * 
-	 * @param xmlSource
+	 * @param xmlSource -
 	 * @param xslSource
-	 * @param encoding
-	 *            (default UTF-8)
+	 * @param encoding  (default UTF-8)
 	 * @return
+	 * @throws UnsupportedEncodingException
+	 * @throws TransformerException
 	 */
 
 	public static void transform(String xmlSource, String xslSource, String encoding, OutputStream output)
-			throws Exception {
+			throws UnsupportedEncodingException, TransformerException {
 		try {
 			if (encoding == null || encoding.isEmpty()) {
 				encoding = "UTF-8";
@@ -93,5 +102,43 @@ public class XSLHandler {
 
 		}
 
+	}
+
+	/**
+	 * This method transforms an Collection of Documents into XML and translates the
+	 * result based on a provided XSL template. The result will be written into a
+	 * output stream.
+	 * 
+	 * @param xmlSource -
+	 * @param xslSource
+	 * @param encoding  (default UTF-8)
+	 * @return
+	 * @throws JAXBException
+	 * @throws TransformerException
+	 * @throws IOException
+	 */
+
+	public static byte[] transform(List<ItemCollection> dataSource, String xslSource, String encoding,
+			OutputStream output) throws JAXBException, TransformerException, IOException {
+
+		byte[] result=null;
+		XMLDataCollection xmlDataCollection = XMLDataCollectionAdapter.getDataCollection(dataSource);
+
+		StringWriter writer = new StringWriter();
+
+		JAXBContext context = JAXBContext.newInstance(XMLDataCollection.class);
+		Marshaller m = context.createMarshaller();
+		m.setProperty("jaxb.encoding", encoding);
+		m.marshal(xmlDataCollection, writer);
+
+		// create a ByteArray Output Stream
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		try {
+			XSLHandler.transform(writer.toString(), xslSource, encoding, outputStream);
+			result=outputStream.toByteArray();
+		} finally {
+			outputStream.close();
+		}
+		return result;
 	}
 }
