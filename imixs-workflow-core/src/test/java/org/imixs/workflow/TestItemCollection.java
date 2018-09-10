@@ -768,6 +768,23 @@ public class TestItemCollection {
 		Assert.assertEquals("Ticket", itemCollection.getWorkflowGroup());
 		Assert.assertEquals(1, itemCollection.getTaskID());
 		Assert.assertEquals(10, itemCollection.getEventID());
+
+	}
+
+	/*
+	 * Test fluent event interface with a event list
+	 */
+	@Test
+	@Category(org.imixs.workflow.ItemCollection.class)
+	public void testFluentInterfaceFollowUpEvents() {
+		ItemCollection itemCollection = new ItemCollection().model("1.0.0").task(1).event(10).event(11);
+		Assert.assertEquals("1.0.0", itemCollection.getModelVersion());
+		Assert.assertEquals(1, itemCollection.getTaskID());
+		Assert.assertEquals(10, itemCollection.getEventID());
+		@SuppressWarnings("unchecked")
+		List<Integer> followups = itemCollection.getItemValue(WorkflowKernel.ACTIVITYIDLIST);
+		Assert.assertEquals(1, followups.size());
+		Assert.assertEquals(11, followups.get(0).intValue());
 	}
 
 	/**
@@ -1004,57 +1021,52 @@ public class TestItemCollection {
 
 	}
 
-	
 	/**
 	 * Test the method getItemValue for number types null
 	 */
 	@Test
 	public void testGetItemValueNumberNull() {
-		ItemCollection itemCol=new ItemCollection();
-		
+		ItemCollection itemCol = new ItemCollection();
+
 		// integer
-		Integer i=itemCol.getItemValue("unkonw", Integer.class);
+		Integer i = itemCol.getItemValue("unkonw", Integer.class);
 		Assert.assertNotNull(i);
 		Assert.assertEquals(0, i.intValue());
-		
+
 		// int
-		int ii=itemCol.getItemValue("unkonw", int.class);
+		int ii = itemCol.getItemValue("unkonw", int.class);
 		Assert.assertNotNull(ii);
 		Assert.assertEquals(0, ii);
-		
-		
-		
+
 		// Float
-		Float f=itemCol.getItemValue("unkonw", Float.class);
+		Float f = itemCol.getItemValue("unkonw", Float.class);
 		Assert.assertNotNull(f);
 		Assert.assertEquals(0, f.intValue());
-		
+
 		// float
-		float ff=itemCol.getItemValue("unkonw", float.class);
+		float ff = itemCol.getItemValue("unkonw", float.class);
 		Assert.assertNotNull(ff);
-		Assert.assertEquals(0, ff,0);
-		
+		Assert.assertEquals(0, ff, 0);
+
 		// Long
-		Long l=itemCol.getItemValue("unkonw", Long.class);
+		Long l = itemCol.getItemValue("unkonw", Long.class);
 		Assert.assertNotNull(l);
 		Assert.assertEquals(0, l.intValue());
-		
+
 		// long
-		long ll=itemCol.getItemValue("unkonw", long.class);
+		long ll = itemCol.getItemValue("unkonw", long.class);
 		Assert.assertNotNull(ll);
 		Assert.assertEquals(0, ll);
-		
-		
+
 		// Double
-		Double d=itemCol.getItemValue("unkonw", Double.class);
+		Double d = itemCol.getItemValue("unkonw", Double.class);
 		Assert.assertNotNull(d);
 		Assert.assertEquals(0, d.intValue());
-		
+
 		// double
-		double dd=itemCol.getItemValue("unkonw", double.class);
+		double dd = itemCol.getItemValue("unkonw", double.class);
 		Assert.assertNotNull(dd);
-		Assert.assertEquals(0, dd,0);
-		
-		
+		Assert.assertEquals(0, dd, 0);
+
 	}
 }

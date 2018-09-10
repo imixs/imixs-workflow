@@ -1050,8 +1050,20 @@ public class ItemCollection implements Cloneable {
 		}
 	}
 
+	/**
+	 * Set the event id for a workitem. If a event id is already set, the method
+	 * appends the event to the ACTIVITYIDLIST
+	 * 
+	 * @param eventID
+	 * @return
+	 */
 	public ItemCollection event(int eventID) {
-		setEventID(eventID);
+		if (this.getEventID() == 0) {
+			setEventID(eventID);
+		} else {
+			// set
+			appendItemValue(WorkflowKernel.ACTIVITYIDLIST, eventID);
+		}
 		return this;
 	}
 
