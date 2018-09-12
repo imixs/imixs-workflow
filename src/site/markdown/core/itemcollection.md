@@ -46,7 +46,7 @@ The following table gives an overview about the getter methods:
 
 |Method						| Return Type  		|
 |---------------------------|-------------------|
-|getItemValue(name,Class<T>)| Object of a specific type |
+|getItemValue(name,Class\<T\>)| Object of a specific type |
 |getItemValueString(name)	| String			|
 |getItemValueInteger(name)	| Integer			|
 |getItemValueDouble(name)	| Double			|
