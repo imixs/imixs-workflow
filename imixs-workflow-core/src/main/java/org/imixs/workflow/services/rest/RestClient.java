@@ -34,10 +34,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.CookieManager;
-import java.net.HttpCookie;
 import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -48,6 +45,7 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
@@ -58,15 +56,13 @@ import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 /**
- * This ServiceClient is a WebService REST Client which encapsulate the
- * communication with a REST web serice based on the Imixs Workflow REST API.
+ * The Imixs RestClient encapsulates the communication with the Imixs Rest API.
  * The Implementation is based on the JAXB API.
- * 
- * The ServiceClient supports methods for posting EntityCollections and
- * XMLItemCollections.
- * 
- * The post method expects the rest service URI and a Dataobject based ont the
- * Imixs Workflow XML API
+ * <p>
+ * The Imixs RestClient provides methods to GET and POST XMLDataCollection
+ * objects.
+ * <p>
+ * The client throws a RestAPIException in case of an communication error.
  * 
  * @see org.imixs.workflow.jee.rest
  * @author Ralph Soika
@@ -74,13 +70,12 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
  */
 public class RestClient {
 
-	private CookieManager cookieManager = null;
 	private String serviceEndpoint;
 	private Map<String, String> requestProperties = null;
 	private String encoding = "UTF-8";
 	private int iLastHTTPResult = 0;
-	private String content = null;
-	private String rootURL=null;
+
+	private String rootURL = null;
 
 	private final static Logger logger = Logger.getLogger(RestClient.class.getName());
 
@@ -93,10 +88,12 @@ public class RestClient {
 
 	public RestClient(String rootURL) {
 		this();
-		this.rootURL=rootURL;
+		if (rootURL != null && !rootURL.endsWith("/")) {
+			rootURL += "/";
+		}
+		this.rootURL = rootURL;
 	}
 
-	
 	/**
 	 * Register a ClientRequestFilter instance.
 	 * 
@@ -117,14 +114,6 @@ public class RestClient {
 		encoding = aEncoding;
 	}
 
-	public CookieManager getCookieManager() {
-		return cookieManager;
-	}
-
-	public void setCookieManager(CookieManager cookieManager) {
-		this.cookieManager = cookieManager;
-	}
-
 	public String getServiceEndpoint() {
 		return serviceEndpoint;
 	}
@@ -143,24 +132,15 @@ public class RestClient {
 		requestProperties.put(key, value);
 	}
 
-	public String getContent() {
-		return content;
-	}
-
-	public void setContent(String content) {
-		this.content = content;
-	}
-
 	/**
-	 * This method posts an XMLItemCollection in the Imixs XML Format to a Rest
-	 * Service URI Endpoint.
-	 * 
+	 * This method posts an XMLDocument in the Imixs XML Format to a Rest Service
+	 * URI Endpoint.
 	 * 
 	 * @param uri       - Rest Endpoint RUI
 	 * @param entityCol - an Entity Collection
 	 * @return HTTPResult
 	 */
-	public int postEntity(String uri, XMLDocument aItemCol) throws Exception {
+	public XMLDocument postXMLDocument(String uri, XMLDocument aItemCol) throws Exception {
 		PrintWriter printWriter = null;
 
 		HttpURLConnection urlConnection = null;
@@ -201,6 +181,15 @@ public class RestClient {
 			String sHTTPResponse = urlConnection.getHeaderField(0);
 			try {
 				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
+
+				if (iLastHTTPResult >= 200 && iLastHTTPResult <= 299) {
+					String content = readResponse(urlConnection);
+
+					XMLDocument xmlDocument = XMLDocumentAdapter.readXMLDocument(content.getBytes());
+					return xmlDocument;
+
+				}
+
 			} catch (Exception eNumber) {
 				// eNumber.printStackTrace();
 				iLastHTTPResult = 500;
@@ -218,7 +207,7 @@ public class RestClient {
 				printWriter.close();
 		}
 
-		return iLastHTTPResult;
+		return null;
 	}
 
 	/**
@@ -433,66 +422,67 @@ public class RestClient {
 	}
 
 	/**
-	 * Returns all cookies set during the last request
-	 * 
-	 * @return
-	 */
-	public CookieManager getCookies() {
-		return cookieManager;
-	}
-
-	/**
-	 * Set the cookies to be used for the next request
-	 * 
-	 * @param cookieManager
-	 */
-	public void setCookies(CookieManager cookieManager) {
-		this.cookieManager = cookieManager;
-	}
-
-	/**
 	 * This method get the content of a GET request from a Rest Service URI
-	 * Endpoint.
-	 * 
+	 * Endpoint. I case of an error the method throws a RestAPIException.
 	 * 
 	 * @param uri - Rest Endpoint RUI
-	 * 
-	 * @return HTTPResult
+	 * @return - content or null if no content is available.
 	 */
-	public int get(String uri) throws Exception {
-		if (rootURL!=null && !rootURL.isEmpty()) {
-			uri=rootURL+uri;
+	public String get(String uri) throws RestAPIException {
+		int responseCode = -1;
+
+		// test for /
+		if (rootURL != null && !rootURL.endsWith("/")) {
+			rootURL += "/";
 		}
-		URL obj = new URL(uri);
-		HttpURLConnection urlConnection = (HttpURLConnection) obj.openConnection();
+		// test for double /
+		if (rootURL.endsWith("/") && uri!=null && uri.startsWith("/")) {
+			uri = uri.substring(1);
+		}
+		uri =  rootURL + uri;
 
-		// optional default is GET
-		urlConnection.setRequestMethod("GET");
+		
+		try {
+			URL url = new URL(uri);
 
-		urlConnection.setDoOutput(true);
-		urlConnection.setDoInput(true);
-		urlConnection.setAllowUserInteraction(false);
+			HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
-		if (requestProperties != null) {
-			for (Map.Entry<String, String> entry : requestProperties.entrySet()) {
-				urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
+			// optional default is GET
+			urlConnection.setRequestMethod("GET");
+
+			urlConnection.setDoOutput(true);
+			urlConnection.setDoInput(true);
+			urlConnection.setAllowUserInteraction(false);
+
+			if (requestProperties != null) {
+				for (Map.Entry<String, String> entry : requestProperties.entrySet()) {
+					urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
+				}
 			}
-		}
 
-		addCookies(urlConnection);
-		// process filters....
-		for (RequestFilter filter : requestFilterList) {
-			filter.filter(urlConnection);
-		}
+			// process filters....
+			for (RequestFilter filter : requestFilterList) {
+				filter.filter(urlConnection);
+			}
 
-		int responseCode = urlConnection.getResponseCode();
-		logger.finest("......Sending 'GET' request to URL : " + uri);
-		logger.finest("......Response Code : " + responseCode);
-		// read response if response was successful
-		if (responseCode >= 200 && responseCode <= 299) {
-			readResponse(urlConnection);
+			responseCode = urlConnection.getResponseCode();
+			logger.finest("......Sending 'GET' request to URL : " + uri);
+			logger.finest("......Response Code : " + responseCode);
+			// read response if response was successful
+			if (responseCode >= 200 && responseCode <= 299) {
+				return readResponse(urlConnection);
+			} else {
+				String error = "Error " + responseCode + " - failed GET request from '" + uri + "'";
+				logger.warning(error);
+				throw new RestAPIException(responseCode, error);
+			}
+
+		} catch (IOException e) {
+			String error = "Error GET request from '" + uri + " - " + e.getMessage();
+			logger.warning(error);
+			throw new RestAPIException(0, error, e);
+
 		}
-		return responseCode;
 	}
 
 	/**
@@ -501,7 +491,7 @@ public class RestClient {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<ItemCollection> getDocumentCollection(String url) throws Exception {
+	public List<ItemCollection> getDocumentCollection(String url) throws RestAPIException {
 		XMLDataCollection xmlDocuments = getXMLDataCollection(url);
 		// convert xmldatacollection into a list of ItemCollection objects
 		List<ItemCollection> documents = XMLDataCollectionAdapter.putDataCollection(xmlDocuments);
@@ -513,19 +503,25 @@ public class RestClient {
 	 * Returns a list of XMLDocuments from a XML data source
 	 * 
 	 * @return
+	 * @throws RestAPIException
 	 * @throws Exception
 	 */
-	public XMLDataCollection getXMLDataCollection(String url) throws Exception {
+	public XMLDataCollection getXMLDataCollection(String url) throws RestAPIException {
+		XMLDataCollection xmlDocuments = null;
 		this.setRequestProperty("Accept", MediaType.APPLICATION_XML);
-		this.get(url);
-		String xmlResult = this.getContent();
-
+		String xmlResult = this.get(url);
 		// convert into ItemCollection list
-		JAXBContext context = JAXBContext.newInstance(XMLDataCollection.class);
-		Unmarshaller u = context.createUnmarshaller();
-		StringReader reader = new StringReader(xmlResult);
-		XMLDataCollection xmlDocuments = (XMLDataCollection) u.unmarshal(reader);
-
+		JAXBContext context;
+		try {
+			context = JAXBContext.newInstance(XMLDataCollection.class);
+			Unmarshaller u = context.createUnmarshaller();
+			StringReader reader = new StringReader(xmlResult);
+			xmlDocuments = (XMLDataCollection) u.unmarshal(reader);
+		} catch (JAXBException e) {
+			String error = "Error GET request from '" + url + " - " + e.getMessage();
+			logger.warning(error);
+			throw new RestAPIException(0, error, e);
+		}
 		return xmlDocuments;
 
 	}
@@ -536,7 +532,7 @@ public class RestClient {
 	 * @return
 	 * @throws Exception
 	 */
-	public ItemCollection getDocument(String url) throws Exception {
+	public ItemCollection getDocument(String url) throws RestAPIException {
 		XMLDocument xmlDocument = getXMLDocument(url);
 		// convert xmldocument into a ItemCollection object
 		ItemCollection document = XMLDocumentAdapter.putDocument(xmlDocument);
@@ -549,60 +545,34 @@ public class RestClient {
 	 * @return
 	 * @throws Exception
 	 */
-	public XMLDocument getXMLDocument(String url) throws Exception {
+	public XMLDocument getXMLDocument(String url) throws RestAPIException {
+		XMLDocument xmlDocument = null;
 		this.setRequestProperty("Accept", MediaType.APPLICATION_XML);
-		this.get(url);
-		String xmlResult = this.getContent();
+		String xmlResult = this.get(url);
+		try {
+			// convert into ItemCollection list
+			JAXBContext context = JAXBContext.newInstance(XMLDocument.class);
+			// JAXBContext context = JAXBContext.newInstance( "org.imixs.workflow.xml" );
 
-		// convert into ItemCollection list
-		JAXBContext context = JAXBContext.newInstance(XMLDocument.class);
-		// JAXBContext context = JAXBContext.newInstance( "org.imixs.workflow.xml" );
-
-		Unmarshaller u = context.createUnmarshaller();
-		StringReader reader = new StringReader(xmlResult);
-		XMLDocument xmlDocument = (XMLDocument) u.unmarshal(reader);
-
+			Unmarshaller u = context.createUnmarshaller();
+			StringReader reader = new StringReader(xmlResult);
+			xmlDocument = (XMLDocument) u.unmarshal(reader);
+		} catch (JAXBException e) {
+			String error = "Error GET request from '" + url + " - " + e.getMessage();
+			logger.warning(error);
+			throw new RestAPIException(0, error, e);
+		}
 		return xmlDocument;
 
 	}
 
-	public void readCookies(HttpURLConnection connection) throws URISyntaxException {
-		String COOKIES_HEADER = "Set-Cookie";
-		cookieManager = new java.net.CookieManager();
-
-		Map<String, List<String>> headerFields = connection.getHeaderFields();
-		List<String> cookiesHeader = headerFields.get(COOKIES_HEADER);
-
-		if (cookiesHeader != null) {
-			for (String cookie : cookiesHeader) {
-				HttpCookie ding = HttpCookie.parse(cookie).get(0);
-
-				cookieManager.getCookieStore().add(connection.getURL().toURI(), ding);
-			}
-		}
-	}
-
-	public void addCookies(HttpURLConnection connection) {
-		if (cookieManager == null)
-			return;
-
-		String values = "";
-		for (HttpCookie acookie : cookieManager.getCookieStore().getCookies()) {
-			values = values + acookie + ",";
-		}
-
-		if (cookieManager.getCookieStore().getCookies().size() > 0) {
-			connection.setRequestProperty("Cookie", values);
-		}
-	}
-
 	/**
-	 * Put the resonse string into the content property
+	 * Reads the response from a http request.
 	 * 
 	 * @param urlConnection
 	 * @throws IOException
 	 */
-	private void readResponse(URLConnection urlConnection) throws IOException {
+	private String readResponse(URLConnection urlConnection) throws IOException {
 		// get content of result
 		logger.finest("......readResponse....");
 		StringWriter writer = new StringWriter();
@@ -633,7 +603,7 @@ public class RestClient {
 				in.close();
 		}
 
-		setContent(writer.toString());
+		return writer.toString();
 
 	}
 

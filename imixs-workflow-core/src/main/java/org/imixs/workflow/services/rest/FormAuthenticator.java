@@ -57,7 +57,7 @@ public class FormAuthenticator implements RequestFilter {
 			wr.flush();
 			wr.close();
 			int responseCode = con.getResponseCode();
-			logger.info(".....Response Code : " + responseCode);
+			logger.finest(".....Response Code : " + responseCode);
 			con.connect();
 			// get cookies from underlying CookieStore
 			CookieStore cookieJar = manager.getCookieStore();

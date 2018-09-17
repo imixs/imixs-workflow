@@ -10,7 +10,9 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.services.rest.BasicAuthenticator;
 import org.imixs.workflow.services.rest.RequestFilter;
 import org.imixs.workflow.services.rest.RestClient;
+import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
+import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 /**
@@ -27,8 +29,7 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
  */
 public class WorkflowTestSuite {
 	private static volatile WorkflowTestSuite instance = null;
-	private final static Logger logger = Logger
-			.getLogger(WorkflowTestSuite.class.getName());
+	private final static Logger logger = Logger.getLogger(WorkflowTestSuite.class.getName());
 
 	Map<String, RestClient> clients = null;
 	String host = null;
@@ -82,20 +83,18 @@ public class WorkflowTestSuite {
 
 	/**
 	 * This method can be used to register a new test client. A test client is
-	 * identified by its userid. The test client can be used to perform
-	 * different methods.
+	 * identified by its userid. The test client can be used to perform different
+	 * methods.
 	 * 
-	 * @param user
-	 *            - user id
-	 * @param password
-	 *            - optional password
+	 * @param user     - user id
+	 * @param password - optional password
 	 */
 	public void joinParty(String user, String password) {
 		RestClient client = new RestClient();
 		if (password != null && !password.isEmpty()) {
-			RequestFilter filter=new BasicAuthenticator(user,password);
+			RequestFilter filter = new BasicAuthenticator(user, password);
 			client.registerRequestFilter(filter);
-			
+
 		}
 		clients.put(user, client);
 	}
@@ -112,11 +111,11 @@ public class WorkflowTestSuite {
 	}
 
 	/**
-	 * Get the worklist for a specific user with an optional param 
+	 * Get the worklist for a specific user with an optional param
 	 * 
 	 * @param user
-	 * @param resource - resource string 
-	 * @param param - optional query param
+	 * @param resource - resource string
+	 * @param param    - optional query param
 	 * @return
 	 * @see WorkflowSerice
 	 */
@@ -126,18 +125,17 @@ public class WorkflowTestSuite {
 		RestClient client = clients.get(user);
 
 		try {
-			
-			String url=getHost() + "workflow/"+ resourceType;
-			if (param!=null && !param.isEmpty()) {
-				url+="/"+param;
+
+			String url = getHost() + "workflow/" + resourceType;
+			if (param != null && !param.isEmpty()) {
+				url += "/" + param;
 			}
-			url+=".xml";
-			
-			int result = client.get(url);
-			if (result >= 200 && result <= 299) {
-				String content = client.getContent();
-				resultList = XMLDataCollectionAdapter.readCollection(content
-						.getBytes());
+			url += ".xml";
+
+			XMLDataCollection result = client.getXMLDataCollection(url);
+
+			if (result != null) {
+				resultList = XMLDataCollectionAdapter.putDataCollection(result);
 			}
 
 		} catch (Exception e) {
@@ -154,11 +152,8 @@ public class WorkflowTestSuite {
 	 * @return
 	 */
 	public List<ItemCollection> getWorklist(String user) {
-		return getWorklist(user, "worklist",null);
+		return getWorklist(user, "worklist", null);
 	}
-	
-	
-
 
 	/**
 	 * post the workitem for a specific user
@@ -172,12 +167,10 @@ public class WorkflowTestSuite {
 		RestClient client = clients.get(user);
 
 		try {
-			int result = client.postEntity(getHost() + "workflow/workitem",
+			XMLDocument result = client.postXMLDocument(getHost() + "workflow/workitem",
 					XMLDocumentAdapter.getDocument(workitem));
-			if (result >= 200 && result <= 299) {
-				String content = client.getContent();
-				resultWorkitem = XMLDocumentAdapter
-						.readItemCollection(content.getBytes());
+			if (result != null) {
+				resultWorkitem = XMLDocumentAdapter.putDocument(result);
 			}
 
 		} catch (Exception e) {

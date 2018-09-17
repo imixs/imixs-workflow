@@ -96,13 +96,12 @@ public class XMLDocumentAdapter {
 			}
 		return itemCol;
 	}
-	
+
 	/**
 	 * This Method converts a <code> org.imixs.workflow.ItemCollection</code> into a
 	 * <code>XMLDocument</code>
 	 * 
-	 * @param document
-	 *            instance of a ItemCollection to be converted
+	 * @param document instance of a ItemCollection to be converted
 	 */
 	public static XMLDocument getDocument(final ItemCollection document) {
 		return getDocument(document, null);
@@ -116,15 +115,12 @@ public class XMLDocumentAdapter {
 	 * The method verifies if the values stored are basic java types. If not these
 	 * values will not be converted!
 	 * 
-	 * @param document
-	 *            instance of a ItemCollection to be converted
-	 * @param itemNames
-	 *            - optional list of item names to be converted. If null all items
-	 *            will be converted
+	 * @param document  instance of a ItemCollection to be converted
+	 * @param itemNames - optional list of item names to be converted. If null all
+	 *                  items will be converted
 	 */
 	@SuppressWarnings({ "unchecked" })
-	public static XMLDocument getDocument(final ItemCollection document,
-			final List<String> itemNames) {
+	public static XMLDocument getDocument(final ItemCollection document, final List<String> itemNames) {
 
 		// create a deep copy of the source
 		ItemCollection aItemCollection = (ItemCollection) document.clone();
@@ -184,7 +180,7 @@ public class XMLDocumentAdapter {
 
 		return entity;
 	}
-	
+
 	/**
 	 * This method sorts all items of a XMLItemCollection by item name.
 	 * 
@@ -201,18 +197,11 @@ public class XMLDocumentAdapter {
 		return xmlDocument;
 	}
 
-	
-
-
-
-	
-	
 	/**
-	 * This method imports an xml entity data stream containing a singel document and returns the
-	 * ItemCollection. 
+	 * This method imports an xml entity data stream containing a singel document
+	 * and returns the ItemCollection.
 	 * 
-	 * @param inputStream
-	 *            xml input stream
+	 * @param inputStream xml input stream
 	 * @throws JAXBException
 	 * @throws IOException
 	 * @return List of ItemCollection objects
@@ -229,19 +218,34 @@ public class XMLDocumentAdapter {
 
 	}
 
-	
-	
 	/**
 	 * This method imports a single XMLItemCollection and returns the ItemCollection
 	 * object.
 	 * 
-	 * @param inputStream
-	 *            xml input stream
+	 * @param inputStream xml input stream
 	 * @throws JAXBException
 	 * @throws IOException
 	 * @return List of ItemCollection objects
 	 */
 	public static ItemCollection readItemCollection(byte[] byteInput) throws JAXBException, IOException {
+		XMLDocument ecol = readXMLDocument(byteInput);
+		if (ecol != null) {
+			// convert entity....
+			ItemCollection itemCol = XMLDocumentAdapter.putDocument(ecol);
+			return itemCol;
+		}
+		return null;
+	}
+
+	/**
+	 * This method reads a XMLItemCollection from a byte array.
+	 * 
+	 * @param byteInput - xml data
+	 * @throws JAXBException
+	 * @throws IOException
+	 * @return List of ItemCollection objects
+	 */
+	public static XMLDocument readXMLDocument(byte[] byteInput) throws JAXBException, IOException {
 
 		if (byteInput == null) {
 			return null;
@@ -260,19 +264,14 @@ public class XMLDocumentAdapter {
 
 		ecol = (XMLDocument) jaxbObject;
 
-		// convert entity....
-		ItemCollection itemCol = XMLDocumentAdapter.putDocument(ecol);
-
-		return itemCol;
+		return ecol;
 
 	}
 
-	
 	/**
 	 * This method writes a ItemCollection into a Byte array
 	 * 
-	 * @param inputStream
-	 *            xml input stream
+	 * @param inputStream xml input stream
 	 * @throws JAXBException
 	 * @throws IOException
 	 * @return List of ItemCollection objects
@@ -291,10 +290,6 @@ public class XMLDocumentAdapter {
 		return writer.toString().getBytes();
 	}
 
-
-
-	
-	
 	private static byte[] getBytesFromStream(InputStream is) throws IOException {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		int nRead;
