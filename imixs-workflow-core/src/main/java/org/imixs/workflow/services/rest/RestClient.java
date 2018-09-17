@@ -80,6 +80,7 @@ public class RestClient {
 	private String encoding = "UTF-8";
 	private int iLastHTTPResult = 0;
 	private String content = null;
+	private String rootURL=null;
 
 	private final static Logger logger = Logger.getLogger(RestClient.class.getName());
 
@@ -90,6 +91,12 @@ public class RestClient {
 		requestFilterList = new ArrayList<RequestFilter>();
 	}
 
+	public RestClient(String rootURL) {
+		this();
+		this.rootURL=rootURL;
+	}
+
+	
 	/**
 	 * Register a ClientRequestFilter instance.
 	 * 
@@ -453,6 +460,9 @@ public class RestClient {
 	 * @return HTTPResult
 	 */
 	public int get(String uri) throws Exception {
+		if (rootURL!=null && !rootURL.isEmpty()) {
+			uri=rootURL+uri;
+		}
 		URL obj = new URL(uri);
 		HttpURLConnection urlConnection = (HttpURLConnection) obj.openConnection();
 
