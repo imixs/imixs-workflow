@@ -7,6 +7,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.services.rest.BasicAuthenticator;
+import org.imixs.workflow.services.rest.RequestFilter;
 import org.imixs.workflow.services.rest.RestClient;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
@@ -91,7 +93,9 @@ public class WorkflowTestSuite {
 	public void joinParty(String user, String password) {
 		RestClient client = new RestClient();
 		if (password != null && !password.isEmpty()) {
-			client.setCredentials(user, password);
+			RequestFilter filter=new BasicAuthenticator(user,password);
+			client.registerRequestFilter(filter);
+			
 		}
 		clients.put(user, client);
 	}

@@ -40,6 +40,7 @@ import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,11 +52,10 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.util.Base64;
 import org.imixs.workflow.xml.XMLDataCollection;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
-import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 
 /**
  * This ServiceClient is a WebService REST Client which encapsulate the
@@ -75,10 +75,7 @@ import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 public class RestClient {
 
 	private CookieManager cookieManager = null;
-
 	private String serviceEndpoint;
-	private String user = null;
-	private String password = null;
 	private Map<String, String> requestProperties = null;
 	private String encoding = "UTF-8";
 	private int iLastHTTPResult = 0;
@@ -86,10 +83,23 @@ public class RestClient {
 
 	private final static Logger logger = Logger.getLogger(RestClient.class.getName());
 
-	// Sets credentials
-	public void setCredentials(String auser, String apw) {
-		user = auser;
-		password = apw;
+	protected List<RequestFilter> requestFilterList;
+
+	public RestClient() {
+		super();
+		requestFilterList = new ArrayList<RequestFilter>();
+	}
+
+	/**
+	 * Register a ClientRequestFilter instance.
+	 * 
+	 * @param filter - request filter instance.
+	 */
+	public void registerRequestFilter(RequestFilter filter) {
+		logger.finest("......register new request filter: " + filter.getClass().getSimpleName());
+
+		// client.register(filter);
+		requestFilterList.add(filter);
 	}
 
 	public String getEncoding() {
@@ -116,22 +126,6 @@ public class RestClient {
 		this.serviceEndpoint = serviceEndpoint;
 	}
 
-	public String getUser() {
-		return user;
-	}
-
-	public void setUser(String user) {
-		this.user = user;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
 	/**
 	 * Set a single header request property
 	 */
@@ -155,10 +149,8 @@ public class RestClient {
 	 * Service URI Endpoint.
 	 * 
 	 * 
-	 * @param uri
-	 *            - Rest Endpoint RUI
-	 * @param entityCol
-	 *            - an Entity Collection
+	 * @param uri       - Rest Endpoint RUI
+	 * @param entityCol - an Entity Collection
 	 * @return HTTPResult
 	 */
 	public int postEntity(String uri, XMLDocument aItemCol) throws Exception {
@@ -175,12 +167,13 @@ public class RestClient {
 			urlConnection.setDoInput(true);
 			urlConnection.setAllowUserInteraction(false);
 
-			// Authorization
-			if (user != null) {
-				urlConnection.setRequestProperty("Authorization", "Basic " + this.getAccessByUser());
-			}
 			/** * HEADER ** */
 			urlConnection.setRequestProperty("Content-Type", "application/xml; charset=" + encoding);
+
+			// process filters....
+			for (RequestFilter filter : requestFilterList) {
+				filter.filter(urlConnection);
+			}
 
 			StringWriter writer = new StringWriter();
 
@@ -226,10 +219,8 @@ public class RestClient {
 	 * Service URI Endpoint.
 	 * 
 	 * 
-	 * @param uri
-	 *            - Rest Endpoint RUI
-	 * @param entityCol
-	 *            - an Entity Collection
+	 * @param uri       - Rest Endpoint RUI
+	 * @param entityCol - an Entity Collection
 	 * @return HTTPResult
 	 */
 	public int postCollection(String uri, XMLDataCollection aEntityCol) throws Exception {
@@ -246,13 +237,13 @@ public class RestClient {
 			urlConnection.setDoInput(true);
 			urlConnection.setAllowUserInteraction(false);
 
-			// Authorization
-			if (user != null) {
-				urlConnection.setRequestProperty("Authorization", "Basic " + this.getAccessByUser());
-			}
-
 			/** * HEADER ** */
 			urlConnection.setRequestProperty("Content-Type", "application/xml; charset=" + encoding);
+
+			// process filters....
+			for (RequestFilter filter : requestFilterList) {
+				filter.filter(urlConnection);
+			}
 
 			StringWriter writer = new StringWriter();
 
@@ -297,10 +288,8 @@ public class RestClient {
 	 * Service URI Endpoint.
 	 * 
 	 * 
-	 * @param uri
-	 *            - Rest Endpoint RUI
-	 * @param entityCol
-	 *            - an Entity Collection
+	 * @param uri       - Rest Endpoint RUI
+	 * @param entityCol - an Entity Collection
 	 * @return HTTPResult
 	 */
 	public int postJsonEntity(String uri, String aItemColString) throws Exception {
@@ -317,12 +306,12 @@ public class RestClient {
 			urlConnection.setDoInput(true);
 			urlConnection.setAllowUserInteraction(false);
 
-			// Authorization
-			if (user != null) {
-				urlConnection.setRequestProperty("Authorization", "Basic " + this.getAccessByUser());
-			}
 			/** * HEADER ** */
 			urlConnection.setRequestProperty("Content-Type", "application/json; charset=" + encoding);
+			// process filters....
+			for (RequestFilter filter : requestFilterList) {
+				filter.filter(urlConnection);
+			}
 
 			StringWriter writer = new StringWriter();
 
@@ -369,10 +358,8 @@ public class RestClient {
 	 * 
 	 * 
 	 * 
-	 * @param uri
-	 *            - Rest Endpoint RUI
-	 * @param entityCol
-	 *            - an Entity Collection
+	 * @param uri       - Rest Endpoint RUI
+	 * @param entityCol - an Entity Collection
 	 * @return HTTPResult
 	 */
 	public int postString(String uri, String dataString, String contentType) throws Exception {
@@ -392,12 +379,13 @@ public class RestClient {
 			urlConnection.setDoInput(true);
 			urlConnection.setAllowUserInteraction(false);
 
-			// Authorization
-			if (user != null) {
-				urlConnection.setRequestProperty("Authorization", "Basic " + this.getAccessByUser());
-			}
 			/** * HEADER ** */
 			urlConnection.setRequestProperty("Content-Type", contentType + "; charset=" + encoding);
+
+			// process filters....
+			for (RequestFilter filter : requestFilterList) {
+				filter.filter(urlConnection);
+			}
 
 			StringWriter writer = new StringWriter();
 
@@ -460,8 +448,7 @@ public class RestClient {
 	 * Endpoint.
 	 * 
 	 * 
-	 * @param uri
-	 *            - Rest Endpoint RUI
+	 * @param uri - Rest Endpoint RUI
 	 * 
 	 * @return HTTPResult
 	 */
@@ -482,66 +469,90 @@ public class RestClient {
 			}
 		}
 
-		// Authorization
-		if (user != null) {
-			urlConnection.setRequestProperty("Authorization", "Basic " + this.getAccessByUser());
-		}
-
 		addCookies(urlConnection);
+		// process filters....
+		for (RequestFilter filter : requestFilterList) {
+			filter.filter(urlConnection);
+		}
 
 		int responseCode = urlConnection.getResponseCode();
 		logger.finest("......Sending 'GET' request to URL : " + uri);
 		logger.finest("......Response Code : " + responseCode);
-		// read response if response was successful  
-		if (responseCode>=200 && responseCode<=299) {
+		// read response if response was successful
+		if (responseCode >= 200 && responseCode <= 299) {
 			readResponse(urlConnection);
 		}
 		return responseCode;
 	}
 
 	/**
-	 * Returns a list of ItemCollections from a XML data source
+	 * Returns a list of ItemCollections
 	 * 
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public List<ItemCollection> getDocumentCollection(String url) throws Exception {
+		XMLDataCollection xmlDocuments = getXMLDataCollection(url);
+		// convert xmldatacollection into a list of ItemCollection objects
+		List<ItemCollection> documents = XMLDataCollectionAdapter.putDataCollection(xmlDocuments);
+		return documents;
+
+	}
+
+	/**
+	 * Returns a list of XMLDocuments from a XML data source
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public XMLDataCollection getXMLDataCollection(String url) throws Exception {
 		this.setRequestProperty("Accept", MediaType.APPLICATION_XML);
 		this.get(url);
 		String xmlResult = this.getContent();
 
 		// convert into ItemCollection list
 		JAXBContext context = JAXBContext.newInstance(XMLDataCollection.class);
-        Unmarshaller u = context.createUnmarshaller();
+		Unmarshaller u = context.createUnmarshaller();
 		StringReader reader = new StringReader(xmlResult);
 		XMLDataCollection xmlDocuments = (XMLDataCollection) u.unmarshal(reader);
 
-		List<ItemCollection> documents = XMLDataCollectionAdapter.putDataCollection(xmlDocuments);
-		return documents;
+		return xmlDocuments;
 
 	}
-	
+
 	/**
-	 * Returns a list of ItemCollections from a XML data source
+	 * Returns a ItemCollection
 	 * 
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public ItemCollection getDocument(String url) throws Exception {
+		XMLDocument xmlDocument = getXMLDocument(url);
+		// convert xmldocument into a ItemCollection object
+		ItemCollection document = XMLDocumentAdapter.putDocument(xmlDocument);
+		return document;
+	}
+
+	/**
+	 * Returns a XMLDocument from a XML data source
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public XMLDocument getXMLDocument(String url) throws Exception {
 		this.setRequestProperty("Accept", MediaType.APPLICATION_XML);
 		this.get(url);
 		String xmlResult = this.getContent();
 
 		// convert into ItemCollection list
 		JAXBContext context = JAXBContext.newInstance(XMLDocument.class);
-		//JAXBContext context = JAXBContext.newInstance( "org.imixs.workflow.xml" );
-		
+		// JAXBContext context = JAXBContext.newInstance( "org.imixs.workflow.xml" );
+
 		Unmarshaller u = context.createUnmarshaller();
 		StringReader reader = new StringReader(xmlResult);
 		XMLDocument xmlDocument = (XMLDocument) u.unmarshal(reader);
 
-		ItemCollection document = XMLDocumentAdapter.putDocument(xmlDocument);
-		return document;
+		return xmlDocument;
 
 	}
 
@@ -602,7 +613,7 @@ public class RestClient {
 				in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 			String inputLine;
 			while ((inputLine = in.readLine()) != null) {
-				logger.finest("......"+inputLine);
+				logger.finest("......" + inputLine);
 				writer.write(inputLine);
 			}
 		} catch (IOException e) {
@@ -614,22 +625,6 @@ public class RestClient {
 
 		setContent(writer.toString());
 
-	}
-
-	/**
-	 * Diese Methode setzt fÃ¼r den Zugriff auf eine URL eine Definierte UserID +
-	 * Passwort
-	 */
-	private String getAccessByUser() {
-		String sURLAccess = "";
-		// UserID:Passwort
-		String sUserCode = user + ":" + password;
-		// String convertieren
-		// sURLAccess = Base64.encodeBase64(sUserCode.getBytes()).toString();
-		char[] authcode = Base64.encode(sUserCode.getBytes());
-
-		sURLAccess = String.valueOf(authcode);
-		return sURLAccess;
 	}
 
 }
