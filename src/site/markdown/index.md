@@ -1,19 +1,12 @@
 # How Imixs-Workflow works
 
-Imixs-Workflow is an **open source workflow engine** for a human-centric business process management (BPM). Human-centric BPM means to support human skills and activities in a task oriented and event driven way. The **Imixs-Workflow project** provides a powerful framework to model business logic for Business Applications and BPM Solutions. 
-The Imixs-Workflow engine can either be embedded into a Java Enterprise Application, or can be run as a service in a microservice architecture.
-
-## Imixs Microservice
-
-Imixs-Workflow provides a Rest Service API to encapsulates the Imixs-Workflow Engine into a microservice. In this architectural style the workflow engine can be bound to any business application, independent from the technology behind. Business logic can be changed without changing a single line of code.
-
-The [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) provides a Docker Container to start a Imixs-Workflow instance with a single command. 
+**Imixs-Workflow** allows you to describe and execute your business process in a model driven way. The open source workflow engine is based on **BPMN 2.0** and designed for a human-centric business process management. In this way your application supports human skills and activities in a task oriented and event driven way. The Imixs-Workflow engine can be embedded into a Java Enterprise Application, or can be run as a microservice.
 
 
 ## BPMN 2.0
 
-Imixs-Workflow is based on the [BPMN 2.0 modeling standard](http://www.bpmn.org/). To create a Imixs-Workflow model the
-powerful Eclipse based modeling tool [Imixs-BPMN](./modelling/) can be used. To install Imixs-BPMN see the [installation guide](./modelling/install.html).
+Imixs-Workflow is based on the [BPMN 2.0 modeling standard](http://www.bpmn.org/). You create a workflow model with the
+Eclipse based modeling tool [Imixs-BPMN](./modelling/). 
 
 With BPMN 2.0 a business process can be described from different perspectives.
 In Imixs-Workflow the process status is described with the BPMN element '_Task_'. 
@@ -21,11 +14,17 @@ The status change between the Task elements is defined by BPMN element '_Event_'
 
 <img src="./images/bpmn-example01.png"  />
 
-This type of modeling is also known as event-driven modeling. You can find more examples in the section "[How to Model](.//modelling/howto.html)".
+This type of modeling is also known as event-driven modeling. You can find more examples in the section "[How to Model](.//modelling/howto.html)". To install Imixs-BPMN see the [installation guide](./modelling/install.html).
 
 
+## Imixs Microservice
 
-## The Actors
+Imixs-Workflow provides a Rest Service API and can be run as a service in a microservice architecture. In this architectural style the workflow engine can be bound to any existing business application, independent from the technology behind. Business logic can be changed without changing a single line of code.
+
+The [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) provides a Docker Containerj. You can start a Imixs-Workflow instance with one single command. 
+
+
+## Human Centric Workflow
 
 Imixs-Workflow is supporting human skills, activities and relieves collaboration in a task-oriented manner.
 Each process instance can be assigned to different actors. 
@@ -45,18 +44,16 @@ You can use Imixs workflow to control access to a process instance in a fine-gra
 <img src="./images/bpmn-example02.png" width="500px" />
  
 ## The Architecture
-The architecture of the Imixs-Workflow engine provides different basic concepts to simplify the development of business applications.
+The architecture of the Imixs-Workflow engine provides a simple concept to develop a business application.
  
-### The Workitem
-A running process instance inside a Workflow Management System is called a '*Workitem*'. Each workitem is assigned to a Task in the BPMN model and can contain several business information.
-If a Workitem is still in process, the Workitem is called a '*running process instance*'. After a process instance is finished the workitem is '*closed*'. 
-Imixs Workflow provides an [XML schema](core/xml/index.html) to translate all workflow and business information of a process instance into an open and compatible data format. As a result, business data can be safely archived with Imixs-Workflow for long periods of time.
-
 ### The Process Model
-The process model (or workflow model) defines what state a process instance can present during its life-cycle. Each time a workitem is processed, the workflow management system synchronizes the status (Task) with the process instance based on the BPMN model.
+
+The BPMN 2.0 based process model defines tasks and events to describe the life-cycle of a business process. 
+The model driven approach helps to understand what happens in a business process. The Imixs-Workflow engine can start and execute a process instance assigned to a process model.
+
 
 ### The Workflow Engine
-The Imixs-Workflow engine persists and controls the process instance into a database. The Workflow Engine ensures that a workitem is always in sync with the process model. The Imixs-Workflow engine supports a Plugin-API to implement different function blocks of a workflow management system. 
+The Imixs-Workflow engine persists and controls the process instance into a database. The Workflow Engine ensures that a workitem is in sync with the process model. The Imixs-Workflow engine supports a Plugin-API to implement different function blocks of a workflow management system. 
 This includes, for example: 
 
 * Access Controll
@@ -66,6 +63,11 @@ This includes, for example:
 * Business Rules
 * Reporting 
 * Archiving
+
+### The Workitem
+A running process instance is called a '*Workitem*'. Each workitem is assigned to a Task in the BPMN model and can contain several business information.
+If a Workitem is still in process, the Workitem is called a '*running process instance*'. After a process instance is finished the workitem is '*closed*'. 
+Imixs Workflow provides an [XML schema](core/xml/index.html) to translate all workflow and business information of a process instance into an open and compatible data format. As a result, business data can be safely archived with Imixs-Workflow for long periods of time.
 
 
 ### Tasklists
