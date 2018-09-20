@@ -436,12 +436,11 @@ public class RestClient {
 			rootURL += "/";
 		}
 		// test for double /
-		if (rootURL.endsWith("/") && uri!=null && uri.startsWith("/")) {
+		if (rootURL.endsWith("/") && uri != null && uri.startsWith("/")) {
 			uri = uri.substring(1);
 		}
-		uri =  rootURL + uri;
+		uri = rootURL + uri;
 
-		
 		try {
 			URL url = new URL(uri);
 
@@ -476,7 +475,6 @@ public class RestClient {
 				logger.warning(error);
 				throw new RestAPIException(responseCode, error);
 			}
-
 		} catch (IOException e) {
 			String error = "Error GET request from '" + uri + " - " + e.getMessage();
 			logger.warning(error);
@@ -508,22 +506,29 @@ public class RestClient {
 	 */
 	public XMLDataCollection getXMLDataCollection(String url) throws RestAPIException {
 		XMLDataCollection xmlDocuments = null;
-		this.setRequestProperty("Accept", MediaType.APPLICATION_XML);
+		
+		setRequestProperty("Accept", MediaType.APPLICATION_XML);
 		String xmlResult = this.get(url);
-		// convert into ItemCollection list
-		JAXBContext context;
-		try {
-			context = JAXBContext.newInstance(XMLDataCollection.class);
-			Unmarshaller u = context.createUnmarshaller();
-			StringReader reader = new StringReader(xmlResult);
-			xmlDocuments = (XMLDataCollection) u.unmarshal(reader);
-		} catch (JAXBException e) {
-			String error = "Error GET request from '" + url + " - " + e.getMessage();
-			logger.warning(error);
-			throw new RestAPIException(0, error, e);
-		}
-		return xmlDocuments;
 
+		if (xmlResult == null || xmlResult.isEmpty()) {
+			// no content!
+			logger.finest("......no content...");
+			return null;
+		} else {
+			// convert into ItemCollection list
+			try {
+				JAXBContext context;
+				context = JAXBContext.newInstance(XMLDataCollection.class);
+				Unmarshaller u = context.createUnmarshaller();
+				StringReader reader = new StringReader(xmlResult);
+				xmlDocuments = (XMLDataCollection) u.unmarshal(reader);
+			} catch (JAXBException e) {
+				String error = "Error GET request from '" + url + " - " + e.getMessage();
+				logger.warning(error);
+				throw new RestAPIException(0, error, e);
+			}
+			return xmlDocuments;
+		}
 	}
 
 	/**
