@@ -1,6 +1,6 @@
 # Workflow Plugins
 
-The [Imixs-Workflow Plugin-API](../engine/plugins/index.html) introduces an extensibility mechanism to extend the standard functionality of the Imixs-Workflow engine. A plugin can provide business logic to control the processing life-cycle of a process instance, as also platform specific technical functionality, to exchange data with its surrounding environment. 
+[Imixs-Workflow Plugins](../engine/plugins/index.html) are introducing an extensibility mechanism to extend the standard functionality of the Imixs-Workflow engine. A plugin can provide business logic to control the processing life-cycle of a process instance, as also platform specific technical functionality, to exchange data with its surrounding environment. 
 
 For example a plugin can apply a business rule, send an E-Mail notification, or import business data from an external datasource. The Imixs-Workflow project already provides a set of plug-ins which covers a lot of standard functionality of a workflow engine. See the section [Plugin-API](../engine/plugins/index.html) for further information. 
 
@@ -14,7 +14,7 @@ Read more about modelling in the [Imixs-BPMN user guide](../modelling/index.html
 Each plugin represents an individual building block inside a Imixs-Workflow application. A plugin can be reused in different workflow models for different applications.
 A plugin, added to a workflow model, is controlled and executed by the [WorkflowKernel](./workflowkernel.html). The _WorkflowKernel_ calls the plugin during the processing life-cycle and provides information about the running process instance and the workflow event processed by the workflow engine.
 
-This concept makes it easy to implement plugins providing additional business logic and custom functionality. 
+This concept makes it easy for a Plugin Developer to implement additional business logic and custom functionality. 
 A plugin can validate a process instance and may also manipulate the business data. A plugin can also interrupt the processing phase by throwing a [PluginException](../engine/plugins/exception_handling.html) - for example in case of a validation error.
  
  

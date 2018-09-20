@@ -5,21 +5,19 @@ The Imixs Workflow API prvides a set of Exception classes to signal unexpected
 	 public class MyPlugin extends AbstractPlugin {
 	    ......
 	 	@Override
-		public int run(ItemCollection adocumentContext,
-				ItemCollection documentActivity) throws PluginException {
-			documentContext = adocumentContext;
+		public ItemCollection run(ItemCollection workitem, ItemCollection event) throws PluginException {
 			// some code going wrong.....
-			Object[] params={documentContext.getItemValueString("txtName")};
+			Object[] params={workitem.getItemValueString("_attachments")};
 			throw new PluginException(
 						MyPlugin.class.getSimpleName(),
 						ERROR_ATTACHMENTS_MISSING,
-						"Please enter a valid name",params);
+						"Please enter a valid file name",params);
 			.....
 		} 
 		....
 	}
 
-In this example a Plugin throws a PluginExceptin. The Exception contains the  Plugin name, an Error Code, a Error Message and an optional array of params.  The optional params can be used by an application to provide additional information to the user. 
+In this example a Plugin throws a _PluginException_. The Exception contains the  Plugin name, an Error Code, a Error Message and an optional array of params.  The optional params can be used by an application to provide additional information to the user. 
  
 ##Handling PluginExceptions in JSF
 This is an example how an application can handle a Plugin Exception and create a JSF Faces Message based on the information of the PluginException:
