@@ -5,12 +5,9 @@
 
 ## BPMN 2.0
 
-Imixs-Workflow is based on the [BPMN 2.0 modeling standard](http://www.bpmn.org/). You create a workflow model with the
-Eclipse based modeling tool [Imixs-BPMN](./modelling/). 
+Imixs-Workflow is based on the [BPMN 2.0 modeling standard](http://www.bpmn.org/). BPMN enables you to describe your business process from different perspectives. You can describe the organizational aspects just to give people an understanding of your process. And you can as well model the technical details to execute your process with Imixs-Workflow engine.
 
-With BPMN 2.0 a business process can be described from different perspectives.
-In Imixs-Workflow the process status is described with the BPMN element '_Task_'. 
-The status change between the Task elements is defined by BPMN element '_Event_'.
+You create a workflow model with the Eclipse based modeling tool [Imixs-BPMN](./modelling/). In Imixs-Workflow the process status is described with the BPMN element '_Task_'. The status change between the Task elements is defined by BPMN element '_Event_'.
 
 <img src="./images/bpmn-example01.png"  />
 
@@ -21,20 +18,19 @@ This type of modeling is also known as event-driven modeling. You can find more 
 
 Imixs-Workflow provides a Rest Service API and can be run as a service in a microservice architecture. In this architectural style the workflow engine can be bound to any existing business application, independent from the technology behind. Business logic can be changed without changing a single line of code.
 
-The [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) provides a Docker Containerj. You can start a Imixs-Workflow instance with one single command. 
+The [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) provides also a Docker Container. With this technology you can start a Imixs-Workflow instance with one single command. 
 
 
-## Human Centric Workflow
+## What Means Human Centric Workflow?
 
-Imixs-Workflow is supporting human skills, activities and relieves collaboration in a task-oriented manner.
-Each process instance can be assigned to different actors. 
+Imixs-Workflow is supporting human skills, activities and relieves collaboration in a task-oriented manner. For this, each process instance can be assigned to different actors. 
 The main objective is to support the human actors and provide them with relevant information about the business process. The workflow engine ensures that the business process is aligned to predetermined business rules:
  
   * Who is the owner of a business process
   * Who is allowed to access and modify the data
-  * Who need to be informed
+  * Who need to be informed next
   
-In that way Imixs-Workflow assists users in starting a new process, finding and processing open tasks and to complete current jobs. The Workflow Engine automatically routes open tasks to the next actor and notifies users about open tasks depending on the current process definition. 
+In that way Imixs-Workflow help users in starting a new process, finding and processing open tasks and to complete current jobs. The Workflow Engine automatically routes open tasks to the next actor and notifies users about open tasks depending on the current process definition. 
 
 Each business process can involve different users to interact with the Workflow Management System.
 These users are called the *actors*. An Actor can either start, update or read a process instance and also the embedded business data
