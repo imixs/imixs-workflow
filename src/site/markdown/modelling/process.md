@@ -1,4 +1,4 @@
-# The Workflow Task Properties
+# The Imixs-BPMN Task Element
 When a Imixs BPMN Task Element is selected in the Drawing Canvas, different settings can be
 configured from the tabbed property sheets displayed in the Property View.
  

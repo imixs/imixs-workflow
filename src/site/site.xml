@@ -37,8 +37,8 @@
 				<item name="Eclipse Workbench" href="modelling/eclipse_workbench.html" />
 				<item name="Creating a Model" href="modelling/create_model.html" />
 				<item name="Process Properties" href="modelling/main_editor.html" />
-				<item name="Task Properties" href="modelling/process.html" />
-				<item name="Event Properties" href="modelling/activities.html" />
+				<item name="Task Element" href="modelling/process.html" />
+				<item name="Event Element" href="modelling/activities.html" />
 				<item name="Text Replacement" href="modelling/textreplacement.html" />
 				<item name="Reports" href="modelling/report_plugin.html" />
 				<item name="Deployment" href="modelling/deployment.html" />

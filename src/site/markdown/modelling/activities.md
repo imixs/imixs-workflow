@@ -1,45 +1,52 @@
-#The Workflow Event Properties
-When a Imixs BPMN Event Element is selected in the Drawing Canvas, different settings can be
- configured from the tabbed property sheets displayed in the Property View.
- 
+# The Imixs-BPMN Event Element
+
+The Imixs-BPMN Event element is an extension to the BPMN 2.0 Intermediate Catch Event. This element describes the transition from one Task into another. The Event Element contains various properties which are evaluated during the execution by the Imixs-Workflow engine. 
+
 <img src="../images/modelling/bpmn_screen_05.png"/>
 
-The property settings are grouped into different sections.
+The properties of an Imixs-BPMN event element are grouped into different sections:
  
-##General Properties
-The property tab 'General' defines basic informations for an Imixs-BPMN Event element. 
+## General Properties
+In the section _General_ you provide basic information for the Imixs-BPMN Event element. 
 
 <img src="../images/modelling/bpmn_screen_19.png"  />
 
-###Name 
 
-The name of the Event element is used to identify the processing action. The name typical describes the activity triggered by the user to process a WorkItem. E.g. "submit", "approve" "close". The event name can be used by applications to display event based workflow actions. 
+### Name 
 
-<center><img src="../images/modelling/bpmn_screen_30.png" width="200px" /></center>
+The name of an event is used to identify the event by the user to process a WorkItem. The name is typically a noun describing the action triggered by the user,  e.g. "submit", "approve" "close". The event name can be used by applications to display the workflow actions as buttons or hyper links. 
+
+<img src="../images/modelling/bpmn_screen_30.png" />
 
 
-###Documentation
+### Documentation
 
-The documentation of the Event element can be used to provide the user with additional information about the event. Typically the documentation provides information how the event will change the current status of the process instance. The documentation can be used  by applications to display event based information. 
+The documentation of the Event element is optional and provides the user with additional information about the event. Typically the documentation contains  information how the event will change the current status of the process instance. The documentation can be used  by applications to display event based information. 
  
  
  
-##Workflow Properties
-The Tab 'Workflow' contains Processing Information for an Event element. These information
-are evaluated by the Workflow Engine while a WorkItem is processed 
+## Workflow Properties
+In the section _Workflow_ you provide the processing information for an Event. These information are evaluated by the Workflow Engine while a WorkItem is processed 
  
 <img src="../images/modelling/bpmn_screen_20.png" width="600px" />  
   
  
 ### ID 
-Every Workflow Event assigned to a Workflow Task has an unambiguously ID. The Event ID is used  by the Workflow Engine to identify the Event.
+Every Workflow Event assigned to a Workflow Task has an unambiguously ID. The Event ID is used  by the Workflow Engine to identify the Event. You can also use the ID to trigger an event manually.  
+
+	...
+	myWorkitem.event(10);
+	workflowService.process(myWorkitem);
+	....
  
  
 ### Result
 The 'Result' defines application specific processing information evaluated by the Workflow Engine. These information are evaluated by plugins and applications. See the section [ResultPlugin](../engine/plugins/resultplugin.html) for further information.
 
+The result information is usually an XML fragment containing a structured list of elements. 
+
  
-###Visiblity
+### Visiblity
 The section 'visibility' defines whether an event is visible to a workflow user or not. The visibility is separated into three levels of visibility. 
 
 <ul>
@@ -56,13 +63,14 @@ The 'Read Access' property can be used to define a general read permission for a
 
   
 ## ACL Properties
-The ACL Tab is used to define the Access Control List (ACL) for a workitem which is processed by the Imixs-Workflow engine.
+In the section _ACL_ you can optional define an Access Control List (ACL) to be assigned to a workitem when the event is processed by the Imixs-Workflow engine.
 
 <img src="../images/modelling/bpmn_screen_21.png"/>  
 
-The ACL defines the read- and write access a user will be granted for, after a WorkItem was successful  processed. This is one of the most important features of the Imixs Workflow System. Also the ownership can be defined by the ACL properties. The ACL can be set based on the 'Actor Properties' which are defined by the [process properties](./main_editor.html) of the workflow model. To activate the feature the option 'Update ACL' has to be checked.
+<strong>Note:</strong> If you define ACL settings on the Event level, the ACL settings on a [Task Element](./process.html) will be overwritten.
 
-<strong>Note:</strong> If the ACL setting is defined on Event level, the ACL settings on the Task Level are overwritten.
+The ACL of an Event defines the read- and write access a user will be granted for, after a WorkItem was successful  processed. This is one of the most important features of the Imixs Workflow System. Also the ownership can be defined by the ACL properties. The ACL can be set based on the 'Actor Properties' which are defined by the [process properties](./main_editor.html) of the workflow model. To activate the feature the option 'Update ACL' has to be checked.
+
 
 
 ### Owner, Read and Write Access:
@@ -112,6 +120,7 @@ A history entry support the [Text Replacer feature](./textreplacement.html).
     Document saved by <itemvalue>namcurrenteditor</itemvalue>
 
 ## Mail Properties
+
 The property section 'Mail' defines information for mail messaging during a process step.
 
 <img src="../images/modelling/bpmn_screen_23.png"/>  
@@ -121,16 +130,16 @@ A mail message is defined by the mail subject and mail body. Both fields support
 A Mail message can be send by the [Imxis-Mail Plugin](../engine/plugins/mailplugin.html)
 
 
-##Rule Properties
+## Rule Properties
 
-The property section 'Rule' allows the definition of business rules to be evaluated during the processing life cycle. 
+In the section 'Rule' you can define business rules to be evaluated during the processing life cycle. 
 
 <img src="../images/modelling/bpmn_screen_24.png"/>
 
-A business rule can be defined in different script languages. See the section [Rule Plugin](../engine/plugins/ruleplugin.html) for further information.
+A business rule can be written in different script languages. See the section [Rule Plugin](../engine/plugins/ruleplugin.html) for further information how a business rule is defined.
 
 
-##Report Properties
+## Report Properties
 
 The 'Report' section describes a report definition to be executed the event.
 
@@ -139,7 +148,7 @@ The 'Report' section describes a report definition to be executed the event.
 See the section [Rule Plugin](../restapi/reportservice.html) for further information about reports.
 
 
-##Version Properties
+## Version Properties
 
 The section 'Version' defines if a new version of a process instance should be created by the event. Versions are used to archive a process instance or to create a copy of a workitem.   
 
@@ -147,7 +156,7 @@ The section 'Version' defines if a new version of a process instance should be c
 
 See the section [Version Plugin](../engine/plugins/versionplugin.html) for further information about reports.
 
-##Timer Properties
+## Timer Properties
 
 Events can be triggered by user interaction or based on a timer event. The section 'timer' allows the definition of a timer event. 
 
