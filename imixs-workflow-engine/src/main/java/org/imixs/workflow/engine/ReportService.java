@@ -127,15 +127,14 @@ public class ReportService {
 	}
 
 	/**
-	 * This method returns all reports (ItemCollection) sorted by name.
+	 * Returns a list of all reports sorted by name.
 	 * 
+	 * @return list of ItemCollection objects.
 	 */
 	public List<ItemCollection> findAllReports() {
 		List<ItemCollection> col = documentService.getDocumentsByType("ReportEntity");
-
 		// sort resultset by name
 		Collections.sort(col, new ItemCollectionComparator("txtname", true));
-
 		return col;
 	}
 
@@ -266,11 +265,13 @@ public class ReportService {
 	}
 
 	/**
-	 * Transforms a datasource based on a report into a FileData object.
+	 * Transforms a datasource based on the XSL template from a report into a
+	 * FileData object.
 	 * 
-	 * @param data
-	 * @param report
-	 * @return
+	 * @param report - the report definition
+	 * @param data - the data source
+	 * @param fileName 
+	 * @return FileData object containing the transformed data source.
 	 * @throws JAXBException
 	 * @throws TransformerException
 	 * @throws IOException
@@ -314,14 +315,14 @@ public class ReportService {
 	 * 
 	 * ADD (FIELD,OFFSET)
 	 * 
-	 * e.g. <date DAY_OF_MONTH="1" MONTH="2" />
-	 * 
+	 * <p>
+	 * e.g. {@code<date DAY_OF_MONTH="1" MONTH="2" />}
+	 * <p>
 	 * results in 1. February of the current year
+	 * <p>
 	 * 
-	 * 
-	 *
-	 * <date DAY_OF_MONTH="ACTUAL_MAXIMUM" MONTH="12" ADD="MONTH,-1" />
-	 * 
+	 * {@code<date DAY_OF_MONTH="ACTUAL_MAXIMUM" MONTH="12" ADD="MONTH,-1" />}
+	 * <p>
 	 * results in 30.November of current year
 	 * 
 	 * @param xmlDate
@@ -389,7 +390,7 @@ public class ReportService {
 	}
 
 	/**
-	 * This method replaces all occurrences of <date> tags with the corresponding
+	 * This method replaces all occurrences of {@code<date>} tags with the corresponding
 	 * dynamic date. See computeDynamicdate.
 	 * 
 	 * @param content
@@ -413,10 +414,15 @@ public class ReportService {
 	/**
 	 * This method converts a double value into a custom number format including an
 	 * optional locale.
+	 * <pre>
+	 * {@code
 	 * 
 	 * "###,###.###", "en_UK", 123456.789
 	 * 
 	 * "EUR #,###,##0.00", "de_DE", 1456.781
+	 * 
+	 * }
+	 * </pre>
 	 * 
 	 * @param pattern
 	 * @param value
@@ -433,7 +439,7 @@ public class ReportService {
 		}
 		formatter.applyPattern(pattern);
 		String output = formatter.format(value);
-	
+
 		return output;
 	}
 
@@ -448,12 +454,12 @@ public class ReportService {
 	@SuppressWarnings({ "unused", "unchecked" })
 	private ItemCollection cloneEntity(ItemCollection entity, List<List<String>> attributes) {
 		ItemCollection clone = null;
-	
+
 		// if we have a itemList we clone each entity of the result set
 		if (attributes != null && attributes.size() > 0) {
 			clone = new ItemCollection();
 			for (List<String> attribute : attributes) {
-	
+
 				String field = attribute.get(0);
 				String label = "field";
 				if (attribute.size() >= 1) {
@@ -463,25 +469,25 @@ public class ReportService {
 				if (attribute.size() >= 2) {
 					convert = attribute.get(2);
 				}
-	
+
 				String format = "";
 				if (attribute.size() >= 3) {
 					format = attribute.get(3);
 				}
-	
+
 				String agregate = "";
 				if (attribute.size() >= 4) {
 					agregate = attribute.get(4);
 				}
-	
+
 				// first look for converter
-	
+
 				// did we have a format definition?
 				List<Object> values = entity.getItemValue(field);
 				if (!convert.isEmpty()) {
 					values = convertItemValue(entity, field, convert);
 				}
-	
+
 				// did we have a format definition?
 				if (!format.isEmpty()) {
 					String sLocale = XMLParser.findAttribute(format, "locale");
@@ -496,15 +502,15 @@ public class ReportService {
 					for (Object rawValue : rawValues) {
 						values.add(formatObjectValue(rawValue, format, sLocale));
 					}
-	
+
 				}
-	
+
 				clone.replaceItemValue(field, values);
 			}
 		} else {
 			// clone all attributes
 			clone = (ItemCollection) entity.clone();
-	
+
 		}
 		return clone;
 	}
