@@ -99,7 +99,7 @@ public class ReportPlugin extends AbstractPlugin {
 		if ("".equals(reportName))
 			return adocumentContext;
 
-		ItemCollection itemCol = getWorkflowService().getReportService().getReport(reportName);
+		ItemCollection itemCol = getWorkflowService().getReportService().findReport(reportName);
 		if (itemCol == null) {
 			// report undefined
 			throw new PluginException(ReportPlugin.class.getSimpleName(), REPORT_UNDEFINED,

@@ -27,6 +27,8 @@
 
 package org.imixs.workflow.engine;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -48,21 +50,26 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXBException;
+import javax.xml.transform.TransformerException;
 
+import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ItemCollectionComparator;
 import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.util.XMLParser;
+import org.imixs.workflow.xml.XSLHandler;
 
 /**
  * The ReportService supports methods to create, process and find report
  * instances.
  * 
- * A Report Entity is identified by its name represented by the attribute
- * 'name' So a ReportService Implementation should ensure that name is a
- * unique key for the report entity.
+ * A Report Entity is identified by its name represented by the attribute 'name'
+ * So a ReportService Implementation should ensure that name is a unique key for
+ * the report entity.
  * 
  * Also each report entity holds a EQL Query in the attribute "txtquery". this
  * eql statement will be processed by the processQuery method and should return
@@ -89,26 +96,41 @@ public class ReportService {
 	DocumentService documentService;
 
 	/**
-	 * Returns a Report Entity identified by the attribute name
+	 * Returns a Report Entity by its identifier. The identifier can either be the
+	 * $uniqueId of the report or the report name. The method returns null if no
+	 * report with the given identifier exists.
 	 * 
-	 * @param aReportName
-	 *            - name of the report
+	 * @param reportID - name of the report or its $uniqueId.
 	 * @return ItemCollection representing the Report
-	 * @throws Exception
 	 */
-	public ItemCollection getReport(String aReportName) {
+	public ItemCollection findReport(String reportID) {
 
-		ItemCollection itemCol = findReport(aReportName);
-		return itemCol;
+		ItemCollection result = null;
+		// try to load report by uniqueid
+		result = documentService.load(reportID);
+		if (result == null) {
+			// try to search for name
+			String searchTerm = "(type:\"ReportEntity\" AND txtname:\"" + reportID + "\")";
+			Collection<ItemCollection> col;
+			try {
+				col = documentService.find(searchTerm, 1, 0);
+			} catch (QueryException e) {
+				logger.severe("findReport - invalid id: " + e.getMessage());
+				return null;
+			}
+			if (col.size() > 0) {
+				result = col.iterator().next();
+			}
+		}
+
+		return result;
 	}
 
 	/**
-	 * This method returns a all reports (ItemCollection) sorted by name.
+	 * This method returns all reports (ItemCollection) sorted by name.
 	 * 
-	 * The method returns only ItemCollections the call has sufficient read
-	 * access for.
 	 */
-	public List<ItemCollection> getReportList() {
+	public List<ItemCollection> findAllReports() {
 		List<ItemCollection> col = documentService.getDocumentsByType("ReportEntity");
 
 		// sort resultset by name
@@ -118,15 +140,13 @@ public class ReportService {
 	}
 
 	/**
-	 * updates a Entity Report Object. The Entity representing a report must
-	 * have at least the attributes : txtQuery, numMaxCount, numStartPost,
-	 * txtName.
+	 * updates a Entity Report Object. The Entity representing a report must have at
+	 * least the attributes : txtQuery, numMaxCount, numStartPost, txtName.
 	 * 
 	 * txtName is the unique key to be use to get a query.
 	 * 
-	 * The method checks if a report with the same key allready exists. If so
-	 * this report will be updated. If no report exists the new report will be
-	 * created
+	 * The method checks if a report with the same key allready exists. If so this
+	 * report will be updated. If no report exists the new report will be created
 	 * 
 	 * @param report
 	 * @throws InvalidItemValueException
@@ -154,9 +174,10 @@ public class ReportService {
 	}
 
 	/**
-	 * This method executes the JQPL statement of a Report Entity. The values of
-	 * the returned entities will be cloned and formated in case a itemList is
-	 * provided.
+	 * Returns the data source defined by a report.
+	 * <p>
+	 * The method executes the JQPL statement of a Report Entity. The values of the
+	 * returned entities will be cloned and formated in case a itemList is provided.
 	 * <p>
 	 * The method parses the attribute txtname for a formating expression to format
 	 * the item value. E.g.:
@@ -167,32 +188,26 @@ public class ReportService {
 	 * 
 	 * }
 	 * 
-	 * @param reportName
-	 *            - name of the report to be executed
+	 * @param reportName - name of the report to be executed
 	 * 
-	 * @param startPos
-	 *            - optional start position to query entities
-	 * @param maxcount
-	 *            - optional max count of entities to query
-	 * @param params
-	 *            - optional parameter list to be mapped to the JQPL statement
-	 * @param itemList
-	 *            - optional attribute list of items to be returned
+	 * @param startPos   - optional start position to query entities
+	 * @param maxcount   - optional max count of entities to query
+	 * @param params     - optional parameter list to be mapped to the JQPL
+	 *                   statement
+	 * @param itemList   - optional attribute list of items to be returned
 	 * @return collection of entities
 	 * @throws QueryException
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	public List<ItemCollection> executeReport(String reportName, int pageSize, int pageIndex, String sortBy,
+	public List<ItemCollection> getDataSource(ItemCollection reportEntity, int pageSize, int pageIndex, String sortBy,
 			boolean sortReverse, Map<String, String> params) throws QueryException {
 
 		List<ItemCollection> clonedResult = new ArrayList<ItemCollection>();
 
 		long l = System.currentTimeMillis();
-		logger.finest("......executeReport: " + reportName);
+		logger.finest("......executeReport: " + reportEntity.getItemValueString("txtname"));
 
-		// Load Query Object
-		ItemCollection reportEntity = findReport(reportName);
 		String query = reportEntity.getItemValueString("txtquery");
 
 		// replace params in query statement
@@ -244,131 +259,50 @@ public class ReportService {
 				clonedResult.add(clone);
 			}
 		}
-		logger.fine("...executed report '" + reportName + "' in " + (System.currentTimeMillis() - l) + "ms");
+		logger.fine("...executed report '" + reportEntity.getItemValueString("txtname") + "' in "
+				+ (System.currentTimeMillis() - l) + "ms");
 		return clonedResult;
 
 	}
 
 	/**
-	 * This method returns all embedded child items of a entity. The childItem
-	 * are identified by a fieldname containing a '~'. The left part is the
-	 * container item (List of Map), the right part is the attribute name in the
-	 * child itemcollection.
+	 * Transforms a datasource based on a report into a FileData object.
 	 * 
-	 * @param entity
-	 * @param keySet
+	 * @param data
+	 * @param report
 	 * @return
+	 * @throws JAXBException
+	 * @throws TransformerException
+	 * @throws IOException
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private List<ItemCollection> getEmbeddedChildItems(ItemCollection entity, List<String> fieldNames) {
-		List<String> embeddedItemNames = new ArrayList<String>();
-		List<ItemCollection> result = new ArrayList<ItemCollection>();
-		// first find all items containing a child element
-		for (String field : fieldNames) {
-			field = field.toLowerCase();
-			if (field.contains("~")) {
-				field = field.substring(0, field.indexOf('~'));
-				if (!embeddedItemNames.contains(field)) {
-					embeddedItemNames.add(field);
-				}
-			}
+	public FileData transformDataSource(ItemCollection report, List<ItemCollection> data, String fileName)
+			throws JAXBException, TransformerException, IOException {
+
+		String xslTemplate = report.getItemValueString("xsl").trim();
+		// execute the transformation based on the report defintion....
+		String sContentType = report.getItemValueString("contenttype");
+		if ("".equals(sContentType)) {
+			sContentType = MediaType.TEXT_XML;
 		}
-		if (!embeddedItemNames.isEmpty()) {
-			for (String field : embeddedItemNames) {
-				List<Object> mapChildItems = entity.getItemValue(field);
-				// try to convert
-				for (Object mapOderItem : mapChildItems) {
-					if (mapOderItem instanceof Map) {
-						ItemCollection child = new ItemCollection((Map) mapOderItem);
-						// clone entity and add all map entries
-						ItemCollection clone = new ItemCollection(entity);
-						Set<String> childFieldNameList = child.getAllItems().keySet();
-						for (String childFieldName : childFieldNameList) {
-							clone.replaceItemValue(field + "~" + childFieldName, child.getItemValue(childFieldName));
-						}
-						result.add(clone);
-					}
-				}
-			}
+		String encoding = report.getItemValueString("encoding");
+		if ("".equals(encoding)) {
+			// no encoding defined so we default to UTF-8
+			encoding = "UTF-8";
 		}
-		return result;
+
+		// create a ByteArray Output Stream
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		byte[] _bytes = XSLHandler.transform(data, xslTemplate, encoding, outputStream);
+
+		FileData fileData = new FileData(fileName, _bytes, sContentType);
+
+		return fileData;
+
 	}
 
 	/**
-	 * This helper method clones a entity with a given format and converter map.
-	 * 
-	 * @param formatMap
-	 * @param converterMap
-	 * @param entity
-	 * @return
-	 */
-	@SuppressWarnings({ "unused", "unchecked" })
-	private ItemCollection cloneEntity(ItemCollection entity, List<List<String>> attributes) {
-		ItemCollection clone = null;
-
-		// if we have a itemList we clone each entity of the result set
-		if (attributes != null && attributes.size() > 0) {
-			clone = new ItemCollection();
-			for (List<String> attribute : attributes) {
-
-				String field = attribute.get(0);
-				String label = "field";
-				if (attribute.size() >= 1) {
-					label = attribute.get(1);
-				}
-				String convert = "";
-				if (attribute.size() >= 2) {
-					convert = attribute.get(2);
-				}
-
-				String format = "";
-				if (attribute.size() >= 3) {
-					format = attribute.get(3);
-				}
-
-				String agregate = "";
-				if (attribute.size() >= 4) {
-					agregate = attribute.get(4);
-				}
-
-				// first look for converter
-
-				// did we have a format definition?
-				List<Object> values = entity.getItemValue(field);
-				if (!convert.isEmpty()) {
-					values = convertItemValue(entity, field, convert);
-				}
-
-				// did we have a format definition?
-				if (!format.isEmpty()) {
-					String sLocale = XMLParser.findAttribute(format, "locale");
-					// test if we have a XML format tag
-					List<String> content = XMLParser.findTagValues(format, "format");
-					if (content.size() > 0) {
-						format = content.get(0);
-					}
-					// create string array of formated values
-					List<?> rawValues = values;
-					values = new ArrayList<Object>();
-					for (Object rawValue : rawValues) {
-						values.add(formatObjectValue(rawValue, format, sLocale));
-					}
-
-				}
-
-				clone.replaceItemValue(field, values);
-			}
-		} else {
-			// clone all attributes
-			clone = (ItemCollection) entity.clone();
-
-		}
-		return clone;
-	}
-
-	/**
-	 * This method parses a <date /> xml tag and computes a dynamic date by
-	 * parsing the attributes:
+	 * This method parses a <date /> xml tag and computes a dynamic date by parsing
+	 * the attributes:
 	 * 
 	 * DAY_OF_MONTH
 	 * 
@@ -455,8 +389,8 @@ public class ReportService {
 	}
 
 	/**
-	 * This method replaces all occurrences of <date> tags with the
-	 * corresponding dynamic date. See computeDynamicdate.
+	 * This method replaces all occurrences of <date> tags with the corresponding
+	 * dynamic date. See computeDynamicdate.
 	 * 
 	 * @param content
 	 * @return
@@ -477,36 +411,107 @@ public class ReportService {
 	}
 
 	/**
-	 * helper method returns a QueryEntity identified by its name or uniqueID
+	 * This method converts a double value into a custom number format including an
+	 * optional locale.
 	 * 
-	 * @param aid
+	 * "###,###.###", "en_UK", 123456.789
+	 * 
+	 * "EUR #,###,##0.00", "de_DE", 1456.781
+	 * 
+	 * @param pattern
+	 * @param value
 	 * @return
 	 */
-	private ItemCollection findReport(String aid) {
-		ItemCollection result = null;
-		// try to load report by uniqueid
-		result = documentService.load(aid);
-		if (result == null) {
-			// try to search for name
-			String searchTerm = "(type:\"ReportEntity\" AND txtname:\"" + aid + "\")";
-			Collection<ItemCollection> col;
-			try {
-				col = documentService.find(searchTerm, 1, 0);
-			} catch (QueryException e) {
-				logger.severe("findReport - invalid id: " + e.getMessage());
-				return null;
-			}
-			if (col.size() > 0) {
-				result = col.iterator().next();
-			}
+	public static String customNumberFormat(String pattern, String locale, double value) {
+		DecimalFormat formatter = null;
+		Locale _locale = getLocaleFromString(locale);
+		// test if we have a locale
+		if (_locale != null) {
+			formatter = (DecimalFormat) DecimalFormat.getInstance(getLocaleFromString(locale));
+		} else {
+			formatter = (DecimalFormat) DecimalFormat.getInstance();
 		}
-
-		return result;
+		formatter.applyPattern(pattern);
+		String output = formatter.format(value);
+	
+		return output;
 	}
 
 	/**
-	 * This methode updates the a itemCollection with the attributes supported
-	 * by another itemCollection without the $uniqueid
+	 * This helper method clones a entity with a given format and converter map.
+	 * 
+	 * @param formatMap
+	 * @param converterMap
+	 * @param entity
+	 * @return
+	 */
+	@SuppressWarnings({ "unused", "unchecked" })
+	private ItemCollection cloneEntity(ItemCollection entity, List<List<String>> attributes) {
+		ItemCollection clone = null;
+	
+		// if we have a itemList we clone each entity of the result set
+		if (attributes != null && attributes.size() > 0) {
+			clone = new ItemCollection();
+			for (List<String> attribute : attributes) {
+	
+				String field = attribute.get(0);
+				String label = "field";
+				if (attribute.size() >= 1) {
+					label = attribute.get(1);
+				}
+				String convert = "";
+				if (attribute.size() >= 2) {
+					convert = attribute.get(2);
+				}
+	
+				String format = "";
+				if (attribute.size() >= 3) {
+					format = attribute.get(3);
+				}
+	
+				String agregate = "";
+				if (attribute.size() >= 4) {
+					agregate = attribute.get(4);
+				}
+	
+				// first look for converter
+	
+				// did we have a format definition?
+				List<Object> values = entity.getItemValue(field);
+				if (!convert.isEmpty()) {
+					values = convertItemValue(entity, field, convert);
+				}
+	
+				// did we have a format definition?
+				if (!format.isEmpty()) {
+					String sLocale = XMLParser.findAttribute(format, "locale");
+					// test if we have a XML format tag
+					List<String> content = XMLParser.findTagValues(format, "format");
+					if (content.size() > 0) {
+						format = content.get(0);
+					}
+					// create string array of formated values
+					List<?> rawValues = values;
+					values = new ArrayList<Object>();
+					for (Object rawValue : rawValues) {
+						values.add(formatObjectValue(rawValue, format, sLocale));
+					}
+	
+				}
+	
+				clone.replaceItemValue(field, values);
+			}
+		} else {
+			// clone all attributes
+			clone = (ItemCollection) entity.clone();
+	
+		}
+		return clone;
+	}
+
+	/**
+	 * This methode updates the a itemCollection with the attributes supported by
+	 * another itemCollection without the $uniqueid
 	 * 
 	 * @param aworkitem
 	 * 
@@ -526,8 +531,8 @@ public class ReportService {
 	}
 
 	/**
-	 * This method returns true if the attribute name can be updated by a
-	 * client. Workflow Attributes are not valid
+	 * This method returns true if the attribute name can be updated by a client.
+	 * Workflow Attributes are not valid
 	 * 
 	 * @param aName
 	 * @return
@@ -551,11 +556,10 @@ public class ReportService {
 	}
 
 	/**
-	 * This helper method test the type of an object and formats the objects
-	 * value.
+	 * This helper method test the type of an object and formats the objects value.
 	 * 
-	 * If the object if from type Date or Calendar it will be formated unsing
-	 * the Java SimpleDateFormat.
+	 * If the object if from type Date or Calendar it will be formated unsing the
+	 * Java SimpleDateFormat.
 	 * 
 	 * If the object is String, Integer or Double the method tries to format the
 	 * value into a number
@@ -621,33 +625,6 @@ public class ReportService {
 
 		return singleValue;
 
-	}
-
-	/**
-	 * This method converts a double value into a custom number format including
-	 * an optional locale.
-	 * 
-	 * "###,###.###", "en_UK", 123456.789
-	 * 
-	 * "EUR #,###,##0.00", "de_DE", 1456.781
-	 * 
-	 * @param pattern
-	 * @param value
-	 * @return
-	 */
-	public static String customNumberFormat(String pattern, String locale, double value) {
-		DecimalFormat formatter = null;
-		Locale _locale = getLocaleFromString(locale);
-		// test if we have a locale
-		if (_locale != null) {
-			formatter = (DecimalFormat) DecimalFormat.getInstance(getLocaleFromString(locale));
-		} else {
-			formatter = (DecimalFormat) DecimalFormat.getInstance();
-		}
-		formatter.applyPattern(pattern);
-		String output = formatter.format(value);
-
-		return output;
 	}
 
 	/**
@@ -732,5 +709,50 @@ public class ReportService {
 		}
 
 		return locale;
+	}
+
+	/**
+	 * This method returns all embedded child items of a entity. The childItem are
+	 * identified by a fieldname containing a '~'. The left part is the container
+	 * item (List of Map), the right part is the attribute name in the child
+	 * itemcollection.
+	 * 
+	 * @param entity
+	 * @param keySet
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private List<ItemCollection> getEmbeddedChildItems(ItemCollection entity, List<String> fieldNames) {
+		List<String> embeddedItemNames = new ArrayList<String>();
+		List<ItemCollection> result = new ArrayList<ItemCollection>();
+		// first find all items containing a child element
+		for (String field : fieldNames) {
+			field = field.toLowerCase();
+			if (field.contains("~")) {
+				field = field.substring(0, field.indexOf('~'));
+				if (!embeddedItemNames.contains(field)) {
+					embeddedItemNames.add(field);
+				}
+			}
+		}
+		if (!embeddedItemNames.isEmpty()) {
+			for (String field : embeddedItemNames) {
+				List<Object> mapChildItems = entity.getItemValue(field);
+				// try to convert
+				for (Object mapOderItem : mapChildItems) {
+					if (mapOderItem instanceof Map) {
+						ItemCollection child = new ItemCollection((Map) mapOderItem);
+						// clone entity and add all map entries
+						ItemCollection clone = new ItemCollection(entity);
+						Set<String> childFieldNameList = child.getAllItems().keySet();
+						for (String childFieldName : childFieldNameList) {
+							clone.replaceItemValue(field + "~" + childFieldName, child.getItemValue(childFieldName));
+						}
+						result.add(clone);
+					}
+				}
+			}
+		}
+		return result;
 	}
 }

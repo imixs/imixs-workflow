@@ -148,7 +148,7 @@ public class ReportRestServiceV40 {
 		try {
 
 			Collection<ItemCollection> col = null;
-			col = reportService.getReportList();
+			col = reportService.findAllReports();
 			return XMLItemCollectionAdapter.putCollection(col);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -167,7 +167,7 @@ public class ReportRestServiceV40 {
 	@Path("/definitions/{name}")
 	public XMLItemCollection getReportDefinition(@PathParam("name") String name) {
 		try {
-			ItemCollection itemCol = reportService.getReport(name);
+			ItemCollection itemCol = reportService.findReport(name);
 			return XMLItemCollectionAdapter.putItemCollection(itemCol);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -204,21 +204,21 @@ public class ReportRestServiceV40 {
 
 		try {
 
-			ItemCollection itemCol = reportService.getReport(reportName);
-			if (itemCol == null) {
+			ItemCollection report = reportService.findReport(reportName);
+			if (report == null) {
 				logger.severe("Report '" + reportName + "' not defined!");
 				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 			}
 
-			sXSL = itemCol.getItemValueString("XSL").trim();
-			sContentType = itemCol.getItemValueString("contenttype");
+			sXSL = report.getItemValueString("XSL").trim();
+			sContentType = report.getItemValueString("contenttype");
 			if ("".equals(sContentType))
 				sContentType = "text/html";
 
 			// if no encoding is provided by the query string than the encoding
 			// from the report will be taken
 			if ("".equals(encoding))
-				encoding = itemCol.getItemValueString("encoding");
+				encoding = report.getItemValueString("encoding");
 			// no encoding defined so take a default encoding
 			// (UTF-8)
 			if ("".equals(encoding))
@@ -226,7 +226,7 @@ public class ReportRestServiceV40 {
 
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(reportName, pageSize, pageIndex, sortBy, sortReverse, params);
+			col = reportService.getDataSource(report, pageSize, pageIndex, sortBy, sortReverse, params);
 
 			// if no XSL is provided return standard html format...?
 			if ("".equals(sXSL)) {
@@ -323,7 +323,8 @@ public class ReportRestServiceV40 {
 		Collection<ItemCollection> col = null;
 
 		try {
-			ItemCollection report = reportService.getReport(reportName);
+			ItemCollection report = reportService.findReport(reportName);
+			
 			List<List<String>> attributes = (List<List<String>>) report.getItemValue("attributes");
 			List<String> items = new ArrayList<String>();
 			List<String> labels = new ArrayList<String>();
@@ -338,7 +339,7 @@ public class ReportRestServiceV40 {
 
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(reportName, pageSize, pageIndex, sortBy, sortReverse, params);
+			col = reportService.getDataSource(report, pageSize, pageIndex, sortBy, sortReverse, params);
 
 			DocumentCollection documentCollection = XMLItemCollectionAdapter.putCollection(col);
 			DocumentTable documentTable = new DocumentTable(documentCollection.getDocument(), items, labels);
@@ -386,9 +387,13 @@ public class ReportRestServiceV40 {
 		Collection<ItemCollection> col = null;
 
 		try {
+			ItemCollection report = reportService.findReport(reportName);
+			if (report==null) {
+				return null;
+			}
 			// execute report
 			Map<String, String> params = getQueryParams(uriInfo);
-			col = reportService.executeReport(reportName, pageSize, pageIndex, sortBy, sortReverse, params);
+			col = reportService.getDataSource(report, pageSize, pageIndex, sortBy, sortReverse, params);
 
 			// set content type and character encoding
 			if (encoding == null || encoding.isEmpty()) {
@@ -455,7 +460,7 @@ public class ReportRestServiceV40 {
 	@Path("/reports/{name}")
 	public void deleteReport(@PathParam("name") String name) {
 		try {
-			ItemCollection itemCol = reportService.getReport(name);
+			ItemCollection itemCol = reportService.findReport(name);
 			entityService.remove(itemCol);
 		} catch (Exception e) {
 			e.printStackTrace();

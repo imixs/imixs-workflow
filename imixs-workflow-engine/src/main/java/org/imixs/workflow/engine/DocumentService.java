@@ -582,6 +582,10 @@ public class DocumentService {
 	 * @throws AccessDeniedException
 	 */
 	public void remove(ItemCollection document) throws AccessDeniedException {
+		if (document==null) {
+			return;
+		}
+		
 		Document persistedDocument = null;
 		String sID = document.getItemValueString("$uniqueid");
 		persistedDocument = manager.find(Document.class, sID);
