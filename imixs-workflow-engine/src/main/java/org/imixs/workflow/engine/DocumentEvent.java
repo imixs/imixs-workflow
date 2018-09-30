@@ -11,6 +11,7 @@ import org.imixs.workflow.ItemCollection;
  * <ul>
  * <li>ON_DOCUMENT_SAVE - send immediately before a document will be saved 
  * <li>ON_DOCUMENT_LOAD - send immediately after a document was loaded
+ * <li>ON_DOCUMENT_DELETE - send immediately before a document will be deleted
  * </ul>
  * 
  * @author Ralph Soika
@@ -21,6 +22,7 @@ public class DocumentEvent {
 
 	public static final int ON_DOCUMENT_SAVE = 1;
 	public static final int ON_DOCUMENT_LOAD = 2;
+	public static final int ON_DOCUMENT_DELETE = 3;
 	
  	private int eventType;
 	private ItemCollection document;

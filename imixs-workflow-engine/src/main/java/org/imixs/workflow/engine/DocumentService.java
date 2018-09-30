@@ -595,12 +595,21 @@ public class DocumentService {
 				throw new AccessDeniedException(OPERATION_NOTALLOWED,
 						"remove - You are not allowed to perform this operation");
 
+			// fire event
+			if (events != null) {
+				events.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_DELETE));
+			} else {
+				logger.warning("Missing CDI support for Event<DocumentEvent> !");
+			}
+			
 			// remove document...
 			manager.remove(persistedDocument);
 			// remove document form index - @see issue #412
 			if (!document.getItemValueBoolean(NOINDEX)) {
 				luceneUpdateService.removeDocument(document.getUniqueID());
 			}
+			
+			
 		} else
 			throw new AccessDeniedException(INVALID_UNIQUEID, "remove - invalid $uniqueid");
 	}
