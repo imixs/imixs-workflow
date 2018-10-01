@@ -51,6 +51,7 @@ import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.ClassicAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -100,7 +101,7 @@ import org.imixs.workflow.exceptions.PluginException;
 @Singleton
 public class LuceneUpdateService {
 
-	protected static final String DEFAULT_ANALYSER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
+	protected static final String DEFAULT_ANALYSER = ClassicAnalyzer.class.getName();
 	protected static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
 	protected static final String ANONYMOUS = "ANONYMOUS";
 
@@ -666,13 +667,20 @@ public class LuceneUpdateService {
 	 * 
 	 * @return
 	 * @throws IOException
-	 * @throws Exception
 	 */
 	IndexWriter createIndexWriter() throws IOException {
 		// create a IndexWriter Instance
 		Directory indexDir = FSDirectory.open(Paths.get(indexDirectoryPath));
 		IndexWriterConfig indexWriterConfig;
-		indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
+
+		// indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
+		try {
+			// issue #429
+			indexWriterConfig = new IndexWriterConfig((Analyzer) Class.forName(analyserClass).newInstance());
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			throw new IndexException(IndexException.INVALID_INDEX, "Unable to create analyzer '" + analyserClass + "'",
+					e);
+		}
 
 		return new IndexWriter(indexDir, indexWriterConfig);
 	}
