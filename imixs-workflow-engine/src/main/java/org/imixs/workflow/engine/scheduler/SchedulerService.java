@@ -239,7 +239,7 @@ public class SchedulerService {
 				configuration.replaceItemValue("Schedule", "");
 
 			}
-			logger.info("...Scheduler Service" + id + " (" + configuration.getItemValueString("txtName")
+			logger.info("...Scheduler Service " + id + " (" + configuration.getItemValueString("txtName")
 					+ ") successfull started.");
 		}
 		configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, true);
