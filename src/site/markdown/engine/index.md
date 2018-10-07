@@ -4,9 +4,9 @@ The Imixs-Workflow engine provides a set of Java EE services to access the [work
 <img src="../images/engine/imixs-architecture_jee.png"/>
 
 
-##The Java EE Services 
+##The Imixs-Workflow Services 
 
-The Imixs-Workflow Engine is based on the [Imixs-Workflow Core-API](../core/index.html) and implements a set of Java EE service interfaces. These services are divided into the typical building blocks of a workflow management system: 
+The Imixs-Workflow Engine is based on the [Imixs-Workflow Core-API](../core/index.html) and implements a set of Java enterprise service interfaces. These services are divided into the typical building blocks of a workflow management system: 
 
  * The Database Layer -> [DocumentService](./documentservice.html)
  * The Workflow Kernel -> [WorkflowService](./workflowservice.html)
