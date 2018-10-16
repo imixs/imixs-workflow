@@ -1,13 +1,14 @@
-#The Access Control List (ACL)
+# The Access Control List (ACL)
 The Imixs-Workflow engine supports a multi-level security model for a fine-grained access control on workitems.
-The access control list (ACL) can be assigned individually to each workitem. 
+You can define the access control list (ACL), with the help of the BPMN workflow model, for each process state individually. For example, one group of users can be authorized to create and process workitems, while another group is only allowed to read workitems.
 
-With application specific roles it is possible to precisely control who will have read and write access to certain workitems. For instance, a group of users can be authorized for only reading workitems while other ones are allowed to create and process workitems.
+<img src="../images/bpmn-example02.png" width="500px" />
 
-The access is closely coupled to the security concept of Java EE and provides many ways to authorize users to access the data managed by the Imixs-Workflow engine. See also the section [Deployment >> Security](../deployment/security.html). 
+The access control of Imixs-Workflow is closely coupled to the security concepts the Java Enterprise Platform. So you have various ways to authorize users. See the section [Deployment >> Security](../deployment/security.html) for more information. The following section describes the core concept how to grant or restrict access for a user interacting with the Imixs-Workflow engine.
  
 ## Access Levels 
-The following section describes the core concept of how to grant or restrict access for a user to interact with the Imixs-Workflow engine. The general access level is defined by 5 different access roles: 
+
+The general access level is defined by 5 individual access roles: 
 
   * org.imixs.ACCESSLEVEL.NOACCESS
   * org.imixs.ACCESSLEVEL.READACCESS
@@ -15,7 +16,7 @@ The following section describes the core concept of how to grant or restrict acc
   * org.imixs.ACCESSLEVEL.EDITORACCESS
   * org.imixs.ACCESSLEVEL.MANAGERACCESS
 
-Each of these roles allows the user to interact in a different way with workitems controlled by the Imixs-Workflow engine:
+Each of these roles allows a user to interact in a different way with workitems controlled by the Imixs-Workflow engine:
 
 ### MANAGERACCESS: 
 Users who are assigned to this access level, are authorized to read and write all workitems. AccessLevels assigned to a single workitem are ignored.
@@ -24,13 +25,13 @@ Users who are assigned to this access level, are authorized to read and write al
 Users who are assigned to this access level, are authorized to create and process all workitems for which they have read privileges or which do not have a restricted read access.
 
 ### AUTHORACCESS:
-Users assigned to this access level are only authorized to process workitems in which they are registered as authors and for which they have read permissions.
+The Authoraccess is the default access level. Users assigned to this access level are only authorized to process workitems in which they are registered as authors and for which they have read permissions.
 
 ### READACCESS:
 Users who are assigned to this access level, are not allowed to create or process workitems. They are only authorized to read workitems for which they have read permissions or which do not have any read restriction.
 
 ### NOACCESS:
-Users who are assigned to this access level or have none of these roles, are not authorized to read or write workitems independent of the read and write privileges of a workitem.
+Users who are assigned to this access level or have none of these roles, are not authorized to interact with the Imixs-Workflow engine at all.
 
 
 ## The Access Level Matrix
