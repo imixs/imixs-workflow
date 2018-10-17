@@ -15,8 +15,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<!-- 4.10.4, 5.5.2, 6.2.0 6.2.1 -->
-		<lucene.version>6.6.1</lucene.version>
+		<!-- 4.10.4, 5.5.2, 6.2.0 6.2.1 6.6.1 -->
+		<lucene.version>7.5.0</lucene.version>
 	</properties>
 
 
