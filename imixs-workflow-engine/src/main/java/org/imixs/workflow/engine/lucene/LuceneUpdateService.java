@@ -38,6 +38,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -482,8 +483,9 @@ public class LuceneUpdateService {
 	 * This method creates/updates an event log entry to indicate an uncommitted
 	 * index update. This method is called by "updateDocuments".
 	 * 
-	 * The identifier of an eventLogEnty is sufixed with "_EVENT_LOG_ENTRY". The
-	 * type of the document entity will be set to 'eventlogentry'.
+	 * The identifier of an eventLogEnty is sufixed with
+	 * "_EVENT_LOG_ENTRY[EVENTUID]". The type of the document entity will be set to
+	 * 'eventlogentry'.
 	 * 
 	 * @param id   - uniqueid of the document to update
 	 * @param type EVENTLOG_ENTRY_TYPE_ADD or EVENTLOG_ENTRY_TYPE_REMOVE
@@ -499,8 +501,7 @@ public class LuceneUpdateService {
 		manager.setFlushMode(FlushModeType.COMMIT);
 
 		// now create a new event log entry
-		id = EVENTLOG_ID_PRAFIX + "[" + System.currentTimeMillis() + "]_" + id;
-		// id =EVENTLOG_ID_PRAFIX + "["+System.nanoTime() + "]_" + id;
+		id = EVENTLOG_ID_PRAFIX + "[" + generateEventUID() + "]_" + id;
 		eventLogEntry = new org.imixs.workflow.engine.jpa.Document(id);
 		eventLogEntry.setType(type);
 		logger.finest("......create new eventLogEntry '" + id + "' => " + type);
@@ -683,5 +684,16 @@ public class LuceneUpdateService {
 		}
 
 		return new IndexWriter(indexDir, indexWriterConfig);
+	}
+
+	/**
+	 * Generates UID on currentTimeMillis + 6 digits of a random number. The result
+	 * will be converted into a hex string.
+	 * 
+	 * @return hexstring
+	 */
+	static String generateEventUID() {
+		int randomNum = ThreadLocalRandom.current().nextInt(10000, 99999 + 1);
+		return "" + Long.toHexString(System.currentTimeMillis()) + "-" + Integer.toHexString(randomNum);
 	}
 }
