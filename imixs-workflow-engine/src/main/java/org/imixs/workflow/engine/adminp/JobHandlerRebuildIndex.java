@@ -38,6 +38,7 @@ import org.imixs.workflow.exceptions.PluginException;
 public class JobHandlerRebuildIndex implements JobHandler {
 
 	private static final int BLOCK_SIZE = 500;
+	private static final int READ_AHEAD = 32;
 	public final static String ITEM_SYNCPOINT = "syncpoint";
 	public final static String ITEM_SYNCDATE = "syncdate";
 	public static final String SNAPSHOT_TYPE_PRAFIX = "snapshot-";
@@ -163,36 +164,44 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		query += " ORDER BY document.created ASC";
 		Query q = manager.createQuery(query);
 		q.setFirstResult(0);
-		// we query 2 max results just to verify if there are duplicats (which should
-		// happen very seldom)
-		q.setMaxResults(2);
+		q.setMaxResults(READ_AHEAD);
 		List<Document> documentList = q.getResultList();
 		if (documentList != null && documentList.size() > 0) {
-			Document firstDocument = null;
-			Document nextDocument = null;
-			Iterator<Document> iter = documentList.iterator();
-			if (iter.hasNext()) {
-				firstDocument = iter.next();
-			}
-			if (iter.hasNext()) {
-				nextDocument = iter.next();
-			}
-			// now test if we have more than one document with the same timestamp
-			if (firstDocument != null && nextDocument != null
-					&& firstDocument.getCreated().equals(nextDocument.getCreated())) {
-				logger.finest("......there are more than one document with the same creation timestamp!");
-				// lets build a collection
-				syncpoint = new Date(firstDocument.getCreated().getTimeInMillis());
-				query = "SELECT document FROM Document AS document ";
-				query += " WHERE document.created = '" + isoFormat.format(syncpoint) + "'";
-				query += " AND NOT document.type LIKE '" + SNAPSHOT_TYPE_PRAFIX + "%' ";
-				query += " ORDER BY document.created ASC";
-				q = manager.createQuery(query);
-				q.setFirstResult(0);
-				q.setMaxResults(BLOCK_SIZE);
-				return q.getResultList();
+			Document lastDocument = null;
+			Document nextToLastDocument = null;
+
+			// test if we have two documents with the same creation date (in seldom cases
+			// possible)
+			if (documentList.size() == READ_AHEAD) {
+				lastDocument = documentList.get(READ_AHEAD - 1);
+				nextToLastDocument = documentList.get(READ_AHEAD - 2);
+				// now test if we have more than one document with the same timestamp at the end
+				// of the list
+				if (lastDocument != null && nextToLastDocument != null
+						&& lastDocument.getCreated().equals(nextToLastDocument.getCreated())) {
+					logger.finest("......there are more than one document with the same creation timestamp!");
+					// lets build a new collection with the duplicated creation timestamp
+					syncpoint = new Date(lastDocument.getCreated().getTimeInMillis());
+					query = "SELECT document FROM Document AS document ";
+					query += " WHERE document.created = '" + isoFormat.format(syncpoint) + "'";
+					query += " AND NOT document.type LIKE '" + SNAPSHOT_TYPE_PRAFIX + "%' ";
+					query += " ORDER BY document.created ASC";
+					q = manager.createQuery(query);
+					q.setFirstResult(0);
+					q.setMaxResults(BLOCK_SIZE);
+					documentList.addAll(q.getResultList());
+					return documentList;
+
+				} else {
+					// we found exactly READ_AHEAD documents and the last two ones are not equal
+					// so we drop the last one of the result to avoid overlapping duplicates in the
+					// next block.
+					documentList.remove(lastDocument);
+					manager.detach(lastDocument);
+					return documentList;
+				}
 			} else {
-				// we found exactly one document
+				// we are at the end of the list
 				return documentList;
 			}
 		}
