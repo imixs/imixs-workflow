@@ -25,14 +25,8 @@ This is a simple example how to request the tasklist of a user:
 	// create RestClient ....
 		RestClient restClient = new RestClient();
 		try {
-			restClient.setRequestProperty("Accept", MediaType.APPLICATION_XML);
-			restClient.get("http://localhost:8080/workflow/rest-service/workflow/tasklist/owner/admin");
-			String xmlResult = restClient.getContent();
-			JAXBContext context = JAXBContext.newInstance(DocumentCollection.class);
-			Unmarshaller u = context.createUnmarshaller();
-			StringReader reader = new StringReader(xmlResult);
-			DocumentCollection xmlDocuments = (DocumentCollection) u.unmarshal(reader);
-			List<ItemCollection> documents = XMLItemCollectionAdapter.getCollection(xmlDocuments);
+			List<ItemCollection> documents = restClient.
+			     getDocumentCollection("http://localhost:8080/workflow/rest-service/workflow/tasklist/owner/admin");
 			logger.info("Read " + documents.size() + " documents");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -40,24 +34,31 @@ This is a simple example how to request the tasklist of a user:
 		}
 		
 
-## Credentials
+## RequestFilter & Autentication
 
-The Imixs-RestClient also upports BASIC authentication. In this case the *principal* and *credentials* can be set. 
+The Imixs-RestClient supports also custom "RequestFilters". A Requestfilter implements the interface _org.imixs.workflow.services.rest.RequestFilter_ and can be used to handle a HTTP Request. 
+
+
+	public class MyFilter implements RequestFilter {
+	
+		public void filter(HttpURLConnection connection) throws IOException {
+			// your code goes here...
+		}
+	}
+
+There a several Request filters available to be used for authentication:
+
+ * BasicAuthenticator - for a BASIC authentication
+ * FormAuthenticator - for a form based authentication with a JSESSION cookie
+ * JWTAuthenticator - for authentication based on JSON Web Tokens
+
+The following example shows how to use a BASIC authentication filter:
 
 	RestClient restClient = new RestClient();
-	restClient.setUser("admin");
-	restClient.setPassword("password");
+	// create a default basic authenticator
+	BasicAuthenticator basicAuth = new BasicAuthenticator("myuser","mypassword");
+	// register the authenticator
+	restClient.registerRequestFilter(basicAuth);
 	...		
-
-## Cookies
-
-The RestClient provides methods to add or read Cookies from a given URI location:
-
-
-| Method                         | Description                                                         | 
-|--------------------------------|---------------------------------------------------------------------|
-| getCookies()                       | Returns all cookies set during the last request  |
-| setCookies(CookieManager cookieManager)   | Set the cookies to be used for the next request                              |
-| readCookies(HttpURLConnection connection)     | reads cookies form a http connection                              |
-| addCookies(HttpURLConnection connection)   | adds all cookies from the CookieManager into a http connection  |
-
+			
+			

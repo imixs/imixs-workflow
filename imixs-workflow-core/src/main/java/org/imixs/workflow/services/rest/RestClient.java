@@ -219,7 +219,7 @@ public class RestClient {
 	 * @param entityCol - an Entity Collection
 	 * @return HTTPResult
 	 */
-	public int postCollection(String uri, XMLDataCollection aEntityCol) throws Exception {
+	public void postCollection(String uri, XMLDataCollection aEntityCol) throws Exception {
 		PrintWriter printWriter = null;
 
 		HttpURLConnection urlConnection = null;
@@ -256,6 +256,12 @@ public class RestClient {
 
 			printWriter.write(writer.toString());
 			printWriter.close();
+			
+			
+			// get content of result
+			readResponse(urlConnection);
+			
+			
 			String sHTTPResponse = urlConnection.getHeaderField(0);
 			try {
 				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
@@ -276,7 +282,7 @@ public class RestClient {
 				printWriter.close();
 		}
 
-		return iLastHTTPResult;
+		
 	}
 
 	/**
@@ -286,9 +292,9 @@ public class RestClient {
 	 * 
 	 * @param uri       - Rest Endpoint RUI
 	 * @param entityCol - an Entity Collection
-	 * @return HTTPResult
+	 * @return XMLDocument
 	 */
-	public int postJsonEntity(String uri, String aItemColString) throws Exception {
+	public XMLDocument postJsonEntity(String uri, String aItemColString) throws Exception {
 		PrintWriter printWriter = null;
 
 		HttpURLConnection urlConnection = null;
@@ -324,9 +330,19 @@ public class RestClient {
 			printWriter.write(writer.toString());
 			printWriter.close();
 
+			
 			String sHTTPResponse = urlConnection.getHeaderField(0);
 			try {
 				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
+
+				if (iLastHTTPResult >= 200 && iLastHTTPResult <= 299) {
+					String content = readResponse(urlConnection);
+
+					XMLDocument xmlDocument = XMLDocumentAdapter.readXMLDocument(content.getBytes());
+					return xmlDocument;
+
+				}
+
 			} catch (Exception eNumber) {
 				// eNumber.printStackTrace();
 				iLastHTTPResult = 500;
@@ -334,7 +350,7 @@ public class RestClient {
 
 			// get content of result
 			readResponse(urlConnection);
-
+			
 		} catch (Exception ioe) {
 			// ioe.printStackTrace();
 			throw ioe;
@@ -344,7 +360,7 @@ public class RestClient {
 				printWriter.close();
 		}
 
-		return iLastHTTPResult;
+		return null;
 	}
 
 	/**
