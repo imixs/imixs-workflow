@@ -12,7 +12,6 @@ import org.imixs.workflow.services.rest.RequestFilter;
 import org.imixs.workflow.services.rest.RestClient;
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
-import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 /**
@@ -167,12 +166,9 @@ public class WorkflowTestSuite {
 		RestClient client = clients.get(user);
 
 		try {
-			XMLDocument result = client.postXMLDocument(getHost() + "workflow/workitem",
+			resultWorkitem = client.postXMLDocument(getHost() + "workflow/workitem",
 					XMLDocumentAdapter.getDocument(workitem));
-			if (result != null) {
-				resultWorkitem = XMLDocumentAdapter.putDocument(result);
-			}
-
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
