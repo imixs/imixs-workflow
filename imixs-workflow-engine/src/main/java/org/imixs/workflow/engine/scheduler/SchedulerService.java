@@ -231,22 +231,19 @@ public class SchedulerService {
 			SimpleDateFormat dateFormatDE = new SimpleDateFormat("dd.MM.yy hh:mm:ss");
 			String msg = "started at " + dateFormatDE.format(calNow.getTime()) + " by "
 					+ ctx.getCallerPrincipal().getName();
-			configuration.replaceItemValue("statusmessage", msg);
-
-			if (timer.isCalendarTimer()) {
-				configuration.replaceItemValue("Schedule", timer.getSchedule().toString());
-			} else {
-				configuration.replaceItemValue("Schedule", "");
-
-			}
+			configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_STATUS, msg);
 			logger.info("...Scheduler Service " + id + " (" + configuration.getItemValueString("txtName")
 					+ ") successfull started.");
 		}
 		configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, true);
-		configuration.replaceItemValue("errormessage", "");
+		// clear logs...
+		configuration.replaceItemValue(Scheduler.ITEM_ERRORMESSAGE, "");
+		configuration.replaceItemValue(Scheduler.ITEM_LOGMESSAGE, "");
+		
 		return configuration;
 	}
 
+	
 	/**
 	 * Cancels a running timer instance. After cancel a timer the corresponding
 	 * timerDescripton (ItemCollection) is no longer valid.
@@ -279,18 +276,20 @@ public class SchedulerService {
 			if (name != null && !name.isEmpty() && !"anonymous".equals(name)) {
 				message += " by " + name;
 			}
-			configuration.replaceItemValue("statusmessage", message);
+			configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_STATUS, message);
 
 			logger.info("... scheduler " + configuration.getItemValueString("txtName") + " stopped: "
 					+ configuration.getUniqueID());
 		} else {
 			String msg = "stopped";
-			configuration.replaceItemValue("statusmessage", msg);
+			configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_STATUS, msg);
 
 		}
 		configuration.removeItem("nextTimeout");
 		configuration.removeItem("timeRemaining");
 		configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, false);
+		Calendar cal = Calendar.getInstance();
+		configuration.replaceItemValue(Scheduler.ITEM_LOGMESSAGE, "Stopped: "+cal.getTime());
 		return configuration;
 	}
 
@@ -430,6 +429,9 @@ public class SchedulerService {
 			Scheduler scheduler = findSchedulerByName(schedulerClassName);
 			if (scheduler != null) {
 				logger.info("...run scheduler '" + id + "' scheduler class='" + schedulerClassName + "'....");
+				Calendar cal = Calendar.getInstance();
+				configuration.replaceItemValue(Scheduler.ITEM_LOGMESSAGE, "Started: "+cal.getTime());
+			
 				configuration = scheduler.run(configuration);
 				logger.info("...run scheduler  '" + id + "' finished in: " + ((System.currentTimeMillis()) - lProfiler)
 						+ " ms");
@@ -442,6 +444,9 @@ public class SchedulerService {
 				logger.warning("...scheduler '" + id + "' scheduler class='" + schedulerClassName
 						+ "' not found, timer will be stopped...");
 				configuration.setItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, false);
+				Calendar cal = Calendar.getInstance();
+				configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Stopped: "+cal.getTime());
+			
 				stop(configuration);
 			}
 		} catch (RuntimeException | SchedulerException e) {
@@ -456,7 +461,7 @@ public class SchedulerService {
 		} finally {
 			// Save statistic in configuration
 			if (configuration != null) {
-				configuration.replaceItemValue("errormessage", errorMes);
+				configuration.replaceItemValue(Scheduler.ITEM_ERRORMESSAGE, errorMes);
 				schedulerSaveService.storeConfigurationInNewTransaction(configuration);
 
 			}

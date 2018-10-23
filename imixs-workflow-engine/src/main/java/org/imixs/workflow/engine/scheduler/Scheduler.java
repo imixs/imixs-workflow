@@ -14,8 +14,12 @@ public interface Scheduler {
 
 	public final static String ITEM_SCHEDULER_NAME = "txtname";
 	public final static String ITEM_SCHEDULER_ENABLED = "_scheduler_enabled";
+	public final static String ITEM_SCHEDULER_STATUS = "_scheduler_status";
 	public final static String ITEM_SCHEDULER_CLASS = "_scheduler_class";
 	public final static String ITEM_SCHEDULER_DEFINITION = "_scheduler_definition";
+	public static final String ITEM_ERRORMESSAGE = "_scheduler_errormessage";
+	public static final String ITEM_LOGMESSAGE = "_scheduler_logmessage";
+
 
 	/**
 	 * The run method is called by the ScheduelrService during a timer timeout
