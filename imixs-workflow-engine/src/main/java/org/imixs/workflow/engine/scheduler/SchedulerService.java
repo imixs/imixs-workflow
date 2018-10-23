@@ -128,7 +128,7 @@ public class SchedulerService {
 			Collection<ItemCollection> col = documentService.find(sQuery, 1, 0);
 			// check if we found a scheduler configuration
 			if (col.size() > 0) {
-				ItemCollection configuration=col.iterator().next();
+				ItemCollection configuration = col.iterator().next();
 				// refresh timer details
 				updateTimerDetails(configuration);
 				return configuration;
@@ -205,11 +205,11 @@ public class SchedulerService {
 
 		String id = configuration.getUniqueID();
 		// try to cancel an existing timer for this workflowinstance
-		timer=findTimer(id);
-		if (timer!= null) {
+		timer = findTimer(id);
+		if (timer != null) {
 			try {
 				timer.cancel();
-				timer=null;
+				timer = null;
 			} catch (Exception e) {
 				logger.warning("...failed to stop existing timer for '" + configuration.getUniqueID() + "'!");
 				throw new InvalidAccessException(SchedulerService.class.getName(), SchedulerException.INVALID_WORKITEM,
@@ -239,11 +239,10 @@ public class SchedulerService {
 		// clear logs...
 		configuration.replaceItemValue(Scheduler.ITEM_ERRORMESSAGE, "");
 		configuration.replaceItemValue(Scheduler.ITEM_LOGMESSAGE, "");
-		
+
 		return configuration;
 	}
 
-	
 	/**
 	 * Cancels a running timer instance. After cancel a timer the corresponding
 	 * timerDescripton (ItemCollection) is no longer valid.
@@ -289,7 +288,7 @@ public class SchedulerService {
 		configuration.removeItem("timeRemaining");
 		configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, false);
 		Calendar cal = Calendar.getInstance();
-		configuration.replaceItemValue(Scheduler.ITEM_LOGMESSAGE, "Stopped: "+cal.getTime());
+		configuration.replaceItemValue(Scheduler.ITEM_LOGMESSAGE, "Stopped: " + cal.getTime());
 		return configuration;
 	}
 
@@ -430,11 +429,13 @@ public class SchedulerService {
 			if (scheduler != null) {
 				logger.info("...run scheduler '" + id + "' scheduler class='" + schedulerClassName + "'....");
 				Calendar cal = Calendar.getInstance();
-				configuration.replaceItemValue(Scheduler.ITEM_LOGMESSAGE, "Started: "+cal.getTime());
-			
+				configuration.replaceItemValue(Scheduler.ITEM_LOGMESSAGE, "Started: " + cal.getTime());
+
 				configuration = scheduler.run(configuration);
 				logger.info("...run scheduler  '" + id + "' finished in: " + ((System.currentTimeMillis()) - lProfiler)
 						+ " ms");
+				cal = Calendar.getInstance();
+				configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Finished: " + cal.getTime());
 				if (configuration.getItemValueBoolean(Scheduler.ITEM_SCHEDULER_ENABLED) == false) {
 					logger.info("...scheduler '" + id + "' disabled -> timer will be stopped...");
 					stop(configuration);
@@ -444,9 +445,7 @@ public class SchedulerService {
 				logger.warning("...scheduler '" + id + "' scheduler class='" + schedulerClassName
 						+ "' not found, timer will be stopped...");
 				configuration.setItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, false);
-				Calendar cal = Calendar.getInstance();
-				configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Stopped: "+cal.getTime());
-			
+
 				stop(configuration);
 			}
 		} catch (RuntimeException | SchedulerException e) {
