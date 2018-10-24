@@ -33,7 +33,9 @@ The custom configuration of the _LuceneService_ can be provided in the file _imi
 	# Fields to be added into the searchindex
 	lucence.fulltextFieldList=txtsearchstring,txtSubject,txtname,txtEmail,txtWorkflowAbstract,txtWorkflowSummary
 	lucence.indexFieldListAnalyze=
-	lucence.indexFieldListNoAnalyze=datDate,txtWorkflowGroup,txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername,
+	lucence.indexFieldListNoAnalyze=datDate,txtWorkflowGroup,txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername
+	lucene.defaultOperator=AND
+	lucene.splitOnWhitespace=true	
 
 
 ### IndexDir
@@ -50,8 +52,13 @@ The property 'lucene.indexFieldListAnalyze' defines a comma separated list of fi
 ### IndexFieldListNoAnalyze
 The property 'lucene.indexFieldListNoAnalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here.
  
+### defaultOperator
+The defaultOperator sets the boolean operator of the QueryParser. In default mode (AND\_OPERATOR) terms without any modifiers are considered optional: for example _capital of France_ is equal to _capital AND of AND France_.
+In OR\_OPERATOR mode terms are considered to be in conjunction: the above mentioned query is parsed as _capital OR of OR France_
  
-
+### splitOnWhitespace
+Whether query text should be split on whitespace prior to analysis. Default is true. For example _cat dog_ will be treated as _cat AND dog_
+ 
 ## How to Initialize the Lucene Index
 
 The lucene index is automatically written into the Index Directory by the Imixs-Workflow engine.

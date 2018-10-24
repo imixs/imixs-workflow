@@ -218,9 +218,10 @@ public class LuceneSearchService {
 			parser.setAllowLeadingWildcard(true);
 
 			// set default operator?
-			if (defaultOperator != null)
+			if (defaultOperator != null) {
 				parser.setDefaultOperator(defaultOperator);
-
+			}
+			
 			long lsearchtime = System.currentTimeMillis();
 			TopDocs topDocs = null;
 			TopDocsCollector<?> collector = null;
@@ -244,7 +245,7 @@ public class LuceneSearchService {
 				// sorted by sortoder
 				logger.finest("......lucene result sorted by sortOrder= '" + sortOrder + "' ");
 				// MAX_SEARCH_RESULT is limiting the total number of hits
-				collector = TopFieldCollector.create(sortOrder, maxSearchResult, false, false, false);
+				collector = TopFieldCollector.create(sortOrder, maxSearchResult, false, false, false, false);
 
 			} else {
 				// sorted by score
@@ -386,12 +387,7 @@ public class LuceneSearchService {
 	 * extended with a users roles to test the read access level of each workitem
 	 * matching the search term.
 	 * 
-	 * The optional param 'defaultOperator' can be set to Operator.AND
-	 * 
 	 * @param sSearchTerm
-	 * @param defaultOperator
-	 *            - optional to change the default search operator
-	 * 
 	 * @return extended search term
 	 * @throws QueryException
 	 *             in case the searchtem is not understandable.
@@ -504,6 +500,12 @@ public class LuceneSearchService {
 			logger.finest("......DefaultOperator: AND");
 			parser.setDefaultOperator(Operator.AND);
 		}
+		
+		// set setSplitOnWhitespace (issue #438)
+		String splitOnWhitespace = prop.getProperty("lucene.splitOnWhitespace","true");
+		boolean bSplitOnWhitespace=Boolean.parseBoolean(splitOnWhitespace);
+		logger.finest("......SplitOnWhitespace: "+bSplitOnWhitespace);
+		parser.setSplitOnWhitespace(bSplitOnWhitespace);
 
 		return parser;
 	}
