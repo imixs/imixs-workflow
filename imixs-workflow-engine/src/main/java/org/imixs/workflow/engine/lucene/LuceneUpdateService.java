@@ -249,7 +249,8 @@ public class LuceneUpdateService {
 	 * will not read uncommitted documents from the Lucene index.
 	 * 
 	 * @see updateDocumentsUncommitted
-	 * @param documents to be indexed
+	 * @param documents
+	 *            to be indexed
 	 * @throws IndexException
 	 */
 	public void updateDocuments(Collection<ItemCollection> documents) {
@@ -278,7 +279,8 @@ public class LuceneUpdateService {
 	 * <p>
 	 * This method is used by the JobHandlerRebuildIndex only.
 	 * 
-	 * @param documents of ItemCollections to be indexed
+	 * @param documents
+	 *            of ItemCollections to be indexed
 	 * @throws IndexException
 	 */
 	public void updateDocumentsUncommitted(Collection<ItemCollection> documents) {
@@ -328,7 +330,8 @@ public class LuceneUpdateService {
 	 * finder method only.
 	 * 
 	 * 
-	 * @param uniqueID of the workitem to be removed
+	 * @param uniqueID
+	 *            of the workitem to be removed
 	 * @throws PluginException
 	 */
 	public void removeDocument(String uniqueID) {
@@ -347,7 +350,11 @@ public class LuceneUpdateService {
 	 * The default flush size is 16. The eventLog cache is tracked by the flag
 	 * 'dirtyIndex'.
 	 * 
+	 * issue #439 - we need to break the method manually if the total count exceeded
+	 * a maximum of
+	 * 
 	 */
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public void flushEventLog() {
 		long total = 0;
 		long count = 0;
@@ -365,6 +372,15 @@ public class LuceneUpdateService {
 								+ "ms...");
 						count = 0;
 					}
+
+					// issue #439
+					// In some cases the flush method runs endless.
+					// experimental code: we break the flush method after 1024 flushs
+					// maybe we can remove this hard break
+					if (total >= 1024) {
+						logger.warning("...flush event: Issue #439  -> total count >=" + total + " hard stop! ...");
+						break;
+					}
 				}
 
 			} catch (IndexException e) {
@@ -378,10 +394,10 @@ public class LuceneUpdateService {
 	 * This method flushes a given count of eventLogEntries. The method return true
 	 * if no more eventLogEntries exist.
 	 * 
-	 * @param count the max size of a eventLog engries to remove.
+	 * @param count
+	 *            the max size of a eventLog engries to remove.
 	 * @return true if the cache was totally flushed.
 	 */
-	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	boolean flushEventLogByCount(int count) {
 		boolean cacheIsEmpty = true;
 		IndexWriter indexWriter = null;
@@ -487,8 +503,10 @@ public class LuceneUpdateService {
 	 * "_EVENT_LOG_ENTRY[EVENTUID]". The type of the document entity will be set to
 	 * 'eventlogentry'.
 	 * 
-	 * @param id   - uniqueid of the document to update
-	 * @param type EVENTLOG_ENTRY_TYPE_ADD or EVENTLOG_ENTRY_TYPE_REMOVE
+	 * @param id
+	 *            - uniqueid of the document to update
+	 * @param type
+	 *            EVENTLOG_ENTRY_TYPE_ADD or EVENTLOG_ENTRY_TYPE_REMOVE
 	 */
 	void writeEventLogEntry(String id, String type) {
 		org.imixs.workflow.engine.jpa.Document eventLogEntry = null;
@@ -593,10 +611,14 @@ public class LuceneUpdateService {
 	/**
 	 * adds a field value into a lucene document
 	 * 
-	 * @param doc          an existing lucene document
-	 * @param workitem     the workitem containg the values
-	 * @param itemName     the Fieldname inside the workitem
-	 * @param analyzeValue indicates if the value should be parsed by the analyzer
+	 * @param doc
+	 *            an existing lucene document
+	 * @param workitem
+	 *            the workitem containg the values
+	 * @param itemName
+	 *            the Fieldname inside the workitem
+	 * @param analyzeValue
+	 *            indicates if the value should be parsed by the analyzer
 	 */
 	void addItemValues(Document doc, ItemCollection workitem, String itemName, boolean analyzeValue) {
 		String sValue = null;
