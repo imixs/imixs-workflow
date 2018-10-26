@@ -344,18 +344,24 @@ public class LuceneUpdateService {
 	}
 
 	/**
-	 * Flush the EventLog cache. This method is called by the LuceneSerachService.
+	 * Flush the EventLog cache. This method is called by the LuceneSerachServicen
+	 * only.
 	 * <p>
-	 * The method flushes the cache in smaller blocks to avoid a heap size problem.
-	 * The default flush size is 16. The eventLog cache is tracked by the flag
-	 * 'dirtyIndex'.
+	 * The method flushes the cache in smaller blocks of the given junkSize. to
+	 * avoid a heap size problem. The default flush size is 16. The eventLog cache
+	 * is tracked by the flag 'dirtyIndex'.
+	 * <p>
+	 * issue #439 - The method returns false if the event log contains more entries
+	 * as defined by the given JunkSize. In this case the caller should recall the
+	 * method which runs always in a new transaction. The goal of this mechanism is
+	 * to reduce the event log even in cases the outer transaction breaks.
 	 * 
-	 * issue #439 - we need to break the method manually if the total count exceeded
-	 * a maximum of
-	 * 
+	 * @see LuceneSearchService
+	 * @return true if the the complete event log was flushed. If false the method
+	 *         must be recalled.
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-	public void flushEventLog() {
+	public boolean flushEventLog(int junkSize) {
 		long total = 0;
 		long count = 0;
 		boolean dirtyIndex = true;
@@ -367,8 +373,8 @@ public class LuceneUpdateService {
 				if (dirtyIndex) {
 					total = total + EVENTLOG_ENTRY_FLUSH_COUNT;
 					count = count + EVENTLOG_ENTRY_FLUSH_COUNT;
-					if (count >= 255) {
-						logger.info("...flush event log: " + total + " entries in " + (System.currentTimeMillis() - l)
+					if (count >= 100) {
+						logger.finest("...flush event log: " + total + " entries in " + (System.currentTimeMillis() - l)
 								+ "ms...");
 						count = 0;
 					}
@@ -377,17 +383,19 @@ public class LuceneUpdateService {
 					// In some cases the flush method runs endless.
 					// experimental code: we break the flush method after 1024 flushs
 					// maybe we can remove this hard break
-					if (total >= 2048) {
-						logger.warning("...flush event: Issue #439  -> total count >=" + total + " flushEventLog stopped...");
-						break;
+					if (total >= junkSize) {
+						logger.finest("...flush event: Issue #439  -> total count >=" + total
+								+ " flushEventLog will be continued...");
+						return false;
 					}
 				}
 
 			} catch (IndexException e) {
 				logger.warning("...unable to flush lucene event log: " + e.getMessage());
-				break;
+				return true;
 			}
 		}
+		return true;
 	}
 
 	/**

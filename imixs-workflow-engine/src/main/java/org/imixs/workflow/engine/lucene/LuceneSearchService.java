@@ -103,7 +103,7 @@ public class LuceneSearchService {
 
 	@EJB
 	DocumentService documentService;
-	
+
 	@EJB
 	LuceneUpdateService luceneUpdateService;
 
@@ -176,9 +176,15 @@ public class LuceneSearchService {
 			Operator defaultOperator) throws QueryException {
 
 		long ltime = System.currentTimeMillis();
-		
+
 		// flush eventlog (see issue #411)
-		luceneUpdateService.flushEventLog();
+		int flushCount = 0;
+		while (luceneUpdateService.flushEventLog(2048) == false) {
+			// repeat flush....
+			flushCount = +2048;
+			logger.info("...flush event log: " + flushCount + " entries updated in "
+					+ (System.currentTimeMillis() - ltime) + "ms ...");
+		}
 
 		// see issue #382
 		/*
@@ -221,7 +227,7 @@ public class LuceneSearchService {
 			if (defaultOperator != null) {
 				parser.setDefaultOperator(defaultOperator);
 			}
-			
+
 			long lsearchtime = System.currentTimeMillis();
 			TopDocs topDocs = null;
 			TopDocsCollector<?> collector = null;
@@ -500,11 +506,11 @@ public class LuceneSearchService {
 			logger.finest("......DefaultOperator: AND");
 			parser.setDefaultOperator(Operator.AND);
 		}
-		
+
 		// set setSplitOnWhitespace (issue #438)
-		String splitOnWhitespace = prop.getProperty("lucene.splitOnWhitespace","true");
-		boolean bSplitOnWhitespace=Boolean.parseBoolean(splitOnWhitespace);
-		logger.finest("......SplitOnWhitespace: "+bSplitOnWhitespace);
+		String splitOnWhitespace = prop.getProperty("lucene.splitOnWhitespace", "true");
+		boolean bSplitOnWhitespace = Boolean.parseBoolean(splitOnWhitespace);
+		logger.finest("......SplitOnWhitespace: " + bSplitOnWhitespace);
 		parser.setSplitOnWhitespace(bSplitOnWhitespace);
 
 		return parser;
