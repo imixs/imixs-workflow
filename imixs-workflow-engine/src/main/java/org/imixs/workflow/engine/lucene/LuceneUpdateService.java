@@ -377,8 +377,8 @@ public class LuceneUpdateService {
 					// In some cases the flush method runs endless.
 					// experimental code: we break the flush method after 1024 flushs
 					// maybe we can remove this hard break
-					if (total >= 1024) {
-						logger.warning("...flush event: Issue #439  -> total count >=" + total + " hard stop! ...");
+					if (total >= 2048) {
+						logger.warning("...flush event: Issue #439  -> total count >=" + total + " flushEventLog stopped...");
 						break;
 					}
 				}
