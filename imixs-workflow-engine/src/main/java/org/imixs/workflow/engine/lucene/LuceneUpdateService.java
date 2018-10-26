@@ -367,7 +367,7 @@ public class LuceneUpdateService {
 				if (dirtyIndex) {
 					total = total + EVENTLOG_ENTRY_FLUSH_COUNT;
 					count = count + EVENTLOG_ENTRY_FLUSH_COUNT;
-					if (count >= 160) {
+					if (count >= 255) {
 						logger.info("...flush event log: " + total + " entries in " + (System.currentTimeMillis() - l)
 								+ "ms...");
 						count = 0;
