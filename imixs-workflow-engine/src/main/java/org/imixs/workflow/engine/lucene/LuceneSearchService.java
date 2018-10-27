@@ -178,13 +178,7 @@ public class LuceneSearchService {
 		long ltime = System.currentTimeMillis();
 
 		// flush eventlog (see issue #411)
-		int flushCount = 0;
-		while (luceneUpdateService.flushEventLog(2048) == false) {
-			// repeat flush....
-			flushCount = +2048;
-			logger.info("...flush event log: " + flushCount + " entries updated in "
-					+ (System.currentTimeMillis() - ltime) + "ms ...");
-		}
+		flush();
 
 		// see issue #382
 		/*
@@ -310,6 +304,22 @@ public class LuceneSearchService {
 		}
 
 		return workitems;
+	}
+	
+	
+	/**
+	 * This method flush the event log. 
+	 */
+	public void flush() {
+		long ltime = System.currentTimeMillis();
+		// flush eventlog (see issue #411)
+		int flushCount = 0;
+		while (luceneUpdateService.flushEventLog(2048) == false) {
+			// repeat flush....
+			flushCount = +2048;
+			logger.info("...flush event log: " + flushCount + " entries updated in "
+					+ (System.currentTimeMillis() - ltime) + "ms ...");
+		}
 	}
 
 	/**
