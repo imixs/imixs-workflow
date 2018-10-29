@@ -1299,10 +1299,6 @@ public class BPMNModelHandler extends DefaultHandler {
 			return null;
 		}
 		
-		
-		
-		
-
 		/**
 		 * This method searches the id for a Imixs follow-Up activity. This is the case
 		 * if the target is another Imixs Event element. The method returns the id of
