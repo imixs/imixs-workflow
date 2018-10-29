@@ -748,14 +748,16 @@ public class BPMNModelHandler extends DefaultHandler {
 			event.removeItem("keyFollowUp");
 			event.replaceItemValue("numNextProcessID", sourceTask.getItemValue("numProcessID"));
 
-			// test if this is a conditional event - search for conditional gateway...
+			// test if this is a conditional event - search for conditional gateways...
 			List<SequenceFlow> outgoingList = this.findOutgoingFlows(eventID);
 			if (outgoingList != null && outgoingList.size() > 0) {
 				Map<String, String> conditions = new HashMap<String, String>();
 				for (SequenceFlow flow : outgoingList) {
-					if (conditionalGatewayCache.contains(flow.target)) {
+					// lookup for a exclusive gateway....
+					String exclusiveGatewayID = new ElementResolver().findExclusiveGateway(flow);
+					if (exclusiveGatewayID!=null) {
 
-						String conditionalGatewayID = flow.target;
+						String conditionalGatewayID = exclusiveGatewayID; //flow.target;
 						// get all outgoing flows from this gateway
 						List<SequenceFlow> conditionalFlows = this.findOutgoingFlows(conditionalGatewayID);
 						for (SequenceFlow condFlow : conditionalFlows) {
@@ -1252,6 +1254,54 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 			return null;
 		}
+		
+		
+		
+		
+		
+		
+		/**
+		 * This method searches a Conditional Gateway  targeted from the given
+		 * SequenceFlow element. If no conditional gateway was found the method returns null.
+		 * 
+		 * @return id of the conditional gateway if found.
+		 */
+		public String findExclusiveGateway(SequenceFlow flow) {
+			if (flow.source == null) {
+				return null;
+			}
+			// detect loops...
+			if (loopFlowCache.contains(flow.target)) {
+				// loop!
+				return null;
+			} else {
+				loopFlowCache.add(flow.target);
+			}
+
+			String id=flow.target;
+			for (String condID : conditionalGatewayCache) {
+				if (id.equals(condID))  {
+					return condID;
+				}
+			}
+			
+			// no Imixs task or event found so we are trying to look for the
+			// next outgoing flow elements. (issue #211)
+			List<SequenceFlow> refList = findOutgoingFlows(flow.target);
+			for (SequenceFlow aflow : refList) {
+				// recursive call....
+				String aResult = findExclusiveGateway(aflow);
+				if (aResult != null) {
+					// we got the task!
+					return aResult;
+				}
+			}
+			return null;
+		}
+		
+		
+		
+		
 
 		/**
 		 * This method searches the id for a Imixs follow-Up activity. This is the case
