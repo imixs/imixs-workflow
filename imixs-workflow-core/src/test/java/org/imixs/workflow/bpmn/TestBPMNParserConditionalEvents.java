@@ -89,6 +89,57 @@ public class TestBPMNParserConditionalEvents {
 		Assert.assertEquals("(workitem._budget && workitem._budget[0]<=100)", conditions.get("task=1200"));
 	}
 
+	
+	/**
+	 * Like testSimple() but with a simple task element between the sequence flow....
+	 * @throws ParseException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ModelException
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testSimpleWithSimpleTask()
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+
+		InputStream inputStream = getClass().getResourceAsStream("/bpmn/conditional_event3.bpmn");
+
+		BPMNModel model = null;
+		try {
+			model = BPMNParser.parseModel(inputStream, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			Assert.fail();
+		} catch (ModelException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertNotNull(model);
+
+		// Test Environment
+		ItemCollection profile = model.getDefinition();
+		Assert.assertNotNull(profile);
+
+
+		// test activity 1000.10 submit
+		ItemCollection activity = model.getEvent(1000, 10);
+		Assert.assertNotNull(activity);
+		Assert.assertEquals("conditional event", activity.getItemValueString("txtname"));
+
+		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
+
+		// Now we need to evaluate if the Event is marked as an conditional Event with
+		// the condition list copied from the gateway.
+		Assert.assertTrue(activity.hasItem("keyExclusiveConditions"));
+		Map<String, String> conditions = (Map<String, String>) activity.getItemValue("keyExclusiveConditions").get(0);
+		Assert.assertNotNull(conditions);
+		Assert.assertEquals("(workitem._budget && workitem._budget[0]>100)", conditions.get("task=1100"));
+		Assert.assertEquals("(workitem._budget && workitem._budget[0]<=100)", conditions.get("task=1200"));
+	}
+
+	
+	
 	@SuppressWarnings({ "unchecked" })
 	@Test
 	// @Ignore
