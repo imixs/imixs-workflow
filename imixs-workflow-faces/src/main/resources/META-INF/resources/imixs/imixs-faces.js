@@ -291,7 +291,7 @@ $.fn.imixsInitFileUpload = function(options) {
 		        	$('#imixsFileUpload_button').blur();
 		        },		
 		        fail: function (e, data) {
-		            alert("Unable to add file!");
+		            alert("The file cannot be added because the maximum file size was exceeded.");
 		        },
 		        progressall: function (e, data) {
 		            var progress = parseInt(data.loaded / data.total * 100, 10);

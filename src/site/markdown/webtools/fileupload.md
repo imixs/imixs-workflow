@@ -50,10 +50,11 @@ These settings can be overwritten with the following web.xml settings:
 			<servlet-class>org.imixs.workflow.faces.fileupload.AjaxFileUploadServlet</servlet-class>
 			<load-on-startup>0</load-on-startup>		
 			<multipart-config>
-		      <location>/tmp</location>
-		      <max-file-size>5242880</max-file-size>
-		      <max-request-size>5242880</max-request-size>
-		      <file-size-threshold>1048576</file-size-threshold>
+				<location>/tmp</location>
+				<!-- 20971520 = 20MB -->
+				<max-file-size>20971520</max-file-size>
+				<max-request-size>52428800</max-request-size>
+				<file-size-threshold>1048576</file-size-threshold>
 			</multipart-config>
 		</servlet>
 		<servlet-mapping>
