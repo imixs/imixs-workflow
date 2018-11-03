@@ -25,6 +25,7 @@ In the following deployment sections you will find more information how to setup
 
   * [WildFly](./deployment/wildfly.html)
   * [GlassFish/Payara](./deployment/glassfish.html) 
+  * [Apache TomEE](./deployment/tomee.html)
 
 
 ## How to Setup a Workflow Model
