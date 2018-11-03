@@ -1,4 +1,4 @@
-#Deployment Guide
+# Deployment Guide
 The following section gives an overview how to deploy the Imixs-Workflow engine into a Java EE container. Imixs-Workflow consists of different modules which simply can be bundled together with other components of a business application. All Imixs-Workflow components are based on the Java EE component model.
  
 The examples illustrate how to deploy the components on a [JBoss/Wildfly Application server](http://www.wildfly.org) which is an open source application server based on the Java EE specification. The deployment is similar to all other Java EE application servers (e.g. [Glassfish](http://www.glassfish.org), [Payara](http://www.payara.fish/)...).
@@ -9,8 +9,9 @@ To deploy the Imixs-Workflow engine on a specific platform see also the chapters
 
  * [Deployment Guide Wildfly](./wildfly.html)
  * [Deployment Guide GlassFish](./glassfish.html)
+ * [Deployment Guide Apache TomEE](./tomee.html)
 
-##Imixs-Workflow components
+## Imixs-Workflow components
 To bundle the Imixs-Workflow engine together with a business application the following components need to be added into the deployment:
  
   * _imixs-workflow-core-4.x.x.jar_  - contains the core api and xml api
@@ -35,7 +36,7 @@ The Imixs-Workflow engine uses a [Lucene Search Index](https://lucene.apache.org
   
    
  
-##Building an Web Application (WAR)
+## Building an Web Application (WAR)
 To install and deploy the Imixs-Workflow engine into a web application it is sufficient to bundle the  Imixs-Workflow components and Luncene libraries into the WEB-INF/lib folder. This is called the "EJB Lightway Runtime Environment". To customize the deployment the deployment descriptor _ejb-jar.xml_ should be added into to WEB-INF/ folder. The persitence.xml is placed into the /WEB-INF/classes folder:
  
 	  / 
@@ -107,8 +108,88 @@ The following example shows the maven dependencies used in a maven project:
 	
 The latest versions can be found in the [Maven repository](http://search.maven.org/#browse). 
  
+
  
-##Building an Enterprise Archive (EAR)
+
+## Adding a Database connection 
+Finally the _persistence.xml_ file need to be added into the ejb or web module. The _persistence.xml_ defines how the entity beans managed by the Imixs-Workflow Engine which will be persisted into the database. 
+
+### persistence.xml in a web module 
+If the imixs-workflow-engine.jar is bundled directly into a web module, the persistence.xml need to be placed into the WEB-INF/classes/META-INF folder:
+ 
+	  /
+	  +- WEB-INF/classes/META-INF/
+	  |  |- persistence.xml
+	  +- WEB-INF/lib/
+	  |  |- imixs-workflow-core-3.0.0.jar
+	  |  |- imixs-workflow-engine-3.0.0.jar
+
+### persistence.xml in a ejb module 
+In case the imixs-workflow-engine.jar is bundled into a EJB module of an enterprise archive (ear), the persistence.xml need to be placed into the /META-INF folder together with the ejb-jar.xml: 
+ 
+	  +- META-INF/
+	  |  |- MANIFEST.MF
+	  |  |- ejb-jar.xml
+	  |  |- persistence.xml
+ 
+## How to configure the persistence.xml 
+The persistence.xml describes the location of the database and the entity beans to be persisted. The following example shows a typical  configuration using the Eclipselink driver:
+ 
+	<?xml version="1.0" encoding="UTF-8"?>
+	<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence">
+		<persistence-unit name="org.imixs.workflow.jpa" transaction-type="JTA">	
+			<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>	
+			<jta-data-source>jdbc/workflow-db</jta-data-source>
+			<jar-file>lib/imixs-workflow-engine-${org.imixs.workflow.version}.jar</jar-file>
+			<properties>
+				<property name="eclipselink.target-database" value="Auto" />
+				<property name="eclipselink.ddl-generation" value="create-tables" />
+				<property name="eclipselink.deploy-on-startup" value="true" />
+				<property name="eclipselink.logging.level" value="INFO" />	
+			</properties>				
+		</persistence-unit>
+	</persistence>
+ 
+The following section gives a short overview about the different settings used by the persistence.xml:
+ 
+### persistence-unit:
+The persistence unit name is fixed defined by the Imixs-Workflow implementation and need to be set to "_org.imixs.workflow.jpa_".
+ 
+### jta-data-source:
+The jta-data-source points to a JNDI Database resource located on the application server. This JNDI Name is a JDBC Resource which is provided by the application server running the application.
+ 
+### jar-file:
+The jar-file defines the java library containing the Entity Beans to be persisted into the Database.
+This tag should always point to the imixs-workflow-engine Jar File. The version number must match the deployed component version.
+	
+In the example the jta-data-source point to a JDBC Resource with the JNDI Name 'jdbc/workflow-db'. The jar-file points to the imixs-workflow-engine.jar part of your application. 
+ 
+  
+## Using shared libraries
+In difference to the deployment example shown above it is also possible to deploy part of the Imixs-Workflow components as shared libraries into an EAR. In this case the jars are put into the /lib/ folder of the EAR. Jars deployed into the /lib folder of an ear are visible to all other modules and components. Except for the imixs-workflow-engine.jar all Imixs jars can be placed into the lib/ directory. The EAR structure will look like this:
+  
+	  /
+	  +- META-INF/
+	  |  |- application.xml
+	  |- lib/
+	  |  |- imixs-workflow-core-4.0.0.jar
+	  |  |- lucene-codecs-6.2.0.jar
+	  |  |- lucene-core-6.2.0.jar
+	  |  |- lucene-analyzers-common-6.2.0.jar
+	  |  |- lucene-queries-6.2.0.jar
+	  |  |- lucene-queryparser-6.2.0.jar
+	  |  |- lucene-sandbox-6.2.0.jar
+	  |- my_ejb_module.jar
+	  |- my_web_module.war
+	  |- imixs-workflow-engine-4.0.0.jar
+ 
+In this EAR layout the EJB module only needs to include the imixs-workflow-engine.jar into the classpath. So the MANIFEST.MF file can be changed to:
+   
+	Manifest-Version: 1.0
+	Class-Path: imixs-workflow-engine-4.0.0.jar
+
+ 
+## Building an Enterprise Archive (EAR)
 Deploying the Imixs-Workflow engine into a Enterprise Archive (EAR) differs in some details from the deployment into a web application as explained before. An EAR splits the business logic (EJBs) and the users web front-end (WAR) into separate modules.  This gives more flexibility in designing enterprise applications. Basically the structure of an EAR looks typical like this:
  
 	  /
@@ -156,84 +237,4 @@ The MANIFEST.MF file is used to add additional component libraries to be used to
 	Manifest-Version: 1.0
 	Class-Path: imixs-workflow-core-4.0.0.jar imixs-workflow-engine-4.0.0.jar
 
-This makes the Imixs-Workflow engine part of your EJB module. The ejb-jar.xml included in your EJB module  can be left empty as EJBs will be deployed automatically. The _ejb-jar.xml_ deployment descriptor allows to control about the default behavior of the EJBs provided by the Imixs-Workflow engine. For example in case to define a 'run-as-principal' role to a ejb or a method or to inject a local jndi-mail or jndi-directory resource. 
- 
-
-##Adding a Database connection 
-Finally the _persistence.xml_ file need to be added into the ejb or web module. The _persistence.xml_ defines how the entity beans managed by the Imixs-Workflow Engine which will be persisted into the database. 
-
-###persistence.xml in a web module 
-If the imixs-workflow-engine.jar is bundled directly into a web module, the persistence.xml need to be placed into the WEB-INF/classes/META-INF folder:
- 
-	  /
-	  +- WEB-INF/classes/META-INF/
-	  |  |- persistence.xml
-	  +- WEB-INF/lib/
-	  |  |- imixs-workflow-core-3.0.0.jar
-	  |  |- imixs-workflow-engine-3.0.0.jar
-
-###persistence.xml in a ejb module 
-In case the imixs-workflow-engine.jar is bundled into a EJB module of an enterprise archive (ear), the persistence.xml need to be placed into the /META-INF folder together with the ejb-jar.xml: 
- 
-	  +- META-INF/
-	  |  |- MANIFEST.MF
-	  |  |- ejb-jar.xml
-	  |  |- persistence.xml
- 
-##How to configure the persistence.xml 
-The persistence.xml describes the location of the database and the entity beans to be persisted. The following example shows a typical  configuration using the Eclipselink driver:
- 
-	<?xml version="1.0" encoding="UTF-8"?>
-	<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence">
-		<persistence-unit name="org.imixs.workflow.jpa" transaction-type="JTA">	
-			<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>	
-			<jta-data-source>jdbc/workflow-db</jta-data-source>
-			<jar-file>lib/imixs-workflow-engine-${org.imixs.workflow.version}.jar</jar-file>
-			<properties>
-				<property name="eclipselink.target-database" value="Auto" />
-				<property name="eclipselink.ddl-generation" value="create-tables" />
-				<property name="eclipselink.deploy-on-startup" value="true" />
-				<property name="eclipselink.logging.level" value="INFO" />	
-			</properties>				
-		</persistence-unit>
-	</persistence>
- 
-The following section gives a short overview about the different settings used by the persistence.xml:
- 
-###persistence-unit:
-The persistence unit name is fixed defined by the Imixs-Workflow implementation and need to be set to "_org.imixs.workflow.jpa_".
- 
-###jta-data-source:
-The jta-data-source points to a JNDI Database resource located on the application server. This JNDI Name is a JDBC Resource which is provided by the application server running the application.
- 
-###jar-file:
-The jar-file defines the java library containing the Entity Beans to be persisted into the Database.
-This tag should always point to the imixs-workflow-engine Jar File. The version number must match the deployed component version.
-	
-In the example the jta-data-source point to a JDBC Resource with the JNDI Name 'jdbc/workflow-db'. The jar-file points to the imixs-workflow-engine.jar part of your application. 
- 
-  
-##Using shared libraries
-In difference to the deployment example shown above it is also possible to deploy part of the Imixs-Workflow components as shared libraries into an EAR. In this case the jars are put into the /lib/ folder of the EAR. Jars deployed into the /lib folder of an ear are visible to all other modules and components. Except for the imixs-workflow-engine.jar all Imixs jars can be placed into the lib/ directory. The EAR structure will look like this:
-  
-	  /
-	  +- META-INF/
-	  |  |- application.xml
-	  |- lib/
-	  |  |- imixs-workflow-core-4.0.0.jar
-	  |  |- lucene-codecs-6.2.0.jar
-	  |  |- lucene-core-6.2.0.jar
-	  |  |- lucene-analyzers-common-6.2.0.jar
-	  |  |- lucene-queries-6.2.0.jar
-	  |  |- lucene-queryparser-6.2.0.jar
-	  |  |- lucene-sandbox-6.2.0.jar
-	  |- my_ejb_module.jar
-	  |- my_web_module.war
-	  |- imixs-workflow-engine-4.0.0.jar
- 
-In this EAR layout the EJB module only needs to include the imixs-workflow-engine.jar into the classpath. So the MANIFEST.MF file can be changed to:
-   
-	Manifest-Version: 1.0
-	Class-Path: imixs-workflow-engine-4.0.0.jar
-
-	
+This makes the Imixs-Workflow engine part of your EJB module. The ejb-jar.xml included in your EJB module  can be left empty as EJBs will be deployed automatically. The _ejb-jar.xml_ deployment descriptor allows to control about the default behavior of the EJBs provided by the Imixs-Workflow engine. For example in case to define a 'run-as-principal' role to a ejb or a method or to inject a local jndi-mail or jndi-directory resource. 	

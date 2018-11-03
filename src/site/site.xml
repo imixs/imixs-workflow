@@ -130,7 +130,8 @@
 			<item name="Deployment" href="./deployment/index.html" collapse="true">
 				<item name="Deployment Guide" href="./deployment/deployment_guide.html" />
 				<item name="WildFly" href="./deployment/wildfly.html" />
-				<item name="GlassFish" href="./deployment/glassfish.html" />
+				<item name="GlassFish/Payara" href="./deployment/glassfish.html" />
+				<item name="TomEE" href="./deployment/tomee.html" />
 				<item name="Database Schema" href="./deployment/database_schema.html" />
 				<item name="Security" href="./deployment/security.html" />
 				<item name="Concurrency" href="./deployment/concurrency.html" />

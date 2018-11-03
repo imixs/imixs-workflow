@@ -1,5 +1,5 @@
-#GlassFish Deployment Guide
-This section will explain the configuration steps needed to successfully deploy the [Imixs-Sample Application](../sampleapplication.html) on GlassFish application server. The deployment is similar for other custom projects. For general information about the deployment of the Imixs-Workflow engine, see also the section [Deployment Guide](./deployment_guide.html).
+# GlassFish/Payara Deployment Guide
+This section will explain the configuration steps needed to successfully deploy the [Imixs-Sample Application](../sampleapplication.html) on [Payara Application Server](https://www.payara.fish/). Payara is based on the [GlassFish implementation](https://github.com/javaee/glassfish). The deployment is similar for other custom projects. For general information about the deployment of the Imixs-Workflow engine, see also the section [Deployment Guide](./deployment_guide.html).
 
 ## Install GlassFish
 You can download the GlassFish Server from the [GlassFish project site](http://www.glassfish.org). This site also includes an Installation guide for installing GlassFish on different platforms. GlassFish is provided in two versions - the latest [official version GlassFish](https://glassfish.java.net/) and the [Payara Project](http://www.payara.fish/). Both versions are based on the Java EE7 specification. After you have installed the GlassFish Server you can start the server by switching into the directory and execute the startup script:
@@ -75,4 +75,8 @@ Now install the .war or .ear file of your application by the following steps:
    7. press the button "ok" located in the upper right corner --> ear will be deployed
 
  
+## Need Help?
+
+If you have any difficulty in deployment of your application, [contact the community for help](https://www.imixs.org/sub_community.html). Also if you have any tips and suggestions for improvements, please share them as well. 
+
 

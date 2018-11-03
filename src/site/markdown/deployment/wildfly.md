@@ -187,4 +187,9 @@ The application can be accessed from the URL
 
 [http://localhost:8080/workflow](http://localhost:8080/workflow) 
 
-      
+
+## Need Help?
+
+If you have any difficulty in deployment of your application, [contact the community for help](https://www.imixs.org/sub_community.html). Also if you have any tips and suggestions for improvements, please share them as well. 
+
+ 
