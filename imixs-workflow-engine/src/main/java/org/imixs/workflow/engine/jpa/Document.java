@@ -28,6 +28,7 @@
 package org.imixs.workflow.engine.jpa;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,8 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.exceptions.InvalidAccessException;
 
 /**
  * This Document entity bean is a wrapper class for the
@@ -190,11 +193,9 @@ public class Document implements java.io.Serializable {
 	}
 
 	/**
-	 * Returns the last modification point of time
-	 * 
-	 * <p>
-	 * <strong>Note:</strong> The field 'modified' is only a complement and is not
-	 * used by the DocumentService.
+	 * Returns the time of last modification. The field shows the point of time when
+	 * the document was created or last updated. This attribute is read only and
+	 * synchronized with the document item '$modified'.
 	 * 
 	 * @return time of modification
 	 */
@@ -204,27 +205,33 @@ public class Document implements java.io.Serializable {
 	}
 
 	/**
-	 * Set the modification point of time
-	 * <p>
-	 * <strong>Note:</strong> The field 'modified' is only a complement and is not
-	 * used by the DocumentService.
-	 */
-	public void setModified(Calendar modified) {
-		this.modified = modified;
-	}
-
-	/**
-	 * Updates the modification time before a update by a persistence manager is
-	 * performed.
-	 * <p>
-	 * <strong>Note:</strong> The field 'modified' is only a complement and is not
-	 * used by the DocumentService.
+	 * Updates the attribute 'modified' before persisted or updated by the
+	 * persistence manager. The field 'modified' is synchronized with the document
+	 * item '$modified'. The method throws an exception in case the item $modified
+	 * is missing
+	 * 
+	 * @throws InvalidAccessException if $modified is missing
 	 */
 	@PrePersist
 	@PreUpdate
 	private void updateModified() {
-		Calendar cal = Calendar.getInstance();
-		modified = cal;
+		if (getData() == null) {
+			// we have no data, so we take the current time.
+			Calendar cal = Calendar.getInstance();
+			modified = cal;
+		} else {
+			// set the time based on $modified
+			List<Object> _modifiedList = getData().get("$modified");
+			if (_modifiedList != null && _modifiedList.size() > 0) {
+				Date _modified = (Date) _modifiedList.get(0);
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(_modified);
+				modified = cal;
+			} else {
+				throw new InvalidAccessException(DocumentService.INVALID_PARAMETER,
+						"missing item '$modified' - document can not be persisted!");
+			}
+		}
 	}
 
 	/**
