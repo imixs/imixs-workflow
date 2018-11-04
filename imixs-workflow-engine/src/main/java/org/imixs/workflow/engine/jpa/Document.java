@@ -28,7 +28,6 @@
 package org.imixs.workflow.engine.jpa;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -36,15 +35,12 @@ import javax.persistence.Basic;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 
 /**
@@ -63,16 +59,15 @@ import org.imixs.workflow.exceptions.InvalidAccessException;
  * <li>
  * </ul>
  * 
- * The creation time represents the point of time where the Document was first
- * saved by the DocumentService to the Database. The modify property represents
- * the point of time where the Document was last saved by the DocumentService.
- * The type property is used to categorize documents in a database. If an
- * ItemCollection contains the attribute 'type' the value will be automatically
- * mapped to the type property.
+ * The creation time represents the point of time where the Document object was
+ * created. The modify property represents the point of time when the Document
+ * was last modified by the DocumentService. The type property is used to
+ * categorize documents in a database. If an ItemCollection contains the
+ * attribute 'type' the value will be automatically mapped to the type property.
  * <p>
  * The data attribute is used to hold the ItemCollection data. It is mapped by a
  * OR-Mapper to a large object (Lob).
- * 
+ * <p>
  * A Client should not work directly with an instance of the Document entity.
  * It's recommended to use the DocumentService which acts as a session facade to
  * manage instances of ItemCollection persisted in a database system.
@@ -107,6 +102,7 @@ public class Document implements java.io.Serializable {
 		// Initialize objects
 		Calendar cal = Calendar.getInstance();
 		created = cal;
+		modified = cal;
 	}
 
 	/**
@@ -193,10 +189,10 @@ public class Document implements java.io.Serializable {
 	}
 
 	/**
-	 * Returns the time of last modification. The field shows the point of time when
-	 * the document was created or last updated. This attribute is read only and
-	 * synchronized with the document item '$modified'.
+	 * Returns the time of last modification. This attribute is synchronized by the
+	 * DocumetnService with the item '$modified'.
 	 * 
+	 * @see setData()
 	 * @return time of modification
 	 */
 	@Temporal(TemporalType.TIMESTAMP)
@@ -205,33 +201,11 @@ public class Document implements java.io.Serializable {
 	}
 
 	/**
-	 * Updates the attribute 'modified' before persisted or updated by the
-	 * persistence manager. The field 'modified' is synchronized with the document
-	 * item '$modified'. The method throws an exception in case the item $modified
-	 * is missing
-	 * 
-	 * @throws InvalidAccessException if $modified is missing
+	 * Set the time of last modification. This attribute is automatically
+	 * synchronized by the DocumetnService with the item '$modified'.
 	 */
-	@PrePersist
-	@PreUpdate
-	private void updateModified() {
-		if (getData() == null) {
-			// we have no data, so we take the current time.
-			Calendar cal = Calendar.getInstance();
-			modified = cal;
-		} else {
-			// set the time based on $modified
-			List<Object> _modifiedList = getData().get("$modified");
-			if (_modifiedList != null && _modifiedList.size() > 0) {
-				Date _modified = (Date) _modifiedList.get(0);
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(_modified);
-				modified = cal;
-			} else {
-				throw new InvalidAccessException(DocumentService.INVALID_PARAMETER,
-						"missing item '$modified' - document can not be persisted!");
-			}
-		}
+	public void setModified(Calendar modified) {
+		this.modified = modified;
 	}
 
 	/**
@@ -249,8 +223,13 @@ public class Document implements java.io.Serializable {
 
 	/**
 	 * sets a data object for this Entity.
+	 * <p>
+	 * The method automatically updates the modified attribute based on the item
+	 * $modified. The method throws an exception in case the item $modified is
+	 * missing. The item $modified is contolled by the DocumentService.
 	 * 
 	 * @param data
+	 * @throws InvalidAccessException if $modified is missing
 	 */
 	public void setData(Map<String, List<Object>> itemCol) {
 		this.data = itemCol;

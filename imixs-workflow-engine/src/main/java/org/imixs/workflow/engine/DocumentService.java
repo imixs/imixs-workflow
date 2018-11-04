@@ -394,13 +394,14 @@ public class DocumentService {
 		persistedDocument.setType(aType);
 
 		// update the standard attributes $modified $created and $uniqueID
-		Calendar cal = Calendar.getInstance();
 		document.replaceItemValue("$uniqueid", persistedDocument.getId());
-		document.replaceItemValue("$modified", cal.getTime());
 		document.replaceItemValue("$created", persistedDocument.getCreated().getTime());
+		// synchronize Document.modified and $modified
+		Calendar cal = Calendar.getInstance();
+		persistedDocument.setModified(cal);
+		document.replaceItemValue("$modified", cal.getTime());
 
 		// Finally we fire the DocumentEvent ON_DOCUMENT_SAVE
-
 		if (events != null) {
 			events.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_SAVE));
 		} else {
