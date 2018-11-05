@@ -288,7 +288,7 @@ public class SchedulerService {
 		configuration.removeItem("timeRemaining");
 		configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, false);
 		Calendar cal = Calendar.getInstance();
-		configuration.replaceItemValue(Scheduler.ITEM_LOGMESSAGE, "Stopped: " + cal.getTime());
+		configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Stopped: " + cal.getTime());
 		return configuration;
 	}
 
@@ -455,6 +455,8 @@ public class SchedulerService {
 			}
 			errorMes = e.getMessage();
 			logger.severe("Scheduler '" + id + "' failed: " + errorMes);
+			
+			configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Error: " + errorMes);
 
 			configuration = stop(configuration, timer);
 		} finally {
