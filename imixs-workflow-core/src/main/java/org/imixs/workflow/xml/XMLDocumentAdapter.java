@@ -101,7 +101,8 @@ public class XMLDocumentAdapter {
 	 * This Method converts a <code> org.imixs.workflow.ItemCollection</code> into a
 	 * <code>XMLDocument</code>
 	 * 
-	 * @param document instance of a ItemCollection to be converted
+	 * @param document
+	 *            instance of a ItemCollection to be converted
 	 */
 	public static XMLDocument getDocument(final ItemCollection document) {
 		return getDocument(document, null);
@@ -115,9 +116,11 @@ public class XMLDocumentAdapter {
 	 * The method verifies if the values stored are basic java types. If not these
 	 * values will not be converted!
 	 * 
-	 * @param document  instance of a ItemCollection to be converted
-	 * @param itemNames - optional list of item names to be converted. If null all
-	 *                  items will be converted
+	 * @param document
+	 *            instance of a ItemCollection to be converted
+	 * @param itemNames
+	 *            - optional list of item names to be converted. If null all items
+	 *            will be converted
 	 */
 	@SuppressWarnings({ "unchecked" })
 	public static XMLDocument getDocument(final ItemCollection document, final List<String> itemNames) {
@@ -201,7 +204,8 @@ public class XMLDocumentAdapter {
 	 * This method imports an xml entity data stream containing a singel document
 	 * and returns the ItemCollection.
 	 * 
-	 * @param inputStream xml input stream
+	 * @param inputStream
+	 *            xml input stream
 	 * @throws JAXBException
 	 * @throws IOException
 	 * @return List of ItemCollection objects
@@ -222,7 +226,8 @@ public class XMLDocumentAdapter {
 	 * This method imports a single XMLItemCollection and returns the ItemCollection
 	 * object.
 	 * 
-	 * @param inputStream xml input stream
+	 * @param inputStream
+	 *            xml input stream
 	 * @throws JAXBException
 	 * @throws IOException
 	 * @return List of ItemCollection objects
@@ -240,7 +245,8 @@ public class XMLDocumentAdapter {
 	/**
 	 * This method reads a XMLItemCollection from a byte array.
 	 * 
-	 * @param byteInput - xml data
+	 * @param byteInput
+	 *            - xml data
 	 * @throws JAXBException
 	 * @throws IOException
 	 * @return List of ItemCollection objects
@@ -269,9 +275,11 @@ public class XMLDocumentAdapter {
 	}
 
 	/**
-	 * This method writes a ItemCollection into a Byte array
+	 * This method writes a ItemCollection into a Byte array representing a
+	 * XMLDocument
 	 * 
-	 * @param inputStream xml input stream
+	 * @param inputStream
+	 *            xml input stream
 	 * @throws JAXBException
 	 * @throws IOException
 	 * @return List of ItemCollection objects
