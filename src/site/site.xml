@@ -72,6 +72,7 @@
 				<item name="WorkflowKernel" href="core/workflowkernel.html" />
 				<item name="WorkflowManager" href="core/workflowmanager.html" />
 				<item name="XML" href="core/xml/index.html" collapse="true">
+					<item name="XML Adapter" href="core/xml/adapter.html" />
 					<item name="Transform data" href="core/xml/transform_xml.html" />
 					<item name="Post data" href="core/xml/post_xml.html" />
 					<item name="Marshaling" href="core/xml/marshal.html" />

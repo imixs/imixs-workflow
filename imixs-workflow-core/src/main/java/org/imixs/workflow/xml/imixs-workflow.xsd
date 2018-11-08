@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <xs:element name="count" type="xmlCount"/>
+
+  <xs:element name="data" type="xmlDataCollection"/>
+
+  <xs:element name="document" type="xmlDocument"/>
+
+  <xs:element name="item" type="xmlItem"/>
+
+  <xs:simpleType name="xmlCount">
+    <xs:restriction base="xs:long"/>
+  </xs:simpleType>
+
+  <xs:complexType name="xmlDocument">
+    <xs:sequence>
+      <xs:element name="item" type="xmlItem" form="unqualified" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="xmlItem">
+    <xs:sequence>
+      <xs:element name="value" type="xs:anyType" form="unqualified" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="xmlDataCollection">
+    <xs:sequence>
+      <xs:element name="document" type="xmlDocument" form="unqualified" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="xmlItemArray" final="#all">
+    <xs:sequence>
+      <xs:element name="item" type="xmlItem" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+
