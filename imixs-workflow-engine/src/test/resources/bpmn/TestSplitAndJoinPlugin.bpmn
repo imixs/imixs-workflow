@@ -78,10 +78,10 @@
         <imixs:item name="txtactivityresult" type="CDATA">
           <imixs:value><![CDATA[<item name="subprocess_create"> 
    <modelversion>1.0.0</modelversion>
-   <processid>100</processid>
-   <activityid>10</activityid>
+   <task>100</task>
+   <event>10</event>
    <items>namTeam</items>
-   <action>/pages/workitems/workitem.jsf?id=<itemValue>$uniqueid</itemValue></action>
+   <action>/pages/workitems/workitem.jsf?id=<itemvalue>$uniqueid</itemvalue></action>
 </item>]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
@@ -138,15 +138,15 @@
         <imixs:item name="txtactivityresult" type="CDATA">
           <imixs:value><![CDATA[<item name="subprocess_create"> 
    <modelversion>1.0.0</modelversion>
-   <processid>100</processid>
-   <activityid>10</activityid>
+   <task>100</task>
+   <event>10</event>
    <items>namTeam</items>
 </item>
 
 <item name="subprocess_create"> 
    <modelversion>1.0.0</modelversion>
-   <processid>100</processid>
-   <activityid>10</activityid>
+   <task>100</task>
+   <event>10</event>
    <items>namTeam</items>
 </item>]]></imixs:value>
         </imixs:item>
@@ -181,8 +181,8 @@
         <imixs:item name="txtactivityresult" type="CDATA">
           <imixs:value><![CDATA[<item name="subprocess_create"> 
    <modelversion>1.0.0</modelversion>
-   <processid>1000</processid>
-   <activityid>10</acttyid>
+   <task>1000</xxxtask>
+   <event>10</event>
    <items>namTeam</items>
 </item>]]></imixs:value>
         </imixs:item>
@@ -209,8 +209,8 @@
         <imixs:item name="txtactivityresult" type="CDATA">
           <imixs:value><![CDATA[<item name="origin_update"> 
     <modelversion>1.0.0</modelversion>
-    <processid>100</processid>
-    <activityid>10</activityid>
+    <task>100</task>
+    <event>10</event>
     <items>namTeam,_sub_data</items>
     <action>/pages/workitems/workitem.jsf?id=<itemValue>$uniqueid</itemValue></action>
 </item>]]></imixs:value>
@@ -236,8 +236,8 @@
         <imixs:item name="txtactivityresult" type="CDATA">
           <imixs:value><![CDATA[<item name="subprocess_create"> 
    <modelversion>1.0.0</modelversion>
-   <processid>100</processid>
-   <activityid>10</activityid>
+   <task>100</task>
+   <event>10</event>
    <items>namTeam|_sub_team,$workflowsummary|_parentworkflowsummary</items>
 </item>
 ]]></imixs:value>
@@ -254,8 +254,8 @@
         <imixs:item name="txtactivityresult" type="CDATA">
           <imixs:value><![CDATA[<item name="subprocess_update">
    <modelversion>1.0.0</modelversion>
-   <processid>100</processid>
-   <activityid>10</activityid>
+   <task>100</task>
+   <event>10</event>
    <items>namTeam</items>
 </item>]]></imixs:value>
         </imixs:item>

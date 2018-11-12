@@ -97,7 +97,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
 			throws PluginException, AccessDeniedException, ProcessingErrorException {
 
-		ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(adocumentActivity, adocumentContext,false);
+		ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(adocumentActivity, adocumentContext,
+				false);
 
 		if (evalItemCollection == null)
 			return adocumentContext;
@@ -139,27 +140,28 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 	/**
 	 * This method expects a list of Subprocess definitions and create for each
-	 * definition a new subprocess. The reference of the created subprocess will
-	 * be stored in the property txtworkitemRef of the origin workitem
+	 * definition a new subprocess. The reference of the created subprocess will be
+	 * stored in the property txtworkitemRef of the origin workitem
 	 * 
 	 * 
 	 * The definition is expected in the following format
 	 * 
 	 * <code>
 	 *    <modelversion>1.0.0</modelversion>
-	 *    <processid>100</processid>
-	 *    <activityid>20</activityid>
+	 *    <task>100</task>
+	 *    <event>20</event>
 	 *    <items>namTeam,_sub_data</items>
 	 *    <action>home</action>
 	 * </code>
 	 * 
 	 *
-	 * Both workitems are connected to each other. The subprocess will contain
-	 * the $UniqueID of the origin process stored in the property $uniqueidRef.
-	 * The origin process will contain a link to the subprocess stored in the
-	 * property txtworkitemRef.
+	 * Both workitems are connected to each other. The subprocess will contain the
+	 * $UniqueID of the origin process stored in the property $uniqueidRef. The
+	 * origin process will contain a link to the subprocess stored in the property
+	 * txtworkitemRef.
 	 *
-	 * The tag 'action' is optional and allows to overwrite the action result evaluated by the ResultPlugin.
+	 * The tag 'action' is optional and allows to overwrite the action result
+	 * evaluated by the ResultPlugin.
 	 * 
 	 * @param subProcessDefinitions
 	 * @param originWorkitem
@@ -193,18 +195,31 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				copyItemList(processData.getItemValueString("items"), originWorkitem, workitemSubProcess);
 
 				// check model version
-				String sModelVersion=processData.getItemValueString("modelversion");
+				String sModelVersion = processData.getItemValueString("modelversion");
 				if (sModelVersion.isEmpty()) {
-					sModelVersion=originWorkitem.getModelVersion();
+					sModelVersion = originWorkitem.getModelVersion();
 				}
-				workitemSubProcess.replaceItemValue(WorkflowKernel.MODELVERSION,sModelVersion);
-				workitemSubProcess.setTaskID(
-						Integer.valueOf(processData.getItemValueString("processid")));
-				workitemSubProcess.setEventID(
-						Integer.valueOf(processData.getItemValueString("activityid")));
+				workitemSubProcess.replaceItemValue(WorkflowKernel.MODELVERSION, sModelVersion);
+				
+				String task_pattern=processData.getItemValueString("task");
+				// support deprecated tag 'processid' (issue #446)
+				if (task_pattern.isEmpty() && processData.hasItem("processid")) {
+					task_pattern = processData.getItemValueString("processid");
+					logger.warning(
+							"...subprocess_create uses deprecated tag 'processid' instead of 'task'. Please check your model");
+				}
+				workitemSubProcess.setTaskID(Integer.valueOf(task_pattern));
+				
+				
+				String event_pattern=processData.getItemValueString("event");
+				// support deprecated tag 'processid' (issue #446)
+				if (event_pattern.isEmpty() && processData.hasItem("activityid")) {
+					event_pattern = processData.getItemValueString("activityid");
+					logger.warning(
+							"...subprocess_create uses deprecated tag 'activityid' instead of 'event'. Please check your model");
+				}
+				workitemSubProcess.setEventID(Integer.valueOf(event_pattern));
 
-				
-				
 				// add the origin reference
 				workitemSubProcess.replaceItemValue(WorkflowService.UNIQUEIDREF, originWorkitem.getUniqueID());
 
@@ -218,12 +233,12 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 				// test for optional action result..
 				if (processData.hasItem("action")) {
-					String workflowResult=processData.getItemValueString("action");
+					String workflowResult = processData.getItemValueString("action");
 					if (!workflowResult.isEmpty()) {
 						workflowResult = getWorkflowService().adaptText(workflowResult, workitemSubProcess);
 						originWorkitem.replaceItemValue("action", workflowResult);
 					}
-					
+
 				}
 			}
 
@@ -234,13 +249,13 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * This method expects a list of Subprocess definitions and updates each
 	 * matching existing subprocess.
 	 * 
-	 * The definition is expected in the following format (were regular
-	 * expressions are allowed)
+	 * The definition is expected in the following format (were regular expressions
+	 * are allowed)
 	 * 
 	 * <code>
 	 *    <modelversion>1.0.0</modelversion>
-	 *    <processid>100</processid>
-	 *    <activityid>20</activityid>
+	 *    <task>100</task>
+	 *    <event>20</event>
 	 *    <items>namTeam,_sub_data</items>
 	 * </code>
 	 * 
@@ -278,7 +293,13 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				// the process definition
 
 				String model_pattern = processData.getItemValueString("modelversion");
-				String process_pattern = processData.getItemValueString("processid");
+				String task_pattern = processData.getItemValueString("task");
+				// support deprecated tag 'processid' (issue #446)
+				if (task_pattern.isEmpty() && processData.hasItem("processid")) {
+					task_pattern = processData.getItemValueString("processid");
+					logger.warning(
+							"...subprocess_update uses deprecated tag 'processid' instead of 'task'. Please check your model");
+				}
 
 				List<ItemCollection> subprocessList = getWorkflowService()
 						.getWorkListByRef(originWorkitem.getUniqueID());
@@ -290,21 +311,27 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 					String subProcessID = "" + workitemSubProcess.getTaskID();
 
 					if (Pattern.compile(model_pattern).matcher(subModelVersion).find()
-							&& Pattern.compile(process_pattern).matcher(subProcessID).find()) {
+							&& Pattern.compile(task_pattern).matcher(subProcessID).find()) {
 
 						logger.finest("...... subprocess matches criteria.");
 						// now clone the field list...
 						copyItemList(processData.getItemValueString("items"), originWorkitem, workitemSubProcess);
 
-						workitemSubProcess.setEventID(
-								Integer.valueOf(processData.getItemValueString("activityid")));
+						
+						String event_pattern=processData.getItemValueString("event");
+						// support deprecated tag 'processid' (issue #446)
+						if (event_pattern.isEmpty() && processData.hasItem("activityid")) {
+							event_pattern = processData.getItemValueString("activityid");
+							logger.warning(
+									"...subprocess_update uses deprecated tag 'activityid' instead of 'event'. Please check your model");
+						}
+						workitemSubProcess.setEventID(Integer.valueOf(event_pattern));
 						// process the exisitng subprocess...
 						workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
 
-						
 						// test for optional action result..
 						if (processData.hasItem("action")) {
-							String workflowResult=processData.getItemValueString("action");
+							String workflowResult = processData.getItemValueString("action");
 							if (!workflowResult.isEmpty()) {
 								workflowResult = getWorkflowService().adaptText(workflowResult, workitemSubProcess);
 								originWorkitem.replaceItemValue("action", workflowResult);
@@ -313,36 +340,33 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 						logger.finest("...... successful updated subprocess.");
 					}
-					
-					
+
 					// test for optional action result..
 					if (processData.hasItem("action")) {
-						String workflowResult=processData.getItemValueString("action");
+						String workflowResult = processData.getItemValueString("action");
 						if (!workflowResult.isEmpty()) {
 							workflowResult = getWorkflowService().adaptText(workflowResult, workitemSubProcess);
 							originWorkitem.replaceItemValue("action", workflowResult);
 						}
-						
+
 					}
 				}
-				
 
-				
 			}
 
 		}
 	}
 
 	/**
-	 * This method expects a single process definitions to update the origin
-	 * process for a subprocess. The origin workitem will be loaded by the
-	 * $uniqueidRef stored in the subprocess
+	 * This method expects a single process definitions to update the origin process
+	 * for a subprocess. The origin workitem will be loaded by the $uniqueidRef
+	 * stored in the subprocess
 	 * 
-	 * The processing definition for the origin process is expected in the
-	 * following format
+	 * The processing definition for the origin process is expected in the following
+	 * format
 	 * 
 	 * <code>
-	 * 	  <activityid>20</activityid>
+	 * 	  <event>20</event>
 	 *    <items>namTeam,_sub_data</items>
 	 * </code>
 	 * 
@@ -369,7 +393,13 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 		ItemCollection processData = XMLParser.parseItemStructure(originProcessDefinition);
 
 		String model_pattern = processData.getItemValueString("modelversion");
-		String process_pattern = processData.getItemValueString("processid");
+		String task_pattern = processData.getItemValueString("task");
+		// support deprecated tag 'processid' (issue #446)
+		if (task_pattern.isEmpty() && processData.hasItem("processid")) {
+			task_pattern = processData.getItemValueString("processid");
+			logger.warning(
+					"...origin_update uses deprecated tag 'processid' instead of 'task'. Please check your model");
+		}
 
 		// first we need to lookup the corresponding origin process instance
 		List<String> refs = subprocessWorkitem.getItemValue(WorkflowService.UNIQUEIDREF);
@@ -383,13 +413,19 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				String subProcessID = "" + originWorkitem.getTaskID();
 
 				if (Pattern.compile(model_pattern).matcher(subModelVersion).find()
-						&& Pattern.compile(process_pattern).matcher(subProcessID).find()) {
+						&& Pattern.compile(task_pattern).matcher(subProcessID).find()) {
 
 					logger.finest("...... origin matches criteria.");
 
 					// process the origin workitem
-					originWorkitem.setEventID(
-							Integer.valueOf(processData.getItemValueString("activityid")));
+					String event_pattern=processData.getItemValueString("event");
+					// support deprecated tag 'processid' (issue #446)
+					if (event_pattern.isEmpty() && processData.hasItem("activityid")) {
+						event_pattern = processData.getItemValueString("activityid");
+						logger.warning(
+								"...origin_update uses deprecated tag 'activityid' instead of 'event'. Please check your model");
+					}
+					originWorkitem.setEventID(Integer.valueOf(event_pattern));
 
 					// now clone the field list...
 					copyItemList(processData.getItemValueString("items"), subprocessWorkitem, originWorkitem);
@@ -399,12 +435,12 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 					// test for optional action result..
 					if (processData.hasItem("action")) {
-						String workflowResult=processData.getItemValueString("action");
+						String workflowResult = processData.getItemValueString("action");
 						if (!workflowResult.isEmpty()) {
 							workflowResult = getWorkflowService().adaptText(workflowResult, originWorkitem);
 							subprocessWorkitem.replaceItemValue("action", workflowResult);
 						}
-						
+
 					}
 					logger.finest("...... successful processed originprocess.");
 
@@ -420,8 +456,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * This Method copies the fields defined in 'items' into the targetWorkitem.
 	 * Multiple values are separated with comma ','.
 	 * 
-	 * In case a item name contains '|' the target field name will become the
-	 * right part of the item name.
+	 * In case a item name contains '|' the target field name will become the right
+	 * part of the item name.
 	 */
 	protected void copyItemList(String items, ItemCollection source, ItemCollection target) {
 		// clone the field list...

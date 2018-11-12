@@ -213,7 +213,6 @@ public class TestSplitAndJoinPlugin {
 	 * 
 	 * @throws ModelException
 	 **/
-	// @Ignore
 	@Test
 	public void testCreateSubProcessParsingError() throws ModelException {
 		try {
