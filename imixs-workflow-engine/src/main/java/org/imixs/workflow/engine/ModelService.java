@@ -107,7 +107,7 @@ public class ModelService implements ModelManager {
 	 * @throws AccessDeniedException
 	 */
 	void init() throws AccessDeniedException {
-		
+
 		// load existing models into the ModelManager....
 		logger.info("Initalizing ModelService...");
 		// first remove existing model entities
@@ -125,17 +125,23 @@ public class ModelService implements ModelManager {
 					InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
 					try {
 						Model model = BPMNParser.parseModel(bpmnInputStream, "UTF-8");
-						
+
 						ItemCollection definition = model.getDefinition();
 						if (definition != null) {
 							String modelVersion = definition.getModelVersion();
-							if (getModel(modelVersion)==null) {
+
+							try {
+								if (getModel(modelVersion) != null) {
+									// no op 
+									logger.warning("Model '" + modelVersion
+											+ "' is dupplicated! Please update the model version!");
+								}
+							} catch (ModelException e) {
+								// exception is expected
 								addModel(model);
-							} else {
-								logger.warning("Model '" + modelVersion + "' is dupplicated! Please update the model version!");
 							}
 						}
-						
+
 					} catch (Exception e) {
 						logger.warning("Failed to load model '" + fileName + "' : " + e.getMessage());
 					}
