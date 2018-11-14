@@ -131,6 +131,8 @@ public class ModelService implements ModelManager {
 							String modelVersion = definition.getModelVersion();
 							if (getModel(modelVersion)==null) {
 								addModel(model);
+							} else {
+								logger.warning("Model '" + modelVersion + "' is dupplicated! Please update the model version!");
 							}
 						}
 						
