@@ -453,6 +453,10 @@ public class RestClient {
 	 */
 	public String get(String uri) throws RestAPIException {
 		int responseCode = -1;
+		
+		if (rootURL==null) {
+			throw new RestAPIException(0, "rootURL is null!");
+		}
 
 		// test for /
 		if (rootURL != null && !rootURL.endsWith("/")) {
