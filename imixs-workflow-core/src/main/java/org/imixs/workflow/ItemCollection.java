@@ -662,8 +662,8 @@ public class ItemCollection implements Cloneable {
 				// try to parse string.....
 				try {
 					return Double.valueOf(v.get(0).toString());
-				} catch (ClassCastException e) {
-					return 0;
+				} catch (ClassCastException | NumberFormatException e) {
+					return 0.0;
 				}
 			}
 		} catch (ClassCastException e) {
@@ -709,8 +709,8 @@ public class ItemCollection implements Cloneable {
 				// try to parse string.....
 				try {
 					return Float.valueOf(v.get(0).toString());
-				} catch (ClassCastException e) {
-					return 0;
+				} catch (ClassCastException | NumberFormatException e) {
+					return (float) 0.0;
 				}
 
 			}
