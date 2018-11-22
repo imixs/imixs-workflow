@@ -94,7 +94,7 @@ import org.imixs.workflow.xml.XSLHandler;
  * 
  */
 @Path("/report")
-@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.TEXT_XML })
+@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.TEXT_XML})
 @Stateless
 public class ReportRestService {
 
@@ -143,7 +143,6 @@ public class ReportRestService {
 				out.write("</body></html>".getBytes());
 			}
 		};
-
 
 	}
 
@@ -264,16 +263,14 @@ public class ReportRestService {
 			}
 
 			/*
-			 * outputStream.toByteArray() did not work here because the encoding
-			 * will not be considered. For that reason we use the
-			 * toString(encoding) method here.
+			 * outputStream.toByteArray() did not work here because the encoding will not be
+			 * considered. For that reason we use the toString(encoding) method here.
 			 * 
 			 * 8.9.2012:
 			 * 
-			 * after some tests we see that only toByteArray will work on things
-			 * like fop processing. So for that reason we switched back to the
-			 * toByteArray method again. But we still need to solve the encoding
-			 * issue
+			 * after some tests we see that only toByteArray will work on things like fop
+			 * processing. So for that reason we switched back to the toByteArray method
+			 * again. But we still need to solve the encoding issue
 			 */
 
 			Response.ResponseBuilder builder = Response.ok(outputStream.toByteArray(), sContentType);
@@ -364,13 +361,61 @@ public class ReportRestService {
 	}
 
 	/**
-	 * Returns a xml stream from a report 
+	 * Returns a Datatable corresponding to the report definition and report content
+	 * type.
+	 * <p>
+	 * The path annotation allows any file extension. 
+	 * 
+	 * @param name
+	 * @param start
+	 * @param count
+	 * @return
+	 */
+	@GET
+	@Path("/custom/{name}.{s:.*}")
+	public Response getCustomResult(@PathParam("name") String reportName,
+			@DefaultValue("1000") @QueryParam("pageSize") int pageSize,
+			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
+			@QueryParam("sortReverse") boolean sortReverse, @DefaultValue("") @QueryParam("encoding") String encoding,
+			@Context UriInfo uriInfo, @Context HttpServletResponse servlerResponse) {
+
+		ItemCollection report = reportService.findReport(reportName);
+		if (report == null) {
+			logger.severe("Report '" + reportName + "' not defined!");
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+		}
+		if (encoding == null || "".equals(encoding)) {
+			encoding = report.getItemValueString("encoding");
+			if ("".equals(encoding)) {
+				// no encoding defined so take a default encoding (UTF-8)
+				encoding = "UTF-8";
+			}
+		}
+
+		DocumentTable documentTable = getHTMLResult(reportName, pageSize, pageIndex, sortBy, sortReverse, encoding,
+				uriInfo, servlerResponse);
+
+		String sContentType = report.getItemValueString("contenttype");
+		if (sContentType.isEmpty()) {
+			sContentType = MediaType.APPLICATION_XML;
+		}
+
+		// set content type and character encoding
+		logger.fine("set encoding :" + encoding);
+		servlerResponse.setContentType(sContentType + "; charset=" + encoding);
+
+		return Response.ok(documentTable, sContentType).build();
+
+	}
+
+	/**
+	 * Returns a xml stream from a report
 	 * 
 	 * If a attribute list is defined in the report only the corresponding
 	 * properties will be returend in the xml stream.
 	 * 
-	 * If the query param 'items' is provided the attribute list in the report
-	 * will be ignored.
+	 * If the query param 'items' is provided the attribute list in the report will
+	 * be ignored.
 	 * 
 	 * @param name
 	 *            reportname of the report to be executed
@@ -412,7 +457,7 @@ public class ReportRestService {
 	}
 
 	/**
-	 * Returns a JSON stream from a report 
+	 * Returns a JSON stream from a report
 	 * 
 	 * If a attribute list is defined in the report only the corresponding
 	 * properties will be returend in the xml stream.
@@ -452,7 +497,7 @@ public class ReportRestService {
 	}
 
 	/**
-	 * Deletes a report by name or by its $uniqueID or name. 
+	 * Deletes a report by name or by its $uniqueID or name.
 	 * 
 	 * @param name
 	 *            of report or uniqueid
@@ -496,7 +541,6 @@ public class ReportRestService {
 	public void postReport(XMLDocument reportCol) {
 		putReport(reportCol);
 	}
-
 
 	/**
 	 * This method dos a apache FOP transformation using the FopFactory
@@ -555,8 +599,8 @@ public class ReportRestService {
 
 	/**
 	 * This method parses the query Params of a Request URL and adds params to a
-	 * given JPQL Query. In addition the method replace dynamic date values in
-	 * the JPQLStatement
+	 * given JPQL Query. In addition the method replace dynamic date values in the
+	 * JPQLStatement
 	 * 
 	 * 
 	 * @param uriInfo
@@ -584,6 +628,5 @@ public class ReportRestService {
 
 		return result;
 	}
-
 
 }

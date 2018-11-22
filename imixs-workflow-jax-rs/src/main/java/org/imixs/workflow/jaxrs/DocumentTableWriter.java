@@ -35,7 +35,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -55,7 +54,6 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
  * 
  */
 @Provider
-@Produces("text/html")
 public class DocumentTableWriter implements MessageBodyWriter<DocumentTable> {
 
 	public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
