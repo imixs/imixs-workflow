@@ -222,26 +222,25 @@ public class MailPlugin extends AbstractPlugin {
 
 				logger.finest("......sending message...");
 
-				// if send message fails (e.g. for policy reasons) the process
-				// will
-				// continue. only a exception is thrown
-
-				// Transport.send(mailMessage);
-
-				// A simple transport.send command did not work if mail host
-				// needs
-				// a authentification. Therefor we use a manual smtp connection
-
-				Transport trans = mailSession.getTransport("smtp");
-				trans.connect(mailSession.getProperty("mail.smtp.user"), mailSession.getProperty("mail.smtp.password"));
-
 				mailMessage.setContent(mimeMultipart, getContentType());
-
 				mailMessage.saveChanges();
-				trans.sendMessage(mailMessage, mailMessage.getAllRecipients());
 
+				// Issue #452 - optional authentication
+				// A simple transport.send command did not work if mail host needs a
+				// authentification. Therefore we use a manual SMTP connection
+				if (mailSession.getProperty("mail.smtp.password") != null
+						&& !mailSession.getProperty("mail.smtp.password").isEmpty()) {
+					// create transport object with authentication data
+					Transport trans = mailSession.getTransport("smtp");
+					trans.connect(mailSession.getProperty("mail.smtp.user"),
+							mailSession.getProperty("mail.smtp.password"));
+					trans.sendMessage(mailMessage, mailMessage.getAllRecipients());
+					trans.close();
+				} else {
+					// no authentication - so we simple send the mail...
+					Transport.send(mailMessage);
+				}
 				logger.info("...send mail: MessageID=" + mailMessage.getMessageID());
-				trans.close();
 
 			} catch (Exception esend) {
 				logger.warning("close failed with exception: " + esend.toString());
@@ -258,7 +257,7 @@ public class MailPlugin extends AbstractPlugin {
 	 * 
 	 * @param documentContext
 	 * @param documentActivity
-	 * @return String - mail seder 
+	 * @return String - mail seder
 	 */
 	public String getFrom(ItemCollection documentContext, ItemCollection documentActivity) {
 
