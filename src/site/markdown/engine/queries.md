@@ -88,6 +88,6 @@ In java you can format a Date object into the lucene syntax with a Forater objec
 	String query = "($created:["+luceneFormat.format(fromDate)+ " TO " + luceneFormat.format(toDate) + "])";
 
 
-See the [Lucene Query Syntax](https://lucene.apache.org/core/3_6_0/queryparsersyntax.html) for further information.
+See the [Lucene Query Syntax](https://lucene.apache.org/core/7_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description) for further information.
  
       
