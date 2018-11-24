@@ -64,6 +64,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.PropertyService;
+import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
 
@@ -106,6 +107,9 @@ public class LuceneSearchService {
 
 	@EJB
 	LuceneUpdateService luceneUpdateService;
+	
+	@EJB 
+	AdminPService adminPService;
 
 	private static Logger logger = Logger.getLogger(LuceneSearchService.class.getName());
 
@@ -474,7 +478,7 @@ public class LuceneSearchService {
 			// verify if the index is missing. In this case we try to fix the issue by
 			// creating a new index dir...
 			if (!DirectoryReader.indexExists(indexDir)) {
-				logger.finest("......index does not yet exist, trying to initialize the index....");
+				logger.info("...lucene index does not yet exist, trying to initialize the index....");
 				// create a IndexWriter Instance
 				IndexWriterConfig indexWriterConfig;
 				indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
@@ -484,7 +488,12 @@ public class LuceneSearchService {
 				// now try to reopen once again.
 				// If this dose not work we really have a IO problem
 				reader = DirectoryReader.open(indexDir);
-				logger.finest("......index successfull created.");
+				logger.info("...lucene index successfull initialized.");
+				// starting index job....
+				logger.info("...rebuilding lucene index...");
+				ItemCollection job=new ItemCollection();
+				job.replaceItemValue("job",AdminPService.JOB_REBUILD_LUCENE_INDEX);
+				adminPService.createJob(job);
 			} else {
 				// throw the origin exception....
 				throw ioe;
