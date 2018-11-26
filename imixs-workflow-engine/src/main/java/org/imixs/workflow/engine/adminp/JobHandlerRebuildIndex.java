@@ -20,6 +20,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.jpa.Document;
 import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -79,8 +80,12 @@ public class JobHandlerRebuildIndex implements JobHandler {
 				if (documents != null && documents.size() > 0) {
 					for (Document doc : documents) {
 						// update syncpoint
-						syncPoint = doc.getCreated().getTimeInMillis();
-						resultList.add(new ItemCollection(doc.getData()));
+						syncPoint = doc.getCreated().getTimeInMillis();						
+						try {
+							resultList.add(new ItemCollection(doc.getData()));
+						} catch (InvalidAccessException e) {
+							logger.warning("...unable to index document '"+doc.getId() + "' "+e.getMessage());
+						}
 						// detach object!
 						manager.detach(doc);
 					}
