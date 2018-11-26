@@ -492,6 +492,7 @@ public class LuceneSearchService {
 				// starting index job....
 				logger.info("...rebuilding lucene index...");
 				ItemCollection job=new ItemCollection();
+				job.replaceItemValue("numinterval",2); // 2 minutes
 				job.replaceItemValue("job",AdminPService.JOB_REBUILD_LUCENE_INDEX);
 				adminPService.createJob(job);
 			} else {

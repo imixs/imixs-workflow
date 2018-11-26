@@ -68,8 +68,8 @@ public class JobHandlerRebuildIndex implements JobHandler {
 	@Override
 	public ItemCollection run(ItemCollection adminp) throws AdminPException {
 		long lProfiler = System.currentTimeMillis();
-		long syncPoint = 0;
-		int totalCount = 0;
+		long syncPoint = adminp.getItemValueLong("_syncpoint");
+		int totalCount = adminp.getItemValueInteger("numUpdates");
 		int blockCount = 0;
 
 		try {
@@ -80,18 +80,20 @@ public class JobHandlerRebuildIndex implements JobHandler {
 				if (documents != null && documents.size() > 0) {
 					for (Document doc : documents) {
 						// update syncpoint
-						syncPoint = doc.getCreated().getTimeInMillis();						
+						syncPoint = doc.getCreated().getTimeInMillis();
 						try {
 							resultList.add(new ItemCollection(doc.getData()));
 						} catch (InvalidAccessException e) {
-							logger.warning("...unable to index document '"+doc.getId() + "' "+e.getMessage());
+							logger.warning("...unable to index document '" + doc.getId() + "' " + e.getMessage());
 						}
 						// detach object!
 						manager.detach(doc);
+
 					}
 
 					// update the index
 					luceneUpdateService.updateDocumentsUncommitted(resultList);
+					manager.flush();
 
 					// update count
 					totalCount += resultList.size();
@@ -107,7 +109,25 @@ public class JobHandlerRebuildIndex implements JobHandler {
 					}
 				} else {
 					// no more documents
+					manager.flush();
 					break;
+				}
+
+				// suspend job?
+				long time = (System.currentTimeMillis() - lProfiler) / 1000;
+				if (time == 0) {
+					time = 1;
+				}
+				if (time > 120) { // suspend after 2 mintues....
+					logger.info("...Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID()
+							+ ") - suspended: " + totalCount + " documents indexed in " + time + " sec. ");
+
+					adminp.replaceItemValue("_syncpoint", syncPoint);
+					adminp.replaceItemValue(JobHandler.ISCOMPLETED, false);
+					adminp.replaceItemValue("numUpdates", totalCount);
+					adminp.replaceItemValue("numProcessed", totalCount);
+					adminp.replaceItemValue("numLastCount", 0);
+					return adminp;
 				}
 			}
 		} catch (Exception e) {
