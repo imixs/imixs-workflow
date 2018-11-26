@@ -1266,7 +1266,7 @@ public class ItemCollection implements Cloneable {
 		// now itemValue is of instance List
 		if (!validateItemValue(itemValueList)) {
 			String message = "setItemValue failed for item '" + itemName
-					+ "', the value is a non supported object type: " + itemValueList;
+					+ "', the value is a non supported object type: " + itemValue.getClass().getName() + " value="+ itemValueList;
 			logger.warning(message);
 			throw new InvalidAccessException(message);
 		}
