@@ -12,6 +12,8 @@ import javax.annotation.security.RunAs;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -53,12 +55,13 @@ public class JobHandlerRebuildIndex implements JobHandler {
 
 	/**
 	 * This method runs the RebuildLuceneIndexJob. The job starts at creation date
-	 * 1970/01/01 and reads singel documents in sequence.
+	 * 1970/01/01 and reads single documents in sequence.
 	 * <p>
 	 * After the run method is finished, the properties numIndex, numUpdates and
 	 * numProcessed are updated.
 	 * <p>
-	 * 
+	 * The method runs in an isolated new transaction because the method flushes the
+	 * local persistence manager.
 	 * 
 	 * @param adminp
 	 * @return true when finished
@@ -66,6 +69,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 	 * @throws PluginException
 	 */
 	@Override
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public ItemCollection run(ItemCollection adminp) throws AdminPException {
 		long lProfiler = System.currentTimeMillis();
 		long syncPoint = adminp.getItemValueLong("_syncpoint");
