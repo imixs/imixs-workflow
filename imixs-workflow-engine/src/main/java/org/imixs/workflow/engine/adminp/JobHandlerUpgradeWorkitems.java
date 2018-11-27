@@ -13,6 +13,8 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -53,18 +55,21 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 	 * This method runs the RebuildLuceneIndexJob. The adminp job description
 	 * contains the start position (numIndex) and the number of documents to read
 	 * (numBlockSize).
-	 * 
+	 * <p>
 	 * The method updates the index for all affected documents which can be filtered
 	 * by 'type' and '$created'.
-	 * 
+	 * <p>
 	 * An existing lucene index must be deleted manually by the administrator.
-	 * 
+	 * <p>
 	 * After the run method is finished, the properties numIndex, numUpdates and
 	 * numProcessed are updated.
-	 * 
+	 * <p>
 	 * If the number of documents returned from the DocumentService is less the the
 	 * BlockSize, the method returns true to indicate that the Timer should be
 	 * canceled.
+	 * <p>
+	 * The method runs in an isolated new transaction because the method flushes the
+	 * local persistence manager.
 	 * 
 	 * @param adminp
 	 * @return true if no more unprocessed documents exist.
@@ -72,6 +77,7 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 	 * @throws PluginException
 	 */
 	@Override
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public ItemCollection run(ItemCollection adminp) throws AdminPException {
 
 		long lProfiler = System.currentTimeMillis();
@@ -206,7 +212,6 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 
 		// ignore imixs-archive snapshots
 		query += "AND document.type NOT LIKE 'snapshot%'";
-
 
 		if (typeFilter != null && !typeFilter.isEmpty()) {
 			// convert type list into comma separated list
