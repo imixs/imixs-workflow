@@ -128,7 +128,7 @@ The tag 'items' defines the list of attributes to be updated from the subprocess
 ### Action result
 
 After the origin process was updated, an optional action result can be evaluated to overwrite the action result provided by the ResultPlugin.
-The following example computes a new action result based on the uniqueId of the originprocess:
+The following example computes a new action result based on the uniqueId of the newly created subprocess:
 
 	<item name="subprocess_create">
 	    <modelversion>1.1.0</modelversion>
