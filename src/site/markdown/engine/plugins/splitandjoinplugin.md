@@ -32,17 +32,30 @@ Both workitems will be connected to each other. The subprocess will contain the 
  
 It is also possible to define multiple subprocess definitions in one workflow result. For each separate definition a new subprocess will be created.
 
-### Copy Attributes
+### Copy Items Source to Target
 
 The tag 'items' specifies a list of items to be copied from the origin workitem into the subprocess workitem. The tag may contain a list of items separated by comma. 
 
     <items>namTeam,txtName,_orderNumber</items>
 
-To avoid item name conflicts the item name in the target workitem can be changed by separating the new item name by a '|' char. 
+### Copy Items With Mapped ItemName
+
+To avoid item name conflicts the item name in the target workitem can be mapped by separating the new item name with the a '|' char. 
 
     <items>namTeam,txtName,_orderNumber|_origin_orderNumber</items>
 
 In this example the item '_ordernumber' will be copied into the target workitem with the new item name '_origin_ordernumber'.
+
+### Copy Items by Regex
+
+You can also define the items to be copied into the target workitem by a regular expression. See the following example with will copy all items starting with alphabetical characters or '_':
+
+	<items>$workflowsummary|_parentworkflowsummary,(^[a-zA-Z]|^_)</items>
+
+A regular expression must always be included in brackets.
+ 
+__Note:__ In case of a regular expression you can not use item name mapping with the '|' character. 
+ 
 
 ### Action result
 

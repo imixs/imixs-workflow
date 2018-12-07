@@ -28,6 +28,7 @@
 package org.imixs.workflow.engine.plugins;
 
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -200,8 +201,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 					sModelVersion = originWorkitem.getModelVersion();
 				}
 				workitemSubProcess.replaceItemValue(WorkflowKernel.MODELVERSION, sModelVersion);
-				
-				String task_pattern=processData.getItemValueString("task");
+
+				String task_pattern = processData.getItemValueString("task");
 				// support deprecated tag 'processid' (issue #446)
 				if (task_pattern.isEmpty() && processData.hasItem("processid")) {
 					task_pattern = processData.getItemValueString("processid");
@@ -209,9 +210,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 							"...subprocess_create uses deprecated tag 'processid' instead of 'task'. Please check your model");
 				}
 				workitemSubProcess.setTaskID(Integer.valueOf(task_pattern));
-				
-				
-				String event_pattern=processData.getItemValueString("event");
+
+				String event_pattern = processData.getItemValueString("event");
 				// support deprecated tag 'processid' (issue #446)
 				if (event_pattern.isEmpty() && processData.hasItem("activityid")) {
 					event_pattern = processData.getItemValueString("activityid");
@@ -317,8 +317,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 						// now clone the field list...
 						copyItemList(processData.getItemValueString("items"), originWorkitem, workitemSubProcess);
 
-						
-						String event_pattern=processData.getItemValueString("event");
+						String event_pattern = processData.getItemValueString("event");
 						// support deprecated tag 'processid' (issue #446)
 						if (event_pattern.isEmpty() && processData.hasItem("activityid")) {
 							event_pattern = processData.getItemValueString("activityid");
@@ -418,7 +417,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 					logger.finest("...... origin matches criteria.");
 
 					// process the origin workitem
-					String event_pattern=processData.getItemValueString("event");
+					String event_pattern = processData.getItemValueString("event");
 					// support deprecated tag 'processid' (issue #446)
 					if (event_pattern.isEmpty() && processData.hasItem("activityid")) {
 						event_pattern = processData.getItemValueString("activityid");
@@ -455,9 +454,27 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	/**
 	 * This Method copies the fields defined in 'items' into the targetWorkitem.
 	 * Multiple values are separated with comma ','.
-	 * 
+	 * <p>
 	 * In case a item name contains '|' the target field name will become the right
 	 * part of the item name.
+	 * <p>
+	 * Example: {@code
+	 *   txttitle,txtfirstname
+	 *   
+	 *   txttitle|newitem1,txtfirstname|newitem2
+	 *   
+	 * }
+	 * 
+	 * <p>
+	 * Optional also reg expressions are supported. In this case mapping of the item
+	 * name is not supported.
+	 * <p>
+	 * Example: {@code
+	 *   (^artikel$|^invoice$),txtTitel|txtNewTitel
+	 *   
+	 *   
+	 * } A reg expression must be includes in brackets.
+	 * 
 	 */
 	protected void copyItemList(String items, ItemCollection source, ItemCollection target) {
 		// clone the field list...
@@ -465,12 +482,26 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 		while (st.hasMoreTokens()) {
 			String field = st.nextToken().trim();
 
-			int pos = field.indexOf('|');
-			if (pos > -1) {
-				target.replaceItemValue(field.substring(pos + 1).trim(),
-						source.getItemValue(field.substring(0, pos).trim()));
+			// test if field is a reg ex
+			if (field.startsWith("(") && field.endsWith(")")) {
+				Pattern itemPattern = Pattern.compile(field);
+				Map<String, List<Object>> map=source.getAllItems();
+				for (String itemName : map.keySet()) {
+					if (itemPattern.matcher(itemName).find()) {
+						target.replaceItemValue(itemName,
+								source.getItemValue(itemName));
+					}
+				}
+				
 			} else {
-				target.replaceItemValue(field, source.getItemValue(field));
+				// default behavior without reg ex
+				int pos = field.indexOf('|');
+				if (pos > -1) {
+					target.replaceItemValue(field.substring(pos + 1).trim(),
+							source.getItemValue(field.substring(0, pos).trim()));
+				} else {
+					target.replaceItemValue(field, source.getItemValue(field));
+				}
 			}
 		}
 	}

@@ -66,6 +66,7 @@ public class TestSplitAndJoinPlugin {
 		list.add("anna");
 		documentContext.replaceItemValue("namTeam", list);
 		documentContext.replaceItemValue("namCreator", "ronny");
+		documentContext.replaceItemValue("$snapshotid", "11112222");
 		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 		documentContext.setTaskID(100);
 		documentContext.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
@@ -349,6 +350,40 @@ public class TestSplitAndJoinPlugin {
 	}
 
 	/**
+	 * Test ItemCopy with regex during the creation of subprocesses
+	 * 
+	 * @throws ModelException
+	 * 
+	 ***/
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testCreateSubProcessCopyItemByRegex() throws ModelException {
+
+		try {
+			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 70);
+			splitAndJoinPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		Assert.assertNotNull(documentContext);
+
+		// load the new subprocess....
+		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+		Assert.assertEquals(1, workitemRefList.size());
+		String subprocessUniqueid = workitemRefList.get(0);
+		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
+
+		Assert.assertEquals("manfred", subprocess.getItemValue("namTeam", String.class));
+		Assert.assertEquals("ronny", subprocess.getItemValue("namcreator", String.class));
+
+		Assert.assertEquals("", subprocess.getItemValueString("$snapshotid"));
+		// ("$snapshotid", "11112222");
+	}
+
+	/**
 	 * Test the regex evuating the execution conditions
 	 ***/
 	@Test
@@ -381,6 +416,17 @@ public class TestSplitAndJoinPlugin {
 		Assert.assertFalse(Pattern.compile("(^1\\d{3}$)").matcher("11123").find());
 
 		Assert.assertTrue(Pattern.compile("1000").matcher("11000").find());
+
+		// test start with
+		Assert.assertTrue(Pattern.compile("(^txt|^num)").matcher("txtTitle").find());
+		Assert.assertTrue(Pattern.compile("(^txt|^num)").matcher("numTitle").find());
+		Assert.assertTrue(Pattern.compile("(^txt|^num|^_)").matcher("_subject").find());
+
+		Assert.assertFalse(Pattern.compile("(^txt|^num|^_)").matcher("$taskid").find());
+
+		Assert.assertTrue(Pattern.compile("(^[a-z]|^num)").matcher("txtTitle").find());
+		Assert.assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("TXTTitle").find());
+		Assert.assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("_title").find());
 
 	}
 
