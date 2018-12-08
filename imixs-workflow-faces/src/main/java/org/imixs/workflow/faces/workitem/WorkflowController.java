@@ -99,7 +99,7 @@ public class WorkflowController extends DocumentController {
 	 *             is thrown in case not valid worklfow task if defined by the
 	 *             current model.
 	 */
-	public String init(String action) throws ModelException {
+	public String init(ItemCollection workitem,String action) throws ModelException {
 
 		if (workitem == null) {
 			return action;
@@ -109,10 +109,10 @@ public class WorkflowController extends DocumentController {
 		if (workitem.getTaskID() <= 0) {
 			// get ProcessEntities by version
 			List<ItemCollection> col;
-			col = modelService.getModelByWorkitem(getWorkitem()).findAllTasks();
+			col = modelService.getModelByWorkitem(workitem).findAllTasks();
 			if (!col.isEmpty()) {
 				startProcessEntity = col.iterator().next();
-				getWorkitem().setTaskID(
+				workitem.setTaskID(
 						startProcessEntity.getItemValueInteger("numProcessID"));
 			}
 		}
@@ -161,7 +161,7 @@ public class WorkflowController extends DocumentController {
 	 * @throws PluginException
 	 * @throws ModelException
 	 */
-	public String process() throws PluginException, ModelException {
+	public String process(ItemCollection workitem) throws PluginException, ModelException {
 		if (workitem == null) {
 			logger.warning("Unable to process workitem == null!");
 			return null;
@@ -179,40 +179,7 @@ public class WorkflowController extends DocumentController {
 		return ("".equals(action) ? null : action);
 	}
 
-	/**
-	 * This method processes the current workItem with the provided activityID. The
-	 * method can be used as an actionListener.
-	 * 
-	 * @param id
-	 *            - eventID to be processed
-	 * @param resetWorkitem
-	 *            - boolean indicates if the workitem should be reset
-	 * @throws PluginException
-	 * @throws ModelException
-	 * @see process()
-	 */
-	public String process(int id, boolean resetWorkitem) throws PluginException, ModelException {
-		// update the property $ActivityID
-		this.getWorkitem().setEventID(id);
-		String result = process();
 
-		return result;
-	}
-
-	/**
-	 * This method processes the current workItem with the provided activityID. The
-	 * meethod can be used as an actionListener.
-	 * 
-	 * @param id
-	 *            - activityID to be processed
-	 * @throws PluginException
-	 * 
-	 * @see process()
-	 * @see process(id,resetWorkitem)
-	 */
-	public String process(int id) throws ModelException, PluginException {
-		return process(id, false);
-	}
 
 	/**
 	 * This method returns a List of workflow events assigned to the corresponding
@@ -220,17 +187,17 @@ public class WorkflowController extends DocumentController {
 	 * 
 	 * @return
 	 */
-	public List<ItemCollection> getEvents() {
+	public List<ItemCollection> getEvents(ItemCollection workitem) {
 		List<ItemCollection> activityList = new ArrayList<ItemCollection>();
 
-		if (getWorkitem() == null || (getWorkitem().getModelVersion().isEmpty()
-				&& getWorkitem().getItemValueString(WorkflowKernel.WORKFLOWGROUP).isEmpty())) {
+		if (workitem == null || (workitem.getModelVersion().isEmpty()
+				&& workitem.getItemValueString(WorkflowKernel.WORKFLOWGROUP).isEmpty())) {
 			return activityList;
 		}
 
 		// get Events form workflowService
 		try {
-			activityList = this.getWorkflowService().getEvents(getWorkitem());
+			activityList = this.getWorkflowService().getEvents(workitem);
 		} catch (ModelException e) {
 			logger.warning("Unable to get workflow event list: " + e.getMessage());
 		}

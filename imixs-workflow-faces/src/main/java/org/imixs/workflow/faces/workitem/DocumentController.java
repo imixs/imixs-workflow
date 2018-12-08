@@ -55,13 +55,11 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
  * The DataController bean is typically used in session scope.
  * 
  * @author rsoika
- * @version 0.0.1
+ * @version 2.0
  */
 public class DocumentController implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	ItemCollection workitem = null;
-	private String defaultType;
 
 	@EJB
 	DocumentService documentService;
@@ -69,27 +67,9 @@ public class DocumentController implements Serializable {
 
 	public DocumentController() {
 		super();
-		setDefaultType("workitem");
 	}
 
-	/**
-	 * This method returns the Default 'type' attribute of the local workitem.
-	 */
-	public String getDefaultType() {
-		return defaultType;
-	}
-
-	/**
-	 * This method set the default 'type' attribute of the local workitem.
-	 * 
-	 * Subclasses may overwrite the type
-	 * 
-	 * @param type
-	 */
-	public void setDefaultType(String type) {
-		this.defaultType = type;
-	}
-
+	
 	/**
 	 * returns an instance of the DocumentService EJB
 	 * 
@@ -99,31 +79,6 @@ public class DocumentController implements Serializable {
 		return documentService;
 	}
 
-	/**
-	 * Returns the current workItem. If no workitem is defined the method
-	 * Instantiates a empty ItemCollection.
-	 * 
-	 * @return - current workItem or null if not set
-	 */
-	public ItemCollection getWorkitem() {
-		// do initialize an empty workItem here if null
-		if (workitem == null) {
-			workitem = new ItemCollection();
-			workitem.replaceItemValue("type", getDefaultType());
-			setWorkitem(workitem);
-		}
-		return workitem;
-	}
-
-	/**
-	 * Set the current worktItem
-	 * 
-	 * @param workitem
-	 *            - new reference or null to clear the current workItem.
-	 */
-	public void setWorkitem(ItemCollection workitem) {
-		this.workitem = workitem;
-	}
 
 	/**
 	 * This method creates an empty workItem with the default type property and
@@ -131,16 +86,19 @@ public class DocumentController implements Serializable {
 	 * should be overwritten to add additional Business logic here.
 	 * 
 	 */
-	public void create() {
-		reset();
+	public ItemCollection create() {
+		
+		ItemCollection workitem=new ItemCollection();
 		// initialize new ItemCollection
-		getWorkitem();
+	
 		FacesContext context = FacesContext.getCurrentInstance();
 		ExternalContext externalContext = context.getExternalContext();
 		String sUser = externalContext.getRemoteUser();
 		workitem.replaceItemValue("$Creator", sUser);
 		workitem.replaceItemValue("namCreator", sUser); // backward compatibility
 		logger.finest("......ItemCollection created");
+		
+		return workitem;
 	}
 
 	/**
@@ -161,33 +119,14 @@ public class DocumentController implements Serializable {
 	 * @throws AccessDeniedException
 	 *             - if user has insufficient access rights.
 	 */
-	public void save() throws AccessDeniedException {
+	public void save(ItemCollection workitem) throws AccessDeniedException {
 		// save workItem ...
 		workitem = getDocumentService().save(workitem);
 		logger.finest("......ItemCollection saved");
 	}
 
-	/**
-	 * This action method saves the current workItem and returns an action
-	 * result. The method expects the result action as a parameter.
-	 * 
-	 * @param action
-	 *            - defines the action result
-	 * @return action result
-	 * @throws AccessDeniedException
-	 *             - if user has insufficient access rights.
-	 */
-	public String save(String action) throws AccessDeniedException {
-		save();
-		return action;
-	}
+	
 
-	/**
-	 * Reset current workItem to null
-	 */
-	public void reset() {
-		this.workitem = null;
-	}
 
 	/**
 	 * This method loads the current workItem from the DocumentService.
@@ -195,14 +134,14 @@ public class DocumentController implements Serializable {
 	 * @param uniqueID
 	 *            - $uniqueId of the workItem to be loaded
 	 */
-	public void load(String uniqueID) {
-		reset();
-		setWorkitem(getDocumentService().load(uniqueID));
+	public ItemCollection  load(String uniqueID) {
+		ItemCollection workitem= getDocumentService().load(uniqueID);
 		if (workitem != null) {
 			logger.finest("......workitem '" + uniqueID + "' loaded");
 		} else {
 			logger.finest("......workitem '" + uniqueID + "' not found (null)");
 		}
+		return workitem;
 	}
 
 	/**
@@ -234,7 +173,7 @@ public class DocumentController implements Serializable {
 		ItemCollection _workitem = getDocumentService().load(uniqueID);
 		if (_workitem != null) {
 			documentService.remove(_workitem);
-			setWorkitem(null);
+			
 			logger.fine("workitem " + uniqueID + " deleted");
 		} else {
 			logger.fine("workitem '" + uniqueID + "' not found (null)");
@@ -265,9 +204,12 @@ public class DocumentController implements Serializable {
 	 * 
 	 * @return
 	 */
-	public boolean isNewWorkitem() {
-		Date created = getWorkitem().getItemValueDate("$created");
-		Date modified = getWorkitem().getItemValueDate("$modified");
+	public boolean isNewWorkitem(ItemCollection workitem) {
+		if (workitem==null) {
+			return false;
+		}
+		Date created = workitem.getItemValueDate("$created");
+		Date modified = workitem.getItemValueDate("$modified");
 		//return (modified == null || created == null || modified.compareTo(created) == 0);
 		return (modified == null || created == null);
 	}

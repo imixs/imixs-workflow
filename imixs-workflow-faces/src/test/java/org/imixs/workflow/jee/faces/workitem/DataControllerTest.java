@@ -18,7 +18,7 @@ import org.junit.Test;
 public class DataControllerTest {
 
 	DocumentController dataController = null;
-
+	
 	@Before
 	public void before() {
 		dataController = new DocumentController();
@@ -28,21 +28,21 @@ public class DataControllerTest {
 	public void testBasic() {
 		ItemCollection workitem = new ItemCollection();
 		// test is new
-		dataController.setWorkitem(workitem);
-		Assert.assertTrue(dataController.isNewWorkitem());
+		
+		Assert.assertTrue(dataController.isNewWorkitem(workitem));
 
 		
 		Date someDate=new Date();
 		workitem.replaceItemValue("$Modified", someDate);
 		workitem.replaceItemValue("$Created", someDate);
-		Assert.assertFalse(dataController.isNewWorkitem());
+		Assert.assertFalse(dataController.isNewWorkitem(workitem));
 
 		someDate=new Date();
 		Calendar cal=Calendar.getInstance();
 		cal.setTime(someDate);
 		cal.add(Calendar.SECOND,+1);
 		workitem.replaceItemValue("$Modified", cal.getTime());
-		Assert.assertFalse(dataController.isNewWorkitem());
+		Assert.assertFalse(dataController.isNewWorkitem(workitem));
 
 	
 	}
