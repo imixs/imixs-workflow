@@ -31,14 +31,21 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.enterprise.context.Conversation;
+import javax.enterprise.context.ConversationScoped;
+import javax.enterprise.event.Event;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
@@ -55,21 +62,50 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
  * The DataController bean is typically used in session scope.
  * 
  * @author rsoika
- * @version 2.0
+ * @version 0.0.1
  */
+@Named
+@ConversationScoped
 public class DocumentController implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	private String defaultType;
+	private static Logger logger = Logger.getLogger(DocumentController.class.getName());
+
+	@Inject
+	protected Event<DocumentEvent> events;
+
+	@Inject
+	Conversation conversation;
+
+	ItemCollection document = null;
 
 	@EJB
 	DocumentService documentService;
-	private static Logger logger = Logger.getLogger(DocumentController.class.getName());
 
 	public DocumentController() {
 		super();
+		setDefaultType("workitem");
 	}
 
-	
+	/**
+	 * This method returns the Default 'type' attribute of the local workitem.
+	 */
+	public String getDefaultType() {
+		return defaultType;
+	}
+
+	/**
+	 * This method set the default 'type' attribute of the local workitem.
+	 * 
+	 * Subclasses may overwrite the type
+	 * 
+	 * @param type
+	 */
+	public void setDefaultType(String type) {
+		this.defaultType = type;
+	}
+
 	/**
 	 * returns an instance of the DocumentService EJB
 	 * 
@@ -79,101 +115,108 @@ public class DocumentController implements Serializable {
 		return documentService;
 	}
 
+	/**
+	 * Returns the current workItem. If no workitem is defined the method
+	 * Instantiates a empty ItemCollection.
+	 * 
+	 * @return - current workItem or null if not set
+	 */
+	public ItemCollection getDocument() {
+		// do initialize an empty workItem here if null
+		if (document == null) {
+			document = new ItemCollection();
+			document.replaceItemValue("type", getDefaultType());
+			setDocument(document);
+		}
+		return document;
+	}
 
 	/**
-	 * This method creates an empty workItem with the default type property and
-	 * the property '$Creator' holding the current RemoteUser This method
-	 * should be overwritten to add additional Business logic here.
+	 * Set the current worktItem
+	 * 
+	 * @param workitem - new reference or null to clear the current workItem.
+	 */
+	public void setDocument(ItemCollection workitem) {
+		this.document = workitem;
+	}
+
+	/**
+	 * This method creates an empty workItem with the default type property and the
+	 * property '$Creator' holding the current RemoteUser This method should be
+	 * overwritten to add additional Business logic here.
 	 * 
 	 */
-	public ItemCollection create() {
-		
-		ItemCollection workitem=new ItemCollection();
+	public void create() {
+		reset();
 		// initialize new ItemCollection
-	
+		getDocument();
 		FacesContext context = FacesContext.getCurrentInstance();
 		ExternalContext externalContext = context.getExternalContext();
 		String sUser = externalContext.getRemoteUser();
-		workitem.replaceItemValue("$Creator", sUser);
-		workitem.replaceItemValue("namCreator", sUser); // backward compatibility
+		document.replaceItemValue("$Creator", sUser);
+		document.replaceItemValue("namCreator", sUser); // backward compatibility
+		events.fire(new DocumentEvent(document, DocumentEvent.DOCUMENT_CREATED));
 		logger.finest("......ItemCollection created");
-		
-		return workitem;
 	}
 
 	/**
-	 * This actionListener method creates an empty workItem with the default
-	 * type property and the property 'namCreator' holding the current
-	 * RemoteUser This method should be overwritten to add additional Business
-	 * logic here.
+	 * This method saves the current document. This method can be overwritten to add
+	 * additional Business logic.
 	 * 
+	 * @throws AccessDeniedException - if user has insufficient access rights.
 	 */
-	public void create(ActionEvent event) {
-		create();
-	}
-
-	/**
-	 * This method saves the current workItem. This method can be overwritten to
-	 * add additional Business logic.
-	 * 
-	 * @throws AccessDeniedException
-	 *             - if user has insufficient access rights.
-	 */
-	public void save(ItemCollection workitem) throws AccessDeniedException {
+	public void save() throws AccessDeniedException {
 		// save workItem ...
-		workitem = getDocumentService().save(workitem);
+		events.fire(new DocumentEvent(getDocument(), DocumentEvent.DOCUMENT_BEFORE_SAVE));
+
+		document = getDocumentService().save(document);
+		events.fire(new DocumentEvent(getDocument(), DocumentEvent.DOCUMENT_AFTER_SAVE));
+
+		// close conversation
+		if (!conversation.isTransient()) {
+			logger.fine("close conversation, id=" + conversation.getId());
+			conversation.end();
+		}
+
 		logger.finest("......ItemCollection saved");
 	}
 
-	
-
+	/**
+	 * Reset current document
+	 */
+	public void reset() {
+		document = new ItemCollection();
+	}
 
 	/**
-	 * This method loads the current workItem from the DocumentService.
+	 * This method loads a document by id from the DocumentService.
 	 * 
-	 * @param uniqueID
-	 *            - $uniqueId of the workItem to be loaded
+	 * @param uniqueID - $uniqueId of the document to be loaded
 	 */
-	public ItemCollection  load(String uniqueID) {
-		ItemCollection workitem= getDocumentService().load(uniqueID);
-		if (workitem != null) {
+	public void load(String uniqueID) {
+
+		events.fire(new DocumentEvent(getDocument(), DocumentEvent.DOCUMENT_BEFORE_DELETE));
+		if (document != null) {
 			logger.finest("......workitem '" + uniqueID + "' loaded");
 		} else {
 			logger.finest("......workitem '" + uniqueID + "' not found (null)");
 		}
-		return workitem;
+		events.fire(new DocumentEvent(getDocument(), DocumentEvent.DOCUMENT_AFTER_DELETE));
+		events.fire(new DocumentEvent(document, DocumentEvent.DOCUMENT_CHANGED));
 	}
 
 	/**
-	 * This Action method loads the current workItem from the DocumentService and
-	 * returns an action result. The method expects the result action as a
-	 * parameter. The method can be called by dataTables to load a workItem for
-	 * editing
+	 * This action method deletes a workitem. The Method also deletes also all child
+	 * workitems recursive
 	 * 
-	 * @param uniqueID
-	 *            - $uniqueId of the workItem to be loaded
-	 * @param action
-	 *            - return action
-	 * @return action event
-	 */
-	public String load(String uniqueID, String action) {
-		load(uniqueID);
-		return action;
-	}
-
-	/**
-	 * This action method deletes a workitem. The Method also deletes also all
-	 * child workitems recursive
-	 * 
-	 * @param currentSelection
-	 *            - workitem to be deleted
+	 * @param currentSelection - workitem to be deleted
 	 * @throws AccessDeniedException
 	 */
 	public void delete(String uniqueID) throws AccessDeniedException {
 		ItemCollection _workitem = getDocumentService().load(uniqueID);
 		if (_workitem != null) {
 			documentService.remove(_workitem);
-			
+			setDocument(null);
 			logger.fine("workitem " + uniqueID + " deleted");
 		} else {
 			logger.fine("workitem '" + uniqueID + "' not found (null)");
@@ -184,10 +227,8 @@ public class DocumentController implements Serializable {
 	 * This action method deletes a workitem and returns an action result. The
 	 * method expects the result action as a parameter.
 	 * 
-	 * @param currentSelection
-	 *            - workitem to be deleted
-	 * @param action
-	 *            - return action
+	 * @param currentSelection - workitem to be deleted
+	 * @param action           - return action
 	 * @return action - action event
 	 * @throws AccessDeniedException
 	 */
@@ -204,22 +245,20 @@ public class DocumentController implements Serializable {
 	 * 
 	 * @return
 	 */
-	public boolean isNewWorkitem(ItemCollection workitem) {
-		if (workitem==null) {
-			return false;
-		}
-		Date created = workitem.getItemValueDate("$created");
-		Date modified = workitem.getItemValueDate("$modified");
-		//return (modified == null || created == null || modified.compareTo(created) == 0);
+	public boolean isNewWorkitem() {
+		Date created = getDocument().getItemValueDate("$created");
+		Date modified = getDocument().getItemValueDate("$modified");
+		// return (modified == null || created == null || modified.compareTo(created) ==
+		// 0);
 		return (modified == null || created == null);
 	}
 
 	/**
 	 * This method can be used to add a Error Messege to the Application Context
 	 * during an actionListener Call. Typical this method is used in the
-	 * doProcessWrktiem method to display a processing exception to the user.
-	 * The method expects the Ressoruce bundle name and the message key inside
-	 * the bundle.
+	 * doProcessWrktiem method to display a processing exception to the user. The
+	 * method expects the Ressoruce bundle name and the message key inside the
+	 * bundle.
 	 * 
 	 * @param ressourceBundleName
 	 * @param messageKey
@@ -240,4 +279,37 @@ public class DocumentController implements Serializable {
 		context.addMessage(null, facesMsg);
 	}
 
+	/**
+	 * Starts a new conversation
+	 */
+	@PostConstruct
+	private void init() {
+		loadDocument();
+		if (conversation.isTransient()) {
+			conversation.setTimeout(
+					((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
+							.getSession().getMaxInactiveInterval() * 1000);
+			conversation.begin();
+			logger.finest("......start new conversation, id=" + conversation.getId());
+		}
+	}
+
+	/**
+	 * Loads a workitem based on the query params 'id' or 'workitem'
+	 */
+	private void loadDocument() {
+		FacesContext fc = FacesContext.getCurrentInstance();
+		Map<String, String> paramMap = fc.getExternalContext().getRequestParameterMap();
+		// try to extract tjhe uniqueid form the query string...
+
+		String uniqueid = paramMap.get("id");
+
+		document = documentService.load(uniqueid);
+		if (document == null) {
+			reset();
+		}
+
+		events.fire(new DocumentEvent(document, DocumentEvent.DOCUMENT_CHANGED));
+
+	}
 }

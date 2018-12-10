@@ -526,6 +526,10 @@ public class DocumentService {
 	public ItemCollection load(String id) {
 		long lLoadTime = System.currentTimeMillis();
 		Document persistedDocument = null;
+		
+		if (id==null || id.isEmpty()) {
+			return null;
+		}
 		persistedDocument = manager.find(Document.class, id);
 
 		// create instance of ItemCollection

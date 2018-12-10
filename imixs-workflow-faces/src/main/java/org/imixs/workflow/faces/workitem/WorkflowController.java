@@ -27,11 +27,21 @@
 
 package org.imixs.workflow.faces.workitem;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.enterprise.context.Conversation;
+import javax.enterprise.context.ConversationScoped;
+import javax.enterprise.event.Event;
+import javax.faces.context.FacesContext;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -43,47 +53,78 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * The WorkflowController can be used in JSF Applications to manage workflow
- * processing on any workitem.
- * 
- * The WorklfowController can be extended by a web module implementing a project
- * specific behavior.
- * 
- * The properties modelVersion and processID are used to control and create new
- * workitem instances based on a model definition
- * 
- * The workflowController bean is typically used in session scope.
+ * The WorkflowController is a conversation scoped CDI bean and can be used in
+ * JSF Applications to manage workflow processing on any workitem.
+ * <p>
+ * The behavior of the bean can be controlled by reacting on the CDI event
+ * WorkflowEvent.
+ * <p>
+ * To load a workitem the query param 'id' with the $uniqueid of an existing
+ * workitem can be used.
+ * <p>
+ * {@code
+ *   /...?id=[UNIQUEID]
+ * }
  * 
  * @author rsoika
  * @version 2.0.0
  */
-public class WorkflowController extends DocumentController {
+@Named
+@ConversationScoped
+public class WorkflowController implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-
-	@EJB
-	private ModelService modelService;
-
-	@EJB
-	private WorkflowService workflowService;
-
 	private static Logger logger = Logger.getLogger(WorkflowController.class.getName());
+
+
+	@Inject
+	protected Event<WorkflowEvent> events;
+
+	
+	ItemCollection workitem = null;
+
+	@Inject
+	Conversation conversation;
+
+	@EJB
+	ModelService modelService;
+
+	@EJB
+	WorkflowService workflowService;
+
+	public static final String DEFAULT_TYPE = "workitem";
 
 	public WorkflowController() {
 		super();
 	}
 
-	/**
-	 * returns an instance of the ModelService EJB
-	 * 
-	 * @return
-	 */
-	public ModelService getModelService() {
-		return modelService;
+	public void reset() {
+		workitem = new ItemCollection();
+		workitem.replaceItemValue("type", DEFAULT_TYPE);
 	}
 
-	public WorkflowService getWorkflowService() {
-		return workflowService;
+	/**
+	 * Returns the current workItem. If no workitem is defined the method
+	 * Instantiates a empty ItemCollection.
+	 * 
+	 * @return - current workItem or null if not set
+	 */
+	public ItemCollection getWorkitem() {
+		// do initialize an empty workItem here if null
+		if (workitem == null) {
+			workitem = new ItemCollection();
+			workitem.replaceItemValue("type", DEFAULT_TYPE);
+		}
+		return workitem;
+	}
+
+	/**
+	 * Set the current worktItem
+	 * 
+	 * @param workitem - new reference or null to clear the current workItem.
+	 */
+	public void setWorkitem(ItemCollection workitem) {
+		this.workitem = workitem;
 	}
 
 	/**
@@ -92,14 +133,12 @@ public class WorkflowController extends DocumentController {
 	 * attributes '$WriteAccess','$workflowgroup', '$workflowStatus',
 	 * 'txtWorkflowImageURL' and 'txtWorkflowEditorid'.
 	 * 
-	 * @param action
-	 *            - the action returned by this method
+	 * @param action - the action returned by this method
 	 * @return - action
-	 * @throws ModelException
-	 *             is thrown in case not valid worklfow task if defined by the
-	 *             current model.
+	 * @throws ModelException is thrown in case not valid worklfow task if defined
+	 *                        by the current model.
 	 */
-	public String init(ItemCollection workitem,String action) throws ModelException {
+	public String init(String action) throws ModelException {
 
 		if (workitem == null) {
 			return action;
@@ -109,28 +148,24 @@ public class WorkflowController extends DocumentController {
 		if (workitem.getTaskID() <= 0) {
 			// get ProcessEntities by version
 			List<ItemCollection> col;
-			col = modelService.getModelByWorkitem(workitem).findAllTasks();
+			col = modelService.getModelByWorkitem(getWorkitem()).findAllTasks();
 			if (!col.isEmpty()) {
 				startProcessEntity = col.iterator().next();
-				workitem.setTaskID(
-						startProcessEntity.getItemValueInteger("numProcessID"));
+				getWorkitem().setTaskID(startProcessEntity.getItemValueInteger("numProcessID"));
 			}
 		}
 
 		// find the ProcessEntity
-		startProcessEntity = modelService.getModelByWorkitem(workitem)
-				.getTask(workitem.getTaskID());
+		startProcessEntity = modelService.getModelByWorkitem(workitem).getTask(workitem.getTaskID());
 
 		// ProcessEntity found?
 		if (startProcessEntity == null)
 			throw new InvalidAccessException(ModelException.INVALID_MODEL_ENTRY,
-					"unable to find ProcessEntity in model version "
-							+ workitem.getModelVersion() + " for ID="
+					"unable to find ProcessEntity in model version " + workitem.getModelVersion() + " for ID="
 							+ workitem.getTaskID());
 
 		// update $WriteAccess
 		workitem.replaceItemValue("$writeaccess", workitem.getItemValue("$creator"));
-		
 
 		// assign WorkflowGroup and editor
 		workitem.replaceItemValue("$workflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
@@ -161,7 +196,7 @@ public class WorkflowController extends DocumentController {
 	 * @throws PluginException
 	 * @throws ModelException
 	 */
-	public String process(ItemCollection workitem) throws PluginException, ModelException {
+	public String process() throws PluginException, ModelException {
 		if (workitem == null) {
 			logger.warning("Unable to process workitem == null!");
 			return null;
@@ -170,16 +205,49 @@ public class WorkflowController extends DocumentController {
 		// clear last action
 		workitem.replaceItemValue("action", "");
 
+		long l1 = System.currentTimeMillis();
+		events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_BEFORE_PROCESS));
+		logger.finest(
+				"......fire WORKITEM_BEFORE_PROCESS event: ' in " + (System.currentTimeMillis() - l1) + "ms");
+
 		// process workItem now...
-		workitem = this.getWorkflowService().processWorkItem(workitem);
+		workitem = workflowService.processWorkItem(workitem);
+		
+		// fire event
+					long l2 = System.currentTimeMillis();
+					events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_AFTER_PROCESS));
+					logger.finest(
+							"[process] fire WORKITEM_AFTER_PROCESS event: ' in " + (System.currentTimeMillis() - l2) + "ms");
+
 
 		// test if the property 'action' is provided
 		String action = workitem.getItemValueString("action");
 		
+		// close conversation
+		if (!conversation.isTransient()) {
+			logger.fine("close conversation, id=" + conversation.getId());
+			conversation.end();
+		}
+
 		return ("".equals(action) ? null : action);
 	}
 
 
+	/**
+	 * This method processes the current workItem with the provided eventID. The
+	 * method can be used as an action or actionListener.
+	 * 
+	 * @param id - activityID to be processed
+	 * @throws PluginException
+	 * 
+	 * @see process()
+	 * @see process(id,resetWorkitem)
+	 */
+	public String process(int id) throws ModelException, PluginException {
+		// update the eventID
+		this.getWorkitem().setEventID(id);
+		return process();
+	}
 
 	/**
 	 * This method returns a List of workflow events assigned to the corresponding
@@ -187,22 +255,59 @@ public class WorkflowController extends DocumentController {
 	 * 
 	 * @return
 	 */
-	public List<ItemCollection> getEvents(ItemCollection workitem) {
+	public List<ItemCollection> getEvents() {
 		List<ItemCollection> activityList = new ArrayList<ItemCollection>();
 
-		if (workitem == null || (workitem.getModelVersion().isEmpty()
-				&& workitem.getItemValueString(WorkflowKernel.WORKFLOWGROUP).isEmpty())) {
+		if (getWorkitem() == null || (getWorkitem().getModelVersion().isEmpty()
+				&& getWorkitem().getItemValueString(WorkflowKernel.WORKFLOWGROUP).isEmpty())) {
 			return activityList;
 		}
 
 		// get Events form workflowService
 		try {
-			activityList = this.getWorkflowService().getEvents(workitem);
+			activityList = workflowService.getEvents(getWorkitem());
 		} catch (ModelException e) {
 			logger.warning("Unable to get workflow event list: " + e.getMessage());
 		}
 
 		return activityList;
+	}
+
+	/**
+	 * Starts a new conversation
+	 */
+	@PostConstruct
+	private void init() {
+		loadWorkitem();
+		if (conversation.isTransient()) {
+			conversation.setTimeout(((HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext()
+					.getRequest()).getSession().getMaxInactiveInterval()*1000);
+			conversation.begin();
+			logger.finest("......start new conversation, id=" + conversation.getId());
+		}
+	}
+
+	/**
+	 * Loads a workitem based on the query params 'id' or 'workitem'
+	 */
+	private void loadWorkitem() {
+		FacesContext fc = FacesContext.getCurrentInstance();
+		Map<String, String> paramMap = fc.getExternalContext().getRequestParameterMap();
+		// try to extract tjhe uniqueid form the query string...
+	
+		String uniqueid = paramMap.get("id");
+		if (uniqueid == null || uniqueid.isEmpty()) {
+			// alternative 'workitem=...'
+			uniqueid = paramMap.get("workitem");
+		}
+	
+		workitem = workflowService.getWorkItem(uniqueid);
+		if (workitem == null) {
+			reset();
+		} 
+		
+		events.fire(new WorkflowEvent(workitem, WorkflowEvent.WORKITEM_CHANGED));
+	
 	}
 
 }

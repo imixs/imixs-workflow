@@ -102,7 +102,7 @@ public class FileUploadController implements Serializable {
 	 * to the workitem but also updates the list of temporary files, which are not
 	 * yet persisted.
 	 * 
-	 * @param workitem
+	 * @param document
 	 * @param aFilename
 	 */
 	public void addAttachedFile(FileData filedata) {
