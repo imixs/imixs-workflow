@@ -29,20 +29,23 @@ public class DataControllerTest {
 		ItemCollection workitem = new ItemCollection();
 		// test is new
 		
-		Assert.assertTrue(dataController.isNewWorkitem(workitem));
+		dataController.setDocument(workitem);
+		Assert.assertTrue(dataController.isNewWorkitem());
 
 		
 		Date someDate=new Date();
 		workitem.replaceItemValue("$Modified", someDate);
 		workitem.replaceItemValue("$Created", someDate);
-		Assert.assertFalse(dataController.isNewWorkitem(workitem));
+		dataController.setDocument(workitem);
+		Assert.assertFalse(dataController.isNewWorkitem());
 
 		someDate=new Date();
 		Calendar cal=Calendar.getInstance();
 		cal.setTime(someDate);
 		cal.add(Calendar.SECOND,+1);
 		workitem.replaceItemValue("$Modified", cal.getTime());
-		Assert.assertFalse(dataController.isNewWorkitem(workitem));
+		dataController.setDocument(workitem);
+		Assert.assertFalse(dataController.isNewWorkitem());
 
 	
 	}
