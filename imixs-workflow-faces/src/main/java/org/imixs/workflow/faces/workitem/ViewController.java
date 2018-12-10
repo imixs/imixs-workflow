@@ -28,6 +28,8 @@
 package org.imixs.workflow.faces.workitem;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -39,7 +41,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
+import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.exceptions.QueryException;
 
 /**
  * The ViewController can be used in JSF Applications to select a data result to
@@ -109,13 +113,13 @@ public class ViewController implements Serializable {
 	@PostConstruct
 	public void init() {
 		if (conversation.isTransient()) {
-			conversation.setTimeout(((HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext()
-					.getRequest()).getSession().getMaxInactiveInterval()*1000);
+			conversation.setTimeout(
+					((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
+							.getSession().getMaxInactiveInterval() * 1000);
 			conversation.begin();
 			logger.finest("......start new conversation, id=" + conversation.getId());
 		}
 	}
-
 
 	/**
 	 * Returns the search Query
@@ -170,7 +174,6 @@ public class ViewController implements Serializable {
 		this.pageSize = pageSize;
 	}
 
-	
 	/**
 	 * resets the current page index to 0.
 	 * 
@@ -222,6 +225,55 @@ public class ViewController implements Serializable {
 	public String getType() {
 		logger.warning("attribute type is deprecated");
 		return null;
+	}
+
+	/**
+	 * Returns the view result which is computed after the view was initialized.
+	 * <p>
+	 * This method is deprecated in org.imixs.workflow.faces.workitem.ViewController
+	 * - use instead a org.imixs.workflow.faces.workitem.ViewHandler
+	 * 
+	 * @return view result
+	 * @throws QueryException
+	 */
+	@Deprecated
+	public List<ItemCollection> getWorkitems() {
+		logger.warning(
+				"getWorkitems is deprecated in org.imixs.workflow.faces.workitem.ViewController - use instead a org.imixs.workflow.faces.workitem.ViewHandler");
+		List<ItemCollection> data;
+		if (query == null || query.isEmpty()) {
+			// no query defined - return empty list
+			return new ArrayList<ItemCollection>();
+		}
+
+		// load data
+		try {
+			data = documentService.find(query, getPageSize(), getPageIndex(), getSortBy(), isSortReverse());
+		} catch (QueryException e) {
+			logger.warning("Unable to load view data: " + e.getMessage());
+			data = new ArrayList<ItemCollection>();
+		}
+
+		// The end of a list is reached when the size is below or equal the
+		// pageSize. See issue #287
+		if (data.size() < getPageSize()) {
+			setEndOfList(true);
+		} else {
+			// look ahead if we have more entries...
+			int iAhead = (getPageSize() * (getPageIndex() + 1)) + 1;
+			try {
+				if (documentService.count(getQuery(), iAhead) < iAhead) {
+					// there is no more data
+					setEndOfList(true);
+				} else {
+					setEndOfList(false);
+				}
+			} catch (QueryException e) {
+				logger.warning("Unable to compute count of data: " + e.getMessage());
+			}
+		}
+
+		return data;
 	}
 
 }
