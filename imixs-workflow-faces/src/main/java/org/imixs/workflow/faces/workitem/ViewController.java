@@ -111,7 +111,7 @@ public class ViewController implements Serializable {
 	 * faces-config.xml
 	 */
 	@PostConstruct
-	public void init() {
+	protected void init() {
 		if (conversation.isTransient()) {
 			conversation.setTimeout(
 					((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())

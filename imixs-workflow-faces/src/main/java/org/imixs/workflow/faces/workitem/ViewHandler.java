@@ -44,8 +44,20 @@ import org.imixs.workflow.exceptions.QueryException;
  * The ViewHandler is a RequestScoped CDI bean to display a data result within a
  * JSF page. The result is controlled by the ViewController which defines the
  * query and the paging mechanism to navigate through a view of data result.
+ * <p>
+ * To load the data the public method loadData() can be called which expects a
+ * ViewController. This can be placed in the f:metadata tag of a JSF page:
+ * 
+ * <pre>{@code
+  	<f:metadata>
+       <f:viewAction action="#{viewController.setQuery(..." />
+       <f:viewAction action="#{viewHandler.loadData(viewController)... />
+ </f:metadata>
+  }</pre>
+
  * 
  * @author rsoika
+ * 
  * @version 0.0.1
  */
 @Named
@@ -71,17 +83,15 @@ public class ViewHandler implements Serializable {
 	 * @return view result
 	 * @throws QueryException
 	 */
-	public List<ItemCollection> getResult(ViewController viewController) {
-		if (data == null) {
-			loadData(viewController);
-		}
-		return data;
-	}
+	/*
+	 * public List<ItemCollection> getResult(ViewController viewController) { if
+	 * (data == null) { loadData(viewController); } return data; }
+	 */
 
 	/**
 	 * This method computes the view result
 	 */
-	private void loadData(ViewController viewController) {
+	public void loadData(ViewController viewController) {
 		String _query = viewController.getQuery();
 		logger.info("..... loading view data: " + _query);
 		if (_query == null || _query.isEmpty()) {
@@ -117,5 +127,12 @@ public class ViewHandler implements Serializable {
 			}
 		}
 
+	}
+
+	public List<ItemCollection> getData() {
+		if (data == null) {
+			data = new ArrayList<ItemCollection>();
+		}
+		return data;
 	}
 }

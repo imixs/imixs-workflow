@@ -277,7 +277,7 @@ public class WorkflowController implements Serializable {
 	 * Starts a new conversation
 	 */
 	@PostConstruct
-	private void init() {
+	protected void init() {
 		loadWorkitem();
 		if (conversation.isTransient()) {
 			conversation.setTimeout(((HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext()
@@ -290,7 +290,7 @@ public class WorkflowController implements Serializable {
 	/**
 	 * Loads a workitem based on the query params 'id' or 'workitem'
 	 */
-	private void loadWorkitem() {
+	protected void loadWorkitem() {
 		FacesContext fc = FacesContext.getCurrentInstance();
 		Map<String, String> paramMap = fc.getExternalContext().getRequestParameterMap();
 		// try to extract tjhe uniqueid form the query string...
