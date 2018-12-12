@@ -30,20 +30,15 @@ package org.imixs.workflow.faces.workitem;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.enterprise.context.Conversation;
 import javax.enterprise.context.ConversationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.ObserverException;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -59,9 +54,9 @@ import org.imixs.workflow.faces.util.ValidationException;
 /**
  * 
  * The WorkflowController is a @ConversationScoped CDI bean to control the
- * processing life cycle of a workitem in JSF an application. The bean can be used
- * in single page applications, as well for complex page flows. The controller
- * is easy to use and supports bookmarkable URLs.
+ * processing life cycle of a workitem in JSF an application. The bean can be
+ * used in single page applications, as well for complex page flows. The
+ * controller is easy to use and supports bookmarkable URLs.
  * <p>
  * The WorkflowController fires CDI events from the type WorkflowEvent. A CDI
  * bean can observe these events to participate in the processing life cycle.
@@ -111,12 +106,10 @@ import org.imixs.workflow.faces.util.ValidationException;
  */
 @Named
 @ConversationScoped
-public class WorkflowController implements Serializable {
+public class WorkflowController extends AbstractDataController implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static Logger logger = Logger.getLogger(WorkflowController.class.getName());
-
-	ItemCollection workitem = null;
 
 	@EJB
 	ModelService modelService;
@@ -128,18 +121,14 @@ public class WorkflowController implements Serializable {
 	Event<WorkflowEvent> events;
 
 	@Inject
-	Conversation conversation;
-
-	@Inject
 	LoginController loginController;
-
-	String defaultActionResult;
 
 	public static final String DEFAULT_TYPE = "workitem";
 
 	public WorkflowController() {
 		super();
 		logger.info("...constructor..");
+		setDefaultType("workitem");
 	}
 
 	/**
@@ -150,11 +139,10 @@ public class WorkflowController implements Serializable {
 	 */
 	public ItemCollection getWorkitem() {
 		// do initialize an empty workItem here if null
-		if (workitem == null) {
-			workitem = new ItemCollection();
-			workitem.replaceItemValue("type", DEFAULT_TYPE);
+		if (data == null) {
+			reset();
 		}
-		return workitem;
+		return data;
 	}
 
 	/**
@@ -163,7 +151,7 @@ public class WorkflowController implements Serializable {
 	 * @param workitem - new reference or null to clear the current workItem.
 	 */
 	public void setWorkitem(ItemCollection workitem) {
-		this.workitem = workitem;
+		this.data = workitem;
 	}
 
 	/**
@@ -179,12 +167,12 @@ public class WorkflowController implements Serializable {
 	 */
 	public void create() throws ModelException {
 
-		if (workitem == null) {
+		if (data == null) {
 			return;
 		}
 		ItemCollection startProcessEntity = null;
 		// if no process id was set fetch the first start workitem
-		if (workitem.getTaskID() <= 0) {
+		if (data.getTaskID() <= 0) {
 			// get ProcessEntities by version
 			List<ItemCollection> col;
 			col = modelService.getModelByWorkitem(getWorkitem()).findAllTasks();
@@ -195,26 +183,26 @@ public class WorkflowController implements Serializable {
 		}
 
 		// find the ProcessEntity
-		startProcessEntity = modelService.getModelByWorkitem(workitem).getTask(workitem.getTaskID());
+		startProcessEntity = modelService.getModelByWorkitem(data).getTask(data.getTaskID());
 
 		// ProcessEntity found?
 		if (startProcessEntity == null)
 			throw new InvalidAccessException(ModelException.INVALID_MODEL_ENTRY,
-					"unable to find ProcessEntity in model version " + workitem.getModelVersion() + " for ID="
-							+ workitem.getTaskID());
+					"unable to find ProcessEntity in model version " + data.getModelVersion() + " for ID="
+							+ data.getTaskID());
 
 		// update $WriteAccess
-		workitem.replaceItemValue("$writeaccess", workitem.getItemValue("$creator"));
+		data.replaceItemValue("$writeaccess", data.getItemValue("$creator"));
 
 		// assign WorkflowGroup and editor
-		workitem.replaceItemValue("$workflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
-		workitem.replaceItemValue("$workflowStatus", startProcessEntity.getItemValueString("txtname"));
-		workitem.replaceItemValue("txtWorkflowImageURL", startProcessEntity.getItemValueString("txtimageurl"));
-		workitem.replaceItemValue("txtWorkflowEditorid", startProcessEntity.getItemValueString("txteditorid"));
+		data.replaceItemValue("$workflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
+		data.replaceItemValue("$workflowStatus", startProcessEntity.getItemValueString("txtname"));
+		data.replaceItemValue("txtWorkflowImageURL", startProcessEntity.getItemValueString("txtimageurl"));
+		data.replaceItemValue("txtWorkflowEditorid", startProcessEntity.getItemValueString("txteditorid"));
 
 		// deprecated field
-		workitem.replaceItemValue("txtworkflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
-		workitem.replaceItemValue("txtworkflowStatus", startProcessEntity.getItemValueString("txtname"));
+		data.replaceItemValue("txtworkflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
+		data.replaceItemValue("txtworkflowStatus", startProcessEntity.getItemValueString("txtname"));
 
 		// fire event
 		events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_CREATED));
@@ -280,13 +268,13 @@ public class WorkflowController implements Serializable {
 		String actionResult = null;
 		long lTotal = System.currentTimeMillis();
 
-		if (workitem == null) {
+		if (data == null) {
 			logger.warning("Unable to process workitem == null!");
 			return actionResult;
 		}
 
 		// clear last action
-		workitem.replaceItemValue("action", "");
+		data.replaceItemValue("action", "");
 
 		try {
 			long l1 = System.currentTimeMillis();
@@ -294,7 +282,7 @@ public class WorkflowController implements Serializable {
 			logger.finest("......fire WORKITEM_BEFORE_PROCESS event: ' in " + (System.currentTimeMillis() - l1) + "ms");
 
 			// process workItem now...
-			workitem = workflowService.processWorkItem(workitem);
+			data = workflowService.processWorkItem(data);
 
 			// fire event
 			long l2 = System.currentTimeMillis();
@@ -303,7 +291,7 @@ public class WorkflowController implements Serializable {
 					"[process] fire WORKITEM_AFTER_PROCESS event: ' in " + (System.currentTimeMillis() - l2) + "ms");
 
 			// test if the property 'action' is provided
-			actionResult = workitem.getItemValueString("action");
+			actionResult = data.getItemValueString("action");
 
 			// compute the Action result...
 			if ((actionResult == null || actionResult.isEmpty()) && !getDefaultActionResult().isEmpty()) {
@@ -372,10 +360,10 @@ public class WorkflowController implements Serializable {
 	 */
 	public String process(int id) throws ModelException, PluginException {
 		// update the eventID
-		if (workitem == null) {
+		if (data == null) {
 			logger.info("...process workitem is null");
 		} else {
-			logger.info("...process workitem id: " + workitem.getUniqueID());
+			logger.info("...process workitem id: " + data.getUniqueID());
 		}
 		this.getWorkitem().setEventID(id);
 		return process();
@@ -406,45 +394,6 @@ public class WorkflowController implements Serializable {
 	}
 
 	/**
-	 * Loads a workitem based on the query params 'id' or 'workitem' Starts a new
-	 * conversation
-	 */
-	@PostConstruct
-	protected void init() {
-		logger.info(".....init sinnlos..");
-
-	}
-
-	/**
-	 * This method extracts a $uniqueid from the query param 'id' and loads the
-	 * workitem. After the workitm was loaded, a new conversation is started.
-	 * <p>
-	 * The method is not running during a JSF Postback of in case of a JSF
-	 * validation error.
-	 */
-	// https://stackoverflow.com/questions/6377798/what-can-fmetadata-fviewparam-and-fviewaction-be-used-for
-	public void onLoad() {
-		logger.info("...onload...");
-		FacesContext facesContext = FacesContext.getCurrentInstance();
-		if (!facesContext.isPostback() && !facesContext.isValidationFailed()) {
-			// ...
-			FacesContext fc = FacesContext.getCurrentInstance();
-			Map<String, String> paramMap = fc.getExternalContext().getRequestParameterMap();
-			// try to extract tjhe uniqueid form the query string...
-
-			String uniqueid = paramMap.get("id");
-			if (uniqueid == null || uniqueid.isEmpty()) {
-				// alternative 'workitem=...'
-				uniqueid = paramMap.get("workitem");
-			}
-
-			setDefaultActionResult(facesContext.getViewRoot().getViewId());
-
-			load(uniqueid);
-		}
-	}
-
-	/**
 	 * Loads a workitem by a given $uniqueid and starts a new conversaton. The
 	 * conversaion will be ended after the workitem was processed or after the
 	 * MaxInactiveInterval from the session.
@@ -452,50 +401,12 @@ public class WorkflowController implements Serializable {
 	 * @param uniqueid
 	 */
 	public void load(String uniqueid) {
-		if (uniqueid != null && !uniqueid.isEmpty()) {
-			logger.info("...load uniqueid=" + uniqueid);
-			workitem = workflowService.getWorkItem(uniqueid);
-			if (workitem == null) {
-				workitem = new ItemCollection();
-			}
-			startConversation();
+		super.load(uniqueid);
+		if (data != null) {
 			// fire event
-			events.fire(new WorkflowEvent(workitem, WorkflowEvent.WORKITEM_CHANGED));
+			events.fire(new WorkflowEvent(data, WorkflowEvent.WORKITEM_CHANGED));
 		}
-	}
 
-	public String getDefaultActionResult() {
-		if (defaultActionResult == null) {
-			defaultActionResult = "";
-		}
-		return defaultActionResult;
-	}
-
-	public void setDefaultActionResult(String defaultActionResult) {
-		this.defaultActionResult = defaultActionResult;
-	}
-
-	/**
-	 * Starts a new conversation
-	 */
-	public void startConversation() {
-		if (conversation.isTransient()) {
-			conversation.setTimeout(
-					((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
-							.getSession().getMaxInactiveInterval() * 1000);
-			conversation.begin();
-			logger.info("......start new conversation, id=" + conversation.getId());
-		}
-	}
-
-	/**
-	 * Stops the current conversation
-	 */
-	public void stopConversation() {
-		if (!conversation.isTransient()) {
-			logger.info("......stopping conversation, id=" + conversation.getId());
-			conversation.end();
-		}
 	}
 
 }
