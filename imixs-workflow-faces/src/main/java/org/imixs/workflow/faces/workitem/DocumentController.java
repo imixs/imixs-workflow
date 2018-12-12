@@ -181,7 +181,7 @@ public class DocumentController extends AbstractDataController implements Serial
 		events.fire(new WorkflowEvent(data, WorkflowEvent.DOCUMENT_AFTER_SAVE));
 
 		// close conversation
-		stopConversation();
+		close();
 
 		logger.finest("......ItemCollection saved");
 	}

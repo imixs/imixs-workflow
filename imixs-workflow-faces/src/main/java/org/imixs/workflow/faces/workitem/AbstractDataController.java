@@ -82,7 +82,6 @@ public abstract class AbstractDataController implements Serializable {
 
 	private String defaultType;
 
-	
 	@Inject
 	Conversation conversation;
 
@@ -93,7 +92,6 @@ public abstract class AbstractDataController implements Serializable {
 
 	String defaultActionResult;
 
-	
 	/**
 	 * This method returns the Default 'type' attribute of the local workitem.
 	 */
@@ -112,7 +110,6 @@ public abstract class AbstractDataController implements Serializable {
 		this.defaultType = type;
 	}
 
-	
 	/**
 	 * Reset current document
 	 */
@@ -222,25 +219,27 @@ public abstract class AbstractDataController implements Serializable {
 	}
 
 	/**
+	 * Closes the current conversation and reset the data item. A conversation is
+	 * automatically started by the methods load() and onLoad(). You can call the
+	 * close() method in a actionListener on any JSF navigation action.
+	 */
+	public void close() {
+		if (!conversation.isTransient()) {
+			logger.info("......stopping conversation, id=" + conversation.getId());
+			conversation.end();
+		}
+	}
+
+	/**
 	 * Starts a new conversation
 	 */
-	public void startConversation() {
+	protected void startConversation() {
 		if (conversation.isTransient()) {
 			conversation.setTimeout(
 					((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
 							.getSession().getMaxInactiveInterval() * 1000);
 			conversation.begin();
 			logger.info("......start new conversation, id=" + conversation.getId());
-		}
-	}
-
-	/**
-	 * Stops the current conversation
-	 */
-	public void stopConversation() {
-		if (!conversation.isTransient()) {
-			logger.info("......stopping conversation, id=" + conversation.getId());
-			conversation.end();
 		}
 	}
 

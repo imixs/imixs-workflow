@@ -94,6 +94,8 @@ import org.imixs.workflow.faces.util.ValidationException;
  * automaticall redirects the user to the new form outcome. This guarantees
  * bookmakrable URLs.
  * <p>
+ * Call the close() method when the workitem data is no longer needed.
+ * <p>
  * Within a JSF form, the items of a workitem can be accessed by the getter
  * method getWorkitem().
  * 
@@ -319,7 +321,7 @@ public class WorkflowController extends AbstractDataController implements Serial
 
 			// stop current conversation - in case of an exception, the conversation will
 			// not be closed.
-			stopConversation();
+			close();
 
 		} catch (ObserverException oe) {
 			actionResult = null;
