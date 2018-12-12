@@ -47,7 +47,7 @@ import org.imixs.workflow.engine.DocumentService;
  * @author rsoika
  * 
  */
-@Named("loginController")
+@Named
 @RequestScoped
 public class LoginController {
 

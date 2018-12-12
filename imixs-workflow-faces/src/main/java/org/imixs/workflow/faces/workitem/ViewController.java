@@ -179,16 +179,16 @@ public class ViewController implements Serializable {
 	 * 
 	 * @return
 	 */
-	public void doReset() {
+	public void reset() {
 		pageIndex = 0;
 	}
 
-	public void doLoadNext() {
+	public void next() {
 		pageIndex++;
 
 	}
 
-	public void doLoadPrev() {
+	public void back() {
 		pageIndex--;
 		if (pageIndex < 0) {
 			pageIndex = 0;

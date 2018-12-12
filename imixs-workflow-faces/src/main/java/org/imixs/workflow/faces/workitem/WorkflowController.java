@@ -31,6 +31,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -38,6 +39,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.Conversation;
 import javax.enterprise.context.ConversationScoped;
 import javax.enterprise.event.Event;
+import javax.enterprise.event.ObserverException;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -47,24 +49,62 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.ModelService;
 import org.imixs.workflow.engine.WorkflowService;
-import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.faces.util.ErrorHandler;
+import org.imixs.workflow.faces.util.LoginController;
+import org.imixs.workflow.faces.util.ValidationException;
 
 /**
- * The WorkflowController is a conversation scoped CDI bean and can be used in
- * JSF Applications to manage workflow processing on any workitem.
+ * 
+ * The WorkflowController is a @ConversationScoped CDI bean to control the
+ * processing life cycle of a workitem in JSF an application. The bean can be used
+ * in single page applications, as well for complex page flows. The controller
+ * is easy to use and supports bookmarkable URLs.
  * <p>
- * The behavior of the bean can be controlled by reacting on the CDI event
- * WorkflowEvent.
+ * The WorkflowController fires CDI events from the type WorkflowEvent. A CDI
+ * bean can observe these events to participate in the processing life cycle.
  * <p>
- * To load a workitem the query param 'id' with the $uniqueid of an existing
- * workitem can be used.
- * <p>
+ * To load a workitem the methods load(id) and onLoad() can be used. The method
+ * load expects the uniqueId of a workItem to be loaded. The onLoad() method
+ * extracts the uniqueid from the query parameter 'id'. This is the recommended
+ * way to support bookmarkable URLs. To load a workitem the onLoad method can be
+ * triggered by an jsf viewAction placed in the header of a JSF page:
+ * 
+ * <pre>
  * {@code
- *   /...?id=[UNIQUEID]
- * }
+    <f:metadata>
+      <f:viewAction action="... workflowController.onLoad()" />
+    </f:metadata> }
+ * </pre>
+ * <p>
+ * A bookmarkable URL looks like this:
+ * <p>
+ * {@code /myForm.xthml?id=[UNIQUEID] }
+ * <p>
+ * In combination with the viewAction the WorkflowController is automatically
+ * initialized.
+ * <p>
+ * After a workitem is loaded, a new conversation is started and the CDI event
+ * WorkflowEvent.WORKITEM_CHANGED is fired.
+ * <p>
+ * After a workitem was processed, the conversation is automatically closed.
+ * Stale conversations will automatically timeout with the default session
+ * timeout.
+ * <p>
+ * After each call of the method process the Post-Redirect-Get is initialized
+ * with the default URL from the start of the conversation. If an alternative
+ * action result is provided by the workflow engine, the WorkflowController
+ * automaticall redirects the user to the new form outcome. This guarantees
+ * bookmakrable URLs.
+ * <p>
+ * Within a JSF form, the items of a workitem can be accessed by the getter
+ * method getWorkitem().
+ * 
+ * <pre>
+ *   #{workflowController.workitem.item['$workflowstatus']}
+ * </pre>
  * 
  * @author rsoika
  * @version 2.0.0
@@ -76,15 +116,7 @@ public class WorkflowController implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static Logger logger = Logger.getLogger(WorkflowController.class.getName());
 
-
-	@Inject
-	protected Event<WorkflowEvent> events;
-
-	
 	ItemCollection workitem = null;
-
-	@Inject
-	Conversation conversation;
 
 	@EJB
 	ModelService modelService;
@@ -92,15 +124,22 @@ public class WorkflowController implements Serializable {
 	@EJB
 	WorkflowService workflowService;
 
+	@Inject
+	Event<WorkflowEvent> events;
+
+	@Inject
+	Conversation conversation;
+
+	@Inject
+	LoginController loginController;
+
+	String defaultActionResult;
+
 	public static final String DEFAULT_TYPE = "workitem";
 
 	public WorkflowController() {
 		super();
-	}
-
-	public void reset() {
-		workitem = new ItemCollection();
-		workitem.replaceItemValue("type", DEFAULT_TYPE);
+		logger.info("...constructor..");
 	}
 
 	/**
@@ -138,13 +177,13 @@ public class WorkflowController implements Serializable {
 	 * @throws ModelException is thrown in case not valid worklfow task if defined
 	 *                        by the current model.
 	 */
-	public String init(String action) throws ModelException {
+	public void create() throws ModelException {
 
 		if (workitem == null) {
-			return action;
+			return;
 		}
 		ItemCollection startProcessEntity = null;
-		// if not process id was set fetch the first start workitem
+		// if no process id was set fetch the first start workitem
 		if (workitem.getTaskID() <= 0) {
 			// get ProcessEntities by version
 			List<ItemCollection> col;
@@ -176,62 +215,151 @@ public class WorkflowController implements Serializable {
 		// deprecated field
 		workitem.replaceItemValue("txtworkflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
 		workitem.replaceItemValue("txtworkflowStatus", startProcessEntity.getItemValueString("txtname"));
-		return action;
+
+		// fire event
+		events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_CREATED));
 	}
 
 	/**
-	 * This method processes the current workItem and returns an action result. The
-	 * method expects that the current workItem provides a valid $ActiviytID.
+	 * This method creates a new empty workitem. An existing workitem and optional
+	 * conversation context will be reset.
 	 * 
-	 * The method returns the value of the property 'action' if provided by the
-	 * workflow model or a plug-in. The 'action' property is typically evaluated
-	 * from the ResultPlugin. Alternatively the property can be provided by an
-	 * application. If no 'action' property is provided the method returns null.
+	 * The method assigns the initial values '$ModelVersion', '$ProcessID' and
+	 * '$UniqueIDRef' to the new workitem. The method creates the empty field
+	 * '$workitemID' and the field 'namowner' which is assigned to the current user.
+	 * This data can be used in case that a workitem is not processed but saved
+	 * (e.g. by the dmsController).
 	 * 
+	 * The method starts a new conversation context. Finally the method fires the
+	 * WorkfowEvent WORKITEM_CREATED.
+	 * 
+	 * @param modelVersion - model version
+	 * @param processID    - processID
+	 * @param processRef   - uniqueid ref
+	 */
+
+	public void create(String modelVersion, int taskID, String uniqueIdRef) throws ModelException {
+		// set model information..
+		getWorkitem().model(modelVersion).task(taskID);
+
+		// set default owner
+		getWorkitem().replaceItemValue("namowner", loginController.getUserPrincipal());
+
+		// set empty $workitemid
+		getWorkitem().replaceItemValue("$workitemid", "");
+
+		this.create();
+	}
+
+	/**
+	 * This method processes the current workItem and returns a new action result.
+	 * The action result redirects the user to the default action result or to a new
+	 * result provided by the workflow model. The 'action' property is typically
+	 * evaluated from the ResultPlugin. Alternatively the property can be provided
+	 * by an application. If no 'action' property is provided the method returns
+	 * null.
+	 * <p>
+	 * The method fires the WorkflowEvents WORKITEM_BEFORE_PROCESS and
+	 * WORKITEM_AFTER_PROCESS.
+	 * <p>
+	 * The Method also catches PluginExceptions and adds the corresponding Faces
+	 * Error Message into the FacesContext. In case of an exception the
+	 * WorkflowEvent WORKITEM_AFTER_PROCESS will not be fired.
+	 * <p>
+	 * In case the processing was successful, the current conversation will be
+	 * closed. In Case of an Exception (e.g PluginException) the conversation will
+	 * not be closed, so that the current workitem data is still available.
 	 * 
 	 * @return the action result provided in the 'action' property or evaluated from
 	 *         the default property 'txtworkflowResultmessage' from the
 	 *         ActivityEntity
-	 * @throws AccessDeniedException
 	 * @throws PluginException
 	 * @throws ModelException
 	 */
 	public String process() throws PluginException, ModelException {
+		String actionResult = null;
+		long lTotal = System.currentTimeMillis();
+
 		if (workitem == null) {
 			logger.warning("Unable to process workitem == null!");
-			return null;
+			return actionResult;
 		}
 
 		// clear last action
 		workitem.replaceItemValue("action", "");
 
-		long l1 = System.currentTimeMillis();
-		events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_BEFORE_PROCESS));
-		logger.finest(
-				"......fire WORKITEM_BEFORE_PROCESS event: ' in " + (System.currentTimeMillis() - l1) + "ms");
+		try {
+			long l1 = System.currentTimeMillis();
+			events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_BEFORE_PROCESS));
+			logger.finest("......fire WORKITEM_BEFORE_PROCESS event: ' in " + (System.currentTimeMillis() - l1) + "ms");
 
-		// process workItem now...
-		workitem = workflowService.processWorkItem(workitem);
-		
-		// fire event
-					long l2 = System.currentTimeMillis();
-					events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_AFTER_PROCESS));
-					logger.finest(
-							"[process] fire WORKITEM_AFTER_PROCESS event: ' in " + (System.currentTimeMillis() - l2) + "ms");
+			// process workItem now...
+			workitem = workflowService.processWorkItem(workitem);
 
+			// fire event
+			long l2 = System.currentTimeMillis();
+			events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_AFTER_PROCESS));
+			logger.finest(
+					"[process] fire WORKITEM_AFTER_PROCESS event: ' in " + (System.currentTimeMillis() - l2) + "ms");
 
-		// test if the property 'action' is provided
-		String action = workitem.getItemValueString("action");
-		
-		// close conversation
-		if (!conversation.isTransient()) {
-			logger.fine("close conversation, id=" + conversation.getId());
-			conversation.end();
+			// test if the property 'action' is provided
+			actionResult = workitem.getItemValueString("action");
+
+			// compute the Action result...
+			if ((actionResult == null || actionResult.isEmpty()) && !getDefaultActionResult().isEmpty()) {
+				// construct default action result if no actionResult was
+				// defined
+				actionResult = getDefaultActionResult() + "?id=" + getWorkitem().getUniqueID() + "&faces-redirect=true";
+			}
+
+			// test if 'faces-redirect' is included in actionResult
+			if (actionResult.contains("/") && !actionResult.contains("faces-redirect=")) {
+				// append faces-redirect=true
+				if (!actionResult.contains("?")) {
+					actionResult = actionResult + "?faces-redirect=true";
+				} else {
+					actionResult = actionResult + "&faces-redirect=true";
+				}
+			}
+
+			logger.fine("... new actionResult=" + actionResult);
+
+			if (logger.isLoggable(Level.FINEST)) {
+				logger.finest("[process] '" + getWorkitem().getItemValueString(WorkflowKernel.UNIQUEID)
+						+ "' completed in " + (System.currentTimeMillis() - lTotal) + "ms");
+			}
+
+			// stop current conversation - in case of an exception, the conversation will
+			// not be closed.
+			stopConversation();
+
+		} catch (ObserverException oe) {
+			actionResult = null;
+			// test if we can handle the exception...
+			if (oe.getCause() instanceof PluginException) {
+				// add error message into current form
+				ErrorHandler.addErrorMessage((PluginException) oe.getCause());
+			} else {
+				if (oe.getCause() instanceof ValidationException) {
+					// add error message into current form
+					ErrorHandler.addErrorMessage((ValidationException) oe.getCause());
+				} else {
+					// throw unknown exception
+					throw oe;
+				}
+			}
+		} catch (PluginException pe) {
+			actionResult = null;
+			// add a new FacesMessage into the FacesContext
+			ErrorHandler.handlePluginException(pe);
+		} catch (ModelException me) {
+			actionResult = null;
+			// add a new FacesMessage into the FacesContext
+			ErrorHandler.handleModelException(me);
 		}
 
-		return ("".equals(action) ? null : action);
+		return ("".equals(actionResult) ? null : actionResult);
 	}
-
 
 	/**
 	 * This method processes the current workItem with the provided eventID. The
@@ -240,11 +368,15 @@ public class WorkflowController implements Serializable {
 	 * @param id - activityID to be processed
 	 * @throws PluginException
 	 * 
-	 * @see process()
-	 * @see process(id,resetWorkitem)
+	 * @see WorkflowController#process()
 	 */
 	public String process(int id) throws ModelException, PluginException {
 		// update the eventID
+		if (workitem == null) {
+			logger.info("...process workitem is null");
+		} else {
+			logger.info("...process workitem id: " + workitem.getUniqueID());
+		}
 		this.getWorkitem().setEventID(id);
 		return process();
 	}
@@ -274,40 +406,96 @@ public class WorkflowController implements Serializable {
 	}
 
 	/**
-	 * Starts a new conversation
+	 * Loads a workitem based on the query params 'id' or 'workitem' Starts a new
+	 * conversation
 	 */
 	@PostConstruct
 	protected void init() {
-		loadWorkitem();
-		if (conversation.isTransient()) {
-			conversation.setTimeout(((HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext()
-					.getRequest()).getSession().getMaxInactiveInterval()*1000);
-			conversation.begin();
-			logger.finest("......start new conversation, id=" + conversation.getId());
+		logger.info(".....init sinnlos..");
+
+	}
+
+	/**
+	 * This method extracts a $uniqueid from the query param 'id' and loads the
+	 * workitem. After the workitm was loaded, a new conversation is started.
+	 * <p>
+	 * The method is not running during a JSF Postback of in case of a JSF
+	 * validation error.
+	 */
+	// https://stackoverflow.com/questions/6377798/what-can-fmetadata-fviewparam-and-fviewaction-be-used-for
+	public void onLoad() {
+		logger.info("...onload...");
+		FacesContext facesContext = FacesContext.getCurrentInstance();
+		if (!facesContext.isPostback() && !facesContext.isValidationFailed()) {
+			// ...
+			FacesContext fc = FacesContext.getCurrentInstance();
+			Map<String, String> paramMap = fc.getExternalContext().getRequestParameterMap();
+			// try to extract tjhe uniqueid form the query string...
+
+			String uniqueid = paramMap.get("id");
+			if (uniqueid == null || uniqueid.isEmpty()) {
+				// alternative 'workitem=...'
+				uniqueid = paramMap.get("workitem");
+			}
+
+			setDefaultActionResult(facesContext.getViewRoot().getViewId());
+
+			load(uniqueid);
 		}
 	}
 
 	/**
-	 * Loads a workitem based on the query params 'id' or 'workitem'
+	 * Loads a workitem by a given $uniqueid and starts a new conversaton. The
+	 * conversaion will be ended after the workitem was processed or after the
+	 * MaxInactiveInterval from the session.
+	 * 
+	 * @param uniqueid
 	 */
-	protected void loadWorkitem() {
-		FacesContext fc = FacesContext.getCurrentInstance();
-		Map<String, String> paramMap = fc.getExternalContext().getRequestParameterMap();
-		// try to extract tjhe uniqueid form the query string...
-	
-		String uniqueid = paramMap.get("id");
-		if (uniqueid == null || uniqueid.isEmpty()) {
-			// alternative 'workitem=...'
-			uniqueid = paramMap.get("workitem");
+	public void load(String uniqueid) {
+		if (uniqueid != null && !uniqueid.isEmpty()) {
+			logger.info("...load uniqueid=" + uniqueid);
+			workitem = workflowService.getWorkItem(uniqueid);
+			if (workitem == null) {
+				workitem = new ItemCollection();
+			}
+			startConversation();
+			// fire event
+			events.fire(new WorkflowEvent(workitem, WorkflowEvent.WORKITEM_CHANGED));
 		}
-	
-		workitem = workflowService.getWorkItem(uniqueid);
-		if (workitem == null) {
-			reset();
-		} 
-		
-		events.fire(new WorkflowEvent(workitem, WorkflowEvent.WORKITEM_CHANGED));
-	
+	}
+
+	public String getDefaultActionResult() {
+		if (defaultActionResult == null) {
+			defaultActionResult = "";
+		}
+		return defaultActionResult;
+	}
+
+	public void setDefaultActionResult(String defaultActionResult) {
+		this.defaultActionResult = defaultActionResult;
+	}
+
+	/**
+	 * Starts a new conversation
+	 */
+	public void startConversation() {
+		if (conversation.isTransient()) {
+			conversation.setTimeout(
+					((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
+							.getSession().getMaxInactiveInterval() * 1000);
+			conversation.begin();
+			logger.info("......start new conversation, id=" + conversation.getId());
+		}
+	}
+
+	/**
+	 * Stops the current conversation
+	 */
+	public void stopConversation() {
+		if (!conversation.isTransient()) {
+			logger.info("......stopping conversation, id=" + conversation.getId());
+			conversation.end();
+		}
 	}
 
 }

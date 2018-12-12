@@ -52,14 +52,58 @@ import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 
 /**
- * The DataController can be used in JSF Applications to manage ItemCollections
- * without any workflow functionality. This bean makes uses of the CRUD
- * operations provided by the Imixs DocumentService.
+ * The DocumentController is a @ConversationScoped CDI bean to control the life
+ * cycle of a ItemCollection in an JSF application without any workflow
+ * functionality. The bean can be used in single page applications, as well for
+ * complex page flows. The controller is easy to use and supports bookmarkable
+ * URLs.
+ * <p>
+ * The DocumentController fires CDI events from the type WorkflowEvent. A CDI
+ * bean can observe these events to participate in the processing life cycle.
+ * <p>
+ * To load a document the methods load(id) and onLoad() can be used. The method
+ * load expects the uniqueId of a document to be loaded. The onLoad() method
+ * extracts the uniqueid from the query parameter 'id'. This is the recommended
+ * way to support bookmarkable URLs. To load a document the onLoad method can be
+ * triggered by an jsf viewAction placed in the header of a JSF page:
  * 
+ * <pre>
+ * {@code
+    <f:metadata>
+      <f:viewAction action="... documentController.onLoad()" />
+    </f:metadata> }
+ * </pre>
+ * <p>
+ * A bookmarkable URL looks like this:
+ * <p>
+ * {@code /myForm.xthml?id=[UNIQUEID] }
+ * <p>
+ * In combination with the viewAction the DocumentController is automatically
+ * initialized.
+ * <p>
+ * After a document is loaded, a new conversation is started and the CDI event
+ * WorkflowEvent.DOCUMENT_CHANGED is fired.
+ * <p>
+ * After a document was saved, the conversation is automatically closed. Stale
+ * conversations will automatically timeout with the default session timeout.
+ * <p>
+ * After each call of the method save the Post-Redirect-Get is initialized with
+ * the default URL from the start of the conversation. This guarantees
+ * bookmakrable URLs.
+ * <p>
+ * Within a JSF form, the items of a document can be accessed by the getter
+ * method getDocument().
+ * 
+ * <pre>
+ *   #{documentController.document.item['$workflowstatus']}
+ * </pre>
+ * 
+ * <p>
  * The default type of a entity created with the DataController is 'workitem'.
  * This property can be changed from a client.
  * 
- * The DataController bean is typically used in session scope.
+ * 
+ * 
  * 
  * @author rsoika
  * @version 0.0.1
@@ -73,7 +117,7 @@ public class DocumentController implements Serializable {
 	private static Logger logger = Logger.getLogger(DocumentController.class.getName());
 
 	@Inject
-	protected Event<DocumentEvent> events;
+	protected Event<WorkflowEvent> events;
 
 	@Inject
 	Conversation conversation;
@@ -82,6 +126,8 @@ public class DocumentController implements Serializable {
 
 	@EJB
 	DocumentService documentService;
+
+	String defaultActionResult;
 
 	public DocumentController() {
 		super();
@@ -155,28 +201,28 @@ public class DocumentController implements Serializable {
 		String sUser = externalContext.getRemoteUser();
 		document.replaceItemValue("$Creator", sUser);
 		document.replaceItemValue("namCreator", sUser); // backward compatibility
-		events.fire(new DocumentEvent(document, DocumentEvent.DOCUMENT_CREATED));
+		events.fire(new WorkflowEvent(document, WorkflowEvent.DOCUMENT_CREATED));
 		logger.finest("......ItemCollection created");
 	}
 
 	/**
-	 * This method saves the current document. This method can be overwritten to add
-	 * additional Business logic.
+	 * This method saves the current document.
+	 * <p>
+	 * The method fires the WorkflowEvents WORKITEM_BEFORE_SAVE and
+	 * WORKITEM_AFTER_SAVE.
+	 * 
 	 * 
 	 * @throws AccessDeniedException - if user has insufficient access rights.
 	 */
 	public void save() throws AccessDeniedException {
-		// save workItem ...
-		events.fire(new DocumentEvent(getDocument(), DocumentEvent.DOCUMENT_BEFORE_SAVE));
 
+		// save workItem ...
+		events.fire(new WorkflowEvent(document, WorkflowEvent.DOCUMENT_BEFORE_SAVE));
 		document = getDocumentService().save(document);
-		events.fire(new DocumentEvent(getDocument(), DocumentEvent.DOCUMENT_AFTER_SAVE));
+		events.fire(new WorkflowEvent(document, WorkflowEvent.DOCUMENT_AFTER_SAVE));
 
 		// close conversation
-		if (!conversation.isTransient()) {
-			logger.fine("close conversation, id=" + conversation.getId());
-			conversation.end();
-		}
+		stopConversation();
 
 		logger.finest("......ItemCollection saved");
 	}
@@ -189,23 +235,6 @@ public class DocumentController implements Serializable {
 	}
 
 	/**
-	 * This method loads a document by id from the DocumentService.
-	 * 
-	 * @param uniqueID - $uniqueId of the document to be loaded
-	 */
-	public void load(String uniqueID) {
-
-		events.fire(new DocumentEvent(getDocument(), DocumentEvent.DOCUMENT_BEFORE_DELETE));
-		if (document != null) {
-			logger.finest("......workitem '" + uniqueID + "' loaded");
-		} else {
-			logger.finest("......workitem '" + uniqueID + "' not found (null)");
-		}
-		events.fire(new DocumentEvent(getDocument(), DocumentEvent.DOCUMENT_AFTER_DELETE));
-		events.fire(new DocumentEvent(document, DocumentEvent.DOCUMENT_CHANGED));
-	}
-
-	/**
 	 * This action method deletes a workitem. The Method also deletes also all child
 	 * workitems recursive
 	 * 
@@ -215,7 +244,9 @@ public class DocumentController implements Serializable {
 	public void delete(String uniqueID) throws AccessDeniedException {
 		ItemCollection _workitem = getDocumentService().load(uniqueID);
 		if (_workitem != null) {
+			events.fire(new WorkflowEvent(getDocument(), WorkflowEvent.DOCUMENT_BEFORE_DELETE));
 			documentService.remove(_workitem);
+			events.fire(new WorkflowEvent(getDocument(), WorkflowEvent.DOCUMENT_AFTER_DELETE));
 			setDocument(null);
 			logger.fine("workitem " + uniqueID + " deleted");
 		} else {
@@ -284,32 +315,91 @@ public class DocumentController implements Serializable {
 	 */
 	@PostConstruct
 	private void init() {
-		loadDocument();
+
+		logger.info("......sinnlos");
+	}
+
+	/**
+	 * This method extracts a $uniqueid from the query param 'id' and loads the
+	 * workitem. After the workitm was loaded, a new conversation is started.
+	 * <p>
+	 * The method is not running during a JSF Postback of in case of a JSF
+	 * validation error.
+	 */
+	// https://stackoverflow.com/questions/6377798/what-can-fmetadata-fviewparam-and-fviewaction-be-used-for
+	public void onLoad() {
+		logger.info("...onload...");
+		FacesContext facesContext = FacesContext.getCurrentInstance();
+		if (!facesContext.isPostback() && !facesContext.isValidationFailed()) {
+			// ...
+			FacesContext fc = FacesContext.getCurrentInstance();
+			Map<String, String> paramMap = fc.getExternalContext().getRequestParameterMap();
+			// try to extract tjhe uniqueid form the query string...
+
+			String uniqueid = paramMap.get("id");
+			if (uniqueid == null || uniqueid.isEmpty()) {
+				// alternative 'workitem=...'
+				uniqueid = paramMap.get("workitem");
+			}
+
+			setDefaultActionResult(facesContext.getViewRoot().getViewId());
+
+			load(uniqueid);
+		}
+	}
+
+	/**
+	 * Loads a workitem by a given $uniqueid and starts a new conversaton. The
+	 * conversaion will be ended after the workitem was processed or after the
+	 * MaxInactiveInterval from the session.
+	 * 
+	 * @param uniqueid
+	 */
+	public void load(String uniqueid) {
+		if (uniqueid != null && !uniqueid.isEmpty()) {
+			logger.info("...load uniqueid=" + uniqueid);
+			document = documentService.load(uniqueid);
+			if (document == null) {
+				document = new ItemCollection();
+			}
+			startConversation();
+			// fire event
+			events.fire(new WorkflowEvent(document, WorkflowEvent.DOCUMENT_CHANGED));
+		}
+	}
+
+	public String getDefaultActionResult() {
+		if (defaultActionResult == null) {
+			defaultActionResult = "";
+		}
+		return defaultActionResult;
+	}
+
+	public void setDefaultActionResult(String defaultActionResult) {
+		this.defaultActionResult = defaultActionResult;
+	}
+
+	/**
+	 * Starts a new conversation
+	 */
+	public void startConversation() {
 		if (conversation.isTransient()) {
 			conversation.setTimeout(
 					((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
 							.getSession().getMaxInactiveInterval() * 1000);
 			conversation.begin();
-			logger.finest("......start new conversation, id=" + conversation.getId());
+			logger.info("......start new conversation, id=" + conversation.getId());
 		}
 	}
 
 	/**
-	 * Loads a workitem based on the query params 'id' or 'workitem'
+	 * Stops the current conversation
 	 */
-	private void loadDocument() {
-		FacesContext fc = FacesContext.getCurrentInstance();
-		Map<String, String> paramMap = fc.getExternalContext().getRequestParameterMap();
-		// try to extract tjhe uniqueid form the query string...
-
-		String uniqueid = paramMap.get("id");
-
-		document = documentService.load(uniqueid);
-		if (document == null) {
-			reset();
+	public void stopConversation() {
+		if (!conversation.isTransient()) {
+			logger.info("......stopping conversation, id=" + conversation.getId());
+			conversation.end();
 		}
-
-		events.fire(new DocumentEvent(document, DocumentEvent.DOCUMENT_CHANGED));
-
 	}
+
 }
