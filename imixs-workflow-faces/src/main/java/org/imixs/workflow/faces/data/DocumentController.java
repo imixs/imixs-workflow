@@ -25,7 +25,7 @@
  *  	Ralph Soika - Software Developer
  *******************************************************************************/
 
-package org.imixs.workflow.faces.workitem;
+package org.imixs.workflow.faces.data;
 
 import java.io.Serializable;
 import java.util.logging.Logger;

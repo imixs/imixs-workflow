@@ -1,4 +1,4 @@
-package org.imixs.workflow.faces.workitem;
+package org.imixs.workflow.faces.data;
 
 import org.imixs.workflow.ItemCollection;
 

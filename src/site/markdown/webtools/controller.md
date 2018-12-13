@@ -1,34 +1,73 @@
-#The Imixs-Workflow-Faces Controller
-The project imixs-workflow-faces provides set of CDI beans which can be used to controll ItemCollections, WorkItems and Views.
+# The Imixs-Workflow-Faces Data
 
-##The DataController
-The DataController is a managed bean controlling the data of a single  WorkItem. The DataController is typically used in sessionScope to store the data of a WorkItem over several pages. The DataController provides a set of Action and ActionListener methods:
+The  Imixs-Workflow-Faces Data package contains CDI beans which can be used to control Imxis-Workflow data.
+
+## The DocumentController
+
+
+The DocumentController is a @ConversationScoped CDI bean to control the life cycle of a ItemCollection in an JSF application without any workflow  functionality. The bean can be used in single page applications, as well for complex page flows. The controller is easy to use and supports bookmarkable  URLs.
  
+The DocumentController fires CDI events from the type WorkflowEvent. A CDI  bean can observe these events to participate in the processing life cycle.
+ 
+To load a document the methods load(id) and onLoad() can be used. The method load expects the uniqueId of a document to be loaded. The onLoad() method  extracts the uniqueid from the query parameter 'id'. This is the recommended  way to support bookmarkable URLs. To load a document the onLoad method can be  triggered by an jsf viewAction placed in the header of a JSF page:
+  
+	<f:metadata>
+      <f:viewAction action="... documentController.onLoad()" />
+    </f:metadata> }
+ 
+A bookmarkable URL looks like this:
 
-| Method        | Type            |Description                                |       
-|---------------|-----------------|-------------------------------------------|
-|create()       | ActionListener  | creates a new empty WorkItem. The new  WorkItem is assigend to the current user  |
-|reset()        | ActionListener  | resets all data of the current WorkItem   |
-|save(action)   | Action          | saves the data of the current WorkItem    |
-|load(id,action)| Action          | loads an existing WorkItem by ID          |
-|delete(id,action)| Action        | deletes an existing workitem by ID        |
+	/myForm.xthml?id=[UNIQUEID] 
+ 
+In combination with the viewAction the DocumentController is automatically  initialized.
+ 
+After a document is loaded, a new conversation is started and the CDI event  WorkflowEvent.DOCUMENT_CHANGED is fired.
+ 
+After a document was saved, the conversation is automatically closed. Stale conversations will automatically timeout with the default session timeout.
 
-All action methods accept a String param 'action' with the default action result. (Can be 'null')
+After each call of the method save the Post-Redirect-Get is initialized with the default URL from the start of the conversation. This guarantees
+ bookmakrable URLs.
+
+  Within a JSF form, the items of a document can be accessed by the getter
+  method getDocument().
+ 
+    #{documentController.document.item['$workflowstatus']}
+ 
+ The default type of a entity created with the DataController is 'workitem'. This property can be changed from a client.
+
  
 ## The WorkflowController
-The WorkflowController is a subclass from the DataController and provides methods to process a  workitem based on a specific workflow model.  The workflow model version can be defined by the WorkItem property '$modelversion'. To process a WorkItem the properties '$taskid' and '$eventid' need to be defined. The WorkflowController provides the following addition Action and ActionListener methods:
+
+The WorkflowController is a @ConversationScoped CDI bean to control the processing life cycle of a workitem in JSF an application. The bean can be used in single page applications, as well for complex page flows. The controller is easy to use and supports bookmarkable URLs.
+
+The WorkflowController fires CDI events from the type WorkflowEvent. A CDI bean can observe these events to participate in the processing life cycle.
+
+To load a workitem the methods load(id) and onLoad() can be used. The method load expects the uniqueId of a workItem to be loaded. The onLoad() method extracts the uniqueid from the query parameter 'id'. This is the recommended way to support bookmarkable URLs. To load a workitem the onLoad method can be triggered by an jsf viewAction placed in the header of a JSF page:
+
+	<f:metadata>
+      <f:viewAction action="... workflowController.onLoad()" />
+    </f:metadata> }
  
-### init(actiion) 
-This method initializes a new created WorkItem based  on the workflow model definition    
+A bookmarkable URL looks like this:
 
-### process()
-The process method processes the current workItem and returns an action result.  The method expects that the current workItem provides a valid $ActiviytID.  The method returns the value of the property 'action' if provided by the workflow model or a plugin. The 'action' property is typically evaluated from the ResultPlugin. Alternatively the property can be provided by an application. If no 'action' property is provided the method evaluates the default property 'txtworkflowResultmessage' from the model as an action result.	 
+	/myForm.xthml?id=[UNIQUEID] 
+	
+In combination with the viewAction the WorkflowController is automatically initialized. After a workitem is loaded, a new conversation is started and the CDI event WorkflowEvent.WORKITEM_CHANGED is fired.
+ 
+After a workitem was processed, the conversation is automatically closed. Stale conversations will automatically timeout with the default session timeout.
 
-###process(activityID)
-This ActionListener processes the current workItem with the provided activityID. The method can be used as a ActionListener for a ajax events.
+After each call of the method process the Post-Redirect-Get is initialized with the default URL from the start of the conversation. If an alternative action result is provided by the workflow engine, the WorkflowController automatically redirects the user to the new form outcome. This guarantees bookmakrable URLs.
+
+Call the close() method when the workitem data is no longer needed.
+
+Within a JSF form, the items of a workitem can be accessed by the getter method getWorkitem().
+
+	#{workflowController.workitem.item['$workflowstatus']}
 
 
-##The ViewController
+
+
+## The ViewController
 The ViewController controls a collection of workItems. The result of the collection can be controlled by different properties of the ViewController.  The property 'view' defines the view type returned by a method call of getWorkitems. The result of a collection is computed by a ViewAdapter.  IViewAdapter can be adapted by any custom implementation. The ViewController can be be used in ViewScope. Long result lists can be paged using an  internal paginator implementation. The length of a page result is defined by the property 'maxResult'
  
 

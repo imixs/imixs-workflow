@@ -1,12 +1,12 @@
-# Imixs Fileupload
-Imixs Fileuplaod is a custom component to provide a fileUpload widget.  The component consists of the follwing parts
+# Imixs-Faces Fileupload
+
+Imixs-Faces Fileupload is a custom component to provide a fileUpload widget.  The component consists of the following parts
  
-  * a MulitpartRequestFilter which is wrapping the servlet request
-  * a MultipartRequestWrapper which extracts the content of an uploaded file
-  * the UploadFile object which represents the content of an uploaded file
-  * the fileUploadConroller which provides an frontend controller to extract uploaded files and providing information about uploaded files
+  * the FileUploadConroller which provides an frontend controller to extract and store uploaded files into a workitem
+  * the AjaxFIleUploadServicel with is a Multipart-Servlet 3.0. to handle file uploads from a ajax component.
+  * the i:imixsFileUpload JSF widget
  
-The MulitpartRequestFilter is used ot wrapp the servlet http request into a  MultipartRequestWrapper if the content type is "multipart/form-data". This content type allows to upload files. The FileUpploadBean provides methods to extract an uploadef file from the http request using the  MulitpartRequestWrapper. The custom component is implemented by the ressource 'imixsFileUpload.xhtml' This component can be included directly into any jsf form with the enctype="multipart/form-data".  To add the FileUpload component into a JSF page use the tag 'imixsFileUpload'
+This i:imixsFileUpload component can be included directly into any JSF form with the enctype="multipart/form-data".  To add the FileUpload component into a JSF page use the tag 'imixsFileUpload'
  
 
 	<i:imixsFileUpload id="file_upload_id" />

@@ -28,12 +28,12 @@ import javax.faces.event.ExceptionQueuedEventContext;
  * @author rsoika
  * 
  */
-public class ViewExpiredExceptionExceptionHandler extends
+public class ViewExpiredExceptionHandler extends
 		ExceptionHandlerWrapper {
 
 	private ExceptionHandler wrapped;
 
-	public ViewExpiredExceptionExceptionHandler(ExceptionHandler wrapped) {
+	public ViewExpiredExceptionHandler(ExceptionHandler wrapped) {
 		this.wrapped = wrapped;
 	}
 
