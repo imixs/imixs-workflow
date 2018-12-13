@@ -106,7 +106,7 @@ public class ViewController implements Serializable {
 					((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
 							.getSession().getMaxInactiveInterval() * 1000);
 			conversation.begin();
-			logger.finest("......start new conversation, id=" + conversation.getId());
+			logger.info("......start new conversation, id=" + conversation.getId());
 		}
 	}
 

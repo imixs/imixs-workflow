@@ -91,7 +91,7 @@ public class ViewHandler implements Serializable {
 	/**
 	 * This method computes the view result
 	 */
-	public void loadData(ViewController viewController) {
+	public void onLoad(ViewController viewController) {
 		String _query = viewController.getQuery();
 		logger.info("..... loading view data: " + _query);
 		if (_query == null || _query.isEmpty()) {

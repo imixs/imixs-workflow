@@ -230,13 +230,14 @@ public class WorkflowController extends AbstractDataController implements Serial
 
 	public void create(String modelVersion, int taskID, String uniqueIdRef) throws ModelException {
 		// set model information..
-		getWorkitem().model(modelVersion).task(taskID);
+		data=new ItemCollection();
+		data.model(modelVersion).task(taskID);
 
 		// set default owner
-		getWorkitem().replaceItemValue("namowner", loginController.getUserPrincipal());
+		data.replaceItemValue("namowner", loginController.getUserPrincipal());
 
 		// set empty $workitemid
-		getWorkitem().replaceItemValue("$workitemid", "");
+		data.replaceItemValue("$workitemid", "");
 
 		this.create();
 	}
