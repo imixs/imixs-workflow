@@ -1,4 +1,4 @@
-#Imixs Editor 
+# Imixs-Faces Editor 
 
 The jQuery TinyMCE Editor will be automatically added to all textareas with the  style class 'imixs-editor'
  

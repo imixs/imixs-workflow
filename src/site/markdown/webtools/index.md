@@ -61,6 +61,13 @@ Imixs-Faces includes some utility classes to support typical UI flows in a JSF a
 This package contains a FileUploadController and a Servlet to handle multi-file uploads.
 
 
+## Imixs-Faces UI
 
-  
+Imixs-Faces provides UI widgets to be used in a JSF Page.
+
+ * header - a header component to load scripts and layout resources 
+ * datepicker - a date picker widget based on jQuery
+ * edit - a WYSIWYG editor based on tinymce
+ * tooltip - jQuery tooltip component
+ * workflow action - a action toolbar to show worklfow actions for a workitem controlled by the WorkflowController 
     

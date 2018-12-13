@@ -1,4 +1,4 @@
-#Imixs Workflow Actions
+# Imixs-Faces  Workflow Actions
 The Imixs-Faces custom tag 'workflowactions' provides action toolbar based on the current workflow model. The tag can be used together with a workflowController component.
  
 	<i:imixsWorkflowActions workflowController="#{workflowController}"

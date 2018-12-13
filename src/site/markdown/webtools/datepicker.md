@@ -1,4 +1,5 @@
-#Imixs DateTimePicker
+# Imixs DateTimePicker
+
 Imixs JFS provides a custom component for a date-time picker widget. The widget uses the  jquery date picker component and provides an easy way to add a date/time widget into a jsf page.
  
     <i:imixsDateInput value="#{workflowController.workitem.item['datDate']}"/>
@@ -12,7 +13,7 @@ The default intervall for the minute selection is '15'. You can override this wi
     <i:imixsDateInput value="#{workflowController.workitem.item['datDate']}"  showtime="true" minuteinterval="30"/>
 
 
-##jQuery DatePicker
+## jQuery DatePicker
 When using the imixsHeader it is also possible to use the jQuery-UI Datepicker widget native.  You just need to add the styleClass 'imixs-date' to a h:inputText. By adding a f:convertDateTime you can store the value as a java Date object. See the following example:
  
 	 <h:inputText value="#{workflowController.workitem.item['_enddate']}"

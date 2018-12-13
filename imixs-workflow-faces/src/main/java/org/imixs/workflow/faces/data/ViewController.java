@@ -46,26 +46,15 @@ import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.QueryException;
 
 /**
- * The ViewController can be used in JSF Applications to select a data result to
- * be displayed by a view.
- * 
+ * The ViewController is a @ConversationScoped CDI bean to define a data query.
+ * This bean is used in combination with the ViewHandler to display a data
+ * result in a JSF page.
  * <p>
  * The query can be defined by the jsf tag, <f:viewAction>. The viewAction
  * component must be declared as a child of the metadata facet (<f:metadata>).
- * 
- * <pre>
- * {@code
- *    <f:metadata> 
- *      <f:viewAction action=" viewController.setQuery('...." />
- *    </f:metadata>
- * }
- * </pre>
- *
- *
- *
  * <p>
- * The view property defines the view type returned by a method call of getData.
- * The ViewController is ConversationScoped to support a paging navigation.
+ * The ViewController also provides a pagination mechanism to navigate through a
+ * big data set.
  * <p>
  * The query can be defined by the jsf tag, <f:viewAction>. The viewAction
  * component must be declared as a child of the metadata facet (<f:metadata>).
