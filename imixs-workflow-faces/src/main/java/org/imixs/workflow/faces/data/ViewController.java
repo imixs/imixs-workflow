@@ -34,50 +34,36 @@ import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.enterprise.context.Conversation;
-import javax.enterprise.context.ConversationScoped;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
+import javax.faces.event.ActionEvent;
+import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.QueryException;
 
 /**
- * The ViewController is a @ConversationScoped CDI bean to define a data query.
- * This bean is used in combination with the ViewHandler to display a data
- * result in a JSF page.
- * <p>
- * The query can be defined by the jsf tag, <f:viewAction>. The viewAction
- * component must be declared as a child of the metadata facet (<f:metadata>).
- * <p>
- * The ViewController also provides a pagination mechanism to navigate through a
- * big data set.
- * <p>
- * The query can be defined by the jsf tag, <f:viewAction>. The viewAction
- * component must be declared as a child of the metadata facet (<f:metadata>).
+ * The ViewController can be used in JSF Applications to manage lists of
+ * ItemCollections.
  * 
- * <pre>
- * {@code
- *    <f:metadata> 
- *      <f:viewAction action=" viewController.setQuery('...." />
- *    </f:metadata>
- * }
- * </pre>
- *
- *
+ * The view property defines the view type returned by a method call of
+ * getWorkitems. The ViewController implements a lazy loading mechanism to cache
+ * the result. The request is delegated to an instance of IViewAdapter to
+ * compute the result set. IViewAdapter can be adapted by any custom
+ * implementation.
+ * 
+ * The ViewController bean should be used in ViewScope.
+ * 
  * @author rsoika
  * @version 0.0.1
  */
 @Named
-@ConversationScoped
+@ViewScoped
 public class ViewController implements Serializable {
 
-	private static Logger logger = Logger.getLogger(ViewController.class.getName());
-
 	private static final long serialVersionUID = 1L;
+	private String type = null;
 	private String query = null;
 	private String sortBy = null;
 	private boolean sortReverse = false;
@@ -85,14 +71,17 @@ public class ViewController implements Serializable {
 	private int pageIndex = 0;
 	private boolean endOfList = false;
 
-	@Inject
-	Conversation conversation;
+	/* result */
+	private List<ItemCollection> workitems = null;
+	@SuppressWarnings("unused")
+	private static Logger logger = Logger.getLogger(ViewController.class.getName());
 
 	@EJB
 	DocumentService documentService;
 
 	public ViewController() {
 		super();
+
 	}
 
 	/**
@@ -100,14 +89,44 @@ public class ViewController implements Serializable {
 	 * faces-config.xml
 	 */
 	@PostConstruct
-	protected void init() {
-		if (conversation.isTransient()) {
-			conversation.setTimeout(
-					((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
-							.getSession().getMaxInactiveInterval() * 1000);
-			conversation.begin();
-			logger.info("......start new conversation, id=" + conversation.getId());
+	public void init() {
+
+		if (type == null || type.isEmpty()) {
+			setType("workitem");
 		}
+		if (query == null || query.isEmpty()) {
+			setQuery("(type:\"" + getType() + "\")");
+		}
+
+	}
+
+	/**
+	 * returns an instance of the DocumentService EJB
+	 * 
+	 * @return
+	 */
+	public DocumentService getDocumentService() {
+		return documentService;
+	}
+
+	/**
+	 * set the value for the attribute 'type' of a workitem to be generated or
+	 * search by this controller
+	 */
+	public String getType() {
+		return type;
+	}
+
+	/**
+	 * defines the type attribute of a workitem to be generated or search by this
+	 * controller
+	 * 
+	 * Subclasses may overwrite the type
+	 * 
+	 * @param type
+	 */
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	/**
@@ -159,30 +178,134 @@ public class ViewController implements Serializable {
 	 * @param searchCount
 	 */
 	public void setPageSize(int pageSize) {
-
 		this.pageSize = pageSize;
 	}
 
 	/**
-	 * resets the current page index to 0.
+	 * resets the current result and set the page pointer to 0.
 	 * 
 	 * @return
 	 */
-	public void reset() {
+	public void doReset() {
+		workitems = null;
 		pageIndex = 0;
 	}
 
-	public void next() {
-		pageIndex++;
-
+	public void doReset(ActionEvent event) {
+		doReset();
 	}
 
-	public void back() {
+	public void doReset(AjaxBehaviorEvent event) {
+		doReset();
+	}
+
+	/**
+	 * refreshes the current workitem list. so the list will be loaded again. but
+	 * start pos will not be changed!
+	 */
+	public void doRefresh() {
+		workitems = null;
+	}
+
+	public void doRefresh(ActionEvent event) {
+		doRefresh();
+	}
+
+	public void doRefresh(AjaxBehaviorEvent event) {
+		doRefresh();
+	}
+
+	public void doLoadNext() {
+		pageIndex++;
+		workitems = null;
+	}
+
+	public void doLoadNext(ActionEvent event) {
+		doLoadNext();
+	}
+
+	public void doLoadNext(AjaxBehaviorEvent event) {
+		doLoadNext();
+	}
+
+	public void doLoadPrev() {
 		pageIndex--;
 		if (pageIndex < 0) {
 			pageIndex = 0;
 		}
+		workitems = null;
 	}
+
+	public void doLoadPrev(ActionEvent event) {
+		doLoadPrev();
+	}
+
+	public void doLoadPrev(AjaxBehaviorEvent event) {
+		doLoadPrev();
+	}
+
+	/**
+	 * Returns the current view result. The request is delegated to an
+	 * implementation of IViewAdapter.
+	 * 
+	 * The method implements a lazy loading mechanism and caches the result locally.
+	 * 
+	 * The returned result set is defined by the current view definition. The view
+	 * definition can be set by the property view. All view definitions are stored
+	 * in the property views.
+	 * 
+	 * The ViewAdapter implements the behavior to return a collection of
+	 * ItemCollections based on the current view type
+	 * 
+	 * @return view result
+	 * @throws QueryException
+	 */
+	public List<ItemCollection> getWorkitems() throws QueryException {
+		// return a cached result set?
+		if (workitems != null)
+			return workitems;
+
+		workitems = new ArrayList<ItemCollection>();
+
+		String _query = getQuery();
+		if (_query == null || _query.isEmpty()) {
+			// no query defined
+			return workitems;
+		}
+
+		// load data
+		workitems = getDocumentService().find(_query, getPageSize(), getPageIndex(), getSortBy(), isSortReverse());
+
+		// if no result is defined return an empty list.
+		if (workitems == null) {
+			workitems = new ArrayList<ItemCollection>();
+		}
+
+		// The end of a list is reached when the size is below or equal the
+		// pageSize. See issue #287
+		if (workitems.size() < pageSize) {
+			endOfList = true;
+		} else {
+			// look ahead if we have more entries...
+			int iAhead = (getPageSize() * (getPageIndex() + 1)) + 1;
+			if (getDocumentService().count(_query, iAhead) < iAhead) {
+				// there is no more data
+				endOfList = true;
+			} else {
+				endOfList = false;
+			}
+		}
+
+		return workitems;
+	}
+
+	public void setWorkitems(List<ItemCollection> workitems) {
+		this.workitems = workitems;
+	}
+
+	/***************************************************************************
+	 * Navigation
+	 */
 
 	public int getPageIndex() {
 		return pageIndex;
@@ -198,71 +321,6 @@ public class ViewController implements Serializable {
 
 	public void setEndOfList(boolean endOfList) {
 		this.endOfList = endOfList;
-	}
-
-	@Deprecated
-	public void setType(String a) {
-		logger.warning("attribute type is deprecated");
-	}
-
-	/**
-	 * Just for backward compatibility.
-	 * 
-	 * @return
-	 */
-	@Deprecated
-	public String getType() {
-		logger.warning("attribute type is deprecated");
-		return null;
-	}
-
-	/**
-	 * Returns the view result which is computed after the view was initialized.
-	 * <p>
-	 * This method is deprecated in org.imixs.workflow.faces.workitem.ViewController
-	 * - use instead a org.imixs.workflow.faces.workitem.ViewHandler
-	 * 
-	 * @return view result
-	 * @throws QueryException
-	 */
-	@Deprecated
-	public List<ItemCollection> getWorkitems() {
-		logger.warning(
-				"getWorkitems is deprecated in org.imixs.workflow.faces.workitem.ViewController - use instead a org.imixs.workflow.faces.workitem.ViewHandler");
-		List<ItemCollection> data;
-		if (query == null || query.isEmpty()) {
-			// no query defined - return empty list
-			return new ArrayList<ItemCollection>();
-		}
-
-		// load data
-		try {
-			data = documentService.find(query, getPageSize(), getPageIndex(), getSortBy(), isSortReverse());
-		} catch (QueryException e) {
-			logger.warning("Unable to load view data: " + e.getMessage());
-			data = new ArrayList<ItemCollection>();
-		}
-
-		// The end of a list is reached when the size is below or equal the
-		// pageSize. See issue #287
-		if (data.size() < getPageSize()) {
-			setEndOfList(true);
-		} else {
-			// look ahead if we have more entries...
-			int iAhead = (getPageSize() * (getPageIndex() + 1)) + 1;
-			try {
-				if (documentService.count(getQuery(), iAhead) < iAhead) {
-					// there is no more data
-					setEndOfList(true);
-				} else {
-					setEndOfList(false);
-				}
-			} catch (QueryException e) {
-				logger.warning("Unable to compute count of data: " + e.getMessage());
-			}
-		}
-
-		return data;
 	}
 
 }
