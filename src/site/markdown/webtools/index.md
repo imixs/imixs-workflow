@@ -31,7 +31,7 @@ Since Java EE6 the lightweight Web Profiles simplifies the deployment of Java EE
 
 You will find more information about the Maven support of Imixs-Workflow in the [section Maven](../maven.html). 
 
-The [Imixs-JSF sample application](../sampleapplication.html) provides a good starting point to learn how to setup a JSF Web Application with Imixs-Workflow.
+The [Imixs-JSF Sample Application](../sampleapplication.html) provides a good starting point to learn how to setup a JSF Web Application with Imixs-Workflow.
 
 
 ## Imixs-Faces Data
@@ -43,7 +43,7 @@ Imixs-Faces provides different CDI beans to control the data flow within a JSF a
  * ViewHandler - A @RequestScoped CDI bean to load a result set of documents or workitems to be viewed in a JSF page
  * ViewController - A @ConversationScoped CDI bean to support pagination and filtering in a view.
  
-To interact a Document or WorkflowController the CDI Event 'WorkflowEvent' can be observed by a client. This simplifies the integration of custom CDI beans and controllers. Read the section (./controller.html)[controller] for details. 
+To interact a Document or WorkflowController the CDI Event 'WorkflowEvent' can be observed by a client. This simplifies the integration of custom CDI beans and controllers. Read the section [controller](./controller.html) for details. 
 
 ## Imixs-Faces Util
 
@@ -65,9 +65,9 @@ This package contains a FileUploadController and a Servlet to handle multi-file 
 
 Imixs-Faces provides UI widgets to be used in a JSF Page.
 
- * (./header.html)[header] - a header component to load scripts and layout resources 
- * (./datepicker.html)[datepicker] - a date picker widget based on jQuery
- * (./tinymce.html)[editor] - a WYSIWYG editor based on tinymce
- * (./tooltip.html)[tooltip] - jQuery tooltip component
- * (./workflowactions.html)[workflow action] - a action toolbar to show worklfow actions for a workitem controlled by the WorkflowController 
+ * [Page Header](./header.html) - a header component to load scripts and layout resources 
+ * [Datepicker](./datepicker.html) - a date picker widget based on jQuery
+ * [WYSIWIG Editor](./tinymce.html) - a WYSIWYG editor based on tinymce
+ * [Tooltips](./tooltip.html) - jQuery tooltip component
+ * [Workflow Action Toolbar](./workflowactions.html) - a action toolbar to show worklfow actions for a workitem controlled by the WorkflowController 
     
