@@ -220,8 +220,11 @@ public class ViewController implements Serializable {
 		return data;
 	}
 
-	public void setWorkitems(List<ItemCollection> workitems) {
-		this.data = workitems;
+	
+	@Deprecated
+	public List<ItemCollection> getWorkitems() throws QueryException {
+		logger.warning("getWorkitems is deprected - replace with getData");
+		return this.getData();
 	}
 
 	/***************************************************************************
