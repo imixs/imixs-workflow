@@ -157,7 +157,7 @@ public class ViewController implements Serializable {
 		data = null;
 	}
 
-	public void next() {
+	public void forward() {
 		pageIndex++;
 		data = null;
 	}

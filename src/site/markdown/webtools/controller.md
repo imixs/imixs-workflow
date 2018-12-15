@@ -109,7 +109,7 @@ The ViewController also provides a pagination mechanism to navigate through a bi
 		</h:commandButton>
 
 		<h:commandButton 
-			actionListener="#{tasklistController.next()}"
+			actionListener="#{tasklistController.forward()}"
 			disabled="#{tasklistController.endOfList}" value="#{global.next}">
 		</h:commandButton>
 	</h:dataTable>	
