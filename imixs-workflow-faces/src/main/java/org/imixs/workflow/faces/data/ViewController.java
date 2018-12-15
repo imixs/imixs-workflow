@@ -34,8 +34,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.event.ActionEvent;
-import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
@@ -63,7 +61,7 @@ import org.imixs.workflow.exceptions.QueryException;
 public class ViewController implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private String type = null;
+
 	private String query = null;
 	private String sortBy = null;
 	private boolean sortReverse = false;
@@ -71,9 +69,8 @@ public class ViewController implements Serializable {
 	private int pageIndex = 0;
 	private boolean endOfList = false;
 
-	/* result */
-	private List<ItemCollection> workitems = null;
-	@SuppressWarnings("unused")
+	private List<ItemCollection> data = null;
+
 	private static Logger logger = Logger.getLogger(ViewController.class.getName());
 
 	@EJB
@@ -81,54 +78,15 @@ public class ViewController implements Serializable {
 
 	public ViewController() {
 		super();
-
+		logger.info("...construct...");
 	}
 
-	/**
-	 * This method is preparing the query and sort order. Can also be set in the
-	 * faces-config.xml
-	 */
 	@PostConstruct
 	public void init() {
-
-		if (type == null || type.isEmpty()) {
-			setType("workitem");
-		}
-		if (query == null || query.isEmpty()) {
-			setQuery("(type:\"" + getType() + "\")");
-		}
-
+		logger.info("init...");
 	}
 
-	/**
-	 * returns an instance of the DocumentService EJB
-	 * 
-	 * @return
-	 */
-	public DocumentService getDocumentService() {
-		return documentService;
-	}
-
-	/**
-	 * set the value for the attribute 'type' of a workitem to be generated or
-	 * search by this controller
-	 */
-	public String getType() {
-		return type;
-	}
-
-	/**
-	 * defines the type attribute of a workitem to be generated or search by this
-	 * controller
-	 * 
-	 * Subclasses may overwrite the type
-	 * 
-	 * @param type
-	 */
-	public void setType(String type) {
-		this.type = type;
-	}
-
+	
 	/**
 	 * Returns the search Query
 	 * 
@@ -186,109 +144,72 @@ public class ViewController implements Serializable {
 	 * 
 	 * @return
 	 */
-	public void doReset() {
-		workitems = null;
+	public void reset() {
+		data = null;
 		pageIndex = 0;
-	}
-
-	public void doReset(ActionEvent event) {
-		doReset();
-	}
-
-	public void doReset(AjaxBehaviorEvent event) {
-		doReset();
 	}
 
 	/**
 	 * refreshes the current workitem list. so the list will be loaded again. but
 	 * start pos will not be changed!
 	 */
-	public void doRefresh() {
-		workitems = null;
+	public void refresh() {
+		data = null;
 	}
 
-	public void doRefresh(ActionEvent event) {
-		doRefresh();
-	}
-
-	public void doRefresh(AjaxBehaviorEvent event) {
-		doRefresh();
-	}
-
-	public void doLoadNext() {
+	public void next() {
 		pageIndex++;
-		workitems = null;
+		data = null;
 	}
 
-	public void doLoadNext(ActionEvent event) {
-		doLoadNext();
-	}
-
-	public void doLoadNext(AjaxBehaviorEvent event) {
-		doLoadNext();
-	}
-
-	public void doLoadPrev() {
+	public void back() {
 		pageIndex--;
 		if (pageIndex < 0) {
 			pageIndex = 0;
 		}
-		workitems = null;
-	}
-
-	public void doLoadPrev(ActionEvent event) {
-		doLoadPrev();
-	}
-
-	public void doLoadPrev(AjaxBehaviorEvent event) {
-		doLoadPrev();
+		data = null;
 	}
 
 	/**
-	 * Returns the current view result. The request is delegated to an
-	 * implementation of IViewAdapter.
-	 * 
+	 * Returns the current view result. The returned result set is defined by the
+	 * current query definition.
+	 * <p>
 	 * The method implements a lazy loading mechanism and caches the result locally.
-	 * 
-	 * The returned result set is defined by the current view definition. The view
-	 * definition can be set by the property view. All view definitions are stored
-	 * in the property views.
-	 * 
-	 * The ViewAdapter implements the behavior to return a collection of
-	 * ItemCollections based on the current view type
 	 * 
 	 * @return view result
 	 * @throws QueryException
 	 */
-	public List<ItemCollection> getWorkitems() throws QueryException {
+	public List<ItemCollection> getData() throws QueryException {
+
+		
 		// return a cached result set?
-		if (workitems != null)
-			return workitems;
+		if (data != null)
+			return data;
 
-		workitems = new ArrayList<ItemCollection>();
+		data = new ArrayList<ItemCollection>();
 
-		String _query = getQuery();
-		if (_query == null || _query.isEmpty()) {
+		if (query == null || query.isEmpty()) {
 			// no query defined
-			return workitems;
+			return data;
 		}
 
 		// load data
-		workitems = getDocumentService().find(_query, getPageSize(), getPageIndex(), getSortBy(), isSortReverse());
+		logger.info("...... get data - query=" + query + " pageIndex=" + pageIndex );
+		data = documentService.find(query, getPageSize(), getPageIndex(), getSortBy(), isSortReverse());
 
 		// if no result is defined return an empty list.
-		if (workitems == null) {
-			workitems = new ArrayList<ItemCollection>();
+		if (data == null) {
+			data = new ArrayList<ItemCollection>();
 		}
 
 		// The end of a list is reached when the size is below or equal the
 		// pageSize. See issue #287
-		if (workitems.size() < pageSize) {
+		if (data.size() < pageSize) {
 			endOfList = true;
 		} else {
 			// look ahead if we have more entries...
 			int iAhead = (getPageSize() * (getPageIndex() + 1)) + 1;
-			if (getDocumentService().count(_query, iAhead) < iAhead) {
+			if (documentService.count(query, iAhead) < iAhead) {
 				// there is no more data
 				endOfList = true;
 			} else {
@@ -296,11 +217,11 @@ public class ViewController implements Serializable {
 			}
 		}
 
-		return workitems;
+		return data;
 	}
 
 	public void setWorkitems(List<ItemCollection> workitems) {
-		this.workitems = workitems;
+		this.data = workitems;
 	}
 
 	/***************************************************************************
