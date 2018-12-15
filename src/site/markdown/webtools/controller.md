@@ -19,21 +19,14 @@ A bookmarkable URL looks like this:
 
 	/myForm.xthml?id=[UNIQUEID] 
  
-In combination with the viewAction the DocumentController is automatically  initialized.
- 
-After a document is loaded, a new conversation is started and the CDI event  WorkflowEvent.DOCUMENT_CHANGED is fired.
- 
-After a document was saved, the conversation is automatically closed. Stale conversations will automatically timeout with the default session timeout.
-
-After each call of the method save the Post-Redirect-Get is initialized with the default URL from the start of the conversation. This guarantees
+In combination with the viewAction the DocumentController is automatically  initialized. After a document is loaded, a new conversation is started and the CDI event  WorkflowEvent.DOCUMENT_CHANGED is fired. After a document was saved, the conversation is automatically closed. Stale conversations will automatically timeout with the default session timeout. After each call of the method save the Post-Redirect-Get is initialized with the default URL from the start of the conversation. This guarantees
  bookmakrable URLs.
 
-  Within a JSF form, the items of a document can be accessed by the getter
-  method getDocument().
+Within a JSF form, the items of a document can be accessed by the getter  method getDocument().
  
     #{documentController.document.item['$workflowstatus']}
  
- The default type of a entity created with the DataController is 'workitem'. This property can be changed from a client.
+The default type of a entity created with the DataController is 'workitem'. This property can be changed from a client.
 
  
 ## The WorkflowController
@@ -63,66 +56,61 @@ Call the close() method when the workitem data is no longer needed.
 Within a JSF form, the items of a workitem can be accessed by the getter method getWorkitem().
 
 	#{workflowController.workitem.item['$workflowstatus']}
-
+ 
 
 
 
 ## The ViewController
 
-The ViewController is a @ConversationScoped CDI bean to define a data query.
-This bean is used in combination with the ViewHandler to display a data result in a JSF page.
+The ViewController is a @ViewScoped CDI bean to select data defined by a search query.
+This bean is used to display a data result in a JSF page and suppors also a pagination mechanism.
 
-The query can be defined by the jsf tag, <f:viewAction>. The viewAction component must be declared as a child of the metadata facet (<f:metadata>).
+A custom ViewController can be defined by sub-classing:
 
-	<f:metadata> 
-	  <f:viewAction action="#{viewController.setQuery('...)}" />
-	</f:metadata>
+	@Named
+	@ViewScoped
+	public class TasklistController extends ViewController implements Serializable {
+		private static final long serialVersionUID = 1L;
 
-The ViewController also provides a pagination mechanism to navigate through a big data set.
-
-
-
-### Customizing the ViewController
-The following example shows how the ViewController can be used in JSF application to display  the users task list. The controller bean is declared and configured in the faces-config.xml or beans.xml file. 
-
-faces-config.xml:
- 
-	... 
-	  <managed-bean>
-			<managed-bean-name>tasklist</managed-bean-name>
-			<managed-bean-class>org.imixs.workflow.jee.faces.data.ViewController</managed-bean-class>
-			<managed-bean-scope>view</managed-bean-scope>
-			<managed-property>
-				<property-name>maxResult</property-name>
-				<property-class>int</property-class>
-				<value>5</value>
-			</managed-property>
-			<managed-property>
-				<property-name>sortOrder</property-name>
-				<property-class>int</property-class>
-				<!-- SORT_ORDER_MODIFIED_DESC -->
-				<value>2</value>
-			</managed-property>
-			<managed-property>
-				<property-name>query</property-name>
-				<property-class>java.lang.String</property-class>
-				<value>type:workitem</value>
-			</managed-property>
-		</managed-bean>
-	 ...
-
-The bean portletWorklistTasks can now be used in any JSF page:
+		@Override
+		@PostConstruct
+		public void init() {
+			super.init();
+			this.setQuery("(type:\"workitem\")");
+			this.setSortBy("$modified");
+			this.setSortReverse(true);
+		}
+	}
 
 
-	<f:metadata>
-        <f:viewAction action="#{viewController.setQuery('type:team')}" />
-		<f:viewAction action="#{viewHandler.loadData(viewController)}" />
-    </f:metadata>
+The ViewController also provides a pagination mechanism to navigate through a big data set. See the following example:
 
+	<h:dataTable value="#{tasklistController.data}" var="record">
 
-	<!-- **** show Workitems ***** -->
-	<h:dataTable class="imixsdatatable" style="width:100%"
-				value="#{viewHandler.data}" var="workitem">
-				....
-	</h:dataTable>
- 
+		<h:column>
+			<h:outputText value="#{record.item['txtName']} " />
+		</h:column>
+		<h:column>
+			<h:outputText value="#{record.item['$modified']}" />
+		</h:column>
+		<!-- edit -->
+		<h:column>
+			<h:link outcome="/workitem?faces-redirect=true">
+				<h:outputText value="#{global.edit}" />
+				<f:param name="id" value="#{record.item['$uniqueid']}" />
+			</h:link>
+		</h:column>
+
+		</h:dataTable>
+
+		<h:commandButton 
+			actionListener="#{tasklistController.back()}"
+			disabled="#{tasklistController.pageIndex==0}" value="#{global.prev}">
+		</h:commandButton>
+
+		<h:commandButton 
+			actionListener="#{tasklistController.next()}"
+			disabled="#{tasklistController.endOfList}" value="#{global.next}">
+		</h:commandButton>
+	</h:dataTable>	
+
