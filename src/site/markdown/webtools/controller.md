@@ -56,16 +56,22 @@ Call the close() method when the workitem data is no longer needed.
 Within a JSF form, the items of a workitem can be accessed by the getter method getWorkitem().
 
 	#{workflowController.workitem.item['$workflowstatus']}
- 
-
-
 
 ## The ViewController
 
-The ViewController is a @ViewScoped CDI bean to select data defined by a search query.
-This bean is used to display a data result in a JSF page and suppors also a pagination mechanism.
+The ViewController is a @ViewScoped CDI bean providing a query and pagination definition. The bean can be used to load a data result from the Imixs-Worklfow engine. To display the data result in a JSP page, the CDI bean ViewHandler can be used (see section below). 
 
-A custom ViewController can be defined by sub-classing:
+The ViewController provides the following properties:
+
+ * query - a Lucene query string
+ * pageIndex - the start page for a query
+ * pageSize - the count of records to be loaded
+ * sortBy - an optional item name to sort the result set
+ * sortReverse - optional defining ascending or descending (true=default) sorting. 
+
+Read more about the search functionality of Imixs-Worklfow in the [section LuceneService](../engine/luceneservice.html). 
+
+To implement custom filters and converters the ViewController can be extended. You just need to overwrite the method _init()_ in your sub-class:
 
 	@Named
 	@ViewScoped
@@ -83,10 +89,12 @@ A custom ViewController can be defined by sub-classing:
 	}
 
 
-The ViewController also provides a pagination mechanism to navigate through a big data set. See the following example:
+### Display a Data Result
 
-	<h:dataTable value="#{tasklistController.data}" var="record">
+The ViewController itself does not hold any data result. This is because the bean is @ViewScoped and so a data result would pollute the session store. 
+To display the data result the @RequestScoped CDI bean 'ViewHandler' can be used. The ViewHandler provides the method _getData(viewConroller)_ to get the data and also provides a pagination mechanism to navigate through a data result. See the following example:
 
+	<h:dataTable value="#{viewHandler.getData(tasklistController)}" var="record">
 		<h:column>
 			<h:outputText value="#{record.item['txtName']} " />
 		</h:column>
@@ -96,21 +104,48 @@ The ViewController also provides a pagination mechanism to navigate through a bi
 		<!-- edit -->
 		<h:column>
 			<h:link outcome="/workitem?faces-redirect=true">
-				<h:outputText value="#{global.edit}" />
+				<h:outputText value="edit" />
 				<f:param name="id" value="#{record.item['$uniqueid']}" />
 			</h:link>
 		</h:column>
+	</h:dataTable>
 
-		</h:dataTable>
+	<!-- navigation -->
+	<h:commandButton 
+		actionListener="#{viewHandler.back(tasklistController)}"
+		disabled="#{tasklistController.pageIndex==0}" value="#{global.prev}">
+	</h:commandButton>
+	<h:commandButton 
+		actionListener="#{viewHandler.forward(tasklistController)}"
+		disabled="#{tasklistController.endOfList}" value="#{global.next}">
+	</h:commandButton>
+	....
+		
 
-		<h:commandButton 
-			actionListener="#{tasklistController.back()}"
-			disabled="#{tasklistController.pageIndex==0}" value="#{global.prev}">
-		</h:commandButton>
 
-		<h:commandButton 
-			actionListener="#{tasklistController.forward()}"
-			disabled="#{tasklistController.endOfList}" value="#{global.next}">
-		</h:commandButton>
-	</h:dataTable>	
+The ViewHandler provides a effective internal caching mechanism which enables you to display different views in one single JSF page. So it is not necessary to subclass the ViewHandler. 
 
+### Refresh a Data Result with Ajax 
+
+You can use the ViewHandler also to display and navigate a data result with ajax: 
+	
+	...
+	<h:panelGroup id="myView" >
+		<!-- pre-compute: #{viewHandler.onLoad(view)}  -->
+		<h:commandLink actionListener="#{viewHandler.back(view)}" 
+						disabled="#{(view.pageIndex == 0)}">back
+						<f:ajax render="myView"/>
+		</h:commandLink>
+		<h:commandLink actionListener="#{viewHandler.forward(view)}" 
+						disabled="#{(view.endOfList)}">forward
+						<f:ajax render="myView"/>
+		</h:commandLink>
+		....
+		<!-- show result -->
+		<ui:repeat var="workitem" value="#{viewHandler.getData(view)}">
+			...
+		</ui:repeat>
+	</h:panelGroup>
+		
+The comment section in this example encapsulates the method call 'onLoad(view)'. This will pre compute the data result. In this way the el expression _view.endOfList_ is computed correctly during navigation.  		
+		

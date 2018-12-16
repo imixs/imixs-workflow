@@ -68,9 +68,6 @@ public class ViewController implements Serializable {
 	private int pageSize = 10;
 	private int pageIndex = 0;
 	private boolean endOfList = false;
-
-	private List<ItemCollection> data = null;
-
 	private static Logger logger = Logger.getLogger(ViewController.class.getName());
 
 	@EJB
@@ -86,7 +83,6 @@ public class ViewController implements Serializable {
 		logger.info("init...");
 	}
 
-	
 	/**
 	 * Returns the search Query
 	 * 
@@ -145,86 +141,13 @@ public class ViewController implements Serializable {
 	 * @return
 	 */
 	public void reset() {
-		data = null;
 		pageIndex = 0;
 	}
 
-	/**
-	 * refreshes the current workitem list. so the list will be loaded again. but
-	 * start pos will not be changed!
-	 */
-	public void refresh() {
-		data = null;
-	}
-
-	public void forward() {
-		pageIndex++;
-		data = null;
-	}
-
-	public void back() {
-		pageIndex--;
-		if (pageIndex < 0) {
-			pageIndex = 0;
-		}
-		data = null;
-	}
-
-	/**
-	 * Returns the current view result. The returned result set is defined by the
-	 * current query definition.
-	 * <p>
-	 * The method implements a lazy loading mechanism and caches the result locally.
-	 * 
-	 * @return view result
-	 * @throws QueryException
-	 */
-	public List<ItemCollection> getData() throws QueryException {
-
-		
-		// return a cached result set?
-		if (data != null)
-			return data;
-
-		data = new ArrayList<ItemCollection>();
-
-		if (query == null || query.isEmpty()) {
-			// no query defined
-			return data;
-		}
-
-		// load data
-		logger.info("...... get data - query=" + query + " pageIndex=" + pageIndex );
-		data = documentService.find(query, getPageSize(), getPageIndex(), getSortBy(), isSortReverse());
-
-		// if no result is defined return an empty list.
-		if (data == null) {
-			data = new ArrayList<ItemCollection>();
-		}
-
-		// The end of a list is reached when the size is below or equal the
-		// pageSize. See issue #287
-		if (data.size() < pageSize) {
-			endOfList = true;
-		} else {
-			// look ahead if we have more entries...
-			int iAhead = (getPageSize() * (getPageIndex() + 1)) + 1;
-			if (documentService.count(query, iAhead) < iAhead) {
-				// there is no more data
-				endOfList = true;
-			} else {
-				endOfList = false;
-			}
-		}
-
-		return data;
-	}
-
-	
 	@Deprecated
 	public List<ItemCollection> getWorkitems() throws QueryException {
-		logger.warning("getWorkitems is deprected - replace with getData");
-		return this.getData();
+		logger.warning("getWorkitems is deprected - replace with viewHandler#getData(viewController)");
+		return null;
 	}
 
 	/***************************************************************************
@@ -245,6 +168,47 @@ public class ViewController implements Serializable {
 
 	public void setEndOfList(boolean endOfList) {
 		this.endOfList = endOfList;
+	}
+
+	/**
+	 * Returns the current view result. The returned result set is defined by the
+	 * current query definition.
+	 * <p>
+	 * The method implements a lazy loading mechanism and caches the result locally.
+	 * 
+	 * @return view result
+	 * @throws QueryException
+	 */
+	public List<ItemCollection> loadData() throws QueryException {
+
+		if (getQuery() == null || getQuery().isEmpty()) {
+			// no query defined
+			logger.warning("now query defined!");
+			return new ArrayList<ItemCollection>();
+		}
+
+		// load data
+		logger.info("...... load data - query=" + getQuery() + " pageIndex=" + getPageIndex());
+		List<ItemCollection> result = documentService.find(getQuery(), getPageSize(), getPageIndex(), getSortBy(),
+				isSortReverse());
+
+		// The end of a list is reached when the size is below or equal the
+		// pageSize. See issue #287
+		if (result.size() < getPageSize()) {
+			setEndOfList(true);
+		} else {
+			// look ahead if we have more entries...
+			int iAhead = (getPageSize() * (getPageIndex() + 1)) + 1;
+			if (documentService.count(getQuery(), iAhead) < iAhead) {
+				// there is no more data
+				setEndOfList(true);
+			} else {
+				setEndOfList(false);
+			}
+		}
+
+		return result;
+
 	}
 
 }

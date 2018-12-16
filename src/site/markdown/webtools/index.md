@@ -40,8 +40,8 @@ Imixs-Faces provides different CDI beans to control the data flow within a JSF a
 
  * DocumentController - A @ConversationScoped CDI bean to view and edit a single document entity 
  * WorkflowController - A @ConversationScoped CDI bean to control the processing life cycle of a single workitem
- * ViewHandler - A @RequestScoped CDI bean to load a result set of documents or workitems to be viewed in a JSF page
- * ViewController - A @ConversationScoped CDI bean to support pagination and filtering in a view.
+ * ViewController - A @ViewScoped CDI bean to control a query defintion, pagination and filtering of a data result.
+ * ViewHandler - A @RequestScoped CDI bean to display the data result provided by the ViewController
  
 To interact a Document or WorkflowController the CDI Event 'WorkflowEvent' can be observed by a client. This simplifies the integration of custom CDI beans and controllers. Read the section [controller](./controller.html) for details. 
 
