@@ -183,7 +183,7 @@ public class ViewController implements Serializable {
 
 		if (getQuery() == null || getQuery().isEmpty()) {
 			// no query defined
-			logger.warning("now query defined!");
+			logger.warning("no query defined!");
 			return new ArrayList<ItemCollection>();
 		}
 

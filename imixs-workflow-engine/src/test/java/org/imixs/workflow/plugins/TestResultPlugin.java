@@ -372,4 +372,42 @@ public class TestResultPlugin {
 		Assert.assertEquals("", adocumentContext.getItemValueString("txtName"));
 
 	}
+	
+	
+	
+	
+	
+	/**
+	 * This test verifies the evaluation of an item tag in case other unspecified tags exits.
+	 * <p>
+	 * {@code<jsf-immediate>true</jsf-immediate>}
+	 * 
+	 * @see imixs-faces - workflow actions
+	 * @throws PluginException
+	 */
+	@Test
+	public void testImediateTag() throws PluginException {
+
+		ItemCollection adocumentContext = new ItemCollection();
+		adocumentContext.replaceItemValue("txtName", "Anna");
+		ItemCollection adocumentActivity = new ItemCollection();
+
+		// clear value...
+		String sResult = "<item name=\"txtName\">some data</item>";
+		sResult = sResult+ "<immediate>true</immediate>";
+		sResult = sResult+ "<item name=\"txtName2\">some other data</item>";
+		logger.info("txtActivityResult=" + sResult);
+
+		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+		// run plugin
+		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+		Assert.assertNotNull(adocumentContext);
+
+		// item should be empty
+		Assert.assertEquals("some data", adocumentContext.getItemValueString("txtName"));
+		
+		
+		
+
+	}
 }
