@@ -47,6 +47,7 @@ import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
@@ -62,6 +63,7 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -130,6 +132,9 @@ public class LuceneUpdateService {
 
 	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
+
+	@Inject
+	LuceneItemAdapter luceneItemAdapter;
 
 	private static Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
 
@@ -629,6 +634,56 @@ public class LuceneUpdateService {
 	 *            indicates if the value should be parsed by the analyzer
 	 */
 	void addItemValues(Document doc, ItemCollection workitem, String itemName, boolean analyzeValue) {
+
+		if (itemName == null) {
+			return;
+		}
+		// item name must be LowerCased and trimmed because of later usage in
+		// doc.add(...)
+		itemName = itemName.toLowerCase().trim();
+
+		List<?> vValues = workitem.getItemValue(itemName);
+		if (vValues.size() == 0) {
+			return;
+		}
+		if (vValues.get(0) == null) {
+			return;
+		}
+
+		boolean firstValue = true;
+		for (Object singleValue : vValues) {
+
+			IndexableField indexableField = luceneItemAdapter.adaptItemValue(itemName, singleValue, analyzeValue);
+
+			doc.add(indexableField);
+
+			// we only add the first value of a multiValue field into the
+			// sort index, because it seems not to make any sense to sort a
+			// result set by multi-values.
+			if (!analyzeValue && firstValue == true) {
+				SortedDocValuesField sortedDocField = luceneItemAdapter.adaptSortableItemValue(itemName, singleValue);
+				doc.add(sortedDocField);
+			}
+
+			firstValue = false;
+		}
+
+	}
+
+	/**
+	 * adds a field value into a lucene document
+	 * 
+	 * @param doc
+	 *            an existing lucene document
+	 * @param workitem
+	 *            the workitem containg the values
+	 * @param itemName
+	 *            the Fieldname inside the workitem
+	 * @param analyzeValue
+	 *            indicates if the value should be parsed by the analyzer
+	 */
+	@Deprecated
+	void addItemValuesOld(Document doc, ItemCollection workitem, String itemName, boolean analyzeValue) {
 		String sValue = null;
 
 		if (itemName == null) {
