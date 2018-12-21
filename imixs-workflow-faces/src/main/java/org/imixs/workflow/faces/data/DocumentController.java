@@ -160,6 +160,9 @@ public class DocumentController extends AbstractDataController implements Serial
 		String sUser = externalContext.getRemoteUser();
 		data.replaceItemValue("$Creator", sUser);
 		data.replaceItemValue("namCreator", sUser); // backward compatibility
+		
+		startConversation();
+		
 		events.fire(new WorkflowEvent(data, WorkflowEvent.DOCUMENT_CREATED));
 		logger.finest("......document created");
 	}

@@ -168,7 +168,7 @@ public abstract class AbstractDataController implements Serializable {
 	 * validation error.
 	 */
 	public void onLoad() {
-		logger.info("...onload...");
+		logger.finest("......onload...");
 		FacesContext facesContext = FacesContext.getCurrentInstance();
 		if (!facesContext.isPostback() && !facesContext.isValidationFailed()) {
 			// ...
@@ -197,7 +197,7 @@ public abstract class AbstractDataController implements Serializable {
 	 */
 	public void load(String uniqueid) {
 		if (uniqueid != null && !uniqueid.isEmpty()) {
-			logger.info("...load uniqueid=" + uniqueid);
+			logger.finest("......load uniqueid=" + uniqueid);
 			data = documentService.load(uniqueid);
 			if (data == null) {
 				data = new ItemCollection();
@@ -225,7 +225,7 @@ public abstract class AbstractDataController implements Serializable {
 	 */
 	public void close() {
 		if (!conversation.isTransient()) {
-			logger.info("......stopping conversation, id=" + conversation.getId());
+			logger.finest("......stopping conversation, id=" + conversation.getId());
 			conversation.end();
 		}
 	}
@@ -239,7 +239,7 @@ public abstract class AbstractDataController implements Serializable {
 					((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
 							.getSession().getMaxInactiveInterval() * 1000);
 			conversation.begin();
-			logger.info("......start new conversation, id=" + conversation.getId());
+			logger.finest("......start new conversation, id=" + conversation.getId());
 		}
 	}
 

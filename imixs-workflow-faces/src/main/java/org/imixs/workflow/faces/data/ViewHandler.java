@@ -67,12 +67,11 @@ public class ViewHandler implements Serializable {
 
 	public ViewHandler() {
 		super();
-		logger.info("...construct...");
 	}
 
 	@PostConstruct
 	public void init() {
-		logger.info("init...");
+		logger.finest("......init data map");
 		data = new HashMap<Integer, List<ItemCollection>>();
 	}
 
@@ -133,30 +132,9 @@ public class ViewHandler implements Serializable {
 		// here we compute the result only in the RENDER_RESPONSE phase
 		FacesContext facesContext = FacesContext.getCurrentInstance();
 		if (facesContext.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE) {
-
 			// load data
-//			logger.info("...... get data - query=" + viewController.getQuery() + " pageIndex="
-//					+ viewController.getPageIndex());
 			result =viewController.loadData();
-//			documentService.find(viewController.getQuery(), viewController.getPageSize(),
-//					viewController.getPageIndex(), viewController.getSortBy(), viewController.isSortReverse());
-
-			// The end of a list is reached when the size is below or equal the
-			// pageSize. See issue #287
-//			if (result.size() < viewController.getPageSize()) {
-//				viewController.setEndOfList(true);
-//			} else {
-//				// look ahead if we have more entries...
-//				int iAhead = (viewController.getPageSize() * (viewController.getPageIndex() + 1)) + 1;
-//				if (documentService.count(viewController.getQuery(), iAhead) < iAhead) {
-//					// there is no more data
-//					viewController.setEndOfList(true);
-//				} else {
-//					viewController.setEndOfList(false);
-//				}
-//			}
-
-			logger.info("...cache with hash=" + getHashKey(viewController));
+			logger.finest("......cache with hash=" + getHashKey(viewController));
 			// cache result
 			data.put(getHashKey(viewController), result);
 		}

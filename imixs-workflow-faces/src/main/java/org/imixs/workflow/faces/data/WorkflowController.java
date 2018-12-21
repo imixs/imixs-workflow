@@ -129,7 +129,6 @@ public class WorkflowController extends AbstractDataController implements Serial
 
 	public WorkflowController() {
 		super();
-		logger.info("...constructor..");
 		setDefaultType("workitem");
 	}
 
@@ -172,6 +171,7 @@ public class WorkflowController extends AbstractDataController implements Serial
 		if (data == null) {
 			return;
 		}
+		
 		ItemCollection startProcessEntity = null;
 		// if no process id was set fetch the first start workitem
 		if (data.getTaskID() <= 0) {
@@ -206,6 +206,7 @@ public class WorkflowController extends AbstractDataController implements Serial
 		data.replaceItemValue("txtworkflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
 		data.replaceItemValue("txtworkflowStatus", startProcessEntity.getItemValueString("txtname"));
 
+		startConversation();
 		// fire event
 		events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_CREATED));
 	}
@@ -364,9 +365,9 @@ public class WorkflowController extends AbstractDataController implements Serial
 	public String process(int id) throws ModelException, PluginException {
 		// update the eventID
 		if (data == null) {
-			logger.info("...process workitem is null");
+			logger.finest("......process workitem is null");
 		} else {
-			logger.info("...process workitem id: " + data.getUniqueID());
+			logger.finest("......process workitem id: " + data.getUniqueID());
 		}
 		this.getWorkitem().setEventID(id);
 		return process();
