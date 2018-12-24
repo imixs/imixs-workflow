@@ -37,8 +37,6 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.event.PhaseId;
 import javax.inject.Named;
 
 import org.imixs.workflow.ItemCollection;
@@ -88,12 +86,12 @@ public class ViewHandler implements Serializable {
 
 	public void forward(ViewController viewController) {
 		data.remove(getHashKey(viewController));
-		viewController.setPageIndex(viewController.getPageIndex()+1);
+		viewController.setPageIndex(viewController.getPageIndex() + 1);
 	}
 
 	public void back(ViewController viewController) {
 		data.remove(getHashKey(viewController));
-		int i=viewController.getPageIndex();
+		int i = viewController.getPageIndex();
 		i--;
 		if (i < 0) {
 			i = 0;
@@ -129,15 +127,11 @@ public class ViewHandler implements Serializable {
 			return result;
 		}
 
-		// here we compute the result only in the RENDER_RESPONSE phase
-		FacesContext facesContext = FacesContext.getCurrentInstance();
-		if (facesContext.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE) {
-			// load data
-			result =viewController.loadData();
-			logger.finest("......cache with hash=" + getHashKey(viewController));
-			// cache result
-			data.put(getHashKey(viewController), result);
-		}
+		// load data
+		result = viewController.loadData();
+		logger.finest("......cache with hash=" + getHashKey(viewController));
+		// cache result
+		data.put(getHashKey(viewController), result);
 
 		return result;
 	}

@@ -59,9 +59,9 @@ Within a JSF form, the items of a workitem can be accessed by the getter method 
 
 ## The ViewController
 
-The ViewController is a @ViewScoped CDI bean providing a query and pagination definition. The bean can be used to load a data result from the Imixs-Worklfow engine. To display the data result in a JSP page, the CDI bean ViewHandler can be used (see section below). 
+The ViewController is a @ViewScoped CDI bean providing a query and pagination definition. The bean can be used to load a data result from the Imixs-Workflow engine. To display the data result in a JSP page, the CDI bean _ViewHandler_ can be used (see section below). 
 
-The ViewController provides the following properties:
+The _ViewController_ provides the following properties to define a data selection:
 
  * query - a Lucene query string
  * pageIndex - the start page for a query
@@ -71,7 +71,7 @@ The ViewController provides the following properties:
 
 Read more about the search functionality of Imixs-Worklfow in the [section LuceneService](../engine/luceneservice.html). 
 
-To implement custom filters and converters the ViewController can be extended. You just need to overwrite the method _init()_ in your sub-class:
+To implement custom filters and converters the _ViewController_ can be easily extended. At least you just need to overwrite the method _init()_ in your sub-class. See the following example defining a query and a sorting:
 
 	@Named
 	@ViewScoped
@@ -91,7 +91,7 @@ To implement custom filters and converters the ViewController can be extended. Y
 
 ### Display a Data Result
 
-The ViewController itself does not hold any data result. This is because the bean is @ViewScoped and so a data result would pollute the session store. 
+The _ViewController_ itself does not hold any data result. This is because the bean is @ViewScoped and so a data result would pollute the session store. 
 To display the data result the @RequestScoped CDI bean 'ViewHandler' can be used. The ViewHandler provides the method _getData(viewConroller)_ to get the data and also provides a pagination mechanism to navigate through a data result. See the following example:
 
 	<h:dataTable value="#{viewHandler.getData(tasklistController)}" var="record">
@@ -123,11 +123,11 @@ To display the data result the @RequestScoped CDI bean 'ViewHandler' can be used
 		
 
 
-The ViewHandler provides a effective internal caching mechanism which enables you to display different views in one single JSF page. So it is not necessary to subclass the ViewHandler. 
+**Note:** The _ViewHandler_ has an effective internal caching mechanism which enables you to display different views in one single JSF page. So it is not necessary to subclass the ViewHandler. 
 
 ### Refresh a Data Result with Ajax 
 
-You can use the ViewHandler also to display and navigate a data result with ajax: 
+You can use the _ViewHandler_ also to display and navigate a data result with ajax: 
 	
 	...
 	<h:panelGroup id="myView" >
