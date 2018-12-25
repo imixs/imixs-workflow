@@ -188,11 +188,19 @@ public class WorkflowController extends AbstractDataController implements Serial
 		startProcessEntity = modelService.getModelByWorkitem(data).getTask(data.getTaskID());
 
 		// ProcessEntity found?
-		if (startProcessEntity == null)
+		if (startProcessEntity == null) {
 			throw new InvalidAccessException(ModelException.INVALID_MODEL_ENTRY,
 					"unable to find ProcessEntity in model version " + data.getModelVersion() + " for ID="
 							+ data.getTaskID());
-
+		}
+		
+		// get type...
+		String type=startProcessEntity.getItemValueString("txttype");
+		if (type.isEmpty()) {
+			type=DEFAULT_TYPE;
+		}
+		data.replaceItemValue("type", type);
+		
 		// update $WriteAccess
 		data.replaceItemValue("$writeaccess", data.getItemValue("$creator"));
 
@@ -288,12 +296,7 @@ public class WorkflowController extends AbstractDataController implements Serial
 			// process workItem now...
 			data = workflowService.processWorkItem(data);
 
-			// fire event
-			long l2 = System.currentTimeMillis();
-			events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_AFTER_PROCESS));
-			logger.finest(
-					"[process] fire WORKITEM_AFTER_PROCESS event: ' in " + (System.currentTimeMillis() - l2) + "ms");
-
+		
 			// test if the property 'action' is provided
 			actionResult = data.getItemValueString("action");
 
@@ -316,8 +319,16 @@ public class WorkflowController extends AbstractDataController implements Serial
 
 			logger.fine("... new actionResult=" + actionResult);
 
+			
+			// fire event
+			long l2 = System.currentTimeMillis();
+			events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_AFTER_PROCESS));
+			logger.finest(
+					"......[process] fire WORKITEM_AFTER_PROCESS event: ' in " + (System.currentTimeMillis() - l2) + "ms");
+
+			
 			if (logger.isLoggable(Level.FINEST)) {
-				logger.finest("[process] '" + getWorkitem().getItemValueString(WorkflowKernel.UNIQUEID)
+				logger.finest("......[process] '" + getWorkitem().getItemValueString(WorkflowKernel.UNIQUEID)
 						+ "' completed in " + (System.currentTimeMillis() - lTotal) + "ms");
 			}
 
