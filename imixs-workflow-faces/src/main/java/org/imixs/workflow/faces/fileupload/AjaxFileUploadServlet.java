@@ -25,7 +25,7 @@ import org.imixs.workflow.FileData;
  * The AjaxFileUploadServlet is a Multipart-Servlet 3.0. It is used by the
  * imixsFileUplad widget. The widget is using a jQuery component to handle the
  * upload of multiple files and supports drag & drop functionality. The servlet
- * is configurered with a max file size to 10MB, and a max request size of 50MB.
+ * is configured with a max file size to 10MB, and a max request size of 50MB.
  * 
  * @author rsoika
  *
