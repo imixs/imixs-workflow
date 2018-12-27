@@ -90,8 +90,6 @@ public abstract class AbstractDataController implements Serializable {
 	@EJB
 	DocumentService documentService;
 
-	String defaultActionResult;
-
 	/**
 	 * This method returns the Default 'type' attribute of the local workitem.
 	 */
@@ -174,16 +172,12 @@ public abstract class AbstractDataController implements Serializable {
 			// ...
 			FacesContext fc = FacesContext.getCurrentInstance();
 			Map<String, String> paramMap = fc.getExternalContext().getRequestParameterMap();
-			// try to extract tjhe uniqueid form the query string...
-
+			// try to extract the uniqueid form the query string...
 			String uniqueid = paramMap.get("id");
 			if (uniqueid == null || uniqueid.isEmpty()) {
 				// alternative 'workitem=...'
 				uniqueid = paramMap.get("workitem");
 			}
-
-			setDefaultActionResult(facesContext.getViewRoot().getViewId());
-
 			load(uniqueid);
 		}
 	}
@@ -205,17 +199,6 @@ public abstract class AbstractDataController implements Serializable {
 			startConversation();
 
 		}
-	}
-
-	public String getDefaultActionResult() {
-		if (defaultActionResult == null) {
-			defaultActionResult = "";
-		}
-		return defaultActionResult;
-	}
-
-	public void setDefaultActionResult(String defaultActionResult) {
-		this.defaultActionResult = defaultActionResult;
 	}
 
 	/**

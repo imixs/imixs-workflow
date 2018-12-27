@@ -209,22 +209,6 @@ public class DocumentController extends AbstractDataController implements Serial
 			logger.fine("......document '" + uniqueID + "' not found (null)");
 		}
 	}
-
-	/**
-	 * This action method deletes a workitem and returns an action result. The
-	 * method expects the result action as a parameter.
-	 * 
-	 * @param currentSelection - workitem to be deleted
-	 * @param action           - return action
-	 * @return action - action event
-	 * @throws AccessDeniedException
-	 */
-	public String delete(String uniqueID, String action) throws AccessDeniedException {
-		delete(uniqueID);
-		return action;
-
-	}
-
 	
 
 	/**

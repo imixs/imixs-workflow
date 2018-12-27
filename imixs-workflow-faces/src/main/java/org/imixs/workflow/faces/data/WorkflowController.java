@@ -37,6 +37,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.ConversationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.ObserverException;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -56,16 +57,17 @@ import org.imixs.workflow.faces.util.ValidationException;
  * The WorkflowController is a @ConversationScoped CDI bean to control the
  * processing life cycle of a workitem in JSF an application. The bean can be
  * used in single page applications, as well for complex page flows. The
- * controller is easy to use and supports bookmarkable URLs.
+ * controller supports bookmarkable URLs.
  * <p>
  * The WorkflowController fires CDI events from the type WorkflowEvent. A CDI
  * bean can observe these events to participate in the processing life cycle.
  * <p>
  * To load a workitem the methods load(id) and onLoad() can be used. The method
- * load expects the uniqueId of a workItem to be loaded. The onLoad() method
+ * load expects a valid uniqueId of a workItem to be loaded. The onLoad() method
  * extracts the uniqueid from the query parameter 'id'. This is the recommended
- * way to support bookmarkable URLs. To load a workitem the onLoad method can be
- * triggered by an jsf viewAction placed in the header of a JSF page:
+ * way to support bookmarkable URLs when opening a JSF page with the data of a
+ * workitem. The onLoad method can be triggered by an jsf viewAction placed in
+ * the header of a JSF page:
  * 
  * <pre>
  * {@code
@@ -91,8 +93,8 @@ import org.imixs.workflow.faces.util.ValidationException;
  * After each call of the method process the Post-Redirect-Get is initialized
  * with the default URL from the start of the conversation. If an alternative
  * action result is provided by the workflow engine, the WorkflowController
- * automaticall redirects the user to the new form outcome. This guarantees
- * bookmakrable URLs.
+ * automatically redirects the user to the new form outcome. This guarantees
+ * bookmarkable URLs.
  * <p>
  * Call the close() method when the workitem data is no longer needed.
  * <p>
@@ -149,7 +151,8 @@ public class WorkflowController extends AbstractDataController implements Serial
 	/**
 	 * Set the current worktItem
 	 * 
-	 * @param workitem - new reference or null to clear the current workItem.
+	 * @param workitem
+	 *            - new reference or null to clear the current workItem.
 	 */
 	public void setWorkitem(ItemCollection workitem) {
 		this.data = workitem;
@@ -161,17 +164,19 @@ public class WorkflowController extends AbstractDataController implements Serial
 	 * attributes '$WriteAccess','$workflowgroup', '$workflowStatus',
 	 * 'txtWorkflowImageURL' and 'txtWorkflowEditorid'.
 	 * 
-	 * @param action - the action returned by this method
+	 * @param action
+	 *            - the action returned by this method
 	 * @return - action
-	 * @throws ModelException is thrown in case not valid worklfow task if defined
-	 *                        by the current model.
+	 * @throws ModelException
+	 *             is thrown in case not valid worklfow task if defined by the
+	 *             current model.
 	 */
 	public void create() throws ModelException {
 
 		if (data == null) {
 			return;
 		}
-		
+
 		ItemCollection startProcessEntity = null;
 		// if no process id was set fetch the first start workitem
 		if (data.getTaskID() <= 0) {
@@ -193,14 +198,14 @@ public class WorkflowController extends AbstractDataController implements Serial
 					"unable to find ProcessEntity in model version " + data.getModelVersion() + " for ID="
 							+ data.getTaskID());
 		}
-		
+
 		// get type...
-		String type=startProcessEntity.getItemValueString("txttype");
+		String type = startProcessEntity.getItemValueString("txttype");
 		if (type.isEmpty()) {
-			type=DEFAULT_TYPE;
+			type = DEFAULT_TYPE;
 		}
 		data.replaceItemValue("type", type);
-		
+
 		// update $WriteAccess
 		data.replaceItemValue("$writeaccess", data.getItemValue("$creator"));
 
@@ -232,16 +237,21 @@ public class WorkflowController extends AbstractDataController implements Serial
 	 * The method starts a new conversation context. Finally the method fires the
 	 * WorkfowEvent WORKITEM_CREATED.
 	 * 
-	 * @param modelVersion - model version
-	 * @param processID    - processID
-	 * @param processRef   - uniqueid ref
+	 * @param modelVersion
+	 *            - model version
+	 * @param processID
+	 *            - processID
+	 * @param processRef
+	 *            - uniqueid ref
 	 */
 
 	public void create(String modelVersion, int taskID, String uniqueIdRef) throws ModelException {
 		// set model information..
-		data=new ItemCollection();
+		data = new ItemCollection();
 		data.model(modelVersion).task(taskID);
 
+		// set optional uniqueidRef
+		data.replaceItemValue(WorkflowService.UNIQUEIDREF, uniqueIdRef);
 		// set default owner
 		data.replaceItemValue("namowner", loginController.getUserPrincipal());
 
@@ -296,15 +306,14 @@ public class WorkflowController extends AbstractDataController implements Serial
 			// process workItem now...
 			data = workflowService.processWorkItem(data);
 
-		
 			// test if the property 'action' is provided
 			actionResult = data.getItemValueString("action");
 
-			// compute the Action result...
-			if ((actionResult == null || actionResult.isEmpty()) && !getDefaultActionResult().isEmpty()) {
-				// construct default action result if no actionResult was
-				// defined
-				actionResult = getDefaultActionResult() + "?id=" + getWorkitem().getUniqueID() + "&faces-redirect=true";
+			// If no action was defined computed it from the current viewID...
+			if (actionResult == null || actionResult.isEmpty()) {
+				FacesContext facesContext = FacesContext.getCurrentInstance();
+				actionResult = facesContext.getViewRoot().getViewId();
+				actionResult = actionResult + "?id=" + getWorkitem().getUniqueID() + "&faces-redirect=true";
 			}
 
 			// test if 'faces-redirect' is included in actionResult
@@ -316,24 +325,20 @@ public class WorkflowController extends AbstractDataController implements Serial
 					actionResult = actionResult + "&faces-redirect=true";
 				}
 			}
-
 			logger.fine("... new actionResult=" + actionResult);
 
-			
 			// fire event
 			long l2 = System.currentTimeMillis();
 			events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_AFTER_PROCESS));
-			logger.finest(
-					"......[process] fire WORKITEM_AFTER_PROCESS event: ' in " + (System.currentTimeMillis() - l2) + "ms");
+			logger.finest("......[process] fire WORKITEM_AFTER_PROCESS event: ' in " + (System.currentTimeMillis() - l2)
+					+ "ms");
 
-			
 			if (logger.isLoggable(Level.FINEST)) {
 				logger.finest("......[process] '" + getWorkitem().getItemValueString(WorkflowKernel.UNIQUEID)
 						+ "' completed in " + (System.currentTimeMillis() - lTotal) + "ms");
 			}
-
-			// stop current conversation - in case of an exception, the conversation will
-			// not be closed.
+			// Finally we close the converstaion. In case of an exception, the conversation
+			// will stay open
 			close();
 
 		} catch (ObserverException oe) {
@@ -361,14 +366,17 @@ public class WorkflowController extends AbstractDataController implements Serial
 			ErrorHandler.handleModelException(me);
 		}
 
-		return ("".equals(actionResult) ? null : actionResult);
+		// return the action result (Post-Redirect-Get). Can be null in case of an
+		// exception
+		return actionResult;
 	}
 
 	/**
 	 * This method processes the current workItem with the provided eventID. The
 	 * method can be used as an action or actionListener.
 	 * 
-	 * @param id - activityID to be processed
+	 * @param id
+	 *            - activityID to be processed
 	 * @throws PluginException
 	 * 
 	 * @see WorkflowController#process()

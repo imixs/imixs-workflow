@@ -75,12 +75,12 @@ public class ViewController implements Serializable {
 
 	public ViewController() {
 		super();
-		logger.info("...construct...");
+		logger.finest("...construct...");
 	}
 
 	@PostConstruct
 	public void init() {
-		logger.info("init...");
+		logger.finest("init...");
 	}
 
 	/**
@@ -188,7 +188,7 @@ public class ViewController implements Serializable {
 		}
 
 		// load data
-		logger.info("...... load data - query=" + getQuery() + " pageIndex=" + getPageIndex());
+		logger.finest("...... load data - query=" + getQuery() + " pageIndex=" + getPageIndex());
 		List<ItemCollection> result = documentService.find(getQuery(), getPageSize(), getPageIndex(), getSortBy(),
 				isSortReverse());
 
