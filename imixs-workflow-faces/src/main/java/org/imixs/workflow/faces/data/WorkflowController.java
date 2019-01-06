@@ -251,7 +251,9 @@ public class WorkflowController extends AbstractDataController implements Serial
 		data.model(modelVersion).task(taskID);
 
 		// set optional uniqueidRef
-		data.replaceItemValue(WorkflowService.UNIQUEIDREF, uniqueIdRef);
+		if (uniqueIdRef != null && !uniqueIdRef.isEmpty()) {
+			data.replaceItemValue(WorkflowService.UNIQUEIDREF, uniqueIdRef);
+		}
 		// set default owner
 		data.replaceItemValue("namowner", loginController.getUserPrincipal());
 

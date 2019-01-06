@@ -116,7 +116,7 @@ public class ViewHandler implements Serializable {
 
 		if (viewController.getQuery() == null || viewController.getQuery().isEmpty()) {
 			// no query defined
-			logger.warning("ViewController - now query defined!");
+			logger.finest("......ViewController - now query defined!");
 			return new ArrayList<ItemCollection>();
 		}
 
