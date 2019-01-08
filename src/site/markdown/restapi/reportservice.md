@@ -13,6 +13,7 @@ The /report GET resources are used to get business objects provided by the Imixs
 | /report/{name}.json                           | the JSON result-set of a report definition                       |
 | /report/{name}.html                           | the HTML output-set of a report definition                       |
 | /report/{name}.imixs-report                   | the XSL result of a report definition                            |
+| /report/custom/{name}.{s:.*}                  | path annotation allows any file extension and variable content types.|
 
 A report definition need to provide a set of informations to define the layout and content of a report
  
@@ -56,7 +57,7 @@ The following example shows a simple XSLT file to format a workitem collection i
 		</xsl:template>
 	</xsl:stylesheet>
 
-###Providing Query Parameters
+### Providing Query Parameters
 A report definition can also contain dynamic query parameters. These parameters can be defined in the search query of the report definition. See the following example of JPQL statement:
   
 	 (type:"workitem") AND ($processid:"?1")
@@ -68,7 +69,7 @@ To provide the Report with the expected parameter ?1 the parameter can be append
 In this example request the URL contains the parameter "?1=5130" which will be inserted into the query statement during the report execution.
 
 
-###Dynamic Date Values
+### Dynamic Date Values
 The JPQL Statement executed by the ReportService may contain dynamic date values. These XML Tags can be used to compute a 
 date during execution time. A dynamic date value is embraced by the 'date' tag:
 
@@ -93,8 +94,21 @@ See the following example to set the start and end date of the last month:
 	                            AND  '<date DAY_OF_MONTH="ACTUAL_MAXIMUM" ADD="MONTH,-1" />' 
 
  
+### Custom Resource Type
  
-##Apache FOP / PDF Reports
+Calling the report api with the path patthern:
+
+	/custom/{name}.{s:.*}
+
+allows to create custom resource types based on a HTML data table. With this resource you can stream the result as an HTML table with the contentType defined by the report definition. A URL can than look like:
+
+	/api/report/custom/[REPORTNAME].ods
+
+with a report content type defintion _application/vnd.ms-excel_ this will lead in most cases to open LibreOffice Calc or MS Excel with the data in a spread sheed.
+
+ 
+ 
+## Apache FOP / PDF Reports
 The Imixs Report rest service provides the option to generate PDF Reports based on the [Apache FOP API](http://xmlgraphics.apache.org/fop/). This  is a flexible way to display workitems in PDF or other File formats supported by Apache FOP. To use FOP API during report processing the Apache FOP API need to be included into the Web Module of the rest service. A report definition also need to define the corresponding content type. This is for example 'application/pdf' to create a 
  pdf file. The XSL instructions need to be replaced with the XSL formatting objects (XSL-FO) instructions.  The following example shows a simple FO template
  
@@ -126,7 +140,7 @@ The Imixs Report rest service provides the option to generate PDF Reports based 
 	</xsl:stylesheet>
 
 
-###Apache FOP / PDF Report Plugin
+### Apache FOP / PDF Report Plugin
 Reports can also be computed during the processing life cycle by adding the following plugin into the process model:
 
     org.imixs.workflow.jee.plugins.ReportPlugin
