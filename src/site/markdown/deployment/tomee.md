@@ -17,7 +17,8 @@ Thus you need first to set up a Database Pool and a JDBC resource before you can
 
 * Install Mysql version 5.7.20 (CE)
 * created the database imixs in MySQL
-* changed the persistence details in persistence.xml in source of imixs-jsf-example-4.0.12
+
+**Note:** You can change the details of the persistence.xml located in _/src/main/resourceses/META-INF_ if necessary. In most cases, however, there is no need for it.
 
 
 
