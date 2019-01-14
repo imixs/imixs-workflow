@@ -552,7 +552,8 @@ public class TestItemCollection {
 	 * used in the $file field
 	 */
 	@Test
-	public void testCloningByteArrays() {
+	@Deprecated
+	public void testCloningByteArraysDeprecated() {
 
 		ItemCollection itemCol1 = new ItemCollection();
 		itemCol1.replaceItemValue("a", 1);
@@ -593,6 +594,56 @@ public class TestItemCollection {
 		Map<String, List<Object>> conedFiles2 = itemCol2.getFiles();
 		List<Object> fileContent2 = conedFiles2.get("test1.txt");
 		byte[] file1Data2 = (byte[]) fileContent2.get(1);
+		// we expect still the empty array
+		Assert.assertArrayEquals(empty, file1Data2);
+
+	}
+	
+	
+	
+	/**
+	 * This method verifies the clone interface in conjunction with byte arrays as
+	 * used in the $file field
+	 */
+	@Test
+	public void testCloningByteArraysWithFileData() {
+
+		ItemCollection itemCol1 = new ItemCollection();
+		itemCol1.replaceItemValue("a", 1);
+		itemCol1.replaceItemValue("b", "hello");
+		itemCol1.replaceItemValue("c", "world");
+		byte[] empty = { 0 };
+		// add a dummy file
+		itemCol1.addFileData(new FileData( "test1.txt",empty, "application/xml",null));
+
+		ItemCollection itemCol2 = (ItemCollection) itemCol1.clone();
+
+		Assert.assertNotNull(itemCol2);
+
+		// test values of clone
+		Assert.assertEquals(1, itemCol2.getItemValueInteger("a"));
+		Assert.assertEquals("hello", itemCol2.getItemValueString("b"));
+		// test the byte content of itemcol2
+		//Map<String, List<Object>> conedFilesTest = itemCol2.getFiles();
+		
+		
+		byte[] file1DataTest = itemCol2.getFileData("test1.txt").getContent();
+
+		Assert.assertArrayEquals(empty, file1DataTest);
+
+		// -------------------
+		// Now we change file content in itemcol1
+		byte[] dummy = { 1, 2, 3 };
+		itemCol1.removeFile("test1.txt");
+		itemCol1.addFileData( new FileData("test1.txt", dummy,"application/xml",null));
+
+		// test the byte content of itemCol1
+		byte[] file1Data1 =  itemCol1.getFileData("test1.txt").getContent();
+		// we expect the new dummy array { 1, 2, 3 }
+		Assert.assertArrayEquals(dummy, file1Data1);
+
+		// test the clone
+		byte[] file1Data2 = itemCol2.getFileData("test1.txt").getContent();
 		// we expect still the empty array
 		Assert.assertArrayEquals(empty, file1Data2);
 
@@ -719,7 +770,8 @@ public class TestItemCollection {
 	 */
 	@Test
 	@Category(org.imixs.workflow.ItemCollection.class)
-	public void testFileData() {
+	@Deprecated
+	public void testFileDataDeprecated() {
 		ItemCollection itemColSource = new ItemCollection();
 
 		// add a dummy file
@@ -746,6 +798,36 @@ public class TestItemCollection {
 		conedFiles1 = itemColTarget.getFiles();
 		fileContent1 = conedFiles1.get("test1.txt");
 		file1Data1 = (byte[]) fileContent1.get(1);
+		// we expect the new dummy array { 1, 2, 3 }
+		Assert.assertArrayEquals(empty, file1Data1);
+
+	}
+	
+	@Test
+	@Category(org.imixs.workflow.ItemCollection.class)
+	public void testFileData() {
+		ItemCollection itemColSource = new ItemCollection();
+
+		// add a dummy file
+		byte[] empty = { 0 };
+		itemColSource.addFileData(new FileData( "test1.txt", empty,"application/xml",null));
+
+		ItemCollection itemColTarget = new ItemCollection();
+
+		itemColTarget.addFileData(itemColSource.getFileData("test1.txt"));
+
+		FileData filedata = itemColTarget.getFileData("test1.txt");
+		Assert.assertNotNull(filedata);
+		Assert.assertEquals("test1.txt", filedata.getName());
+		Assert.assertEquals("application/xml", filedata.getContentType());
+
+		// test the byte content of itemColSource
+		byte[] file1Data1 =itemColSource.getFileData("test1.txt").getContent();
+		// we expect the new dummy array { 1, 2, 3 }
+		Assert.assertArrayEquals(empty, file1Data1);
+
+		// test the byte content of itemColTarget
+		file1Data1 = itemColTarget.getFileData("test1.txt").getContent();
 		// we expect the new dummy array { 1, 2, 3 }
 		Assert.assertArrayEquals(empty, file1Data1);
 

@@ -37,7 +37,6 @@ import java.net.URLDecoder;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -62,6 +61,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
+import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowService;
@@ -163,14 +163,13 @@ public class WorkflowRestService {
 	/**
 	 * Returns a file attachment located in the property $file of the specified
 	 * workitem
-	 * 
+	 * <p>
 	 * The file name will be encoded. With a URLDecode the filename is decoded in
 	 * different formats and searched in the file list. This is not a nice solution.
 	 * 
 	 * @param uniqueid
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes" })
 	@GET
 	@Path("/workitem/{uniqueid}/file/{file}")
 	public Response getWorkItemFile(@PathParam("uniqueid") String uniqueid, @PathParam("file") @Encoded String file,
@@ -185,50 +184,28 @@ public class WorkflowRestService {
 				String fileNameUTF8 = URLDecoder.decode(file, "UTF-8");
 				String fileNameISO = URLDecoder.decode(file, "ISO-8859-1");
 
-				// fetch $file from hashmap....
-				Map mapFiles = workItem.getFiles();
-				if (mapFiles != null) {
-					Object fileInfoObject = null;
-					// try to guess encodings.....
-					fileInfoObject = mapFiles.get(fileNameUTF8);
-					if (fileInfoObject == null)
-						fileInfoObject = mapFiles.get(fileNameISO);
-					if (fileInfoObject == null)
-						fileInfoObject = mapFiles.get(file);
-
-					if (fileInfoObject != null) {
-						String sContentType = null;
-						byte[] fileContent = null;
-						// fileInfoObject can be a List or a an Array
-						if (fileInfoObject instanceof List) {
-							sContentType = ((List) fileInfoObject).get(0).toString();
-							fileContent = (byte[]) ((List) fileInfoObject).get(1);
-						} else {
-							// seems to be an array...
-							sContentType = ((Object[]) fileInfoObject)[0].toString();
-							fileContent = (byte[]) ((Object[]) fileInfoObject)[1];
-						}
-
-						// Set content type in order of the contentType stored
-						// in the $file attribute
-						Response.ResponseBuilder builder = Response.ok(fileContent, sContentType);
-
-						return builder.build();
-
-					} else {
-						logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '"
-								+ uniqueid + "' - error: Filename not found!");
-
-						// workitem not found
-						return Response.status(Response.Status.NOT_FOUND).build();
-					}
+				// fetch FileData object
+				FileData fileData=null;
+				// try to guess encodings.....
+				fileData=workItem.getFileData(fileNameUTF8);
+				if (fileData == null)
+					fileData = workItem.getFileData(fileNameISO);
+				if (fileData == null)
+					fileData = workItem.getFileData(file);
+				
+				
+				if (fileData != null) {
+					// Set content type in order of the contentType stored
+					// in the $file attribute
+					Response.ResponseBuilder builder = Response.ok(fileData.getContent(), fileData.getContentType());
+					return builder.build();
 				} else {
-					logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
-							+ "' - error: No files available!");
-
+					logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '"
+							+ uniqueid + "' - error: Filename not found!");
 					// workitem not found
 					return Response.status(Response.Status.NOT_FOUND).build();
 				}
+				
 			} else {
 				logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
 						+ "' - error: Workitem not found!");

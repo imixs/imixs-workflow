@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.exceptions.InvalidAccessException;
@@ -94,7 +95,8 @@ public class ItemCollection implements Cloneable {
 	/**
 	 * Creates a new ItemCollection and makes a deep copy from a given value Map
 	 * 
-	 * @param map - with item values
+	 * @param map
+	 *            - with item values
 	 */
 	public ItemCollection(Map<String, List<Object>> map) {
 		super();
@@ -105,7 +107,8 @@ public class ItemCollection implements Cloneable {
 	 * Creates a new ItemCollection and makes a deep copy from a given
 	 * ItemCollection
 	 * 
-	 * @param itemCol - ItemCollection with values
+	 * @param itemCol
+	 *            - ItemCollection with values
 	 */
 	public ItemCollection(ItemCollection itemCol) {
 		super();
@@ -119,7 +122,8 @@ public class ItemCollection implements Cloneable {
 	 * all other cases, the constructor method 'ItemCollection(Map<String,
 	 * List<Object>> map)' should be used.
 	 * 
-	 * @param map - reference with item values
+	 * @param map
+	 *            - reference with item values
 	 */
 	public static ItemCollection createByReference(final Map<String, List<Object>> map) {
 		ItemCollection reference = new ItemCollection();
@@ -144,7 +148,8 @@ public class ItemCollection implements Cloneable {
 	 * method makes a deep copy of the current instance and removes items not
 	 * defined by the list of itemNames.
 	 * 
-	 * @param itemNames - list of properties to be copied into the clone
+	 * @param itemNames
+	 *            - list of properties to be copied into the clone
 	 * @return new ItemCollection
 	 */
 	@SuppressWarnings("unchecked")
@@ -189,10 +194,12 @@ public class ItemCollection implements Cloneable {
 	 * If the ItemValue is not serializable the item will be removed.
 	 * <p>
 	 * 
-	 * @param itemName  The name of the item or items you want to replace.
-	 * @param itemValue The value of the new item. The data type of the item depends
-	 *                  upon the data type of value, and does not need to match the
-	 *                  data type of the old item.
+	 * @param itemName
+	 *            The name of the item or items you want to replace.
+	 * @param itemValue
+	 *            The value of the new item. The data type of the item depends upon
+	 *            the data type of value, and does not need to match the data type
+	 *            of the old item.
 	 */
 
 	public ItemCollection setItemValue(String itemName, Object itemValue) {
@@ -214,10 +221,12 @@ public class ItemCollection implements Cloneable {
 	 * If the ItemValue is not serializable the item will be removed.
 	 * 
 	 * 
-	 * @param itemName  The name of the item or items you want to replace.
-	 * @param itemValue The value of the new item. The data type of the item depends
-	 *                  upon the data type of value, and does not need to match the
-	 *                  data type of the old item.
+	 * @param itemName
+	 *            The name of the item or items you want to replace.
+	 * @param itemValue
+	 *            The value of the new item. The data type of the item depends upon
+	 *            the data type of value, and does not need to match the data type
+	 *            of the old item.
 	 */
 	public ItemCollection appendItemValue(String itemName, Object itemValue) {
 		setItemValue(itemName, itemValue, true);
@@ -239,7 +248,8 @@ public class ItemCollection implements Cloneable {
 	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
 	 * item.
 	 * 
-	 * @param itemName The name of an item.
+	 * @param itemName
+	 *            The name of an item.
 	 * @return an untyped list of values contained by the item.
 	 * 
 	 */
@@ -273,9 +283,10 @@ public class ItemCollection implements Cloneable {
 	 * null. The ItemName is not case sensitive. Use hasItem to verify the existence
 	 * of an item.
 	 * 
-	 * @param itemName The item Name.
-	 * @param itemType The type into which the resolve item value should get
-	 *                 converted
+	 * @param itemName
+	 *            The item Name.
+	 * @param itemType
+	 *            The type into which the resolve item value should get converted
 	 * @return the resolved item value as an object of the requested type.
 	 */
 	@SuppressWarnings("unchecked")
@@ -318,9 +329,10 @@ public class ItemCollection implements Cloneable {
 	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
 	 * item.
 	 * 
-	 * @param itemName The item Name.
-	 * @param itemType The type into which the resolved item values should get
-	 *                 converted
+	 * @param itemName
+	 *            The item Name.
+	 * @param itemType
+	 *            The type into which the resolved item values should get converted
 	 * @return the resolved list of item values of the requested type.
 	 */
 
@@ -349,7 +361,8 @@ public class ItemCollection implements Cloneable {
 	/**
 	 * Indicates whether an item exists in the document.
 	 * 
-	 * @param aName The name of an item.
+	 * @param aName
+	 *            The name of an item.
 	 * @return true if an item with name exists in the document, false if no item
 	 *         with name exists in the document
 	 * 
@@ -507,10 +520,12 @@ public class ItemCollection implements Cloneable {
 	 * deprecated and should be replaced by the method setItemvValue.
 	 * 
 	 * @see method setItemValue.
-	 * @param itemName  The name of the item or items you want to replace.
-	 * @param itemValue The value of the new item. The data type of the item depends
-	 *                  upon the data type of value, and does not need to match the
-	 *                  data type of the old item.
+	 * @param itemName
+	 *            The name of the item or items you want to replace.
+	 * @param itemValue
+	 *            The value of the new item. The data type of the item depends upon
+	 *            the data type of value, and does not need to match the data type
+	 *            of the old item.
 	 */
 	public void replaceItemValue(String itemName, Object itemValue) {
 		setItemValue(itemName, itemValue, false);
@@ -526,7 +541,8 @@ public class ItemCollection implements Cloneable {
 	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
 	 * item.
 	 * 
-	 * @param itemName The name of an item.
+	 * @param itemName
+	 *            The name of an item.
 	 * @return the String value of the item
 	 * 
 	 */
@@ -555,7 +571,8 @@ public class ItemCollection implements Cloneable {
 	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
 	 * item.
 	 * 
-	 * @param itemName The name of an item.
+	 * @param itemName
+	 *            The name of an item.
 	 * @return the integer value of the item
 	 */
 	public int getItemValueInteger(String itemName) {
@@ -582,7 +599,8 @@ public class ItemCollection implements Cloneable {
 	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
 	 * item.
 	 * 
-	 * @param itemName The name of an item.
+	 * @param itemName
+	 *            The name of an item.
 	 * @return the Long value of the item
 	 */
 	public long getItemValueLong(String itemName) {
@@ -608,7 +626,8 @@ public class ItemCollection implements Cloneable {
 	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
 	 * item.
 	 * 
-	 * @param itemName The name of an item.
+	 * @param itemName
+	 *            The name of an item.
 	 * @return the Date value of the item
 	 */
 	public Date getItemValueDate(String aName) {
@@ -636,7 +655,8 @@ public class ItemCollection implements Cloneable {
 	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
 	 * item.
 	 * 
-	 * @param itemName The name of an item.
+	 * @param itemName
+	 *            The name of an item.
 	 * @return the double value of the item
 	 */
 	public double getItemValueDouble(String itemName) {
@@ -680,7 +700,8 @@ public class ItemCollection implements Cloneable {
 	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
 	 * item.
 	 * 
-	 * @param itemName The name of an item.
+	 * @param itemName
+	 *            The name of an item.
 	 * @return the float value of the item
 	 */
 	public float getItemValueFloat(String itemName) {
@@ -728,7 +749,8 @@ public class ItemCollection implements Cloneable {
 	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
 	 * item.
 	 * 
-	 * @param itemName The name of an item.
+	 * @param itemName
+	 *            The name of an item.
 	 * @return the boolean value of the item
 	 */
 	public boolean getItemValueBoolean(String itemName) {
@@ -774,14 +796,39 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
-	 * This method adds a fileData object to the ItemCollection. filesData object
-	 * will be stored into the property $file.
+	 * This method adds a fileData object to the ItemCollection. The item '$file'
+	 * stores all data objects.
 	 * 
-	 * @param filedata - a file data object
+	 * @param filedata
+	 *            - a file data object
+	 * @see FileData
 	 */
+	@SuppressWarnings("unchecked")
 	public void addFileData(FileData filedata) {
 		if (filedata != null) {
-			addFile(filedata.content, filedata.name, filedata.contentType);
+			List<Object> vectorFileInfo = null;
+
+			// Store files using a map....
+			Map<String, List<Object>> mapFiles = null;
+			List<?> vFiles = getItemValue("$file");
+			if (vFiles != null && vFiles.size() > 0)
+				mapFiles = (Map<String, List<Object>>) vFiles.get(0);
+			else
+				mapFiles = new LinkedHashMap<String, List<Object>>();
+
+			// existing file will be overridden!
+			vectorFileInfo = new ArrayList<Object>();
+			// put file in a List containing the contentType, content, MD5Checksum and
+			// optional attributes
+			vectorFileInfo.add(filedata.contentType);
+			vectorFileInfo.add(filedata.content);
+			// add optional attributes
+			vectorFileInfo.add(filedata.getAttributes());
+
+			mapFiles.put(filedata.name, vectorFileInfo);
+			replaceItemValue("$file", mapFiles);
+
+			// addFile(filedata.content, filedata.name, filedata.contentType);
 		}
 	}
 
@@ -789,13 +836,18 @@ public class ItemCollection implements Cloneable {
 	 * This method adds a single file to the ItemCollection. files will be stored
 	 * into the property $file.
 	 * 
-	 * @param data        - byte array with file data
-	 * @param fileName    - name of the file attachment
-	 * @param contentType - the contenttype (e.g. 'Text/HTML')
+	 * @param data
+	 *            - byte array with file data
+	 * @param fileName
+	 *            - name of the file attachment
+	 * @param contentType
+	 *            - the contenttype (e.g. 'Text/HTML')
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
+	@Deprecated
 	public void addFile(byte[] data, String fileName, String contentType) {
+		logger.warning("method addFile() is deprecated - replace with addFileData()");
 		if (data != null) {
 			List<Object> vectorFileInfo = null;
 
@@ -834,6 +886,7 @@ public class ItemCollection implements Cloneable {
 	 * @param filename
 	 * @return file data contentType (String) and the content (byte[])
 	 */
+	@Deprecated
 	public List<Object> getFile(String filename) {
 		Map<String, List<Object>> files = this.getFiles();
 		if (files != null) {
@@ -850,27 +903,70 @@ public class ItemCollection implements Cloneable {
 	 * @return FileData object
 	 */
 	public FileData getFileData(String filename) {
-		List<Object> content = getFile(filename);
-		if (content != null) {
-			return new FileData(filename, (byte[]) content.get(1), content.get(0).toString());
-		} else {
+		if (filename==null || filename.isEmpty()) {
 			return null;
 		}
+		List<FileData> files=getFileData();
+		for (FileData fileData: files) {
+			if (filename.equals(fileData.getName())) {
+				return fileData;
+			}
+		}
+		// not found!
+		return null;
 	}
 
 	/**
 	 * Returns a list of all FileData objects.
-	 * 
+	 * <p>
+	 * FileData objects are stored in the attribute '$file'.
 	 *
 	 * @return list of FileData objects
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public List<FileData> getFileData() {
+
 		List<FileData> result = new ArrayList<FileData>();
-		List<String> fileNames = this.getFileNames();
-		for (String filename : fileNames) {
-			result.add(this.getFileData(filename));
+		List<?> vFiles = getItemValue("$file");
+		if (vFiles != null && vFiles.size() > 0) {
+			Map<String, ?> testContent = (Map<String, ?>) vFiles.get(0);
+			for (Entry<String, ?> entry : testContent.entrySet()) {
+				List<Object> data = null;
+				String sFileName = entry.getKey();
+				Object obj = entry.getValue();
+				// test if the value part is a List or an Object[] ?
+				// In case its an Object[] we convert the array to a List
+				if (obj instanceof List) {
+					data = (List<Object>) obj;
+				} else {
+					// convert array to List
+					data = Arrays.asList(obj);
+				}
+				// now we build the FileData object.
+				String contentType = (String) data.get(0);
+				byte[] content = (byte[]) data.get(1);
+				Map<String, List<Object>> attributes = null;
+				// test if we have custom attributes?
+				if (data.size() >= 3) {
+					attributes = (Map<String, List<Object>>) data.get(2);
+				}
+				if (attributes == null) {
+					// try to migrate deprecated 'dms' item......
+					List<Map> vDMS = getItemValue("dms");
+					// test if we found a match....
+					for (Map aMetadata : vDMS) {
+						String sName = getStringValueFromMap(aMetadata, "txtname");
+						if (sFileName.equals(sName)) {
+							attributes = aMetadata;
+							break;
+						}
+					}
+				}
+				result.add(new FileData(sFileName, content, contentType, attributes));
+			}
 		}
 		return result;
+
 	}
 
 	/**
@@ -898,8 +994,10 @@ public class ItemCollection implements Cloneable {
 	 * 
 	 * @return
 	 */
+	@Deprecated
 	@SuppressWarnings("unchecked")
 	public Map<String, List<Object>> getFiles() {
+		logger.warning("method getFiles() is deprecated - replace with getFileData()");
 		List<?> vFiles = getItemValue("$file");
 		if (vFiles != null && vFiles.size() > 0) {
 			// test if the value part is a List or an Object[]. In case its an
@@ -1208,9 +1306,12 @@ public class ItemCollection implements Cloneable {
 	/**
 	 * Helper method to replace an ItemValue.
 	 * 
-	 * @param itemName  - name of the value
-	 * @param itemValue - value
-	 * @param append    - true if the value should be appended to an existing list
+	 * @param itemName
+	 *            - name of the value
+	 * @param itemValue
+	 *            - value
+	 * @param append
+	 *            - true if the value should be appended to an existing list
 	 */
 	@SuppressWarnings("unchecked")
 	private void setItemValue(String itemName, Object itemValue, boolean append) {
@@ -1266,7 +1367,8 @@ public class ItemCollection implements Cloneable {
 		// now itemValue is of instance List
 		if (!validateItemValue(itemValueList)) {
 			String message = "setItemValue failed for item '" + itemName
-					+ "', the value is a non supported object type: " + itemValue.getClass().getName() + " value="+ itemValueList;
+					+ "', the value is a non supported object type: " + itemValue.getClass().getName() + " value="
+					+ itemValueList;
 			logger.warning(message);
 			throw new InvalidAccessException(message);
 		}
@@ -1400,6 +1502,57 @@ public class ItemCollection implements Cloneable {
 		} catch (ClassNotFoundException e) {
 			logger.warning("Unable to clone values of ItemCollection - " + e);
 			return null;
+		}
+	}
+
+	/**
+	 * This is a helper method to check a string value of a map.
+	 * 
+	 * @return String object of a named key
+	 */
+	@SuppressWarnings({ "unchecked", "unused" })
+	private static String getStringValueFromMap(Map<String, List<Object>> hash, String aName) {
+
+		List<Object> v = null;
+
+		if (aName == null) {
+			return null;
+		}
+		aName = aName.toLowerCase().trim();
+
+		Object obj = hash.get(aName);
+		if (obj == null) {
+			return "";
+		}
+
+		if (obj instanceof List) {
+
+			List<Object> oList = (List<Object>) obj;
+			if (oList == null)
+				v = new Vector<Object>();
+			else {
+				v = oList;
+				// scan vector for null values
+				for (int i = 0; i < v.size(); i++) {
+					if (v.get(i) == null)
+						v.remove(i);
+				}
+			}
+
+			if (v.size() == 0)
+				return "";
+			else {
+				// verify if value is null
+				Object o = v.get(0);
+				if (o == null)
+					return "";
+				else
+					return o.toString();
+			}
+		} else {
+			// Value is not a list!
+			logger.warning("getStringValueFromMap - wrong value object found '" + aName + "'");
+			return obj.toString();
 		}
 	}
 

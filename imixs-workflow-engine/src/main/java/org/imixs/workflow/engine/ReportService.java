@@ -295,7 +295,7 @@ public class ReportService {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		byte[] _bytes = XSLHandler.transform(data, xslTemplate, encoding, outputStream);
 
-		FileData fileData = new FileData(fileName, _bytes, sContentType);
+		FileData fileData = new FileData(fileName, _bytes, sContentType,null);
 
 		return fileData;
 

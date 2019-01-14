@@ -249,7 +249,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 					// extract the file content...
 					FileData fileData = null;
 					logger.finest("......filename : " + fileName + ", contentType " + p.getContentType());
-					fileData = new FileData(fileName, b, p.getContentType());
+					fileData = new FileData(fileName, b, p.getContentType(),null);
 					fileDataList.add(fileData);
 
 				}
