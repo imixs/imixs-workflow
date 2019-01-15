@@ -1,8 +1,12 @@
 package org.imixs.workflow;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * Helper class to abstract the file content stored in a ItemCollection.
@@ -109,5 +113,30 @@ public class FileData {
 			attributes = new LinkedHashMap<String, List<Object>>();
 		}
 		attributes.put(name, values);
+	}
+	
+	
+	/**
+	 * Generates a MD5 from a current file content
+	 * 
+	 * @param b
+	 * @return
+	 * @throws NoSuchAlgorithmException
+	 */
+	public String generateMD5() throws NoSuchAlgorithmException {
+		byte[] hash_bytes = MessageDigest.getInstance("MD5").digest(content);
+		return DatatypeConverter.printHexBinary(hash_bytes);
+	}
+
+
+	/**
+	 * Validates a given MD5 checksum
+	 * 
+	 * @return true if equal
+	 * @throws NoSuchAlgorithmException
+	 */
+	public  boolean validateMD5(String checksum) throws NoSuchAlgorithmException {
+		String testChecksum = generateMD5();
+		return (testChecksum.equals(checksum));
 	}
 }
