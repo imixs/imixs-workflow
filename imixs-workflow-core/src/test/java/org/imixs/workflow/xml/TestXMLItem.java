@@ -101,7 +101,6 @@ public class TestXMLItem {
 	/**
 	 * This method test the convertion of a file data structure which is a list with an embedded map
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void testFileDataStructure() {
 		
@@ -128,8 +127,6 @@ public class TestXMLItem {
 		xmlItem.setValue(itemColSource.getItemValue("$file").toArray());
 		Assert.assertEquals("$file", xmlItem.getName());
 		Assert.assertEquals(1, xmlItem.getValue().length);
-
-		
 		
 	}
 
