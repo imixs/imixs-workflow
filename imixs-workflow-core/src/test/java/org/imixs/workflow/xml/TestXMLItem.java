@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.junit.Assert;
 import org.junit.Test;
@@ -93,6 +94,43 @@ public class TestXMLItem {
 		Assert.assertEquals("other data", m2.get("_name").get(0));
 		Assert.assertEquals("Munich", m2.get("_city").get(0));
 
+	}
+
+	
+	
+	/**
+	 * This method test the convertion of a file data structure which is a list with an embedded map
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test
+	public void testFileDataStructure() {
+		
+		ItemCollection itemColSource = new ItemCollection();
+		
+		// first we test without custom attributes
+		// add a dummy file
+		byte[] empty = { 0 };
+		itemColSource.addFileData(new FileData( "test1.txt", empty,"application/xml",null));
+		XMLItem xmlItem = new XMLItem();
+		xmlItem.setName("$file");
+		xmlItem.setValue(itemColSource.getItemValue("$file").toArray());
+		Assert.assertEquals("$file", xmlItem.getName());
+		Assert.assertEquals(1, xmlItem.getValue().length);
+
+		
+		// second we test with custom attributes
+		ItemCollection attributes=new ItemCollection();
+		attributes.setItemValue("comment","some data");
+		attributes.setItemValue("count", 47);
+		itemColSource.addFileData(new FileData( "test1.txt", empty,"application/xml",attributes.getAllItems()));
+		xmlItem = new XMLItem();
+		xmlItem.setName("$file");
+		xmlItem.setValue(itemColSource.getItemValue("$file").toArray());
+		Assert.assertEquals("$file", xmlItem.getName());
+		Assert.assertEquals(1, xmlItem.getValue().length);
+
+		
+		
 	}
 
 }

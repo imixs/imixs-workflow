@@ -79,9 +79,9 @@ public class XMLItem implements java.io.Serializable {
 	}
 
 	/**
-	 * This method returns the value. In case forceConversion=true and the value
-	 * is an array of XMLItem elements, the method converts the elements into a
-	 * Map or List interface.
+	 * This method returns the value. In case forceConversion=true and the value is
+	 * an array of XMLItem elements, the method converts the elements into a Map or
+	 * List interface.
 	 * 
 	 * @see XMLItemCollectionAdapter.getItemCollection()
 	 * @return
@@ -114,9 +114,9 @@ public class XMLItem implements java.io.Serializable {
 	}
 
 	/**
-	 * This method set the value list of the item. The method verifies if the
-	 * values are from basic type or implementing a Map or List interface.
-	 * Otherwise the method prints a warning into the log file.
+	 * This method set the value list of the item. The method verifies if the values
+	 * are from basic type or implementing a Map or List interface. Otherwise the
+	 * method prints a warning into the log file.
 	 * 
 	 * Null values will be converted into an empty vector.
 	 * 
@@ -143,7 +143,7 @@ public class XMLItem implements java.io.Serializable {
 		values = convertXMLGregorianCalendar(values);
 
 		// convert basic types into array
-		if (isBasicType(values)) {
+		if (isArrayOfBasicType(values)) {
 			this.value = values;
 		} else {
 
@@ -174,13 +174,47 @@ public class XMLItem implements java.io.Serializable {
 					this.value = result;
 
 				} else {
-					// unable to convert object!
-					String classNames = "";
-					for (Object singleValue : values) {
-						classNames = classNames + singleValue.getClass().getName() + "; ";
+					// Mixed List ?
+					// it can be that we now have an array of mixed object types.
+					// for this case we try to convert the list manually...
+					List<Object> listOfObjects = new ArrayList<Object>();
+					boolean manualConversionSuccessfull = true;
+					for (Object aSingleObject : values) {
+						if (isBasicType(aSingleObject)) {
+							// normal type....
+							listOfObjects.add(aSingleObject);
+						} else {
+							// maybe we have a Map?
+							if (aSingleObject instanceof Map) {
+								@SuppressWarnings("rawtypes")
+								XMLItem[] embeddedxmlMap = XMLItem.convertMap((Map) aSingleObject);
+								listOfObjects.add(embeddedxmlMap);
+							} else {
+								// maybe we have a List?
+								if (aSingleObject instanceof List) {
+									List<?> valueList = (List<?>) aSingleObject;
+									XMLItem[] result = new XMLItem[valueList.size()];
+									int j = 0;
+									for (Object aObjectOfList : valueList) {
+										XMLItem xmlVal = new XMLItem();
+										List<?> aList = (List<?>) aObjectOfList;
+										xmlVal.setValue(aList.toArray());
+										result[j] = xmlVal;
+										j++;
+									}
+								} else {
+									manualConversionSuccessfull = false;
+									logger.warning("WARNING : XMLItem - property '" + this.name
+											+ "' contains unsupported java types: "
+											+ aSingleObject.getClass().getName());
+									break;
+								}
+							}
+						}
 					}
-					logger.warning("WARNING : XMLItem - property '" + this.name + "' contains unsupported java types: "
-							+ classNames);
+					if (manualConversionSuccessfull) {
+						this.value = listOfObjects.toArray();
+					}
 				}
 			}
 
@@ -285,8 +319,7 @@ public class XMLItem implements java.io.Serializable {
 	}
 
 	/**
-	 * returns true if all elements of values are an array from type XMLItem
-	 * arrays
+	 * returns true if all elements of values are an array from type XMLItem arrays
 	 * 
 	 * @param values
 	 * @return
@@ -324,15 +357,15 @@ public class XMLItem implements java.io.Serializable {
 	}
 
 	/**
-	 * This helper method test if the values of a List are basic types which can
-	 * be converted into a XML element
+	 * This helper method test if the values of a List are basic types which can be
+	 * converted into a XML element
 	 * 
 	 * check for raw arrays, java.lang.*, java.math.*
 	 * 
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	private static boolean isBasicType(java.lang.Object[] v) {
+	private static boolean isArrayOfBasicType(java.lang.Object[] v) {
 		for (Object o : v) {
 
 			if (o == null) {
@@ -341,8 +374,7 @@ public class XMLItem implements java.io.Serializable {
 			// test raw array types first
 			if (o instanceof byte[] || o instanceof boolean[] || o instanceof short[] || o instanceof char[]
 					|| o instanceof int[] || o instanceof long[] || o instanceof float[] || o instanceof double[]
-				    || o instanceof XMLItem[]		
-					) {
+					|| o instanceof XMLItem[]) {
 				continue;
 			}
 
@@ -355,6 +387,35 @@ public class XMLItem implements java.io.Serializable {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * This helper method test if a value of a basic type including check for raw
+	 * arrays, java.lang.*, java.math.*
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	private static boolean isBasicType(java.lang.Object o) {
+
+		if (o == null) {
+			return true;
+		}
+		// test raw array types first
+		if (o instanceof byte[] || o instanceof char[]) {
+			return true;
+		}
+
+		// test package name
+		Class c = o.getClass();
+		String name = c.getName();
+		if (name.startsWith("java.lang.") || name.startsWith("java.math.") || "java.util.Date".equals(name)
+				|| "org.imixs.workflow.xml.XMLItem".equals(name)) {
+			return true;
+		}
+
+		return false;
+
 	}
 
 	/**
