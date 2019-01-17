@@ -237,8 +237,15 @@ public class MailPlugin extends AbstractPlugin {
 					trans.sendMessage(mailMessage, mailMessage.getAllRecipients());
 					trans.close();
 				} else {
+					long l=System.currentTimeMillis();
 					// no authentication - so we simple send the mail...
-					Transport.send(mailMessage);
+					//Transport.send(mailMessage);
+					// issue #467
+					Transport trans = mailSession.getTransport("smtp");//("smtp");
+					trans.connect();
+					trans.sendMessage(mailMessage, mailMessage.getAllRecipients());
+					trans.close();
+					logger.finest("...mail transfer in " + (System.currentTimeMillis() -l) + "ms");
 				}
 				logger.info("...send mail: MessageID=" + mailMessage.getMessageID());
 
