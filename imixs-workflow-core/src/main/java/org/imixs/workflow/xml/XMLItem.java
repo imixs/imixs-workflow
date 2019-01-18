@@ -68,58 +68,10 @@ public class XMLItem implements java.io.Serializable {
 		this.name = name;
 	}
 
-	/**
-	 * This method returns the value array of the item.
-	 * <p>
-	 * In case an object value is an instance of a XMLItem, the method converts the
-	 * object into the corresponding Map or List interface.
-	 * <p>
-	 * 
-	 * @return
-	 */
 	public java.lang.Object[] getValue() {
-
-		Object[] result = new Object[value.length];
-		int j = 0; 
-		for (Object aSingleObject : value) {
-
-			if (aSingleObject instanceof XMLItem) {
-				XMLItem embeddedXMLItem = (XMLItem) aSingleObject;
-				Object[] embeddedValueArray = embeddedXMLItem.getValue();
-				// convert to list...
-				result[j] =  Arrays.asList(embeddedValueArray);
-			} else {
-
-				// is value object of type XMLItem >> Map
-				if (aSingleObject instanceof XMLItem[]) {
-					XMLItem[] innerlist = (XMLItem[]) aSingleObject;
-
-					// create map
-					HashMap<String, List<Object>> map = new HashMap<String, List<Object>>();
-					for (XMLItem x : innerlist) {
-						map.put(x.getName(), Arrays.asList(x.getValue()));
-					}
-					// return resultMap;
-
-					// Map<String, List<Object>> map = XMLItem.convertXMLItemArray(innerlist);
-					result[j] = map;
-				}
-
-				else {
-					// raw type...
-					result[j] = aSingleObject;
-				}
-			}
-
-			j++;
-
-		}
-
-		return result;
+		return value;
 	}
 
-	
-	
 	/**
 	 * This method set the value array of the item. The method verifies if the
 	 * values are from basic type, XMLItem or implementing the Map or List
@@ -190,6 +142,67 @@ public class XMLItem implements java.io.Serializable {
 	}
 
 	/**
+	 * This method returns a transformed version of the XMLItem value array.
+	 * <p>
+	 * In case an object value is an instance of a XMLItem, the method converts the
+	 * object into the corresponding Map or List interface.
+	 * <p>
+	 * 
+	 * @see XMLDocumentAdapter#putDocument(XMLDocument)
+	 * @return
+	 */
+	public java.lang.Object[] transformValue() {
+
+		Object[] result = new Object[value.length];
+		int j = 0;
+		for (Object aSingleObject : value) {
+
+			if (aSingleObject instanceof XMLItem) {
+				XMLItem embeddedXMLItem = (XMLItem) aSingleObject;
+				Object[] embeddedValueArray = embeddedXMLItem.transformValue();
+				// convert to list...
+				result[j] = Arrays.asList(embeddedValueArray);
+			} else {
+
+				// is value object of type XMLItem >> Map
+				if (aSingleObject instanceof XMLItem[]) {
+					XMLItem[] innerlist = (XMLItem[]) aSingleObject;
+
+					// create map
+					HashMap<String, List<Object>> map = new HashMap<String, List<Object>>();
+					for (XMLItem x : innerlist) {
+						map.put(x.getName(), Arrays.asList(x.transformValue()));
+					}
+					// return resultMap;
+
+					// Map<String, List<Object>> map = XMLItem.convertXMLItemArray(innerlist);
+					result[j] = map;
+				}
+
+				else {
+					// raw type...
+					result[j] = aSingleObject;
+				}
+			}
+
+			j++;
+
+		}
+
+		return result;
+	}
+
+	/**
+	 * This method compares the item name and value array
+	 */
+	public boolean equals(Object o) {
+		if (!(o instanceof XMLItem))
+			return false;
+		XMLItem _xmlItem = (XMLItem) o;
+		return (name != null && name.equals(_xmlItem.name) && value != null && Arrays.equals(value, _xmlItem.value));
+	}
+
+	/**
 	 * Converts a Map interface into a Array of XMLItem objects
 	 * 
 	 * @return
@@ -215,24 +228,6 @@ public class XMLItem implements java.io.Serializable {
 
 		return result;
 	}
-
-	
-
-	
-
-	/**
-	 * This method compares the item name and value array
-	 */
-	public boolean equals(Object o) {
-		if (!(o instanceof XMLItem))
-			return false;
-		XMLItem _xmlItem = (XMLItem) o;
-		return (name != null && name.equals(_xmlItem.name) && value != null && Arrays.equals(value, _xmlItem.value));
-	}
-
-	
-
-
 
 	/**
 	 * This helper method test if a value if of a basic java type including check

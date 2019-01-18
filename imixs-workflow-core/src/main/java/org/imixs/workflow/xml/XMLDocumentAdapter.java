@@ -84,7 +84,7 @@ public class XMLDocumentAdapter {
 				String key = it.getName();
 				
 				
-				Object[] valueArray = it.getValue();
+				Object[] valueArray = it.transformValue();
 				if (valueArray == null || valueArray.length==0) {
 					// no value found
 					itemCol.replaceItemValue(key, new Vector());
@@ -93,21 +93,6 @@ public class XMLDocumentAdapter {
 					List valueList = new ArrayList<>(Arrays.asList(valueArray));
 					itemCol.replaceItemValue(key, valueList);
 				}
-				
-//				if (it.getValue() == null) {
-//					// no value found
-//					itemCol.replaceItemValue(key, new Vector());
-//				} else {
-//					// force migration of embedded XMLItem elements!
-//					// create a mutable list
-//					//List valueList = new ArrayList<>(Arrays.asList(it.getValue(true)));
-//					List valueList = new ArrayList<>(Arrays.asList(it.getValue()));
-//					
-//					
-//					// we can not use Arrays.asList() in this content
-//					// because list need to be modified
-//					itemCol.replaceItemValue(key, valueList);
-//				}
 			}
 		return itemCol;
 	}

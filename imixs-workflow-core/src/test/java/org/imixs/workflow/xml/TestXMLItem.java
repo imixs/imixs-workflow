@@ -99,7 +99,7 @@ public class TestXMLItem {
  
 		// test the value object.... force conversion to map interface
 		// Object[] testMaps = xmlItem.getValue(true);
-		Object[] testMaps = xmlItem.getValue();
+		Object[] testMaps = xmlItem.transformValue();
 		// we excpect 2 entries of maps ...
 		Assert.assertEquals(2, testMaps.length);
 
