@@ -82,17 +82,32 @@ public class XMLDocumentAdapter {
 				if (it == null)
 					continue;
 				String key = it.getName();
-				if (it.getValue() == null) {
+				
+				
+				Object[] valueArray = it.getValue();
+				if (valueArray == null || valueArray.length==0) {
 					// no value found
 					itemCol.replaceItemValue(key, new Vector());
 				} else {
-					// force migration of embedded XMLItem elements!
-					// create a mutable list
-					List valueList = new ArrayList<>(Arrays.asList(it.getValue(true)));
-					// we can not use Arrays.asList() in this content
-					// because list need to be modified
+					//create a mutable list
+					List valueList = new ArrayList<>(Arrays.asList(valueArray));
 					itemCol.replaceItemValue(key, valueList);
 				}
+				
+//				if (it.getValue() == null) {
+//					// no value found
+//					itemCol.replaceItemValue(key, new Vector());
+//				} else {
+//					// force migration of embedded XMLItem elements!
+//					// create a mutable list
+//					//List valueList = new ArrayList<>(Arrays.asList(it.getValue(true)));
+//					List valueList = new ArrayList<>(Arrays.asList(it.getValue()));
+//					
+//					
+//					// we can not use Arrays.asList() in this content
+//					// because list need to be modified
+//					itemCol.replaceItemValue(key, valueList);
+//				}
 			}
 		return itemCol;
 	}

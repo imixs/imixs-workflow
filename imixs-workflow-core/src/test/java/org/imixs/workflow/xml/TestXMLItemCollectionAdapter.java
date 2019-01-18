@@ -12,6 +12,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.junit.Assert;
 import org.junit.Test;
@@ -223,6 +224,66 @@ public class TestXMLItemCollectionAdapter {
 	}
 
 	/**
+	 * Test conversion of a ItemCollection containing a Item which value is a array
+	 * of raw types (String and long)
+	 */
+	@SuppressWarnings({ "rawtypes" })
+	@Test
+	public void testItemCollectionContainingListOfArray() {
+		ItemCollection itemColSource = new ItemCollection();
+		itemColSource.replaceItemValue("txtTitel", "Hello");
+
+		String[] valueArray1 = { "ABC", "DEF", "GHI" };
+		itemColSource.replaceItemValue("_stringArrayData", valueArray1);
+
+		long[] valueArray2 = { 1, 2, 3 };
+		itemColSource.replaceItemValue("_longArrayData", valueArray2);
+
+		Long[] valueArray3 = { new Long(1), new Long(2), new Long(3) };
+		itemColSource.replaceItemValue("_longObjectArrayData", valueArray3);
+
+		XMLDocument xmlItemCollection = null;
+		try {
+			xmlItemCollection = XMLDocumentAdapter.getDocument(itemColSource);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// now reconstruct the xmlItemCollection into a ItemCollection...
+		ItemCollection itemColTest = XMLDocumentAdapter.putDocument(xmlItemCollection);
+		Assert.assertEquals(itemColTest.getItemValueString("txttitel"), "Hello");
+
+		// test String array...
+		List listOfList = itemColTest.getItemValue("_stringArrayData");
+		Assert.assertEquals(1, listOfList.size());
+		String[] resultStringArray = (String[]) listOfList.get(0);
+		Assert.assertNotNull(resultStringArray);
+		Assert.assertEquals("ABC", resultStringArray[0]);
+		Assert.assertEquals("DEF", resultStringArray[1]);
+		Assert.assertEquals("GHI", resultStringArray[2]);
+
+		// test long array...
+		listOfList = itemColTest.getItemValue("_LongArrayData");
+		Assert.assertEquals(1, listOfList.size());
+		long[] resultLongArray = (long[]) listOfList.get(0);
+		Assert.assertNotNull(resultStringArray);
+		Assert.assertEquals(1, resultLongArray[0]);
+		Assert.assertEquals(2, resultLongArray[1]);
+		Assert.assertEquals(3, resultLongArray[2]);
+
+		// test long object array...
+		listOfList = itemColTest.getItemValue("_LongObjectArrayData");
+		Assert.assertEquals(1, listOfList.size());
+		Long[] resultLongObjectArray = (Long[]) listOfList.get(0);
+		Assert.assertNotNull(resultStringArray);
+		Assert.assertEquals(new Long(1), resultLongObjectArray[0]);
+		Assert.assertEquals(new Long(2), resultLongObjectArray[1]);
+		Assert.assertEquals(new Long(3), resultLongObjectArray[2]);
+
+	}
+
+	/**
 	 * Test conversion of a ItemCollection containing a Item which value is a single
 	 * Map object
 	 */
@@ -352,6 +413,44 @@ public class TestXMLItemCollectionAdapter {
 		Map<String, List<Object>> mapTest2 = (Map<String, List<Object>>) o2;
 		Assert.assertEquals("other data", mapTest2.get("_name").get(0));
 		Assert.assertEquals("Munich", mapTest2.get("_city").get(0));
+
+	}
+
+	/**
+	 * Test marshaling and unmarshaling FileData Objects.
+	 * 
+	 */
+	@Test
+	public void testItemCollectionContainingFileData() {
+		ItemCollection itemCollection = new ItemCollection();
+		itemCollection.setItemValue("txtTitel", "Hello");
+
+		ItemCollection attributes = new ItemCollection();
+		attributes.setItemValue("comment", "some data");
+		attributes.setItemValue("size", 47);
+
+		// add a dummy file
+		byte[] empty = { 0 };
+		itemCollection.addFileData(new FileData("test1.txt", empty, "application/xml", attributes.getAllItems()));
+
+		// convert to xml
+		XMLDocument xmlItemCollection = null;
+		try {
+			xmlItemCollection = XMLDocumentAdapter.getDocument(itemCollection);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// reconvert inot itemcollection
+		ItemCollection col2 = XMLDocumentAdapter.putDocument(xmlItemCollection);
+
+		Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+		Assert.assertEquals(col2.getItemValueString("txttitel"), "Hello");
+
+		// verify file data....
+		List<FileData> files = col2.getFileData();
+		Assert.assertNotNull(files);
 
 	}
 
