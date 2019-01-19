@@ -153,6 +153,10 @@ public class XMLItem implements java.io.Serializable {
 	 */
 	public java.lang.Object[] transformValue() {
 
+		if (value == null) {
+			return null;
+		}
+
 		Object[] result = new Object[value.length];
 		int j = 0;
 		for (Object aSingleObject : value) {
@@ -242,15 +246,27 @@ public class XMLItem implements java.io.Serializable {
 			return true;
 		}
 
-		// test raw array types first
+		// test raw  types first
 		if (o instanceof byte[] || o instanceof String[] || o instanceof boolean[] || o instanceof short[]
 				|| o instanceof char[] || o instanceof int[] || o instanceof long[] || o instanceof float[]
 				|| o instanceof double[] || o instanceof Long[] || o instanceof Integer[] || o instanceof Double[]
 				|| o instanceof Float[] || o instanceof Short[] || o instanceof XMLItem[]) {
 			return true;
 		}
+				
+		// text mixed object arrays...
+		if (o instanceof Object[]) {
+			Object[] objects=(Object[])o;
+			for (Object oneObject: objects) {
+				if (!isBasicType(oneObject)) {
+					return false;
+				}
+			}
+			// all elements are supported
+			return true;
+		}
 
-		// next test package name
+		// finaly test package name
 		Class c = o.getClass();
 		String name = c.getName();
 		if (name.startsWith("java.lang.") || name.startsWith("java.math.") || "java.util.Date".equals(name)

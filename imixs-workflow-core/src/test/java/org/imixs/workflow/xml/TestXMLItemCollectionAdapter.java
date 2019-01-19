@@ -282,6 +282,47 @@ public class TestXMLItemCollectionAdapter {
 		Assert.assertEquals(new Long(3), resultLongObjectArray[2]);
 
 	}
+	
+	
+	
+	/**
+	 * Test conversion of a ItemCollection containing a Item which value is a array
+	 * of mixed raw types (String and long)
+	 */
+	@SuppressWarnings({ "rawtypes" })
+	@Test
+	public void testItemCollectionContainingListOfMixedArray() {
+		ItemCollection itemColSource = new ItemCollection();
+		itemColSource.replaceItemValue("txtTitel", "Hello");
+
+		Object[] valueArray1 = { "ABC", 4, new Long(5) };
+		itemColSource.replaceItemValue("_mixedArrayData", valueArray1);
+
+		XMLDocument xmlItemCollection = null;
+		try {
+			xmlItemCollection = XMLDocumentAdapter.getDocument(itemColSource);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// now reconstruct the xmlItemCollection into a ItemCollection...
+		ItemCollection itemColTest = XMLDocumentAdapter.putDocument(xmlItemCollection);
+		Assert.assertEquals(itemColTest.getItemValueString("txttitel"), "Hello");
+
+		// test String array...
+		List listOfList = itemColTest.getItemValue("_mixedArrayData");
+		Assert.assertEquals(1, listOfList.size());
+		Object[] resultStringArray = (Object[]) listOfList.get(0);
+		Assert.assertNotNull(resultStringArray);
+		Assert.assertEquals("ABC", resultStringArray[0]);
+		Assert.assertEquals(4, resultStringArray[1]);
+		Assert.assertEquals(new Long(5), resultStringArray[2]);
+
+		
+	}
+
+	
 
 	/**
 	 * Test conversion of a ItemCollection containing a Item which value is a single
