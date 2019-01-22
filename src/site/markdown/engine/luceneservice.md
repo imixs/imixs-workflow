@@ -59,10 +59,20 @@ In OR\_OPERATOR mode terms are considered to be in conjunction: the above mentio
 ### splitOnWhitespace
 Whether query text should be split on whitespace prior to analysis. Default is true. For example _cat dog_ will be treated as _cat AND dog_
  
+ 
+ 
 ## How to Initialize the Lucene Index
 
 The lucene index is automatically written into the Index Directory by the Imixs-Workflow engine.
-However, it some cases it can be necessary to create or update the lucene index manually. For example, this can be the case after a Database restore. 
+However, it is also possible to rebuild the lucene index manually. For example, this can be the case after a Database restore. To force a rebuild of the index it is sufficient to delete the Index Directory and restart the application. The Imixs-Workflow engine will recognize the missing index and start an [AdminP Job](adminp.html) called "REBUILD_LUCENE_INDEX" immediately. 
+
+### Configuration of the REBUILD_LUCENE_INDEX-Job
+
+The _REBUILD_LUCENE_INDEX Job_ can be configured by the following imixs.properties settings:
+
+ * lucene.rebuild.block_size - defines the internal block size of documents be read in one block by the indexer job. The default value is 500. It can be reduced in case the VM heap size is to small.
+  
+ * lucene.rebuild.time_out - defines the internal time out in seconds after the AdminP job will be suspended form 60 seconds. The defautl time out is set to 120 seconds. It can be reduced in case the VM heap size is to small.
 
 ### Initialize the Index with the Imixs-Admin Client 
 The [Imixs-Admin Client](../administration.html) provides a web interface to build a new index. 
