@@ -464,6 +464,12 @@ public class WorkflowKernel {
 		vectorEdgeHistory.addElement(
 				event.getItemValueInteger("numprocessid") + "." + event.getItemValueInteger("numactivityid"));
 
+		
+		// update the next task (can be updated by plugins or conditional events.... 
+		// issue #470
+		itemColNextTask = findNextTask(documentContext, event);
+		
+		
 		// evaluate a split-event and create new versions of the current process
 		// instance.
 		evaluateSplitEvent(event, documentResult);
