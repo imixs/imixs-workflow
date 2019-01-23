@@ -432,20 +432,6 @@ public class WorkflowKernel {
 		}
 		logger.info(msg);
 
-		// compute next task..
-		ItemCollection itemColNextTask = findNextTask(documentContext, event);
-
-		// update the type attribute if defined.
-		// the type attribute can be overwritten by a plug-in
-		String sType = itemColNextTask.getItemValueString("txttype");
-		if (sType != null && !"".equals(sType)) {
-			documentResult.replaceItemValue(TYPE, sType);
-		}
-
-		// update the $workflowGroup
-		documentResult.replaceItemValue(WORKFLOWGROUP, itemColNextTask.getItemValueString("txtworkflowgroup"));
-		logger.finest("......new $workflowGroup=" + documentResult.getItemValueString(WORKFLOWGROUP));
-
 		// execute plugins - PluginExceptions will bubble up....
 		try {
 			documentResult = runPlugins(documentResult, event);
@@ -467,7 +453,7 @@ public class WorkflowKernel {
 		
 		// update the next task (can be updated by plugins or conditional events.... 
 		// issue #470
-		itemColNextTask = findNextTask(documentContext, event);
+		ItemCollection itemColNextTask = findNextTask(documentResult, event);
 		
 		
 		// evaluate a split-event and create new versions of the current process
