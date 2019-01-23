@@ -89,11 +89,9 @@ public class WorkflowKernel {
 	public static final String CREATOR = "$creator";
 	public static final String EDITOR = "$editor";
 	public static final String LASTEDITOR = "$lasteditor";
-	
+
 	public static final String CREATED = "$created";
 	public static final String MODIFIED = "$modified";
-	
-	
 
 	public static final String TYPE = "type";
 
@@ -246,11 +244,20 @@ public class WorkflowKernel {
 	}
 
 	/**
-	 * Processes a workitem. The Workitem have at least provide the properties
-	 * PROCESSID and ACTIVITYID
+	 * Processes a process instance (workitem) based on the current model
+	 * definition. A Workitem must at least provide the properties $TASKID and
+	 * $EVENTID.
+	 * <p>
+	 * During the processing life-cycle more than one event can be processed. This
+	 * depends on the model definition which can define follow-up-events,
+	 * split-events and conditional events.
+	 * <p>
+	 * The method returns an updated instance of the workitem, but did not persist
+	 * the process instance. The persitance mechanisim is covered by the
+	 * WorkflowService.
 	 * 
 	 * @param workitem
-	 *            to be processed.
+	 *            the process instance to be processed.
 	 * @return updated workitem
 	 * @throws PluginException,ModelException
 	 */
@@ -266,17 +273,14 @@ public class WorkflowKernel {
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_PROCESSID,
 					"processing error: $taskID undefined (" + workitem.getTaskID() + ")");
 
-		
 		// check $eventId
 		if (workitem.getEventID() <= 0)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_ACTIVITYID,
 					"processing error: $eventID undefined (" + workitem.getEventID() + ")");
 
-		
 		ItemCollection documentResult = new ItemCollection(workitem);
 		vectorEdgeHistory = new Vector<String>();
 
-		
 		// Check if $UniqueID is available
 		if ("".equals(workitem.getItemValueString(UNIQUEID))) {
 			// generating a new one
@@ -301,7 +305,6 @@ public class WorkflowKernel {
 			documentResult = updateEventList(documentResult);
 		}
 
-
 		return documentResult;
 	}
 
@@ -323,23 +326,23 @@ public class WorkflowKernel {
 	 */
 	public ItemCollection findNextTask(ItemCollection documentContext, ItemCollection event)
 			throws ModelException, PluginException {
-	
+
 		ItemCollection itemColNextTask = null;
-	
+
 		int iNewProcessID = event.getItemValueInteger("numnextprocessid");
 		logger.finest("......next $taskID=" + iNewProcessID + "");
-	
+
 		// test if we have an conditional exclusive Task exits...
 		itemColNextTask = findConditionalExclusiveTask(event, documentContext);
 		if (itemColNextTask != null) {
 			return itemColNextTask;
 		}
-	
+
 		itemColNextTask = findConditionalSplitTask(event, documentContext);
 		if (itemColNextTask != null) {
 			return itemColNextTask;
 		}
-	
+
 		// default behavior
 		if (iNewProcessID > 0) {
 			itemColNextTask = this.ctx.getModelManager().getModel(documentContext.getModelVersion())
@@ -405,16 +408,16 @@ public class WorkflowKernel {
 	}
 
 	/**
-	 * This method process an event by running all registered plug-ins.
-	 * 
-	 * Before a plug-in is called the method updates the 'type' attribute defined by
-	 * the next Task.
-	 * 
-	 * After all plug-ins are processed, the attributes $taskID, $workflowstatus
-	 * and $workflowgroup are updated.
-	 * 
-	 * If an FollowUp Activity is defined (keyFollowUp="1" & numNextActivityID>0)
-	 * the next event will be attached to the $ActiviyIDList.
+	 * This method processes a single event on a workflow instance. All registered
+	 * plug-ins will be executed.
+	 * <p>
+	 * During the processing life-cycle more than one event can be processed. This
+	 * depends on the model definition which can define follow-up-events,
+	 * split-events and conditional events.
+	 * <p>
+	 * After all plug-ins succeeded, the attributes $taskID, $workflowstatus and
+	 * $workflowgroup are updated based on the definition of the target task
+	 * element.
 	 * 
 	 * @throws PluginException,ModelException
 	 */
@@ -423,9 +426,8 @@ public class WorkflowKernel {
 		ItemCollection documentResult = documentContext;
 		// log the general processing message
 		String msg = "processing=" + documentContext.getItemValueString(UNIQUEID) + ", MODELVERSION="
-				+ documentContext.getItemValueString(MODELVERSION) + ", $taskID="
-				+ documentContext.getTaskID() + ", $eventID="
-				+ documentContext.getEventID();
+				+ documentContext.getItemValueString(MODELVERSION) + ", $taskID=" + documentContext.getTaskID()
+				+ ", $eventID=" + documentContext.getEventID();
 
 		if (ctx == null) {
 			logger.warning("no WorkflowContext defined!");
@@ -450,12 +452,10 @@ public class WorkflowKernel {
 		vectorEdgeHistory.addElement(
 				event.getItemValueInteger("numprocessid") + "." + event.getItemValueInteger("numactivityid"));
 
-		
-		// update the next task (can be updated by plugins or conditional events.... 
+		// update the next task (can be updated by plugins or conditional events....
 		// issue #470
 		ItemCollection itemColNextTask = findNextTask(documentResult, event);
-		
-		
+
 		// evaluate a split-event and create new versions of the current process
 		// instance.
 		evaluateSplitEvent(event, documentResult);
@@ -730,7 +730,7 @@ public class WorkflowKernel {
 	 * @throws Exception
 	 */
 	private ItemCollection createVersion(ItemCollection sourceItemCollection) throws PluginException {
-		
+
 		// clone the source workitem with its '$workitemid'
 		ItemCollection itemColNewVersion = (ItemCollection) sourceItemCollection.clone();
 		String id = sourceItemCollection.getUniqueID();
@@ -738,7 +738,7 @@ public class WorkflowKernel {
 		// create a new $Uniqueid to force the generation of a new Entity Instance.
 		itemColNewVersion.replaceItemValue(UNIQUEID, WorkflowKernel.generateUniqueID());
 
-		// update $unqiueIDSource 
+		// update $unqiueIDSource
 		itemColNewVersion.replaceItemValue(UNIQUEIDSOURCE, id);
 
 		// remove $UniqueIDVersions
@@ -791,8 +791,8 @@ public class WorkflowKernel {
 		timestamp|model-version|1010.10|1010|comment
 	 * </code>
 	 * 
-	 * The comment is an optional information generated by Plugins. If a
-	 * property 'txtworkflowactivitylogComment' exits the value will be appended.
+	 * The comment is an optional information generated by Plugins. If a property
+	 * 'txtworkflowactivitylogComment' exits the value will be appended.
 	 * 
 	 * The method restrict the maximum count of entries to avoid a overflow. (issue
 	 * #179)
@@ -816,8 +816,6 @@ public class WorkflowKernel {
 		sLogEntry.append("|");
 		sLogEntry.append(event.getItemValueInteger("numnextprocessid"));
 		sLogEntry.append("|");
-		
-		
 
 		// check for optional log comment
 		String sLogComment = documentContext.getItemValueString("txtworkflowactivitylogComment");
@@ -825,26 +823,26 @@ public class WorkflowKernel {
 			sLogEntry.append(sLogComment);
 
 		// support deprecated field txtworkflowactivitylog
-		List<String> logEntries=null;
+		List<String> logEntries = null;
 		if (!documentContext.hasItem("$eventlog"))
 			logEntries = (List<String>) documentContext.getItemValue("txtworkflowactivitylog"); // deprecated
-		else 
+		else
 			logEntries = (List<String>) documentContext.getItemValue("$eventlog");
 		logEntries.add(sLogEntry.toString());
 
 		// test if the log has exceeded the maximum count of entries
 		while (logEntries.size() > MAXIMUM_ACTIVITYLOGENTRIES) {
-			logger.finest(
-					"......maximum activity log entries=" + MAXIMUM_ACTIVITYLOGENTRIES + " exceeded, remove first entry...");
+			logger.finest("......maximum activity log entries=" + MAXIMUM_ACTIVITYLOGENTRIES
+					+ " exceeded, remove first entry...");
 			logEntries.remove(0);
 		}
 
-		
 		documentResult.replaceItemValue("$eventlog", logEntries);
 
 		documentResult.replaceItemValue("$lastEvent", Integer.valueOf(event.getItemValueInteger("numactivityid")));
 		// deprecated
-		documentResult.replaceItemValue("numlastactivityid",Integer.valueOf(event.getItemValueInteger("numactivityid")));
+		documentResult.replaceItemValue("numlastactivityid",
+				Integer.valueOf(event.getItemValueInteger("numactivityid")));
 
 		return documentResult;
 	}
@@ -873,8 +871,8 @@ public class WorkflowKernel {
 
 		if (event == null)
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), ACTIVITY_NOT_FOUND,
-					"[loadEvent] model entry " + taskID + "." + eventID + " not found for model version '"
-							+ version + "'");
+					"[loadEvent] model entry " + taskID + "." + eventID + " not found for model version '" + version
+							+ "'");
 
 		logger.finest(".......event: " + taskID + "." + eventID + " loaded");
 
@@ -882,8 +880,7 @@ public class WorkflowKernel {
 		if (vectorEdgeHistory != null) {
 			if (vectorEdgeHistory.indexOf((taskID + "." + eventID)) != -1)
 				throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MODEL_ERROR,
-						"[loadEvent] loop detected " + taskID + "." + eventID + ","
-								+ vectorEdgeHistory.toString());
+						"[loadEvent] loop detected " + taskID + "." + eventID + "," + vectorEdgeHistory.toString());
 		}
 
 		return event;
@@ -908,9 +905,10 @@ public class WorkflowKernel {
 				sPluginName = plugin.getClass().getName();
 				logger.finest("......running Plugin: " + sPluginName + "...");
 
-				long lPluginTime=System.currentTimeMillis();
+				long lPluginTime = System.currentTimeMillis();
 				documentResult = plugin.run(documentResult, event);
-				logger.fine("...Plugin '" + sPluginName + "' processing time=" + (System.currentTimeMillis() - lPluginTime) + "ms");
+				logger.fine("...Plugin '" + sPluginName + "' processing time="
+						+ (System.currentTimeMillis() - lPluginTime) + "ms");
 				if (documentResult == null) {
 					logger.severe("[runPlugins] PLUGIN_ERROR: " + sPluginName);
 					for (String sLogEntry : localPluginLog)
