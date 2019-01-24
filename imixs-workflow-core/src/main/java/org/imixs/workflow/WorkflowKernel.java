@@ -415,8 +415,8 @@ public class WorkflowKernel {
 	 * depends on the model definition which can define follow-up-events,
 	 * split-events and conditional events.
 	 * <p>
-	 * After all plug-ins succeeded, the attributes $taskID, $workflowstatus and
-	 * $workflowgroup are updated based on the definition of the target task
+	 * After all plug-ins succeeded, the attributes type, $taskID, $workflowstatus
+	 * and $workflowgroup are updated based on the definition of the target task
 	 * element.
 	 * 
 	 * @throws PluginException,ModelException
@@ -468,6 +468,13 @@ public class WorkflowKernel {
 		// update deprecated attributes txtworkflowStatus and txtworkflowGroup
 		documentResult.replaceItemValue("txtworkflowStatus", documentResult.getItemValueString(WORKFLOWSTATUS));
 		documentResult.replaceItemValue("txtworkflowGroup", documentResult.getItemValueString(WORKFLOWGROUP));
+
+		// update the type attribute if defined.
+		// the type attribute can only be overwritten by a plug-in if the type is not defined by the task!
+		String sType = itemColNextTask.getItemValueString("txttype");
+		if (!"".equals(sType)) {
+			documentResult.replaceItemValue(TYPE, sType);
+		}
 
 		// clear ActivityID
 		documentResult.setEventID(Integer.valueOf(0));

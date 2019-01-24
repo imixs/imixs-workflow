@@ -80,9 +80,14 @@ public class TestWorkflowKernelModels {
 
 			itemCollection = kernel.process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+			Assert.assertEquals("workitem", itemCollection.getItemValueString("type"));
+			Assert.assertEquals(1000, itemCollection.getTaskID());
 
+			itemCollection.event(20);
+			itemCollection = kernel.process(itemCollection);
+			Assert.assertEquals("workitemarchive", itemCollection.getItemValueString("type"));
 			Assert.assertEquals(1100, itemCollection.getTaskID());
-
+			
 		} catch (Exception e) {
 			Assert.fail();
 			e.printStackTrace();
