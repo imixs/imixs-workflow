@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- origin at X=0.0 Y=0.0 -->
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:ext="http://org.eclipse.bpmn2/ext" xmlns:imixs="http://www.imixs.org/bpmn2" xmlns:xs="http://www.w3.org/2001/XMLSchema" id="Definitions_1" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.3.2.Final-v20161020-1541-B59" targetNamespace="http://www.imixs.org/bpmn2">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:ext="http://org.eclipse.bpmn2/ext" xmlns:imixs="http://www.imixs.org/bpmn2" xmlns:xs="http://www.w3.org/2001/XMLSchema" id="Definitions_1" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.5.0.Final-v20180515-1642-B1" targetNamespace="http://www.imixs.org/bpmn2">
   <bpmn2:extensionElements>
     <imixs:item name="txtfieldmapping" type="xs:string">
       <imixs:value><![CDATA[Manager|namManager]]></imixs:value>
@@ -44,7 +44,7 @@
           <imixs:value><![CDATA[test-data]]></imixs:value>
         </imixs:item>
         <imixs:item name="txttype" type="xs:string">
-          <imixs:value><![CDATA[workitem]]></imixs:value>
+          <imixs:value><![CDATA[workitemdeleted]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
@@ -109,7 +109,7 @@
           <imixs:value><![CDATA[namManager]]></imixs:value>
         </imixs:item>
         <imixs:item name="txtactivityresult" type="CDATA">
-          <imixs:value><![CDATA[<item name="type">workitemdeleted</item>]]></imixs:value>
+          <imixs:value><![CDATA[<item name="subtype">deleted</item>]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
       <bpmn2:documentation id="Documentation_3">&lt;b>Submitt&lt;/b> new ticket</bpmn2:documentation>
@@ -117,7 +117,8 @@
     </bpmn2:intermediateCatchEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_7" sourceRef="IntermediateCatchEvent_4" targetRef="Task_2"/>
     <bpmn2:textAnnotation id="TextAnnotation_1">
-      <bpmn2:text>set the type to 'workitemdeleted'</bpmn2:text>
+      <bpmn2:text>set the attribute 'subtype' to 'deleted'.
+The type is defined by the task and can not be modified by a plugin. </bpmn2:text>
     </bpmn2:textAnnotation>
     <bpmn2:association id="Association_1" sourceRef="TextAnnotation_1" targetRef="IntermediateCatchEvent_4"/>
   </bpmn2:process>
@@ -172,9 +173,9 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_TextAnnotation_1" bpmnElement="TextAnnotation_1">
-        <dc:Bounds height="61.0" width="163.0" x="550.0" y="40.0"/>
+        <dc:Bounds height="61.0" width="221.0" x="550.0" y="40.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_14">
-          <dc:Bounds height="55.0" width="151.0" x="556.0" y="40.0"/>
+          <dc:Bounds height="55.0" width="209.0" x="556.0" y="40.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_1" bpmnElement="SequenceFlow_1" sourceElement="BPMNShape_1" targetElement="BPMNShape_Task_1">

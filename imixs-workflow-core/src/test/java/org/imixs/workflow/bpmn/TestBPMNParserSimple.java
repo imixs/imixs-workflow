@@ -98,14 +98,14 @@ public class TestBPMNParserSimple {
 		// test activity 1000.10 submit
 		ItemCollection activity = model.getEvent(1000, 10);
 		Assert.assertNotNull(activity);
-		Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
-
+		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
+		Assert.assertEquals("update", activity.getItemValueString("txtname"));
+		
 		// test activity 1000.20 submit
 		activity = model.getEvent(1000, 20);
 		Assert.assertNotNull(activity);
-		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("update", activity.getItemValueString("txtname"));
+		Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
+		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
 
 	}
 

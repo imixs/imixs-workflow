@@ -61,7 +61,7 @@ public class TestBPMNModelSimple {
 		Assert.assertNotNull(model);
 
 		// test activity 1000.10 submit
-		ItemCollection activity = model.getEvent(1000, 10);
+		ItemCollection activity = model.getEvent(1000, 20);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
 		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
@@ -71,7 +71,7 @@ public class TestBPMNModelSimple {
 		Assert.assertEquals("test", activity.getItemValueString("txtname"));
 
 		// test activity 1000.10 once again
-		activity = model.getEvent(1000, 10);
+		activity = model.getEvent(1000, 20);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
 		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
@@ -182,8 +182,8 @@ public class TestBPMNModelSimple {
 		// test activity 1000.10 submit
 		ItemCollection activity = events.get(0);
 		Assert.assertNotNull(activity);
-		Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
+		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
+		Assert.assertEquals("update", activity.getItemValueString("txtname"));
 
 		// change name of activity....
 		activity.replaceItemValue("txtName", "test");
@@ -193,8 +193,8 @@ public class TestBPMNModelSimple {
 		events = model.findAllEventsByTask(1000);
 		activity = events.get(0);
 		Assert.assertNotNull(activity);
-		Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
+		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
+		Assert.assertEquals("update", activity.getItemValueString("txtname"));
 
 	}
 

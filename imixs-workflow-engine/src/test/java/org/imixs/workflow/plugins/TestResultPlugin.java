@@ -223,10 +223,13 @@ public class TestResultPlugin {
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
 		// run plugin
-		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+		try {
+			adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+			Assert.fail();
+		} catch (PluginException e) {
+			// expected exception - type attribute can not be modified by plugin!
+		}
 		Assert.assertNotNull(adocumentContext);
-
-		Assert.assertEquals("workitemdeleted", adocumentContext.getItemValueString("Type"));
 
 	}
 
@@ -278,9 +281,9 @@ public class TestResultPlugin {
 
 	/**
 	 * This test simulates a workflowService process call.
-	 * 
+	 * <p>
 	 * The test validates the update of the type attribute
-	 * 
+	 * <p>
 	 * event 10 - no type defined - empty event 20 - type = "workitem" event 30 -
 	 * type = "workitemeleted"
 	 * 
@@ -307,13 +310,14 @@ public class TestResultPlugin {
 		workitem.setEventID(20);
 		workitem = workflowMockEnvironment.processWorkItem(workitem);
 		Assert.assertEquals(200, workitem.getTaskID());
-		Assert.assertEquals("workitem", workitem.getType());
+		Assert.assertEquals("workitemdeleted", workitem.getType());
 
 		// case 3 - workitemdeleted
 		workitem.setEventID(30);
 		workitem = workflowMockEnvironment.processWorkItem(workitem);
 		Assert.assertEquals(200, workitem.getTaskID());
 		Assert.assertEquals("workitemdeleted", workitem.getType());
+		Assert.assertEquals("deleted", workitem.getItemValueString("subtype"));
 
 	}
 
@@ -330,7 +334,7 @@ public class TestResultPlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// test new line...
-		String sResult = "  \r\n  some data \r\n <item name='type' >workitemdeleted</item> \r\n ";
+		String sResult = "  \r\n  some data \r\n <item name='subtype' >workitemdeleted</item> \r\n ";
 
 		logger.info("txtActivityResult=" + sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
@@ -339,7 +343,7 @@ public class TestResultPlugin {
 		adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
 		Assert.assertNotNull(adocumentContext);
 
-		Assert.assertEquals("workitemdeleted", adocumentContext.getItemValueString("Type"));
+		Assert.assertEquals("workitemdeleted", adocumentContext.getItemValueString("subType"));
 
 	}
 
