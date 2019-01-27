@@ -1,3 +1,10 @@
+# Goals
+
+ * Keep it short
+ * Say what you really mean - figure out your true meaning
+ * Start boldly - get rid of introductory warm up text
+ 
+
 # Review Process
 
 
