@@ -1,23 +1,25 @@
-#Split & Joins 
-The Imixs Split & Join plugin provides the functionality to create and update sub-process instances from an existing process instance (origin process),  or to update the origin process instance based on the processing instruction of a subprocess instance. 
+# Split & Joins 
+
+With the _Split & Join_ functionality you can split up a process instance (origin) in one or more sub-process instances. The _Split & Join_ functionality is added by the plug-in '_SplitAndJoinPlugin_'.
 
 	org.imixs.workflow.engine.plugins.SplitAndJoinPlugin
 
-A 'split' means that a new subprocess instance will be created and linked to the current process instance (origin process). A 'join' means that a subprocess instance will update the origin process instance. The Split & Join definition is defined in the workflow result of a Imixs-BPMN Event definition using the [Imixs-BPMN modelling tool](../../modelling/index.html).   
 
-The plugin evaluates the following items definition of a workflow result ("txtactivityResult"):
+Depending on the model configuration a sub-process instances can also update the origin process instance. This means that data and the state can join the origin process instance.  
+
+The _Split & Join_ defines the following functions:
  
- * <strong>subprocess_create</strong> = create a new subprocess assigned to the current workitem 
- * <strong>subprocess_update</strong> = update an existing subprocess assigned to the current workitem
- * <strong>origin_update</strong> = update the origin process assigned to the current workitem
+ * <strong>subprocess_create</strong> = creates a new sub-process instance 
+ * <strong>subprocess_update</strong> = update an existing subprocess 
+ * <strong>origin_update</strong> = updates the origin process 
  
-A subprocess instance will contain the ID of the origin process instance stored in the property $uniqueidRef. The origin process will contain a link to the subprocess stored in the property txtworkitemRef. So both workitems are linked together.
+The _Split & Join_ functionality can be defined within the [Imixs-BPMN modelling tool](../../modelling/index.html) by adding a _Split & Join_ function into the workflow result of a Imixs-BPMN Event. 
+
+<img src="../../images/modelling/bpmn_screen_36.png"/> 
  
-<img src="../../images/engine/split-and-join-ref.png"/> 
+## Creating a New Sub-Process Instance
  
-## Creating a new Subprocess
- 
-To create a new subprocess instance during the processing life cycle of an origin process, a item named 'subprocess_create' need to be defined in the corresponding event result. See the following example: 
+To create a new sub-process instance, the following item definition need to be added into the workflow result of an Imixs-BPMN Event: 
  
 	<item name="subprocess_create">
 		<modelversion>1.0.0</modelversion>
@@ -26,19 +28,16 @@ To create a new subprocess instance during the processing life cycle of an origi
 		<items>namTeam</items>
 	</item>
 
-This example will create a new subprocess instance with the model version '1.0.0' and the initial task 100, which will be processed by the eventID 10. The tag 'items' defines a list of attributes to be copied from the origin process into the new subprocess.
+A new sub-process instance can run in the same model as the origin process instance or run in a complete different model.
 
-Both workitems will be connected to each other. The subprocess will contain the $UniqueID of the origin process stored in the property $uniqueidRef. The origin process will contain a link to the subprocess stored in the property txtworkitemRef. So it is possible to navigate between the process instances.
- 
-It is also possible to define multiple subprocess definitions in one workflow result. For each separate definition a new subprocess will be created.
+This example will create a new subprocess instance with the model version '1.0.0' and the initial task 100, which will be processed by the eventID 10. 
+Of course you can also define multiple sub-process definitions in one workflow result. For each separate definition a new sub-process instance will be created.
 
-### Copy Items Source to Target
+### Adding Item Data
 
-The tag 'items' specifies a list of items to be copied from the origin workitem into the subprocess workitem. The tag may contain a list of items separated by comma. 
+The optional tag 'items' defines a list of attributes to be copied from the origin process into the new sub-process. The tag may contain a list of items separated by comma. 
 
     <items>namTeam,txtName,_orderNumber</items>
-
-### Copy Items With Mapped ItemName
 
 To avoid item name conflicts the item name in the target workitem can be mapped by separating the new item name with the a '|' char. 
 
@@ -48,7 +47,7 @@ In this example the item '_ordernumber' will be copied into the target workitem 
 
 ### Copy Items by Regex
 
-You can also define the items to be copied into the target workitem by a regular expression. See the following example with will copy all items starting with alphabetical characters or '_':
+The _items_ tag also suppors regular expression. See the following example with will copy all items starting with alphabetical characters or '_':
 
 	<items>$workflowsummary|_parentworkflowsummary,(^[a-zA-Z]|^_)</items>
 
@@ -57,7 +56,7 @@ A regular expression must always be included in brackets.
 __Note:__ In case of a regular expression you can not use item name mapping with the '|' character. 
  
 
-### Action result
+### The Action result
 
 After a new subprocess was created, an optional action result can be evaluated to overwrite the action result provided by the ResultPlugin.
 The following example computes a new action result based on the uniqueId of the new subprocess:
@@ -69,12 +68,9 @@ The following example computes a new action result based on the uniqueId of the 
 	    <action>/pages/workitems/workitem.jsf?id=<itemvalue>$uniqueid</itemvalue></action>
 	</item>
 
+## Updating a Sub-Process Instance
 
-
- 
-## Updating a Subprocess
-
-To update an existing subprocess instance during the processing life cycle of the origin process, a item named 'subprocess_update' can be defined in the corresponding event result. See the following example: 
+To update an existing sub-process instance the following item definition need to be added into the workflow result of an Imixs-BPMN Event: 
  
 	<item name="subprocess_update">
 		<modelversion>1.0.0</modelversion>
@@ -83,13 +79,11 @@ To update an existing subprocess instance during the processing life cycle of th
 		<items>namTeam</items>
 	</item>
 
-
-The evntId defines the workflow event to be processed on the matching subprocess instance. The tag 'items' defines the list of attributes to be added or updated from the origin process into the new subprocess.
-Subprocesses and the origin process are connected to each other. The subprocess will contain the $UniqueID of the origin process stored in the property $uniqueidRef. The origin process will contain a link to the subprocess stored in the property txtworkitemRef.
+The _task_ tag defines the matching sub-process instance. The sub-process instance will be processed by the EvenID defined by the tag _event_.  
 
 
 ### Regular Expressions
-The definition accepts regular expressions to filter a subset of existing process instances. See the following example:
+The matching algorithm for a sub-process instance accepts also regular expressions. See the following example:
 
 	<item name="subprocess_update">
 		<modelversion>(^1.0)|(^2.0)</modelversion>
@@ -98,7 +92,8 @@ The definition accepts regular expressions to filter a subset of existing proces
 		<items>namTeam</items>
 	</item>
 
-This example applies to all existing subprocess instances with model versions starting with '1.0' or '2.0' and the task 1000 or 1010.
+This example applies to all existing sub-process instances with a model version starting with '1.0' or '2.0' and the taskID 1000 or 1010.
+
 To match all taskIds between 1000 and 1999 the following regular expression can be applied:
 
 	<item name="subprocess_update">
@@ -107,25 +102,21 @@ To match all taskIds between 1000 and 1999 the following regular expression can 
 		<event>20</event>
 		<items>namTeam</items>
 	</item>
- 
 
+## Updating the Origin-Process Instance
 
-
-## Updating the Origin Process
-
-To join the data and status of a subprocess instance with the origin process instance a item named 'origin_update' can be defined in the event result of a subprocess definition. 
-Only one definition to update the origin process is allowed in a subprocess event. See the following example:
+To join the data and status of a sub-process instance back to the origin process, the following item definition need to be added into the workflow result of an Imixs-BPMN Event: 
 
 	<item name="origin_update">
 		<event>20</event>
 		<items>namTeam</items>
 	</item>
 
-The definition will update the origin process instance linked to the current subprocess. As the origin process instance is uniquely defined by the attribute $UniqueIDRef no further expression is needed in this case.   
-The tag 'items' defines the list of attributes to be updated from the subprocess into the origin process.
+The origin-process instance will be processed by the EvenID defined by the tag _event_.  
 
+**Note:** In case of an origin_update, only one definition is allowed in a subprocess event!
 
-### Action result
+### The Action result
 
 After the origin process was updated, an optional action result can be evaluated to overwrite the action result provided by the ResultPlugin.
 The following example computes a new action result based on the uniqueId of the newly created subprocess:
@@ -138,3 +129,11 @@ The following example computes a new action result based on the uniqueId of the 
 	</item>
 
 
+## Linking
+
+After a new sub-process instance was created, both workitems are connected to each other by the items ' _$uniqueidRef_' and '_txtworkitemRef_'.
+
+<img src="../../images/engine/split-and-join-ref.png"/> 
+
+After a _split_ the new sub-process instance is linked to the origin process instance by the item _$uniqueidRef_. The origin process holds the $uniqueids of all sub-process instances in the item _txtworkitemRef_. So both workitems are linked together.
+ 
