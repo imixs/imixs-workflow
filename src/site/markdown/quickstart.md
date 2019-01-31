@@ -1,11 +1,6 @@
 # Quickstart
 
-The following section gives you a brief overview how **Imixs-Workflow** works. 
-
-
-## Modelling with BPMN 2.0
-
-To start with Imixs-Workflow you first create a workflow-model. The model describes your business logic. You can change the logic later without changing one line of code.
+To start with **Imixs-Workflow** you first create a workflow-model. The model describes your business logic. You can change the logic later without changing one line of code.
 Imixs-Workflow is based on the [BPMN 2.0 modeling standard](http://www.bpmn.org/). BPMN is useful for visualizing both - the business process and the responsibilities. 
 
 You create your workflow model with the Eclipse based modeling tool [Imixs-BPMN](./modelling/). Let's take look at a simple example:
@@ -29,19 +24,32 @@ Let's see what the last variant looks like in your Java code:
 
 	ItemCollection workitem=new ItemCollection().model("1.0.0").task(1000).event(10);
 	// assign some business data...
-	workitem.replaceItemValue("_customer","M. Melman");
-	workitem.replaceItemValue("_ordernumber",20051234);
+	workitem.setItemValue("_customer","M. Melman");
+	workitem.setItemValue("_ordernumber",20051234);
 	// process the workitem
 	workitem = workflowService.processWorkItem(workitem);
 
-You inject the Workflow Engine with the annotation @EJB. Next you create a new business object and assign it to your model. You also can add your own business data. Finally you 'process' your object. From now on the newly created process instance is fully under the control of your business model. 
+
+1. You inject the Workflow Engine with the annotation @EJB. 
+2. Next you create a new business object and assign it to your model. 
+3. You also can add your own business data. 
+4. Finally you 'process' your object. 
+
+From now on the newly created process instance is under the control of your business model. 
+After you have created a new process instance you can use the _UniqueID_ to access the instance later: 
+   
+    String uniqueID=workitem.getUnqiueID();
+    ....
+    // load the instance
+    ItemCollection workitem=workflowService.getWorkItem(unqiueID);
+    ....
 
 
 
 ## Why Should You Use It?
 
 So the first question so far is - why should you use a workflow engine? 
-Surely you are also implement your business states within a database. But the reason why you should use a workflow engine comes from a different direction. The workflow engine generates a lot of useful business information behind the scene. 
+Surely you can also implement your business states within a database. But the reason why you should use a workflow engine comes from a different direction. The workflow engine manages your business data behind the scene and generates a lot of useful business information. 
 
 ### Status Information
 

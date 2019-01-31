@@ -26,13 +26,11 @@
 			<item name="Overview" href="index.html" collapse="true">
 				<item name="Quick Start" href="quickstart.html" />
 				<item name="Business Data" href="quickstart/workitem.html" />
-				<item name="Business Process" href="quickstart/businessprocess.html" />
-				<item name="Workflow Engine" href="quickstart/workflowengine.html" />
+				<item name="How to Model..." href="modelling/howto.html" />
 			</item>
 
 			<item name="BPMN 2.0" href="modelling/index.html" collapse="true">
 				<item name="Overview" href="modelling/overview.html" />
-				<item name="How to Model..." href="modelling/howto.html" />
 				<item name="Installation" href="modelling/install.html" />
 				<item name="Eclipse Workbench" href="modelling/eclipse_workbench.html" />
 				<item name="Creating a Model" href="modelling/create_model.html" />

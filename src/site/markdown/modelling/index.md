@@ -9,9 +9,11 @@ The section [Overview](./overview.html) provides general information about how y
 <img src="../images/modelling/bpmn_screen_00.png"/>
  
 
+In the section ['How to model'](howto.html) you will find examples how you can model your business logic with Imixs-BPMN.
+
  
  
-##Support & Community
+## Support & Community
 
 Imixs-BPMN is a open source project. You will find further information about the project here:
 
