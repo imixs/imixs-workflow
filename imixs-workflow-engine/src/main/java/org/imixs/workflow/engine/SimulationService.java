@@ -115,7 +115,7 @@ public class SimulationService implements WorkflowContext {
 		if (events!=null) {
 			events.fire(new ProcessingEvent(workitem, ProcessingEvent.BEFORE_PROCESS));
 		} else {
-			logger.warning("CDI Support is missing - ProcessingEvent wil not be fired");
+			logger.warning("CDI Support is missing - ProcessingEvent will not be fired");
 		}
 		// Fetch the current Profile Entity for this version.
 		WorkflowKernel workflowkernel = new WorkflowKernel(this);

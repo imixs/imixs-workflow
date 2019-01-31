@@ -579,7 +579,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		if (processingEvents != null) {
 			processingEvents.fire(new ProcessingEvent(workitem, ProcessingEvent.BEFORE_PROCESS));
 		} else {
-			logger.warning("CDI Support is missing - ProcessingEvent wil not be fired");
+			logger.warning("CDI Support is missing - ProcessingEvent will not be fired");
 		}
 		// load current instance of this workitem
 		ItemCollection currentInstance = this.getWorkItem(workitem.getItemValueString(WorkflowKernel.UNIQUEID));
