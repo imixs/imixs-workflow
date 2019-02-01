@@ -25,8 +25,9 @@
 		<menu name="Documentation">
 			<item name="Overview" href="index.html" collapse="true">
 				<item name="Quick Start" href="quickstart.html" />
-				<item name="Business Data" href="quickstart/workitem.html" />
 				<item name="How to Model..." href="modelling/howto.html" />
+				<item name="Business Data" href="quickstart/workitem.html" />
+				<item name="Why should I use it?" href="quickstart/why.html" />
 			</item>
 
 			<item name="BPMN 2.0" href="modelling/index.html" collapse="true">

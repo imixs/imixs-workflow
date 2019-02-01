@@ -1,5 +1,5 @@
 
-#How to manage business data
+# How to Manage Business Data
 
 In a business application information need to be managed and distributed in a predefined way. Users edit data, which need to be made available for various actors. Back-end applications need the data to track the status or trigger different events. The data which is  processed by a workflow management system is stored into a database and synchronized with a [business process](./businessprocess.html). 
 This data is called the 'workitem'. 

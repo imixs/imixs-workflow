@@ -1,16 +1,22 @@
-#How to Create a Workflow Model?
-The Imixs-BPMN Plugin is based on the BPMN 2.0 standard. This means every BPMN 2.0 model can be used to be extended with workflow elements provided by the Imixs-BPMN Plugin. A BPMN model containing Imixs-Workflow elements can be executed within the Imixs-Workflow Engine.
+# How to Model with Imixs-BPMN?
 
-An Imixs-Workflow model can contain the elements "Workflow Task" and "Workflow Event". The Workflow-Task element is used to describe a state in a process. The "Workflow Event" describes the  transition from one state to another.
+**Imixs-Workflow** is based on the [BPMN 2.0 modeling standard](http://www.bpmn.org/). BPMN enables you to describe your business process from different perspectives. You can describe the organizational aspects just to give people an understanding of your process. And you can as well model the technical details to execute your process within the Imixs-Workflow engine.
 
-<img src="../images/modelling/example_01.png"/>
+You create an Imixs-Workflow model with the Eclipse based modeling tool [Imixs-BPMN](index.html). To install Imixs-BPMN see the [installation guide](./modelling/install.html).
 
-This example contains two workflow states: 'New Ticket' and 'Open'. The workflow event 'Submit' changes the state of the process instance form 'New Ticket' to 'Open'.
+Let's take look at a simple example:
 
-A 'Workflow Event' is an instance of a BPMN Intermediate Catch Event. A Catch Event should always have an outgoing sequence flow. The outgoing sequence flow of a workflow event points to the Workflow Task assigned to a process instance after the event was processed. 
+<img src="../images/modelling/example_01.png"  />
+
+The blue boxes symbolize a **Task**, while the yellow symbols describe an **Event** that changes the state within the process.
+This example contains two tasks: '_New Ticket_' and '_Open_' and the event '_Submit_'.
+
+A process instance is always assigned to exactly one Task within your model. An event is typically triggered by a process participant within your process. This type of modeling is also known as event-driven modeling. 
+
+
 
 ## Event Gateways
-If a Workflow Task have more than one Workflow Event, the BPMN element "Event Gateway" can be used to model alternative process flows: 
+If a Workflow Task has more than one Workflow Event, the BPMN element "Event Gateway" can be used to model alternative process flows: 
 
 <img src="../images/modelling/example_02.png"/>
 
@@ -18,7 +24,7 @@ A BPMN "Event Gateway" is an exclusive gateway and should always have the gatewa
 
 
 
-##Loop Events
+## Loop Events
 
 In some cases a Workflow Event is used to update a process instance without changing the workflow state. For example if a user added new information to a workitem the status of the process instance did not change: 
 

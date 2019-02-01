@@ -1,17 +1,32 @@
-# How Imixs-Workflow works
+# How Imixs-Workflow Works
 
-**Imixs-Workflow** allows you to describe and execute your business process in a model driven way. The open source workflow engine is based on **BPMN 2.0** and designed for a human-centric business process management. In this way your application supports human skills and activities in a task oriented and event driven way. The Imixs-Workflow engine can be embedded into a Java Enterprise Application, or can be run as a microservice.
+**Imixs-Workflow** is an Open Source Workflow engine optimized for a human-centric business process management. 
+
+ * Imixs-Workflow controls your business processes and distributes tasks within an organization. 
+ 
+ * Imixs-Workflow ensures that all tasks are processed in accordance to your Compliance Guidelines and Business Rules.
+
+ * Imixs-Workflow stores your business data and protects it from unauthorized access. 
+ 
+In this way Imixs-Workflow improves your business processes and supports human skills and activities in a task oriented and event driven way. 
 
 
 ## BPMN 2.0
 
-Imixs-Workflow is based on the [BPMN 2.0 modeling standard](http://www.bpmn.org/). BPMN enables you to describe your business process from different perspectives. You can describe the organizational aspects just to give people an understanding of your process. And you can as well model the technical details to execute your process with Imixs-Workflow engine.
-
-You create a workflow model with the Eclipse based modeling tool [Imixs-BPMN](./modelling/). In Imixs-Workflow the process status is described with the BPMN element '_Task_'. The status change between the Task elements is defined by BPMN element '_Event_'.
+In Imixs-Workflow you can design and execute your business process with the help of the [BPMN 2.0](/modelling.howto.html). 
 
 <img src="./images/bpmn-example01.png"  />
 
-This type of modeling is also known as event-driven modeling. You can find more examples in the section "[How to Model](.//modelling/howto.html)". To install Imixs-BPMN see the [installation guide](./modelling/install.html).
+You will learn to design your own business process in the section "[How to Model with Imixs-BPMN](.//modelling/howto.html)". To install Imixs-BPMN see the [installation guide](./modelling/install.html).
+
+## Integaration 
+
+
+The Imixs-Workflow engine can be integrated in different ways. You can run Imixs-Worklfow as a [Microservice](https://github.com/imixs/imixs-microservice) and interact with the engine through the [Imixs-Rest API](/restapi/index.html).
+Or you can build a Java application and embed the Workflow engine as a library. You can find an example on [Github](https://github.com/imixs/imixs-jsf-example).
+
+
+
 
 
 ## Imixs Microservice
