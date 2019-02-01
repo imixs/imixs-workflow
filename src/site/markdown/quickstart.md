@@ -7,17 +7,16 @@ You create your workflow model with the Eclipse based modeling tool [Imixs-BPMN]
 
 <img src="./images/modelling/order-01.png" />
 
-The blue boxes symbolize a **Task**, while the yellow symbols describe an **Event** that changes the state within the process.
+The blue boxes symbolize **Task** elements, while the yellow symbols describe **Event** elements. The later can change the state within the process.
 An event is typically triggered by a process participant within your application. The example model can be download from [Github](https://github.com/imixs/imixs-workflow/tree/master/src/site/resources/bpmn). 
 
-Next lets see how you can integrate Imixs-Workflow in your own application. 
+Next lets see how you can integrate Imixs-Workflow in your own Java application. 
 
 ## How to Integrate Imixs-Workflow
 
-The Imixs-Workflow engine can be integrated in different ways. You can run Imixs-Worklfow as a [Microservice](https://github.com/imixs/imixs-microservice) and interact with the engine through the [Imixs-Rest API](/restapi/index.html).
-Or you can build a Java application and embed the Workflow engine as a library. You can find an example on [Github](https://github.com/imixs/imixs-jsf-example).
+The Imixs-Workflow engine is based on Jakarta EE and so it can be integrated easily into a business application by injection.
 
-Let's see what the last variant looks like in your Java code:
+Let's see what this looks like in your Java code:
 
 	@EJB
 	private org.imixs.workflow.engine.WorkflowService workflowService;
@@ -35,7 +34,7 @@ Let's see what the last variant looks like in your Java code:
 3. You also can add your own business data. 
 4. Finally you 'process' your object. 
 
-From now on the newly created process instance is under the control of your business model. 
+From now on the newly created **Process Instance** is under the control of your business model. 
 After you have created a new process instance you can use the _UniqueID_ to access the instance later: 
    
     String uniqueID=workitem.getUnqiueID();
@@ -44,16 +43,23 @@ After you have created a new process instance you can use the _UniqueID_ to acce
     ItemCollection workitem=workflowService.getWorkItem(unqiueID);
     ....
 
+Depending on the design of your workflow model a process instance can be assigned to a team or a single process participant. E.g. the method _getWorkListByOwner_ can be used to select all process instances belonging to
+a specified participant:
+
+	List<ItemCollection> result=workflowService.getWorkListByOwner("melman", "workitem", 30, 0,null,false);  
+
+See the documentation of the [WorkflowService](engine/workflowservice.html) for more details. 
 
 
-# What's next?
+## What's Next...
 
-Additional information about how to use the Imixs-Workflow engine can be found here:
+Continue reading more about:
 
  * [How to Model with Imixs-BPMN](./modelling/howto.html)
- * [How to Manage Business Data](./quickstart/workitem.html)
- * [Why Should I Use Imixs-Workflow?](./quickstart/why.html)
- * [The Imixs-BPMN Modeler - User Guide](./modelling/index.html)
- * [The Plugin API](./engine/plugins/index.html)
- * [The Rest API](./restapi/index.html)
+ * [How to Manage your Business Data](./quickstart/workitem.html)
+ * [Why You Should Use Imixs-Workflow](./quickstart/why.html)
+ * [What Means Human Centric Workflow?](./quickstart/human.html)
+ * [Imixs-BPMN - The Modeler User Guide](./modelling/index.html)
+ * [The Imixs-Worklfow Plugin API](./engine/plugins/index.html)
+ * [The Imixs-Worklfow Rest API](./restapi/index.html)
  

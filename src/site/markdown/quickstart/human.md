@@ -16,4 +16,10 @@ You can use Imixs workflow to control access to a process instance in a fine-gra
 
 <img src="../images/bpmn-example02.png" width="500px" />
  
- 
+## What's Next...
+
+Continue reading more about:
+
+ * [Imixs-BPMN - The Modeler User Guide](./modelling/index.html)
+ * [The Imixs-Worklfow Plugin API](./engine/plugins/index.html)
+ * [The Imixs-Worklfow Rest API](./restapi/index.html)

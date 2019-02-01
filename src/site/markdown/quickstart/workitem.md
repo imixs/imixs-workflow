@@ -11,7 +11,7 @@ So a workitem holds business data, entered by a user or controlled by an applica
  
 ## Business data
  
-To manage the data of a workitem, the Imixs Workflow project provides the simple data object - called ItemCollection. A ItemCollection contains a list of items that can store any type of data. There are no restrictions in the amount or size of the data stored into an ItemCollection. See the following example how to use the ItemCollection object:
+To manage the data of a workitem, the Imixs Workflow project provides the simple data object - called _ItemCollection_. A [ItemCollection](../core/itemcollection.html) holds a list of _Items_ that can store any type of data. There are no restrictions in the amount or size of the data stored into an _ItemCollection_. See the following example:
  
     import org.imixs.workflow.ItemCollection;
     .....
@@ -25,20 +25,21 @@ Each item stored into a ItemCollection has a item-name and a item-value. The ite
     String name=workitem.getItemValueString("name");
     int age=workitem.getItemValueInteger("age");
     ....
-  
+ 
+You will find more information in the section [ItemCollection](../core/itemcollection.html).  
  
 ## Workflow data
 
-As explained before, a workitem can not only contain business data, but also information about the process instance which is controlled by the workflow system. This workflow data of a process instance contains for example data like the creation date or the processing status. This is an example how to access this kind of data:
+As explained before, a workitem can not only contain business data, but also information about the process instance which is controlled by the workflow engine. This workflow data of a process instance contains for example the creation date or the processing status. This is an example how to access this kind of data:
  
    
     String uniqueID=workitem.getUnqiueID();
-    int processID=workitem.getTask();
+    int taskID=workitem.getTask();
     String status=workitem.getItemValueString(WorkflowKernle.WORKFLOWSTATUS);
     Date created=workitem.getItemValueDate("$created");
     Date modified=workitem.getItemValueDate("$modified");
   
-The following table provides an overview about the data of a process instance managed by the Imixs-Workflow Engine. The column '_read/write_' indicates if the property can be controlled by an application. The column '_indexed_' indicates if the date item can be searched by the [search index](../engine/queries.html#Query_Items):
+The following table provides an overview about all data items managed by the Imixs-Workflow Engine. The column '_read/write_' indicates if the item can be controlled by an application. The column '_indexed_' indicates if the item can be searched by the [search index](../engine/queries.html#Query_Items):
  
  
 | Property        | Type   |read/write  | indexed | Description												 	|
@@ -86,3 +87,12 @@ Temporarily attributes are indicating the session state of a workitem:
 
 
 
+## What's Next...
+
+Continue reading more about:
+
+ * [Why You Should Use Imixs-Workflow](./quickstart/why.html)
+ * [What Means Human Centric Workflow?](./quickstart/human.html)
+ * [Imixs-BPMN - The Modeler User Guide](./modelling/index.html)
+ * [The Imixs-Worklfow Plugin API](./engine/plugins/index.html)
+ * [The Imixs-Worklfow Rest API](./restapi/index.html)

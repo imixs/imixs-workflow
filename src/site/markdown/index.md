@@ -41,7 +41,7 @@ See also the [Deployment Guide](./deployment/deployment_guide.html) for informat
 
 Imixs-Workflow provides a [Rest Service API](restapi/index.html) and can be run as a service in a microservice architecture. In this architectural style the workflow engine can be bound to any existing business application, independent from the technology behind. Business logic can be changed without changing a single line of code.
 
-You can start with the [Imixs-Microservice Project](https://github.com/imixs/imixs-microservice) which is available on Github, as a template service for your your own project. 
+You can start with the [Imixs-Microservice Project](https://github.com/imixs/imixs-microservice) which is available on Github. You can use the code as a template for your own microservice. 
 
 
 <center><img src="./images/docker_small_h-trans.png"  /></center>

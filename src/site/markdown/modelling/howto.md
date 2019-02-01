@@ -26,7 +26,7 @@ A BPMN "Event Gateway" is an exclusive gateway and should always have the gatewa
 
 ## Loop Events
 
-In some cases a Workflow Event is used to update a process instance without changing the workflow state. For example if a user added new information to a workitem the status of the process instance did not change: 
+In some cases a Workflow Event is used to update a process instance without changing the process state. For example if a user just updates a process instance: 
 
 <img src="../images/modelling/example_03.png"/>
 
@@ -111,5 +111,15 @@ In a complex process model, it can be helpful to avoid too many overlapping sequ
 In a Imixs-Workflow model a Link Event can be modeled using one intermediate "Throw Event" and one intermediate "Catch Event" from the event type 'Link'. Both link events should have the same name to indicate the connection between them.
 
 
+## What's Next...
 
+Continue reading more about:
+
+ * [How to Manage your Business Data](./quickstart/workitem.html)
+ * [Why You Should Use Imixs-Workflow](./quickstart/why.html)
+ * [What Means Human Centric Workflow?](./quickstart/human.html)
+ * [Imixs-BPMN - The Modeler User Guide](./modelling/index.html)
+ * [The Imixs-Worklfow Plugin API](./engine/plugins/index.html)
+ * [The Imixs-Worklfow Rest API](./restapi/index.html)
+ 
  
