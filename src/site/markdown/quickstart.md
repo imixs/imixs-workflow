@@ -57,4 +57,3 @@ Additional information about how to use the Imixs-Workflow engine can be found h
  * [The Plugin API](./engine/plugins/index.html)
  * [The Rest API](./restapi/index.html)
  
-If you have any questions about how Imixs-Worklfow works and how you can use it in your own project, ask your question on the [GitHub Issue Tracker](https://github.com/imixs/imixs-workflow/issues). If you have general questions and your are not sure where to put it, use the [discussion forum on gitter](https://gitter.im/imixs/imixs-workflow). 

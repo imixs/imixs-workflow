@@ -13,111 +13,57 @@ In this way Imixs-Workflow improves your business processes and supports human s
 
 ## BPMN 2.0
 
-In Imixs-Workflow you can design and execute your business process with the help of the [BPMN 2.0](/modelling.howto.html). 
+In Imixs-Workflow you can design and execute your business process with the help of the **BPMN 2.0** modeling standard. BPMN 2.0 makes it easy to change your business logic without changing one single line of code.
 
 <img src="./images/bpmn-example01.png"  />
 
 You will learn to design your own business process in the section "[How to Model with Imixs-BPMN](.//modelling/howto.html)". To install Imixs-BPMN see the [installation guide](./modelling/install.html).
 
-## Integaration 
+## How to Integrate 
 
+The Imixs-Workflow engine can be integrated in different ways: 
 
-The Imixs-Workflow engine can be integrated in different ways. You can run Imixs-Worklfow as a [Microservice](https://github.com/imixs/imixs-microservice) and interact with the engine through the [Imixs-Rest API](/restapi/index.html).
-Or you can build a Java application and embed the Workflow engine as a library. You can find an example on [Github](https://github.com/imixs/imixs-jsf-example).
-
-
-
-
-
-## Imixs Microservice
-
-Imixs-Workflow provides a Rest Service API and can be run as a service in a microservice architecture. In this architectural style the workflow engine can be bound to any existing business application, independent from the technology behind. Business logic can be changed without changing a single line of code.
-
-The [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) provides also a Docker Container. With this technology you can start a Imixs-Workflow instance with one single command. 
-
-
-## What Means Human Centric Workflow?
-
-Imixs-Workflow is supporting human skills, activities and relieves collaboration in a task-oriented manner. For this, each process instance can be assigned to different actors. 
-The main objective is to support the human actors and provide them with relevant information about the business process. The workflow engine ensures that the business process is aligned to predetermined business rules:
+ * Imixs-Workflow can be embedded into a **Jakarta EE** Application and extended by the  **Imixs-Plugin API**.
  
-  * Who is the owner of a business process
-  * Who is allowed to access and modify the data
-  * Who need to be informed next
-  
-In that way Imixs-Workflow help users in starting a new process, finding and processing open tasks and to complete current jobs. The Workflow Engine automatically routes open tasks to the next actor and notifies users about open tasks depending on the current process definition. 
+ * Or you can run Imixs-Worklfow as a **Microservice** and interact with the engine through the **Imixs-Rest API**.
 
-Each business process can involve different users to interact with the Workflow Management System.
-These users are called the *actors*. An Actor can either start, update or read a process instance and also the embedded business data
-Imixs Workflow allows you to assign any kind of business data with a running process instance.
-You can use Imixs workflow to control access to a process instance in a fine-grained way using an ACL. This includes the read and write access for users and roles. The ACL can be defined via the BPMN model for each Task or Event separately. 
 
-<img src="./images/bpmn-example02.png" width="500px" />
+### Imixs-Workflow in the Embedded Mode
+
+Imixs-Workflow is build on the Jakarta EE standard. Within this standard business applications can be developed on a highly scalable and transactional framework. Take a look into the [Quickstart Guide](quickstart.html) to learn how the Imixs-Workflow engine works in your own business application.
+With the [Imixs-Workflow Plugin API](engine/plugins/index.html) you can extend the behavior of Imixs-Workflow. 
  
-## The Architecture
-The architecture of the Imixs-Workflow engine provides a simple concept to develop a business application.
- 
-### The Process Model
-
-The BPMN 2.0 based process model defines tasks and events to describe the life-cycle of a business process. 
-The model driven approach helps to understand what happens in a business process. The Imixs-Workflow engine can start and execute a process instance assigned to a process model.
-
-
-### The Workflow Engine
-The Imixs-Workflow engine persists and controls the process instance into a database. The Workflow Engine ensures that a workitem is in sync with the process model. The Imixs-Workflow engine supports a Plugin-API to implement different function blocks of a workflow management system. 
-This includes, for example: 
-
-* Access Controll
-* Routing 
-* E-Mail Notification
-* Versioning
-* Business Rules
-* Reporting 
-* Archiving
-
-### The Workitem
-A running process instance is called a '*Workitem*'. Each workitem is assigned to a Task in the BPMN model and can contain several business information.
-If a Workitem is still in process, the Workitem is called a '*running process instance*'. After a process instance is finished the workitem is '*closed*'. 
-Imixs Workflow provides an [XML schema](core/xml/index.html) to translate all workflow and business information of a process instance into an open and compatible data format. As a result, business data can be safely archived with Imixs-Workflow for long periods of time.
-
-
-### Tasklists
-A Workflow Management System provides various views of all running process instances. A 'tasklist' contains all open tasks from the view of an individual actor. Imixs-Workflow provides a lot of different views to navigate through the running process instances. 
-  
- 
-## Getting started...
-There are several ways how you can benefit from Imixs-Workflow. The following section gives you a short guideline how to find out the best way to use Imixs-Workflow in your own project.
- 
-### Using the Imixs-Workflow Engine out of the Box
-Using Imixs-Workflow out of the Box is a good starting point to run the workflow engine without modification or Java EE development. 
-You can start with the [Imixs-Microservice Project](https://github.com/imixs/imixs-microservice) which can be deployed in a Java EE Application server or by simply starting a [Docker Container](https://hub.docker.com/r/imixs/imixs-microservice/). 
-
-If you want to develop a business application or embed the Imixs-Workflow engine into an existing project, you can also start with the [Imixs-Workflow Sample Application](sampleapplication.html) which gives a good starting point to develop a new project from scratch. 
-
-Before you start developing with Imixs-Workflow, consider the following:
- 
-  * Provide a database where the workflow data can be stored
-  * Configure a [security realm](./deployment/security.html) for granting access to different actors
-  * Design a workflow model using the [Imixs-Workflow-Modeler](./modelling/index.html) 
-  * Deploy the workflow application on an application server
-  
-
-
-### Using Imixs-Workflow in a Java EE Project 
-Using Imixs-Workflow in a Java EE project is the typical way to extend your own java project with the functionality of a workflow engine.  In this kind of usage you develop your own workflow application. Inside your application you integrate the Imixs-Workflow Engine to provide the typical functionality of a Workflow Management System. 
-
-To integrate Imixs-Workflow engine in an JEE application consider the following steps: 
- 
-  * Add the Imixs-Workflow jar files to your application. 
-  * Add the Imixs-RestService into your application. 
-  * Deploy your application together with the Imixs-Workflow on a application server
-
-Read the [Deployment Guide](./deployment/deployment_guide.html) about how to deploy the Imixs-Workflow engine into an enterprise application (EAR).  
+On Github you will find an [JSF Example application](https://github.com/imixs/imixs-jsf-example) which can be used as a starting point.
+See also the [Deployment Guide](./deployment/deployment_guide.html) for information how to deploy the Imixs-Workflow engine on an application server.  
    
-### Contribute to the Imixs-Workflow project
-You can also help in developing the Imixs-Workflow project or use the results of the project to implement new components. In this case you extend the implementation with additional features or just add a different behavior. So in different of the usage described before, you need more than a running instance of the Workflow  Engine or the Java EE libraries. In this kind of usage you should check out the source code packages from [GitHub](https://github.com/imixs/imixs-workflow) and set up a Java EE Project. The source code include also some JUnit tests which can help to test different behaviors of the engine.
 
-See the [Imixs Workflow community site on GitHub](https://github.com/imixs/imixs-workflow) for source code or ask questions in the issue tracking tool. 
+### Imixs-Worklfow as Part of a Microservice Architecture 
 
- 
- 
+Imixs-Workflow provides a [Rest Service API](restapi/index.html) and can be run as a service in a microservice architecture. In this architectural style the workflow engine can be bound to any existing business application, independent from the technology behind. Business logic can be changed without changing a single line of code.
+
+You can start with the [Imixs-Microservice Project](https://github.com/imixs/imixs-microservice) which is available on Github, as a template service for your your own project. 
+
+
+<center><img src="./images/docker_small_h-trans.png"  /></center>
+
+The Imixs-Worklfow project also supports the use of [Docker](https://www.docker.com/). With this technology you can start an Imixs-Workflow instance with one single command in a container. Learn more about how to containerize Imixs-Workflow in the section [Docker](docker.html). See also the [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) on Github which provides full Docker support.
+
+
+## What's Next...
+
+Get started now and read more about:
+
+ * [The Quickstart Guide](quickstart.html)
+ * [How to Model with Imixs-BPMN](./modelling/howto.html)
+ * [How to Manage your Business Data](./quickstart/workitem.html)
+ * [Why You Should Use Imixs-Workflow](./quickstart/why.html)
+ * [What Means Human Centric Workflow?](./quickstart/human.html)
+ * [Imixs-BPMN - The Modeler User Guide](./modelling/index.html)
+ * [The Imixs-Worklfow Plugin API](./engine/plugins/index.html)
+ * [The Imixs-Worklfow Rest API](./restapi/index.html)
+
+
+## Need Help?
+
+If you have any questions about the Imixs-Worklfow project or how you can best integrate Imixs-Workflow in your own project, 
+[join the Imixs Community](https://www.imixs.org/sub_community.html).
