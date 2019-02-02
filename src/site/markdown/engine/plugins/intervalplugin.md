@@ -1,4 +1,5 @@
-#Interval Plugin 
+# Interval Plugin 
+
 The Imixs Interval Plugin implements an mechanism to adjust a date field of a workitem based on a interval definition. The interval description is stored in a field with the prafix 'keyinterval' followed by the name of an  existing DateTime field. See the following example:
  
 	 keyIntervalDatDate=monthly

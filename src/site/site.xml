@@ -81,6 +81,7 @@
 			
 			<item name="Plugin API" href="./engine/plugins/index.html"
 					collapse="true">
+					<item name="How to Extend" href="./engine/plugins/howto_extend.html" />
 					<item name="Access Plugin" href="./engine/plugins/accessplugin.html" />
 					<item name="Analysis Plugin" href="./engine/plugins/analysisplugin.html" />
 					<item name="Application Plugin" href="./engine/plugins/applicationplugin.html" />
