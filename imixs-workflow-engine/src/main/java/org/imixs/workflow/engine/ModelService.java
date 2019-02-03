@@ -32,7 +32,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +46,7 @@ import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Singleton;
 
+import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.ModelManager;
@@ -113,38 +113,30 @@ public class ModelService implements ModelManager {
 		// first remove existing model entities
 		Collection<ItemCollection> col = documentService.getDocumentsByType("model");
 		for (ItemCollection modelEntity : col) {
-			Map<String, List<Object>> files = modelEntity.getFiles();
-			if (files != null) {
-				Iterator<Map.Entry<String, List<Object>>> entries = files.entrySet().iterator();
-				while (entries.hasNext()) {
-					Map.Entry<String, List<Object>> entry = entries.next();
-					String fileName = entry.getKey();
-					logger.finest("......loading file:" + fileName);
-					List<Object> fileData = entry.getValue();
-					byte[] rawData = (byte[]) fileData.get(1);
-					InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
-					try {
-						Model model = BPMNParser.parseModel(bpmnInputStream, "UTF-8");
+			List<FileData> files = modelEntity.getFileData();
 
-						ItemCollection definition = model.getDefinition();
-						if (definition != null) {
-							String modelVersion = definition.getModelVersion();
-
-							try {
-								if (getModel(modelVersion) != null) {
-									// no op 
-									logger.warning("Model '" + modelVersion
-											+ "' is dupplicated! Please update the model version!");
-								}
-							} catch (ModelException e) {
-								// exception is expected
-								addModel(model);
+			for (FileData file : files) {
+				logger.finest("......loading file:" + file.getName());
+				byte[] rawData = file.getContent();
+				InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
+				try {
+					Model model = BPMNParser.parseModel(bpmnInputStream, "UTF-8");
+					ItemCollection definition = model.getDefinition();
+					if (definition != null) {
+						String modelVersion = definition.getModelVersion();
+						try {
+							if (getModel(modelVersion) != null) {
+								// no op
+								logger.warning("Model '" + modelVersion
+										+ "' is dupplicated! Please update the model version!");
 							}
+						} catch (ModelException e) {
+							// exception is expected
+							addModel(model);
 						}
-
-					} catch (Exception e) {
-						logger.warning("Failed to load model '" + fileName + "' : " + e.getMessage());
 					}
+				} catch (Exception e) {
+					logger.warning("Failed to load model '" + file.getName() + "' : " + e.getMessage());
 				}
 			}
 		}
@@ -303,7 +295,8 @@ public class ModelService implements ModelManager {
 			modelItemCol.replaceItemValue("type", "model");
 			modelItemCol.replaceItemValue("namcreator", ctx.getCallerPrincipal().getName());
 			modelItemCol.replaceItemValue("txtname", bpmnModel.getVersion());
-			modelItemCol.addFile(bpmnModel.getRawData(), bpmnModel.getVersion() + ".bpmn", "application/xml");
+			FileData fileData=new FileData( bpmnModel.getVersion() + ".bpmn", bpmnModel.getRawData(), "application/xml", null);
+			modelItemCol.addFileData(fileData);
 			// store model in database
 			documentService.save(modelItemCol);
 		}

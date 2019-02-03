@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.xml.XMLDataCollection;
@@ -151,8 +152,8 @@ public class ReportPlugin extends AbstractPlugin {
 
 			// write to workitem
 			if (reportTarget.isEmpty() || "0".equals(reportTarget)) {
-
-				adocumentContext.addFile(outputStream.toByteArray(), reportFilePath, sContentType);
+				FileData fileData = new FileData(reportFilePath, outputStream.toByteArray(), sContentType, null);
+				adocumentContext.addFileData(fileData);
 			}
 			// write to blob
 			if ("1".equals(reportTarget)) {
