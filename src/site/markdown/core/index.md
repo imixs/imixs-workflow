@@ -1,34 +1,43 @@
-#The Imixs-Workflow Core-API 
+# The Imixs-Workflow Core-API 
  
-The Imixs-Workflow Core-API provides a platform independent open source workflow API. 
-This API is the basic library for all other components provided by the Imixs-Workflow project. The Imixs-Workflow Core-API defines a set of java classes and interfaces to develop a workflow management solution. The Core-API is used by the Imixs-Workflow Engine and also the Imixs-Workflow REST API. The following section gives a brief overview about the architecture and general concepts.
+The following section gives you a brief overview about the **Imixs-Workflow Core-API**. The API is independent from a specific platform or technology and can be used in all kinds of Java applications. For example this API is the foundation of the [Imixs-Workflow engine](../engine/index.html) which is build on the Java Enterprise Stack. 
+But the API can also be used to implement a workflow engine on a different technology stack (e.g. Spring Boot). 
+
+The following section describes the basic concepts of the _Imixs-Workflow Core-API_:
  
-##The Architecture
-
-The Imixs-Workflow Core-API consists of a set of interfaces and classes providing the general functionality of a workflow management solution. The following section describes these components and their basic concepts. The Imixs-Workflow Core-API is independent from a specific platform or technology and can be used in all kinds of java applications. 
- 
-<img src="../images/api-architecture.gif"/>
-
-### The Workflow Manager
-The WorkflowManager is the uppermost layer of each workflow system based on the Imixs-Workflow API. The interface _org.imixs.workflow.WorkflowManager_ provides basic methods to create and control a process instance.
- 
- 
-### The Model
-Imixs-Workflow supports the BPMN modeling standard and extends the capabilities of BPMN 2.0 with additional functionality. 
-In Imixs-Workflow, a workflow model describes the process flow from the business view. The Imixs-Workflow model can be defined by Task and Event elements with various extensions within the BPMN standard.
-The interface _org.imixs.workflow.Model_ provides methods to access and navigate through the model. 
-
-The Imixs-Workflow engine is an event-based processing engine. 
-Each state in a process model is mapped as a Task element. The transitions between the Tasks are mapped to Event elements. Each element stores various processing introductions. 
-The [Imixs-BPMN Modeler](./modelling/index.html) provides an eclipse based powerful graphical editor to create workflow models within the BPMN 2.0 specification.  
-
-
-### The Plugin API
-The Imixs-Workflow Core API provides a Plugin concept to provide components implementing a concrete behavior inside a workflow management system. A Plugin is called by the WorkflowManager when a process instance is processed. Plugins can implement application specific functionality and business logic. Plugins are reusable components in the Workflow Management System and typical used by the application developer to design the  behavior of a business application. See the section [Plugin-API](./plugin-api.html) for more information.
-
-### The WorkflowKernel
-The WorkflowKernel implements the core functionality of the Imixs-Workflow API. The WorkflowKernel can start a new process instance and process a running instance based on the definition of the process model. The WorkflowKernel validates the processing phase and coordinates the interaction between the model and the plugins. See the section [WorkflowKernel](./workflowkernel.html) for more information.
+	
  
 ### The ItemCollection
-All data objects in the Imixs-Workflow API are encapsulated in a generic value object called 'ItemCollection'.  The ItemColleciton is a very flexible kind of document oriented data structure which can consist of a variable number of attributes (Items). Each Item in an ItemCollection is defined by the Item-Name and a Item-Value. The value of an Item can be any java based data object which is serializeable. See the section [ItemCollection](./itemcollection.html) for further information and examples.
+
+All data objects in the Imixs-Workflow API are encapsulated in a generic value object _org.imixs.workflow.ItemCollection_. 
+The ItemCollection can be treated as a kind of document-based data structure. A ItemCollection consists of an Item Set (attributes). Each Item is defined by a key (item name) and a value list (item value).  
+
+See the section [ItemCollection](./itemcollection.html) for further information and examples.
   
+  
+### The Model
+
+The interface _org.imixs.workflow.Model_ provides methods to access and navigate through the model. 
+The Model is used by the WorkflowKernel to compute the next Task or Event elements within the processing life-cycle. The Imixs-Workflow engine implements this interface based on the BPMN 2.0 standard. 
+
+
+### The WorkflowKernel
+
+The WorkflowKernel implements the core functionality of the Imixs-Workflow API. The WorkflowKernel can start a new process instance and process a running instance based on the definition of the process model. The WorkflowKernel validates the processing phase and coordinates the interaction between the model and the plugins. 
+
+See the section [WorkflowKernel](./workflowkernel.html) for more information.
+ 
+
+### The Plugin API
+
+The Imixs Plugin-API is the extension concept of the Imixs-Workflow Engine. The business logic of an application as also technical interfaces can be implemented by plugins which can easily be activated through the workflow model. 
+
+See the section [Plugin-API](./plugin-api.html) for more information. The Imixs-Workflow Engine defines a set of [standard plugins](../engine/plugins/index.html) to be used in a workflow model. 
+
+
+
+### The Workflow Manager
+
+The WorkflowManager interface defines the uppermost layer of each workflow system based on the _Imixs-Workflow API_. The interface _org.imixs.workflow.WorkflowManager_ provides basic methods to create and control a process instance.
+
+If you develop your own workflow engine you need to implement this interface. The Imixs WorkflowKernel expects an instance of WorkflowManager when processing a workflow instance. 	
