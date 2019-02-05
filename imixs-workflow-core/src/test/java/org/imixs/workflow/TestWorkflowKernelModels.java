@@ -122,7 +122,15 @@ public class TestWorkflowKernelModels {
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 
 			Assert.assertEquals(1200, itemCollection.getTaskID());
+			
+			
+			Assert.assertEquals("in Progress", itemCollection.getItemValueString("$workflowstatus"));
+			Assert.assertEquals("Ticket", itemCollection.getItemValueString("$workflowgroup"));
 
+			// test support for deprecated items
+			Assert.assertEquals("in Progress", itemCollection.getItemValueString("txtworkflowstatus"));
+			Assert.assertEquals("Ticket", itemCollection.getItemValueString("txtworkflowgroup"));
+			
 		} catch (Exception e) {
 			Assert.fail();
 			e.printStackTrace();

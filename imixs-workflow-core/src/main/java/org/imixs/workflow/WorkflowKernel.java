@@ -464,6 +464,7 @@ public class WorkflowKernel {
 		documentResult.setTaskID(Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
 		logger.finest("......new $taskID=" + documentResult.getTaskID());
 		documentResult.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString("txtname"));
+		documentResult.replaceItemValue(WORKFLOWGROUP, itemColNextTask.getItemValueString("txtworkflowgroup"));
 		logger.finest("......new $workflowStatus=" + documentResult.getItemValueString(WORKFLOWSTATUS));
 		// update deprecated attributes txtworkflowStatus and txtworkflowGroup
 		documentResult.replaceItemValue("txtworkflowStatus", documentResult.getItemValueString(WORKFLOWSTATUS));
