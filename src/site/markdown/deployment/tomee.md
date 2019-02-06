@@ -52,18 +52,18 @@ next create a user named "both" in tomcat-users.xml
 Now you can deploy your application:
 
 
-1. drop the imixs-jsf-example-4.0.12.war file in webapps folder of tomee-plus
+1. drop the imixs-jsf-example.war file in webapps folder of tomee-plus
 2. start tomee-plus startup script
 3. restarted tomee-plus    
  
  
 Run The application
 
-	http://localhost:8080/imixs-jsf-example-4.0.12
+	http://localhost:8080/
     
 You can login as user "both" and password
 
-**Note:** In case of a console error about missing imixs core libs in folder WEB-INF/classes for imixs-jsf-example-4.0.12 webapp, stop  the server and copy entire lib folder from WEB-INF to to WEB-INF/classes folder. See also discussion [here](https://github.com/imixs/imixs-jsf-example/issues/26). 
+**Note:** In case of a console error about missing imixs core libs in folder WEB-INF/classes for imixs-jsf-example webapp, stop  the server and copy entire lib folder from WEB-INF to to WEB-INF/classes folder. See also discussion [here](https://github.com/imixs/imixs-jsf-example/issues/26). 
 
 
 
