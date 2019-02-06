@@ -1,34 +1,34 @@
 # Maven 
-The Imixs-Workflow project contains a great deal of technologies which helps building powerful workflow applications. To integrate the Imixs-Workflow Engine into a business application, the project provides Maven artifacts.  Maven is a build and configuration tool which helps to organize a project and finding necessary libraries and artifacts through the Internet.  Working with maven makes it almost simple to build applications based on different libraries or frameworks. General information about using Maven in a project can be found on the [Maven project site](http://maven.apache.org).
+The Imixs-Workflow project contains a great deal of technologies which helps building powerful workflow applications. To integrate the Imixs-Workflow Engine into your own code, the project provides Maven artifacts. [Maven](http://maven.apache.org) is a build and configuration tool which helps you to organize your project and finding necessary libraries and artifacts automatically through the Internet.  
+ 
+All components of Imixs-Workflow are build with Maven which makes it easy to add them into a Maven based project. The following example adds the Imixs-Workflow Engine and the Imixs REST API into a maven based project:
+
+	
+	<properties>
+		.....
+		<org.imixs.workflow.version>4.5.0</org.imixs.workflow.version>
+	</properties>
+	...
+	<dependency>
+		<groupId>org.imixs.workflow</groupId>
+		<artifactId>imixs-workflow-engine</artifactId>
+		<version>${org.imixs.workflow.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.imixs.workflow</groupId>
+		<artifactId>imixs-workflow-jax-rs</artifactId>
+		<version>${org.imixs.workflow.version}</version>
+	</dependency>
+
+The latest version number can be look up by browsing the [maven-central-repository](http://search.maven.org/#browse). Also detailed information about each artifact are provided in separate sections of the different Imixs-Workflow subprojects.
 
 ## Downloads
 All binaries from the Imixs-Workflow project are provided in the [maven-central-repository](http://search.maven.org/#browse). To download a binary directly from there you cab browse the [maven-central-repository](http://search.maven.org/#browse) and search for the keyword 'imixs'.
  
 
-## Maven Dependencies 
-To add the dependency of Imixs-Workflow to a maven proejct, the dependencies can be configured in the pom.xml like shown in the following example:
-
-	...
-	<properties>
-	    .....
-	    <org.imixs.workflow.version>4.1.2</org.imixs.workflow.version>
-	</properties>
-	...
-	<dependency>
-	    <groupId>org.imixs.workflow</groupId>
-	    <artifactId>imixs-workflow-core</artifactId>
-	    <version>${org.imixs.workflow.version}</version>
-	</dependency>
-	<dependency>
-	    <groupId>org.imixs.workflow</groupId>
-	    <artifactId>imixs-workflow-engine</artifactId>
-	    <version>${org.imixs.workflow.version}</version>
-	</dependency>
-  
-The latest version number can be look up by browsing the [maven-central-repository](http://search.maven.org/#browse). Also detailed information about each artifact are provided in separate sections of the different Imixs-Workflow subprojects.
 
 ### Snapshot Releases 
-Snapshot releases are newer releases of the Imixs-Workflow engine which are still under development.  A Snapshot release should only be used in cases where the latest final release did not provide a specific feature or bug-fix needed to work with.  The Imixs-Workflow snapshot releases are published inti the [Sonatype Snapshot repository](http://oss.sonatype.org/content/repositories/snapshots).
+Snapshot releases are newer releases of the Imixs-Workflow engine which are still under development.  A Snapshot release should only be used in cases where the latest final release did not provide a specific feature or bug-fix needed to work with.  The Imixs-Workflow snapshot releases are published into the [Sonatype Snapshot repository](http://oss.sonatype.org/content/repositories/snapshots).
 
 <strong>Note:</strong> The snapshot repository should only be used if snapshot releases are necessary for a specific build!
 
@@ -48,10 +48,13 @@ To access the Snapshot repository the following additional repository location c
 
 
 ## Java EE Module Configuration Using Maven
-Using Maven makes it easy to setup an Java enterprise application. Most of the steps described in the [deployment guide](./deployment.html) can be simplified. The following section describes how you can use maven in your EAR and how you should setup the EAR and EJB pom.xml files.
- 
+
+If you are using Imixs-Workflow in a Web Application or a a Microservice, there is no special configuration necessary. Maven will put all libraries into the location /WEB-INF/lib/ which is the default location for web modules. You can skip the following section if your are working with a maven web module. 
+
 ### Packaging the Imixs-Workflow engine into a EJB Module
-Using the maven-ejb-plugin you can add a declaration for additional manifest entries. This makes it easy to add the Imixs JEE Components into your EJB module.  The following example shows how to add the additional configuration to your pom.xml 
+
+Imixs-Workflow is based on EJB and can be combined with a custom EJB module within your application.  
+Using the maven-ejb-plugin you can add a declaration for additional manifest entries. The following example shows how to add the additional configuration to your pom.xml 
  
 	<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -115,7 +118,6 @@ To package the Imixs-Workflow engine into an EAR the pom.xml can be configured a
 							....
 							<!-- EJB Module -->
 							...
-							
 							<!-- Imixs-Workflow -->
 							<JarModule>
 								<groupId>org.imixs.workflow</groupId>
@@ -125,9 +127,7 @@ To package the Imixs-Workflow engine into an EAR the pom.xml can be configured a
 								<groupId>org.imixs.workflow</groupId>
 								<artifactId> imixs-workflow-core </artifactId>							
 							</JarModule>
-							
 							....
-						
 						</modules>
 					</configuration>
 				</plugin>
@@ -150,7 +150,7 @@ To package the Imixs-Workflow engine into an EAR the pom.xml can be configured a
 		</dependencies>
 
  
-__Note:__ The deployment descriptiors for the EJB Module (ejb-jar.xml) are not part of the Imixs-Workflow jar files and need to be provided by the deployed application. This enables the application to provide custom environment specific configurations. See the following example of a ejb-jar.xml file providing the JNDI Mail ressource to the Imixs-Workflow engine:
+__Note:__ The deployment descriptors for the EJB Module (ejb-jar.xml) are not part of the Imixs-Workflow jar files and need to be provided by the deployed application. This enables the application to provide custom environment specific configurations. See the following example of a ejb-jar.xml file providing the JNDI Mail resource to the Imixs-Workflow engine:
 
 
 	<?xml version="1.0" encoding="UTF-8"?>
