@@ -10,11 +10,11 @@ The Imixs Admin Client requires the user to authenticate with a valid security r
 
 To connect to an instance of the Imixs-Workflow engine the corresponding Imixs Rest Service URL need to be entered. 
 
-<img src="images/imixs-admin-client-01.png" /> 
+<img src="images/imixs-admin-client-01.png" class="screenshot" /> 
  
 Next the client can be connected to the Imixs-Workflow engine to query data using a search terms.
 
-<img src="images/imixs-admin-client-02.png" /> 
+<img src="images/imixs-admin-client-02.png" class="screenshot"/> 
   
 See the section [Query Syntax](./engine/queries.html) for further details. 
 
@@ -27,7 +27,7 @@ The Imixs Admin Client provides a interface to update or delete entities (Workit
 ## The Administration Process
 The Imixs-Workflow engine provides the [administration process 'AdminP'](./engine/adminp.html) which can be used to maintain the documents and process instances managed by the Imixs-Workflow engine. This process can be monitored by the Admin Client
 
-<img src="images/imixs-admin-client-04.png" /> 
+<img src="images/imixs-admin-client-04.png" class="screenshot" /> 
 
 
 The Imixs-Workflow engine provides a set of standard AdminP Job Handlers which can be triggered directly form the Admin UI: 
@@ -59,7 +59,7 @@ The administration process provides a feature to migrate a business application 
 ## Backup & Restore
 With the Backup feature it is also possible to export entities into a file system and later re-import them into any exiting workflow instance.
 
-<img src="images/imixs-admin-client-05.png" /> 
+<img src="images/imixs-admin-client-05.png" class="screenshot" /> 
 
  
 To backup a collection of workitems a search term can be specified.
