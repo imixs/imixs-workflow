@@ -29,7 +29,7 @@ Each report is identified uniquely by its report name which is equals to the fil
 ##Executing a Report
 To execute a report the report can be triggered via the Imixs-Rest API given the report name:
 
-    http://localhost:8080/workflow/rest-service/report/REPOTNAME.html
+    http://localhost:8080/api/report/REPOTNAME.html
 
 When a report is executed, a result set of WorkItems based on the search statement and attribute definition will be generated. The result set of a report can be requested in different formats (e.g  HTML, XML, JSON). 
 
@@ -145,7 +145,7 @@ These parameters are equals to the corresponding  parameters of the Imixs-REST S
 
 To execute the transformation of a result set by the defined XSL template the report can be requested with the '.imixs-report' extension from the [Report REST API](../restapi/reportservice.html):
 
-    http://localhost:8080/workflow/rest-service/report/REPOTNAME.imixs-report
+    http://localhost:8080/api/report/REPOTNAME.imixs-report
  
  
 ## Report Definition

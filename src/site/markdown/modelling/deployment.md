@@ -4,9 +4,9 @@ After you have created a model with the Imixs-BPMN modeler you can deploy the mo
  
 The Imixs-Workflow Model Rest Service is available under the following resource URL:
  
-    http://localhost:8080/workflow/rest-service/model/
+    http://localhost:8080/api/model/
  
-where '/workflow/' is the context root of your workflow application and '/rest-service/' is the 
+where '/workflow/' is the context root of your workflow application and '/api/' is the 
  context of the Imixs-Workflow Rest Services. See the [section model rest service](../restapi/modelservice.html) for general information about the Imixs-Workflow Rest API.
  
  
@@ -14,7 +14,7 @@ where '/workflow/' is the context root of your workflow application and '/rest-s
 To deploy a BPMN model you can use the [command-line tool curl](https://en.wikipedia.org/wiki/CURL) to upload a Imixs BPMN 2.0 model into a Imixs-Workflow instance. 
 See the following example:
  
-	curl --user admin:adminpassword --request POST -Tticket.bpmn http://localhost:8080/workflow/rest-service/model/bpmn
+	curl --user admin:adminpassword --request POST -Tticket.bpmn http://localhost:8080/api/model/bpmn
  
 This example deploys the bpmn file 'ticket.bpmn' into the Imixs-Workflow Instance 'http://localhost:8080/workflow/'. The result of the deployment can be verified in the server log:
 
@@ -22,7 +22,7 @@ This example deploys the bpmn file 'ticket.bpmn' into the Imixs-Workflow Instanc
   
 You can also verify the current status of deployed models by calling the model Rest Service in your Web Browser:
  
-	http://localhost:8080/workflow/rest-service/model/
+	http://localhost:8080/api/model/
 
 <img src="../images/modelling/bpmn_screen_28.png"/> 
  

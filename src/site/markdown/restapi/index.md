@@ -16,7 +16,7 @@ The different resources provided by Imixs-Workflow are divided in the following 
 | [/adminp/](./adminp.html)     | This resource provides methods to create and monitor adminP jobs managed by the AdminPService EJB |
 
  
-<strong>Note:</strong> The root context of the REST Service is defined by the web application (web.xml) containing the REST Service. The default root context is "/rest-service/".
+<strong>Note:</strong> The root context of the REST Service is defined by the web application (web.xml) containing the REST Service. The default root context is "/api/".
 
 ## The Representation of Business Objects
 Each resource published by the Imixs-Workflow REST API is represented by common response and request object format. This format reflects a representation of the internal Business Object [ItemCollection](../core/itemcollection.html). Business objects can be represented in XML or JSON format. 

@@ -23,7 +23,7 @@ See the following example:
 
 To create a new process instance with a JSON request object, the POST method of the Imixs-Workflow REST API can be used in the following way: 
  
-  * URI= http://localhost/workflow/rest-service/workflow/workitem.json
+  * URI= http://localhost/api/workflow/workitem.json
   * METHOD=POST
   * MEDIA TYPE= application/json
 

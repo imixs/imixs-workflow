@@ -45,7 +45,7 @@ With the following optional URI parameters the GET request can be filtered and s
  
 **Example:**
 
-	/rest-service/workflow/tasklistbycreator/admin?type=workitem&pageSize=10&pageIndex=2
+	/api/workflow/tasklistbycreator/admin?type=workitem&pageSize=10&pageIndex=2
  
 See details about the search in the section [Search Index](../engine/luceneservice.html).
 

@@ -32,7 +32,7 @@ The following curl example shows how to create a new job to update the Lucene fu
        <item name="numindex"><value xsi:type="xs:int">0</value></item> \
        <item name="numinterval"><value xsi:type="xs:int">1</value></item> \
     </document>' \
-    http://localhost:8080/workflow/rest-service/adminp/jobs
+    http://localhost:8080/api/adminp/jobs
 
 
 

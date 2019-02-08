@@ -131,6 +131,6 @@ It is  possible to trigger an AdminP job via the Rest API. See the following exa
            <item name="numindex"><value xsi:type="xs:int">0</value></item> \
            <item name="numinterval"><value xsi:type="xs:int">1</value></item> \
         </document>' \
-    http://localhost:8080/workflow/rest-service/adminp/jobs
+    http://localhost:8080/api/adminp/jobs
 
  

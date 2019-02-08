@@ -15,7 +15,7 @@ The GET method can be used to read a single document resource by its UniqueID:
 
 **Example:**
 
-	/rest-service/documents/ed8ad2c7-f460-113d-a9b5-bb71bf61cf09
+	/api/documents/ed8ad2c7-f460-113d-a9b5-bb71bf61cf09
 
 ## GET Document Collection
 The sub-resource _/search/_ can be used to search for a set of documents using the [search index](../engine/luceneservice.html):
@@ -28,7 +28,7 @@ The sub-resource _/search/_ can be used to search for a set of documents using t
 
 **Example:**
 
-	/rest-service/documents/search/type:"workitem"
+	/api/documents/search/type:"workitem"
 
 
 
@@ -46,7 +46,7 @@ With the following optional URI parameters the GET request can be filtered and s
  
 **Example:**
 
-	/rest-service/documents/search/type:"workitem"?pageSize=10&pageIndex=2
+	/api/documents/search/type:"workitem"?pageSize=10&pageIndex=2
  
 See details about the search in the section [Search Index](../engine/luceneservice.html).
 
@@ -77,7 +77,7 @@ Optional the  resource _/documents_ provides the sub-resource _/jpql_ to select 
 
 Example:
 
-	/rest-service/documents/jpql/SELECT document FROM Document AS document WHERE document.type='workitem'
+	/api/documents/jpql/SELECT document FROM Document AS document WHERE document.type='workitem'
  
 See the [Document Service](../engine/documentservice.html) for details.
 

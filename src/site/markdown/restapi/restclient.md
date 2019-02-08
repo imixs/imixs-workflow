@@ -39,7 +39,7 @@ This is a simple example how to request the tasklist of a user:
 		RestClient restClient = new RestClient();
 		try {
 			List<ItemCollection> documents = restClient.
-			     getDocumentCollection("http://localhost:8080/workflow/rest-service/workflow/tasklist/owner/admin");
+			     getDocumentCollection("http://localhost:8080/api/workflow/tasklist/owner/admin");
 			logger.info("Read " + documents.size() + " documents");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

@@ -89,12 +89,12 @@ It is also possible to trigger the build process for the lucene index via the Re
            <item name="numindex"><value xsi:type="xs:int">0</value></item> \
            <item name="numinterval"><value xsi:type="xs:int">1</value></item> \
         </document>' \
-    http://localhost:8080/workflow/rest-service/adminp/jobs
+    http://localhost:8080/api/adminp/jobs
 
  
 This call starts the Job 'REBUILD\_LUCENE\_INDEX' on the workflow application located at
 
-    http://localhost:8080/workflow/rest-service
+    http://localhost:8080/api
   
 The user must have manager-access to be allowed to trigger this build job. 
 
