@@ -170,7 +170,10 @@ public class DocumentService {
 	private LuceneSearchService luceneSearchService;
 
 	@Inject
-	protected Event<DocumentEvent> events;
+	protected Event<DocumentEvent> documentEvents;
+
+	@Inject
+	protected Event<UserGroupEvent> userGroupEvents;
 
 	/**
 	 * Returns a comma separated list of additional Access-Roles defined for this
@@ -202,7 +205,11 @@ public class DocumentService {
 	/**
 	 * This method returns a list of user names, roles and application groups the
 	 * user belongs to.
+	 * <p>
+	 * A client can extend the list of user groups associated with a userId by
+	 * reacting on the CDI event 'UserGrouptEvent'.
 	 * 
+	 * @see UserGroupEvent
 	 * @return
 	 */
 	public List<String> getUserNameList() {
@@ -228,12 +235,23 @@ public class DocumentService {
 			}
 		}
 
-		// read dynamic user roles from the ContextData (if provided) and add
-		// them to the query....
-		String[] applicationGroups = getUserGroupList();
-		if (applicationGroups != null)
-			for (String auserRole : applicationGroups)
-				userNameList.add(auserRole);
+		// To extend UserGroups we fire the CDI Event UserGroupEvent...
+		if (userGroupEvents != null) {
+			// create Group Event
+			UserGroupEvent groupEvent = new UserGroupEvent(ctx.getCallerPrincipal().getName().toString());
+			userGroupEvents.fire(groupEvent);
+			if (groupEvent.getGroups() != null) {
+				userNameList.addAll(groupEvent.getGroups());
+			}
+
+		} else {
+			logger.warning("Missing CDI support for Event<UserGroupEvent> !");
+		}
+
+		// String[] applicationGroups = getUserGroupList();
+		// if (applicationGroups != null)
+		// for (String auserRole : applicationGroups)
+		// userNameList.add(auserRole);
 
 		return userNameList;
 	}
@@ -402,8 +420,8 @@ public class DocumentService {
 		document.replaceItemValue("$modified", cal.getTime());
 
 		// Finally we fire the DocumentEvent ON_DOCUMENT_SAVE
-		if (events != null) {
-			events.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_SAVE));
+		if (documentEvents != null) {
+			documentEvents.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_SAVE));
 		} else {
 			logger.warning("Missing CDI support for Event<DocumentEvent> !");
 		}
@@ -526,8 +544,8 @@ public class DocumentService {
 	public ItemCollection load(String id) {
 		long lLoadTime = System.currentTimeMillis();
 		Document persistedDocument = null;
-		
-		if (id==null || id.isEmpty()) {
+
+		if (id == null || id.isEmpty()) {
 			return null;
 		}
 		persistedDocument = manager.find(Document.class, id);
@@ -559,8 +577,8 @@ public class DocumentService {
 			result.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
 
 			// fire event
-			if (events != null) {
-				events.fire(new DocumentEvent(result, DocumentEvent.ON_DOCUMENT_LOAD));
+			if (documentEvents != null) {
+				documentEvents.fire(new DocumentEvent(result, DocumentEvent.ON_DOCUMENT_LOAD));
 			} else {
 				logger.warning("Missing CDI support for Event<DocumentEvent> !");
 			}
@@ -587,10 +605,10 @@ public class DocumentService {
 	 * @throws AccessDeniedException
 	 */
 	public void remove(ItemCollection document) throws AccessDeniedException {
-		if (document==null) {
+		if (document == null) {
 			return;
 		}
-		
+
 		Document persistedDocument = null;
 		String sID = document.getItemValueString("$uniqueid");
 		persistedDocument = manager.find(Document.class, sID);
@@ -601,20 +619,19 @@ public class DocumentService {
 						"remove - You are not allowed to perform this operation");
 
 			// fire event
-			if (events != null) {
-				events.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_DELETE));
+			if (documentEvents != null) {
+				documentEvents.fire(new DocumentEvent(document, DocumentEvent.ON_DOCUMENT_DELETE));
 			} else {
 				logger.warning("Missing CDI support for Event<DocumentEvent> !");
 			}
-			
+
 			// remove document...
 			manager.remove(persistedDocument);
 			// remove document form index - @see issue #412
 			if (!document.getItemValueBoolean(NOINDEX)) {
 				luceneUpdateService.removeDocument(document.getUniqueID());
 			}
-			
-			
+
 		} else
 			throw new AccessDeniedException(INVALID_UNIQUEID, "remove - invalid $uniqueid");
 	}
@@ -1102,28 +1119,6 @@ public class DocumentService {
 			}
 		}
 		return true;
-	}
-
-	/**
-	 * This method read the param USER_GROUP_LIST from the EJB ContextData. This
-	 * context data object can provide a string array with application specific
-	 * dynamic user groups. These groups are used to grant access to an entity
-	 * independent from the static User-Role settings. The method returns null if no
-	 * ContextData is set
-	 * 
-	 * @return - list of user group names or null if not USER_GROUP_LIST is defined
-	 */
-	private String[] getUserGroupList() {
-		// read dynamic user roles from the ContextData (if provided) ....
-		String[] applicationUserGroupList = (String[]) ctx.getContextData().get(USER_GROUP_LIST);
-
-		if (applicationUserGroupList != null)
-			// trim entries....
-			for (int i = 0; i < applicationUserGroupList.length; i++) {
-				applicationUserGroupList[i] = applicationUserGroupList[i].trim();
-			}
-
-		return applicationUserGroupList;
 	}
 
 }

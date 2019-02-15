@@ -172,38 +172,6 @@ The following example illustrates how to define an application specific role in 
 
 The env-entry defines the new role to be used by the access control of the Imixs-Workflow engine. The security-role-ref adds the role to the EJB. It is necessary to specify the role-name and also the role-link for each custom role. 
 
-## How to Use Dynamic User Groups
-Imixs-Workflow also allows the dynamic mapping of user groups from an application. Through this mechanism it is possible to inject any user groups into the  security layer of the Imxis-Workflow engine. For example an application can lookup dynamic created groups from a LDAP directory or a user-database and inject this groups into the security mechanism. The Imxis-Workflow engine test if dynamic user groups are provided by checking the EJB ContextData named _"org.imixs.USER.GROUPLIST"_. The context data is a  String array containing the users group names.   
- 
-The typically implementation of this mechanism is done by an interceptor Class attached to the DocumentService EJB. This is an example of a simple interceptor:
- 
-	 public class UserGroupInterceptor {
-		@Resource
-		SessionContext ejbCtx;
-	
-		@AroundInvoke
-		public Object intercept(InvocationContext ctx) throws Exception {
-			ctx.getContextData().put(DocumentService.USER_GROUP_LIST, "MyGroup");
-			return ctx.proceed();
-		}
-	 }
- 
-The intercepter can be configured using again the ejb-jar.xml deployment descriptor
-
-	 ....
-		<!-- adding interceptor -->
-		<interceptors>
-			<interceptor>
-				<interceptor-class>org.imixs.business.ejb.UserGroupInterceptor</interceptor-class>
-			</interceptor>
-		</interceptors>
-	
-		<assembly-descriptor>
-			<interceptor-binding>
-				<description>Intercepter to add project-role mapping into EJB Context Data</description>
-				<ejb-name>DocumentService</ejb-name>
-				<interceptor-class>org.imixs.business.ejb.UserGroupInterceptor</interceptor-class>
-			</interceptor-binding>
-		</assembly-descriptor>
-	 ...
- 
+## How to Inject Custom User Groups
+Imixs-Workflow supports also an mechanism to inject additional user groups into the security layer based on CDI events. See the [DocumentService](../engine/documentservice.html) for 
+details.

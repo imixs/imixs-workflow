@@ -167,9 +167,21 @@ current user belongs to.
 
 	List<String> userNames = documentService.getUserNameList();
 
-The UserNameList can be extended with custom application groups. Application groups are roles or group names computed by an application. This can be for example a list of groups fetched from an external directory (e.g. LDAP). or a list of groups computed by the workflow application based on a specific business rule. An Application can adapt the  UserNameList by implementing an EJB Intercepter class. A good example for this kind of interceptor is the *org.imixs.marty.ejb.TeamIntercepter* provided by the Imixs-Marty project. 
+## Inject Custom User Groups
+Imixs-Workflow supports an mechanism to inject additional user groups into the security layer of the Imxis-Workflow engine.
+
+Based on CDI Events your can inject custom user groups from your own application or library. For example, your  application can lookup groups from a LDAP directory or a user-database and inject this groups into the security mechanism. 
+ 
+The typically implementation of this mechanism is done by an CDI observer pattern:
+ 
+	public void onUserGroupEvent(@Observes UserGroupEvent userGroupEvent) {
+		List<String> customGroups = new ArrayList<String>();
+		customGroups.add("my-group");
+		userGroupEvent.setGroups(customGroups);
+	}
+	
   
-## CDI Events
+## The CDI DocumentEvent
 
 The DocumentService EJB provides an Observer Pattern based on CDI Events. The events are fired when a document is loaded or saved.
 The Event is defined by the class:
@@ -180,6 +192,7 @@ The class _DocumentEvent_ defines the following event types:
 
  * **ON\_DOCUMENT\_SAVE** - send immediately before a document will be persisted. The document is already managed by JPA but the transaction is not closed and the lucene index is not updated. So a EJB-Exception can roll back the changes. This event should be handled in the same transaction context.  
  * **ON\_DOCUMENT\_LOAD** - send immediately after a document was loaded. The document may already be managed by JPA (attached) if the document was saved in the same transaction. 
+ * **ON\_DOCUMENT\_DELETE** - send immediately before a document will be deleted
 
 
 This _DocumentEvent_ can be consumed by another Session Bean or managed bean implementing the @Observes annotation: 
