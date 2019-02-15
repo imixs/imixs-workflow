@@ -8,10 +8,13 @@
 	xmlns:cc="http://java.sun.com/jsf/composite">
 
 <cc:interface>
-	<cc:attribute name="hideatachments" default="false"
-		type="java.lang.Boolean"></cc:attribute>
+	<cc:attribute name="hideatachments" default="false"	type="java.lang.Boolean"></cc:attribute>
 	<cc:attribute name="workitem"></cc:attribute>
 	<cc:attribute name="context_url"></cc:attribute>
+	<cc:attribute name="styleClass"></cc:attribute>
+	<cc:attribute name="labelButton" default="File Upload"></cc:attribute>
+	<cc:attribute name="labelHelp" default="drop files here..."></cc:attribute>
+	
 </cc:interface>
 <!-- 
 
@@ -23,17 +26,16 @@
 	<!-- We inject the workitem into the fileUploadController to receive new file data from the AjaxFileUploadServlet
 			 	#{fileUploadController.setWorkitem(cc.attrs.workitem)}"
 		-->
-	<h:panelGroup class="imixsFileUpload">
+	<h:panelGroup class="imixsFileUpload #{cc.attrs.styleClass}">
 		<div class="imixsFileUpload_control">
-			<button id="imixsFileUpload_button" style="float: left;">File
-				Upload</button>
+			<button class="imixsFileUpload_button">#{cc.attrs.labelButton}</button>
 			<!-- we need to append the converstaion id to the AjaxFileUploadServlet url here -->
-			<input id="imixsFileUpload_input" type="file" name="files[]"
+			<input class="imixsFileUpload_input" type="file" name="files[]"
 				data-url="#{facesContext.externalContext.requestContextPath}/fileupload/?cid=#{fileUploadController.getCID()}"
 				multiple="multiple" />
-			<div class="imixsFileUpload_help">drop files here...</div>
+			<div class="imixsFileUpload_help">#{cc.attrs.labelHelp}</div>
 		</div>
-		<div id="imixsFileUpload_progress_bar" style="clear:left"/>
+		<div class="imixsFileUpload_progress_bar" />
 		<h:panelGroup id="imixsFileUpload_dataTable">
 
 			<!-- show no attachments (dummy table) -->

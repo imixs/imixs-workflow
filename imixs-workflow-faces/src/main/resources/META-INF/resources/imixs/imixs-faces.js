@@ -278,17 +278,17 @@ $.fn.layoutImixsEditor = function(rootContext,_with,_height) {
 /* This method initializes the imixs fileupload component */
 $.fn.imixsInitFileUpload = function(options) {
 	return this.each(function() {
-		$('body').on('click', '#imixsFileUpload_button', function() { 
-		    $('#imixsFileUpload_input').trigger('click');   
+		$('body').on('click', '.imixsFileUpload_button', function() { 
+		    $('.imixsFileUpload_input').trigger('click');   
 		    return false;
 		});			
 		
 		// draganddrop fileupload
-		 $('#imixsFileUpload_input').fileupload({
+		 $('.imixsFileUpload_input').fileupload({
 		        dataType: 'json',
 		        done: function (e, data) {
 		        	refreshFileList(data.result.files);
-		        	$('#imixsFileUpload_button').blur();
+		        	$('.imixsFileUpload_button').blur();
 		        },		
 		        fail: function (e, data) {
 		            alert("The file cannot be added because the maximum file size was exceeded.");
@@ -297,7 +297,7 @@ $.fn.imixsInitFileUpload = function(options) {
 		            var progress = parseInt(data.loaded / data.total * 100, 10);
 		            if (progress==100)
 		            	progress=0;
-		            $('#imixsFileUpload_progress_bar').css(
+		            $('.imixsFileUpload_progress_bar').css(
 		                'width',
 		                progress + '%'
 		            );
@@ -311,8 +311,8 @@ $.fn.imixsInitFileUpload = function(options) {
 $.fn.imixsLayoutFileUpload = function(options) {
 	return this.each(function() {
 		// hide fileupload and replace with imixsFile-Button
-		$('#imixsFileUpload_input').hide();			
-		$('#imixsFileUpload_button').button({
+		$('.imixsFileUpload_input').hide();			
+		$('.imixsFileUpload_button').button({
 		      icons: {primary: "ui-icon-folder-open"}
 		});
 		$('.imixsFileUpload_delete','.imixsFileUpload_uploadlist').button({
@@ -343,7 +343,7 @@ function refreshFileList(files) {
  */
 function updateFileUpload() {	
 	// upload url
-	var base_url=$('#imixsFileUpload_input').attr( 'data-url' );	
+	var base_url=$('.imixsFileUpload_input').attr( 'data-url' );	
 	$.ajax({url:base_url,
 		type: 'GET',
 		dataType: "json",
@@ -355,7 +355,7 @@ function updateFileUpload() {
 
 function cancelFileUpload(file) {	
 	// upload url
-	var base_url=$('#imixsFileUpload_input').attr( 'data-url' );	
+	var base_url=$('.imixsFileUpload_input').attr( 'data-url' );	
 	
 	var cidPos=base_url.indexOf("?cid=");
 	
