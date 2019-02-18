@@ -780,10 +780,10 @@ public class DocumentService {
 	 * @return resultset
 	 * 
 	 */
-	public List<ItemCollection> findDocumentsByRef(String uniqueIdRef, int start, int count) {
+	public List<ItemCollection> findDocumentsByRef(String uniqueIdRef, int pageSize, int pageIndex) {
 		String searchTerm = "(" + "$uniqueidref:\"" + uniqueIdRef + "\")";
 		try {
-			return find(searchTerm, start, count);
+			return find(searchTerm, pageSize, pageIndex);
 		} catch (QueryException e) {
 			logger.severe("findDocumentsByRef - invalid query: " + e.getMessage());
 			return null;
