@@ -49,6 +49,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.xml.XMLDocument;
@@ -796,6 +797,22 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
+	 * This method removes duplicates and null or empty values from an item list
+	 * 
+	 * @param itemName
+	 *            - item to be processed
+	 */
+	@SuppressWarnings("unchecked")
+	public void purgeItemValue(String itemName) {
+		List<Object> valueList = this.getItemValue(itemName);
+		// remove null or empty entries...
+		valueList.removeIf(item -> item == null || "".equals(item));
+		// create a new instance of a List and distinct the List.
+		List<Object> purgedValueList = valueList.stream().distinct().collect(Collectors.toList());
+		this.setItemValue(itemName, purgedValueList);
+	}
+
+	/**
 	 * This method adds a fileData object to the ItemCollection. The item '$file'
 	 * stores all data objects.
 	 * 
@@ -903,11 +920,11 @@ public class ItemCollection implements Cloneable {
 	 * @return FileData object
 	 */
 	public FileData getFileData(String filename) {
-		if (filename==null || filename.isEmpty()) {
+		if (filename == null || filename.isEmpty()) {
 			return null;
 		}
-		List<FileData> files=getFileData();
-		for (FileData fileData: files) {
+		List<FileData> files = getFileData();
+		for (FileData fileData : files) {
 			if (filename.equals(fileData.getName())) {
 				return fileData;
 			}
