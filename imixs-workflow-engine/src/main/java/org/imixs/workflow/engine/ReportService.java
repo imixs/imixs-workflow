@@ -59,6 +59,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ItemCollectionComparator;
 import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.util.XMLParser;
 import org.imixs.workflow.xml.XSLHandler;
@@ -94,6 +95,9 @@ public class ReportService {
 
 	@EJB
 	DocumentService documentService;
+	
+	@EJB
+	WorkflowService workflowService;
 
 	/**
 	 * Returns a Report Entity by its identifier. The identifier can either be the
@@ -657,6 +661,15 @@ public class ReportService {
 		for (int i = 0; i < values.size(); i++) {
 			Object o = values.get(i);
 
+			// first test if we have a custom converter
+			if (converter.startsWith("<") && converter.endsWith(">")) {
+				try {
+					o=workflowService.adaptText(converter, itemcol);
+				} catch (PluginException e) {
+					logger.warning("Unable to adapt text converter: " + converter);
+				}
+			}
+			
 			if (converter.equalsIgnoreCase("double") || converter.equalsIgnoreCase("xs:decimal")) {
 				try {
 					double d = 0;
@@ -680,6 +693,9 @@ public class ReportService {
 					values.set(i, new Integer(0));
 				}
 			}
+			
+		
+			
 
 		}
 		return values;
