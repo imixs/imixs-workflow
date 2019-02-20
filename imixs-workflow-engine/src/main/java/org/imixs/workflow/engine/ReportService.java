@@ -657,23 +657,26 @@ public class ReportService {
 		if (values.size() == 0) {
 			values.add(null);
 		}
-
+		
+		// first test if we have a custom converter
+		List<String> adaptedValueList =null;
+		if (converter.startsWith("<") && converter.endsWith(">")) {
+			try {
+				logger.finest("......converter = " + converter);
+				// adapt the value list...
+				adaptedValueList = workflowService.adaptTextList(converter, itemcol);
+			} catch (PluginException e) {
+				logger.warning("Unable to adapt text converter: " + converter);
+			}
+		}
+		
+		if (adaptedValueList!=null) {
+			values=new ArrayList<String>();
+			values.addAll(adaptedValueList);
+		}
+		
 		for (int i = 0; i < values.size(); i++) {
 			Object o = values.get(i);
-
-			// first test if we have a custom converter
-			if (converter.startsWith("<") && converter.endsWith(">")) {
-				try {
-					logger.finest("......converter = " + converter);
-					o=workflowService.adaptText(converter, itemcol);
-					if (o!=null) {
-						logger.finest("......new value = " + o);
-						values.set(i, o);
-					}
-				} catch (PluginException e) {
-					logger.warning("Unable to adapt text converter: " + converter);
-				}
-			}
 			
 			if (converter.equalsIgnoreCase("double") || converter.equalsIgnoreCase("xs:decimal")) {
 				try {
@@ -700,6 +703,8 @@ public class ReportService {
 			}
 
 		}
+		
+
 		return values;
 
 	}
