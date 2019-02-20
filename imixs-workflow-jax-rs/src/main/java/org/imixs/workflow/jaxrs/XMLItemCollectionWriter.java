@@ -53,12 +53,17 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 
+/**
+ * This class translates a XMLDocument into a HTML representation. 
+ * 
+ * @author rsoika
+ * @version 1.1
+ */
 @Provider
-@Produces("text/html")
+@Produces(MediaType.TEXT_HTML)
 public class XMLItemCollectionWriter implements MessageBodyWriter<XMLDocument> {
 
 	public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-
 		return XMLDocument.class.isAssignableFrom(type);
 	}
 
@@ -68,7 +73,7 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLDocument> {
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(entityStream));
 
 		bw.write("<html>");
-		printHead(bw);
+		printHead(bw,mediaType.toString(),null);
 		bw.write("<body>");
 		try {
 			bw.write("<h1>Entity</h1>");
@@ -91,8 +96,8 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLDocument> {
 	}
 
 	/**
-	 * This Method prints a single XMLItemCollection in html format. The items
-	 * are sorted by name
+	 * This Method prints a single XMLItemCollection in html format. The items are
+	 * sorted by name
 	 * 
 	 * @param out
 	 * @param workItem
@@ -188,14 +193,19 @@ public class XMLItemCollectionWriter implements MessageBodyWriter<XMLDocument> {
 	}
 
 	/**
-	 * THis method prints the generic HTML Header for HTML output, including a
+	 * This method prints the generic HTML Header for HTML output, including a
 	 * default CSS definition for table layout.
+	 * The meta tag Content-Type is generated in case a contentType and encoding is provided.
 	 * 
 	 * @param bw
 	 * @throws IOException
 	 */
-	public static void printHead(BufferedWriter bw) throws IOException {
+	public static void printHead(BufferedWriter bw, String contentType, String encoding) throws IOException {
 		bw.write("<head>");
+
+		if (contentType != null && encoding != null) {
+			bw.write("<meta http-equiv=\"Content-Type\" content=\"" + contentType + "; charset=" + encoding + "\"/>");
+		}
 		bw.write("<style>");
 		bw.write("table {width: 100%;font-size:small;} ");
 		bw.write("body,td,select,input,li {font-family: Verdana, Helvetica, Arial, sans-serif;} ");

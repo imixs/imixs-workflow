@@ -46,15 +46,17 @@ public class DocumentTable implements java.io.Serializable {
 	private XMLDocument[] document;
 	private List<String> items;
 	private List<String> labels;
+	private String encoding;
 
 	public DocumentTable() {
 		setDocument(new XMLDocument[] {});
 	}
 	
-	public DocumentTable(XMLDocument[] documents,List<String> items,List<String> labels) {
+	public DocumentTable(XMLDocument[] documents,List<String> items,List<String> labels,String encoding) {
 		setDocument(documents);
 		setItems(items);
 		setLabels(labels);
+		setEncoding(encoding);
 	}
 
 	public XMLDocument[] getDocument() {
@@ -79,6 +81,14 @@ public class DocumentTable implements java.io.Serializable {
 
 	public void setLabels(List<String> labels) {
 		this.labels = labels;
+	}
+
+	public String getEncoding() {
+		return encoding;
+	}
+
+	public void setEncoding(String encoding) {
+		this.encoding = encoding;
 	}
 
 

@@ -343,13 +343,16 @@ public class ReportRestService {
 			col = reportService.getDataSource(report, pageSize, pageIndex, sortBy, sortReverse, params);
 
 			XMLDataCollection documentCollection = XMLDataCollectionAdapter.getDataCollection(col);
-			DocumentTable documentTable = new DocumentTable(documentCollection.getDocument(), items, labels);
-			// documentTable.setDocument(documentCollection.getDocument());
-
-			// set content type and character encoding
-			if (encoding == null || encoding.isEmpty()) {
-				encoding = "UTF-8";
+			DocumentTable documentTable = new DocumentTable(documentCollection.getDocument(), items, labels,encoding);
+			
+			if (encoding == null || "".equals(encoding)) {
+				encoding = report.getItemValueString("encoding");
+				if ("".equals(encoding)) {
+					// no encoding defined so take a default encoding (UTF-8)
+					encoding = "UTF-8";
+				}
 			}
+		
 			logger.fine("set encoding :" + encoding);
 			servlerResponse.setContentType(MediaType.TEXT_HTML + "; charset=" + encoding);
 
@@ -442,9 +445,14 @@ public class ReportRestService {
 			col = reportService.getDataSource(report, pageSize, pageIndex, sortBy, sortReverse, params);
 
 			// set content type and character encoding
-			if (encoding == null || encoding.isEmpty()) {
-				encoding = "UTF-8";
+			if (encoding == null || "".equals(encoding)) {
+				encoding = report.getItemValueString("encoding");
+				if ("".equals(encoding)) {
+					// no encoding defined so take a default encoding (UTF-8)
+					encoding = "UTF-8";
+				}
 			}
+
 			logger.fine("set encoding :" + encoding);
 			servlerResponse.setContentType(MediaType.APPLICATION_XML + "; charset=" + encoding);
 
@@ -485,11 +493,6 @@ public class ReportRestService {
 		XMLDataCollection result = getXMLResult(name, pageSize, pageIndex, sortBy, sortReverse, encoding, uriInfo,
 				servlerResponse);
 
-		// set content type and character encoding
-		if (encoding == null || encoding.isEmpty()) {
-			encoding = "UTF-8";
-		}
-		logger.fine("set encoding :" + encoding);
 		servlerResponse.setContentType(MediaType.APPLICATION_JSON + "; charset=" + encoding);
 
 		return result;
