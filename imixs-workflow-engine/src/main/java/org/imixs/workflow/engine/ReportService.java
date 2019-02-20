@@ -95,7 +95,7 @@ public class ReportService {
 
 	@EJB
 	DocumentService documentService;
-	
+
 	@EJB
 	WorkflowService workflowService;
 
@@ -104,7 +104,8 @@ public class ReportService {
 	 * $uniqueId of the report or the report name. The method returns null if no
 	 * report with the given identifier exists.
 	 * 
-	 * @param reportID - name of the report or its $uniqueId.
+	 * @param reportID
+	 *            - name of the report or its $uniqueId.
 	 * @return ItemCollection representing the Report
 	 */
 	public ItemCollection findReport(String reportID) {
@@ -191,13 +192,17 @@ public class ReportService {
 	 * 
 	 * }
 	 * 
-	 * @param reportName - name of the report to be executed
+	 * @param reportName
+	 *            - name of the report to be executed
 	 * 
-	 * @param startPos   - optional start position to query entities
-	 * @param maxcount   - optional max count of entities to query
-	 * @param params     - optional parameter list to be mapped to the JQPL
-	 *                   statement
-	 * @param itemList   - optional attribute list of items to be returned
+	 * @param startPos
+	 *            - optional start position to query entities
+	 * @param maxcount
+	 *            - optional max count of entities to query
+	 * @param params
+	 *            - optional parameter list to be mapped to the JQPL statement
+	 * @param itemList
+	 *            - optional attribute list of items to be returned
 	 * @return collection of entities
 	 * @throws QueryException
 	 * 
@@ -272,9 +277,11 @@ public class ReportService {
 	 * Transforms a datasource based on the XSL template from a report into a
 	 * FileData object.
 	 * 
-	 * @param report - the report definition
-	 * @param data - the data source
-	 * @param fileName 
+	 * @param report
+	 *            - the report definition
+	 * @param data
+	 *            - the data source
+	 * @param fileName
 	 * @return FileData object containing the transformed data source.
 	 * @throws JAXBException
 	 * @throws TransformerException
@@ -299,7 +306,7 @@ public class ReportService {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		byte[] _bytes = XSLHandler.transform(data, xslTemplate, encoding, outputStream);
 
-		FileData fileData = new FileData(fileName, _bytes, sContentType,null);
+		FileData fileData = new FileData(fileName, _bytes, sContentType, null);
 
 		return fileData;
 
@@ -394,8 +401,8 @@ public class ReportService {
 	}
 
 	/**
-	 * This method replaces all occurrences of {@code<date>} tags with the corresponding
-	 * dynamic date. See computeDynamicdate.
+	 * This method replaces all occurrences of {@code<date>} tags with the
+	 * corresponding dynamic date. See computeDynamicdate.
 	 * 
 	 * @param content
 	 * @return
@@ -418,6 +425,7 @@ public class ReportService {
 	/**
 	 * This method converts a double value into a custom number format including an
 	 * optional locale.
+	 * 
 	 * <pre>
 	 * {@code
 	 * 
@@ -658,22 +666,25 @@ public class ReportService {
 			values.add(null);
 		}
 
+		// first test if we have a custom converter
+		List<String> adaptedValueList = null;
+		if (converter.startsWith("<") && converter.endsWith(">")) {
+			try {
+				logger.finest("......converter = " + converter);
+				// adapt the value list...
+				adaptedValueList = workflowService.adaptTextList(converter, itemcol);
+			} catch (PluginException e) {
+				logger.warning("Unable to adapt text converter: " + converter);
+			}
+		}
+
+		if (adaptedValueList != null) {
+			values = new ArrayList<String>();
+			values.addAll(adaptedValueList);
+		}
+
 		for (int i = 0; i < values.size(); i++) {
 			Object o = values.get(i);
-
-			// first test if we have a custom converter
-			if (converter.startsWith("<") && converter.endsWith(">")) {
-				try {
-					logger.finest("......converter = " + converter);
-					o=workflowService.adaptText(converter, itemcol);
-					if (o!=null) {
-						logger.finest("......new value = " + o);
-						values.set(i, o);
-					}
-				} catch (PluginException e) {
-					logger.warning("Unable to adapt text converter: " + converter);
-				}
-			}
 
 			if (converter.equalsIgnoreCase("double") || converter.equalsIgnoreCase("xs:decimal")) {
 				try {
@@ -698,9 +709,6 @@ public class ReportService {
 					values.set(i, new Integer(0));
 				}
 			}
-			
-		
-			
 
 		}
 		return values;
