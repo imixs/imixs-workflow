@@ -51,7 +51,7 @@ import org.imixs.workflow.xml.XMLDocument;
  *
  */
 @Provider
-@Produces("text/html")
+@Produces(MediaType.TEXT_HTML)
 public class DocumentCollectionWriter implements MessageBodyWriter<XMLDataCollection> {
 
 	public boolean isWriteable(Class<?> type, Type genericType,
@@ -70,7 +70,7 @@ public class DocumentCollectionWriter implements MessageBodyWriter<XMLDataCollec
 		
 		
 		bw.write("<html>");
-		XMLItemCollectionWriter.printHead(bw);
+		XMLItemCollectionWriter.printHead(bw,mediaType.toString(),null);
 		bw.write("<body>");
 		try {
 			bw.write("<h1>EntityCollection</h1>");

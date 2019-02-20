@@ -56,6 +56,7 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
 @Provider
 public class DocumentTableWriter implements MessageBodyWriter<DocumentTable> {
 
+	
 	public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
 		return DocumentTable.class.isAssignableFrom(type);
 	}
@@ -75,7 +76,7 @@ public class DocumentTableWriter implements MessageBodyWriter<DocumentTable> {
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(entityStream));
 
 		bw.write("<html>");
-		XMLItemCollectionWriter.printHead(bw);
+		XMLItemCollectionWriter.printHead(bw,mediaType.toString(),documentTable.getEncoding());
 
 		bw.write("<body>");
 
