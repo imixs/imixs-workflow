@@ -33,7 +33,23 @@ The following example file _imixsrealm.properties_  maps the individual group na
 
 Groupnames are listed on the left of the equal operator and roles are listed on the right. In the example above, users in the group ‘IMIXS-WORKFLOW-Reader’ fulfill the role ‘org.imixs.ACCESSLEVEL.READACCESS’.
 
-Finally an appropriate security-domain have to be configured in the standalone.xml file of Wildfly. See the following example of a database realm:
+### The Security Domain
+Finally an appropriate security-domain have to be configured in the standalone.xml file of Wildfly. See the following example of a file based security realm:
+
+	<security-domain name="imixsrealm">
+        <authentication>
+               <login-module code="UsersRoles" flag="required">  
+                   <module-option name="usersProperties" value="${jboss.server.config.dir}/sampleapp-users.properties"/>  
+                   <module-option name="rolesProperties" value="${jboss.server.config.dir}/sampleapp-roles.properties"/>  
+               </login-module>  
+               <login-module code="RoleMapping" flag="required">
+					<module-option name="rolesProperties" value="file:${jboss.server.config.dir}/imixsrealm.properties"/>
+					<module-option name="replaceRole" value="false"/>
+				</login-module>
+        </authentication>
+    </security-domain>
+
+If you have a database holding your userIds and group information you can for example configure a database security realm:
 
 	<security-domain name="imixsrealm">
 	 <authentication>
@@ -52,6 +68,8 @@ Finally an appropriate security-domain have to be configured in the standalone.x
 	 </authentication>
 	</security-domain>
  
+See also the [Wildfly Project](https://docs.jboss.org/author/display/WFLY10/Authentication) for more information. 
+
 
 ## GlassFish
 The following section holds deployment strategies for the GlassFish platform.
