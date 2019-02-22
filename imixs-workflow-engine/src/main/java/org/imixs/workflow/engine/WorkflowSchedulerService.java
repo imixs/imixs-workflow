@@ -563,7 +563,7 @@ public class WorkflowSchedulerService {
 	void runTimer(javax.ejb.Timer timer) throws AccessDeniedException {
 
 		ItemCollection configItemCollection = loadConfiguration();
-		logger.info(" started....");
+		logger.info("...WorkflowSchedulerService started....");
 
 		// test if imixsDayOfWeek is provided
 		// https://java.net/jira/browse/GLASSFISH-20673
@@ -583,11 +583,10 @@ public class WorkflowSchedulerService {
 			// get all model versions...
 			List<String> modelVersions = modelService.getVersions();
 			for (String version : modelVersions) {
-				logger.info("processing ModelVersion: " + version);
+				logger.info("...'" + version + "' - start processing...");
 				// find scheduled Activities
 				Collection<ItemCollection> colScheduledActivities = findScheduledActivities(version);
-				logger.info(" " + colScheduledActivities.size() + " scheduled activityEntities found in ModelVersion: "
-						+ version);
+				logger.info("...'" + version + "' - " + colScheduledActivities.size() + " scheduled events found");
 				// process all workitems for coresponding activities
 				for (ItemCollection aactivityEntity : colScheduledActivities) {
 					processWorkListByEvent(aactivityEntity);
@@ -595,15 +594,15 @@ public class WorkflowSchedulerService {
 			}
 
 		} catch (Exception e) {
-			logger.severe(" error processing worklist: " + e.getMessage());
+			logger.severe("Error processing worklist: " + e.getMessage());
 			if (logger.isLoggable(Level.FINE)) {
 				e.printStackTrace();
 			}
 		}
 
-		logger.info("finished successfull");
+		logger.info("... WorkflowSchedulerService finished.");
 
-		logger.info(iProcessWorkItems + " workitems processed");
+		logger.info("..."+iProcessWorkItems + " workitems processed");
 
 		if (unprocessedIDs.size() > 0) {
 			logger.warning(unprocessedIDs.size() + " workitems could not be processed:");
@@ -843,7 +842,7 @@ public class WorkflowSchedulerService {
 			searchTerm = "($taskid:\"" + taskD + "\" AND $modelversion:\"" + sModelVersion + "\")";
 		}
 		
-		logger.info("...selecting workitems: " + searchTerm + " ...");
+		logger.info("...selector = " + searchTerm + " ...");
 		Collection<ItemCollection> worklist = documentService.find(searchTerm, 1000, 0);
 		logger.finest("......" + worklist.size() + " workitems found");
 		for (ItemCollection workitem : worklist) {
