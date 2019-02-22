@@ -98,7 +98,19 @@ The configuration entity for the WorkflowSchedulerService holds the following ad
 |datStop     | Date      | optional- stop date for timer  if no txtConfiguration is defined    |
 
 <strong>Note:</strong> The properties "statusmessage", "schedule", "nextTimeout" and "timeRemaining" are read only and will be updated computed if the method findConfiguration() was called.
- 
+
+
+## Selector
+
+The workitems processed by the scheduler are selected by a default selector based on the TaskID, EventID and ModelVersion. 
+
+	($taskid:"[TASKID]" AND $modelversion:"[MODELVERSION]")
+	
+The selector can be overwritten by the BPMN event. For example the modelversion can be replaced by the workflow group to make the scheduling independent from a model version:
+
+	($taskid:"[TASKID]" AND $workflowgroup:"[MY-WORKLFOWGROUP]")
+
+
   
 ## Ignored Workitems
 The _WorkflowSchedulerService_ processes all kinds of workitems which are assigned to a valid workflow model definition with scheduled events. 

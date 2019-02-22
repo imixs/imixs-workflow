@@ -371,7 +371,7 @@ public class WorkflowSchedulerService {
 			if ("4".equals(sDelayUnit))
 				sDelayUnit = "workdays";
 
-			logger.finest("......"+suniqueid + " offset =" + iOffset + " " + sDelayUnit);
+			logger.finest("......" + suniqueid + " offset =" + iOffset + " " + sDelayUnit);
 
 			iCompareType = docActivity.getItemValueInteger("keyScheduledBaseObject");
 
@@ -381,7 +381,7 @@ public class WorkflowSchedulerService {
 			switch (iCompareType) {
 			// last process -
 			case 1: {
-				logger.finest("......"+suniqueid + ": CompareType = last event");
+				logger.finest("......" + suniqueid + ": CompareType = last event");
 
 				// support deprecated fields $lastProcessingDate and timWorkflowLastAccess
 				if (!doc.hasItem("$lastEventDate")) {
@@ -399,7 +399,7 @@ public class WorkflowSchedulerService {
 				}
 
 				// compute scheduled time
-				logger.finest("......"+suniqueid + ": $lastEventDate=" + dateTimeCompare);
+				logger.finest("......" + suniqueid + ": $lastEventDate=" + dateTimeCompare);
 				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
 				if (dateTimeCompare != null)
 					return dateTimeCompare.before(dateTimeNow);
@@ -409,11 +409,11 @@ public class WorkflowSchedulerService {
 
 			// last modification
 			case 2: {
-				logger.finest("......"+suniqueid + ": CompareType = last modify");
+				logger.finest("......" + suniqueid + ": CompareType = last modify");
 
 				dateTimeCompare = doc.getItemValueDate("$modified");
 
-				logger.finest("......"+suniqueid + ": modified=" + dateTimeCompare);
+				logger.finest("......" + suniqueid + ": modified=" + dateTimeCompare);
 
 				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
 
@@ -425,10 +425,10 @@ public class WorkflowSchedulerService {
 
 			// creation
 			case 3: {
-				logger.finest("......"+suniqueid + ": CompareType = creation");
+				logger.finest("......" + suniqueid + ": CompareType = creation");
 
 				dateTimeCompare = doc.getItemValueDate("$created");
-				logger.finest("......"+suniqueid + ": doc.getCreated() =" + dateTimeCompare);
+				logger.finest("......" + suniqueid + ": doc.getCreated() =" + dateTimeCompare);
 
 				// Nein -> Creation date ist masstab
 				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
@@ -442,24 +442,23 @@ public class WorkflowSchedulerService {
 			// field
 			case 4: {
 				String sNameOfField = docActivity.getItemValueString("keyTimeCompareField");
-				logger.finest("......"+suniqueid + ": CompareType = field: '" + sNameOfField + "'");
+				logger.finest("......" + suniqueid + ": CompareType = field: '" + sNameOfField + "'");
 
 				if (!doc.hasItem(sNameOfField)) {
-					logger.finest("......"+suniqueid + ": CompareType =" + sNameOfField
-							+ " no value found!");
+					logger.finest("......" + suniqueid + ": CompareType =" + sNameOfField + " no value found!");
 					return false;
 				}
 
 				dateTimeCompare = doc.getItemValueDate(sNameOfField);
 
-				logger.finest("......"+suniqueid + ": " + sNameOfField + "=" + dateTimeCompare);
+				logger.finest("......" + suniqueid + ": " + sNameOfField + "=" + dateTimeCompare);
 
 				dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
 				if (dateTimeCompare != null) {
-					logger.finest("......"+suniqueid + ": Compare " + dateTimeCompare + " <-> " + dateTimeNow);
+					logger.finest("......" + suniqueid + ": Compare " + dateTimeCompare + " <-> " + dateTimeNow);
 
 					if (dateTimeCompare.before(dateTimeNow)) {
-						logger.finest("......"+suniqueid + " isInDue!");
+						logger.finest("......" + suniqueid + " isInDue!");
 					}
 					return dateTimeCompare.before(dateTimeNow);
 				} else
@@ -544,7 +543,8 @@ public class WorkflowSchedulerService {
 			}
 		}
 		if (resultDate != null) {
-			logger.finest("......addWorkDays (" + baseDate.getTime() + ") + " + days + " = (" + resultDate.getTime() + ")");
+			logger.finest(
+					"......addWorkDays (" + baseDate.getTime() + ") + " + days + " = (" + resultDate.getTime() + ")");
 		}
 		return resultDate;
 	}
@@ -590,7 +590,7 @@ public class WorkflowSchedulerService {
 						+ version);
 				// process all workitems for coresponding activities
 				for (ItemCollection aactivityEntity : colScheduledActivities) {
-					processWorkListByActivityEntity(aactivityEntity);
+					processWorkListByEvent(aactivityEntity);
 				}
 			}
 
@@ -814,56 +814,56 @@ public class WorkflowSchedulerService {
 	}
 
 	/**
-	 * This method processes all workitems for a specific processID. the processID
-	 * is identified by the activityEntity Object (numprocessid)
+	 * This method processes all workitems for a specific scheduled event element of
+	 * a workflow model. A scheduled event element can define a selector
+	 * (txtscheduledview). If no selector is defined, the default selector is used:
+	 * <p>
+	 * {@code
+	 * ($taskid:"[TASKID]" AND $modelversion:"[MODELVERSION]")
+	 * }
+	 * <p>
 	 * 
-	 * If the ActivityEntity has defined a EQL statement (attribute
-	 * txtscheduledview) then the method selects the workitems by this query.
-	 * Otherwise the method use the standard method getWorklistByProcessID()
-	 * 
-	 * 
-	 * @see http://blog.imixs.org/?p=155
-	 * 
-	 * @param aProcessID
+	 * @param event
+	 *            - a event model element
 	 * @throws Exception
 	 */
-	void processWorkListByActivityEntity(ItemCollection activityEntity) throws Exception {
+	void processWorkListByEvent(ItemCollection event) throws Exception {
 
-		// get processID
-		int iProcessID = activityEntity.getItemValueInteger("numprocessid");
-		int iActivityID = activityEntity.getItemValueInteger("numActivityID");
-		// get Modelversion
-		String sModelVersion = activityEntity.getItemValueString("$modelversion");
+		// get task and event id form the event model entity....
+		int taskD = event.getItemValueInteger("numprocessid");
+		int eventID = event.getItemValueInteger("numActivityID");
+		String sModelVersion = event.getItemValueString("$modelversion");
 
-		logger.info("processing " + iProcessID + "." + iActivityID + " (" + sModelVersion + ") ...");
-
-		// now we need to select by type, $ProcessID and by $modelVersion!
-		String searchTerm = "($processid:\"" + iProcessID + "\" AND $modelversion:\""
-				+ sModelVersion + "\")";
-
-		logger.finest("......select: " + searchTerm);
-
+		String searchTerm=null;
+		// test if we have a custom selector
+		searchTerm=event.getItemValueString("txtscheduledview");
+		
+		if (searchTerm.isEmpty()) {
+			// build the default selector....
+			searchTerm = "($taskid:\"" + taskD + "\" AND $modelversion:\"" + sModelVersion + "\")";
+		}
+		
+		logger.info("...selecting workitems: " + searchTerm + " ...");
 		Collection<ItemCollection> worklist = documentService.find(searchTerm, 1000, 0);
-
-		logger.finest("......"+worklist.size() + " workitems found");
+		logger.finest("......" + worklist.size() + " workitems found");
 		for (ItemCollection workitem : worklist) {
-			
-			String type=workitem.getType();
+
+			String type = workitem.getType();
 			// skip deleted....
 			if (type.endsWith("deleted")) {
 				continue;
-			}			
-			
+			}
+
 			// skip $immutable Workitems
 			if (workitem.getItemValueBoolean("$immutable")) {
 				continue;
-			}						
-			
+			}
+
 			// verify due date
-			if (workItemInDue(workitem, activityEntity)) {
+			if (workItemInDue(workitem, event)) {
 				String sID = workitem.getItemValueString(WorkflowKernel.UNIQUEID);
 				logger.finest("......document " + sID + "is in due");
-				workitem.replaceItemValue("$activityid", iActivityID);
+				workitem.setEventID(eventID);
 				try {
 					logger.finest("......getBusinessObject.....");
 					// call from new instance because of transaction new...
