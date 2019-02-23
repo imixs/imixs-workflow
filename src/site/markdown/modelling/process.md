@@ -66,13 +66,13 @@ The 'Input Form' can be used to control how a WorkItem in a specific status  is 
 
 A 'Status Icon' can be a Image URL to visualize the current status of a WorkItem.
  
-###WorkItem Type 
+### WorkItem Type 
 The 'WorkItem Type' is a category assigned to the WorkItem by the Workflow Engine when the WorkItem was processed. 
  
   
  
-##ACL Properties
-The ACL Tab is used to define the Access Control List (ACL) for a workitem which is processed by the Imixs-Workflow engine.
+## ACL Properties
+The ACL Tab is used to define the Access Control List (ACL) for a workitem.
 
 <img src="../images/modelling/bpmn_screen_31.png"/>  
 
@@ -81,7 +81,7 @@ The ACL defines the read- and write access a user will be granted for, after a W
 <strong>Note:</strong> If the ACL setting is defined on Event level, the ACL settings on the Task Level are overwritten.
 
 
-###Owner, Read and Write Access:
+### Owner, Read and Write Access:
 The ACL of a WorkItem is defined in three different layers.  The 'Owner' defines the users assigned to the WorkItem for the next Workflow Task. This setting typically adds the WorkItem to the users task list.  The 'Read Access' is used to restrict the read access for a WorkItem. Only users which are assigned to the Read Access of a WorkItem can access the workitem from the application. If no Users or Roles are defined in the Read Access not read restrictions are set to a WorkItem.
  
 The 'Write Access' restricts the author access for a WorkItem. The Author Access depends on the 
@@ -92,7 +92,8 @@ The 'Write Access' restricts the author access for a WorkItem. The Author Access
 <ul>
 
 <strong>Dynamic ACL:</strong><br />
-The dynamic ACL settings are used to compute the access list based on the definition of 'Actors'.  Actors play an essential role in a user-centric workflow system. The actors are computed dynamically based on the properties of a WorkItem. See the section [Process Property Editor](./main_editor.html) for more  information how to define Actors in an Imixs BPMN model. <br /><br />
+The dynamic ACL settings are used to compute the access list based on the definition of 'Actors'.  Actors play an essential role in a user-centric workflow system. The actors are computed dynamically based on the properties of a WorkItem. 
+See the section <a href="./main_editor.html">Process Property Editor</a> for more  information how to define Actors in an Imixs BPMN model. <br /><br />
 
 <strong>Static ACL:</strong><br />
 It is also possible to define the ACL in a static way. The UserIDs and Role names have to match the  login name and role definitions of the workflow application. The following Imixs standard roles can be used here:<br />

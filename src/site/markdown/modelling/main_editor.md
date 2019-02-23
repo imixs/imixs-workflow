@@ -16,9 +16,7 @@ The Model Version is a unique identifier for the model and there included workfl
 Actors play an essential role in a user-centric workflow system. The actors are users who actively  interact with a workflow application. For example, actors can start a new process instance to create a Workitem or trigger actions on an existing WorkItem. Actors can also be passively involved into a workflow, for instance, as recipients of an e-mail notification. 
  
 An actor is defined as an abstract role in a workflow model. The application specific user names (UserIDs) behind the actor are computed dynamically by the Imixs-Workflow engine. The Workflow engine maps the actor to the corresponding property of the WorkItem during runtime.
- 
-An Actor definition is used within the property sections of an Imixs BPMN Event element.  For example if the workflow application provides a WorkItem property 'namDelegate' the actor definition can be added as 
- 
+  
     Delegate | namDelegate
  
 The first part is the name of the actor displayed in the property sections of an Imixs BPMN Event element. The last part is the WorkItem property evaluated by the workflow engine.

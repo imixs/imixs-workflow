@@ -4,6 +4,8 @@ You can define the access control list (ACL), with the help of the BPMN workflow
 
 <img src="../images/bpmn-example02.png" width="500px" />
 
+The 'Actor Properties' are defined in the [process properties](./main_editor.html) of your workflow model.
+
 The access control of Imixs-Workflow is closely coupled to the security concepts the Java Enterprise Platform. So you have various ways to authorize users. See the section [Deployment >> Security](../deployment/security.html) for more information. The following section describes the core concept how to grant or restrict access for a user interacting with the Imixs-Workflow engine.
  
 ## Access Levels 
