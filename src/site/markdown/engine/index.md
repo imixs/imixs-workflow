@@ -1,37 +1,68 @@
-#The Imixs-Workflow Engine
-The Imixs-Workflow engine provides a set of Java EE services to access the [workflow model](../quickstart/businessprocess.html) and to create and manage [process instances](../quickstart/workitem.html) of a process definition, called _workitems_. The Imixs-Workflow engine can be embedded into a Java Enterprise application or can be accessed through the [RESTfull service API](../restapi/index.html). 
+# The Imixs-Workflow Engine
 
-<img src="../images/engine/imixs-architecture_jee.png"/>
+The Imixs-Workflow engine consists of different service components. Each component maps a specific functionality into your workflow application: 
 
+ * The [WorkflowService](./workflowservice.html) → the core component to create and update a process instance
+ * The [ModelService](./modelservice.html) → the management component for BPMN models. 
+ * The [DocumentService](./documentservice.html) → the data access layer to store workflow related data
+ * The [ReportService](./reportservice.html) → a service component to create data reports
 
-##The Imixs-Workflow Services 
+All services can either be injected into a Java Enterprise application or can be accessed through its [RESTfull service API](../restapi/index.html). 
 
-The Imixs-Workflow Engine is based on the [Imixs-Workflow Core-API](../core/index.html) and implements a set of Java enterprise service interfaces. These services are divided into the typical building blocks of a workflow management system: 
+Further more, all services are subject to the [Imixs-Workflow Security Model](./acl.html). In this way only an authenticated access to these service components is allowed. This concept ensures the protection of your business data. 
 
- * The Database Layer -> [DocumentService](./documentservice.html)
- * The Workflow Kernel -> [WorkflowService](./workflowservice.html)
- * The Model -> [ModelService](./modelservice.html) 
- * The Analysis -> [ReportService](./reportservice.html)
+ 
+### The WorkflowService
+The _WorkflowService_ is the core service to create, update and read a process instance. To create a process instance a workitem is assigned to a BPMN 2.0  model definition managed by the _ModelService_. 
+
+	@EJB
+	WorkflowService workflowService;
+	ItemCollection workitem=new ItemCollection().model("1.0.0").task(100).event(10);
+	workitem=workflowService.processWorkItem(workitem);
+
+ 
+Read more about in the section [Imixs WorkflowService](../engine/workflowservice.html).
  
 ### The DocumentService
 The _DocumentService_ is the general persistence layer of the Imixs-Workflow engine and provides an interface to store, load and query data objects (_Documents_) within a database. 
-The _DocumentService_ is independent from the workflow engine and can not only be used to persist a process instance (_workitem_), but also any other kind of business data, not necessarily associated with the workflow engine (e.g configuration data). Each document managed by the _DocumentService_ is assigned to a access control list (ACL). The ACL protects the document from unauthorized  access. 
+The _DocumentService_ is independent from the workflow engine and can not only be used to persist a process instance (_workitem_), but also any other kind of business data, not necessarily associated with the workflow engine (e.g configuration data). 
 
-The _DocumentService_ creates a [Lucene Search Index](https://lucene.apache.org/) over all documents and provides methods to query documents by a search term. This is a power full feature to navigate easily through the workitems managed by the Imixs-Workflow engine.  
+	@EJB
+	DocumentService documentService;
+	ItemCollection myDocument=new ItemCollection;
+	myDocument.setItemValue("type","product");
+	myDocument.setItemValue("name","coffee");
+	myDocument=documentService.save(myDocument);
+	  
 
-[Read more about the Imixs DocumentService](../engine/documentservice.html).
+The _DocumentService_ provides also a [Full-Text-Search](./luceneservice.html). In this way documents can be accessed through a search query:
+
+	List<ItemCollection> result=documentService.find("(type:'workitem')(imixs*)");
+
+
+Read more about in the section [DocumentService](../engine/documentservice.html).
   
- 
-### The WorkflowService
-The _WorkflowService_ provides the interface to the Imixs-Workflow kernel. This component provides methods to create, process and access workitems. A workitem managed by the _WorkflowService_ must be assigned to a valid workflow model definition managed by the _ModelService_. 
- 
-[Read more about the Imixs WorkflowService](../engine/workflowservice.html).
+
  
 ### The ModelService
-The _ModelService_ manages the models and provides methods to store a new model definition. A model can be created with the Eclipse based modeling tool [Imixs-BPMN](../modelling/index.html). The _ModelService_ is used internally by the _WorkflowService_ but can also be used by the business application to navigate through a model definition.
+The _ModelService_ provides methods to manage BPMN model definitions. A model can be created with the Eclipse based modeling tool [Imixs-BPMN](../modelling/index.html). 
 
-[Read more about the Imixs ModelService](../engine/modelservice.html).
+	@EJB
+	ModelService modelService;
+	InputStream inputStream = new FileInputStream(new File("ticket.bpmn"));
+	ticketModel = BPMNParser.parseModel(inputStream, "UTF-8");
+	modelService.addModel(model);
+	
+
+The _ModelService_ is used internally by the _WorkflowService_ but can also be used by your application to navigate through a model definition.
+
+	@EJB
+	ModelService modelService;
+	Model ticketModel = modelService.getModel("ticket-1.0.0");
+	List<ItemCollection> tasks = modelService.findAllTasks();
+
+Read more about in the section [ModelService](../engine/modelservice.html).
  
 ### The ReportService
 The _ReportService_ component supports methods to create, find and execute business reports created with the Eclipse based [Imixs-Workflow Modeller](../modelling/index.html). A report is used to generate aggregated information from data objects managed by the _DocumentService_.  
-  
+

@@ -1,7 +1,6 @@
-# The LuceneService 
-This _LuceneService_ is used by the Imixs-Workflow engine to provide a full-text index based on [Lucene Search Technology](https://lucene.apache.org/). The Imixs-Workflow engine is currently supporting Lucene version 6.6.1. The lucene search feature is part of the [DocumentService section](./documentservice.html).
+# The Full-Text-Search 
 
-See the section [Query Syntax](queries.html) for details about how to search for documents.
+The Imixs-Workflow engine provides a **Full-Text-Search** based on the [Lucene Search Technology](https://lucene.apache.org/). The Imixs-Workflow engine is currently supporting Lucene version 7.5. The Full-Text-Search feature is part of the [DocumentService section](./documentservice.html). See the section [Query Syntax](queries.html) for details about how to search for documents.
 
 ## The Configuration
 The lucene index is written by default into the folder 

@@ -3,7 +3,7 @@ The Model Service provides a service layer to manage workflow models. The model 
 
 To create and manage workflow models the Eclipse tool  [Imixs-BPMN Modeller](../modelling/index.html) can be used.
  
-##Methods 
+## Methods 
 The ModelService EJB extends the interface '_org.imixs.workflow.ModelManager_' and provides the following methods:
 
 
@@ -20,4 +20,19 @@ The ModelService EJB extends the interface '_org.imixs.workflow.ModelManager_' a
 |loadModelEntity(version)        | Loads an existing Model Entities from the database.|
 
 
- 
+
+## How to Add a Model
+
+The ModelService provides a method to add a BPMNModel object. This object can be created from a file. See the following example:
+
+	@EJB
+	ModelService modelService;
+	InputStream inputStream = new FileInputStream(new File("ticket.bpmn"));
+	ticketModel = BPMNParser.parseModel(inputStream, "UTF-8");
+	modelService.addModel(model);
+
+You can also persist the model into the data storage
+
+	modelService.save(ticketModel);
+
+A persisted model will be automatically loaded when the workflow service starts. 	

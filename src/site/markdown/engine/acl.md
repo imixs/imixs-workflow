@@ -1,4 +1,4 @@
-# The Access Control List (ACL)
+# The Security Model
 The Imixs-Workflow engine supports a multi-level security model for a fine-grained access control on workitems.
 You can define the access control list (ACL), with the help of the BPMN workflow model, for each process state individually. For example, one group of users can be authorized to create and process workitems, while another group is only allowed to read workitems.
 
