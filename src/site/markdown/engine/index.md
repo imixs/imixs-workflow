@@ -64,5 +64,5 @@ The _ModelService_ is used internally by the _WorkflowService_ but can also be u
 Read more about in the section [ModelService](../engine/modelservice.html).
  
 ### The ReportService
-The _ReportService_ component supports methods to create, find and execute business reports created with the Eclipse based [Imixs-Workflow Modeller](../modelling/index.html). A report is used to generate aggregated information from data objects managed by the _DocumentService_.  
+The _ReportService_ component supports methods to create, find and execute business reports created with the Eclipse based [Imixs-Workflow Modeler](../modelling/index.html). A report is used to generate aggregated information from data objects managed by the _DocumentService_.  
 
