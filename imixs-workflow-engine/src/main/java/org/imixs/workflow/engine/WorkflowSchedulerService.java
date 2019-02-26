@@ -32,6 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
@@ -582,6 +583,10 @@ public class WorkflowSchedulerService {
 		try {
 			// get all model versions...
 			List<String> modelVersions = modelService.getVersions();
+
+			// sort versions in descending order (issue #482)
+			Collections.sort(modelVersions, Collections.reverseOrder());
+
 			for (String version : modelVersions) {
 				logger.info("...'" + version + "' - start processing...");
 				// find scheduled Activities
@@ -602,7 +607,7 @@ public class WorkflowSchedulerService {
 
 		logger.info("... WorkflowSchedulerService finished.");
 
-		logger.info("..."+iProcessWorkItems + " workitems processed");
+		logger.info("..." + iProcessWorkItems + " workitems processed");
 
 		if (unprocessedIDs.size() > 0) {
 			logger.warning(unprocessedIDs.size() + " workitems could not be processed:");
@@ -821,27 +826,34 @@ public class WorkflowSchedulerService {
 	 * ($taskid:"[TASKID]" AND $modelversion:"[MODELVERSION]")
 	 * }
 	 * <p>
+	 * In case an old modelversion was deleted, the method tries to migrate to the
+	 * lates model version. (issue #482)
 	 * 
-	 * @param event
-	 *            - a event model element
+	 * @param event - a event model element
 	 * @throws Exception
 	 */
 	void processWorkListByEvent(ItemCollection event) throws Exception {
 
 		// get task and event id form the event model entity....
-		int taskD = event.getItemValueInteger("numprocessid");
+		int taskID = event.getItemValueInteger("numprocessid");
 		int eventID = event.getItemValueInteger("numActivityID");
-		String sModelVersion = event.getItemValueString("$modelversion");
+		String modelVersionEvent = event.getItemValueString("$modelversion");
+		// find task
+		ItemCollection taskElement = modelService.getModel(modelVersionEvent).getTask(taskID);
+		String workflowGroup = taskElement.getItemValueString("txtworkflowgroup");
 
-		String searchTerm=null;
+		String searchTerm = null;
 		// test if we have a custom selector
-		searchTerm=event.getItemValueString("txtscheduledview");
-		
+		searchTerm = event.getItemValueString("txtscheduledview");
+
 		if (searchTerm.isEmpty()) {
 			// build the default selector....
-			searchTerm = "($taskid:\"" + taskD + "\" AND $modelversion:\"" + sModelVersion + "\")";
+			// searchTerm = "($taskid:\"" + taskID + "\" AND $modelversion:\"" +
+			// modelVersionEvent + "\")";
+			// we are build the default selector based on workflowgroup (see isseu #482)....
+			searchTerm = "($taskid:\"" + taskID + "\" AND $workflowgroup:\"" + workflowGroup + "\")";
 		}
-		
+
 		logger.info("...selector = " + searchTerm + " ...");
 		Collection<ItemCollection> worklist = documentService.find(searchTerm, 1000, 0);
 		logger.finest("......" + worklist.size() + " workitems found");
@@ -856,6 +868,22 @@ public class WorkflowSchedulerService {
 			// skip $immutable Workitems
 			if (workitem.getItemValueBoolean("$immutable")) {
 				continue;
+			}
+
+			// issue #482
+			// If the modelversion did not match the eventModelVersion, than migrate the
+			// model version...
+			if (!modelVersionEvent.equals(workitem.getModelVersion())) {
+				// test if the old model version still exists.
+				if (modelService.getModel(workitem.getModelVersion()) != null) {
+					logger.finest("......skip because model version is older than current version...");
+					// will be processed in the following loops..
+					continue;
+				} else {
+					logger.warning("...deprecated model version '" + workitem.getModelVersion()
+							+ "' no longer exists -> migrating to new model version '" + modelVersionEvent + "'");
+					workitem.model(modelVersionEvent);
+				}
 			}
 
 			// verify due date
@@ -990,13 +1018,10 @@ public class WorkflowSchedulerService {
 	 * This method adjusts a given base date for a amount of delay
 	 * 
 	 * 
-	 * @param baseDate
-	 *            date object to be adjusted
+	 * @param baseDate   date object to be adjusted
 	 * 
-	 * @param offsetUnit
-	 *            - time unit (0=sec, 1=min, 2=hours, 3=days, 4=workdays)
-	 * @param offset
-	 *            offset for adjustment
+	 * @param offsetUnit - time unit (0=sec, 1=min, 2=hours, 3=days, 4=workdays)
+	 * @param offset     offset for adjustment
 	 * @return new date object
 	 */
 	private static Date adjustBaseDate(Date baseDate, int offsetUnit, int offset) {
