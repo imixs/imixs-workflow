@@ -382,7 +382,7 @@ public class RestClient {
 	 * 
 	 * @param uri       - Rest Endpoint RUI
 	 * @param dataString - content
-	 * @return HTTPResult
+	 * @return content
 	 */
 	public String post(String uri, String dataString, String contentType) throws Exception {
 		PrintWriter printWriter = null;
@@ -442,6 +442,14 @@ public class RestClient {
 			if (printWriter != null)
 				printWriter.close();
 		}
+	}
+	
+	/**
+	 * This method returns the last HTTP Result
+	 * @return
+	 */
+	public int getLastHTTPResult() {
+		return iLastHTTPResult;
 	}
 
 	/**
