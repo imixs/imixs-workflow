@@ -1,27 +1,37 @@
-# The Full-Text-Search 
+# Lucene Configuration 
 
-The Imixs-Workflow engine provides a **Full-Text-Search** based on the [Lucene Search Technology](https://lucene.apache.org/). The Imixs-Workflow engine is currently supporting Lucene version 7.5. The Full-Text-Search feature is part of the [DocumentService section](./documentservice.html). See the section [Query Syntax](queries.html) for details about how to search for documents.
+The [Full-Text-Search](queries.html) in Imixs-Workflow is part of the [DocumentService](./documentservice.html) and based on the [Lucene Search Technology](https://lucene.apache.org/) (version 7.5). 
+The behavior of the search index can be configured and adapted in various ways. The following section gives you an overview how to setup the Lucene Full-Text-Search.
 
-## The Configuration
-The lucene index is written by default into the folder 
+## The Search Index
+The lucene search index is written by default into the folder 
 
 	/imixs-workflow-index/
 	
-inside the runtime environment of the application server.
+The location is typical the home or installation directory in the runtime environment of your application server.
 
-If no further configuration exists, the content of the document items  "txtworkflowsummary" and "txtworkflowabstract" will be analyzed and added into the serach index. 
+In the default configuration the content of the following [workflow items](../quickstart/workitem.html) will be full-text indexed:
 
-In addition the following list of items in a document are indexed by the _LuceneService_ without using an analyser. 
+ * $workflowsummary
+ * $workflowabstract
 
-	"$modelversion", "$taskid", "$workitemid", "$uniqueidref", "type", 
-	"$writeaccess", "$modified", "$created", "namcreator", "txtworkflowgroup", "txtname", "namowner", "txtworkitemref", "$processid"
+The content of these items is defined by the [task element](../modelling/process.html#Workflow_Properties) in your workflow model.
 
-These items can be used in a search term. 
+The following list of items are so called 'index-items'. THese items are indexed by the _LuceneService_ without using an analyser. 
+
+	$modelversion, $taskid, $workitemid, $uniqueidref, type, $writeaccess, $modified,$created, $creator, 
+	$editor, $lasteditor, $workflowgroup, $workflowstatus, txtname, namowner, txtworkitemref, $uniqueidsource, 
+	$uniqueidversions, $lasttask,$lastevent, $lasteventdate
+
+_Index-Items_ can be used in a search term. 
 
     (type:"workitem") and ($modelversion:"1.0.0")
+    
+You will find more information how to query a result set in the section [Full-Text-Search](queries.html).  
+  
 
 ## Custom Configuration
-The custom configuration of the _LuceneService_ can be provided in the file _imixs.properties_. The following example shows custom configuration for the _LuceneService_:
+A custom configuration for the _Lucene Search Index_ can be provided in the file _imixs.properties_. The following example shows an example:
  
 	##############################
 	# Imixs Lucene Service 
@@ -40,7 +50,7 @@ The custom configuration of the _LuceneService_ can be provided in the file _imi
 ### IndexDir
  
 This is the directory on the servers file system the lucene index will be created. Make sure that 
-the server has sufficient write access for this location. Using Glassfish Server the example above will  create a directory named 'my-index' into the location GLASSFISH_INSTALL/domains/domain1/config/
+the server has sufficient write access for this location. The root directory is typical the home or installation directory in the runtime environment of your application server.
  
 ### FulltextFieldList
 The property 'lucene.fulltextFieldList' defines a comma separated list of fields which will be indexed by the LucenePlugin. The content of these fields will be stored into the lucene field name 'content'. The values will be analyzed  with the lucene standard analyzer.
@@ -63,7 +73,7 @@ Whether query text should be split on whitespace prior to analysis. Default is t
 ## How to Initialize the Lucene Index
 
 The lucene index is automatically written into the Index Directory by the Imixs-Workflow engine.
-However, it is also possible to rebuild the lucene index manually. For example, this can be the case after a Database restore. To force a rebuild of the index it is sufficient to delete the Index Directory and restart the application. The Imixs-Workflow engine will recognize the missing index and start an [AdminP Job](adminp.html) called "REBUILD_LUCENE_INDEX" immediately. 
+However, it is also possible to rebuild the lucene index manually. For example, this can be the case after a Database restore. To force a rebuild of the index it is sufficient to delete the Index Directory and restart the application. The Imixs-Workflow engine will recognize the missing index and start an [AdminP Job](adminp.html) called "REBUILD_LUCENE_INDEX" immediately. It can take some minutes depending on the amount of documents until the index is created. 
 
 ### Configuration of the REBUILD_LUCENE_INDEX-Job
 

@@ -1,10 +1,16 @@
-# How to Search Documents
+# The Full-Text-Search
 
-Since the Imixs-Workflow engine is bundled with the [Lucene Search Technology](https://lucene.apache.org/), documents can be queried by a lucene search term. A search term can be assembled from the very powerful query syntax of Lucene.
+The Imixs-Workflow engine provides a **Full-Text-Search** based on the [Lucene Search Technology](https://lucene.apache.org/). 
+The Full-Text-Search is part of the [DocumentService](./documentservice.html) which provides different search methods.
 
-## The Query Syntax
+The Search-Index of Imixs-Workflow allows you search documents by a single _search term_ such as "cat" or "dog". Or you can define a _search query_ to 
+select documents with specific item values. 
 
-A search string can be specified either as a simple string or as an combination of multiple parentheses expressions.
+The following section gives you an overview how a search term can be assembled from the very powerful [Lucene Query Syntax](https://lucene.apache.org/core/7_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description).
+
+## How to Search Documents
+
+A search term can be specified either as a simple string or as an combination of multiple parentheses expressions.
 
     the imixs workflow egine
     
@@ -51,15 +57,15 @@ To search for documents that contain "imixs" but not "lucene" use the query:
 
 The Imixs-Workflow engine adds a list of [workflow data items](../quickstart/workitem.html#Workflow_data) into the index, which allow the targeted query of documents. These items can be used to search for documents of a specific type or item value. 
 
-The following example searches only documents form the type 'workitem' and with the $processid of '1200':
+The following example searches only documents form the type 'workitem' and with the $taskid of '1200':
 
-    (type:"workitem") ($processid:1200)
+    (type:"workitem") ($tasnkid:1200)
      
 To specify more complex queries a search term can boolean expressions like 'AND' or 'OR'. 
 
-The next example searches for all documents from the type 'workitem' and the $processid with a value of 1100 or 1200.
+The next example searches for all documents from the type 'workitem' and the $taskid with a value of 1100 or 1200.
 
-	(type:"workitem") AND ($processid:1100 OR $processid:1200)
+	(type:"workitem") AND ($taskid:1100 OR $taskid:1200)
 
 
 ### Query Value Ranges
@@ -67,7 +73,7 @@ The next example searches for all documents from the type 'workitem' and the $pr
 Range Queries allow to search for documents whose item values are between the lower and upper bound specified by the Range Query *[xxx TO yyy] *:
 
 
-	$processid:[1100 TO 1200]
+	$taskid:[1100 TO 1200]
 
 Range Queries can be inclusive or exclusive of the upper and lower bounds. Sorting is done lexicographically.
 
@@ -89,5 +95,11 @@ In java you can format a Date object into the lucene syntax with a Forater objec
 
 
 See the [Lucene Query Syntax](https://lucene.apache.org/core/7_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description) for further information.
+
+
+## How to Setup a Custom Search Index
+
+In the section [Lucene Configuration](luceneservice.html) you will find detailed information you to setup and customize the search index of Imixs-Workflow.
+
  
       

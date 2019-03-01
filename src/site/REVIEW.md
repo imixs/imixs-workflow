@@ -26,6 +26,8 @@ sub_security.html			2018-09-22
 	├── acl.md									2018-10.16
 		├── plugins/
 			├── splitandjoinplugin.html		2019-01-27
+	├── query.md								2019-03-01
+	├── luceneservice.md						2019-03-01
 	modelling/
 	├── index.md								2018-09-21
 	├── activities.md							2018-09-24
