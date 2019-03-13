@@ -138,7 +138,7 @@ public class WorkflowController extends AbstractDataController implements Serial
 	 * Returns the current workItem. If no workitem is defined the method
 	 * Instantiates a empty ItemCollection.
 	 * 
-	 * @return - current workItem or null if not set
+	 * @return - current workItem or an emtpy workitem if not set
 	 */
 	public ItemCollection getWorkitem() {
 		// do initialize an empty workItem here if null
