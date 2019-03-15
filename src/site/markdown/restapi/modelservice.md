@@ -8,14 +8,15 @@ The resource _/model_ provides methods to read and update workflow models throug
 The GET method is used to read model objects provided by the Model Manager:
 
 
-| URI                                           | Method| Description                                                           | 
-|-----------------------------------------------|-------|----------------------------------------------------------------|
+| URI                                           | Method| Description                                                          | 
+|-----------------------------------------------|-------|----------------------------------------------------------------------|
 | /model                                        | GET  | a list of model versions provided by the  workflow instance           |
 | /model/{version}/tasks                        | GET  | all tasks of a specific model  version                                |
 | /model/{version}/tasks/{taskid}               | GET  | a task identified by its taskID                                       |
 | /model/{version}/tasks/{taskid}/events        | GET  | all events assigned to a specific task identified by its eventID.     |
 | /model/{version}/groups                       | GET  | a collection of all workflow groups                                   |
 | /model/{version}/groups/{group}               | GET  | all tasks of a specific workflow group                                |
+| /model/{version}/definition                   | GET  | the model definition containing general model information (e.g.$ModelVersion, Actors, Plugins, ...).      |
 | /model/{version}/bpmn                         | GET  | BPMN source file                                                      |
 
 

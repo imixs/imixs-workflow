@@ -250,6 +250,26 @@ public class ModelRestService {
 		}
 	}
 
+	/**
+	 * Returns the model definition containing general model information (e.g.
+	 * $ModelVersion).
+	 *  
+	 */
+	@GET
+	@Path("/{version}/definition")
+	public XMLDataCollection getDefiniton(@PathParam("version") String version,
+			@QueryParam("items") String items) {
+		ItemCollection definition = null;
+		try {
+			definition = modelService.getModel(version).getDefinition();
+			return XMLDataCollectionAdapter.getDataCollection(definition, getItemList(items));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new XMLDataCollection();
+	}
+	
 	@GET
 	@Path("/{version}/tasks/{taskid}")
 	public XMLDataCollection getTask(@PathParam("version") String version, @PathParam("taskid") int processid,
