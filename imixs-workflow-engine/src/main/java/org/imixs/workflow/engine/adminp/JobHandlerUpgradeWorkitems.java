@@ -109,7 +109,8 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 			if (workitem.hasItem(WorkflowKernel.MODELVERSION)) {
 				if (upgradeWorkitem(workitem)) {
 					// update workitem...
-					documentService.save(workitem);
+					logger.info("...upgrade '" + workitem.getUniqueID() + "' ...");
+					documentService.saveByNewTransaction(workitem);
 					iCount++;
 				}
 			}
