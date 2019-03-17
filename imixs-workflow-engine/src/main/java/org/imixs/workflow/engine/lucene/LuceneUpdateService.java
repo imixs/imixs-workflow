@@ -407,6 +407,7 @@ public class LuceneUpdateService {
 	 * @return true if the cache was totally flushed.
 	 */
 	boolean flushEventLogByCount(int count) {
+		Date lastEventDate=null;
 		boolean cacheIsEmpty = true;
 		IndexWriter indexWriter = null;
 		long l = System.currentTimeMillis();
@@ -459,6 +460,7 @@ public class LuceneUpdateService {
 					}
 
 					// remove the eventLogEntry.
+					lastEventDate = eventLogEntry.getCreated().getTime();
 					manager.remove(eventLogEntry);
 
 					// break?
@@ -496,8 +498,8 @@ public class LuceneUpdateService {
 			}
 		}
 
-		logger.fine("...flushEventLog - " + documentList.size() + " documents in " + (System.currentTimeMillis() - l)
-				+ " ms");
+		logger.fine("...flushEventLog - " + documentList.size() + " events in " + (System.currentTimeMillis() - l)
+				+ " ms - last log entry: " + lastEventDate);
 
 		return cacheIsEmpty;
 
