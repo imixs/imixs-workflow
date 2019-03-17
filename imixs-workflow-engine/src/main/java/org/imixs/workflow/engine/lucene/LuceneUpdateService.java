@@ -323,8 +323,8 @@ public class LuceneUpdateService {
 		}
 
 		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("... update worklist in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
-					+ " worktiems total)");
+			logger.fine("... update index block in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
+					+ " workitems total)");
 		}
 	}
 
