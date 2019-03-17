@@ -208,6 +208,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		String query = "SELECT document FROM Document AS document ";
 		query += " WHERE document.created > '" + isoFormat.format(syncpoint) + "'";
 		query += " AND NOT document.type LIKE '" + SNAPSHOT_TYPE_PRAFIX + "%' ";
+		query += " AND NOT document.type LIKE 'workitemlob%' ";
 		query += " ORDER BY document.created ASC";
 		Query q = manager.createQuery(query);
 		q.setFirstResult(0);
@@ -232,6 +233,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 					query = "SELECT document FROM Document AS document ";
 					query += " WHERE document.created = '" + isoFormat.format(syncpoint) + "'";
 					query += " AND NOT document.type LIKE '" + SNAPSHOT_TYPE_PRAFIX + "%' ";
+					query += " AND NOT document.type LIKE 'workitemlob%' ";
 					query += " ORDER BY document.created ASC";
 					q = manager.createQuery(query);
 					q.setFirstResult(0);
