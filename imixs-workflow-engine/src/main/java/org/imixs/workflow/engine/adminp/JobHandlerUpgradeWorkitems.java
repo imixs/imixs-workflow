@@ -19,6 +19,7 @@ import javax.ejb.TransactionAttributeType;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.lucene.LuceneSearchService;
 import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -47,7 +48,9 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 	DocumentService documentService;
 
 	@EJB
-	LuceneUpdateService luceneService;
+	LuceneSearchService luceneService;
+	
+	
 
 	private static Logger logger = Logger.getLogger(JobHandlerRebuildIndex.class.getName());
 
@@ -83,6 +86,12 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 		long lProfiler = System.currentTimeMillis();
 		int iIndex = adminp.getItemValueInteger("numIndex");
 		int iBlockSize = adminp.getItemValueInteger("numBlockSize");
+		
+		
+		// First flush the lucene event log....
+		logger.info("... flush lucene event log...");
+		luceneService.flush();
+		
 
 		// test if numBlockSize is defined.
 		if (iBlockSize <= 0) {
@@ -98,6 +107,7 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 		logger.finest("......JQPL query: " + query);
 		adminp.replaceItemValue("txtQuery", query);
 
+		logger.info("... selecting workitems...");
 		List<ItemCollection> workitemList = documentService.getDocumentsByQuery(query, iIndex, iBlockSize);
 		int colSize = workitemList.size();
 		// Update index
