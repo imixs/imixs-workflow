@@ -47,13 +47,13 @@ This example query will select all running workitems in the worklfow group 'Tick
 ### Providing Parameters
 The query statement of a report can contain dynamic parameters. These parameters can be provided through the [Imixs Report REST API](../restapi/reportservice.html). See the following example of a query defining a parameter named '1':
   
-	 (type:"workitem") AND ($taskid:?1)
+	 (type:"workitem") AND ($taskid:{1})
 
 To provide the execution with a parameter, the parameter value is appended into the query string of the Rest API call:
  
     http://Host/WorkflowApp/report/reportfile.imixs-report?pagesize=100&1=5130
  
-In this example the URL contains the parameter "?1=5130" which will be inserted into the query statement during the report execution.
+In this example the URL contains the parameter "1=5130" which will be inserted into the query statement during the report execution.
 
 
 ### Dynamic Date Values

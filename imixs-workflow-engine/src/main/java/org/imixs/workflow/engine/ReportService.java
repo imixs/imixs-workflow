@@ -180,8 +180,9 @@ public class ReportService {
 	/**
 	 * Returns the data source defined by a report.
 	 * <p>
-	 * The method executes the JQPL statement of a Report Entity. The values of the
-	 * returned entities will be cloned and formated in case a itemList is provided.
+	 * The method executes the lucene search query defined by the Report. The values
+	 * of the returned entities will be cloned and formated in case a itemList is
+	 * provided.
 	 * <p>
 	 * The method parses the attribute txtname for a formating expression to format
 	 * the item value. E.g.:
@@ -191,6 +192,18 @@ public class ReportService {
 	 *  datDate<format locale="de" label="Date">yy-dd-mm</format>
 	 * 
 	 * }
+	 * <p>
+	 * Optional the lucene search query my contain params which will be replaced by
+	 * a given param Map:
+	 * <p>
+	 * 
+	 * <pre>
+	 * ($created:{date_from})
+	 * </pre>
+	 * <p>
+	 * In this example the literal ?{date_from} will be replaced with the given
+	 * value provided in the param map.
+	 * <p>
 	 * 
 	 * @param reportName
 	 *            - name of the report to be executed
@@ -224,13 +237,22 @@ public class ReportService {
 			Iterator<String> iter = keys.iterator();
 			while (iter.hasNext()) {
 				// read key
-				String sKeyName = iter.next().toString();
+				String sKeyName = iter.next().toString().trim();
+				String sParamValue = params.get(sKeyName);
 				// test if key is contained in query
-				if (query.indexOf("?" + sKeyName) > -1) {
-					String sParamValue = params.get(sKeyName);
-					query = query.replace("?" + sKeyName, sParamValue);
+				if (query.indexOf("{" + sKeyName + "}") > -1) {
+					query = query.replace("{" + sKeyName + "}", sParamValue);
 					logger.finest("......executeReport set param " + sKeyName + "=" + sParamValue);
+				} else {
+					// support old param format
+					if (query.indexOf("?" + sKeyName) > -1) {
+						query = query.replace("?" + sKeyName, sParamValue);
+						logger.warning("......query definition in Report '" + reportEntity.getItemValueString("txtname")
+								+ "' is deprecated! Please replace the param '?" + sKeyName + "' with '{"
+								+ sKeyName + "}'");
+					}
 				}
+
 			}
 		}
 
