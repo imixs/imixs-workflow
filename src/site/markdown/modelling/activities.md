@@ -14,25 +14,33 @@ In the section _General_ you provide basic information for the Imixs-BPMN Event 
 
 ### Name 
 
-The name of an event is used to identify the event by the user to process a WorkItem. The name is typically a noun describing the action triggered by the user,  e.g. "submit", "approve" "close". The event name can be used by applications to display the workflow actions as buttons or hyper links. 
+The name of an event is used to identify the event by the user to process a WorkItem. The name is typically a noun describing the action triggered by the user,  e.g. "submit", "approve" "close".
+
+### Documentation
+
+The documentation of the Event element is optional and provides the user with additional information about the event. Typically the documentation contains  information how the event will change the current status of the process instance. 
+
+The properties name and documentation can be used  by an application to display event based information- e.g. as buttons or hyper links. 
 
 <img src="../images/modelling/bpmn_screen_30.png" />
 
 
-### Documentation
-
-The documentation of the Event element is optional and provides the user with additional information about the event. Typically the documentation contains  information how the event will change the current status of the process instance. The documentation can be used  by applications to display event based information. 
  
+| Property        | Type   	| Description									 				|
+|-----------------|---------|---------------------------------------------------------------|
+| name            | String 	| name of the event element       								|
+| documentation   | String 	| short description				   								|
+
  
  
 ## Workflow Properties
-In the section _Workflow_ you provide the processing information for an Event. These information are evaluated by the Workflow Engine while a WorkItem is processed 
+In the section _Workflow_ you provides the processing information for an Event. These information are evaluated by the Workflow Engine while a WorkItem is processed 
  
 <img src="../images/modelling/bpmn_screen_20.png" width="600px" />  
   
  
 ### ID 
-Every Workflow Event assigned to a Workflow Task has an unambiguously ID. The Event ID is used  by the Workflow Engine to identify the Event. You can also use the ID to trigger an event manually.  
+Every Imixs-Event Element assigned to an Imixs Task Element has an unambiguously ID. The Event ID is used  by the Workflow Engine to identify the Event. You can also use the ID to trigger an event manually.  
 
 	...
 	myWorkitem.event(10);
@@ -55,54 +63,85 @@ The section 'visibility' defines whether an event is visible to a workflow user 
 Per default each Imixs-Event is public and visible to all users. If the property 'Public Event' is set to 'No', the event will not be part of the public event list of an workitem and not be displayed by an application as a click action.<br /><br />
 
 <strong>Restricted Events:</strong><br />
-A 'Public Event' can be restricted to a specific group of users depending on the state of a workflow instance. The restriction is based on the 'Actor Properties' which are defined by the [process properties](./main_editor.html) of the workflow model. If a restriction is set the event is only visible to the workflow user if the userid is listed in one of the Actor Properties. With the restriction feature, the visibility of a workflow event can be configured on a very fine grained level.  <br />  <br />
+A 'Public Event' can be restricted to a specific group of users depending on the state of a workflow instance. The restriction is based on the 'Actor Properties' which are defined by the <a href ="./main_editor.html">process properties</a> of the workflow model. If a restriction is set the event is only visible to the workflow user if the userid is listed in one of the Actor Properties. With the restriction feature, the visibility of a workflow event can be configured on a very fine grained level.  <br />  <br />
 
 <strong>Read Access:</strong><br />
 The 'Read Access' property can be used to define a general read permission for a Imixs-Event element. The list can contain any application specific role or userid. If a 'read access' is specified the event is only visible to users with the corresponding access role or userid. 
 </ul>
 
-  
+
+ 
+| Property        | Type   		| Description									 				|
+|-----------------|-------------|---------------------------------------------------------------|
+| id	          | Integer		| event identifier which is unique to the associated task element   |
+| $readaccess	  | String List	| optional access restriction to user- or group IDs 		|
+| workflow.result | String 		| application specific processing information 					|
+| workflow.public | Boolean		| indicates if the event is a public event (true) or hidden for backend processing only (false)		|
+| workflow.public_actors  | String List	| an optional list of public actors 	|
+
+
+
+
+
+ 
 ## ACL Properties
-In the section _ACL_ you can optional define an Access Control List (ACL) to be assigned to a workitem when the event is processed by the Imixs-Workflow engine.
+The ACL defines the read-, write- and ownership, an actor will be granted for, after processing a WorkItem.
 
-<img src="../images/modelling/bpmn_screen_21.png"/>  
+<img src="../images/modelling/bpmn_screen_31.png"/>  
 
-<strong>Note:</strong> If you define ACL settings on the Event level, the ACL settings on a [Task Element](./process.html) will be overwritten.
+Actors play an essential role within a human-centric workflow system. 
+In Imixs-Workflow the actors can be defined statically by adding user- or group IDs, or the ACL can be dynamically computed based on the properties of a process instance. 
+The dynamic mapping of actors to a workitem property is defined by the [process properties](./main_editor.html) of the workflow model. 
 
-The ACL of an Event defines the read- and write access a user will be granted for, after a WorkItem was successful  processed. This is one of the most important features of the Imixs Workflow System. Also the ownership can be defined by the ACL properties. The ACL can be set based on the 'Actor Properties' which are defined by the [process properties](./main_editor.html) of the workflow model. To activate the feature the option 'Update ACL' has to be checked.
-
+<strong>Note:</strong> If the ACL setting is defined on Event level, the ACL settings on the Task Level will be overwritten.
 
 
 ### Owner, Read and Write Access:
-The ACL of a WorkItem is defined in three different layers.  The 'Owner' defines the users assigned to the WorkItem for the next Workflow Task. This setting typically adds the WorkItem to the users task list.  The 'Read Access' is used to restrict the read access for a WorkItem. Only users which are assigned to the Read Access of a WorkItem can access the workitem from the application. If no Users or Roles are defined in the Read Access not read restrictions are set to a WorkItem.
+
+The ACL of a WorkItem is defined in three different layers.  
+
+* **The 'Owner'** describes the users assigned to the process instance. This setting defines the users task list.  
+
+* **The 'Read Access'** restricts the general access to a process instance. Only users which are assigned to the Read Access can access the process instance. If no read access is defined at all, the process instance is not read restricted.
  
-The 'Write Access' restricts the author access for a WorkItem. The Author Access depends on the 
- AccessLevel a user is granted for. If a user is assigned to the role 'org.imixs.ACCESSLEVEL.AUTHORACCESS' and is not listed in the Write Access List of a WorkItem, the user is not allowed to change or process the WorkItem. 
+* **The 'Write Access'** restricts the write access to a process instance.  The Write Access depends on the 
+ AccessLevel a user is granted for. If a user is assigned to the role _org.imixs.ACCESSLEVEL.AUTHORACCESS_ and is not listed in the Write Access List, the user is not allowed to update the process instance. Find more details in the [security section](../engine/acl.html). 
  
+
+The ACL can be defined either in a static or by a mapping between the properties of the process instance to the ACL definition.  
+
+
+
+
+### The Static ACL List:
+
+User- or Group IDs added to the ACL have to match the login name and role definitions of the workflow application. Imixs-Workflow defines the following functional roles which can be added to a static ACL definition:
+
+* org.imixs.ACCESSLEVEL.READACCESS
+* org.imixs.ACCESSLEVEL.AUTHORACCESS
+* org.imixs.ACCESSLEVEL.EDITORACCESS
+* org.imixs.ACCESSLEVEL.MANAGERACCESS
+
+### The ACL Mapping:
+
+The _ACL Mapping_ is used to  map a property of the  process instance to the ACL. The mapping list can be defined by the <a href="./main_editor.html">Process Property Editor</a>. 
+
+See also the section [security settings](../engine/acl.html) for more details about access control of Imixs-Worklow.  
+ 
+ 
+ 
+| Property     		| Type   		| Description									 				|
+|-------------------|---------------|---------------------------------------------------------------|
+| acl.update 		| boolean 		| indicates an ACL update on the event level						|
+| acl.owner_list		| String List 	| a static owner list										|
+| acl.owner_list_mapping		| String List 	| defines the mapping of a workitem property to the owner list	|
+| acl.readaccess_list	| String List 	| the a static read access list										|
+| acl.readaccess_list_mapping	| String List 	| defines the mapping of a workitem property to the read access list	|
+| acl.writeaccess_list	| String List 	| the a static write access list										|
+| acl.writeaccess_list_mapping	| String List 	| defines the mapping of a workitem property to the write access list	|
+
+
   
-
-<ul>
-
-<strong>Dynamic ACL:</strong><br />
-The dynamic ACL settings are used to compute the access list based on the definition of 'Actors'.  Actors play an essential role in a user-centric workflow system. The actors are computed dynamically based on the properties of a WorkItem. See the section [Process Property Editor](./main_editor.html) for more  information how to define Actors in an Imixs BPMN model. <br /><br />
-
-<strong>Static ACL:</strong><br />
-It is also possible to define the ACL in a static way. The UserIDs and Role names have to match the  login name and role definitions of the workflow application. The following Imixs standard roles can be used here:<br />
-
-
- <ul><li> org.imixs.ACCESSLEVEL.READACCESS</li>
- 
- <li>org.imixs.ACCESSLEVEL.AUTHORACCESS</li>
- 
- <li>org.imixs.ACCESSLEVEL.EDITORACCESS</li>
- 
- <li>org.imixs.ACCESSLEVEL.MANAGERACCESS</li>
- </ul>
-
-</ul>
-
-
-See also the section [security settings](../engine/acl.html) for more details.  
 
 ## History Properties
 This history property defines information added by the [HistoryPlugin](../engine/plugins/historyplugin.html) during the processing phase of the imixs-workflow engine. 
@@ -119,6 +158,14 @@ A history entry support the [Text Replacer feature](./textreplacement.html).
 
     Document saved by <itemvalue>namcurrenteditor</itemvalue>
 
+
+
+ 
+| Property        | Type   		| Description									 				|
+|-----------------|-------------|---------------------------------------------------------------|
+| history.message | String		| History message definition											|
+
+
 ## Mail Properties
 
 The property section 'Mail' defines information for mail messaging during a process step.
@@ -130,6 +177,22 @@ A mail message is defined by the mail subject and mail body. Both fields support
 A Mail message can be send by the [Imxis-Mail Plugin](../engine/plugins/mailplugin.html)
 
 
+
+ 
+| Property        			| Type   		| Description									 				|
+|---------------------------|---------------|---------------------------------------------------------------|
+| mail.subject    			| String		| the message subject											|
+| mail.body		  			| String		| the message body												|
+| mail.to\_list				| String List 	| a static recipient list												|
+| mail.to\_list\_mapping	| String List 	| defines the mapping of a workitem property to the recipient list		|
+| mail.cc\_list				| String List 	| a static CC recipient list											|
+| mail.cc\_list\_mapping	| String List 	| defines the mapping of a workitem property to the CC recipient list	|
+| mail.bcc\_list			| String List 	| a static BCC recipient list											|
+| mail.bcc\_list\_mapping	| String List 	| defines the mapping of a workitem property to the BCC recipient list	|
+
+
+
+
 ## Rule Properties
 
 In the section 'Rule' you can define business rules to be evaluated during the processing life cycle. 
@@ -137,6 +200,11 @@ In the section 'Rule' you can define business rules to be evaluated during the p
 <img src="../images/modelling/bpmn_screen_24.png"/>
 
 A business rule can be written in different script languages. See the section [Rule Plugin](../engine/plugins/ruleplugin.html) for further information how a business rule is defined.
+ 
+| Property        			| Type   		| Description									 				|
+|---------------------------|---------------|---------------------------------------------------------------|
+| rule.engine    			| String		| rule engine (default is JavaScript)							|
+| rule.definition  			| String		| rule definition												|
 
 
 ## Report Properties
@@ -148,6 +216,16 @@ The 'Report' section describes a report definition to be executed the event.
 See the section [Rule Plugin](../restapi/reportservice.html) for further information about reports.
 
 
+
+| Property      | Type   		| Description									 				|
+|---------------|---------------|---------------------------------------------------------------|
+| report.name   | String		| report name													|
+| report.path	| String		| optional file path											|
+| report.options| String List 	| optional param list list										|
+| report.target	| String		| traget definition												|
+
+
+
 ## Version Properties
 
 The section 'Version' defines if a new version of a process instance should be created by the event. Versions are used to archive a process instance or to create a copy of a workitem.   
@@ -156,6 +234,17 @@ The section 'Version' defines if a new version of a process instance should be c
 
 See the section [Version Plugin](../engine/plugins/versionplugin.html) for further information about reports.
 
+
+
+| Property      | Type   		| Description									 				|
+|---------------|---------------|---------------------------------------------------------------|
+| version.mode  | String		| mode option (1=create new, 2=convert to master)				|
+| version.event | Integer		| event id														|
+
+
+
+
+
 ## Timer Properties
 
 Events can be triggered by user interaction or based on a timer event. The section 'timer' allows the definition of a timer event. 
@@ -163,4 +252,15 @@ Events can be triggered by user interaction or based on a timer event. The secti
 <img src="../images/modelling/bpmn_screen_27.png"/>
 
 See the section [Workflow Scheduler](../engine/scheduler.html) for further information.
+  
+  
+| Property      				| Type   	| Description									 				|
+|-------------------------------|-----------|---------------------------------------------------------------|
+| timer.active  				| Boolean	| true if the event is a timer event							|
+| timer.selection 				| String	| optional view selection (lucene query)						|
+| timer.delay					| Integer	| delay															|
+| timer.delay\_unit 			| String	| delay unit (0=seconds, 1=minutes, 2=hours, 3=days, 4=working days)	|
+| timer.delay\_base 			| String	| delay base (1=last event, 2=last modify, 3=creation date, 4=workitem property)|	
+| timer.delay\_base\_property 	| String	| name of workitem base property								|
+
   

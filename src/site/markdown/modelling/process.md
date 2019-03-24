@@ -159,7 +159,7 @@ See also the section [security settings](../engine/acl.html) for more details ab
 | Property     		| Type   		| Description									 				|
 |-------------------|---------------|---------------------------------------------------------------|
 | acl.update 		| boolean 		| indicates an ACL update on the task level						|
-| acl.owner_list		| String List 	| the a static owner list										|
+| acl.owner_list		| String List 	| a static owner list										|
 | acl.owner_list_mapping		| String List 	| defines the mapping of a workitem property to the owner list	|
 | acl.readaccess_list	| String List 	| the a static read access list										|
 | acl.readaccess_list_mapping	| String List 	| defines the mapping of a workitem property to the read access list	|
