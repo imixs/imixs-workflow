@@ -310,6 +310,10 @@ public class BPMNModelHandler extends DefaultHandler {
 		// end of bpmn2:task -
 		if (bImixsTask && qName.equalsIgnoreCase("bpmn2:task")) {
 			bImixsTask = false;
+
+			// adapt deprecated proptery format
+			adaptDeprecatedTaskProperties(currentEntity);
+
 			taskCache.put(bpmnID, currentEntity);
 		}
 
@@ -677,7 +681,8 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 		}
 
-		logger.finest("......Imixs BPMN Event '" + eventID + "' is directly assigend to " + result.size() + " task elements");
+		logger.finest(
+				"......Imixs BPMN Event '" + eventID + "' is directly assigend to " + result.size() + " task elements");
 		return result;
 	}
 
@@ -755,9 +760,9 @@ public class BPMNModelHandler extends DefaultHandler {
 				for (SequenceFlow flow : outgoingList) {
 					// lookup for a exclusive gateway....
 					String exclusiveGatewayID = new ElementResolver().findExclusiveGateway(flow);
-					if (exclusiveGatewayID!=null) {
+					if (exclusiveGatewayID != null) {
 
-						String conditionalGatewayID = exclusiveGatewayID; //flow.target;
+						String conditionalGatewayID = exclusiveGatewayID; // flow.target;
 						// get all outgoing flows from this gateway
 						List<SequenceFlow> conditionalFlows = this.findOutgoingFlows(conditionalGatewayID);
 						for (SequenceFlow condFlow : conditionalFlows) {
@@ -766,8 +771,8 @@ public class BPMNModelHandler extends DefaultHandler {
 							if (targetTask != null) {
 								String sExpression = findConditionBySquenceFlow(condFlow);
 								if (sExpression != null && !sExpression.trim().isEmpty()) {
-									logger.finest("......add condition: " + targetTask.getItemValueInteger("numProcessid") + "="
-											+ sExpression);
+									logger.finest("......add condition: "
+											+ targetTask.getItemValueInteger("numProcessid") + "=" + sExpression);
 									conditions.put("task=" + targetTask.getItemValueInteger("numProcessid"),
 											sExpression);
 								}
@@ -778,8 +783,8 @@ public class BPMNModelHandler extends DefaultHandler {
 								if (targetEvent != null) {
 									String sExpression = findConditionBySquenceFlow(condFlow);
 									if (sExpression != null && !sExpression.trim().isEmpty()) {
-										logger.finest("......add condition: " + targetEvent.getItemValueInteger("numActivityid")
-												+ "=" + sExpression);
+										logger.finest("......add condition: "
+												+ targetEvent.getItemValueInteger("numActivityid") + "=" + sExpression);
 										conditions.put("event=" + targetEvent.getItemValueInteger("numActivityid"),
 												sExpression);
 									}
@@ -814,8 +819,8 @@ public class BPMNModelHandler extends DefaultHandler {
 							if (targetTask != null) {
 								String sExpression = findConditionBySquenceFlow(parallelFlow);
 								if (sExpression != null && !sExpression.trim().isEmpty()) {
-									logger.finest("......add condition: " + targetTask.getItemValueInteger("numProcessid") + "="
-											+ sExpression);
+									logger.finest("......add condition: "
+											+ targetTask.getItemValueInteger("numProcessid") + "=" + sExpression);
 									conditions.put("task=" + targetTask.getItemValueInteger("numProcessid"),
 											sExpression);
 								}
@@ -826,8 +831,8 @@ public class BPMNModelHandler extends DefaultHandler {
 								if (targetEvent != null) {
 									String sExpression = findConditionBySquenceFlow(parallelFlow);
 									if (sExpression != null && !sExpression.trim().isEmpty()) {
-										logger.finest("......add condition: " + targetEvent.getItemValueInteger("numActivityid")
-												+ "=" + sExpression);
+										logger.finest("......add condition: "
+												+ targetEvent.getItemValueInteger("numActivityid") + "=" + sExpression);
 										conditions.put("event=" + targetEvent.getItemValueInteger("numActivityid"),
 												sExpression);
 									}
@@ -1085,6 +1090,59 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	}
 
+	/**
+	 * This is a helper method to adapt the old property names into the new. The
+	 * method also works the other way around so that new imixs-workflow can handle
+	 * old bpmn files too.
+	 * 
+	 * @param currentEntity2
+	 */
+	private void adaptDeprecatedTaskProperties(ItemCollection taskEntity) {
+		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_WORKFLOW_SUMMARY,"txtworkflowsummary");
+		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_WORKFLOW_SUMMARY,"txtworkflowsummary");
+
+		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_APPLICATION_EDITOR,"txteditorid");
+		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_APPLICATION_ICON,"txtimageurl");
+		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_APPLICATION_TYPE,"txttype");
+		
+		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_OWNER_LIST,"namownershipnames");
+		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_OWNER_LIST_MAPPING,"keyownershipfields");
+		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_READACCESS_LIST,"namaddreadaccess");
+		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_READACCESS_LIST_MAPPING,"keyaddreadfields");
+		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_WRITEACCESS_LIST,"namaddwriteaccess");
+		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING,"keyaddwritefields");
+		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_UPDATE,"keyupdateacl");
+	
+	}
+	
+	
+	/**
+	 * Helper method to adopt a old name into a new one
+	 * @param taskEntity
+	 * @param newItemName
+	 * @param oldItemName
+	 */
+	private void adaptDeprecatedItem(ItemCollection taskEntity,String newItemName, String oldItemName) {
+	
+		// test if old name is provided with a value...
+		if (taskEntity.getItemValueString(newItemName).isEmpty()
+				&& !taskEntity.getItemValueString(oldItemName).isEmpty()) {
+			taskEntity.replaceItemValue(newItemName,
+					taskEntity.getItemValue(oldItemName));
+		}
+		
+		// now we support backward compatibility and add the old name if missing
+		if (taskEntity.getItemValueString(oldItemName).isEmpty()) {
+			taskEntity.replaceItemValue(oldItemName,
+					taskEntity.getItemValue(newItemName));
+		}
+		
+	}
+	
+	
+	
+	
+
 	class SequenceFlow {
 		String target = null;
 		String source = null;
@@ -1254,15 +1312,11 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 			return null;
 		}
-		
-		
-		
-		
-		
-		
+
 		/**
-		 * This method searches a Conditional Gateway  targeted from the given
-		 * SequenceFlow element. If no conditional gateway was found the method returns null.
+		 * This method searches a Conditional Gateway targeted from the given
+		 * SequenceFlow element. If no conditional gateway was found the method returns
+		 * null.
 		 * 
 		 * @return id of the conditional gateway if found.
 		 */
@@ -1278,13 +1332,13 @@ public class BPMNModelHandler extends DefaultHandler {
 				loopFlowCache.add(flow.target);
 			}
 
-			String id=flow.target;
+			String id = flow.target;
 			for (String condID : conditionalGatewayCache) {
-				if (id.equals(condID))  {
+				if (id.equals(condID)) {
 					return condID;
 				}
 			}
-			
+
 			// no Imixs task or event found so we are trying to look for the
 			// next outgoing flow elements. (issue #211)
 			List<SequenceFlow> refList = findOutgoingFlows(flow.target);
@@ -1298,7 +1352,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			}
 			return null;
 		}
-		
+
 		/**
 		 * This method searches the id for a Imixs follow-Up activity. This is the case
 		 * if the target is another Imixs Event element. The method returns the id of

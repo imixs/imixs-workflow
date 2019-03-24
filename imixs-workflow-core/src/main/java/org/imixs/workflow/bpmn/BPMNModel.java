@@ -22,6 +22,22 @@ import org.imixs.workflow.exceptions.ModelException;
  * 
  */
 public class BPMNModel implements Model {
+	
+	
+	public final static String TASK_ITEM_WORKFLOW_SUMMARY="workflow.summary";
+	public final static String TASK_ITEM_WORKFLOW_ABSTRACT="workflow.abstract";
+	public final static String TASK_ITEM_APPLICATION_EDITOR="application.editor";
+	public final static String TASK_ITEM_APPLICATION_ICON="application.icon";
+	public final static String TASK_ITEM_APPLICATION_TYPE="application.type";
+	
+	public final static String TASK_ITEM_ACL_OWNER_LIST="acl.owner_list";
+	public final static String TASK_ITEM_ACL_OWNER_LIST_MAPPING="acl.owner_list_mapping";
+	public final static String TASK_ITEM_ACL_READACCESS_LIST="acl.readaccess_list";
+	public final static String TASK_ITEM_ACL_READACCESS_LIST_MAPPING="acl.readaccess_list_mapping";
+	public final static String TASK_ITEM_ACL_WRITEACCESS_LIST="acl.writeaccess_list";
+	public final static String TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING="acl.writeaccess_list_mapping";
+
+	public final static String TASK_ITEM_ACL_UPDATE="acl.update";
 
 	private Map<Integer, ItemCollection> taskList = null;
 	private Map<Integer, List<ItemCollection>> eventList = null;

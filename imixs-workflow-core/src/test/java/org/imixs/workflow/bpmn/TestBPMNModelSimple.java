@@ -270,4 +270,46 @@ public class TestBPMNModelSimple {
 
 	}
 
+	/**
+	 * Test the adoption of deprecated task properties.
+	 * 
+	 * See issue #491
+	 * 
+	 * @throws ModelException
+	 */
+	@Test
+	public void testDeprecatedTaskProperties() throws ModelException {
+
+		Assert.assertNotNull(model);
+
+		// test task 1000
+		ItemCollection task = model.getTask(1100);
+		Assert.assertNotNull(task);
+		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
+		Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
+
+
+		// new items
+		Assert.assertTrue(task.getItemValueBoolean(BPMNModel.TASK_ITEM_ACL_UPDATE));
+		Assert.assertEquals("test summary",task.getItemValueString(BPMNModel.TASK_ITEM_WORKFLOW_SUMMARY));
+		Assert.assertEquals("test abstract",task.getItemValueString(BPMNModel.TASK_ITEM_WORKFLOW_ABSTRACT));
+		
+
+		Assert.assertEquals("test form",task.getItemValueString(BPMNModel.TASK_ITEM_APPLICATION_EDITOR));
+		Assert.assertEquals("test icon",task.getItemValueString(BPMNModel.TASK_ITEM_APPLICATION_ICON));
+		Assert.assertEquals("test type",task.getItemValueString(BPMNModel.TASK_ITEM_APPLICATION_TYPE));
+
+		
+		Assert.assertEquals("test_actor",task.getItemValueString(BPMNModel.TASK_ITEM_ACL_OWNER_LIST_MAPPING));
+		Assert.assertEquals("test_actor",task.getItemValueString(BPMNModel.TASK_ITEM_ACL_READACCESS_LIST_MAPPING));
+		Assert.assertEquals("test_actor",task.getItemValueString(BPMNModel.TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING));
+
+
+		Assert.assertEquals("testowner",task.getItemValueString(BPMNModel.TASK_ITEM_ACL_OWNER_LIST));
+		Assert.assertEquals("testreadaccess",task.getItemValueString(BPMNModel.TASK_ITEM_ACL_READACCESS_LIST));
+		Assert.assertEquals("testwriteaccess",task.getItemValueString(BPMNModel.TASK_ITEM_ACL_WRITEACCESS_LIST));
+
+		
+	}
+
 }
