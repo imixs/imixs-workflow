@@ -325,6 +325,10 @@ public class BPMNModelHandler extends DefaultHandler {
 		if (bImixsEvent && (qName.equalsIgnoreCase("bpmn2:intermediateCatchEvent")
 				|| qName.equalsIgnoreCase("bpmn2:intermediateThrowEvent"))) {
 			bImixsEvent = false;
+
+			// adapt deprecated proptery format
+			adaptDeprecatedEventProperties(currentEntity);
+
 			// we need to cache the activities because the sequenceflows must be
 			// analysed later
 			eventCache.put(bpmnID, currentEntity);
@@ -1098,50 +1102,117 @@ public class BPMNModelHandler extends DefaultHandler {
 	 * @param currentEntity2
 	 */
 	private void adaptDeprecatedTaskProperties(ItemCollection taskEntity) {
-		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_WORKFLOW_SUMMARY,"txtworkflowsummary");
-		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_WORKFLOW_SUMMARY,"txtworkflowsummary");
 
-		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_APPLICATION_EDITOR,"txteditorid");
-		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_APPLICATION_ICON,"txtimageurl");
-		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_APPLICATION_TYPE,"txttype");
-		
-		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_OWNER_LIST,"namownershipnames");
-		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_OWNER_LIST_MAPPING,"keyownershipfields");
-		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_READACCESS_LIST,"namaddreadaccess");
-		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_READACCESS_LIST_MAPPING,"keyaddreadfields");
-		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_WRITEACCESS_LIST,"namaddwriteaccess");
-		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING,"keyaddwritefields");
-		adaptDeprecatedItem(taskEntity,BPMNModel.TASK_ITEM_ACL_UPDATE,"keyupdateacl");
-	
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_NAME, "txtname");
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_DOCUMENTATION, "rtfdescription");
+
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_WORKFLOW_SUMMARY, "txtworkflowsummary");
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_WORKFLOW_ABSTRACT, "txtworkflowabstract");
+
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_APPLICATION_EDITOR, "txteditorid");
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_APPLICATION_ICON, "txtimageurl");
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_APPLICATION_TYPE, "txttype");
+
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_ACL_OWNER_LIST, "namownershipnames");
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_ACL_OWNER_LIST_MAPPING, "keyownershipfields");
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_ACL_READACCESS_LIST, "namaddreadaccess");
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_ACL_READACCESS_LIST_MAPPING, "keyaddreadfields");
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_ACL_WRITEACCESS_LIST, "namaddwriteaccess");
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING, "keyaddwritefields");
+		adaptDeprecatedItem(taskEntity, BPMNModel.TASK_ITEM_ACL_UPDATE, "keyupdateacl");
+
 	}
-	
-	
+
+	/**
+	 * This is a helper method to adapt the old property names into the new. The
+	 * method also works the other way around so that new imixs-workflow can handle
+	 * old bpmn files too.
+	 * 
+	 * @param currentEntity2
+	 */
+	private void adaptDeprecatedEventProperties(ItemCollection eventEntity) {
+
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_NAME, "txtname");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_DOCUMENTATION, "rtfdescription");
+
+		// migrate keypublicresult
+		if (!eventEntity.hasItem("keypublicresult")) {
+			if (!eventEntity.hasItem(BPMNModel.EVENT_ITEM_WORKFLOW_PUBLIC)) {
+				eventEntity.setItemValue(BPMNModel.EVENT_ITEM_WORKFLOW_PUBLIC, true);
+			} else {
+				if (!eventEntity.hasItem(BPMNModel.EVENT_ITEM_WORKFLOW_PUBLIC)) {
+					eventEntity.setItemValue(BPMNModel.EVENT_ITEM_WORKFLOW_PUBLIC,
+							!"0".equals(eventEntity.getItemValueString("keypublicresult")));
+				}
+			}
+		} else {
+			if (!eventEntity.hasItem(BPMNModel.EVENT_ITEM_WORKFLOW_PUBLIC)) {
+				eventEntity.setItemValue(BPMNModel.EVENT_ITEM_WORKFLOW_PUBLIC,
+						!"0".equals(eventEntity.getItemValueString("keypublicresult")));
+			}
+		}
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_WORKFLOW_PUBLIC_ACTORS, "keyrestrictedvisibility");
+
+		// acl
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_ACL_OWNER_LIST, "namownershipnames");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_ACL_OWNER_LIST_MAPPING, "keyownershipfields");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_ACL_READACCESS_LIST, "namaddreadaccess");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_ACL_READACCESS_LIST_MAPPING, "keyaddreadfields");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_ACL_WRITEACCESS_LIST, "namaddwriteaccess");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_ACL_WRITEACCESS_LIST_MAPPING, "keyaddwritefields");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_ACL_UPDATE, "keyupdateacl");
+
+		// workflow
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_WORKFLOW_RESULT, "txtactivityresult");
+		
+		// history
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_HISTORY_MESSAGE, "rtfresultlog");
+		
+		// mail
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_MAIL_SUBJECT, "txtmailsubject");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_MAIL_BODY, "rtfmailbody");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_MAIL_TO_LIST, "nammailreceiver");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_MAIL_TO_LIST_MAPPING, "keymailreceiverfields");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_MAIL_CC_LIST, "nammailreceivercc");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_MAIL_CC_LIST_MAPPING, "keymailreceiverfieldscc");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_MAIL_BCC_LIST, "nammailreceiverbcc");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_MAIL_BCC_LIST_MAPPING, "keymailreceiverfieldsbcc");
+		
+		// rule
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_RULE_ENGINE, "txtbusinessruleengine");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_RULE_DEFINITION, "txtbusinessrule");
+		
+		// report
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_REPORT_NAME, "txtreportname");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_REPORT_PATH, "txtreportfilepath");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_REPORT_OPTIONS, "txtreportparams");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_REPORT_TARGET, "txtreporttarget");
+		
+		
+		
+	}
+
 	/**
 	 * Helper method to adopt a old name into a new one
+	 * 
 	 * @param taskEntity
 	 * @param newItemName
 	 * @param oldItemName
 	 */
-	private void adaptDeprecatedItem(ItemCollection taskEntity,String newItemName, String oldItemName) {
-	
+	private void adaptDeprecatedItem(ItemCollection taskEntity, String newItemName, String oldItemName) {
+
 		// test if old name is provided with a value...
 		if (taskEntity.getItemValueString(newItemName).isEmpty()
 				&& !taskEntity.getItemValueString(oldItemName).isEmpty()) {
-			taskEntity.replaceItemValue(newItemName,
-					taskEntity.getItemValue(oldItemName));
+			taskEntity.replaceItemValue(newItemName, taskEntity.getItemValue(oldItemName));
 		}
-		
+
 		// now we support backward compatibility and add the old name if missing
 		if (taskEntity.getItemValueString(oldItemName).isEmpty()) {
-			taskEntity.replaceItemValue(oldItemName,
-					taskEntity.getItemValue(newItemName));
+			taskEntity.replaceItemValue(oldItemName, taskEntity.getItemValue(newItemName));
 		}
-		
+
 	}
-	
-	
-	
-	
 
 	class SequenceFlow {
 		String target = null;

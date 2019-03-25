@@ -222,7 +222,7 @@ See the section [Rule Plugin](../restapi/reportservice.html) for further informa
 | report.name   | String		| report name													|
 | report.path	| String		| optional file path											|
 | report.options| String List 	| optional param list list										|
-| report.target	| String		| traget definition												|
+| report.target	| String		| target definition	(0=attach, 2=file)							|
 
 
 

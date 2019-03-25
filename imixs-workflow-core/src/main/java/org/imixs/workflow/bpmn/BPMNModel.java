@@ -23,21 +23,53 @@ import org.imixs.workflow.exceptions.ModelException;
  */
 public class BPMNModel implements Model {
 	
-	
+	public final static String TASK_ITEM_NAME="name";
+	public final static String TASK_ITEM_DOCUMENTATION="documentation";
 	public final static String TASK_ITEM_WORKFLOW_SUMMARY="workflow.summary";
 	public final static String TASK_ITEM_WORKFLOW_ABSTRACT="workflow.abstract";
 	public final static String TASK_ITEM_APPLICATION_EDITOR="application.editor";
 	public final static String TASK_ITEM_APPLICATION_ICON="application.icon";
 	public final static String TASK_ITEM_APPLICATION_TYPE="application.type";
-	
 	public final static String TASK_ITEM_ACL_OWNER_LIST="acl.owner_list";
 	public final static String TASK_ITEM_ACL_OWNER_LIST_MAPPING="acl.owner_list_mapping";
 	public final static String TASK_ITEM_ACL_READACCESS_LIST="acl.readaccess_list";
 	public final static String TASK_ITEM_ACL_READACCESS_LIST_MAPPING="acl.readaccess_list_mapping";
 	public final static String TASK_ITEM_ACL_WRITEACCESS_LIST="acl.writeaccess_list";
 	public final static String TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING="acl.writeaccess_list_mapping";
-
 	public final static String TASK_ITEM_ACL_UPDATE="acl.update";
+
+	public final static String EVENT_ITEM_NAME="name";
+	public final static String EVENT_ITEM_DOCUMENTATION="documentation";
+	public final static String EVENT_ITEM_ACL_OWNER_LIST="acl.owner_list";
+	public final static String EVENT_ITEM_ACL_OWNER_LIST_MAPPING="acl.owner_list_mapping";
+	public final static String EVENT_ITEM_ACL_READACCESS_LIST="acl.readaccess_list";
+	public final static String EVENT_ITEM_ACL_READACCESS_LIST_MAPPING="acl.readaccess_list_mapping";
+	public final static String EVENT_ITEM_ACL_WRITEACCESS_LIST="acl.writeaccess_list";
+	public final static String EVENT_ITEM_ACL_WRITEACCESS_LIST_MAPPING="acl.writeaccess_list_mapping";
+	public final static String EVENT_ITEM_ACL_UPDATE="acl.update";
+	
+	
+	public final static String EVENT_ITEM_WORKFLOW_RESULT="workflow.result";
+	public final static String EVENT_ITEM_WORKFLOW_PUBLIC="workflow.public";
+	public final static String EVENT_ITEM_WORKFLOW_PUBLIC_ACTORS="workflow.public_actors";
+	public final static String EVENT_ITEM_READACCESS="$readaccess";
+	public final static String EVENT_ITEM_HISTORY_MESSAGE="history.message";
+	public final static String EVENT_ITEM_MAIL_SUBJECT="mail.subject";
+	public final static String EVENT_ITEM_MAIL_BODY="mail.body";
+	public final static String EVENT_ITEM_MAIL_TO_LIST="mail.to_list";
+	public final static String EVENT_ITEM_MAIL_TO_LIST_MAPPING="mail.to_list_mapping";
+	public final static String EVENT_ITEM_MAIL_CC_LIST="mail.cc_list";
+	public final static String EVENT_ITEM_MAIL_CC_LIST_MAPPING="mail.cc_list_mapping";
+	public final static String EVENT_ITEM_MAIL_BCC_LIST="mail.bcc_list";
+	public final static String EVENT_ITEM_MAIL_BCC_LIST_MAPPING="mail.bcc_list_mapping";
+	public final static String EVENT_ITEM_RULE_ENGINE="rule.engine";
+	public final static String EVENT_ITEM_RULE_DEFINITION="rule.definition";
+	
+	public final static String EVENT_ITEM_REPORT_NAME="report.name";
+	public final static String EVENT_ITEM_REPORT_PATH="report.path";
+	public final static String EVENT_ITEM_REPORT_OPTIONS="report.options";
+	public final static String EVENT_ITEM_REPORT_TARGET="report.target";
+	
 
 	private Map<Integer, ItemCollection> taskList = null;
 	private Map<Integer, List<ItemCollection>> eventList = null;
