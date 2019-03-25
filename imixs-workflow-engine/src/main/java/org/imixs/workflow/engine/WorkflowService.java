@@ -733,9 +733,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	public ItemCollection processWorkItem(ItemCollection workitem, ItemCollection event)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
-		return processWorkItem(workitem,event.getItemValueInteger("numactivityid"));
+		return processWorkItem(workitem, event.getItemValueInteger("numactivityid"));
 	}
-	
+
 	/**
 	 * This method processes a workItem based on a given event.
 	 * 
@@ -926,7 +926,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 */
 	public ItemCollection evalWorkflowResult(ItemCollection event, ItemCollection documentContext,
 			boolean resolveItemValues) throws PluginException {
-		boolean invalidPattern = true;
 
 		ItemCollection result = new ItemCollection();
 		String workflowResult = event.getItemValueString("txtActivityResult");
@@ -937,28 +936,71 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		if (resolveItemValues) {
 			workflowResult = adaptText(workflowResult, documentContext);
 		}
-		// Extract all <item> tags with attributes using regex (including empty item
-		// tags)
-		// The XMLParser class is not suited in this scenario.
-		Pattern pattern = Pattern.compile("<item(.*?)>(.*?)</item>|<item(.*?)./>", Pattern.DOTALL);
-		Matcher matcher = pattern.matcher(workflowResult);
-		while (matcher.find()) {
-			invalidPattern = false;
-			// we expect up to 3 different result groups
+		// Extract all <item> tags with attributes including empty item
+		// tags.
+		// The XMLParser class is not suited in this scenario and regex is not possible
+		// see also here:
+		// https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags
+		// even this promising regex did not work in all scenarios:
+		// <item(.*?)>(.*?)</item>|<item(.*?)./>
 
-			// group 0 contains complete item string
-			String attributes = matcher.group(1);
-			String content = matcher.group(2);
+		// for that reason we simple do a string search for opening and closing <item>
+		// tags.
 
-			// test if empty tag (group 1 and 2 empty)
-			if (attributes == null || content == null) {
-				attributes = matcher.group(3);
+		/*
+		 * We need to find empty and not empty tags .... <item name="comment"
+		 * ignore="true"/> <item name="action">home</item>
+		 */
+
+		// or negative lookahead: a(?!b), which is a not followed by b
+		// or negative lookbehind: (?<!a)b, which is b not preceeded by a
+		// Pattern pattern = Pattern.compile("(<item(.*?))(?!/>)>(.*?)</item>",
+		// Pattern.DOTALL);
+
+		// Pattern pattern = Pattern.compile("</?\\w+\\s+[\\^>]*>", Pattern.DOTALL);
+		int pos = -1;
+		int index = 0;
+		while ((pos = workflowResult.indexOf("<item ", index)) > -1) { // space is mandatory!
+			// we found the first occurrence of an item tag...
+			// lets find the end
+
+			// first check for empty
+			int end = -1;
+			int end1 = workflowResult.indexOf("/>", pos);
+			// next test if closing item tag is found
+			int end2 = workflowResult.indexOf(">", pos);
+			boolean isEmpty = false;
+			// take best match
+			if (end1 > 0 && end1 < end2) {
+				end = end1 + 2;
+				isEmpty = true;
+			} else {
+				end = end2 + 1;
 			}
 
-			if (content == null) {
-				content = "";
+			if (end <= 0) {
+				// invalid tag!
+				throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_ITEM_FORMAT,
+						"invalid <item> tag format in workflowResult: " + workflowResult
+								+ "  , expected format is <item name=\"...\">...</item> ");
 			}
 
+			// cut the attributes and the content....
+			String content = "";
+			if (!isEmpty) {
+				int contentEnd = workflowResult.indexOf("</item>", end);
+				if (contentEnd > -1) {
+					content = workflowResult.substring(end, contentEnd);
+				} else {
+					// invalid tag!
+					throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_ITEM_FORMAT,
+							"invalid <item> tag format in workflowResult: " + workflowResult
+									+ "  , expected format is <item name=\"...\">...</item> ");
+				}
+			}
+
+			// cut the attributes ....
+			String attributes = workflowResult.substring(pos + 5, end - 1);
 			// now extract the attributes to verify the item name..
 			if (attributes != null && !attributes.isEmpty()) {
 				// parse attributes...
@@ -1040,14 +1082,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 			}
 
+			// now we adjust the pos....
+			index = end;
+
 		}
 
-		// test for general invalid format
-		if (invalidPattern) {
-			throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_ITEM_FORMAT,
-					"invalid <item> tag format in workflowResult: " + workflowResult
-							+ "  , expected format is <item name=\"...\">...</item> ");
-		}
 		return result;
 	}
 

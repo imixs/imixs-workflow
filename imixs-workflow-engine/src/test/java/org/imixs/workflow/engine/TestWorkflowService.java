@@ -281,7 +281,7 @@ public class TestWorkflowService {
 		ItemCollection activityEntity = new ItemCollection();
 		activityEntity.replaceItemValue("txtActivityResult", sResult);
 
-		// expeced txtname= Manfred,Anna,Sam
+		// expected txtname= Manfred,Anna,Sam
 		ItemCollection evalItemCollection = new ItemCollection();
 		evalItemCollection = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
 				new ItemCollection());
@@ -298,6 +298,54 @@ public class TestWorkflowService {
 
 		// test test item
 		Assert.assertEquals("XXX", evalItemCollection.getItemValueString("test"));
+	}
+
+	/**
+	 * This test verifies if multiple item tags with empty tags work correctly (see
+	 * issue #490
+	 * 
+	 * @throws PluginException
+	 */
+	@Test
+	public void testEvaluateWorkflowResultMultiValueWithEmptyTag() throws PluginException {
+		String sResult = "<item name=\"comment\" ignore=\"true\"/>";
+		sResult += "\n<item name=\"action\">home</item>";
+
+		ItemCollection activityEntity = new ItemCollection();
+		activityEntity.replaceItemValue("txtActivityResult", sResult);
+
+		ItemCollection evalItemCollection = new ItemCollection();
+		evalItemCollection = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+				new ItemCollection());
+
+		// expected: comment_ignore=true
+		Assert.assertTrue(evalItemCollection.hasItem("comment.ignore"));
+		Assert.assertTrue(evalItemCollection.getItemValueBoolean("comment.ignore"));
+
+		// expected: action = "home"
+		Assert.assertTrue(evalItemCollection.hasItem("action"));
+		Assert.assertEquals("home", evalItemCollection.getItemValueString("action"));
+		
+		
+		// now test the different order....
+		// we expect the same result
+		 sResult = "<item name=\"action\">home</item>";
+		sResult += "\n<item name=\"comment\" ignore=\"true\"/>";
+
+		 activityEntity = new ItemCollection();
+		activityEntity.replaceItemValue("txtActivityResult", sResult);
+
+		 evalItemCollection = new ItemCollection();
+		evalItemCollection = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+				new ItemCollection());
+
+		// expected: comment_ignore=true
+		Assert.assertTrue(evalItemCollection.hasItem("comment.ignore"));
+		Assert.assertTrue(evalItemCollection.getItemValueBoolean("comment.ignore"));
+
+		// expected: action = "home"
+		Assert.assertTrue(evalItemCollection.hasItem("action"));
+		Assert.assertEquals("home", evalItemCollection.getItemValueString("action"));
 	}
 
 	/**
