@@ -1189,6 +1189,27 @@ public class BPMNModelHandler extends DefaultHandler {
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_REPORT_TARGET, "txtreporttarget");
 		
 		
+		// version
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_VERSION_MODE, "keyversion");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_VERSION_EVENT, "numversionactivityid");
+		
+		
+		// timer
+		if (!eventEntity.hasItem(BPMNModel.EVENT_ITEM_TIMER_ACTIVE)) {
+			eventEntity.setItemValue(BPMNModel.EVENT_ITEM_TIMER_ACTIVE, new Boolean("1".equals(eventEntity.getItemValueString("keyscheduledactivity"))));
+		}
+		if (!eventEntity.hasItem("keyscheduledactivity")) {
+			if (eventEntity.getItemValueBoolean(BPMNModel.EVENT_ITEM_TIMER_ACTIVE)) {
+				eventEntity.setItemValue("keyscheduledactivity","0");
+			} else {
+				eventEntity.setItemValue("keyscheduledactivity","1");
+			}
+		}
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_TIMER_SELECTION, "txtscheduledview");	
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_TIMER_DELAY, "numactivitydelay");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_TIMER_DELAY_UNIT, "keyactivitydelayunit");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_TIMER_DELAY_BASE, "keyscheduledbaseobject");
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_TIMER_DELAY_BASE_PROPERTY, "keytimecomparefield");
 		
 	}
 

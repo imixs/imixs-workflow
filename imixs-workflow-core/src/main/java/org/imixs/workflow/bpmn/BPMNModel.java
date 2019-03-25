@@ -69,8 +69,19 @@ public class BPMNModel implements Model {
 	public final static String EVENT_ITEM_REPORT_PATH="report.path";
 	public final static String EVENT_ITEM_REPORT_OPTIONS="report.options";
 	public final static String EVENT_ITEM_REPORT_TARGET="report.target";
+	public final static String EVENT_ITEM_VERSION_MODE="version.mode";
+	public final static String EVENT_ITEM_VERSION_EVENT="version.event";
 	
 
+	public final static String EVENT_ITEM_TIMER_ACTIVE="timer.active";
+	public final static String EVENT_ITEM_TIMER_SELECTION="timer.selection";
+	public final static String EVENT_ITEM_TIMER_DELAY="timer.delay";
+	public final static String EVENT_ITEM_TIMER_DELAY_UNIT="timer.delay_unit";
+	public final static String EVENT_ITEM_TIMER_DELAY_BASE="timer.delay_base";
+	public final static String EVENT_ITEM_TIMER_DELAY_BASE_PROPERTY="timer.delay_base_property";
+	
+	
+	
 	private Map<Integer, ItemCollection> taskList = null;
 	private Map<Integer, List<ItemCollection>> eventList = null;
 	private List<String> workflowGroups = null;

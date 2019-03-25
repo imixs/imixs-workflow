@@ -8,6 +8,9 @@
     <imixs:item name="txtfieldmapping" type="xs:string">
       <imixs:value><![CDATA[TestActor|test_actor]]></imixs:value>
     </imixs:item>
+    <imixs:item name="txttimefieldmapping" type="xs:string">
+      <imixs:value><![CDATA[date|datdate]]></imixs:value>
+    </imixs:item>
   </bpmn2:extensionElements>
   <bpmn2:process id="simple" name="Simple" isExecutable="false">
     <bpmn2:startEvent id="StartEvent_1" name="Start Event 1">
@@ -109,6 +112,30 @@
         </imixs:item>
         <imixs:item name="txtreporttarget" type="xs:string">
           <imixs:value><![CDATA[2]]></imixs:value>
+        </imixs:item>
+        <imixs:item name="keyversion" type="xs:string">
+          <imixs:value><![CDATA[1]]></imixs:value>
+        </imixs:item>
+        <imixs:item name="numversionactivityid" type="xs:string">
+          <imixs:value><![CDATA[55]]></imixs:value>
+        </imixs:item>
+        <imixs:item name="keyscheduledactivity" type="xs:string">
+          <imixs:value><![CDATA[1]]></imixs:value>
+        </imixs:item>
+        <imixs:item name="txtscheduledview" type="xs:string">
+          <imixs:value><![CDATA[my timer selection]]></imixs:value>
+        </imixs:item>
+        <imixs:item name="numactivitydelay" type="xs:string">
+          <imixs:value><![CDATA[24]]></imixs:value>
+        </imixs:item>
+        <imixs:item name="keyscheduledbaseobject" type="xs:string">
+          <imixs:value><![CDATA[4]]></imixs:value>
+        </imixs:item>
+        <imixs:item name="keyactivitydelayunit" type="xs:string">
+          <imixs:value><![CDATA[2]]></imixs:value>
+        </imixs:item>
+        <imixs:item name="keytimecomparefield" type="xs:string">
+          <imixs:value><![CDATA[datdate]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
       <bpmn2:documentation id="Documentation_2"><![CDATA[test documentation]]></bpmn2:documentation>

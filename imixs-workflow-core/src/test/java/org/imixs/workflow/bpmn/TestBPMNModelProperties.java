@@ -148,6 +148,19 @@ public class TestBPMNModelProperties {
 		Assert.assertEquals("my file",event.getItemValueString(BPMNModel.EVENT_ITEM_REPORT_PATH));
 		Assert.assertEquals("my params",event.getItemValueString(BPMNModel.EVENT_ITEM_REPORT_OPTIONS));
 		Assert.assertEquals("2",event.getItemValueString(BPMNModel.EVENT_ITEM_REPORT_TARGET));
+	
+		// version
+		Assert.assertEquals("1",event.getItemValueString(BPMNModel.EVENT_ITEM_VERSION_MODE));
+		Assert.assertEquals("55",event.getItemValueString(BPMNModel.EVENT_ITEM_VERSION_EVENT));
+		
+		// timer
+		Assert.assertTrue(event.getItemValueBoolean(BPMNModel.EVENT_ITEM_TIMER_ACTIVE));
+		Assert.assertEquals("my timer selection",event.getItemValueString(BPMNModel.EVENT_ITEM_TIMER_SELECTION));
+		Assert.assertEquals("24",event.getItemValueString(BPMNModel.EVENT_ITEM_TIMER_DELAY));
+		Assert.assertEquals("2",event.getItemValueString(BPMNModel.EVENT_ITEM_TIMER_DELAY_UNIT));
+		Assert.assertEquals("4",event.getItemValueString(BPMNModel.EVENT_ITEM_TIMER_DELAY_BASE));
+		Assert.assertEquals("datdate",event.getItemValueString(BPMNModel.EVENT_ITEM_TIMER_DELAY_BASE_PROPERTY));
+		
 		
 	}
 
