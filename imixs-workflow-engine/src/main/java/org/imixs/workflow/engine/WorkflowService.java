@@ -62,6 +62,7 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.WorkflowManager;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -573,13 +574,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 		if (workitem == null)
 			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
-					ProcessingErrorException.INVALID_WORKITEM, "WorkflowService: error - workitem is null");
+					ProcessingErrorException.INVALID_WORKITEM, "workitem Is Null!");
 
 		// fire event
 		if (processingEvents != null) {
 			processingEvents.fire(new ProcessingEvent(workitem, ProcessingEvent.BEFORE_PROCESS));
 		} else {
-			logger.warning("CDI Support is missing - ProcessingEvent will not be fired");
+			logger.warning("CDI Support is missing - ProcessingEvents Not Supported!");
 		}
 		// load current instance of this workitem if a unqiueID is provided
 		if (!workitem.getUniqueID().isEmpty()) {
@@ -589,16 +590,16 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			if (currentInstance != null) {
 				// test for author access
 				if (!currentInstance.getItemValueBoolean(DocumentService.ISAUTHOR)) {
-					throw new AccessDeniedException(AccessDeniedException.OPERATION_NOTALLOWED,
-							"WorkflowService: error - $UniqueID ("
-									+ workitem.getItemValueInteger(WorkflowKernel.UNIQUEID) + ") no Author Access!");
+					throw new AccessDeniedException(AccessDeniedException.OPERATION_NOTALLOWED, "$uniqueid: "
+							+ workitem.getItemValueInteger(WorkflowKernel.UNIQUEID) + " - No Author Access!");
 				}
 				// test if $taskID matches current instance
 				if (workitem.getTaskID() > 0 && currentInstance.getTaskID() != workitem.getTaskID()) {
 					throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
 							ProcessingErrorException.INVALID_PROCESSID,
-							"WorkflowService: error - $taskID (" + workitem.getTaskID()
-									+ ") did not match expected $ProcesssID (" + currentInstance.getTaskID() + ")");
+							"$uniqueid: " + workitem.getItemValueInteger(WorkflowKernel.UNIQUEID) + " - $taskid="
+									+ workitem.getTaskID() + " Did Not Match Expected $taskid="
+									+ currentInstance.getTaskID());
 				}
 				// merge workitem into current instance (issue #86)
 				// an instance of this WorkItem still exists! so we update the new
@@ -606,10 +607,18 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 				currentInstance.replaceAllItems(workitem.getAllItems());
 				workitem = currentInstance;
 			} else {
-				// user has no read access -> throw AccessDeniedException
-				throw new AccessDeniedException(AccessDeniedException.OPERATION_NOTALLOWED,
-						"WorkflowService: error - $UniqueID (" + workitem.getItemValueInteger(WorkflowKernel.UNIQUEID)
-								+ ") no Read Access!");
+				// In case we have a $UniqueId but did not found an matching workitem
+				// and the workitem miss a valid model assignment than
+				// processing is not possible - OPERATION_NOTALLOWED
+
+				if ((workitem.getTaskID() <= 0) || (workitem.getEventID() <= 0)
+						|| (workitem.getModelVersion().isEmpty() && workitem.getWorkflowGroup().isEmpty())) {
+					// user has no read access -> throw AccessDeniedException
+					throw new InvalidAccessException(InvalidAccessException.OPERATION_NOTALLOWED,
+							"$uniqueid: " + workitem.getItemValueInteger(WorkflowKernel.UNIQUEID)
+									+ " - Insufficient Data or Lack Of Permission!");
+				}
+
 			}
 		}
 
