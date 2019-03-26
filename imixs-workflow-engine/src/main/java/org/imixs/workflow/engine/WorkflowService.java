@@ -581,30 +581,36 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		} else {
 			logger.warning("CDI Support is missing - ProcessingEvent will not be fired");
 		}
-		// load current instance of this workitem
-		ItemCollection currentInstance = this.getWorkItem(workitem.getItemValueString(WorkflowKernel.UNIQUEID));
-
-		if (currentInstance != null) {
-			// test author access
-			if (!currentInstance.getItemValueBoolean(DocumentService.ISAUTHOR))
+		// load current instance of this workitem if a unqiueID is provided
+		if (!workitem.getUniqueID().isEmpty()) {
+			// try to load the instance
+			ItemCollection currentInstance = this.getWorkItem(workitem.getUniqueID());
+			// Instance successful loaded ?
+			if (currentInstance != null) {
+				// test for author access
+				if (!currentInstance.getItemValueBoolean(DocumentService.ISAUTHOR)) {
+					throw new AccessDeniedException(AccessDeniedException.OPERATION_NOTALLOWED,
+							"WorkflowService: error - $UniqueID ("
+									+ workitem.getItemValueInteger(WorkflowKernel.UNIQUEID) + ") no Author Access!");
+				}
+				// test if $taskID matches current instance
+				if (workitem.getTaskID() > 0 && currentInstance.getTaskID() != workitem.getTaskID()) {
+					throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
+							ProcessingErrorException.INVALID_PROCESSID,
+							"WorkflowService: error - $taskID (" + workitem.getTaskID()
+									+ ") did not match expected $ProcesssID (" + currentInstance.getTaskID() + ")");
+				}
+				// merge workitem into current instance (issue #86)
+				// an instance of this WorkItem still exists! so we update the new
+				// values....
+				currentInstance.replaceAllItems(workitem.getAllItems());
+				workitem = currentInstance;
+			} else {
+				// user has no read access -> throw AccessDeniedException
 				throw new AccessDeniedException(AccessDeniedException.OPERATION_NOTALLOWED,
 						"WorkflowService: error - $UniqueID (" + workitem.getItemValueInteger(WorkflowKernel.UNIQUEID)
-								+ ") no Author Access!");
-
-			// test if $taskID matches current instance
-			if (workitem.getTaskID() > 0 && currentInstance.getTaskID() != workitem.getTaskID())
-				throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
-						ProcessingErrorException.INVALID_PROCESSID,
-						"WorkflowService: error - $taskID (" + workitem.getTaskID()
-								+ ") did not match expected $ProcesssID (" + currentInstance.getTaskID() + ")");
-
-			// merge workitem into current instance (issue #86)
-			// an instance of this WorkItem still exists! so we update the new
-			// values....
-			// currentInstance.getAllItems().putAll(workitem.getAllItems());
-			currentInstance.replaceAllItems(workitem.getAllItems());
-			workitem = currentInstance;
-
+								+ ") no Read Access!");
+			}
 		}
 
 		// verify type attribute
