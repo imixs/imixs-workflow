@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import javax.enterprise.context.Conversation;
 import javax.enterprise.context.ConversationScoped;
+import javax.enterprise.event.Observes;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -17,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.faces.data.WorkflowEvent;
 
 /**
  * The FileUploadController is a conversation scoped bean and used to hold the
@@ -73,8 +75,7 @@ public class FileUploadController implements Serializable {
 				conversation.begin();
 				logger.finest("......starting new conversation, id=" + conversation.getId());
 			}
-			_tmpFiles = new ArrayList<FileData>();
-			_persistedFiles=new ArrayList<FileData>();
+			reset();
 			for (FileData fileData: workitem.getFileData()) {
 				_persistedFiles.add(fileData);
 			}
@@ -97,6 +98,25 @@ public class FileUploadController implements Serializable {
 		}
 	}
 
+	/**
+	 * WorkflowEvent listener
+	 * <p>
+	 * If a new WorkItem was created the file upload will be reset. 
+	 * 
+	 * 
+	 * @param workflowEvent
+	 */
+	public void onWorkflowEvent(@Observes WorkflowEvent workflowEvent) {
+		if (workflowEvent == null)
+			return;
+
+		if (WorkflowEvent.WORKITEM_CREATED == workflowEvent.getEventType()) {
+			// reset file data...
+			reset();
+		}
+
+	}
+	
 	/**
 	 * This method is called by the AjaxFileUpload Servlet. The method adds the file
 	 * to the workitem but also updates the list of temporary files, which are not
@@ -183,6 +203,13 @@ public class FileUploadController implements Serializable {
 		return _persistedFiles;
 	}
 	
+	/**
+	 * reset the temp and persisted file variables. 
+	 */
+	void reset() {
+		_tmpFiles = new ArrayList<FileData>();
+		_persistedFiles=new ArrayList<FileData>();		
+	}
 	
 	
 	
