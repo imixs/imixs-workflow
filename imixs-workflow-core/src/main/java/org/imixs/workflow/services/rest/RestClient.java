@@ -91,13 +91,15 @@ public class RestClient {
 		if (rootURL != null && !rootURL.endsWith("/")) {
 			rootURL += "/";
 		}
+
 		this.rootURL = rootURL;
 	}
 
 	/**
 	 * Register a ClientRequestFilter instance.
 	 * 
-	 * @param filter - request filter instance.
+	 * @param filter
+	 *            - request filter instance.
 	 */
 	public void registerRequestFilter(RequestFilter filter) {
 		logger.finest("......register new request filter: " + filter.getClass().getSimpleName());
@@ -118,8 +120,31 @@ public class RestClient {
 		return serviceEndpoint;
 	}
 
-	public void setServiceEndpoint(String serviceEndpoint) {
-		this.serviceEndpoint = serviceEndpoint;
+
+	/**
+	 * This method builds the serviceEndpoint based on a given URI . The
+	 * method prafix the URI with the root uri if the uri starts with /
+	 * 
+	 * @param uri
+	 * @throws RestAPIException 
+	 */
+	void setServiceEndpoint(String uri) throws RestAPIException {
+
+		if (rootURL == null) {
+			throw new RestAPIException(0, "rootURL is null!");
+		}
+		
+		// test for double /
+		if (uri != null && uri.startsWith("/")) {
+			uri = uri.substring(1);
+		}
+		// test for protocoll
+		if (!uri.contains("://")) {
+			// add root URL
+			uri = rootURL + uri;
+		}
+
+		this.serviceEndpoint = uri;
 	}
 
 	/**
@@ -135,8 +160,10 @@ public class RestClient {
 	/**
 	 * Posts an Imixs ItemCollection to a Rest Service URI endpoint.
 	 * 
-	 * @param uri      - RestService endpoint
-	 * @param document - an ItemCollection
+	 * @param uri
+	 *            - RestService endpoint
+	 * @param document
+	 *            - an ItemCollection
 	 * @return ItemCollection - result document
 	 * @throws RestAPIException
 	 */
@@ -147,8 +174,10 @@ public class RestClient {
 	/**
 	 * Posts an XMLDocument in the Imixs XML Format to a Rest Service URI endpoint.
 	 * 
-	 * @param uri       - RestService endpoint
-	 * @param entityCol - an Entity Collection
+	 * @param uri
+	 *            - RestService endpoint
+	 * @param entityCol
+	 *            - an Entity Collection
 	 * @return ItemCollection - workitem
 	 * @throws RestAPIException
 	 */
@@ -157,10 +186,11 @@ public class RestClient {
 
 		HttpURLConnection urlConnection = null;
 		try {
-			serviceEndpoint = uri;
+			setServiceEndpoint(uri);
 			iLastHTTPResult = 500;
 
 			urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
+			
 			urlConnection.setRequestMethod("POST");
 			urlConnection.setDoOutput(true);
 			urlConnection.setDoInput(true);
@@ -214,7 +244,7 @@ public class RestClient {
 
 		} catch (Exception e) {
 			// ioe.printStackTrace();
-			String error = "Error postXMLDocument request from '" + uri + " - " + e.getMessage();
+			String error = "Error postXMLDocument request from '" + serviceEndpoint + " - " + e.getMessage();
 			logger.warning(error);
 			throw new RestAPIException(0, error, e);
 		} finally {
@@ -229,15 +259,17 @@ public class RestClient {
 	/**
 	 * This method posts an XMLDataCollection to a Rest Service URI Endpoint.
 	 * 
-	 * @param uri     - RestService endpoint
-	 * @param xmlData - a XMLDataCollection
+	 * @param uri
+	 *            - RestService endpoint
+	 * @param xmlData
+	 *            - a XMLDataCollection
 	 */
 	public void postXMLDataCollection(String uri, XMLDataCollection xmlData) throws Exception {
 		PrintWriter printWriter = null;
 
 		HttpURLConnection urlConnection = null;
 		try {
-			serviceEndpoint = uri;
+			setServiceEndpoint(uri);
 			iLastHTTPResult = 500;
 
 			urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
@@ -301,8 +333,10 @@ public class RestClient {
 	 * Service URI Endpoint.
 	 * 
 	 * 
-	 * @param uri  - Rest Endpoint RUI
-	 * @param JSON string
+	 * @param uri
+	 *            - Rest Endpoint RUI
+	 * @param JSON
+	 *            string
 	 * @return XMLDocument
 	 */
 	public ItemCollection postJSON(String uri, String jsonString) throws Exception {
@@ -376,12 +410,13 @@ public class RestClient {
 	}
 
 	/**
-	 * Posts a String data object with a specific Content-Type to a Rest
-	 * Service URI Endpoint. This method can be used to simulate different post
-	 * scenarios.
+	 * Posts a String data object with a specific Content-Type to a Rest Service URI
+	 * Endpoint. This method can be used to simulate different post scenarios.
 	 * 
-	 * @param uri       - Rest Endpoint RUI
-	 * @param dataString - content
+	 * @param uri
+	 *            - Rest Endpoint RUI
+	 * @param dataString
+	 *            - content
 	 * @return content
 	 */
 	public String post(String uri, String dataString, String contentType) throws Exception {
@@ -421,8 +456,7 @@ public class RestClient {
 					new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), encoding)));
 			printWriter.write(writer.toString());
 			printWriter.close();
-			
-			
+
 			String sHTTPResponse = urlConnection.getHeaderField(0);
 			try {
 				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
@@ -443,9 +477,10 @@ public class RestClient {
 				printWriter.close();
 		}
 	}
-	
+
 	/**
 	 * This method returns the last HTTP Result
+	 * 
 	 * @return
 	 */
 	public int getLastHTTPResult() {
@@ -453,33 +488,19 @@ public class RestClient {
 	}
 
 	/**
-	 * Gets the content of a GET request from a Rest Service URI
-	 * Endpoint. I case of an error the method throws a RestAPIException.
+	 * Gets the content of a GET request from a Rest Service URI Endpoint. I case of
+	 * an error the method throws a RestAPIException.
 	 * 
-	 * @param uri - Rest Endpoint RUI
+	 * @param uri
+	 *            - Rest Endpoint RUI
 	 * @return - content or null if no content is available.
 	 */
 	public String get(String uri) throws RestAPIException {
 		int responseCode = -1;
-		
-		if (rootURL==null) {
-			throw new RestAPIException(0, "rootURL is null!");
-		}
 
-		// test for /
-		if (rootURL != null && !rootURL.endsWith("/")) {
-			rootURL += "/";
-		}
-		// test for double /
-		if (rootURL.endsWith("/") && uri != null && uri.startsWith("/")) {
-			uri = uri.substring(1);
-		}
-		uri = rootURL + uri;
-
+		setServiceEndpoint(uri);
 		try {
-			URL url = new URL(uri);
-
-			HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+			HttpURLConnection urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
 
 			// optional default is GET
 			urlConnection.setRequestMethod("GET");
@@ -500,7 +521,7 @@ public class RestClient {
 			}
 
 			responseCode = urlConnection.getResponseCode();
-			logger.finest("......Sending 'GET' request to URL : " + uri);
+			logger.finest("......Sending 'GET' request to URL : " +serviceEndpoint);
 			logger.finest("......Response Code : " + responseCode);
 			// read response if response was successful
 			if (responseCode >= 200 && responseCode <= 299) {
@@ -518,10 +539,12 @@ public class RestClient {
 		}
 	}
 
+
 	/**
 	 * Returns a ItemCollection from a rest service endpoint.
 	 * 
-	 * @param uri - RestService endpoint
+	 * @param uri
+	 *            - RestService endpoint
 	 * @return ItemCollection - workitem
 	 * @throws RestAPIException
 	 */
@@ -535,7 +558,8 @@ public class RestClient {
 	/**
 	 * Returns a XMLDocument from a rest service endpoint.
 	 * 
-	 * @param uri - RestService endpoint
+	 * @param uri
+	 *            - RestService endpoint
 	 * @return XMLDocument - workitem
 	 * @throws RestAPIException
 	 */
@@ -563,7 +587,8 @@ public class RestClient {
 	/**
 	 * Returns a list of ItemCollections from a rest service endpoint.
 	 * 
-	 * @param uri - RestService endpoint
+	 * @param uri
+	 *            - RestService endpoint
 	 * @return List<ItemCollection> - result set
 	 * @throws RestAPIException
 	 */
@@ -578,7 +603,8 @@ public class RestClient {
 	/**
 	 * Returns a list of XMLDataCollection from a rest service endpoint.
 	 * 
-	 * @param uri - RestService endpoint
+	 * @param uri
+	 *            - RestService endpoint
 	 * @return XMLDataCollection
 	 * @throws RestAPIException
 	 */
