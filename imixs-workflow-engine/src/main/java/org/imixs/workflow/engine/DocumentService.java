@@ -142,6 +142,7 @@ public class DocumentService {
 	public static final String ISAUTHOR = "$isAuthor";
 	public static final String NOINDEX = "$noindex";
 	public static final String IMMUTABLE = "$immutable";
+	public static final String VERSION = "$version";
 
 	public static final String USER_GROUP_LIST = "org.imixs.USER.GROUPLIST";
 
@@ -343,7 +344,7 @@ public class DocumentService {
 	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
 		long lSaveTime = System.currentTimeMillis();
 		logger.finest("......save - ID=" + document.getUniqueID() + ", provided version="
-				+ document.getItemValueInteger("$version"));
+				+ document.getItemValueInteger(VERSION));
 		Document persistedDocument = null;
 		// Now set flush Mode to COMMIT
 		manager.setFlushMode(FlushModeType.COMMIT);
@@ -439,11 +440,11 @@ public class DocumentService {
 			// in case of optimistic locking is disabled we remove $version
 			document.removeItem("$Version");
 		}
-		if (!disableOptimisticLocking && document.hasItem("$Version") && document.getItemValueInteger("$Version") > 0) {
+		if (!disableOptimisticLocking && document.hasItem(VERSION) && document.getItemValueInteger(VERSION) > 0) {
 			// if $version is provided we update the version number of
 			// the managaed document to ensure that optimisticLock exception is
 			// handled the right way!
-			int version = document.getItemValueInteger("$Version");
+			int version = document.getItemValueInteger(VERSION);
 			persistedDocument.setVersion(version);
 		}
 
@@ -467,7 +468,7 @@ public class DocumentService {
 		 */
 
 		// remove $version from ItemCollection
-		document.removeItem("$version");
+		document.removeItem(VERSION);
 
 		// update the $isauthor flag
 		document.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
@@ -568,9 +569,9 @@ public class DocumentService {
 			// if disable Optimistic Locking is TRUE we do not add the version
 			// number
 			if (disableOptimisticLocking) {
-				result.removeItem("$Version");
+				result.removeItem(VERSION);
 			} else {
-				result.replaceItemValue("$Version", persistedDocument.getVersion());
+				result.replaceItemValue(VERSION, persistedDocument.getVersion());
 			}
 
 			// update the $isauthor flag
@@ -888,9 +889,9 @@ public class DocumentService {
 				// if disable Optimistic Locking is TRUE we do not add the
 				// version number
 				if (disableOptimisticLocking) {
-					_tmp.removeItem("$Version");
+					_tmp.removeItem(VERSION);
 				} else {
-					_tmp.replaceItemValue("$Version", doc.getVersion());
+					_tmp.replaceItemValue(VERSION, doc.getVersion());
 				}
 
 				// update the $isauthor flag
@@ -984,7 +985,7 @@ public class DocumentService {
 				Map hmap = (Map) in.readObject();
 				ItemCollection itemCol = new ItemCollection(hmap);
 				// remove the $version property!
-				itemCol.removeItem("$Version");
+				itemCol.removeItem(VERSION);
 				// now save imported data
 				// issue #407 - call new transaction context...
 				itemCol = ctx.getBusinessObject(DocumentService.class).saveByNewTransaction(itemCol);
