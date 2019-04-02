@@ -10,7 +10,7 @@ After the server is started you can access the GlassFish web console from your w
 
     http://localhost:4848/
       
-##Setting up a Imixs-Workflow database pool
+## Setting up a Imixs-Workflow database pool
 The [Imixs-Sample Application](../sampleapplication.html) expects a database resource with the name "jdbc/workflow-db". Thus you need first to set up a Database Pool and a JDBC resource before you can deploy the application successful. In this example we create a database pool for the build in derby database from GlassFish.  You can also configure any other database like MySQL, Oracle, Informix, Microsoft SQL Server,....
 
 To create a new database pool in GlassFish follow these steps:
@@ -37,7 +37,7 @@ To create a new database pool in GlassFish follow these steps:
        - jndiName: jdbc/workflow-db
        - PoolName: imixs_db_pool 
 
-##Setup a Security Realm
+## Setup a Security Realm
 To login to the Imixs-Sample Application you need also to configure a security realm.  Follow the steps below:
  
    1. start admin console -> http://localhost:4848/   
@@ -51,11 +51,11 @@ To login to the Imixs-Sample Application you need also to configure a security r
 
 | UserID       |GroupName                |Description                         | 
 |--------------|-------------------------|------------------------------------|
-|Manfred       |IMIXS-WORKFLOW-Manager   | This user will have maximum access |
-|Eddy          |IMIXS-WORKFLOW-Editor    | User can edit all workitems         |
-|Anna          |IMIXS-WORKFLOW-Author    | User will be allowed to create workitems and edit his own     |
-|Ronny         |IMIXS-WORKFLOW-Reader    | This user will be only allowed to read workitems   |
-|Guest         |                         | This user will have no access (just to be sure security works well) 
+|admin         |IMIXS-WORKFLOW-Manager   | This user will have maximum access |
+|gloria        |IMIXS-WORKFLOW-Editor    | User can edit all workitems         |
+|alex          |IMIXS-WORKFLOW-Author    | User will be allowed to create workitems and edit his own     |
+|rico          |IMIXS-WORKFLOW-Reader    | This user will be only allowed to read workitems   |
+|private       |                         | This user will have no access (just to be sure security works well) 
   
 It is also possible to configure other security bindings as the file based described here.  Only the realm name should match to "imixsrealm". 
 
@@ -73,6 +73,10 @@ Now install the .war or .ear file of your application by the following steps:
    5. Choose as type "Enterprise Application (.ear)"
    6. select your appliation (.war or .ear file)
    7. press the button "ok" located in the upper right corner --> ear will be deployed
+
+## Use Docker
+
+The [Imixs-JSF-Sample project](https://github.com/imixs/imixs-jsf-example) contains also a Docker setup. This allows you to run the sample application on Payara Server on a docker stack. You can find more details about the Docker Payara Setup [here](https://github.com/imixs/imixs-jsf-example/tree/master/src/docker/configuration/payara).
 
  
 ## Need Help?
