@@ -19,6 +19,7 @@ import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -59,7 +60,7 @@ public class WorkflowSimulationEnvironment {
 
 	@SuppressWarnings("unchecked")
 	@Before
-	public void setup() throws PluginException, ModelException {
+	public void setup() throws PluginException, ModelException, AccessDeniedException, ProcessingErrorException, AdapterException {
 		MockitoAnnotations.initMocks(this);
 
 		// mock session context
@@ -163,8 +164,9 @@ public class WorkflowSimulationEnvironment {
 	 * @throws PluginException 
 	 * @throws ProcessingErrorException 
 	 * @throws AccessDeniedException 
+	 * @throws AdapterException 
 	 */
-	public ItemCollection processWorkItem(ItemCollection workitem) throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+	public ItemCollection processWorkItem(ItemCollection workitem) throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
 		workitem = simulationService.processWorkItem(workitem, plugins);
 		return workitem;
 	}

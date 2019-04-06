@@ -66,6 +66,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -464,6 +465,8 @@ public class WorkflowRestServiceV40 {
 			workitem = this.addErrorMessage(e, workitem);
 		} catch (ModelException e) {
 			workitem = this.addErrorMessage(e, workitem);
+		} catch (AdapterException e) {
+			workitem = this.addErrorMessage(e, workitem);
 		}
 
 		// return workitem
@@ -540,6 +543,9 @@ public class WorkflowRestServiceV40 {
 			workitem = this.addErrorMessage(e, workitem);
 		} catch (ModelException e) {
 			workitem = this.addErrorMessage(e, workitem);
+		} catch (AdapterException e) {
+			logger.severe(e.getMessage());
+			workitem = this.addErrorMessage(e, workitem);
 		}
 
 		// return workitem
@@ -605,6 +611,9 @@ public class WorkflowRestServiceV40 {
 			logger.severe(e.getMessage());
 			workitem = this.addErrorMessage(e, workitem);
 		} catch (ModelException e) {
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (AdapterException e) {
+			logger.severe(e.getMessage());
 			workitem = this.addErrorMessage(e, workitem);
 		}
 
@@ -710,6 +719,8 @@ public class WorkflowRestServiceV40 {
 			workitem = this.addErrorMessage(e, workitem);
 		} catch (ModelException e) {
 			workitem = this.addErrorMessage(e, workitem);
+		} catch (AdapterException e) {
+			workitem = this.addErrorMessage(e, workitem);
 		}
 
 		// return workitem
@@ -806,6 +817,9 @@ public class WorkflowRestServiceV40 {
 			logger.severe(e.getMessage());
 			workitem = this.addErrorMessage(e, workitem);
 		} catch (ModelException e) {
+			workitem = this.addErrorMessage(e, workitem);
+		} catch (AdapterException e) {
+			logger.severe(e.getMessage());
 			workitem = this.addErrorMessage(e, workitem);
 		}
 

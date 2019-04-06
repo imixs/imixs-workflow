@@ -10,6 +10,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 
 import org.imixs.workflow.engine.plugins.RulePlugin;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.WorkflowException;
@@ -32,7 +33,7 @@ public class ErrorHandler {
 		if (RulePlugin.class.getName().equals(pe.getErrorContext())
 				&& (RulePlugin.VALIDATION_ERROR.equals(pe.getErrorCode())) && pe.getErrorParameters() != null
 				&& pe.getErrorParameters().length > 0) {
-			
+
 			String errorCode = pe.getErrorCode();
 			// try to find the message text in resource bundle...
 			try {
@@ -47,8 +48,8 @@ public class ErrorHandler {
 			for (Object aMessage : messages) {
 
 				FacesContext.getCurrentInstance().addMessage(null,
-						new FacesMessage(FacesMessage.SEVERITY_INFO,errorCode, aMessage.toString()));
-			} 
+						new FacesMessage(FacesMessage.SEVERITY_INFO, errorCode, aMessage.toString()));
+			}
 		} else {
 			// default behavior
 			addErrorMessage(pe);
@@ -59,6 +60,53 @@ public class ErrorHandler {
 		if (logger.isLoggable(Level.FINE)) {
 
 			pe.printStackTrace(); // Or use a logger.
+		}
+	}
+
+	/**
+	 * The Method expects a PluginException and adds the corresponding Faces Error
+	 * Message into the FacesContext.
+	 * 
+	 * If the PluginException was thrown from the RulePLugin then the method test
+	 * this exception for ErrorParams and generate separate Faces Error Messages for
+	 * each param.
+	 */
+	public static void handleAdapterException(AdapterException ae) {
+		// default behavior
+		addErrorMessage(ae);
+		logger.warning(
+				"ErrorHandler cauth AdapterException - error code=" + ae.getErrorCode() + " - " + ae.getMessage());
+		if (logger.isLoggable(Level.FINE)) {
+			ae.printStackTrace(); // Or use a logger.
+		}
+	}
+
+	/**
+	 * The Method expects a ModelException and adds the corresponding Faces Error
+	 * Message into the FacesContext.
+	 * 
+	 * In case of a model exception, the exception message will become part of the
+	 * error message. ErrorParams are not supported by a ModelException.
+	 */
+	public static void handleModelException(ModelException me) {
+
+		// try to get the message code...
+		String message = me.getErrorCode();
+		// try to find the message text in resource bundle...
+		try {
+			Locale browserLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+			ResourceBundle rb = ResourceBundle.getBundle("bundle.app", browserLocale);
+			message = rb.getString(me.getErrorCode());
+		} catch (MissingResourceException mre) {
+			logger.warning("ErrorHandler: " + mre.getMessage());
+		}
+
+		FacesContext.getCurrentInstance().addMessage(null,
+				new FacesMessage(FacesMessage.SEVERITY_INFO, message, me.getMessage()));
+
+		logger.warning("ErrorHandler cauth ModelException - error code=" + me.getErrorCode() + " - " + me.getMessage());
+		if (logger.isLoggable(Level.FINE)) {
+			me.printStackTrace(); // Or use a logger.
 		}
 	}
 
@@ -91,8 +139,8 @@ public class ErrorHandler {
 			Locale browserLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
 			ResourceBundle rb = ResourceBundle.getBundle("bundle.app", browserLocale);
 			String messageFromBundle = rb.getString(pe.getErrorCode());
-			if (messageFromBundle!=null && !messageFromBundle.isEmpty()) {
-				message=messageFromBundle;
+			if (messageFromBundle != null && !messageFromBundle.isEmpty()) {
+				message = messageFromBundle;
 			}
 		} catch (MissingResourceException mre) {
 			logger.warning("ErrorHandler: " + mre.getMessage());
@@ -116,37 +164,9 @@ public class ErrorHandler {
 				}
 			}
 		}
-		FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,errorCode, message));
-
-	}
-
-	/**
-	 * The Method expects a ModelException and adds the corresponding Faces Error
-	 * Message into the FacesContext.
-	 * 
-	 * In case of a model exception, the exception message will become part of the
-	 * error message. ErrorParams are not supported by a ModelException.
-	 */
-	public static void handleModelException(ModelException me) {
-
-		// try to get the message code...
-		String message = me.getErrorCode();
-		// try to find the message text in resource bundle...
-		try {
-			Locale browserLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
-			ResourceBundle rb = ResourceBundle.getBundle("bundle.app", browserLocale);
-			message = rb.getString(me.getErrorCode());
-		} catch (MissingResourceException mre) {
-			logger.warning("ErrorHandler: " + mre.getMessage());
-		}
-
 		FacesContext.getCurrentInstance().addMessage(null,
-				new FacesMessage(FacesMessage.SEVERITY_INFO, message, me.getMessage()));
+				new FacesMessage(FacesMessage.SEVERITY_INFO, errorCode, message));
 
-		logger.warning("ErrorHandler cauth ModelException - error code=" + me.getErrorCode() + " - " + me.getMessage());
-		if (logger.isLoggable(Level.FINE)) {
-			me.printStackTrace(); // Or use a logger.
-		}
 	}
 
 }
