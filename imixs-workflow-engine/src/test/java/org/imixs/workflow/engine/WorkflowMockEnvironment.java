@@ -24,6 +24,7 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -62,13 +63,17 @@ public class WorkflowMockEnvironment {
 	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 
 	Map<String, ItemCollection> database = null;
+
+	@Spy
 	protected DocumentService documentService;
+
+	@Spy
 	protected WorkflowService workflowService;
 
 	@Spy
 	protected ModelService modelService;
-	protected SessionContext ctx;
 
+	protected SessionContext ctx;
 	protected WorkflowContext workflowContext;
 	private BPMNModel model = null;
 
@@ -99,7 +104,7 @@ public class WorkflowMockEnvironment {
 	}
 
 	@Before
-	public void setup() throws PluginException, ModelException {
+	public void setup() throws PluginException, ModelException, AdapterException {
 		MockitoAnnotations.initMocks(this);
 		// setup db
 		createTestDatabase();
@@ -189,26 +194,24 @@ public class WorkflowMockEnvironment {
 			}
 		});
 
-		
 		// AdaptText
-		when(workflowService.adaptText(Mockito.anyString(),Mockito.any(ItemCollection.class))).thenAnswer(new Answer<String>(){
-			@Override
-			public String answer(InvocationOnMock invocation) throws Throwable, PluginException {
-				
-				Object[] args = invocation.getArguments();
-				String text=(String) args[0];
-				ItemCollection document = (ItemCollection) args[1];
+		when(workflowService.adaptText(Mockito.anyString(), Mockito.any(ItemCollection.class)))
+				.thenAnswer(new Answer<String>() {
+					@Override
+					public String answer(InvocationOnMock invocation) throws Throwable, PluginException {
 
-				TextEvent textEvent=new TextEvent(text, document);
-				
-				TextItemValueAdapter tiva=new TextItemValueAdapter();
-				tiva.onEvent(textEvent);
-				
-				
-				return textEvent.getText();
-			}
-		});
+						Object[] args = invocation.getArguments();
+						String text = (String) args[0];
+						ItemCollection document = (ItemCollection) args[1];
 
+						TextEvent textEvent = new TextEvent(text, document);
+
+						TextItemValueAdapter tiva = new TextItemValueAdapter();
+						tiva.onEvent(textEvent);
+
+						return textEvent.getText();
+					}
+				});
 		
 		// AdaptText
 		when(workflowService.adaptTextList(Mockito.anyString(),Mockito.any(ItemCollection.class))).thenAnswer(new Answer<List<String>>(){
@@ -229,15 +232,19 @@ public class WorkflowMockEnvironment {
 			}
 		});
 
-		
-		
-		
-		when(workflowService.evalNextTask(Mockito.any(ItemCollection.class),Mockito.any(ItemCollection.class))).thenCallRealMethod();
-		when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class),Mockito.any(ItemCollection.class))).thenCallRealMethod();
-		when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class),Mockito.any(ItemCollection.class),Mockito.anyBoolean())).thenCallRealMethod();
+
+		when(workflowService.evalNextTask(Mockito.any(ItemCollection.class), Mockito.any(ItemCollection.class)))
+				.thenCallRealMethod();
+		when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class), Mockito.any(ItemCollection.class)))
+				.thenCallRealMethod();
+		when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class), Mockito.any(ItemCollection.class),
+				Mockito.anyBoolean())).thenCallRealMethod();
 		when(workflowService.processWorkItem(Mockito.any(ItemCollection.class))).thenCallRealMethod();
 		when(workflowService.getUserName()).thenCallRealMethod();
 		when(workflowService.getWorkItem(Mockito.anyString())).thenCallRealMethod();
+		// mock registerPlugins...
+		Mockito.doCallRealMethod().when(workflowService).registerPlugins(Mockito.any(WorkflowKernel.class),
+				Mockito.any(Model.class));
 
 		try {
 			when(workflowService.getEvents(Mockito.any(ItemCollection.class))).thenCallRealMethod();
@@ -248,7 +255,6 @@ public class WorkflowMockEnvironment {
 
 	}
 
-	
 	/**
 	 * Create a test database with some workItems and a simple model
 	 */
@@ -301,7 +307,7 @@ public class WorkflowMockEnvironment {
 				model = BPMNParser.parseModel(inputStream, "UTF-8");
 
 				this.modelService.addModel(model);
-				logger.fine("...loadModel processing time=" + (System.currentTimeMillis() - lLoadTime) + "ms");	
+				logger.fine("...loadModel processing time=" + (System.currentTimeMillis() - lLoadTime) + "ms");
 			} catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e) {
 				e.printStackTrace();
 			}
@@ -323,9 +329,10 @@ public class WorkflowMockEnvironment {
 	 * @throws PluginException
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
+	 * @throws AdapterException
 	 */
 	public ItemCollection processWorkItem(ItemCollection workitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
 		workitem = workflowService.processWorkItem(workitem);
 		return workitem;
 	}

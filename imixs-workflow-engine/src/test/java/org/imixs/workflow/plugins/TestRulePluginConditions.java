@@ -5,6 +5,7 @@ import org.imixs.workflow.engine.ModelPluginMock;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -28,7 +29,7 @@ public class TestRulePluginConditions {
 	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setup() throws PluginException, ModelException {
+	public void setup() throws PluginException, ModelException, AdapterException {
 
 		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestRulePluginConditions.bpmn");
@@ -57,11 +58,12 @@ public class TestRulePluginConditions {
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
 	 * @throws ModelException
+	 * @throws AdapterException 
 	 * 
 	 */
 	@Test
 	public void testProcessTypeBusinessSimple()
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+			throws PluginException, ModelException, AccessDeniedException, ProcessingErrorException, AdapterException {
 
 		// test _budget > 100
 		ItemCollection workitem = new ItemCollection();
@@ -83,14 +85,14 @@ public class TestRulePluginConditions {
 	 * The test validates the update of the _budget item by a business rule in
 	 * combination with conditional events.
 	 * 
-	 * @throws ProcessingErrorException
-	 * @throws AccessDeniedException
+	 * @throws PluginException
 	 * @throws ModelException
+	 * @throws AdapterException 
 	 * 
 	 */
 	@Test
 	public void testProcessTypeBusinessRule()
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+			throws PluginException, ModelException, AdapterException {
 
 		// test _budget > 100
 		ItemCollection workitem = new ItemCollection();

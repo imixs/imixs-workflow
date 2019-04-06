@@ -3,6 +3,7 @@ package org.imixs.workflow.engine;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -28,11 +29,12 @@ public class TestSimulationService {
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
 	 * @throws ModelException
+	 * @throws AdapterException 
 	 * 
 	 */
 	@Test
 	public void testConditionalEvent1()
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
 
 		WorkflowSimulationEnvironment wse = new WorkflowSimulationEnvironment();
 		wse.setup();

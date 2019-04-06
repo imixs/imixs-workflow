@@ -2,6 +2,7 @@ package org.imixs.workflow.engine;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
@@ -22,7 +23,7 @@ public class TestModelService extends WorkflowMockEnvironment {
 	public static final String DEFAULT_MODEL_VERSION="1.0.0";
 
 	@Before
-	public void setup() throws PluginException, ModelException {
+	public void setup() throws PluginException, ModelException, AdapterException {
 		this.setModelPath("/bpmn/TestWorkflowService.bpmn");
 		super.setup();
 	}

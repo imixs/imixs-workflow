@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import javax.ejb.SessionContext;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
@@ -87,7 +88,7 @@ public class TestWorkflowKernelModels {
 			itemCollection = kernel.process(itemCollection);
 			Assert.assertEquals("workitemarchive", itemCollection.getItemValueString("type"));
 			Assert.assertEquals(1100, itemCollection.getTaskID());
-			
+
 		} catch (Exception e) {
 			Assert.fail();
 			e.printStackTrace();
@@ -122,15 +123,14 @@ public class TestWorkflowKernelModels {
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 
 			Assert.assertEquals(1200, itemCollection.getTaskID());
-			
-			
+
 			Assert.assertEquals("in Progress", itemCollection.getItemValueString("$workflowstatus"));
 			Assert.assertEquals("Ticket", itemCollection.getItemValueString("$workflowgroup"));
 
 			// test support for deprecated items
 			Assert.assertEquals("in Progress", itemCollection.getItemValueString("txtworkflowstatus"));
 			Assert.assertEquals("Ticket", itemCollection.getItemValueString("txtworkflowgroup"));
-			
+
 		} catch (Exception e) {
 			Assert.fail();
 			e.printStackTrace();
@@ -284,14 +284,14 @@ public class TestWorkflowKernelModels {
 
 			// Master $uniqueid must not match the version $uniqueid
 			Assert.assertFalse(itemCollection.getUniqueID().equals(version.getUniqueID()));
-			
-			
+
 			// $uniqueidSource must match $uni1ueid of master
-			Assert.assertEquals(itemCollection.getUniqueID(),version.getItemValueString(WorkflowKernel.UNIQUEIDSOURCE));
-			
+			Assert.assertEquals(itemCollection.getUniqueID(),
+					version.getItemValueString(WorkflowKernel.UNIQUEIDSOURCE));
+
 			// $uniqueidVirsions must mach $uniqueid of version
-			Assert.assertEquals(version.getUniqueID(),itemCollection.getItemValueString(WorkflowKernel.UNIQUEIDVERSIONS));
-			
+			Assert.assertEquals(version.getUniqueID(),
+					itemCollection.getItemValueString(WorkflowKernel.UNIQUEIDVERSIONS));
 
 		} catch (Exception e) {
 			Assert.fail();
@@ -339,6 +339,10 @@ public class TestWorkflowKernelModels {
 		} catch (ModelException e) {
 			// expected behavior
 		} catch (PluginException e) {
+			// not expected
+			e.printStackTrace();
+			Assert.fail();
+		} catch (AdapterException e) {
 			// not expected
 			e.printStackTrace();
 			Assert.fail();

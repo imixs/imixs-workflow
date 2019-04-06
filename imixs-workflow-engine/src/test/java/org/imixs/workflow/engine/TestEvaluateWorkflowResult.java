@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
@@ -25,7 +26,7 @@ public class TestEvaluateWorkflowResult {
 	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setup() throws PluginException, ModelException {
+	public void setup() throws PluginException, ModelException, AdapterException {
 		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setup();
 

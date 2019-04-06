@@ -48,6 +48,7 @@ import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -103,7 +104,7 @@ public class SimulationService implements WorkflowContext {
 	 * @throws ModelException
 	 */
 	public ItemCollection processWorkItem(ItemCollection workitem, List<String> vPlugins)
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
 
 		long l = System.currentTimeMillis();
 
@@ -112,7 +113,7 @@ public class SimulationService implements WorkflowContext {
 					ProcessingErrorException.INVALID_WORKITEM, "WorkflowService: error - workitem is null");
 
 		// fire event
-		if (events!=null) {
+		if (events != null) {
 			events.fire(new ProcessingEvent(workitem, ProcessingEvent.BEFORE_PROCESS));
 		} else {
 			logger.warning("CDI Support is missing - ProcessingEvent will not be fired");
@@ -141,7 +142,7 @@ public class SimulationService implements WorkflowContext {
 		// now process the workitem
 		try {
 			workitem = workflowkernel.process(workitem);
-		} catch (PluginException pe) {
+		} catch (PluginException | AdapterException pe) {
 			// if a plugin exception occurs we roll back the transaction.
 			logger.severe("processing workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
 					+ " failed, rollback transaction...");
@@ -151,14 +152,14 @@ public class SimulationService implements WorkflowContext {
 				+ (System.currentTimeMillis() - l) + "ms");
 
 		// fire event
-		if (events!=null) {
+		if (events != null) {
 			events.fire(new ProcessingEvent(workitem, ProcessingEvent.AFTER_PROCESS));
 		}
 		// Now fire also events for all split versions.....
 		List<ItemCollection> splitWorkitems = workflowkernel.getSplitWorkitems();
 		for (ItemCollection splitWorkitemm : splitWorkitems) {
 			// fire event
-			if (events!=null) {
+			if (events != null) {
 				events.fire(new ProcessingEvent(splitWorkitemm, ProcessingEvent.AFTER_PROCESS));
 			}
 		}

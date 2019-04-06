@@ -6,6 +6,7 @@ import java.util.List;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -29,7 +30,7 @@ public class TestWorkflowServiceGateways {
 	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setup() throws PluginException, ModelException {
+	public void setup() throws PluginException, ModelException, AdapterException {
 		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setup();
 
@@ -45,11 +46,12 @@ public class TestWorkflowServiceGateways {
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
 	 * @throws ModelException
+	 * @throws AdapterException 
 	 * 
 	 */
 	@Test
 	public void testConditionalEvent1()
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
 
 		workflowMockEnvironment.loadModel("/bpmn/conditional_event1.bpmn");
 
@@ -88,11 +90,12 @@ public class TestWorkflowServiceGateways {
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
 	 * @throws ModelException
+	 * @throws AdapterException 
 	 * 
 	 */
 	@Test
 	public void testSplitEvent1()
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
 
 		workflowMockEnvironment.loadModel("/bpmn/split_event1.bpmn");
 

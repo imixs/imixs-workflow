@@ -14,8 +14,6 @@ public class MokPlugin implements Plugin {
 
 	@Override
 	public void init(WorkflowContext actx) throws PluginException {
-		// TODO Auto-generated method stub
-
 	}
  
 	@Override 

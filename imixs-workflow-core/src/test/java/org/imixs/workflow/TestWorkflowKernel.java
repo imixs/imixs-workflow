@@ -14,9 +14,11 @@ import java.util.logging.Logger;
 
 import javax.ejb.SessionContext;
 
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.imixs.workflow.exceptions.WorkflowException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,16 +75,13 @@ public class TestWorkflowKernel {
 
 		try {
 			itemCollectionProcessed = kernel.process(itemCollection);
-		} catch (PluginException e) {
+		} catch (WorkflowException e) {
 			Assert.fail();
 			e.printStackTrace();
 		} catch (ProcessingErrorException e) {
 			Assert.fail();
 			e.printStackTrace();
-		} catch (ModelException e) {
-			Assert.fail();
-			e.printStackTrace();
-		}
+		} 
 
 		Assert.assertEquals(1, itemCollectionProcessed.getItemValueInteger("runs"));
 		Assert.assertEquals(100, itemCollectionProcessed.getTaskID());
@@ -112,17 +111,13 @@ public class TestWorkflowKernel {
 
 		try {
 			itemCollectionProcessed = kernel.process(itemCollection);
-		} catch (PluginException e) {
+		} catch (WorkflowException e) {
 			Assert.fail();
 			e.printStackTrace();
 		} catch (ProcessingErrorException e) {
 			Assert.fail();
 			e.printStackTrace();
-		} catch (ModelException e) {
-			Assert.fail();
-			e.printStackTrace();
-		}
-
+		} 
 		Assert.assertEquals(1, itemCollectionProcessed.getItemValueInteger("runs"));
 		Assert.assertEquals(100, itemCollectionProcessed.getTaskID());
 		
@@ -158,21 +153,23 @@ public class TestWorkflowKernel {
 			Assert.fail();
 		} catch (PluginException e) {
 			Assert.assertEquals(WorkflowKernel.PLUGIN_ERROR, e.getErrorCode());
-
 		} catch (ProcessingErrorException e) {
 			Assert.fail();
 			e.printStackTrace();
 		} catch (ModelException e) {
 			Assert.fail();
 			e.printStackTrace();
-		}
+		} catch (AdapterException e) {
+			Assert.fail();
+			e.printStackTrace();
+		} 
 
 		Assert.assertEquals("test", itemCollection.getItemValueString("txtname"));
 		Assert.assertEquals(100, itemCollection.getTaskID());
 	}
 
 	@Test
-	@Category(org.imixs.workflow.WorkflowKernel.class)
+	@Category(org.imixs.workflow.WorkflowKernel.class) 
 	public void testForward() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
@@ -184,13 +181,10 @@ public class TestWorkflowKernel {
 
 		try {
 			itemCollection = kernel.process(itemCollection);
-		} catch (PluginException e) {
+		} catch (WorkflowException e) {
 			Assert.fail();
 			e.printStackTrace();
 		} catch (ProcessingErrorException e) {
-			Assert.fail();
-			e.printStackTrace();
-		} catch (ModelException e) {
 			Assert.fail();
 			e.printStackTrace();
 		}
@@ -213,16 +207,13 @@ public class TestWorkflowKernel {
 
 		try {
 			itemCollection = kernel.process(itemCollection);
-		} catch (PluginException e) {
+		} catch (WorkflowException e) {
 			Assert.fail();
 			e.printStackTrace();
 		} catch (ProcessingErrorException e) {
 			Assert.fail();
 			e.printStackTrace();
-		} catch (ModelException e) {
-			Assert.fail();
-			e.printStackTrace();
-		}
+		} 
 
 		// runs should be 2
 		Assert.assertEquals(2, itemCollection.getItemValueInteger("runs"));
@@ -281,7 +272,7 @@ public class TestWorkflowKernel {
 			itemCollection = kernel.process(itemCollection);
 
 			itemCollection.setEventID(20);
-			// sumulate a Log Comment...
+			// sumulate a Log Comment... 
 			itemCollection.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
 
 			itemCollection = kernel.process(itemCollection);
@@ -293,6 +284,9 @@ public class TestWorkflowKernel {
 			Assert.fail();
 			e.printStackTrace();
 		} catch (ModelException e) {
+			Assert.fail();
+			e.printStackTrace();
+		} catch (AdapterException e) {
 			Assert.fail();
 			e.printStackTrace();
 		}
@@ -395,6 +389,9 @@ public class TestWorkflowKernel {
 			Assert.fail();
 			e.printStackTrace();
 		} catch (ModelException e) {
+			Assert.fail();
+			e.printStackTrace();
+		} catch (AdapterException e) {
 			Assert.fail();
 			e.printStackTrace();
 		}
