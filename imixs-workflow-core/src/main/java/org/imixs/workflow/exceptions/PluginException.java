@@ -28,7 +28,7 @@
 package org.imixs.workflow.exceptions;
 
 /**
- * An PluginException should be thrown by a workflow plugin
+ * A PluginException is thrown by an Imixs-Workflow plugin implementation.
  * 
  * @author rsoika
  * 
@@ -50,6 +50,11 @@ public class PluginException extends WorkflowException {
 	}
 
 	
+	public PluginException(AdapterException e) {
+		super(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
+	}
+
+	
 	public PluginException(String aErrorContext, String aErrorCode,
 			String message,java.lang.Object[] params) {
 		super(aErrorContext, aErrorCode, message);
@@ -63,5 +68,7 @@ public class PluginException extends WorkflowException {
 	protected void setErrorParameters(java.lang.Object[] aparams) {
 		this.params=aparams;
 	}
+	
+	
 	
 }

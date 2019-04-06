@@ -28,6 +28,7 @@
 package org.imixs.workflow;
 
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -35,12 +36,12 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 /**
  * The WorkflowManager is the general interface for a concrete implementation of
  * a workflow management system. The Interface defines the basic methods for
- * processing and encountering a workItem. The Workflowmanger instantiate a
+ * processing and encountering a workItem. The WorkflowManger instantiate a
  * WorkflowKernel, an supports the platform dependent environment for concrete
- * Workitems and Workfmodels.
+ * Workitems and Workflow models.
  * 
  * @author Ralph Soika
- * @version 1.0
+ * @version 1.1
  * @see org.imixs.workflow.WorkflowKernel
  */
 
@@ -48,19 +49,19 @@ public interface WorkflowManager {
 
 	/**
 	 * This method processes a workItem. The workItem needs at least provide the
-	 * valid attributes $taskID and $EventID (integer values) to identify
-	 * the current processEntity the workItem belongs to and the concrete
-	 * activtyEntity which should be processed by the wokflowManager
-	 * implementation. If the workItem is new the method creates a new instance
-	 * for the corresponding process.
-	 * 
+	 * valid attributes $taskID and $EventID (integer values) to identify the
+	 * current processEntity the workItem belongs to and the concrete activtyEntity
+	 * which should be processed by the wokflowManager implementation. If the
+	 * workItem is new the method creates a new instance for the corresponding
+	 * process.
+	 * <p>
 	 * The method is responsible to persist the workItem after successfully
 	 * processing. The method returns the workItem with additional workflow
 	 * informations defined by the workfowManager Implementation.
-	 * 
+	 * <p>
 	 * The Method throws an InvalidWorkitemException if the provided workItem is
-	 * invalid or the provided attributes $taskID and $EventID (integer)
-	 * did not match an valid modelEntity the workItem can be processed to.
+	 * invalid or the provided attributes $taskID and $EventID (integer) did not
+	 * match an valid modelEntity the workItem can be processed to.
 	 * 
 	 * @param workitem
 	 *            a workItem instance which should be processed
@@ -72,12 +73,13 @@ public interface WorkflowManager {
 	 * @throws ProcessingErrorException
 	 *             - thrown if the workitem could not be processed by the
 	 *             workflowKernel
+	 * @throws AdapterExceptionAdapterException
+	 *             - thrown if processing by an adapter fails
 	 * @throws PluginException
 	 *             - thrown if processing by a plugin fails
 	 */
 	public ItemCollection processWorkItem(ItemCollection workitem)
-			throws AccessDeniedException, ProcessingErrorException,
-			PluginException,ModelException;
+			throws AccessDeniedException, ProcessingErrorException, PluginException, AdapterException, ModelException;
 
 	/**
 	 * returns a workItem by its uniuqeID ($uniqueID)
@@ -89,8 +91,8 @@ public interface WorkflowManager {
 	public ItemCollection getWorkItem(String uniqueid);
 
 	/**
-	 * The method removes the provide Workitem form the persistence unit managed
-	 * by the WorkflowManager implementation.
+	 * The method removes the provide Workitem form the persistence unit managed by
+	 * the WorkflowManager implementation.
 	 * 
 	 * The Method throws an InvalidWorkitemException if the provided Workitem is
 	 * invalid.
@@ -99,9 +101,6 @@ public interface WorkflowManager {
 	 *            of the WorkItem to be removed
 	 * @throws AccessDeniedException
 	 */
-	public void removeWorkItem(ItemCollection workitem)
-			throws AccessDeniedException;
-
-	
+	public void removeWorkItem(ItemCollection workitem) throws AccessDeniedException;
 
 }

@@ -53,6 +53,7 @@ import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
+import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.ModelManager;
@@ -62,6 +63,7 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.WorkflowManager;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -105,6 +107,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	@Inject
 	@Any
 	private Instance<Plugin> plugins;
+
+	@Inject
+	@Any
+	private Instance<Adapter> adapters;
 
 	@EJB
 	DocumentService documentService;
@@ -565,10 +571,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @throws PluginException
 	 *             - thrown if processing by a plugin fails
 	 * @throws ModelException
+	 * @throws AdapterException 
 	 */
-	@SuppressWarnings("unchecked")
 	public ItemCollection processWorkItem(ItemCollection workitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
 
 		long lStartTime = System.currentTimeMillis();
 
@@ -639,57 +645,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 					ProcessingErrorException.INVALID_PROCESSID, e.getMessage(), e);
 		}
 
-		// Fetch the current Profile Entity for this version.
-		ItemCollection profile = model.getDefinition();
 		WorkflowKernel workflowkernel = new WorkflowKernel(this);
-		// register plugins defined in the environment.profile ....
-		List<String> vPlugins = (List<String>) profile.getItemValue("txtPlugins");
-		for (int i = 0; i < vPlugins.size(); i++) {
-			String aPluginClassName = vPlugins.get(i);
-
-			Plugin aPlugin = findPluginByName(aPluginClassName);
-			// aPlugin=null;
-			if (aPlugin != null) {
-				// register injected CDI Plugin
-				logger.finest("......register CDI plugin class: " + aPluginClassName + "...");
-				workflowkernel.registerPlugin(aPlugin);
-			} else {
-				// register plugin by class name
-				workflowkernel.registerPlugin(aPluginClassName);
-			}
-
-		}
-
-		// identify Caller and update CurrentEditor
-		String nameEditor;
-		nameEditor = ctx.getCallerPrincipal().getName();
-
-		// add namCreator if empty
-		// migrate $creator (Backward compatibility)
-		if (workitem.getItemValueString("$creator").isEmpty() && !workitem.getItemValueString("namCreator").isEmpty()) {
-			workitem.replaceItemValue("$creator", workitem.getItemValue("namCreator"));
-		}
-
-		if (workitem.getItemValueString("$creator").isEmpty()) {
-			workitem.replaceItemValue("$creator", nameEditor);
-			// support deprecated fieldname
-			workitem.replaceItemValue("namCreator", nameEditor);
-		}
-
-		// update namLastEditor only if current editor has changed
-		if (!nameEditor.equals(workitem.getItemValueString("$editor"))
-				&& !workitem.getItemValueString("$editor").isEmpty()) {
-
-			workitem.replaceItemValue("$lasteditor", workitem.getItemValueString("$editor"));
-			// deprecated
-			workitem.replaceItemValue("namlasteditor", workitem.getItemValueString("$editor"));
-		}
-
-		// update $editor
-
-		workitem.replaceItemValue("$editor", nameEditor);
-		// deprecated
-		workitem.replaceItemValue("namcurrenteditor", nameEditor);
+		// register plugins...
+		registerPlugins(workflowkernel, model);
+		// register adapters.....
+		registerAdapters(workflowkernel);
+		// udpate workitem properties...
+		updateWorkitem(workitem);
 
 		// now process the workitem
 		try {
@@ -744,9 +706,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @throws PluginException
 	 *             - thrown if processing by a plugin fails
 	 * @throws ModelException
+	 * @throws AdapterException 
 	 **/
 	public ItemCollection processWorkItem(ItemCollection workitem, ItemCollection event)
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
 
 		return processWorkItem(workitem, event.getItemValueInteger("numactivityid"));
 	}
@@ -770,9 +733,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @throws PluginException
 	 *             - thrown if processing by a plugin fails
 	 * @throws ModelException
+	 * @throws AdapterException 
 	 **/
 	public ItemCollection processWorkItem(ItemCollection workitem, int eventID)
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
 
 		workitem.setEventID(eventID);
 		return processWorkItem(workitem);
@@ -1124,8 +1088,87 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * This method returns a n injected Plugin by name or null if not plugin with
-	 * the requested class name is injected.
+	 * This method register all plugin classes listed in the model profile
+	 * 
+	 * @throws PluginException
+	 */
+	@SuppressWarnings("unchecked")
+	void registerPlugins(WorkflowKernel workflowkernel, Model model) throws PluginException {
+		// Fetch the current Profile Entity for this version.
+		ItemCollection profile = model.getDefinition();
+
+		// register plugins defined in the environment.profile ....
+		List<String> vPlugins = (List<String>) profile.getItemValue("txtPlugins");
+		for (int i = 0; i < vPlugins.size(); i++) {
+			String aPluginClassName = vPlugins.get(i);
+
+			Plugin aPlugin = findPluginByName(aPluginClassName);
+			// aPlugin=null;
+			if (aPlugin != null) {
+				// register injected CDI Plugin
+				logger.finest("......register CDI plugin class: " + aPluginClassName + "...");
+				workflowkernel.registerPlugin(aPlugin);
+			} else {
+				// register plugin by class name
+				workflowkernel.registerPlugin(aPluginClassName);
+			}
+		}
+	}
+
+	void registerAdapters(WorkflowKernel workflowkernel) {
+		if (adapters == null || !adapters.iterator().hasNext()) {
+			logger.finest("......no CDI Adapters injected");
+		} else {
+			// iterate over all injected adapters....
+			for (Adapter adapter : this.adapters) {
+				logger.finest("......register CDI Adapter class '" + adapter.getClass().getName() + "'");
+				workflowkernel.registerAdapter(adapter);
+			}
+		}
+	}
+
+	/**
+	 * This method updates the workitem properties '$creator', '$editor' and
+	 * '$lasteditor.
+	 * <p>
+	 * The method also migrates deprected items.
+	 * 
+	 * @param workitem
+	 */
+	void updateWorkitem(ItemCollection workitem) {
+		// identify Caller and update CurrentEditor
+		String nameEditor;
+		nameEditor = ctx.getCallerPrincipal().getName();
+
+		// add namCreator if empty
+		// migrate $creator (Backward compatibility)
+		if (workitem.getItemValueString("$creator").isEmpty() && !workitem.getItemValueString("namCreator").isEmpty()) {
+			workitem.replaceItemValue("$creator", workitem.getItemValue("namCreator"));
+		}
+
+		if (workitem.getItemValueString("$creator").isEmpty()) {
+			workitem.replaceItemValue("$creator", nameEditor);
+			// support deprecated fieldname
+			workitem.replaceItemValue("namCreator", nameEditor);
+		}
+
+		// update namLastEditor only if current editor has changed
+		if (!nameEditor.equals(workitem.getItemValueString("$editor"))
+				&& !workitem.getItemValueString("$editor").isEmpty()) {
+			workitem.replaceItemValue("$lasteditor", workitem.getItemValueString("$editor"));
+			// deprecated
+			workitem.replaceItemValue("namlasteditor", workitem.getItemValueString("$editor"));
+		}
+
+		// update $editor
+		workitem.replaceItemValue("$editor", nameEditor);
+		// deprecated
+		workitem.replaceItemValue("namcurrenteditor", nameEditor);
+	}
+
+	/**
+	 * This method returns an injected Plugin by name or null if no plugin with the
+	 * requested class name is injected.
 	 * 
 	 * @param pluginClassName
 	 * @return plugin class or null if not found
@@ -1148,5 +1191,4 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 		return null;
 	}
-
 }
