@@ -40,6 +40,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	boolean bMessage = false;
 	boolean bAnnotation = false;
 	boolean bDataObject = false;
+	boolean bSignal = false;
 	boolean bExtensionElements = false;
 	boolean bImixsProperty = false;
 	boolean bImixsTask = false;
@@ -62,6 +63,9 @@ public class BPMNModelHandler extends DefaultHandler {
 	String currentAnnotationName = null;
 	String currentDataObjectName = null;
 	String currentDataObjectID = null;
+	String currentSignalID = null;
+	String currentSignalName = null;
+	String currentSignalRefID = null;
 	String currentLinkName = null;
 
 	String bpmnID = null;
@@ -80,6 +84,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	Map<String, String> messageCache = null;
 	Map<String, String> annotationCache = null;
 	Map<String, List<String>> dataObjectCache = null;
+	Map<String, String> signalCache = null;
 
 	Map<String, String> conditionCache = null;
 
@@ -100,6 +105,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		messageCache = new HashMap<String, String>();
 		annotationCache = new HashMap<String, String>();
 		dataObjectCache = new HashMap<String, List<String>>();
+		signalCache = new HashMap<String, String>();
 		conditionCache = new HashMap<String, String>();
 
 		linkThrowEventCache = new HashMap<String, String>();
@@ -214,6 +220,7 @@ public class BPMNModelHandler extends DefaultHandler {
 			currentEntity.replaceItemValue("type", "ActivityEntity");
 			currentEntity.replaceItemValue("txtname", attributes.getValue("name"));
 			currentEntity.replaceItemValue("numactivityid", currentID);
+			currentSignalRefID = null;
 		}
 
 		// bpmn2:sequenceFlow - cache all sequenceFlows...
@@ -294,6 +301,16 @@ public class BPMNModelHandler extends DefaultHandler {
 			currentDataObjectName = attributes.getValue("name");
 		}
 
+		if (qName.equalsIgnoreCase("bpmn2:signal")) {
+			bSignal = true;
+			currentSignalID = attributes.getValue("id");
+			currentSignalName = attributes.getValue("name");
+		}
+
+		if (qName.equalsIgnoreCase("bpmn2:signalEventDefinition")) {
+			currentSignalRefID = attributes.getValue("signalRef");
+		}
+
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -329,8 +346,19 @@ public class BPMNModelHandler extends DefaultHandler {
 			// adapt deprecated proptery format
 			adaptDeprecatedEventProperties(currentEntity);
 
-			// we need to cache the activities because the sequenceflows must be
-			// analysed later
+			// adapter ?
+			if (currentSignalRefID != null && !currentSignalRefID.isEmpty()) {
+				String signalName = signalCache.get(currentSignalRefID);
+				if (signalName != null && !signalName.isEmpty()) {
+					currentEntity.setItemValue("adapter.id", signalName);
+				} else {
+					logger.warning("Event " + currentEntity.getItemValueInteger("id") + " Signal Ref " + signalName
+							+ " is not defined!");
+				}
+			}
+
+			// we need to cache the activities because the sequence flows must be
+			// analyzed later
 			eventCache.put(bpmnID, currentEntity);
 		}
 
@@ -392,6 +420,13 @@ public class BPMNModelHandler extends DefaultHandler {
 
 			characterStream = null;
 			bdocumentation = false;
+		}
+
+		// bpmn2:signal?
+		if (bSignal) {
+			// cache the Signal
+			signalCache.put(currentSignalID, currentSignalName);
+			bSignal = false;
 		}
 
 		// end of bpmn2:intermediateThrowEvent -
@@ -1164,10 +1199,10 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		// workflow
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_WORKFLOW_RESULT, "txtactivityresult");
-		
+
 		// history
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_HISTORY_MESSAGE, "rtfresultlog");
-		
+
 		// mail
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_MAIL_SUBJECT, "txtmailsubject");
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_MAIL_BODY, "rtfmailbody");
@@ -1177,40 +1212,39 @@ public class BPMNModelHandler extends DefaultHandler {
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_MAIL_CC_LIST_MAPPING, "keymailreceiverfieldscc");
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_MAIL_BCC_LIST, "nammailreceiverbcc");
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_MAIL_BCC_LIST_MAPPING, "keymailreceiverfieldsbcc");
-		
+
 		// rule
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_RULE_ENGINE, "txtbusinessruleengine");
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_RULE_DEFINITION, "txtbusinessrule");
-		
+
 		// report
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_REPORT_NAME, "txtreportname");
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_REPORT_PATH, "txtreportfilepath");
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_REPORT_OPTIONS, "txtreportparams");
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_REPORT_TARGET, "txtreporttarget");
-		
-		
+
 		// version
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_VERSION_MODE, "keyversion");
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_VERSION_EVENT, "numversionactivityid");
-		
-		
+
 		// timer
 		if (!eventEntity.hasItem(BPMNModel.EVENT_ITEM_TIMER_ACTIVE)) {
-			eventEntity.setItemValue(BPMNModel.EVENT_ITEM_TIMER_ACTIVE, new Boolean("1".equals(eventEntity.getItemValueString("keyscheduledactivity"))));
+			eventEntity.setItemValue(BPMNModel.EVENT_ITEM_TIMER_ACTIVE,
+					new Boolean("1".equals(eventEntity.getItemValueString("keyscheduledactivity"))));
 		}
 		if (!eventEntity.hasItem("keyscheduledactivity")) {
 			if (eventEntity.getItemValueBoolean(BPMNModel.EVENT_ITEM_TIMER_ACTIVE)) {
-				eventEntity.setItemValue("keyscheduledactivity","0");
+				eventEntity.setItemValue("keyscheduledactivity", "0");
 			} else {
-				eventEntity.setItemValue("keyscheduledactivity","1");
+				eventEntity.setItemValue("keyscheduledactivity", "1");
 			}
 		}
-		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_TIMER_SELECTION, "txtscheduledview");	
+		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_TIMER_SELECTION, "txtscheduledview");
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_TIMER_DELAY, "numactivitydelay");
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_TIMER_DELAY_UNIT, "keyactivitydelayunit");
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_TIMER_DELAY_BASE, "keyscheduledbaseobject");
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_TIMER_DELAY_BASE_PROPERTY, "keytimecomparefield");
-		
+
 	}
 
 	/**
