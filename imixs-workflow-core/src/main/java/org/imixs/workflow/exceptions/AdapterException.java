@@ -28,63 +28,40 @@
 package org.imixs.workflow.exceptions;
 
 /**
- * WorkflowException is the abstract super class for all Imixs Workflow
- * Exception classes. A WorkflowException signals an error in the business
- * logic. WorkflowExceptions need to be caught.
+ * An AdapterException is thrown by an Imixs-Workflow Adapter implementation 
  * 
  * @author rsoika
+ * 
  */
-public abstract class WorkflowException extends Exception {
+public class AdapterException extends WorkflowException {
 
 	private static final long serialVersionUID = 1L;
-
-	protected String errorContext = "UNDEFINED";
-	protected String errorCode = "UNDEFINED";
-
-	public WorkflowException(String aErrorCode, String message) {
-		super(message);
-		errorCode = aErrorCode;
-
-	}
-
-	public WorkflowException(String aErrorContext, String aErrorCode,
-			String message) {
-		super(message);
-		errorContext = aErrorContext;
-		errorCode = aErrorCode;
-
-	}
-
-	public WorkflowException(String aErrorContext, String aErrorCode,
-			String message, Exception e) {
-		super(message, e);
-		errorContext = aErrorContext;
-		errorCode = aErrorCode;
-
-	}
+	private java.lang.Object[] params=null;
 	
 
-	public WorkflowException(String aErrorCode, String message, Exception e) {
-		super(message, e);
-
-		errorCode = aErrorCode;
-
+	public AdapterException(String aErrorContext, String aErrorCode,
+			String message) {
+		super(aErrorContext, aErrorCode, message);
 	}
 
-	public String getErrorContext() {
-		return errorContext;
+	public AdapterException(String aErrorContext, String aErrorCode,
+			String message, Exception e) {
+		super(aErrorContext, aErrorCode, message, e);
 	}
 
-	public void setErrorContext(String errorContext) {
-		this.errorContext = errorContext;
+	
+	public AdapterException(String aErrorContext, String aErrorCode,
+			String message,java.lang.Object[] params) {
+		super(aErrorContext, aErrorCode, message);
+		this.params=params;
 	}
-
-	public String getErrorCode() {
-		return errorCode;
+	
+	public java.lang.Object[] getErrorParameters() {
+		return params;
 	}
-
-	public void setErrorCode(String errorCode) {
-		this.errorCode = errorCode;
+	
+	protected void setErrorParameters(java.lang.Object[] aparams) {
+		this.params=aparams;
 	}
-
+	
 }
