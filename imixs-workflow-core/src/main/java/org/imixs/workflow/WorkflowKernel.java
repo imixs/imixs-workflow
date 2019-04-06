@@ -30,6 +30,7 @@ package org.imixs.workflow;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,6 +38,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -97,8 +99,8 @@ public class WorkflowKernel {
 
 	public static final int MAXIMUM_ACTIVITYLOGENTRIES = 30;
 
-	/** Plugin objects **/
 	private List<Plugin> pluginRegistry = null;
+	private Map<String,Adapter> adapterRegistry = null;
 	private WorkflowContext ctx = null;
 	private Vector<String> vectorEdgeHistory = new Vector<String>();
 	private List<ItemCollection> splitWorkitems = null;
@@ -118,6 +120,7 @@ public class WorkflowKernel {
 
 		ctx = actx;
 		pluginRegistry = new ArrayList<Plugin>();
+		adapterRegistry = new HashMap<String,Adapter>();
 		splitWorkitems = new ArrayList<ItemCollection>();
 		ruleEngine = new RuleEngine();
 	}
@@ -146,7 +149,6 @@ public class WorkflowKernel {
 	 * @throws PluginException
 	 */
 	public void registerPlugin(final Plugin plugin) throws PluginException {
-
 		// validate dependencies
 		if (plugin instanceof PluginDependency) {
 			List<String> dependencies = ((PluginDependency) plugin).dependsOn();
@@ -166,6 +168,15 @@ public class WorkflowKernel {
 		}
 		plugin.init(ctx);
 		pluginRegistry.add(plugin);
+	}
+	
+	/**
+	 * This method registers a new adapter class. 
+	 * 
+	 * @param adapterClass
+	 */
+	public void registerAdapter(final Adapter adapter) {
+		adapterRegistry.put(adapter.getClass().getName(),adapter);
 	}
 
 	/**
@@ -260,8 +271,9 @@ public class WorkflowKernel {
 	 *            the process instance to be processed.
 	 * @return updated workitem
 	 * @throws PluginException,ModelException
+	 * @throws AdapterException 
 	 */
-	public ItemCollection process(final ItemCollection workitem) throws PluginException, ModelException {
+	public ItemCollection process(final ItemCollection workitem) throws PluginException, ModelException, AdapterException {
 
 		// check document context
 		if (workitem == null)
@@ -409,20 +421,21 @@ public class WorkflowKernel {
 
 	/**
 	 * This method processes a single event on a workflow instance. All registered
-	 * plug-ins will be executed.
+	 * adapter and plug-in classes will be executed.
 	 * <p>
 	 * During the processing life-cycle more than one event can be processed. This
 	 * depends on the model definition which can define follow-up-events,
 	 * split-events and conditional events.
 	 * <p>
-	 * After all plug-ins succeeded, the attributes type, $taskID, $workflowstatus
+	 * After all adapter and plug-in classes are executed, the attributes type, $taskID, $workflowstatus
 	 * and $workflowgroup are updated based on the definition of the target task
 	 * element.
 	 * 
 	 * @throws PluginException,ModelException
+	 * @throws AdapterException 
 	 */
 	private ItemCollection processEvent(final ItemCollection documentContext, final ItemCollection event)
-			throws PluginException, ModelException {
+			throws PluginException, ModelException, AdapterException {
 		ItemCollection documentResult = documentContext;
 		// log the general processing message
 		String msg = "processing=" + documentContext.getItemValueString(UNIQUEID) + ", MODELVERSION="
@@ -433,6 +446,14 @@ public class WorkflowKernel {
 			logger.warning("no WorkflowContext defined!");
 		}
 		logger.info(msg);
+		
+		
+		// execute adapters if defined....
+		Adapter adapter=adapterRegistry.get(event.getItemValueString("adapter.id"));
+		if (adapter!=null) {
+			// execute...
+			documentResult=adapter.execute(documentResult, event);
+		}
 
 		// execute plugins - PluginExceptions will bubble up....
 		try {
@@ -649,10 +670,11 @@ public class WorkflowKernel {
 	 * @return conditional Task or Event object or null if no condition exits.
 	 * @throws PluginException
 	 * @throws ModelException
+	 * @throws AdapterException 
 	 */
 	@SuppressWarnings("unchecked")
 	private void evaluateSplitEvent(ItemCollection event, ItemCollection documentContext)
-			throws PluginException, ModelException {
+			throws PluginException, ModelException, AdapterException {
 
 		// test if we have an split event
 		Map<String, String> conditions = null;
