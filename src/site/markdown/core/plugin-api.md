@@ -1,6 +1,6 @@
-# Workflow Plugins
+# Imixs-Workflow Plugin API
 
-[Imixs-Workflow Plugins](../engine/plugins/index.html) are introducing an extensibility mechanism to extend the standard functionality of the Imixs-Workflow engine. A plugin can provide business logic to control the processing life-cycle of a process instance, as also platform specific technical functionality, to exchange data with its surrounding environment. 
+The [Imixs-Workflow Plugin API](../engine/plugins/index.html) introduce an extensibility mechanism to extend the standard functionality of the Imixs-Workflow engine. A plugin can provide business logic to control the processing life-cycle of a process instance, as also platform specific technical functionality, to exchange data with its surrounding environment. 
 
 For example a plugin can apply a business rule, send an E-Mail notification, or import business data from an external datasource. The Imixs-Workflow project already provides a set of plug-ins which covers a lot of standard functionality of a workflow engine. See the section [Plugin-API](../engine/plugins/index.html) for further information. 
 

@@ -1,6 +1,6 @@
-#Exception Handling 
+# Exception Handling 
 The Imixs Workflow API prvides a set of Exception classes to signal unexpected
- programm situations. For the Plugin API there exists the specific Exception type 'PluginException'. This exception can be used throw an exception in a plugin which can be handled by  a workflow application.See the following example:
+ program situations. For the Plugin API there exists the specific Exception type 'PluginException'. This exception can be used throw an exception in a plugin which can be handled by  a workflow application.See the following example:
 
 	 public class MyPlugin extends AbstractPlugin {
 	    ......
@@ -19,7 +19,7 @@ The Imixs Workflow API prvides a set of Exception classes to signal unexpected
 
 In this example a Plugin throws a _PluginException_. The Exception contains the  Plugin name, an Error Code, a Error Message and an optional array of params.  The optional params can be used by an application to provide additional information to the user. 
  
-##Handling PluginExceptions in JSF
+## Handling PluginExceptions in JSF
 This is an example how an application can handle a Plugin Exception and create a JSF Faces Message based on the information of the PluginException:
  
 	

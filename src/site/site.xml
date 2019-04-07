@@ -69,6 +69,7 @@
 				<item name="ItemCollection" href="core/itemcollection.html" />
 				<item name="Model" href="core/model.html" />
 				<item name="Plugins" href="core/plugin-api.html" />
+				<item name="Adapter" href="core/adapter-api.html" />
 				<item name="WorkflowKernel" href="core/workflowkernel.html" />
 				<item name="WorkflowManager" href="core/workflowmanager.html" />
 				<item name="XML" href="core/xml/index.html" collapse="true">

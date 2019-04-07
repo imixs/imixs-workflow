@@ -21,6 +21,11 @@ The Imixs-Workflow Engine already ofers a set of plugins that can be used to ext
  * [Document-Composer](documentcomposerplugin.html) - compose documents 
  * [Interval Plugin](intervalplugin.html) - compute time points on a interval definition
 
+
+## The Adapter API
+
+As an alternative to a the Plugin-API, business logic can also be implemented in an Adapter class. An adapter is bound to a single event and can be used for a more fine grained process control. Read more about the concept of the [Imixs Adapter-API](../../core/adapter-api.html).
+
 ## What's Next...
 
 Read more about:
@@ -28,4 +33,6 @@ Read more about:
  * [The Imixs Plugin-API](../../core/plugin-api.html) 
  * [How to Extend The Plugin-API](howto_extend.html) 
  * [Exception Handling](exception_handling.html) 
+ * [The Imixs Adapter-API](../../core/adapter-api.html) 
+ 
  
