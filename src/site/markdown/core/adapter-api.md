@@ -1,11 +1,10 @@
 # Imixs-Workflow Adapter API
 
-The **Imixs-Workflow Adapter API** is an extension mechanism of the Imixs-Workflow engine. An adapter can provide business logic to adapt or extend a process instance. For examplle, an adapter can exchange data with an external Microservice API. 
+The **Imixs-Workflow Adapter API** is an extension mechanism of the Imixs-Workflow engine. An adapter can provide business logic to adapt or extend a process instance. For example, an adapter can exchange data with an external Microservice API. 
 
-In different to the [Plugin API](./plugin-api.html) the Adapter API is bound to a single Event within a BPMN 2.0 model.  
-This allows a more fine grained configuration. 
+In different to the [Plugin API](./plugin-api.html) the Adapter API is bound to a single Event within a BPMN 2.0 model. This allows a more fine grained configuration. 
 
-Adapters are defined as BPMN Signal-Events. The signal definition contains the adapter class name:
+Adapters are defined as BPMN Signal-Events. The signal definition contains the adapter class name to be called by the Imixs Workflow engine:
 
 <img src="../images/modelling/bpmn_screen_37.png" style="width:700px"/>
 
@@ -13,14 +12,14 @@ Adapters are defined as BPMN Signal-Events. The signal definition contains the a
  
 ## The Adapter Interface
 
-The Imixs Adapter-API defines an Interface with one single call-back method '_execute_'. This method is called by the WorkflowKernel for each corresponding signal event.
+The Imixs Adapter-API defines an Interface with the call-back method '_execute_'. This method is called by the WorkflowKernel for each matching signal event.
      
     public ItemCollection execute(ItemCollection document,ItemCollection event) throws AdapterException;
    
     
 ## CDI Support
 
-Imixs-Workflow supports CDI for the adapter API. So an EJB or Resource can be injected into an adapter class by the corresponding annotation. See the following example:
+The Imixs-Workflow Adapter API also supports CDI. In this way an EJB or Resource can be injected into an adapter class by the corresponding CDI annotation. See the following example:
 
 
 	public class DemoAdapter implements org.imixs.workflow.Adapter {
@@ -35,10 +34,11 @@ Imixs-Workflow supports CDI for the adapter API. So an EJB or Resource can be in
 		}
 	}
 
+In this example the adapter injects the Imixs ModelService to ask for available model versions. 
  
 ## Exception Handling
     
-An adapter can also interrupt the processing phase by throwing an AdapterException. For example in case of a communication error.
+An adapter can also interrupt the processing phase by throwing an _AdapterException_. For example in case of a communication error.
 
 See the following example handling a jax-rs client communication:
 
