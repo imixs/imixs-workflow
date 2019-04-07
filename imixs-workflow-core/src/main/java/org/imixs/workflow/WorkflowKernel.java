@@ -100,7 +100,7 @@ public class WorkflowKernel {
 	public static final int MAXIMUM_ACTIVITYLOGENTRIES = 30;
 
 	private List<Plugin> pluginRegistry = null;
-	private Map<String,Adapter> adapterRegistry = null;
+	private Map<String, Adapter> adapterRegistry = null;
 	private WorkflowContext ctx = null;
 	private Vector<String> vectorEdgeHistory = new Vector<String>();
 	private List<ItemCollection> splitWorkitems = null;
@@ -120,7 +120,7 @@ public class WorkflowKernel {
 
 		ctx = actx;
 		pluginRegistry = new ArrayList<Plugin>();
-		adapterRegistry = new HashMap<String,Adapter>();
+		adapterRegistry = new HashMap<String, Adapter>();
 		splitWorkitems = new ArrayList<ItemCollection>();
 		ruleEngine = new RuleEngine();
 	}
@@ -169,14 +169,14 @@ public class WorkflowKernel {
 		plugin.init(ctx);
 		pluginRegistry.add(plugin);
 	}
-	
+
 	/**
-	 * This method registers a new adapter class. 
+	 * This method registers a new adapter class.
 	 * 
 	 * @param adapterClass
 	 */
 	public void registerAdapter(final Adapter adapter) {
-		adapterRegistry.put(adapter.getClass().getName(),adapter);
+		adapterRegistry.put(adapter.getClass().getName(), adapter);
 	}
 
 	/**
@@ -271,9 +271,10 @@ public class WorkflowKernel {
 	 *            the process instance to be processed.
 	 * @return updated workitem
 	 * @throws PluginException,ModelException
-	 * @throws AdapterException 
+	 * @throws AdapterException
 	 */
-	public ItemCollection process(final ItemCollection workitem) throws PluginException, ModelException, AdapterException {
+	public ItemCollection process(final ItemCollection workitem)
+			throws PluginException, ModelException, AdapterException {
 
 		// check document context
 		if (workitem == null)
@@ -427,12 +428,11 @@ public class WorkflowKernel {
 	 * depends on the model definition which can define follow-up-events,
 	 * split-events and conditional events.
 	 * <p>
-	 * After all adapter and plug-in classes are executed, the attributes type, $taskID, $workflowstatus
-	 * and $workflowgroup are updated based on the definition of the target task
-	 * element.
+	 * After all adapter and plug-in classes are executed, the attributes type,
+	 * $taskID, $workflowstatus and $workflowgroup are updated based on the
+	 * definition of the target task element.
 	 * 
-	 * @throws PluginException,ModelException
-	 * @throws AdapterException 
+	 * @throws PluginException,ModelException, AdapterException
 	 */
 	private ItemCollection processEvent(final ItemCollection documentContext, final ItemCollection event)
 			throws PluginException, ModelException, AdapterException {
@@ -446,15 +446,18 @@ public class WorkflowKernel {
 			logger.warning("no WorkflowContext defined!");
 		}
 		logger.info(msg);
-		
-		
-		// execute adapters if defined....
-		Adapter adapter=adapterRegistry.get(event.getItemValueString("adapter.id"));
-		if (adapter!=null) {
-			// execute...
-			documentResult=adapter.execute(documentResult, event);
-		}
 
+		// execute adapters if adapter class is defined....
+		String adapterClass = event.getItemValueString("adapter.id");
+		if (!adapterClass.isEmpty() && adapterClass.matches("^(?:\\w+|\\w+\\.\\w+)+$")) {
+			Adapter adapter = adapterRegistry.get(adapterClass);
+			if (adapter != null) {
+				// execute...
+				documentResult = adapter.execute(documentResult, event);
+			} else {
+				logger.warning("...Adapter '" + adapterClass + "' not registered - verify model!");
+			}
+		}
 		// execute plugins - PluginExceptions will bubble up....
 		try {
 			documentResult = runPlugins(documentResult, event);
@@ -492,7 +495,8 @@ public class WorkflowKernel {
 		documentResult.replaceItemValue("txtworkflowGroup", documentResult.getItemValueString(WORKFLOWGROUP));
 
 		// update the type attribute if defined.
-		// the type attribute can only be overwritten by a plug-in if the type is not defined by the task!
+		// the type attribute can only be overwritten by a plug-in if the type is not
+		// defined by the task!
 		String sType = itemColNextTask.getItemValueString("txttype");
 		if (!"".equals(sType)) {
 			documentResult.replaceItemValue(TYPE, sType);
@@ -670,7 +674,7 @@ public class WorkflowKernel {
 	 * @return conditional Task or Event object or null if no condition exits.
 	 * @throws PluginException
 	 * @throws ModelException
-	 * @throws AdapterException 
+	 * @throws AdapterException
 	 */
 	@SuppressWarnings("unchecked")
 	private void evaluateSplitEvent(ItemCollection event, ItemCollection documentContext)
