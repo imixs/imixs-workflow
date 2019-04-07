@@ -189,7 +189,6 @@ public class WorkflowMockEnvironment {
 						result.add(aentity);
 					}
 				}
-
 				return result;
 			}
 		});
@@ -212,26 +211,23 @@ public class WorkflowMockEnvironment {
 						return textEvent.getText();
 					}
 				});
-		
-		// AdaptText
-		when(workflowService.adaptTextList(Mockito.anyString(),Mockito.any(ItemCollection.class))).thenAnswer(new Answer<List<String>>(){
-			@Override
-			public List<String> answer(InvocationOnMock invocation) throws Throwable, PluginException {
-				
-				Object[] args = invocation.getArguments();
-				String text=(String) args[0];
-				ItemCollection document = (ItemCollection) args[1];
+		when(workflowService.adaptTextList(Mockito.anyString(), Mockito.any(ItemCollection.class)))
+				.thenAnswer(new Answer<List<String>>() {
+					@Override
+					public List<String> answer(InvocationOnMock invocation) throws Throwable, PluginException {
 
-				TextEvent textEvent=new TextEvent(text, document);
-				
-				TextItemValueAdapter tiva=new TextItemValueAdapter();
-				tiva.onEvent(textEvent);
-				
-				
-				return textEvent.getTextList();
-			}
-		});
+						Object[] args = invocation.getArguments();
+						String text = (String) args[0];
+						ItemCollection document = (ItemCollection) args[1];
 
+						TextEvent textEvent = new TextEvent(text, document);
+
+						TextItemValueAdapter tiva = new TextItemValueAdapter();
+						tiva.onEvent(textEvent);
+
+						return textEvent.getTextList();
+					}
+				});
 
 		when(workflowService.evalNextTask(Mockito.any(ItemCollection.class), Mockito.any(ItemCollection.class)))
 				.thenCallRealMethod();
@@ -242,9 +238,11 @@ public class WorkflowMockEnvironment {
 		when(workflowService.processWorkItem(Mockito.any(ItemCollection.class))).thenCallRealMethod();
 		when(workflowService.getUserName()).thenCallRealMethod();
 		when(workflowService.getWorkItem(Mockito.anyString())).thenCallRealMethod();
-		// mock registerPlugins...
+		// mock registerPlugins, registerAdapter, updateWorkitem...
 		Mockito.doCallRealMethod().when(workflowService).registerPlugins(Mockito.any(WorkflowKernel.class),
 				Mockito.any(Model.class));
+		Mockito.doCallRealMethod().when(workflowService).registerAdapters(Mockito.any(WorkflowKernel.class));
+		Mockito.doCallRealMethod().when(workflowService).updateWorkitem(Mockito.any(ItemCollection.class));
 
 		try {
 			when(workflowService.getEvents(Mockito.any(ItemCollection.class))).thenCallRealMethod();
