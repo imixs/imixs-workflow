@@ -55,7 +55,7 @@ See the following example handling a jax-rs client communication:
 			.....
 		} 
 
-In this example a Adapter throws an _AdapterException_ when the rest api call failed. The Exception contains the  Adapter name, an Error Code, and a Error Message. The processing life-cycle will not be interrupted by an AdapterException. But the Exception infomration will be added into the current process instance in the following items:
+In this example an Adapter throws an _AdapterException_ when the rest api call failed. The Exception contains the  Adapter name, an Error Code, and a Error Message. The processing life-cycle will not be interrupted by an AdapterException. But the Exception inforration will be added into the current process instance in the following items:
 
 
 * adapter.error_code - the exception code
@@ -65,14 +65,17 @@ In this example a Adapter throws an _AdapterException_ when the rest api call fa
 
 These data can be used to control the processing flow. For example a conditional event can evaluate the adapter.error_code to control the outcome of the event. 
 
-Furthermore, a Plugin can investigate the Adapter Exception data and interrupt the processing life-cycle by throwing a PluginException. In this case a running transaction will be automatically rolled back. 
+Of course, a Plugin can investigate the Adapter Exception data and interrupt the processing life-cycle by throwing a PluginException. In this case a running transaction will be automatically rolled back. 
 
 	...
 	public ItemCollection run(ItemCollection documentContext, ItemCollection adocumentActivity)
 		throws PluginException {
 		....
 		if (documentContext.hasItem("adapter.error_code") {
-			throw new PluginException(e);
+			throw new PluginException(documentContext.getItemValueString("adapter.error_context"),
+		 	 documentContext.getItemValueString("adapter.error_code"),
+			 documentContext.getItemValueString("adapter.error_message")
+			);
 		}
 	}
 
@@ -93,4 +96,4 @@ If you want to interrupt the processing imideately your Adapter Implementaion ca
 			.....
 		}
 
-In case of a ProcessingErrorException a running transaction will be automatically rolled back. 		
+In case of a ProcessingErrorException a running transaction will be automatically rolled back because it is a Runtime Exception. 		
