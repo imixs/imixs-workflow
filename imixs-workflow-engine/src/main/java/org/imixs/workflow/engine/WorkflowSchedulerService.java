@@ -56,7 +56,6 @@ import javax.ejb.TransactionAttributeType;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -920,11 +919,10 @@ public class WorkflowSchedulerService {
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
 	 * @throws ModelException
-	 * @throws AdapterException 
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public void processSingleWorkitem(ItemCollection aWorkitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 		workflowService.processWorkItem(aWorkitem);
 	}
 

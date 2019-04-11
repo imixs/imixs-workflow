@@ -48,7 +48,6 @@ import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -104,7 +103,7 @@ public class SimulationService implements WorkflowContext {
 	 * @throws ModelException
 	 */
 	public ItemCollection processWorkItem(ItemCollection workitem, List<String> vPlugins)
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
 		long l = System.currentTimeMillis();
 
@@ -142,7 +141,7 @@ public class SimulationService implements WorkflowContext {
 		// now process the workitem
 		try {
 			workitem = workflowkernel.process(workitem);
-		} catch (PluginException | AdapterException pe) {
+		} catch (PluginException pe) {
 			// if a plugin exception occurs we roll back the transaction.
 			logger.severe("processing workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
 					+ " failed, rollback transaction...");

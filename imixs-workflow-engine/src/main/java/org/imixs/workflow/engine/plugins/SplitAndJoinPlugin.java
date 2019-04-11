@@ -37,7 +37,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -172,7 +171,6 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * @throws ProcessingErrorException
 	 * @throws PluginException
 	 * @throws ModelException
-	 * @throws AdapterException 
 	 */
 	protected void createSubprocesses(final List<String> subProcessDefinitions, final ItemCollection originWorkitem)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
@@ -227,12 +225,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 				workitemSubProcess.replaceItemValue(WorkflowService.UNIQUEIDREF, originWorkitem.getUniqueID());
 
 				// process the new subprocess...
-				try {
-					workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
-				} catch (AdapterException e) {
-					throw new PluginException(e);
-				}
-
+				workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
+				
 				logger.finest("...... successful created new subprocess.");
 				// finally add the new workitemRef into the origin
 				// documentContext
@@ -277,7 +271,6 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * @throws ProcessingErrorException
 	 * @throws PluginException
 	 * @throws ModelException
-	 * @throws AdapterException 
 	 */
 	protected void updateSubprocesses(final List<String> subProcessDefinitions, final ItemCollection originWorkitem)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
@@ -334,11 +327,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 						}
 						workitemSubProcess.setEventID(Integer.valueOf(event_pattern));
 						// process the exisitng subprocess...
-						try {
-							workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
-						} catch (AdapterException e) {
-							throw new PluginException(e);
-						}
+
+						workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);	
 
 						// test for optional action result..
 						if (processData.hasItem("action")) {
@@ -388,7 +378,6 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * @throws ProcessingErrorException
 	 * @throws PluginException
 	 * @throws ModelException
-	 * @throws AdapterException 
 	 */
 	@SuppressWarnings("unchecked")
 	protected void updateOrigin(final String originProcessDefinition, final ItemCollection subprocessWorkitem)
@@ -443,11 +432,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 					copyItemList(processData.getItemValueString("items"), subprocessWorkitem, originWorkitem);
 
 					// finally we process the new subprocess...
-					try {
-						originWorkitem = getWorkflowService().processWorkItem(originWorkitem);
-					} catch (AdapterException e) {
-						throw new PluginException(e);
-					}
+					originWorkitem = getWorkflowService().processWorkItem(originWorkitem);
 
 					// test for optional action result..
 					if (processData.hasItem("action")) {

@@ -38,7 +38,7 @@ In this example the adapter injects the Imixs ModelService to ask for available 
  
 ## Exception Handling
     
-An adapter can also interrupt the processing phase by throwing an _AdapterException_. For example in case of a communication error.
+An adapter can also extend the processing phase by throwing an _AdapterException_. For example in case of a communication error.
 
 See the following example handling a jax-rs client communication:
 
@@ -55,6 +55,42 @@ See the following example handling a jax-rs client communication:
 			.....
 		} 
 
-In this example a Adapter throws an _AdapterException_ when the rest api call failed. The Exception contains the  Adapter name, an Error Code, and a Error Message. A running transaction will be automatically rolled back. 
+In this example a Adapter throws an _AdapterException_ when the rest api call failed. The Exception contains the  Adapter name, an Error Code, and a Error Message. The processing life-cycle will not be interrupted by an AdapterException. But the Exception infomration will be added into the current process instance in the following items:
 
-	
+
+* adapter.error_code - the exception code
+* adapter.error_message - the exception message
+* adapter.error_cause - the exception cause
+* adapter.error_params - optional exception params provided by the AdapterException
+
+These data can be used to control the processing flow. For example a conditional event can evaluate the adapter.error_code to control the outcome of the event. 
+
+Furthermore, a Plugin can investigate the Adapter Exception data and interrupt the processing life-cycle by throwing a PluginException. In this case a running transaction will be automatically rolled back. 
+
+	...
+	public ItemCollection run(ItemCollection documentContext, ItemCollection adocumentActivity)
+		throws PluginException {
+		....
+		if (documentContext.hasItem("adapter.error_code") {
+			throw new PluginException(e);
+		}
+	}
+
+
+If you want to interrupt the processing imideately your Adapter Implementaion can throw a ProcessingErrorException
+
+		public ItemCollection execute(ItemCollection workitem, ItemCollection event) throws AdapterException {
+			...
+			// call external Rest API....
+			try {
+				Response response = client.target(uri).request(MediaType.APPLICATION_XML)
+					.post(Entity.entity(data, MediaType.APPLICATION_XML));
+			} catch (ResponseProcessingException e) {
+				// interrupt current transaction
+				throw new ProcessingErrorException(
+						MyAdapter.class.getSimpleName(),ERROR_API_COMMUNICATION,"Failed to call rest api!");
+			}
+			.....
+		}
+
+In case of a ProcessingErrorException a running transaction will be automatically rolled back. 		

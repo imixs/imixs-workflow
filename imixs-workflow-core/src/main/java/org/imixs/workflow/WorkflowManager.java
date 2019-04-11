@@ -28,7 +28,6 @@
 package org.imixs.workflow;
 
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -79,7 +78,7 @@ public interface WorkflowManager {
 	 *             - thrown if processing by a plugin fails
 	 */
 	public ItemCollection processWorkItem(ItemCollection workitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException, AdapterException, ModelException;
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException;
 
 	/**
 	 * returns a workItem by its uniuqeID ($uniqueID)

@@ -271,10 +271,9 @@ public class WorkflowKernel {
 	 *            the process instance to be processed.
 	 * @return updated workitem
 	 * @throws PluginException,ModelException
-	 * @throws AdapterException
 	 */
 	public ItemCollection process(final ItemCollection workitem)
-			throws PluginException, ModelException, AdapterException {
+			throws PluginException, ModelException {
 
 		// check document context
 		if (workitem == null)
@@ -431,11 +430,12 @@ public class WorkflowKernel {
 	 * After all adapter and plug-in classes are executed, the attributes type,
 	 * $taskID, $workflowstatus and $workflowgroup are updated based on the
 	 * definition of the target task element.
-	 * 
-	 * @throws PluginException,ModelException, AdapterException
+	 * <p>
+	 * In case of an AdapterException, the exception data will be wrapped into items with the prefix 'adapter.'
+	 * @throws PluginException,ModelException
 	 */
 	private ItemCollection processEvent(final ItemCollection documentContext, final ItemCollection event)
-			throws PluginException, ModelException, AdapterException {
+			throws PluginException, ModelException {
 		ItemCollection documentResult = documentContext;
 		// log the general processing message
 		String msg = "processing=" + documentContext.getItemValueString(UNIQUEID) + ", MODELVERSION="
@@ -453,7 +453,22 @@ public class WorkflowKernel {
 			Adapter adapter = adapterRegistry.get(adapterClass);
 			if (adapter != null) {
 				// execute...
-				documentResult = adapter.execute(documentResult, event);
+				try {
+					// remove adapter errors..
+					documentResult.removeItem("adapter.error_context");
+					documentResult.removeItem("adapter.error_code");
+					documentResult.removeItem("adapter.error_params");
+					documentResult.removeItem("adapter.error_message");
+					documentResult = adapter.execute(documentResult, event);
+				} catch (AdapterException e) {
+					logger.warning("...execution of adapter failed: " + e.getMessage());
+					// update workitem with adapter exception....
+					documentResult.setItemValue("adapter.error_context", e.getErrorContext());
+					documentResult.setItemValue("adapter.error_code", e.getErrorCode());
+					documentResult.setItemValue("adapter.error_params", e.getErrorParameters());
+					documentResult.setItemValue("adapter.error_message", e.getMessage());
+					e.printStackTrace();
+				}
 			} else {
 				logger.warning("...Adapter '" + adapterClass + "' not registered - verify model!");
 			}
@@ -678,7 +693,7 @@ public class WorkflowKernel {
 	 */
 	@SuppressWarnings("unchecked")
 	private void evaluateSplitEvent(ItemCollection event, ItemCollection documentContext)
-			throws PluginException, ModelException, AdapterException {
+			throws PluginException, ModelException {
 
 		// test if we have an split event
 		Map<String, String> conditions = null;

@@ -5,7 +5,6 @@ import org.imixs.workflow.engine.ModelPluginMock;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -29,7 +28,7 @@ public class TestRulePluginConditions {
 	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setup() throws PluginException, ModelException, AdapterException {
+	public void setup() throws PluginException, ModelException {
 
 		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestRulePluginConditions.bpmn");
@@ -58,12 +57,10 @@ public class TestRulePluginConditions {
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
 	 * @throws ModelException
-	 * @throws AdapterException 
-	 * 
 	 */
 	@Test
 	public void testProcessTypeBusinessSimple()
-			throws PluginException, ModelException, AccessDeniedException, ProcessingErrorException, AdapterException {
+			throws PluginException, ModelException, AccessDeniedException, ProcessingErrorException {
 
 		// test _budget > 100
 		ItemCollection workitem = new ItemCollection();
@@ -87,12 +84,10 @@ public class TestRulePluginConditions {
 	 * 
 	 * @throws PluginException
 	 * @throws ModelException
-	 * @throws AdapterException 
-	 * 
 	 */
 	@Test
 	public void testProcessTypeBusinessRule()
-			throws PluginException, ModelException, AdapterException {
+			throws PluginException, ModelException {
 
 		// test _budget > 100
 		ItemCollection workitem = new ItemCollection();

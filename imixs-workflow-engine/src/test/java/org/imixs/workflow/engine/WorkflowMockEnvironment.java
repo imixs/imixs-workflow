@@ -24,7 +24,6 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -104,7 +103,7 @@ public class WorkflowMockEnvironment {
 	}
 
 	@Before
-	public void setup() throws PluginException, ModelException, AdapterException {
+	public void setup() throws PluginException, ModelException {
 		MockitoAnnotations.initMocks(this);
 		// setup db
 		createTestDatabase();
@@ -327,10 +326,9 @@ public class WorkflowMockEnvironment {
 	 * @throws PluginException
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
-	 * @throws AdapterException
 	 */
 	public ItemCollection processWorkItem(ItemCollection workitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 		workitem = workflowService.processWorkItem(workitem);
 		return workitem;
 	}

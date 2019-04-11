@@ -32,7 +32,6 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -135,11 +134,8 @@ public class VersionPlugin extends AbstractPlugin {
 				if (versionActivityID > 0) {
 					version.replaceItemValue("$ActivityID", versionActivityID);
 					version.replaceItemValue(PROCESSING_VERSION_ATTRIBUTE, true);
-					try {
-						version = getWorkflowService().processWorkItem(version);
-					} catch (AdapterException e) {
-						throw new PluginException(e);
-					}
+					version = getWorkflowService().processWorkItem(version);
+
 				} else {
 					// no processing - simply save workitem
 					version = getWorkflowService().getDocumentService().save(version);
@@ -173,11 +169,7 @@ public class VersionPlugin extends AbstractPlugin {
 						// check if worktiem should be processed
 						if (versionActivityID > 0) {
 							aVersion.replaceItemValue("$ActivityID", versionActivityID);
-							try {
-								aVersion = getWorkflowService().processWorkItem(aVersion);
-							} catch (AdapterException e) {
-								throw new PluginException(e);
-							}
+							aVersion = getWorkflowService().processWorkItem(aVersion);
 						} else {
 							// no processing - simply save workitem
 							aVersion = getWorkflowService().getDocumentService().save(aVersion);

@@ -63,7 +63,6 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.WorkflowManager;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -546,16 +545,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * This method processes a workItem by the WorkflowKernel and saves the workitem
 	 * after the processing was finished successful. The workitem have to provide at
 	 * least the properties '$modelversion', '$taskid' and '$eventid'
-	 * 
+	 * <p>
 	 * Before the method starts processing the workitem, the method load the current
 	 * instance of the given workitem and compares the property $taskID. If it is
 	 * not equal the method throws an ProcessingErrorException.
-	 * 
+	 * <p>
 	 * After the workitem was processed successful, the method verifies the property
 	 * $workitemList. If this property holds a list of entities these entities will
 	 * be saved and the property will be removed automatically.
-	 * 
-	 * 
+	 * <p>
 	 * The method provides a observer pattern for plugins to get called during the
 	 * processing phase.
 	 * 
@@ -570,11 +568,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 *             workflowKernel
 	 * @throws PluginException
 	 *             - thrown if processing by a plugin fails
-	 * @throws ModelException
-	 * @throws AdapterException 
+	 * @throws ModelException 
 	 */
 	public ItemCollection processWorkItem(ItemCollection workitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
 		long lStartTime = System.currentTimeMillis();
 
@@ -657,14 +654,14 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		try {
 			long lKernelTime = System.currentTimeMillis();
 			workitem = workflowkernel.process(workitem);
-			logger.fine("...WorkflowKernel processing time=" + (System.currentTimeMillis() - lKernelTime) + "ms");
+			logger.fine("...WorkflowKernel processing time=" + (System.currentTimeMillis() - lKernelTime) + "ms");		
 		} catch (PluginException pe) {
 			// if a plugin exception occurs we roll back the transaction.
 			logger.severe("processing workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
 					+ " failed, rollback transaction...");
 			ctx.setRollbackOnly();
 			throw pe;
-		}
+		} 
 
 		// fire event
 		if (processingEvents != null) {
@@ -706,10 +703,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @throws PluginException
 	 *             - thrown if processing by a plugin fails
 	 * @throws ModelException
-	 * @throws AdapterException 
 	 **/
 	public ItemCollection processWorkItem(ItemCollection workitem, ItemCollection event)
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
 		return processWorkItem(workitem, event.getItemValueInteger("numactivityid"));
 	}
@@ -733,10 +729,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @throws PluginException
 	 *             - thrown if processing by a plugin fails
 	 * @throws ModelException
-	 * @throws AdapterException 
 	 **/
 	public ItemCollection processWorkItem(ItemCollection workitem, int eventID)
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
 		workitem.setEventID(eventID);
 		return processWorkItem(workitem);

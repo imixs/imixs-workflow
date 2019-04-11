@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 
 import javax.ejb.SessionContext;
 
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -159,9 +158,6 @@ public class TestWorkflowKernel {
 		} catch (ModelException e) {
 			Assert.fail();
 			e.printStackTrace();
-		} catch (AdapterException e) {
-			Assert.fail();
-			e.printStackTrace();
 		} 
 
 		Assert.assertEquals("test", itemCollection.getItemValueString("txtname"));
@@ -286,9 +282,6 @@ public class TestWorkflowKernel {
 		} catch (ModelException e) {
 			Assert.fail();
 			e.printStackTrace();
-		} catch (AdapterException e) {
-			Assert.fail();
-			e.printStackTrace();
 		}
 
 		Assert.assertEquals(2, itemCollection.getItemValueInteger("runs"));
@@ -389,9 +382,6 @@ public class TestWorkflowKernel {
 			Assert.fail();
 			e.printStackTrace();
 		} catch (ModelException e) {
-			Assert.fail();
-			e.printStackTrace();
-		} catch (AdapterException e) {
 			Assert.fail();
 			e.printStackTrace();
 		}

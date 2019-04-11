@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.ApplicationPlugin;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
@@ -33,7 +32,7 @@ public class TestApplicationPlugin  {
 	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setup() throws PluginException, ModelException, AdapterException {
+	public void setup() throws PluginException, ModelException {
 
 		workflowMockEnvironment=new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/plugin-test.bpmn");

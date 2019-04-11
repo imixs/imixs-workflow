@@ -9,7 +9,6 @@ import java.util.Vector;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -33,7 +32,7 @@ public class TestWorkflowService {
 	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setup() throws PluginException, ModelException, AdapterException {
+	public void setup() throws PluginException, ModelException {
 
 		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setup();
@@ -51,12 +50,10 @@ public class TestWorkflowService {
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
 	 * @throws ModelException
-	 * @throws AdapterException 
-	 * 
 	 */
 	@Test
 	public void testProcessSimple()
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 		// load test workitem
 		ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);

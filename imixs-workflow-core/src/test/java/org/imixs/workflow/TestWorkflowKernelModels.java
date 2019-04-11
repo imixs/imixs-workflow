@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import javax.ejb.SessionContext;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
@@ -339,10 +338,6 @@ public class TestWorkflowKernelModels {
 		} catch (ModelException e) {
 			// expected behavior
 		} catch (PluginException e) {
-			// not expected
-			e.printStackTrace();
-			Assert.fail();
-		} catch (AdapterException e) {
 			// not expected
 			e.printStackTrace();
 			Assert.fail();

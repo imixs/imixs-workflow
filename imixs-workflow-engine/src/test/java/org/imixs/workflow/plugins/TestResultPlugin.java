@@ -12,7 +12,6 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -38,7 +37,7 @@ public class TestResultPlugin {
 	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setup() throws PluginException, ModelException, AdapterException {
+	public void setup() throws PluginException, ModelException {
 
 		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestResultPlugin.bpmn");
@@ -291,12 +290,10 @@ public class TestResultPlugin {
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
 	 * @throws ModelException
-	 * @throws AdapterException 
-	 * 
 	 */
 	@Test
 	public void testProcessTypeAttriubteComplex()
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 		ItemCollection workitem = workflowMockEnvironment.getDatabase().get("W0000-00001");
 		workitem.removeItem("type");
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);
