@@ -8,7 +8,6 @@ import org.imixs.workflow.exceptions.WorkflowException;
  * 
  * @see PluginException
  * @author rsoika
- *
  */
 public class ValidationException extends WorkflowException {
  

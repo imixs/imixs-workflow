@@ -66,7 +66,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -862,8 +861,6 @@ public class WorkflowRestService {
 		} catch (RuntimeException e) {
 			workitem = this.addErrorMessage(e, workitem);
 		} catch (ModelException e) {
-			workitem = this.addErrorMessage(e, workitem);
-		} catch (AdapterException e) {
 			workitem = this.addErrorMessage(e, workitem);
 		}
 

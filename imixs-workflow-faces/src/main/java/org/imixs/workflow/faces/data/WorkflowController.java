@@ -45,7 +45,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.ModelService;
 import org.imixs.workflow.engine.WorkflowService;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -367,10 +366,6 @@ public class WorkflowController extends AbstractDataController implements Serial
 			actionResult = null;
 			// add a new FacesMessage into the FacesContext
 			ErrorHandler.handleModelException(me);
-		} catch (AdapterException e) {
-			actionResult = null;
-			// add a new FacesMessage into the FacesContext
-			ErrorHandler.handleAdapterException(e);
 		}
 
 		// return the action result (Post-Redirect-Get). Can be null in case of an

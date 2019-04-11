@@ -10,7 +10,6 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 
 import org.imixs.workflow.engine.plugins.RulePlugin;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.WorkflowException;
@@ -60,24 +59,6 @@ public class ErrorHandler {
 		if (logger.isLoggable(Level.FINE)) {
 
 			pe.printStackTrace(); // Or use a logger.
-		}
-	}
-
-	/**
-	 * The Method expects a PluginException and adds the corresponding Faces Error
-	 * Message into the FacesContext.
-	 * 
-	 * If the PluginException was thrown from the RulePLugin then the method test
-	 * this exception for ErrorParams and generate separate Faces Error Messages for
-	 * each param.
-	 */
-	public static void handleAdapterException(AdapterException ae) {
-		// default behavior
-		addErrorMessage(ae);
-		logger.warning(
-				"ErrorHandler cauth AdapterException - error code=" + ae.getErrorCode() + " - " + ae.getMessage());
-		if (logger.isLoggable(Level.FINE)) {
-			ae.printStackTrace(); // Or use a logger.
 		}
 	}
 
