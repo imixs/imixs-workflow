@@ -202,7 +202,7 @@ public class Document implements java.io.Serializable {
 
 	/**
 	 * Set the time of last modification. This attribute is automatically
-	 * synchronized by the DocumetnService with the item '$modified'.
+	 * synchronized with the item '$modified'.
 	 */
 	public void setModified(Calendar modified) {
 		this.modified = modified;
@@ -212,7 +212,7 @@ public class Document implements java.io.Serializable {
 	 * returns the data object part of the Entity represented by a java.util.Map
 	 * <p>
 	 * Data is loaded eager because it is read in any case by the DocumentService.
-	 * 
+	 *
 	 * @return Map
 	 */
 	@Lob
@@ -224,12 +224,13 @@ public class Document implements java.io.Serializable {
 	/**
 	 * sets a data object for this Entity.
 	 * <p>
-	 * The method automatically updates the modified attribute based on the item
-	 * $modified. The method throws an exception in case the item $modified is
-	 * missing. The item $modified is contolled by the DocumentService.
+	 * Note: the modified timestamp will be updated automatically to the current
+	 * point of time (see setModified) independent from the value of the item
+	 * $modified. The item $modified will be updated by the DocumentService on read.
 	 * 
 	 * @param data
-	 * @throws InvalidAccessException if $modified is missing
+	 * @throws InvalidAccessException
+	 *             if $modified is missing
 	 */
 	public void setData(Map<String, List<Object>> itemCol) {
 		this.data = itemCol;

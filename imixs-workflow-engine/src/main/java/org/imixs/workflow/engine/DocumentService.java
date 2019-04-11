@@ -566,16 +566,7 @@ public class DocumentService {
 				manager.detach(persistedDocument);
 			}
 
-			// if disable Optimistic Locking is TRUE we do not add the version
-			// number
-			if (disableOptimisticLocking) {
-				result.removeItem(VERSION);
-			} else {
-				result.replaceItemValue(VERSION, persistedDocument.getVersion());
-			}
-
-			// update the $isauthor flag
-			result.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
+			updateMetaData(result, persistedDocument);
 
 			// fire event
 			if (documentEvents != null) {
@@ -886,16 +877,7 @@ public class DocumentService {
 					manager.detach(doc);
 				}
 
-				// if disable Optimistic Locking is TRUE we do not add the
-				// version number
-				if (disableOptimisticLocking) {
-					_tmp.removeItem(VERSION);
-				} else {
-					_tmp.replaceItemValue(VERSION, doc.getVersion());
-				}
-
-				// update the $isauthor flag
-				_tmp.replaceItemValue("$isauthor", isCallerAuthor(doc));
+				updateMetaData(_tmp, doc);
 
 				result.add(_tmp);
 			}
@@ -1017,6 +999,38 @@ public class DocumentService {
 				+ " Errors.  Import FileName:" + filePath;
 
 		logger.info(loginfo);
+	}
+
+	/**
+	 * This method udates the metadata of a new loaded ItemCollection based on the
+	 * document attributes.
+	 * <p>
+	 * The metadata which is updated is:
+	 * <ul>
+	 * <li>$version - set to current version if OptimisticLocking is not
+	 * disabled</li>
+	 * <li>$modified - the modify timestamp from the document entity</li>
+	 * <li>$isauthor - computed on the current users access level</li>
+	 * </ul>
+	 * 
+	 * @see issue #497
+	 * @param itemColection
+	 * @param doc
+	 */
+	private void updateMetaData(ItemCollection itemColection, Document doc) {
+		// if disable Optimistic Locking is TRUE we do not add the
+		// version number
+		if (disableOptimisticLocking) {
+			itemColection.removeItem(VERSION);
+		} else {
+			itemColection.replaceItemValue(VERSION, doc.getVersion());
+		}
+	
+		// Update $modified base on doc.getModified! (see issue #497)
+		itemColection.replaceItemValue("$modified", doc.getModified().getTime());
+	
+		// update the $isauthor flag
+		itemColection.replaceItemValue("$isauthor", isCallerAuthor(doc));
 	}
 
 	/**
