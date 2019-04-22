@@ -49,9 +49,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.ClassicAnalyzer;
@@ -71,6 +69,7 @@ import org.apache.lucene.util.BytesRef;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.PropertyService;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -108,9 +107,8 @@ public class LuceneUpdateService {
 	protected static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
 	protected static final String ANONYMOUS = "ANONYMOUS";
 
-	public static final String EVENTLOG_TYPE_ADD = "lucene_event_add";
-	public static final String EVENTLOG_TYPE_REMOVE = "lucene_event_remove";
-	protected static final String EVENTLOG_ID_PRAFIX = "lucene_event_id_";
+	public static final String EVENTLOG_TOPIC_ADD = "lucene.add";
+	public static final String EVENTLOG_TOPIC_REMOVE = "lucene.remove";
 	protected static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
 
 	private List<String> searchFieldList = null;
@@ -127,14 +125,18 @@ public class LuceneUpdateService {
 			"$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "txtname", "namowner",
 			"txtworkitemref", "$uniqueidsource", "$uniqueidversions", "$lasttask", "$lastevent", "$lasteventdate");
 
+
 	@EJB
 	PropertyService propertyService;
 
-	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
-	private EntityManager manager;
-
+	@EJB
+	EventLogService eventLogService;
+	
 	@Inject
 	LuceneItemAdapter luceneItemAdapter;
+
+	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
+	private EntityManager manager;
 
 	private static Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
 
@@ -265,7 +267,8 @@ public class LuceneUpdateService {
 		for (ItemCollection workitem : documents) {
 			// skip if the flag 'noindex' = true
 			if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
-				writeEventLogEntry(workitem.getUniqueID(), EVENTLOG_TYPE_ADD);
+				//eventLogService.createEvent(workitem.getUniqueID(), EVENTLOG_TOPIC_ADD);
+				eventLogService.createEvent(workitem.getUniqueID(), EVENTLOG_TOPIC_ADD);
 			}
 		}
 
@@ -341,7 +344,7 @@ public class LuceneUpdateService {
 	 */
 	public void removeDocument(String uniqueID) {
 		long ltime = System.currentTimeMillis();
-		writeEventLogEntry(uniqueID, EVENTLOG_TYPE_REMOVE);
+		eventLogService.createEvent(uniqueID, EVENTLOG_TOPIC_REMOVE);
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime)
 					+ " ms (1 document to be removed)");
@@ -418,28 +421,25 @@ public class LuceneUpdateService {
 		long l = System.currentTimeMillis();
 		logger.finest("......flush eventlog cache....");
 
-		String query = "SELECT document FROM Document AS document ";
-		query += "WHERE document.type IN ('" + EVENTLOG_TYPE_ADD + "','" + EVENTLOG_TYPE_REMOVE
-				+ "') ORDER BY document.created ASC";
-
-		// find all eventLogEntries....
-		Query q = manager.createQuery(query);
-		// we try to search one more log entry as requested to see if the cache is
-		// empty...
-		q.setMaxResults(count + 1);
-
-		@SuppressWarnings("unchecked")
-		Collection<org.imixs.workflow.engine.jpa.Document> documentList = q.getResultList();
+		List<org.imixs.workflow.engine.jpa.Document> 
+		documentList=eventLogService.findEvents(count+1, EVENTLOG_TOPIC_ADD,EVENTLOG_TOPIC_REMOVE);
+		
 		if (documentList != null && documentList.size() > 0) {
 			try {
 				indexWriter = createIndexWriter();
 				int _counter = 0;
 				for (org.imixs.workflow.engine.jpa.Document eventLogEntry : documentList) {
-
+					String topic=null;
 					String id = eventLogEntry.getId();
 					// cut prafix...
-					id = id.substring(EVENTLOG_ID_PRAFIX.length());
-					id = id.substring(id.indexOf("]_") + 2);
+					if (id.startsWith(EVENTLOG_TOPIC_ADD)) {
+						id = id.substring(EVENTLOG_TOPIC_ADD.length()+1);
+						topic=EVENTLOG_TOPIC_ADD;
+					}
+					if (id.startsWith(EVENTLOG_TOPIC_REMOVE)) {
+						id = id.substring(EVENTLOG_TOPIC_REMOVE.length()+1);
+						topic=EVENTLOG_TOPIC_REMOVE;
+					}
 					// lookup the workitem...
 					org.imixs.workflow.engine.jpa.Document doc = manager
 							.find(org.imixs.workflow.engine.jpa.Document.class, id);
@@ -447,7 +447,7 @@ public class LuceneUpdateService {
 
 					// if the document was found we add/update the index. Otherwise we remove the
 					// document form the index.
-					if (doc != null && EVENTLOG_TYPE_ADD.equals(eventLogEntry.getType())) {
+					if (doc != null && EVENTLOG_TOPIC_ADD.equals(topic)) {
 						// add workitem to search index....
 						long l2 = System.currentTimeMillis();
 						ItemCollection workitem = new ItemCollection();
@@ -510,36 +510,7 @@ public class LuceneUpdateService {
 
 	}
 
-	/**
-	 * This method creates/updates an event log entry to indicate an uncommitted
-	 * index update. This method is called by "updateDocuments".
-	 * 
-	 * The identifier of an eventLogEnty is sufixed with
-	 * "_EVENT_LOG_ENTRY[EVENTUID]". The type of the document entity will be set to
-	 * 'eventlogentry'.
-	 * 
-	 * @param id
-	 *            - uniqueid of the document to update
-	 * @param type
-	 *            EVENTLOG_ENTRY_TYPE_ADD or EVENTLOG_ENTRY_TYPE_REMOVE
-	 */
-	void writeEventLogEntry(String id, String type) {
-		org.imixs.workflow.engine.jpa.Document eventLogEntry = null;
-		if (id == null || id.isEmpty()) {
-			logger.warning("WriteEventLog failed - given id is empty!");
-			return;
-		}
 
-		// Now set flush Mode to COMMIT
-		manager.setFlushMode(FlushModeType.COMMIT);
-
-		// now create a new event log entry
-		id = EVENTLOG_ID_PRAFIX + "[" + generateEventUID() + "]_" + id;
-		eventLogEntry = new org.imixs.workflow.engine.jpa.Document(id);
-		eventLogEntry.setType(type);
-		logger.finest("......create new eventLogEntry '" + id + "' => " + type);
-		manager.persist(eventLogEntry);
-	}
 
 	/**
 	 * This method creates a lucene document based on a ItemCollection. The Method
@@ -783,4 +754,6 @@ public class LuceneUpdateService {
 		int randomNum = ThreadLocalRandom.current().nextInt(10000, 99999 + 1);
 		return "" + Long.toHexString(System.currentTimeMillis()) + "-" + Integer.toHexString(randomNum);
 	}
+	
+	
 }
