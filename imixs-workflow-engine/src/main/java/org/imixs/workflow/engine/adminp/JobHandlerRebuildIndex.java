@@ -209,6 +209,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		query += " WHERE document.created > '" + isoFormat.format(syncpoint) + "'";
 		query += " AND NOT document.type LIKE '" + SNAPSHOT_TYPE_PRAFIX + "%' ";
 		query += " AND NOT document.type LIKE 'workitemlob%' ";
+		query += " AND document.type != 'event' ";
 		query += " ORDER BY document.created ASC";
 		Query q = manager.createQuery(query);
 		q.setFirstResult(0);
@@ -234,6 +235,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 					query += " WHERE document.created = '" + isoFormat.format(syncpoint) + "'";
 					query += " AND NOT document.type LIKE '" + SNAPSHOT_TYPE_PRAFIX + "%' ";
 					query += " AND NOT document.type LIKE 'workitemlob%' ";
+					query += " AND document.type != 'event' ";
 					query += " ORDER BY document.created ASC";
 					q = manager.createQuery(query);
 					q.setFirstResult(0);

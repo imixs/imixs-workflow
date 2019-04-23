@@ -218,11 +218,10 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 		boolean bAddAnd = false;
 		String query = "SELECT document FROM Document AS document ";
 		// ignore lucene event log entries
-		query += "WHERE document.type NOT IN ('" + LuceneUpdateService.EVENTLOG_TOPIC_ADD + "','"
-				+ LuceneUpdateService.EVENTLOG_TOPIC_REMOVE + "') ";
-
-		// ignore imixs-archive snapshots
-		query += "AND document.type NOT LIKE 'snapshot%'";
+		query += "WHERE document.type NOT IN ('event') ";
+		// ignore imixs-archive snapshots and deprecated blob
+		query += "AND document.type NOT LIKE 'snapshot%' ";
+		query += "AND document.type NOT LIKE 'workitemlob%' ";
 
 		if (typeFilter != null && !typeFilter.isEmpty()) {
 			// convert type list into comma separated list
