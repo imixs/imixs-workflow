@@ -139,7 +139,7 @@ The Event is defined by the class:
 The class _ProcessingEvent_ defines the following event types:
 
  * **BEFORE\_PROCESS** - is send immediately before a workitem will be processed 
- * **AFTER\_PROCESS** - is send immediately after a workitem was processed
+ * **AFTER\_PROCESS** - is send immediately after a workitem was processed but before the document is [saved](https://imixs.org/doc/engine/documentservice.html#The_CDI_DocumentEvent).
 
 This event can be consumed by another Session Bean or managed bean implementing the @Observes annotation: 
 
