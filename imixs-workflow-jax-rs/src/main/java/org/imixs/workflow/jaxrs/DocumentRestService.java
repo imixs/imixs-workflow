@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -51,6 +51,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -63,11 +64,10 @@ import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
-import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLCount;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
-import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 
 /**
  * The DocumentService provides methods to access the DocumentService EJB
@@ -163,15 +163,16 @@ public class DocumentRestService {
 	 */
 	@GET
 	@Path("/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
-	public XMLDataCollection getDocument(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
-		ItemCollection document;
+	public Response getDocument(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items,
+			@QueryParam("format") String format) {
+		ItemCollection document = null;
 		try {
 			document = documentService.load(uniqueid);
-			return XMLDataCollectionAdapter.getDataCollection(document, DocumentRestService.getItemList(items));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
+		return convertResult(document, items, format);
 	}
 
 	/**
@@ -185,20 +186,22 @@ public class DocumentRestService {
 	 */
 	@GET
 	@Path("/search/{query}")
-	public XMLDataCollection findDocumentsByQuery(@PathParam("query") String query,
+	public Response findDocumentsByQuery(@PathParam("query") String query,
 			@DefaultValue("-1") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("sortBy") String sortBy,
-			@QueryParam("sortReverse") boolean sortReverse, @QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
+			@QueryParam("sortReverse") boolean sortReverse, @QueryParam("items") String items,
+			@QueryParam("format") String format) {
+		List<ItemCollection> result = null;
 		try {
 			// decode query...
 			String decodedQuery = URLDecoder.decode(query, "UTF-8");
-			col = documentService.find(decodedQuery, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLDataCollectionAdapter.getDataCollection(col, getItemList(items));
+			result = documentService.find(decodedQuery, pageSize, pageIndex, sortBy, sortReverse);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new XMLDataCollection();
+
+		return convertResultList(result, items, format);
 	}
 
 	/**
@@ -212,22 +215,21 @@ public class DocumentRestService {
 	 */
 	@GET
 	@Path("/jpql/{query}")
-	public XMLDataCollection findDocumentsByJPQL(@PathParam("query") String query,
+	public Response findDocumentsByJPQL(@PathParam("query") String query,
 			@DefaultValue("" + LuceneSearchService.DEFAULT_PAGE_SIZE) @QueryParam("pageSize") int pageSize,
-			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
+			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("items") String items,
+			@QueryParam("format") String format) {
+		List<ItemCollection> result = null;
 		try {
 			// decode query...
 			String decodedQuery = URLDecoder.decode(query, "UTF-8");
 			// compute first result....
 			int firstResult = pageIndex * pageSize;
-
-			col = documentService.getDocumentsByQuery(decodedQuery, firstResult, pageSize);
-			return XMLDataCollectionAdapter.getDataCollection(col, getItemList(items));
+			result = documentService.getDocumentsByQuery(decodedQuery, firstResult, pageSize);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new XMLDataCollection();
+		return convertResultList(result, items, format);
 	}
 
 	/**
@@ -241,8 +243,8 @@ public class DocumentRestService {
 	 */
 	@GET
 	@Path("/count/{query}")
-	public XMLCount countTotalHitsByQuery(@PathParam("query") String query,
-			@DefaultValue("-1") @QueryParam("maxResult") int maxResult) {
+	public Response countTotalHitsByQuery(@PathParam("query") String query,
+			@DefaultValue("-1") @QueryParam("maxResult") int maxResult, @QueryParam("format") String format) {
 		XMLCount xmlcount = new XMLCount();
 		String decodedQuery;
 		try {
@@ -251,9 +253,28 @@ public class DocumentRestService {
 		} catch (UnsupportedEncodingException | QueryException e) {
 			xmlcount.count = 0l;
 			logger.severe(e.getMessage());
-			return xmlcount;
 		}
-		return xmlcount;
+
+		if ("json".equals(format)) {
+			return Response
+					// Set the status and Put your entity here.
+					.ok(xmlcount)
+					// Add the Content-Type header to tell Jersey which format it should marshall
+					// the entity into.
+					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
+		} else if ("xml".equals(format)) {
+			return Response
+					// Set the status and Put your entity here.
+					.ok(xmlcount)
+					// Add the Content-Type header to tell Jersey which format it should marshall
+					// the entity into.
+					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML).build();
+		} else {
+			// default header param
+			return Response
+					// Set the status and Put your entity here.
+					.ok(xmlcount).build();
+		}
 	}
 
 	/**
@@ -267,18 +288,38 @@ public class DocumentRestService {
 	 */
 	@GET
 	@Path("/countpages/{query}")
-	public XMLCount countTotalPagesByQuery(@PathParam("query") String query,
-			@DefaultValue("-1") @QueryParam("pageSize") int pageSize) {
+	public Response countTotalPagesByQuery(@PathParam("query") String query,
+			@DefaultValue("-1") @QueryParam("pageSize") int pageSize, @QueryParam("format") String format) {
 		XMLCount xmlcount = new XMLCount();
 		String decodedQuery;
 		try {
 			decodedQuery = URLDecoder.decode(query, "UTF-8");
 			xmlcount.count = (long) documentService.countPages(decodedQuery, pageSize);
-			return xmlcount;
 		} catch (UnsupportedEncodingException | QueryException e) {
 			xmlcount.count = 0l;
 			logger.severe(e.getMessage());
-			return xmlcount;
+
+		}
+
+		if ("json".equals(format)) {
+			return Response
+					// Set the status and Put your entity here.
+					.ok(xmlcount)
+					// Add the Content-Type header to tell Jersey which format it should marshall
+					// the entity into.
+					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
+		} else if ("xml".equals(format)) {
+			return Response
+					// Set the status and Put your entity here.
+					.ok(xmlcount)
+					// Add the Content-Type header to tell Jersey which format it should marshall
+					// the entity into.
+					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML).build();
+		} else {
+			// default header param
+			return Response
+					// Set the status and Put your entity here.
+					.ok(xmlcount).build();
 		}
 	}
 
@@ -293,7 +334,8 @@ public class DocumentRestService {
 	 * DocumentService the WorkflowService method process() did this merge
 	 * automatically.
 	 * 
-	 * @param xmlworkitem - entity to be saved
+	 * @param xmlworkitem
+	 *            - entity to be saved
 	 * @return
 	 */
 	@POST
@@ -393,7 +435,8 @@ public class DocumentRestService {
 	 * @param query
 	 * @param start
 	 * @param count
-	 * @param filepath - path in server filesystem
+	 * @param filepath
+	 *            - path in server filesystem
 	 * @return
 	 */
 	@PUT
@@ -420,7 +463,8 @@ public class DocumentRestService {
 	/**
 	 * This method restores a backup from the fileSystem
 	 * 
-	 * @param filepath - path in server fileSystem
+	 * @param filepath
+	 *            - path in server fileSystem
 	 * @return
 	 */
 	@GET
@@ -450,13 +494,13 @@ public class DocumentRestService {
 	@GET
 	@Path("/configuration")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public XMLDataCollection getConfiguration() throws Exception {
+	public Response getConfiguration(@QueryParam("format") String format) throws Exception {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
 			return null;
 		}
-
 		ItemCollection config = lucenUpdateService.getConfiguration();
-		return XMLDataCollectionAdapter.getDataCollection(config);
+
+		return convertResult(config, null, format);
 	}
 
 	/**
@@ -503,4 +547,89 @@ public class DocumentRestService {
 
 		return aworkitem;
 	}
+
+	/**
+	 * This method converts a single ItemCollection into a Jax-rs response object.
+	 * <p>
+	 * The method expects optional items and format string (json|xml)
+	 * <p>
+	 * In case the result set is null, than the method returns an empty collection.
+	 * 
+	 * @param result
+	 *            list of ItemCollection
+	 * @param items
+	 *            - optional item list
+	 * @param format
+	 *            - optional format string (json|xml)
+	 * @return jax-rs Response object.
+	 */
+	public static Response convertResult(ItemCollection workitem, String items, String format) {
+		if (workitem == null) {
+			workitem = new ItemCollection();
+		}
+		if ("json".equals(format)) {
+			return Response
+					// Set the status and Put your entity here.
+					.ok(XMLDataCollectionAdapter.getDataCollection(workitem, DocumentRestService.getItemList(items)))
+					// Add the Content-Type header to tell Jersey which format it should marshall
+					// the entity into.
+					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
+		} else if ("xml".equals(format)) {
+			return Response
+					// Set the status and Put your entity here.
+					.ok(XMLDataCollectionAdapter.getDataCollection(workitem, DocumentRestService.getItemList(items)))
+					// Add the Content-Type header to tell Jersey which format it should marshall
+					// the entity into.
+					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML).build();
+		} else {
+			// default header param
+			return Response
+					// Set the status and Put your entity here.
+					.ok(XMLDataCollectionAdapter.getDataCollection(workitem, DocumentRestService.getItemList(items)))
+					.build();
+		}
+	}
+
+	/**
+	 * This method converts a ItemCollection List into a Jax-rs response object.
+	 * <p>
+	 * The method expects optional items and format string (json|xml)
+	 * <p>
+	 * In case the result set is null, than the method returns an empty collection.
+	 * 
+	 * @param result
+	 *            list of ItemCollection
+	 * @param items
+	 *            - optional item list
+	 * @param format
+	 *            - optional format string (json|xml)
+	 * @return jax-rs Response object.
+	 */
+	public static Response convertResultList(List<ItemCollection> result, String items, String format) {
+		if (result == null) {
+			result = new ArrayList<ItemCollection>();
+		}
+		if ("json".equals(format)) {
+			return Response
+					// Set the status and Put your entity here.
+					.ok(XMLDataCollectionAdapter.getDataCollection(result, DocumentRestService.getItemList(items)))
+					// Add the Content-Type header to tell Jersey which format it should marshall
+					// the entity into.
+					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
+		} else if ("xml".equals(format)) {
+			return Response
+					// Set the status and Put your entity here.
+					.ok(XMLDataCollectionAdapter.getDataCollection(result, DocumentRestService.getItemList(items)))
+					// Add the Content-Type header to tell Jersey which format it should marshall
+					// the entity into.
+					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML).build();
+		} else {
+			// default header param
+			return Response
+					// Set the status and Put your entity here.
+					.ok(XMLDataCollectionAdapter.getDataCollection(result, DocumentRestService.getItemList(items)))
+					.build();
+		}
+	}
+
 }

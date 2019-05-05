@@ -35,7 +35,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.ParseException;
-import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -135,14 +134,15 @@ public class WorkflowRestService {
 	}
 
 	/**
-	 * returns a singel workitem defined by $uniqueid
+	 * returns a single workitem defined by $uniqueid
 	 * 
 	 * @param uniqueid
 	 * @return
 	 */
 	@GET
 	@Path("/workitem/{uniqueid}")
-	public Response getWorkItem(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items) {
+	public Response getWorkItem(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items,
+			@QueryParam("format") String format) {
 
 		ItemCollection workitem;
 		try {
@@ -151,13 +151,13 @@ public class WorkflowRestService {
 				// workitem not found
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
-			return Response
-					.ok(XMLDataCollectionAdapter.getDataCollection(workitem, DocumentRestService.getItemList(items)))
-					.build();
+
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
+			workitem = null;
 		}
+
+		return DocumentRestService.convertResult(workitem, items, format);
 	}
 
 	/**
@@ -185,27 +185,26 @@ public class WorkflowRestService {
 				String fileNameISO = URLDecoder.decode(file, "ISO-8859-1");
 
 				// fetch FileData object
-				FileData fileData=null;
+				FileData fileData = null;
 				// try to guess encodings.....
-				fileData=workItem.getFileData(fileNameUTF8);
+				fileData = workItem.getFileData(fileNameUTF8);
 				if (fileData == null)
 					fileData = workItem.getFileData(fileNameISO);
 				if (fileData == null)
 					fileData = workItem.getFileData(file);
-				
-				
+
 				if (fileData != null) {
 					// Set content type in order of the contentType stored
 					// in the $file attribute
 					Response.ResponseBuilder builder = Response.ok(fileData.getContent(), fileData.getContentType());
 					return builder.build();
 				} else {
-					logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '"
-							+ uniqueid + "' - error: Filename not found!");
+					logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
+							+ "' - error: Filename not found!");
 					// workitem not found
 					return Response.status(Response.Status.NOT_FOUND).build();
 				}
-				
+
 			} else {
 				logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
 						+ "' - error: Workitem not found!");
@@ -233,16 +232,15 @@ public class WorkflowRestService {
 	 */
 	@GET
 	@Path("/workitem/events/{uniqueid}")
-	public XMLDataCollection getEvents(@PathParam("uniqueid") String uniqueid) {
-		Collection<ItemCollection> eventList = null;
+	public Response getEvents(@PathParam("uniqueid") String uniqueid, @QueryParam("format") String format) {
+		List<ItemCollection> result = null;
 		try {
-			eventList = workflowService.getEvents(this.workflowService.getDocumentService().load(uniqueid));
-			return XMLDataCollectionAdapter.getDataCollection(eventList);
-
+			result = workflowService.getEvents(this.workflowService.getDocumentService().load(uniqueid));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new XMLDataCollection();
+
+		return DocumentRestService.convertResultList(result, null, format);
 	}
 
 	/**
@@ -256,23 +254,25 @@ public class WorkflowRestService {
 	 */
 	@GET
 	@Path("/worklist")
-	public XMLDataCollection getWorkList(@QueryParam("type") String type,
+	public Response getWorkList(@QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
-			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items,
+			@QueryParam("format") String format) {
 
-		return getTaskListByOwner(null, type, pageSize, pageIndex, sortBy, sortReverse, items);
+		return getTaskListByOwner(null, type, pageSize, pageIndex, sortBy, sortReverse, items, format);
 	}
 
 	@GET
 	@Path("/tasklist/owner/{owner}")
-	public XMLDataCollection getTaskListByOwner(@PathParam("owner") String owner, @QueryParam("type") String type,
+	public Response getTaskListByOwner(@PathParam("owner") String owner, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
-			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items,
+			@QueryParam("format") String format) {
+		List<ItemCollection> result = null;
 		try {
 			if ("null".equalsIgnoreCase(owner))
 				owner = null;
@@ -281,12 +281,12 @@ public class WorkflowRestService {
 			if (owner != null)
 				owner = URLDecoder.decode(owner, "UTF-8");
 
-			col = workflowService.getWorkListByOwner(owner, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLDataCollectionAdapter.getDataCollection(col, DocumentRestService.getItemList(items));
+			result = workflowService.getWorkListByOwner(owner, type, pageSize, pageIndex, sortBy, sortReverse);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new XMLDataCollection();
+
+		return DocumentRestService.convertResultList(result, items, format);
 	}
 
 	/**
@@ -300,12 +300,13 @@ public class WorkflowRestService {
 	 */
 	@GET
 	@Path("/tasklist/author/{user}")
-	public XMLDataCollection getTaskListByAuthor(@PathParam("user") String user, @QueryParam("type") String type,
+	public Response getTaskListByAuthor(@PathParam("user") String user, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
-			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items,
+			@QueryParam("format") String format) {
+		List<ItemCollection> result = null;
 		try {
 			if ("null".equalsIgnoreCase(user))
 				user = null;
@@ -314,23 +315,23 @@ public class WorkflowRestService {
 			if (user != null)
 				user = URLDecoder.decode(user, "UTF-8");
 
-			col = workflowService.getWorkListByAuthor(user, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLDataCollectionAdapter.getDataCollection(col, DocumentRestService.getItemList(items));
+			result = workflowService.getWorkListByAuthor(user, type, pageSize, pageIndex, sortBy, sortReverse);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new XMLDataCollection();
+		return DocumentRestService.convertResultList(result, items, format);
 	}
 
 	@GET
 	@Path("/tasklist/creator/{creator}")
-	public XMLDataCollection getTaskListByCreator(@PathParam("creator") String creator, @QueryParam("type") String type,
+	public Response getTaskListByCreator(@PathParam("creator") String creator, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
-			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items,
+			@QueryParam("format") String format) {
+		List<ItemCollection> result = null;
 		try {
 			if ("null".equalsIgnoreCase(creator))
 				creator = null;
@@ -339,69 +340,69 @@ public class WorkflowRestService {
 			if (creator != null)
 				creator = URLDecoder.decode(creator, "UTF-8");
 
-			col = workflowService.getWorkListByCreator(creator, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLDataCollectionAdapter.getDataCollection(col, DocumentRestService.getItemList(items));
+			result = workflowService.getWorkListByCreator(creator, type, pageSize, pageIndex, sortBy, sortReverse);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new XMLDataCollection();
+
+		return DocumentRestService.convertResultList(result, items, format);
 	}
 
 	@GET
 	@Path("/tasklist/processid/{processid}")
-	public XMLDataCollection getTaskListByProcessID(@PathParam("processid") int processid,
-			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
+	public Response getTaskListByProcessID(@PathParam("processid") int processid, @QueryParam("type") String type,
+			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
-			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items,
+			@QueryParam("format") String format) {
+		List<ItemCollection> result = null;
 		try {
-			col = workflowService.getWorkListByProcessID(processid, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLDataCollectionAdapter.getDataCollection(col, DocumentRestService.getItemList(items));
+			result = workflowService.getWorkListByProcessID(processid, type, pageSize, pageIndex, sortBy, sortReverse);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new XMLDataCollection();
+		return DocumentRestService.convertResultList(result, items, format);
 	}
 
 	@GET
 	@Path("/tasklist/group/{processgroup}")
-	public XMLDataCollection getTaskListByGroup(@PathParam("processgroup") String processgroup,
-			@QueryParam("type") String type, @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
+	public Response getTaskListByGroup(@PathParam("processgroup") String processgroup, @QueryParam("type") String type,
+			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
-			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items,
+			@QueryParam("format") String format) {
+		List<ItemCollection> result = null;
 		try {
-
 			// decode URL param
 			if (processgroup != null)
 				processgroup = URLDecoder.decode(processgroup, "UTF-8");
-
-			col = workflowService.getWorkListByGroup(processgroup, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLDataCollectionAdapter.getDataCollection(col, DocumentRestService.getItemList(items));
+			result = workflowService.getWorkListByGroup(processgroup, type, pageSize, pageIndex, sortBy, sortReverse);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new XMLDataCollection();
+
+		return DocumentRestService.convertResultList(result, items, format);
 	}
 
 	@GET
 	@Path("/tasklist/ref/{uniqueid}")
-	public XMLDataCollection getTaskListByRef(@PathParam("uniqueid") String uniqueid, @QueryParam("type") String type,
+	public Response getTaskListByRef(@PathParam("uniqueid") String uniqueid, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
 			@DefaultValue("") @QueryParam("sortBy") String sortBy,
-			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items) {
-		Collection<ItemCollection> col = null;
+			@DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items,
+			@QueryParam("format") String format) {
+		List<ItemCollection> result = null;
 		try {
-			col = workflowService.getWorkListByRef(uniqueid, type, pageSize, pageIndex, sortBy, sortReverse);
-			return XMLDataCollectionAdapter.getDataCollection(col, DocumentRestService.getItemList(items));
+			result = workflowService.getWorkListByRef(uniqueid, type, pageSize, pageIndex, sortBy, sortReverse);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new XMLDataCollection();
+
+		return DocumentRestService.convertResultList(result, items, format);
 	}
 
 	/**
@@ -423,7 +424,7 @@ public class WorkflowRestService {
 		logger.fine("postFormWorkitem @POST /workitem  method:postWorkitem....");
 		// parse the workItem.
 		ItemCollection workitem = parseWorkitem(requestBodyStream);
-		return processWorkitem(workitem,null);
+		return processWorkitem(workitem, null);
 	}
 
 	/**
@@ -445,7 +446,7 @@ public class WorkflowRestService {
 		logger.finest("......postFormWorkitem @POST /workitem  method:postWorkitem....");
 		// parse the workItem.
 		ItemCollection workitem = parseWorkitem(requestBodyStream);
-		return processWorkitem(workitem,uid);
+		return processWorkitem(workitem, uid);
 	}
 
 	/**
@@ -480,7 +481,7 @@ public class WorkflowRestService {
 	public Response postXMLWorkitem(XMLDocument xmlworkitem) {
 		logger.fine("postXMLWorkitem @POST /workitem  method:postWorkitemXML....");
 		ItemCollection workitem = XMLDocumentAdapter.putDocument(xmlworkitem);
-		return processWorkitem(workitem,null);
+		return processWorkitem(workitem, null);
 	}
 
 	/**
@@ -504,7 +505,7 @@ public class WorkflowRestService {
 		logger.fine("postXMLWorkitemByUniqueID @POST /workitem/" + uniqueid + "  method:postWorkitemXML....");
 		ItemCollection workitem;
 		workitem = XMLDocumentAdapter.putDocument(xmlworkitem);
-		return processWorkitem(workitem,uniqueid);
+		return processWorkitem(workitem, uniqueid);
 	}
 
 	/**
@@ -574,7 +575,7 @@ public class WorkflowRestService {
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
 
-		return processWorkitem(workitem,null);
+		return processWorkitem(workitem, null);
 	}
 
 	/**
@@ -620,7 +621,7 @@ public class WorkflowRestService {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
-		return processWorkitem(workitem,uniqueid);
+		return processWorkitem(workitem, uniqueid);
 	}
 
 	/**
@@ -826,22 +827,24 @@ public class WorkflowRestService {
 	 * This method is called by the POST/PUT methods.
 	 * 
 	 * @param workitem
-	 * @param uid - optional $uniqueid, will be validated. 
+	 * @param uid
+	 *            - optional $uniqueid, will be validated.
 	 * @return
 	 */
-	private Response processWorkitem(ItemCollection workitem,String uid) {
+	private Response processWorkitem(ItemCollection workitem, String uid) {
 
 		// test for null values
 		if (workitem == null) {
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
-		
+
 		// validate optional uniqueId
-		if (uid!=null && !uid.equals(workitem.getUniqueID())) {
-			logger.severe("@POST/@PUT workitem/" + uid + " : $UNIQUEID did not match, remove $uniqueid to create a new instnace!");
+		if (uid != null && !uid.equals(workitem.getUniqueID())) {
+			logger.severe("@POST/@PUT workitem/" + uid
+					+ " : $UNIQUEID did not match, remove $uniqueid to create a new instnace!");
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		}
-		
+
 		if (uid != null && !uid.isEmpty()) {
 			// set provided uniqueid
 			workitem.replaceItemValue(WorkflowKernel.UNIQUEID, uid);
