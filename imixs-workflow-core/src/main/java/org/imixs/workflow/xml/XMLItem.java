@@ -110,6 +110,12 @@ public class XMLItem implements java.io.Serializable {
 		boolean conversionSuccessfull = true;
 		for (Object aSingleObject : values) {
 			if (isBasicType(aSingleObject)) {
+
+				if (aSingleObject instanceof String) {
+					// issue #502
+					// we test the string for NonValidXMLCharacters
+					aSingleObject = stripNonValidXMLCharacters((String) aSingleObject);
+				}
 				// normal type....
 				listOfObjects.add(aSingleObject);
 			} else {
@@ -139,6 +145,38 @@ public class XMLItem implements java.io.Serializable {
 			this.value = listOfObjects.toArray();
 		}
 
+	}
+
+	/**
+	 * This method ensures that the output String has only valid XML unicode
+	 * characters as specified by the XML 1.0 standard. For reference, please see
+	 * <a href="http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char">the
+	 * standard</a>. This method will return an empty String if the input is null or
+	 * empty.
+	 *
+	 * @param itemValue
+	 *            The String whose non-valid characters we want to remove.
+	 * @param itemName
+	 *            - the item name used just for logging
+	 * @return The in String, stripped of non-valid characters.
+	 */
+	private String stripNonValidXMLCharacters(String itemValue) {
+		StringBuffer out = new StringBuffer(); // Used to hold the output.
+		char current; // Used to reference the current character.
+
+		if (itemValue == null || ("".equals(itemValue)))
+			return ""; // vacancy test.
+		for (int i = 0; i < itemValue.length(); i++) {
+			current = itemValue.charAt(i); // NOTE: No IndexOutOfBoundsException caught here; it should not happen.
+			if ((current == 0x9) || (current == 0xA) || (current == 0xD) || ((current >= 0x20) && (current <= 0xD7FF))
+					|| ((current >= 0xE000) && (current <= 0xFFFD))
+					|| ((current >= 0x10000) && (current <= 0x10FFFF))) {
+				out.append(current);
+			} else {
+				logger.warning("invalid xml character at position " + i + " in item '" + name + "'");
+			}
+		}
+		return out.toString();
 	}
 
 	/**
@@ -246,18 +284,18 @@ public class XMLItem implements java.io.Serializable {
 			return true;
 		}
 
-		// test raw  types first
+		// test raw types first
 		if (o instanceof byte[] || o instanceof String[] || o instanceof boolean[] || o instanceof short[]
 				|| o instanceof char[] || o instanceof int[] || o instanceof long[] || o instanceof float[]
 				|| o instanceof double[] || o instanceof Long[] || o instanceof Integer[] || o instanceof Double[]
 				|| o instanceof Float[] || o instanceof Short[] || o instanceof XMLItem[]) {
 			return true;
 		}
-				
+
 		// text mixed object arrays...
 		if (o instanceof Object[]) {
-			Object[] objects=(Object[])o;
-			for (Object oneObject: objects) {
+			Object[] objects = (Object[]) o;
+			for (Object oneObject : objects) {
 				if (!isBasicType(oneObject)) {
 					return false;
 				}
