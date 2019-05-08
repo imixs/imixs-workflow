@@ -875,15 +875,17 @@ public class WorkflowSchedulerService {
 			// model version...
 			if (!modelVersionEvent.equals(workitem.getModelVersion())) {
 				// test if the old model version still exists.
-				if (modelService.getModel(workitem.getModelVersion()) != null) {
+				try {
+					modelService.getModel(workitem.getModelVersion());
 					logger.finest("......skip because model version is older than current version...");
 					// will be processed in the following loops..
 					continue;
-				} else {
+				} catch (ModelException me) {
+					// ModelException - we migrate the model ...
 					logger.warning("...deprecated model version '" + workitem.getModelVersion()
-							+ "' no longer exists -> migrating to new model version '" + modelVersionEvent + "'");
+					+ "' no longer exists -> migrating to new model version '" + modelVersionEvent + "'");
 					workitem.model(modelVersionEvent);
-				}
+				}				
 			}
 
 			// verify due date
