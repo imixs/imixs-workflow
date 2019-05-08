@@ -117,9 +117,7 @@ public class ErrorHandler {
 		String message = pe.getMessage();
 		// try to find the message text in resource bundle...
 		try {
-			Locale browserLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
-			ResourceBundle rb = ResourceBundle.getBundle("bundle.app", browserLocale);
-			String messageFromBundle = rb.getString(pe.getErrorCode());
+			String messageFromBundle = getMessageFromBundle(pe.getErrorCode());
 			if (messageFromBundle != null && !messageFromBundle.isEmpty()) {
 				message = messageFromBundle;
 			}
@@ -148,6 +146,42 @@ public class ErrorHandler {
 		FacesContext.getCurrentInstance().addMessage(null,
 				new FacesMessage(FacesMessage.SEVERITY_INFO, errorCode, message));
 
+	}
+
+	/**
+	 * Returns a message string from one of the following bundles:
+	 * 
+	 * app custom
+	 * 
+	 * @return
+	 */
+	private static String getMessageFromBundle(String messageFromBundle) {
+		String result = "";
+
+		if (messageFromBundle != null && !messageFromBundle.isEmpty()) {
+			Locale browserLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+
+			try {
+
+				ResourceBundle rb = ResourceBundle.getBundle("bundle.custom", browserLocale);
+				if (rb != null) {
+					result = rb.getString(messageFromBundle);
+				}
+
+				if (result == null || result.isEmpty()) {
+					// try second bundle
+					rb = ResourceBundle.getBundle("bundle.app", browserLocale);
+					if (rb != null) {
+						result = rb.getString(messageFromBundle);
+					}
+				}
+
+			} catch (MissingResourceException mre) {
+				logger.warning("ErrorHandler: " + mre.getMessage());
+			}
+		}
+
+		return result;
 	}
 
 }
