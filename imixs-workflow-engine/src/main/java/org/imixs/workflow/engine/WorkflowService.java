@@ -604,11 +604,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 									+ workitem.getTaskID() + " Did Not Match Expected $taskid="
 									+ currentInstance.getTaskID());
 				}
-				// merge workitem into current instance (issue #86)
+				// merge workitem into current instance (issue #86, issue #507)
 				// an instance of this WorkItem still exists! so we update the new
 				// values....
-				currentInstance.replaceAllItems(workitem.getAllItems());
-				workitem = currentInstance;
+				workitem.mergeItems(currentInstance.getAllItems());
+				
 			} else {
 				// In case we have a $UniqueId but did not found an matching workitem
 				// and the workitem miss a valid model assignment than
