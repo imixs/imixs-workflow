@@ -797,6 +797,40 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
+	 * Merges all items from a source map into the current instance. Only Items will
+	 * be copied if the current instance does not have an item with the same name.
+	 * If you want to copy all item values, use the method replaceAllItems instead.
+	 * <p>
+	 * The method makes a deep copy of the source map using serialization. This is
+	 * to make sure, that no object reference is copied. Other wise for example
+	 * embedded arrays are not cloned. This is also important for JPA to avoid
+	 * changes of attached entity beans with references in the data of an
+	 * ItemCollection.
+	 * 
+	 * @see deepCopyOfMap
+	 * @param map
+	 */
+	@SuppressWarnings("unchecked")
+	public void mergeItems(Map<String, List<Object>> map) {
+		if (map == null) {
+			return;
+		}
+		// make a deep copy of the map
+		Map<String, List<Object>> clonedMap = (Map<String, List<Object>>) deepCopyOfMap(map);
+		if (clonedMap != null) {
+			Iterator<?> it = clonedMap.entrySet().iterator();
+			while (it.hasNext()) {
+
+				Map.Entry<String, List<Object>> entry = (Map.Entry<String, List<Object>>) it.next();
+				// copy only the item if the hash map does not have an item with the same name
+				if (!hash.containsKey(entry.getKey())) {
+					replaceItemValue(entry.getKey().toString(), entry.getValue());
+				}
+			}
+		}
+	}
+
+	/**
 	 * This method removes duplicates and null or empty values from an item list
 	 * 
 	 * @param itemName
