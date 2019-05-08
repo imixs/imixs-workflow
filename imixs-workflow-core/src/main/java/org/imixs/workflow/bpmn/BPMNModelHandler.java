@@ -1234,9 +1234,9 @@ public class BPMNModelHandler extends DefaultHandler {
 		}
 		if (!eventEntity.hasItem("keyscheduledactivity")) {
 			if (eventEntity.getItemValueBoolean(BPMNModel.EVENT_ITEM_TIMER_ACTIVE)) {
-				eventEntity.setItemValue("keyscheduledactivity", "0");
-			} else {
 				eventEntity.setItemValue("keyscheduledactivity", "1");
+			} else {
+				eventEntity.setItemValue("keyscheduledactivity", "0");
 			}
 		}
 		adaptDeprecatedItem(eventEntity, BPMNModel.EVENT_ITEM_TIMER_SELECTION, "txtscheduledview");
