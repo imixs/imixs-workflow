@@ -42,6 +42,7 @@ With the following optional URI parameters the GET request can be filtered and s
 | sortBy	  | sort item 					      | ..&sortBy=txtworkflowstatus |
 | sortReverse | sort direction (ascending/descending)   | ..&sourtReverse=true		|
 | items       | filter item values to be returned | ..&items=$taskid,$modellversion
+| format      | optional output format JSON/XML   | ..&format=json   or   &format=xml |
  
  
 **Example:**

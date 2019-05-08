@@ -41,6 +41,7 @@ With the following optional URI parameters the GET request can be filtered and s
 | sortReverse | sort direction (ascending/descending)   | ..&sourtReverse=true		|
 | type        | filter workitems by the 'type' property | ..&type=workitem      | 
 | items       | filter item values to be returned | ..&items=$processid,$modellversion
+| format      | optional output format JSON/XML   | ..&format=json   or   &format=xml |
  
  
 **Example:**
