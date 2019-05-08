@@ -12,24 +12,17 @@ public class MokPluginNull implements Plugin {
 
 	@Override
 	public void init(WorkflowContext actx) throws PluginException {
-		// TODO Auto-generated method stub
-
 	}
- 
-	@Override 
-	public ItemCollection run(final ItemCollection documentContext,
-			ItemCollection documentActivity) throws PluginException {
 
-		
-		documentContext.replaceItemValue("txtName","should not be null");
-
+	@Override
+	public ItemCollection run(final ItemCollection documentContext, ItemCollection documentActivity)
+			throws PluginException {
+		documentContext.replaceItemValue("txtName", "should not be null");
 		return null;
 	}
 
 	@Override
 	public void close(boolean rollbackTransaction) throws PluginException {
-		// TODO Auto-generated method stub
-
 	}
 
 }

@@ -85,9 +85,9 @@ public class TestWorkflowKernel {
 		Assert.assertEquals(1, itemCollectionProcessed.getItemValueInteger("runs"));
 		Assert.assertEquals(100, itemCollectionProcessed.getTaskID());
 		
-		// initial and processed workitems are not the same and not equals! 
-		Assert.assertNotSame(itemCollection, itemCollectionProcessed);
-		Assert.assertFalse(itemCollection.equals(itemCollectionProcessed));
+		// initial and processed workitems should be the same and should be equals! 
+		Assert.assertSame(itemCollection, itemCollectionProcessed);
+		Assert.assertTrue(itemCollection.equals(itemCollectionProcessed));
 	}
 	
 
@@ -120,9 +120,9 @@ public class TestWorkflowKernel {
 		Assert.assertEquals(1, itemCollectionProcessed.getItemValueInteger("runs"));
 		Assert.assertEquals(100, itemCollectionProcessed.getTaskID());
 		
-		// initial and processed workitems are not the same and not equals! 
-		Assert.assertNotSame(itemCollection, itemCollectionProcessed);
-		Assert.assertFalse(itemCollection.equals(itemCollectionProcessed));
+		// initial and processed workitems are the same and equals! 
+		Assert.assertSame(itemCollection, itemCollectionProcessed);
+		Assert.assertTrue(itemCollection.equals(itemCollectionProcessed));
 	}
 
 	/**
@@ -160,7 +160,7 @@ public class TestWorkflowKernel {
 			e.printStackTrace();
 		} 
 
-		Assert.assertEquals("test", itemCollection.getItemValueString("txtname"));
+		Assert.assertEquals("should not be null", itemCollection.getItemValueString("txtname"));
 		Assert.assertEquals(100, itemCollection.getTaskID());
 	}
 

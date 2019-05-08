@@ -290,7 +290,9 @@ public class WorkflowKernel {
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_ACTIVITYID,
 					"processing error: $eventID undefined (" + workitem.getEventID() + ")");
 
-		ItemCollection documentResult = new ItemCollection(workitem);
+		//ItemCollection documentResult = new ItemCollection(workitem);
+		// we do no longer clone the woritem - Issue #507
+		ItemCollection documentResult = workitem;
 		vectorEdgeHistory = new Vector<String>();
 
 		// Check if $UniqueID is available
