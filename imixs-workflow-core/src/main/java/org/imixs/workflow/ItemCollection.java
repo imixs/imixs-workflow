@@ -1003,13 +1003,20 @@ public class ItemCollection implements Cloneable {
 				}
 				if (attributes == null) {
 					// try to migrate deprecated 'dms' item......
-					List<Map> vDMS = getItemValue("dms");
+					// in some cases the DMS item does not contain a Map object
+					// for that reason we test the object type
+					// see issue #509
+					List<?> vDMS = getItemValue("dms");
 					// test if we found a match....
-					for (Map aMetadata : vDMS) {
-						String sName = getStringValueFromMap(aMetadata, "txtname");
-						if (sFileName.equals(sName)) {
-							attributes = aMetadata;
-							break;
+					for (Object aMetadataObject : vDMS) {
+						// issue #509
+						if (aMetadataObject instanceof Map ) {
+							Map aMetadata=(Map) aMetadataObject;
+							String sName = getStringValueFromMap(aMetadata, "txtname");
+							if (sFileName.equals(sName)) {
+								attributes = aMetadata;
+								break;
+							}
 						}
 					}
 				}
