@@ -4,7 +4,7 @@
 	<artifactId>imixs-workflow</artifactId>
 	<name>Imixs Workflow</name>
 	<packaging>pom</packaging>
-	<version>4.5.7-SNAPSHOT</version>
+	<version>5.0.0-SNAPSHOT</version>
 
 	<modules>
 		<module>imixs-workflow-core</module>
@@ -90,16 +90,26 @@
 
 	<build>
 		<plugins>
-			<!-- use JDK 1.8 settings for compiling -->
+		
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
+			    <groupId>org.codehaus.mojo</groupId>
+			    <artifactId>versions-maven-plugin</artifactId>
+			    <version>2.5</version>
+			    <configuration>
+			        <generateBackupPoms>false</generateBackupPoms>
+			    </configuration>
 			</plugin>
+		
+			<!-- use JDK 10 settings for compiling -->
+			<plugin>
+	            <groupId>org.apache.maven.plugins</groupId>
+	            <artifactId>maven-compiler-plugin</artifactId>
+	            <version>3.8.1</version>
+	            <configuration>
+	                <source>10</source>
+	                <target>10</target>
+	            </configuration>
+	        </plugin>
 
 			<!-- release management -->
 			<plugin>
@@ -126,16 +136,6 @@
 				</configuration>
 			</plugin>
 
-			<!-- temporarily fix issue #442 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<useSystemClassLoader>false</useSystemClassLoader>
-				</configuration>
-				<version>2.22.1</version>
-			</plugin>
-			-->
 		</plugins>
 	</build>
 
@@ -256,11 +256,18 @@
 	</profiles>
 
 	<dependencies>
-		<!-- JEE dependencies -->
+		<!-- Jakarta EE -->
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-api</artifactId>
-			<version>7.0</version>
+			<version>8.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- Microprofile -->
+		<dependency>
+		    <groupId>org.eclipse.microprofile.config</groupId>
+		    <artifactId>microprofile-config-api</artifactId>
+		    <version>1.3</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -278,6 +285,29 @@
 			<version>1.9.5</version>
 			<scope>test</scope>
 		</dependency>
+		
+		
+		
+		<!-- migrating to java 11 -->
+		<dependency>
+		    <groupId>javax.annotation</groupId>
+		    <artifactId>javax.annotation-api</artifactId>
+		    <version>1.3.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>javax.xml.bind</groupId>
+		    <artifactId>jaxb-api</artifactId>
+		    <version>2.4.0-b180725.0427</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.glassfish.jaxb</groupId>
+		    <artifactId>jaxb-runtime</artifactId>
+		    <version>2.4.0-b180725.0644</version>
+			<scope>provided</scope>
+		</dependency>
+		
 	</dependencies>
 
 
