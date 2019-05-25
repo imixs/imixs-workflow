@@ -104,9 +104,7 @@ public class AdminPService {
 	@EJB
 	JobHandlerRenameUser jobHandlerRenameUser;
 
-	@EJB
-	JobHandlerMigration3X jobHandlerMigration3X;
-
+	
 	@Inject
 	@Any
 	private Instance<JobHandler> jobHandlers;
@@ -229,10 +227,6 @@ public class AdminPService {
 			}
 			if (job.equals(JOB_REBUILD_LUCENE_INDEX)) {
 				jobHandler = jobHandlerRebuildIndex;
-			}
-
-			if (job.equals(JOB_MIGRATION)) {
-				jobHandler = jobHandlerMigration3X;
 			}
 
 			if (job.equals(JOB_UPGRADE)) {
