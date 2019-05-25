@@ -106,8 +106,8 @@
 	            <artifactId>maven-compiler-plugin</artifactId>
 	            <version>3.8.1</version>
 	            <configuration>
-	                <source>10</source>
-	                <target>10</target>
+	                <source>1.8</source>
+	                <target>1.8</target>
 	            </configuration>
 	        </plugin>
 
@@ -288,7 +288,7 @@
 		
 		
 		
-		<!-- migrating to java 11 -->
+		<!-- migrating to java 11 
 		<dependency>
 		    <groupId>javax.annotation</groupId>
 		    <artifactId>javax.annotation-api</artifactId>
@@ -307,7 +307,7 @@
 		    <version>2.4.0-b180725.0644</version>
 			<scope>provided</scope>
 		</dependency>
-		
+		-->
 	</dependencies>
 
 
