@@ -409,7 +409,7 @@ public class SchedulerService {
 	 * @throws QueryException
 	 */
 	@Timeout
-	void onTimeout(javax.ejb.Timer timer) throws Exception {
+	void onTimeout(javax.ejb.Timer timer)  {
 		String errorMes = "";
 		// start time....
 		long lProfiler = System.currentTimeMillis();
