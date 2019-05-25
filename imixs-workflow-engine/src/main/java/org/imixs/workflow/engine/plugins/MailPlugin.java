@@ -40,6 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
+import javax.ejb.EJB;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -50,12 +51,11 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.PropertyService;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
@@ -79,9 +79,15 @@ import org.imixs.workflow.xml.XSLHandler;
 public class MailPlugin extends AbstractPlugin {
 
 	public static final String INVALID_XSL_FORMAT = "INVALID_XSL_FORMAT";
+	public static final String MAIL_SESSION_NAME = "mail/org.imixs.workflow.mail";
 
 	// Mail objects
+	@Resource(lookup = MAIL_SESSION_NAME)
 	Session mailSession;
+
+	@EJB
+	PropertyService propertyService;
+
 	MimeMessage mailMessage = null;
 	Multipart mimeMultipart = null;
 	static final String CONTENTTYPE_TEXT_PLAIN = "text/plain";
@@ -89,10 +95,7 @@ public class MailPlugin extends AbstractPlugin {
 	public static final String INVALID_ADDRESS = "INVALID_ADDRESS";
 	String charSet = "ISO-8859-1";
 
-	@Resource(name = "IMIXS_MAIL_SESSION")
-	private String sMailSession = "org.imixs.workflow.mail";
 	private boolean bHTMLMail = false;
-	private boolean noMailSessionBound = false;
 	private static Logger logger = Logger.getLogger(MailPlugin.class.getName());
 
 	/**
@@ -237,15 +240,15 @@ public class MailPlugin extends AbstractPlugin {
 					trans.sendMessage(mailMessage, mailMessage.getAllRecipients());
 					trans.close();
 				} else {
-					long l=System.currentTimeMillis();
+					long l = System.currentTimeMillis();
 					// no authentication - so we simple send the mail...
-					//Transport.send(mailMessage);
+					// Transport.send(mailMessage);
 					// issue #467
-					Transport trans = mailSession.getTransport("smtp");//("smtp");
+					Transport trans = mailSession.getTransport("smtp");// ("smtp");
 					trans.connect();
 					trans.sendMessage(mailMessage, mailMessage.getAllRecipients());
 					trans.close();
-					logger.finest("...mail transfer in " + (System.currentTimeMillis() -l) + "ms");
+					logger.finest("...mail transfer in " + (System.currentTimeMillis() - l) + "ms");
 				}
 				logger.info("...send mail: MessageID=" + mailMessage.getMessageID());
 
@@ -498,10 +501,18 @@ public class MailPlugin extends AbstractPlugin {
 	public void initMailMessage() throws AddressException, MessagingException {
 		logger.finest("......initializeMailMessage...");
 
-		// fetch mail session object....
-		initMailSession();
+		if (mailSession == null) {
+			logger.warning(" Lookup MailSession '" + MAIL_SESSION_NAME + "' failed: ");
+			logger.warning(" Unable to send mails! Verify server resources -> mail session.");
+		} else {
 
-		if (mailSession != null) {
+			// test for proeprty mail.charSet
+			String sTestCharSet = (String) propertyService.getProperties().get("mail.charSet");
+			if (sTestCharSet != null && !sTestCharSet.isEmpty()) {
+				setCharSet(sTestCharSet);
+
+			}
+
 			// log mail Properties ....
 			if (logger.isLoggable(Level.FINE)) {
 				Properties props = mailSession.getProperties();
@@ -530,7 +541,8 @@ public class MailPlugin extends AbstractPlugin {
 	 * The method can be overwritten by subclasses to return a different
 	 * mail-address name or lookup a mail attribute in a directory.
 	 * 
-	 * @param aAddr string
+	 * @param aAddr
+	 *            string
 	 * @return InternetAddress
 	 * @throws AddressException
 	 */
@@ -559,7 +571,8 @@ public class MailPlugin extends AbstractPlugin {
 	 * This method transforms a vector of E-Mail addresses into an InternetAddress
 	 * Array. Null values will be removed from list
 	 * 
-	 * @param String List of adresses
+	 * @param String
+	 *            List of adresses
 	 * @return array of InternetAddresses
 	 */
 	@SuppressWarnings("rawtypes")
@@ -592,63 +605,9 @@ public class MailPlugin extends AbstractPlugin {
 	}
 
 	/**
-	 * This method initializes a new instance of a MailSession.
-	 * 
-	 * The MailSession is received from the current jndi context. The Default name
-	 * of the Mail Session is 'org.imixs.workflow.jee.mailsession' The name can be
-	 * overwritten by the EJB Properties of the workflowmanager
-	 * 
-	 * @return MailSession object or null if no MailSession is bound to the
-	 *         WorkflowContext.
-	 */
-	public void initMailSession() {
-
-		// check if yet initialized....
-		if (mailSession != null || noMailSessionBound) {
-			return;
-		}
-
-		// Initialize mail session
-		InitialContext ic;
-		String sJNDINName = "";
-		try {
-			ic = new InitialContext();
-			// add java: prafix if not defined in jndi ref
-			if (!sMailSession.startsWith("java:")) {
-				sJNDINName = "java:comp/env/" + sMailSession;
-			} else {
-				sJNDINName = sMailSession;
-			}
-			logger.finest("...... Lookup MailSession '" + sJNDINName + "' ...");
-			mailSession = (Session) ic.lookup(sJNDINName);
-			logger.finest("...... Lookup MailSession '" + sJNDINName + "' successful");
-
-		} catch (NamingException e) {
-			logger.warning(" Lookup MailSession '" + sJNDINName + "' failed: " + e.getMessage());
-			logger.warning(" Unable to send mails! Verify server resources -> mail session.");
-			noMailSessionBound = true;
-		}
-
-		// if property service is defined we can lookup the default charset
-		if (getWorkflowService().getPropertyService() != null) {
-			// test for mail.charSet
-			String sTestCharSet = (String) getWorkflowService().getPropertyService().getProperties()
-					.get("mail.charSet");
-			if (sTestCharSet != null && !sTestCharSet.isEmpty())
-				setCharSet(sTestCharSet);
-
-		}
-	}
-
-	/**
-	 * This method returns the mail session object. If no mailSession exists the
-	 * method initializes a new instance of a MailSession.
-	 * 
+	 * This method returns the mail session object.
 	 */
 	public Session getMailSession() {
-		if (mailSession == null && noMailSessionBound == false) {
-			initMailSession();
-		}
 		return mailSession;
 	}
 

@@ -161,39 +161,25 @@ The following event properties are supported:
 
 ## Deployment
 
-Running the Imixs MailPlugin in a EJB container requires a valid JNDI mail resource. A mail resource can be configured from the application server environment. 
-The expected JNDI resource name to lookup the mail resource by the Imixs MailPlugin is
+Running the Imixs MailPlugin in a EJB container requires a valid JNDI mail resource named:
 
-    org.imixs.workflow.mail
+    mail/org.imixs.workflow.mail
 
 The mail resource object is used to send outgoing mails to mail server. See Java EE spec for details about Java managing mail sessions.
 
 ### Deployment Descriptors
-As the MailPlugin needs to lookup the Java mail resource using a JNDI Lookup you need to provide a  valid resource reference to the WorkflowService. Therefore you need to add the mail resource into the ejb-jar.xml to provide the WorkflowService EJB with a valid JNDI resource. See the following ejb-jar.xml example for GlassFish V3
-   
-	......   
-		<session>
-			<ejb-name>WorkflowService</ejb-name>
-			<ejb-class>org.imixs.workflow.jee.ejb.WorkflowService</ejb-class>
-			<session-type>Stateless</session-type>
-			
-			<!-- Mail Configuration -->
-			<env-entry>
-				<description>Mail Plugin Session name</description>
-				<env-entry-name>IMIXS_MAIL_SESSION</env-entry-name>
-				<env-entry-type>java.lang.String</env-entry-type>
-				<env-entry-value>mail/org.imixs.workflow.mail</env-entry-value>
-			</env-entry>
-		   ....
-			<!-- Mail resource -->
-			<resource-ref>
-				<res-ref-name>mail/org.imixs.workflow.mail</res-ref-name>
-				<res-type>javax.mail.Session</res-type>
-				<res-auth>Container</res-auth>
-				<res-sharing-scope>Shareable</res-sharing-scope>
-			</resource-ref>
-	 </session>
 
- 
- 
-<strong>Note:</strong> In other application servers the resource-ref can have a different jndi name.  E.g. for JBoss/WildFly need to be full specified: "java:/mail/org.imixs.workflow.mail"
+Depending on the server environment the Mail resource need also be defined in the deployment descriptor. See the following example for JBoss/Wildfly Server: 
+
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<jboss-web>
+		....
+		<resource-ref>
+			<res-ref-name>mail/org.imixs.workflow.mail</res-ref-name>
+			<res-type>javax.mail.Session</res-type>
+			<jndi-name>java:/mail/org.imixs.workflow.mail</jndi-name>
+		</resource-ref>
+		....
+	</jboss-web>
+
