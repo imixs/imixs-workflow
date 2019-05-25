@@ -21,10 +21,12 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestWorkflowScheduler {
+	
+	WorkflowSchedulerService workflowSchedulerService;
 
 	@Before
 	public void setup() throws PluginException {
-
+		workflowSchedulerService=new WorkflowSchedulerService();
 	}
 
 	/**
@@ -53,7 +55,7 @@ public class TestWorkflowScheduler {
 		workitemCal.add(Calendar.DAY_OF_MONTH, -14);
 		// prepare doc
 		doc.replaceItemValue("$lastProcessingDate", workitemCal.getTime());
-		Assert.assertTrue(WorkflowSchedulerService.workItemInDue(doc, activity));
+		Assert.assertTrue(workflowSchedulerService.workItemInDue(doc, activity));
 
 		// delay
 		activity.replaceItemValue("numActivityDelay", 15);
@@ -62,7 +64,7 @@ public class TestWorkflowScheduler {
 		workitemCal.add(Calendar.DAY_OF_MONTH, -14);
 		// prepare doc
 		doc.replaceItemValue("$lastProcessingDate", workitemCal.getTime());
-		Assert.assertFalse(WorkflowSchedulerService.workItemInDue(doc, activity));
+		Assert.assertFalse(workflowSchedulerService.workItemInDue(doc, activity));
 
 	}
 
@@ -83,24 +85,24 @@ public class TestWorkflowScheduler {
 
 		
 		Assert.assertEquals(Calendar.TUESDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 1).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 1).get(Calendar.DAY_OF_WEEK));
 		Assert.assertEquals(Calendar.WEDNESDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 2).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 2).get(Calendar.DAY_OF_WEEK));
 		Assert.assertEquals(Calendar.FRIDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 4).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 4).get(Calendar.DAY_OF_WEEK));
 	
 	
 		Assert.assertEquals(Calendar.MONDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 5).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 5).get(Calendar.DAY_OF_WEEK));
 		
 		
 		
 		
 		
 		Assert.assertEquals(Calendar.FRIDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 9).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 9).get(Calendar.DAY_OF_WEEK));
 		Assert.assertEquals(Calendar.MONDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 10).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 10).get(Calendar.DAY_OF_WEEK));
 
 	}
 
@@ -119,16 +121,16 @@ public class TestWorkflowScheduler {
 	
 		// adjust -3 Workdays -> THUSEDAY
 		Assert.assertEquals(Calendar.TUESDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 2).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 2).get(Calendar.DAY_OF_WEEK));
 	
 		Assert.assertEquals(Calendar.WEDNESDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 8).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 8).get(Calendar.DAY_OF_WEEK));
 	
 		Assert.assertEquals(Calendar.FRIDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 10).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 10).get(Calendar.DAY_OF_WEEK));
 	
 		Assert.assertEquals(Calendar.THURSDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 14).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 14).get(Calendar.DAY_OF_WEEK));
 	
 	}
 
@@ -146,18 +148,18 @@ public class TestWorkflowScheduler {
 
 		// adjust -3 Workdays -> THUSEDAY
 		Assert.assertEquals(Calendar.THURSDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, -1).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, -1).get(Calendar.DAY_OF_WEEK));
 		Assert.assertEquals(Calendar.WEDNESDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, -2).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, -2).get(Calendar.DAY_OF_WEEK));
 		Assert.assertEquals(Calendar.MONDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, -4).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, -4).get(Calendar.DAY_OF_WEEK));
 		// friday - 5
 		Assert.assertEquals(Calendar.FRIDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, -5).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, -5).get(Calendar.DAY_OF_WEEK));
 		Assert.assertEquals(Calendar.MONDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, -9).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, -9).get(Calendar.DAY_OF_WEEK));
 		Assert.assertEquals(Calendar.FRIDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, -10).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, -10).get(Calendar.DAY_OF_WEEK));
 
 	}
 	
@@ -176,7 +178,7 @@ public class TestWorkflowScheduler {
 
 		// adjust -3 Workdays -> THUSEDAY
 		Assert.assertEquals(Calendar.THURSDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, -2).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, -2).get(Calendar.DAY_OF_WEEK));
 
 	}
 	
@@ -196,9 +198,9 @@ public class TestWorkflowScheduler {
 
 		// adjust -1 Workdays -> THURSDAY
 		Assert.assertEquals(Calendar.THURSDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, -1).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, -1).get(Calendar.DAY_OF_WEEK));
 		Assert.assertEquals(Calendar.FRIDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, -5).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, -5).get(Calendar.DAY_OF_WEEK));
 
 	}
 	
@@ -217,14 +219,14 @@ public class TestWorkflowScheduler {
 
 		// adjust -1 Workdays -> TUESDAY
 		Assert.assertEquals(Calendar.TUESDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 1).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 1).get(Calendar.DAY_OF_WEEK));
 
 		Assert.assertEquals(Calendar.FRIDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 4).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 4).get(Calendar.DAY_OF_WEEK));
 
 		
 		Assert.assertEquals(Calendar.MONDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 5).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 5).get(Calendar.DAY_OF_WEEK));
 
 	}
 
@@ -242,9 +244,9 @@ public class TestWorkflowScheduler {
 
 		// adjust -1 Workdays -> THURSDAY
 		Assert.assertEquals(Calendar.THURSDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, -1).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, -1).get(Calendar.DAY_OF_WEEK));
 		Assert.assertEquals(Calendar.FRIDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, -5).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, -5).get(Calendar.DAY_OF_WEEK));
 
 	}
 	
@@ -262,14 +264,14 @@ public class TestWorkflowScheduler {
 
 		// adjust -1 Workdays -> TUESDAY
 		Assert.assertEquals(Calendar.TUESDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 1).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 1).get(Calendar.DAY_OF_WEEK));
 	
 		Assert.assertEquals(Calendar.FRIDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 4).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 4).get(Calendar.DAY_OF_WEEK));
 
 		
 		Assert.assertEquals(Calendar.MONDAY,
-				WorkflowSchedulerService.addWorkDays(startDate, 5).get(Calendar.DAY_OF_WEEK));
+				workflowSchedulerService.addWorkDays(startDate, 5).get(Calendar.DAY_OF_WEEK));
 
 	}
 

@@ -90,7 +90,7 @@ public class TextPropertyValueAdapter {
 	 * values.
 	 * 
 	 */
-	public static String formatItemValues(List<?> aItem, String aSeparator, String sFormat, Locale locale,
+	public String formatItemValues(List<?> aItem, String aSeparator, String sFormat, Locale locale,
 			String sPosition) {
 
 		StringBuffer sBuffer = new StringBuffer();

@@ -255,7 +255,7 @@ public class ReportRestService {
 			try {
 				// test if FOP Tranformation
 				if ("application/pdf".equals(sContentType.toLowerCase()))
-					ReportRestService.fopTranformation(writer.toString(), sXSL, encoding, outputStream);
+					fopTranformation(writer.toString(), sXSL, encoding, outputStream);
 				else
 					XSLHandler.transform(writer.toString(), sXSL, encoding, outputStream);
 			} finally {
@@ -553,7 +553,7 @@ public class ReportRestService {
 	 * @param aEncoding
 	 * @param outputWriter
 	 */
-	public static void fopTranformation(String xmlSource, String xslSource, String aEncoding, OutputStream output)
+	public void fopTranformation(String xmlSource, String xslSource, String aEncoding, OutputStream output)
 			throws Exception {
 		// configure fopFactory as desired
 		FopFactory fopFactory = FopFactory.newInstance();

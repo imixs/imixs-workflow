@@ -553,7 +553,7 @@ public class LuceneSearchService {
 	 *            - if true brackes will not be escaped.
 	 * @return escaped search term
 	 */
-	public static String escapeSearchTerm(String searchTerm, boolean ignoreBracket) {
+	public String escapeSearchTerm(String searchTerm, boolean ignoreBracket) {
 		if (searchTerm == null || searchTerm.isEmpty()) {
 			return searchTerm;
 		}
@@ -581,7 +581,7 @@ public class LuceneSearchService {
 
 	}
 
-	public static String escapeSearchTerm(String searchTerm) {
+	public String escapeSearchTerm(String searchTerm) {
 		return escapeSearchTerm(searchTerm, false);
 	}
 
@@ -598,7 +598,7 @@ public class LuceneSearchService {
 	 * @return normalzed search term
 	 * @throws QueryException
 	 */
-	public static String normalizeSearchTerm(String searchTerm) throws QueryException {
+	public String normalizeSearchTerm(String searchTerm) throws QueryException {
 		if (searchTerm == null) {
 			return "";
 		}

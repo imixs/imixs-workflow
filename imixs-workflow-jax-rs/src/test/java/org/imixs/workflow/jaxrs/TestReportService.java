@@ -6,7 +6,9 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.imixs.workflow.engine.ReportService;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -16,6 +18,13 @@ import org.junit.Test;
  * 
  */
 public class TestReportService {
+
+	ReportService reportService = null;
+
+	@Before
+	public void setup() throws PluginException {
+		reportService = new ReportService();
+	}
 
 	/**
 	 * test computeDynammicDate
@@ -33,7 +42,8 @@ public class TestReportService {
 		System.out.println("Test=" + cal.getTime());
 
 		// parse string and compute result
-		Calendar result = ReportService.computeDynamicDate(test);
+
+		Calendar result = reportService.computeDynamicDate(test);
 
 		System.out.println("Result=" + result.getTime());
 
@@ -57,7 +67,7 @@ public class TestReportService {
 		System.out.println("Test=" + cal.getTime());
 
 		// parse string and compute result
-		Calendar result = ReportService.computeDynamicDate(test);
+		Calendar result = reportService.computeDynamicDate(test);
 
 		System.out.println("Result=" + result.getTime());
 
@@ -82,7 +92,7 @@ public class TestReportService {
 		System.out.println("Test=" + cal.getTime());
 
 		// parse string and compute result
-		Calendar result = ReportService.computeDynamicDate(test);
+		Calendar result = reportService.computeDynamicDate(test);
 
 		System.out.println("Result=" + result.getTime());
 
@@ -104,7 +114,7 @@ public class TestReportService {
 		System.out.println("Test=" + cal.getTime());
 
 		// parse string and compute result
-		result = ReportService.computeDynamicDate(test);
+		result = reportService.computeDynamicDate(test);
 
 		System.out.println("Result=" + result.getTime());
 
@@ -129,7 +139,7 @@ public class TestReportService {
 		System.out.println("Test=" + cal.getTime());
 
 		// parse string and compute result
-		Calendar result = ReportService.computeDynamicDate(test);
+		Calendar result = reportService.computeDynamicDate(test);
 
 		System.out.println("Result=" + result.getTime());
 
@@ -141,11 +151,7 @@ public class TestReportService {
 		Assert.assertEquals(Calendar.THURSDAY, cal.get(Calendar.DAY_OF_WEEK));
 
 	}
-	
-	
-	
-	
-	
+
 	/**
 	 * Test the replace date function
 	 */
@@ -160,13 +166,14 @@ public class TestReportService {
 		cal.setTime(new Date());
 		cal.set(Calendar.DAY_OF_MONTH, 1);
 		cal.add(Calendar.MONTH, -6);
-		
+
 		DateFormat f = new SimpleDateFormat("yyyyMMdd");
-		String exprectedDateResult=f.format(cal.getTime());;
-		System.out.println("expected test-date =" +  exprectedDateResult);
+		String exprectedDateResult = f.format(cal.getTime());
+		;
+		System.out.println("expected test-date =" + exprectedDateResult);
 
 		// parse string and compute result
-		String result = ReportService.replaceDateString(test);
+		String result = reportService.replaceDateString(test);
 
 		System.out.println("result=" + result);
 

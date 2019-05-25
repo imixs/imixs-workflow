@@ -563,7 +563,7 @@ public class DocumentRestService {
 	 *            - optional format string (json|xml)
 	 * @return jax-rs Response object.
 	 */
-	public static Response convertResult(ItemCollection workitem, String items, String format) {
+	public Response convertResult(ItemCollection workitem, String items, String format) {
 		if (workitem == null) {
 			workitem = new ItemCollection();
 		}
@@ -605,7 +605,7 @@ public class DocumentRestService {
 	 *            - optional format string (json|xml)
 	 * @return jax-rs Response object.
 	 */
-	public static Response convertResultList(List<ItemCollection> result, String items, String format) {
+	public Response convertResultList(List<ItemCollection> result, String items, String format) {
 		if (result == null) {
 			result = new ArrayList<ItemCollection>();
 		}

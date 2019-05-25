@@ -141,7 +141,7 @@ public class TextItemValueAdapter {
 	 * values.
 	 * 
 	 */
-	public static String formatItemValues(List<?> aItem, String aSeparator, String sFormat, Locale locale,
+	public String formatItemValues(List<?> aItem, String aSeparator, String sFormat, Locale locale,
 			String sPosition) {
 
 		StringBuffer sBuffer = new StringBuffer();
@@ -189,7 +189,7 @@ public class TextItemValueAdapter {
 	 * this method formats a string object depending of an attribute type.
 	 * MultiValues will be separated by the provided separator
 	 */
-	public static String formatItemValues(List<?> aItem, String aSeparator, String sFormat) {
+	public String formatItemValues(List<?> aItem, String aSeparator, String sFormat) {
 		return formatItemValues(aItem, aSeparator, sFormat, null, null);
 	}
 
@@ -197,7 +197,7 @@ public class TextItemValueAdapter {
 	 * this method formats a string object depending of an attribute type.
 	 * MultiValues will be separated by the provided separator
 	 */
-	public static String formatItemValues(List<?> aItem, String aSeparator, String sFormat, Locale alocale) {
+	public String formatItemValues(List<?> aItem, String aSeparator, String sFormat, Locale alocale) {
 		return formatItemValues(aItem, aSeparator, sFormat, alocale, null);
 	}
 

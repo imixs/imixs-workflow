@@ -20,7 +20,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.lucene.LuceneSearchService;
-import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 
@@ -158,7 +157,7 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 	 * @param worktem
 	 * @return
 	 */
-	public static boolean upgradeWorkitem(ItemCollection workitem) {
+	public boolean upgradeWorkitem(ItemCollection workitem) {
 		boolean bUpgrade = false;
 
 		if (workitem.getItemValueBoolean("$immutable")) {

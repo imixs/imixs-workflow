@@ -333,7 +333,7 @@ public class WorkflowSchedulerService {
 	 * 
 	 * @return true if workitem is is due
 	 */
-	public static boolean workItemInDue(ItemCollection doc, ItemCollection docActivity) {
+	public boolean workItemInDue(ItemCollection doc, ItemCollection docActivity) {
 		try {
 			int iCompareType = -1;
 			int iOffsetUnit = -1;
@@ -489,7 +489,7 @@ public class WorkflowSchedulerService {
 	 * @param days
 	 * @return new calendar instance
 	 */
-	public static Calendar addWorkDays(final Calendar baseDate, final int days) {
+	public Calendar addWorkDays(final Calendar baseDate, final int days) {
 		Calendar resultDate = null;
 		Calendar workCal = Calendar.getInstance();
 		workCal.setTime(baseDate.getTime());
@@ -1026,7 +1026,7 @@ public class WorkflowSchedulerService {
 	 * @param offset     offset for adjustment
 	 * @return new date object
 	 */
-	private static Date adjustBaseDate(Date baseDate, int offsetUnit, int offset) {
+	private Date adjustBaseDate(Date baseDate, int offsetUnit, int offset) {
 		if (baseDate != null) {
 
 			// workdays?

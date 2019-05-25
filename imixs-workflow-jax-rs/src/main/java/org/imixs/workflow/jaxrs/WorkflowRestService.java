@@ -63,6 +63,7 @@ import javax.ws.rs.core.UriInfo;
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
@@ -71,9 +72,9 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.WorkflowException;
 import org.imixs.workflow.util.JSONParser;
 import org.imixs.workflow.xml.XMLDataCollection;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
-import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 
 /**
  * The WorkflowService Handler supports methods to process different kind of
@@ -88,7 +89,10 @@ import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 public class WorkflowRestService {
 
 	@EJB
-	private WorkflowService workflowService;
+	WorkflowService workflowService;
+	
+	@EJB
+	DocumentRestService documentRestService;
 
 	@javax.ws.rs.core.Context
 	private HttpServletRequest servletRequest;
@@ -157,7 +161,7 @@ public class WorkflowRestService {
 			workitem = null;
 		}
 
-		return DocumentRestService.convertResult(workitem, items, format);
+		return documentRestService.convertResult(workitem, items, format);
 	}
 
 	/**
@@ -240,7 +244,7 @@ public class WorkflowRestService {
 			e.printStackTrace();
 		}
 
-		return DocumentRestService.convertResultList(result, null, format);
+		return documentRestService.convertResultList(result, null, format);
 	}
 
 	/**
@@ -286,7 +290,7 @@ public class WorkflowRestService {
 			e.printStackTrace();
 		}
 
-		return DocumentRestService.convertResultList(result, items, format);
+		return documentRestService.convertResultList(result, items, format);
 	}
 
 	/**
@@ -320,7 +324,7 @@ public class WorkflowRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return DocumentRestService.convertResultList(result, items, format);
+		return documentRestService.convertResultList(result, items, format);
 	}
 
 	@GET
@@ -346,7 +350,7 @@ public class WorkflowRestService {
 			e.printStackTrace();
 		}
 
-		return DocumentRestService.convertResultList(result, items, format);
+		return documentRestService.convertResultList(result, items, format);
 	}
 
 	@GET
@@ -363,7 +367,7 @@ public class WorkflowRestService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return DocumentRestService.convertResultList(result, items, format);
+		return documentRestService.convertResultList(result, items, format);
 	}
 
 	@GET
@@ -384,7 +388,7 @@ public class WorkflowRestService {
 			e.printStackTrace();
 		}
 
-		return DocumentRestService.convertResultList(result, items, format);
+		return documentRestService.convertResultList(result, items, format);
 	}
 
 	@GET
@@ -402,7 +406,7 @@ public class WorkflowRestService {
 			e.printStackTrace();
 		}
 
-		return DocumentRestService.convertResultList(result, items, format);
+		return documentRestService.convertResultList(result, items, format);
 	}
 
 	/**
@@ -704,7 +708,7 @@ public class WorkflowRestService {
 	 * @return a workitem
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static ItemCollection parseWorkitem(InputStream requestBodyStream) {
+	public ItemCollection parseWorkitem(InputStream requestBodyStream) {
 		Vector<String> vMultiValueFieldNames = new Vector<String>();
 		BufferedReader in = new BufferedReader(new InputStreamReader(requestBodyStream));
 		String inputLine;

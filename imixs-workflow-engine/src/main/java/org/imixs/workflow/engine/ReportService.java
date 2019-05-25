@@ -361,7 +361,7 @@ public class ReportService {
 	 * @param xmlDate
 	 * @return
 	 */
-	public static Calendar computeDynamicDate(String xmlDate) {
+	public Calendar computeDynamicDate(String xmlDate) {
 		Calendar cal = Calendar.getInstance();
 
 		Map<String, String> attributes = XMLParser.findAttributes(xmlDate);
@@ -429,7 +429,7 @@ public class ReportService {
 	 * @param content
 	 * @return
 	 */
-	public static String replaceDateString(String content) {
+	public String replaceDateString(String content) {
 
 		List<String> dates = XMLParser.findTags(content, "date");
 		for (String dateString : dates) {
@@ -462,7 +462,7 @@ public class ReportService {
 	 * @param value
 	 * @return
 	 */
-	public static String customNumberFormat(String pattern, String locale, double value) {
+	public String customNumberFormat(String pattern, String locale, double value) {
 		DecimalFormat formatter = null;
 		Locale _locale = getLocaleFromString(locale);
 		// test if we have a locale
