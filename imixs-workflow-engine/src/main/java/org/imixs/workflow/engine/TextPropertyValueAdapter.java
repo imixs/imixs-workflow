@@ -8,10 +8,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.enterprise.event.Observes;
+import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.Config;
 import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.util.XMLParser;
 
@@ -25,8 +26,12 @@ import org.imixs.workflow.util.XMLParser;
 @Stateless
 public class TextPropertyValueAdapter {
 
-	@EJB
-	WorkflowService workflowService;
+	@Inject
+	Config config;
+
+	
+//	@EJB
+//	WorkflowService workflowService;
 
 	private static Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
 
@@ -58,10 +63,14 @@ public class TextPropertyValueAdapter {
 			// read the property Value
 			String sPropertyKey = XMLParser.findTagValue(tag, "propertyvalue");
 
-			String vValue = workflowService.getPropertyService().getProperties().getProperty(sPropertyKey);
+			
+			
+			String vValue = config.getValue(sPropertyKey, String.class);
+					
+					//workflowService.getPropertyService().getProperties().getProperty(sPropertyKey);
 			if (vValue == null) {
 				logger.warning(
-						"[AbstractPlugin] propertyvalue '" + sPropertyKey + "' is not defined in imixs.properties!");
+						"propertyvalue '" + sPropertyKey + "' is not defined in imixs.properties!");
 				vValue = "";
 			}
 

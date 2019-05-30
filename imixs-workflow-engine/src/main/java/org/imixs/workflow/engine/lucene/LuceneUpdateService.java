@@ -36,7 +36,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
@@ -52,7 +51,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.ClassicAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.SortedDocValuesField;
@@ -66,11 +64,11 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.EventLogService;
-import org.imixs.workflow.engine.PropertyService;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.PluginException;
 
@@ -103,7 +101,7 @@ import org.imixs.workflow.exceptions.PluginException;
 @Singleton
 public class LuceneUpdateService {
 
-	protected static final String DEFAULT_ANALYSER = ClassicAnalyzer.class.getName();
+	protected static final String DEFAULT_ANALYSER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
 	protected static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
 	protected static final String ANONYMOUS = "ANONYMOUS";
 
@@ -111,12 +109,29 @@ public class LuceneUpdateService {
 	public static final String EVENTLOG_TOPIC_REMOVE = "lucene.remove";
 	protected static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
 
+	@Inject
+	@ConfigProperty(name = "lucence.indexDir", defaultValue = LuceneUpdateService.DEFAULT_INDEX_DIRECTORY)
+	String luceneIndexDir;
+
+	@Inject
+	@ConfigProperty(name = "lucence.analyzerClass", defaultValue = LuceneUpdateService.DEFAULT_ANALYSER)
+	String luceneAnalyserClass;
+
+	@Inject
+	@ConfigProperty(name = "lucence.fulltextFieldList", defaultValue = "")
+	String luceneFulltextFieldList;
+
+	@Inject
+	@ConfigProperty(name = "lucence.indexFieldListAnalyze", defaultValue = "")
+	String luceneIndexFieldListAnalyse;
+
+	@Inject
+	@ConfigProperty(name = "lucence.indexFieldListNoAnalyze", defaultValue = "")
+	String luceneIndexFieldListNoAnalyse;
+
 	private List<String> searchFieldList = null;
 	private List<String> indexFieldListAnalyse = null;
 	private List<String> indexFieldListNoAnalyse = null;
-	private String indexDirectoryPath = null;
-	private String analyserClass = null;
-	private Properties properties = null;
 
 	// default field lists
 	private static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
@@ -125,13 +140,9 @@ public class LuceneUpdateService {
 			"$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "txtname", "namowner",
 			"txtworkitemref", "$uniqueidsource", "$uniqueidversions", "$lasttask", "$lastevent", "$lasteventdate");
 
-
-	@EJB
-	PropertyService propertyService;
-
 	@EJB
 	EventLogService eventLogService;
-	
+
 	@Inject
 	LuceneItemAdapter luceneItemAdapter;
 
@@ -149,29 +160,17 @@ public class LuceneUpdateService {
 	@PostConstruct
 	void init() {
 
-		// read configuration
-		properties = propertyService.getProperties();
-		indexDirectoryPath = properties.getProperty("lucence.indexDir", DEFAULT_INDEX_DIRECTORY);
-		// luceneLockFactory = properties.getProperty("lucence.lockFactory");
-		// get Analyzer Class -
-		// default=org.apache.lucene.analysis.standard.ClassicAnalyzer
-		analyserClass = properties.getProperty("lucence.analyzerClass", DEFAULT_ANALYSER);
-
-		String sFulltextFieldList = properties.getProperty("lucence.fulltextFieldList");
-		String sIndexFieldListAnalyse = properties.getProperty("lucence.indexFieldListAnalyze");
-		String sIndexFieldListNoAnalyse = properties.getProperty("lucence.indexFieldListNoAnalyze");
-
-		logger.finest("......lucene IndexDir=" + indexDirectoryPath);
-		logger.finest("......lucene FulltextFieldList=" + sFulltextFieldList);
-		logger.finest("......lucene IndexFieldListAnalyse=" + sIndexFieldListAnalyse);
-		logger.finest("......lucene IndexFieldListNoAnalyse=" + sIndexFieldListNoAnalyse);
+		logger.finest("......lucene IndexDir=" + luceneIndexDir);
+		logger.finest("......lucene FulltextFieldList=" + luceneFulltextFieldList);
+		logger.finest("......lucene IndexFieldListAnalyse=" + luceneIndexFieldListAnalyse);
+		logger.finest("......lucene IndexFieldListNoAnalyse=" + luceneIndexFieldListNoAnalyse);
 
 		// compute search field list
 		searchFieldList = new ArrayList<String>();
 		// add all static default field list
 		searchFieldList.addAll(DEFAULT_SEARCH_FIELD_LIST);
-		if (sFulltextFieldList != null && !sFulltextFieldList.isEmpty()) {
-			StringTokenizer st = new StringTokenizer(sFulltextFieldList, ",");
+		if (luceneFulltextFieldList != null && !luceneFulltextFieldList.isEmpty()) {
+			StringTokenizer st = new StringTokenizer(luceneFulltextFieldList, ",");
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase().trim();
 				// do not add internal fields
@@ -182,8 +181,8 @@ public class LuceneUpdateService {
 
 		// compute Index field list (Analyze)
 		indexFieldListAnalyse = new ArrayList<String>();
-		if (sIndexFieldListAnalyse != null && !sIndexFieldListAnalyse.isEmpty()) {
-			StringTokenizer st = new StringTokenizer(sIndexFieldListAnalyse, ",");
+		if (luceneIndexFieldListAnalyse != null && !luceneIndexFieldListAnalyse.isEmpty()) {
+			StringTokenizer st = new StringTokenizer(luceneIndexFieldListAnalyse, ",");
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase().trim();
 				// do not add internal fields
@@ -197,9 +196,9 @@ public class LuceneUpdateService {
 		indexFieldListNoAnalyse = new ArrayList<String>();
 		// add all static default field list
 		indexFieldListNoAnalyse.addAll(DEFAULT_NOANALYSE_FIELD_LIST);
-		if (sIndexFieldListNoAnalyse != null && !sIndexFieldListNoAnalyse.isEmpty()) {
+		if (luceneIndexFieldListNoAnalyse != null && !luceneIndexFieldListNoAnalyse.isEmpty()) {
 			// add additional field list from imixs.properties
-			StringTokenizer st = new StringTokenizer(sIndexFieldListNoAnalyse, ",");
+			StringTokenizer st = new StringTokenizer(luceneIndexFieldListNoAnalyse, ",");
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase().trim();
 				if (!indexFieldListNoAnalyse.contains(sName))
@@ -216,9 +215,9 @@ public class LuceneUpdateService {
 	public ItemCollection getConfiguration() {
 		ItemCollection config = new ItemCollection();
 
-		config.replaceItemValue("lucence.indexDir", indexDirectoryPath);
+		config.replaceItemValue("lucence.indexDir", luceneIndexDir);
 		// config.replaceItemValue("lucence.lockFactory", luceneLockFactory);
-		config.replaceItemValue("lucence.analyzerClass", analyserClass);
+		config.replaceItemValue("lucence.analyzerClass", luceneAnalyserClass);
 		config.replaceItemValue("lucence.fulltextFieldList", searchFieldList);
 		config.replaceItemValue("lucence.indexFieldListAnalyze", indexFieldListAnalyse);
 		config.replaceItemValue("lucence.indexFieldListNoAnalyze", indexFieldListNoAnalyse);
@@ -267,7 +266,7 @@ public class LuceneUpdateService {
 		for (ItemCollection workitem : documents) {
 			// skip if the flag 'noindex' = true
 			if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
-				//eventLogService.createEvent(workitem.getUniqueID(), EVENTLOG_TOPIC_ADD);
+				// eventLogService.createEvent(workitem.getUniqueID(), EVENTLOG_TOPIC_ADD);
 				eventLogService.createEvent(workitem.getUniqueID(), EVENTLOG_TOPIC_ADD);
 			}
 		}
@@ -415,30 +414,30 @@ public class LuceneUpdateService {
 	 * @return true if the cache was totally flushed.
 	 */
 	boolean flushEventLogByCount(int count) {
-		Date lastEventDate=null;
+		Date lastEventDate = null;
 		boolean cacheIsEmpty = true;
 		IndexWriter indexWriter = null;
 		long l = System.currentTimeMillis();
 		logger.finest("......flush eventlog cache....");
 
-		List<org.imixs.workflow.engine.jpa.Document> 
-		documentList=eventLogService.findEvents(count+1, EVENTLOG_TOPIC_ADD,EVENTLOG_TOPIC_REMOVE);
-		
+		List<org.imixs.workflow.engine.jpa.Document> documentList = eventLogService.findEvents(count + 1,
+				EVENTLOG_TOPIC_ADD, EVENTLOG_TOPIC_REMOVE);
+
 		if (documentList != null && documentList.size() > 0) {
 			try {
 				indexWriter = createIndexWriter();
 				int _counter = 0;
 				for (org.imixs.workflow.engine.jpa.Document eventLogEntry : documentList) {
-					String topic=null;
+					String topic = null;
 					String id = eventLogEntry.getId();
 					// cut prafix...
 					if (id.startsWith(EVENTLOG_TOPIC_ADD)) {
-						id = id.substring(EVENTLOG_TOPIC_ADD.length()+1);
-						topic=EVENTLOG_TOPIC_ADD;
+						id = id.substring(EVENTLOG_TOPIC_ADD.length() + 1);
+						topic = EVENTLOG_TOPIC_ADD;
 					}
 					if (id.startsWith(EVENTLOG_TOPIC_REMOVE)) {
-						id = id.substring(EVENTLOG_TOPIC_REMOVE.length()+1);
-						topic=EVENTLOG_TOPIC_REMOVE;
+						id = id.substring(EVENTLOG_TOPIC_REMOVE.length() + 1);
+						topic = EVENTLOG_TOPIC_REMOVE;
 					}
 					// lookup the workitem...
 					org.imixs.workflow.engine.jpa.Document doc = manager
@@ -509,8 +508,6 @@ public class LuceneUpdateService {
 		return cacheIsEmpty;
 
 	}
-
-
 
 	/**
 	 * This method creates a lucene document based on a ItemCollection. The Method
@@ -729,16 +726,16 @@ public class LuceneUpdateService {
 	 */
 	IndexWriter createIndexWriter() throws IOException {
 		// create a IndexWriter Instance
-		Directory indexDir = FSDirectory.open(Paths.get(indexDirectoryPath));
+		Directory indexDir = FSDirectory.open(Paths.get(luceneIndexDir));
 		IndexWriterConfig indexWriterConfig;
 
 		// indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
 		try {
 			// issue #429
-			indexWriterConfig = new IndexWriterConfig((Analyzer) Class.forName(analyserClass).newInstance());
+			indexWriterConfig = new IndexWriterConfig((Analyzer) Class.forName(luceneAnalyserClass).newInstance());
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-			throw new IndexException(IndexException.INVALID_INDEX, "Unable to create analyzer '" + analyserClass + "'",
-					e);
+			throw new IndexException(IndexException.INVALID_INDEX,
+					"Unable to create analyzer '" + luceneAnalyserClass + "'", e);
 		}
 
 		return new IndexWriter(indexDir, indexWriterConfig);
@@ -754,6 +751,5 @@ public class LuceneUpdateService {
 		int randomNum = ThreadLocalRandom.current().nextInt(10000, 99999 + 1);
 		return "" + Long.toHexString(System.currentTimeMillis()) + "-" + Integer.toHexString(randomNum);
 	}
-	
-	
+
 }

@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.annotation.security.DeclareRoles;
@@ -15,12 +14,13 @@ import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.PropertyService;
 import org.imixs.workflow.engine.jpa.Document;
 import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -42,9 +42,16 @@ import org.imixs.workflow.exceptions.PluginException;
 public class JobHandlerRebuildIndex implements JobHandler {
 
 	private static final String BLOCK_SIZE_DEFAULT = "500";
-	private static final String TIMEOUT_DEFAULT= "120";
-	private int block_size;
-	private int time_out;
+	private static final String TIMEOUT_DEFAULT = "120";
+
+	@Inject
+	@ConfigProperty(name = "lucene.rebuild.block_size", defaultValue = BLOCK_SIZE_DEFAULT)
+	int block_size;
+
+	@Inject
+	@ConfigProperty(name = "lucene.rebuild.time_out", defaultValue = TIMEOUT_DEFAULT)
+	int time_out;
+
 	private static final int READ_AHEAD = 32;
 	public final static String ITEM_SYNCPOINT = "syncpoint";
 	public final static String ITEM_SYNCDATE = "syncdate";
@@ -55,10 +62,6 @@ public class JobHandlerRebuildIndex implements JobHandler {
 
 	@EJB
 	LuceneUpdateService luceneUpdateService;
-	
-	@EJB
-	PropertyService propertyService;
-
 
 	private static Logger logger = Logger.getLogger(JobHandlerRebuildIndex.class.getName());
 
@@ -77,6 +80,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 	 * @throws AccessDeniedException
 	 * @throws PluginException
 	 */
+
 	@Override
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public ItemCollection run(ItemCollection adminp) throws AdminPException {
@@ -84,17 +88,13 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		long syncPoint = adminp.getItemValueLong("_syncpoint");
 		int totalCount = adminp.getItemValueInteger("numUpdates");
 		int blockCount = 0;
-		
+
 		// read blocksize and timeout....
-		// read configuration
-		Properties properties = propertyService.getProperties();
-		block_size = new Integer( properties.getProperty("lucene.rebuild.block_size", BLOCK_SIZE_DEFAULT));
-		time_out = new Integer( properties.getProperty("lucene.rebuild.time_out", TIMEOUT_DEFAULT));
 		logger.info("...Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID()
-		+ ") - lucene.rebuild.block_size=" + block_size);
+				+ ") - lucene.rebuild.block_size=" + block_size);
 		logger.info("...Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID()
-		+ ") - lucene.rebuild.time_out=" + time_out);
-		
+				+ ") - lucene.rebuild.time_out=" + time_out);
+
 		try {
 			while (true) {
 				List<ItemCollection> resultList = new ArrayList<ItemCollection>();

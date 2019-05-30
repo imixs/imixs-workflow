@@ -120,9 +120,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	@EJB
 	ReportService reportService;
 
-	@EJB
-	PropertyService propertyService;
-
+	
 	@Resource
 	SessionContext ctx;
 
@@ -778,14 +776,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		return reportService;
 	}
 
-	/**
-	 * Returns an instance of the PropertyService EJB.
-	 * 
-	 * @return
-	 */
-	public PropertyService getPropertyService() {
-		return propertyService;
-	}
+	
 
 	/**
 	 * Obtain the java.security.Principal that identifies the caller and returns the

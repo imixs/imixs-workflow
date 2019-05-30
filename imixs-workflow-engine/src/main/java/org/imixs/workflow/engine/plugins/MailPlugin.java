@@ -40,7 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
-import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -54,8 +54,8 @@ import javax.mail.internet.MimeMultipart;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.PropertyService;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
@@ -85,8 +85,17 @@ public class MailPlugin extends AbstractPlugin {
 	@Resource(lookup = MAIL_SESSION_NAME)
 	Session mailSession;
 
-	@EJB
-	PropertyService propertyService;
+	@Inject
+	@ConfigProperty(name = "mail.testRecipients", defaultValue = "")
+	String mailTestRecipients;
+
+	@Inject
+	@ConfigProperty(name = "mail.defaultSender", defaultValue = "")
+	String mailDefaultSender;
+
+	@Inject
+	@ConfigProperty(name = "mail.charSet", defaultValue = "")
+	String mailCharSet;
 
 	MimeMessage mailMessage = null;
 	Multipart mimeMultipart = null;
@@ -190,37 +199,32 @@ public class MailPlugin extends AbstractPlugin {
 			try {
 
 				// Check if we are running in a Test MODE
-				if (getWorkflowService().getPropertyService() != null) {
-					String sTestRecipients = (String) getWorkflowService().getPropertyService().getProperties()
-							.get("mail.testRecipients");
-					// test if TestReceipiens are defined...
-					if (sTestRecipients != null && !"".equals(sTestRecipients)) {
-						List<String> vRecipients = new Vector<String>();
-						// split multivalues
-						StringTokenizer st = new StringTokenizer(sTestRecipients, ",", false);
-						while (st.hasMoreElements()) {
-							vRecipients.add(st.nextToken().trim());
-						}
 
-						logger.info("Running in TestMode, forwarding mails to:");
-						for (String adr : vRecipients) {
-							logger.info("     " + adr);
-						}
-						try {
-							getMailMessage().setRecipients(Message.RecipientType.CC, null);
-							getMailMessage().setRecipients(Message.RecipientType.BCC, null);
-							getMailMessage().setRecipients(Message.RecipientType.TO,
-									getInternetAddressArray(vRecipients));
-							// change subject
-							String sSubject = getMailMessage().getSubject();
-							getMailMessage().setSubject("[TESTMODE] : " + sSubject);
-
-						} catch (MessagingException e) {
-							throw new PluginException(MailPlugin.class.getSimpleName(), INVALID_ADDRESS,
-									" unable to set mail recipients: ", e);
-						}
+				// test if TestReceipiens are defined...
+				if (mailTestRecipients != null && !"".equals(mailTestRecipients)) {
+					List<String> vRecipients = new Vector<String>();
+					// split multivalues
+					StringTokenizer st = new StringTokenizer(mailTestRecipients, ",", false);
+					while (st.hasMoreElements()) {
+						vRecipients.add(st.nextToken().trim());
 					}
 
+					logger.info("Running in TestMode, forwarding mails to:");
+					for (String adr : vRecipients) {
+						logger.info("     " + adr);
+					}
+					try {
+						getMailMessage().setRecipients(Message.RecipientType.CC, null);
+						getMailMessage().setRecipients(Message.RecipientType.BCC, null);
+						getMailMessage().setRecipients(Message.RecipientType.TO, getInternetAddressArray(vRecipients));
+						// change subject
+						String sSubject = getMailMessage().getSubject();
+						getMailMessage().setSubject("[TESTMODE] : " + sSubject);
+
+					} catch (MessagingException e) {
+						throw new PluginException(MailPlugin.class.getSimpleName(), INVALID_ADDRESS,
+								" unable to set mail recipients: ", e);
+					}
 				}
 
 				logger.finest("......sending message...");
@@ -275,8 +279,8 @@ public class MailPlugin extends AbstractPlugin {
 		String sFrom = documentActivity.getItemValueString("namMailFrom");
 
 		// if no from was defined by teh event, we test if a default sender is defined
-		if (sFrom.isEmpty() && getWorkflowService().getPropertyService() != null) {
-			sFrom = (String) getWorkflowService().getPropertyService().getProperties().get("mail.defaultSender");
+		if (sFrom.isEmpty()) {
+			sFrom = mailDefaultSender;
 		}
 		// if no default sender take the current username
 		if (sFrom == null || sFrom.isEmpty())
@@ -506,10 +510,9 @@ public class MailPlugin extends AbstractPlugin {
 			logger.warning(" Unable to send mails! Verify server resources -> mail session.");
 		} else {
 
-			// test for proeprty mail.charSet
-			String sTestCharSet = (String) propertyService.getProperties().get("mail.charSet");
-			if (sTestCharSet != null && !sTestCharSet.isEmpty()) {
-				setCharSet(sTestCharSet);
+			// test for property mail.charSet
+			if (mailCharSet != null && !mailCharSet.isEmpty()) {
+				setCharSet(mailCharSet);
 
 			}
 

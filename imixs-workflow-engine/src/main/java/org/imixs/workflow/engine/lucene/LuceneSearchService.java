@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -40,13 +39,14 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.ClassicAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -61,9 +61,9 @@ import org.apache.lucene.search.TopFieldCollector;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
-import org.imixs.workflow.engine.PropertyService;
 import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
@@ -99,16 +99,25 @@ public class LuceneSearchService {
 	// number of hits
 	public static final int DEFAULT_PAGE_SIZE = 100; // default docs in one page
 
-	@EJB
-	PropertyService propertyService;
+	@Inject
+	@ConfigProperty(name = "lucence.indexDir", defaultValue = LuceneUpdateService.DEFAULT_INDEX_DIRECTORY)
+	String luceneIndexDir;
+
+	@Inject
+	@ConfigProperty(name = "lucene.defaultOperator", defaultValue = "AND")
+	String luceneDefaultOperator;
+
+	@Inject
+	@ConfigProperty(name = "lucene.splitOnWhitespace", defaultValue = "true")
+	boolean luceneSplitOnWhitespace;
 
 	@EJB
 	DocumentService documentService;
 
 	@EJB
 	LuceneUpdateService luceneUpdateService;
-	
-	@EJB 
+
+	@EJB
 	AdminPService adminPService;
 
 	private static Logger logger = Logger.getLogger(LuceneSearchService.class.getName());
@@ -209,15 +218,9 @@ public class LuceneSearchService {
 			return workitems;
 		}
 
-		Properties prop = propertyService.getProperties();
-		if (prop.isEmpty()) {
-			logger.warning("imixs.properties not found!");
-			return workitems;
-		}
-
 		try {
-			IndexSearcher searcher = createIndexSearcher(prop);
-			QueryParser parser = createQueryParser(prop);
+			IndexSearcher searcher = createIndexSearcher();
+			QueryParser parser = createQueryParser();
 
 			parser.setAllowLeadingWildcard(true);
 
@@ -309,10 +312,9 @@ public class LuceneSearchService {
 
 		return workitems;
 	}
-	
-	
+
 	/**
-	 * This method flush the event log. 
+	 * This method flush the event log.
 	 */
 	public void flush() {
 		long ltime = System.currentTimeMillis();
@@ -356,15 +358,9 @@ public class LuceneSearchService {
 			return 0;
 		}
 
-		Properties prop = propertyService.getProperties();
-		if (prop.isEmpty()) {
-			logger.warning("imixs.properties not found!");
-			return 0;
-		}
-
 		try {
-			IndexSearcher searcher = createIndexSearcher(prop);
-			QueryParser parser = createQueryParser(prop);
+			IndexSearcher searcher = createIndexSearcher();
+			QueryParser parser = createQueryParser();
 
 			parser.setAllowLeadingWildcard(true);
 
@@ -445,12 +441,11 @@ public class LuceneSearchService {
 	 * @return
 	 * @throws IOException
 	 */
-	Directory createIndexDirectory(Properties prop) throws IOException {
+
+	Directory createIndexDirectory() throws IOException {
 		logger.finest("......createIndexDirectory...");
-		// read configuration
-		String sIndexDir = prop.getProperty("lucence.indexDir", LuceneUpdateService.DEFAULT_INDEX_DIRECTORY);
 		Directory indexDir;
-		indexDir = FSDirectory.open(Paths.get(sIndexDir));
+		indexDir = FSDirectory.open(Paths.get(luceneIndexDir));
 		return indexDir;
 	}
 
@@ -465,11 +460,11 @@ public class LuceneSearchService {
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	IndexSearcher createIndexSearcher(Properties prop) throws IOException {
+	IndexSearcher createIndexSearcher() throws IOException {
 		IndexReader reader = null;
 		logger.finest("......createIndexSearcher...");
 
-		Directory indexDir = createIndexDirectory(prop);
+		Directory indexDir = createIndexDirectory();
 
 		// if the index dose not yet exits we got a IO Exception (issue #329)
 		try {
@@ -491,9 +486,9 @@ public class LuceneSearchService {
 				logger.info("...lucene index successfull initialized.");
 				// starting index job....
 				logger.info("...rebuilding lucene index...");
-				ItemCollection job=new ItemCollection();
-				job.replaceItemValue("numinterval",2); // 2 minutes
-				job.replaceItemValue("job",AdminPService.JOB_REBUILD_LUCENE_INDEX);
+				ItemCollection job = new ItemCollection();
+				job.replaceItemValue("numinterval", 2); // 2 minutes
+				job.replaceItemValue("job", AdminPService.JOB_REBUILD_LUCENE_INDEX);
 				adminPService.createJob(job);
 			} else {
 				// throw the origin exception....
@@ -514,12 +509,13 @@ public class LuceneSearchService {
 	 * @param prop
 	 * @return
 	 */
-	QueryParser createQueryParser(Properties prop) {
+
+	QueryParser createQueryParser() {
 		// use the keywordAnalyzer for searching a search term.
 		QueryParser parser = new QueryParser("content", new KeywordAnalyzer());
 		// set default operator to 'AND' if not defined by property setting
-		String defaultOperator = prop.getProperty("lucene.defaultOperator");
-		if (defaultOperator != null && "OR".equals(defaultOperator.toUpperCase())) {
+		// String defaultOperator = prop.getProperty("lucene.defaultOperator");
+		if (luceneDefaultOperator != null && "OR".equals(luceneDefaultOperator.toUpperCase())) {
 			logger.finest("......DefaultOperator: OR");
 			parser.setDefaultOperator(Operator.OR);
 		} else {
@@ -528,10 +524,8 @@ public class LuceneSearchService {
 		}
 
 		// set setSplitOnWhitespace (issue #438)
-		String splitOnWhitespace = prop.getProperty("lucene.splitOnWhitespace", "true");
-		boolean bSplitOnWhitespace = Boolean.parseBoolean(splitOnWhitespace);
-		logger.finest("......SplitOnWhitespace: " + bSplitOnWhitespace);
-		parser.setSplitOnWhitespace(bSplitOnWhitespace);
+		logger.finest("......SplitOnWhitespace: " + luceneSplitOnWhitespace);
+		parser.setSplitOnWhitespace(luceneSplitOnWhitespace);
 
 		return parser;
 	}
