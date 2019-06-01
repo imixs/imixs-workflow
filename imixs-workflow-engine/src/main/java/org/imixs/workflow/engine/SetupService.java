@@ -60,9 +60,12 @@ import org.xml.sax.SAXException;
  * The SetupService EJB initializes the Imxis-Workflow engine. 
  * <p>
  * The service loads a default model defined by the optional environment
- * variable 'MODEL'. This variable can point to multiple model resources
+ * variable 'MODEL_DEFAULT_DATA'. This variable can point to multiple model resources
  * separated by a ';'. A model resource file must have the file extension
  * '.bpmn'.
+ * <p>
+ * If you define the variable in the imixs.properties file than the variable can be lowercased to
+ * 'model.default.data'.
  * <p>
  * Optional it is also possible to provide setup data in a XML file.
  * <p>
@@ -82,7 +85,10 @@ public class SetupService {
 	private static Logger logger = Logger.getLogger(SetupService.class.getName());
 
 	@Inject
-	@ConfigProperty(name = "MODEL.DEFAULT.DATA", defaultValue = "")
+	@ConfigProperty(name = "MODEL_DEFAULT_DATA", defaultValue = "")
+	String envModelDefaultData;
+	@Inject
+	@ConfigProperty(name = "model.default.data", defaultValue = "")
 	String modelDefaultData;
 
 	
@@ -112,7 +118,6 @@ public class SetupService {
 		}
 
 		// next start optional schedulers
-		logger.info("...starting Imixs-Schedulers...");
 		schedulerService.startAllSchedulers();
 	}
 
@@ -124,7 +129,10 @@ public class SetupService {
 	public void scanDefaultModels() {
 		logger.finest("......scan default models...");
 
-		String[] modelResources = modelDefaultData.split(";");
+		// test if we have an environment  variable or a property value...
+		String modelData=!envModelDefaultData.isEmpty()?envModelDefaultData:modelDefaultData;
+		
+		String[] modelResources = modelData.split(";");
 		for (String modelResource : modelResources) {
 
 			// try to load this model
