@@ -61,6 +61,7 @@
 				<item name="AdminP" href="./engine/adminp.html" />
 				<item name="Scheduler" href="./engine/scheduler.html" />
 				<item name="CDI and JNDI Lookup" href="./engine/remote_lookup.html" />
+				<item name="SetupService" href="./engine/setupservice.html" />
 			</item>
 			
 

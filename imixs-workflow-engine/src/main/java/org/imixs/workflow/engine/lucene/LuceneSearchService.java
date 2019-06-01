@@ -46,8 +46,6 @@ import org.apache.lucene.analysis.standard.ClassicAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser.Operator;
@@ -474,22 +472,10 @@ public class LuceneSearchService {
 			// creating a new index dir...
 			if (!DirectoryReader.indexExists(indexDir)) {
 				logger.info("...lucene index does not yet exist, trying to initialize the index....");
-				// create a IndexWriter Instance
-				IndexWriterConfig indexWriterConfig;
-				indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
-				indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-				IndexWriter indexWriter = new IndexWriter(indexDir, indexWriterConfig);
-				indexWriter.close();
+				luceneUpdateService.rebuildIndex(indexDir);
 				// now try to reopen once again.
 				// If this dose not work we really have a IO problem
-				reader = DirectoryReader.open(indexDir);
-				logger.info("...lucene index successfull initialized.");
-				// starting index job....
-				logger.info("...rebuilding lucene index...");
-				ItemCollection job = new ItemCollection();
-				job.replaceItemValue("numinterval", 2); // 2 minutes
-				job.replaceItemValue("job", AdminPService.JOB_REBUILD_LUCENE_INDEX);
-				adminPService.createJob(job);
+				reader = DirectoryReader.open(indexDir);				
 			} else {
 				// throw the origin exception....
 				throw ioe;
@@ -499,7 +485,8 @@ public class LuceneSearchService {
 		IndexSearcher searcher = new IndexSearcher(reader);
 		return searcher;
 	}
-
+	
+	
 	/**
 	 * Returns in instance of a QueyParser based on a KeywordAnalyser. The method
 	 * set the lucene DefaultOperator to 'OR' if not specified otherwise in the
@@ -509,7 +496,6 @@ public class LuceneSearchService {
 	 * @param prop
 	 * @return
 	 */
-
 	QueryParser createQueryParser() {
 		// use the keywordAnalyzer for searching a search term.
 		QueryParser parser = new QueryParser("content", new KeywordAnalyzer());

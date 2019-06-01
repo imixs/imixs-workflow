@@ -51,12 +51,14 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.ClassicAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexableField;
@@ -69,6 +71,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.EventLogService;
+import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.PluginException;
 
@@ -145,6 +148,9 @@ public class LuceneUpdateService {
 
 	@Inject
 	LuceneItemAdapter luceneItemAdapter;
+
+	@EJB
+	AdminPService adminPService;
 
 	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
@@ -727,8 +733,12 @@ public class LuceneUpdateService {
 	IndexWriter createIndexWriter() throws IOException {
 		// create a IndexWriter Instance
 		Directory indexDir = FSDirectory.open(Paths.get(luceneIndexDir));
+		// verify existence of index directory...
+		if (!DirectoryReader.indexExists(indexDir)) {
+			logger.info("...lucene index does not yet exist, initialize the index now....");
+			rebuildIndex(indexDir);
+		}
 		IndexWriterConfig indexWriterConfig;
-
 		// indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
 		try {
 			// issue #429
@@ -739,6 +749,26 @@ public class LuceneUpdateService {
 		}
 
 		return new IndexWriter(indexDir, indexWriterConfig);
+	}
+
+	/**
+	 * This method forces an update of the full text index. The method also creates
+	 * the index directory if it does not yet exist.
+	 */
+	public void rebuildIndex(Directory indexDir) throws IOException {
+		// create a IndexWriter Instance to make sure we have created the index
+		// directory..
+		IndexWriterConfig indexWriterConfig;
+		indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
+		indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+		IndexWriter indexWriter = new IndexWriter(indexDir, indexWriterConfig);
+		indexWriter.close();
+		// now starting index job....
+		logger.info("...rebuild lucene index job created...");
+		ItemCollection job = new ItemCollection();
+		job.replaceItemValue("numinterval", 2); // 2 minutes
+		job.replaceItemValue("job", AdminPService.JOB_REBUILD_LUCENE_INDEX);
+		adminPService.createJob(job);
 	}
 
 	/**
