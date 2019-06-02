@@ -57,19 +57,24 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.xml.sax.SAXException;
 
 /**
- * The SetupService EJB initializes the Imxis-Workflow engine. 
+ * The SetupService EJB initializes the Imxis-Workflow engine and returns the
+ * current status.
  * <p>
- * The service loads a default model defined by the optional environment
- * variable 'MODEL_DEFAULT_DATA'. This variable can point to multiple model resources
- * separated by a ';'. A model resource file must have the file extension
- * '.bpmn'.
+ * During startup, the service loads a default model defined by the optional
+ * environment variable 'MODEL_DEFAULT_DATA'. This variable can point to
+ * multiple model resources separated by a ';'. A model resource file must have
+ * the file extension '.bpmn'.
  * <p>
- * If you define the variable in the imixs.properties file than the variable can be lowercased to
- * 'model.default.data'.
+ * The variable can be defined also in the imixs.properties file. In this case
+ * the variable is named: 'model.default.data'.
  * <p>
- * Optional it is also possible to provide setup data in a XML file.
+ * Optional it is also possible to provide setup workflow initial data in a XML
+ * file.
  * <p>
  * Finally the service starts optional registered scheduler services.
+ * <p>
+ * With the method 'getModelCount' the service returns the current status of the
+ * workflow engine by returning the count of valid workflow models.
  * 
  * @author rsoika
  * @version 1.0
@@ -81,9 +86,10 @@ import org.xml.sax.SAXException;
 public class SetupService {
 	public static String SETUP_OK = "OK";
 	public static String MODEL_INITIALIZED = "MODEL_INITIALIZED";
-	
+
 	private static Logger logger = Logger.getLogger(SetupService.class.getName());
 
+	// inject evnironment / property for the model default data.
 	@Inject
 	@ConfigProperty(name = "MODEL_DEFAULT_DATA", defaultValue = "")
 	String envModelDefaultData;
@@ -91,7 +97,6 @@ public class SetupService {
 	@ConfigProperty(name = "model.default.data", defaultValue = "")
 	String modelDefaultData;
 
-	
 	@EJB
 	DocumentService documentService;
 
@@ -100,6 +105,10 @@ public class SetupService {
 
 	@EJB
 	SchedulerService schedulerService;
+
+	public int getModelCount() {
+		return modelService.getVersions().size();
+	}
 
 	/**
 	 * This method start the system setup during deployment
@@ -122,16 +131,16 @@ public class SetupService {
 	}
 
 	/**
-	 * This method loads the default model if no models exist in the current instance
+	 * This method loads the default model if no models exist in the current
+	 * instance
 	 * 
 	 * @return - status
 	 */
 	public void scanDefaultModels() {
 		logger.finest("......scan default models...");
+		// test if we have an environment variable or a property value...
+		String modelData = !envModelDefaultData.isEmpty() ? envModelDefaultData : modelDefaultData;
 
-		// test if we have an environment  variable or a property value...
-		String modelData=!envModelDefaultData.isEmpty()?envModelDefaultData:modelDefaultData;
-		
 		String[] modelResources = modelData.split(";");
 		for (String modelResource : modelResources) {
 
@@ -276,5 +285,4 @@ public class SetupService {
 
 	}
 
-	
 }

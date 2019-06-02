@@ -1,4 +1,8 @@
 # The PropertyService 
+ 
+<p style="border:solid 1px red;padding:5px;">
+<strong>Note:</strong><span>This service is deprecated and is replaced since version 5.0.0 by the Microprofile Config API! <br />See <a href="configsource.html">Imixs Config Source</a>.</span> 
+</p>
 
 The Imixs Workflow Engine provides a property service to manage application specific properties  in a common way. The properties can be stored into a file named 'imixs.properties'.  The singleton ejb 'PropertyService' provides a service to access the imxis.property file. The property file can be packaged together with an application in any ejb module.  This in an example how to acces the imixs.properties:
   

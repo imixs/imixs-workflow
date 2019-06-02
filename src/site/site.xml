@@ -62,6 +62,10 @@
 				<item name="Scheduler" href="./engine/scheduler.html" />
 				<item name="CDI and JNDI Lookup" href="./engine/remote_lookup.html" />
 				<item name="SetupService" href="./engine/setupservice.html" />
+				<item name="Configuration" href="./engine/configsource.html" />
+				<item name="Health Check" href="./engine/healthcheck.html" />
+				<item name="Metrics" href="./engine/metrics.html" />
+				
 			</item>
 			
 
