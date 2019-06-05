@@ -65,6 +65,7 @@
 				<item name="Configuration" href="./engine/configsource.html" />
 				<item name="Health Check" href="./engine/healthcheck.html" />
 				<item name="Metrics" href="./engine/metrics.html" />
+				<item name="Event Log" href="./engine/eventlogservice.html" />
 				
 			</item>
 			
