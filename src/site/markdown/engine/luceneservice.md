@@ -61,6 +61,12 @@ The property 'lucene.indexFieldListAnalyze' defines a comma separated list of fi
 ### IndexFieldListNoAnalyze
 The property 'lucene.indexFieldListNoAnalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here.
  
+### IndexFieldListStore 
+The property 'lucence.indexFieldListStore' defines a comma separated list of fields which will be stored into the Lucene Document. This kind of data can be requested by the method findHits(). This finder method is faster but did not load the whole document. 
+  
+ 
+ 
+ 
 ### defaultOperator
 The defaultOperator sets the boolean operator of the QueryParser. In default mode (AND\_OPERATOR) terms without any modifiers are considered optional: for example _capital of France_ is equal to _capital AND of AND France_.
 In OR\_OPERATOR mode terms are considered to be in conjunction: the above mentioned query is parsed as _capital OR of OR France_

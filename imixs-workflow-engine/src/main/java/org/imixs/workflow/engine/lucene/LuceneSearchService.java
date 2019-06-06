@@ -29,7 +29,10 @@ package org.imixs.workflow.engine.lucene;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -46,6 +49,7 @@ import org.apache.lucene.analysis.standard.ClassicAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser.Operator;
@@ -61,6 +65,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.exceptions.InvalidAccessException;
@@ -160,16 +165,31 @@ public class LuceneSearchService {
 	}
 
 	/**
-	 * Returns a collection of documents matching matching the provided search term.
-	 * The provided search term will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term.
+	 * Returns a collection of documents matching the provided search term. The term
+	 * will be extended with the current users roles to test the read access level
+	 * of each workitem matching the search term.
+	 */
+	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex, Sort sortOrder,
+			Operator defaultOperator) throws QueryException {
+
+		return search(sSearchTerm, pageSize, pageIndex, sortOrder, defaultOperator, true);
+	}
+
+	/**
+	 * Returns a collection of documents matching the provided search term. The term
+	 * will be extended with the current users roles to test the read access level
+	 * of each workitem matching the search term.
 	 * <p>
 	 * The optional param 'searchOrder' can be set to force lucene to sort the
 	 * search result by any search order.
 	 * <p>
 	 * The optional param 'defaultOperator' can be set to Operator.AND
+	 * <p>
+	 * The optional param 'stubs' indicates if the full Imixs Document should be
+	 * loaded or if only the data fields stored in the lucedn index will be return.
+	 * The later is the faster method but returns only document stubs.
 	 * 
-	 * @param sSearchTerm
+	 * @param searchTerm
 	 * @param pageSize
 	 *            - docs per page
 	 * @param pageIndex
@@ -178,13 +198,16 @@ public class LuceneSearchService {
 	 *            - optional to sort the result
 	 * @param defaultOperator
 	 *            - optional to change the default search operator
-	 * 
+	 * @param loadStubs
+	 *            - optional indicates of only the lucene document should be
+	 *            returned.
 	 * @return collection of search result
+	 * 
 	 * @throws QueryException
 	 *             in case the searchtem is not understandable.
 	 */
-	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex, Sort sortOrder,
-			Operator defaultOperator) throws QueryException {
+	public List<ItemCollection> search(String searchTerm, int pageSize, int pageIndex, Sort sortOrder,
+			Operator defaultOperator, boolean loadStubs) throws QueryException {
 
 		long ltime = System.currentTimeMillis();
 
@@ -210,9 +233,9 @@ public class LuceneSearchService {
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
-		sSearchTerm = getExtendedSearchTerm(sSearchTerm);
+		searchTerm = getExtendedSearchTerm(searchTerm);
 		// test if searchtem is provided
-		if (sSearchTerm == null || "".equals(sSearchTerm)) {
+		if (searchTerm == null || "".equals(searchTerm)) {
 			return workitems;
 		}
 
@@ -245,7 +268,7 @@ public class LuceneSearchService {
 						+ DEFAULT_MAX_SEARCH_RESULT + ") -> new MAX_SEARCH_RESULT is set to " + maxSearchResult);
 			}
 
-			Query query = parser.parse(sSearchTerm);
+			Query query = parser.parse(searchTerm);
 			if (sortOrder != null) {
 				// sorted by sortoder
 				logger.finest("......lucene result sorted by sortOrder= '" + sortOrder + "' ");
@@ -277,13 +300,22 @@ public class LuceneSearchService {
 
 			for (ScoreDoc scoredoc : scoreDosArray) {
 				// Retrieve the matched document and show relevant details
-				Document doc = searcher.doc(scoredoc.doc);
+				Document luceneDoc = searcher.doc(scoredoc.doc);
 
-				String sID = doc.get("$uniqueid");
-				logger.finest("......lucene lookup $uniqueid=" + sID);
-				ItemCollection itemCol = documentService.load(sID);
-				if (itemCol != null) {
-					workitems.add(itemCol);
+				String sID = luceneDoc.get(WorkflowKernel.UNIQUEID);
+				ItemCollection imixsDoc = null;
+				if (loadStubs) {
+					// return only the fields form the Lucene document
+					imixsDoc = convertLuceneDocument(luceneDoc);
+					imixsDoc.replaceItemValue(WorkflowKernel.UNIQUEID, sID);
+				} else {
+					// load the full imixs document from the database
+					logger.finest("......lucene lookup $uniqueid=" + sID);
+					imixsDoc = documentService.load(sID);
+				}
+
+				if (imixsDoc != null) {
+					workitems.add(imixsDoc);
 				} else {
 					logger.warning("lucene index returned unreadable workitem : " + sID);
 					luceneUpdateService.removeDocument(sID);
@@ -297,7 +329,8 @@ public class LuceneSearchService {
 
 			searcher.getIndexReader().close();
 
-			logger.fine("...search result computed in " + (System.currentTimeMillis() - ltime) + " ms");
+			logger.info("...search result computed in " + (System.currentTimeMillis() - ltime) + " ms - loadStubs="
+					+ loadStubs);
 		} catch (IOException e) {
 			// in case of an IOException we just print an error message and
 			// return an empty result
@@ -475,7 +508,7 @@ public class LuceneSearchService {
 				luceneUpdateService.rebuildIndex(indexDir);
 				// now try to reopen once again.
 				// If this dose not work we really have a IO problem
-				reader = DirectoryReader.open(indexDir);				
+				reader = DirectoryReader.open(indexDir);
 			} else {
 				// throw the origin exception....
 				throw ioe;
@@ -485,8 +518,7 @@ public class LuceneSearchService {
 		IndexSearcher searcher = new IndexSearcher(reader);
 		return searcher;
 	}
-	
-	
+
 	/**
 	 * Returns in instance of a QueyParser based on a KeywordAnalyser. The method
 	 * set the lucene DefaultOperator to 'OR' if not specified otherwise in the
@@ -514,6 +546,53 @@ public class LuceneSearchService {
 		parser.setSplitOnWhitespace(luceneSplitOnWhitespace);
 
 		return parser;
+	}
+
+	/**
+	 * This method converts a LuceneDocument into a ItemCollection with all stored
+	 * index fields from the Lucene document.
+	 * 
+	 * @param luceneDoc
+	 * @return ItemCollection representing the Lucene Document
+	 */
+	ItemCollection convertLuceneDocument(Document luceneDoc) {
+		SimpleDateFormat luceneDateformat = new SimpleDateFormat("yyyyMMddHHmmss");
+		// load the full imixs document from the database
+		ItemCollection imixsDoc = new ItemCollection();
+		Iterator<IndexableField> iter = luceneDoc.iterator();
+		while (iter.hasNext()) {
+			IndexableField indexableField = iter.next();
+			Object objectValue = null;
+			String stringValue = indexableField.stringValue();
+			// is date?
+			if (stringValue.length() == 14) {
+				try {
+					objectValue = luceneDateformat.parse(stringValue);
+				} catch (java.text.ParseException e) {
+					// no date!
+				}
+			}
+			// lets see if it is a number..?
+			if (objectValue == null) {
+				try {
+					Number number = NumberFormat.getInstance().parse(stringValue);
+					objectValue = number;
+				} catch (java.text.ParseException e) {
+					// no number
+				}
+			}
+			if (objectValue == null) {
+				objectValue = stringValue;
+			}
+			logger.finest(".........append "+indexableField.name() 
+					+ " = "+objectValue);
+			imixsDoc.appendItemValue(indexableField.name(), objectValue);
+		}
+
+		// compute $isAuthor flag...
+		imixsDoc.replaceItemValue(DocumentService.ISAUTHOR, documentService.isAuthor(imixsDoc));
+
+		return imixsDoc;
 	}
 
 	/**

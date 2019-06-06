@@ -65,7 +65,6 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.BytesRef;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -132,9 +131,14 @@ public class LuceneUpdateService {
 	@ConfigProperty(name = "lucence.indexFieldListNoAnalyze", defaultValue = "")
 	String luceneIndexFieldListNoAnalyse;
 
+	@Inject
+	@ConfigProperty(name = "lucence.indexFieldListStore", defaultValue = "")
+	String luceneIndexFieldListStore;
+
 	private List<String> searchFieldList = null;
 	private List<String> indexFieldListAnalyse = null;
 	private List<String> indexFieldListNoAnalyse = null;
+	private List<String> indexFieldListStore = null;
 
 	// default field lists
 	private static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
@@ -142,6 +146,9 @@ public class LuceneUpdateService {
 			"$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator",
 			"$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "txtname", "namowner",
 			"txtworkitemref", "$uniqueidsource", "$uniqueidversions", "$lasttask", "$lastevent", "$lasteventdate");
+	private static List<String> DEFAULT_STORE_FIELD_LIST = Arrays.asList("type", "$writeaccess", "$workflowsummary",
+			"$workflowabstract", "$workflowgroup", "$workflowstatus", "$modified", "$created", "$creator", "$editor",
+			"$lasteditor", "namowner");
 
 	@EJB
 	EventLogService eventLogService;
@@ -198,7 +205,6 @@ public class LuceneUpdateService {
 		}
 
 		// compute Index field list (NoAnalyze)
-
 		indexFieldListNoAnalyse = new ArrayList<String>();
 		// add all static default field list
 		indexFieldListNoAnalyse.addAll(DEFAULT_NOANALYSE_FIELD_LIST);
@@ -211,6 +217,32 @@ public class LuceneUpdateService {
 					indexFieldListNoAnalyse.add(sName);
 			}
 		}
+
+		// compute Index field list (Store)
+		indexFieldListStore = new ArrayList<String>();
+		// add all static default field list
+		indexFieldListStore.addAll(DEFAULT_STORE_FIELD_LIST);
+		if (luceneIndexFieldListStore != null && !luceneIndexFieldListStore.isEmpty()) {
+			// add additional field list from imixs.properties
+			StringTokenizer st = new StringTokenizer(luceneIndexFieldListStore, ",");
+			while (st.hasMoreElements()) {
+				String sName = st.nextToken().toLowerCase().trim();
+				if (!indexFieldListStore.contains(sName))
+					indexFieldListStore.add(sName);
+			}
+		}
+
+		// Issue #518:
+		// if a field of the indexFieldListStore is not part of the
+		// indexFieldListAnalyse , than we add these fields to the indexFieldListAnalyse
+		// This is to guaranty that we store the field value in any case.
+		for (String fieldName : indexFieldListStore) {
+			if (!indexFieldListAnalyse.contains(fieldName)) {
+				// add this field into he indexFieldListAnalyse
+				indexFieldListAnalyse.add(fieldName);
+			}
+		}
+
 	}
 
 	/**
@@ -227,6 +259,7 @@ public class LuceneUpdateService {
 		config.replaceItemValue("lucence.fulltextFieldList", searchFieldList);
 		config.replaceItemValue("lucence.indexFieldListAnalyze", indexFieldListAnalyse);
 		config.replaceItemValue("lucence.indexFieldListNoAnalyze", indexFieldListNoAnalyse);
+		config.replaceItemValue("lucence.indexFieldListStore", indexFieldListStore);
 
 		return config;
 	}
@@ -567,14 +600,18 @@ public class LuceneUpdateService {
 		doc.add(new TextField("content", sContent, Store.NO));
 
 		// add each field from the indexFieldList into the lucene document
+		List<String> _localFieldListStore=new ArrayList<String>();
+		_localFieldListStore.addAll(indexFieldListStore);
 
 		// analyzed...
 		for (String aFieldname : indexFieldListAnalyse) {
-			addItemValues(doc, aworkitem, aFieldname, true);
+			addItemValues(doc, aworkitem, aFieldname, true, _localFieldListStore.contains(aFieldname));
+			// avoid duplication.....
+			_localFieldListStore.remove(aFieldname);
 		}
 		// ... and not analyzed...
 		for (String aFieldname : indexFieldListNoAnalyse) {
-			addItemValues(doc, aworkitem, aFieldname, false);
+			addItemValues(doc, aworkitem, aFieldname, false, _localFieldListStore.contains(aFieldname));
 		}
 
 		// add $uniqueid not analyzed
@@ -598,7 +635,8 @@ public class LuceneUpdateService {
 	}
 
 	/**
-	 * adds a field value into a lucene document
+	 * adds a field value into a Lucene document. The parameter store specifies if
+	 * the value will become part of the Lucene document which is optional.
 	 * 
 	 * @param doc
 	 *            an existing lucene document
@@ -608,8 +646,10 @@ public class LuceneUpdateService {
 	 *            the Fieldname inside the workitem
 	 * @param analyzeValue
 	 *            indicates if the value should be parsed by the analyzer
+	 * @param store
+	 *            indicates if the value will become part of the Lucene document
 	 */
-	void addItemValues(Document doc, ItemCollection workitem, String itemName, boolean analyzeValue) {
+	void addItemValues(Document doc, ItemCollection workitem, String itemName, boolean analyzeValue, boolean store) {
 
 		if (itemName == null) {
 			return;
@@ -628,9 +668,12 @@ public class LuceneUpdateService {
 
 		boolean firstValue = true;
 		for (Object singleValue : vValues) {
-
-			IndexableField indexableField = luceneItemAdapter.adaptItemValue(itemName, singleValue, analyzeValue);
-
+			IndexableField indexableField = null;
+			if (store) {
+				indexableField = luceneItemAdapter.adaptItemValue(itemName, singleValue, analyzeValue, Store.YES);
+			} else {
+				indexableField = luceneItemAdapter.adaptItemValue(itemName, singleValue, analyzeValue, Store.NO);
+			}
 			doc.add(indexableField);
 
 			// we only add the first value of a multiValue field into the
@@ -639,81 +682,6 @@ public class LuceneUpdateService {
 			if (!analyzeValue && firstValue == true) {
 				SortedDocValuesField sortedDocField = luceneItemAdapter.adaptSortableItemValue(itemName, singleValue);
 				doc.add(sortedDocField);
-			}
-
-			firstValue = false;
-		}
-
-	}
-
-	/**
-	 * adds a field value into a lucene document
-	 * 
-	 * @param doc
-	 *            an existing lucene document
-	 * @param workitem
-	 *            the workitem containg the values
-	 * @param itemName
-	 *            the Fieldname inside the workitem
-	 * @param analyzeValue
-	 *            indicates if the value should be parsed by the analyzer
-	 */
-	@Deprecated
-	void addItemValuesOld(Document doc, ItemCollection workitem, String itemName, boolean analyzeValue) {
-		String sValue = null;
-
-		if (itemName == null) {
-			return;
-		}
-		// item name must be LowerCased and trimmed because of later usage in
-		// doc.add(...)
-		itemName = itemName.toLowerCase().trim();
-
-		List<?> vValues = workitem.getItemValue(itemName);
-		if (vValues.size() == 0) {
-			return;
-		}
-		if (vValues.get(0) == null) {
-			return;
-		}
-
-		boolean firstValue = true;
-		for (Object singleValue : vValues) {
-
-			// Object o = vValues.firstElement();
-			if (singleValue instanceof Calendar || singleValue instanceof Date) {
-				SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmmss");
-
-				// convert calendar to string
-				String sDateValue;
-				if (singleValue instanceof Calendar) {
-					sDateValue = dateformat.format(((Calendar) singleValue).getTime());
-				} else {
-					sDateValue = dateformat.format((Date) singleValue);
-				}
-				sValue = sDateValue;
-
-			} else {
-				// simple string representation
-				sValue = singleValue.toString();
-			}
-
-			logger.finest("......lucene add IndexField (analyse=" + analyzeValue + "): " + itemName + "=" + sValue);
-			if (analyzeValue) {
-				doc.add(new TextField(itemName, sValue, Store.NO));
-			} else {
-				// do not analyze content of index fields!
-				doc.add(new StringField(itemName, sValue, Store.NO));
-
-				// we only add the first value of a multiValue field into the
-				// sort index, because it seems not to make any sense to sort a
-				// result set by multivalues.
-				// since lucene 5 we create an additional sortedSet field..
-				// doc.add(new SortedSetDocValuesField(itemName, new
-				// BytesRef(sValue)));
-				if (firstValue) {
-					doc.add(new SortedDocValuesField(itemName, new BytesRef(sValue)));
-				}
 			}
 
 			firstValue = false;

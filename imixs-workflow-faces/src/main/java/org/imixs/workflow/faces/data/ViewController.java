@@ -44,13 +44,14 @@ import org.imixs.workflow.exceptions.QueryException;
 /**
  * The ViewController can be used in JSF Applications to manage lists of
  * ItemCollections.
- * 
+ * <p>
  * The view property defines the view type returned by a method call of
- * getWorkitems. The ViewController implements a lazy loading mechanism to cache
- * the result. The request is delegated to an instance of IViewAdapter to
- * compute the result set. IViewAdapter can be adapted by any custom
- * implementation.
- * 
+ * loadData. The ViewController implements a lazy loading mechanism to cache the
+ * result.
+ * <p>
+ * The property 'loadStubs' can be used to define if only the Document Stubs
+ * (default) or the full Document should be loaded.
+ * <p>
  * The ViewController bean should be used in ViewScope.
  * 
  * @author rsoika
@@ -68,6 +69,9 @@ public class ViewController implements Serializable {
 	private int pageSize = 10;
 	private int pageIndex = 0;
 	private boolean endOfList = false;
+	private boolean loadStubs=true;
+	
+
 	private static Logger logger = Logger.getLogger(ViewController.class.getName());
 
 	@EJB
@@ -135,6 +139,14 @@ public class ViewController implements Serializable {
 		this.pageSize = pageSize;
 	}
 
+	public boolean isLoadStubs() {
+		return loadStubs;
+	}
+
+	public void setLoadStubs(boolean loadStubs) {
+		this.loadStubs = loadStubs;
+	}
+	
 	/**
 	 * resets the current result and set the page pointer to 0.
 	 * 
@@ -190,7 +202,7 @@ public class ViewController implements Serializable {
 		// load data
 		logger.finest("...... load data - query=" + getQuery() + " pageIndex=" + getPageIndex());
 		List<ItemCollection> result = documentService.find(getQuery(), getPageSize(), getPageIndex(), getSortBy(),
-				isSortReverse());
+				isSortReverse(),this.isLoadStubs());
 
 		// The end of a list is reached when the size is below or equal the
 		// pageSize. See issue #287

@@ -15,13 +15,16 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.util.BytesRef;
 
 /**
- * The LuceneItemAdapter is CDI bean, providing methods to convert the value of
- * an Imixs Item into a IndexableField. This Fields can be stored in a Lucene
- * Document.
+ * The LuceneItemAdapter is a CDI bean, providing methods to convert the value
+ * of an Imixs Item into a IndexableField. This kind of lucene fields can be
+ * stored in a Lucene Document.
+ * <p>
+ * You can overwrite the bean to provide an alternative method of value
+ * conversion.
  * 
  * @see LuceneUdpateService#addItemValues
  * @author rsoika
- * @version 1.0
+ * @version 1.1
  */
 @Named
 public class LuceneItemAdapter {
@@ -29,10 +32,12 @@ public class LuceneItemAdapter {
 	private static Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
 
 	/**
-	 * Creates a Indexable Lucene Field to be stored in a lucene document. The
-	 * content of the itemValue will be converted and depending on the parameter
-	 * doAnalye converted into a TextField or in a StringField. The later is used
-	 * for exact match.
+	 * Creates a Indexable Lucene Field to be added into a Lucene document. The
+	 * content of the itemValue will be converted. Depending on the parameter
+	 * doAnalye a TextField or a StringField is created. The later is used for exact
+	 * match.
+	 * <p>
+	 * The item value will not be stored into the lucene document
 	 * 
 	 * @param itemName
 	 *            - name of the item will be used as the doc field name
@@ -45,15 +50,40 @@ public class LuceneItemAdapter {
 	 * @return
 	 */
 	public IndexableField adaptItemValue(String itemName, Object itemValue, boolean doAnalyze) {
+		return adaptItemValue(itemName, itemValue, doAnalyze, Store.NO);
+	}
+
+	/**
+	 * Creates a Indexable Lucene Field to be added into a Lucene document. The
+	 * content of the itemValue will be converted. Depending on the parameter
+	 * doAnalye a TextField or a StringField is created. The later is used for exact
+	 * match.
+	 * <p>
+	 * The parameter 'store' indicates if Lucene should store the item value in the
+	 * document
+	 * <p>
+	 * <code>Store.NO - Store.YES</code>
+	 * 
+	 * @param itemName
+	 *            - name of the item will be used as the doc field name
+	 * @param itemValue
+	 *            - the item value which will be converted by the method
+	 *            convertItemValue
+	 * @param doAnalyze
+	 *            - if true the content will by analyzed by the LuceneAnalyzer
+	 *            configured in the IndexWriter
+	 * @return
+	 */
+	public IndexableField adaptItemValue(String itemName, Object itemValue, boolean doAnalyze, Store stored) {
 		String stringValue = convertItemValue(itemValue);
 		logger.finest("......lucene add IndexField (analyzed=" + doAnalyze + "): " + itemName + "=" + stringValue);
 		if (doAnalyze) {
 			// just create a text field to be indexed
-			return new TextField(itemName, stringValue, Store.NO);
+			return new TextField(itemName, stringValue, stored);
 		} else {
 			// do not analyze content. Content can be used for exact match and sortable
 			// fields!
-			return new StringField(itemName, stringValue, Store.NO);
+			return new StringField(itemName, stringValue, stored);
 		}
 	}
 
@@ -97,8 +127,8 @@ public class LuceneItemAdapter {
 			}
 			convertedValue = sDateValue;
 		} else {
-			// default 
-			convertedValue=itemValue.toString();
+			// default
+			convertedValue = itemValue.toString();
 		}
 		return convertedValue;
 	}

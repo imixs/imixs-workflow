@@ -401,7 +401,7 @@ public class DocumentService {
 				"......save - ID=" + document.getUniqueID() + " managed version=" + persistedDocument.getVersion());
 
 		// remove the property $isauthor
-		document.removeItem("$isauthor");
+		document.removeItem(ISAUTHOR);
 
 		// verify type attribute
 		String aType = document.getItemValueString("type");
@@ -471,7 +471,7 @@ public class DocumentService {
 		document.removeItem(VERSION);
 
 		// update the $isauthor flag
-		document.replaceItemValue("$isauthor", isCallerAuthor(persistedDocument));
+		document.replaceItemValue(ISAUTHOR, isCallerAuthor(persistedDocument));
 
 		// add/update document into lucene index
 		if (!document.getItemValueBoolean(NOINDEX)) {
@@ -740,6 +740,39 @@ public class DocumentService {
 	 */
 	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy, boolean sortReverse)
 			throws QueryException {
+		return find(searchTerm, pageSize, pageIndex, sortBy, sortReverse, false);
+	}
+
+	/**
+	 * The method returns a sorted list of ItemCollections by calling the
+	 * LuceneSearchService. The result list can be sorted by a sortField and a sort
+	 * direction.
+	 * <p>
+	 * The method expects an valid Lucene search term. The method returns only
+	 * ItemCollections which are readable by the CallerPrincipal. With the pageSize
+	 * and pageNumber it is possible to paginate.
+	 * 
+	 * @param searchTerm
+	 *            - Lucene search term
+	 * @param pageSize
+	 *            - total docs per page
+	 * @param pageIndex
+	 *            - number of page to start (default = 0)
+	 * 
+	 * @param sortBy
+	 *            -optional field to sort the result
+	 * @param sortReverse
+	 *            - optional sort direction
+	 * @param loadStubs
+	 *            - optional indicates if only the Lucene Document stubs should be
+	 *            loaded
+	 * @return list of ItemCollection elements
+	 * @throws QueryException
+	 * 
+	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
+	 */
+	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy, boolean sortReverse,
+			boolean loadStubs) throws QueryException {
 		logger.finest("......find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber=" + pageIndex
 				+ " , sortBy=" + sortBy + " reverse=" + sortReverse);
 
@@ -752,7 +785,7 @@ public class DocumentService {
 			sortOrder = new Sort(new SortField[] { new SortField(sortBy, Type.STRING, sortReverse) });
 		}
 
-		return luceneSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null);
+		return luceneSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null, loadStubs);
 
 	}
 
@@ -1002,6 +1035,43 @@ public class DocumentService {
 	}
 
 	/**
+	 * Verifies if the caller has write access to the current ItemCollection
+	 * 
+	 * @return
+	 */
+	public boolean isAuthor(ItemCollection itemcol) {
+		@SuppressWarnings("unchecked")
+		List<String> writeAccessList = itemcol.getItemValue(WRITEACCESS);
+	
+		/**
+		 * 1.) org.imixs.ACCESSLEVEL.NOACCESS allways false - now write access!
+		 */
+		if (ctx.isCallerInRole(ACCESSLEVEL_NOACCESS))
+			return false;
+	
+		/**
+		 * 2.) org.imixs.ACCESSLEVEL.MANAGERACCESS or org.imixs.ACCESSLEVEL.EDITOR
+		 * Always true - grant writeaccess.
+		 */
+		if (ctx.isCallerInRole(ACCESSLEVEL_MANAGERACCESS) || ctx.isCallerInRole(ACCESSLEVEL_EDITORACCESS))
+			return true;
+	
+		/**
+		 * 2.) org.imixs.ACCESSLEVEL.AUTHOR
+		 * 
+		 * check write access in detail
+		 */
+	
+		if (ctx.isCallerInRole(ACCESSLEVEL_AUTHORACCESS)) {
+			if (isUserContained(writeAccessList)) {
+				// user role known - grant access
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * This method udates the metadata of a new loaded ItemCollection based on the
 	 * document attributes.
 	 * <p>
@@ -1025,12 +1095,12 @@ public class DocumentService {
 		} else {
 			itemColection.replaceItemValue(VERSION, doc.getVersion());
 		}
-	
+
 		// Update $modified base on doc.getModified! (see issue #497)
 		itemColection.replaceItemValue("$modified", doc.getModified().getTime());
-	
+
 		// update the $isauthor flag
-		itemColection.replaceItemValue("$isauthor", isCallerAuthor(doc));
+		itemColection.replaceItemValue(ISAUTHOR, isCallerAuthor(doc));
 	}
 
 	/**
@@ -1077,45 +1147,16 @@ public class DocumentService {
 	}
 
 	/**
-	 * Verifies if the caller has write access to the current document
+	 * Verifies if the caller has write access to the given ItemCollection (document).
 	 * 
-	 * @return
+	 * @return true if the current user has author access
 	 */
 	private boolean isCallerAuthor(Document document) {
-
 		ItemCollection itemcol = ItemCollection.createByReference(document.getData());
-
-		@SuppressWarnings("unchecked")
-		List<String> writeAccessList = itemcol.getItemValue(WRITEACCESS);
-
-		/**
-		 * 1.) org.imixs.ACCESSLEVEL.NOACCESS allways false - now write access!
-		 */
-		if (ctx.isCallerInRole(ACCESSLEVEL_NOACCESS))
-			return false;
-
-		/**
-		 * 2.) org.imixs.ACCESSLEVEL.MANAGERACCESS or org.imixs.ACCESSLEVEL.EDITOR
-		 * Always true - grant writeaccess.
-		 */
-		if (ctx.isCallerInRole(ACCESSLEVEL_MANAGERACCESS) || ctx.isCallerInRole(ACCESSLEVEL_EDITORACCESS))
-			return true;
-
-		/**
-		 * 2.) org.imixs.ACCESSLEVEL.AUTHOR
-		 * 
-		 * check write access in detail
-		 */
-
-		if (ctx.isCallerInRole(ACCESSLEVEL_AUTHORACCESS)) {
-			if (isUserContained(writeAccessList)) {
-				// user role known - grant access
-				return true;
-			}
-		}
-		return false;
+		return isAuthor(itemcol);
 	}
-
+	
+	
 	/**
 	 * This method returns true if the given list is empty or contains only null or
 	 * '' values.
@@ -1123,7 +1164,7 @@ public class DocumentService {
 	 * @param aList
 	 * @return
 	 */
-	private boolean isEmptyList(List<String> aList) {
+	public boolean isEmptyList(List<String> aList) {
 		if (aList == null || aList.size() == 0) {
 			return true;
 		}
