@@ -32,7 +32,6 @@ import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -295,9 +294,10 @@ public class LuceneSearchService {
 			// Get an array of references to matched documents
 			ScoreDoc[] scoreDosArray = topDocs.scoreDocs;
 
-			logger.fine("...returned " + scoreDosArray.length + " documents in "
+			logger.finest("...returned " + scoreDosArray.length + " documents in "
 					+ (System.currentTimeMillis() - lsearchtime) + " ms - total hits=" + topDocs.totalHits);
 
+			SimpleDateFormat luceneDateformat = new SimpleDateFormat("yyyyMMddHHmmss");
 			for (ScoreDoc scoredoc : scoreDosArray) {
 				// Retrieve the matched document and show relevant details
 				Document luceneDoc = searcher.doc(scoredoc.doc);
@@ -306,7 +306,7 @@ public class LuceneSearchService {
 				ItemCollection imixsDoc = null;
 				if (loadStubs) {
 					// return only the fields form the Lucene document
-					imixsDoc = convertLuceneDocument(luceneDoc);
+					imixsDoc = convertLuceneDocument(luceneDoc,luceneDateformat);
 					imixsDoc.replaceItemValue(WorkflowKernel.UNIQUEID, sID);
 				} else {
 					// load the full imixs document from the database
@@ -329,7 +329,7 @@ public class LuceneSearchService {
 
 			searcher.getIndexReader().close();
 
-			logger.info("...search result computed in " + (System.currentTimeMillis() - ltime) + " ms - loadStubs="
+			logger.fine("...search result computed in " + (System.currentTimeMillis() - ltime) + " ms - loadStubs="
 					+ loadStubs);
 		} catch (IOException e) {
 			// in case of an IOException we just print an error message and
@@ -555,37 +555,40 @@ public class LuceneSearchService {
 	 * @param luceneDoc
 	 * @return ItemCollection representing the Lucene Document
 	 */
-	ItemCollection convertLuceneDocument(Document luceneDoc) {
-		SimpleDateFormat luceneDateformat = new SimpleDateFormat("yyyyMMddHHmmss");
+	ItemCollection convertLuceneDocument(Document luceneDoc,SimpleDateFormat luceneDateformat) {	
 		// load the full imixs document from the database
 		ItemCollection imixsDoc = new ItemCollection();
-		Iterator<IndexableField> iter = luceneDoc.iterator();
-		while (iter.hasNext()) {
-			IndexableField indexableField = iter.next();
+		
+		
+		List<IndexableField> fields = luceneDoc.getFields();
+		for (IndexableField indexableField : fields) {
+			
 			Object objectValue = null;
 			String stringValue = indexableField.stringValue();
-			// is date?
-			if (stringValue.length() == 14) {
-				try {
-					objectValue = luceneDateformat.parse(stringValue);
-				} catch (java.text.ParseException e) {
-					// no date!
+			// check for numbers....
+			if (isNumeric(stringValue)) {
+				// is date?
+				if (stringValue.length() == 14 && !stringValue.contains(".")) {
+					try {
+						objectValue = luceneDateformat.parse(stringValue);
+					} catch (java.text.ParseException e) {
+						// no date!
+					}
 				}
-			}
-			// lets see if it is a number..?
-			if (objectValue == null) {
-				try {
-					Number number = NumberFormat.getInstance().parse(stringValue);
-					objectValue = number;
-				} catch (java.text.ParseException e) {
-					// no number
+				// lets see if it is a number..?
+				if (objectValue == null) {
+					try {
+						Number number = NumberFormat.getInstance().parse(stringValue);
+						objectValue = number;
+					} catch (java.text.ParseException e) {
+						// no number - should not happen
+					}
 				}
 			}
 			if (objectValue == null) {
 				objectValue = stringValue;
 			}
-			logger.finest(".........append "+indexableField.name() 
-					+ " = "+objectValue);
+			logger.finest(".........append " + indexableField.name() + " = " + objectValue);
 			imixsDoc.appendItemValue(indexableField.name(), objectValue);
 		}
 
@@ -593,6 +596,31 @@ public class LuceneSearchService {
 		imixsDoc.replaceItemValue(DocumentService.ISAUTHOR, documentService.isAuthor(imixsDoc));
 
 		return imixsDoc;
+	}
+
+	/**
+	 * Helper method to check for numbers.
+	 * 
+	 * @see https://stackoverflow.com/questions/1102891/how-to-check-if-a-string-is-numeric-in-java
+	 * @param str
+	 * @return
+	 */
+	private static boolean isNumeric(String str) {
+		boolean dot = false;
+		if (str == null || str.isEmpty()) {
+			return false;
+		}
+		for (char c : str.toCharArray()) {
+			if (c == '.' && dot == false) {
+				dot = true; // first dot!
+				continue;
+			}
+			if (c < '0' || c > '9') {
+				return false;
+			}
+		}
+		return true;
+
 	}
 
 	/**
