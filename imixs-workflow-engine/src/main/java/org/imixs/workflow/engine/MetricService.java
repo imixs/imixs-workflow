@@ -3,17 +3,11 @@ package org.imixs.workflow.engine;
 import java.util.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.ObserverException;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import org.eclipse.microprofile.metrics.Counter;
-import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricType;
-import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.annotation.RegistryType;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 
 /**
@@ -66,13 +60,14 @@ public class MetricService {
 			return;
 		}
 
-		try {
-			Counter counter = buildWorkitemMetric(processingEvent);
-			counter.inc();
-		} catch (IncompatibleClassChangeError | ObserverException oe) {
-			mpMetricNoSupport=true;
-			logger.warning("...Microprofile Metrics v2.0 not supported!");
-		}
+		// NOTE: Issue #514  - just uncomment this code!
+//		try {
+//			Counter counter = buildWorkitemMetric(processingEvent);
+//			counter.inc();
+//		} catch (IncompatibleClassChangeError | ObserverException oe) {
+//			mpMetricNoSupport=true;
+//			logger.warning("...Microprofile Metrics v2.0 not supported!");
+//		}
 	}
 
 	/**
@@ -90,15 +85,16 @@ public class MetricService {
 			return;
 		}
 
-		try {
-			Counter counter = buildDocumentMetric(documentEvent);
-			counter.inc();
-
-		} catch (IncompatibleClassChangeError | ObserverException oe) {
-			mpMetricNoSupport=true;
-			logger.warning("...Microprofile Metrics v2.0 not supported!");
-			oe.printStackTrace();
-		}
+		// NOTE: Issue #514   - just uncomment this code!
+//		try {
+//			Counter counter = buildDocumentMetric(documentEvent);
+//			counter.inc();
+//
+//		} catch (IncompatibleClassChangeError | ObserverException oe) {
+//			mpMetricNoSupport=true;
+//			logger.warning("...Microprofile Metrics v2.0 not supported!");
+//			oe.printStackTrace();
+//		}
 	}
 
 	/**
@@ -107,39 +103,43 @@ public class MetricService {
 	 * 
 	 * @return Counter metric
 	 */
-	private Counter buildDocumentMetric(DocumentEvent event) {
-
-		// Constructs a Metadata object from a map with the following keys:
-		// - name - The name of the metric
-		// - displayName - The display (friendly) name of the metric
-		// - description - The description of the metric
-		// - type - The type of the metric
-		// - tags - The tags of the metric - cannot be null
-		// - reusable - If true, this metric name is permitted to be used at multiple
-
-		Metadata metadata = Metadata.builder().withName(METRIC_DOCUMENTS_TOTAL)
-				.withDescription("Imixs-Workflow count documents").withType(MetricType.COUNTER).build();
-
-		String method = null;
-		// build tags...
-		if (DocumentEvent.ON_DOCUMENT_SAVE == event.getEventType()) {
-			method = "save";
-		}
-
-		if (DocumentEvent.ON_DOCUMENT_LOAD == event.getEventType()) {
-			method = "load";
-		}
-
-		if (DocumentEvent.ON_DOCUMENT_DELETE == event.getEventType()) {
-			method = "delete";
-		}
-
-		Tag[] tags = { new Tag("method", method) };
-
-		Counter counter = metricRegistry.counter(metadata, tags);
-
-		return counter;
-	}
+	
+	
+	// NOTE: Issue #514   - just uncomment this code!
+	
+//	private Counter buildDocumentMetric(DocumentEvent event) {
+//
+//		// Constructs a Metadata object from a map with the following keys:
+//		// - name - The name of the metric
+//		// - displayName - The display (friendly) name of the metric
+//		// - description - The description of the metric
+//		// - type - The type of the metric
+//		// - tags - The tags of the metric - cannot be null
+//		// - reusable - If true, this metric name is permitted to be used at multiple
+//
+//		Metadata metadata = Metadata.builder().withName(METRIC_DOCUMENTS_TOTAL)
+//				.withDescription("Imixs-Workflow count documents").withType(MetricType.COUNTER).build();
+//
+//		String method = null;
+//		// build tags...
+//		if (DocumentEvent.ON_DOCUMENT_SAVE == event.getEventType()) {
+//			method = "save";
+//		}
+//
+//		if (DocumentEvent.ON_DOCUMENT_LOAD == event.getEventType()) {
+//			method = "load";
+//		}
+//
+//		if (DocumentEvent.ON_DOCUMENT_DELETE == event.getEventType()) {
+//			method = "delete";
+//		}
+//
+//		Tag[] tags = { new Tag("method", method) };
+//
+//		Counter counter = metricRegistry.counter(metadata, tags);
+//
+//		return counter;
+//	}
 
 	/**
 	 * This method builds a Microprofile Metric for a Counter. The metric contains
@@ -148,30 +148,30 @@ public class MetricService {
 	 * 
 	 * @return Counter metric
 	 */
-	private Counter buildWorkitemMetric(ProcessingEvent event) {
-
-		// Constructs a Metadata object from a map with the following keys:
-		// - name - The name of the metric
-		// - displayName - The display (friendly) name of the metric
-		// - description - The description of the metric
-		// - type - The type of the metric
-		// - tags - The tags of the metric - cannot be null
-		// - reusable - If true, this metric name is permitted to be used at multiple
-
-		Metadata metadata = Metadata.builder().withName(METRIC_WORKITEMS_TOTAL)
-				.withDescription("Imixs-Workflow count procssed workitems").withType(MetricType.COUNTER).build();
-
-		// build tags...
-		Tag[] tags = { new Tag("type", event.getDocument().getType()),
-				new Tag("modelversion", event.getDocument().getModelVersion()),
-				new Tag("task", event.getDocument().getTaskID() + ""),
-				new Tag("event", event.getDocument().getItemValueInteger("$lastevent") + ""),
-				new Tag("workflowgroup", event.getDocument().getItemValueString(WorkflowKernel.WORKFLOWGROUP)),
-				new Tag("workflowstatus", event.getDocument().getItemValueString(WorkflowKernel.WORKFLOWSTATUS)) };
-
-		Counter counter = metricRegistry.counter(metadata, tags);
-
-		return counter;
-	}
+//	private Counter buildWorkitemMetric(ProcessingEvent event) {
+//
+//		// Constructs a Metadata object from a map with the following keys:
+//		// - name - The name of the metric
+//		// - displayName - The display (friendly) name of the metric
+//		// - description - The description of the metric
+//		// - type - The type of the metric
+//		// - tags - The tags of the metric - cannot be null
+//		// - reusable - If true, this metric name is permitted to be used at multiple
+//
+//		Metadata metadata = Metadata.builder().withName(METRIC_WORKITEMS_TOTAL)
+//				.withDescription("Imixs-Workflow count procssed workitems").withType(MetricType.COUNTER).build();
+//
+//		// build tags...
+//		Tag[] tags = { new Tag("type", event.getDocument().getType()),
+//				new Tag("modelversion", event.getDocument().getModelVersion()),
+//				new Tag("task", event.getDocument().getTaskID() + ""),
+//				new Tag("event", event.getDocument().getItemValueInteger("$lastevent") + ""),
+//				new Tag("workflowgroup", event.getDocument().getItemValueString(WorkflowKernel.WORKFLOWGROUP)),
+//				new Tag("workflowstatus", event.getDocument().getItemValueString(WorkflowKernel.WORKFLOWSTATUS)) };
+//
+//		Counter counter = metricRegistry.counter(metadata, tags);
+//
+//		return counter;
+//	}
 
 }
