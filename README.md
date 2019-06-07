@@ -1,7 +1,7 @@
 # Imixs-Workflow
 [![Join the chat at https://gitter.im/imixs/imixs-workflow](https://badges.gitter.im/imixs/imixs-workflow.svg)](https://gitter.im/imixs/imixs-workflow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/imixs/imixs-workflow.svg?branch=master)](https://travis-ci.org/imixs/imixs-workflow)
-[![License](https://img.shields.io/aur/license/yaourt.svg?maxAge=2592000)](https://github.com/imixs/imixs-workflow/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/imixs/imixs-workflow/blob/master/LICENSE)
 
 Imixs-Workflow is an open source workflow engine based on the Java Enterprise Architecture (JEE). The Imixs-Workflow project provides components to build human-centric workflow applications within a flexible and robust framework. The business logic can be modeled and executed using the Business Process Modelling Notation - BPMN 2.0 standard. 
 
