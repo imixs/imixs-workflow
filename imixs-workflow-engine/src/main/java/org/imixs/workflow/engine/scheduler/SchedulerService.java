@@ -124,7 +124,8 @@ public class SchedulerService {
 	 */
 	public ItemCollection loadConfiguration(String name) {
 		try {
-			String sQuery = "(type:\"" + DOCUMENT_TYPE + "\" AND txtname:\"" + name + "\")";
+			// support deprecated txtname attribure
+			String sQuery = "(type:\"" + DOCUMENT_TYPE + "\" AND (name:\"" + name + "\" OR txtname:\"" + name + "\" ) )";
 			Collection<ItemCollection> col = documentService.find(sQuery, 1, 0);
 			// check if we found a scheduler configuration
 			if (col.size() > 0) {
@@ -144,7 +145,7 @@ public class SchedulerService {
 	 * following properties are set to default.
 	 * <ul>
 	 * <li>type</li>
-	 * <li>txtName</li>
+	 * <li>name</li>
 	 * <li>$writeAccess</li>
 	 * <li>$readAccess</li>
 	 * </ul>
@@ -155,11 +156,15 @@ public class SchedulerService {
 	 */
 	public ItemCollection saveConfiguration(ItemCollection configItemCollection) {
 
-		// validate
-		String name = configItemCollection.getItemValueString("txtname");
+		// validate and migrate deprecated 'txtname' field
+		String name = configItemCollection.getItemValueString("name");
+		if (name.isEmpty()) {
+			name=configItemCollection.getItemValueString("txtname");
+			configItemCollection.replaceItemValue("name", name);
+		}
 		if (name == null || name.isEmpty()) {
 			throw new InvalidAccessException(SchedulerService.class.getName(), SchedulerException.INVALID_WORKITEM,
-					" scheduler configuraiton must contain the item 'txtname'");
+					" scheduler configuraiton must contain the item 'name'");
 		}
 
 		// update write and read access
@@ -232,7 +237,7 @@ public class SchedulerService {
 			String msg = "started at " + dateFormatDE.format(calNow.getTime()) + " by "
 					+ ctx.getCallerPrincipal().getName();
 			configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_STATUS, msg);
-			logger.info("...Scheduler Service " + id + " (" + configuration.getItemValueString("txtName")
+			logger.info("...Scheduler Service " + id + " (" + configuration.getItemValueString("Name")
 					+ ") successfull started.");
 		}
 		configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, true);
@@ -277,7 +282,7 @@ public class SchedulerService {
 			}
 			configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_STATUS, message);
 
-			logger.info("... scheduler " + configuration.getItemValueString("txtName") + " stopped: "
+			logger.info("... scheduler " + configuration.getItemValueString("Name") + " stopped: "
 					+ configuration.getUniqueID());
 		} else {
 			String msg = "stopped";
@@ -370,6 +375,47 @@ public class SchedulerService {
 		}
 	}
 
+	
+
+	/**
+	 * Creates a new log entry stored in the item _scheduler_log. The log can be
+	 * writen optional to the scheduler configuration and a workitem.
+	 * 
+	 * @param message
+	 * @param configuration
+	 */
+	public void logMessage(String message, ItemCollection configuration, ItemCollection workitem) {
+		if (configuration != null) {
+			configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, message);
+		}
+		if (workitem != null) {
+			workitem.appendItemValue(Scheduler.ITEM_LOGMESSAGE, message);
+		}
+
+		logger.info(message);
+
+	}
+	
+	/**
+	 * Creates a new log entry stored in the item _scheduler_log. The log can be
+	 * writen optional to the scheduler configuration and a workitem.
+	 * 
+	 * @param message
+	 * @param configuration
+	 */
+	public void logWarning(String message, ItemCollection configuration, ItemCollection workitem) {
+		if (configuration != null) {
+			configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, message);
+		}
+		if (workitem != null) {
+			workitem.appendItemValue(Scheduler.ITEM_LOGMESSAGE, message);
+		}
+
+		logger.warning(message);
+
+	}
+	
+	
 	/**
 	 * This method returns a n injected JobHandler by name or null if no JobHandler
 	 * with the requested class name is injected.
@@ -418,6 +464,7 @@ public class SchedulerService {
 
 		if (configuration == null) {
 			logger.severe("...failed to load scheduler configuration for current timer. Timer will be stopped...");
+			timer.cancel();
 			return;
 		}
 

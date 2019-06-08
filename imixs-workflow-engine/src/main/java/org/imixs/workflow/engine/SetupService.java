@@ -29,15 +29,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+import java.util.Collection;
 import java.util.Vector;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.ejb.Timer;
 import javax.inject.Inject;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -48,9 +51,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
+import org.imixs.workflow.engine.scheduler.Scheduler;
 import org.imixs.workflow.engine.scheduler.SchedulerService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
@@ -75,6 +81,10 @@ import org.xml.sax.SAXException;
  * <p>
  * With the method 'getModelCount' the service returns the current status of the
  * workflow engine by returning the count of valid workflow models.
+ * <p>
+ * The SetupSerivce has a migration method to migrate old Workflow Schedulers
+ * into the new Scheduler concept. The method migrateWorkflowScheduler is nust
+ * for migration and can be deprecated in future releases.
  * 
  * @author rsoika
  * @version 1.0
@@ -106,6 +116,9 @@ public class SetupService {
 	@EJB
 	SchedulerService schedulerService;
 
+	@Resource
+	javax.ejb.TimerService timerService;
+
 	public int getModelCount() {
 		return modelService.getVersions().size();
 	}
@@ -125,6 +138,9 @@ public class SetupService {
 		} else {
 			logger.info("...model status = OK");
 		}
+
+		// migrate old workflow scheduler
+		migrateWorkflowScheduler();
 
 		// next start optional schedulers
 		schedulerService.startAllSchedulers();
@@ -283,6 +299,78 @@ public class SetupService {
 			e.printStackTrace();
 		}
 
+	}
+
+	/**
+	 * This method migrates the deprecated WorkflowScheduelr configuraiton into the
+	 * new Imixs Scheduler API
+	 */
+	public void migrateWorkflowScheduler() {
+		// lets see if we have an old scheduler configuration....
+
+		ItemCollection configItemCollection = null;
+		String searchTerm = "(type:\"configuration\" AND txtname:\"org.imixs.workflow.scheduler\")";
+		Collection<ItemCollection> col;
+		try {
+			col = documentService.find(searchTerm, 1, 0);
+		} catch (QueryException e) {
+			logger.severe("loadConfiguration - invalid param: " + e.getMessage());
+			throw new InvalidAccessException(InvalidAccessException.INVALID_ID, e.getMessage(), e);
+		}
+
+		if (col.size() == 1) {
+
+			configItemCollection = col.iterator().next();
+			ItemCollection scheduler = new ItemCollection();
+
+			// create new scheduler??
+			if (schedulerService.loadConfiguration(WorkflowScheduler.NAME) == null) {
+				logger.info("...migrating deprecated workflow scheduler configuration...");
+				scheduler.setItemValue("type", SchedulerService.DOCUMENT_TYPE);
+				scheduler.setItemValue(Scheduler.ITEM_SCHEDULER_DEFINITION,
+						configItemCollection.getItemValue("txtConfiguration"));
+				scheduler.setItemValue(Scheduler.ITEM_SCHEDULER_CLASS, WorkflowScheduler.class.getName());
+
+				scheduler.setItemValue(Scheduler.ITEM_SCHEDULER_ENABLED,
+						configItemCollection.getItemValueBoolean("_enabled"));
+
+				scheduler.setItemValue("txtname", WorkflowScheduler.NAME);
+				schedulerService.saveConfiguration(scheduler);
+
+
+			}
+			Timer oldTimer = this.findTimer(configItemCollection.getUniqueID());
+			if (oldTimer != null) {
+				logger.info("...stopping deprecated workflow scheduler");
+			}
+			logger.info("...deleting deprecated workflow scheduler");
+			documentService.remove(configItemCollection);
+
+		}
+
+	}
+
+	/**
+	 * This method returns a timer for a corresponding id if such a timer object
+	 * exists.
+	 * 
+	 * @param id
+	 * @return Timer
+	 * @throws Exception
+	 */
+	Timer findTimer(String id) {
+		Timer timer = null;
+		for (Object obj : timerService.getTimers()) {
+			Timer atimer = (javax.ejb.Timer) obj;
+			String timerID = atimer.getInfo().toString();
+			if (id.equals(timerID)) {
+				if (timer != null) {
+					logger.severe("more then one timer with id " + id + " was found!");
+				}
+				timer = atimer;
+			}
+		}
+		return timer;
 	}
 
 }

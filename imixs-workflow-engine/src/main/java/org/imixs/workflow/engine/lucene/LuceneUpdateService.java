@@ -144,11 +144,11 @@ public class LuceneUpdateService {
 	private static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
 	private static List<String> DEFAULT_NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
 			"$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator",
-			"$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "txtname", "namowner",
+			"$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "name", "txtname", "namowner",
 			"txtworkitemref", "$uniqueidsource", "$uniqueidversions", "$lasttask", "$lastevent", "$lasteventdate");
 	private static List<String> DEFAULT_STORE_FIELD_LIST = Arrays.asList("type", "$writeaccess", "$workflowsummary",
-			"$workflowabstract", "$workflowgroup", "$workflowstatus", "$modified", "$created", "$creator", "$editor",
-			"$lasteditor", "namowner");
+			"$workflowabstract", "$workflowgroup", "$workflowstatus", "$modified", "$created", "$lasteventdate",
+			"$creator", "$editor", "$lasteditor", "namowner");
 
 	@EJB
 	EventLogService eventLogService;
@@ -600,7 +600,7 @@ public class LuceneUpdateService {
 		doc.add(new TextField("content", sContent, Store.NO));
 
 		// add each field from the indexFieldList into the lucene document
-		List<String> _localFieldListStore=new ArrayList<String>();
+		List<String> _localFieldListStore = new ArrayList<String>();
 		_localFieldListStore.addAll(indexFieldListStore);
 
 		// analyzed...

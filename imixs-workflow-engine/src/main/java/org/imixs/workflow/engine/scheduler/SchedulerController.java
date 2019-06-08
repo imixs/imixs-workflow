@@ -40,7 +40,7 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 /**
  * The SchedulerController is a front-end controller to start and stop
  * schedulers. A scheduler configuration is defined by the item type="scheduler"
- * and the item txtname.
+ * and the item name.
  * <p>
  * The class can be subclassed to add specific data to the scheduler
  * configuration.
