@@ -68,6 +68,7 @@ The _ViewController_ provides the following properties to define a data selectio
  * pageSize - the count of records to be loaded
  * sortBy - an optional item name to sort the result set
  * sortReverse - optional defining ascending or descending (true=default) sorting. 
+ * loadStubs - if true (default) only the Lucene Document Stubs will be loaded (see Lucene Search) 
 
 Read more about the search functionality of Imixs-Worklfow in the [section LuceneService](../engine/luceneservice.html). 
 

@@ -1,12 +1,12 @@
 # The Full-Text-Search
 
 The Imixs-Workflow engine provides a **Full-Text-Search** based on the [Lucene Search Technology](https://lucene.apache.org/). 
-The Full-Text-Search is part of the [DocumentService](./documentservice.html) which provides different search methods.
+The Full-Text-Search is part of the [DocumentService](./documentservice.html) controlling the search index and providing search methods.
 
-The Search-Index of Imixs-Workflow allows you search documents by a single _search term_ such as "cat" or "dog". Or you can define a _search query_ to 
-select documents with specific item values. 
+The Search-Index allows you to search documents by a single _search term_ such as "cat" or "dog". 
+Or you can define a _search query_ selecting documents with specific search criteria. 
 
-The following section gives you an overview how a search term can be assembled from the very powerful [Lucene Query Syntax](https://lucene.apache.org/core/7_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description).
+The Search-Index can also store search data, which dramatically speeds up the document access. The following section gives you an overview how a search term can be assembled from the very powerful [Lucene Query Syntax](https://lucene.apache.org/core/7_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description).
 
 ## How to Search Documents
 

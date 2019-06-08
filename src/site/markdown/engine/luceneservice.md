@@ -29,6 +29,19 @@ _Index-Items_ can be used in a search term.
     
 You will find more information how to query a result set in the section [Full-Text-Search](queries.html).  
   
+### Store Documents
+
+The Imixs Search Index provides a feature to store item values into the search index. This is called a 'Document Stub'. Document Stubs can be fetched much faster from the search index like the full document. The items to be stored in the index can be defined by the property 
+	
+	lucence.indexFieldListStore
+	
+To fetch the Document Stub form the serach index use the method findStubs:
+
+	result = documentService.findStubs(query, 100, 0, '$created' , true);
+
+You can later load the full document by the $uniqueid which is part of the document stub.   
+
+
 
 ## Custom Configuration
 A custom configuration for the _Lucene Search Index_ can be provided in the file _imixs.properties_. The following example shows an example:
@@ -62,7 +75,7 @@ The property 'lucene.indexFieldListAnalyze' defines a comma separated list of fi
 The property 'lucene.indexFieldListNoAnalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here.
  
 ### IndexFieldListStore 
-The property 'lucence.indexFieldListStore' defines a comma separated list of fields which will be stored into the Lucene Document. This kind of data can be requested by the method findHits(). This finder method is faster but did not load the whole document. 
+The property 'lucence.indexFieldListStore' defines a comma separated list of fields to be stored into the search index. This kind of data can be requested by the method findStubs(). This finder method is faster but did not load the whole document. 
   
  
  

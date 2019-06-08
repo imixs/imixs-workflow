@@ -201,9 +201,18 @@ public class ViewController implements Serializable {
 
 		// load data
 		logger.finest("...... load data - query=" + getQuery() + " pageIndex=" + getPageIndex());
-		List<ItemCollection> result = documentService.find(getQuery(), getPageSize(), getPageIndex(), getSortBy(),
-				isSortReverse(),this.isLoadStubs());
+		
+		List<ItemCollection> result = null;
+		if (this.isLoadStubs()) {
+			result = documentService.findStubs(getQuery(), getPageSize(), getPageIndex(), getSortBy(),
+					isSortReverse());
 
+		} else {
+			result = documentService.find(getQuery(), getPageSize(), getPageIndex(), getSortBy(),
+					isSortReverse());
+
+		}
+		
 		// The end of a list is reached when the size is below or equal the
 		// pageSize. See issue #287
 		if (result.size() < getPageSize()) {

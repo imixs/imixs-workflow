@@ -691,8 +691,8 @@ public class DocumentService {
 	}
 
 	/**
-	 * The method returns a list of ItemCollections by calling the
-	 * LuceneSearchService. The method expects an valid Lucene search term.
+	 * The method returns a list of ItemCollections from the search-index. The
+	 * method expects an valid Lucene search term.
 	 * <p>
 	 * The method returns only ItemCollections which are readable by the
 	 * CallerPrincipal. With the pageSize and pageNumber it is possible to paginate.
@@ -713,9 +713,8 @@ public class DocumentService {
 	}
 
 	/**
-	 * The method returns a sorted list of ItemCollections by calling the
-	 * LuceneSearchService. The result list can be sorted by a sortField and a sort
-	 * direction.
+	 * The method returns a sorted list of ItemCollections from the search-index.
+	 * The result list can be sorted by a sortField and a sort direction.
 	 * <p>
 	 * The method expects an valid Lucene search term. The method returns only
 	 * ItemCollections which are readable by the CallerPrincipal. With the pageSize
@@ -740,39 +739,6 @@ public class DocumentService {
 	 */
 	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy, boolean sortReverse)
 			throws QueryException {
-		return find(searchTerm, pageSize, pageIndex, sortBy, sortReverse, false);
-	}
-
-	/**
-	 * The method returns a sorted list of ItemCollections by calling the
-	 * LuceneSearchService. The result list can be sorted by a sortField and a sort
-	 * direction.
-	 * <p>
-	 * The method expects an valid Lucene search term. The method returns only
-	 * ItemCollections which are readable by the CallerPrincipal. With the pageSize
-	 * and pageNumber it is possible to paginate.
-	 * 
-	 * @param searchTerm
-	 *            - Lucene search term
-	 * @param pageSize
-	 *            - total docs per page
-	 * @param pageIndex
-	 *            - number of page to start (default = 0)
-	 * 
-	 * @param sortBy
-	 *            -optional field to sort the result
-	 * @param sortReverse
-	 *            - optional sort direction
-	 * @param loadStubs
-	 *            - optional indicates if only the Lucene Document stubs should be
-	 *            loaded
-	 * @return list of ItemCollection elements
-	 * @throws QueryException
-	 * 
-	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
-	 */
-	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy, boolean sortReverse,
-			boolean loadStubs) throws QueryException {
 		logger.finest("......find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber=" + pageIndex
 				+ " , sortBy=" + sortBy + " reverse=" + sortReverse);
 
@@ -785,7 +751,55 @@ public class DocumentService {
 			sortOrder = new Sort(new SortField[] { new SortField(sortBy, Type.STRING, sortReverse) });
 		}
 
-		return luceneSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null, loadStubs);
+		return luceneSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null);
+
+	}
+
+	/**
+	 * The method returns a sorted list of Document Stubs from the search-index. A
+	 * document stub contains only the items stored in the search index. These items
+	 * can be defined by the property <code>lucence.indexFieldListStore</code>. See
+	 * the LuceneUpdateService for details.
+	 * <p>
+	 * The result list can be sorted by a sortField and a sort direction.
+	 * <p>
+	 * The method expects an valid Lucene search term. The method returns only
+	 * ItemCollections which are readable by the CallerPrincipal. With the pageSize
+	 * and pageNumber it is possible to paginate.
+	 * <p>
+	 * 
+	 * @param searchTerm
+	 *            - Lucene search term
+	 * @param pageSize
+	 *            - total docs per page
+	 * @param pageIndex
+	 *            - number of page to start (default = 0)
+	 * 
+	 * @param sortBy
+	 *            -optional field to sort the result
+	 * @param sortReverse
+	 *            - optional sort direction
+	 * 
+	 * @return list of ItemCollection elements
+	 * @throws QueryException
+	 * 
+	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
+	 */
+	public List<ItemCollection> findStubs(String searchTerm, int pageSize, int pageIndex, String sortBy,
+			boolean sortReverse) throws QueryException {
+		logger.finest("......find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber=" + pageIndex
+				+ " , sortBy=" + sortBy + " reverse=" + sortReverse);
+
+		// create sort object
+		Sort sortOrder = null;
+		if (sortBy != null && !sortBy.isEmpty()) {
+			// we do not support multi values here - see
+			// LuceneUpdateService.addItemValues
+			// it would be possible if we use a SortedSetSortField class here
+			sortOrder = new Sort(new SortField[] { new SortField(sortBy, Type.STRING, sortReverse) });
+		}
+		// find stubs only!
+		return luceneSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null, true);
 
 	}
 
@@ -1042,26 +1056,26 @@ public class DocumentService {
 	public boolean isAuthor(ItemCollection itemcol) {
 		@SuppressWarnings("unchecked")
 		List<String> writeAccessList = itemcol.getItemValue(WRITEACCESS);
-	
+
 		/**
 		 * 1.) org.imixs.ACCESSLEVEL.NOACCESS allways false - now write access!
 		 */
 		if (ctx.isCallerInRole(ACCESSLEVEL_NOACCESS))
 			return false;
-	
+
 		/**
 		 * 2.) org.imixs.ACCESSLEVEL.MANAGERACCESS or org.imixs.ACCESSLEVEL.EDITOR
 		 * Always true - grant writeaccess.
 		 */
 		if (ctx.isCallerInRole(ACCESSLEVEL_MANAGERACCESS) || ctx.isCallerInRole(ACCESSLEVEL_EDITORACCESS))
 			return true;
-	
+
 		/**
 		 * 2.) org.imixs.ACCESSLEVEL.AUTHOR
 		 * 
 		 * check write access in detail
 		 */
-	
+
 		if (ctx.isCallerInRole(ACCESSLEVEL_AUTHORACCESS)) {
 			if (isUserContained(writeAccessList)) {
 				// user role known - grant access
@@ -1147,7 +1161,8 @@ public class DocumentService {
 	}
 
 	/**
-	 * Verifies if the caller has write access to the given ItemCollection (document).
+	 * Verifies if the caller has write access to the given ItemCollection
+	 * (document).
 	 * 
 	 * @return true if the current user has author access
 	 */
@@ -1155,8 +1170,7 @@ public class DocumentService {
 		ItemCollection itemcol = ItemCollection.createByReference(document.getData());
 		return isAuthor(itemcol);
 	}
-	
-	
+
 	/**
 	 * This method returns true if the given list is empty or contains only null or
 	 * '' values.

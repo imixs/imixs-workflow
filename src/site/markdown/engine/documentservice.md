@@ -106,7 +106,15 @@ Per default the search result is sorted by the lucene internal score of each doc
      String serachTerm="(imixs*)";
     // return only the first 10 documents 
     // sort by $created descending
-    result=documentService.find(serachTerm,10,0,'$created',true);
+    result=documentService.findStubs(serachTerm,10,0,'$created',true);
+ 
+### Document Stubs 
+
+The Imixs Search Index provides a feature to store parts of a document directly into the index. This feature allows you to search for the so called 'Document Stubs'. A Document stub contains only a subset of Items from the full Document. This search method is much faster and can be used to display a preview of a document in the result-set like you know it from the Internet search.  
+
+	result = documentService.findStubs(query, 100, 0, '$created' , true);
+
+You can later load the full document by the $uniqueid which is part of the document stub.   
  
 ### Count Total Hits 
 The method *count(String)* can be used to compute the total hits of a  specific serach term.  The method expects the same search term as for the find() method but returns only the count of documents. The method counts only ItemCollections which are accessible by the CallerPrincipal.
