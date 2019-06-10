@@ -27,6 +27,7 @@
 
 package org.imixs.workflow.engine;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Logger;
@@ -62,7 +63,7 @@ import org.imixs.workflow.engine.jpa.Document;
 @Stateless
 public class EventLogService {
 
-	public static final String EVENTLOG_TYPE = "event";
+	public static final String EVENTLOG_TYPE = "eventlog";
 
 	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
@@ -70,9 +71,8 @@ public class EventLogService {
 	private static Logger logger = Logger.getLogger(EventLogService.class.getName());
 
 	/**
-	 * This method creates/updates a new event log entry. The identifier of an
-	 * eventLogEnty is sufixed with the event topic. The type for all event entities
-	 * is 'event'.
+	 * Creates/updates a new event log entry. The identifier of an eventLogEnty is
+	 * sufixed with the event topic. The type for all event entities is 'event'.
 	 * <p>
 	 * If an event for the same uniqueId and the same topic already exists, than the
 	 * existing event will be updated.
@@ -81,36 +81,41 @@ public class EventLogService {
 	 *            - uniqueid of the document to be assigned to the event
 	 * @param topic
 	 *            - the topic of the event.
+	 * @return - generated event log entry
 	 */
-	public void createEvent(String uniqueID, String topic) {
-		org.imixs.workflow.engine.jpa.Document eventLogEntry = null;
+	public EventLogEntry createEvent(String uniqueID, String topic) {
+		org.imixs.workflow.engine.jpa.Document eventLogDocument = null;
 		if (uniqueID == null || uniqueID.isEmpty()) {
 			logger.warning("WriteEventLog failed - given id is empty!");
-			return;
+			return null;
 		}
 
 		// Now set flush Mode to COMMIT
 		manager.setFlushMode(FlushModeType.COMMIT);
 		// now create a new event log entry
-		uniqueID = topic + "_" + uniqueID;
+		EventLogEntry eventLogEntry = new EventLogEntry(uniqueID, topic);
 
 		// test if the event alredy exists
-		eventLogEntry = manager.find(Document.class, uniqueID);
+		eventLogDocument = manager.find(Document.class, eventLogEntry.getID());
 
-		if (eventLogEntry == null) {
-			eventLogEntry = new org.imixs.workflow.engine.jpa.Document(uniqueID);
-			eventLogEntry.setType(EVENTLOG_TYPE);
-			manager.persist(eventLogEntry);
+		if (eventLogDocument == null) {
+			eventLogDocument = new org.imixs.workflow.engine.jpa.Document(eventLogEntry.getID());
+			eventLogDocument.setType(EVENTLOG_TYPE);
+			manager.persist(eventLogDocument);
 		} else {
 			// update modified
 			Calendar cal = Calendar.getInstance();
-			eventLogEntry.setModified(cal);
+			eventLogDocument.setModified(cal);
 			// there is no need to merge the persistedDocument because it is
 			// already managed by JPA!
 		}
-	
+
 		logger.finest("......create new eventLogEntry '" + uniqueID + "' => " + topic);
 
+		// update the modified date
+		eventLogEntry.setModified(eventLogDocument.getModified());
+
+		return eventLogEntry;
 	}
 
 	/**
@@ -120,9 +125,10 @@ public class EventLogService {
 	 *            - maximum count of events to be returned
 	 * @param topic
 	 *            - list of topics
-	 * @return - list of events
+	 * @return - list of eventLogEntries
 	 */
-	public List<Document> findEvents(int maxCount, String... topic) {
+	public List<EventLogEntry> findEvents(int maxCount, String... topic) {
+		List<EventLogEntry> result = new ArrayList<>();
 		String query = "SELECT document FROM Document AS document ";
 		query += "WHERE document.type = '" + EventLogService.EVENTLOG_TYPE + "' ";
 		query += "AND (";
@@ -140,7 +146,40 @@ public class EventLogService {
 		q.setMaxResults(maxCount);
 
 		@SuppressWarnings("unchecked")
-		List<org.imixs.workflow.engine.jpa.Document> documentList = q.getResultList();
-		return documentList;
+		List<Document> documentList = q.getResultList();
+
+		// now create a list of EventLog entries....
+		if (documentList != null && documentList.size() > 0) {
+			for (Document doc : documentList) {
+				String id = doc.getId();
+				// extract topic and id
+				String _uniqueID = id.substring(id.lastIndexOf('_') + 1);
+				String _topic = id.substring(0, id.lastIndexOf('_'));
+				EventLogEntry eventLogEntry = new EventLogEntry(_uniqueID, _topic);
+				eventLogEntry.setModified(doc.getModified());
+				result.add(eventLogEntry);
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Deletes an existing eventLogEntry. The method cathces
+	 * javax.persistence.OptimisticLockException as this may occure during parallel
+	 * requests.
+	 * 
+	 * @param eventLogID
+	 */
+	public void removeEvent(EventLogEntry eventLogEntry) {
+		Document eventLogEntryDocument = manager.find(Document.class, eventLogEntry.getID());
+		if (eventLogEntryDocument != null) {
+			try {
+				manager.remove(eventLogEntryDocument);
+			} catch (javax.persistence.OptimisticLockException e) {
+				// no todo - can occure during parallel requests
+				logger.finest(e.getMessage());
+			}
+		}
 	}
 }

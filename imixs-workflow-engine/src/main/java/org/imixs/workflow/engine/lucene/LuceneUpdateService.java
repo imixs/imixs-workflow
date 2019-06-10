@@ -69,6 +69,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.EventLogEntry;
 import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.exceptions.IndexException;
@@ -459,52 +460,41 @@ public class LuceneUpdateService {
 		long l = System.currentTimeMillis();
 		logger.finest("......flush eventlog cache....");
 
-		List<org.imixs.workflow.engine.jpa.Document> documentList = eventLogService.findEvents(count + 1,
+		List<EventLogEntry> events = eventLogService.findEvents(count + 1,
 				EVENTLOG_TOPIC_ADD, EVENTLOG_TOPIC_REMOVE);
 
-		if (documentList != null && documentList.size() > 0) {
+		if (events != null && events.size() > 0) {
 			try {
 				indexWriter = createIndexWriter();
 				int _counter = 0;
-				for (org.imixs.workflow.engine.jpa.Document eventLogEntry : documentList) {
-					String topic = null;
-					String id = eventLogEntry.getId();
-					// cut prafix...
-					if (id.startsWith(EVENTLOG_TOPIC_ADD)) {
-						id = id.substring(EVENTLOG_TOPIC_ADD.length() + 1);
-						topic = EVENTLOG_TOPIC_ADD;
-					}
-					if (id.startsWith(EVENTLOG_TOPIC_REMOVE)) {
-						id = id.substring(EVENTLOG_TOPIC_REMOVE.length() + 1);
-						topic = EVENTLOG_TOPIC_REMOVE;
-					}
-					// lookup the workitem...
+				for (EventLogEntry eventLogEntry : events) {
+					Term term = new Term("$uniqueid", eventLogEntry.getUniqueID());
+					// lookup the Document Entity...
 					org.imixs.workflow.engine.jpa.Document doc = manager
-							.find(org.imixs.workflow.engine.jpa.Document.class, id);
-					Term term = new Term("$uniqueid", id);
+							.find(org.imixs.workflow.engine.jpa.Document.class, eventLogEntry.getUniqueID());
 
 					// if the document was found we add/update the index. Otherwise we remove the
 					// document form the index.
-					if (doc != null && EVENTLOG_TOPIC_ADD.equals(topic)) {
+					if (doc != null && EVENTLOG_TOPIC_ADD.equals(eventLogEntry.getTopic())) {
 						// add workitem to search index....
 						long l2 = System.currentTimeMillis();
 						ItemCollection workitem = new ItemCollection();
 						workitem.setAllItems(doc.getData());
 						if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
 							indexWriter.updateDocument(term, createDocument(workitem));
-							logger.finest("......lucene add/update workitem '" + id + "' to index in "
+							logger.finest("......lucene add/update workitem '" + doc.getId() + "' to index in "
 									+ (System.currentTimeMillis() - l2) + "ms");
 						}
 					} else {
 						long l2 = System.currentTimeMillis();
 						indexWriter.deleteDocuments(term);
-						logger.finest("......lucene remove workitem '" + id + "' from index in "
+						logger.finest("......lucene remove workitem '" + term + "' from index in "
 								+ (System.currentTimeMillis() - l2) + "ms");
 					}
 
 					// remove the eventLogEntry.
-					lastEventDate = eventLogEntry.getCreated().getTime();
-					manager.remove(eventLogEntry);
+					lastEventDate = eventLogEntry.getModified().getTime();
+					eventLogService.removeEvent(eventLogEntry);
 
 					// break?
 					_counter++;
@@ -541,7 +531,7 @@ public class LuceneUpdateService {
 			}
 		}
 
-		logger.fine("...flushEventLog - " + documentList.size() + " events in " + (System.currentTimeMillis() - l)
+		logger.fine("...flushEventLog - " + events.size() + " events in " + (System.currentTimeMillis() - l)
 				+ " ms - last log entry: " + lastEventDate);
 
 		return cacheIsEmpty;
