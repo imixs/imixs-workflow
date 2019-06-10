@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -43,30 +42,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.ws.rs.core.MediaType;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
-import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.xml.XMLDataCollection;
-import org.imixs.workflow.xml.XMLDataCollectionAdapter;
-import org.imixs.workflow.xml.XMLDocument;
-import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 /**
- * The Imixs RestClient encapsulates the communication with the Imixs Rest API.
- * The Implementation is based on the JAXB API.
+ * The Imixs RestClient is a helper class for a Rest based communication without the use of Jax-rs.
  * <p>
- * The Imixs RestClient provides methods to GET and POST XMLDataCollection
+ * The Imixs RestClient provides methods to GET and POST data
  * objects.
  * <p>
  * The client throws a RestAPIException in case of an communication error.
+ * <p>
+ * For a convinient way to access the Imixs-Rest API use the Imixs-Melman project on Github.
  * 
- * @see org.imixs.workflow.jee.rest
  * @author Ralph Soika
- * 
  */
 public class RestClient {
 
@@ -157,257 +144,9 @@ public class RestClient {
 		requestProperties.put(key, value);
 	}
 
-	/**
-	 * Posts an Imixs ItemCollection to a Rest Service URI endpoint.
-	 * 
-	 * @param uri
-	 *            - RestService endpoint
-	 * @param document
-	 *            - an ItemCollection
-	 * @return ItemCollection - result document
-	 * @throws RestAPIException
-	 */
-	public ItemCollection postDocument(String uri, ItemCollection document) throws RestAPIException {
-		return this.postXMLDocument(uri, XMLDocumentAdapter.getDocument(document));
-	}
 
-	/**
-	 * Posts an XMLDocument in the Imixs XML Format to a Rest Service URI endpoint.
-	 * 
-	 * @param uri
-	 *            - RestService endpoint
-	 * @param entityCol
-	 *            - an Entity Collection
-	 * @return ItemCollection - workitem
-	 * @throws RestAPIException
-	 */
-	public ItemCollection postXMLDocument(String uri, XMLDocument aItemCol) throws RestAPIException {
-		PrintWriter printWriter = null;
 
-		HttpURLConnection urlConnection = null;
-		try {
-			setServiceEndpoint(uri);
-			iLastHTTPResult = 500;
-
-			urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
-			
-			urlConnection.setRequestMethod("POST");
-			urlConnection.setDoOutput(true);
-			urlConnection.setDoInput(true);
-			urlConnection.setAllowUserInteraction(false);
-
-			// set XML request properties
-			urlConnection.setRequestProperty("Content-Type", "application/xml; charset=" + encoding);
-			urlConnection.setRequestProperty("Accept", "application/xml");
-
-			// process filters....
-			for (RequestFilter filter : requestFilterList) {
-				filter.filter(urlConnection);
-			}
-
-			StringWriter writer = new StringWriter();
-
-			JAXBContext context = JAXBContext.newInstance(XMLDocument.class);
-			Marshaller m = context.createMarshaller();
-			m.marshal(aItemCol, writer);
-
-			// compute length
-			urlConnection.setRequestProperty("Content-Length",
-					"" + Integer.valueOf(writer.toString().getBytes().length));
-
-			printWriter = new PrintWriter(
-					new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), encoding)));
-
-			printWriter.write(writer.toString());
-			printWriter.close();
-
-			String sHTTPResponse = urlConnection.getHeaderField(0);
-			try {
-				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
-
-				if (iLastHTTPResult >= 200 && iLastHTTPResult <= 299) {
-					String content = readResponse(urlConnection);
-					List<ItemCollection> result = XMLDataCollectionAdapter.readCollection(content.getBytes());
-					if (result != null && result.size() > 0) {
-						return result.get(0);
-					}
-
-				}
-
-			} catch (Exception eNumber) {
-				// eNumber.printStackTrace();
-				iLastHTTPResult = 500;
-			}
-
-			// get content of result
-			readResponse(urlConnection);
-
-		} catch (Exception e) {
-			// ioe.printStackTrace();
-			String error = "Error postXMLDocument request from '" + serviceEndpoint + " - " + e.getMessage();
-			logger.warning(error);
-			throw new RestAPIException(0, error, e);
-		} finally {
-			// Release current connection
-			if (printWriter != null)
-				printWriter.close();
-		}
-
-		return null;
-	}
-
-	/**
-	 * This method posts an XMLDataCollection to a Rest Service URI Endpoint.
-	 * 
-	 * @param uri
-	 *            - RestService endpoint
-	 * @param xmlData
-	 *            - a XMLDataCollection
-	 */
-	public void postXMLDataCollection(String uri, XMLDataCollection xmlData) throws Exception {
-		PrintWriter printWriter = null;
-
-		HttpURLConnection urlConnection = null;
-		try {
-			setServiceEndpoint(uri);
-			iLastHTTPResult = 500;
-
-			urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
-			urlConnection.setRequestMethod("POST");
-			urlConnection.setDoOutput(true);
-			urlConnection.setDoInput(true);
-			urlConnection.setAllowUserInteraction(false);
-
-			// set XML request properties
-			urlConnection.setRequestProperty("Content-Type", "application/xml; charset=" + encoding);
-			urlConnection.setRequestProperty("Accept", "application/xml");
-
-			// process filters....
-			for (RequestFilter filter : requestFilterList) {
-				filter.filter(urlConnection);
-			}
-
-			StringWriter writer = new StringWriter();
-
-			JAXBContext context = JAXBContext.newInstance(XMLDataCollection.class);
-			Marshaller m = context.createMarshaller();
-			m.marshal(xmlData, writer);
-
-			// compute length
-			urlConnection.setRequestProperty("Content-Length",
-					"" + Integer.valueOf(writer.toString().getBytes().length));
-
-			printWriter = new PrintWriter(
-					new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), encoding)));
-
-			printWriter.write(writer.toString());
-			printWriter.close();
-
-			// get content of result
-			readResponse(urlConnection);
-
-			String sHTTPResponse = urlConnection.getHeaderField(0);
-			try {
-				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
-			} catch (Exception eNumber) {
-				// eNumber.printStackTrace();
-				iLastHTTPResult = 500;
-			}
-
-			// get content of result
-			readResponse(urlConnection);
-
-		} catch (Exception ioe) {
-			// ioe.printStackTrace();
-			throw ioe;
-		} finally {
-			// Release current connection
-			if (printWriter != null)
-				printWriter.close();
-		}
-
-	}
-
-	/**
-	 * This method posts an JSON String in the Imixs ItemCollection Format to a Rest
-	 * Service URI Endpoint.
-	 * 
-	 * 
-	 * @param uri
-	 *            - Rest Endpoint RUI
-	 * @param JSON
-	 *            string
-	 * @return XMLDocument
-	 */
-	public ItemCollection postJSON(String uri, String jsonString) throws Exception {
-		PrintWriter printWriter = null;
-
-		HttpURLConnection urlConnection = null;
-		try {
-			serviceEndpoint = uri;
-			iLastHTTPResult = 500;
-
-			urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
-			urlConnection.setRequestMethod("POST");
-			urlConnection.setDoOutput(true);
-			urlConnection.setDoInput(true);
-			urlConnection.setAllowUserInteraction(false);
-
-			// set XML request properties
-			urlConnection.setRequestProperty("Content-Type", "application/json; charset=" + encoding);
-			urlConnection.setRequestProperty("Accept", "application/xml");
-
-			// process filters....
-			for (RequestFilter filter : requestFilterList) {
-				filter.filter(urlConnection);
-			}
-
-			StringWriter writer = new StringWriter();
-			writer.write(jsonString);
-			writer.flush();
-
-			// compute length
-			urlConnection.setRequestProperty("Content-Length",
-					"" + Integer.valueOf(writer.toString().getBytes().length));
-
-			printWriter = new PrintWriter(
-					new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), encoding)));
-
-			printWriter.write(writer.toString());
-			printWriter.close();
-
-			String sHTTPResponse = urlConnection.getHeaderField(0);
-			try {
-				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
-
-				if (iLastHTTPResult >= 200 && iLastHTTPResult <= 299) {
-					String content = readResponse(urlConnection);
-
-					List<ItemCollection> result = XMLDataCollectionAdapter.readCollection(content.getBytes());
-					if (result != null && result.size() > 0) {
-						return result.get(0);
-					}
-				}
-
-			} catch (Exception eNumber) {
-				// eNumber.printStackTrace();
-				iLastHTTPResult = 500;
-			}
-
-			// get content of result
-			readResponse(urlConnection);
-
-		} catch (Exception ioe) {
-			// ioe.printStackTrace();
-			throw ioe;
-		} finally {
-			// Release current connection
-			if (printWriter != null)
-				printWriter.close();
-		}
-
-		return null;
-	}
+	
 
 	/**
 	 * Posts a String data object with a specific Content-Type to a Rest Service URI
@@ -540,100 +279,7 @@ public class RestClient {
 	}
 
 
-	/**
-	 * Returns a ItemCollection from a rest service endpoint.
-	 * 
-	 * @param uri
-	 *            - RestService endpoint
-	 * @return ItemCollection - workitem
-	 * @throws RestAPIException
-	 */
-	public ItemCollection getDocument(String url) throws RestAPIException {
-		XMLDocument xmlDocument = getXMLDocument(url);
-		// convert xmldocument into a ItemCollection object
-		ItemCollection document = XMLDocumentAdapter.putDocument(xmlDocument);
-		return document;
-	}
 
-	/**
-	 * Returns a XMLDocument from a rest service endpoint.
-	 * 
-	 * @param uri
-	 *            - RestService endpoint
-	 * @return XMLDocument - workitem
-	 * @throws RestAPIException
-	 */
-	public XMLDocument getXMLDocument(String url) throws RestAPIException {
-		XMLDocument xmlDocument = null;
-		this.setRequestProperty("Accept", MediaType.APPLICATION_XML);
-		String xmlResult = this.get(url);
-		try {
-			// convert into ItemCollection list
-			JAXBContext context = JAXBContext.newInstance(XMLDocument.class);
-			// JAXBContext context = JAXBContext.newInstance( "org.imixs.workflow.xml" );
-
-			Unmarshaller u = context.createUnmarshaller();
-			StringReader reader = new StringReader(xmlResult);
-			xmlDocument = (XMLDocument) u.unmarshal(reader);
-		} catch (JAXBException e) {
-			String error = "Error GET request from '" + url + " - " + e.getMessage();
-			logger.warning(error);
-			throw new RestAPIException(0, error, e);
-		}
-		return xmlDocument;
-
-	}
-
-	/**
-	 * Returns a list of ItemCollections from a rest service endpoint.
-	 * 
-	 * @param uri
-	 *            - RestService endpoint
-	 * @return List<ItemCollection> - result set
-	 * @throws RestAPIException
-	 */
-	public List<ItemCollection> getDocumentCollection(String url) throws RestAPIException {
-		XMLDataCollection xmlDocuments = getXMLDataCollection(url);
-		// convert xmldatacollection into a list of ItemCollection objects
-		List<ItemCollection> documents = XMLDataCollectionAdapter.putDataCollection(xmlDocuments);
-		return documents;
-
-	}
-
-	/**
-	 * Returns a list of XMLDataCollection from a rest service endpoint.
-	 * 
-	 * @param uri
-	 *            - RestService endpoint
-	 * @return XMLDataCollection
-	 * @throws RestAPIException
-	 */
-	public XMLDataCollection getXMLDataCollection(String url) throws RestAPIException {
-		XMLDataCollection xmlDocuments = null;
-
-		setRequestProperty("Accept", MediaType.APPLICATION_XML);
-		String xmlResult = this.get(url);
-
-		if (xmlResult == null || xmlResult.isEmpty()) {
-			// no content!
-			logger.finest("......no content...");
-			return null;
-		} else {
-			// convert into ItemCollection list
-			try {
-				JAXBContext context;
-				context = JAXBContext.newInstance(XMLDataCollection.class);
-				Unmarshaller u = context.createUnmarshaller();
-				StringReader reader = new StringReader(xmlResult);
-				xmlDocuments = (XMLDataCollection) u.unmarshal(reader);
-			} catch (JAXBException e) {
-				String error = "Error GET request from '" + url + " - " + e.getMessage();
-				logger.warning(error);
-				throw new RestAPIException(0, error, e);
-			}
-			return xmlDocuments;
-		}
-	}
 
 	/**
 	 * Reads the response from a http request.
