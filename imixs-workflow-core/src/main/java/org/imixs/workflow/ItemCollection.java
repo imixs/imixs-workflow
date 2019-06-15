@@ -34,6 +34,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -44,6 +46,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -648,6 +651,31 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
+	 * Returns the resolved LocalDateTime value of the specified item. The method
+	 * converts a Date object into a LocalDateTime object using the
+	 * ZoneId.systemDefault().
+	 * <p>
+	 * Note: internaly the ItemCollection store LocalDateTime values as Date
+	 * objects!
+	 * <p>
+	 * If the item has no value or the value is not of the type Date, the method
+	 * returns null. If the item has multiple values, this method returns the first
+	 * value.
+	 * <p>
+	 * The ItemName is not case sensitive. Use hasItem to verify the existence of an
+	 * item.
+	 * 
+	 * @param itemName
+	 *            The name of an item.
+	 * @return the Date value of the item
+	 */
+	public LocalDateTime getItemValueLocalDateTime(String aName) {
+		Date d = this.getItemValueDate(aName);
+		LocalDateTime localDateTime = d.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+		return localDateTime;
+	}
+
+	/**
 	 * Returns the resolved Double value of the specified item. The method converts
 	 * the stored value to double. If the item has no value or the value is not
 	 * convertible to a Double, the method returns 0.0. If the item has multiple
@@ -1010,8 +1038,8 @@ public class ItemCollection implements Cloneable {
 					// test if we found a match....
 					for (Object aMetadataObject : vDMS) {
 						// issue #509
-						if (aMetadataObject instanceof Map ) {
-							Map aMetadata=(Map) aMetadataObject;
+						if (aMetadataObject instanceof Map) {
+							Map aMetadata = (Map) aMetadataObject;
 							String sName = getStringValueFromMap(aMetadata, "txtname");
 							if (sFileName.equals(sName)) {
 								attributes = aMetadata;
@@ -1423,6 +1451,7 @@ public class ItemCollection implements Cloneable {
 		}
 
 		// now itemValue is of instance List
+		convertItemValue(itemValueList);
 		if (!validateItemValue(itemValueList)) {
 			String message = "setItemValue failed for item '" + itemName
 					+ "', the value is a non supported object type: " + itemValue.getClass().getName() + " value="
@@ -1445,6 +1474,34 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
+	 * This method converts specific itemValue in standardized object classes:
+	 * <p>
+	 * <code>java.util.Calendar => java.util.Date</code>
+	 * <p>
+	 * <code>java.time.LocalDateTime => java.util.Date</code>
+	 * 
+	 * 
+	 * @param itemValue
+	 * @return
+	 */
+	private void convertItemValue(List<Object> itemValues) {
+
+		ListIterator<Object> iterator = itemValues.listIterator();
+		while (iterator.hasNext()) {
+			Object o = iterator.next();
+			if (o instanceof Calendar) {
+				Date date = ((Calendar) o).getTime();
+				iterator.set(date);
+			}
+			if (o instanceof LocalDateTime) {
+				LocalDateTime ldt = (LocalDateTime) o;
+				Date date = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+				iterator.set(date);
+			}
+		}
+	}
+
+	/**
 	 * This method validates of a itemValue is acceptable for the ItemCollection.
 	 * Only basic types are supported.
 	 * 
@@ -1453,11 +1510,6 @@ public class ItemCollection implements Cloneable {
 	 */
 	@SuppressWarnings("rawtypes")
 	private boolean validateItemValue(Object itemValue) {
-
-		// convert Calendar instance into Date! issue #52
-		if (itemValue instanceof Calendar) {
-			itemValue = ((Calendar) itemValue).getTime();
-		}
 
 		// first we test if basic type?
 		if (isBasicType(itemValue)) {

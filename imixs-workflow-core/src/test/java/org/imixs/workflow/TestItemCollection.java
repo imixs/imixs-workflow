@@ -1,7 +1,11 @@
 package org.imixs.workflow;
 
 import java.awt.Color;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -598,9 +602,7 @@ public class TestItemCollection {
 		Assert.assertArrayEquals(empty, file1Data2);
 
 	}
-	
-	
-	
+
 	/**
 	 * This method verifies the clone interface in conjunction with byte arrays as
 	 * used in the $file field
@@ -614,7 +616,7 @@ public class TestItemCollection {
 		itemCol1.replaceItemValue("c", "world");
 		byte[] empty = { 0 };
 		// add a dummy file
-		itemCol1.addFileData(new FileData( "test1.txt",empty, "application/xml",null));
+		itemCol1.addFileData(new FileData("test1.txt", empty, "application/xml", null));
 
 		ItemCollection itemCol2 = (ItemCollection) itemCol1.clone();
 
@@ -624,9 +626,8 @@ public class TestItemCollection {
 		Assert.assertEquals(1, itemCol2.getItemValueInteger("a"));
 		Assert.assertEquals("hello", itemCol2.getItemValueString("b"));
 		// test the byte content of itemcol2
-		//Map<String, List<Object>> conedFilesTest = itemCol2.getFiles();
-		
-		
+		// Map<String, List<Object>> conedFilesTest = itemCol2.getFiles();
+
 		byte[] file1DataTest = itemCol2.getFileData("test1.txt").getContent();
 
 		Assert.assertArrayEquals(empty, file1DataTest);
@@ -635,10 +636,10 @@ public class TestItemCollection {
 		// Now we change file content in itemcol1
 		byte[] dummy = { 1, 2, 3 };
 		itemCol1.removeFile("test1.txt");
-		itemCol1.addFileData( new FileData("test1.txt", dummy,"application/xml",null));
+		itemCol1.addFileData(new FileData("test1.txt", dummy, "application/xml", null));
 
 		// test the byte content of itemCol1
-		byte[] file1Data1 =  itemCol1.getFileData("test1.txt").getContent();
+		byte[] file1Data1 = itemCol1.getFileData("test1.txt").getContent();
 		// we expect the new dummy array { 1, 2, 3 }
 		Assert.assertArrayEquals(dummy, file1Data1);
 
@@ -802,7 +803,7 @@ public class TestItemCollection {
 		Assert.assertArrayEquals(empty, file1Data1);
 
 	}
-	
+
 	@Test
 	@Category(org.imixs.workflow.ItemCollection.class)
 	public void testFileData() {
@@ -810,7 +811,7 @@ public class TestItemCollection {
 
 		// add a dummy file
 		byte[] empty = { 0 };
-		itemColSource.addFileData(new FileData( "test1.txt", empty,"application/xml",null));
+		itemColSource.addFileData(new FileData("test1.txt", empty, "application/xml", null));
 
 		ItemCollection itemColTarget = new ItemCollection();
 
@@ -822,7 +823,7 @@ public class TestItemCollection {
 		Assert.assertEquals("application/xml", filedata.getContentType());
 
 		// test the byte content of itemColSource
-		byte[] file1Data1 =itemColSource.getFileData("test1.txt").getContent();
+		byte[] file1Data1 = itemColSource.getFileData("test1.txt").getContent();
 		// we expect the new dummy array { 1, 2, 3 }
 		Assert.assertArrayEquals(empty, file1Data1);
 
@@ -1151,4 +1152,62 @@ public class TestItemCollection {
 		Assert.assertEquals(0, dd, 0);
 
 	}
+
+	/**
+	 * Test the handling ob Calendar objects. CalendarObjects will be converted
+	 * into Date.
+	 * 
+	 */
+	@Test
+	public void testCalendarValues() {
+		ItemCollection itemCol = new ItemCollection();
+
+		Date nowDate = new Date();
+
+		Calendar nowCalendar = Calendar.getInstance();
+		nowCalendar.setTime(nowDate);
+		itemCol.setItemValue("calendar", nowCalendar);
+
+		Date testDateCal = itemCol.getItemValueDate("calendar");
+		Assert.assertNotNull(testDateCal);
+		Assert.assertEquals(nowDate, testDateCal);
+
+	}
+
+	/**
+	 * Test the method getItemValueDate and getItemValueLocalDateTime and the
+	 * corresponding setter method
+	 * 
+	 */
+	@Test
+	public void testLocalDateTimeValues() {
+		ItemCollection itemCol = new ItemCollection();
+
+		Date nowDate = new Date();
+		itemCol.setItemValue("date", nowDate);
+		Date testDate = itemCol.getItemValueDate("date");
+		Assert.assertEquals(nowDate, testDate);
+
+		// test with LocalDateTime
+		LocalDateTime localDateTime = itemCol.getItemValueLocalDateTime("date");
+		
+		// test if equal....
+		Date out = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+		Assert.assertEquals(nowDate,out);
+		
+		// now set a LocalDateTime Value...
+		LocalDateTime ldt = LocalDateTime.ofInstant(nowDate.toInstant(), ZoneId.systemDefault());
+		itemCol.setItemValue("localdate", ldt);
+		
+		LocalDateTime localDateTimeTest = itemCol.getItemValueLocalDateTime("localdate");
+		Assert.assertNotNull(localDateTimeTest);
+		Assert.assertEquals(ldt,localDateTimeTest);
+		
+		// test date convertion....
+		Date dateTest2=itemCol.getItemValueDate("localDAte");
+		
+		Assert.assertEquals(nowDate,dateTest2);
+				
+	}
+
 }
