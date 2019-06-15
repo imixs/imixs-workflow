@@ -167,11 +167,17 @@ public class LuceneSearchService {
 	 * Returns a collection of documents matching the provided search term. The term
 	 * will be extended with the current users roles to test the read access level
 	 * of each workitem matching the search term.
+	 * <p>
+	 * The method returns the full loaded documents. If you only want to search for document stubs use instead the method
+	 * <p>
+	 * <code>search(String searchTerm, int pageSize, int pageIndex, Sort sortOrder,
+			Operator defaultOperator, boolean loadStubs)</code>
+		<p>
+		
 	 */
 	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex, Sort sortOrder,
 			Operator defaultOperator) throws QueryException {
-
-		return search(sSearchTerm, pageSize, pageIndex, sortOrder, defaultOperator, true);
+		return search(sSearchTerm, pageSize, pageIndex, sortOrder, defaultOperator, false);
 	}
 
 	/**
