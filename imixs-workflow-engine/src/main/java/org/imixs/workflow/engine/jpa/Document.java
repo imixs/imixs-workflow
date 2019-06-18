@@ -49,16 +49,15 @@ import org.imixs.workflow.exceptions.InvalidAccessException;
  * Interfaces. The Document is used by the DocumentService to store
  * ItemCollections into a database, using the Java Persistence API. Each
  * Document is added into the Lucene index.
- * 
+ * <p>
  * A Document contains a universal unique ID to identify the Entity. Also the
  * Document contains the following additional properties
  * <ul>
  * <li>type
  * <li>created
  * <li>modified
- * <li>
  * </ul>
- * 
+ * <p>
  * The creation time represents the point of time where the Document object was
  * created. The modify property represents the point of time when the Document
  * was last modified by the DocumentService. The type property is used to
@@ -74,8 +73,7 @@ import org.imixs.workflow.exceptions.InvalidAccessException;
  * <p>
  * 
  * 
- * @see org.imixs.workflow.jee.ejb.EntityService
- * @see org.imixs.workflow.jee.ejb.EntityService
+ * @see org.imixs.workflow.engine.DocumentService
  * @author rsoika
  * @version 1.0
  */
