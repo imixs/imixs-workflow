@@ -60,6 +60,16 @@ public class ItemCollectionComparator implements Comparator<ItemCollection> {
 
 			Date dateA = a.getItemValueDate(itemName);
 			Date dateB = b.getItemValueDate(itemName);
+			if (dateA==null && dateB !=null) {
+				return 1;
+			}
+			if (dateB==null && dateA !=null) {
+				return -1;
+			}
+			if (dateB==null && dateA ==null) {
+				return 0;
+			}
+
 			int result = dateB.compareTo(dateA);
 			if (!this.ascending) {
 				result = -result;
