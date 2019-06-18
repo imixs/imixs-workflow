@@ -30,6 +30,7 @@ package org.imixs.workflow.engine.plugins;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
@@ -52,7 +53,9 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.transform.TransformerException;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
@@ -78,7 +81,8 @@ import org.imixs.workflow.xml.XSLHandler;
  */
 public class MailPlugin extends AbstractPlugin {
 
-	public static final String INVALID_XSL_FORMAT = "INVALID_XSL_FORMAT";
+	public static final String ERROR_INVALID_XSL_FORMAT = "INVALID_XSL_FORMAT";
+	public static final String ERROR_MAIL_MESSAGE = "ERROR_MAIL_MESSAGE";
 	public static final String MAIL_SESSION_NAME = "mail/org.imixs.workflow.mail";
 
 	// Mail objects
@@ -178,10 +182,12 @@ public class MailPlugin extends AbstractPlugin {
 			mimeMultipart.addBodyPart(messagePart);
 			// mimeMulitPart object can be extended from subclases
 
-		} catch (Exception e) {
-			logger.warning(" run - Warning:" + e.toString());
-			e.printStackTrace();
-			return documentContext;
+		} catch (MessagingException e) {
+			throw new PluginException(MailPlugin.class.getSimpleName(), ERROR_MAIL_MESSAGE, e.getMessage(), e);
+			
+//			logger.warning(" run - Warning:" + e.toString());
+//			e.printStackTrace();
+//			return documentContext;
 		}
 
 		return documentContext;
@@ -483,9 +489,9 @@ public class MailPlugin extends AbstractPlugin {
 			XSLHandler.transform(writer.toString(), xslTemplate, encoding, outputStream);
 			return outputStream.toString(encoding);
 
-		} catch (Exception e) {
+		} catch ( JAXBException | UnsupportedEncodingException | TransformerException e) {
 			logger.warning("Error processing XSL template!");
-			throw new PluginException(MailPlugin.class.getSimpleName(), INVALID_XSL_FORMAT, e.getMessage(), e);
+			throw new PluginException(MailPlugin.class.getSimpleName(), ERROR_INVALID_XSL_FORMAT, e.getMessage(), e);
 		} finally {
 			try {
 				outputStream.close();
