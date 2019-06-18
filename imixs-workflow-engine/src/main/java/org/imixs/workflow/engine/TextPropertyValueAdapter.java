@@ -29,10 +29,6 @@ public class TextPropertyValueAdapter {
 	@Inject
 	Config config;
 
-	
-//	@EJB
-//	WorkflowService workflowService;
-
 	private static Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
 
 	/**
@@ -53,7 +49,7 @@ public class TextPropertyValueAdapter {
 		}
 
 		List<String> tagList = XMLParser.findTags(text, "propertyvalue");
-		logger.finest("......"+tagList.size() + " tags found");
+		logger.finest("......" + tagList.size() + " tags found");
 		// test if a <value> tag exists...
 		for (String tag : tagList) {
 
@@ -63,14 +59,11 @@ public class TextPropertyValueAdapter {
 			// read the property Value
 			String sPropertyKey = XMLParser.findTagValue(tag, "propertyvalue");
 
-			
-			
-			String vValue = config.getValue(sPropertyKey, String.class);
-					
-					//workflowService.getPropertyService().getProperties().getProperty(sPropertyKey);
-			if (vValue == null) {
-				logger.warning(
-						"propertyvalue '" + sPropertyKey + "' is not defined in imixs.properties!");
+			String vValue = "";
+			try {
+				vValue = config.getValue(sPropertyKey, String.class);
+			} catch (java.util.NoSuchElementException e) {
+				logger.warning("propertyvalue '" + sPropertyKey + "' is not defined in imixs.properties!");
 				vValue = "";
 			}
 
@@ -80,7 +73,6 @@ public class TextPropertyValueAdapter {
 
 			// now replace the tag with the result string
 			text = text.substring(0, iStartPos) + vValue + text.substring(iEndPos);
-
 		}
 
 		event.setText(text);
@@ -99,8 +91,7 @@ public class TextPropertyValueAdapter {
 	 * values.
 	 * 
 	 */
-	public String formatItemValues(List<?> aItem, String aSeparator, String sFormat, Locale locale,
-			String sPosition) {
+	public String formatItemValues(List<?> aItem, String aSeparator, String sFormat, Locale locale, String sPosition) {
 
 		StringBuffer sBuffer = new StringBuffer();
 
