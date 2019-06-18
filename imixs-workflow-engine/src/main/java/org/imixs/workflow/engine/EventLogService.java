@@ -28,8 +28,8 @@
 package org.imixs.workflow.engine;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -38,11 +38,10 @@ import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import org.imixs.workflow.engine.jpa.Document;
+import org.imixs.workflow.engine.jpa.EventLog;
 
 /**
- * The EventLogService is a service to log events into the database to be
- * processed in an asynchronous way.
+ * The EventLogService is a service to create and access log events.
  * <p>
  * An event that occurs during an update or a processing function within a
  * transaction becomes a fact when the transaction completes successfully. The
@@ -63,59 +62,49 @@ import org.imixs.workflow.engine.jpa.Document;
 @Stateless
 public class EventLogService {
 
-	public static final String EVENTLOG_TYPE = "eventlog";
-
 	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
 
 	private static Logger logger = Logger.getLogger(EventLogService.class.getName());
 
 	/**
-	 * Creates/updates a new event log entry. The identifier of an eventLogEnty is
-	 * sufixed with the event topic. The type for all event entities is 'event'.
-	 * <p>
-	 * If an event for the same uniqueId and the same topic already exists, than the
-	 * existing event will be updated.
+	 * Creates/updates a new event log entry.
 	 * 
-	 * @param uniqueID
+	 * @param refID
 	 *            - uniqueid of the document to be assigned to the event
 	 * @param topic
 	 *            - the topic of the event.
 	 * @return - generated event log entry
 	 */
-	public EventLogEntry createEvent(String uniqueID, String topic) {
-		org.imixs.workflow.engine.jpa.Document eventLogDocument = null;
-		if (uniqueID == null || uniqueID.isEmpty()) {
-			logger.warning("WriteEventLog failed - given id is empty!");
+	public EventLog createEvent(String topic, String refID) {
+		return createEvent(topic,refID,null);
+	}
+
+	/**
+	 * Creates/updates a new event log entry.
+	 *
+	 * @param refID
+	 *            - uniqueId of the document to be assigned to the event
+	 * @param topic
+	 *            - the topic of the event.
+	 * @param data
+	 *            - optional data map
+	 * @return - generated event log entry
+	 */
+	public EventLog createEvent(String topic, String refID, Map<String, List<Object>> data) {
+		if (refID == null || refID.isEmpty()) {
+			logger.warning("create EventLog failed - given ref-id is empty!");
 			return null;
 		}
-
 		// Now set flush Mode to COMMIT
 		manager.setFlushMode(FlushModeType.COMMIT);
 		// now create a new event log entry
-		EventLogEntry eventLogEntry = new EventLogEntry(uniqueID, topic);
+		EventLog eventLog = new EventLog(topic, refID, data);
+		manager.persist(eventLog);
 
-		// test if the event alredy exists
-		eventLogDocument = manager.find(Document.class, eventLogEntry.getID());
+		logger.finest("......created new eventLog '" + refID + "' => " + topic);
 
-		if (eventLogDocument == null) {
-			eventLogDocument = new org.imixs.workflow.engine.jpa.Document(eventLogEntry.getID());
-			eventLogDocument.setType(EVENTLOG_TYPE);
-			manager.persist(eventLogDocument);
-		} else {
-			// update modified
-			Calendar cal = Calendar.getInstance();
-			eventLogDocument.setModified(cal);
-			// there is no need to merge the persistedDocument because it is
-			// already managed by JPA!
-		}
-
-		logger.finest("......create new eventLogEntry '" + uniqueID + "' => " + topic);
-
-		// update the modified date
-		eventLogEntry.setModified(eventLogDocument.getModified());
-
-		return eventLogEntry;
+		return eventLog;
 	}
 
 	/**
@@ -127,55 +116,79 @@ public class EventLogService {
 	 *            - list of topics
 	 * @return - list of eventLogEntries
 	 */
-	public List<EventLogEntry> findEvents(int maxCount, String... topic) {
-		List<EventLogEntry> result = new ArrayList<>();
-		String query = "SELECT document FROM Document AS document ";
-		query += "WHERE document.type = '" + EventLogService.EVENTLOG_TYPE + "' ";
-		query += "AND (";
+	@SuppressWarnings("unchecked")
+	public List<EventLog> findEventsByTopic(int maxCount, String... topic) {
+		List<EventLog> result = new ArrayList<>();
+		String query = "SELECT eventlog FROM EventLog AS eventlog ";
+		query += "WHERE (";
 		for (String _topic : topic) {
-			query += "document.id LIKE '" + _topic + "%' OR ";
+			query += "eventlog.topic = '" + _topic + "' OR ";
 		}
 		// cut last OR
 		query = query.substring(0, query.length() - 3);
-		query += ") ORDER BY document.modified ASC";
+		query += ") ORDER BY eventlog.created ASC";
 
 		// find all eventLogEntries....
 		Query q = manager.createQuery(query);
-		// we try to search one more log entry as requested to see if the cache is
-		// empty...
 		q.setMaxResults(maxCount);
-
-		@SuppressWarnings("unchecked")
-		List<Document> documentList = q.getResultList();
-
-		// now create a list of EventLog entries....
-		if (documentList != null && documentList.size() > 0) {
-			for (Document doc : documentList) {
-				String id = doc.getId();
-				// extract topic and id
-				String _uniqueID = id.substring(id.lastIndexOf('_') + 1);
-				String _topic = id.substring(0, id.lastIndexOf('_'));
-				EventLogEntry eventLogEntry = new EventLogEntry(_uniqueID, _topic);
-				eventLogEntry.setModified(doc.getModified());
-				result.add(eventLogEntry);
-			}
-		}
+		result = q.getResultList();
+		logger.fine("found " + result.size() + " event for topic " + topic);
 
 		return result;
+
 	}
 
 	/**
-	 * Deletes an existing eventLogEntry. The method cathces
-	 * javax.persistence.OptimisticLockException as this may occure during parallel
+	 * Finds events for one or many given topics assigned to a given document
+	 * reference ($uniqueId). The method returns an empty list if no event log
+	 * entries exist of the given refId,
+	 * 
+	 * @param maxCount
+	 *            - maximum count of events to be returned
+	 * @param ref
+	 *            - a reference ID for an assigned Document or Workitem instance
+	 * @param topic
+	 *            - list of topics
+	 * 
+	 * @return - list of eventLogEntries
+	 */
+	@SuppressWarnings("unchecked")
+	public List<EventLog> findEventsByRef(int maxCount, String ref, String... topic) {
+		List<EventLog> result = null;
+		String query = "SELECT eventlog FROM EventLog AS eventlog ";
+		query += "WHERE (eventlog.ref = '" + ref + "' AND (";
+		for (String _topic : topic) {
+			query += "eventlog.topic = '" + _topic + "' OR ";
+		}
+		// cut last OR
+		query = query.substring(0, query.length() - 3);
+		query += ") ORDER BY eventlog.created ASC";
+
+		// find all eventLogEntries....
+		Query q = manager.createQuery(query);
+		q.setMaxResults(maxCount);
+		result = q.getResultList();
+		logger.fine("found " + result.size() + " event for topic " + topic);
+
+		return result;
+
+	}
+
+	/**
+	 * Deletes an existing eventLog. The method catches
+	 * javax.persistence.OptimisticLockException as this may occur during parallel
 	 * requests.
 	 * 
-	 * @param eventLogID
+	 * @param eventLog
 	 */
-	public void removeEvent(EventLogEntry eventLogEntry) {
-		Document eventLogEntryDocument = manager.find(Document.class, eventLogEntry.getID());
-		if (eventLogEntryDocument != null) {
+	public void removeEvent(EventLog eventLog) {
+		if (eventLog != null && !manager.contains(eventLog)) {
+			// entity is not atached - so lookup the entity....
+			eventLog = manager.find(EventLog.class, eventLog.getId());
+		}
+		if (eventLog != null) {
 			try {
-				manager.remove(eventLogEntryDocument);
+				manager.remove(eventLog);
 			} catch (javax.persistence.OptimisticLockException e) {
 				// no todo - can occure during parallel requests
 				logger.finest(e.getMessage());

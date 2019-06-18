@@ -69,9 +69,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
-import org.imixs.workflow.engine.EventLogEntry;
 import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.adminp.AdminPService;
+import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.PluginException;
 
@@ -267,7 +267,7 @@ public class LuceneUpdateService {
 
 	/**
 	 * This method adds a single document into the to the Lucene index. Before the
-	 * document is added to the index, a new eventLogEntry is created. The document
+	 * document is added to the index, a new eventLog is created. The document
 	 * will be indexed after the method flushEventLog is called. This method is
 	 * called by the LuceneSearchService finder methods.
 	 * <p>
@@ -287,7 +287,7 @@ public class LuceneUpdateService {
 
 	/**
 	 * This method adds a collection of documents to the Lucene index. For each
-	 * document in a given selection a new eventLogEntry is created. The documents
+	 * document in a given selection a new eventLog is created. The documents
 	 * will be indexed after the method flushEventLog is called. This method is
 	 * called by the LuceneSearchService finder methods.
 	 * <p>
@@ -306,9 +306,8 @@ public class LuceneUpdateService {
 		for (ItemCollection workitem : documents) {
 			// skip if the flag 'noindex' = true
 			if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
-				// eventLogService.createEvent(workitem.getUniqueID(), EVENTLOG_TOPIC_ADD);
-				eventLogService.createEvent(workitem.getUniqueID(), EVENTLOG_TOPIC_ADD);
-			}
+				eventLogService.createEvent(EVENTLOG_TOPIC_ADD,workitem.getUniqueID() );
+			} 
 		}
 
 		if (logger.isLoggable(Level.FINE)) {
@@ -371,7 +370,7 @@ public class LuceneUpdateService {
 	}
 
 	/**
-	 * This method adds a new eventLogEntry for a document to be deleted from the
+	 * This method adds a new eventLog for a document to be deleted from the
 	 * index. The document will be removed from the index after the method
 	 * fluschEventLog is called. This method is called by the LuceneSearchService
 	 * finder method only.
@@ -383,7 +382,7 @@ public class LuceneUpdateService {
 	 */
 	public void removeDocument(String uniqueID) {
 		long ltime = System.currentTimeMillis();
-		eventLogService.createEvent(uniqueID, EVENTLOG_TOPIC_REMOVE);
+		eventLogService.createEvent(EVENTLOG_TOPIC_REMOVE,uniqueID );
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime)
 					+ " ms (1 document to be removed)");
@@ -460,18 +459,18 @@ public class LuceneUpdateService {
 		long l = System.currentTimeMillis();
 		logger.finest("......flush eventlog cache....");
 
-		List<EventLogEntry> events = eventLogService.findEvents(count + 1,
+		List<EventLog> events = eventLogService.findEventsByTopic(count + 1,
 				EVENTLOG_TOPIC_ADD, EVENTLOG_TOPIC_REMOVE);
 
 		if (events != null && events.size() > 0) {
 			try {
 				indexWriter = createIndexWriter();
 				int _counter = 0;
-				for (EventLogEntry eventLogEntry : events) {
-					Term term = new Term("$uniqueid", eventLogEntry.getUniqueID());
+				for (EventLog eventLogEntry : events) {
+					Term term = new Term("$uniqueid", eventLogEntry.getRef());
 					// lookup the Document Entity...
 					org.imixs.workflow.engine.jpa.Document doc = manager
-							.find(org.imixs.workflow.engine.jpa.Document.class, eventLogEntry.getUniqueID());
+							.find(org.imixs.workflow.engine.jpa.Document.class, eventLogEntry.getRef());
 
 					// if the document was found we add/update the index. Otherwise we remove the
 					// document form the index.
@@ -493,7 +492,7 @@ public class LuceneUpdateService {
 					}
 
 					// remove the eventLogEntry.
-					lastEventDate = eventLogEntry.getModified().getTime();
+					lastEventDate = eventLogEntry.getCreated().getTime();
 					eventLogService.removeEvent(eventLogEntry);
 
 					// break?
