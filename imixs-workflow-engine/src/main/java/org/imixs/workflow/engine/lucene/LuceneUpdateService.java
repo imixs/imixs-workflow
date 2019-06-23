@@ -145,11 +145,12 @@ public class LuceneUpdateService {
 	private static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
 	private static List<String> DEFAULT_NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
 			"$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator",
-			"$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "name", "txtname", "namowner",
-			"txtworkitemref", "$uniqueidsource", "$uniqueidversions", "$lasttask", "$lastevent", "$lasteventdate");
-	private static List<String> DEFAULT_STORE_FIELD_LIST = Arrays.asList("type", "$writeaccess", "$workflowsummary",
-			"$workflowabstract", "$workflowgroup", "$workflowstatus", "$modified", "$created", "$lasteventdate",
-			"$creator", "$editor", "$lasteditor", "namowner");
+			"$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "name", "txtname",
+			"namowner", "txtworkitemref", "$uniqueidsource", "$uniqueidversions", "$lasttask", "$lastevent",
+			"$lasteventdate");
+	private static List<String> DEFAULT_STORE_FIELD_LIST = Arrays.asList("type", "$taskid", "$writeaccess",
+			"$workflowsummary", "$workflowabstract", "$workflowgroup", "$workflowstatus", "$modified", "$created",
+			"$lasteventdate", "$creator", "$editor", "$lasteditor", "namowner");
 
 	@EJB
 	EventLogService eventLogService;
@@ -267,9 +268,9 @@ public class LuceneUpdateService {
 
 	/**
 	 * This method adds a single document into the to the Lucene index. Before the
-	 * document is added to the index, a new eventLog is created. The document
-	 * will be indexed after the method flushEventLog is called. This method is
-	 * called by the LuceneSearchService finder methods.
+	 * document is added to the index, a new eventLog is created. The document will
+	 * be indexed after the method flushEventLog is called. This method is called by
+	 * the LuceneSearchService finder methods.
 	 * <p>
 	 * The method supports committed read. This means that a running transaction
 	 * will not read an uncommitted document from the Lucene index.
@@ -287,9 +288,9 @@ public class LuceneUpdateService {
 
 	/**
 	 * This method adds a collection of documents to the Lucene index. For each
-	 * document in a given selection a new eventLog is created. The documents
-	 * will be indexed after the method flushEventLog is called. This method is
-	 * called by the LuceneSearchService finder methods.
+	 * document in a given selection a new eventLog is created. The documents will
+	 * be indexed after the method flushEventLog is called. This method is called by
+	 * the LuceneSearchService finder methods.
 	 * <p>
 	 * The method supports committed read. This means that a running transaction
 	 * will not read uncommitted documents from the Lucene index.
@@ -306,8 +307,8 @@ public class LuceneUpdateService {
 		for (ItemCollection workitem : documents) {
 			// skip if the flag 'noindex' = true
 			if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
-				eventLogService.createEvent(EVENTLOG_TOPIC_ADD,workitem.getUniqueID() );
-			} 
+				eventLogService.createEvent(EVENTLOG_TOPIC_ADD, workitem.getUniqueID());
+			}
 		}
 
 		if (logger.isLoggable(Level.FINE)) {
@@ -370,10 +371,10 @@ public class LuceneUpdateService {
 	}
 
 	/**
-	 * This method adds a new eventLog for a document to be deleted from the
-	 * index. The document will be removed from the index after the method
-	 * fluschEventLog is called. This method is called by the LuceneSearchService
-	 * finder method only.
+	 * This method adds a new eventLog for a document to be deleted from the index.
+	 * The document will be removed from the index after the method fluschEventLog
+	 * is called. This method is called by the LuceneSearchService finder method
+	 * only.
 	 * 
 	 * 
 	 * @param uniqueID
@@ -382,7 +383,7 @@ public class LuceneUpdateService {
 	 */
 	public void removeDocument(String uniqueID) {
 		long ltime = System.currentTimeMillis();
-		eventLogService.createEvent(EVENTLOG_TOPIC_REMOVE,uniqueID );
+		eventLogService.createEvent(EVENTLOG_TOPIC_REMOVE, uniqueID);
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime)
 					+ " ms (1 document to be removed)");
@@ -459,8 +460,7 @@ public class LuceneUpdateService {
 		long l = System.currentTimeMillis();
 		logger.finest("......flush eventlog cache....");
 
-		List<EventLog> events = eventLogService.findEventsByTopic(count + 1,
-				EVENTLOG_TOPIC_ADD, EVENTLOG_TOPIC_REMOVE);
+		List<EventLog> events = eventLogService.findEventsByTopic(count + 1, EVENTLOG_TOPIC_ADD, EVENTLOG_TOPIC_REMOVE);
 
 		if (events != null && events.size() > 0) {
 			try {
