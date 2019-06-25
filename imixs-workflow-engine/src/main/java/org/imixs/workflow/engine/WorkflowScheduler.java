@@ -474,7 +474,7 @@ public class WorkflowScheduler implements Scheduler {
 					ctx.getBusinessObject(WorkflowScheduler.class).processSingleWorkitem(workitem);
 					iProcessWorkItems++;
 				} catch (Exception e) {
-					logger.warning("error processing workitem: " + sID);
+					logger.warning("error processing workitem: " + sID + " Error=" + e.getMessage());
 					if (logger.isLoggable(Level.FINEST)) {
 						e.printStackTrace();
 					}

@@ -43,7 +43,7 @@ import org.imixs.workflow.exceptions.PluginException;
  * date field. See the following example:
  * 
  * <code>
- *  keyItervalDatDate=monthly
+ *  keyIntervalDatDate=monthly
  *  datDate=01.01.2014 
  * </code>
  * 
