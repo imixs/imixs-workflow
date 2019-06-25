@@ -13,8 +13,6 @@ import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.SessionContext;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -23,8 +21,6 @@ import org.imixs.workflow.engine.scheduler.SchedulerException;
 import org.imixs.workflow.engine.scheduler.SchedulerService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
-import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.exceptions.ProcessingErrorException;
 
 /**
  * This EJB implements a Imixs Scheduler Interface and scans workitems for
@@ -471,7 +467,7 @@ public class WorkflowScheduler implements Scheduler {
 					// call from new instance because of transaction new...
 					// see: http://blog.imixs.org/?p=155
 					// see: https://www.java.net/node/705304
-					ctx.getBusinessObject(WorkflowScheduler.class).processSingleWorkitem(workitem);
+					workitem=workflowService.processWorkItemByNewTransaction(workitem);
 					iProcessWorkItems++;
 				} catch (Exception e) {
 					logger.warning("error processing workitem: " + sID + " Error=" + e.getMessage());
@@ -485,22 +481,7 @@ public class WorkflowScheduler implements Scheduler {
 		}
 	}
 
-	/**
-	 * This method process a single workIten in a new transaction. The method is
-	 * called by processWorklist()
-	 * 
-	 * @param aWorkitem
-	 * @throws PluginException
-	 * @throws ProcessingErrorException
-	 * @throws AccessDeniedException
-	 * @throws ModelException
-	 */
-	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-	public void processSingleWorkitem(ItemCollection aWorkitem)
-			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
-		workflowService.processWorkItem(aWorkitem);
-	}
-
+	
 	/**
 	 * This method adjusts a given base date for a amount of delay
 	 * 

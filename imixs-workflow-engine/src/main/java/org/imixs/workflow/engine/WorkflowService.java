@@ -48,6 +48,8 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.enterprise.event.Event;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
@@ -120,7 +122,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	@EJB
 	ReportService reportService;
 
-	
 	@Resource
 	SessionContext ctx;
 
@@ -566,7 +567,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 *             workflowKernel
 	 * @throws PluginException
 	 *             - thrown if processing by a plugin fails
-	 * @throws ModelException 
+	 * @throws ModelException
 	 */
 	public ItemCollection processWorkItem(ItemCollection workitem)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
@@ -606,7 +607,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 				// an instance of this WorkItem still exists! so we update the new
 				// values....
 				workitem.mergeItems(currentInstance.getAllItems());
-				
+
 			} else {
 				// In case we have a $UniqueId but did not found an matching workitem
 				// and the workitem miss a valid model assignment than
@@ -652,14 +653,14 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		try {
 			long lKernelTime = System.currentTimeMillis();
 			workitem = workflowkernel.process(workitem);
-			logger.fine("...WorkflowKernel processing time=" + (System.currentTimeMillis() - lKernelTime) + "ms");		
+			logger.fine("...WorkflowKernel processing time=" + (System.currentTimeMillis() - lKernelTime) + "ms");
 		} catch (PluginException pe) {
 			// if a plugin exception occurs we roll back the transaction.
 			logger.severe("processing workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
 					+ " failed, rollback transaction...");
 			ctx.setRollbackOnly();
 			throw pe;
-		} 
+		}
 
 		// fire event
 		if (processingEvents != null) {
@@ -735,6 +736,22 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		return processWorkItem(workitem);
 	}
 
+	/**
+	 * This method processes a workitem  in a new transaction.
+	 * 
+	 * @throws ModelException
+	 * @throws PluginException
+	 * @throws ProcessingErrorException
+	 * @throws AccessDeniedException
+	 * 
+	 */
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
+	public ItemCollection processWorkItemByNewTransaction(ItemCollection workitem)
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+		logger.finest(" ....processing workitem by by new transaction...");
+		return processWorkItem(workitem);
+	}
+
 	public void removeWorkItem(ItemCollection aworkitem) throws AccessDeniedException {
 		documentService.remove(aworkitem);
 	}
@@ -775,8 +792,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	public ReportService getReportService() {
 		return reportService;
 	}
-
-	
 
 	/**
 	 * Obtain the java.security.Principal that identifies the caller and returns the
