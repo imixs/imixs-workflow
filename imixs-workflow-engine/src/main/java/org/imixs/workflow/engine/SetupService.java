@@ -157,6 +157,12 @@ public class SetupService {
 		// test if we have an environment variable or a property value...
 		String modelData = !envModelDefaultData.isEmpty() ? envModelDefaultData : modelDefaultData;
 
+		if ("".equals(modelData)) {
+			// no model data to scan
+			return;
+		}
+		
+		
 		String[] modelResources = modelData.split(";");
 		for (String modelResource : modelResources) {
 
