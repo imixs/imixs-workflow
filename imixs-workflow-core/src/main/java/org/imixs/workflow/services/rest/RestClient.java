@@ -42,16 +42,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-
 /**
- * The Imixs RestClient is a helper class for a Rest based communication without the use of Jax-rs.
+ * The Imixs RestClient is a helper class for a Rest based communication without
+ * the use of Jax-rs.
  * <p>
- * The Imixs RestClient provides methods to GET and POST data
- * objects.
+ * The Imixs RestClient provides methods to GET and POST data objects.
  * <p>
  * The client throws a RestAPIException in case of an communication error.
  * <p>
- * For a convinient way to access the Imixs-Rest API use the Imixs-Melman project on Github.
+ * For a convinient way to access the Imixs-Rest API use the Imixs-Melman
+ * project on Github.
  * 
  * @author Ralph Soika
  */
@@ -107,20 +107,19 @@ public class RestClient {
 		return serviceEndpoint;
 	}
 
-
 	/**
-	 * This method builds the serviceEndpoint based on a given URI . The
-	 * method prafix the URI with the root uri if the uri starts with /
+	 * This method builds the serviceEndpoint based on a given URI . The method
+	 * prafix the URI with the root uri if the uri starts with /
 	 * 
 	 * @param uri
-	 * @throws RestAPIException 
+	 * @throws RestAPIException
 	 */
 	void setServiceEndpoint(String uri) throws RestAPIException {
 
 		if (rootURL == null) {
 			throw new RestAPIException(0, "rootURL is null!");
 		}
-		
+
 		// test for double /
 		if (uri != null && uri.startsWith("/")) {
 			uri = uri.substring(1);
@@ -144,24 +143,48 @@ public class RestClient {
 		requestProperties.put(key, value);
 	}
 
-
-
-	
-
 	/**
 	 * Posts a String data object with a specific Content-Type to a Rest Service URI
 	 * Endpoint. This method can be used to simulate different post scenarios.
+	 * <p>
+	 * The parameter 'contnetType' can be used to request a specific media type.
 	 * 
 	 * @param uri
 	 *            - Rest Endpoint RUI
 	 * @param dataString
 	 *            - content
+	 * @param contentType
+	 *            - request MediaType
 	 * @return content
 	 */
 	public String post(String uri, String dataString, String contentType) throws Exception {
+		return post(uri, dataString, contentType, null);
+	}
+
+	/**
+	 * Posts a String data object with a specific Content-Type to a Rest Service URI
+	 * Endpoint. This method can be used to simulate different post scenarios.
+	 * <p>
+	 * The parameter 'contnetType' and 'acceptType' can be used to request and
+	 * accept specific media types.
+	 * 
+	 * @param uri
+	 *            - Rest Endpoint RUI
+	 * @param dataString
+	 *            - content
+	 * @param contentType
+	 *            - request MediaType
+	 * @param acceptType
+	 *            - accept MediaType
+	 * @return content
+	 */
+	public String post(String uri, String dataString, String contentType, String acceptType) throws Exception {
 		PrintWriter printWriter = null;
 		if (contentType == null || contentType.isEmpty()) {
 			contentType = "application/xml";
+		}
+		if (acceptType == null || acceptType.isEmpty()) {
+			acceptType = contentType;
 		}
 
 		HttpURLConnection urlConnection = null;
@@ -177,6 +200,8 @@ public class RestClient {
 
 			/** * HEADER ** */
 			urlConnection.setRequestProperty("Content-Type", contentType + "; charset=" + encoding);
+			urlConnection.setRequestProperty("Accept-Charset", encoding);
+			urlConnection.setRequestProperty("Accept", acceptType);
 
 			// process filters....
 			for (RequestFilter filter : requestFilterList) {
@@ -260,7 +285,7 @@ public class RestClient {
 			}
 
 			responseCode = urlConnection.getResponseCode();
-			logger.finest("......Sending 'GET' request to URL : " +serviceEndpoint);
+			logger.finest("......Sending 'GET' request to URL : " + serviceEndpoint);
 			logger.finest("......Response Code : " + responseCode);
 			// read response if response was successful
 			if (responseCode >= 200 && responseCode <= 299) {
@@ -277,9 +302,6 @@ public class RestClient {
 
 		}
 	}
-
-
-
 
 	/**
 	 * Reads the response from a http request.
