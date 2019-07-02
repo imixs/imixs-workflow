@@ -1716,7 +1716,7 @@ public class ItemCollection implements Cloneable {
 		public Object put(String key, Object value) {
 			if (key == null)
 				return null;
-			itemCollection.replaceItemValue(key.toString(), value);
+			itemCollection.replaceItemValue(key, value);
 			return value;
 		}
 
