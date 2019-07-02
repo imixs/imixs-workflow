@@ -75,10 +75,10 @@ public class SimulationService implements WorkflowContext {
 	private Instance<Plugin> plugins;
 
 	@EJB
-	ModelService modelService;
+	private ModelService modelService;
 
 	@Resource
-	SessionContext ctx;
+	private SessionContext ctx;
 
 	@Inject
 	protected Event<ProcessingEvent> events;

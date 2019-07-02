@@ -102,22 +102,22 @@ public class SetupService {
 	// inject evnironment / property for the model default data.
 	@Inject
 	@ConfigProperty(name = "MODEL_DEFAULT_DATA", defaultValue = "")
-	String envModelDefaultData;
+	private String envModelDefaultData;
 	@Inject
 	@ConfigProperty(name = "model.default.data", defaultValue = "")
-	String modelDefaultData;
+	private String modelDefaultData;
 
 	@EJB
-	DocumentService documentService;
+	private DocumentService documentService;
 
 	@EJB
-	ModelService modelService;
+	private ModelService modelService;
 
 	@EJB
-	SchedulerService schedulerService;
+	private SchedulerService schedulerService;
 
 	@Resource
-	javax.ejb.TimerService timerService;
+	private javax.ejb.TimerService timerService;
 
 	public int getModelCount() {
 		return modelService.getVersions().size();

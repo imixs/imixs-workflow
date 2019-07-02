@@ -90,9 +90,9 @@ public class ModelService implements ModelManager {
 	private Map<String, Model> modelStore = null;
 	private static Logger logger = Logger.getLogger(ModelService.class.getName());
 	@EJB
-	DocumentService documentService;
+	private DocumentService documentService;
 	@Resource
-	SessionContext ctx;
+	private SessionContext ctx;
 
 	public ModelService() {
 		super();

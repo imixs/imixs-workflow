@@ -86,13 +86,13 @@ public class ModelRestService {
 			"activityentity");
 
 	@EJB
-	DocumentService documentService;
+	private DocumentService documentService;
 
 	@EJB
-	WorkflowRestService workflowRestService;
+	private WorkflowRestService workflowRestService;
 
 	@EJB
-	ModelService modelService;
+	private ModelService modelService;
 	
 	@javax.ws.rs.core.Context
 	private HttpServletRequest servletRequest;

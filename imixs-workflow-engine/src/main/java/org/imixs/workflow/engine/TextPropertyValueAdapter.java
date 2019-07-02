@@ -27,7 +27,7 @@ import org.imixs.workflow.util.XMLParser;
 public class TextPropertyValueAdapter {
 
 	@Inject
-	Config config;
+	private Config config;
 
 	private static Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
 

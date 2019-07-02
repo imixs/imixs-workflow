@@ -49,7 +49,7 @@ import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
 public class ImixsHealthCheck implements HealthCheck {
 
 	@Inject
-	SetupService setupService;
+	private SetupService setupService;
 
 	/**
 	 * This is the implementation for the health check call back method.

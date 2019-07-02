@@ -85,9 +85,10 @@ public class RuleEngine {
 
 	private static Logger logger = Logger.getLogger(RuleEngine.class.getName());
 
-	ScriptEngineManager scriptEngineManager;
-	ScriptEngine scriptEngine = null;
-	String scriptLanguage;
+	private ScriptEngineManager scriptEngineManager;
+	private ScriptEngine scriptEngine = null;
+	@SuppressWarnings("unused")
+	private String scriptLanguage;
 
 	/**
 	 * This method initializes the default script engine.

@@ -63,7 +63,6 @@ import javax.ws.rs.core.UriInfo;
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
@@ -89,10 +88,10 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
 public class WorkflowRestService {
 
 	@EJB
-	WorkflowService workflowService;
+	private WorkflowService workflowService;
 	
 	@EJB
-	DocumentRestService documentRestService;
+	private DocumentRestService documentRestService;
 
 	@javax.ws.rs.core.Context
 	private HttpServletRequest servletRequest;

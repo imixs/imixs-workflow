@@ -99,10 +99,10 @@ import org.imixs.workflow.xml.XSLHandler;
 public class ReportRestService {
 
 	@EJB
-	DocumentService entityService;
+	private DocumentService entityService;
 
 	@EJB
-	ReportService reportService;
+	private ReportService reportService;
 
 	@javax.ws.rs.core.Context
 	private HttpServletRequest servletRequest;
