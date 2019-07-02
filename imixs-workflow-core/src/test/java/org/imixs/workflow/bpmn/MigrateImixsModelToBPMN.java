@@ -34,7 +34,6 @@ public class MigrateImixsModelToBPMN {
 	private static String sourceModelFile = null;
 	private static List<ItemCollection> modelItemCollection = null;
 	private static List<SequenceFlow> sequenceFlows = null;
-	// private static boolean bStartTask;
 	private static ItemCollection startTask = null;
 	private final static Logger logger = Logger
 			.getLogger(MigrateImixsModelToBPMN.class.getName());
@@ -586,8 +585,8 @@ public class MigrateImixsModelToBPMN {
 }
 
 class SequenceFlow {
-	String from, to;
-	String id;
+	protected String from, to;
+	protected String id;
 
 	public SequenceFlow(String from, String to, String id) {
 		this.from = from;

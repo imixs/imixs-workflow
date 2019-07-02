@@ -84,29 +84,29 @@ public class MailPlugin extends AbstractPlugin {
 	public static final String ERROR_INVALID_XSL_FORMAT = "INVALID_XSL_FORMAT";
 	public static final String ERROR_MAIL_MESSAGE = "ERROR_MAIL_MESSAGE";
 	public static final String MAIL_SESSION_NAME = "mail/org.imixs.workflow.mail";
+	public static final String CONTENTTYPE_TEXT_PLAIN = "text/plain";
+	public static final String CONTENTTYPE_TEXT_HTML = "text/html";
+	public static final String INVALID_ADDRESS = "INVALID_ADDRESS";
 
 	// Mail objects
 	@Resource(lookup = MAIL_SESSION_NAME)
-	Session mailSession;
+	private Session mailSession;
 
 	@Inject
 	@ConfigProperty(name = "mail.testRecipients", defaultValue = "")
-	String mailTestRecipients;
+	private String mailTestRecipients;
 
 	@Inject
 	@ConfigProperty(name = "mail.defaultSender", defaultValue = "")
-	String mailDefaultSender;
+	private String mailDefaultSender;
 
 	@Inject
 	@ConfigProperty(name = "mail.charSet", defaultValue = "")
-	String mailCharSet;
+	private String mailCharSet;
 
-	MimeMessage mailMessage = null;
-	Multipart mimeMultipart = null;
-	static final String CONTENTTYPE_TEXT_PLAIN = "text/plain";
-	static final String CONTENTTYPE_TEXT_HTML = "text/html";
-	public static final String INVALID_ADDRESS = "INVALID_ADDRESS";
-	String charSet = "ISO-8859-1";
+	private MimeMessage mailMessage = null;
+	private Multipart mimeMultipart = null;
+	private String charSet = "ISO-8859-1";
 
 	private boolean bHTMLMail = false;
 	private static Logger logger = Logger.getLogger(MailPlugin.class.getName());

@@ -56,8 +56,7 @@ public class IntervalPlugin extends AbstractPlugin {
 
 	public static final String INVALID_FORMAT = "INVALID_FORMAT";
 
-	ItemCollection documentContext;
-	String sActivityResult;
+	private ItemCollection documentContext;
 	private static Logger logger = Logger.getLogger(IntervalPlugin.class.getName());
 
 	/**

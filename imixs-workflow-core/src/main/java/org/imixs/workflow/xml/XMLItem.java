@@ -91,7 +91,7 @@ public class XMLItem implements java.io.Serializable {
 	 *            - array of objects
 	 */
 	@SuppressWarnings("unchecked")
-	public void setValue(java.lang.Object[] values) {
+	public void setValue(Object[] values) {
 		// this.value = values;
 
 		if (values == null || values.length == 0) {

@@ -54,7 +54,6 @@ public abstract class AbstractPlugin implements Plugin {
 
 	private WorkflowContext ctx;
 	private WorkflowService workflowService;
-
 	private static Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
 
 	/**

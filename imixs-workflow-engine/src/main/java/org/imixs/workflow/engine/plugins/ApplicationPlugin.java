@@ -73,8 +73,7 @@ public class ApplicationPlugin extends AbstractPlugin {
 
 	public static final String PROCESS_UNDEFINED = "PROCESS_UNDEFINED";
 
-	ItemCollection documentContext;
-
+	private ItemCollection documentContext;
 	private String sEditorID;
 	private String sImageURL;
 	private String sAbstract;

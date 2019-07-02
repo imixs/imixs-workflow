@@ -77,8 +77,8 @@ import org.imixs.workflow.exceptions.PluginException;
  */
 
 public class OwnerPlugin extends AbstractPlugin {
-	ItemCollection documentContext;
-	ItemCollection documentActivity, documentNextProcessEntity;
+	private ItemCollection documentContext;
+	private ItemCollection documentActivity, documentNextProcessEntity;
 
 	private static Logger logger = Logger.getLogger(AccessPlugin.class.getName());
 

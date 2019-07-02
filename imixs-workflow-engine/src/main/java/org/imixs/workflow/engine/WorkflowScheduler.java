@@ -44,22 +44,22 @@ public class WorkflowScheduler implements Scheduler {
 	private static Logger logger = Logger.getLogger(WorkflowScheduler.class.getName());
 
 	@EJB
-	WorkflowService workflowService;
+	private WorkflowService workflowService;
 
 	@EJB
-	DocumentService documentService;
+	private DocumentService documentService;
 
 	@EJB
-	ModelService modelService;
+	private ModelService modelService;
 
 	@EJB
-	SchedulerService schedulerService;
+	private SchedulerService schedulerService;
 
 	@Resource
-	SessionContext ctx;
+	private SessionContext ctx;
 
-	int iProcessWorkItems = 0;
-	List<String> unprocessedIDs = null;
+	private int iProcessWorkItems = 0;
+	private List<String> unprocessedIDs = null;
 
 	/**
 	 * This method checks if a workitem (doc) is in due. There are 4 different cases
