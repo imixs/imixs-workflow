@@ -9,10 +9,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.xml.XMLDataCollection;
-import org.imixs.workflow.xml.XMLDataCollectionAdapter;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import junit.framework.Assert;
@@ -28,15 +24,6 @@ import junit.framework.Assert;
  */
 public class TestReadWriteXMLData {
 
-	@Before
-	public void setup() {
-
-	}
-
-	@After
-	public void teardown() {
-
-	}
 
 	/**
 	 * Read /document-example.xml

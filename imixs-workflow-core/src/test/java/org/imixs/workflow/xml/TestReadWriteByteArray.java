@@ -8,8 +8,6 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 
 import org.imixs.workflow.ItemCollection;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import junit.framework.Assert;
@@ -23,15 +21,7 @@ import junit.framework.Assert;
  */
 public class TestReadWriteByteArray {
 
-	@Before
-	public void setup() {
 
-	}
-
-	@After
-	public void teardown() {
-
-	}
 
 	/**
 	 * Write a ItemCollection into a byte array and reads it back
