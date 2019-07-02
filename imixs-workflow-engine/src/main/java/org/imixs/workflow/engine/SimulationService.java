@@ -77,6 +77,22 @@ public class SimulationService implements WorkflowContext {
 	@EJB
 	private ModelService modelService;
 
+	public ModelService getModelService() {
+		return modelService;
+	}
+
+	public void setModelService(ModelService modelService) {
+		this.modelService = modelService;
+	}
+
+	public SessionContext getCtx() {
+		return ctx;
+	}
+
+	public void setCtx(SessionContext ctx) {
+		this.ctx = ctx;
+	}
+
 	@Resource
 	private SessionContext ctx;
 

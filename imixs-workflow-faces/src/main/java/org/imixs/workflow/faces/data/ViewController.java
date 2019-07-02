@@ -75,7 +75,7 @@ public class ViewController implements Serializable {
 	private static Logger logger = Logger.getLogger(ViewController.class.getName());
 
 	@EJB
-	DocumentService documentService;
+	private DocumentService documentService;
 
 	public ViewController() {
 		super();

@@ -93,9 +93,9 @@ public class WorkflowSimulationEnvironment {
 		// Mock WorkflowService
 		simulationService = Mockito.mock(SimulationService.class);
 		// workflowService.documentService = documentService;
-		simulationService.ctx = ctx;
+		simulationService.setCtx(ctx);
 
-		simulationService.modelService = modelService;
+		simulationService.setModelService(modelService);
 		when(simulationService.getModelManager()).thenReturn(modelService);
 
 		when(simulationService.processWorkItem(Mockito.any(ItemCollection.class), Mockito.any(List.class)))

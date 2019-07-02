@@ -111,9 +111,9 @@ public class DocumentController extends AbstractDataController implements Serial
 
 	
 	@EJB
-	DocumentService documentService;
+	private DocumentService documentService;
 
-	String defaultActionResult;
+	private String defaultActionResult;
 
 	public DocumentController() {
 		super();

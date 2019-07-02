@@ -61,7 +61,7 @@ public class ViewHandler implements Serializable {
 	private static Logger logger = Logger.getLogger(ViewHandler.class.getName());
 
 	@EJB
-	DocumentService documentService;
+	private DocumentService documentService;
 
 	public ViewHandler() {
 		super();

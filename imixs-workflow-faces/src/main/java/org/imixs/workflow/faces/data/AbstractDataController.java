@@ -83,12 +83,12 @@ public abstract class AbstractDataController implements Serializable {
 	private String defaultType;
 
 	@Inject
-	Conversation conversation;
+	private Conversation conversation;
 
-	ItemCollection data = null;
+	protected ItemCollection data = null;
 
 	@EJB
-	DocumentService documentService;
+	private DocumentService documentService;
 
 	/**
 	 * This method returns the Default 'type' attribute of the local workitem.
