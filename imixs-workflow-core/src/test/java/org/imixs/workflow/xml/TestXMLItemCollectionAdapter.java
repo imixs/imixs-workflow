@@ -129,7 +129,7 @@ public class TestXMLItemCollectionAdapter {
 		Assert.assertEquals(1, resultDate.size());
 
 		Assert.assertFalse(resultDate.get(0) instanceof XMLGregorianCalendar);
-		Assert.assertTrue(resultDate.get(0) instanceof java.util.Date);
+		Assert.assertTrue(resultDate.get(0) instanceof Date);
 
 		Assert.assertEquals(itemCollection.getItemValueDate("datdate"), datTest);
 

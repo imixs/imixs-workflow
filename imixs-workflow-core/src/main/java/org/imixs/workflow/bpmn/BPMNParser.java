@@ -55,7 +55,7 @@ public class BPMNParser {
 		long lTime = System.currentTimeMillis();
 		if (bpmnInputStream == null) {
 			logger.severe("[BPMNParser] parseModel - inputStream is null!");
-			throw new java.text.ParseException("inputStream is null", -1);
+			throw new ParseException("inputStream is null", -1);
 		}
 
 		// copy stream into byte array to store content later in BMPMModel object

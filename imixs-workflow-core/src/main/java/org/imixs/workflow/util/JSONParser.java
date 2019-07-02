@@ -46,7 +46,7 @@ public class JSONParser {
 
 		if (requestBodyStream == null) {
 			logger.severe("parseWorkitem - inputStream is null!");
-			throw new java.text.ParseException("inputStream is null", -1);
+			throw new ParseException("inputStream is null", -1);
 		}
 
 		// default encoding?
@@ -179,7 +179,7 @@ public class JSONParser {
 			iStart = token.indexOf('"', iPos + "\"@type\"".length() + 1) + 1;
 			iEnd = token.indexOf('"', iStart);
 			if (iEnd < iStart)
-				throw new java.text.ParseException("Unexpected position of '}", iEnd);
+				throw new ParseException("Unexpected position of '}", iEnd);
 
 			type = token.substring(iStart, iEnd);
 			token = token.substring(iEnd + 1);
@@ -195,7 +195,7 @@ public class JSONParser {
 			iEnd = token.length();
 		}
 		if (iEnd < iStart)
-			throw new java.text.ParseException("Unexpected position of '}", iEnd);
+			throw new ParseException("Unexpected position of '}", iEnd);
 
 		String stringValue = token.substring(iStart, iEnd);
 		value = stringValue;

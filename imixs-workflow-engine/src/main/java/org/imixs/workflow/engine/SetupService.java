@@ -367,7 +367,7 @@ public class SetupService {
 	Timer findTimer(String id) {
 		Timer timer = null;
 		for (Object obj : timerService.getTimers()) {
-			Timer atimer = (javax.ejb.Timer) obj;
+			Timer atimer = (Timer) obj;
 			String timerID = atimer.getInfo().toString();
 			if (id.equals(timerID)) {
 				if (timer != null) {
