@@ -899,12 +899,12 @@ public class ItemCollection implements Cloneable {
 			vectorFileInfo = new ArrayList<Object>();
 			// put file in a List containing the contentType, content, MD5Checksum and
 			// optional attributes
-			vectorFileInfo.add(filedata.contentType);
-			vectorFileInfo.add(filedata.content);
+			vectorFileInfo.add(filedata.getContentType());
+			vectorFileInfo.add(filedata.getContent());
 			// add optional attributes
 			vectorFileInfo.add(filedata.getAttributes());
 
-			mapFiles.put(filedata.name, vectorFileInfo);
+			mapFiles.put(filedata.getName(), vectorFileInfo);
 			replaceItemValue("$file", mapFiles);
 
 			// addFile(filedata.content, filedata.name, filedata.contentType);

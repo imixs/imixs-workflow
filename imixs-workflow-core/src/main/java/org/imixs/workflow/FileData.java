@@ -20,10 +20,10 @@ import javax.xml.bind.DatatypeConverter;
  * @version 2.0
  */
 public class FileData {
-	String name;
-	byte[] content;
-	String contentType;
-	Map<String, List<Object>> attributes;
+	private String name;
+	private byte[] content;
+	private String contentType;
+	private Map<String, List<Object>> attributes;
 
 	public static final String DEFAULT_CONTENT_TYPE = "application/unknown";
 
