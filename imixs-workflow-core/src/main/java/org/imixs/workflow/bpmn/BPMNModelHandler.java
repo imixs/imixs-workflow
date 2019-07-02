@@ -1269,8 +1269,8 @@ public class BPMNModelHandler extends DefaultHandler {
 	}
 
 	class SequenceFlow {
-		String target = null;
-		String source = null;
+		private String target = null;
+		private String source = null;
 
 		public SequenceFlow(String source, String target) {
 			this.target = target;
@@ -1287,7 +1287,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	 *
 	 */
 	class ElementResolver {
-		List<String> loopFlowCache = null;
+		private List<String> loopFlowCache = null;
 
 		public ElementResolver() {
 			// initalize loop dedection

@@ -20,7 +20,7 @@ import org.junit.Test;
  */
 public class TestMailPlugin {
 
-	MailPlugin mailPlugin = null;
+	protected MailPlugin mailPlugin = null;
 	private final static Logger logger = Logger.getLogger(TestMailPlugin.class.getName());
 
 	

@@ -29,7 +29,7 @@ import org.xml.sax.SAXException;
  */
 public class TestWorkflowKernelModels {
 
-	WorkflowKernel kernel = null;
+	protected WorkflowKernel kernel = null;
 	protected SessionContext ctx;
 	protected WorkflowContext workflowContext;
 	private static Logger logger = Logger.getLogger(TestWorkflowKernelModels.class.getName());

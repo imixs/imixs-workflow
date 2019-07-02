@@ -33,7 +33,7 @@ import org.mockito.Mockito;
  */
 public class TestWorkflowKernel {
 
-	WorkflowKernel kernel = null;
+	protected WorkflowKernel kernel = null;
 	protected SessionContext ctx;
 	protected WorkflowContext workflowContext;
 	private static Logger logger = Logger.getLogger(TestWorkflowKernel.class.getName());

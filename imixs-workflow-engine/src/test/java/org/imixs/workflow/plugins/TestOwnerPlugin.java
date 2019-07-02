@@ -27,11 +27,11 @@ public class TestOwnerPlugin  {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPlugin.class.getName());
 
-	OwnerPlugin ownerPlugin = null;
-	ItemCollection documentContext;
-	ItemCollection documentActivity;
+	protected OwnerPlugin ownerPlugin = null;
+	protected ItemCollection documentContext;
+	protected ItemCollection documentActivity;
 
-	WorkflowMockEnvironment workflowMockEnvironment;
+	protected WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setup() throws PluginException, ModelException {

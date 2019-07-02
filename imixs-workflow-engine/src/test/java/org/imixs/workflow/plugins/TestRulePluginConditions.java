@@ -22,7 +22,7 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestRulePluginConditions {
-	ResultPlugin resultPlugin = null;
+	protected ResultPlugin resultPlugin = null;
 	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 	
 	WorkflowMockEnvironment workflowMockEnvironment;

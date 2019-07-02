@@ -44,10 +44,11 @@ public class TestAccessPluginProcessEntity {
 
 	private final static Logger logger = Logger.getLogger(TestAccessPluginProcessEntity.class.getName());
 
-	AccessPlugin accessPlugin = null;
-	ItemCollection documentContext;
-	ItemCollection documentActivity, documentProcess;
-	WorkflowMockEnvironment workflowMockEnvironment;
+	protected AccessPlugin accessPlugin = null;
+	protected ItemCollection documentContext;
+	protected ItemCollection documentActivity;
+	protected ItemCollection documentProcess;
+	protected WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setup() throws PluginException, ModelException {

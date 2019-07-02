@@ -29,9 +29,9 @@ public class TestSplitAndJoinPlugin {
 
 	private final static Logger logger = Logger.getLogger(TestSplitAndJoinPlugin.class.getName());
 
-	SplitAndJoinPlugin splitAndJoinPlugin = null;
-	ItemCollection documentContext;
-	ItemCollection documentActivity, documentProcess;
+	protected SplitAndJoinPlugin splitAndJoinPlugin = null;
+	protected ItemCollection documentContext;
+	protected ItemCollection documentActivity, documentProcess;
 
 	/**
 	 * We use the provided test workflow model form the AbstractWorkflowServiceTest

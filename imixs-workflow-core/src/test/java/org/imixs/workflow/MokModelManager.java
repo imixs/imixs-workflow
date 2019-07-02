@@ -29,7 +29,7 @@ import org.xml.sax.SAXException;
  */
 public class MokModelManager implements ModelManager {
 
-	Model model=null;
+	protected Model model=null;
 
 	/**
 	 *  

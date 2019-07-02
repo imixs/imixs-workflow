@@ -30,11 +30,11 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestResultPlugin {
-	ResultPlugin resultPlugin = null;
+	protected ResultPlugin resultPlugin = null;
 	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 	private static Logger logger = Logger.getLogger(TestResultPlugin.class.getName());
 
-	WorkflowMockEnvironment workflowMockEnvironment;
+	protected WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setup() throws PluginException, ModelException {

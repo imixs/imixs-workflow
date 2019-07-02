@@ -25,7 +25,7 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestRulePlugin {
-	RulePlugin rulePlugin = null;
+	protected RulePlugin rulePlugin = null;
 
 	@Before
 	public void setup() throws PluginException {

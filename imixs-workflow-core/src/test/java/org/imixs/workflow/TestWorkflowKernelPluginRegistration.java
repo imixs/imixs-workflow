@@ -23,7 +23,7 @@ import org.mockito.Mockito;
  */
 public class TestWorkflowKernelPluginRegistration {
 
-	WorkflowKernel kernel = null;
+	protected WorkflowKernel kernel = null;
 	protected SessionContext ctx;
 	protected WorkflowContext workflowContext;
 

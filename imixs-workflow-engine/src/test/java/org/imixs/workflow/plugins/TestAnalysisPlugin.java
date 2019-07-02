@@ -16,7 +16,7 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestAnalysisPlugin {
-	AnalysisPlugin analysisPlugin = null;
+	protected AnalysisPlugin analysisPlugin = null;
 	private static Logger logger = Logger.getLogger(TestAnalysisPlugin.class.getName());
 
 	@Before

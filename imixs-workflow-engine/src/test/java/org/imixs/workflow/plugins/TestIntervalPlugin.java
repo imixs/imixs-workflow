@@ -19,7 +19,7 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestIntervalPlugin {
-	IntervalPlugin intervalPlugin = null;
+	protected IntervalPlugin intervalPlugin = null;
 	private static Logger logger = Logger.getLogger(TestIntervalPlugin.class.getName());
 
 	@SuppressWarnings("static-access")

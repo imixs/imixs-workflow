@@ -44,11 +44,11 @@ public class TestOwnerPluginProcessEntity {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPluginProcessEntity.class.getName());
 
-	OwnerPlugin ownerPlugin = null;
-	ItemCollection documentContext;
-	ItemCollection documentActivity, documentProcess;
+	protected OwnerPlugin ownerPlugin = null;
+	protected ItemCollection documentContext;
+	protected ItemCollection documentActivity, documentProcess;
 
-	WorkflowMockEnvironment workflowMockEnvironment;
+	protected WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setup() throws PluginException, ModelException {

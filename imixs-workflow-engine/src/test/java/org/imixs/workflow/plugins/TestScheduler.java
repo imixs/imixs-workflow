@@ -5,9 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -18,11 +16,6 @@ import org.junit.Test;
  */
 public class TestScheduler  {
 	
-
-	@Before
-	public void setup() throws PluginException {
-		
-	}
 
 	
 	@Test 

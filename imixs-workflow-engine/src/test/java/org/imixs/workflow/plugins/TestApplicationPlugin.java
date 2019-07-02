@@ -26,10 +26,10 @@ public class TestApplicationPlugin  {
 	private final static Logger logger = Logger
 			.getLogger(TestApplicationPlugin.class.getName());
 
-	ApplicationPlugin applicationPlugin = null;
-	ItemCollection documentContext;
-	ItemCollection documentActivity, documentProcess;
-	WorkflowMockEnvironment workflowMockEnvironment;
+	protected ApplicationPlugin applicationPlugin = null;
+	protected ItemCollection documentContext;
+	protected ItemCollection documentActivity, documentProcess;
+	protected WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setup() throws PluginException, ModelException {
