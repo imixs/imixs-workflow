@@ -1836,7 +1836,7 @@ public class ItemCollection implements Cloneable {
 
 			// skipp null values
 			if (value == null) {
-				itemCollection.replaceItemValue(key.toString(), new ArrayList());
+				itemCollection.replaceItemValue(key, new ArrayList());
 				return null;
 			}
 			// convert List into Vector object
@@ -1852,10 +1852,10 @@ public class ItemCollection implements Cloneable {
 					for (Object aEntryValue : (Object[]) value) {
 						v.add(aEntryValue);
 					}
-				itemCollection.replaceItemValue(key.toString(), v);
+				itemCollection.replaceItemValue(key, v);
 			} else
 				// non convertable object!
-				itemCollection.replaceItemValue(key.toString(), value);
+				itemCollection.replaceItemValue(key, value);
 
 			return value;
 		}

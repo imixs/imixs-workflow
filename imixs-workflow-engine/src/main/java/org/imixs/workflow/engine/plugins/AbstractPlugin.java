@@ -130,7 +130,7 @@ public abstract class AbstractPlugin implements Plugin {
 					values = Arrays.asList(key.substring(1, key.length() - 1).split("\\s*,\\s*"));
 				} else {
 					// extract value list form documentContext
-					values = documentContext.getItemValue(key.toString());
+					values = documentContext.getItemValue(key);
 				}
 				// now append the values into p_VectorDestination
 				if ((values != null) && (values.size() > 0)) {
