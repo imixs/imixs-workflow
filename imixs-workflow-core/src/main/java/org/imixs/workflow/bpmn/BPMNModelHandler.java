@@ -36,63 +36,62 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	private static Logger logger = Logger.getLogger(BPMNModelHandler.class.getName());
 
-	boolean bDefinitions = false;
-	boolean bMessage = false;
-	boolean bAnnotation = false;
-	boolean bDataObject = false;
-	boolean bSignal = false;
-	boolean bExtensionElements = false;
-	boolean bImixsProperty = false;
-	boolean bImixsTask = false;
-	boolean bImixsEvent = false;
-	boolean bThrowEvent = false;
-	boolean bCatchEvent = false;
-	boolean bLinkThrowEvent = false;
-	boolean bLinkCatchEvent = false;
-	boolean bItemValue = false;
-	boolean bdocumentation = false;
-	boolean bSequenceFlow = false;
+	private boolean bDefinitions = false;
+	private boolean bMessage = false;
+	private boolean bAnnotation = false;
+	private boolean bDataObject = false;
+	private boolean bSignal = false;
+	private boolean bExtensionElements = false;
+	private boolean bImixsTask = false;
+	private boolean bImixsEvent = false;
+	private boolean bThrowEvent = false;
+	private boolean bCatchEvent = false;
+	private boolean bLinkThrowEvent = false;
+	private boolean bLinkCatchEvent = false;
+	private boolean bItemValue = false;
+	private boolean bdocumentation = false;
+	private boolean bSequenceFlow = false;
 
-	boolean bconditionExpression = false;
+	private boolean bconditionExpression = false;
 
-	ItemCollection currentEntity = null;
-	String currentItemName = null;
-	String currentItemType = null;
-	String currentWorkflowGroup = null;
-	String currentMessageName = null;
-	String currentAnnotationName = null;
-	String currentDataObjectName = null;
-	String currentDataObjectID = null;
-	String currentSignalID = null;
-	String currentSignalName = null;
-	String currentSignalRefID = null;
-	String currentLinkName = null;
+	private ItemCollection currentEntity = null;
+	private String currentItemName = null;
+	private String currentItemType = null;
+	private String currentWorkflowGroup = null;
+	private String currentMessageName = null;
+	private String currentAnnotationName = null;
+	private String currentDataObjectName = null;
+	private String currentDataObjectID = null;
+	private String currentSignalID = null;
+	private String currentSignalName = null;
+	private String currentSignalRefID = null;
+	private String currentLinkName = null;
 
-	String bpmnID = null;
-	StringBuilder characterStream = null;
+	private String bpmnID = null;
+	private StringBuilder characterStream = null;
 
-	BPMNModel model = null;
+	private BPMNModel model = null;
 
-	Map<String, ItemCollection> taskCache = null;
-	Map<String, ItemCollection> eventCache = null;
+	private Map<String, ItemCollection> taskCache = null;
+	private Map<String, ItemCollection> eventCache = null;
 
-	Map<String, String> linkThrowEventCache = null;
-	Map<String, String> linkCatchEventCache = null;
+	private Map<String, String> linkThrowEventCache = null;
+	private Map<String, String> linkCatchEventCache = null;
 
-	Map<String, SequenceFlow> sequenceCache = null;
-	Map<String, SequenceFlow> associationCache = null;
-	Map<String, String> messageCache = null;
-	Map<String, String> annotationCache = null;
-	Map<String, List<String>> dataObjectCache = null;
-	Map<String, String> signalCache = null;
+	private Map<String, SequenceFlow> sequenceCache = null;
+	private Map<String, SequenceFlow> associationCache = null;
+	private Map<String, String> messageCache = null;
+	private Map<String, String> annotationCache = null;
+	private Map<String, List<String>> dataObjectCache = null;
+	private Map<String, String> signalCache = null;
 
-	Map<String, String> conditionCache = null;
+	private Map<String, String> conditionCache = null;
 
-	List<String> startEvents = null;
-	List<String> conditionalGatewayCache = null;
-	List<String> parallelGatewayCache = null;
+	private List<String> startEvents = null;
+	private List<String> conditionalGatewayCache = null;
+	private List<String> parallelGatewayCache = null;
 
-	ItemCollection definition = null;
+	private ItemCollection definition = null;
 
 	private List<String> ignoreItemList = null;
 

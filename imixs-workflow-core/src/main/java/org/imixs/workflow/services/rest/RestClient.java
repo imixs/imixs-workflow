@@ -61,9 +61,7 @@ public class RestClient {
 	private Map<String, String> requestProperties = null;
 	private String encoding = "UTF-8";
 	private int iLastHTTPResult = 0;
-
 	private String rootURL = null;
-
 	private final static Logger logger = Logger.getLogger(RestClient.class.getName());
 
 	protected List<RequestFilter> requestFilterList;
