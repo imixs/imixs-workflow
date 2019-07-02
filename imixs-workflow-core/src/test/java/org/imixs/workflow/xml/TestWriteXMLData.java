@@ -12,8 +12,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import org.imixs.workflow.ItemCollection;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import junit.framework.Assert;
@@ -27,16 +25,6 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestWriteXMLData {
-
-	@Before
-	public void setup() {
-
-	}
-
-	@After
-	public void teardown() {
-
-	}
 
 	/**
 	 * This test case is split into 3 phases.

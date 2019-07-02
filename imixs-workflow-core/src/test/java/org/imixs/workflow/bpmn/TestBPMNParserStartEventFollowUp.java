@@ -10,8 +10,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -24,16 +22,6 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestBPMNParserStartEventFollowUp {
-
-	@Before
-	public void setup() {
-
-	}
-
-	@After
-	public void teardown() {
-
-	}
 
 	@Test
 	public void testSimple()

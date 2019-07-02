@@ -10,8 +10,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -29,17 +27,7 @@ import junit.framework.Assert;
  */
 public class TestBPMNParserCollaborationMinutes {
 
-	@Before
-	public void setup() {
 
-	}
-
-	@After
-	public void teardown() {
-
-	}
-
-	// @Ignore
 	@Test
 	public void testSimple() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 

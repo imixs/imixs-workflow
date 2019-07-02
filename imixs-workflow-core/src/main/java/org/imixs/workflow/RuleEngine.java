@@ -81,6 +81,8 @@ import org.imixs.workflow.exceptions.PluginException;
 public class RuleEngine {
 	public static final String DEFAULT_SCRIPT_LANGUAGE = "javascript";
 	public static final String INVALID_SCRIPT = "INVALID_SCRIPT";
+	private static final HashSet<Class<?>> BASIC_OBJECT_TYPES = getBasicObjectTypes();
+
 	private static Logger logger = Logger.getLogger(RuleEngine.class.getName());
 
 	ScriptEngineManager scriptEngineManager;
@@ -356,8 +358,7 @@ public class RuleEngine {
 		return result;
 	}
 
-	private static final HashSet<Class<?>> BASIC_OBJECT_TYPES = getBasicObjectTypes();
-
+	
 	private static boolean isBasicObjectType(Class<?> clazz) {
 		return BASIC_OBJECT_TYPES.contains(clazz);
 	}

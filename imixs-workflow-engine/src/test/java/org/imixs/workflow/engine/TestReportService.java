@@ -17,7 +17,7 @@ public class TestReportService {
 
 	@Before
 	public void setup() throws PluginException {
-
+		// setup
 	}
 
 	/**

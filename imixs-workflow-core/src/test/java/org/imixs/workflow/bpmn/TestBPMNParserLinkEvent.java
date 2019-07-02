@@ -8,14 +8,12 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import junit.framework.Assert;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import junit.framework.Assert;
 
 /**
  * Test class test the Imixs BPMNParser.
@@ -26,16 +24,6 @@ import org.xml.sax.SAXException;
  * @author rsoika
  */
 public class TestBPMNParserLinkEvent {
-
-	@Before
-	public void setup() {
-
-	}
-
-	@After
-	public void teardown() {
-
-	}
 
 	/**
 	 * This test test intermediate link events and also loop throw events

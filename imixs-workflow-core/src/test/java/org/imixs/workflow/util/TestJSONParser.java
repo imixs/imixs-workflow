@@ -5,12 +5,10 @@ import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.imixs.workflow.ItemCollection;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 /**
  * Test class test the parsing of a json file used by the workflowRestService
@@ -20,16 +18,6 @@ import org.junit.Test;
  * @author rsoika
  */
 public class TestJSONParser {
-
-	@Before
-	public void setup() {
-
-	}
-
-	@After
-	public void teardown() {
-
-	}
 
 	@Test
 	public void testSimple() throws ParseException {
