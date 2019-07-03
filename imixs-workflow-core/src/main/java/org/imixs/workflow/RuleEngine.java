@@ -87,9 +87,8 @@ public class RuleEngine {
 
 	private ScriptEngineManager scriptEngineManager;
 	private ScriptEngine scriptEngine = null;
-	@SuppressWarnings("unused")
-	private String scriptLanguage;
-
+	
+	
 	/**
 	 * This method initializes the default script engine.
 	 */
@@ -103,7 +102,7 @@ public class RuleEngine {
 	 * 
 	 * @param scriptLanguage
 	 */
-	public RuleEngine(String scriptLanguage) {
+	public RuleEngine(final String scriptLanguage) {
 		super();
 		init(scriptLanguage);
 	}
@@ -113,15 +112,15 @@ public class RuleEngine {
 	 * 
 	 * @param scriptLanguage
 	 */
-	void init(String scriptLanguage) {
-		this.scriptLanguage = scriptLanguage;
+	void init(final String _scriptLanguage) {
+		String scriptLanguage = _scriptLanguage;
 		// set default engine to javascript if no engine is specified
-		if ("".equals(this.scriptLanguage)) {
-			this.scriptLanguage = DEFAULT_SCRIPT_LANGUAGE;
+		if ("".equals(scriptLanguage)) {
+			scriptLanguage = DEFAULT_SCRIPT_LANGUAGE;
 		}
 		// initialize the script engine...
 		scriptEngineManager = new ScriptEngineManager();
-		scriptEngine = scriptEngineManager.getEngineByName(this.scriptLanguage);
+		scriptEngine = scriptEngineManager.getEngineByName(scriptLanguage);
 	}
 
 	/**

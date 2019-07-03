@@ -1,7 +1,5 @@
 package org.imixs.workflow.engine;
 
-import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Before;
 import org.junit.Test;
 
 import junit.framework.Assert;
@@ -14,11 +12,6 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestReportService {
-
-	@Before
-	public void setup() throws PluginException {
-		// setup
-	}
 
 	/**
 	 * Test the customNumberFormat method of the report service.

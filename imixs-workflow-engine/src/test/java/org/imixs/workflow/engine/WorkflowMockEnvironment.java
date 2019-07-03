@@ -61,7 +61,7 @@ public class WorkflowMockEnvironment {
 	private final static Logger logger = Logger.getLogger(WorkflowMockEnvironment.class.getName());
 	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 
-	Map<String, ItemCollection> database = null;
+	protected Map<String, ItemCollection> database = null;
 
 	@Spy
 	protected DocumentService documentService;

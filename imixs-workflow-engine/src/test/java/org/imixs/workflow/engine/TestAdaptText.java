@@ -24,12 +24,10 @@ public class TestAdaptText {
 	public ItemCollection documentActivity;
 	private final static Logger logger = Logger.getLogger(TestAdaptText.class.getName());
 
-	
-	
-	WorkflowMockEnvironment workflowMockEnvironment;
+	protected WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setup() throws PluginException, ModelException {
+	public void setUp() throws PluginException, ModelException {
 
 		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setup();

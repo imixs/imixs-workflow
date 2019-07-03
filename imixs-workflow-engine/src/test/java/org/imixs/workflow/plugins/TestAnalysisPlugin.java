@@ -20,7 +20,7 @@ public class TestAnalysisPlugin {
 	private static Logger logger = Logger.getLogger(TestAnalysisPlugin.class.getName());
 
 	@Before
-	public void setup() throws PluginException {
+	public void setUp() throws PluginException {
 		analysisPlugin = new AnalysisPlugin();
 		analysisPlugin.init(null);
 	}

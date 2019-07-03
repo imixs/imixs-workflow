@@ -22,7 +22,7 @@ public class TestModelService extends WorkflowMockEnvironment {
 	public static final String DEFAULT_MODEL_VERSION="1.0.0";
 
 	@Before
-	public void setup() throws PluginException, ModelException {
+	public void setUp() throws PluginException, ModelException {
 		this.setModelPath("/bpmn/TestWorkflowService.bpmn");
 		super.setup();
 	}

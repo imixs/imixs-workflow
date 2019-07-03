@@ -29,7 +29,7 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestWorkflowService {
-	WorkflowMockEnvironment workflowMockEnvironment;
+	protected WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setup() throws PluginException, ModelException {

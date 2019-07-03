@@ -41,7 +41,7 @@ public class TestSplitAndJoinPlugin {
 	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setup() throws PluginException, ModelException {
+	public void setUp() throws PluginException, ModelException {
 
 		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestSplitAndJoinPlugin.bpmn");

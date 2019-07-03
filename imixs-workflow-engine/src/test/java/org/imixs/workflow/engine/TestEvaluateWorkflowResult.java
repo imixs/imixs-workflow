@@ -22,10 +22,10 @@ public class TestEvaluateWorkflowResult {
 
 	private final static Logger logger = Logger.getLogger(TestEvaluateWorkflowResult.class.getName());
 
-	WorkflowMockEnvironment workflowMockEnvironment;
+	protected WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setup() throws PluginException, ModelException {
+	public void setUp() throws PluginException, ModelException {
 		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setup();
 

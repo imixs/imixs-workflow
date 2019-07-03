@@ -64,7 +64,7 @@ public class XMLItem implements java.io.Serializable {
 		return name;
 	}
 
-	public void setName(java.lang.String name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 

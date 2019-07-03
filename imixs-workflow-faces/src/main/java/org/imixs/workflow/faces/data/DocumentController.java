@@ -108,13 +108,10 @@ public class DocumentController extends AbstractDataController implements Serial
 
 	@Inject
 	protected Event<WorkflowEvent> events;
-
 	
 	@EJB
 	private DocumentService documentService;
-
-	private String defaultActionResult;
-
+	
 	public DocumentController() {
 		super();
 		setDefaultType("workitem");

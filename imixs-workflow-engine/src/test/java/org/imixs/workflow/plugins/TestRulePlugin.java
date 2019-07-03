@@ -28,7 +28,7 @@ public class TestRulePlugin {
 	protected RulePlugin rulePlugin = null;
 
 	@Before
-	public void setup() throws PluginException {
+	public void setUp() throws PluginException {
 		rulePlugin = new RulePlugin();
 		rulePlugin.init(null);
 	}

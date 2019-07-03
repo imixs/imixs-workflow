@@ -38,47 +38,34 @@ import org.imixs.workflow.exceptions.WorkflowException;
  */
 public class SchedulerException extends WorkflowException {
 
-
-	public SchedulerException(String aErrorCode, String message) {
-		super(aErrorCode,message);
-		
-
-	}
-
-	public SchedulerException(String aErrorContext, String aErrorCode,
-			String message) {
-		super(aErrorContext,aErrorCode,message);
-		
-	}
-
-	public SchedulerException(String aErrorContext, String aErrorCode,
-			String message, Exception e) {
-		super(aErrorContext,aErrorCode,message, e);
-		
-
-	}
-	
-
-	public SchedulerException(String aErrorCode, String message, Exception e) {
-		super(aErrorCode,message, e);
-
-
-	}
-
-
-
 	private static final long serialVersionUID = 1L;
 
 	public static final String INVALID_MODELVERSION = "INVALID_MODELVERSION";
 	public static final String INVALID_WORKITEM = "INVALID_WORKITEM";
 	public static final String INVALID_PROCESSID = "INVALID_PROCESSID";
-
 	
 	protected String errorContext = "UNDEFINED";
 	protected String errorCode = "UNDEFINED";
 
+
+	public SchedulerException(String aErrorCode, String message) {
+		super(aErrorCode,message);
+	}
+
+	public SchedulerException(String aErrorContext, String aErrorCode,
+			String message) {
+		super(aErrorContext,aErrorCode,message);
+	}
+
+	public SchedulerException(String aErrorContext, String aErrorCode,
+			String message, Exception e) {
+		super(aErrorContext,aErrorCode,message, e);
+	}
 	
-	
+
+	public SchedulerException(String aErrorCode, String message, Exception e) {
+		super(aErrorCode,message, e);
+	}
 
 	public void setErrorCode(String errorCode) {
 		this.errorCode = errorCode;

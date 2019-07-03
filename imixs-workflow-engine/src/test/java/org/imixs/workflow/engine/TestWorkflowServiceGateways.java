@@ -26,7 +26,7 @@ import junit.framework.Assert;
  */
 public class TestWorkflowServiceGateways {
 
-	WorkflowMockEnvironment workflowMockEnvironment;
+	protected WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setup() throws PluginException, ModelException {

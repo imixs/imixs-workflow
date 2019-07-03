@@ -59,7 +59,7 @@ public class WorkflowSimulationEnvironment {
 
 	@SuppressWarnings("unchecked")
 	@Before
-	public void setup() throws PluginException, ModelException, AccessDeniedException, ProcessingErrorException {
+	public void setUp() throws PluginException, ModelException, AccessDeniedException, ProcessingErrorException {
 		MockitoAnnotations.initMocks(this);
 
 		// mock session context

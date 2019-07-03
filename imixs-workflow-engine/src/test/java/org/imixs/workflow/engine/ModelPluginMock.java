@@ -30,9 +30,9 @@ import org.imixs.workflow.exceptions.ModelException;
  * 
  */
 public class ModelPluginMock extends BPMNModel {
-	BPMNModel internalModel = null;
-	ItemCollection internalDefinition = null;
-	Vector<String> plugins = null;
+	protected BPMNModel internalModel = null;
+	protected ItemCollection internalDefinition = null;
+	protected Vector<String> plugins = null;
 
 	/**
 	 * this constructor changes the registered plugins

@@ -37,7 +37,7 @@ public class TestResultPlugin {
 	protected WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setup() throws PluginException, ModelException {
+	public void setUp() throws PluginException, ModelException {
 
 		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestResultPlugin.bpmn");

@@ -24,7 +24,7 @@ public class TestIntervalPlugin {
 
 	@SuppressWarnings("static-access")
 	@Before
-	public void setup() throws PluginException {
+	public void setUp() throws PluginException {
 		intervalPlugin = new IntervalPlugin();
 		intervalPlugin.init(null);
 

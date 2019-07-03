@@ -32,7 +32,7 @@ public class TestAccessPlugin {
 	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setup() throws PluginException, ModelException {
+	public void setUp() throws PluginException, ModelException {
 
 		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestAccessPlugin.bpmn");

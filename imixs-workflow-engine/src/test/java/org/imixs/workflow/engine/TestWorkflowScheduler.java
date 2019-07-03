@@ -21,7 +21,7 @@ import junit.framework.Assert;
  */
 public class TestWorkflowScheduler {
 	
-	WorkflowScheduler workflowScheduler;
+	protected WorkflowScheduler workflowScheduler;
 
 	@Before
 	public void setup() throws PluginException {
