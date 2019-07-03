@@ -91,10 +91,9 @@ public class XMLItem implements java.io.Serializable {
 	 *            - array of objects
 	 */
 	@SuppressWarnings("unchecked")
-	public void setValue(Object[] values) {
-		// this.value = values;
+	public void setValue(Object[] _values) {
 
-		if (values == null || values.length == 0) {
+		if (_values == null || _values.length == 0) {
 			// add empty vector
 			Vector<Object> vOrg = new Vector<Object>();
 			vOrg.add(null);
@@ -103,7 +102,7 @@ public class XMLItem implements java.io.Serializable {
 		}
 
 		// issue #52
-		values = convertXMLGregorianCalendar(values);
+		Object[] values = convertXMLGregorianCalendar(_values);
 
 		// convert values...
 		List<Object> listOfObjects = new ArrayList<Object>();

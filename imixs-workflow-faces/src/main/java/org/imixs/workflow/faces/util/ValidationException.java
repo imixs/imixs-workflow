@@ -25,7 +25,7 @@ public class ValidationException extends WorkflowException {
 	}
 
 	public ValidationException(String aErrorContext, String aErrorCode,
-			String message, java.lang.Object[] params) {
+			String message, Object[] params) {
 		super(aErrorContext, aErrorCode, message);
 		this.params = params;
 	}
@@ -34,7 +34,7 @@ public class ValidationException extends WorkflowException {
 		return params;
 	}
 
-	protected void setErrorParameters(java.lang.Object[] aparams) {
+	protected void setErrorParameters(Object[] aparams) {
 		this.params = aparams;
 	}
 

@@ -116,12 +116,12 @@ public class RuleEngine {
 	void init(String scriptLanguage) {
 		this.scriptLanguage = scriptLanguage;
 		// set default engine to javascript if no engine is specified
-		if ("".equals(scriptLanguage)) {
-			scriptLanguage = DEFAULT_SCRIPT_LANGUAGE;
+		if ("".equals(this.scriptLanguage)) {
+			this.scriptLanguage = DEFAULT_SCRIPT_LANGUAGE;
 		}
 		// initialize the script engine...
 		scriptEngineManager = new ScriptEngineManager();
-		scriptEngine = scriptEngineManager.getEngineByName(scriptLanguage);
+		scriptEngine = scriptEngineManager.getEngineByName(this.scriptLanguage);
 	}
 
 	/**

@@ -742,7 +742,6 @@ public class TestItemCollection {
 				// expected
 			} else {
 				Assert.fail();
-
 			}
 		}
 
@@ -1154,8 +1153,8 @@ public class TestItemCollection {
 	}
 
 	/**
-	 * Test the handling ob Calendar objects. CalendarObjects will be converted
-	 * into Date.
+	 * Test the handling ob Calendar objects. CalendarObjects will be converted into
+	 * Date.
 	 * 
 	 */
 	@Test
@@ -1190,24 +1189,24 @@ public class TestItemCollection {
 
 		// test with LocalDateTime
 		LocalDateTime localDateTime = itemCol.getItemValueLocalDateTime("date");
-		
+
 		// test if equal....
 		Date out = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-		Assert.assertEquals(nowDate,out);
-		
+		Assert.assertEquals(nowDate, out);
+
 		// now set a LocalDateTime Value...
 		LocalDateTime ldt = LocalDateTime.ofInstant(nowDate.toInstant(), ZoneId.systemDefault());
 		itemCol.setItemValue("localdate", ldt);
-		
+
 		LocalDateTime localDateTimeTest = itemCol.getItemValueLocalDateTime("localdate");
 		Assert.assertNotNull(localDateTimeTest);
-		Assert.assertEquals(ldt,localDateTimeTest);
-		
+		Assert.assertEquals(ldt, localDateTimeTest);
+
 		// test date convertion....
-		Date dateTest2=itemCol.getItemValueDate("localDAte");
-		
-		Assert.assertEquals(nowDate,dateTest2);
-				
+		Date dateTest2 = itemCol.getItemValueDate("localDAte");
+
+		Assert.assertEquals(nowDate, dateTest2);
+
 	}
 
 }

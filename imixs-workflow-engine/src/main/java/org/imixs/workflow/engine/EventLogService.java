@@ -181,7 +181,8 @@ public class EventLogService {
 	 * 
 	 * @param eventLog
 	 */
-	public void removeEvent(EventLog eventLog) {
+	public void removeEvent(final EventLog _eventLog) {
+		EventLog eventLog=_eventLog;
 		if (eventLog != null && !manager.contains(eventLog)) {
 			// entity is not atached - so lookup the entity....
 			eventLog = manager.find(EventLog.class, eventLog.getId());

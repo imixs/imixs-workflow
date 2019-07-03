@@ -585,7 +585,8 @@ public class MigrateImixsModelToBPMN {
 }
 
 class SequenceFlow {
-	protected String from, to;
+	protected String from;
+	protected String to;
 	protected String id;
 
 	public SequenceFlow(String from, String to, String id) {

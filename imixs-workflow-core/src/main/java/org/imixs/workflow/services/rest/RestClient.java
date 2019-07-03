@@ -176,8 +176,10 @@ public class RestClient {
 	 *            - accept MediaType
 	 * @return content
 	 */
-	public String post(String uri, String dataString, String contentType, String acceptType) throws Exception {
+	public String post(String uri, String dataString, final String _contentType, String acceptType) throws Exception {
 		PrintWriter printWriter = null;
+		String contentType=_contentType;
+		
 		if (contentType == null || contentType.isEmpty()) {
 			contentType = "application/xml";
 		}

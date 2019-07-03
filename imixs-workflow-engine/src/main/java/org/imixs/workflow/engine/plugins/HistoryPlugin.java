@@ -65,7 +65,6 @@ import org.imixs.workflow.exceptions.PluginException;
 
 public class HistoryPlugin extends AbstractPlugin {
 	private ItemCollection documentContext;
-	private ItemCollection documentActivity;
 	private List<List<Object>> historyList = null;
 	private static Logger logger = Logger.getLogger(HistoryPlugin.class.getName());
 
@@ -81,7 +80,7 @@ public class HistoryPlugin extends AbstractPlugin {
 		String rtfItemLog;
 
 		documentContext = adocumentContext;
-		documentActivity = adocumentActivity;
+		ItemCollection documentActivity = adocumentActivity;
 
 		// convert old format if exists (backward compatibility (< 3.1.1)
 		if (documentContext.hasItem("txtworkflowhistorylogrev")) {

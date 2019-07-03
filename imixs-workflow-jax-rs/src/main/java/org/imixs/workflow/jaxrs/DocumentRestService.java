@@ -513,7 +513,7 @@ public class DocumentRestService {
 	 * @param items
 	 * @return
 	 */
-	static List<String> getItemList(String items) {
+	protected static List<String> getItemList(String items) {
 		if (items == null || "".equals(items))
 			return null;
 		Vector<String> v = new Vector<String>();

@@ -36,7 +36,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.ConverterException;
 import javax.faces.convert.FacesConverter;
 
-/*
+/**
  * für ConfigItem benutzter Converter, der einen Komma-separierten String in einen Vektor umwandelt
  * und umgekehrt.
  * 
@@ -51,13 +51,13 @@ import javax.faces.convert.FacesConverter;
  * - Den Separator im converter-tag der JSP Seite definieren. Das wird allerdings ein Act (Vorgehen
  *   beschrieben in Kap. 20.4 in "Kito Mann - JSF in Action")
  */
-
+@SuppressWarnings("rawtypes")
 @FacesConverter(value="org.imixs.VectorConverter")
 public class VectorConverter implements Converter {
 
-	String separator = "\n";
+	private String separator = "\n";
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	public Object getAsObject(FacesContext context, UIComponent component,
 			String value) throws ConverterException {
 
@@ -71,7 +71,6 @@ public class VectorConverter implements Converter {
 
 	}
 
-	@SuppressWarnings("rawtypes")
 	public String getAsString(FacesContext context, UIComponent component,
 			Object value) throws ConverterException {
 

@@ -43,6 +43,7 @@ public class MetricService {
 
 	boolean mpMetricNoSupport = false;
 
+	@SuppressWarnings("unused")
 	private static Logger logger = Logger.getLogger(MetricService.class.getName());
 
 	/**

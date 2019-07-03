@@ -103,33 +103,26 @@ public class LuceneSearchService {
 
 	@Inject
 	@ConfigProperty(name = "lucence.indexDir", defaultValue = LuceneUpdateService.DEFAULT_INDEX_DIRECTORY)
-	String luceneIndexDir;
+	private String luceneIndexDir;
 
 	@Inject
 	@ConfigProperty(name = "lucene.defaultOperator", defaultValue = "AND")
-	String luceneDefaultOperator;
+	private String luceneDefaultOperator;
 
 	@Inject
 	@ConfigProperty(name = "lucene.splitOnWhitespace", defaultValue = "true")
-	boolean luceneSplitOnWhitespace;
+	private boolean luceneSplitOnWhitespace;
 
 	@EJB
-	DocumentService documentService;
+	private DocumentService documentService;
 
 	@EJB
-	LuceneUpdateService luceneUpdateService;
+	private LuceneUpdateService luceneUpdateService;
 
 	@EJB
-	AdminPService adminPService;
+	private AdminPService adminPService;
 
 	private static Logger logger = Logger.getLogger(LuceneSearchService.class.getName());
-
-	/**
-	 * PostContruct event - loads the imixs.properties.
-	 */
-	@PostConstruct
-	void init() {
-	}
 
 	/**
 	 * Returns a collection of documents matching the provided search term. The
@@ -383,13 +376,13 @@ public class LuceneSearchService {
 	 * @throws QueryException
 	 *             in case the searchterm is not understandable.
 	 */
-	public int getTotalHits(String sSearchTerm, int maxResult, Operator defaultOperator) throws QueryException {
+	public int getTotalHits(final String _searchTerm, int maxResult, Operator defaultOperator) throws QueryException {
 		int result;
 		if (maxResult <= 0) {
 			maxResult = DEFAULT_MAX_SEARCH_RESULT;
 		}
-
-		sSearchTerm = getExtendedSearchTerm(sSearchTerm);
+		
+		String sSearchTerm = getExtendedSearchTerm(_searchTerm);
 		// test if searchtem is provided
 		if (sSearchTerm == null || "".equals(sSearchTerm)) {
 			return 0;

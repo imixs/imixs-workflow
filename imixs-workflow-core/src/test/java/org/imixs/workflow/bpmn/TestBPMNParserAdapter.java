@@ -23,11 +23,7 @@ import junit.framework.Assert;
  */
 public class TestBPMNParserAdapter {
 
-	@Before
-	public void setup() {
-
-	}
-
+	
 	@Test
 	public void testEventAdapter()
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {

@@ -93,10 +93,9 @@ public class ModelRestService {
 
 	@EJB
 	private ModelService modelService;
-	
+
 	@javax.ws.rs.core.Context
 	private HttpServletRequest servletRequest;
-
 
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
@@ -148,8 +147,8 @@ public class ModelRestService {
 			List<String> modelVersionList = modelService.getVersions();
 
 			// compute rootContext:
-			String rootContext= servletRequest.getContextPath()+servletRequest.getServletPath() ;
-			
+			String rootContext = servletRequest.getContextPath() + servletRequest.getServletPath();
+
 			buffer.append("<table>");
 			buffer.append("<tr><th>Version</th><th>Uploaded</th><th>Workflow Groups</th></tr>");
 			for (String modelVersion : modelVersionList) {
@@ -163,9 +162,9 @@ public class ModelRestService {
 				buffer.append("<tr>");
 
 				if (modelEntity != null) {
-					
-					
-					buffer.append("<td><a href=\"" + rootContext+ "/model/" + modelVersion + "/bpmn\">" + modelVersion + "</a></td>");
+
+					buffer.append("<td><a href=\"" + rootContext + "/model/" + modelVersion + "/bpmn\">" + modelVersion
+							+ "</a></td>");
 
 					// print upload date...
 					if (modelEntity != null) {
@@ -183,8 +182,8 @@ public class ModelRestService {
 				for (String group : groupList) {
 					// build a link for each group to get the Tasks
 
-					buffer.append(
-							"<a href=\"" + rootContext + "/model/" + modelVersion + "/groups/" + group + "\">" + group + "</a></br>");
+					buffer.append("<a href=\"" + rootContext + "/model/" + modelVersion + "/groups/" + group + "\">"
+							+ group + "</a></br>");
 				}
 				buffer.append("</td>");
 				buffer.append("</tr>");
@@ -253,12 +252,11 @@ public class ModelRestService {
 	/**
 	 * Returns the model definition containing general model information (e.g.
 	 * $ModelVersion).
-	 *  
+	 * 
 	 */
 	@GET
 	@Path("/{version}/definition")
-	public XMLDataCollection getDefiniton(@PathParam("version") String version,
-			@QueryParam("items") String items) {
+	public XMLDataCollection getDefiniton(@PathParam("version") String version, @QueryParam("items") String items) {
 		ItemCollection definition = null;
 		try {
 			definition = modelService.getModel(version).getDefinition();
@@ -269,7 +267,7 @@ public class ModelRestService {
 		}
 		return new XMLDataCollection();
 	}
-	
+
 	@GET
 	@Path("/{version}/tasks/{taskid}")
 	public XMLDataCollection getTask(@PathParam("version") String version, @PathParam("taskid") int processid,
@@ -353,8 +351,8 @@ public class ModelRestService {
 	}
 
 	/**
-	 * This method consumes a Imixs BPMN model file and updates the
-	 * corresponding model information.
+	 * This method consumes a Imixs BPMN model file and updates the corresponding
+	 * model information.
 	 * 
 	 * @param model
 	 * @return
@@ -383,10 +381,9 @@ public class ModelRestService {
 
 	/**
 	 * This method updates a Model provided in a EntityCollection object for a
-	 * provided model version. The Method expects a subresource with a
-	 * ModelVersion. Next the method updates each Entity object with the
-	 * property $ModelVersion. An old version will be automatically removed
-	 * before update.
+	 * provided model version. The Method expects a subresource with a ModelVersion.
+	 * Next the method updates each Entity object with the property $ModelVersion.
+	 * An old version will be automatically removed before update.
 	 * 
 	 * @param version
 	 *            - $modelversion
@@ -396,8 +393,9 @@ public class ModelRestService {
 	@PUT
 	@Path("/{version}")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-	public void putModelByVersion(@PathParam("version") String sModelVersion, XMLDataCollection ecol) {
+	public void putModelByVersion(@PathParam("version") final String _modelVersion, XMLDataCollection ecol) {
 
+		String sModelVersion = _modelVersion;
 		XMLDocument entity;
 		ItemCollection itemCollection;
 		try {
@@ -439,8 +437,8 @@ public class ModelRestService {
 	/**
 	 * This method updates a Model provided in a EntityCollection object.
 	 * 
-	 * The method takes the first entity to get the provided $modelVersion. An
-	 * old version will be automatically removed before update.
+	 * The method takes the first entity to get the provided $modelVersion. An old
+	 * version will be automatically removed before update.
 	 * 
 	 * @param ecol
 	 */
@@ -476,9 +474,9 @@ public class ModelRestService {
 	}
 
 	/**
-	 * This method returns a List object from a given comma separated string.
-	 * The method returns null if no elements are found. The provided parameter
-	 * looks typical like this: <code>
+	 * This method returns a List object from a given comma separated string. The
+	 * method returns null if no elements are found. The provided parameter looks
+	 * typical like this: <code>
 	 *   txtWorkflowStatus,numProcessID,txtName
 	 * </code>
 	 * 

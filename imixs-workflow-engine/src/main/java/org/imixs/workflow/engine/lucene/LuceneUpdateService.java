@@ -37,7 +37,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -728,15 +727,6 @@ public class LuceneUpdateService {
 		adminPService.createJob(job);
 	}
 
-	/**
-	 * Generates UID on currentTimeMillis + 6 digits of a random number. The result
-	 * will be converted into a hex string.
-	 * 
-	 * @return hexstring
-	 */
-	static String generateEventUID() {
-		int randomNum = ThreadLocalRandom.current().nextInt(10000, 99999 + 1);
-		return "" + Long.toHexString(System.currentTimeMillis()) + "-" + Integer.toHexString(randomNum);
-	}
+
 
 }

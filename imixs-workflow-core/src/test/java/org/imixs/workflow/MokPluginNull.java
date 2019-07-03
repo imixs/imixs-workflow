@@ -12,6 +12,7 @@ public class MokPluginNull implements Plugin {
 
 	@Override
 	public void init(WorkflowContext actx) throws PluginException {
+		// no op
 	}
 
 	@Override
@@ -23,6 +24,7 @@ public class MokPluginNull implements Plugin {
 
 	@Override
 	public void close(boolean rollbackTransaction) throws PluginException {
+		// no op
 	}
 
 }
