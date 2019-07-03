@@ -34,7 +34,7 @@ public class TestSimulationService {
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
 		WorkflowSimulationEnvironment wse = new WorkflowSimulationEnvironment();
-		wse.setup();
+		wse.setUp();
 		wse.loadModel("/bpmn/conditional_event1.bpmn");
 
 		// load test workitem
