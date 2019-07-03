@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
@@ -66,7 +65,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
-import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
 
@@ -118,9 +116,6 @@ public class LuceneSearchService {
 
 	@EJB
 	private LuceneUpdateService luceneUpdateService;
-
-	@EJB
-	private AdminPService adminPService;
 
 	private static Logger logger = Logger.getLogger(LuceneSearchService.class.getName());
 
@@ -376,8 +371,10 @@ public class LuceneSearchService {
 	 * @throws QueryException
 	 *             in case the searchterm is not understandable.
 	 */
-	public int getTotalHits(final String _searchTerm, int maxResult, Operator defaultOperator) throws QueryException {
+	public int getTotalHits(final String _searchTerm, final int _maxResult, final Operator defaultOperator) throws QueryException {
 		int result;
+		int maxResult=_maxResult;
+		
 		if (maxResult <= 0) {
 			maxResult = DEFAULT_MAX_SEARCH_RESULT;
 		}
