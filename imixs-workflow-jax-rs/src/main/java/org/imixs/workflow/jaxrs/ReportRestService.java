@@ -104,7 +104,7 @@ public class ReportRestService {
 	@EJB
 	private ReportService reportService;
 
-	@javax.ws.rs.core.Context
+	@Context
 	private HttpServletRequest servletRequest;
 
 	private static Logger logger = Logger.getLogger(ReportRestService.class.getName());

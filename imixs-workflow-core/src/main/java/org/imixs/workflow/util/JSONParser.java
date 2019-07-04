@@ -41,8 +41,9 @@ public class JSONParser {
 	 * @throws ParseException
 	 * @throws UnsupportedEncodingException
 	 */
-	public final static ItemCollection parseWorkitem(InputStream requestBodyStream, String encoding)
+	public final static ItemCollection parseWorkitem(final InputStream requestBodyStream, final String _encoding)
 			throws ParseException, UnsupportedEncodingException {
+		String encoding = _encoding;
 
 		if (requestBodyStream == null) {
 			logger.severe("parseWorkitem - inputStream is null!");
@@ -50,11 +51,11 @@ public class JSONParser {
 		}
 
 		// default encoding?
-		if (encoding==null || encoding.isEmpty()) {
+		if (encoding == null || encoding.isEmpty()) {
 			logger.finest("......parseWorkitem - switch to default encoding 'UTF-8'");
-			encoding="UTF-8";
+			encoding = "UTF-8";
 		}
-		
+
 		// Vector<String> vMultiValueFieldNames = new Vector<String>();
 		BufferedReader in = new BufferedReader(new InputStreamReader(requestBodyStream, encoding));
 

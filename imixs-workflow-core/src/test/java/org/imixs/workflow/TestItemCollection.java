@@ -26,7 +26,7 @@ import org.junit.experimental.categories.Category;
 public class TestItemCollection {
 
 	@Test
-	@Category(org.imixs.workflow.ItemCollection.class)
+	@Category(ItemCollection.class)
 	public void testItemCollection() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
@@ -34,7 +34,7 @@ public class TestItemCollection {
 	}
 
 	@Test
-	@Category(org.imixs.workflow.ItemCollection.class)
+	@Category(ItemCollection.class)
 	public void testRemoveItem() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
@@ -483,7 +483,7 @@ public class TestItemCollection {
 	}
 
 	@Test
-	@Category(org.imixs.workflow.ItemCollection.class)
+	@Category(ItemCollection.class)
 	public void testItemCollectionItemNameList() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("_subject", "Hello");
@@ -708,7 +708,7 @@ public class TestItemCollection {
 	 */
 	@SuppressWarnings("rawtypes")
 	@Test
-	@Category(org.imixs.workflow.ItemCollection.class)
+	@Category(ItemCollection.class)
 	public void testItemCollectionAppend() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
@@ -730,7 +730,7 @@ public class TestItemCollection {
 	 * Test no basic type
 	 */
 	@Test
-	@Category(org.imixs.workflow.ItemCollection.class)
+	@Category(ItemCollection.class)
 	public void testItemCollectionNoBasictype() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
@@ -739,7 +739,7 @@ public class TestItemCollection {
 			Assert.fail();
 		} catch (Exception e) {
 			if (e instanceof RuntimeException) {
-				// expected
+				// expected result
 			} else {
 				Assert.fail();
 			}
@@ -751,7 +751,7 @@ public class TestItemCollection {
 	 * Test raw type int, double, boolean
 	 */
 	@Test
-	@Category(org.imixs.workflow.ItemCollection.class)
+	@Category(ItemCollection.class)
 	public void testItemCollectionRawtype() {
 		ItemCollection itemCollection = new ItemCollection();
 		itemCollection.replaceItemValue("txtTitel", "Hello");
@@ -769,7 +769,7 @@ public class TestItemCollection {
 	 * Test the fileData methods
 	 */
 	@Test
-	@Category(org.imixs.workflow.ItemCollection.class)
+	@Category(ItemCollection.class)
 	@Deprecated
 	public void testFileDataDeprecated() {
 		ItemCollection itemColSource = new ItemCollection();
@@ -804,7 +804,7 @@ public class TestItemCollection {
 	}
 
 	@Test
-	@Category(org.imixs.workflow.ItemCollection.class)
+	@Category(ItemCollection.class)
 	public void testFileData() {
 		ItemCollection itemColSource = new ItemCollection();
 
@@ -837,7 +837,7 @@ public class TestItemCollection {
 	 * Test the fluent code interface.
 	 */
 	@Test
-	@Category(org.imixs.workflow.ItemCollection.class)
+	@Category(ItemCollection.class)
 	public void testFluentInterface() {
 		ItemCollection itemCollection = new ItemCollection().model("1.0.0").task(1).event(10);
 
@@ -857,7 +857,7 @@ public class TestItemCollection {
 	 * Test fluent event interface with a event list
 	 */
 	@Test
-	@Category(org.imixs.workflow.ItemCollection.class)
+	@Category(ItemCollection.class)
 	public void testFluentInterfaceFollowUpEvents() {
 		ItemCollection itemCollection = new ItemCollection().model("1.0.0").task(1).event(10).event(11);
 		Assert.assertEquals("1.0.0", itemCollection.getModelVersion());
@@ -874,7 +874,7 @@ public class TestItemCollection {
 	 */
 	@SuppressWarnings("deprecation")
 	@Test
-	@Category(org.imixs.workflow.ItemCollection.class)
+	@Category(ItemCollection.class)
 	public void testDeprecatedFieldProcessID() {
 
 		Assert.assertEquals("$processid", WorkflowKernel.PROCESSID);

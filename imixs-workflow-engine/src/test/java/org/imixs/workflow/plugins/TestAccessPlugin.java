@@ -26,10 +26,10 @@ public class TestAccessPlugin {
 
 	private final static Logger logger = Logger.getLogger(TestAccessPlugin.class.getName());
 
-	AccessPlugin accessPlugin = null;
-	ItemCollection documentContext;
-	ItemCollection documentActivity;
-	WorkflowMockEnvironment workflowMockEnvironment;
+	protected AccessPlugin accessPlugin = null;
+	protected ItemCollection documentContext;
+	protected ItemCollection documentActivity;
+	protected WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setUp() throws PluginException, ModelException {

@@ -423,7 +423,7 @@ public class SchedulerService {
 	 * @param jobHandlerClassName
 	 * @return jobHandler class or null if not found
 	 */
-	Scheduler findSchedulerByName(String schedulerClassName) {
+	protected Scheduler findSchedulerByName(String schedulerClassName) {
 		if (schedulerClassName == null || schedulerClassName.isEmpty()) {
 			return null;
 		}
@@ -455,7 +455,7 @@ public class SchedulerService {
 	 * @throws QueryException
 	 */
 	@Timeout
-	void onTimeout(javax.ejb.Timer timer)  {
+	protected void onTimeout(javax.ejb.Timer timer)  {
 		String errorMes = "";
 		// start time....
 		long lProfiler = System.currentTimeMillis();
@@ -534,7 +534,7 @@ public class SchedulerService {
 	 * @return
 	 * @throws ParseException
 	 */
-	Timer createTimerOnCalendar(ItemCollection configItemCollection) throws ParseException {
+	protected Timer createTimerOnCalendar(ItemCollection configItemCollection) throws ParseException {
 
 		TimerConfig timerConfig = new TimerConfig();
 		timerConfig.setInfo(configItemCollection.getUniqueID());

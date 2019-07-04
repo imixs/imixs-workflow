@@ -10,7 +10,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -23,10 +22,11 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestBPMNModelSimple {
-	BPMNModel model = null;
+	
+	protected BPMNModel model = null;
 
 	@Before
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void setUp() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		InputStream inputStream = getClass().getResourceAsStream("/bpmn/simple.bpmn");
 
 		try {
@@ -40,10 +40,7 @@ public class TestBPMNModelSimple {
 		}
 	}
 
-	@After
-	public void teardown() {
 
-	}
 
 	/**
 	 * Test the behavior of manipulating event objects.

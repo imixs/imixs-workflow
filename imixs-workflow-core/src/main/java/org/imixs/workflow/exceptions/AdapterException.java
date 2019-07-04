@@ -36,7 +36,7 @@ package org.imixs.workflow.exceptions;
 public class AdapterException extends WorkflowException {
 
 	private static final long serialVersionUID = 1L;
-	private java.lang.Object[] params=null;
+	private Object[] params=null;
 	
 
 	public AdapterException(String aErrorContext, String aErrorCode,
@@ -51,7 +51,7 @@ public class AdapterException extends WorkflowException {
 
 	
 	public AdapterException(String aErrorContext, String aErrorCode,
-			String message,java.lang.Object[] params) {
+			String message,Object[] params) {
 		super(aErrorContext, aErrorCode, message);
 		this.params=params;
 	}
@@ -60,7 +60,7 @@ public class AdapterException extends WorkflowException {
 		return params;
 	}
 	
-	protected void setErrorParameters(java.lang.Object[] aparams) {
+	protected void setErrorParameters(Object[] aparams) {
 		this.params=aparams;
 	}
 	

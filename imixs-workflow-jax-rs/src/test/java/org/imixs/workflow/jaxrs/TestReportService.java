@@ -19,10 +19,10 @@ import org.junit.Test;
  */
 public class TestReportService {
 
-	ReportService reportService = null;
+	protected ReportService reportService = null;
 
 	@Before
-	public void setup() throws PluginException {
+	public void setUp() throws PluginException {
 		reportService = new ReportService();
 	}
 
@@ -30,7 +30,7 @@ public class TestReportService {
 	 * test computeDynammicDate
 	 */
 	@Test
-	public void testcomputeDynamicDate_firstDayOfMonth() {
+	public void testcomputeDynamicDateFirstDayOfMonth() {
 
 		String test = "<date DAY_OF_MONTH=\"1\" MONTH=\"2\" />";
 
@@ -55,7 +55,7 @@ public class TestReportService {
 	}
 
 	@Test
-	public void testcomputeDynamicDate_lastDayOfMonth() {
+	public void testcomputeDynamicDateLastDayOfMonth() {
 
 		String test = "<date DAY_OF_MONTH=\"ACTUAL_MAXIMUM\" MONTH=\"12\" />";
 
@@ -79,7 +79,7 @@ public class TestReportService {
 	}
 
 	@Test
-	public void testcomputeDynamicDate_MoveMonth() {
+	public void testcomputeDynamicDateMoveMonth() {
 
 		String test = "<date DAY_OF_MONTH=\"ACTUAL_MAXIMUM\" MONTH=\"12\" ADD=\"MONTH,-1\" />";
 
@@ -126,7 +126,7 @@ public class TestReportService {
 	}
 
 	@Test
-	public void testcomputeDynamicDate_AbsolutDate() {
+	public void testcomputeDynamicDateAbsolutDate() {
 
 		String test = "<date DAY_OF_MONTH=\"7\" MONTH=\"8\" YEAR=\"1969\" />";
 

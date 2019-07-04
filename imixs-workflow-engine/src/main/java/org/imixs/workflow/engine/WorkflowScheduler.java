@@ -361,7 +361,7 @@ public class WorkflowScheduler implements Scheduler {
 	 * The method goes through the latest or a specific Model Version
 	 * 
 	 */
-	Collection<ItemCollection> findScheduledEvents(String aModelVersion) throws Exception {
+	protected Collection<ItemCollection> findScheduledEvents(String aModelVersion) throws Exception {
 		Vector<ItemCollection> vectorActivities = new Vector<ItemCollection>();
 		Collection<ItemCollection> colProcessList = null;
 
@@ -401,7 +401,7 @@ public class WorkflowScheduler implements Scheduler {
 	 *            - a event model element
 	 * @throws Exception
 	 */
-	void processWorkListByEvent(ItemCollection event, ItemCollection configItemCollection) throws Exception {
+	protected void processWorkListByEvent(ItemCollection event, ItemCollection configItemCollection) throws Exception {
 
 		// get task and event id form the event model entity....
 		int taskID = event.getItemValueInteger("numprocessid");

@@ -26,6 +26,7 @@
  *******************************************************************************/
 package org.imixs.workflow.xml;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,14 +51,14 @@ import javax.xml.datatype.XMLGregorianCalendar;
  */
 @XmlSeeAlso({ XMLItem[].class }) // important! to support arrays of XMLItem
 @XmlRootElement(name = "item")
-public class XMLItem implements java.io.Serializable {
+public class XMLItem implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static Logger logger = Logger.getLogger(XMLItem.class.getName());
 
-	private java.lang.String name;
+	private String name;
 
-	private java.lang.Object[] value;
+	private Object[] value;
 
 	@XmlAttribute
 	public java.lang.String getName() {
@@ -68,7 +69,7 @@ public class XMLItem implements java.io.Serializable {
 		this.name = name;
 	}
 
-	public java.lang.Object[] getValue() {
+	public Object[] getValue() {
 		return value;
 	}
 

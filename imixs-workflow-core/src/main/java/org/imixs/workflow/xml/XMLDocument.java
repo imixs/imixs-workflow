@@ -26,6 +26,7 @@
  *******************************************************************************/
 package org.imixs.workflow.xml;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -38,20 +39,20 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @version 0.0.1
  */
 @XmlRootElement(name = "document")
-public class XMLDocument implements java.io.Serializable {
+public class XMLDocument implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private org.imixs.workflow.xml.XMLItem[] item;
+	private XMLItem[] item;
 
 	public XMLDocument() {
 		this.setItem(new XMLItem[] {});
 	}
 
-	public org.imixs.workflow.xml.XMLItem[] getItem() {
+	public XMLItem[] getItem() {
 		return item;
 	}
 
-	public void setItem(org.imixs.workflow.xml.XMLItem[] item) {
+	public void setItem(XMLItem[] item) {
 		this.item = item;
 	}
 	

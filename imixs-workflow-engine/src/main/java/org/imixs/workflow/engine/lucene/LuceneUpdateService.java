@@ -113,27 +113,27 @@ public class LuceneUpdateService {
 
 	@Inject
 	@ConfigProperty(name = "lucence.indexDir", defaultValue = LuceneUpdateService.DEFAULT_INDEX_DIRECTORY)
-	String luceneIndexDir;
+	private String luceneIndexDir;
 
 	@Inject
 	@ConfigProperty(name = "lucence.analyzerClass", defaultValue = LuceneUpdateService.DEFAULT_ANALYSER)
-	String luceneAnalyserClass;
+	private String luceneAnalyserClass;
 
 	@Inject
 	@ConfigProperty(name = "lucence.fulltextFieldList", defaultValue = "")
-	String luceneFulltextFieldList;
+	private String luceneFulltextFieldList;
 
 	@Inject
 	@ConfigProperty(name = "lucence.indexFieldListAnalyze", defaultValue = "")
-	String luceneIndexFieldListAnalyse;
+	private String luceneIndexFieldListAnalyse;
 
 	@Inject
 	@ConfigProperty(name = "lucence.indexFieldListNoAnalyze", defaultValue = "")
-	String luceneIndexFieldListNoAnalyse;
+	private String luceneIndexFieldListNoAnalyse;
 
 	@Inject
 	@ConfigProperty(name = "lucence.indexFieldListStore", defaultValue = "")
-	String luceneIndexFieldListStore;
+	private String luceneIndexFieldListStore;
 
 	private List<String> searchFieldList = null;
 	private List<String> indexFieldListAnalyse = null;
@@ -152,13 +152,13 @@ public class LuceneUpdateService {
 			"$lasteventdate", "$creator", "$editor", "$lasteditor", "namowner");
 
 	@EJB
-	EventLogService eventLogService;
+	private EventLogService eventLogService;
 
 	@Inject
-	LuceneItemAdapter luceneItemAdapter;
+	private LuceneItemAdapter luceneItemAdapter;
 
 	@EJB
-	AdminPService adminPService;
+	private AdminPService adminPService;
 
 	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
@@ -452,7 +452,7 @@ public class LuceneUpdateService {
 	 *            the max size of a eventLog engries to remove.
 	 * @return true if the cache was totally flushed.
 	 */
-	boolean flushEventLogByCount(int count) {
+	private boolean flushEventLogByCount(int count) {
 		Date lastEventDate = null;
 		boolean cacheIsEmpty = true;
 		IndexWriter indexWriter = null;
@@ -548,7 +548,7 @@ public class LuceneUpdateService {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	Document createDocument(ItemCollection aworkitem) {
+	private Document createDocument(ItemCollection aworkitem) {
 		String sValue = null;
 		Document doc = new Document();
 		// combine all search fields from the search field list into one field
@@ -637,7 +637,10 @@ public class LuceneUpdateService {
 	 * @param store
 	 *            indicates if the value will become part of the Lucene document
 	 */
-	void addItemValues(Document doc, ItemCollection workitem, String itemName, boolean analyzeValue, boolean store) {
+	private void addItemValues(final Document doc, final ItemCollection workitem, final String _itemName,
+			final boolean analyzeValue, final boolean store) {
+
+		String itemName = _itemName;
 
 		if (itemName == null) {
 			return;
@@ -686,7 +689,7 @@ public class LuceneUpdateService {
 	 * @return
 	 * @throws IOException
 	 */
-	IndexWriter createIndexWriter() throws IOException {
+	private IndexWriter createIndexWriter() throws IOException {
 		// create a IndexWriter Instance
 		Directory indexDir = FSDirectory.open(Paths.get(luceneIndexDir));
 		// verify existence of index directory...
@@ -726,7 +729,5 @@ public class LuceneUpdateService {
 		job.replaceItemValue("job", AdminPService.JOB_REBUILD_LUCENE_INDEX);
 		adminPService.createJob(job);
 	}
-
-
 
 }

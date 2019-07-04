@@ -69,7 +69,15 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 @Stateless
 @LocalBean
 public class SimulationService implements WorkflowContext {
+	
+	private static Logger logger = Logger.getLogger(SimulationService.class.getName());
 
+	@Resource
+	private SessionContext ctx;
+
+	@Inject
+	protected Event<ProcessingEvent> events;
+	
 	@Inject
 	@Any
 	private Instance<Plugin> plugins;
@@ -93,13 +101,6 @@ public class SimulationService implements WorkflowContext {
 		this.ctx = ctx;
 	}
 
-	@Resource
-	private SessionContext ctx;
-
-	@Inject
-	protected Event<ProcessingEvent> events;
-
-	private static Logger logger = Logger.getLogger(SimulationService.class.getName());
 
 	/**
 	 * This method simulates a processing life cycle of a process instance without
@@ -118,9 +119,10 @@ public class SimulationService implements WorkflowContext {
 	 *             - thrown if processing by a plugin fails
 	 * @throws ModelException
 	 */
-	public ItemCollection processWorkItem(ItemCollection workitem, List<String> vPlugins)
+	public ItemCollection processWorkItem(final ItemCollection _workitem, final List<String> vPlugins)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
+		ItemCollection workitem=_workitem;
 		long l = System.currentTimeMillis();
 
 		if (workitem == null)

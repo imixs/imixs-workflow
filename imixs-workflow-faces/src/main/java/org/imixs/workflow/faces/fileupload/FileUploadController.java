@@ -206,7 +206,7 @@ public class FileUploadController implements Serializable {
 	/**
 	 * reset the temp and persisted file variables. 
 	 */
-	void reset() {
+	public void reset() {
 		_tmpFiles = new ArrayList<FileData>();
 		_persistedFiles=new ArrayList<FileData>();		
 	}
