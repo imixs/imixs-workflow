@@ -40,13 +40,6 @@ public class FileData {
 	}
 
 	public void setName(String name) {
-		// IE includes '\' characters! so remove all these characters....
-		if (name.indexOf('\\') > -1) {
-			name = name.substring(name.lastIndexOf('\\') + 1);
-		}
-		if (name.indexOf('/') > -1) {
-			name = name.substring(name.lastIndexOf('/') + 1);
-		}
 		this.name = name;
 	}
 
