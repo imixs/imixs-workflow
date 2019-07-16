@@ -96,4 +96,12 @@ If you want to interrupt the processing imideately your Adapter Implementaion ca
 			.....
 		}
 
-In case of a ProcessingErrorException a running transaction will be automatically rolled back because it is a Runtime Exception. 		
+In case of a ProcessingErrorException a running transaction will be automatically rolled back because it is a Runtime Exception. 
+
+
+## StaticAdapter 
+
+The Adapter Interface _org.imixs.workflow.StaticAdapter_ extends the Adapter Interface. A static Adapter is executed independent from the BPMN model. A StaticAdapter should not be associated with a BPMN Signal Event.
+
+StaticAdapters can be uses to execute general business logic.  A StaticAdapter can be
+ a CDI implementation.	
