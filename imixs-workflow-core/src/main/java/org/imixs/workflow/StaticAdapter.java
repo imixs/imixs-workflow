@@ -27,30 +27,22 @@
 
 package org.imixs.workflow;
 
-import org.imixs.workflow.exceptions.AdapterException;
-
 /**
- * An Adapter defines an adapter pattern used by the WorkflowKernel to 
- * call adapter implementations defined by the BPMN model. 
- * <p> 
- * An adapter class must be associated with a BPMN Signal Event.  
+ * A StaticAdapter extends the Adapter Interface. A StaticAdapter is called by
+ * the WorkfklowKernel during the processing life-cycle. A StaticAdapter can be
+ * a CDI implementation.
+ * <p>
+ * StaticAdapters are called before any Signal-Adapter or plugin was executed.
+ * <p>
+ * A StaticAdapter is independent from the BPMN Model and should not be
+ * associated with a BPMN Signal Event. A StaticAdapter provides static code to
+ * be executed before the plugin life cylce.
  * 
  * @author Ralph Soika
  * @version 1.0
  * @see org.imixs.workflow.engine.WorkflowKernel
  */
 
-public interface Adapter {
-
-	
-	/**
-	 * @param document
-	 *            the workitem to be processed
-	 * @param event
-	 *            the workflow event containing the processing instructions
-	 * @return updated workitem for further processing
-	 * @throws AdapterException
-	 */
-	public ItemCollection execute(ItemCollection document,ItemCollection event) throws AdapterException;
+public interface StaticAdapter extends Adapter {
 
 }

@@ -29,6 +29,7 @@ package org.imixs.workflow;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -101,6 +102,7 @@ public class WorkflowKernel {
 
 	private List<Plugin> pluginRegistry = null;
 	private Map<String, Adapter> adapterRegistry = null;
+
 	private WorkflowContext ctx = null;
 	private Vector<String> vectorEdgeHistory = new Vector<String>();
 	private List<ItemCollection> splitWorkitems = null;
@@ -272,8 +274,7 @@ public class WorkflowKernel {
 	 * @return updated workitem
 	 * @throws PluginException,ModelException
 	 */
-	public ItemCollection process(final ItemCollection workitem)
-			throws PluginException, ModelException {
+	public ItemCollection process(final ItemCollection workitem) throws PluginException, ModelException {
 
 		// check document context
 		if (workitem == null)
@@ -290,7 +291,7 @@ public class WorkflowKernel {
 			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_ACTIVITYID,
 					"processing error: $eventID undefined (" + workitem.getEventID() + ")");
 
-		//ItemCollection documentResult = new ItemCollection(workitem);
+		// ItemCollection documentResult = new ItemCollection(workitem);
 		// we do no longer clone the woritem - Issue #507
 		ItemCollection documentResult = workitem;
 		vectorEdgeHistory = new Vector<String>();
@@ -423,17 +424,19 @@ public class WorkflowKernel {
 
 	/**
 	 * This method processes a single event on a workflow instance. All registered
-	 * adapter and plug-in classes will be executed.
+	 * handler, adapter and plug-in classes will be executed.
 	 * <p>
 	 * During the processing life-cycle more than one event can be processed. This
 	 * depends on the model definition which can define follow-up-events,
 	 * split-events and conditional events.
 	 * <p>
-	 * After all adapter and plug-in classes are executed, the attributes type,
-	 * $taskID, $workflowstatus and $workflowgroup are updated based on the
+	 * After all handler, adapter and plug-in classes are executed, the attributes
+	 * type, $taskID, $workflowstatus and $workflowgroup are updated based on the
 	 * definition of the target task element.
 	 * <p>
-	 * In case of an AdapterException, the exception data will be wrapped into items with the prefix 'adapter.'
+	 * In case of an AdapterException, the exception data will be wrapped into items
+	 * with the prefix 'adapter.'
+	 * 
 	 * @throws PluginException,ModelException
 	 */
 	private ItemCollection processEvent(final ItemCollection documentContext, final ItemCollection event)
@@ -449,32 +452,12 @@ public class WorkflowKernel {
 		}
 		logger.info(msg);
 
-		// execute adapters if adapter class is defined....
-		String adapterClass = event.getItemValueString("adapter.id");
-		if (!adapterClass.isEmpty() && adapterClass.matches("^(?:\\w+|\\w+\\.\\w+)+$")) {
-			Adapter adapter = adapterRegistry.get(adapterClass);
-			if (adapter != null) {
-				// execute...
-				try {
-					// remove adapter errors..
-					documentResult.removeItem("adapter.error_context");
-					documentResult.removeItem("adapter.error_code");
-					documentResult.removeItem("adapter.error_params");
-					documentResult.removeItem("adapter.error_message");
-					documentResult = adapter.execute(documentResult, event);
-				} catch (AdapterException e) {
-					logger.warning("...execution of adapter failed: " + e.getMessage());
-					// update workitem with adapter exception....
-					documentResult.setItemValue("adapter.error_context", e.getErrorContext());
-					documentResult.setItemValue("adapter.error_code", e.getErrorCode());
-					documentResult.setItemValue("adapter.error_params", e.getErrorParameters());
-					documentResult.setItemValue("adapter.error_message", e.getMessage());
-					e.printStackTrace();
-				}
-			} else {
-				logger.warning("...Adapter '" + adapterClass + "' not registered - verify model!");
-			}
-		}
+		// execute StaticAdapters
+		executeStaticAdapters(documentResult, event);
+
+		// execute Signal Adapters
+		executeSignalAdapters(documentResult, event);
+
 		// execute plugins - PluginExceptions will bubble up....
 		try {
 			documentResult = runPlugins(documentResult, event);
@@ -530,6 +513,87 @@ public class WorkflowKernel {
 		}
 
 		return documentResult;
+	}
+
+	/**
+	 * This method executes all SignalAdapters associated with the model.
+	 * <p>
+	 * A StaticAdaper should not be associated with a BPMN Signal Event.
+	 * 
+	 * @param documentResult
+	 * @param event
+	 */
+	private void executeSignalAdapters(ItemCollection documentResult, ItemCollection event) {
+		logger.finest("......executing SignalAdapters...");
+		// execute adapters if adapter class is defined....
+		String adapterClass = event.getItemValueString("adapter.id");
+		if (!adapterClass.isEmpty() && adapterClass.matches("^(?:\\w+|\\w+\\.\\w+)+$")) {
+			Adapter adapter = adapterRegistry.get(adapterClass);
+			if (adapter != null) {
+
+				if (adapter instanceof StaticAdapter) {
+					logger.warning(
+							"...StaticAdapter '" + adapterClass + "' should not be associated with a Signal Event!");
+					// ...stop execution as the StaticAdaper was already executed by the method
+					// executeStaticAdapters...
+				} else {
+					// execute...
+					try {
+						// remove adapter errors..
+						documentResult.removeItem("adapter.error_context");
+						documentResult.removeItem("adapter.error_code");
+						documentResult.removeItem("adapter.error_params");
+						documentResult.removeItem("adapter.error_message");
+						documentResult = adapter.execute(documentResult, event);
+					} catch (AdapterException e) {
+						logger.warning("...execution of adapter failed: " + e.getMessage());
+						// update workitem with adapter exception....
+						documentResult.setItemValue("adapter.error_context", e.getErrorContext());
+						documentResult.setItemValue("adapter.error_code", e.getErrorCode());
+						documentResult.setItemValue("adapter.error_params", e.getErrorParameters());
+						documentResult.setItemValue("adapter.error_message", e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			} else {
+				logger.warning("...Adapter '" + adapterClass + "' not registered - verify model!");
+			}
+		}
+	}
+
+	/**
+	 * This method executes all StaticAdapters. StaticAdapters are executed before
+	 * the SignalAdapters
+	 * 
+	 * @param documentResult
+	 * @param event
+	 */
+	private void executeStaticAdapters(ItemCollection documentResult, ItemCollection event) {
+		logger.finest("......executing StaticAdapters...");
+		// execute all StaticAdapters
+		Collection<Adapter> adapters = adapterRegistry.values();
+		for (Adapter adapter : adapters) {
+			// test if Adapter is static
+			if (adapter instanceof StaticAdapter) {
+				// execute...
+				try {
+					// remove adapter errors..
+					documentResult.removeItem("adapter.error_context");
+					documentResult.removeItem("adapter.error_code");
+					documentResult.removeItem("adapter.error_params");
+					documentResult.removeItem("adapter.error_message");
+					documentResult = adapter.execute(documentResult, event);
+				} catch (AdapterException e) {
+					logger.warning("...execution of adapter failed: " + e.getMessage());
+					// update workitem with adapter exception....
+					documentResult.setItemValue("adapter.error_context", e.getErrorContext());
+					documentResult.setItemValue("adapter.error_code", e.getErrorCode());
+					documentResult.setItemValue("adapter.error_params", e.getErrorParameters());
+					documentResult.setItemValue("adapter.error_message", e.getMessage());
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	/**
