@@ -38,6 +38,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -106,7 +107,7 @@ public class HistoryPlugin extends AbstractPlugin {
 		}
 
 		List<Object> newEntry = new ArrayList<Object>();
-		newEntry.add(new Date());
+		newEntry.add(documentContext.getItemValueDate(WorkflowKernel.LASTEVENTDATE));
 		newEntry.add(rtfItemLog);
 		newEntry.add(this.getWorkflowService().getUserName());
 		historyList.add(newEntry);
