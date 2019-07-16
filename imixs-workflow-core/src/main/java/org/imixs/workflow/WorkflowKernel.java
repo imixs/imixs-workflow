@@ -312,7 +312,7 @@ public class WorkflowKernel {
 		// now process all events defined by the model
 		while (documentResult.getEventID() > 0) {
 			// set $lastEventDate
-			documentResult.replaceItemValue("$lastEventDate", new Date());
+			documentResult.replaceItemValue(LASTEVENTDATE, new Date());
 			// load event...
 			ItemCollection event = loadEvent(documentResult);
 			documentResult = processEvent(documentResult, event);
