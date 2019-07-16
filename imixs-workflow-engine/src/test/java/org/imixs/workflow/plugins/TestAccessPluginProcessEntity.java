@@ -183,7 +183,7 @@ public class TestAccessPluginProcessEntity {
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
-		documentContext.replaceItemValue("namOwner", list);
+		documentContext.replaceItemValue("$Owner", list);
 		documentContext.setTaskID(300);
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 20);

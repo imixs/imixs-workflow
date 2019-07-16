@@ -38,7 +38,7 @@ import org.imixs.workflow.exceptions.PluginException;
 
 /**
  * This plugin implements a ownership control by evaluating the configuration of
- * a Activity Entity. The Plugin updates the WorkItem attribute namOwner
+ * an BPMN Event element. The Plugin updates the WorkItem attribute $Owner
  * depending on the provided information.
  * 
  * <p>
@@ -77,6 +77,9 @@ import org.imixs.workflow.exceptions.PluginException;
  */
 
 public class OwnerPlugin extends AbstractPlugin {
+	
+	public final static String ITEM_OWNER="$owner";
+	
 	private ItemCollection documentContext;
 	private ItemCollection documentActivity;
 	private ItemCollection documentNextProcessEntity;
@@ -84,11 +87,11 @@ public class OwnerPlugin extends AbstractPlugin {
 	private static Logger logger = Logger.getLogger(AccessPlugin.class.getName());
 
 	/**
-	 * changes the namOwner attribue depending to the activityentity or
+	 * changes the $Owner attribute depending to the activityentity or
 	 * processEntity
 	 * 
-	 * The method prevents the field 'namowner' of the documentcontext in case that
-	 * namowner is part of the
+	 * The method prevents the field '$owner' of the documentcontext in case that
+	 * $owner is part of the
 	 */
 	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
 			throws PluginException {
@@ -154,12 +157,16 @@ public class OwnerPlugin extends AbstractPlugin {
 		newOwnerList = uniqueList(newOwnerList);
 
 		// update ownerlist....
-		documentContext.replaceItemValue("namowner", newOwnerList);
+		documentContext.replaceItemValue(ITEM_OWNER, newOwnerList);
 		if ((logger.isLoggable(Level.FINE)) && (newOwnerList.size() > 0)) {
 			logger.finest("......Owners:");
 			for (int j = 0; j < newOwnerList.size(); j++)
 				logger.finest("               '" + (String) newOwnerList.get(j) + "'");
 		}
+		
+		
+		// we also need to support the deprecated iten name "namOwner" which was replaced since version 5.0.1 by "$owner"
+		documentContext.replaceItemValue("namOwner", newOwnerList);
 
 	}
 

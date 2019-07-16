@@ -49,7 +49,7 @@
 		<item name="namcurrenteditor">
 			<value xsi:type="xs:string">admin</value>
 		</item>
-		<item name="namowner">
+		<item name="$owner">
 			<value xsi:type="xs:string">anna</value>
 			<value xsi:type="xs:string">rsoika</value>
 			<value xsi:type="xs:string">manfred</value>
@@ -143,7 +143,7 @@
 		<item name="namcurrenteditor">
 			<value xsi:type="xs:string">admin</value>
 		</item>
-		<item name="namowner">
+		<item name="$owner">
 			<value xsi:type="xs:string">admin</value>
 		</item>
 		<item name="namteam">

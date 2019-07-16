@@ -16,6 +16,11 @@
         <item name="$modified">
             <value xsi:type="xs:dateTime">2016-09-02T12:01:25.310+02:00</value>
         </item>
+        <item name="$owner">
+            <value xsi:type="xs:string">anna</value>
+            <value xsi:type="xs:string">rsoika</value>
+            <value xsi:type="xs:string">manfred</value>
+        </item>
         <item name="$processid">
             <value xsi:type="xs:int">1100</value>
         </item>
@@ -47,11 +52,6 @@
         </item>
         <item name="namcurrenteditor">
             <value xsi:type="xs:string">admin</value>
-        </item>
-        <item name="namowner">
-            <value xsi:type="xs:string">anna</value>
-            <value xsi:type="xs:string">rsoika</value>
-            <value xsi:type="xs:string">manfred</value>
         </item>
         <item name="namteam">
             <value xsi:type="xs:string">anna</value>
@@ -112,6 +112,9 @@
         <item name="$modified">
             <value xsi:type="xs:dateTime">2016-09-02T12:01:36.155+02:00</value>
         </item>
+        <item name="$owner">
+            <value xsi:type="xs:string">admin</value>
+        </item>
         <item name="$processid">
             <value xsi:type="xs:int">1100</value>
         </item>
@@ -140,9 +143,6 @@
             <value xsi:type="xs:string">admin</value>
         </item>
         <item name="namcurrenteditor">
-            <value xsi:type="xs:string">admin</value>
-        </item>
-        <item name="namowner">
             <value xsi:type="xs:string">admin</value>
         </item>
         <item name="namteam">

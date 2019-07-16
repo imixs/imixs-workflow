@@ -46,7 +46,7 @@ The following table provides an overview about all data items managed by the Imi
 |-----------------|--------|------------|-----------------------------------------------------------------------|
 |$ModelVersion    |String  |yes   		| yes 	  | The Version of the model the workitem belongs to  			|
 |$TaskID       	  |Integer |yes   		| yes 	  | The current taskID of the workitem							|
-|$EventID         |Integer |yes   		| yes 	  | The next event to be processed by the workflow engine  		|
+|$EventID         |Integer |yes   		| yes 	  | Current event processed by the Workflow Engine. Is 0 if no processing lifecycle is executed.		|
 |$workflowGroup   |String  |no    		| yes 	  | The name of the current process group   					|
 |$workflowStatus  |String  |no   		| yes 	  | The name of the current workflow status      				|
 |$Created         |Date    |no    		| yes 	  | Date of creation                              				|
@@ -67,7 +67,7 @@ The following table provides an overview about all data items managed by the Imi
 |$lasteditor      |String  |no    		| yes 	  | The last user, that invoked the process method before the $editor |
 |$noindex    	  |Boolean |yes    		| no 	  | If set to 'true', the document will not be added into the index. (See [DocumentService](../engine/documentservice.html) for details.)   |
 |$immutable    	  |Boolean |yes    		| no 	  | If set to 'true' updateing the workitem is no longer allowed. (See [DocumentService](../engine/documentservice.html) for details.) |
-|namOwner         |List    |no    		| yes 	  | String list of User/Roles, that are owners of that WorkItem. 	|
+|$Owner         |List    |no    		| yes 	  | String list of User/Roles, that are owners of that WorkItem. 	|
 |txtworkflowsummary |String|no 			| yes 	  | A short description of the current status      				|
 |txtworkflowabstract|String|no 			| yes 	  | A long description of the current status       				|
 |txtworkflowimageurl|String|no 			| no 	  | A link to an image which displays the current status 			|

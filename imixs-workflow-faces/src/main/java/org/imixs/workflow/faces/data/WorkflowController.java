@@ -230,7 +230,7 @@ public class WorkflowController extends AbstractDataController implements Serial
 	 * 
 	 * The method assigns the initial values '$ModelVersion', '$ProcessID' and
 	 * '$UniqueIDRef' to the new workitem. The method creates the empty field
-	 * '$workitemID' and the field 'namowner' which is assigned to the current user.
+	 * '$workitemID' and the field '$owner' which is assigned to the current user.
 	 * This data can be used in case that a workitem is not processed but saved
 	 * (e.g. by the dmsController).
 	 * 
@@ -255,8 +255,11 @@ public class WorkflowController extends AbstractDataController implements Serial
 			data.replaceItemValue(WorkflowService.UNIQUEIDREF, uniqueIdRef);
 		}
 		// set default owner
+		data.replaceItemValue("$owner", loginController.getUserPrincipal());
+		// support deprecated field
 		data.replaceItemValue("namowner", loginController.getUserPrincipal());
-
+		
+		
 		// set empty $workitemid
 		data.replaceItemValue("$workitemid", "");
 

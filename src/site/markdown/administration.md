@@ -45,7 +45,7 @@ The function updates the workitem items:
 
  * $ReadAccess
  * $WriteAccess
- * namOwner
+ * $Owner
  
 The new userId can either be replaced with the old one or be appended. The blocksize
 defines the maximum number of workflow documents to be processed in one run. After the blocksize was updated, the job will pause for a given interval specified in minutes.  
