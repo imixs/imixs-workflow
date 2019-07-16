@@ -1,4 +1,4 @@
-package org.imixs.workflow.plugins;
+package org.imixs.workflow.engine.adapters;
 
 import java.util.List;
 import java.util.Vector;
@@ -7,7 +7,8 @@ import java.util.logging.Logger;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
-import org.imixs.workflow.engine.plugins.AccessPlugin;
+import org.imixs.workflow.engine.WorkflowService;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
@@ -44,12 +45,13 @@ public class TestAccessPluginProcessEntity {
 
 	private final static Logger logger = Logger.getLogger(TestAccessPluginProcessEntity.class.getName());
 
-	protected AccessPlugin accessPlugin = null;
+	
 	protected ItemCollection documentContext;
 	protected ItemCollection documentActivity;
 	protected ItemCollection documentProcess;
 	protected WorkflowMockEnvironment workflowMockEnvironment;
-
+	protected ParticipantAdapter adapter;
+	
 	@Before
 	public void setUp() throws PluginException, ModelException {
 
@@ -58,13 +60,10 @@ public class TestAccessPluginProcessEntity {
 
 		workflowMockEnvironment.setup();
 
-		accessPlugin = new AccessPlugin();
-		try {
-			accessPlugin.init(workflowMockEnvironment.getWorkflowService());
-		} catch (PluginException e) {
 
-			e.printStackTrace();
-		}
+		adapter = new ParticipantAdapter();
+		adapter.workflowService=workflowMockEnvironment.getWorkflowService();
+
 
 		// prepare data
 		documentContext = new ItemCollection();
@@ -90,20 +89,19 @@ public class TestAccessPluginProcessEntity {
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
-		documentContext.replaceItemValue("$writeaccess", list);
+		documentContext.replaceItemValue(WorkflowService.WRITEACCESS, list);
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
 
 		try {
-			accessPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
-
+			adapter.execute(documentContext, documentActivity);
+		} catch (AdapterException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
 		@SuppressWarnings("unchecked")
-		List<String> writeAccess = documentContext.getItemValue("$WriteAccess");
+		List<String> writeAccess = documentContext.getItemValue(WorkflowService.WRITEACCESS);
 
 		Assert.assertEquals(2, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("Kevin"));
@@ -124,15 +122,14 @@ public class TestAccessPluginProcessEntity {
 		documentContext.setTaskID(300);
 
 		try {
-			accessPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
-
+			adapter.execute(documentContext, documentActivity);
+		} catch (AdapterException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
 		@SuppressWarnings("unchecked")
-		List<String> writeAccess = documentContext.getItemValue("$WriteAccess");
+		List<String> writeAccess = documentContext.getItemValue(WorkflowService.WRITEACCESS);
 
 		Assert.assertEquals(2, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
@@ -152,15 +149,14 @@ public class TestAccessPluginProcessEntity {
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
 
 		try {
-			accessPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
-
+			adapter.execute(documentContext, documentActivity);
+		} catch (AdapterException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
 		@SuppressWarnings("unchecked")
-		List<String> writeAccess = documentContext.getItemValue("$WriteAccess");
+		List<String> writeAccess = documentContext.getItemValue(WorkflowService.WRITEACCESS);
 
 		Assert.assertEquals(3, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
@@ -188,15 +184,14 @@ public class TestAccessPluginProcessEntity {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 20);
 		try {
-			accessPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
-
+			adapter.execute(documentContext, documentActivity);
+		} catch (AdapterException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
 		// $writeAccess= anna , manfred, joe, sam
-		List<String> writeAccess = documentContext.getItemValue("$WriteAccess");
+		List<String> writeAccess = documentContext.getItemValue(WorkflowService.WRITEACCESS);
 		Assert.assertEquals(3, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
 		// Assert.assertTrue(writeAccess.contains("sam"));
@@ -204,7 +199,7 @@ public class TestAccessPluginProcessEntity {
 		Assert.assertTrue(writeAccess.contains("anna"));
 
 		// $readAccess= anna , manfred, joe, sam
-		writeAccess = documentContext.getItemValue("$readAccess");
+		writeAccess = documentContext.getItemValue(WorkflowService.READACCESS);
 		Assert.assertEquals(2, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("tom"));
 		Assert.assertTrue(writeAccess.contains("manfred"));

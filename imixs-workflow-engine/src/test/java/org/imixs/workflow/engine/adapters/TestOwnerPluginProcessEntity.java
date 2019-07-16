@@ -1,4 +1,4 @@
-package org.imixs.workflow.plugins;
+package org.imixs.workflow.engine.adapters;
 
 import java.util.List;
 import java.util.Vector;
@@ -7,7 +7,8 @@ import java.util.logging.Logger;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
-import org.imixs.workflow.engine.plugins.OwnerPlugin;
+import org.imixs.workflow.engine.WorkflowService;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
@@ -44,11 +45,13 @@ public class TestOwnerPluginProcessEntity {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPluginProcessEntity.class.getName());
 
-	protected OwnerPlugin ownerPlugin = null;
+
 	protected ItemCollection documentContext;
 	protected ItemCollection documentActivity, documentProcess;
-
 	protected WorkflowMockEnvironment workflowMockEnvironment;
+	protected ParticipantAdapter adapter;
+
+	
 
 	@Before
 	public void setUp() throws PluginException, ModelException {
@@ -58,14 +61,11 @@ public class TestOwnerPluginProcessEntity {
 		
 		workflowMockEnvironment.setup();
 		
-	
-		ownerPlugin = new OwnerPlugin();
-		try {
-			ownerPlugin.init(workflowMockEnvironment.getWorkflowService());
-		} catch (PluginException e) {
 
-			e.printStackTrace();
-		}
+		adapter = new ParticipantAdapter();
+		adapter.workflowService=workflowMockEnvironment.getWorkflowService();
+
+
 
 		// prepare data
 		documentContext = new ItemCollection();
@@ -90,20 +90,20 @@ public class TestOwnerPluginProcessEntity {
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
-		documentContext.replaceItemValue(OwnerPlugin.ITEM_OWNER, list);
+		documentContext.replaceItemValue(WorkflowService.OWNER, list);
 		documentContext.setTaskID(100);
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
 		try {
-			ownerPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
-
+			adapter.execute(documentContext, documentActivity);
+		} catch (AdapterException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
+
 		@SuppressWarnings("unchecked")
-		List<String> ownerList = documentContext.getItemValue(OwnerPlugin.ITEM_OWNER);
+		List<String> ownerList = documentContext.getItemValue(WorkflowService.OWNER);
 
 		Assert.assertEquals(2, ownerList.size());
 		Assert.assertTrue(ownerList.contains("Kevin"));
@@ -122,15 +122,15 @@ public class TestOwnerPluginProcessEntity {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
 		try {
-			ownerPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
-
+			adapter.execute(documentContext, documentActivity);
+		} catch (AdapterException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
+
 		@SuppressWarnings("unchecked")
-		List<String> onwerList = documentContext.getItemValue(OwnerPlugin.ITEM_OWNER);
+		List<String> onwerList = documentContext.getItemValue(WorkflowService.OWNER);
 
 		Assert.assertEquals(3, onwerList.size());
 		Assert.assertTrue(onwerList.contains("joe"));
@@ -152,15 +152,15 @@ public class TestOwnerPluginProcessEntity {
 		documentContext.setTaskID(300);
 
 		try {
-			ownerPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
-
+			adapter.execute(documentContext, documentActivity);
+		} catch (AdapterException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
+
 		@SuppressWarnings("unchecked")
-		List<String> ownerList = documentContext.getItemValue(OwnerPlugin.ITEM_OWNER);
+		List<String> ownerList = documentContext.getItemValue(WorkflowService.OWNER);
 
 		Assert.assertEquals(2, ownerList.size());
 		Assert.assertTrue(ownerList.contains("joe"));
@@ -183,21 +183,21 @@ public class TestOwnerPluginProcessEntity {
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
-		documentContext.replaceItemValue(OwnerPlugin.ITEM_OWNER, list);
+		documentContext.replaceItemValue(WorkflowService.OWNER, list);
 		documentContext.setTaskID(300);
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 20);
 
 		try {
-			ownerPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
-
+			adapter.execute(documentContext, documentActivity);
+		} catch (AdapterException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
+
 		// $writeAccess= anna , manfred, joe, sam
-		List<String> onwerList = documentContext.getItemValue(OwnerPlugin.ITEM_OWNER);
+		List<String> onwerList = documentContext.getItemValue(WorkflowService.OWNER);
 		Assert.assertEquals(3, onwerList.size());
 		Assert.assertTrue(onwerList.contains("joe"));
 		// Assert.assertTrue(onwerList.contains("sam"));

@@ -94,6 +94,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 	// workitem properties
 	public static final String UNIQUEIDREF = "$uniqueidref";
+	public static final String READACCESS = "$readaccess";
+	public static final String WRITEACCESS = "$writeaccess";
+	public static final String OWNER = "$owner";
+	public static final String PARTICIPANTS="$participants";
 	public static final String DEFAULT_TYPE = "workitem";
 
 	// view properties
@@ -111,7 +115,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 	@Inject
 	@Any
-	private Instance<Adapter> adapters;
+	protected Instance<Adapter> adapters;
+	
+	// just for junit testing - maybe we found a better solution
+	protected List<Adapter> adaptersLocal;
+	
 
 	@EJB
 	DocumentService documentService;
@@ -132,7 +140,17 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	protected Event<TextEvent> textEvents;
 
 	private static Logger logger = Logger.getLogger(WorkflowService.class.getName());
-
+//
+//	public void addAdapter(Adapter a) {
+//		if (adaptersLocal==null) {
+//			adaptersLocal=new ArrayList<Adapter>();
+//		}
+//		
+//		adaptersLocal.add(a);
+//		
+//	}
+//	
+	
 	/**
 	 * This method loads a Workitem with the corresponding uniqueid.
 	 * 
@@ -1118,7 +1136,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		}
 	}
 
-	void registerAdapters(WorkflowKernel workflowkernel) {
+	public void registerAdapters(WorkflowKernel workflowkernel) {
 		if (adapters == null || !adapters.iterator().hasNext()) {
 			logger.finest("......no CDI Adapters injected");
 		} else {
@@ -1127,9 +1145,19 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 				logger.finest("......register CDI Adapter class '" + adapter.getClass().getName() + "'");
 				workflowkernel.registerAdapter(adapter);
 			}
+			
+			// iterate over all local adapters....
+			for (Adapter adapter : this.adaptersLocal) {
+				logger.finest("......register CDI Adapter class '" + adapter.getClass().getName() + "'");
+				workflowkernel.registerAdapter(adapter);
+			}
+			
 		}
 	}
 
+	
+	
+	
 	/**
 	 * This method updates the workitem properties '$creator', '$editor' and
 	 * '$lasteditor.
