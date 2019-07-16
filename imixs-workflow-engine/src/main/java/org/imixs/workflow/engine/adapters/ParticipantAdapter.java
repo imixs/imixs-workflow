@@ -90,7 +90,8 @@ public class ParticipantAdapter implements StaticAdapter, Serializable {
 		return null;
 	}
 
-	protected void aa() {
+	public void setWorkflowService(WorkflowService workflowService) {
+		this.workflowService=workflowService;
 		
 	}
 	

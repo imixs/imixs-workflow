@@ -71,12 +71,15 @@ public class WorkflowMockEnvironment {
 	@Spy
 	protected DocumentService documentService;
 
-	@Spy
+	// @Spy
 	protected WorkflowService workflowService;
 
 	@Spy
 	protected ModelService modelService;
-	
+
+	@Spy
+	protected ParticipantAdapter participantAdapter;
+
 	protected SessionContext ctx;
 	protected WorkflowContext workflowContext;
 	private BPMNModel model = null;
@@ -106,8 +109,7 @@ public class WorkflowMockEnvironment {
 	public DocumentService getDocumentService() {
 		return documentService;
 	}
-	
-	
+
 	@Before
 	public void setup() throws PluginException, ModelException {
 		MockitoAnnotations.initMocks(this);
@@ -174,6 +176,7 @@ public class WorkflowMockEnvironment {
 
 		// Mock WorkflowService
 		workflowService = Mockito.mock(WorkflowService.class);
+
 		workflowService.documentService = documentService;
 		workflowService.ctx = ctx;
 
@@ -198,8 +201,6 @@ public class WorkflowMockEnvironment {
 			}
 		});
 
-		
-		
 		// AdaptText
 		when(workflowService.adaptText(Mockito.anyString(), Mockito.any(ItemCollection.class)))
 				.thenAnswer(new Answer<String>() {
@@ -235,28 +236,6 @@ public class WorkflowMockEnvironment {
 						return textEvent.getTextList();
 					}
 				});
-		
-		
-	
-		
-		// register ParticipantAdapter
-//		doAnswer(new Answer<Void>() {
-//
-//	        @Override
-//	        public Void answer(InvocationOnMock invocation) throws Throwable {
-//	            Object[] arguments = invocation.getArguments();
-//	            if (arguments != null && arguments.length == 1 && arguments[0] != null) {
-//	            	
-//	            	WorkflowKernel workflowKernel = (WorkflowKernel) arguments[0];
-//	            	
-//	            	workflowKernel.registerAdapter(new ParticipantAdapter());
-//	              
-//	            }
-//	            return null;
-//	        }
-//	    }).when(workflowService).registerAdapters(Mockito.any(WorkflowKernel.class));
-
-		
 
 		when(workflowService.evalNextTask(Mockito.any(ItemCollection.class), Mockito.any(ItemCollection.class)))
 				.thenCallRealMethod();
@@ -270,17 +249,27 @@ public class WorkflowMockEnvironment {
 		// mock registerPlugins, registerAdapter, updateWorkitem...
 		Mockito.doCallRealMethod().when(workflowService).registerPlugins(Mockito.any(WorkflowKernel.class),
 				Mockito.any(Model.class));
-			
-		Mockito.doCallRealMethod().when(workflowService).registerAdapters(Mockito.any(WorkflowKernel.class));
+
 		Mockito.doCallRealMethod().when(workflowService).updateWorkitem(Mockito.any(ItemCollection.class));
 
-		
-		// add static adapters....
-		List<Adapter> adaptersLocal=new ArrayList<>();
-		adaptersLocal.add(new ParticipantAdapter());
-		workflowService.adaptersLocal=adaptersLocal;
-		
-		
+		// register ParticipantAdapter
+		participantAdapter.setWorkflowService(workflowService);
+		doAnswer(new Answer<Void>() {
+
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				Object[] arguments = invocation.getArguments();
+				if (arguments != null && arguments.length == 1 && arguments[0] != null) {
+
+					WorkflowKernel workflowKernel = (WorkflowKernel) arguments[0];
+
+					workflowKernel.registerAdapter(participantAdapter);
+
+				}
+				return null;
+			}
+		}).when(workflowService).registerAdapters(Mockito.any(WorkflowKernel.class));
+
 		try {
 			when(workflowService.getEvents(Mockito.any(ItemCollection.class))).thenCallRealMethod();
 		} catch (ModelException e) {
@@ -289,8 +278,6 @@ public class WorkflowMockEnvironment {
 		}
 
 	}
-	
-	
 
 	/**
 	 * Create a test database with some workItems and a simple model

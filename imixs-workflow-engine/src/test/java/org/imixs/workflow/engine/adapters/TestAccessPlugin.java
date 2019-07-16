@@ -1,16 +1,10 @@
 package org.imixs.workflow.engine.adapters;
 
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
-
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowContext;
-import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AdapterException;
@@ -18,11 +12,8 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import junit.framework.Assert;
 
@@ -38,14 +29,9 @@ public class TestAccessPlugin {
 
 	private final static Logger logger = Logger.getLogger(TestAccessPlugin.class.getName());
 
-	// protected AccessPlugin accessPlugin = null;
 	protected ItemCollection documentContext;
 	protected ItemCollection documentActivity;
 	protected WorkflowMockEnvironment workflowMockEnvironment;
-	//protected ParticipantAdapter participantAdapter;
-
-	
-
 	@Spy
 	protected ParticipantAdapter participantAdapter;
 
@@ -59,42 +45,13 @@ public class TestAccessPlugin {
 
 		workflowMockEnvironment.setup();
 
-		//adapter = new ParticipantAdapter();
-		
-	//	participantAdapter = Mockito.mock(ParticipantAdapter.class);
 		participantAdapter.workflowService = workflowMockEnvironment.getWorkflowService();
-//		try {
-//			when(participantAdapter.execute(Mockito.any(ItemCollection.class), Mockito.any(ItemCollection.class)))
-//			.thenCallRealMethod();
-//		} catch (AdapterException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 		
 		// prepare data
 		documentContext = new ItemCollection();
 		documentContext.replaceItemValue("$processid", 100);
 		documentContext.replaceItemValue("$modelversion", "1.0.0");
 		
-		
-		WorkflowService workflowService=workflowMockEnvironment.getWorkflowService();
-		// register ParticipantAdapter
-		doAnswer(new Answer<Void>() {
-
-	        @Override
-	        public Void answer(InvocationOnMock invocation) throws Throwable {
-	            Object[] arguments = invocation.getArguments();
-	            if (arguments != null && arguments.length == 1 && arguments[0] != null) {
-	            	
-	            	WorkflowKernel workflowKernel = (WorkflowKernel) arguments[0];
-	            	
-	            	workflowKernel.registerAdapter(participantAdapter);
-	              
-	            }
-	            return null;
-	        }
-	    }).when(workflowService).registerAdapters(Mockito.any(WorkflowKernel.class));
-
 		
 
 	}
@@ -224,8 +181,6 @@ public class TestAccessPlugin {
 	@Test
 	public void testCondition() throws ModelException {
 
-		
-		
 		// case I.
 
 		documentContext.setTaskID(200);

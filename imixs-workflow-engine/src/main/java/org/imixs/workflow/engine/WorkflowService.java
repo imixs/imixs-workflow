@@ -117,10 +117,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	@Any
 	protected Instance<Adapter> adapters;
 	
-	// just for junit testing - maybe we found a better solution
-	protected List<Adapter> adaptersLocal;
-	
-
 	@EJB
 	DocumentService documentService;
 
@@ -140,16 +136,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	protected Event<TextEvent> textEvents;
 
 	private static Logger logger = Logger.getLogger(WorkflowService.class.getName());
-//
-//	public void addAdapter(Adapter a) {
-//		if (adaptersLocal==null) {
-//			adaptersLocal=new ArrayList<Adapter>();
-//		}
-//		
-//		adaptersLocal.add(a);
-//		
-//	}
-//	
 	
 	/**
 	 * This method loads a Workitem with the corresponding uniqueid.
@@ -1145,17 +1131,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 				logger.finest("......register CDI Adapter class '" + adapter.getClass().getName() + "'");
 				workflowkernel.registerAdapter(adapter);
 			}
-			
-			// iterate over all local adapters....
-			for (Adapter adapter : this.adaptersLocal) {
-				logger.finest("......register CDI Adapter class '" + adapter.getClass().getName() + "'");
-				workflowkernel.registerAdapter(adapter);
-			}
-			
 		}
 	}
-
-	
 	
 	
 	/**
