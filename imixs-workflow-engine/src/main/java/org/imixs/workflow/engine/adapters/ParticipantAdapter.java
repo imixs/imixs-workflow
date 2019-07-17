@@ -35,43 +35,61 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.StaticAdapter;
+import org.imixs.workflow.GenericAdapter;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * The ParticipantHandler is a CDI bean responsible to update the Items
- * 
+ * The ParticipantHandler is a generic adapter class responsible to update the
+ * ACL and Owernship of a workitem. The CID Bean updates the following Items
  * <ul>
  * <li>$writeAccess</li>
  * <li>$readAccess</li>
  * <li>$owner</li>
  * <li>$participants</li>
  * </ul>
- * 
  * <p>
- * 
- * 
+ * The read and write access for a workitem can be defined by the BPMN model
+ * with the ACL Properties of the Imixs-BPMN modeler.
  * <p>
- * defining an CDI alternative an application this bean
+ * By defining an CDI alternative an application can overwrite the behavior of
+ * this bean.
  * 
  * @author rsoika
  * @version 1.0.0
  */
 @Named
-public class ParticipantAdapter implements StaticAdapter, Serializable {
+public class ParticipantAdapter implements GenericAdapter, Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static Logger logger = Logger.getLogger(ParticipantAdapter.class.getName());
 
-	@EJB
+	// See CDI Constructor
 	protected WorkflowService workflowService;
+
+	/**
+	 * Default Constructor
+	 */
+	public ParticipantAdapter() {
+		super();
+	}
+
+	/**
+	 * CDI Constructor to inject WorkflowService
+	 * 
+	 * @param workflowService
+	 */
+	@Inject
+	public ParticipantAdapter(WorkflowService workflowService) {
+		super();
+		this.workflowService = workflowService;
+	}
 
 	@Override
 	public ItemCollection execute(ItemCollection document, ItemCollection event) throws AdapterException {
@@ -91,10 +109,10 @@ public class ParticipantAdapter implements StaticAdapter, Serializable {
 	}
 
 	public void setWorkflowService(WorkflowService workflowService) {
-		this.workflowService=workflowService;
-		
+		this.workflowService = workflowService;
+
 	}
-	
+
 	/**
 	 * Update the $PARTICIPANTS.
 	 * 

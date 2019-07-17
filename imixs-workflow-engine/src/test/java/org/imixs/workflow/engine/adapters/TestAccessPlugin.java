@@ -182,7 +182,7 @@ public class TestAccessPlugin {
 	public void testCondition() throws ModelException {
 
 		// case I.
-
+ 
 		documentContext.setTaskID(200);
 		documentContext.setEventID(20);
 		documentContext.replaceItemValue("_budget", 50);

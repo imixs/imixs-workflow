@@ -77,8 +77,8 @@ public class WorkflowMockEnvironment {
 	@Spy
 	protected ModelService modelService;
 
-	@Spy
-	protected ParticipantAdapter participantAdapter;
+	//@Spy
+	//protected ParticipantAdapter participantAdapter;
 
 	protected SessionContext ctx;
 	protected WorkflowContext workflowContext;
@@ -252,8 +252,7 @@ public class WorkflowMockEnvironment {
 
 		Mockito.doCallRealMethod().when(workflowService).updateWorkitem(Mockito.any(ItemCollection.class));
 
-		// register ParticipantAdapter
-		participantAdapter.setWorkflowService(workflowService);
+		// register static Adapters: ParticipantAdapter
 		doAnswer(new Answer<Void>() {
 
 			@Override
@@ -263,7 +262,9 @@ public class WorkflowMockEnvironment {
 
 					WorkflowKernel workflowKernel = (WorkflowKernel) arguments[0];
 
-					workflowKernel.registerAdapter(participantAdapter);
+					// Spy ParticipantAdapter after construction....
+					ParticipantAdapter participantAdapter = new ParticipantAdapter(workflowService);
+					workflowKernel.registerAdapter(Mockito.spy(participantAdapter));
 
 				}
 				return null;

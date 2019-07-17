@@ -1,15 +1,16 @@
-#AccessPlugin
-The AccessPlugin is responsible for the ACL settings in a workitem.
+# The ParticipantAdapter
 
-    org.imixs.workflow.engine.AccessPlugin
+The ParticipantAdapter is responsible for the ACL settings and ownership associated with a workitem.
+The generic adapter class  applies a access control list (ACL) to the current process instance. See also the [section security](../acl.html) for more details.  
 
-The plugin applies a access control list (ACL) to the current process instance. 
-Therefore the plugin evaluates the configuration of a BPMN Event and BPMN Task elements. The plug-in updates the
-WorkItem attributes $ReadAccess and $WriteAccess which are responsible to secure a process instance. 
-See also the [section security](../acl.html) for more details. 
+ The adapter updates the WorkItem attributes:
 
-The ACL can be configured through the Imixs-BPMN modeling tool:
+* $ReadAccess 
+* $WriteAccess
+* $owner
+* $participants.
 
+The ACL and Ownership settings can be configured for a BPMN Event or Task element using the Imixs-BPMN modeling tool:
 
 
 <img src="../../images/modelling/bpmn_screen_21.png"/>  
@@ -31,7 +32,6 @@ The following attributes defined in the model element are evaluated by the plugi
 The AccessPlugin  evaluates the ACL settings of the current Event element as also the  ACL settings of the next Task element. 
 If the current Event Element provides a ACL setting, the next Task element will be ignored. 
 
- 
 
 
 ### Dynamic ACLs
