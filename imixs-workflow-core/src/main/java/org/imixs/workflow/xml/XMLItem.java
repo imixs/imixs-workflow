@@ -260,8 +260,14 @@ public class XMLItem implements Serializable {
 				singleXMLItem.setValue(((List<?>) mapentry.getValue()).toArray());
 			} else {
 				// create single list entry
+				/*
 				ArrayList<String> aList = new ArrayList<String>();
 				aList.add(mapentry.getValue().toString());
+				singleXMLItem.setValue(aList.toArray());
+				*/
+				// Issue 535
+				ArrayList<Object> aList = new ArrayList<>();
+				aList.add(mapentry.getValue());
 				singleXMLItem.setValue(aList.toArray());
 			}
 			result[i] = singleXMLItem;

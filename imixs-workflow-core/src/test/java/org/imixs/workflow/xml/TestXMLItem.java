@@ -1,6 +1,8 @@
 package org.imixs.workflow.xml;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +12,7 @@ import javax.xml.bind.Marshaller;
 
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.RuleEngine;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -43,11 +46,36 @@ public class TestXMLItem {
 			e.printStackTrace();
 			Assert.fail();
 		}
+
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
-	public void testListValue() {
+	public void testDateValue() {
+		XMLItem xmlItem = new XMLItem();
+		xmlItem.setName("name");
+		Date date = new Date();
+		List values = new ArrayList<>();
+		values.add(date);
+		xmlItem.setValue(values.toArray());
+
+		Assert.assertEquals("name", xmlItem.getName());
+
+		Assert.assertEquals(1, xmlItem.getValue().length);
+		Assert.assertEquals(date, xmlItem.getValue()[0]);
+		// final marshaling test...
+		try {
+			testMarshaling(xmlItem);
+		} catch (JAXBException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test
+	public void testListSimpleValues() {
 		XMLItem xmlItem = new XMLItem();
 		xmlItem.setName("name");
 
@@ -61,6 +89,39 @@ public class TestXMLItem {
 		Assert.assertEquals(2, xmlItem.getValue().length);
 		Assert.assertEquals("a", xmlItem.getValue()[0]);
 		Assert.assertEquals("b", xmlItem.getValue()[1]);
+
+		// final marshaling test...
+		try {
+			testMarshaling(xmlItem);
+		} catch (JAXBException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+	}
+
+	/**
+	 * Test conversion of Date objects in a list
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test
+	public void testListDateValues() {
+		XMLItem xmlItem = new XMLItem();
+		xmlItem.setName("name");
+
+		Date date1 = new Date();
+		Date date2 = new Date();
+
+		List values = new ArrayList<>();
+		values.add(date1);
+		values.add(date2);
+		xmlItem.setValue(values.toArray());
+
+		Assert.assertEquals("name", xmlItem.getName());
+
+		Assert.assertEquals(2, xmlItem.getValue().length);
+		Assert.assertEquals(date1, xmlItem.getValue()[0]);
+		Assert.assertEquals(date2, xmlItem.getValue()[1]);
 
 		// final marshaling test...
 		try {
@@ -96,7 +157,7 @@ public class TestXMLItem {
 		xmlItem.setValue(mapList.toArray());
 
 		Assert.assertEquals("maps", xmlItem.getName());
- 
+
 		// test the value object.... force conversion to map interface
 		// Object[] testMaps = xmlItem.getValue(true);
 		Object[] testMaps = xmlItem.transformValue();
@@ -122,6 +183,132 @@ public class TestXMLItem {
 			e.printStackTrace();
 			Assert.fail();
 		}
+	}
+
+	/**
+	 * Test embedded list of Maps with Objects from Type Date and Double
+	 * 
+	 * Issue #535
+	 * 
+	 */
+	@Test
+	public void testListOfMapsWithNonStringValues() {
+		XMLItem xmlItem = new XMLItem();
+		xmlItem.setName("maps");
+
+		Date date = new Date();
+		Double _double1=new Double(1.47);
+		
+		
+		List<Map<String, Object>> commentList = new ArrayList<>();
+
+		Map<String, Object> log = new HashMap<String, Object>();
+		log.put("date", date);
+		log.put("double1", _double1);
+		commentList.add(log);
+		xmlItem.setValue(commentList.toArray());
+		// final marshaling test...
+		try {
+			testMarshaling(xmlItem);
+		} catch (JAXBException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// test values
+		Object[] xmlValue = xmlItem.getValue();
+		Assert.assertEquals(1, xmlValue.length);
+
+		Object o1 = xmlValue[0];
+		Assert.assertTrue(o1 instanceof Object[]);
+	
+		Object[] objectArrayValue = (Object[]) xmlValue[0];
+		Assert.assertEquals(2, objectArrayValue.length);
+
+		// check date
+		XMLItem embeddedXMLItem = (XMLItem) objectArrayValue[0];
+		Assert.assertEquals("date", embeddedXMLItem.getName());
+		Object[] embeddedValue = embeddedXMLItem.getValue();
+		Assert.assertEquals(1, embeddedValue.length);
+		Object innerObject = embeddedValue[0];
+		// we expect a Date object!
+		Assert.assertTrue(innerObject instanceof Date);
+		Assert.assertEquals(date, innerObject);
+
+	
+		// check double1
+		 embeddedXMLItem = (XMLItem) objectArrayValue[1];
+		Assert.assertEquals("double1", embeddedXMLItem.getName());
+		embeddedValue = embeddedXMLItem.getValue();
+		Assert.assertEquals(1, embeddedValue.length);
+		innerObject = embeddedValue[0];
+		// we expect a Double object!
+		Assert.assertTrue(innerObject instanceof Double);
+		Assert.assertEquals(_double1, innerObject);
+
+	
+	
+	}
+
+	/**
+	 * Test embedded list of Maps with Date Object and a non serializeable object
+	 * (in this example a RuleEngine).
+	 * <p>
+	 * Non serializable objects should not be part of the XML tree. So the value
+	 * must be null
+	 * 
+	 */
+	@Test
+	public void testListOfMapsWithNonSerializableValues() {
+		XMLItem xmlItem = new XMLItem();
+		xmlItem.setName("maps");
+
+		Date date = new Date();
+		List<Map<String, Object>> commentList = new ArrayList<>();
+
+		Map<String, Object> log = new HashMap<String, Object>();
+		log.put("date", date);
+
+		// ad a non serializeable object.....
+		log.put("ruleengine", new RuleEngine());
+		commentList.add(log);
+		xmlItem.setValue(commentList.toArray());
+		// final marshaling test...
+		try {
+			testMarshaling(xmlItem);
+		} catch (JAXBException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// test values
+		Object[] xmlValue = xmlItem.getValue();
+
+		Assert.assertEquals(1, xmlValue.length);
+
+		Object o1 = xmlValue[0];
+		Assert.assertTrue(o1 instanceof Object[]);
+
+		Object[] objectArrayValue = (Object[]) xmlValue[0];
+		Assert.assertEquals(2, objectArrayValue.length);
+
+		// test Date object
+		XMLItem embeddedXMLItem = (XMLItem) objectArrayValue[0];
+		Assert.assertEquals("date", embeddedXMLItem.getName());
+		Object[] embeddedValue = embeddedXMLItem.getValue();
+		Assert.assertEquals(1, embeddedValue.length);
+		Object innerObject = embeddedValue[0];
+		// we expect a Date object!
+		Assert.assertTrue(innerObject instanceof Date);
+		Assert.assertEquals(date, innerObject);
+
+		// test RuleEngine object
+		embeddedXMLItem = (XMLItem) objectArrayValue[1];
+		Assert.assertEquals("ruleengine", embeddedXMLItem.getName());
+		embeddedValue = embeddedXMLItem.getValue();
+		// expected a null value
+		Assert.assertNull(embeddedValue);
+
 	}
 
 	/**
@@ -164,7 +351,7 @@ public class TestXMLItem {
 	}
 
 	/**
-	 * This helpe rmethod simpliy tries to marshal the XMLItem object. It verifies
+	 * This helper method simpliy tries to marshal the XMLItem object. It verifies
 	 * if the object can be converted by Jaxb
 	 * 
 	 * @param xmlItem

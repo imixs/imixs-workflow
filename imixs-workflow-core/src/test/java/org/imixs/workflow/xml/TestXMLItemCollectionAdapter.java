@@ -339,6 +339,7 @@ public class TestXMLItemCollectionAdapter {
 		Map map1 = new HashMap<>();
 		map1.put("_name", "some data");
 		map1.put("_city", "Munich");
+		
 
 		mapList.add(map1);
 		itemColSource.replaceItemValue("_mapdata", mapList);
@@ -368,6 +369,53 @@ public class TestXMLItemCollectionAdapter {
 
 	}
 
+	
+
+	/**
+	 * Test conversion of a ItemCollection containing a Item which value is a single
+	 * Map object containing Date objects
+	 * 
+	 * Issue #
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Test
+	public void testItemCollectionContainingListOfMapWithDate() {
+		ItemCollection itemColSource = new ItemCollection();
+		
+		Date date=new Date();
+
+		List<Map<String, List<Object>>> mapList = new ArrayList<Map<String, List<Object>>>();
+
+		Map map1 = new HashMap<>();
+		map1.put("_date", date);
+		map1.put("_amount", new Double(5.47));
+
+		mapList.add(map1);
+		itemColSource.replaceItemValue("_mapdata", mapList);
+
+		XMLDocument xmlItemCollection = null;
+		try {
+			xmlItemCollection = XMLDocumentAdapter.getDocument(itemColSource);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// now reconstruct the xmlItemCollection into a ItemCollection...
+		ItemCollection itemColTest = XMLDocumentAdapter.putDocument(xmlItemCollection);
+
+		List listOfMap = itemColTest.getItemValue("_mapdata");
+		Assert.assertEquals(1, listOfMap.size());
+
+		Object o1 = listOfMap.get(0);
+		Assert.assertTrue(o1 instanceof Map);
+		Map<String, List<Object>> mapTest1 = (Map<String, List<Object>>) o1;
+		
+		Assert.assertEquals(date, mapTest1.get("_date").get(0));
+
+	}
+
+	
 	/**
 	 * Test conversion of a ItemCollection containing a $file Item
 	 */
