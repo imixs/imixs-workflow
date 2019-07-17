@@ -2,27 +2,41 @@
 
 The **Imixs-Workflow Adapter API** is an extension mechanism of the Imixs-Workflow engine. An adapter can provide business logic to adapt or extend a process instance. For example, an adapter can exchange data with an external Microservice API. 
 
-In different to the [Plugin API](./plugin-api.html) the Adapter API is bound to a single Event within a BPMN 2.0 model. This allows a more fine grained configuration. 
+In different to the [Plugin API](./plugin-api.html) the Adapter API can be bound to a single Event within a BPMN 2.0 model. This allows a more fine grained configuration. 
 
-Adapters are defined as BPMN Signal-Events. The signal definition contains the adapter class name to be called by the Imixs Workflow engine:
+An Adapter can be implemented either as a SignalAdapter or a Generic Adapter class.
+
+   
+## SignalAdapter
+
+The Adapter Interface _org.imixs.workflow.SignalAdapter_ defines an Adapter bound to a BPMN Signal Event. 
+
+The signal definition contains the adapter class name to be called by the Imixs Workflow engine:
 
 <img src="../images/modelling/bpmn_screen_37.png" style="width:700px"/>
 
+## GenericAdapter 
 
- 
-## The Adapter Interface
+The Adapter Interface _org.imixs.workflow.GenericAdapter_ is executed independent from the BPMN model. A StaticAdapter should not be associated with a BPMN Signal Event.
 
-The Imixs Adapter-API defines an Interface with the call-back method '_execute_'. This method is called by the WorkflowKernel for each matching signal event.
+GenericAdapters can be uses to execute general business logic.  
+
+
+
+## How to Implement an Adapter
+
+The Imixs Adapter-API defines an Interface with the call-back method '_execute_'. This method is called by the WorkflowKernel:
      
     public ItemCollection execute(ItemCollection document,ItemCollection event) throws AdapterException;
    
-    
-## CDI Support
+   
+
+### CDI Support
 
 The Imixs-Workflow Adapter API also supports CDI. In this way an EJB or Resource can be injected into an adapter class by the corresponding CDI annotation. See the following example:
 
 
-	public class DemoAdapter implements org.imixs.workflow.Adapter {
+	public class DemoAdapter implements org.imixs.workflow.SignalAdapter {
 	    // inject services...
 	    @EJB
 	    ModelService modelService;
@@ -36,7 +50,7 @@ The Imixs-Workflow Adapter API also supports CDI. In this way an EJB or Resource
 
 In this example the adapter injects the Imixs ModelService to ask for available model versions. 
  
-## Exception Handling
+### Exception Handling
     
 An adapter can also extend the processing phase by throwing an _AdapterException_. For example in case of a communication error.
 
@@ -99,9 +113,3 @@ If you want to interrupt the processing imideately your Adapter Implementaion ca
 In case of a ProcessingErrorException a running transaction will be automatically rolled back because it is a Runtime Exception. 
 
 
-## StaticAdapter 
-
-The Adapter Interface _org.imixs.workflow.StaticAdapter_ extends the Adapter Interface. A static Adapter is executed independent from the BPMN model. A StaticAdapter should not be associated with a BPMN Signal Event.
-
-StaticAdapters can be uses to execute general business logic.  A StaticAdapter can be
- a CDI implementation.	

@@ -452,10 +452,10 @@ public class WorkflowKernel {
 		}
 		logger.info(msg);
 
-		// execute StaticAdapters
-		executeStaticAdapters(documentResult, event);
+		// execute GenericAdapters
+		executeGenericAdapters(documentResult, event);
 
-		// execute Signal Adapters
+		// execute SignalAdapters
 		executeSignalAdapters(documentResult, event);
 
 		// execute plugins - PluginExceptions will bubble up....
@@ -522,8 +522,9 @@ public class WorkflowKernel {
 	 * 
 	 * @param documentResult
 	 * @param event
+	 * @throws PluginException 
 	 */
-	private void executeSignalAdapters(ItemCollection documentResult, ItemCollection event) {
+	private void executeSignalAdapters(ItemCollection documentResult, ItemCollection event) throws PluginException {
 		logger.finest("......executing SignalAdapters...");
 		// execute adapters if adapter class is defined....
 		String adapterClass = event.getItemValueString("adapter.id");
@@ -531,28 +532,20 @@ public class WorkflowKernel {
 			Adapter adapter = adapterRegistry.get(adapterClass);
 			if (adapter != null) {
 
-				if (adapter instanceof StaticAdapter) {
+				if (adapter instanceof GenericAdapter) {
 					logger.warning(
-							"...StaticAdapter '" + adapterClass + "' should not be associated with a Signal Event!");
-					// ...stop execution as the StaticAdaper was already executed by the method
-					// executeStaticAdapters...
+							"...GenericAdapter '" + adapterClass + "' should not be associated with a Signal Event!");
+					// ...stop execution as the GenericAdapter was already executed by the method
+					// executeGenericAdapters...
 				} else {
-					// execute...
-					try {
-						// remove adapter errors..
-						documentResult.removeItem("adapter.error_context");
-						documentResult.removeItem("adapter.error_code");
-						documentResult.removeItem("adapter.error_params");
-						documentResult.removeItem("adapter.error_message");
-						documentResult = adapter.execute(documentResult, event);
-					} catch (AdapterException e) {
-						logger.warning("...execution of adapter failed: " + e.getMessage());
-						// update workitem with adapter exception....
-						documentResult.setItemValue("adapter.error_context", e.getErrorContext());
-						documentResult.setItemValue("adapter.error_code", e.getErrorCode());
-						documentResult.setItemValue("adapter.error_params", e.getErrorParameters());
-						documentResult.setItemValue("adapter.error_message", e.getMessage());
-						e.printStackTrace();
+					// execute only instance of signal Adapters...
+					if (adapter instanceof SignalAdapter) {
+						executeAdaper(adapter,documentResult, event );
+
+					} else {
+						throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_ERROR,
+								"Abstract Adapter '" + adapterClass + "' can not be executed!");
+						
 					}
 				}
 			} else {
@@ -568,31 +561,43 @@ public class WorkflowKernel {
 	 * @param documentResult
 	 * @param event
 	 */
-	private void executeStaticAdapters(ItemCollection documentResult, ItemCollection event) {
-		logger.finest("......executing StaticAdapters...");
-		// execute all StaticAdapters
+	private void executeGenericAdapters(ItemCollection documentResult, ItemCollection event) {
+		logger.finest("......executing GenericAdapters...");
+		// execute all GenericAdapters
 		Collection<Adapter> adapters = adapterRegistry.values();
 		for (Adapter adapter : adapters) {
 			// test if Adapter is static
-			if (adapter instanceof StaticAdapter) {
+			if (adapter instanceof GenericAdapter) {
 				// execute...
-				try {
-					// remove adapter errors..
-					documentResult.removeItem("adapter.error_context");
-					documentResult.removeItem("adapter.error_code");
-					documentResult.removeItem("adapter.error_params");
-					documentResult.removeItem("adapter.error_message");
-					documentResult = adapter.execute(documentResult, event);
-				} catch (AdapterException e) {
-					logger.warning("...execution of adapter failed: " + e.getMessage());
-					// update workitem with adapter exception....
-					documentResult.setItemValue("adapter.error_context", e.getErrorContext());
-					documentResult.setItemValue("adapter.error_code", e.getErrorCode());
-					documentResult.setItemValue("adapter.error_params", e.getErrorParameters());
-					documentResult.setItemValue("adapter.error_message", e.getMessage());
-					e.printStackTrace();
-				}
+				executeAdaper(adapter,documentResult, event );
 			}
+		}
+	}
+	
+	/**
+	 * This method executes an instance of Adapter and logs adapter error messages. 
+	 * 
+	 * @param adpater
+	 * @param documentResult
+	 * @param event
+	 */
+	private void executeAdaper(Adapter adapter,ItemCollection documentResult, ItemCollection event) {
+		// execute...
+		try {
+			// remove adapter errors..
+			documentResult.removeItem("adapter.error_context");
+			documentResult.removeItem("adapter.error_code");
+			documentResult.removeItem("adapter.error_params");
+			documentResult.removeItem("adapter.error_message");
+			documentResult = adapter.execute(documentResult, event);
+		} catch (AdapterException e) {
+			logger.warning("...execution of adapter failed: " + e.getMessage());
+			// update workitem with adapter exception....
+			documentResult.setItemValue("adapter.error_context", e.getErrorContext());
+			documentResult.setItemValue("adapter.error_code", e.getErrorCode());
+			documentResult.setItemValue("adapter.error_params", e.getErrorParameters());
+			documentResult.setItemValue("adapter.error_message", e.getMessage());
+			e.printStackTrace();
 		}
 	}
 

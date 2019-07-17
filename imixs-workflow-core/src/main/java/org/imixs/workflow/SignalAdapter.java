@@ -27,30 +27,22 @@
 
 package org.imixs.workflow;
 
-import org.imixs.workflow.exceptions.AdapterException;
-
 /**
- * An Adapter defines an adapter pattern used by the WorkflowKernel to 
- * call adapter implementations defined by the BPMN model. 
- * <p> 
- * 
+ * A SignalAdapter extends the Adapter Interface. This Adapter can be associated
+ * with a BPMN Signal Event. A SignalAdapter is called by the WorkfklowKernel
+ * during the processing life-cycle before the plugin life-cycle.
+ * <p>
+ * A SignalAdapter can be a CDI implementation.
+ * <p>
+ * SignalAdapters are called after the execution of GenericAdapters but before any
+ * plugin was executed.
+ * <p>
  * 
  * @author Ralph Soika
  * @version 1.0
  * @see org.imixs.workflow.engine.WorkflowKernel
  */
 
-public abstract interface Adapter {
-
-	
-	/**
-	 * @param document
-	 *            the workitem to be processed
-	 * @param event
-	 *            the workflow event containing the processing instructions
-	 * @return updated workitem for further processing
-	 * @throws AdapterException
-	 */
-	public ItemCollection execute(ItemCollection document,ItemCollection event) throws AdapterException;
+public interface SignalAdapter extends Adapter {
 
 }

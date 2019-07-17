@@ -28,21 +28,21 @@
 package org.imixs.workflow;
 
 /**
- * A StaticAdapter extends the Adapter Interface. A StaticAdapter is called by
- * the WorkfklowKernel during the processing life-cycle. A StaticAdapter can be
- * a CDI implementation.
+ * A GenericAdapter extends the Adapter Interface. This Adapter is independent
+ * from the BPMN Model and should not be associated with a BPMN Signal Event. A
+ * GenericAdapter is called by the WorkfklowKernel during the processing
+ * life-cycle before the plugin life-cycle.
  * <p>
- * StaticAdapters are called before any Signal-Adapter or plugin was executed.
+ * A GenericAdapter can be a CDI implementation.
  * <p>
- * A StaticAdapter is independent from the BPMN Model and should not be
- * associated with a BPMN Signal Event. A StaticAdapter provides static code to
- * be executed before the plugin life cylce.
+ * GenericAdapter are called before any Signal-Adapter or plugin was executed.
+ * <p>
  * 
  * @author Ralph Soika
  * @version 1.0
  * @see org.imixs.workflow.engine.WorkflowKernel
  */
 
-public interface StaticAdapter extends Adapter {
+public interface GenericAdapter extends Adapter {
 
 }

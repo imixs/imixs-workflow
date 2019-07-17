@@ -62,7 +62,7 @@ A protected workitem means that the workitem is protected by a read/ or write ac
 |MANAGERACCESS | yes     | yes     | yes     | yes     |  yes    | yes     |
 
 
-The read and write access for a workitem can be defined by the BPMN model with the [ACL Properties of the Imixs-BPMN modeler](../modelling/process.html#ACL_Properties) and the [Access Plugin](./plugins/accessplugin.html)
+The read and write access for a workitem can be defined by the BPMN model with the [ACL Properties of the Imixs-BPMN modeler](../modelling/process.html#ACL_Properties).
 
 ## The AccessDeniedException
 

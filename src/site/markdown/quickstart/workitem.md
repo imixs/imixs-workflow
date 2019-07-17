@@ -54,24 +54,25 @@ The following table provides an overview about all data items managed by the Imi
 |$ReadAccess      |List    |no    		| yes 	  | String list of User/Roles with read access    				|
 |$WriteAccess     |List    |no    		| yes 	  | String list of User/Roles with write access   				|
 |$uniqueId        |String  |no    		| yes 	  | The unique ID of this workItem                				|
-|$uniqueIdRef     |String  |yes   		| yes 	  | A reference to a connected workItem (child process) 			|
+|$uniqueIdRef     |String  |yes   		| yes 	  | A reference to a connected workItem (child process) 		|
 |$workitemId      |String  |no    		| yes 	  | A unique process instance id of a workitem and all its versions|
 |$uniqueIDSource  |String  |no    		| yes 	  | The UniqueID of the Source workitem for a version (See [Workflow Kernel split-events](../core/workflowkernel.html))     |
 |$uniqueIDVersions|String  |no    		| yes 	  | A list of UniqueIDs to all created versions of this workitem  (See [Workflow Kernel split-events](../core/workflowkernel.html))|
 |$lastTask        |Integer |no    		| yes 	  | The last assigned Task ID (processid)          				|
 |$lastEvent       |Integer |no    		| yes 	  | The last processed event ID           						|
 |$lastEventDate   |Date    |no     		| yes 	  | The timestamp of the last processing action    				|
-|$eventLog        |List    |no    	    | no 	  | Log of processed workflow events    					     	|
+|$eventLog        |List    |no    	    | no 	  | Log of processed workflow events    					    |
 |$creator         |String  |no    		| yes 	  | The user who created the workItem.             				|
-|$editor          |String  |no    		| yes 	  | The user who invoked the processWorkitem() method.       		|
+|$editor          |String  |no    		| yes 	  | The user who invoked the processWorkitem() method.       	|
 |$lasteditor      |String  |no    		| yes 	  | The last user, that invoked the process method before the $editor |
 |$noindex    	  |Boolean |yes    		| no 	  | If set to 'true', the document will not be added into the index. (See [DocumentService](../engine/documentservice.html) for details.)   |
 |$immutable    	  |Boolean |yes    		| no 	  | If set to 'true' updateing the workitem is no longer allowed. (See [DocumentService](../engine/documentservice.html) for details.) |
-|$Owner         |List    |no    		| yes 	  | String list of User/Roles, that are owners of that WorkItem. 	|
+|$Owner           |List    |no    		| yes 	  | String list of User/Roles, that are owners of that WorkItem. 	|
+|$Participants    |List    |no    		| yes 	  | String list of Users having executed this WorkItem. 		|
 |txtworkflowsummary |String|no 			| yes 	  | A short description of the current status      				|
 |txtworkflowabstract|String|no 			| yes 	  | A long description of the current status       				|
-|txtworkflowimageurl|String|no 			| no 	  | A link to an image which displays the current status 			|
-|txtworkflowresultmessage  |String |no  | no 	  | The result message of last process step 						|
+|txtworkflowimageurl|String|no 			| no 	  | A link to an image which displays the current status 		|
+|txtworkflowresultmessage  |String |no  | no 	  | The result message of last process step 					|
  
 
 ### Temporary Attributes 
