@@ -544,7 +544,7 @@ public class WorkflowKernel {
 
 					} else {
 						throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_ERROR,
-								"Abstract Adapter '" + adapterClass + "' can not be executed!");
+								"Abstract Adapter '" + adapterClass + "' can not be executed - use SignalAdapter or GenericAdapter instead!");
 						
 					}
 				}
