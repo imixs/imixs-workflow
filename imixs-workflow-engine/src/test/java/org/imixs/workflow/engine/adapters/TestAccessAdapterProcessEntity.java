@@ -41,9 +41,9 @@ import junit.framework.Assert;
  * @author rsoika
  * 
  */
-public class TestAccessPluginProcessEntity {
+public class TestAccessAdapterProcessEntity {
 
-	private final static Logger logger = Logger.getLogger(TestAccessPluginProcessEntity.class.getName());
+	private final static Logger logger = Logger.getLogger(TestAccessAdapterProcessEntity.class.getName());
 
 	
 	protected ItemCollection documentContext;

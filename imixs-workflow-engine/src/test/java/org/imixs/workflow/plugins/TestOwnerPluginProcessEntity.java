@@ -1,4 +1,4 @@
-package org.imixs.workflow.engine.adapters;
+package org.imixs.workflow.plugins;
 
 import java.util.List;
 import java.util.Vector;
@@ -8,7 +8,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.WorkflowService;
-import org.imixs.workflow.exceptions.AdapterException;
+import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
@@ -45,12 +45,12 @@ public class TestOwnerPluginProcessEntity {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPluginProcessEntity.class.getName());
 
-
+	
+	OwnerPlugin ownerPlugin = null;
 	protected ItemCollection documentContext;
 	protected ItemCollection documentActivity, documentProcess;
 	protected WorkflowMockEnvironment workflowMockEnvironment;
-	protected ParticipantAdapter adapter;
-
+	
 	
 
 	@Before
@@ -62,10 +62,13 @@ public class TestOwnerPluginProcessEntity {
 		workflowMockEnvironment.setup();
 		
 
-		adapter = new ParticipantAdapter();
-		adapter.workflowService=workflowMockEnvironment.getWorkflowService();
+		ownerPlugin = new OwnerPlugin();
+		try {
+			ownerPlugin.init(workflowMockEnvironment.getWorkflowService());
+		} catch (PluginException e) {
 
-
+			e.printStackTrace();
+		}
 
 		// prepare data
 		documentContext = new ItemCollection();
@@ -95,8 +98,8 @@ public class TestOwnerPluginProcessEntity {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
 		try {
-			adapter.execute(documentContext, documentActivity);
-		} catch (AdapterException e) {
+			ownerPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
@@ -122,8 +125,8 @@ public class TestOwnerPluginProcessEntity {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
 		try {
-			adapter.execute(documentContext, documentActivity);
-		} catch (AdapterException e) {
+			ownerPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
@@ -152,8 +155,8 @@ public class TestOwnerPluginProcessEntity {
 		documentContext.setTaskID(300);
 
 		try {
-			adapter.execute(documentContext, documentActivity);
-		} catch (AdapterException e) {
+			ownerPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
@@ -189,8 +192,8 @@ public class TestOwnerPluginProcessEntity {
 		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 20);
 
 		try {
-			adapter.execute(documentContext, documentActivity);
-		} catch (AdapterException e) {
+			ownerPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}

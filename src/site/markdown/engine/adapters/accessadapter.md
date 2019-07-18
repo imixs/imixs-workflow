@@ -1,21 +1,25 @@
-# The ParticipantAdapter
+# The AccessAdapter
 
-The ParticipantAdapter is responsible for the ACL settings and ownership associated with a workitem.
+The AccessAdapter is responsible for the ACL settings associated with a workitem.
 The generic adapter class  applies a access control list (ACL) to the current process instance. See also the [section security](../acl.html) for more details.  
 
- The adapter updates the WorkItem attributes:
+ The adapter updates the following WorkItem attributes:
 
 * $ReadAccess 
 * $WriteAccess
-* $owner
 * $participants.
 
-The ACL and Ownership settings can be configured for a BPMN Event or Task element using the Imixs-BPMN modeling tool:
+The ACL  settings can be configured for a BPMN Event or Task element using the Imixs-BPMN modeling tool:
 
 
 <img src="../../images/modelling/bpmn_screen_21.png"/>  
 
 See also the section [ACL Properties](http://www.imixs.org/doc/modelling/activities.html#ACL_Properties) of the BPMN modeler. 
+
+The participants is a computed list of all users who edited this workitem. 
+
+
+## BPMN Attributes 
 
 The following attributes defined in the model element are evaluated by the plugin:
 

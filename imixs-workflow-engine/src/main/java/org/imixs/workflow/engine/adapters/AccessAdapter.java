@@ -28,7 +28,6 @@
 package org.imixs.workflow.engine.adapters;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -38,25 +37,26 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.GenericAdapter;
+import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * The ParticipantHandler is a generic adapter class responsible to update the
- * ACL and Owernship of a workitem. The CID Bean updates the following Items
+ * The AccessAdapter is a generic adapter class responsible to update the
+ * ACL of a workitem. The CID Bean updates the following Items
  * <ul>
  * <li>$writeAccess</li>
  * <li>$readAccess</li>
- * <li>$owner</li>
  * <li>$participants</li>
  * </ul>
  * <p>
  * The read and write access for a workitem can be defined by the BPMN model
  * with the ACL Properties of the Imixs-BPMN modeler.
+ * <p>
+ * The participants is a computed list of all users who edited this workitem.  
  * <p>
  * By defining an CDI alternative an application can overwrite the behavior of
  * this bean.
@@ -65,10 +65,10 @@ import org.imixs.workflow.exceptions.PluginException;
  * @version 1.0.0
  */
 @Named
-public class ParticipantAdapter implements GenericAdapter, Serializable {
+public class AccessAdapter implements GenericAdapter, Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private static Logger logger = Logger.getLogger(ParticipantAdapter.class.getName());
+	private static Logger logger = Logger.getLogger(AccessAdapter.class.getName());
 
 	// See CDI Constructor
 	protected WorkflowService workflowService;
@@ -76,7 +76,7 @@ public class ParticipantAdapter implements GenericAdapter, Serializable {
 	/**
 	 * Default Constructor
 	 */
-	public ParticipantAdapter() {
+	public AccessAdapter() {
 		super();
 	}
 
@@ -86,7 +86,7 @@ public class ParticipantAdapter implements GenericAdapter, Serializable {
 	 * @param workflowService
 	 */
 	@Inject
-	public ParticipantAdapter(WorkflowService workflowService) {
+	public AccessAdapter(WorkflowService workflowService) {
 		super();
 		this.workflowService = workflowService;
 	}
@@ -98,12 +98,11 @@ public class ParticipantAdapter implements GenericAdapter, Serializable {
 		try {
 			nextTask = workflowService.evalNextTask(document, event);
 
-			updateOwner(document, event, nextTask);
 			updateACL(document, event, nextTask);
 			updateParticipants(document);
 
 		} catch (ModelException | PluginException e) {
-			throw new AdapterException(ParticipantAdapter.class.getSimpleName(), e.getErrorCode(), e.getMessage());
+			throw new AdapterException(AccessAdapter.class.getSimpleName(), e.getErrorCode(), e.getMessage());
 		}
 		return null;
 	}
@@ -170,84 +169,6 @@ public class ParticipantAdapter implements GenericAdapter, Serializable {
 		}
 
 		return documentContext;
-	}
-
-	/**
-	 * changes the $Owner attribute depending to the activityentity or processEntity
-	 * 
-	 * The method prevents the field '$owner' of the documentcontext in case that
-	 * $owner is part of the
-	 */
-	public ItemCollection updateOwner(ItemCollection adocumentContext, ItemCollection adocumentActivity,
-			ItemCollection nextTask) throws PluginException {
-
-		ItemCollection documentContext = adocumentContext;
-		ItemCollection documentActivity = adocumentActivity;
-
-		// in case the activity is connected to a followup activity the
-		// nextProcess can be null!
-
-		// test update mode of activity and process entity - if true clear the
-		// existing values.
-		if (documentActivity.getItemValueBoolean("keyupdateacl") == false
-				&& (nextTask == null || nextTask.getItemValueBoolean("keyupdateacl") == false)) {
-			// no update!
-			return documentContext;
-		} else {
-			// activity settings will not be merged with process entity
-			// settings!
-			if (documentActivity.getItemValueBoolean("keyupdateacl") == true) {
-				updateOwnerByItemCollection(documentContext, documentActivity);
-			} else {
-				updateOwnerByItemCollection(documentContext, nextTask);
-			}
-		}
-
-		return documentContext;
-	}
-
-	/**
-	 * This method updates the owner of a workitem depending on a given model entity
-	 * The model entity should provide the following attributes:
-	 * 
-	 * keyupdateacl, namOwnershipNames,keyOwnershipFields
-	 * 
-	 * 
-	 * The method did not clear the exiting values of namowner
-	 * 
-	 * @throws PluginException
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void updateOwnerByItemCollection(ItemCollection documentContext, ItemCollection modelEntity)
-			throws PluginException {
-
-		if (modelEntity == null || modelEntity.getItemValueBoolean("keyupdateacl") == false) {
-			// no update necessary
-			return;
-		}
-
-		List newOwnerList;
-		newOwnerList = new ArrayList<String>();
-
-		// add names
-		mergeRoles(newOwnerList, modelEntity.getItemValue("namOwnershipNames"), documentContext);
-		// add Mapped Fields
-		mergeFieldList(documentContext, newOwnerList, modelEntity.getItemValue("keyOwnershipFields"));
-		// clean Vector
-		newOwnerList = uniqueList(newOwnerList);
-
-		// update ownerlist....
-		documentContext.replaceItemValue(WorkflowService.OWNER, newOwnerList);
-		if ((logger.isLoggable(Level.FINE)) && (newOwnerList.size() > 0)) {
-			logger.finest("......Owners:");
-			for (int j = 0; j < newOwnerList.size(); j++)
-				logger.finest("               '" + (String) newOwnerList.get(j) + "'");
-		}
-
-		// we also need to support the deprecated iten name "namOwner" which was
-		// replaced since version 5.0.1 by "$owner"
-		documentContext.replaceItemValue("namOwner", newOwnerList);
-
 	}
 
 	/**
@@ -400,7 +321,7 @@ public class ParticipantAdapter implements GenericAdapter, Serializable {
 	 * @throws PluginException
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void mergeRoles(List valueList, List sourceList, ItemCollection documentContext) throws PluginException {
+	public  void mergeRoles(List valueList, List sourceList, ItemCollection documentContext) throws PluginException {
 		if ((sourceList != null) && (sourceList.size() > 0)) {
 			for (Object o : sourceList) {
 				if (valueList.indexOf(o) == -1) {

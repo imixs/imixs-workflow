@@ -25,9 +25,9 @@ import junit.framework.Assert;
  * @author rsoika
  * 
  */
-public class TestAccessPlugin {
+public class TestAccessAdapter {
 
-	private final static Logger logger = Logger.getLogger(TestAccessPlugin.class.getName());
+	private final static Logger logger = Logger.getLogger(TestAccessAdapter.class.getName());
 
 	protected ItemCollection documentContext;
 	protected ItemCollection documentActivity;

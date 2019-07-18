@@ -1,4 +1,4 @@
-package org.imixs.workflow.engine.adapters;
+package org.imixs.workflow.plugins;
 
 import java.util.List;
 import java.util.Vector;
@@ -7,8 +7,7 @@ import java.util.logging.Logger;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
-import org.imixs.workflow.engine.WorkflowService;
-import org.imixs.workflow.exceptions.AdapterException;
+import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
@@ -24,25 +23,32 @@ import junit.framework.Assert;
  * @author rsoika
  * 
  */
-public class TestOwnerPlugin {
+public class TestOwnerPlugin  {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPlugin.class.getName());
 
-	protected ItemCollection documentContext;
-	protected ItemCollection documentActivity;
-	protected WorkflowMockEnvironment workflowMockEnvironment;
-	protected ParticipantAdapter adapter;
+	OwnerPlugin ownerPlugin = null;
+	ItemCollection documentContext;
+	ItemCollection documentActivity;
+
+	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
-	public void setUp() throws PluginException, ModelException {
+	public void setup() throws PluginException, ModelException {
 
-		workflowMockEnvironment = new WorkflowMockEnvironment();
+		workflowMockEnvironment=new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestOwnerPlugin.bpmn");
-
+		
 		workflowMockEnvironment.setup();
+		
 
-		adapter = new ParticipantAdapter();
-		adapter.workflowService = workflowMockEnvironment.getWorkflowService();
+		ownerPlugin = new OwnerPlugin();
+		try {
+			ownerPlugin.init(workflowMockEnvironment.getWorkflowService());
+		} catch (PluginException e) {
+
+			e.printStackTrace();
+		}
 
 		// prepare data
 		documentContext = new ItemCollection();
@@ -53,7 +59,7 @@ public class TestOwnerPlugin {
 		documentContext.replaceItemValue("namTeam", list);
 
 		documentContext.replaceItemValue("namCreator", "ronny");
-
+		
 		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 	}
 
@@ -64,6 +70,8 @@ public class TestOwnerPlugin {
 		documentActivity = new ItemCollection();
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 		documentActivity.replaceItemValue("numNextProcessID", 100);
+		
+		
 
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
@@ -71,13 +79,14 @@ public class TestOwnerPlugin {
 		documentActivity.replaceItemValue("namOwnershipNames", list);
 
 		try {
-			adapter.execute(documentContext, documentActivity);
-		} catch (AdapterException e) {
+			ownerPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
 			e.printStackTrace();
 			Assert.fail();
 		}
 
-		List writeAccess = documentContext.getItemValue(WorkflowService.OWNER);
+		List writeAccess = documentContext.getItemValue("namOwner");
 
 		Assert.assertEquals(2, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
@@ -85,7 +94,7 @@ public class TestOwnerPlugin {
 	}
 
 	/**
-	 * Test if the current value of $owner can be set as the new value
+	 * Test if the current value of namowner can be set as the new value
 	 */
 	@SuppressWarnings({ "rawtypes" })
 	@Test
@@ -94,24 +103,25 @@ public class TestOwnerPlugin {
 		documentActivity = new ItemCollection();
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 		documentActivity.replaceItemValue("numNextProcessID", 100);
-
+		
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
 		list.add("joe");
 		documentActivity.replaceItemValue("namOwnershipNames", list);
 
 		// set a current owner
-		documentContext.replaceItemValue(WorkflowService.OWNER, "ralph");
-		documentActivity.replaceItemValue("keyOwnershipFields", WorkflowService.OWNER);
+		documentContext.replaceItemValue("namOwner", "ralph");
+		documentActivity.replaceItemValue("keyOwnershipFields", "namowner");
 
 		try {
-			adapter.execute(documentContext, documentActivity);
-		} catch (AdapterException e) {
+			ownerPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
 			e.printStackTrace();
 			Assert.fail();
 		}
 
-		List writeAccess = documentContext.getItemValue(WorkflowService.OWNER);
+		List writeAccess = documentContext.getItemValue("namOwner");
 
 		Assert.assertEquals(3, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
@@ -120,10 +130,9 @@ public class TestOwnerPlugin {
 	}
 
 	/**
-	 * This test verifies if a list of users provided by the fieldMapping is mapped
-	 * correctly into the workItem
-	 * 
-	 * @throws ModelException
+	 * This test verifies if a list of users provided by the fieldMapping is
+	 * mapped correctly into the workItem
+	 * @throws ModelException 
 	 */
 	@SuppressWarnings({ "rawtypes" })
 	@Test
@@ -134,14 +143,16 @@ public class TestOwnerPlugin {
 		documentActivity.replaceItemValue("keyOwnershipFields", "[sam, tom,  anna ,]"); // 3
 																						// values
 																						// expected!
+		//this.setActivityEntity(documentActivity);
 		try {
-			adapter.execute(documentContext, documentActivity);
-		} catch (AdapterException e) {
+			ownerPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
 			e.printStackTrace();
 			Assert.fail();
 		}
 
-		List writeAccess = documentContext.getItemValue(WorkflowService.OWNER);
+		List writeAccess = documentContext.getItemValue("namOwner");
 
 		Assert.assertEquals(3, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("tom"));
@@ -154,16 +165,20 @@ public class TestOwnerPlugin {
 	public void testNoUpdate() throws ModelException {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
+		
 		try {
-			adapter.execute(documentContext, documentActivity);
-		} catch (AdapterException e) {
+			ownerPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
+
 			e.printStackTrace();
 			Assert.fail();
 		}
 
-		List writeAccess = documentContext.getItemValue(WorkflowService.OWNER);
+		List writeAccess = documentContext.getItemValue("namOwner");
 
 		Assert.assertEquals(0, writeAccess.size());
 	}
+
+	
 
 }

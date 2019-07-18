@@ -26,7 +26,7 @@ import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
-import org.imixs.workflow.engine.adapters.ParticipantAdapter;
+import org.imixs.workflow.engine.adapters.AccessAdapter;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -263,7 +263,7 @@ public class WorkflowMockEnvironment {
 					WorkflowKernel workflowKernel = (WorkflowKernel) arguments[0];
 
 					// Spy ParticipantAdapter after construction....
-					ParticipantAdapter participantAdapter = new ParticipantAdapter(workflowService);
+					AccessAdapter participantAdapter = new AccessAdapter(workflowService);
 					workflowKernel.registerAdapter(Mockito.spy(participantAdapter));
 
 				}
