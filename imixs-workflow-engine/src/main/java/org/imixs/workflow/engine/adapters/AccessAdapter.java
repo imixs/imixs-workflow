@@ -98,8 +98,9 @@ public class AccessAdapter implements GenericAdapter, Serializable {
 		try {
 			nextTask = workflowService.evalNextTask(document, event);
 
-			updateACL(document, event, nextTask);
 			updateParticipants(document);
+			updateACL(document, event, nextTask);
+			
 
 		} catch (ModelException | PluginException e) {
 			throw new AdapterException(AccessAdapter.class.getSimpleName(), e.getErrorCode(), e.getMessage());
