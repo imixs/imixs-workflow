@@ -96,7 +96,7 @@ public class ApplicationPlugin extends AbstractPlugin {
 		try {
 			itemColNextProcess = this.getWorkflowService().evalNextTask(adocumentContext, adocumentActivity);
 		} catch (ModelException e) {
-			throw new PluginException(AccessPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
+			throw new PluginException(ApplicationPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
 		}
 
 		// fetch Editor and Image

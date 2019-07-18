@@ -55,7 +55,7 @@
 					<item name="Configuration" href="./engine/luceneservice.html" />
 				</item>
 				<item name="Security Model" href="./engine/acl.html" />
-				<item name="ParticipantAdapter" href="./engine/adapters/participantadapter.html" />
+				<item name="AccessAdapter" href="./engine/adapters/accessadapter.html" />
 				<item name="Adapt Text" href="./engine/adapttext.html" />
 				<item name="Workflow Scheduler" href="./engine/workflowscheduler.html" />
 				<item name="PropertyService" href="./engine/propertyservice.html" />
@@ -94,6 +94,7 @@
 					<item name="Analysis Plugin" href="./engine/plugins/analysisplugin.html" />
 					<item name="Application Plugin" href="./engine/plugins/applicationplugin.html" />
 					<item name="DocumentComposer Plugin" href="./engine/plugins/documentcomposerplugin.html" />
+					<item name="Owner Plugin" href="./engine/plugins/ownerplugin.html" />
 					<item name="History Plugin" href="./engine/plugins/historyplugin.html" />
 					<item name="Interval Plugin" href="./engine/plugins/intervalplugin.html" />
 					<item name="Mail Plugin" href="./engine/plugins/mailplugin.html" />

@@ -1,31 +1,42 @@
 # Imixs-Workflow Adapter API
 
-The **Imixs-Workflow Adapter API** is an extension mechanism of the Imixs-Workflow engine. An adapter can provide business logic to adapt or extend a process instance. For example, an adapter can exchange data with an external Microservice API. 
+The **Imixs-Workflow Adapter API** is an extension mechanism of the Imixs _WorkflowKernel_. An Adapter class can execute business logic and adapt the data of a process instance. For example, an adapter can call an external Microservice to send or receive data. 
 
-In different to the [Plugin API](./plugin-api.html) the Adapter API can be bound to a single Event within a BPMN 2.0 model. This allows a more fine grained configuration. 
+Adapters can be implemented either as a _SignalAdapter_ or _GenericAdapter_ class. Depending on its type, the Adapter class is executed before or after the plug-in processing life-cycle, controlled by the _WorkflowKernel_:
 
-An Adapter can be implemented either as a SignalAdapter or a Generic Adapter class.
+<img src="../images/workflowkernel.png"/>  
 
    
 ## SignalAdapter
 
-The Adapter Interface _org.imixs.workflow.SignalAdapter_ defines an Adapter bound to a BPMN Signal Event. 
+The SignalAdapter is defined by the Interface:
 
-The signal definition contains the adapter class name to be called by the Imixs Workflow engine:
+	org.imixs.workflow.SignalAdapter
+
+In different to the [Plugin API](./plugin-api.html) the _SignalAdapter_ is bound to a single Event within a BPMN 2.0 model. This allows a fine grained configuration. 
+
+The BPMN signal definition contains the adapter class name:
 
 <img src="../images/modelling/bpmn_screen_37.png" style="width:700px"/>
 
+**Note:** The _SignalAdapter_ is executed before the Plug-In processing life-cycle.
+
+
 ## GenericAdapter 
 
-The Adapter Interface _org.imixs.workflow.GenericAdapter_ is executed independent from the BPMN model. A StaticAdapter should not be associated with a BPMN Signal Event.
+The GenericAdapter is defined by the Interface:
 
-GenericAdapters can be uses to execute general business logic.  
+	org.imixs.workflow.GenericAdapter
+
+This Adapter can be used to execute general business logic independent from the BPMN model. A GenericAdapter should not be associated with a BPMN Signal Event.
+
+The GenericAdapter is executed after the Plug-In processing life-cycle. 
 
 
 
 ## How to Implement an Adapter
 
-The Imixs Adapter-API defines an Interface with the call-back method '_execute_'. This method is called by the WorkflowKernel:
+The Imixs Adapter-API defines the call-back method '_execute_'. This method is called by the WorkflowKernel:
      
     public ItemCollection execute(ItemCollection document,ItemCollection event) throws AdapterException;
    

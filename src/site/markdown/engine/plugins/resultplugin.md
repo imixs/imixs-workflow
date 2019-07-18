@@ -4,7 +4,7 @@ The Imixs-Workflow Result Plugin is used to provide model based processing infor
 
 _Plugin Class Name:_
 
-    org.imixs.workflow.plugins.ResultPlugin
+    org.imixs.workflow.engine.plugins.ResultPlugin
 
 The Result plugin should run in the first place, so that processing information can be provided to following plugins.
 With the [Imixs-BPMN modeler](../../modelling/activities.html) the Workflow Result can be edited in the 'Workflow' section of an event. 

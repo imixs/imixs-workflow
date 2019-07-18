@@ -33,7 +33,7 @@ public class TestAccessPlugin {
 	protected ItemCollection documentActivity;
 	protected WorkflowMockEnvironment workflowMockEnvironment;
 	@Spy
-	protected ParticipantAdapter participantAdapter;
+	protected AccessAdapter participantAdapter;
 
 	
 	

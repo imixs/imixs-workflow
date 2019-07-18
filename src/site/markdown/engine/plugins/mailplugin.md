@@ -1,6 +1,8 @@
 # MailPlugin 
 The Imixs-MailPlugin provides a convenient way to send e-mail messages through a corresponding BPMN event.
-The Imixs-MailPlugin is based on the Java Mail API and can be activated by adding the plugin class to the corresponding model definition:
+The Imixs-MailPlugin is based on the Java Mail API and can be activated by adding the plugin class to the corresponding model definition.
+
+_Plugin Class Name:_
 
     org.imixs.workflow.engine.plugins.MailPlugin
 

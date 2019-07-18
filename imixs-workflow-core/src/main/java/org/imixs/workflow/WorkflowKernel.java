@@ -424,13 +424,13 @@ public class WorkflowKernel {
 
 	/**
 	 * This method processes a single event on a workflow instance. All registered
-	 * handler, adapter and plug-in classes will be executed.
+	 * adapter and plug-in classes will be executed.
 	 * <p>
 	 * During the processing life-cycle more than one event can be processed. This
 	 * depends on the model definition which can define follow-up-events,
 	 * split-events and conditional events.
 	 * <p>
-	 * After all handler, adapter and plug-in classes are executed, the attributes
+	 * After all adapter and plug-in classes have been executed, the attributes
 	 * type, $taskID, $workflowstatus and $workflowgroup are updated based on the
 	 * definition of the target task element.
 	 * <p>
@@ -452,9 +452,7 @@ public class WorkflowKernel {
 		}
 		logger.info(msg);
 
-		// execute GenericAdapters
-		executeGenericAdapters(documentResult, event);
-
+		
 		// execute SignalAdapters
 		executeSignalAdapters(documentResult, event);
 
@@ -469,6 +467,10 @@ public class WorkflowKernel {
 		}
 		// Successful close plugins
 		closePlugins(false);
+		
+		// execute GenericAdapters
+		executeGenericAdapters(documentResult, event);
+		
 		// write event log
 		documentResult = logEvent(documentResult, event);
 
@@ -576,27 +578,30 @@ public class WorkflowKernel {
 	
 	/**
 	 * This method executes an instance of Adapter and logs adapter error messages. 
+	 * <p>
+	 * In case of an AdapterException, the exception data will be wrapped into items
+	 * with the prefix 'adapter.'
 	 * 
-	 * @param adpater
-	 * @param documentResult
+	 * @param adapter
+	 * @param workitem
 	 * @param event
 	 */
-	private void executeAdaper(Adapter adapter,ItemCollection documentResult, ItemCollection event) {
+	private void executeAdaper(Adapter adapter,ItemCollection workitem, ItemCollection event) {
 		// execute...
 		try {
 			// remove adapter errors..
-			documentResult.removeItem("adapter.error_context");
-			documentResult.removeItem("adapter.error_code");
-			documentResult.removeItem("adapter.error_params");
-			documentResult.removeItem("adapter.error_message");
-			documentResult = adapter.execute(documentResult, event);
+			workitem.removeItem("adapter.error_context");
+			workitem.removeItem("adapter.error_code");
+			workitem.removeItem("adapter.error_params");
+			workitem.removeItem("adapter.error_message");
+			workitem = adapter.execute(workitem, event);
 		} catch (AdapterException e) {
 			logger.warning("...execution of adapter failed: " + e.getMessage());
 			// update workitem with adapter exception....
-			documentResult.setItemValue("adapter.error_context", e.getErrorContext());
-			documentResult.setItemValue("adapter.error_code", e.getErrorCode());
-			documentResult.setItemValue("adapter.error_params", e.getErrorParameters());
-			documentResult.setItemValue("adapter.error_message", e.getMessage());
+			workitem.setItemValue("adapter.error_context", e.getErrorContext());
+			workitem.setItemValue("adapter.error_code", e.getErrorCode());
+			workitem.setItemValue("adapter.error_params", e.getErrorParameters());
+			workitem.setItemValue("adapter.error_message", e.getMessage());
 			e.printStackTrace();
 		}
 	}

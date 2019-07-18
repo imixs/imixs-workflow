@@ -1,0 +1,43 @@
+@startuml
+
+autonumber 
+
+participant WorkflowKernel order 1
+participant Model order 2
+participant SignalAdapter order 3
+participant GenericAdapter order 4
+participant Plugin order 50
+
+
+activate WorkflowKernel
+
+WorkflowKernel -> Model: load BPMN Event
+activate Model
+Model --> WorkflowKernel:
+deactivate Model
+
+
+WorkflowKernel -> SignalAdapter: execute Signal Adapters
+activate SignalAdapter
+SignalAdapter --> WorkflowKernel
+deactivate SignalAdapter
+
+WorkflowKernel -> GenericAdapter: execute Generic Adapters
+activate GenericAdapter
+GenericAdapter -> WorkflowKernel
+deactivate GenericAdapter
+
+
+
+
+WorkflowKernel -> Plugin: execute Plug-Ins (run)
+activate Plugin
+Plugin --> WorkflowKernel: Plug-In (close)
+deactivate Plugin
+
+
+
+
+deactivate WorkflowKernel
+
+@enduml

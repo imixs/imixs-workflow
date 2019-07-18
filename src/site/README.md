@@ -25,4 +25,6 @@ review workflowservice.md
 
 ## Plant UML
 
+    java -jar plantuml.jar -verbose workflowkernel.uml
+    
     java -jar plantuml.jar -verbose analysisplugin.uml

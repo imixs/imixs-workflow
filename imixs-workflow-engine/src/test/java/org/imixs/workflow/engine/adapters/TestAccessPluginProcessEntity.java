@@ -50,7 +50,7 @@ public class TestAccessPluginProcessEntity {
 	protected ItemCollection documentActivity;
 	protected ItemCollection documentProcess;
 	protected WorkflowMockEnvironment workflowMockEnvironment;
-	protected ParticipantAdapter adapter;
+	protected AccessAdapter adapter;
 	
 	@Before
 	public void setUp() throws PluginException, ModelException {
@@ -61,7 +61,7 @@ public class TestAccessPluginProcessEntity {
 		workflowMockEnvironment.setup();
 
 
-		adapter = new ParticipantAdapter();
+		adapter = new AccessAdapter();
 		adapter.workflowService=workflowMockEnvironment.getWorkflowService();
 
 
