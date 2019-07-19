@@ -1,7 +1,7 @@
 package org.imixs.workflow.engine;
 
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,10 +15,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ejb.SessionContext;
-import javax.enterprise.inject.Instance;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.ModelManager;
@@ -32,7 +30,6 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Before;
-import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -250,7 +247,7 @@ public class WorkflowMockEnvironment {
 		Mockito.doCallRealMethod().when(workflowService).registerPlugins(Mockito.any(WorkflowKernel.class),
 				Mockito.any(Model.class));
 
-		Mockito.doCallRealMethod().when(workflowService).updateWorkitem(Mockito.any(ItemCollection.class));
+		Mockito.doCallRealMethod().when(workflowService).updateMetadata(Mockito.any(ItemCollection.class));
 
 		// register static Adapters: ParticipantAdapter
 		doAnswer(new Answer<Void>() {

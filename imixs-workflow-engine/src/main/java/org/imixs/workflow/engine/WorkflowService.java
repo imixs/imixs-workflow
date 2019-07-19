@@ -652,8 +652,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		registerPlugins(workflowkernel, model);
 		// register adapters.....
 		registerAdapters(workflowkernel);
-		// udpate workitem properties...
-		updateWorkitem(workitem);
+		// udpate workitem metadata...
+		updateMetadata(workitem);
 
 		// now process the workitem
 		try {
@@ -1100,7 +1100,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 * @throws PluginException
 	 */
 	@SuppressWarnings("unchecked")
-	void registerPlugins(WorkflowKernel workflowkernel, Model model) throws PluginException {
+	protected void registerPlugins(WorkflowKernel workflowkernel, Model model) throws PluginException {
 		// Fetch the current Profile Entity for this version.
 		ItemCollection profile = model.getDefinition();
 
@@ -1122,7 +1122,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		}
 	}
 
-	public void registerAdapters(WorkflowKernel workflowkernel) {
+	protected void registerAdapters(WorkflowKernel workflowkernel) {
 		if (adapters == null || !adapters.iterator().hasNext()) {
 			logger.finest("......no CDI Adapters injected");
 		} else {
@@ -1135,15 +1135,23 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 	
 	
+
 	/**
-	 * This method updates the workitem properties '$creator', '$editor' and
-	 * '$lasteditor.
+	 * This method updates the workitem metadata. The following items will be updated:
+	 * 
+	 * <ul>
+	 * <li>$creator</li>
+	 * <li>$editor</li>
+	 * <li>$lasteditor</li>
+	 * <li>$participants</li>
+	 * </ul>
 	 * <p>
 	 * The method also migrates deprected items.
 	 * 
 	 * @param workitem
 	 */
-	void updateWorkitem(ItemCollection workitem) {
+	protected void updateMetadata(ItemCollection workitem) {
+
 		// identify Caller and update CurrentEditor
 		String nameEditor;
 		nameEditor = ctx.getCallerPrincipal().getName();
