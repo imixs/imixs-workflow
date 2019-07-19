@@ -5,9 +5,11 @@ autonumber
 participant WorkflowKernel order 1
 participant Model order 2
 participant SignalAdapter order 3
-participant GenericAdapter order 4
 participant Plugin order 50
+participant GenericAdapter order 90
 
+
+hide footbox
 
 activate WorkflowKernel
 
@@ -22,11 +24,6 @@ activate SignalAdapter
 SignalAdapter --> WorkflowKernel
 deactivate SignalAdapter
 
-WorkflowKernel -> GenericAdapter: execute Generic Adapters
-activate GenericAdapter
-GenericAdapter -> WorkflowKernel
-deactivate GenericAdapter
-
 
 
 
@@ -35,6 +32,11 @@ activate Plugin
 Plugin --> WorkflowKernel: Plug-In (close)
 deactivate Plugin
 
+
+WorkflowKernel -> GenericAdapter: execute Generic Adapters
+activate GenericAdapter
+GenericAdapter -> WorkflowKernel
+deactivate GenericAdapter
 
 
 

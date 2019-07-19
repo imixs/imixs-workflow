@@ -1,0 +1,51 @@
+@startuml
+
+ 
+
+
+participant WorkflowKernel order 1
+participant Model order 2
+collections Plugin order 50
+collections Service order 99
+
+box "Workflow Engine" #White
+	participant WorkflowKernel 
+	participant Model
+	participant Plugin
+
+end box
+
+box "Microservice" #LightBlue
+	participant Service
+end box
+
+hide footbox
+
+activate WorkflowKernel
+
+WorkflowKernel -> WorkflowKernel: register Plug-In 
+
+WorkflowKernel -> Model: load BPMN Event
+activate Model
+Model --> WorkflowKernel:
+deactivate Model
+
+
+
+WorkflowKernel -> Plugin: init Plug-In
+activate Plugin
+WorkflowKernel -> Plugin: run Plug-In
+
+Plugin -->o Service: external API Call
+activate Service
+Service --> Plugin
+deactivate Service
+
+WorkflowKernel -> Plugin: close Plug-In
+deactivate Plugin
+
+
+
+deactivate WorkflowKernel
+
+@enduml
