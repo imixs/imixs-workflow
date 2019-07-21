@@ -3,6 +3,7 @@ package org.imixs.workflow.xml;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -184,6 +185,48 @@ public class TestXMLItem {
 			Assert.fail();
 		}
 	}
+	
+	
+	
+	/**
+	 * Test embedded list of HashTables
+	 * 
+	 * https://github.com/imixs/imixs-admin/issues/46
+	 */
+	@Test
+	public void testEmbeddedListOfHashTables() {
+		XMLItem xmlItem = new XMLItem();
+		xmlItem.setName("maps");
+		
+		Hashtable<String, ArrayList<String>> hashTable = new Hashtable<String, ArrayList<String>>();
+		ArrayList<String> arrayList=new ArrayList<String>();
+		arrayList.add("a");
+		arrayList.add("b");
+		hashTable.put("mykey", arrayList);
+		
+		List<Object> values=new ArrayList<>();
+		values.add(hashTable);
+		xmlItem.setValue(values.toArray());
+
+		// final marshaling test...
+		try {
+			testMarshaling(xmlItem);
+		} catch (JAXBException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		
+		// repeat the test with an ItemCollection
+		ItemCollection workitem1=new ItemCollection();
+		workitem1.replaceItemValue("somedata", hashTable);
+		XMLDocument xmlDocument=XMLDocumentAdapter.getDocument(workitem1);
+		ItemCollection workitem2=XMLDocumentAdapter.putDocument(xmlDocument);
+		Assert.assertEquals(workitem1.getItemValue("somedata"), workitem2.getItemValue("somedata"));
+		
+	}
+
+	
+	
 
 	/**
 	 * Test embedded list of Maps with Objects from Type Date and Double

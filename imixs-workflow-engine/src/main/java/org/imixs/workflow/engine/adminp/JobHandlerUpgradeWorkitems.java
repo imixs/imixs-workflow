@@ -24,7 +24,7 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * JobHandler to upgrates existing workitems to the lates workflow version.
+ * JobHandler to upgrate existing workItems to the latest workflow version.
  * 
  * Missing workflow items will be added.
  * 
@@ -54,7 +54,7 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 	private static Logger logger = Logger.getLogger(JobHandlerRebuildIndex.class.getName());
 
 	/**
-	 * This method runs the RebuildLuceneIndexJob. The adminp job description
+	 * This method runs the RebuildLuceneIndexJob. The AdminP job description
 	 * contains the start position (numIndex) and the number of documents to read
 	 * (numBlockSize).
 	 * <p>
