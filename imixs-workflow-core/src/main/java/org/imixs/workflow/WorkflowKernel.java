@@ -452,7 +452,6 @@ public class WorkflowKernel {
 		}
 		logger.info(msg);
 
-		
 		// execute SignalAdapters
 		executeSignalAdapters(documentResult, event);
 
@@ -467,10 +466,10 @@ public class WorkflowKernel {
 		}
 		// Successful close plugins
 		closePlugins(false);
-		
+
 		// execute GenericAdapters
 		executeGenericAdapters(documentResult, event);
-		
+
 		// write event log
 		documentResult = logEvent(documentResult, event);
 
@@ -524,7 +523,7 @@ public class WorkflowKernel {
 	 * 
 	 * @param documentResult
 	 * @param event
-	 * @throws PluginException 
+	 * @throws PluginException
 	 */
 	private void executeSignalAdapters(ItemCollection documentResult, ItemCollection event) throws PluginException {
 		logger.finest("......executing SignalAdapters...");
@@ -542,12 +541,13 @@ public class WorkflowKernel {
 				} else {
 					// execute only instance of signal Adapters...
 					if (adapter instanceof SignalAdapter) {
-						executeAdaper(adapter,documentResult, event );
+						executeAdaper(adapter, documentResult, event);
 
 					} else {
 						throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_ERROR,
-								"Abstract Adapter '" + adapterClass + "' can not be executed - use SignalAdapter or GenericAdapter instead!");
-						
+								"Abstract Adapter '" + adapterClass
+										+ "' can not be executed - use SignalAdapter or GenericAdapter instead!");
+
 					}
 				}
 			} else {
@@ -571,13 +571,13 @@ public class WorkflowKernel {
 			// test if Adapter is static
 			if (adapter instanceof GenericAdapter) {
 				// execute...
-				executeAdaper(adapter,documentResult, event );
+				executeAdaper(adapter, documentResult, event);
 			}
 		}
 	}
-	
+
 	/**
-	 * This method executes an instance of Adapter and logs adapter error messages. 
+	 * This method executes an instance of Adapter and logs adapter error messages.
 	 * <p>
 	 * In case of an AdapterException, the exception data will be wrapped into items
 	 * with the prefix 'adapter.'
@@ -586,7 +586,7 @@ public class WorkflowKernel {
 	 * @param workitem
 	 * @param event
 	 */
-	private void executeAdaper(Adapter adapter,ItemCollection workitem, ItemCollection event) {
+	private void executeAdaper(Adapter adapter, ItemCollection workitem, ItemCollection event) {
 		// execute...
 		try {
 			// remove adapter errors..
@@ -1002,10 +1002,9 @@ public class WorkflowKernel {
 		logger.finest(".......event: " + taskID + "." + eventID + " loaded");
 
 		// Check for loop in edge history
-		if (vectorEdgeHistory != null) {
-			if (vectorEdgeHistory.indexOf((taskID + "." + eventID)) != -1)
-				throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MODEL_ERROR,
-						"[loadEvent] loop detected " + taskID + "." + eventID + "," + vectorEdgeHistory.toString());
+		if (vectorEdgeHistory != null && vectorEdgeHistory.indexOf((taskID + "." + eventID)) != -1) {
+			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MODEL_ERROR,
+					"[loadEvent] loop detected " + taskID + "." + eventID + "," + vectorEdgeHistory.toString());
 		}
 
 		return event;
