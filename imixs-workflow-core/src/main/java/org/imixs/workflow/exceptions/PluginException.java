@@ -61,7 +61,7 @@ public class PluginException extends WorkflowException {
 		this.params=params;
 	}
 	
-	public java.lang.Object[] getErrorParameters() {
+	public Object[] getErrorParameters() {
 		return params;
 	}
 	
