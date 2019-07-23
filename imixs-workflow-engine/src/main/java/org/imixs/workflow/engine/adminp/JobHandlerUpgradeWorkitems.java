@@ -199,8 +199,8 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 			bUpgrade = true;
 		}
 		
-		if (!workitem.hasItem("$owner")) {
-			workitem.replaceItemValue("$owner", workitem.getItemValue("namowner"));
+		if (!workitem.hasItem("owner")) {
+			workitem.replaceItemValue("owner", workitem.getItemValue("namowner"));
 			bUpgrade = true;
 		}
 

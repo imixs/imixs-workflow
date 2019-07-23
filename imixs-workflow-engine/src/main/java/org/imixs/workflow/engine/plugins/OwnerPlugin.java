@@ -38,7 +38,7 @@ import org.imixs.workflow.exceptions.PluginException;
 
 /**
  * This plugin implements a ownership control by evaluating the configuration of
- * an BPMN Event element. The Plugin updates the WorkItem attribute $Owner
+ * an BPMN Event element. The Plugin updates the WorkItem attribute 'owner'
  * depending on the provided information.
  * 
  * <p>
@@ -78,7 +78,7 @@ import org.imixs.workflow.exceptions.PluginException;
 
 public class OwnerPlugin extends AbstractPlugin {
 	
-	public final static String ITEM_OWNER="$owner";
+	public final static String ITEM_OWNER="owner";
 	
 	private ItemCollection documentContext;
 	private ItemCollection documentActivity;
@@ -87,11 +87,9 @@ public class OwnerPlugin extends AbstractPlugin {
 	private static Logger logger = Logger.getLogger(OwnerPlugin.class.getName());
 
 	/**
-	 * changes the $Owner attribute depending to the activityentity or
+	 * changes the 'owner' item depending to the activityentity or
 	 * processEntity
 	 * 
-	 * The method prevents the field '$owner' of the documentcontext in case that
-	 * $owner is part of the
 	 */
 	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
 			throws PluginException {
@@ -165,7 +163,7 @@ public class OwnerPlugin extends AbstractPlugin {
 		}
 		
 		
-		// we also need to support the deprecated iten name "namOwner" which was replaced since version 5.0.1 by "$owner"
+		// we also need to support the deprecated iten name "namOwner" which was replaced since version 5.0.2 by "owner"
 		documentContext.replaceItemValue("namOwner", newOwnerList);
 
 	}

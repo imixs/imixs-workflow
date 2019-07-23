@@ -47,8 +47,8 @@ import org.imixs.workflow.exceptions.QueryException;
  * <ul>
  * <li>$writeaccess</li>
  * <li>$readaccess</li>
- * <li>$owner</li>
  * <li>$creator</li>
+ * <li>owner</li>
  * <li>namcreator (deprecated)</li>
  * </ul>
  * 
@@ -129,7 +129,7 @@ public class JobHandlerRenameUser implements JobHandler {
 		sQuery = sQuery.substring(0, sQuery.length() - 4);
 		sQuery += ")";
 		// !! We do ignore the creator!! - see issue #350
-		sQuery += " AND ($writeaccess:\"" + fromUserID + "\" OR $readaccess:\"" + fromUserID + "\" OR $owner:\"" + fromUserID + " OR namowner:\"" + fromUserID+ "\")";
+		sQuery += " AND ($writeaccess:\"" + fromUserID + "\" OR $readaccess:\"" + fromUserID + "\" OR owner:\"" + fromUserID + " OR namowner:\"" + fromUserID+ "\")";
 
 		if (datFilterFrom != null && datFilterTo != null) {
 			SimpleDateFormat luceneFormat = new SimpleDateFormat("yyyyMMdd");
@@ -219,7 +219,7 @@ public class JobHandlerRenameUser implements JobHandler {
 		if (updateList(entity.getItemValue("$WriteAccess"), from, to, replace))
 			bUpdate = true;
 
-		if (updateList(entity.getItemValue("$Owner"), from, to, replace))
+		if (updateList(entity.getItemValue("owner"), from, to, replace))
 			bUpdate = true;
 		
 		// support deprecated field

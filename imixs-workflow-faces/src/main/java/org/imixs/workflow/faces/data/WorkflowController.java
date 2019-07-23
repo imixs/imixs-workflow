@@ -45,6 +45,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.ModelService;
 import org.imixs.workflow.engine.WorkflowService;
+import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -230,7 +231,7 @@ public class WorkflowController extends AbstractDataController implements Serial
 	 * 
 	 * The method assigns the initial values '$ModelVersion', '$ProcessID' and
 	 * '$UniqueIDRef' to the new workitem. The method creates the empty field
-	 * '$workitemID' and the field '$owner' which is assigned to the current user.
+	 * '$workitemID' and the item 'owner' which is assigned to the current user.
 	 * This data can be used in case that a workitem is not processed but saved
 	 * (e.g. by the dmsController).
 	 * 
@@ -255,7 +256,7 @@ public class WorkflowController extends AbstractDataController implements Serial
 			data.replaceItemValue(WorkflowService.UNIQUEIDREF, uniqueIdRef);
 		}
 		// set default owner
-		data.replaceItemValue("$owner", loginController.getUserPrincipal());
+		data.replaceItemValue(OwnerPlugin.ITEM_OWNER, loginController.getUserPrincipal());
 		// support deprecated field
 		data.replaceItemValue("namowner", loginController.getUserPrincipal());
 		

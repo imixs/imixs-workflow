@@ -59,7 +59,7 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
  * RenameUserJob:
  * 
  * This job is to replace entries in the fields $WriteAccess, $ReadAccess and
- * $Owner. An update request is stored in a adminp entity containing alll
+ * owner. An update request is stored in a adminp entity containing alll
  * necessary informations. The service starts a timer instances for each update
  * process
  * 

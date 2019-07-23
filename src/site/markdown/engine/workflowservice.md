@@ -98,7 +98,7 @@ The method returns a collection of workitems belonging to a specified $processID
 
 
 ### getWorkListByOwner
-The method returns a collection of workitems containing a $Owner property belonging to a specified username.  The $Owner property is typical controlled by the OwnerPlugin using the Imixs Workflow Modeler
+The method returns a collection of workitems containing a 'owner' item belonging to a specified username.  The 'owner' item is typical controlled by the OwnerPlugin using the Imixs Workflow Modeler
 
 	  String type="workitem";
 	  String user="Manfred"

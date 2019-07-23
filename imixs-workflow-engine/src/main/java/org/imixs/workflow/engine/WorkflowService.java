@@ -96,7 +96,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	public static final String UNIQUEIDREF = "$uniqueidref";
 	public static final String READACCESS = "$readaccess";
 	public static final String WRITEACCESS = "$writeaccess";
-	public static final String OWNER = "$owner";
 	public static final String PARTICIPANTS="$participants";
 	public static final String DEFAULT_TYPE = "workitem";
 
@@ -146,12 +145,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * Returns a collection of workitems containing a $Owner property belonging to
-	 * a specified username. The $Owner property can be controlled by the plug-in
+	 * Returns a collection of workitems containing a 'owner' item belonging to
+	 * a specified username. The 'owner' item can be controlled by the plug-in
 	 * {@code org.imixs.workflow.plugins.OwnerPlugin}
 	 * 
 	 * @param name
-	 *            = username for property $Owner - if null current username will
+	 *            = username for itme 'owner' - if null current username will
 	 *            be used
 	 * @param pageSize
 	 *            = optional page count (default 20)
@@ -180,7 +179,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		}
 		
 		// support deprecated namowner field
-		searchTerm += " (namowner:\"" + name + "\" OR $owner:\"" + name + "\") )";
+		searchTerm += " (namowner:\"" + name + "\" OR owner:\"" + name + "\") )";
 		try {
 			return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
 		} catch (QueryException e) {

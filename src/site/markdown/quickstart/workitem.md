@@ -67,8 +67,8 @@ The following table provides an overview about all data items managed by the Imi
 |$lasteditor      |String  |no    		| yes 	  | The last user, that invoked the process method before the $editor |
 |$noindex    	  |Boolean |yes    		| no 	  | If set to 'true', the document will not be added into the index. (See [DocumentService](../engine/documentservice.html) for details.)   |
 |$immutable    	  |Boolean |yes    		| no 	  | If set to 'true' updateing the workitem is no longer allowed. (See [DocumentService](../engine/documentservice.html) for details.) |
-|$Owner           |List    |no    		| yes 	  | String list of User/Roles, that are owners of that WorkItem. 	|
 |$Participants    |List    |no    		| yes 	  | String list of Users having executed this WorkItem. 		|
+|owner           |List    |no    		| yes 	  | String list of User/Roles, that are owners of that WorkItem. 	|
 |txtworkflowsummary |String|no 			| yes 	  | A short description of the current status      				|
 |txtworkflowabstract|String|no 			| yes 	  | A long description of the current status       				|
 |txtworkflowimageurl|String|no 			| no 	  | A link to an image which displays the current status 		|
