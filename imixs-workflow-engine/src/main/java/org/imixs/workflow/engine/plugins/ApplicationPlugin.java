@@ -70,6 +70,11 @@ import org.imixs.workflow.exceptions.PluginException;
  * 
  */
 public class ApplicationPlugin extends AbstractPlugin {
+	
+	
+	public final static String WORKFLOWABSTRACT="$workflowabstract";
+	public final static String WORKFLOWSUMMARY="$workflowsummary";
+	
 
 	public static final String PROCESS_UNDEFINED = "PROCESS_UNDEFINED";
 
@@ -129,12 +134,12 @@ public class ApplicationPlugin extends AbstractPlugin {
 		 */
 		// set Abstract
 		if (sAbstract != null) {
-			documentContext.replaceItemValue("$workflowabstract", sAbstract);
+			documentContext.replaceItemValue(WORKFLOWABSTRACT, sAbstract);
 			documentContext.replaceItemValue("txtworkflowabstract", sAbstract);
 		}
 		// set Summary
 		if (sSummary != null) {
-			documentContext.replaceItemValue("$workflowsummary", sSummary);
+			documentContext.replaceItemValue(WORKFLOWSUMMARY, sSummary);
 			documentContext.replaceItemValue("txtworkflowsummary", sSummary);
 		}
 		return documentContext;
