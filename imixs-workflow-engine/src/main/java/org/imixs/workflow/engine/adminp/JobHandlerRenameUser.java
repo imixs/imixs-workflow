@@ -20,7 +20,9 @@ import javax.ejb.TransactionAttributeType;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.lucene.LuceneUpdateService;
+import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
@@ -213,13 +215,14 @@ public class JobHandlerRenameUser implements JobHandler {
 		}
 
 		// Verify Fields
-		if (updateList(entity.getItemValue("$ReadAccess"), from, to, replace))
+		
+		if (updateList(entity.getItemValue(WorkflowService.READACCESS), from, to, replace))
 			bUpdate = true;
 
-		if (updateList(entity.getItemValue("$WriteAccess"), from, to, replace))
+		if (updateList(entity.getItemValue(WorkflowService.WRITEACCESS), from, to, replace))
 			bUpdate = true;
 
-		if (updateList(entity.getItemValue("owner"), from, to, replace))
+		if (updateList(entity.getItemValue(OwnerPlugin.OWNER), from, to, replace))
 			bUpdate = true;
 		
 		// support deprecated field

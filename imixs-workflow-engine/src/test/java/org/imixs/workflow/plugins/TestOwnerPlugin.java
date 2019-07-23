@@ -86,7 +86,7 @@ public class TestOwnerPlugin  {
 			Assert.fail();
 		}
 
-		List writeAccess = documentContext.getItemValue("namOwner");
+		List writeAccess = documentContext.getItemValue(OwnerPlugin.OWNER);
 
 		Assert.assertEquals(2, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
@@ -110,7 +110,7 @@ public class TestOwnerPlugin  {
 		documentActivity.replaceItemValue("namOwnershipNames", list);
 
 		// set a current owner
-		documentContext.replaceItemValue("namOwner", "ralph");
+		documentContext.replaceItemValue(OwnerPlugin.OWNER, "ralph");
 		documentActivity.replaceItemValue("keyOwnershipFields", "namowner");
 
 		try {
@@ -121,7 +121,7 @@ public class TestOwnerPlugin  {
 			Assert.fail();
 		}
 
-		List writeAccess = documentContext.getItemValue("namOwner");
+		List writeAccess = documentContext.getItemValue(OwnerPlugin.OWNER);
 
 		Assert.assertEquals(3, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
@@ -152,7 +152,7 @@ public class TestOwnerPlugin  {
 			Assert.fail();
 		}
 
-		List writeAccess = documentContext.getItemValue("namOwner");
+		List writeAccess = documentContext.getItemValue(OwnerPlugin.OWNER);
 
 		Assert.assertEquals(3, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("tom"));
@@ -174,7 +174,7 @@ public class TestOwnerPlugin  {
 			Assert.fail();
 		}
 
-		List writeAccess = documentContext.getItemValue("namOwner");
+		List writeAccess = documentContext.getItemValue(OwnerPlugin.OWNER);
 
 		Assert.assertEquals(0, writeAccess.size());
 	}

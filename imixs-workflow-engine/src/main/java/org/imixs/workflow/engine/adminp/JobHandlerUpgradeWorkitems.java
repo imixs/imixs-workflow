@@ -20,6 +20,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.lucene.LuceneSearchService;
+import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 
@@ -199,8 +200,8 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 			bUpgrade = true;
 		}
 		
-		if (!workitem.hasItem("owner")) {
-			workitem.replaceItemValue("owner", workitem.getItemValue("namowner"));
+		if (!workitem.hasItem(OwnerPlugin.OWNER)) {
+			workitem.replaceItemValue(OwnerPlugin.OWNER, workitem.getItemValue("namowner"));
 			bUpgrade = true;
 		}
 

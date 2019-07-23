@@ -180,7 +180,7 @@ public class TestAccessAdapterProcessEntity {
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
-		documentContext.replaceItemValue(OwnerPlugin.ITEM_OWNER, list);
+		documentContext.replaceItemValue(OwnerPlugin.OWNER, list);
 		documentContext.setTaskID(300);
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 20);

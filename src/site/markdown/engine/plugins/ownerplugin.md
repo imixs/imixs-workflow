@@ -1,7 +1,7 @@
 # Owner Plugin 
 
 The OwnerPlugin is responsible for the ownership associated with a workitem.
-The plug-in applies a ownership list of userIDs and roles to the current process instance stored in the item 'owner'.
+The plug-in applies a ownership list of userIDs and roles to the current process instance stored in the item '$owner'.
 
 
 _Plugin Class Name:_

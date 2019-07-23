@@ -30,7 +30,7 @@ import junit.framework.Assert;
  * ActivityEntity 'namaddwriteaccess' = 'anna'
  * 
  * 
- * then 'owner' should be 'jo','anna'
+ * then '$owner' should be 'jo','anna'
  * 
  * 
  * 
@@ -92,7 +92,7 @@ public class TestOwnerPluginProcessEntity {
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
-		documentContext.replaceItemValue(OwnerPlugin.ITEM_OWNER, list);
+		documentContext.replaceItemValue(OwnerPlugin.OWNER, list);
 		documentContext.setTaskID(100);
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
@@ -105,7 +105,7 @@ public class TestOwnerPluginProcessEntity {
 
 
 		@SuppressWarnings("unchecked")
-		List<String> ownerList = documentContext.getItemValue(OwnerPlugin.ITEM_OWNER);
+		List<String> ownerList = documentContext.getItemValue(OwnerPlugin.OWNER);
 
 		Assert.assertEquals(2, ownerList.size());
 		Assert.assertTrue(ownerList.contains("Kevin"));
@@ -132,7 +132,7 @@ public class TestOwnerPluginProcessEntity {
 
 
 		@SuppressWarnings("unchecked")
-		List<String> onwerList = documentContext.getItemValue(OwnerPlugin.ITEM_OWNER);
+		List<String> onwerList = documentContext.getItemValue(OwnerPlugin.OWNER);
 
 		Assert.assertEquals(3, onwerList.size());
 		Assert.assertTrue(onwerList.contains("joe"));
@@ -162,7 +162,7 @@ public class TestOwnerPluginProcessEntity {
 
 
 		@SuppressWarnings("unchecked")
-		List<String> ownerList = documentContext.getItemValue(OwnerPlugin.ITEM_OWNER);
+		List<String> ownerList = documentContext.getItemValue(OwnerPlugin.OWNER);
 
 		Assert.assertEquals(2, ownerList.size());
 		Assert.assertTrue(ownerList.contains("joe"));
@@ -185,7 +185,7 @@ public class TestOwnerPluginProcessEntity {
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
-		documentContext.replaceItemValue(OwnerPlugin.ITEM_OWNER, list);
+		documentContext.replaceItemValue(OwnerPlugin.OWNER, list);
 		documentContext.setTaskID(300);
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 20);
@@ -199,7 +199,7 @@ public class TestOwnerPluginProcessEntity {
 
 
 		// $writeAccess= anna , manfred, joe, sam
-		List<String> onwerList = documentContext.getItemValue(OwnerPlugin.ITEM_OWNER);
+		List<String> onwerList = documentContext.getItemValue(OwnerPlugin.OWNER);
 		Assert.assertEquals(3, onwerList.size());
 		Assert.assertTrue(onwerList.contains("joe"));
 		// Assert.assertTrue(onwerList.contains("sam"));

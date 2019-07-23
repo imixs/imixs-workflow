@@ -56,7 +56,7 @@
         <item name="numlastactivityid">
             <value xsi:type="xs:int">10</value>
         </item>
-        <item name="owner">
+        <item name="$owner">
             <value xsi:type="xs:string">anna</value>
             <value xsi:type="xs:string">rsoika</value>
             <value xsi:type="xs:string">manfred</value>
@@ -148,7 +148,7 @@
         <item name="numlastactivityid">
             <value xsi:type="xs:int">10</value>
         </item>
-        <item name="owner">
+        <item name="$owner">
             <value xsi:type="xs:string">admin</value>
         </item>
         <item name="subject">

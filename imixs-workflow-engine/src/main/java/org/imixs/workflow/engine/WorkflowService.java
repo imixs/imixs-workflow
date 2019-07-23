@@ -145,12 +145,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * Returns a collection of workitems containing a 'owner' item belonging to
-	 * a specified username. The 'owner' item can be controlled by the plug-in
+	 * Returns a collection of workitems containing a '$owner' item belonging to
+	 * a specified username. The '$owner' item can be controlled by the plug-in
 	 * {@code org.imixs.workflow.plugins.OwnerPlugin}
 	 * 
 	 * @param name
-	 *            = username for itme 'owner' - if null current username will
+	 *            = username for itme '$owner' - if null current username will
 	 *            be used
 	 * @param pageSize
 	 *            = optional page count (default 20)
