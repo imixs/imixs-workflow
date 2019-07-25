@@ -302,11 +302,12 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 							"...subprocess_update uses deprecated tag 'processid' instead of 'task'. Please check your model");
 				}
 
-				List<ItemCollection> subprocessList = getWorkflowService()
-						.getWorkListByRef(originWorkitem.getUniqueID());
-				// process all subprcess matching...
-				for (ItemCollection workitemSubProcess : subprocessList) {
-
+				
+				@SuppressWarnings("unchecked")
+				List<String> subProcessRefList = originWorkitem.getItemValue(LINK_PROPERTY);
+				for (String subProcessRef: subProcessRefList) {
+					ItemCollection workitemSubProcess = this.getWorkflowService().getWorkItem(subProcessRef);
+					
 					// test if process matches
 					String subModelVersion = workitemSubProcess.getModelVersion();
 					String subProcessID = "" + workitemSubProcess.getTaskID();
