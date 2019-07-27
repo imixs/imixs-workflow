@@ -123,7 +123,7 @@ public class TestOwnerPlugin  {
 
 		List ownerList = documentContext.getItemValue(OwnerPlugin.OWNER);
 
-		Assert.assertEquals(2, ownerList.size());
+		Assert.assertEquals(2, ownerList.size()); 
 		Assert.assertTrue(ownerList.contains("joe"));
 		Assert.assertTrue(ownerList.contains("sam"));
 		//Assert.assertTrue(ownerList.contains("ralph"));
