@@ -111,22 +111,21 @@ public class TestOwnerPlugin  {
 
 		// set a current owner
 		documentContext.replaceItemValue(OwnerPlugin.OWNER, "ralph");
-		documentActivity.replaceItemValue("keyOwnershipFields", "namowner");
+		documentActivity.replaceItemValue("keyOwnershipFields", OwnerPlugin.OWNER);
 
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
-
 			e.printStackTrace();
 			Assert.fail();
 		}
 
 		List ownerList = documentContext.getItemValue(OwnerPlugin.OWNER);
 
-		Assert.assertEquals(2, ownerList.size()); 
+		Assert.assertEquals(3, ownerList.size());
 		Assert.assertTrue(ownerList.contains("joe"));
 		Assert.assertTrue(ownerList.contains("sam"));
-		//Assert.assertTrue(ownerList.contains("ralph"));
+		Assert.assertTrue(ownerList.contains("ralph"));
 	}
 
 	/**
