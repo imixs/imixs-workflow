@@ -18,21 +18,21 @@ To migrate data form version 3.x to version 4.x the latest [Imixs-Admin Client](
 
 ## Migration Guide
 
- 1. Migrate Workflow Models - (new package org.imixs.workflow.engine - see details below)
+1. Migrate Workflow Models - (new package org.imixs.workflow.engine - see details below)
 
- 2. Undeploy the existing application from your application server (containing Imixs-Workflow 3.x)
+2. Undeploy the existing application from your application server (containing Imixs-Workflow 3.x)
 
- 2. Backup Database (recommended)
+3. Backup Database (recommended)
  
- 3. Shutdown the application server and remove existing Lucene index from filesystem (also remove old artifacts)
+4. Shutdown the application server and remove existing Lucene index from filesystem (also remove old artifacts)
  
- 4. Extend imixs.properties param "FieldListNoAnalyse" with the values "txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername"
+5. Extend imixs.properties param "FieldListNoAnalyse" with the values "txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername"
 
- 5. Restart the  the application server and deploy new application (containing Imixs-Workflow 4.x) 
-  
- 6. Start Migration Job from Imixs-Admin Interface
+6. Restart the  the application server and deploy new application (containing Imixs-Workflow 4.x) 
  
- 7. Migrate the plugin list of your workflow models and upload the new models into your application
+7. Start Migration Job from Imixs-Admin Interface
+ 
+8. Migrate the plugin list of your workflow models and upload the new models into your application
  
 
 
@@ -55,18 +55,18 @@ You need to change the plugin classes in your model files and upload the new mod
 
 The following java packages are deprecated in version 4.x but still available to support the migration:
 
- * org.imxis.workflow.jee.ejb
- * org.imxis.workflow.jee.jpa
- * org.imxis.workflow.jee.util
- * org.imxis.workflow.plugins.jee
+  * org.imxis.workflow.jee.ejb
+  * org.imxis.workflow.jee.jpa
+  * org.imxis.workflow.jee.util
+  * org.imxis.workflow.plugins.jee
  
 The packages will be removed in future releases. 
 
 The following new packages are introduced with version 4.x :
 
- * org.imixs.workflow.engine - contains the services EJB classes
- * org.imixs.workflow.engine.jpa - contains the persistence JPA classes
- * org.imixs.workflow.engine.plugins - contains all plug-in classes
+  * org.imixs.workflow.engine - contains the services EJB classes
+  * org.imixs.workflow.engine.jpa - contains the persistence JPA classes
+  * org.imixs.workflow.engine.plugins - contains all plug-in classes
  
 ## Persistence API
 
@@ -108,7 +108,6 @@ The old rest api to post workitems in JSON/XML format is supported by a backport
      /v3/model/
 
 **NOTE:** This api is deprecated and will be droped with future releases!
-		
 
 ## XML
 
@@ -135,5 +134,4 @@ See example below:
 	        </item>
 	        .....
 	    </document>
- 
- 		
+
