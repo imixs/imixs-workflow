@@ -427,6 +427,12 @@ public class TestSplitAndJoinPlugin {
 		Assert.assertTrue(Pattern.compile("(^[a-z]|^num)").matcher("txtTitle").find());
 		Assert.assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("TXTTitle").find());
 		Assert.assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("_title").find());
+		
+		
+		Assert.assertTrue(Pattern.compile("(^requester[a-zA-Z])").matcher("requesterName").find());
+		Assert.assertFalse(Pattern.compile("(^requester[a-zA-Z])").matcher("creatorName").find());
+		
+		
 
 	}
 
