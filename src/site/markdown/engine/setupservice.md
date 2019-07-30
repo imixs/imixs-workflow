@@ -12,6 +12,16 @@ You can also define the Default Model data by a environment variable. In this ca
 
 	MODEL_DEFAULT_DATA=my-model.bpmn
 
+
+## Default Instance Data
+
+The SetupService can also be used to import any xml entity data stream. This mode can be used to import data like configuration data.
+
+The data file need to be a valid XML file. The configuration is controlled by the imixs.property variable 'model.default.data'
+
+
+	model.default.data=my-model.bpmn, my-data.xml
+
 ## Lucene Index
 During the initialization, the Lucene index will be verified and initialized if it does not exist. 
 
