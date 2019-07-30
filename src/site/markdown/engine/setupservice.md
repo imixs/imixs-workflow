@@ -35,3 +35,21 @@ Optional scheduler Jobs will be started by the service.
 ## Workflow Instance Status
 
 With the method 'getModelCount()' a client can check the status of the worklfow instance. The method returns the number of available workflow models. 
+
+
+
+## The CDI SetupEvent
+
+The SetupService EJB provides an Observer Pattern based on CDI Events. The events are fired before the setup service finished.
+The Event is defined by the class:
+
+    org.imixs.workflow.engine.SetupEvent
+
+This _SetupEvent_ can be consumed by another Session Bean or managed bean implementing the @Observes annotation: 
+
+	@Stateless
+	public class MySetupHandler {
+	    public void onEvent(@Observes SetuptEvent setupEvent){
+	        ... extend the setup .....
+    	}
+	}

@@ -41,6 +41,7 @@ import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.Timer;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -99,7 +100,7 @@ public class SetupService {
 
 	private static Logger logger = Logger.getLogger(SetupService.class.getName());
 
-	// inject evnironment / property for the model default data.
+	// inject evnvironment / property for the model default data.
 	@Inject
 	@ConfigProperty(name = "MODEL_DEFAULT_DATA", defaultValue = "")
 	private String envModelDefaultData;
@@ -118,6 +119,9 @@ public class SetupService {
 
 	@Resource
 	private javax.ejb.TimerService timerService;
+
+	@Inject
+	protected Event<SetupEvent> setupEvents;
 
 	public int getModelCount() {
 		return modelService.getVersions().size();
@@ -144,6 +148,16 @@ public class SetupService {
 
 		// next start optional schedulers
 		schedulerService.startAllSchedulers();
+		
+		// Finally fire the SetupEvent. This allows CDI Observers to react on the setup 
+		if (setupEvents != null) {
+			// create Group Event
+			SetupEvent setupEvent = new SetupEvent();
+			setupEvents.fire(setupEvent);
+		} else {
+			logger.warning("Missing CDI support for Event<SetupEvent> !");
+		}
+
 	}
 
 	/**
