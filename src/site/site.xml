@@ -100,6 +100,7 @@
 					<item name="Mail Plugin" href="./engine/plugins/mailplugin.html" />
 					<item name="Result Plugin" href="./engine/plugins/resultplugin.html" />
 					<item name="Rule Plugin" href="./engine/plugins/ruleplugin.html" />
+					<item name="Approver Plugin" href="./engine/plugins/approverplugin.html" />
 					<item name="Split &amp; Join" href="./engine/plugins/splitandjoinplugin.html" />
 					<item name="Version Plugin" href="./engine/plugins/versionplugin.html" />
 					<item name="Exception handling" href="./engine/plugins/exception_handling.html" />

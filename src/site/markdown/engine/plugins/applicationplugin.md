@@ -1,7 +1,7 @@
 # ApplicationPlugin
 The ApplicationPlugin updates application specific properties for the current WorkItem.
 
-    org.imixs.workflow.plugins.ApplicationPlugin
+    org.imixs.workflow.engine.plugins.ApplicationPlugin
 
   * txtWorkflowEditorID - optional EditorID to be used by an application (provided by the activityEntity property 'txtEditorID')
   * txtWorkflowImageURL - visual image can be displayed by an application (provided by the activityEntity property 'txtImageURL')
