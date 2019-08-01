@@ -91,17 +91,22 @@ public class AccessAdapter implements GenericAdapter, Serializable {
 		this.workflowService = workflowService;
 	}
 
+	/**
+	 * The Execute method updates the ACL of a process instance based on a given event. 
+	 * 
+	 */
 	@Override
 	public ItemCollection execute(ItemCollection document, ItemCollection event) throws AdapterException {
 		ItemCollection nextTask = null;
 		// get next process entity
 		try {
 			nextTask = workflowService.evalNextTask(document, event);
+			// in case the event is connected to a followup activity the
+			// nextProcess can be null!
 
 			updateParticipants(document);
 			updateACL(document, event, nextTask);
 			
-
 		} catch (ModelException | PluginException e) {
 			throw new AdapterException(AccessAdapter.class.getSimpleName(), e.getErrorCode(), e.getMessage());
 		}
@@ -144,15 +149,17 @@ public class AccessAdapter implements GenericAdapter, Serializable {
 	@SuppressWarnings({ "rawtypes" })
 	public ItemCollection updateACL(ItemCollection workitem, ItemCollection event, ItemCollection nextTask)
 			throws PluginException {
+		
+		if (event==null && nextTask==null) {
+			// no update!
+			return workitem;
+		}
 		ItemCollection documentContext = workitem;
-		ItemCollection documentActivity = event;
 
-		// in case the activity is connected to a followup activity the
-		// nextProcess can be null!
-
+		
 		// test update mode of activity and process entity - if true clear the
 		// existing values.
-		if (documentActivity.getItemValueBoolean("keyupdateacl") == false
+		if ((event==null || event.getItemValueBoolean("keyupdateacl") == false)
 				&& (nextTask == null || nextTask.getItemValueBoolean("keyupdateacl") == false)) {
 			// no update!
 			return documentContext;
@@ -161,9 +168,9 @@ public class AccessAdapter implements GenericAdapter, Serializable {
 			documentContext.replaceItemValue(WorkflowService.READACCESS, new Vector());
 			documentContext.replaceItemValue(WorkflowService.WRITEACCESS, new Vector());
 
-			// activity settings will not be merged with process entity settings!
-			if (documentActivity.getItemValueBoolean("keyupdateacl") == true) {
-				updateACLByItemCollection(documentContext, documentActivity);
+			// event settings will not be merged with task settings!
+			if (event!=null && event.getItemValueBoolean("keyupdateacl") == true) {
+				updateACLByItemCollection(documentContext, event);
 			} else {
 				updateACLByItemCollection(documentContext, nextTask);
 			}
