@@ -1,4 +1,5 @@
-#History Plugin
+# THe History Plugin
+
 The HistoryPlugin generates a workflow history for each process instance depending on the configuration in the workflow model. 
 
 _Plugin Class Name:_
@@ -11,10 +12,29 @@ For each workflow step the HistoryPlugin generates a separate entry which is add
   * comment (String)
   * userID (String)
   
+The History entries can be configured in the workflow model using the [Imixs-BPMN Modeler](../../modelling/index.html).
+
+<img src="../../images/modelling/bpmn_screen_22.png"/>  
+
+For each event processed by the Imixs-Workflow engine a new history entry will be added into the WorkItem. The history is a user-friendly process documentation like in the following example:
+
+	02.10.2006 13:36:47 : Document saved by Tom.
+	02.10.2006 13:46:37 : Document assigned by Mark.
+	02.10.2006 13:36:47 : Document saved by Anna.
+
+A history entry support the [Text Replacer feature](../../modelling/textreplacement.html).
+
+    Document saved by <itemvalue>$currenteditor</itemvalue>
+
+
+## Maximum Length of History   
 
 The number of entries for the history list can be restricted to a maximum number of entries by adding the attribute "numworkflowhistoryLength" into the workitem. The Attribute indicates the maximum number of entries. If lower 0 no limit is set.
 
-The History entries can be configured in the workflow model using the [Imixs-BPMN Modeler](../../modelling/index.html). The following example shows how to output the workflow history list using facelets:
+
+## JSF Example
+
+ The following example shows how to output the workflow history list using facelets:
  
 	<ui:fragment rendered="#{!empty workflowController.workitem.item['txtworkflowhistory']}">
 		<h:dataTable var="log"
