@@ -15,7 +15,7 @@ Imixs-BPMN is an Eclipse modeling tool to design a business process based on the
 
 <img src="screen_001.png" alt="Imixs-BPMN" width="640"/>
 
-Read more about Imixs-BPMN on the [project home](http://www.imixs.org/modeler/). 
+Read more about Imixs-BPMN on the [project home](https://www.imixs.org/sub_modeler.html). 
 
 
 ## Imixs-RESTful API
