@@ -30,6 +30,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -108,11 +109,19 @@ public class RestClient {
 	/**
 	 * This method builds the serviceEndpoint based on a given URI . The method
 	 * prafix the URI with the root uri if the uri starts with /
+	 * <p>
+	 * If the URI is with protocol :// then the servcieEndpoint is set directly.
+	 * 
 	 * 
 	 * @param uri
 	 * @throws RestAPIException
 	 */
 	void setServiceEndpoint(String uri) throws RestAPIException {
+		// test for protocoll
+		if (uri.contains("://")) {
+			this.serviceEndpoint = uri;
+			return;
+		}
 
 		if (rootURL == null) {
 			throw new RestAPIException(0, "rootURL is null!");
@@ -122,12 +131,10 @@ public class RestClient {
 		if (uri != null && uri.startsWith("/")) {
 			uri = uri.substring(1);
 		}
-		// test for protocoll
-		if (!uri.contains("://")) {
-			// add root URL
-			uri = rootURL + uri;
-		}
 
+		// add root URL
+		uri = rootURL + uri;
+		
 		this.serviceEndpoint = uri;
 	}
 
@@ -178,8 +185,8 @@ public class RestClient {
 	 */
 	public String post(String uri, String dataString, final String _contentType, String acceptType) throws Exception {
 		PrintWriter printWriter = null;
-		String contentType=_contentType;
-		
+		String contentType = _contentType;
+
 		if (contentType == null || contentType.isEmpty()) {
 			contentType = "application/xml";
 		}
@@ -239,6 +246,67 @@ public class RestClient {
 			// Release current connection
 			if (printWriter != null)
 				printWriter.close();
+		}
+	}
+
+	/**
+	 * Posts a byte array to a Rest Service URI Endpoint. This method can be used to
+	 * simulate different post scenarios.
+	 * <p>
+	 * The parameter 'acceptType' can be used to request and accept specific media
+	 * types.
+	 * 
+	 * @param uri
+	 *            - Rest Endpoint RUI
+	 * @param data
+	 *            - content
+	 * @param acceptType
+	 *            - accept MediaType
+	 * @return content
+	 */
+	public String post(String uri, byte[] data, String acceptType) throws Exception {
+
+		HttpURLConnection urlConnection = null;
+		try {
+			serviceEndpoint = uri;
+			iLastHTTPResult = 500;
+
+			urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
+			urlConnection.setRequestMethod("POST");
+			urlConnection.setDoOutput(true);
+			urlConnection.setDoInput(true);
+			urlConnection.setAllowUserInteraction(true);
+
+			/** * HEADER ** */
+			urlConnection.setRequestProperty("Accept-Charset", encoding);
+			urlConnection.setRequestProperty("Accept", acceptType);
+			if (requestProperties != null) {
+				for (Map.Entry<String, String> entry : requestProperties.entrySet()) {
+					urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
+				}
+			}
+
+			// process filters....
+			for (RequestFilter filter : requestFilterList) {
+				filter.filter(urlConnection);
+			}
+
+			// transfer data
+			OutputStream outputStreamToRequestBody = urlConnection.getOutputStream();
+			BufferedWriter httpRequestBodyWriter = new BufferedWriter(
+					new OutputStreamWriter(outputStreamToRequestBody));
+			outputStreamToRequestBody.write(data); // , 0, bytesRead);
+			outputStreamToRequestBody.flush();
+			// Close the streams
+			outputStreamToRequestBody.close();
+			httpRequestBodyWriter.close();
+			String content = readResponse(urlConnection);
+			return content;
+		} catch (Exception ioe) {
+			// ioe.printStackTrace();
+			throw ioe;
+		} finally {
+
 		}
 	}
 
