@@ -947,6 +947,15 @@ public class BPMNModelHandler extends DefaultHandler {
 		event.replaceItemValue("numProcessID", sourceTask.getItemValue("numProcessID"));
 		event.replaceItemValue("$modelVersion", sourceTask.getModelVersion());
 		replaceMessageTags(event);
+		
+		// look for optional dataObjects...
+					List<List<String>> dataObjectList = getDataObjectsForElement(eventID);
+					if (dataObjectList != null) {
+						// we take the annotation as the new documentation
+						event.replaceItemValue("dataObjects", dataObjectList);
+					}
+		
+		
 		model.addEvent(verifyActiviytIdForEvent(event));
 	}
 

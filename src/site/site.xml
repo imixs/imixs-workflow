@@ -40,6 +40,7 @@
 				<item name="Task Element" href="modelling/process.html" />
 				<item name="Event Element" href="modelling/activities.html" />
 				<item name="Text Replacement" href="modelling/textreplacement.html" />
+				<item name="Data Objects" href="modelling/dataobject.html" />
 				<item name="Reports" href="modelling/report_plugin.html" />
 				<item name="Deployment" href="modelling/deployment.html" />
 

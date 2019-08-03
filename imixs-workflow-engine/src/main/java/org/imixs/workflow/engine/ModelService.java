@@ -295,7 +295,8 @@ public class ModelService implements ModelManager {
 			modelItemCol.replaceItemValue("type", "model");
 			modelItemCol.replaceItemValue("namcreator", ctx.getCallerPrincipal().getName());
 			modelItemCol.replaceItemValue("txtname", bpmnModel.getVersion());
-			FileData fileData=new FileData( bpmnModel.getVersion() + ".bpmn", bpmnModel.getRawData(), "application/xml", null);
+			FileData fileData = new FileData(bpmnModel.getVersion() + ".bpmn", bpmnModel.getRawData(),
+					"application/xml", null);
 			modelItemCol.addFileData(fileData);
 			// store model in database
 			documentService.save(modelItemCol);
@@ -358,6 +359,33 @@ public class ModelService implements ModelManager {
 			logger.finest("......BPMNModel Entity '" + version + "' not found!");
 		}
 		return null;
+	}
+
+	/**
+	 * Returns a BPMN DataObject, part of a Task or Event element, by its name
+	 * <p>
+	 * DataObjects can be associated in a BPMN Diagram with a Task or an Event
+	 * element
+	 * 
+	 * @param bpmnElement
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public String getDataObject(ItemCollection bpmnElement, String name) {
+
+		List<List<String>> dataObjects = bpmnElement.getItemValue("dataObjects");
+
+		if (dataObjects != null && dataObjects.size() > 0) {
+			for (List<String> dataObject : dataObjects) {
+				String key = dataObject.get(0);
+				if (name.equals(key)) {
+					return dataObject.get(1);
+				}
+			}
+		}
+		// not found!
+		return null;
+
 	}
 
 	/**
