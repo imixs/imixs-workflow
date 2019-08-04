@@ -87,8 +87,7 @@ public class RuleEngine {
 
 	private ScriptEngineManager scriptEngineManager;
 	private ScriptEngine scriptEngine = null;
-	
-	
+
 	/**
 	 * This method initializes the default script engine.
 	 */
@@ -179,6 +178,39 @@ public class RuleEngine {
 	}
 
 	/**
+	 * This method converts a JSON String into a JavaScript JSON Object and
+	 * evaluates a script.
+	 * <p>
+	 * The JSON Object is set as a input variable named 'data' so that the script
+	 * can access the json structure in an easy way.
+	 * <p>
+	 * Example: <code>
+	 *   var result={}; result.name=data.name;
+	 * </code>
+	 * <p>
+	 * The method returns an ItemCollection with the result object. 
+	 * @param json
+	 *            - a JSON data string
+	 * @param script
+	 *            - a Script to be evaluated
+	 * @return an ItemCollection returning the Result Object.
+	 * @throws ScriptException
+	 */
+	public ItemCollection evaluateJsonByScript(String json, String script) throws ScriptException {
+
+		// create a data object
+		scriptEngine.put("data", json);
+		Object jsonDataObject = scriptEngine.eval("JSON.parse(data);");
+		// set the parsed JSON object again as 'data'.
+		scriptEngine.put("data", jsonDataObject);
+		// evaluate the script
+		scriptEngine.eval(script);
+		// get the result object
+		ItemCollection result = convertScriptVariableToItemCollection("result");
+		return result;
+	}
+
+	/**
 	 * This method evaluates a boolean expression. The method takes a
 	 * documentContext as argument.
 	 * 
@@ -263,7 +295,7 @@ public class RuleEngine {
 			if (logger.isLoggable(Level.FINE)) {
 				logger.finest("......evalueateScript object to Java");
 				for (Object val : resultList) {
-					logger.finest("        "+val.toString());
+					logger.finest("        " + val.toString());
 				}
 			}
 
@@ -358,7 +390,6 @@ public class RuleEngine {
 		return result;
 	}
 
-	
 	private static boolean isBasicObjectType(Class<?> clazz) {
 		return BASIC_OBJECT_TYPES.contains(clazz);
 	}

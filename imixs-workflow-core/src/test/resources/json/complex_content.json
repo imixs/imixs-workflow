@@ -1,0 +1,756 @@
+{
+	"content": [
+		{
+			"id": 70805774,
+			"url": "https://api.com/70805774",
+			"children": [
+				{
+					"id": 70805775,
+					"content": {
+						"value": "1001",
+						"page": 1,
+						"position": [
+							1004.0,
+							288.0,
+							1050.0,
+							324.0
+						],
+						"rir_confidence": 0.9795745061747109,
+						"connector_text": null
+					},
+					"category": "datapoint",
+					"schema_id": "invoice_id",
+					"validation_sources": [
+						"score"
+					],
+					"time_spent": 0.0
+				},
+				{
+					"id": 70805776,
+					"url": "https://api.com/70805776",
+					"content": {
+						"value": "tax_invoice",
+						"page": null,
+						"position": null,
+						"rir_text": "tax_invoice",
+						"rir_position": null,
+						"rir_confidence": null,
+						"connector_text": null
+					},
+					"category": "datapoint",
+					"schema_id": "invoice_type",
+					"validation_sources": [
+						"human"
+					],
+					"time_spent": 18.2
+				}
+			],
+			"category": "section",
+			"schema_id": "invoice_info_section"
+		},
+		{
+			"id": 70805799,
+			"url": "https://api.com/720040/content/70805799",
+			"children": [
+				{
+					"id": 70805800,
+					"url": "https://api.com/720040/content/70805800",
+					"children": [
+						{
+							"id": 70805801,
+							"url": "https://api.com/720040/content/70805801",
+							"children": [
+								{
+									"id": 70805802,
+									"url": "https://api.com/720040/content/70805802",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_id",
+									"validation_sources": [],
+									"time_spent": 0.0
+								},
+								{
+									"id": 70805807,
+									"url": "https://api.com/720040/content/70805807",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_amount_total",
+									"validation_sources": [],
+									"time_spent": 0.0
+								}
+							],
+							"category": "tuple",
+							"schema_id": "line_item"
+						},
+						{
+							"id": 70805808,
+							"url": "https://api.com/720040/content/70805808",
+							"children": [
+								{
+									"id": 70805809,
+									"url": "https://api.com/720040/content/70805809",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_id",
+									"validation_sources": [],
+									"time_spent": 0.0
+								},
+								{
+									"id": 70805814,
+									"url": "https://api.com/720040/content/70805814",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_amount_total",
+									"validation_sources": [],
+									"time_spent": 0.0
+								}
+							],
+							"category": "tuple",
+							"schema_id": "line_item"
+						},
+						{
+							"id": 70805815,
+							"url": "https://api.com/720040/content/70805815",
+							"children": [
+								{
+									"id": 70805816,
+									"url": "https://api.com/720040/content/70805816",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_id",
+									"validation_sources": [],
+									"time_spent": 0.0
+								},
+								{
+									"id": 70805821,
+									"url": "https://api.com/720040/content/70805821",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_amount_total",
+									"validation_sources": [],
+									"time_spent": 0.0
+								}
+							],
+							"category": "tuple",
+							"schema_id": "line_item"
+						},
+						{
+							"id": 70805822,
+							"url": "https://api.com/720040/content/70805822",
+							"children": [
+								{
+									"id": 70805823,
+									"url": "https://api.com/720040/content/70805823",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_id",
+									"validation_sources": [],
+									"time_spent": 0.0
+								},
+								{
+									"id": 70805828,
+									"url": "https://api.com/720040/content/70805828",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_amount_total",
+									"validation_sources": [],
+									"time_spent": 0.0
+								}
+							],
+							"category": "tuple",
+							"schema_id": "line_item"
+						}
+					],
+					"category": "multivalue",
+					"schema_id": "line_items",
+					"grid": {
+						"parts": [
+							{
+								"page": 1,
+								"columns": [
+									{
+										"left_position": 102.0,
+										"schema_id": null,
+										"header_texts": [
+											"Pos."
+										]
+									},
+									{
+										"left_position": 161.5,
+										"schema_id": "item_desc",
+										"header_texts": [
+											"Bezeichnung"
+										]
+									},
+									{
+										"left_position": 569.5,
+										"schema_id": "item_quantity",
+										"header_texts": [
+											"Menge"
+										]
+									},
+									{
+										"left_position": 812.5,
+										"schema_id": "item_net_unit_price",
+										"header_texts": [
+											"Einzelpreis"
+										]
+									},
+									{
+										"left_position": 974.5,
+										"schema_id": null,
+										"header_texts": [
+											"Gesamtpreis"
+										]
+									}
+								],
+								"rows": [
+									{
+										"top_position": 758.5,
+										"type": "data"
+									},
+									{
+										"top_position": 806.5,
+										"type": "data"
+									},
+									{
+										"top_position": 869.5,
+										"type": "data"
+									},
+									{
+										"top_position": 958.5,
+										"type": "data"
+									}
+								],
+								"width": 1031.0,
+								"height": 272.5
+							}
+						]
+					}
+				}
+			],
+			"category": "section",
+			"schema_id": "line_items_section"
+		}
+	],
+	"results": [
+		{
+			"id": 70805774,
+			"url": "https://api.com/720040/content/70805774",
+			"children": [
+				{
+					"id": 70805775,
+					"url": "https://api.com/720040/content/70805775",
+					"content": {
+						"value": "1001",
+						"page": 1,
+						"position": [
+							1004.0,
+							288.0,
+							1050.0,
+							324.0
+						],
+						"rir_text": "1001",
+						"rir_position": [
+							1004.0,
+							288.0,
+							1050.0,
+							324.0
+						],
+						"rir_confidence": 0.9795745061747109,
+						"connector_text": null
+					},
+					"category": "datapoint",
+					"schema_id": "invoice_id",
+					"validation_sources": [
+						"score"
+					],
+					"time_spent": 0.0
+				},
+				{
+					"id": 70805780,
+					"url": "https://api.com/720040/content/70805780",
+					"content": {
+						"value": "eur",
+						"page": null,
+						"position": null,
+						"rir_text": "eur",
+						"rir_position": null,
+						"rir_confidence": null,
+						"connector_text": null
+					},
+					"category": "datapoint",
+					"schema_id": "currency",
+					"validation_sources": [
+						"human"
+					],
+					"time_spent": 3.4
+				}
+			],
+			"category": "section",
+			"schema_id": "invoice_info_section"
+		},
+		{
+			"id": 70805788,
+			"url": "https://api.com/720040/content/70805788",
+			"children": [
+				{
+					"id": 70805789,
+					"url": "https://api.com/720040/content/70805789",
+					"content": {
+						"value": "606.90",
+						"page": 1,
+						"position": [
+							998.0,
+							996.0,
+							1088.0,
+							1032.0
+						],
+						"rir_text": "606.90",
+						"rir_position": [
+							998.0,
+							996.0,
+							1088.0,
+							1032.0
+						],
+						"rir_confidence": 1.0,
+						"connector_text": null
+					},
+					"category": "datapoint",
+					"schema_id": "amount_total",
+					"validation_sources": [
+						"checks",
+						"score"
+					],
+					"time_spent": 0.0
+				},
+				{
+					"id": 70805792,
+					"url": "https://api.com/720040/content/70805792",
+					"content": {
+						"value": "19",
+						"page": 1,
+						"position": [
+							360.0,
+							942.0,
+							386.0,
+							972.0
+						],
+						"rir_text": "19",
+						"rir_position": [
+							360.0,
+							942.0,
+							386.0,
+							972.0
+						],
+						"rir_confidence": 0.8672853323624317,
+						"connector_text": null
+					},
+					"category": "datapoint",
+					"schema_id": "tax_rate",
+					"validation_sources": [
+						"checks"
+					],
+					"time_spent": 0.0
+				}
+			],
+			"category": "section",
+			"schema_id": "amounts_section"
+		},
+		{
+			"id": 70805793,
+			"url": "https://api.com/720040/content/70805793",
+			"children": [
+				{
+					"id": 70805794,
+					"url": "https://api.com/720040/content/70805794",
+					"content": {
+						"value": "",
+						"page": null,
+						"position": null,
+						"rir_text": "",
+						"rir_position": null,
+						"rir_confidence": null,
+						"connector_text": null
+					},
+					"category": "datapoint",
+					"schema_id": "account_num",
+					"validation_sources": [],
+					"time_spent": 0.0
+				},
+				{
+					"id": 70805795,
+					"url": "https://api.com/720040/content/70805795",
+					"content": {
+						"value": "",
+						"page": null,
+						"position": null,
+						"rir_text": "",
+						"rir_position": null,
+						"rir_confidence": null,
+						"connector_text": null
+					},
+					"category": "datapoint",
+					"schema_id": "bank_num",
+					"validation_sources": [],
+					"time_spent": 0.0
+				},
+				{
+					"id": 70805798,
+					"url": "https://api.com/720040/content/70805798",
+					"content": {
+						"value": "Fabian Silberer",
+						"page": 1,
+						"position": [
+							994.8413234301148,
+							389.6466093600764,
+							1139.3301823092504,
+							413.3333333333333
+						],
+						"rir_text": "",
+						"rir_position": null,
+						"rir_confidence": null,
+						"connector_text": null
+					},
+					"category": "datapoint",
+					"schema_id": "payment_reference",
+					"validation_sources": [
+						"human"
+					],
+					"time_spent": 16.6
+				}
+			],
+			"category": "section",
+			"schema_id": "bank_details_section"
+		},
+		{
+			"id": 70805799,
+			"url": "https://api.com/720040/content/70805799",
+			"children": [
+				{
+					"id": 70805800,
+					"url": "https://api.com/720040/content/70805800",
+					"children": [
+						{
+							"id": 70805801,
+							"url": "https://api.com/720040/content/70805801",
+							"children": [
+								{
+									"id": 70805802,
+									"url": "https://api.com/720040/content/70805802",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_id",
+									"validation_sources": [],
+									"time_spent": 0.0
+								},
+								{
+									"id": 70805807,
+									"url": "https://api.com/720040/content/70805807",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_amount_total",
+									"validation_sources": [],
+									"time_spent": 0.0
+								}
+							],
+							"category": "tuple",
+							"schema_id": "line_item"
+						},
+						{
+							"id": 70805808,
+							"url": "https://api.com/720040/content/70805808",
+							"children": [
+								{
+									"id": 70805809,
+									"url": "https://api.com/720040/content/70805809",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_id",
+									"validation_sources": [],
+									"time_spent": 0.0
+								},
+								{
+									"id": 70805814,
+									"url": "https://api.com/720040/content/70805814",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_amount_total",
+									"validation_sources": [],
+									"time_spent": 0.0
+								}
+							],
+							"category": "tuple",
+							"schema_id": "line_item"
+						},
+						{
+							"id": 70805815,
+							"url": "https://api.com/720040/content/70805815",
+							"children": [
+								{
+									"id": 70805816,
+									"url": "https://api.com/720040/content/70805816",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_id",
+									"validation_sources": [],
+									"time_spent": 0.0
+								},
+								{
+									"id": 70805820,
+									"url": "https://api.com/720040/content/70805820",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_vat_rate",
+									"validation_sources": [],
+									"time_spent": 0.0
+								},
+								{
+									"id": 70805821,
+									"url": "https://api.com/720040/content/70805821",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_amount_total",
+									"validation_sources": [],
+									"time_spent": 0.0
+								}
+							],
+							"category": "tuple",
+							"schema_id": "line_item"
+						},
+						{
+							"id": 70805822,
+							"url": "https://api.com/720040/content/70805822",
+							"children": [
+								{
+									"id": 70805823,
+									"url": "https://api.com/720040/content/70805823",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_id",
+									"validation_sources": [],
+									"time_spent": 0.0
+								},
+								{
+									"id": 70805827,
+									"url": "https://api.com/720040/content/70805827",
+									"content": {
+										"value": "",
+										"page": null,
+										"position": null,
+										"rir_text": "",
+										"rir_position": null,
+										"rir_confidence": null,
+										"connector_text": null
+									},
+									"category": "datapoint",
+									"schema_id": "item_vat_rate",
+									"validation_sources": [],
+									"time_spent": 0.0
+								}
+							],
+							"category": "tuple",
+							"schema_id": "line_item"
+						}
+					],
+					"category": "multivalue",
+					"schema_id": "line_items",
+					"grid": {
+						"parts": [
+							{
+								"page": 1,
+								"columns": [
+									{
+										"left_position": 102.0,
+										"schema_id": null,
+										"header_texts": [
+											"Pos."
+										]
+									},
+									{
+										"left_position": 161.5,
+										"schema_id": "item_desc",
+										"header_texts": [
+											"Bezeichnung"
+										]
+									},
+									{
+										"left_position": 569.5,
+										"schema_id": "item_quantity",
+										"header_texts": [
+											"Menge"
+										]
+									},
+									{
+										"left_position": 812.5,
+										"schema_id": "item_net_unit_price",
+										"header_texts": [
+											"Einzelpreis"
+										]
+									},
+									{
+										"left_position": 974.5,
+										"schema_id": null,
+										"header_texts": [
+											"Gesamtpreis"
+										]
+									}
+								],
+								"rows": [
+									{
+										"top_position": 758.5,
+										"type": "data"
+									},
+									{
+										"top_position": 806.5,
+										"type": "data"
+									},
+									{
+										"top_position": 869.5,
+										"type": "data"
+									},
+									{
+										"top_position": 958.5,
+										"type": "data"
+									}
+								],
+								"width": 1031.0,
+								"height": 272.5
+							}
+						]
+					}
+				}
+			],
+			"category": "section",
+			"schema_id": "line_items_section"
+		}
+	]
+}

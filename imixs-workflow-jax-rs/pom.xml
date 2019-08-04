@@ -7,28 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>imixs-workflow-jax-rs</artifactId>
 	<name>RESTful API</name>
-
-
 	<description>Imixs Workflow REST Service API provides a servlet implementation for the Imixs JEE Workflow Components.</description>
-
-<!-- 
-	<scm>
-		<connection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-jax-rs/trunk</connection>
-		<developerConnection>scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-jax-rs/trunk</developerConnection>
-		<url>
-			scm:svn:https://svn.java.net/svn/imixs-workflow~svn/imixs-workflow-jax-rs/trunk
-		</url>
-	</scm>
-
-	<licenses>
-		<license>
-			<name>GNU General Public License</name>
-			<url>http://www.gnu.org/licenses/gpl-2.0.txt</url>
-			<distribution>repo</distribution>
-			<comments>All the results of the imixs workflow project are subject to the GPL licensing model. </comments>
-		</license>
-	</licenses>
- -->
 
 	<build>
 

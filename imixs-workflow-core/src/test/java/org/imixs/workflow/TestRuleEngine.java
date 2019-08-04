@@ -1,5 +1,9 @@
 package org.imixs.workflow;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import javax.script.ScriptException;
 
 import org.imixs.workflow.exceptions.PluginException;
@@ -71,6 +75,58 @@ public class TestRuleEngine {
 		result = ruleEngine.evaluateBooleanExpression(script, workitem);
 		Assert.assertFalse(result);
 
+	}
+
+	/**
+	 * The test parses a complex json structure...
+	 * 
+	 * @throws IOException
+	 * @throws ScriptException
+	 */
+	@Test
+	public void testSimpleJsonParseByScript() throws IOException {
+
+		String json = readFromFile("/json/simple_content.json");
+		String script = "var result={}; result.name=data.name;result.id=data.id;";
+
+		RuleEngine ruleEngine = new RuleEngine();
+		ItemCollection result = null;
+		try {
+			result = ruleEngine.evaluateJsonByScript(json, script);
+		} catch (ScriptException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertNotNull(result);
+
+		Assert.assertEquals("simple data", result.getItemValueString("name"));
+		Assert.assertEquals(70805774, result.getItemValueInteger("id"));
+
+	}
+
+	/**
+	 * Helper Method to read a file and return the content as a string.
+	 * 
+	 * @param file
+	 * @return
+	 * @throws IOException
+	 */
+	private String readFromFile(String file) throws IOException {
+		try (InputStream is = getClass().getResourceAsStream(file)) {
+
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			int nRead;
+			byte[] data = new byte[0x4000];
+			while ((nRead = is.read(data, 0, data.length)) != -1) {
+				buffer.write(data, 0, nRead);
+			}
+			buffer.flush();
+			is.close();
+
+			byte[] dataArry = buffer.toByteArray();
+			return new String(dataArry);
+		}
 	}
 
 }

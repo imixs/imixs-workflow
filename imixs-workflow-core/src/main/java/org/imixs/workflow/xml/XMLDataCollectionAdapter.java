@@ -252,7 +252,7 @@ public class XMLDataCollectionAdapter {
 		return writer.toString().getBytes();
 	}
 
-	private static byte[] getBytesFromStream(InputStream is) throws IOException {
+	public static byte[] getBytesFromStream(InputStream is) throws IOException {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		int nRead;
 		byte[] data = new byte[0x4000];
