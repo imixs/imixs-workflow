@@ -4,19 +4,72 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.json.Json;
+import javax.json.stream.JsonParser;
+import javax.json.stream.JsonParser.Event;
+
 import org.imixs.workflow.ItemCollection;
 
+/**
+ * The JSONParser is an utility class to parse JSON structures. The parser
+ * provides methods to transfare a Imixs JSON structure into a Imixs
+ * ItemCollection as well as helper methods to extract single values of a json
+ * file.
+ * <p>
+ * The method parse translates a JSON structure into ItemCollection in a generic
+ * way.
+ * 
+ * @author rsoika
+ *
+ */
 public class JSONParser {
 
 	private static Logger logger = Logger.getLogger(JSONParser.class.getName());
 
 	/**
-	 * This method parses a json input stream
+	 * This method extracts a single key froma a JSON structure. It does not matter
+	 * where the key is defined within the JSON structure. The method simply returns
+	 * the first match.
+	 * 
+	 * @param key
+	 * @param json
+	 * @return
+	 */
+	public static String getKey(String key, String json) {
+		String result = null;
+		// now extract the key
+		JsonParser parser = Json.createParser(new StringReader(json));
+		// {"key":"b38b84614af36f874ba4f08dd4ea40c4e66e0607"}
+
+		Event event = null;
+		while (true) {
+
+			event = parser.next(); // START_OBJECT
+			if (event.name().equals(Event.KEY_NAME.toString())) {
+				String jsonkey = parser.getString();
+				if (key.equals(jsonkey)) {
+					event = parser.next(); // value
+					if (event.name().equals(Event.VALUE_STRING.toString())) {
+						result = parser.getString();
+						break;
+					}
+
+				}
+			}
+		}
+		return result;
+	}
+
+	
+	/**
+	 * This method parses an Imixs JSON input stream and returns a Imixs
+	 * ItemCollection.
 	 * 
 	 * Example: <code>
 	 *  {
@@ -169,7 +222,7 @@ public class JSONParser {
 	 * @throws ParseException
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	static void storeValue(String name, String token, ItemCollection workitem) throws ParseException {
+	private static void storeValue(String name, String token, ItemCollection workitem) throws ParseException {
 		int iPos, iStart, iEnd;
 		Object value;
 		String type = null;
@@ -246,7 +299,7 @@ public class JSONParser {
 	 * @param token
 	 * @return
 	 */
-	static boolean isValueArray(String token) {
+	private static boolean isValueArray(String token) {
 		int b1 = findNextChar(token, '[');
 		int b2 = findNextChar(token, '{');
 		if (b1 > -1 && b1 < b2)
@@ -263,7 +316,7 @@ public class JSONParser {
 	 * @param c
 	 * @return
 	 */
-	static int findNextChar(String token, char c) {
+	private static int findNextChar(String token, char c) {
 		int iPos = token.indexOf(c);
 
 		if (iPos <= 0)

@@ -11,13 +11,13 @@ import org.junit.Test;
 import junit.framework.Assert;
 
 /**
- * Test class test the parsing of a json file used by the workflowRestService
+ * Test class test the parsing of a Imixs JSON file used by the workflowRestService
  * method postWorkitemJSON(InputStream requestBodyStream)
  * 
  * 
  * @author rsoika
  */
-public class TestJSONParser {
+public class TestJSONParserWorkitem {
 
 	@Test
 	public void testSimple() throws ParseException {
