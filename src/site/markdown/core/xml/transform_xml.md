@@ -8,6 +8,7 @@ The following example shows how to transform xml data:
 This is a sample of a xml data structure provided by an external system. The structure contains several 'Documents' containing detail information and DocumentLevelFields
  
 	<?xml version="1.0" encoding="UTF-8"?>
+	<Batch>
 		<Documents>
 			<Document>
 				<Identifier>DOC1</Identifier>
@@ -50,54 +51,54 @@ This is a sample of a xml data structure provided by an external system. The str
 With a XSL template it is possible to transform the given XML data into the Imixs XML schema. This XML format of an Imixs EntityCollection has the following structure:
 
 	<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-	<collection>
-		<entity>
-			<item>
-				<name>numsequencenummer</name>
-				<value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-					xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">1</value>
-			</item>
-			<item>
-				<name>namlasteditor</name>
-				<value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-					xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">sally</value>
-			</item>
-			<item>
-				<name>$uniqueid</name>
-				<value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-					xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">13189f34ce7-5668d41
-				</value>
-			</item>
-			<item>
-				<name>_ordernumber</name>
-				<value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-					xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">345</value>
-			</item>
-		</entity>
-		<entity>
-			<item>
-				<name>numsequencenummer</name>
-				<value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-					xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">2</value>
-			</item>
-			<item>
-				<name>namlasteditor</name>
-				<value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-					xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">Karl</value>
-			</item>
-			<item>
-				<name>$uniqueid</name>
-				<value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-					xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">13189f34ce7-5668d41
-				</value>
-			</item>
-			<item>
-				<name>_ordernumber</name>
-				<value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-					xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">345555</value>
-			</item>
-		</entity>
-	</collection>
+	<data>
+	    <document>
+	       <item>
+	         <name>numsequencenummer</name>
+	         <value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	          xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">1</value>
+	       </item>
+	       <item>
+	         <name>namlasteditor</name>
+	         <value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	          xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">sally</value>
+	       </item>
+	       <item>
+	         <name>$uniqueid</name>
+	         <value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	          xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">13189f34ce7-5668d41
+	         </value>
+	       </item>
+	       <item>
+	         <name>_ordernumber</name>
+	         <value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	          xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">345</value>
+	       </item>
+	    </document>
+	    <document>
+	       <item>
+	         <name>numsequencenummer</name>
+	         <value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	          xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">2</value>
+	       </item>
+	       <item>
+	         <name>namlasteditor</name>
+	         <value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	          xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">Karl</value>
+	       </item>
+	       <item>
+	         <name>$uniqueid</name>
+	         <value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	          xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">13189f34ce7-5668d41
+	         </value>
+	       </item>
+	       <item>
+	         <name>_ordernumber</name>
+	         <value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	          xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">345555</value>
+	       </item>
+	    </document>
+	</data>
 
 See details about the xml format in the section [XML](../index.html). To transform the external data source a simple XSL template can be used like shown in the following example:
  
@@ -106,14 +107,14 @@ See details about the xml format in the section [XML](../index.html). To transfo
 		xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	
 		<xsl:template match="/">
-			<collection>
+			<data>
 				<xsl:apply-templates select="Batch/Documents/Document[Type='Imixs-RG']">
 				</xsl:apply-templates>
-			</collection>
+			</data>
 		</xsl:template>
 	
 		<xsl:template match="Batch/Documents/Document[Type='Imixs-RG']">
-			<entity>
+			<document>
 			
 			<!-- setting General Workflow Settings -->
 				<item>
@@ -154,7 +155,7 @@ See details about the xml format in the section [XML](../index.html). To transfo
 							select="DocumentLevelFields/DocumentLevelField[Name='RG-NR']/Value" />
 					</value>
 				</item>
-			</entity>
+			</document>
 		</xsl:template>
 	</xsl:stylesheet>  
 
