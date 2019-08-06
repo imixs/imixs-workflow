@@ -825,6 +825,22 @@ public class ItemCollection implements Cloneable {
 	}
 
 	/**
+	 * Copies all items of a source ItemCollection.
+	 * <p>
+	 * The method makes a deep copy of the source map using serialization. This is
+	 * to make sure, that no object reference is copied. Other wise for example
+	 * embedded arrays are not cloned. This is also important for JPA to avoid
+	 * changes of attached entity beans with references in the data of an
+	 * ItemCollection.
+	 * 
+	 * @see deepCopyOfMap
+	 * @param map
+	 */
+	public void copy(ItemCollection source) {
+		replaceAllItems(source.getAllItems());
+	}
+
+	/**
 	 * Merges all items from a source map into the current instance. Only Items will
 	 * be copied if the current instance does not have an item with the same name.
 	 * If you want to copy all item values, use the method replaceAllItems instead.

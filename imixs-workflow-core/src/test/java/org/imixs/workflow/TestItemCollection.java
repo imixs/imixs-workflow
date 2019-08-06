@@ -215,7 +215,7 @@ public class TestItemCollection {
 	 * 
 	 */
 	@Test
-	public void testCopyValues() {
+	public void testReplaceAllValues() {
 
 		ItemCollection itemCollection1 = new ItemCollection();
 		ItemCollection itemCollection2 = new ItemCollection();
@@ -225,6 +225,33 @@ public class TestItemCollection {
 
 		// copy values
 		itemCollection2.replaceAllItems(itemCollection1.getAllItems());
+		Assert.assertEquals(itemCollection1, itemCollection2);
+		Assert.assertNotSame(itemCollection1, itemCollection2);
+
+		// change value of itemcol2
+		itemCollection2.replaceItemValue("txtName", "Anna");
+		Assert.assertEquals("Manfred", itemCollection1.getItemValueString("txtName"));
+		Assert.assertEquals("Anna", itemCollection2.getItemValueString("txtName"));
+
+		Assert.assertFalse(itemCollection1.equals(itemCollection2));
+		Assert.assertNotSame(itemCollection1, itemCollection2);
+
+	}
+	
+	/**
+	 * Test the copy method
+	 */
+	@Test
+	public void testCopyValues() {
+
+		ItemCollection itemCollection1 = new ItemCollection();
+		ItemCollection itemCollection2 = new ItemCollection();
+
+		itemCollection1.replaceItemValue("txtName", "Manfred");
+		itemCollection1.replaceItemValue("numID", new Integer(20));
+
+		// copy values
+		itemCollection2.copy(itemCollection1);
 		Assert.assertEquals(itemCollection1, itemCollection2);
 		Assert.assertNotSame(itemCollection1, itemCollection2);
 
