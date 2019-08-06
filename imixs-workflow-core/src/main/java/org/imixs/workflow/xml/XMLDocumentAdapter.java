@@ -105,7 +105,8 @@ public class XMLDocumentAdapter {
 	 *            instance of a ItemCollection to be converted
 	 */
 	public static XMLDocument getDocument(final ItemCollection document) {
-		return getDocument(document, null);
+		List<String> list=null;
+		return getDocument(document, list);
 	}
 
 	/**
@@ -183,6 +184,25 @@ public class XMLDocumentAdapter {
 
 		return entity;
 	}
+	
+	/**
+	 * This Method converts a <code> org.imixs.workflow.ItemCollection</code> into a
+	 * <code>XMLDocument</code>
+	 * 
+	 * <p>
+	 * The method verifies if the values stored are basic java types. If not these
+	 * values will not be converted!
+	 * 
+	 * @param document
+	 *            instance of a ItemCollection to be converted
+	 * @param itemNames
+	 *            - optional list of item names to be converted. If null all items
+	 *            will be converted
+	 */
+	public static XMLDocument getDocument(final ItemCollection document, final String... itemNames) {		
+		return getDocument(document, itemNames);		
+	}
+
 
 	/**
 	 * This method sorts all items of a XMLItemCollection by item name.

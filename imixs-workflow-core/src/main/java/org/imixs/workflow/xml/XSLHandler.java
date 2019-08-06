@@ -104,6 +104,7 @@ public class XSLHandler {
 
 	}
 
+	
 	/**
 	 * This method transforms an Collection of Documents into XML and translates the
 	 * result based on a provided XSL template. The result will be written into a
@@ -117,7 +118,6 @@ public class XSLHandler {
 	 * @throws TransformerException
 	 * @throws IOException
 	 */
-
 	public static byte[] transform(List<ItemCollection> dataSource, String xslSource, String encoding,
 			OutputStream output) throws JAXBException, TransformerException, IOException {
 
@@ -130,6 +130,43 @@ public class XSLHandler {
 		Marshaller m = context.createMarshaller();
 		m.setProperty("jaxb.encoding", encoding);
 		m.marshal(xmlDataCollection, writer);
+
+		// create a ByteArray Output Stream
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		try {
+			XSLHandler.transform(writer.toString(), xslSource, encoding, outputStream);
+			result=outputStream.toByteArray();
+		} finally {
+			outputStream.close();
+		}
+		return result;
+	}
+	
+	/**
+	 * This method transforms a single Documents (ItemCollection) into XML and translates the
+	 * result based on a provided XSL template. The result will be written into a
+	 * output stream.
+	 * 
+	 * @param xmlSource -
+	 * @param xslSource
+	 * @param encoding  (default UTF-8)
+	 * @return
+	 * @throws JAXBException
+	 * @throws TransformerException
+	 * @throws IOException
+	 */
+	public static byte[] transform(ItemCollection dataSource, String xslSource, String encoding,
+			OutputStream output) throws JAXBException, TransformerException, IOException {
+
+		byte[] result=null;
+		XMLDocument xmlDocument=XMLDocumentAdapter.getDocument(dataSource);
+		
+		StringWriter writer = new StringWriter();
+
+		JAXBContext context = JAXBContext.newInstance(XMLDocument.class);
+		Marshaller m = context.createMarshaller();
+		m.setProperty("jaxb.encoding", encoding);
+		m.marshal(xmlDocument, writer);
 
 		// create a ByteArray Output Stream
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
