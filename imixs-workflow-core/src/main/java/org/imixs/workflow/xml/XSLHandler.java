@@ -27,7 +27,6 @@
 package org.imixs.workflow.xml;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -118,10 +117,12 @@ public class XSLHandler {
 	 * @throws TransformerException
 	 * @throws IOException
 	 */
-	public static byte[] transform(List<ItemCollection> dataSource, String xslSource, String encoding,
+	public static void transform(List<ItemCollection> dataSource, String xslSource, String encoding,
 			OutputStream output) throws JAXBException, TransformerException, IOException {
 
-		byte[] result=null;
+		if (encoding == null || encoding.isEmpty()) {
+			encoding = "UTF-8";
+		}
 		XMLDataCollection xmlDataCollection = XMLDataCollectionAdapter.getDataCollection(dataSource);
 
 		StringWriter writer = new StringWriter();
@@ -131,15 +132,7 @@ public class XSLHandler {
 		m.setProperty("jaxb.encoding", encoding);
 		m.marshal(xmlDataCollection, writer);
 
-		// create a ByteArray Output Stream
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		try {
-			XSLHandler.transform(writer.toString(), xslSource, encoding, outputStream);
-			result=outputStream.toByteArray();
-		} finally {
-			outputStream.close();
-		}
-		return result;
+		XSLHandler.transform(writer.toString(), xslSource, encoding, output);
 	}
 	
 	/**
@@ -155,10 +148,13 @@ public class XSLHandler {
 	 * @throws TransformerException
 	 * @throws IOException
 	 */
-	public static byte[] transform(ItemCollection dataSource, String xslSource, String encoding,
+	public static void transform(ItemCollection dataSource, String xslSource, String encoding,
 			OutputStream output) throws JAXBException, TransformerException, IOException {
 
-		byte[] result=null;
+		//byte[] result=null;
+		if (encoding == null || encoding.isEmpty()) {
+			encoding = "UTF-8";
+		}
 		XMLDocument xmlDocument=XMLDocumentAdapter.getDocument(dataSource);
 		
 		StringWriter writer = new StringWriter();
@@ -168,14 +164,6 @@ public class XSLHandler {
 		m.setProperty("jaxb.encoding", encoding);
 		m.marshal(xmlDocument, writer);
 
-		// create a ByteArray Output Stream
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		try {
-			XSLHandler.transform(writer.toString(), xslSource, encoding, outputStream);
-			result=outputStream.toByteArray();
-		} finally {
-			outputStream.close();
-		}
-		return result;
+		XSLHandler.transform(writer.toString(), xslSource, encoding, output);
 	}
 }

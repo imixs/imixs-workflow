@@ -324,10 +324,12 @@ public class ReportService {
 			encoding = "UTF-8";
 		}
 
+		byte[] _bytes =null;
 		// create a ByteArray Output Stream
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		byte[] _bytes = XSLHandler.transform(data, xslTemplate, encoding, outputStream);
-
+		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+			XSLHandler.transform(data, xslTemplate, encoding, outputStream);
+			_bytes = outputStream.toByteArray(); 
+		}
 		FileData fileData = new FileData(fileName, _bytes, sContentType, null);
 
 		return fileData;
