@@ -1,4 +1,4 @@
-#Rule Plugin 
+# Rule Plugin 
 The Imixs RulePlugin is used to evaluate business rules during the processing life cycle of an event. 
 
 _Plugin Class Name:_
@@ -9,6 +9,8 @@ A business rule can be written in any script language supported by the JVM. E.g 
 The [Imixs-BPMN modeler](../../modelling/activities.html) provides an easy way to enter business rules for an event. 
 
 <img src="../../images/modelling/bpmn_screen_24.png"/>
+
+The the section [RuleEngine](../../core/ruleengine.html) for more information about the Imixs Rule Engine. 
 
 ## Script Objects
 
@@ -100,7 +102,7 @@ The result object can also be constructed with a JSON string:
  
  
  
-##How to control the process flow 
+## How to control the process flow 
 To control the process flow by the result of an evaluated business rule a script can set the following result properties:
  
 |Name      |Type        | Description                                   |
@@ -159,7 +161,7 @@ If no errorCode is defined the default errorCode 'VALIDATION_ERROR' will be set.
   
 This script defines the result as an JSON object containing an array with two error messages. The error messages will be part of  the param[] property of the PluginException. See the [section exception handling](./exception_handling.html)
 
-##Definition of a Business Rule 
+## Definition of a Business Rule 
 
 The business rule and the used script language are defined in the following BPMN event properties:
 
@@ -169,7 +171,7 @@ The business rule and the used script language are defined in the following BPMN
 The rule plugin supports any Script Engine provided by the JVM. 
 
 
-##JDK-7 Support 
+## JDK-7 Support 
 
 With JDK-8 the new Script Engine 'Nashorn' was introduced. 
 Nashorn treats java.util.Map objects as JSON objects which allows to tread the Map keys as "properties". 

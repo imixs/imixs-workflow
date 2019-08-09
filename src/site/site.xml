@@ -86,6 +86,7 @@
 					<item name="Post data" href="core/xml/post_xml.html" />
 					<item name="Marshaling" href="core/xml/marshal.html" />
 				</item>
+				<item name="Rule Engine" href="./core/ruleengine.html" />
 			</item>
 			
 			<item name="Plugin API" href="./engine/plugins/index.html"

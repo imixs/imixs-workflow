@@ -141,9 +141,9 @@ public class RuleEngine {
 	}
 
 	/**
-	 * This method evaluates the business rule defined by the provided activity. The
-	 * method returns the instance of the script engine which can be used to
-	 * continue evaluation. If a rule evaluation was not successful, the method
+	 * This method evaluates the business rule defined by the provided event. The
+	 * method returns the instance of the evaluated result object which can be used
+	 * to continue evaluation. If a rule evaluation was not successful, the method
 	 * returns null.
 	 * 
 	 * @param adocumentContext
@@ -188,7 +188,8 @@ public class RuleEngine {
 	 *   var result={}; result.name=data.name;
 	 * </code>
 	 * <p>
-	 * The method returns an ItemCollection with the result object. 
+	 * The method returns an ItemCollection with the result object.
+	 * 
 	 * @param json
 	 *            - a JSON data string
 	 * @param script
