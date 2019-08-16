@@ -150,3 +150,16 @@ You can use the _ViewHandler_ also to display and navigate a data result with aj
 		
 The comment section in this example encapsulates the method call 'onLoad(view)'. This will pre compute the data result. In this way the el expression _view.endOfList_ is computed correctly during navigation.  		
 		
+		
+		
+## The LoginController
+
+This Backing Bean LoginController provides methods to identify the login state and user roles. 
+
+ * isAuthenticated() - returns true if user is authenticated and has at least on of the Imixs Access Roles
+ * isUserInRole(rolename) - tests if the user is assigned to a specific JAAS role
+ * getUserPrincipal() - returns the userPrincipal Name
+ * getUserNameList() - Returns the current user name list including userId, roles and context. See also the [DocumentService](../engine/documentservice.html)
+ * doLogout(ActionEvent event)  - invalidates the current JSF user session
+	 * groups.
+ 
