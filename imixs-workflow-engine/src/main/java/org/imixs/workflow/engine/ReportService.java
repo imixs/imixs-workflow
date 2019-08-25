@@ -50,6 +50,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.TransformerException;
@@ -93,10 +94,10 @@ public class ReportService {
 
 	private static Logger logger = Logger.getLogger(ReportService.class.getName());
 
-	@EJB
+	@Inject
 	DocumentService documentService;
 
-	@EJB
+	@Inject
 	WorkflowService workflowService;
 
 	/**

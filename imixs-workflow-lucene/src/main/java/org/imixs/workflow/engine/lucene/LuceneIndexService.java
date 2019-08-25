@@ -31,18 +31,15 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
@@ -62,6 +59,9 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -70,305 +70,83 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.adminp.AdminPService;
+import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.exceptions.QueryException;
 
 /**
- * The LuceneUpdateService provides methods to write Imixs Workitems into a
- * Lucene search index. With the method <code>addWorkitem()</code> a
- * ItemCollection can be added to a lucene search index. The service init method
- * reads the property file 'imixs.properties' from the current classpath to
- * determine the configuration.
- * 
- * <ul>
- * <li>The property "IndexDir" defines the location of the lucene index
- * <li>The property "FulltextFieldList" lists all fields which should be
- * searchable after a workitem was updated
- * <li>The property "IndexFieldList" lists all fields which should be indexed as
- * keywords by the lucene search engine
- * </ul>
- * 
- * The singleton pattern is used to avoid conflicts within multi-thread
- * scenarios. The service is used by the LucenPlugin to update the lucene index
- * during a workflow processing step.
- * 
- * 
- * @see http://stackoverflow.com/questions/34880347/why-did-lucene-indexwriter-
- *      did-not-update-the-index-when-called-from-a-web-modul
- * @see LucenePlugin
- * @version 1.2
+ * This session ejb provides functionallity to maintain a local Lucen index.
+ * @version 1.0
  * @author rsoika
  */
-@Singleton
-public class LuceneUpdateService {
+@Stateless
+@LocalBean
+public class LuceneIndexService {
 
-	protected static final String DEFAULT_ANALYSER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
-	protected static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
-	protected static final String ANONYMOUS = "ANONYMOUS";
-
+	public static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
 	public static final String EVENTLOG_TOPIC_ADD = "lucene.add";
 	public static final String EVENTLOG_TOPIC_REMOVE = "lucene.remove";
-	protected static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
+	
+	public static final String ANONYMOUS = "ANONYMOUS";
+	public static final String DEFAULT_ANALYSER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
+	public static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
+	
+	
+	
+	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
+	private EntityManager manager;
 
+	
 	@Inject
-	@ConfigProperty(name = "lucence.indexDir", defaultValue = LuceneUpdateService.DEFAULT_INDEX_DIRECTORY)
+	@ConfigProperty(name = "lucence.indexDir", defaultValue = DEFAULT_INDEX_DIRECTORY)
 	private String luceneIndexDir;
 
 	@Inject
-	@ConfigProperty(name = "lucence.analyzerClass", defaultValue = LuceneUpdateService.DEFAULT_ANALYSER)
+	@ConfigProperty(name = "lucence.analyzerClass", defaultValue = DEFAULT_ANALYSER)
 	private String luceneAnalyserClass;
 
-	@Inject
-	@ConfigProperty(name = "lucence.fulltextFieldList", defaultValue = "")
-	private String luceneFulltextFieldList;
-
-	@Inject
-	@ConfigProperty(name = "lucence.indexFieldListAnalyze", defaultValue = "")
-	private String luceneIndexFieldListAnalyse;
-
-	@Inject
-	@ConfigProperty(name = "lucence.indexFieldListNoAnalyze", defaultValue = "")
-	private String luceneIndexFieldListNoAnalyse;
-
-	@Inject
-	@ConfigProperty(name = "lucence.indexFieldListStore", defaultValue = "")
-	private String luceneIndexFieldListStore;
-
-	private List<String> searchFieldList = null;
-	private List<String> indexFieldListAnalyse = null;
-	private List<String> indexFieldListNoAnalyse = null;
-	private List<String> indexFieldListStore = null;
-
-	// default field lists
-	private static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
-	private static List<String> DEFAULT_NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
-			"$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator",
-			"$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "name", "txtname",
-			"$owner", "namowner", "txtworkitemref", "$uniqueidsource", "$uniqueidversions", "$lasttask", "$lastevent",
-			"$lasteventdate");
-	private static List<String> DEFAULT_STORE_FIELD_LIST = Arrays.asList("type", "$taskid", "$writeaccess",
-			"$workflowsummary", "$workflowabstract", "$workflowgroup", "$workflowstatus", "$modified", "$created",
-			"$lasteventdate", "$creator", "$editor", "$lasteditor", "$owner", "namowner");
-
-	@EJB
-	private EventLogService eventLogService;
 
 	@Inject
 	private LuceneItemAdapter luceneItemAdapter;
 
-	@EJB
+	
+	private static Logger logger = Logger.getLogger(LuceneIndexService.class.getName());
+
+	@Inject
 	private AdminPService adminPService;
 
-	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
-	private EntityManager manager;
 
-	private static Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
+	@Inject
+	private DocumentService documentService;
 
-	/**
-	 * PostContruct event - The method loads the lucene index properties from the
-	 * imixs.properties file from the classpath. If no properties are defined the
-	 * method terminates.
-	 * 
-	 */
-	@PostConstruct
-	void init() {
+	@Inject
+	private EventLogService eventLogService;
+	
+	@Inject
+	private SchemaService schemaService; 
 
-		logger.finest("......lucene IndexDir=" + luceneIndexDir);
-		logger.finest("......lucene FulltextFieldList=" + luceneFulltextFieldList);
-		logger.finest("......lucene IndexFieldListAnalyse=" + luceneIndexFieldListAnalyse);
-		logger.finest("......lucene IndexFieldListNoAnalyse=" + luceneIndexFieldListNoAnalyse);
-
-		// compute search field list
-		searchFieldList = new ArrayList<String>();
-		// add all static default field list
-		searchFieldList.addAll(DEFAULT_SEARCH_FIELD_LIST);
-		if (luceneFulltextFieldList != null && !luceneFulltextFieldList.isEmpty()) {
-			StringTokenizer st = new StringTokenizer(luceneFulltextFieldList, ",");
-			while (st.hasMoreElements()) {
-				String sName = st.nextToken().toLowerCase().trim();
-				// do not add internal fields
-				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName) && !searchFieldList.contains(sName))
-					searchFieldList.add(sName);
-			}
-		}
-
-		// compute Index field list (Analyze)
-		indexFieldListAnalyse = new ArrayList<String>();
-		if (luceneIndexFieldListAnalyse != null && !luceneIndexFieldListAnalyse.isEmpty()) {
-			StringTokenizer st = new StringTokenizer(luceneIndexFieldListAnalyse, ",");
-			while (st.hasMoreElements()) {
-				String sName = st.nextToken().toLowerCase().trim();
-				// do not add internal fields
-				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
-					indexFieldListAnalyse.add(sName);
-			}
-		}
-
-		// compute Index field list (NoAnalyze)
-		indexFieldListNoAnalyse = new ArrayList<String>();
-		// add all static default field list
-		indexFieldListNoAnalyse.addAll(DEFAULT_NOANALYSE_FIELD_LIST);
-		if (luceneIndexFieldListNoAnalyse != null && !luceneIndexFieldListNoAnalyse.isEmpty()) {
-			// add additional field list from imixs.properties
-			StringTokenizer st = new StringTokenizer(luceneIndexFieldListNoAnalyse, ",");
-			while (st.hasMoreElements()) {
-				String sName = st.nextToken().toLowerCase().trim();
-				if (!indexFieldListNoAnalyse.contains(sName))
-					indexFieldListNoAnalyse.add(sName);
-			}
-		}
-
-		// compute Index field list (Store)
-		indexFieldListStore = new ArrayList<String>();
-		// add all static default field list
-		indexFieldListStore.addAll(DEFAULT_STORE_FIELD_LIST);
-		if (luceneIndexFieldListStore != null && !luceneIndexFieldListStore.isEmpty()) {
-			// add additional field list from imixs.properties
-			StringTokenizer st = new StringTokenizer(luceneIndexFieldListStore, ",");
-			while (st.hasMoreElements()) {
-				String sName = st.nextToken().toLowerCase().trim();
-				if (!indexFieldListStore.contains(sName))
-					indexFieldListStore.add(sName);
-			}
-		}
-
-		// Issue #518:
-		// if a field of the indexFieldListStore is not part of the
-		// indexFieldListAnalyse , than we add these fields to the indexFieldListAnalyse
-		// This is to guaranty that we store the field value in any case.
-		for (String fieldName : indexFieldListStore) {
-			if (!indexFieldListAnalyse.contains(fieldName)) {
-				// add this field into he indexFieldListAnalyse
-				indexFieldListAnalyse.add(fieldName);
-			}
-		}
-
+	
+	public String getLuceneIndexDir() {
+		return luceneIndexDir;
 	}
 
-	/**
-	 * Returns the Lucene configuration
-	 * 
-	 * @return
-	 */
-	public ItemCollection getConfiguration() {
-		ItemCollection config = new ItemCollection();
 
-		config.replaceItemValue("lucence.indexDir", luceneIndexDir);
-		// config.replaceItemValue("lucence.lockFactory", luceneLockFactory);
-		config.replaceItemValue("lucence.analyzerClass", luceneAnalyserClass);
-		config.replaceItemValue("lucence.fulltextFieldList", searchFieldList);
-		config.replaceItemValue("lucence.indexFieldListAnalyze", indexFieldListAnalyse);
-		config.replaceItemValue("lucence.indexFieldListNoAnalyze", indexFieldListNoAnalyse);
-		config.replaceItemValue("lucence.indexFieldListStore", indexFieldListStore);
-
-		return config;
+	public void setLuceneIndexDir(String luceneIndexDir) {
+		this.luceneIndexDir = luceneIndexDir;
 	}
 
-	/**
-	 * This method adds a single document into the to the Lucene index. Before the
-	 * document is added to the index, a new eventLog is created. The document will
-	 * be indexed after the method flushEventLog is called. This method is called by
-	 * the LuceneSearchService finder methods.
-	 * <p>
-	 * The method supports committed read. This means that a running transaction
-	 * will not read an uncommitted document from the Lucene index.
-	 * 
-	 * 
-	 * @param documentContext
-	 */
-	public void updateDocument(ItemCollection documentContext) {
-		// adds the document into a empty Collection and call the method
-		// updateDocuments.
-		List<ItemCollection> documents = new ArrayList<ItemCollection>();
-		documents.add(documentContext);
-		updateDocuments(documents);
+
+	public String getLuceneAnalyserClass() {
+		return luceneAnalyserClass;
 	}
 
-	/**
-	 * This method adds a collection of documents to the Lucene index. For each
-	 * document in a given selection a new eventLog is created. The documents will
-	 * be indexed after the method flushEventLog is called. This method is called by
-	 * the LuceneSearchService finder methods.
-	 * <p>
-	 * The method supports committed read. This means that a running transaction
-	 * will not read uncommitted documents from the Lucene index.
-	 * 
-	 * @see updateDocumentsUncommitted
-	 * @param documents
-	 *            to be indexed
-	 * @throws IndexException
-	 */
-	public void updateDocuments(Collection<ItemCollection> documents) {
-		long ltime = System.currentTimeMillis();
 
-		// write a new EventLog entry for each document....
-		for (ItemCollection workitem : documents) {
-			// skip if the flag 'noindex' = true
-			if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
-				eventLogService.createEvent(EVENTLOG_TOPIC_ADD, workitem.getUniqueID());
-			}
-		}
-
-		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime) + " ms ("
-					+ documents.size() + " documents to be index)");
-		}
+	public void setLuceneAnalyserClass(String luceneAnalyserClass) {
+		this.luceneAnalyserClass = luceneAnalyserClass;
 	}
-
-	/**
-	 * This method adds a collection of documents to the Lucene index. The documents
-	 * are added immediately to the index. Calling this method within a running
-	 * transaction leads to a uncommitted reads in the index. For transaction
-	 * control, it is recommended to use instead the the method updateDocumetns()
-	 * which takes care of uncommitted reads.
-	 * <p>
-	 * This method is used by the JobHandlerRebuildIndex only.
-	 * 
-	 * @param documents
-	 *            of ItemCollections to be indexed
-	 * @throws IndexException
-	 */
-	public void updateDocumentsUncommitted(Collection<ItemCollection> documents) {
-
-		IndexWriter awriter = null;
-		long ltime = System.currentTimeMillis();
-		try {
-			awriter = createIndexWriter();
-			// add workitem to search index....
-			for (ItemCollection workitem : documents) {
-
-				if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
-					// create term
-					Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
-					logger.finest("......lucene add/update uncommitted workitem '"
-							+ workitem.getItemValueString(WorkflowKernel.UNIQUEID) + "' to index...");
-					awriter.updateDocument(term, createDocument(workitem));
-				}
-			}
-		} catch (IOException luceneEx) {
-			logger.warning("lucene error: " + luceneEx.getMessage());
-			throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index", luceneEx);
-		} finally {
-			// close writer!
-			if (awriter != null) {
-				logger.finest("......lucene close IndexWriter...");
-				try {
-					awriter.close();
-				} catch (CorruptIndexException e) {
-					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
-				} catch (IOException e) {
-					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
-				}
-			}
-		}
-
-		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("... update index block in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
-					+ " workitems total)");
-		}
-	}
-
+	
 	/**
 	 * This method adds a new eventLog for a document to be deleted from the index.
 	 * The document will be removed from the index after the method fluschEventLog
@@ -381,6 +159,7 @@ public class LuceneUpdateService {
 	 * @throws PluginException
 	 */
 	public void removeDocument(String uniqueID) {
+		
 		long ltime = System.currentTimeMillis();
 		eventLogService.createEvent(EVENTLOG_TOPIC_REMOVE, uniqueID);
 		if (logger.isLoggable(Level.FINE)) {
@@ -388,6 +167,8 @@ public class LuceneUpdateService {
 					+ " ms (1 document to be removed)");
 		}
 	}
+	
+
 
 	/**
 	 * Flush the EventLog cache. This method is called by the LuceneSerachServicen
@@ -548,12 +329,14 @@ public class LuceneUpdateService {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private Document createDocument(ItemCollection aworkitem) {
+	public Document createDocument(ItemCollection aworkitem) {
 		String sValue = null;
 		Document doc = new Document();
 		// combine all search fields from the search field list into one field
 		// ('content') for the lucene document
 		String sContent = "";
+		
+		List<String> searchFieldList = schemaService.getFieldList();
 		for (String aFieldname : searchFieldList) {
 			sValue = "";
 			// check value list - skip empty fields
@@ -589,15 +372,18 @@ public class LuceneUpdateService {
 
 		// add each field from the indexFieldList into the lucene document
 		List<String> _localFieldListStore = new ArrayList<String>();
-		_localFieldListStore.addAll(indexFieldListStore);
+		_localFieldListStore.addAll(schemaService.getFieldListStore());
 
 		// analyzed...
+		List<String> indexFieldListAnalyse = schemaService.getFieldListAnalyse();
 		for (String aFieldname : indexFieldListAnalyse) {
 			addItemValues(doc, aworkitem, aFieldname, true, _localFieldListStore.contains(aFieldname));
 			// avoid duplication.....
 			_localFieldListStore.remove(aFieldname);
 		}
 		// ... and not analyzed...
+		
+		List<String> indexFieldListNoAnalyse = schemaService.getFieldListNoAnalyse();
 		for (String aFieldname : indexFieldListNoAnalyse) {
 			addItemValues(doc, aworkitem, aFieldname, false, _localFieldListStore.contains(aFieldname));
 		}
@@ -680,36 +466,9 @@ public class LuceneUpdateService {
 
 	}
 
-	/**
-	 * This method creates a new instance of a lucene IndexWriter.
-	 * 
-	 * The location of the lucene index in the filesystem is read from the
-	 * imixs.properties
-	 * 
-	 * @return
-	 * @throws IOException
-	 */
-	private IndexWriter createIndexWriter() throws IOException {
-		// create a IndexWriter Instance
-		Directory indexDir = FSDirectory.open(Paths.get(luceneIndexDir));
-		// verify existence of index directory...
-		if (!DirectoryReader.indexExists(indexDir)) {
-			logger.info("...lucene index does not yet exist, initialize the index now....");
-			rebuildIndex(indexDir);
-		}
-		IndexWriterConfig indexWriterConfig;
-		// indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
-		try {
-			// issue #429
-			indexWriterConfig = new IndexWriterConfig((Analyzer) Class.forName(luceneAnalyserClass).newInstance());
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-			throw new IndexException(IndexException.INVALID_INDEX,
-					"Unable to create analyzer '" + luceneAnalyserClass + "'", e);
-		}
+	
 
-		return new IndexWriter(indexDir, indexWriterConfig);
-	}
-
+	
 	/**
 	 * This method forces an update of the full text index. The method also creates
 	 * the index directory if it does not yet exist.
@@ -729,5 +488,211 @@ public class LuceneUpdateService {
 		job.replaceItemValue("job", AdminPService.JOB_REBUILD_LUCENE_INDEX);
 		adminPService.createJob(job);
 	}
+	
+	/**
+	 * This method adds a collection of documents to the Lucene index. The documents
+	 * are added immediately to the index. Calling this method within a running
+	 * transaction leads to a uncommitted reads in the index. For transaction
+	 * control, it is recommended to use instead the the method updateDocumetns()
+	 * which takes care of uncommitted reads.
+	 * <p>
+	 * This method is used by the JobHandlerRebuildIndex only.
+	 * 
+	 * @param documents
+	 *            of ItemCollections to be indexed
+	 * @throws IndexException
+	 */
+	public void updateDocumentsUncommitted(Collection<ItemCollection> documents) {
+
+		IndexWriter awriter = null;
+		long ltime = System.currentTimeMillis();
+		try {
+			awriter = createIndexWriter();
+			// add workitem to search index....
+			for (ItemCollection workitem : documents) {
+
+				if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
+					// create term
+					Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
+					logger.finest("......lucene add/update uncommitted workitem '"
+							+ workitem.getItemValueString(WorkflowKernel.UNIQUEID) + "' to index...");
+					awriter.updateDocument(term, createDocument(workitem));
+				}
+			}
+		} catch (IOException luceneEx) {
+			logger.warning("lucene error: " + luceneEx.getMessage());
+			throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index", luceneEx);
+		} finally {
+			// close writer!
+			if (awriter != null) {
+				logger.finest("......lucene close IndexWriter...");
+				try {
+					awriter.close();
+				} catch (CorruptIndexException e) {
+					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+				} catch (IOException e) {
+					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+				}
+			}
+		}
+
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("... update index block in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
+					+ " workitems total)");
+		}
+	}
+
+	
+	
+	/**
+	 * This method creates a new instance of a lucene IndexWriter.
+	 * 
+	 * The location of the lucene index in the filesystem is read from the
+	 * imixs.properties
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	public IndexWriter createIndexWriter() throws IOException {
+		// create a IndexWriter Instance
+		Directory indexDir = FSDirectory.open(Paths.get(luceneIndexDir));
+		// verify existence of index directory...
+		if (!DirectoryReader.indexExists(indexDir)) {
+			logger.info("...lucene index does not yet exist, initialize the index now....");
+			rebuildIndex(indexDir);
+		}
+		IndexWriterConfig indexWriterConfig;
+		// indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
+		try {
+			// issue #429
+			indexWriterConfig = new IndexWriterConfig((Analyzer) Class.forName(luceneAnalyserClass).newInstance());
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			throw new IndexException(IndexException.INVALID_INDEX,
+					"Unable to create analyzer '" + luceneAnalyserClass + "'", e);
+		}
+
+		return new IndexWriter(indexDir, indexWriterConfig);
+	}
+	
+	
+	/**
+	 * This method normalizes a search term using the Lucene ClassicTokenzier. The
+	 * method can be used by clients to prepare a search phrase.
+	 * 
+	 * The method also escapes the result search term.
+	 * 
+	 * e.g. 'europe/berlin' will be normalized to 'europe berlin' e.g. 'r555/333'
+	 * will be unmodified 'r555/333'
+	 * 
+	 * @param searchTerm
+	 * @return normalzed search term
+	 * @throws QueryException
+	 */
+	public String normalizeSearchTerm(String searchTerm) throws QueryException {
+		if (searchTerm == null) {
+			return "";
+		}
+		if (searchTerm.trim().isEmpty()) {
+			return "";
+		}
+
+		ClassicAnalyzer analyzer = new ClassicAnalyzer();
+		QueryParser parser = new QueryParser("content", analyzer);
+		// issue #331
+		parser.setAllowLeadingWildcard(true);
+		try {
+			Query result = parser.parse(escapeSearchTerm(searchTerm, false));
+			searchTerm = result.toString("content");
+		} catch (ParseException e) {
+			logger.warning("Unable to normalze serchTerm '" + searchTerm + "'  -> " + e.getMessage());
+			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
+		}
+		return escapeSearchTerm(searchTerm, true);
+
+	}
+	/**
+	 * Returns the extended search term for a given query. The search term will be
+	 * extended with a users roles to test the read access level of each workitem
+	 * matching the search term.
+	 * 
+	 * @param sSearchTerm
+	 * @return extended search term
+	 * @throws QueryException
+	 *             in case the searchtem is not understandable.
+	 */
+	public String getExtendedSearchTerm(String sSearchTerm) throws QueryException {
+		// test if searchtem is provided
+		if (sSearchTerm == null || "".equals(sSearchTerm)) {
+			logger.warning("No search term provided!");
+			return "";
+		}
+		// extend the Search Term if user is not ACCESSLEVEL_MANAGERACCESS
+		if (!documentService.isUserInRole(DocumentService.ACCESSLEVEL_MANAGERACCESS)) {
+			// get user names list
+			List<String> userNameList = documentService.getUserNameList();
+			// create search term (always add ANONYMOUS)
+			String sAccessTerm = "($readaccess:" + ANONYMOUS;
+			for (String aRole : userNameList) {
+				if (!"".equals(aRole))
+					sAccessTerm += " OR $readaccess:\"" + aRole + "\"";
+			}
+			sAccessTerm += ") AND ";
+			sSearchTerm = sAccessTerm + sSearchTerm;
+		}
+		logger.finest("......lucene final searchTerm=" + sSearchTerm);
+
+		return sSearchTerm;
+	}
+
+	/**
+	 * This helper method escapes wildcard tokens found in a lucene search term. The
+	 * method can be used by clients to prepare a search phrase.
+	 * 
+	 * The method rewrites the lucene <code>QueryParser.escape</code> method and did
+	 * not! escape '*' char.
+	 * 
+	 * Clients should use the method normalizeSearchTerm() instead of
+	 * escapeSearchTerm() to prepare a user input for a lucene search.
+	 * 
+	 * 
+	 * @see normalizeSearchTerm
+	 * @param searchTerm
+	 * @param ignoreBracket
+	 *            - if true brackes will not be escaped.
+	 * @return escaped search term
+	 */
+	public String escapeSearchTerm(String searchTerm, boolean ignoreBracket) {
+		if (searchTerm == null || searchTerm.isEmpty()) {
+			return searchTerm;
+		}
+
+		// this is the code from the QueryParser.escape() method without the '*'
+		// char!
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < searchTerm.length(); i++) {
+			char c = searchTerm.charAt(i);
+			// These characters are part of the query syntax and must be escaped
+			// (ignore brackets!)
+			if (c == '\\' || c == '+' || c == '-' || c == '!' || c == ':' || c == '^' || c == '[' || c == ']'
+					|| c == '\"' || c == '{' || c == '}' || c == '~' || c == '?' || c == '|' || c == '&' || c == '/') {
+				sb.append('\\');
+			}
+
+			// escape bracket?
+			if (!ignoreBracket && (c == '(' || c == ')')) {
+				sb.append('\\');
+			}
+
+			sb.append(c);
+		}
+		return sb.toString();
+
+	}
+
+	public String escapeSearchTerm(String searchTerm) {
+		return escapeSearchTerm(searchTerm, false);
+	}
+
+
 
 }

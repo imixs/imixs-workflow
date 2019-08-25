@@ -82,7 +82,7 @@ public class SimulationService implements WorkflowContext {
 	@Any
 	private Instance<Plugin> plugins;
 
-	@EJB
+	@Inject
 	private ModelService modelService;
 
 	public ModelService getModelService() {

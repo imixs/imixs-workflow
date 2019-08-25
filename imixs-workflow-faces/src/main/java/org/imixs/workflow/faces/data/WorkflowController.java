@@ -116,10 +116,10 @@ public class WorkflowController extends AbstractDataController implements Serial
 	private static final long serialVersionUID = 1L;
 	private static Logger logger = Logger.getLogger(WorkflowController.class.getName());
 
-	@EJB
+	@Inject
 	ModelService modelService;
 
-	@EJB
+	@Inject
 	WorkflowService workflowService;
 
 	@Inject

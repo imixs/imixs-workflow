@@ -109,7 +109,7 @@ public class DocumentController extends AbstractDataController implements Serial
 	@Inject
 	protected Event<WorkflowEvent> events;
 	
-	@EJB
+	@Inject
 	private DocumentService documentService;
 	
 	public DocumentController() {

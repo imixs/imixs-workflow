@@ -32,8 +32,8 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -54,9 +54,9 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.WorkflowException;
 import org.imixs.workflow.xml.XMLDataCollection;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
-import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 
 /**
  * The AdminPRestService provides methods to access the AdminPService EJB
@@ -69,10 +69,10 @@ import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 @Stateless
 public class AdminPRestService {
 
-	@EJB
+	@Inject
 	private DocumentService documentService;
 
-	@EJB
+	@Inject
 	private AdminPService adminPService;
 
 	@javax.ws.rs.core.Context

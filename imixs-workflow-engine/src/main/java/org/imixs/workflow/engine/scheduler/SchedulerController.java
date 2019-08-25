@@ -32,6 +32,7 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.faces.event.ActionEvent;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.imixs.workflow.ItemCollection;
@@ -57,7 +58,7 @@ public class SchedulerController implements Serializable {
 	private String name;
 	private String schedulerClass;
 
-	@EJB
+	@Inject
 	private SchedulerService schedulerService;
 
 	private static final long serialVersionUID = 1L;

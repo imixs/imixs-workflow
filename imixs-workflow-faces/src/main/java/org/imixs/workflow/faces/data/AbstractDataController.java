@@ -87,7 +87,7 @@ public abstract class AbstractDataController implements Serializable {
 
 	protected ItemCollection data = null;
 
-	@EJB
+	@Inject
 	private DocumentService documentService;
 
 	/**

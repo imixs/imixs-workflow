@@ -6,7 +6,7 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>imixs-workflow-jax-rs</artifactId>
-	<name>RESTful API</name>
+	<name>Rest API</name>
 	<description>Imixs Workflow REST Service API provides a servlet implementation for the Imixs JEE Workflow Components.</description>
 
 	<build>

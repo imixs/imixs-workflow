@@ -53,7 +53,7 @@ import org.imixs.workflow.engine.jpa.EventLog;
  * type of document entity directly in the database to represent an event. These
  * types of events can be queried by clients through the service.
  * 
- * @see org.imixs.workflow.engine.lucene.LuceneUpdateService
+ * @see org.imixs.workflow.engine.index.UpdateService
  * @author rsoika
  * @version 1.0
  * 

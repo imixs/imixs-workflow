@@ -16,12 +16,13 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.WorkflowService;
-import org.imixs.workflow.engine.lucene.LuceneUpdateService;
+import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
@@ -70,11 +71,11 @@ public class JobHandlerRenameUser implements JobHandler {
 	@Resource
 	SessionContext ctx;
 
-	@EJB
+	@Inject
 	DocumentService documentService;
 
-	@EJB
-	LuceneUpdateService luceneService;
+	@Inject
+	UpdateService luceneService;
 
 	private static final int DEFAULT_COUNT = 100;
 	private static Logger logger = Logger.getLogger(JobHandlerRenameUser.class.getName());

@@ -45,6 +45,7 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Singleton;
+import javax.inject.Inject;
 
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
@@ -89,7 +90,7 @@ public class ModelService implements ModelManager {
 
 	private Map<String, Model> modelStore = null;
 	private static Logger logger = Logger.getLogger(ModelService.class.getName());
-	@EJB
+	@Inject
 	private DocumentService documentService;
 	@Resource
 	private SessionContext ctx;

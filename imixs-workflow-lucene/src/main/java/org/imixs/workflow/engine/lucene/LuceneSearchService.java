@@ -37,13 +37,10 @@ import java.util.logging.Logger;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.EJB;
-import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.standard.ClassicAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -55,6 +52,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopDocsCollector;
 import org.apache.lucene.search.TopFieldCollector;
@@ -65,6 +63,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.index.DefaultOperator;
+import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
 
@@ -91,17 +91,13 @@ import org.imixs.workflow.exceptions.QueryException;
 		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
 		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
-@LocalBean
-public class LuceneSearchService {
+public class LuceneSearchService implements SearchService {
 
 	public static final int DEFAULT_MAX_SEARCH_RESULT = 9999; // limiting the
 																// total
 	// number of hits
 	public static final int DEFAULT_PAGE_SIZE = 100; // default docs in one page
 
-	@Inject
-	@ConfigProperty(name = "lucence.indexDir", defaultValue = LuceneUpdateService.DEFAULT_INDEX_DIRECTORY)
-	private String luceneIndexDir;
 
 	@Inject
 	@ConfigProperty(name = "lucene.defaultOperator", defaultValue = "AND")
@@ -111,12 +107,14 @@ public class LuceneSearchService {
 	@ConfigProperty(name = "lucene.splitOnWhitespace", defaultValue = "true")
 	private boolean luceneSplitOnWhitespace;
 
-	@EJB
+	@Inject
+	//@EJB
+	private LuceneIndexService luceneIndexService;
+
+	
+	@Inject
 	private DocumentService documentService;
-
-	@EJB
-	private LuceneUpdateService luceneUpdateService;
-
+	
 	private static Logger logger = Logger.getLogger(LuceneSearchService.class.getName());
 
 	/**
@@ -128,9 +126,10 @@ public class LuceneSearchService {
 	 * @return collection of search result
 	 * @throws QueryException
 	 */
+	@Override
 	public List<ItemCollection> search(String sSearchTerm) throws QueryException {
 		// no sort order
-		return search(sSearchTerm, DEFAULT_MAX_SEARCH_RESULT, 0, null, null);
+		return search(sSearchTerm, DEFAULT_MAX_SEARCH_RESULT, 0, null, DefaultOperator.AND);
 	}
 
 	/**
@@ -146,6 +145,8 @@ public class LuceneSearchService {
 	 * @return collection of search result
 	 * @throws QueryException
 	 */
+	@Override
+
 	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) throws QueryException {
 		// no sort order
 		return search(sSearchTerm, pageSize, pageIndex, null, null);
@@ -156,15 +157,18 @@ public class LuceneSearchService {
 	 * will be extended with the current users roles to test the read access level
 	 * of each workitem matching the search term.
 	 * <p>
-	 * The method returns the full loaded documents. If you only want to search for document stubs use instead the method
+	 * The method returns the full loaded documents. If you only want to search for
+	 * document stubs use instead the method
 	 * <p>
 	 * <code>search(String searchTerm, int pageSize, int pageIndex, Sort sortOrder,
 			Operator defaultOperator, boolean loadStubs)</code>
-		<p>
-		
+	 * <p>
+	 * 
 	 */
-	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex, Sort sortOrder,
-			Operator defaultOperator) throws QueryException {
+	@Override
+	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex,
+			org.imixs.workflow.engine.index.SortOrder sortOrder, DefaultOperator defaultOperator)
+			throws QueryException {
 		return search(sSearchTerm, pageSize, pageIndex, sortOrder, defaultOperator, false);
 	}
 
@@ -188,7 +192,6 @@ public class LuceneSearchService {
 	 * @param pageIndex
 	 *            - page number
 	 * @param sortOrder
-	 *            - optional to sort the result
 	 * @param defaultOperator
 	 *            - optional to change the default search operator
 	 * @param loadStubs
@@ -199,8 +202,10 @@ public class LuceneSearchService {
 	 * @throws QueryException
 	 *             in case the searchtem is not understandable.
 	 */
-	public List<ItemCollection> search(String searchTerm, int pageSize, int pageIndex, Sort sortOrder,
-			Operator defaultOperator, boolean loadStubs) throws QueryException {
+	@Override
+	public List<ItemCollection> search(String searchTerm, int pageSize, int pageIndex,
+			org.imixs.workflow.engine.index.SortOrder sortOrder, DefaultOperator defaultOperator, boolean loadStubs)
+			throws QueryException {
 
 		long ltime = System.currentTimeMillis();
 
@@ -226,7 +231,7 @@ public class LuceneSearchService {
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
-		searchTerm = getExtendedSearchTerm(searchTerm);
+		searchTerm = luceneIndexService.getExtendedSearchTerm(searchTerm);
 		// test if searchtem is provided
 		if (searchTerm == null || "".equals(searchTerm)) {
 			return workitems;
@@ -239,8 +244,10 @@ public class LuceneSearchService {
 			parser.setAllowLeadingWildcard(true);
 
 			// set default operator?
-			if (defaultOperator != null) {
-				parser.setDefaultOperator(defaultOperator);
+			if (defaultOperator == DefaultOperator.AND) {
+				parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.AND);
+			} else {
+				parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.OR);
 			}
 
 			long lsearchtime = System.currentTimeMillis();
@@ -266,7 +273,7 @@ public class LuceneSearchService {
 				// sorted by sortoder
 				logger.finest("......lucene result sorted by sortOrder= '" + sortOrder + "' ");
 				// MAX_SEARCH_RESULT is limiting the total number of hits
-				collector = TopFieldCollector.create(sortOrder, maxSearchResult, false, false, false, false);
+				collector = TopFieldCollector.create(buildLuceneSort(sortOrder), maxSearchResult, false, false, false, false);
 
 			} else {
 				// sorted by score
@@ -300,7 +307,7 @@ public class LuceneSearchService {
 				ItemCollection imixsDoc = null;
 				if (loadStubs) {
 					// return only the fields form the Lucene document
-					imixsDoc = convertLuceneDocument(luceneDoc,luceneDateformat);
+					imixsDoc = convertLuceneDocument(luceneDoc, luceneDateformat);
 					imixsDoc.replaceItemValue(WorkflowKernel.UNIQUEID, sID);
 				} else {
 					// load the full imixs document from the database
@@ -312,7 +319,7 @@ public class LuceneSearchService {
 					workitems.add(imixsDoc);
 				} else {
 					logger.warning("lucene index returned unreadable workitem : " + sID);
-					luceneUpdateService.removeDocument(sID);
+					luceneIndexService.removeDocument(sID);
 					// this situation happens if the search index returned
 					// documents the current user has no read access.
 					// this should normally avoided with the $readaccess
@@ -338,6 +345,19 @@ public class LuceneSearchService {
 		return workitems;
 	}
 
+	
+	
+	private Sort buildLuceneSort(org.imixs.workflow.engine.index.SortOrder sortOrder) {
+		Sort sort = null;
+			// we do not support multi values here - see
+			// LuceneUpdateService.addItemValues
+			// it would be possible if we use a SortedSetSortField class here
+			sort = new Sort(new SortField[] { new SortField(sortOrder.getField(), SortField.Type.STRING, sortOrder.isReverse()) });
+		return sort;
+	}
+	
+	
+	
 	/**
 	 * This method flush the event log.
 	 */
@@ -345,7 +365,7 @@ public class LuceneSearchService {
 		long ltime = System.currentTimeMillis();
 		// flush eventlog (see issue #411)
 		int flushCount = 0;
-		while (luceneUpdateService.flushEventLog(2048) == false) {
+		while (luceneIndexService.flushEventLog(2048) == false) {
 			// repeat flush....
 			flushCount = +2048;
 			logger.info("...flush event log: " + flushCount + " entries updated in "
@@ -371,15 +391,17 @@ public class LuceneSearchService {
 	 * @throws QueryException
 	 *             in case the searchterm is not understandable.
 	 */
-	public int getTotalHits(final String _searchTerm, final int _maxResult, final Operator defaultOperator) throws QueryException {
+	@Override
+	public int getTotalHits(final String _searchTerm, final int _maxResult, final DefaultOperator defaultOperator)
+			throws QueryException {
 		int result;
-		int maxResult=_maxResult;
-		
+		int maxResult = _maxResult;
+
 		if (maxResult <= 0) {
 			maxResult = DEFAULT_MAX_SEARCH_RESULT;
 		}
-		
-		String sSearchTerm = getExtendedSearchTerm(_searchTerm);
+
+		String sSearchTerm =luceneIndexService.getExtendedSearchTerm(_searchTerm);
 		// test if searchtem is provided
 		if (sSearchTerm == null || "".equals(sSearchTerm)) {
 			return 0;
@@ -392,8 +414,11 @@ public class LuceneSearchService {
 			parser.setAllowLeadingWildcard(true);
 
 			// set default operator?
-			if (defaultOperator != null) {
-				parser.setDefaultOperator(defaultOperator);
+			if (defaultOperator.equals(Operator.AND)) {
+				parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.AND);
+			} else {
+				parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.OR);
+
 			}
 
 			TopDocsCollector<?> collector = null;
@@ -425,40 +450,7 @@ public class LuceneSearchService {
 		return result;
 	}
 
-	/**
-	 * Returns the extended search term for a given query. The search term will we
-	 * extended with a users roles to test the read access level of each workitem
-	 * matching the search term.
-	 * 
-	 * @param sSearchTerm
-	 * @return extended search term
-	 * @throws QueryException
-	 *             in case the searchtem is not understandable.
-	 */
-	String getExtendedSearchTerm(String sSearchTerm) throws QueryException {
-		// test if searchtem is provided
-		if (sSearchTerm == null || "".equals(sSearchTerm)) {
-			logger.warning("No search term provided!");
-			return "";
-		}
-		// extend the Search Term if user is not ACCESSLEVEL_MANAGERACCESS
-		if (!documentService.isUserInRole(DocumentService.ACCESSLEVEL_MANAGERACCESS)) {
-			// get user names list
-			List<String> userNameList = documentService.getUserNameList();
-			// create search term (always add ANONYMOUS)
-			String sAccessTerm = "($readaccess:" + LuceneUpdateService.ANONYMOUS;
-			for (String aRole : userNameList) {
-				if (!"".equals(aRole))
-					sAccessTerm += " OR $readaccess:\"" + aRole + "\"";
-			}
-			sAccessTerm += ") AND ";
-			sSearchTerm = sAccessTerm + sSearchTerm;
-		}
-		logger.finest("......lucene final searchTerm=" + sSearchTerm);
-
-		return sSearchTerm;
-	}
-
+	
 	/**
 	 * Creates a Lucene FSDirectory Instance. The method uses the proeprty
 	 * LockFactory to set a custom LockFactory.
@@ -472,7 +464,7 @@ public class LuceneSearchService {
 	Directory createIndexDirectory() throws IOException {
 		logger.finest("......createIndexDirectory...");
 		Directory indexDir;
-		indexDir = FSDirectory.open(Paths.get(luceneIndexDir));
+		indexDir = FSDirectory.open(Paths.get(luceneIndexService.getLuceneIndexDir()));
 		return indexDir;
 	}
 
@@ -501,7 +493,7 @@ public class LuceneSearchService {
 			// creating a new index dir...
 			if (!DirectoryReader.indexExists(indexDir)) {
 				logger.info("...lucene index does not yet exist, trying to initialize the index....");
-				luceneUpdateService.rebuildIndex(indexDir);
+				luceneIndexService.rebuildIndex(indexDir);
 				// now try to reopen once again.
 				// If this dose not work we really have a IO problem
 				reader = DirectoryReader.open(indexDir);
@@ -531,10 +523,10 @@ public class LuceneSearchService {
 		// String defaultOperator = prop.getProperty("lucene.defaultOperator");
 		if (luceneDefaultOperator != null && "OR".equals(luceneDefaultOperator.toUpperCase())) {
 			logger.finest("......DefaultOperator: OR");
-			parser.setDefaultOperator(Operator.OR);
+			parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.OR);
 		} else {
 			logger.finest("......DefaultOperator: AND");
-			parser.setDefaultOperator(Operator.AND);
+			parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.AND);
 		}
 
 		// set setSplitOnWhitespace (issue #438)
@@ -551,14 +543,13 @@ public class LuceneSearchService {
 	 * @param luceneDoc
 	 * @return ItemCollection representing the Lucene Document
 	 */
-	ItemCollection convertLuceneDocument(Document luceneDoc,SimpleDateFormat luceneDateformat) {	
+	ItemCollection convertLuceneDocument(Document luceneDoc, SimpleDateFormat luceneDateformat) {
 		// load the full imixs document from the database
 		ItemCollection imixsDoc = new ItemCollection();
-		
-		
+
 		List<IndexableField> fields = luceneDoc.getFields();
 		for (IndexableField indexableField : fields) {
-			
+
 			Object objectValue = null;
 			String stringValue = indexableField.stringValue();
 			// check for numbers....
@@ -619,88 +610,5 @@ public class LuceneSearchService {
 
 	}
 
-	/**
-	 * This helper method escapes wildcard tokens found in a lucene search term. The
-	 * method can be used by clients to prepare a search phrase.
-	 * 
-	 * The method rewrites the lucene <code>QueryParser.escape</code> method and did
-	 * not! escape '*' char.
-	 * 
-	 * Clients should use the method normalizeSearchTerm() instead of
-	 * escapeSearchTerm() to prepare a user input for a lucene search.
-	 * 
-	 * 
-	 * @see normalizeSearchTerm
-	 * @param searchTerm
-	 * @param ignoreBracket
-	 *            - if true brackes will not be escaped.
-	 * @return escaped search term
-	 */
-	public String escapeSearchTerm(String searchTerm, boolean ignoreBracket) {
-		if (searchTerm == null || searchTerm.isEmpty()) {
-			return searchTerm;
-		}
 
-		// this is the code from the QueryParser.escape() method without the '*'
-		// char!
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < searchTerm.length(); i++) {
-			char c = searchTerm.charAt(i);
-			// These characters are part of the query syntax and must be escaped
-			// (ignore brackets!)
-			if (c == '\\' || c == '+' || c == '-' || c == '!' || c == ':' || c == '^' || c == '[' || c == ']'
-					|| c == '\"' || c == '{' || c == '}' || c == '~' || c == '?' || c == '|' || c == '&' || c == '/') {
-				sb.append('\\');
-			}
-
-			// escape bracket?
-			if (!ignoreBracket && (c == '(' || c == ')')) {
-				sb.append('\\');
-			}
-
-			sb.append(c);
-		}
-		return sb.toString();
-
-	}
-
-	public String escapeSearchTerm(String searchTerm) {
-		return escapeSearchTerm(searchTerm, false);
-	}
-
-	/**
-	 * This method normalizes a search term using the Lucene ClassicTokenzier. The
-	 * method can be used by clients to prepare a search phrase.
-	 * 
-	 * The method also escapes the result search term.
-	 * 
-	 * e.g. 'europe/berlin' will be normalized to 'europe berlin' e.g. 'r555/333'
-	 * will be unmodified 'r555/333'
-	 * 
-	 * @param searchTerm
-	 * @return normalzed search term
-	 * @throws QueryException
-	 */
-	public String normalizeSearchTerm(String searchTerm) throws QueryException {
-		if (searchTerm == null) {
-			return "";
-		}
-		if (searchTerm.trim().isEmpty()) {
-			return "";
-		}
-
-		ClassicAnalyzer analyzer = new ClassicAnalyzer();
-		QueryParser parser = new QueryParser("content", analyzer);
-		// issue #331
-		parser.setAllowLeadingWildcard(true);
-		try {
-			Query result = parser.parse(escapeSearchTerm(searchTerm, false));
-			searchTerm = result.toString("content");
-		} catch (ParseException e) {
-			logger.warning("Unable to normalze serchTerm '" + searchTerm + "'  -> " + e.getMessage());
-			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
-		}
-		return escapeSearchTerm(searchTerm, true);
-
-	}
 }

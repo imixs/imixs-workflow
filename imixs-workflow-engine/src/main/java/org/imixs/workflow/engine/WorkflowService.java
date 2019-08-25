@@ -116,13 +116,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	@Any
 	protected Instance<Adapter> adapters;
 	
-	@EJB
+	@Inject
 	DocumentService documentService;
 
-	@EJB
+	@Inject
 	ModelService modelService;
 
-	@EJB
+	@Inject
 	ReportService reportService;
 
 	@Resource

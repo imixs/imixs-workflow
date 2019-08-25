@@ -58,14 +58,12 @@ import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.SortField.Type;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.engine.index.SearchService;
+import org.imixs.workflow.engine.index.UpdateService;
+import org.imixs.workflow.engine.index.SortOrder;
 import org.imixs.workflow.engine.jpa.Document;
-import org.imixs.workflow.engine.lucene.LuceneSearchService;
-import org.imixs.workflow.engine.lucene.LuceneUpdateService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
@@ -164,11 +162,11 @@ public class DocumentService {
 	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
 
-	@EJB
-	private LuceneUpdateService luceneUpdateService;
+	@Inject
+	private UpdateService indexUpdateService;
 
-	@EJB
-	private LuceneSearchService luceneSearchService;
+	@Inject
+	private SearchService luceneSearchService;
 
 	@Inject
 	protected Event<DocumentEvent> documentEvents;
@@ -475,10 +473,10 @@ public class DocumentService {
 
 		// add/update document into lucene index
 		if (!document.getItemValueBoolean(NOINDEX)) {
-			luceneUpdateService.updateDocument(document);
+			indexUpdateService.updateDocument(document);
 		} else {
 			// remove from index
-			luceneUpdateService.removeDocument(document.getUniqueID());
+			indexUpdateService.removeDocument(document.getUniqueID());
 		}
 
 		/*
@@ -621,7 +619,7 @@ public class DocumentService {
 			manager.remove(persistedDocument);
 			// remove document form index - @see issue #412
 			if (!document.getItemValueBoolean(NOINDEX)) {
-				luceneUpdateService.removeDocument(document.getUniqueID());
+				indexUpdateService.removeDocument(document.getUniqueID());
 			}
 
 		} else
@@ -706,7 +704,7 @@ public class DocumentService {
 	 * @return list of ItemCollection elements
 	 * @throws QueryException
 	 * 
-	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
+	 * @see org.imixs.workflow.engine.index.SearchService
 	 */
 	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex) throws QueryException {
 		return find(searchTerm, pageSize, pageIndex, null, false);
@@ -735,7 +733,7 @@ public class DocumentService {
 	 * @return list of ItemCollection elements
 	 * @throws QueryException
 	 * 
-	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
+	 * @see org.imixs.workflow.engine.index.SearchService
 	 */
 	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy, boolean sortReverse)
 			throws QueryException {
@@ -743,12 +741,12 @@ public class DocumentService {
 				+ " , sortBy=" + sortBy + " reverse=" + sortReverse);
 
 		// create sort object
-		Sort sortOrder = null;
+		SortOrder sortOrder = null;
 		if (sortBy != null && !sortBy.isEmpty()) {
 			// we do not support multi values here - see
 			// LuceneUpdateService.addItemValues
 			// it would be possible if we use a SortedSetSortField class here
-			sortOrder = new Sort(new SortField[] { new SortField(sortBy, Type.STRING, sortReverse) });
+			sortOrder = new SortOrder(sortBy, sortReverse);
 		}
 
 		return luceneSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null);
@@ -783,7 +781,7 @@ public class DocumentService {
 	 * @return list of ItemCollection elements
 	 * @throws QueryException
 	 * 
-	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
+	 * @see org.imixs.workflow.engine.index.SearchService
 	 */
 	public List<ItemCollection> findStubs(String searchTerm, int pageSize, int pageIndex, String sortBy,
 			boolean sortReverse) throws QueryException {
@@ -791,12 +789,12 @@ public class DocumentService {
 				+ " , sortBy=" + sortBy + " reverse=" + sortReverse);
 
 		// create sort object
-		Sort sortOrder = null;
+		SortOrder sortOrder = null;
 		if (sortBy != null && !sortBy.isEmpty()) {
 			// we do not support multi values here - see
 			// LuceneUpdateService.addItemValues
 			// it would be possible if we use a SortedSetSortField class here
-			sortOrder = new Sort(new SortField[] { new SortField(sortBy, Type.STRING, sortReverse) });
+			sortOrder = new SortOrder(sortBy,sortReverse);
 		}
 		// find stubs only!
 		return luceneSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null, true);

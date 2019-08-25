@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.imixs.workflow.ItemCollection;
@@ -74,7 +75,7 @@ public class ViewController implements Serializable {
 
 	private static Logger logger = Logger.getLogger(ViewController.class.getName());
 
-	@EJB
+	@Inject
 	private DocumentService documentService;
 
 	public ViewController() {

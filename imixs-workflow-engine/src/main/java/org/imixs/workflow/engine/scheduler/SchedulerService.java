@@ -101,13 +101,13 @@ public class SchedulerService {
 	@Resource
 	SessionContext ctx;
 
-	@EJB
+	@Inject
 	DocumentService documentService;
 
 	@Resource
 	javax.ejb.TimerService timerService;
 
-	@EJB
+	@Inject
 	SchedulerConfigurationService schedulerSaveService;
 
 	@Inject

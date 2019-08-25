@@ -34,6 +34,7 @@ import javax.enterprise.context.RequestScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -51,7 +52,7 @@ import org.imixs.workflow.engine.DocumentService;
 @RequestScoped
 public class LoginController {
 
-	@EJB
+	@Inject
 	private DocumentService documentService;
 
 	/**

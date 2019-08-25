@@ -108,13 +108,13 @@ public class SetupService {
 	@ConfigProperty(name = "model.default.data", defaultValue = "")
 	private String modelDefaultData;
 
-	@EJB
+	@Inject
 	private DocumentService documentService;
 
-	@EJB
+	@Inject
 	private ModelService modelService;
 
-	@EJB
+	@Inject
 	private SchedulerService schedulerService;
 
 	@Resource

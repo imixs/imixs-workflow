@@ -13,6 +13,7 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.util.BytesRef;
+import org.imixs.workflow.engine.index.UpdateService;
 
 /**
  * The LuceneItemAdapter is a CDI bean, providing methods to convert the value
@@ -29,7 +30,7 @@ import org.apache.lucene.util.BytesRef;
 @Named
 public class LuceneItemAdapter {
 
-	private static Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
+	private static Logger logger = Logger.getLogger(UpdateService.class.getName());
 
 	/**
 	 * Creates a Indexable Lucene Field to be added into a Lucene document. The

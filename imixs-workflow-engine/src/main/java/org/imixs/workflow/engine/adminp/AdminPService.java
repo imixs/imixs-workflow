@@ -92,16 +92,13 @@ public class AdminPService {
 	@Resource
 	javax.ejb.TimerService timerService;
 
-	@EJB
+	@Inject
 	DocumentService documentService;
 
-	@EJB
-	JobHandlerRebuildIndex jobHandlerRebuildIndex;
-
-	@EJB
+	@Inject
 	JobHandlerUpgradeWorkitems jobHandlerUpgradeWorkitems;
 
-	@EJB
+	@Inject
 	JobHandlerRenameUser jobHandlerRenameUser;
 
 	
@@ -224,9 +221,6 @@ public class AdminPService {
 			JobHandler jobHandler = null;
 			if (job.equals(JOB_RENAME_USER)) {
 				jobHandler = jobHandlerRenameUser;
-			}
-			if (job.equals(JOB_REBUILD_LUCENE_INDEX)) {
-				jobHandler = jobHandlerRebuildIndex;
 			}
 
 			if (job.equals(JOB_UPGRADE)) {

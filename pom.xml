@@ -11,6 +11,8 @@
 		<module>imixs-workflow-engine</module>
 		<module>imixs-workflow-faces</module>
 		<module>imixs-workflow-jax-rs</module>
+		<module>imixs-workflow-lucene</module>
+		<module>imixs-workflow-solr</module>
 	</modules>
 
 	<properties>

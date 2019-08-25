@@ -38,8 +38,8 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -64,9 +64,9 @@ import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.ModelService;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.xml.XMLDataCollection;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
-import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 
 /**
  * The WorkflowService Handler supports methods to process different kind of
@@ -85,13 +85,13 @@ public class ModelRestService {
 	static List<String> modelEntityTypes = Arrays.asList("WorkflowEnvironmentEntity", "processentity",
 			"activityentity");
 
-	@EJB
+	@Inject
 	private DocumentService documentService;
 
-	@EJB
+	@Inject
 	private WorkflowRestService workflowRestService;
 
-	@EJB
+	@Inject
 	private ModelService modelService;
 
 	@javax.ws.rs.core.Context

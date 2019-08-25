@@ -40,8 +40,8 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -87,10 +87,10 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
 @Stateless
 public class WorkflowRestService {
 
-	@EJB
+	@Inject
 	private WorkflowService workflowService;
 	
-	@EJB
+	@Inject
 	private DocumentRestService documentRestService;
 
 	@javax.ws.rs.core.Context

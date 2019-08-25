@@ -42,8 +42,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
@@ -79,11 +79,11 @@ import org.apache.fop.apps.MimeConstants;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.ReportService;
-import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.DocumentTable;
+import org.imixs.workflow.xml.XMLDataCollection;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
-import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XSLHandler;
 
 /**
@@ -98,10 +98,10 @@ import org.imixs.workflow.xml.XSLHandler;
 @Stateless
 public class ReportRestService {
 
-	@EJB
+	@Inject
 	private DocumentService entityService;
 
-	@EJB
+	@Inject
 	private ReportService reportService;
 
 	@Context

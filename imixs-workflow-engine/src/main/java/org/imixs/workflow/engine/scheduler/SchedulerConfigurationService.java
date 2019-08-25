@@ -33,6 +33,7 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
@@ -55,7 +56,7 @@ public class SchedulerConfigurationService {
 	@Resource
 	SessionContext ctx;
 
-	@EJB
+	@Inject
 	DocumentService documentService;
 
 	private static Logger logger = Logger.getLogger(SchedulerConfigurationService.class.getName());

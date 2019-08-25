@@ -15,11 +15,11 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
-import org.imixs.workflow.engine.lucene.LuceneSearchService;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -44,15 +44,10 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 	@Resource
 	SessionContext ctx;
 
-	@EJB
+	@Inject
 	DocumentService documentService;
 
-	@EJB
-	LuceneSearchService luceneService;
-	
-	
-
-	private static Logger logger = Logger.getLogger(JobHandlerRebuildIndex.class.getName());
+	private static Logger logger = Logger.getLogger(JobHandlerUpgradeWorkitems.class.getName());
 
 	/**
 	 * This method runs the RebuildLuceneIndexJob. The AdminP job description
@@ -86,12 +81,6 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 		long lProfiler = System.currentTimeMillis();
 		int iIndex = adminp.getItemValueInteger("numIndex");
 		int iBlockSize = adminp.getItemValueInteger("numBlockSize");
-		
-		
-		// First flush the lucene event log....
-		logger.info("... flush lucene event log...");
-		luceneService.flush();
-		
 
 		// test if numBlockSize is defined.
 		if (iBlockSize <= 0) {
@@ -199,7 +188,7 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 			workitem.replaceItemValue("$taskid", workitem.getItemValue("$processid"));
 			bUpgrade = true;
 		}
-		
+
 		if (!workitem.hasItem(OwnerPlugin.OWNER)) {
 			workitem.replaceItemValue(OwnerPlugin.OWNER, workitem.getItemValue("namowner"));
 			bUpgrade = true;

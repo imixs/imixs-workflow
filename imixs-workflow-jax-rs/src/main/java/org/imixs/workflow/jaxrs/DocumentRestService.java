@@ -37,8 +37,8 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -59,8 +59,8 @@ import javax.ws.rs.core.StreamingOutput;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
-import org.imixs.workflow.engine.lucene.LuceneSearchService;
-import org.imixs.workflow.engine.lucene.LuceneUpdateService;
+import org.imixs.workflow.engine.index.SearchService;
+import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
@@ -80,11 +80,11 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
 @Stateless
 public class DocumentRestService {
 
-	@EJB
+	@Inject
 	private DocumentService documentService;
 
-	@EJB
-	private LuceneUpdateService lucenUpdateService;
+	@Inject
+	private SchemaService schemaService;
 
 	@javax.ws.rs.core.Context
 	private HttpServletRequest servletRequest;
@@ -216,7 +216,7 @@ public class DocumentRestService {
 	@GET
 	@Path("/jpql/{query}")
 	public Response findDocumentsByJPQL(@PathParam("query") String query,
-			@DefaultValue("" + LuceneSearchService.DEFAULT_PAGE_SIZE) @QueryParam("pageSize") int pageSize,
+			@DefaultValue("" + SearchService.DEFAULT_PAGE_SIZE) @QueryParam("pageSize") int pageSize,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex, @QueryParam("items") String items,
 			@QueryParam("format") String format) {
 		List<ItemCollection> result = null;
@@ -498,7 +498,7 @@ public class DocumentRestService {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
 			return null;
 		}
-		ItemCollection config = lucenUpdateService.getConfiguration();
+		ItemCollection config = schemaService.getConfiguration();
 
 		return convertResult(config, null, format);
 	}

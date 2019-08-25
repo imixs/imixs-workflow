@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.SessionContext;
+import javax.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -43,16 +44,16 @@ public class WorkflowScheduler implements Scheduler {
 
 	private static Logger logger = Logger.getLogger(WorkflowScheduler.class.getName());
 
-	@EJB
+	@Inject
 	private WorkflowService workflowService;
 
-	@EJB
+	@Inject
 	private DocumentService documentService;
 
-	@EJB
+	@Inject
 	private ModelService modelService;
 
-	@EJB
+	@Inject
 	private SchedulerService schedulerService;
 
 	@Resource
