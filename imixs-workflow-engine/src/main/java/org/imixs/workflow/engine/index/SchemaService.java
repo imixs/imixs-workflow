@@ -39,44 +39,58 @@ import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.exceptions.QueryException;
 
 /**
  * The IndexSchemaService provides the index Schema.
+ * <p>
+ * The schema is defined by the following properties:
+ * 
+ * <ul>
+ * <li>index.fields - content which will be indexed</li>
+ * <li>index.fields.analyse - fields indexed as analyzed keyword fields </li>
+ * <li>index.fields.noanalyse - fields indexed without analyze</li>
+ * <li>index.fields.store - fields stored in the index</li>
+ * <li>index.operator - default operator</li>
+ * <li>index.splitwhitespace - split text on whitespace prior to analysis</li>
+ * </ul>
+ * 
  * 
  * @version 1.0
  * @author rsoika
  */
 @Singleton
-public class SchemaService  {
-	
-	
+public class SchemaService {
+
 	/*
-	 * index.fields
-	 * index.fields.analyse
-	 * index.fields.noanalyse
-	 * index.fields.store
+	 * index.fields index.fields.analyse index.fields.noanalyse index.fields.store
 	 * 
-	 * index.operator
-	 * index.splitwhitespace
+	 * index.operator index.splitwhitespace
 	 * 
 	 * 
 	 */
 
+	public static final String ANONYMOUS = "ANONYMOUS";
+	
 	@Inject
-	@ConfigProperty(name = "lucence.fulltextFieldList", defaultValue = "")
-	private String luceneFulltextFieldList;
+	@ConfigProperty(name = "index.fields", defaultValue = "")
+	private String indexFields;
 
 	@Inject
-	@ConfigProperty(name = "lucence.indexFieldListAnalyze", defaultValue = "")
-	private String luceneIndexFieldListAnalyse;
+	@ConfigProperty(name = "index.fields.analyze", defaultValue = "")
+	private String indexFieldsAnalyse;
 
 	@Inject
-	@ConfigProperty(name = "lucence.indexFieldListNoAnalyze", defaultValue = "")
-	private String luceneIndexFieldListNoAnalyse;
+	@ConfigProperty(name = "index.fields.noanalyze", defaultValue = "")
+	private String indexFieldsNoAnalyse;
 
 	@Inject
-	@ConfigProperty(name = "lucence.indexFieldListStore", defaultValue = "")
-	private String luceneIndexFieldListStore;
+	@ConfigProperty(name = "index.fields.store", defaultValue = "")
+	private String indexFieldsStore;
+	
+	@Inject
+	private DocumentService documentService;
 
 	private List<String> fieldList = null;
 	private List<String> fieldListAnalyse = null;
@@ -94,8 +108,6 @@ public class SchemaService  {
 			"$workflowsummary", "$workflowabstract", "$workflowgroup", "$workflowstatus", "$modified", "$created",
 			"$lasteventdate", "$creator", "$editor", "$lasteditor", "$owner", "namowner");
 
-	
-
 	private static Logger logger = Logger.getLogger(SchemaService.class.getName());
 
 	/**
@@ -106,17 +118,17 @@ public class SchemaService  {
 	 */
 	@PostConstruct
 	void init() {
-		
-		logger.finest("......lucene FulltextFieldList=" + luceneFulltextFieldList);
-		logger.finest("......lucene IndexFieldListAnalyse=" + luceneIndexFieldListAnalyse);
-		logger.finest("......lucene IndexFieldListNoAnalyse=" + luceneIndexFieldListNoAnalyse);
+
+		logger.finest("......lucene FulltextFieldList=" + indexFields);
+		logger.finest("......lucene IndexFieldListAnalyse=" + indexFieldsAnalyse);
+		logger.finest("......lucene IndexFieldListNoAnalyse=" + indexFieldsNoAnalyse);
 
 		// compute search field list
 		fieldList = new ArrayList<String>();
 		// add all static default field list
 		fieldList.addAll(DEFAULT_SEARCH_FIELD_LIST);
-		if (luceneFulltextFieldList != null && !luceneFulltextFieldList.isEmpty()) {
-			StringTokenizer st = new StringTokenizer(luceneFulltextFieldList, ",");
+		if (indexFields != null && !indexFields.isEmpty()) {
+			StringTokenizer st = new StringTokenizer(indexFields, ",");
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase().trim();
 				// do not add internal fields
@@ -127,8 +139,8 @@ public class SchemaService  {
 
 		// compute Index field list (Analyze)
 		fieldListAnalyse = new ArrayList<String>();
-		if (luceneIndexFieldListAnalyse != null && !luceneIndexFieldListAnalyse.isEmpty()) {
-			StringTokenizer st = new StringTokenizer(luceneIndexFieldListAnalyse, ",");
+		if (indexFieldsAnalyse != null && !indexFieldsAnalyse.isEmpty()) {
+			StringTokenizer st = new StringTokenizer(indexFieldsAnalyse, ",");
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase().trim();
 				// do not add internal fields
@@ -141,9 +153,9 @@ public class SchemaService  {
 		fieldListNoAnalyse = new ArrayList<String>();
 		// add all static default field list
 		fieldListNoAnalyse.addAll(DEFAULT_NOANALYSE_FIELD_LIST);
-		if (luceneIndexFieldListNoAnalyse != null && !luceneIndexFieldListNoAnalyse.isEmpty()) {
+		if (indexFieldsNoAnalyse != null && !indexFieldsNoAnalyse.isEmpty()) {
 			// add additional field list from imixs.properties
-			StringTokenizer st = new StringTokenizer(luceneIndexFieldListNoAnalyse, ",");
+			StringTokenizer st = new StringTokenizer(indexFieldsNoAnalyse, ",");
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase().trim();
 				if (!fieldListNoAnalyse.contains(sName))
@@ -155,9 +167,9 @@ public class SchemaService  {
 		fieldListStore = new ArrayList<String>();
 		// add all static default field list
 		fieldListStore.addAll(DEFAULT_STORE_FIELD_LIST);
-		if (luceneIndexFieldListStore != null && !luceneIndexFieldListStore.isEmpty()) {
+		if (indexFieldsStore != null && !indexFieldsStore.isEmpty()) {
 			// add additional field list from imixs.properties
-			StringTokenizer st = new StringTokenizer(luceneIndexFieldListStore, ",");
+			StringTokenizer st = new StringTokenizer(indexFieldsStore, ",");
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase().trim();
 				if (!fieldListStore.contains(sName))
@@ -177,44 +189,22 @@ public class SchemaService  {
 		}
 
 	}
-	
-	
-	
-	
 
 	public List<String> getFieldList() {
 		return fieldList;
 	}
 
-
-
-
-
-
-
 	public List<String> getFieldListAnalyse() {
 		return fieldListAnalyse;
 	}
-
-
-
-
 
 	public List<String> getFieldListNoAnalyse() {
 		return fieldListNoAnalyse;
 	}
 
-
-
-
-
 	public List<String> getFieldListStore() {
 		return fieldListStore;
 	}
-
-
-
-
 
 	/**
 	 * Returns the Lucene schema configuration
@@ -234,4 +224,88 @@ public class SchemaService  {
 
 	
 	
+	/**
+	 * Returns the extended search term for a given query. The search term will be
+	 * extended with a users roles to test the read access level of each workitem
+	 * matching the search term.
+	 * 
+	 * @param sSearchTerm
+	 * @return extended search term
+	 * @throws QueryException
+	 *             in case the searchtem is not understandable.
+	 */
+	public String getExtendedSearchTerm(String sSearchTerm) throws QueryException {
+		// test if searchtem is provided
+		if (sSearchTerm == null || "".equals(sSearchTerm)) {
+			logger.warning("No search term provided!");
+			return "";
+		}
+		// extend the Search Term if user is not ACCESSLEVEL_MANAGERACCESS
+		if (!documentService.isUserInRole(DocumentService.ACCESSLEVEL_MANAGERACCESS)) {
+			// get user names list
+			List<String> userNameList = documentService.getUserNameList();
+			// create search term (always add ANONYMOUS)
+			String sAccessTerm = "($readaccess:" + ANONYMOUS;
+			for (String aRole : userNameList) {
+				if (!"".equals(aRole))
+					sAccessTerm += " OR $readaccess:\"" + aRole + "\"";
+			}
+			sAccessTerm += ") AND ";
+			sSearchTerm = sAccessTerm + sSearchTerm;
+		}
+		logger.finest("......lucene final searchTerm=" + sSearchTerm);
+
+		return sSearchTerm;
+	}
+
+	
+	/**
+	 * This helper method escapes wildcard tokens found in a lucene search term. The
+	 * method can be used by clients to prepare a search phrase.
+	 * 
+	 * The method rewrites the lucene <code>QueryParser.escape</code> method and did
+	 * not! escape '*' char.
+	 * 
+	 * Clients should use the method normalizeSearchTerm() instead of
+	 * escapeSearchTerm() to prepare a user input for a lucene search.
+	 * 
+	 * 
+	 * @see normalizeSearchTerm
+	 * @param searchTerm
+	 * @param ignoreBracket
+	 *            - if true brackes will not be escaped.
+	 * @return escaped search term
+	 */
+	public String escapeSearchTerm(String searchTerm, boolean ignoreBracket) {
+		if (searchTerm == null || searchTerm.isEmpty()) {
+			return searchTerm;
+		}
+
+		// this is the code from the QueryParser.escape() method without the '*'
+		// char!
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < searchTerm.length(); i++) {
+			char c = searchTerm.charAt(i);
+			// These characters are part of the query syntax and must be escaped
+			// (ignore brackets!)
+			if (c == '\\' || c == '+' || c == '-' || c == '!' || c == ':' || c == '^' || c == '[' || c == ']'
+					|| c == '\"' || c == '{' || c == '}' || c == '~' || c == '?' || c == '|' || c == '&' || c == '/') {
+				sb.append('\\');
+			}
+
+			// escape bracket?
+			if (!ignoreBracket && (c == '(' || c == ')')) {
+				sb.append('\\');
+			}
+
+			sb.append(c);
+		}
+		return sb.toString();
+
+	}
+
+	public String escapeSearchTerm(String searchTerm) {
+		return escapeSearchTerm(searchTerm, false);
+	}
+
 }

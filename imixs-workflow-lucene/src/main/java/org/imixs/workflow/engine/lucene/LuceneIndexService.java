@@ -117,10 +117,6 @@ public class LuceneIndexService {
 	@Inject
 	private AdminPService adminPService;
 
-
-	@Inject
-	private DocumentService documentService;
-
 	@Inject
 	private EventLogService eventLogService;
 	
@@ -601,98 +597,18 @@ public class LuceneIndexService {
 		// issue #331
 		parser.setAllowLeadingWildcard(true);
 		try {
-			Query result = parser.parse(escapeSearchTerm(searchTerm, false));
+			Query result = parser.parse(schemaService.escapeSearchTerm(searchTerm, false));
 			searchTerm = result.toString("content");
 		} catch (ParseException e) {
 			logger.warning("Unable to normalze serchTerm '" + searchTerm + "'  -> " + e.getMessage());
 			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
 		}
-		return escapeSearchTerm(searchTerm, true);
-
-	}
-	/**
-	 * Returns the extended search term for a given query. The search term will be
-	 * extended with a users roles to test the read access level of each workitem
-	 * matching the search term.
-	 * 
-	 * @param sSearchTerm
-	 * @return extended search term
-	 * @throws QueryException
-	 *             in case the searchtem is not understandable.
-	 */
-	public String getExtendedSearchTerm(String sSearchTerm) throws QueryException {
-		// test if searchtem is provided
-		if (sSearchTerm == null || "".equals(sSearchTerm)) {
-			logger.warning("No search term provided!");
-			return "";
-		}
-		// extend the Search Term if user is not ACCESSLEVEL_MANAGERACCESS
-		if (!documentService.isUserInRole(DocumentService.ACCESSLEVEL_MANAGERACCESS)) {
-			// get user names list
-			List<String> userNameList = documentService.getUserNameList();
-			// create search term (always add ANONYMOUS)
-			String sAccessTerm = "($readaccess:" + ANONYMOUS;
-			for (String aRole : userNameList) {
-				if (!"".equals(aRole))
-					sAccessTerm += " OR $readaccess:\"" + aRole + "\"";
-			}
-			sAccessTerm += ") AND ";
-			sSearchTerm = sAccessTerm + sSearchTerm;
-		}
-		logger.finest("......lucene final searchTerm=" + sSearchTerm);
-
-		return sSearchTerm;
-	}
-
-	/**
-	 * This helper method escapes wildcard tokens found in a lucene search term. The
-	 * method can be used by clients to prepare a search phrase.
-	 * 
-	 * The method rewrites the lucene <code>QueryParser.escape</code> method and did
-	 * not! escape '*' char.
-	 * 
-	 * Clients should use the method normalizeSearchTerm() instead of
-	 * escapeSearchTerm() to prepare a user input for a lucene search.
-	 * 
-	 * 
-	 * @see normalizeSearchTerm
-	 * @param searchTerm
-	 * @param ignoreBracket
-	 *            - if true brackes will not be escaped.
-	 * @return escaped search term
-	 */
-	public String escapeSearchTerm(String searchTerm, boolean ignoreBracket) {
-		if (searchTerm == null || searchTerm.isEmpty()) {
-			return searchTerm;
-		}
-
-		// this is the code from the QueryParser.escape() method without the '*'
-		// char!
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < searchTerm.length(); i++) {
-			char c = searchTerm.charAt(i);
-			// These characters are part of the query syntax and must be escaped
-			// (ignore brackets!)
-			if (c == '\\' || c == '+' || c == '-' || c == '!' || c == ':' || c == '^' || c == '[' || c == ']'
-					|| c == '\"' || c == '{' || c == '}' || c == '~' || c == '?' || c == '|' || c == '&' || c == '/') {
-				sb.append('\\');
-			}
-
-			// escape bracket?
-			if (!ignoreBracket && (c == '(' || c == ')')) {
-				sb.append('\\');
-			}
-
-			sb.append(c);
-		}
-		return sb.toString();
+		return schemaService.escapeSearchTerm(searchTerm, true);
 
 	}
 
-	public String escapeSearchTerm(String searchTerm) {
-		return escapeSearchTerm(searchTerm, false);
-	}
 
+	
 
 
 }

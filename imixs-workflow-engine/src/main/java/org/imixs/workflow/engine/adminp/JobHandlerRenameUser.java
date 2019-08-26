@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
-import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
@@ -22,7 +21,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.WorkflowService;
-import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
@@ -74,9 +72,7 @@ public class JobHandlerRenameUser implements JobHandler {
 	@Inject
 	DocumentService documentService;
 
-	@Inject
-	UpdateService luceneService;
-
+	
 	private static final int DEFAULT_COUNT = 100;
 	private static Logger logger = Logger.getLogger(JobHandlerRenameUser.class.getName());
 

@@ -38,21 +38,17 @@ import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * The IndexUpdateService provides methods to write Imixs Workitems into a
- * search index. With the method <code>addWorkitem()</code> a ItemCollection can
- * be added to a lucene search index. The service init method reads the property
- * file 'imixs.properties' from the current classpath to determine the
- * configuration.
+ * The UpdateService provides methods to write Imixs Workitems into a search
+ * index. An ItemCollection can be added into the index by calling themethod
+ * <code>updateDocument()</code>
  * 
- * 
+ * @see SchemaService
  * @version 1.0
  * @author rsoika
  */
 @Local
 public interface UpdateService {
 
-
-	
 	// default field lists
 	public static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
 	public static List<String> DEFAULT_NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
@@ -63,8 +59,6 @@ public interface UpdateService {
 	public static List<String> DEFAULT_STORE_FIELD_LIST = Arrays.asList("type", "$taskid", "$writeaccess",
 			"$workflowsummary", "$workflowabstract", "$workflowgroup", "$workflowstatus", "$modified", "$created",
 			"$lasteventdate", "$creator", "$editor", "$lasteditor", "$owner", "namowner");
-
-
 
 	/**
 	 * This method adds a single document into the to the Lucene index. Before the

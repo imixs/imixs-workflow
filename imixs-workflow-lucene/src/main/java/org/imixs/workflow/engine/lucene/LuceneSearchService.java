@@ -64,6 +64,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.index.DefaultOperator;
+import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
@@ -108,12 +109,13 @@ public class LuceneSearchService implements SearchService {
 	private boolean luceneSplitOnWhitespace;
 
 	@Inject
-	//@EJB
 	private LuceneIndexService luceneIndexService;
-
 	
 	@Inject
 	private DocumentService documentService;
+	
+	@Inject 
+	private SchemaService schemaService;
 	
 	private static Logger logger = Logger.getLogger(LuceneSearchService.class.getName());
 
@@ -231,7 +233,7 @@ public class LuceneSearchService implements SearchService {
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
-		searchTerm = luceneIndexService.getExtendedSearchTerm(searchTerm);
+		searchTerm = schemaService.getExtendedSearchTerm(searchTerm);
 		// test if searchtem is provided
 		if (searchTerm == null || "".equals(searchTerm)) {
 			return workitems;
@@ -401,7 +403,7 @@ public class LuceneSearchService implements SearchService {
 			maxResult = DEFAULT_MAX_SEARCH_RESULT;
 		}
 
-		String sSearchTerm =luceneIndexService.getExtendedSearchTerm(_searchTerm);
+		String sSearchTerm =schemaService.getExtendedSearchTerm(_searchTerm);
 		// test if searchtem is provided
 		if (sSearchTerm == null || "".equals(sSearchTerm)) {
 			return 0;

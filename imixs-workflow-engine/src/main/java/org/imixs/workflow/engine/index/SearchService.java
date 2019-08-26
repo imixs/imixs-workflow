@@ -35,19 +35,10 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.QueryException;
 
 /**
- * This session ejb provides a service to search the lucene index. The EJB uses
- * the IndexSearcher to query the current index. As the index can change across
- * multiple searches we can not share a single IndexSearcher instance. For that
- * reason the EJB is creating a new IndexSearch per-search.
+ * This SearchService defines methods to search workitems or collections of
+ * workitems.
  * 
- * The service provides a set of public methods which can be used to query
- * workitems or collections of workitems. A search term can be escaped by
- * calling the method <code>escpeSearchTerm</code>. This method prepends a
- * <code>\</code> for those characters that QueryParser expects to be escaped.
- * 
- * @see http://stackoverflow.com/questions/34880347/why-did-lucene-indexwriter-
- *      did-not-update-the-index-when-called-from-a-web-modul
- * @version 2.0
+ * @version 1.0
  * @author rsoika
  */
 @Local
@@ -58,7 +49,6 @@ public interface SearchService {
 	// number of hits
 	public static final int DEFAULT_PAGE_SIZE = 100; // default docs in one page
 
-	
 	/**
 	 * Returns a collection of documents matching the provided search term. The
 	 * provided search team will we extended with a users roles to test the read
@@ -84,18 +74,19 @@ public interface SearchService {
 	 * @throws QueryException
 	 */
 	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) throws QueryException;
-	
+
 	/**
 	 * Returns a collection of documents matching the provided search term. The term
 	 * will be extended with the current users roles to test the read access level
 	 * of each workitem matching the search term.
 	 * <p>
-	 * The method returns the full loaded documents. If you only want to search for document stubs use instead the method
+	 * The method returns the full loaded documents. If you only want to search for
+	 * document stubs use instead the method
 	 * <p>
 	 * <code>search(String searchTerm, int pageSize, int pageIndex, Sort sortOrder,
 			Operator defaultOperator, boolean loadStubs)</code>
-		<p>
-		
+	 * <p>
+	 * 
 	 */
 	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex, SortOrder sortOrder,
 			DefaultOperator defaultOperator) throws QueryException;
@@ -133,7 +124,6 @@ public interface SearchService {
 	 */
 	public List<ItemCollection> search(String searchTerm, int pageSize, int pageIndex, SortOrder sortOrder,
 			DefaultOperator defaultOperator, boolean loadStubs) throws QueryException;
-	
 
 	/**
 	 * Returns the total hits for a given search term from the lucene index. The
@@ -153,5 +143,6 @@ public interface SearchService {
 	 * @throws QueryException
 	 *             in case the searchterm is not understandable.
 	 */
-	public int getTotalHits(final String _searchTerm, final int _maxResult, final DefaultOperator defaultOperator) throws QueryException;
+	public int getTotalHits(final String _searchTerm, final int _maxResult, final DefaultOperator defaultOperator)
+			throws QueryException;
 }
