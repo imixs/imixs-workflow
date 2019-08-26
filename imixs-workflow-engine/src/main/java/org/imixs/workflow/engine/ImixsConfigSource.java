@@ -44,7 +44,21 @@ public class ImixsConfigSource implements ConfigSource {
 		if (properties == null) {
 			loadProperties();
 		}
-		return properties.get(key);
+
+		String value = properties.get(key);
+		// search alterntive / deprecated imixs.property?
+		if (value == null || value.isEmpty()) {
+			String keyAlternative = getAlternative(key);
+			if (keyAlternative != null && !keyAlternative.isEmpty()) {
+				value = properties.get(keyAlternative);
+				if (value != null && !value.isEmpty()) {
+					logger.warning(
+							"Deprecated imixs.property '" + keyAlternative + "' should be replaced by '" + key + "'");
+				}
+			}
+
+		}
+		return value;
 	}
 
 	@Override
@@ -91,4 +105,44 @@ public class ImixsConfigSource implements ConfigSource {
 
 	}
 
+	/**
+	 * This method provides key alternatives for deprecated imixs.property values
+	 * 
+	 * <ul>
+	 * <li>lucence.fulltextFieldList - index.fields</li>
+	 * <li>lucence.indexFieldListAnalyze - index.fields.analyse</li>
+	 * <li>lucence.indexFieldListNoAnalyze - index.fields.noanalyse</li>
+	 * <li>lucence.indexFieldListStore - index.fields.store</li>
+	 * 
+	 * <li>lucence.defaultOperator - index.operator</li>
+	 * <li>lucence.splitOnWhitespace - index.splitwhitespace</li>
+	 * </ul>
+	 * 
+	 * @param key
+	 * @return
+	 */
+	private String getAlternative(String key) {
+
+		if ("index.fields".equals(key)) {
+			return "lucence.fulltextFieldList";
+		}
+		if ("index.fields.analyse".equals(key)) {
+			return "lucence.indexFieldListAnalyze";
+		}
+		if ("index.fields.noanalyse".equals(key)) {
+			return "lucence.indexFieldListNoAnalyze";
+		}
+		if ("index.fields.store".equals(key)) {
+			return "lucence.indexFieldListStore";
+		}
+
+		if ("index.operator".equals(key)) {
+			return "lucence.defaultOperator";
+		}
+		if ("index.splitwhitespace".equals(key)) {
+			return "lucence.splitOnWhitespace";
+		}
+
+		return null;
+	}
 }
