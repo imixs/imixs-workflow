@@ -52,9 +52,9 @@
 				<item name="WorkflowService" href="./engine/workflowservice.html" />
 				<item name="ModelService" href="./engine/modelservice.html" />
 				<item name="DocumentService" href="./engine/documentservice.html" />
-				<item name="Full-Text-Search" href="./engine/queries.html"
+				<item name="Search Index" href="./engine/queries.html"
 					collapse="true">
-					<item name="Configuration" href="./engine/luceneservice.html" />
+					<item name="Index Schema" href="./engine/luceneservice.html" />
 				</item>
 				<item name="Security Model" href="./engine/acl.html" />
 				<item name="AccessAdapter" href="./engine/adapters/accessadapter.html" />

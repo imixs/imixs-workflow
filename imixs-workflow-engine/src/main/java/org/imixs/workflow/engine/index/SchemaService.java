@@ -48,6 +48,19 @@ import org.imixs.workflow.ItemCollection;
  */
 @Singleton
 public class SchemaService  {
+	
+	
+	/*
+	 * index.fields
+	 * index.fields.analyse
+	 * index.fields.noanalyse
+	 * index.fields.store
+	 * 
+	 * index.operator
+	 * index.splitwhitespace
+	 * 
+	 * 
+	 */
 
 	@Inject
 	@ConfigProperty(name = "lucence.fulltextFieldList", defaultValue = "")

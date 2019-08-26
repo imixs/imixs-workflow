@@ -1,4 +1,4 @@
-# Lucene Configuration 
+# The Index Schema
 
 The [Full-Text-Search](queries.html) in Imixs-Workflow is part of the [DocumentService](./documentservice.html) and based on the [Lucene Search Technology](https://lucene.apache.org/) (version 7.5). 
 The behavior of the search index can be configured and adapted in various ways. The following section gives you an overview how to setup the Lucene Full-Text-Search.
@@ -60,10 +60,7 @@ A custom configuration for the _Lucene Search Index_ can be provided in the file
 	lucene.splitOnWhitespace=true	
 
 
-### IndexDir
- 
-This is the directory on the servers file system the lucene index will be created. Make sure that 
-the server has sufficient write access for this location. The root directory is typical the home or installation directory in the runtime environment of your application server.
+
  
 ### FulltextFieldList
 The property 'lucene.fulltextFieldList' defines a comma separated list of fields which will be indexed by the LucenePlugin. The content of these fields will be stored into the lucene field name 'content'. The values will be analyzed  with the lucene standard analyzer.
@@ -170,3 +167,45 @@ and will return all workitems containing the keywords 'europe', 'berlin' and 'rs
 See the section [Query Syntax](queries.html) for more details about the lucene search syntax.  
  
  
+ 
+ 
+ 
+## The Search Engine
+
+The Search Index can be controlled by different search engines and can be extended by custom implementations. The Imixs-Workflow engine provides two search engines:
+
+### Apache Lucene Core
+
+[Apache Lucene Core](https://lucene.apache.org/core/) is the default search engine for Imixs-Workflow. The index is created in the local file system and is very fast. It's the best choice for a workflow instance in a single-server environment. The index location is defined by the imixs.property '_lucence.indexDir_'. 
+
+To activate the Lucene Core Engine you just have to add the following dependency:
+
+	<dependency>
+		<groupId>org.imixs.workflow</groupId>
+		<artifactId>imixs-workflow-lucene</artifactId>
+		<version>${org.imixs.workflow.version}</version>
+	</dependency>
+
+### Apache Solr
+
+[Apache Solr](https://lucene.apache.org/solr/) is a highly reliable, scalable and fault tolerant search engine. 
+Solr is providing distributed indexing and replication and can be deployed in a microservice architecture as well in large distributed cloud environments.
+
+You need to setup a Solr server environment to use the Solr Search Engine. To activate the Solr Engine you need to add the following dependency:
+
+	<dependency>
+		<groupId>org.imixs.workflow</groupId>
+		<artifactId>imixs-workflow-solr</artifactId>
+		<version>${org.imixs.workflow.version}</version>
+	</dependency>
+      
+Apache Solr provides a lot of flexibility in configuration and offers additional features like translation or suggestion. In this way you can control the Imixs Search Index in a more fine grained way. 
+
+
+### Build Your Custom Search Engine
+
+You can also extend Imixs-Workflow Search engines or you can implement your own custom search engine. Therefor you need to implement the following interfaces and deploy your engine together with the Imixs-Workflow engine:
+
+ - **SearchService** - provides method to search an index
+ - **UpdateService** - is responsible to build the search index. 
+  

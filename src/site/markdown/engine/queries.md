@@ -1,12 +1,10 @@
-# The Full-Text-Search
+# The Search Index
 
-The Imixs-Workflow engine provides a **Full-Text-Search** based on the [Lucene Search Technology](https://lucene.apache.org/). 
-The Full-Text-Search is part of the [DocumentService](./documentservice.html) controlling the search index and providing search methods.
+The Imixs-Workflow engine provides a **Full-Text-Search** based on the [Lucene Search Technology](https://lucene.apache.org/). The search index is managed by the [DocumentService](./documentservice.html), which offers various search methods.
+You can search documents by search terms like "cat" or "dog*" and you can also define complex queries to select documents with specific search criteria.
 
-The Search-Index allows you to search documents by a single _search term_ such as "cat" or "dog". 
-Or you can define a _search query_ selecting documents with specific search criteria. 
 
-The Search-Index can also store search data, which dramatically speeds up the document access. The following section gives you an overview how a search term can be assembled from the very powerful [Lucene Query Syntax](https://lucene.apache.org/core/7_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description).
+The Search-Index stores also parts of a document, which dramatically speeds up the document access. The following section gives you an overview how a search term can be assembled from the very powerful [Lucene Query Syntax](https://lucene.apache.org/core/7_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description).
 
 ## How to Search Documents
 
@@ -97,9 +95,6 @@ In java you can format a Date object into the lucene syntax with a Forater objec
 See the [Lucene Query Syntax](https://lucene.apache.org/core/7_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description) for further information.
 
 
-## How to Setup a Custom Search Index
+## How to Setup an Index Schema
 
-In the section [Lucene Configuration](luceneservice.html) you will find detailed information you to setup and customize the search index of Imixs-Workflow.
-
- 
-      
+In the section [Index Schema](luceneservice.html) you will find detailed information how to setup and customize the search index by defining an Index Schema and a Search Engine.
