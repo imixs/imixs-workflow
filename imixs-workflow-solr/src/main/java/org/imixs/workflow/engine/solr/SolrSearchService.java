@@ -48,6 +48,7 @@ import org.imixs.workflow.exceptions.QueryException;
 
 /**
  * This session ejb provides a service to search the solr index.
+ * <p>
  * 
  * @version 1.0
  * @author rsoika
@@ -67,20 +68,14 @@ public class SolrSearchService implements SearchService {
 	public static final int DEFAULT_PAGE_SIZE = 100; // default docs in one page
 
 	@Inject
-	@ConfigProperty(name = "solr.server", defaultValue = "http://solr")
-	private String host;
-
-	@Inject
-	@ConfigProperty(name = "solr.core", defaultValue = "imixs-workflow")
-	private String core;
-
-	@Inject
 	private SchemaService schemaService;
 
 	@Inject
 	private DocumentService documentService;
 
 	private static Logger logger = Logger.getLogger(SolrSearchService.class.getName());
+
+	
 
 	/**
 	 * Returns a collection of documents matching the provided search term. The
@@ -198,25 +193,13 @@ public class SolrSearchService implements SearchService {
 		if (searchTerm == null || "".equals(searchTerm)) {
 			return workitems;
 		}
-
-		try {
-			
-			createCore();
-			
 		
-				logger.fine("...search result computed in " + (System.currentTimeMillis() - ltime) + " ms - loadStubs="
+			logger.fine("...search result computed in " + (System.currentTimeMillis() - ltime) + " ms - loadStubs="
 					+ loadStubs);
-		} catch (IOException e) {
-			// in case of an IOException we just print an error message and
-			// return an empty result
-			logger.severe("Lucene index error: " + e.getMessage());
-			throw new InvalidAccessException(InvalidAccessException.INVALID_INDEX, e.getMessage(), e);
-		}
+		
 
 		return workitems;
 	}
-
-	
 
 	/**
 	 * Returns the total hits for a given search term from the lucene index. The
@@ -239,33 +222,10 @@ public class SolrSearchService implements SearchService {
 	@Override
 	public int getTotalHits(final String _searchTerm, final int _maxResult, final DefaultOperator defaultOperator)
 			throws QueryException {
-		
+
 		logger.warning("...TBD");
 		return 0;
 	}
 
 	
-	/**
-	 * Connects the solr core
-	 * <p>
-	 * In case no core yet exits, the method tries to create a new one. This
-	 * typically is necessary after first deployment.
-	 * 
-	 * @param prop
-	 * @return
-	 * @throws IOException
-	 * @throws Exception
-	 */
-	private void createCore() throws IOException {
-		logger.info("...solr - create core " + core );
-		
-		String uri=host + "/admin/cores?action=CREATE&name="+core + "&instanceDir="+ core + "&configSet=/opt/solr/server/solr/configsets/_default";
-		
-		logger.info("...solr - URI=" + uri);
-	}
-
-	
-	
-	
-
 }

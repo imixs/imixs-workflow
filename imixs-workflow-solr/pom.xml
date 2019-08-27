@@ -24,5 +24,10 @@
 			<artifactId>imixs-workflow-engine</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-engine</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 </project>
