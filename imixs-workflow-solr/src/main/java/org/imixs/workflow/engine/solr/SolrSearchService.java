@@ -259,8 +259,7 @@ public class SolrSearchService implements SearchService {
 	private void createCore() throws IOException {
 		logger.info("...solr - create core " + core );
 		
-		//String uri=host + "/admin/cores?action=CREATE&name=core-name&instanceDir=path/to/dir&config=solrconfig.xml&dataDir=data";
-		String uri=host + "/admin/cores?action=CREATE&name=core-name";
+		String uri=host + "/admin/cores?action=CREATE&name="+core + "&instanceDir="+ core + "&configSet=/opt/solr/server/solr/configsets/_default";
 		
 		logger.info("...solr - URI=" + uri);
 	}

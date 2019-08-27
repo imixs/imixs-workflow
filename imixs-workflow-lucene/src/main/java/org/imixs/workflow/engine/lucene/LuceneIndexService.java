@@ -77,7 +77,7 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.QueryException;
 
 /**
- * This session ejb provides functionallity to maintain a local Lucen index.
+ * This session ejb provides functionality to maintain a local Lucene index.
  * @version 1.0
  * @author rsoika
  */
