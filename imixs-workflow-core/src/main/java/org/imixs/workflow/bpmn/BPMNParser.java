@@ -71,7 +71,7 @@ public class BPMNParser {
 		// store file content from input stream into the BPMNmodel
 		model.setRawData(rawData);
 
-		logger.info("BPMN Model '" + model.getVersion() + "' parsed in " + (System.currentTimeMillis() - lTime) + "ms");
+		logger.fine("...BPMN Model '" + model.getVersion() + "' parsed in " + (System.currentTimeMillis() - lTime) + "ms");
 		return model;
 
 	}

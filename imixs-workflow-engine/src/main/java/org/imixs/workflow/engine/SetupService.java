@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -134,19 +135,30 @@ public class SetupService {
 	 */
 	@PostConstruct
 	public void startup() {
-		logger.info("...setup service started...");
+		
+		logger.info("   ____      _             _      __         __    _____ ");
+		logger.info("  /  _/_ _  (_)_ __ ______| | /| / /__  ____/ /__ / _/ /__ _    __");
+		logger.info(" _/ //  ' \\/ /\\ \\ /(_-<___/ |/ |/ / _ \\/ __/  '_// _/ / _ \\ |/|/ /");
+		logger.info("/___/_/_/_/_//_\\_\\/___/   |__/|__/\\___/_/ /_/\\_\\/_//_/\\___/__,__/ 5.1");
+		logger.info("");	
+		
+		logger.info("...initalizing models...");
 
 		// first we scan for default models
-		if (modelService.getVersions().isEmpty()) {
+		List<String> models = modelService.getVersions();
+		if (models.isEmpty()) {
 			scanDefaultModels();
 		} else {
-			logger.info("...model status = OK");
+			for (String model: models) {
+				logger.info("...model: " + model + " ...OK");
+			}
 		}
 
 		// migrate old workflow scheduler
 		migrateWorkflowScheduler();
 
 		// next start optional schedulers
+		logger.info("...initalizing schedulers...");
 		schedulerService.startAllSchedulers();
 		
 		// Finally fire the SetupEvent. This allows CDI Observers to react on the setup 

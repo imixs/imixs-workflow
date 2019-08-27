@@ -41,7 +41,6 @@ import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Singleton;
@@ -110,7 +109,7 @@ public class ModelService implements ModelManager {
 	void init() throws AccessDeniedException {
 
 		// load existing models into the ModelManager....
-		logger.info("Initalizing ModelService...");
+		logger.finest("......Initalizing ModelService...");
 		// first remove existing model entities
 		Collection<ItemCollection> col = documentService.getDocumentsByType("model");
 		for (ItemCollection modelEntity : col) {
