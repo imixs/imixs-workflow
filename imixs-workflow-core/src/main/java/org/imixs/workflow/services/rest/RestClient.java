@@ -328,8 +328,7 @@ public class RestClient {
 	 * @return - content or null if no content is available.
 	 */
 	public String get(String uri) throws RestAPIException {
-		int responseCode = -1;
-
+	
 		setServiceEndpoint(uri);
 		try {
 			HttpURLConnection urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
@@ -352,16 +351,16 @@ public class RestClient {
 				filter.filter(urlConnection);
 			}
 
-			responseCode = urlConnection.getResponseCode();
+			iLastHTTPResult = urlConnection.getResponseCode();
 			logger.finest("......Sending 'GET' request to URL : " + serviceEndpoint);
-			logger.finest("......Response Code : " + responseCode);
+			logger.finest("......Response Code : " + iLastHTTPResult);
 			// read response if response was successful
-			if (responseCode >= 200 && responseCode <= 299) {
+			if (iLastHTTPResult >= 200 && iLastHTTPResult <= 299) {
 				return readResponse(urlConnection);
 			} else {
-				String error = "Error " + responseCode + " - failed GET request from '" + uri + "'";
+				String error = "Error " + iLastHTTPResult + " - failed GET request from '" + uri + "'";
 				logger.warning(error);
-				throw new RestAPIException(responseCode, error);
+				throw new RestAPIException(iLastHTTPResult, error);
 			}
 		} catch (IOException e) {
 			String error = "Error GET request from '" + uri + " - " + e.getMessage();
