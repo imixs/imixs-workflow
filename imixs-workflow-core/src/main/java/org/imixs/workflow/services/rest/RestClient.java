@@ -161,8 +161,10 @@ public class RestClient {
 	 * @param contentType
 	 *            - request MediaType
 	 * @return content
+	 * @throws RestAPIException 
+	 * @throws Exception 
 	 */
-	public String post(String uri, String dataString, String contentType) throws Exception {
+	public String post(String uri, String dataString, String contentType) throws RestAPIException {
 		return post(uri, dataString, contentType, null);
 	}
 
@@ -182,8 +184,9 @@ public class RestClient {
 	 * @param acceptType
 	 *            - accept MediaType
 	 * @return content
+	 * @throws RestAPIException 
 	 */
-	public String post(String uri, String dataString, final String _contentType, String acceptType) throws Exception {
+	public String post(String uri, String dataString, final String _contentType, String acceptType) throws RestAPIException  {
 		PrintWriter printWriter = null;
 		String contentType = _contentType;
 
@@ -239,9 +242,10 @@ public class RestClient {
 
 			return content;
 
-		} catch (Exception ioe) {
-			// ioe.printStackTrace();
-			throw ioe;
+		} catch ( IOException ioe) {
+			String error = "Error POST request '" + uri + " - " + ioe.getMessage();
+			logger.warning(error);
+			throw new RestAPIException(500, error, ioe);
 		} finally {
 			// Release current connection
 			if (printWriter != null)
@@ -263,8 +267,9 @@ public class RestClient {
 	 * @param acceptType
 	 *            - accept MediaType
 	 * @return content
+	 * @throws RestAPIException 
 	 */
-	public String post(String uri, byte[] data, String acceptType) throws Exception {
+	public String post(String uri, byte[] data, String acceptType) throws RestAPIException{
 
 		HttpURLConnection urlConnection = null;
 		try {
@@ -302,9 +307,10 @@ public class RestClient {
 			httpRequestBodyWriter.close();
 			String content = readResponse(urlConnection);
 			return content;
-		} catch (Exception ioe) {
-			// ioe.printStackTrace();
-			throw ioe;
+		} catch ( IOException ioe) {
+			String error = "Error POST request '" + uri + " - " + ioe.getMessage();
+			logger.warning(error);
+			throw new RestAPIException(500, error, ioe);
 		} finally {
 
 		}
