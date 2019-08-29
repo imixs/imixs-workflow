@@ -49,7 +49,7 @@ import org.imixs.workflow.exceptions.QueryException;
  * 
  * <ul>
  * <li>index.fields - content which will be indexed</li>
- * <li>index.fields.analyse - fields indexed as analyzed keyword fields </li>
+ * <li>index.fields.analyse - fields indexed as analyzed keyword fields</li>
  * <li>index.fields.noanalyse - fields indexed without analyze</li>
  * <li>index.fields.store - fields stored in the index</li>
  * <li>index.operator - default operator</li>
@@ -72,7 +72,7 @@ public class SchemaService {
 	 */
 
 	public static final String ANONYMOUS = "ANONYMOUS";
-	
+
 	@Inject
 	@ConfigProperty(name = "index.fields", defaultValue = "")
 	private String indexFields;
@@ -88,7 +88,7 @@ public class SchemaService {
 	@Inject
 	@ConfigProperty(name = "index.fields.store", defaultValue = "")
 	private String indexFieldsStore;
-	
+
 	@Inject
 	private DocumentService documentService;
 
@@ -132,8 +132,9 @@ public class SchemaService {
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase().trim();
 				// do not add internal fields
-				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName) && !fieldList.contains(sName))
+				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName) && !fieldList.contains(sName)) {
 					fieldList.add(sName);
+				}
 			}
 		}
 
@@ -144,8 +145,9 @@ public class SchemaService {
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase().trim();
 				// do not add internal fields
-				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName))
+				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName)) {
 					fieldListAnalyse.add(sName);
+				}
 			}
 		}
 
@@ -158,8 +160,10 @@ public class SchemaService {
 			StringTokenizer st = new StringTokenizer(indexFieldsNoAnalyse, ",");
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase().trim();
-				if (!fieldListNoAnalyse.contains(sName))
+				// Issue #560 - avoid duplicates from indexFieldsAnalyse
+				if (!fieldListNoAnalyse.contains(sName) && !indexFieldsAnalyse.contains(sName)) {
 					fieldListNoAnalyse.add(sName);
+				}
 			}
 		}
 
@@ -179,10 +183,11 @@ public class SchemaService {
 
 		// Issue #518:
 		// if a field of the indexFieldListStore is not part of the
-		// indexFieldListAnalyse , than we add these fields to the indexFieldListAnalyse
-		// This is to guaranty that we store the field value in any case.
+		// fieldListAnalyse add not part of fieldListNoAnalyse , than we add these
+		// fields to the indexFieldListAnalyse. This is to guaranty that we store the
+		// field value in any case.
 		for (String fieldName : fieldListStore) {
-			if (!fieldListAnalyse.contains(fieldName)) {
+			if (!fieldListAnalyse.contains(fieldName) && !fieldListNoAnalyse.contains(fieldName)) {
 				// add this field into he indexFieldListAnalyse
 				fieldListAnalyse.add(fieldName);
 			}
@@ -222,8 +227,6 @@ public class SchemaService {
 		return config;
 	}
 
-	
-	
 	/**
 	 * Returns the extended search term for a given query. The search term will be
 	 * extended with a users roles to test the read access level of each workitem
@@ -258,7 +261,6 @@ public class SchemaService {
 		return sSearchTerm;
 	}
 
-	
 	/**
 	 * This helper method escapes wildcard tokens found in a lucene search term. The
 	 * method can be used by clients to prepare a search phrase.
