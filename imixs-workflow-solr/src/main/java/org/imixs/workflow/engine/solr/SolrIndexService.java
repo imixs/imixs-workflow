@@ -111,73 +111,25 @@ public class SolrIndexService {
 	 * than the method creates a new empty core
 	 * 
 	 * @param setupEvent
+	 * @throws RestAPIException
 	 */
-	@SuppressWarnings("unused")
-	public void setup(@Observes SetupEvent setupEvent) {
+	public void setup(@Observes SetupEvent setupEvent) throws RestAPIException {
 
 		logger.info("...verify solr core '" + core + "'...");
 
 		// try to get the schma of the core...
 		try {
-			String schema = restClient.get(host + "/api/cores/" + core + "/schema");
-			logger.info("...solr core '" + core + "' OK ");
+			String existingSchema = restClient.get(host + "/api/cores/" + core + "/schema");
+			logger.info("...core   = OK ");
+
+			// update schema
+			updateSchema(existingSchema);
 		} catch (RestAPIException e) {
 			// no schema found
-			logger.info("...no solr core '" + core + "' found!");
-			try {
-				createCore();
-			} catch (RestAPIException e1) {
-				logger.warning("Failed to verify solr core - " + e1.getMessage());
-				e1.printStackTrace();
-			}
+			logger.severe("...no solr core '" + core + "' found!");
+			throw e;
 		}
 
-	}
-
-	/**
-	 * This method returns a JSON structure to create all fields to be added into a
-	 * empty schema.
-	 * <p>
-	 * This is used during creation of a new empty core
-	 * 
-	 * @return
-	 */
-	public String getSchemaUpdate() {
-
-		StringBuffer schema = new StringBuffer();
-		List<String> fieldListStore = schemaService.getFieldListStore();
-		List<String> fieldListAnalyse = schemaService.getFieldListAnalyse();
-		List<String> fieldListNoAnalyse = schemaService.getFieldListNoAnalyse();
-		schema.append("{");
-
-		// finally add the default content field
-		schema.append("\"add-field\":{\"name\":\"content\",\"type\":\"TextField\",\"stored\":false },");
-
-		// add each field from the fieldListAnalyse
-		for (String field : fieldListAnalyse) {
-			boolean store = fieldListStore.contains(field);
-			schema.append("\"add-field\":{\"name\":\"" + field + "\",\"type\":\"StrField\",\"stored\":" + store + " },");
-		}
-		// add each field from the fieldListAnalyse
-		for (String field : fieldListAnalyse) {
-			boolean store = fieldListStore.contains(field);
-			schema.append("\"add-field\":{\"name\":\"" + field + "\",\"type\":\"TextField\",\"stored\":" + store + " },");
-		}
-
-		// add each field from the fieldListNoAnalyse
-		for (String field : fieldListNoAnalyse) {
-			boolean store = fieldListStore.contains(field);
-			schema.append("\"add-field\":{\"name\":\"" + field + "\",\"type\":\"StrField\",\"stored\":" + store + " },");
-		}
-
-		// doc.add(new TextField("content", sContent, Store.NO));
-
-		// finally add the $uniqueid field
-		schema.append("\"add-field\":{\"name\":\"$uniqueid\",\"type\":\"StrField\",\"stored\":true }");
-
-		schema.append("}");
-
-		return schema.toString();
 	}
 
 	/**
@@ -191,22 +143,103 @@ public class SolrIndexService {
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	private void createCore() throws RestAPIException {
-
-		String uri = host + "/solr/admin/cores?action=CREATE&name=" + core + "&instanceDir=" + core
-				+ "&configSet=/opt/solr/server/solr/configsets/" + configset;
-
-		logger.info("...creating solr core '" + core + "' with configset '" + configset + "'");
-		restClient.get(uri);
+	public void updateSchema(String schema) throws RestAPIException {
 
 		// create the schema....
-		String schemaUpdate = getSchemaUpdate();
+		String schemaUpdate = createUpdateSchema(schema);
+		// test if the schemaUdpate contains instructions....
+		if (!"{}".equals(schemaUpdate)) {
+			String uri = host + "/api/cores/" + core + "/schema";
+			logger.info("...update schema '" + core + "':");
+			logger.info("..." + schemaUpdate);
+			restClient.post(uri, schemaUpdate, "application/json");
+		} else {
+			logger.info("...schema = OK ");
+		}
+	}
 
-		uri = host + "/api/cores/" + core + "/schema";
+	/**
+	 * This method returns a JSON structure to to update an existing Solr schema.
+	 * The method adds all fields into a solr update definition that did not yet
+	 * exist in the current schema.
+	 * <p>
+	 * The param schema contains the current schema definition of the core.
+	 * 
+	 * @return
+	 */
+	private String createUpdateSchema(String oldSchema) {
 
-		logger.info("...update schema information");
-		restClient.post(uri, schemaUpdate, "application/json");
+		StringBuffer updateSchema = new StringBuffer();
+		List<String> fieldListStore = schemaService.getFieldListStore();
+		List<String> fieldListAnalyse = schemaService.getFieldListAnalyse();
+		List<String> fieldListNoAnalyse = schemaService.getFieldListNoAnalyse();
 
+		// remove white space from oldSchema to simplify string compare...
+		oldSchema = oldSchema.replace(" ", "");
+
+		updateSchema.append("{");
+
+		// finally add the default content field
+		addFieldIntoUpdateSchema(updateSchema, oldSchema, "content", "text_general", false);
+		// add each field from the fieldListAnalyse
+		for (String field : fieldListAnalyse) {
+			boolean store = fieldListStore.contains(field);
+			addFieldIntoUpdateSchema(updateSchema, oldSchema, field, "text_general", store);
+		}
+
+		// add each field from the fieldListNoAnalyse
+		for (String field : fieldListNoAnalyse) {
+			boolean store = fieldListStore.contains(field);
+			addFieldIntoUpdateSchema(updateSchema, oldSchema, field, "strings", store);
+		}
+
+		// finally add the $uniqueid field
+		addFieldIntoUpdateSchema(updateSchema, oldSchema, "$uniqueid", "string", true);
+
+		// remove last ,
+		int lastComma = updateSchema.lastIndexOf(",");
+		if (lastComma > -1) {
+			updateSchema.deleteCharAt(lastComma);
+		}
+		updateSchema.append("}");
+		return updateSchema.toString();
+	}
+
+	/**
+	 * This method adds a 'add-field' object to an updateSchema.
+	 * <p>
+	 * In case the same field already exists in the oldSchema then the method will
+	 * not add the field to the update schema.
+	 * <p>
+	 * Example: <code>{name=$workflowsummary, type=text_general, stored=true}</code>
+	 *
+	 * <p>
+	 * NOTE: The test here is very week (simple indexOf) and may cause problems in
+	 * the future. TODO optimize the schema compare method.
+	 *
+	 * @param updateSchema
+	 *            - a stringBuffer containing the update schema
+	 * @param oldSchema
+	 *            - the current schema definition
+	 * @param name
+	 *            - field name
+	 * @param type
+	 *            - field type
+	 * @param store
+	 *            - boolean store field
+	 * @param addComma
+	 *            - true if a ',' should be added to the end of the updateSchema.
+	 * 
+	 */
+	private void addFieldIntoUpdateSchema(StringBuffer updateSchema, String oldSchema, String name, String type,
+			boolean store) {
+
+		String fieldDefinition = "{\"name\":\"" + name + "\",\"type\":\"" + type + "\",\"stored\":" + store + "}";
+		// test if this field discription already exists
+		if (!oldSchema.contains(fieldDefinition)) {
+			// add new field to updateSchema....
+			updateSchema.append("\"add-field\":" + fieldDefinition + ",");
+		}
 	}
 
 }
