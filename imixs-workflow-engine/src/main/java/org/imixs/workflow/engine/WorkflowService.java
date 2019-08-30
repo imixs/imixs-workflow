@@ -997,9 +997,19 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 					if ("boolean".equalsIgnoreCase(sType)) {
 						result.appendItemValue(itemName, Boolean.valueOf(content));
 					} else if ("integer".equalsIgnoreCase(sType)) {
-						result.appendItemValue(itemName, Integer.valueOf(content));
+						try {
+							result.appendItemValue(itemName, Integer.valueOf(content));
+						} catch (NumberFormatException e) {
+							// append 0 value
+							result.appendItemValue(itemName, new Integer(0));
+						}
 					} else if ("double".equalsIgnoreCase(sType)) {
-						result.appendItemValue(itemName, Double.valueOf(content));
+						try {
+							result.appendItemValue(itemName, Double.valueOf(content));
+						} catch (NumberFormatException e) {
+							// append 0 value
+							result.appendItemValue(itemName, new Double(0));
+						}
 					} else if ("date".equalsIgnoreCase(sType)) {
 						if (content == null || content.isEmpty()) {
 							// no value available - no op!
