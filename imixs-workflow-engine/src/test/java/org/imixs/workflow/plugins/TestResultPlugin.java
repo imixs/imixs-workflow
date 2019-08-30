@@ -413,4 +413,33 @@ public class TestResultPlugin {
 		
 
 	}
+	
+	
+	/**
+	 * This test copies an item from the source workitem.
+	 * <p>
+	 * The test copies the value of 'amount' into the new item 'count'
+	 * 
+	 * @throws PluginException
+	 */
+	@Test
+	public void testCopyItemFromSource() throws PluginException {
+
+		ItemCollection workitem = new ItemCollection();
+		workitem.replaceItemValue("name", "Anna");
+		workitem.replaceItemValue("amount", 55.332);
+		ItemCollection event = new ItemCollection();
+
+		event.replaceItemValue("txtActivityResult",
+				"<item name=\"count\" type=\"double\"><itemvalue>amount</itemvalue></item>");
+		// run plugin
+		workitem = resultPlugin.run(workitem, event);
+
+		workitem = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(event, workitem);
+		Assert.assertNotNull(workitem);
+		Assert.assertTrue(workitem.hasItem("count"));
+		Assert.assertEquals(55.332, workitem.getItemValueDouble("count"));
+
+
+	}
 }
