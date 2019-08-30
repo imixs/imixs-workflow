@@ -42,6 +42,7 @@ With the optional attribute 'type' the item value type can be specified. The fol
 
 * boolean - results in type Boolean
 * integer - results in type Integer
+* double - results in type Double
 * date - results in type java.util.Date
  
 Example Boolean: 
