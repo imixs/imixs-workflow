@@ -59,9 +59,6 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -74,7 +71,6 @@ import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.exceptions.QueryException;
 
 /**
  * This session ejb provides functionality to maintain a local Lucene index.
@@ -570,45 +566,5 @@ public class LuceneIndexService {
 		return new IndexWriter(indexDir, indexWriterConfig);
 	}
 	
-	
-	/**
-	 * This method normalizes a search term using the Lucene ClassicTokenzier. The
-	 * method can be used by clients to prepare a search phrase.
-	 * 
-	 * The method also escapes the result search term.
-	 * 
-	 * e.g. 'europe/berlin' will be normalized to 'europe berlin' e.g. 'r555/333'
-	 * will be unmodified 'r555/333'
-	 * 
-	 * @param searchTerm
-	 * @return normalzed search term
-	 * @throws QueryException
-	 */
-	public String normalizeSearchTerm(String searchTerm) throws QueryException {
-		if (searchTerm == null) {
-			return "";
-		}
-		if (searchTerm.trim().isEmpty()) {
-			return "";
-		}
-
-		ClassicAnalyzer analyzer = new ClassicAnalyzer();
-		QueryParser parser = new QueryParser("content", analyzer);
-		// issue #331
-		parser.setAllowLeadingWildcard(true);
-		try {
-			Query result = parser.parse(schemaService.escapeSearchTerm(searchTerm, false));
-			searchTerm = result.toString("content");
-		} catch (ParseException e) {
-			logger.warning("Unable to normalze serchTerm '" + searchTerm + "'  -> " + e.getMessage());
-			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
-		}
-		return schemaService.escapeSearchTerm(searchTerm, true);
-
-	}
-
-
-	
-
 
 }

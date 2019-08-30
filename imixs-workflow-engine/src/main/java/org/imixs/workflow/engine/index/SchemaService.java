@@ -262,15 +262,15 @@ public class SchemaService {
 	}
 
 	/**
-	 * This helper method escapes wildcard tokens found in a lucene search term. The
-	 * method can be used by clients to prepare a search phrase.
-	 * 
-	 * The method rewrites the lucene <code>QueryParser.escape</code> method and did
-	 * not! escape '*' char.
-	 * 
+	 * This helper method escapes special characters found in a lucene search term.
+	 * The method can be used by clients to prepare a search phrase.
+	 * <p>
+	 * Special characters are characters that are part of the lucene query syntax
+	 * <p>
+	 * <code>+ - && || ! ( ) { } [ ] ^ " ~ * ? : \ /</code>
+	 * <p>
 	 * Clients should use the method normalizeSearchTerm() instead of
 	 * escapeSearchTerm() to prepare a user input for a lucene search.
-	 * 
 	 * 
 	 * @see normalizeSearchTerm
 	 * @param searchTerm
@@ -308,6 +308,83 @@ public class SchemaService {
 
 	public String escapeSearchTerm(String searchTerm) {
 		return escapeSearchTerm(searchTerm, false);
+	}
+
+	/**
+	 * This method normalizes a search term. The method can be used by clients to
+	 * prepare a search phrase. The serach term will be lowercased and special
+	 * characters will be replaced by a blank separator
+	 * <p>
+	 * e.g. 'europe/berlin' will be normalized to 'europe berlin'
+	 * <p>
+	 * In case the searchTerm contains numbers the method escapes special characters
+	 * instead of replacing with a blank:
+	 * <p>
+	 * e.g. 'r-555/333' will be converted into 'r\-555\/333'
+	 * <p>
+	 * Special characters are characters that are part of the lucene query syntax
+	 * <p>
+	 * <code>+ - && || ! ( ) { } [ ] ^ " ~ ? : \ /</code>
+	 * <p>
+	 * 
+	 * @param searchTerm
+	 * @return normalized search term
+	 * 
+	 */
+	public String normalizeSearchTerm(String searchTerm) {
+
+		if (searchTerm == null) {
+			return "";
+		}
+		if (searchTerm.trim().isEmpty()) {
+			return "";
+		}
+
+		// lowercase
+		searchTerm = searchTerm.toLowerCase();
+
+		if (containsDigit(searchTerm)) {
+			return escapeSearchTerm(searchTerm, false);
+		}
+
+		// now replace Special Characters with blanks
+		// + - && || ! ( ) { } [ ] ^ " ~ * ? : \ /
+		// this is the code from the QueryParser.escape() method without the '*'
+		// char!
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < searchTerm.length(); i++) {
+			char c = searchTerm.charAt(i);
+			// These characters are part of the query syntax and must be escaped
+			// (ignore brackets!)
+			if (c == '\\' || c == '+' || c == '-' || c == '!' || c == ':' || c == '^' || c == '[' || c == ']'
+					|| c == '\"' || c == '{' || c == '}' || c == '~' || c == '?' || c == '|' || c == '&' || c == '/') {
+				sb.append(' ');
+			} else {
+				sb.append(c);
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Test if a string contains a number. Seems to be faster than regex.
+	 * <p>
+	 * See:
+	 * https://stackoverflow.com/questions/18590901/check-if-a-string-contains-numbers-java
+	 * 
+	 * @param s
+	 * @return
+	 */
+	private final boolean containsDigit(String s) {
+		boolean containsDigit = false;
+		if (s != null && !s.isEmpty()) {
+			for (char c : s.toCharArray()) {
+				if (containsDigit = Character.isDigit(c)) {
+					break;
+				}
+			}
+		}
+		return containsDigit;
 	}
 
 }
