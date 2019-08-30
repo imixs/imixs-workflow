@@ -27,10 +27,7 @@
 
 package org.imixs.workflow.engine.lucene;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -38,11 +35,8 @@ import javax.ejb.Singleton;
 import javax.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.DocumentService;
-import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.exceptions.IndexException;
-import org.imixs.workflow.exceptions.PluginException;
 
 /**
  * The LuceneUpdateService provides methods to write Imixs Workitems into a
@@ -74,10 +68,6 @@ import org.imixs.workflow.exceptions.PluginException;
 public class LuceneUpdateService implements UpdateService {
 
 
-	
-	@Inject
-	private EventLogService eventLogService;
-	
 	@Inject
 	private LuceneIndexService luceneIndexService;
 
@@ -92,80 +82,46 @@ public class LuceneUpdateService implements UpdateService {
 	 */
 	@PostConstruct
 	void init() {
-
 		logger.finest("......lucene IndexDir=" + luceneIndexService.getLuceneIndexDir());
-		
 	}
 
 	/**
-	 * This method adds a single document into the to the Lucene index. Before the
-	 * document is added to the index, a new eventLog is created. The document will
-	 * be indexed after the method flushEventLog is called. This method is called by
-	 * the LuceneSearchService finder methods.
+	 * This method adds a collection of documents to the Lucene index. The documents
+	 * are added immediately to the index. Calling this method within a running
+	 * transaction leads to a uncommitted reads in the index. For transaction
+	 * control, it is recommended to use instead the the method updateDocumetns()
+	 * which takes care of uncommitted reads.
 	 * <p>
-	 * The method supports committed read. This means that a running transaction
-	 * will not read an uncommitted document from the Lucene index.
+	 * This method is used by the JobHandlerRebuildIndex only.
 	 * 
-	 * 
-	 * @param documentContext
-	 */
-	public void updateDocument(ItemCollection documentContext) {
-		// adds the document into a empty Collection and call the method
-		// updateDocuments.
-		List<ItemCollection> documents = new ArrayList<ItemCollection>();
-		documents.add(documentContext);
-		updateDocuments(documents);
-	}
-
-	/**
-	 * This method adds a collection of documents to the Lucene index. For each
-	 * document in a given selection a new eventLog is created. The documents will
-	 * be indexed after the method flushEventLog is called. This method is called by
-	 * the LuceneSearchService finder methods.
-	 * <p>
-	 * The method supports committed read. This means that a running transaction
-	 * will not read uncommitted documents from the Lucene index.
-	 * 
-	 * @see updateDocumentsUncommitted
 	 * @param documents
-	 *            to be indexed
+	 *            of ItemCollections to be indexed
 	 * @throws IndexException
 	 */
-	public void updateDocuments(Collection<ItemCollection> documents) {
-		long ltime = System.currentTimeMillis();
-
-		// write a new EventLog entry for each document....
-		for (ItemCollection workitem : documents) {
-			// skip if the flag 'noindex' = true
-			if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
-				eventLogService.createEvent(LuceneIndexService.EVENTLOG_TOPIC_ADD, workitem.getUniqueID());
-			}
-		}
-
-		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime) + " ms ("
-					+ documents.size() + " documents to be index)");
-		}
-	}
-
-	
-	/**
-	 * This method adds a new eventLog for a document to be deleted from the index.
-	 * The document will be removed from the index after the method fluschEventLog
-	 * is called. This method is called by the LuceneSearchService finder method
-	 * only.
-	 * 
-	 * 
-	 * @param uniqueID
-	 *            of the workitem to be removed
-	 * @throws PluginException
-	 */
-	public void removeDocument(String uniqueID) {
-		luceneIndexService.removeDocument(uniqueID);
+	@Override
+	public void updateIndex(List<ItemCollection> documents) {
+		luceneIndexService.updateDocumentsUncommitted(documents);
 		
 	}
+
 	
 
+	/**
+	 * This method flush the event log.
+	 */
+	@Override
+	public void updateIndex() {
+		long ltime = System.currentTimeMillis();
+		// flush eventlog (see issue #411)
+		int flushCount = 0;
+		while (luceneIndexService.flushEventLog(2048) == false) {
+			// repeat flush....
+			flushCount = +2048;
+			logger.info("...flush event log: " + flushCount + " entries updated in "
+					+ (System.currentTimeMillis() - ltime) + "ms ...");
+		}
+	}
+	
 
 	
 }

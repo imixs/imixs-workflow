@@ -86,11 +86,11 @@ public class SolrSearchService implements SearchService {
 	 * @return collection of search result
 	 * @throws QueryException
 	 */
-	@Override
-	public List<ItemCollection> search(String sSearchTerm) throws QueryException {
-		// no sort order
-		return search(sSearchTerm, DEFAULT_MAX_SEARCH_RESULT, 0, null, DefaultOperator.AND);
-	}
+//	@Override
+//	public List<ItemCollection> search(String sSearchTerm) throws QueryException {
+//		// no sort order
+//		return search(sSearchTerm, DEFAULT_MAX_SEARCH_RESULT, 0, null, DefaultOperator.AND);
+//	}
 
 	/**
 	 * Returns a collection of documents matching the provided search term. The
@@ -105,12 +105,11 @@ public class SolrSearchService implements SearchService {
 	 * @return collection of search result
 	 * @throws QueryException
 	 */
-	@Override
-
-	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) throws QueryException {
-		// no sort order
-		return search(sSearchTerm, pageSize, pageIndex, null, null);
-	}
+//	@Override
+//	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) throws QueryException {
+//		// no sort order
+//		return search(sSearchTerm, pageSize, pageIndex, null, null);
+//	}
 
 	/**
 	 * Returns a collection of documents matching the provided search term. The term
@@ -125,12 +124,12 @@ public class SolrSearchService implements SearchService {
 	 * <p>
 	 * 
 	 */
-	@Override
-	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex,
-			org.imixs.workflow.engine.index.SortOrder sortOrder, DefaultOperator defaultOperator)
-			throws QueryException {
-		return search(sSearchTerm, pageSize, pageIndex, sortOrder, defaultOperator, false);
-	}
+//	@Override
+//	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex,
+//			org.imixs.workflow.engine.index.SortOrder sortOrder, DefaultOperator defaultOperator)
+//			throws QueryException {
+//		return search(sSearchTerm, pageSize, pageIndex, sortOrder, defaultOperator, false);
+//	}
 
 	/**
 	 * Returns a collection of documents matching the provided search term. The term

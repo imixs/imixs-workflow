@@ -28,6 +28,7 @@
 package org.imixs.workflow.engine.solr;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -59,10 +60,7 @@ import org.imixs.workflow.exceptions.PluginException;
 public class SolrUpdateService implements UpdateService {
 
 
-	
-	@Inject
-	private EventLogService eventLogService;
-	
+		
 		private static Logger logger = Logger.getLogger(SolrUpdateService.class.getName());
 
 	/**
@@ -79,57 +77,32 @@ public class SolrUpdateService implements UpdateService {
 	}
 
 	/**
-	 * This method adds a single document into the to the Lucene index. Before the
-	 * document is added to the index, a new eventLog is created. The document will
-	 * be indexed after the method flushEventLog is called. This method is called by
-	 * the LuceneSearchService finder methods.
+	 * This method adds a collection of documents to the Lucene index. The documents
+	 * are added immediately to the index. Calling this method within a running
+	 * transaction leads to a uncommitted reads in the index. For transaction
+	 * control, it is recommended to use instead the the method updateDocumetns()
+	 * which takes care of uncommitted reads.
 	 * <p>
-	 * The method supports committed read. This means that a running transaction
-	 * will not read an uncommitted document from the Lucene index.
+	 * This method is used by the JobHandlerRebuildIndex only.
 	 * 
-	 * 
-	 * @param documentContext
-	 */
-	public void updateDocument(ItemCollection documentContext) {
-		logger.info("...TBD");
-	}
-
-	/**
-	 * This method adds a collection of documents to the Lucene index. For each
-	 * document in a given selection a new eventLog is created. The documents will
-	 * be indexed after the method flushEventLog is called. This method is called by
-	 * the LuceneSearchService finder methods.
-	 * <p>
-	 * The method supports committed read. This means that a running transaction
-	 * will not read uncommitted documents from the Lucene index.
-	 * 
-	 * @see updateDocumentsUncommitted
 	 * @param documents
-	 *            to be indexed
+	 *            of ItemCollections to be indexed
 	 * @throws IndexException
 	 */
-	public void updateDocuments(Collection<ItemCollection> documents) {
-		logger.info("...TBD");
+	@Override
+	public void updateIndex(List<ItemCollection> documents) {
 
+		logger.warning(" unimplemented !!!!");
 	}
-
 	
-	/**
-	 * This method adds a new eventLog for a document to be deleted from the index.
-	 * The document will be removed from the index after the method fluschEventLog
-	 * is called. This method is called by the LuceneSearchService finder method
-	 * only.
-	 * 
-	 * 
-	 * @param uniqueID
-	 *            of the workitem to be removed
-	 * @throws PluginException
-	 */
-	public void removeDocument(String uniqueID) {
-		logger.info("...TBD");
+	
+	@Override
+	public void updateIndex() {
 
-		
+		logger.warning(" unimplemented !!!!");
 	}
+	
+	
 	
 
 

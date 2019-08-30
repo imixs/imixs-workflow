@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
-import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
@@ -81,7 +80,7 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 public class AdminPService {
 
 	public static final String JOB_RENAME_USER = "RENAME_USER";
-	public static final String JOB_REBUILD_LUCENE_INDEX = "REBUILD_LUCENE_INDEX";
+	public static final String JOB_REBUILD_INDEX ="JOB_REBUILD_INDEX";
 	public static final String JOB_UPGRADE = "UPGRADE";
 	public static final String JOB_MIGRATION = "MIGRATION";
 	private static final int DEFAULT_INTERVAL = 1;
@@ -101,6 +100,8 @@ public class AdminPService {
 	@Inject
 	JobHandlerRenameUser jobHandlerRenameUser;
 
+	@Inject
+	JobHandlerRebuildIndex jobHandlerRebuildIndex;
 	
 	@Inject
 	@Any
@@ -225,6 +226,10 @@ public class AdminPService {
 
 			if (job.equals(JOB_UPGRADE)) {
 				jobHandler = jobHandlerUpgradeWorkitems;
+			}
+			
+			if (job.equals(JOB_REBUILD_INDEX) || job.equals("REBUILD_LUCENE_INDEX")) {
+				jobHandler = jobHandlerRebuildIndex;
 			}
 
 			if (jobHandler == null) {

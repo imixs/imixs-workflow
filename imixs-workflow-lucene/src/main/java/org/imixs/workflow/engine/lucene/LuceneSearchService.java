@@ -128,11 +128,11 @@ public class LuceneSearchService implements SearchService {
 	 * @return collection of search result
 	 * @throws QueryException
 	 */
-	@Override
-	public List<ItemCollection> search(String sSearchTerm) throws QueryException {
-		// no sort order
-		return search(sSearchTerm, DEFAULT_MAX_SEARCH_RESULT, 0, null, DefaultOperator.AND);
-	}
+//	@Override
+//	public List<ItemCollection> search(String sSearchTerm) throws QueryException {
+//		// no sort order
+//		return search(sSearchTerm, DEFAULT_MAX_SEARCH_RESULT, 0, null, DefaultOperator.AND);
+//	}
 
 	/**
 	 * Returns a collection of documents matching the provided search term. The
@@ -147,12 +147,11 @@ public class LuceneSearchService implements SearchService {
 	 * @return collection of search result
 	 * @throws QueryException
 	 */
-	@Override
-
-	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) throws QueryException {
-		// no sort order
-		return search(sSearchTerm, pageSize, pageIndex, null, null);
-	}
+//	@Override
+//	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) throws QueryException {
+//		// no sort order
+//		return search(sSearchTerm, pageSize, pageIndex, null, null);
+//	}
 
 	/**
 	 * Returns a collection of documents matching the provided search term. The term
@@ -167,12 +166,12 @@ public class LuceneSearchService implements SearchService {
 	 * <p>
 	 * 
 	 */
-	@Override
-	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex,
-			org.imixs.workflow.engine.index.SortOrder sortOrder, DefaultOperator defaultOperator)
-			throws QueryException {
-		return search(sSearchTerm, pageSize, pageIndex, sortOrder, defaultOperator, false);
-	}
+//	@Override
+//	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex,
+//			org.imixs.workflow.engine.index.SortOrder sortOrder, DefaultOperator defaultOperator)
+//			throws QueryException {
+//		return search(sSearchTerm, pageSize, pageIndex, sortOrder, defaultOperator, false);
+//	}
 
 	/**
 	 * Returns a collection of documents matching the provided search term. The term
@@ -212,7 +211,7 @@ public class LuceneSearchService implements SearchService {
 		long ltime = System.currentTimeMillis();
 
 		// flush eventlog (see issue #411)
-		flush();
+		//flush();
 
 		// see issue #382
 		/*
@@ -321,7 +320,7 @@ public class LuceneSearchService implements SearchService {
 					workitems.add(imixsDoc);
 				} else {
 					logger.warning("lucene index returned unreadable workitem : " + sID);
-					luceneIndexService.removeDocument(sID);
+					documentService.removeDocumentFromIndex(sID);
 					// this situation happens if the search index returned
 					// documents the current user has no read access.
 					// this should normally avoided with the $readaccess
@@ -349,32 +348,6 @@ public class LuceneSearchService implements SearchService {
 
 	
 	
-	private Sort buildLuceneSort(org.imixs.workflow.engine.index.SortOrder sortOrder) {
-		Sort sort = null;
-			// we do not support multi values here - see
-			// LuceneUpdateService.addItemValues
-			// it would be possible if we use a SortedSetSortField class here
-			sort = new Sort(new SortField[] { new SortField(sortOrder.getField(), SortField.Type.STRING, sortOrder.isReverse()) });
-		return sort;
-	}
-	
-	
-	
-	/**
-	 * This method flush the event log.
-	 */
-	public void flush() {
-		long ltime = System.currentTimeMillis();
-		// flush eventlog (see issue #411)
-		int flushCount = 0;
-		while (luceneIndexService.flushEventLog(2048) == false) {
-			// repeat flush....
-			flushCount = +2048;
-			logger.info("...flush event log: " + flushCount + " entries updated in "
-					+ (System.currentTimeMillis() - ltime) + "ms ...");
-		}
-	}
-
 	/**
 	 * Returns the total hits for a given search term from the lucene index. The
 	 * method did not load any data. The provided search term will we extended with
@@ -398,46 +371,46 @@ public class LuceneSearchService implements SearchService {
 			throws QueryException {
 		int result;
 		int maxResult = _maxResult;
-
+	
 		if (maxResult <= 0) {
 			maxResult = DEFAULT_MAX_SEARCH_RESULT;
 		}
-
+	
 		String sSearchTerm =schemaService.getExtendedSearchTerm(_searchTerm);
 		// test if searchtem is provided
 		if (sSearchTerm == null || "".equals(sSearchTerm)) {
 			return 0;
 		}
-
+	
 		try {
 			IndexSearcher searcher = createIndexSearcher();
 			QueryParser parser = createQueryParser();
-
+	
 			parser.setAllowLeadingWildcard(true);
-
+	
 			// set default operator?
 			if (defaultOperator.equals(Operator.AND)) {
 				parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.AND);
 			} else {
 				parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.OR);
-
+	
 			}
-
+	
 			TopDocsCollector<?> collector = null;
-
+	
 			Query query = parser.parse(sSearchTerm);
 			// MAX_SEARCH_RESULT is limiting the total number of hits
 			collector = TopScoreDocCollector.create(maxResult);
-
+	
 			// - ignore time limiting for now
 			// Counter clock = Counter.newCounter(true);
 			// TimeLimitingCollector timeLimitingCollector = new
 			// TimeLimitingCollector(collector, clock, 10);
-
+	
 			// start search....
 			searcher.search(query, collector);
 			result = collector.getTotalHits();
-
+	
 			logger.finest("......lucene count result = " + result);
 		} catch (IOException e) {
 			// in case of an IOException we just print an error message and
@@ -448,11 +421,12 @@ public class LuceneSearchService implements SearchService {
 			logger.severe("Lucene search error: " + e.getMessage());
 			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
 		}
-
+	
 		return result;
 	}
 
-	
+
+
 	/**
 	 * Creates a Lucene FSDirectory Instance. The method uses the proeprty
 	 * LockFactory to set a custom LockFactory.
@@ -586,6 +560,17 @@ public class LuceneSearchService implements SearchService {
 
 		return imixsDoc;
 	}
+
+	private Sort buildLuceneSort(org.imixs.workflow.engine.index.SortOrder sortOrder) {
+		Sort sort = null;
+			// we do not support multi values here - see
+			// LuceneUpdateService.addItemValues
+			// it would be possible if we use a SortedSetSortField class here
+			sort = new Sort(new SortField[] { new SortField(sortOrder.getField(), SortField.Type.STRING, sortOrder.isReverse()) });
+		return sort;
+	}
+
+
 
 	/**
 	 * Helper method to check for numbers.

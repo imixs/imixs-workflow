@@ -158,6 +158,9 @@ public class SolrIndexService {
 		}
 	}
 
+	
+	
+
 	/**
 	 * This method returns a JSON structure to to update an existing Solr schema.
 	 * The method adds all fields into a solr update definition that did not yet

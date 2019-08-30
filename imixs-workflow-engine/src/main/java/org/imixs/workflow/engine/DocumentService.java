@@ -40,12 +40,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
@@ -61,11 +61,12 @@ import javax.persistence.Query;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.index.SearchService;
-import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.engine.index.SortOrder;
+import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.engine.jpa.Document;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.QueryException;
 
 /**
@@ -135,6 +136,10 @@ public class DocumentService {
 
 	public static final String ACCESSLEVEL_MANAGERACCESS = "org.imixs.ACCESSLEVEL.MANAGERACCESS";
 
+	public static final String EVENTLOG_TOPIC_INDEX_ADD = "index.add";
+	public static final String EVENTLOG_TOPIC_INDEX_REMOVE = "index.remove";
+
+	
 	public static final String READACCESS = "$readaccess";
 	public static final String WRITEACCESS = "$writeaccess";
 	public static final String ISAUTHOR = "$isAuthor";
@@ -166,8 +171,11 @@ public class DocumentService {
 	private UpdateService indexUpdateService;
 
 	@Inject
-	private SearchService luceneSearchService;
+	private SearchService indexSearchService;
 
+	@Inject
+	private EventLogService eventLogService;
+	
 	@Inject
 	protected Event<DocumentEvent> documentEvents;
 
@@ -473,10 +481,10 @@ public class DocumentService {
 
 		// add/update document into lucene index
 		if (!document.getItemValueBoolean(NOINDEX)) {
-			indexUpdateService.updateDocument(document);
+			addDocumentToIndex(document);
 		} else {
 			// remove from index
-			indexUpdateService.removeDocument(document.getUniqueID());
+			removeDocumentFromIndex(document.getUniqueID());
 		}
 
 		/*
@@ -490,6 +498,50 @@ public class DocumentService {
 		// return the updated document
 		return document;
 	}
+	
+	
+	
+	/**
+	 * This method adds a single document into the to the Lucene index. Before the
+	 * document is added to the index, a new eventLog is created. The document will
+	 * be indexed after the method flushEventLog is called. This method is called by
+	 * the LuceneSearchService finder methods.
+	 * <p>
+	 * The method supports committed read. This means that a running transaction
+	 * will not read an uncommitted document from the Lucene index.
+	 * 
+	 * 
+	 * @param documentContext
+	 */
+	public void addDocumentToIndex(ItemCollection document) {
+		// skip if the flag 'noindex' = true
+		if (!document.getItemValueBoolean(DocumentService.NOINDEX)) {
+			// write a new EventLog entry for each document....
+			eventLogService.createEvent(EVENTLOG_TOPIC_INDEX_ADD, document.getUniqueID());
+		}
+	}
+	
+	/**
+	 * This method adds a new eventLog for a document to be deleted from the index.
+	 * The document will be removed from the index after the method fluschEventLog
+	 * is called. This method is called by the LuceneSearchService finder method
+	 * only.
+	 * 
+	 * 
+	 * @param uniqueID
+	 *            of the workitem to be removed
+	 * @throws PluginException
+	 */
+	public void removeDocumentFromIndex(String uniqueID) {
+		
+		long ltime = System.currentTimeMillis();
+		eventLogService.createEvent(EVENTLOG_TOPIC_INDEX_REMOVE, uniqueID);
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime)
+					+ " ms (1 document to be removed)");
+		}
+	}
+	
 
 	/**
 	 * This method saves a workitem in a new transaction. The method can be used by
@@ -619,7 +671,7 @@ public class DocumentService {
 			manager.remove(persistedDocument);
 			// remove document form index - @see issue #412
 			if (!document.getItemValueBoolean(NOINDEX)) {
-				indexUpdateService.removeDocument(document.getUniqueID());
+				removeDocumentFromIndex(document.getUniqueID());
 			}
 
 		} else
@@ -665,7 +717,8 @@ public class DocumentService {
 	 *             in case the searchterm is not understandable.
 	 */
 	public int count(String sSearchTerm, int maxResult) throws QueryException {
-		return luceneSearchService.getTotalHits(sSearchTerm, maxResult, null);
+		indexUpdateService.updateIndex();
+		return indexSearchService.getTotalHits(sSearchTerm, maxResult, null);
 	}
 
 	/**
@@ -749,7 +802,10 @@ public class DocumentService {
 			sortOrder = new SortOrder(sortBy, sortReverse);
 		}
 
-		return luceneSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null);
+		// flush eventlog (see issue #411)
+		indexUpdateService.updateIndex();
+				
+		return indexSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null,false);
 
 	}
 
@@ -796,8 +852,12 @@ public class DocumentService {
 			// it would be possible if we use a SortedSetSortField class here
 			sortOrder = new SortOrder(sortBy,sortReverse);
 		}
+		
+		// flush eventlog (see issue #411)
+		indexUpdateService.updateIndex();
+		
 		// find stubs only!
-		return luceneSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null, true);
+		return indexSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null, true);
 
 	}
 

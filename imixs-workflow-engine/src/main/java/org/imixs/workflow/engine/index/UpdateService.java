@@ -28,19 +28,23 @@
 package org.imixs.workflow.engine.index;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.Local;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.IndexException;
-import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * The UpdateService provides methods to write Imixs Workitems into a search
- * index. An ItemCollection can be added into the index by calling themethod
- * <code>updateDocument()</code>
+ * The UpdateService defines methods to update the search index. These methods
+ * are called by the DocuentService.
+ * <p>
+ * The method updateIndex(documents) writes documents immediately into
+ * the index.
+ * <p> 
+ * The method updateIndex() updates the search index based on the eventLog.
+ * <p>
+ * The UpdateService provides also the default index schema.
  * 
  * @see SchemaService
  * @version 1.0
@@ -61,46 +65,26 @@ public interface UpdateService {
 			"$lasteventdate", "$creator", "$editor", "$lasteditor", "$owner", "namowner");
 
 	/**
-	 * This method adds a single document into the to the Lucene index. Before the
-	 * document is added to the index, a new eventLog is created. The document will
-	 * be indexed after the method flushEventLog is called. This method is called by
-	 * the LuceneSearchService finder methods.
+	 * This method adds a collection of documents to the index. The documents are
+	 * added immediately to the index. Calling this method within a running
+	 * transaction leads to a uncommitted reads in the index. For transaction
+	 * control, it is recommended to use instead the the method
+	 * documentService.addDocumentToIndex() which takes care of uncommitted reads.
 	 * <p>
-	 * The method supports committed read. This means that a running transaction
-	 * will not read an uncommitted document from the Lucene index.
+	 * This method is used by the JobHandlerRebuildIndex only.
 	 * 
-	 * 
-	 * @param documentContext
-	 */
-	public void updateDocument(ItemCollection documentContext);
-
-	/**
-	 * This method adds a collection of documents to the Lucene index. For each
-	 * document in a given selection a new eventLog is created. The documents will
-	 * be indexed after the method flushEventLog is called. This method is called by
-	 * the LuceneSearchService finder methods.
-	 * <p>
-	 * The method supports committed read. This means that a running transaction
-	 * will not read uncommitted documents from the Lucene index.
-	 * 
-	 * @see updateDocumentsUncommitted
 	 * @param documents
-	 *            to be indexed
+	 *            of ItemCollections to be indexed
 	 * @throws IndexException
 	 */
-	public void updateDocuments(Collection<ItemCollection> documents);
+	public void updateIndex(List<ItemCollection> documents);
 
 	/**
-	 * This method adds a new eventLog for a document to be deleted from the index.
-	 * The document will be removed from the index after the method fluschEventLog
-	 * is called. This method is called by the LuceneSearchService finder method
-	 * only.
+	 * This method updates the search index based on the eventLog. Documents are
+	 * added by the DocumentService as events to the EventLogService. This ensures
+	 * that only committed documents are added into the index.
 	 * 
-	 * 
-	 * @param uniqueID
-	 *            of the workitem to be removed
-	 * @throws PluginException
+	 * @see DocumentService
 	 */
-	public void removeDocument(String uniqueID);
-
+	public void updateIndex();
 }

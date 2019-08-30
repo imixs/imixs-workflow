@@ -70,7 +70,6 @@ import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.exceptions.IndexException;
-import org.imixs.workflow.exceptions.PluginException;
 
 /**
  * This session ejb provides functionality to maintain a local Lucene index.
@@ -82,8 +81,6 @@ import org.imixs.workflow.exceptions.PluginException;
 public class LuceneIndexService {
 
 	public static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
-	public static final String EVENTLOG_TOPIC_ADD = "lucene.add";
-	public static final String EVENTLOG_TOPIC_REMOVE = "lucene.remove";
 	
 	public static final String ANONYMOUS = "ANONYMOUS";
 	public static final String DEFAULT_ANALYSER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
@@ -139,31 +136,11 @@ public class LuceneIndexService {
 		this.luceneAnalyserClass = luceneAnalyserClass;
 	}
 	
-	/**
-	 * This method adds a new eventLog for a document to be deleted from the index.
-	 * The document will be removed from the index after the method fluschEventLog
-	 * is called. This method is called by the LuceneSearchService finder method
-	 * only.
-	 * 
-	 * 
-	 * @param uniqueID
-	 *            of the workitem to be removed
-	 * @throws PluginException
-	 */
-	public void removeDocument(String uniqueID) {
-		
-		long ltime = System.currentTimeMillis();
-		eventLogService.createEvent(EVENTLOG_TOPIC_REMOVE, uniqueID);
-		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime)
-					+ " ms (1 document to be removed)");
-		}
-	}
-	
+
 
 
 	/**
-	 * Flush the EventLog cache. This method is called by the LuceneSerachServicen
+	 * Flush the EventLog cache. This method is called by the LuceneSerachService
 	 * only.
 	 * <p>
 	 * The method flushes the cache in smaller blocks of the given junkSize. to
@@ -232,7 +209,7 @@ public class LuceneIndexService {
 		long l = System.currentTimeMillis();
 		logger.finest("......flush eventlog cache....");
 
-		List<EventLog> events = eventLogService.findEventsByTopic(count + 1, EVENTLOG_TOPIC_ADD, EVENTLOG_TOPIC_REMOVE);
+		List<EventLog> events = eventLogService.findEventsByTopic(count + 1, DocumentService.EVENTLOG_TOPIC_INDEX_ADD, DocumentService.EVENTLOG_TOPIC_INDEX_REMOVE);
 
 		if (events != null && events.size() > 0) {
 			try {
@@ -246,7 +223,7 @@ public class LuceneIndexService {
 
 					// if the document was found we add/update the index. Otherwise we remove the
 					// document form the index.
-					if (doc != null && EVENTLOG_TOPIC_ADD.equals(eventLogEntry.getTopic())) {
+					if (doc != null && DocumentService.EVENTLOG_TOPIC_INDEX_ADD.equals(eventLogEntry.getTopic())) {
 						// add workitem to search index....
 						long l2 = System.currentTimeMillis();
 						ItemCollection workitem = new ItemCollection();
@@ -477,8 +454,39 @@ public class LuceneIndexService {
 		logger.info("...rebuild lucene index job created...");
 		ItemCollection job = new ItemCollection();
 		job.replaceItemValue("numinterval", 2); // 2 minutes
-		job.replaceItemValue("job", AdminPService.JOB_REBUILD_LUCENE_INDEX);
+		job.replaceItemValue("job", AdminPService.JOB_REBUILD_INDEX);
 		adminPService.createJob(job);
+	}
+	
+
+	/**
+	 * This method creates a new instance of a lucene IndexWriter.
+	 * 
+	 * The location of the lucene index in the filesystem is read from the
+	 * imixs.properties
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	public IndexWriter createIndexWriter() throws IOException {
+		// create a IndexWriter Instance
+		Directory indexDir = FSDirectory.open(Paths.get(luceneIndexDir));
+		// verify existence of index directory...
+		if (!DirectoryReader.indexExists(indexDir)) {
+			logger.info("...lucene index does not yet exist, initialize the index now....");
+			rebuildIndex(indexDir);
+		}
+		IndexWriterConfig indexWriterConfig;
+		// indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
+		try {
+			// issue #429
+			indexWriterConfig = new IndexWriterConfig((Analyzer) Class.forName(luceneAnalyserClass).newInstance());
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			throw new IndexException(IndexException.INVALID_INDEX,
+					"Unable to create analyzer '" + luceneAnalyserClass + "'", e);
+		}
+
+		return new IndexWriter(indexDir, indexWriterConfig);
 	}
 	
 	/**
@@ -533,38 +541,4 @@ public class LuceneIndexService {
 					+ " workitems total)");
 		}
 	}
-
-	
-	
-	/**
-	 * This method creates a new instance of a lucene IndexWriter.
-	 * 
-	 * The location of the lucene index in the filesystem is read from the
-	 * imixs.properties
-	 * 
-	 * @return
-	 * @throws IOException
-	 */
-	public IndexWriter createIndexWriter() throws IOException {
-		// create a IndexWriter Instance
-		Directory indexDir = FSDirectory.open(Paths.get(luceneIndexDir));
-		// verify existence of index directory...
-		if (!DirectoryReader.indexExists(indexDir)) {
-			logger.info("...lucene index does not yet exist, initialize the index now....");
-			rebuildIndex(indexDir);
-		}
-		IndexWriterConfig indexWriterConfig;
-		// indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
-		try {
-			// issue #429
-			indexWriterConfig = new IndexWriterConfig((Analyzer) Class.forName(luceneAnalyserClass).newInstance());
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-			throw new IndexException(IndexException.INVALID_INDEX,
-					"Unable to create analyzer '" + luceneAnalyserClass + "'", e);
-		}
-
-		return new IndexWriter(indexDir, indexWriterConfig);
-	}
-	
-
 }

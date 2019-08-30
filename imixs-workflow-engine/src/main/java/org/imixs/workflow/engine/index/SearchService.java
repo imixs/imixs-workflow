@@ -58,7 +58,7 @@ public interface SearchService {
 	 * @return collection of search result
 	 * @throws QueryException
 	 */
-	public List<ItemCollection> search(String sSearchTerm) throws QueryException;
+	//public List<ItemCollection> search(String sSearchTerm) throws QueryException;
 
 	/**
 	 * Returns a collection of documents matching the provided search term. The
@@ -73,7 +73,7 @@ public interface SearchService {
 	 * @return collection of search result
 	 * @throws QueryException
 	 */
-	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) throws QueryException;
+	//public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) throws QueryException;
 
 	/**
 	 * Returns a collection of documents matching the provided search term. The term
@@ -88,8 +88,8 @@ public interface SearchService {
 	 * <p>
 	 * 
 	 */
-	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex, SortOrder sortOrder,
-			DefaultOperator defaultOperator) throws QueryException;
+//	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex, SortOrder sortOrder,
+//			DefaultOperator defaultOperator) throws QueryException;
 
 	/**
 	 * Returns a collection of documents matching the provided search term. The term

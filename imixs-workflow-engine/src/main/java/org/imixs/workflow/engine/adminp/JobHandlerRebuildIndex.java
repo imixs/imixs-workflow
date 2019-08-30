@@ -20,8 +20,8 @@ import javax.persistence.Query;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.engine.jpa.Document;
-import org.imixs.workflow.engine.lucene.LuceneIndexService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -62,7 +62,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 	private EntityManager manager;
 
 	@Inject
-	LuceneIndexService luceneIndexService;
+	UpdateService updateService;
 
 	private static Logger logger = Logger.getLogger(JobHandlerRebuildIndex.class.getName());
 
@@ -91,9 +91,9 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		int blockCount = 0;
 
 		// read blocksize and timeout....
-		logger.info("...Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID()
+		logger.info("...Job " + AdminPService.JOB_REBUILD_INDEX + " (" + adminp.getUniqueID()
 				+ ") - lucene.rebuild.block_size=" + block_size);
-		logger.info("...Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID()
+		logger.info("...Job " + AdminPService.JOB_REBUILD_INDEX + " (" + adminp.getUniqueID()
 				+ ") - lucene.rebuild.time_out=" + time_out);
 
 		try {
@@ -116,7 +116,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 					}
 
 					// update the index
-					luceneIndexService.updateDocumentsUncommitted(resultList);
+					updateService.updateIndex(resultList);
 					manager.flush();
 
 					// update count
@@ -127,7 +127,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 						if (time == 0) {
 							time = 1;
 						}
-						logger.info("...Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID()
+						logger.info("...Job " + AdminPService.JOB_REBUILD_INDEX + " (" + adminp.getUniqueID()
 								+ ") - ..." + totalCount + " documents indexed in " + time + " sec. ... ");
 						blockCount = 0;
 					}
@@ -143,7 +143,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 					time = 1;
 				}
 				if (time > time_out) { // suspend after 2 mintues (default 120)....
-					logger.info("...Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID()
+					logger.info("...Job " + AdminPService.JOB_REBUILD_INDEX + " (" + adminp.getUniqueID()
 							+ ") - suspended: " + totalCount + " documents indexed in " + time + " sec. ");
 
 					adminp.replaceItemValue("_syncpoint", syncPoint);
@@ -156,7 +156,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 			}
 		} catch (Exception e) {
 			// print exception and stop job
-			logger.severe("...Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID()
+			logger.severe("...Job " + AdminPService.JOB_REBUILD_INDEX + " (" + adminp.getUniqueID()
 					+ ") - failed - " + e.getMessage() + " last syncpoint  " + syncPoint + " - " + totalCount
 					+ "  documents reindexed....");
 			e.printStackTrace();
@@ -177,7 +177,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 		if (time == 0) {
 			time = 1;
 		}
-		logger.info("...Job " + AdminPService.JOB_REBUILD_LUCENE_INDEX + " (" + adminp.getUniqueID() + ") - Finished: "
+		logger.info("...Job " + AdminPService.JOB_REBUILD_INDEX + " (" + adminp.getUniqueID() + ") - Finished: "
 				+ totalCount + " documents indexed in " + time + " sec. ");
 
 		adminp.replaceItemValue(JobHandler.ISCOMPLETED, true);
