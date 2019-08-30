@@ -375,13 +375,10 @@ public class TestResultPlugin {
 		Assert.assertEquals("", adocumentContext.getItemValueString("txtName"));
 
 	}
-	
-	
-	
-	
-	
+
 	/**
-	 * This test verifies the evaluation of an item tag in case other unspecified tags exits.
+	 * This test verifies the evaluation of an item tag in case other unspecified
+	 * tags exits.
 	 * <p>
 	 * {@code<jsf-immediate>true</jsf-immediate>}
 	 * 
@@ -397,8 +394,8 @@ public class TestResultPlugin {
 
 		// clear value...
 		String sResult = "<item name=\"txtName\">some data</item>";
-		sResult = sResult+ "<immediate>true</immediate>";
-		sResult = sResult+ "<item name=\"txtName2\">some other data</item>";
+		sResult = sResult + "<immediate>true</immediate>";
+		sResult = sResult + "<item name=\"txtName2\">some other data</item>";
 		logger.info("txtActivityResult=" + sResult);
 
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
@@ -408,9 +405,34 @@ public class TestResultPlugin {
 
 		// item should be empty
 		Assert.assertEquals("some data", adocumentContext.getItemValueString("txtName"));
-		
-		
-		
+
+	}
+
+	/**
+	 * This test copies an item from the source workitem.
+	 * <p>
+	 * The test copies the value of 'amount' into the new item 'count'
+	 * 
+	 * @throws PluginException
+	 */
+	@Test
+	public void testCopyItemFromSource() throws PluginException {
+
+		ItemCollection workitem = new ItemCollection();
+		workitem.replaceItemValue("name", "Anna");
+		workitem.replaceItemValue("amount", 55.332);
+		ItemCollection event = new ItemCollection();
+
+		event.replaceItemValue("txtActivityResult",
+				"<item name=\"count\" type=\"double\"><itemvalue>amount</itemvalue></item>");
+		// run plugin
+		workitem = resultPlugin.run(workitem, event);
+
+		workitem = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(event, workitem);
+		Assert.assertNotNull(workitem);
+		Assert.assertTrue(workitem.hasItem("count"));
+		Assert.assertEquals(55.332, workitem.getItemValueDouble("count"));
+
 
 	}
 }

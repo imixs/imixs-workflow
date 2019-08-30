@@ -133,6 +133,35 @@ public class TestEvaluateWorkflowResult {
 	}
 
 	/**
+	 * This test evaluates a event result for a double item copied from a source
+	 * item value
+	 * 
+	 * @throws PluginException
+	 */
+	@Test
+	public void testEvaluateWorkflowResultNumbersFromSource() {
+		ItemCollection activityEntity = new ItemCollection();
+
+		ItemCollection source = new ItemCollection();
+		source.replaceItemValue("amount", 55.123);
+
+		// test double
+		try {
+			activityEntity.replaceItemValue("txtActivityResult",
+					"<item name=\"count\" type=\"double\"><itemvalue>amount</itemvalue></item>");
+			ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+					source);
+			Assert.assertNotNull(result);
+			Assert.assertTrue(result.hasItem("count"));
+			Assert.assertEquals(55.123, result.getItemValueDouble("count"));
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+	}
+
+	/**
 	 * This test verifies if multiple item tags with the same name will be evaluated
 	 * and added into one single property
 	 * 
