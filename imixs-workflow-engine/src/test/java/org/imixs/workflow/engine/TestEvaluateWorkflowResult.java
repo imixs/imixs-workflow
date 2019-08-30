@@ -70,6 +70,69 @@ public class TestEvaluateWorkflowResult {
 	}
 
 	/**
+	 * This test evaluates a event result
+	 * 
+	 * @throws PluginException
+	 */
+	@Test
+	public void testEvaluateWorkflowResultNumbers() {
+		ItemCollection activityEntity = new ItemCollection();
+
+		// test integer
+		try {
+			activityEntity.replaceItemValue("txtActivityResult", "<item name=\"count\" type=\"integer\">55</item>");
+			ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+					new ItemCollection());
+			Assert.assertNotNull(result);
+			Assert.assertTrue(result.hasItem("count"));
+			Assert.assertEquals(55, result.getItemValueInteger("count"));
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// test double
+		try {
+			activityEntity.replaceItemValue("txtActivityResult", "<item name=\"count\" type=\"double\">55.11</item>");
+			ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+					new ItemCollection());
+			Assert.assertNotNull(result);
+			Assert.assertTrue(result.hasItem("count"));
+			Assert.assertEquals(55.11, result.getItemValueDouble("count"));
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// test empty string for Double
+		try {
+			activityEntity.replaceItemValue("txtActivityResult", "<item name=\"count\" type=\"double\"></item>");
+			ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+					new ItemCollection());
+			Assert.assertNotNull(result);
+			Assert.assertTrue(result.hasItem("count"));
+			Assert.assertEquals(0.0, result.getItemValueDouble("count"));
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		// test empty string for Integer
+		try {
+			activityEntity.replaceItemValue("txtActivityResult", "<item name=\"count\" type=\"integer\"></item>");
+			ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+					new ItemCollection());
+			Assert.assertNotNull(result);
+			Assert.assertTrue(result.hasItem("count"));
+			Assert.assertEquals(0, result.getItemValueInteger("count"));
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+	}
+
+	/**
 	 * This test verifies if multiple item tags with the same name will be evaluated
 	 * and added into one single property
 	 * 

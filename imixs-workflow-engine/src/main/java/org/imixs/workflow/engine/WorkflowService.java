@@ -44,7 +44,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
@@ -96,7 +95,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	public static final String UNIQUEIDREF = "$uniqueidref";
 	public static final String READACCESS = "$readaccess";
 	public static final String WRITEACCESS = "$writeaccess";
-	public static final String PARTICIPANTS="$participants";
+	public static final String PARTICIPANTS = "$participants";
 	public static final String DEFAULT_TYPE = "workitem";
 
 	// view properties
@@ -115,7 +114,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	@Inject
 	@Any
 	protected Instance<Adapter> adapters;
-	
+
 	@Inject
 	DocumentService documentService;
 
@@ -135,7 +134,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	protected Event<TextEvent> textEvents;
 
 	private static Logger logger = Logger.getLogger(WorkflowService.class.getName());
-	
+
 	/**
 	 * This method loads a Workitem with the corresponding uniqueid.
 	 * 
@@ -145,13 +144,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * Returns a collection of workitems containing a '$owner' item belonging to
-	 * a specified username. The '$owner' item can be controlled by the plug-in
+	 * Returns a collection of workitems containing a '$owner' item belonging to a
+	 * specified username. The '$owner' item can be controlled by the plug-in
 	 * {@code org.imixs.workflow.plugins.OwnerPlugin}
 	 * 
 	 * @param name
-	 *            = username for itme '$owner' - if null current username will
-	 *            be used
+	 *            = username for itme '$owner' - if null current username will be
+	 *            used
 	 * @param pageSize
 	 *            = optional page count (default 20)
 	 * @param pageIndex
@@ -177,7 +176,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		if (type != null && !"".equals(type)) {
 			searchTerm += " type:\"" + type + "\" AND ";
 		}
-		
+
 		// support deprecated namowner field
 		searchTerm += " (namowner:\"" + name + "\" OR owner:\"" + name + "\") )";
 		try {
@@ -742,7 +741,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * This method processes a workitem  in a new transaction.
+	 * This method processes a workitem in a new transaction.
 	 * 
 	 * @throws ModelException
 	 * @throws PluginException
@@ -997,9 +996,19 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 					if ("boolean".equalsIgnoreCase(sType)) {
 						result.appendItemValue(itemName, Boolean.valueOf(content));
 					} else if ("integer".equalsIgnoreCase(sType)) {
-						result.appendItemValue(itemName, Integer.valueOf(content));
+						try {
+							result.appendItemValue(itemName, Integer.valueOf(content));
+						} catch (NumberFormatException e) {
+							// append 0 value
+							result.appendItemValue(itemName, new Integer(0));
+						}
 					} else if ("double".equalsIgnoreCase(sType)) {
-						result.appendItemValue(itemName, Double.valueOf(content));
+						try {
+							result.appendItemValue(itemName, Double.valueOf(content));
+						} catch (NumberFormatException e) {
+							// append 0 value
+							result.appendItemValue(itemName, new Double(0));
+						}
 					} else if ("date".equalsIgnoreCase(sType)) {
 						if (content == null || content.isEmpty()) {
 							// no value available - no op!
@@ -1132,11 +1141,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			}
 		}
 	}
-	
-	
 
 	/**
-	 * This method updates the workitem metadata. The following items will be updated:
+	 * This method updates the workitem metadata. The following items will be
+	 * updated:
 	 * 
 	 * <ul>
 	 * <li>$creator</li>
