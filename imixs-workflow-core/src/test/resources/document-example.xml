@@ -65,6 +65,9 @@
 		<item name="subject">
 			<value xsi:type="xs:string">Test-1</value>
 		</item>
+		<item name="amount">
+			<value xsi:type="xs:double">55.123</value>
+		</item>
 		<item name="team">
 			<value xsi:type="xs:string">14cd0def79b-c3826b4</value>
 		</item>

@@ -42,6 +42,12 @@ public class TestReadWriteXMLData {
 		}
 
 		Assert.assertEquals(2, col.size());
+		
+		// test values
+		ItemCollection workitem=col.get(0);
+		Assert.assertEquals("1.0.1", workitem.getItemValueString("$modelversion"));
+		Assert.assertEquals(55.123, workitem.getItemValueDouble("amount"));
+
 	}
 
 	/**

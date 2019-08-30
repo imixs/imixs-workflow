@@ -44,6 +44,9 @@
         <item name="action">
             <value xsi:type="xs:string">worklist</value>
         </item>
+        <item name="amount">
+            <value xsi:type="xs:double">55.123</value>
+        </item>
         <item name="description">
             <value xsi:type="xs:string">&lt;p&gt;Test&lt;/p&gt;</value>
         </item>
