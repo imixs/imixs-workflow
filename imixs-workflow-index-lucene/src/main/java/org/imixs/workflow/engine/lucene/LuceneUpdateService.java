@@ -30,7 +30,6 @@ package org.imixs.workflow.engine.lucene;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
 
@@ -70,20 +69,8 @@ public class LuceneUpdateService implements UpdateService {
 
 	@Inject
 	private LuceneIndexService luceneIndexService;
-
 	
 	private static Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
-
-	/**
-	 * PostContruct event - The method loads the lucene index properties from the
-	 * imixs.properties file from the classpath. If no properties are defined the
-	 * method terminates.
-	 * 
-	 */
-	@PostConstruct
-	void init() {
-		logger.finest("......lucene IndexDir=" + luceneIndexService.getLuceneIndexDir());
-	}
 
 	/**
 	 * This method adds a collection of documents to the Lucene index. The documents
@@ -100,7 +87,7 @@ public class LuceneUpdateService implements UpdateService {
 	 */
 	@Override
 	public void updateIndex(List<ItemCollection> documents) {
-		luceneIndexService.updateDocumentsUncommitted(documents);
+		luceneIndexService.indexDocuments(documents);
 		
 	}
 

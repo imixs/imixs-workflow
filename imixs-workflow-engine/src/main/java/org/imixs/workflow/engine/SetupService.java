@@ -38,7 +38,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
-import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.Timer;
@@ -154,12 +153,6 @@ public class SetupService {
 			}
 		}
 
-		// migrate old workflow scheduler
-		migrateWorkflowScheduler();
-
-		// next start optional schedulers
-		logger.info("...initalizing schedulers...");
-		schedulerService.startAllSchedulers();
 		
 		// Finally fire the SetupEvent. This allows CDI Observers to react on the setup 
 		if (setupEvents != null) {
@@ -170,6 +163,16 @@ public class SetupService {
 			logger.warning("Missing CDI support for Event<SetupEvent> !");
 		}
 
+		
+		
+		
+		// migrate old workflow scheduler
+		migrateWorkflowScheduler();
+
+		// Finally start optional schedulers
+		logger.info("...initalizing schedulers...");
+		schedulerService.startAllSchedulers();
+	
 	}
 
 	/**

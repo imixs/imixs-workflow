@@ -84,9 +84,7 @@ public class LuceneIndexService {
 	
 	public static final String ANONYMOUS = "ANONYMOUS";
 	public static final String DEFAULT_ANALYSER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
-	public static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
-	
-	
+	public static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";	
 	
 	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
@@ -228,7 +226,7 @@ public class LuceneIndexService {
 	 *            of ItemCollections to be indexed
 	 * @throws IndexException
 	 */
-	public void updateDocumentsUncommitted(Collection<ItemCollection> documents) {
+	public void indexDocuments(Collection<ItemCollection> documents) {
 	
 		IndexWriter awriter = null;
 		long ltime = System.currentTimeMillis();

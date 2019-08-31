@@ -30,7 +30,6 @@ package org.imixs.workflow.engine.solr;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
@@ -62,18 +61,7 @@ public class SolrUpdateService implements UpdateService {
 
 	private static Logger logger = Logger.getLogger(SolrUpdateService.class.getName());
 
-	/**
-	 * PostContruct event - The method loads the lucene index properties from the
-	 * imixs.properties file from the classpath. If no properties are defined the
-	 * method terminates.
-	 * 
-	 */
-	@PostConstruct
-	void init() {
-
-		logger.finest("...... ");
-
-	}
+	
 
 	/**
 	 * This method adds a collection of documents to the Lucene index. The documents
@@ -92,7 +80,7 @@ public class SolrUpdateService implements UpdateService {
 	@Override
 	public void updateIndex(List<ItemCollection> documents) {
 		try {
-			solrIndexService.updateDocumentsUncommitted(documents);
+			solrIndexService.indexDocuments(documents);
 		} catch (RestAPIException e) {
 			logger.severe("Failed to update document collection: " + e.getMessage());
 			throw new IndexException(IndexException.INVALID_INDEX, "Unable to update solr search index", e);
@@ -101,8 +89,15 @@ public class SolrUpdateService implements UpdateService {
 
 	@Override
 	public void updateIndex() {
-		// TODO
-		logger.warning(" unimplemented !!!!");
+		long ltime = System.currentTimeMillis();
+		// flush eventlog (see issue #411)
+		int flushCount = 0;
+		while (solrIndexService.flushEventLog(2048) == false) {
+			// repeat flush....
+			flushCount = +2048;
+			logger.info("...flush event log: " + flushCount + " entries updated in "
+					+ (System.currentTimeMillis() - ltime) + "ms ...");
+		}
 	}
 
 }

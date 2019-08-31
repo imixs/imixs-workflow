@@ -27,21 +27,28 @@
 
 package org.imixs.workflow.engine.solr;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.stream.JsonParser;
+import javax.json.stream.JsonParser.Event;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.index.DefaultOperator;
 import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.exceptions.QueryException;
+import org.imixs.workflow.util.JSONParser;
 
 /**
  * This session ejb provides a service to search the solr index.
@@ -65,68 +72,19 @@ public class SolrSearchService implements SearchService {
 	public static final int DEFAULT_PAGE_SIZE = 100; // default docs in one page
 
 	@Inject
+	@ConfigProperty(name = "solr.core", defaultValue = "imixs-workflow")
+	private String core;
+
+	@Inject
 	private SchemaService schemaService;
+
+	@Inject
+	private SolrIndexService solarIndexService;
 
 	@Inject
 	private DocumentService documentService;
 
 	private static Logger logger = Logger.getLogger(SolrSearchService.class.getName());
-
-	
-
-	/**
-	 * Returns a collection of documents matching the provided search term. The
-	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term.
-	 * 
-	 * @param sSearchTerm
-	 * @return collection of search result
-	 * @throws QueryException
-	 */
-//	@Override
-//	public List<ItemCollection> search(String sSearchTerm) throws QueryException {
-//		// no sort order
-//		return search(sSearchTerm, DEFAULT_MAX_SEARCH_RESULT, 0, null, DefaultOperator.AND);
-//	}
-
-	/**
-	 * Returns a collection of documents matching the provided search term. The
-	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term.
-	 * 
-	 * @param pageSize
-	 *            - docs per page
-	 * @param pageIndex
-	 *            - page number
-	 * 
-	 * @return collection of search result
-	 * @throws QueryException
-	 */
-//	@Override
-//	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) throws QueryException {
-//		// no sort order
-//		return search(sSearchTerm, pageSize, pageIndex, null, null);
-//	}
-
-	/**
-	 * Returns a collection of documents matching the provided search term. The term
-	 * will be extended with the current users roles to test the read access level
-	 * of each workitem matching the search term.
-	 * <p>
-	 * The method returns the full loaded documents. If you only want to search for
-	 * document stubs use instead the method
-	 * <p>
-	 * <code>search(String searchTerm, int pageSize, int pageIndex, Sort sortOrder,
-			Operator defaultOperator, boolean loadStubs)</code>
-	 * <p>
-	 * 
-	 */
-//	@Override
-//	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex,
-//			org.imixs.workflow.engine.index.SortOrder sortOrder, DefaultOperator defaultOperator)
-//			throws QueryException {
-//		return search(sSearchTerm, pageSize, pageIndex, sortOrder, defaultOperator, false);
-//	}
 
 	/**
 	 * Returns a collection of documents matching the provided search term. The term
@@ -189,12 +147,57 @@ public class SolrSearchService implements SearchService {
 		if (searchTerm == null || "".equals(searchTerm)) {
 			return workitems;
 		}
-		
-			logger.fine("...search result computed in " + (System.currentTimeMillis() - ltime) + " ms - loadStubs="
-					+ loadStubs);
-		
+
+		// post query....
+		String result = solarIndexService.query(searchTerm);
+		logger.finest("......Result = " + result);
+
+		if (result != null && !result.isEmpty()) {
+			List<ItemCollection> documentStubs = parseJSONQueyResult(result);
+			// now we extract the docs and build ItemCollections from it....
+
+		}
+
+		logger.fine("...search result computed in " + (System.currentTimeMillis() - ltime) + " ms - loadStubs="
+				+ loadStubs);
 
 		return workitems;
+	}
+
+	/**
+	 * This method extracts the docs from a Solr JSON query result
+	 * 
+	 * @param json - solr query response (JSON)
+	 * @return List of ItemCollection objects
+	 */
+	protected List<ItemCollection> parseJSONQueyResult(String json) {
+		List<ItemCollection> result= new ArrayList<ItemCollection>();
+		String response = JSONParser.getKey("response", json);
+		String docs = JSONParser.getKey("docs", response);
+		
+		// now we go through the json docs structure and build ItemCollections ......
+		
+
+		logger.info("docs=" + docs);
+		JsonParser parser = Json.createParser(new StringReader(docs));
+		
+		Event event = null;
+		while (true) {
+
+			try {
+				event = parser.next(); // START_OBJECT
+				if (event == null) {
+					return null;
+				}
+				if (event.name().equals(Event.KEY_NAME.toString())) {
+					String jsonkey = parser.getString();
+					break;
+				}
+			} catch (NoSuchElementException e) {
+				return null;
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -223,5 +226,4 @@ public class SolrSearchService implements SearchService {
 		return 0;
 	}
 
-	
 }

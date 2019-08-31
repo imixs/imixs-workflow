@@ -45,6 +45,9 @@ public class JSONParser {
 	 * @return - the json value or the json object for the corresponding json key
 	 */
 	public static String getKey(String key, String json) {
+		if (json==null || json.isEmpty()) {
+			return null;
+		}
 		String result = null;
 		// now extract the key
 		JsonParser parser = Json.createParser(new StringReader(json));
