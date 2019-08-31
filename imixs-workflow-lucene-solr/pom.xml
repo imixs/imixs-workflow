@@ -7,11 +7,12 @@
 		<artifactId>imixs-workflow</artifactId>
 		<version>5.1.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>imixs-workflow-lucene</artifactId>
-	<name>Apache Lucene Search Index</name>
+	<artifactId>imixs-workflow-lucene-solr</artifactId>
+	<name>Apache Solr Search Index</name>
+
 
 	<dependencies>
-	
+
 		<!-- Imixs Workflow core dependencies -->
 		<dependency>
 			<groupId>org.imixs.workflow</groupId>
@@ -23,22 +24,11 @@
 			<artifactId>imixs-workflow-engine</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-	
-		<!-- Apache Lucene -->
 		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-core</artifactId>
-			<version>${lucene.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-analyzers-common</artifactId>
-			<version>${lucene.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-queryparser</artifactId>
-			<version>${lucene.version}</version>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-engine</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
+	<description>Search index based on Apache Lucene Solr</description>
 </project>
