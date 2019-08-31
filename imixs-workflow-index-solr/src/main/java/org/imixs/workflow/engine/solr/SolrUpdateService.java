@@ -27,7 +27,6 @@
 
 package org.imixs.workflow.engine.solr;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -36,17 +35,16 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.exceptions.IndexException;
-import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.services.rest.RestAPIException;
 
 /**
- * The SolrUpdateService provides methods to write Imixs Workitems into a
- * Solr search index. With the method <code>addWorkitem()</code> a
- * ItemCollection can be added to a Solr search index. The service init method
- * reads the property file 'imixs.properties' from the current classpath to
- * determine the configuration.
+ * The SolrUpdateService provides methods to write Imixs Workitems into a Solr
+ * search index. With the method <code>addWorkitem()</code> a ItemCollection can
+ * be added to a Solr search index. The service init method reads the property
+ * file 'imixs.properties' from the current classpath to determine the
+ * configuration.
  * 
  * <ul>
  * <li>The property "solr.core" defines the Solr core for the lucene index
@@ -59,9 +57,10 @@ import org.imixs.workflow.exceptions.PluginException;
 @Stateless
 public class SolrUpdateService implements UpdateService {
 
+	@Inject
+	SolrIndexService solrIndexService;
 
-		
-		private static Logger logger = Logger.getLogger(SolrUpdateService.class.getName());
+	private static Logger logger = Logger.getLogger(SolrUpdateService.class.getName());
 
 	/**
 	 * PostContruct event - The method loads the lucene index properties from the
@@ -73,7 +72,7 @@ public class SolrUpdateService implements UpdateService {
 	void init() {
 
 		logger.finest("...... ");
-		
+
 	}
 
 	/**
@@ -87,24 +86,23 @@ public class SolrUpdateService implements UpdateService {
 	 * 
 	 * @param documents
 	 *            of ItemCollections to be indexed
+	 * @throws RestAPIException
 	 * @throws IndexException
 	 */
 	@Override
 	public void updateIndex(List<ItemCollection> documents) {
-
-		logger.warning(" unimplemented !!!!");
+		try {
+			solrIndexService.updateDocumentsUncommitted(documents);
+		} catch (RestAPIException e) {
+			logger.severe("Failed to update document collection: " + e.getMessage());
+			throw new IndexException(IndexException.INVALID_INDEX, "Unable to update solr search index", e);
+		}
 	}
-	
-	
+
 	@Override
 	public void updateIndex() {
-
+		// TODO
 		logger.warning(" unimplemented !!!!");
 	}
-	
-	
-	
 
-
-	
 }

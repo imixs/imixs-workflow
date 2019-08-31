@@ -27,7 +27,6 @@
 
 package org.imixs.workflow.engine.solr;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -37,13 +36,11 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.index.DefaultOperator;
 import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.index.SearchService;
-import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
 
 /**

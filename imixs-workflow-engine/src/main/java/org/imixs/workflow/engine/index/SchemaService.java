@@ -195,18 +195,41 @@ public class SchemaService {
 
 	}
 
+	/**
+	 * Returns the field list defining the default content of the schema. The values
+	 * of those items are only searchable by fulltext search
+	 * 
+	 * @return
+	 */
 	public List<String> getFieldList() {
 		return fieldList;
 	}
 
+	/**
+	 * Returns the analyzed field list of the schema. The values of those items are
+	 * searchable by a field search. The values are analyzed.
+	 * 
+	 * @return
+	 */
 	public List<String> getFieldListAnalyse() {
 		return fieldListAnalyse;
 	}
 
+	/**
+	 * Returns the no-analyze field list of the schema. The values of those items
+	 * are searchable by field search. The values are not analyzed.
+	 * 
+	 * @return
+	 */
 	public List<String> getFieldListNoAnalyse() {
 		return fieldListNoAnalyse;
 	}
 
+	/**
+	 * Returns the field list of items stored in the index.
+	 * 
+	 * @return
+	 */
 	public List<String> getFieldListStore() {
 		return fieldListStore;
 	}

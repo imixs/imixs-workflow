@@ -28,7 +28,11 @@
 package org.imixs.workflow.engine.solr;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -39,8 +43,11 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.SetupEvent;
+import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.engine.index.SchemaService;
+import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.services.rest.BasicAuthenticator;
 import org.imixs.workflow.services.rest.RestAPIException;
 import org.imixs.workflow.services.rest.RestClient;
@@ -88,6 +95,10 @@ public class SolrIndexService {
 
 	@Inject
 	private SchemaService schemaService;
+	
+	@Inject
+	private AdminPService adminPService;
+
 
 	private RestClient restClient;
 
@@ -146,31 +157,79 @@ public class SolrIndexService {
 	public void updateSchema(String schema) throws RestAPIException {
 
 		// create the schema....
-		String schemaUpdate = createUpdateSchema(schema);
+		String schemaUpdate = createUpdateSchemaJSONRequest(schema);
 		// test if the schemaUdpate contains instructions....
 		if (!"{}".equals(schemaUpdate)) {
 			String uri = host + "/api/cores/" + core + "/schema";
 			logger.info("...update schema '" + core + "':");
 			logger.info("..." + schemaUpdate);
 			restClient.post(uri, schemaUpdate, "application/json");
+			
+			// force rebuild index
+			rebuildIndex();
 		} else {
 			logger.info("...schema = OK ");
 		}
 	}
 
-	
-	
-
 	/**
-	 * This method returns a JSON structure to to update an existing Solr schema.
-	 * The method adds all fields into a solr update definition that did not yet
-	 * exist in the current schema.
+	 * This method adds a collection of documents to the Lucene solr index. The
+	 * documents are added immediately to the index. Calling this method within a
+	 * running transaction leads to a uncommitted reads in the index. For
+	 * transaction control, it is recommended to use instead the the method
+	 * updateDocumetns() which takes care of uncommitted reads.
+	 * <p>
+	 * This method is used by the JobHandlerRebuildIndex only.
+	 * 
+	 * @param documents
+	 *            of ItemCollections to be indexed
+	 * @throws RestAPIException
+	 * @throws IndexException
+	 */
+	public void updateDocumentsUncommitted(List<ItemCollection> documents) throws RestAPIException {
+		long ltime = System.currentTimeMillis();
+	
+		if (documents == null || documents.size() == 0) {
+			// no op!
+			return;
+		} else {
+	
+			String xmlRequest = createAddDocumentsXMLRequest(documents);
+			String uri = host + "/solr/" + core + "/update";
+			logger.info("...update documents '" + core + "':");
+			restClient.post(uri, xmlRequest, "text/xml");
+		}
+	
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("... update index block in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
+					+ " workitems total)");
+		}
+	}
+
+	
+	/**
+	 * This method forces an update of the full text index. 
+	 */
+	public void rebuildIndex() {
+		// now starting index job....
+		logger.info("...rebuild lucene index job created...");
+		ItemCollection job = new ItemCollection();
+		job.replaceItemValue("numinterval", 2); // 2 minutes
+		job.replaceItemValue("job", AdminPService.JOB_REBUILD_INDEX);
+		adminPService.createJob(job);
+	}
+	
+	
+	/**
+	 * This method returns a JSON structure to update an existing Solr schema. The
+	 * method adds all fields into a solr update definition that did not yet exist
+	 * in the current schema.
 	 * <p>
 	 * The param schema contains the current schema definition of the core.
 	 * 
 	 * @return
 	 */
-	private String createUpdateSchema(String oldSchema) {
+	protected String createUpdateSchemaJSONRequest(String oldSchema) {
 
 		StringBuffer updateSchema = new StringBuffer();
 		List<String> fieldListStore = schemaService.getFieldListStore();
@@ -183,21 +242,21 @@ public class SolrIndexService {
 		updateSchema.append("{");
 
 		// finally add the default content field
-		addFieldIntoUpdateSchema(updateSchema, oldSchema, "content", "text_general", false);
+		addFieldDefinitionToUpdateSchema(updateSchema, oldSchema, "content", "text_general", false);
 		// add each field from the fieldListAnalyse
 		for (String field : fieldListAnalyse) {
 			boolean store = fieldListStore.contains(field);
-			addFieldIntoUpdateSchema(updateSchema, oldSchema, field, "text_general", store);
+			addFieldDefinitionToUpdateSchema(updateSchema, oldSchema, field, "text_general", store);
 		}
 
 		// add each field from the fieldListNoAnalyse
 		for (String field : fieldListNoAnalyse) {
 			boolean store = fieldListStore.contains(field);
-			addFieldIntoUpdateSchema(updateSchema, oldSchema, field, "strings", store);
+			addFieldDefinitionToUpdateSchema(updateSchema, oldSchema, field, "strings", store);
 		}
 
 		// finally add the $uniqueid field
-		addFieldIntoUpdateSchema(updateSchema, oldSchema, "$uniqueid", "string", true);
+		addFieldDefinitionToUpdateSchema(updateSchema, oldSchema, "$uniqueid", "string", true);
 
 		// remove last ,
 		int lastComma = updateSchema.lastIndexOf(",");
@@ -206,6 +265,77 @@ public class SolrIndexService {
 		}
 		updateSchema.append("}");
 		return updateSchema.toString();
+	}
+
+	/**
+	 * This method returns a XNK structure to add new documents into the solr index.
+	 * 
+	 * @return xml content to update documents
+	 */
+	protected String createAddDocumentsXMLRequest(List<ItemCollection> documents) {
+
+		List<String> fieldList = schemaService.getFieldList();
+		List<String> fieldListAnalyse = schemaService.getFieldListAnalyse();
+		List<String> fieldListNoAnalyse = schemaService.getFieldListNoAnalyse();
+		SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmmss");
+
+		StringBuffer xmlContent = new StringBuffer();
+
+		xmlContent.append("<add commitWithin=\"5000\" overwrite=\"true\">");
+
+		for (ItemCollection document : documents) {
+			xmlContent.append("<doc>");
+
+			// add all content fields defined in the schema
+			String content = "";
+			for (String field : fieldList) {
+				String sValue = "";
+				// check value list - skip empty fields
+				List<?> vValues = document.getItemValue(field);
+				if (vValues.size() == 0)
+					continue;
+				// get all values of a value list field
+				for (Object o : vValues) {
+					if (o == null)
+						// skip null values
+						continue;
+
+					if (o instanceof Calendar || o instanceof Date) {
+
+						// convert calendar to string
+						String sDateValue;
+						if (o instanceof Calendar)
+							sDateValue = dateformat.format(((Calendar) o).getTime());
+						else
+							sDateValue = dateformat.format((Date) o);
+						sValue += sDateValue + ",";
+
+					} else
+						// simple string representation
+						sValue += o.toString() + ",";
+				}
+				if (sValue != null) {
+					content += sValue + ",";
+				}
+			}
+			logger.finest("......add index field content=" + content);
+			xmlContent.append("<field name=\"content\">" + content + "</field>");
+
+			// now add all analyzed fields...
+			for (String aFieldname : fieldListAnalyse) {
+				addFieldValuesToUpdateRequest(xmlContent, document, aFieldname);
+			}
+			// now add all notanalyzed fields...
+			for (String aFieldname : fieldListNoAnalyse) {
+				addFieldValuesToUpdateRequest(xmlContent, document, aFieldname);
+			}
+
+			xmlContent.append("</doc>");
+		}
+
+		xmlContent.append("</add>");
+
+		return xmlContent.toString();
 	}
 
 	/**
@@ -234,7 +364,7 @@ public class SolrIndexService {
 	 *            - true if a ',' should be added to the end of the updateSchema.
 	 * 
 	 */
-	private void addFieldIntoUpdateSchema(StringBuffer updateSchema, String oldSchema, String name, String type,
+	private void addFieldDefinitionToUpdateSchema(StringBuffer updateSchema, String oldSchema, String name, String type,
 			boolean store) {
 
 		String fieldDefinition = "{\"name\":\"" + name + "\",\"type\":\"" + type + "\",\"stored\":" + store + "}";
@@ -245,4 +375,51 @@ public class SolrIndexService {
 		}
 	}
 
+	/**
+	 * This method adds a field value into a xml update request.
+	 * 
+	 * @param doc
+	 *            an existing lucene document
+	 * @param workitem
+	 *            the workitem containing the values
+	 * @param _itemName
+	 *            the item name inside the workitem
+	 */
+	private void addFieldValuesToUpdateRequest(StringBuffer xmlContent, final ItemCollection workitem,
+			final String _itemName) {
+
+		SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmmss");
+
+		if (_itemName == null) {
+			return;
+		}
+
+		List<?> vValues = workitem.getItemValue(_itemName);
+		if (vValues.size() == 0) {
+			return;
+		}
+		if (vValues.get(0) == null) {
+			return;
+		}
+
+		String itemName = _itemName.toLowerCase().trim();
+		for (Object singleValue : vValues) {
+			String convertedValue = "";
+			if (singleValue instanceof Calendar || singleValue instanceof Date) {
+				// convert calendar to lucene string representation
+				String sDateValue;
+				if (singleValue instanceof Calendar) {
+					sDateValue = dateformat.format(((Calendar) singleValue).getTime());
+				} else {
+					sDateValue = dateformat.format((Date) singleValue);
+				}
+				convertedValue = sDateValue;
+			} else {
+				// default
+				convertedValue = singleValue.toString();
+			}
+			xmlContent.append("<field name=\"" + itemName + "\">" + convertedValue + "</field>");
+		}
+
+	}
 }

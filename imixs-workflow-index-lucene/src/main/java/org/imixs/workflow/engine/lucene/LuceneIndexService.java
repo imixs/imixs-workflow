@@ -195,6 +195,81 @@ public class LuceneIndexService {
 	}
 
 	/**
+	 * This method forces an update of the full text index. The method also creates
+	 * the index directory if it does not yet exist.
+	 */
+	public void rebuildIndex(Directory indexDir) throws IOException {
+		// create a IndexWriter Instance to make sure we have created the index
+		// directory..
+		IndexWriterConfig indexWriterConfig;
+		indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
+		indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+		IndexWriter indexWriter = new IndexWriter(indexDir, indexWriterConfig);
+		indexWriter.close();
+		// now starting index job....
+		logger.info("...rebuild lucene index job created...");
+		ItemCollection job = new ItemCollection();
+		job.replaceItemValue("numinterval", 2); // 2 minutes
+		job.replaceItemValue("job", AdminPService.JOB_REBUILD_INDEX);
+		adminPService.createJob(job);
+	}
+
+
+	/**
+	 * This method adds a collection of documents to the Lucene index. The documents
+	 * are added immediately to the index. Calling this method within a running
+	 * transaction leads to a uncommitted reads in the index. For transaction
+	 * control, it is recommended to use instead the the method updateDocumetns()
+	 * which takes care of uncommitted reads.
+	 * <p>
+	 * This method is used by the JobHandlerRebuildIndex only.
+	 * 
+	 * @param documents
+	 *            of ItemCollections to be indexed
+	 * @throws IndexException
+	 */
+	public void updateDocumentsUncommitted(Collection<ItemCollection> documents) {
+	
+		IndexWriter awriter = null;
+		long ltime = System.currentTimeMillis();
+		try {
+			awriter = createIndexWriter();
+			// add workitem to search index....
+			for (ItemCollection workitem : documents) {
+	
+				if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
+					// create term
+					Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
+					logger.finest("......lucene add/update uncommitted workitem '"
+							+ workitem.getItemValueString(WorkflowKernel.UNIQUEID) + "' to index...");
+					awriter.updateDocument(term, createDocument(workitem));
+				}
+			}
+		} catch (IOException luceneEx) {
+			logger.warning("lucene error: " + luceneEx.getMessage());
+			throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index", luceneEx);
+		} finally {
+			// close writer!
+			if (awriter != null) {
+				logger.finest("......lucene close IndexWriter...");
+				try {
+					awriter.close();
+				} catch (CorruptIndexException e) {
+					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+				} catch (IOException e) {
+					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+				}
+			}
+		}
+	
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("... update index block in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
+					+ " workitems total)");
+		}
+	}
+
+
+	/**
 	 * This method flushes a given count of eventLogEntries. The method return true
 	 * if no more eventLogEntries exist.
 	 * 
@@ -202,7 +277,7 @@ public class LuceneIndexService {
 	 *            the max size of a eventLog engries to remove.
 	 * @return true if the cache was totally flushed.
 	 */
-	private boolean flushEventLogByCount(int count) {
+	protected boolean flushEventLogByCount(int count) {
 		Date lastEventDate = null;
 		boolean cacheIsEmpty = true;
 		IndexWriter indexWriter = null;
@@ -298,7 +373,7 @@ public class LuceneIndexService {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public Document createDocument(ItemCollection aworkitem) {
+	protected Document createDocument(ItemCollection aworkitem) {
 		String sValue = null;
 		Document doc = new Document();
 		// combine all search fields from the search field list into one field
@@ -392,7 +467,7 @@ public class LuceneIndexService {
 	 * @param store
 	 *            indicates if the value will become part of the Lucene document
 	 */
-	private void addItemValues(final Document doc, final ItemCollection workitem, final String _itemName,
+	protected void addItemValues(final Document doc, final ItemCollection workitem, final String _itemName,
 			final boolean analyzeValue, final boolean store) {
 
 		String itemName = _itemName;
@@ -439,27 +514,6 @@ public class LuceneIndexService {
 
 	
 	/**
-	 * This method forces an update of the full text index. The method also creates
-	 * the index directory if it does not yet exist.
-	 */
-	public void rebuildIndex(Directory indexDir) throws IOException {
-		// create a IndexWriter Instance to make sure we have created the index
-		// directory..
-		IndexWriterConfig indexWriterConfig;
-		indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
-		indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-		IndexWriter indexWriter = new IndexWriter(indexDir, indexWriterConfig);
-		indexWriter.close();
-		// now starting index job....
-		logger.info("...rebuild lucene index job created...");
-		ItemCollection job = new ItemCollection();
-		job.replaceItemValue("numinterval", 2); // 2 minutes
-		job.replaceItemValue("job", AdminPService.JOB_REBUILD_INDEX);
-		adminPService.createJob(job);
-	}
-	
-
-	/**
 	 * This method creates a new instance of a lucene IndexWriter.
 	 * 
 	 * The location of the lucene index in the filesystem is read from the
@@ -468,7 +522,7 @@ public class LuceneIndexService {
 	 * @return
 	 * @throws IOException
 	 */
-	public IndexWriter createIndexWriter() throws IOException {
+	protected IndexWriter createIndexWriter() throws IOException {
 		// create a IndexWriter Instance
 		Directory indexDir = FSDirectory.open(Paths.get(luceneIndexDir));
 		// verify existence of index directory...
@@ -487,58 +541,5 @@ public class LuceneIndexService {
 		}
 
 		return new IndexWriter(indexDir, indexWriterConfig);
-	}
-	
-	/**
-	 * This method adds a collection of documents to the Lucene index. The documents
-	 * are added immediately to the index. Calling this method within a running
-	 * transaction leads to a uncommitted reads in the index. For transaction
-	 * control, it is recommended to use instead the the method updateDocumetns()
-	 * which takes care of uncommitted reads.
-	 * <p>
-	 * This method is used by the JobHandlerRebuildIndex only.
-	 * 
-	 * @param documents
-	 *            of ItemCollections to be indexed
-	 * @throws IndexException
-	 */
-	public void updateDocumentsUncommitted(Collection<ItemCollection> documents) {
-
-		IndexWriter awriter = null;
-		long ltime = System.currentTimeMillis();
-		try {
-			awriter = createIndexWriter();
-			// add workitem to search index....
-			for (ItemCollection workitem : documents) {
-
-				if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
-					// create term
-					Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
-					logger.finest("......lucene add/update uncommitted workitem '"
-							+ workitem.getItemValueString(WorkflowKernel.UNIQUEID) + "' to index...");
-					awriter.updateDocument(term, createDocument(workitem));
-				}
-			}
-		} catch (IOException luceneEx) {
-			logger.warning("lucene error: " + luceneEx.getMessage());
-			throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index", luceneEx);
-		} finally {
-			// close writer!
-			if (awriter != null) {
-				logger.finest("......lucene close IndexWriter...");
-				try {
-					awriter.close();
-				} catch (CorruptIndexException e) {
-					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
-				} catch (IOException e) {
-					throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
-				}
-			}
-		}
-
-		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("... update index block in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
-					+ " workitems total)");
-		}
 	}
 }
