@@ -6,7 +6,7 @@ All components of Imixs-Workflow are build with Maven which makes it easy to add
 	
 	<properties>
 		.....
-		<org.imixs.workflow.version>4.5.0</org.imixs.workflow.version>
+		<org.imixs.workflow.version>5.1.0</org.imixs.workflow.version>
 	</properties>
 	...
 	<dependency>
@@ -17,6 +17,11 @@ All components of Imixs-Workflow are build with Maven which makes it easy to add
 	<dependency>
 		<groupId>org.imixs.workflow</groupId>
 		<artifactId>imixs-workflow-jax-rs</artifactId>
+		<version>${org.imixs.workflow.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.imixs.workflow</groupId>
+		<artifactId>imixs-workflow-index-lucene</artifactId>
 		<version>${org.imixs.workflow.version}</version>
 	</dependency>
 

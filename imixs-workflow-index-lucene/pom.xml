@@ -7,8 +7,8 @@
 		<artifactId>imixs-workflow</artifactId>
 		<version>5.1.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>imixs-workflow-lucene-core</artifactId>
-	<name>Apache Lucene Search Index</name>
+	<artifactId>imixs-workflow-index-lucene</artifactId>
+	<name>Search Index Apache Lucene</name>
 
 	<dependencies>
 	

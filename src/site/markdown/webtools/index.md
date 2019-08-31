@@ -27,6 +27,11 @@ Since Java EE6 the lightweight Web Profiles simplifies the deployment of Java EE
 			<artifactId>imixs-workflow-faces</artifactId>
 			<version>${org.imixs.workflow.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-index-lucene</artifactId>
+			<version>${org.imixs.workflow.version}</version>
+		</dependency>
 		....
 
 You will find more information about the Maven support of Imixs-Workflow in the [section Maven](../maven.html). 
