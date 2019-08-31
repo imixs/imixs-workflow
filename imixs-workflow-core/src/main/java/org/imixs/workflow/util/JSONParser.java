@@ -8,6 +8,7 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 import javax.json.Json;
@@ -18,28 +19,30 @@ import org.imixs.workflow.ItemCollection;
 
 /**
  * The JSONParser is an utility class to parse JSON structures. The parser
- * provides methods to transfare a Imixs JSON structure into a Imixs
- * ItemCollection as well as helper methods to extract single values of a json
- * file.
+ * provides methods to transfer a Imixs JSON structure into a Imixs
+ * ItemCollection as well as helper methods to extract single values from a JSON
+ * structure.
  * <p>
- * The method parse translates a JSON structure into ItemCollection in a generic
- * way.
+ * The method parseWorkitem translates a JSON structure containing a Imixs
+ * Document into a ItemCollection.
  * 
  * @author rsoika
- *
  */
 public class JSONParser {
 
 	private static Logger logger = Logger.getLogger(JSONParser.class.getName());
 
 	/**
-	 * This method extracts a single key froma a JSON structure. It does not matter
+	 * This method extracts a single key from a JSON structure. It does not matter
 	 * where the key is defined within the JSON structure. The method simply returns
 	 * the first match.
+	 * <p>
+	 * It is also possible to get a JSON object or an JSON array embedded in the
+	 * given JSON structure. This object can be parsed again with this method.
 	 * 
 	 * @param key
 	 * @param json
-	 * @return
+	 * @return - the json value or the json object for the corresponding json key
 	 */
 	public static String getKey(String key, String json) {
 		String result = null;
@@ -50,23 +53,38 @@ public class JSONParser {
 		Event event = null;
 		while (true) {
 
-			event = parser.next(); // START_OBJECT
-			if (event.name().equals(Event.KEY_NAME.toString())) {
-				String jsonkey = parser.getString();
-				if (key.equals(jsonkey)) {
-					event = parser.next(); // value
-					if (event.name().equals(Event.VALUE_STRING.toString())) {
-						result = parser.getString();
-						break;
-					}
-
+			try {
+				event = parser.next(); // START_OBJECT
+				if (event == null) {
+					return null;
 				}
+				if (event.name().equals(Event.KEY_NAME.toString())) {
+					String jsonkey = parser.getString();
+					if (key.equals(jsonkey)) {
+						event = parser.next(); // value
+						if (event.name().equals(Event.VALUE_STRING.toString())) {
+							result = parser.getString();
+							break;
+						}
+						if (event.name().equals(Event.START_OBJECT.toString())) {
+							// just return the next json object here
+							result = parser.getObject().toString();
+							break;
+						}
+						if (event.name().equals(Event.START_ARRAY.toString())) {
+							// just return the next json object here
+							result = parser.getArray().toString();
+							break;
+						}
+					}
+				}
+			} catch (NoSuchElementException e) {
+				return null;
 			}
 		}
 		return result;
 	}
 
-	
 	/**
 	 * This method parses an Imixs JSON input stream and returns a Imixs
 	 * ItemCollection.
