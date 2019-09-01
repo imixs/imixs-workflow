@@ -47,7 +47,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.queryparser.classic.QueryParser.Operator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -99,7 +98,6 @@ public class LuceneSearchService implements SearchService {
 	// number of hits
 	public static final int DEFAULT_PAGE_SIZE = 100; // default docs in one page
 
-
 	@Inject
 	@ConfigProperty(name = "index.defaultOperator", defaultValue = "AND")
 	private String luceneDefaultOperator;
@@ -110,16 +108,15 @@ public class LuceneSearchService implements SearchService {
 
 	@Inject
 	private LuceneIndexService luceneIndexService;
-	
+
 	@Inject
 	private DocumentService documentService;
-	
-	@Inject 
+
+	@Inject
 	private SchemaService schemaService;
-	
+
 	private static Logger logger = Logger.getLogger(LuceneSearchService.class.getName());
 
-	
 	/**
 	 * Returns a collection of documents matching the provided search term. The term
 	 * will be extended with the current users roles to test the read access level
@@ -158,7 +155,7 @@ public class LuceneSearchService implements SearchService {
 		long ltime = System.currentTimeMillis();
 
 		// flush eventlog (see issue #411)
-		//flush();
+		// flush();
 
 		// see issue #382
 		/*
@@ -221,7 +218,8 @@ public class LuceneSearchService implements SearchService {
 				// sorted by sortoder
 				logger.finest("......lucene result sorted by sortOrder= '" + sortOrder + "' ");
 				// MAX_SEARCH_RESULT is limiting the total number of hits
-				collector = TopFieldCollector.create(buildLuceneSort(sortOrder), maxSearchResult, false, false, false, false);
+				collector = TopFieldCollector.create(buildLuceneSort(sortOrder), maxSearchResult, false, false, false,
+						false);
 
 			} else {
 				// sorted by score
@@ -293,8 +291,6 @@ public class LuceneSearchService implements SearchService {
 		return workitems;
 	}
 
-	
-	
 	/**
 	 * Returns the total hits for a given search term from the lucene index. The
 	 * method did not load any data. The provided search term will we extended with
@@ -318,46 +314,45 @@ public class LuceneSearchService implements SearchService {
 			throws QueryException {
 		int result;
 		int maxResult = _maxResult;
-	
+
 		if (maxResult <= 0) {
 			maxResult = DEFAULT_MAX_SEARCH_RESULT;
 		}
-	
-		String sSearchTerm =schemaService.getExtendedSearchTerm(_searchTerm);
+
+		String sSearchTerm = schemaService.getExtendedSearchTerm(_searchTerm);
 		// test if searchtem is provided
 		if (sSearchTerm == null || "".equals(sSearchTerm)) {
 			return 0;
 		}
-	
+
 		try {
 			IndexSearcher searcher = createIndexSearcher();
 			QueryParser parser = createQueryParser();
-	
+
 			parser.setAllowLeadingWildcard(true);
-	
+
 			// set default operator?
-			if (defaultOperator.equals(Operator.AND)) {
-				parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.AND);
-			} else {
+			if (defaultOperator == DefaultOperator.OR) {
 				parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.OR);
-	
+			} else {
+				parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.AND);
 			}
-	
+
 			TopDocsCollector<?> collector = null;
-	
+
 			Query query = parser.parse(sSearchTerm);
 			// MAX_SEARCH_RESULT is limiting the total number of hits
 			collector = TopScoreDocCollector.create(maxResult);
-	
+
 			// - ignore time limiting for now
 			// Counter clock = Counter.newCounter(true);
 			// TimeLimitingCollector timeLimitingCollector = new
 			// TimeLimitingCollector(collector, clock, 10);
-	
+
 			// start search....
 			searcher.search(query, collector);
 			result = collector.getTotalHits();
-	
+
 			logger.finest("......lucene count result = " + result);
 		} catch (IOException e) {
 			// in case of an IOException we just print an error message and
@@ -368,11 +363,9 @@ public class LuceneSearchService implements SearchService {
 			logger.severe("Lucene search error: " + e.getMessage());
 			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
 		}
-	
+
 		return result;
 	}
-
-
 
 	/**
 	 * Creates a Lucene FSDirectory Instance. The method uses the proeprty
@@ -510,14 +503,13 @@ public class LuceneSearchService implements SearchService {
 
 	private Sort buildLuceneSort(org.imixs.workflow.engine.index.SortOrder sortOrder) {
 		Sort sort = null;
-			// we do not support multi values here - see
-			// LuceneUpdateService.addItemValues
-			// it would be possible if we use a SortedSetSortField class here
-			sort = new Sort(new SortField[] { new SortField(sortOrder.getField(), SortField.Type.STRING, sortOrder.isReverse()) });
+		// we do not support multi values here - see
+		// LuceneUpdateService.addItemValues
+		// it would be possible if we use a SortedSetSortField class here
+		sort = new Sort(
+				new SortField[] { new SortField(sortOrder.getField(), SortField.Type.STRING, sortOrder.isReverse()) });
 		return sort;
 	}
-
-
 
 	/**
 	 * Helper method to check for numbers.
@@ -543,6 +535,5 @@ public class LuceneSearchService implements SearchService {
 		return true;
 
 	}
-
 
 }
