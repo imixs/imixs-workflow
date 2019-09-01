@@ -89,6 +89,9 @@ public class LuceneIndexService {
 	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
 
+	private SimpleDateFormat luceneDateFormat=new SimpleDateFormat("yyyyMMddHHmmss");
+
+
 	
 	@Inject
 	@ConfigProperty(name = "lucence.indexDir", defaultValue = DEFAULT_INDEX_DIRECTORY)
@@ -392,13 +395,12 @@ public class LuceneIndexService {
 					continue;
 
 				if (o instanceof Calendar || o instanceof Date) {
-					SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmmss");
 					// convert calendar to string
 					String sDateValue;
 					if (o instanceof Calendar)
-						sDateValue = dateformat.format(((Calendar) o).getTime());
+						sDateValue = luceneDateFormat.format(((Calendar) o).getTime());
 					else
-						sDateValue = dateformat.format((Date) o);
+						sDateValue = luceneDateFormat.format((Date) o);
 					sValue += sDateValue + ",";
 
 				} else

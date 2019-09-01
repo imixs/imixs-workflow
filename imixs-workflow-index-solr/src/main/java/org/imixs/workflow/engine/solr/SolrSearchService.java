@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.security.DeclareRoles;
@@ -45,10 +46,12 @@ import javax.json.stream.JsonParser.Event;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.index.DefaultOperator;
 import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.index.SearchService;
+import org.imixs.workflow.engine.index.SortOrder;
 import org.imixs.workflow.exceptions.QueryException;
 
 /**
@@ -87,6 +90,8 @@ public class SolrSearchService implements SearchService {
 
 	private static Logger logger = Logger.getLogger(SolrSearchService.class.getName());
 
+	private SimpleDateFormat luceneDateFormat=new SimpleDateFormat("yyyyMMddHHmmss");
+
 	/**
 	 * Returns a collection of documents matching the provided search term. The term
 	 * will be extended with the current users roles to test the read access level
@@ -119,17 +124,10 @@ public class SolrSearchService implements SearchService {
 	 */
 	@Override
 	public List<ItemCollection> search(String searchTerm, int pageSize, int pageIndex,
-			org.imixs.workflow.engine.index.SortOrder sortOrder, DefaultOperator defaultOperator, boolean loadStubs)
+			SortOrder sortOrder, DefaultOperator defaultOperator, boolean loadStubs)
 			throws QueryException {
 
 		long ltime = System.currentTimeMillis();
-
-		// see issue #382
-		/*
-		 * if (sSearchTerm.toLowerCase().contains("$processid")) { logger.
-		 * warning("The field $processid is deprecated. Please use $taskid instead. " +
-		 * "searching a workitem with an deprecated $processid is still supported."); }
-		 */
 
 		if (pageSize <= 0) {
 			pageSize = DEFAULT_PAGE_SIZE;
@@ -150,7 +148,7 @@ public class SolrSearchService implements SearchService {
 		}
 
 		// post query....
-		String result = solarIndexService.query(searchTerm);
+		String result = solarIndexService.query(searchTerm, pageSize,  pageIndex,sortOrder,defaultOperator);
 		logger.finest("......Result = " + result);
 
 		if (result != null && !result.isEmpty()) {
@@ -159,9 +157,9 @@ public class SolrSearchService implements SearchService {
 				workitems.addAll(documentStubs);
 			} else {
 				// load workitems
-				for (ItemCollection stub: documentStubs) {
-					ItemCollection document=documentService.load(stub.getUniqueID());
-					if (document!=null) {
+				for (ItemCollection stub : documentStubs) {
+					ItemCollection document = documentService.load(stub.getUniqueID());
+					if (document != null) {
 						workitems.add(document);
 					}
 				}
@@ -210,8 +208,7 @@ public class SolrSearchService implements SearchService {
 								result.add(itemCol);
 								event = parser.next();
 							}
-							
-							
+
 							if (event.name().equals(Event.END_ARRAY.toString())) {
 								break;
 
@@ -227,7 +224,7 @@ public class SolrSearchService implements SearchService {
 			}
 		}
 
-		logger.info("******* total parsing time " + (System.currentTimeMillis() - l) + "ms");
+		logger.finest("......total parsing time " + (System.currentTimeMillis() - l) + "ms");
 		return result;
 	}
 
@@ -246,7 +243,7 @@ public class SolrSearchService implements SearchService {
 			logger.finest("......found item " + itemName);
 			List<?> itemValue = parseItem(parser);
 			// convert itemName and value....
-			itemName=adaptItemName(itemName);
+			itemName = adaptItemName(itemName);
 			document.replaceItemValue(itemName, itemValue);
 			event = parser.next();
 		}
@@ -261,7 +258,7 @@ public class SolrSearchService implements SearchService {
 	 * @return
 	 */
 	private List<Object> parseItem(JsonParser parser) {
-		SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmmss");
+		
 		List<Object> result = new ArrayList<Object>();
 		Event event = null;
 		while (true) {
@@ -272,14 +269,14 @@ public class SolrSearchService implements SearchService {
 					event = parser.next(); // a single doc..
 					if (event.name().equals(Event.VALUE_STRING.toString())) {
 						// just return the next json object here
-						
-						result.add(convertLuceneValue(parser.getString(),dateformat));
+
+						result.add(convertLuceneValue(parser.getString()));
 					}
 					if (event.name().equals(Event.VALUE_NUMBER.toString())) {
 						// just return the next json object here
-						//result.add(parser.getBigDecimal());
-						
-						result.add(convertLuceneValue(parser.getString(),dateformat));
+						// result.add(parser.getBigDecimal());
+
+						result.add(convertLuceneValue(parser.getString()));
 					}
 					if (event.name().equals(Event.VALUE_TRUE.toString())) {
 						// just return the next json object here
@@ -320,18 +317,19 @@ public class SolrSearchService implements SearchService {
 	}
 
 	/**
-	 * This 
+	 * This
+	 * 
 	 * @param stringValue
 	 * @return
 	 */
-	private Object convertLuceneValue(String stringValue, SimpleDateFormat luceneDateformat) {
+	private Object convertLuceneValue(String stringValue) {
 		Object objectValue = null;
 		// check for numbers....
 		if (isNumeric(stringValue)) {
 			// is date?
 			if (stringValue.length() == 14 && !stringValue.contains(".")) {
 				try {
-					objectValue = luceneDateformat.parse(stringValue);
+					objectValue = luceneDateFormat.parse(stringValue);
 				} catch (java.text.ParseException e) {
 					// no date!
 				}
@@ -351,7 +349,6 @@ public class SolrSearchService implements SearchService {
 		}
 		return objectValue;
 	}
-	
 
 	/**
 	 * Helper method to check for numbers.
@@ -377,28 +374,27 @@ public class SolrSearchService implements SearchService {
 		return true;
 
 	}
-	
+
 	/**
-	 * This method adapts an item name to the corresponding Imixs Item name
+	 * This method adapts an item name to the corresponding Imixs Item name. Because
+	 * Solr does not accept $ char at the beginning of an field we need to replace
+	 * starting _ with $
 	 * 
 	 * @param itemName
 	 * @return
 	 */
 	private String adaptItemName(String itemName) {
-
-		String[] from = { "_uniqueid", "_modified", "_created" };
-		String[] to = { "$uniqueid", "$modified", "$created" };
-
-		int max = from.length;
-		for (int i = 0; i < max; i++) {
-			if (from[i].equalsIgnoreCase(itemName)) {
-				itemName = to[i];
-				break;
+		if (itemName==null || itemName.isEmpty() || schemaService==null) {
+			return itemName;
+		}
+		if (itemName.charAt(0)=='_')  {
+			String adaptedName="$"+itemName.substring(1);
+			Set<String> uniqueFieldList = schemaService.getUniqueFieldList();
+			uniqueFieldList.add(WorkflowKernel.UNIQUEID);
+			if (uniqueFieldList.contains(adaptedName)) {
+				return adaptedName;
 			}
 		}
-		
-	
-
 		return itemName;
 	}
 

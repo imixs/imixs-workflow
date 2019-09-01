@@ -55,7 +55,9 @@ import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.SetupEvent;
 import org.imixs.workflow.engine.adminp.AdminPService;
+import org.imixs.workflow.engine.index.DefaultOperator;
 import org.imixs.workflow.engine.index.SchemaService;
+import org.imixs.workflow.engine.index.SortOrder;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.QueryException;
@@ -79,6 +81,7 @@ import org.imixs.workflow.services.rest.RestClient;
 @Stateless
 public class SolrIndexService {
 
+	public static final String DEFAULT_SEARCH_FIELD = "_text_";
 	public static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
 	public static final int DEFAULT_MAX_SEARCH_RESULT = 9999; // limiting the
 																// total
@@ -180,8 +183,6 @@ public class SolrIndexService {
 	 */
 	public void updateSchema(String schema) throws RestAPIException {
 
-		
-		
 		// create the schema....
 		String schemaUpdate = buildUpdateSchema(schema);
 		// test if the schemaUdpate contains instructions....
@@ -220,8 +221,10 @@ public class SolrIndexService {
 		} else {
 
 			String xmlRequest = buildAddDoc(documents);
-			String uri = host + "/solr/" + core + "/update";
-			logger.info("...update documents '" + core + "':");
+			if (logger.isLoggable(Level.FINEST)) {
+				logger.finest(xmlRequest);
+			}
+			String uri = host + "/solr/" + core + "/update?commit=true";
 			restClient.post(uri, xmlRequest, "text/xml");
 		}
 
@@ -270,7 +273,7 @@ public class SolrIndexService {
 			xmlDelete.append("</delete>");
 			String xmlRequest = xmlDelete.toString();
 			String uri = host + "/solr/" + core + "/update";
-			logger.info("...delete documents '" + core + "':");
+			logger.finest("......delete documents '" + core + "':");
 			restClient.post(uri, xmlRequest, "text/xml");
 		}
 
@@ -313,16 +316,59 @@ public class SolrIndexService {
 	 * @return
 	 * @throws QueryException
 	 */
-	public String query(String searchTerm) throws QueryException {
+	public String query(String searchTerm, int pageSize, int pageIndex, SortOrder sortOrder,
+			DefaultOperator defaultOperator) throws QueryException {
 
-		logger.info("...search solr index: " + searchTerm + "...");
+		logger.fine("...search solr index: " + searchTerm + "...");
+
+		StringBuffer uri = new StringBuffer();
 
 		// URL Encode the query string....
 		try {
-			String uri = host + "/solr/" + core + "/query?q=" + URLEncoder.encode(searchTerm, "UTF-8");
+			uri.append(host + "/solr/" + core + "/query");
 
-			logger.info("... uri=" + uri);
-			String result = restClient.get(uri);
+			// set default operator?
+			if (defaultOperator == DefaultOperator.OR) {
+				uri.append("?q.op=" + defaultOperator);
+			} else {
+				// if not define we default in any case to AND
+				uri.append("?q.op=AND");
+			}
+
+			// set sort order....
+			if (sortOrder != null) {
+				// sorted by sortoder
+				String sortField = sortOrder.getField();
+				// for Solr we need to replace the leading $ with _
+				if (sortField.startsWith("$")) {
+					sortField = "_" + sortField.substring(1);
+				}
+				if (sortOrder.isReverse()) {
+					uri.append("&sort=" + sortField + "%20desc");
+				} else {
+					uri.append("&sort=" + sortField + "%20asc");
+				}
+			}
+
+			// page size
+			if (pageSize <= 0) {
+				pageSize = DEFAULT_PAGE_SIZE;
+			}
+
+			if (pageIndex < 0) {
+				pageIndex = 0;
+			}
+
+			uri.append("&rows=" + (pageSize));
+			if (pageIndex > 0) {
+				uri.append("&start=" + (pageIndex * pageSize));
+			}
+
+			// append query
+			uri.append("&q=" + URLEncoder.encode(searchTerm, "UTF-8"));
+
+			logger.finest("...... uri=" + uri.toString());
+			String result = restClient.get(uri.toString());
 
 			return result;
 		} catch (RestAPIException | UnsupportedEncodingException e) {
@@ -381,13 +427,12 @@ public class SolrIndexService {
 		// remove white space from oldSchema to simplify string compare...
 		oldSchema = oldSchema.replace(" ", "");
 
-		
-		logger.finest("......old schema="+oldSchema);	
-		
+		logger.finest("......old schema=" + oldSchema);
+
 		updateSchema.append("{");
 
 		// finally add the default content field
-		addFieldDefinitionToUpdateSchema(updateSchema, oldSchema, "content", "text_general", false, false);
+		addFieldDefinitionToUpdateSchema(updateSchema, oldSchema, DEFAULT_SEARCH_FIELD, "text_general", false, false);
 		// add each field from the fieldListAnalyse
 		for (String field : fieldListAnalyse) {
 			boolean store = fieldListStore.contains(field);
@@ -429,10 +474,12 @@ public class SolrIndexService {
 
 		StringBuffer xmlContent = new StringBuffer();
 
-		xmlContent.append("<add commitWithin=\"5000\" overwrite=\"true\">");
+		xmlContent.append("<add overwrite=\"true\">");
 
 		for (ItemCollection document : documents) {
 			xmlContent.append("<doc>");
+
+			xmlContent.append("<field name=\"id\">" + document.getUniqueID() + "</field>");
 
 			// add all content fields defined in the schema
 			String content = "";
@@ -466,8 +513,9 @@ public class SolrIndexService {
 					content += sValue + ",";
 				}
 			}
-			logger.finest("......add index field content=" + content);
-			xmlContent.append("<field name=\"content\">" + content + "</field>");
+			logger.finest("......add index field " + DEFAULT_SEARCH_FIELD + "=" + content);
+			// if XML is part of the content, the we need to add a wrapping CDATA
+			xmlContent.append("<field name=\"" + DEFAULT_SEARCH_FIELD + "\"><![CDATA[" + content + "]]></field>");
 
 			// now add all analyzed fields...
 			for (String aFieldname : fieldListAnalyse) {
@@ -480,7 +528,7 @@ public class SolrIndexService {
 
 			// add $uniqueid not analyzed
 			addFieldValuesToUpdateRequest(xmlContent, document, WorkflowKernel.UNIQUEID);
-			
+
 			xmlContent.append("</doc>");
 		}
 
@@ -584,6 +632,11 @@ public class SolrIndexService {
 				// default
 				convertedValue = singleValue.toString();
 			}
+
+			// if XML is part of the content, the we need to add a wrapping CDATA
+			if (convertedValue.contains("<") || convertedValue.contains("<")) {
+				convertedValue = "<![CDATA[" + convertedValue + "]]>";
+			}
 			xmlContent.append("<field name=\"" + itemName + "\">" + convertedValue + "</field>");
 		}
 
@@ -626,13 +679,13 @@ public class SolrIndexService {
 						workitem.setAllItems(doc.getData());
 						if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
 							indexDocument(workitem);
-							logger.info("......solr added workitem '" + eventLogEntry.getId() + "' to index in "
+							logger.finest("......solr added workitem '" + eventLogEntry.getId() + "' to index in "
 									+ (System.currentTimeMillis() - l2) + "ms");
 						}
 					} else {
 						long l2 = System.currentTimeMillis();
 						removeDocument(eventLogEntry.getId());
-						logger.info("......solr remove workitem '" + eventLogEntry.getId() + "' from index in "
+						logger.finest("......solr removed workitem '" + eventLogEntry.getId() + "' from index in "
 								+ (System.currentTimeMillis() - l2) + "ms");
 					}
 

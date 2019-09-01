@@ -49,48 +49,7 @@ public interface SearchService {
 	// number of hits
 	public static final int DEFAULT_PAGE_SIZE = 100; // default docs in one page
 
-	/**
-	 * Returns a collection of documents matching the provided search term. The
-	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term.
-	 * 
-	 * @param sSearchTerm
-	 * @return collection of search result
-	 * @throws QueryException
-	 */
-	//public List<ItemCollection> search(String sSearchTerm) throws QueryException;
-
-	/**
-	 * Returns a collection of documents matching the provided search term. The
-	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term.
-	 * 
-	 * @param pageSize
-	 *            - docs per page
-	 * @param pageIndex
-	 *            - page number
-	 * 
-	 * @return collection of search result
-	 * @throws QueryException
-	 */
-	//public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) throws QueryException;
-
-	/**
-	 * Returns a collection of documents matching the provided search term. The term
-	 * will be extended with the current users roles to test the read access level
-	 * of each workitem matching the search term.
-	 * <p>
-	 * The method returns the full loaded documents. If you only want to search for
-	 * document stubs use instead the method
-	 * <p>
-	 * <code>search(String searchTerm, int pageSize, int pageIndex, Sort sortOrder,
-			Operator defaultOperator, boolean loadStubs)</code>
-	 * <p>
-	 * 
-	 */
-//	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex, SortOrder sortOrder,
-//			DefaultOperator defaultOperator) throws QueryException;
-
+	
 	/**
 	 * Returns a collection of documents matching the provided search term. The term
 	 * will be extended with the current users roles to test the read access level

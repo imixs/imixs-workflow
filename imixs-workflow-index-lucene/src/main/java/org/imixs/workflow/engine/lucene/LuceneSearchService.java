@@ -101,11 +101,11 @@ public class LuceneSearchService implements SearchService {
 
 
 	@Inject
-	@ConfigProperty(name = "lucene.defaultOperator", defaultValue = "AND")
+	@ConfigProperty(name = "index.defaultOperator", defaultValue = "AND")
 	private String luceneDefaultOperator;
 
 	@Inject
-	@ConfigProperty(name = "lucene.splitOnWhitespace", defaultValue = "true")
+	@ConfigProperty(name = "index.splitOnWhitespace", defaultValue = "true")
 	private boolean luceneSplitOnWhitespace;
 
 	@Inject
@@ -119,60 +119,7 @@ public class LuceneSearchService implements SearchService {
 	
 	private static Logger logger = Logger.getLogger(LuceneSearchService.class.getName());
 
-	/**
-	 * Returns a collection of documents matching the provided search term. The
-	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term.
-	 * 
-	 * @param sSearchTerm
-	 * @return collection of search result
-	 * @throws QueryException
-	 */
-//	@Override
-//	public List<ItemCollection> search(String sSearchTerm) throws QueryException {
-//		// no sort order
-//		return search(sSearchTerm, DEFAULT_MAX_SEARCH_RESULT, 0, null, DefaultOperator.AND);
-//	}
-
-	/**
-	 * Returns a collection of documents matching the provided search term. The
-	 * provided search team will we extended with a users roles to test the read
-	 * access level of each workitem matching the search term.
-	 * 
-	 * @param pageSize
-	 *            - docs per page
-	 * @param pageIndex
-	 *            - page number
-	 * 
-	 * @return collection of search result
-	 * @throws QueryException
-	 */
-//	@Override
-//	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex) throws QueryException {
-//		// no sort order
-//		return search(sSearchTerm, pageSize, pageIndex, null, null);
-//	}
-
-	/**
-	 * Returns a collection of documents matching the provided search term. The term
-	 * will be extended with the current users roles to test the read access level
-	 * of each workitem matching the search term.
-	 * <p>
-	 * The method returns the full loaded documents. If you only want to search for
-	 * document stubs use instead the method
-	 * <p>
-	 * <code>search(String searchTerm, int pageSize, int pageIndex, Sort sortOrder,
-			Operator defaultOperator, boolean loadStubs)</code>
-	 * <p>
-	 * 
-	 */
-//	@Override
-//	public List<ItemCollection> search(String sSearchTerm, int pageSize, int pageIndex,
-//			org.imixs.workflow.engine.index.SortOrder sortOrder, DefaultOperator defaultOperator)
-//			throws QueryException {
-//		return search(sSearchTerm, pageSize, pageIndex, sortOrder, defaultOperator, false);
-//	}
-
+	
 	/**
 	 * Returns a collection of documents matching the provided search term. The term
 	 * will be extended with the current users roles to test the read access level
@@ -245,10 +192,10 @@ public class LuceneSearchService implements SearchService {
 			parser.setAllowLeadingWildcard(true);
 
 			// set default operator?
-			if (defaultOperator == DefaultOperator.AND) {
-				parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.AND);
-			} else {
+			if (defaultOperator == DefaultOperator.OR) {
 				parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.OR);
+			} else {
+				parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.AND);
 			}
 
 			long lsearchtime = System.currentTimeMillis();

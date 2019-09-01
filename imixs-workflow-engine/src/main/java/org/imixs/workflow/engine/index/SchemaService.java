@@ -29,7 +29,9 @@ package org.imixs.workflow.engine.index;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
@@ -96,6 +98,7 @@ public class SchemaService {
 	private List<String> fieldListAnalyse = null;
 	private List<String> fieldListNoAnalyse = null;
 	private List<String> fieldListStore = null;
+	private Set<String> uniqueFieldList = null;
 
 	// default field lists
 	private static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
@@ -192,6 +195,13 @@ public class SchemaService {
 				fieldListAnalyse.add(fieldName);
 			}
 		}
+		
+		
+		// build unique field list containing all field names
+		uniqueFieldList=new HashSet<String>();
+		uniqueFieldList.addAll(fieldListStore);
+		uniqueFieldList.addAll(fieldListAnalyse);
+		uniqueFieldList.addAll(fieldListNoAnalyse);
 
 	}
 
@@ -234,6 +244,15 @@ public class SchemaService {
 		return fieldListStore;
 	}
 
+	/**
+	 * Returns a unique list of all fields part of the index schema. 
+	 * @return
+	 */
+	public Set<String> getUniqueFieldList() {
+		return uniqueFieldList;
+	}
+	
+	
 	/**
 	 * Returns the Lucene schema configuration
 	 * 

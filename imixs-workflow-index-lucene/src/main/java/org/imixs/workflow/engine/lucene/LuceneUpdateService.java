@@ -65,8 +65,7 @@ import org.imixs.workflow.exceptions.IndexException;
  */
 @Singleton
 public class LuceneUpdateService implements UpdateService {
-
-
+	
 	@Inject
 	private LuceneIndexService luceneIndexService;
 	

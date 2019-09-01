@@ -60,7 +60,6 @@ public class SolrUpdateService implements UpdateService {
 	SolrIndexService solrIndexService;
 
 	private static Logger logger = Logger.getLogger(SolrUpdateService.class.getName());
-
 	
 
 	/**
