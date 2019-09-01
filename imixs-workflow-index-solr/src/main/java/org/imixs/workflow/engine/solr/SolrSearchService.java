@@ -28,6 +28,8 @@
 package org.imixs.workflow.engine.solr;
 
 import java.io.StringReader;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -48,7 +50,6 @@ import org.imixs.workflow.engine.index.DefaultOperator;
 import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.exceptions.QueryException;
-import org.imixs.workflow.util.JSONParser;
 
 /**
  * This session ejb provides a service to search the solr index.
@@ -153,12 +154,22 @@ public class SolrSearchService implements SearchService {
 		logger.finest("......Result = " + result);
 
 		if (result != null && !result.isEmpty()) {
-			List<ItemCollection> documentStubs = parseJSONQueyResult(result);
-			// now we extract the docs and build ItemCollections from it....
+			List<ItemCollection> documentStubs = parseQueryResult(result);
+			if (loadStubs) {
+				workitems.addAll(documentStubs);
+			} else {
+				// load workitems
+				for (ItemCollection stub: documentStubs) {
+					ItemCollection document=documentService.load(stub.getUniqueID());
+					if (document!=null) {
+						workitems.add(document);
+					}
+				}
+			}
 
 		}
 
-		logger.fine("...search result computed in " + (System.currentTimeMillis() - ltime) + " ms - loadStubs="
+		logger.info("...search result computed in " + (System.currentTimeMillis() - ltime) + " ms - loadStubs="
 				+ loadStubs);
 
 		return workitems;
@@ -167,37 +178,228 @@ public class SolrSearchService implements SearchService {
 	/**
 	 * This method extracts the docs from a Solr JSON query result
 	 * 
-	 * @param json - solr query response (JSON)
+	 * @param json
+	 *            - solr query response (JSON)
 	 * @return List of ItemCollection objects
 	 */
-	protected List<ItemCollection> parseJSONQueyResult(String json) {
-		List<ItemCollection> result= new ArrayList<ItemCollection>();
-		String response = JSONParser.getKey("response", json);
-		String docs = JSONParser.getKey("docs", response);
-		
-		// now we go through the json docs structure and build ItemCollections ......
-		
-
-		logger.info("docs=" + docs);
-		JsonParser parser = Json.createParser(new StringReader(docs));
-		
+	protected List<ItemCollection> parseQueryResult(String json) {
+		long l = System.currentTimeMillis();
+		List<ItemCollection> result = new ArrayList<ItemCollection>();
+		JsonParser parser = Json.createParser(new StringReader(json));
 		Event event = null;
 		while (true) {
 
 			try {
 				event = parser.next(); // START_OBJECT
 				if (event == null) {
-					return null;
-				}
-				if (event.name().equals(Event.KEY_NAME.toString())) {
-					String jsonkey = parser.getString();
 					break;
 				}
+
+				if (event.name().equals(Event.KEY_NAME.toString())) {
+					String jsonkey = parser.getString();
+					if ("docs".equals(jsonkey)) {
+						event = parser.next(); // docs array
+						if (event.name().equals(Event.START_ARRAY.toString())) {
+							event = parser.next();
+							while (event.name().equals(Event.START_OBJECT.toString())) {
+								// a single doc..
+
+								logger.finest("......parse doc....");
+								ItemCollection itemCol = parseDoc(parser);
+								// now take the values
+								result.add(itemCol);
+								event = parser.next();
+							}
+							
+							
+							if (event.name().equals(Event.END_ARRAY.toString())) {
+								break;
+
+							}
+
+						}
+
+					}
+
+				}
 			} catch (NoSuchElementException e) {
-				return null;
+				break;
 			}
 		}
+
+		logger.info("******* total parsing time " + (System.currentTimeMillis() - l) + "ms");
 		return result;
+	}
+
+	/**
+	 * Builds a ItemCollection from a json doc strcuture
+	 * 
+	 * @param parser
+	 * @return
+	 */
+	private ItemCollection parseDoc(JsonParser parser) {
+		ItemCollection document = new ItemCollection();
+		Event event = null;
+		event = parser.next(); // a single doc..
+		while (event.name().equals(Event.KEY_NAME.toString())) {
+			String itemName = parser.getString();
+			logger.finest("......found item " + itemName);
+			List<?> itemValue = parseItem(parser);
+			// convert itemName and value....
+			itemName=adaptItemName(itemName);
+			document.replaceItemValue(itemName, itemValue);
+			event = parser.next();
+		}
+
+		return document;
+	}
+
+	/**
+	 * parses a single item value
+	 * 
+	 * @param parser
+	 * @return
+	 */
+	private List<Object> parseItem(JsonParser parser) {
+		SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmmss");
+		List<Object> result = new ArrayList<Object>();
+		Event event = null;
+		while (true) {
+			event = parser.next(); // a single doc..
+			if (event.name().equals(Event.START_ARRAY.toString())) {
+
+				while (true) {
+					event = parser.next(); // a single doc..
+					if (event.name().equals(Event.VALUE_STRING.toString())) {
+						// just return the next json object here
+						
+						result.add(convertLuceneValue(parser.getString(),dateformat));
+					}
+					if (event.name().equals(Event.VALUE_NUMBER.toString())) {
+						// just return the next json object here
+						//result.add(parser.getBigDecimal());
+						
+						result.add(convertLuceneValue(parser.getString(),dateformat));
+					}
+					if (event.name().equals(Event.VALUE_TRUE.toString())) {
+						// just return the next json object here
+						result.add(true);
+					}
+					if (event.name().equals(Event.VALUE_FALSE.toString())) {
+						// just return the next json object here
+						result.add(false);
+					}
+					if (event.name().equals(Event.END_ARRAY.toString())) {
+						break;
+					}
+				}
+
+			}
+
+			if (event.name().equals(Event.VALUE_STRING.toString())) {
+				// single value!
+				result.add(parser.getString());
+			}
+			if (event.name().equals(Event.VALUE_NUMBER.toString())) {
+				// just return the next json object here
+				result.add(parser.getBigDecimal());
+			}
+			if (event.name().equals(Event.VALUE_TRUE.toString())) {
+				// just return the next json object here
+				result.add(true);
+			}
+			if (event.name().equals(Event.VALUE_FALSE.toString())) {
+				// just return the next json object here
+				result.add(false);
+			}
+
+			break;
+		}
+
+		return result;
+	}
+
+	/**
+	 * This 
+	 * @param stringValue
+	 * @return
+	 */
+	private Object convertLuceneValue(String stringValue, SimpleDateFormat luceneDateformat) {
+		Object objectValue = null;
+		// check for numbers....
+		if (isNumeric(stringValue)) {
+			// is date?
+			if (stringValue.length() == 14 && !stringValue.contains(".")) {
+				try {
+					objectValue = luceneDateformat.parse(stringValue);
+				} catch (java.text.ParseException e) {
+					// no date!
+				}
+			}
+			// lets see if it is a number..?
+			if (objectValue == null) {
+				try {
+					Number number = NumberFormat.getInstance().parse(stringValue);
+					objectValue = number;
+				} catch (java.text.ParseException e) {
+					// no number - should not happen
+				}
+			}
+		}
+		if (objectValue == null) {
+			objectValue = stringValue;
+		}
+		return objectValue;
+	}
+	
+
+	/**
+	 * Helper method to check for numbers.
+	 * 
+	 * @see https://stackoverflow.com/questions/1102891/how-to-check-if-a-string-is-numeric-in-java
+	 * @param str
+	 * @return
+	 */
+	private static boolean isNumeric(String str) {
+		boolean dot = false;
+		if (str == null || str.isEmpty()) {
+			return false;
+		}
+		for (char c : str.toCharArray()) {
+			if (c == '.' && dot == false) {
+				dot = true; // first dot!
+				continue;
+			}
+			if (c < '0' || c > '9') {
+				return false;
+			}
+		}
+		return true;
+
+	}
+	
+	/**
+	 * This method adapts an item name to the corresponding Imixs Item name
+	 * 
+	 * @param itemName
+	 * @return
+	 */
+	private String adaptItemName(String itemName) {
+
+		String[] from = { "_uniqueid", "_modified", "_created" };
+		String[] to = { "$uniqueid", "$modified", "$created" };
+
+		int max = from.length;
+		for (int i = 0; i < max; i++) {
+			if (from[i].equalsIgnoreCase(itemName)) {
+				itemName = to[i];
+				break;
+			}
+		}
+		
+	
+
+		return itemName;
 	}
 
 	/**

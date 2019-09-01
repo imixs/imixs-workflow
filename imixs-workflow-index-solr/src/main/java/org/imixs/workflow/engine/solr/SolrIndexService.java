@@ -50,6 +50,7 @@ import javax.persistence.PersistenceContext;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.SetupEvent;
@@ -477,6 +478,9 @@ public class SolrIndexService {
 				addFieldValuesToUpdateRequest(xmlContent, document, aFieldname);
 			}
 
+			// add $uniqueid not analyzed
+			addFieldValuesToUpdateRequest(xmlContent, document, WorkflowKernel.UNIQUEID);
+			
 			xmlContent.append("</doc>");
 		}
 

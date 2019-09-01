@@ -1,7 +1,11 @@
 package org.imixs.workflow.engine.solr;
 
+import java.io.StringReader;
 import java.util.List;
 import java.util.logging.Logger;
+
+import javax.json.Json;
+import javax.json.stream.JsonParser;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
@@ -19,7 +23,7 @@ import junit.framework.Assert;
  */
 public class TestParseSolrJSONResult {
 		
-	@SuppressWarnings("unused")
+	
 	private final static Logger logger = Logger.getLogger(TestParseSolrJSONResult.class.getName());
 
 	SolrSearchService solrSearchService=null;
@@ -27,6 +31,10 @@ public class TestParseSolrJSONResult {
 	@Before
 	public void setUp() throws PluginException, ModelException {
 
+		// init parser just to measure time correctly
+		
+		JsonParser parser = Json.createParser(new StringReader("{}"));
+		
 		 solrSearchService=new SolrSearchService();
 	}
 	
@@ -37,7 +45,7 @@ public class TestParseSolrJSONResult {
 	 */
 	@Test
 	public void testParseResult() {
-
+		List<ItemCollection> result=null;
 		String testString = "{\n" + 
 				"  \"responseHeader\":{\n" + 
 				"    \"status\":0,\n" + 
@@ -62,12 +70,22 @@ public class TestParseSolrJSONResult {
 		
 		
 		
-	
-//		List<ItemCollection> result=solrSearchService.parseJSONQueyResult(testString);
-//		
-//		
-//		Assert.assertTrue(result.size()==2);
+		result=solrSearchService.parseQueryResult(testString);
+		Assert.assertEquals(2,result.size());
+		
+		ItemCollection document=null;
 
+		document=result.get(0);
+		Assert.assertEquals("model", document.getItemValueString("type"));
+		Assert.assertEquals("3a182d18-33d9-4951-8970-d9eaf9d337ff", document.getUniqueID());
+		Assert.assertEquals(1567278977000l, document.getItemValueDate("$modified").getTime());
+		Assert.assertEquals(1567278977000l, document.getItemValueDate("$created").getTime());
+		
+		document=result.get(1);
+		Assert.assertEquals("adminp", document.getItemValueString("type"));
+		Assert.assertEquals("60825929-4d7d-4346-9333-afd7dbfca457", document.getUniqueID());
+		Assert.assertEquals(1567278978000l, document.getItemValueDate("$created").getTime());
+		
 	}
 
 }
