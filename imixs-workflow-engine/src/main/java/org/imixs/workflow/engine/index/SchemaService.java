@@ -41,6 +41,7 @@ import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.QueryException;
 
@@ -199,9 +200,11 @@ public class SchemaService {
 		
 		// build unique field list containing all field names
 		uniqueFieldList=new HashSet<String>();
+		uniqueFieldList.add(WorkflowKernel.UNIQUEID);
 		uniqueFieldList.addAll(fieldListStore);
 		uniqueFieldList.addAll(fieldListAnalyse);
 		uniqueFieldList.addAll(fieldListNoAnalyse);
+		
 
 	}
 

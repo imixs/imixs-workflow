@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.function.IntPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -224,6 +225,7 @@ public class SolrIndexService {
 			if (logger.isLoggable(Level.FINEST)) {
 				logger.finest(xmlRequest);
 			}
+
 			String uri = host + "/solr/" + core + "/update?commit=true";
 			restClient.post(uri, xmlRequest, "text/xml");
 		}
@@ -311,13 +313,20 @@ public class SolrIndexService {
 
 	/**
 	 * This method post a search query and returns the result.
+	 * <p>
+	 * The method will return the documents containing all stored or DocValues
+	 * fields. Only if the param 'loadStubs' is false, then only the field
+	 * '$uniqueid' will be returnded by the method. The caller is responsible to
+	 * load the full document from DocumentService.
+	 * 
+	 * 
 	 * 
 	 * @param searchterm
 	 * @return
 	 * @throws QueryException
 	 */
 	public String query(String searchTerm, int pageSize, int pageIndex, SortOrder sortOrder,
-			DefaultOperator defaultOperator) throws QueryException {
+			DefaultOperator defaultOperator, boolean loadStubs) throws QueryException {
 
 		logger.fine("...search solr index: " + searchTerm + "...");
 
@@ -362,6 +371,11 @@ public class SolrIndexService {
 			uri.append("&rows=" + (pageSize));
 			if (pageIndex > 0) {
 				uri.append("&start=" + (pageIndex * pageSize));
+			}
+
+			// if loadStubs is true, then we only request the field '$uniqueid' here.
+			if (!loadStubs) {
+				uri.append("&fl=_uniqueid");
 			}
 
 			// append query
@@ -477,8 +491,15 @@ public class SolrIndexService {
 		xmlContent.append("<add overwrite=\"true\">");
 
 		for (ItemCollection document : documents) {
+			
+			// if no UniqueID is defined we need to skip this document
+			if (document.getUniqueID().isEmpty()) {
+				continue;
+			}
+			
 			xmlContent.append("<doc>");
 
+			
 			xmlContent.append("<field name=\"id\">" + document.getUniqueID() + "</field>");
 
 			// add all content fields defined in the schema
@@ -514,7 +535,12 @@ public class SolrIndexService {
 				}
 			}
 			logger.finest("......add index field " + DEFAULT_SEARCH_FIELD + "=" + content);
-			// if XML is part of the content, the we need to add a wrapping CDATA
+
+			// remove existing CDATA...
+			content = stripCDATA(content);
+			// strip control codes..
+			content = stripControlCodes(content);
+			// We need to add a wrapping CDATA, allow xml in general..
 			xmlContent.append("<field name=\"" + DEFAULT_SEARCH_FIELD + "\"><![CDATA[" + content + "]]></field>");
 
 			// now add all analyzed fields...
@@ -591,6 +617,11 @@ public class SolrIndexService {
 
 	/**
 	 * This method adds a field value into a xml update request.
+	 * <p>
+	 * In case the value is a date or calendar object, then the value will be
+	 * converted into a lucene time format.
+	 * <p>
+	 * The value will always be wrapped with a CDATA tag to avoid invalid XML.
 	 * 
 	 * @param doc
 	 *            an existing lucene document
@@ -633,13 +664,68 @@ public class SolrIndexService {
 				convertedValue = singleValue.toString();
 			}
 
-			// if XML is part of the content, the we need to add a wrapping CDATA
-			if (convertedValue.contains("<") || convertedValue.contains("<")) {
-				convertedValue = "<![CDATA[" + convertedValue + "]]>";
-			}
+			// remove existing CDATA...
+			convertedValue = stripCDATA(convertedValue);
+			// strip control codes..
+			convertedValue = stripControlCodes(convertedValue);
+			// wrapp value into CDATA
+			convertedValue = "<![CDATA[" + stripControlCodes(convertedValue) + "]]>";
+
 			xmlContent.append("<field name=\"" + itemName + "\">" + convertedValue + "</field>");
 		}
 
+	}
+
+	/**
+	 * This helper method is to strip control codes and extended characters from a
+	 * string. We can not put those chars into the XML request send to solr.
+	 * <p>
+	 * Background:
+	 * <p>
+	 * In ASCII, the control codes have decimal codes 0 through to 31 and 127. On an
+	 * ASCII based system, if the control codes are stripped, the resultant string
+	 * would have all of its characters within the range of 32 to 126 decimal on the
+	 * ASCII table.
+	 * <p>
+	 * On a non-ASCII based system, we consider characters that do not have a
+	 * corresponding glyph on the ASCII table (within the ASCII range of 32 to 126
+	 * decimal) to be an extended character for the purpose of this task.
+	 * </p>
+	 * 
+	 * @see https://rosettacode.org/wiki/Strip_control_codes_and_extended_characters_from_a_string
+	 * 
+	 * @param s
+	 * @param include
+	 * @return
+	 */
+	protected String stripControlCodes(String s) {
+
+		// control codes stripped (but extended characters not stripped)
+		// IntPredicate include=c -> c > '\u001F' && c != '\u007F';
+
+		// control codes and extended characters stripped
+		IntPredicate include = c -> c > '\u001F' && c < '\u007F';
+		return s.codePoints().filter(include::test)
+				.collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
+	}
+
+	/**
+	 * This helper method strips CDATA blocks from a string. We can not post
+	 * embedded CDATA in an alredy existing CDATA when we post the xml to solr.
+	 * <p>
+	 * 
+	 * @param s
+	 * @return
+	 */
+	protected String stripCDATA(String s) {
+
+		if (s.contains("<![CDATA[")) {
+			String result = s.replaceAll("<!\\[CDATA\\[", "");
+			result = result.replaceAll("]]>", "");
+			return result;
+		} else {
+			return s;
+		}
 	}
 
 	/**

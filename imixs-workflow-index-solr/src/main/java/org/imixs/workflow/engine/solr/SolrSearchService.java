@@ -148,7 +148,7 @@ public class SolrSearchService implements SearchService {
 		}
 
 		// post query....
-		String result = solarIndexService.query(searchTerm, pageSize,  pageIndex,sortOrder,defaultOperator);
+		String result = solarIndexService.query(searchTerm, pageSize,  pageIndex,sortOrder,defaultOperator, loadStubs);
 		logger.finest("......Result = " + result);
 
 		if (result != null && !result.isEmpty()) {
@@ -171,6 +171,54 @@ public class SolrSearchService implements SearchService {
 				+ loadStubs);
 
 		return workitems;
+	}
+
+	/**
+	 * Returns the total hits for a given search term from the lucene index. The
+	 * method did not load any data. The provided search term will we extended with
+	 * a users roles to test the read access level of each workitem matching the
+	 * search term.
+	 * 
+	 * The optional param 'maxResult' can be set to overwrite the
+	 * DEFAULT_MAX_SEARCH_RESULT.
+	 * 
+	 * @see search(String, int, int, Sort, Operator)
+	 * 
+	 * @param sSearchTerm
+	 * @param maxResult
+	 *            - max search result
+	 * @return total hits of search result
+	 * @throws QueryException
+	 *             in case the searchterm is not understandable.
+	 */
+	@Override
+	public int getTotalHits(final String _searchTerm, final int _maxResult, final DefaultOperator defaultOperator)
+			throws QueryException {
+		
+		int maxResult = _maxResult;
+
+		if (maxResult <= 0) {
+			maxResult = DEFAULT_MAX_SEARCH_RESULT;
+		}
+
+		// quey only the $uniqueid
+		String searchTerm = schemaService.getExtendedSearchTerm(_searchTerm);
+		// test if searchtem is provided
+		if (searchTerm == null || "".equals(searchTerm)) {
+			return 0;
+		}
+
+		// post query....
+		String result = solarIndexService.query(searchTerm, _maxResult,  0,null,defaultOperator, true);
+		
+//	TODO	now parse the count!!!
+//		
+//		
+//		logger.finest("......Result = " + result);
+//
+//		
+		
+		return 0;
 	}
 
 	/**
@@ -389,39 +437,11 @@ public class SolrSearchService implements SearchService {
 		}
 		if (itemName.charAt(0)=='_')  {
 			String adaptedName="$"+itemName.substring(1);
-			Set<String> uniqueFieldList = schemaService.getUniqueFieldList();
-			uniqueFieldList.add(WorkflowKernel.UNIQUEID);
-			if (uniqueFieldList.contains(adaptedName)) {
+			if (schemaService.getUniqueFieldList().contains(adaptedName)) {
 				return adaptedName;
 			}
 		}
 		return itemName;
-	}
-
-	/**
-	 * Returns the total hits for a given search term from the lucene index. The
-	 * method did not load any data. The provided search term will we extended with
-	 * a users roles to test the read access level of each workitem matching the
-	 * search term.
-	 * 
-	 * The optional param 'maxResult' can be set to overwrite the
-	 * DEFAULT_MAX_SEARCH_RESULT.
-	 * 
-	 * @see search(String, int, int, Sort, Operator)
-	 * 
-	 * @param sSearchTerm
-	 * @param maxResult
-	 *            - max search result
-	 * @return total hits of search result
-	 * @throws QueryException
-	 *             in case the searchterm is not understandable.
-	 */
-	@Override
-	public int getTotalHits(final String _searchTerm, final int _maxResult, final DefaultOperator defaultOperator)
-			throws QueryException {
-
-		logger.warning("...TBD");
-		return 0;
 	}
 
 }
