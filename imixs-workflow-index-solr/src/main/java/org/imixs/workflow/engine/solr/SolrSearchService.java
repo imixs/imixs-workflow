@@ -33,7 +33,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.security.DeclareRoles;
@@ -46,13 +45,13 @@ import javax.json.stream.JsonParser.Event;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.index.DefaultOperator;
 import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.index.SortOrder;
 import org.imixs.workflow.exceptions.QueryException;
+import org.imixs.workflow.util.JSONParser;
 
 /**
  * This session ejb provides a service to search the solr index.
@@ -178,11 +177,10 @@ public class SolrSearchService implements SearchService {
 	 * method did not load any data. The provided search term will we extended with
 	 * a users roles to test the read access level of each workitem matching the
 	 * search term.
+	 * <p>
+	 * In Solr we can get the count if we the the query param 'row=0'.
+	 * The the response contains still the numFound but not docs!
 	 * 
-	 * The optional param 'maxResult' can be set to overwrite the
-	 * DEFAULT_MAX_SEARCH_RESULT.
-	 * 
-	 * @see search(String, int, int, Sort, Operator)
 	 * 
 	 * @param sSearchTerm
 	 * @param maxResult
@@ -194,31 +192,31 @@ public class SolrSearchService implements SearchService {
 	@Override
 	public int getTotalHits(final String _searchTerm, final int _maxResult, final DefaultOperator defaultOperator)
 			throws QueryException {
-		
-		int maxResult = _maxResult;
+		long l=System.currentTimeMillis();
+		int hits=0;
+//		if (_maxResult!=0) {
+//			logger.severe("getTotalHits should be called with maxResult==0");
+//			return 0;
+//		}
 
-		if (maxResult <= 0) {
-			maxResult = DEFAULT_MAX_SEARCH_RESULT;
-		}
-
-		// quey only the $uniqueid
 		String searchTerm = schemaService.getExtendedSearchTerm(_searchTerm);
 		// test if searchtem is provided
 		if (searchTerm == null || "".equals(searchTerm)) {
 			return 0;
 		}
 
-		// post query....
-		String result = solarIndexService.query(searchTerm, _maxResult,  0,null,defaultOperator, true);
+		// post query with row = 0 
+		String result = solarIndexService.query(searchTerm, 0,  0,null,defaultOperator, true);
+		try {
+			String response=JSONParser.getKey("response", result);
+			hits=Integer.parseInt(JSONParser.getKey("numFound", response));
+		} catch (NumberFormatException e) {
+			logger.severe("getTotalHits - failed to parse solr result object! - " + e.getMessage());
+			hits=0;
+		}
 		
-//	TODO	now parse the count!!!
-//		
-//		
-//		logger.finest("......Result = " + result);
-//
-//		
-		
-		return 0;
+		logger.info("......computed totalHits in " +(System.currentTimeMillis()-l) + "ms");
+		return hits;
 	}
 
 	/**

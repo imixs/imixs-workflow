@@ -69,6 +69,22 @@ public class JSONParser {
 							result = parser.getString();
 							break;
 						}
+						if (event.name().equals(Event.VALUE_NUMBER.toString())) {
+							result = parser.getBigDecimal()+"";
+							break;
+						}
+						if (event.name().equals(Event.VALUE_TRUE.toString())) {
+							result = "true";
+							break;
+						}
+						if (event.name().equals(Event.VALUE_FALSE.toString())) {
+							result = "false";
+							break;
+						}
+						if (event.name().equals(Event.VALUE_NULL.toString())) {
+							result = null;
+							break;
+						}
 						if (event.name().equals(Event.START_OBJECT.toString())) {
 							// just return the next json object here
 							result = parser.getObject().toString();

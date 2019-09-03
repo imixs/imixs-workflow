@@ -359,8 +359,8 @@ public class SolrIndexService {
 				}
 			}
 
-			// page size
-			if (pageSize <= 0) {
+			// page size of 0 is allowed here - this will be used by the getTotalHits method of the SolrSearchService
+			if (pageSize < 0) {
 				pageSize = DEFAULT_PAGE_SIZE;
 			}
 
