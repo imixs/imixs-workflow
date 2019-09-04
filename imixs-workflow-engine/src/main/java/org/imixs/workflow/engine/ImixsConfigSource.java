@@ -110,8 +110,8 @@ public class ImixsConfigSource implements ConfigSource {
 	 * 
 	 * <ul>
 	 * <li>lucence.fulltextFieldList - index.fields</li>
-	 * <li>lucence.indexFieldListAnalyze - index.fields.analyse</li>
-	 * <li>lucence.indexFieldListNoAnalyze - index.fields.noanalyse</li>
+	 * <li>lucence.indexFieldListAnalyze - index.fields.analyze</li>
+	 * <li>lucence.indexFieldListNoAnalyze - index.fields.noanalyze</li>
 	 * <li>lucence.indexFieldListStore - index.fields.store</li>
 	 * 
 	 * <li>lucence.defaultOperator - index.operator</li>
@@ -126,10 +126,10 @@ public class ImixsConfigSource implements ConfigSource {
 		if ("index.fields".equals(key)) {
 			return "lucence.fulltextFieldList";
 		}
-		if ("index.fields.analyse".equals(key)) {
+		if ("index.fields.analyze".equals(key)) {
 			return "lucence.indexFieldListAnalyze";
 		}
-		if ("index.fields.noanalyse".equals(key)) {
+		if ("index.fields.noanalyze".equals(key)) {
 			return "lucence.indexFieldListNoAnalyze";
 		}
 		if ("index.fields.store".equals(key)) {

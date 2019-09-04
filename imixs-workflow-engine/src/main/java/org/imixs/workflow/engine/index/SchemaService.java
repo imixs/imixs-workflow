@@ -52,8 +52,8 @@ import org.imixs.workflow.exceptions.QueryException;
  * 
  * <ul>
  * <li>index.fields - content which will be indexed</li>
- * <li>index.fields.analyse - fields indexed as analyzed keyword fields</li>
- * <li>index.fields.noanalyse - fields indexed without analyze</li>
+ * <li>index.fields.analyze - fields indexed as analyzed keyword fields</li>
+ * <li>index.fields.noanalyze - fields indexed without analyze</li>
  * <li>index.fields.store - fields stored in the index</li>
  * <li>index.operator - default operator</li>
  * <li>index.splitwhitespace - split text on whitespace prior to analysis</li>
@@ -67,7 +67,7 @@ import org.imixs.workflow.exceptions.QueryException;
 public class SchemaService {
 
 	/*
-	 * index.fields index.fields.analyse index.fields.noanalyse index.fields.store
+	 * index.fields index.fields.analyze index.fields.noanalyze index.fields.store
 	 * 
 	 * index.operator index.splitwhitespace
 	 * 
@@ -82,11 +82,11 @@ public class SchemaService {
 
 	@Inject
 	@ConfigProperty(name = "index.fields.analyze", defaultValue = "")
-	private String indexFieldsAnalyse;
+	private String indexFieldsAnalyze;
 
 	@Inject
 	@ConfigProperty(name = "index.fields.noanalyze", defaultValue = "")
-	private String indexFieldsNoAnalyse;
+	private String indexFieldsNoAnalyze;
 
 	@Inject
 	@ConfigProperty(name = "index.fields.store", defaultValue = "")
@@ -96,14 +96,14 @@ public class SchemaService {
 	private DocumentService documentService;
 
 	private List<String> fieldList = null;
-	private List<String> fieldListAnalyse = null;
-	private List<String> fieldListNoAnalyse = null;
+	private List<String> fieldListAnalyze = null;
+	private List<String> fieldListNoAnalyze = null;
 	private List<String> fieldListStore = null;
 	private Set<String> uniqueFieldList = null;
 
 	// default field lists
 	private static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
-	private static List<String> DEFAULT_NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
+	private static List<String> DEFAULT_NOANALYZE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
 			"$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator",
 			"$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "name", "txtname",
 			"$owner", "namowner", "txtworkitemref", "$uniqueidsource", "$uniqueidversions", "$lasttask", "$lastevent",
@@ -124,8 +124,9 @@ public class SchemaService {
 	void init() {
 
 		logger.finest("......lucene FulltextFieldList=" + indexFields);
-		logger.finest("......lucene IndexFieldListAnalyse=" + indexFieldsAnalyse);
-		logger.finest("......lucene IndexFieldListNoAnalyse=" + indexFieldsNoAnalyse);
+		logger.finest("......lucene IndexFieldListAnalyze=" + indexFieldsAnalyze);
+		logger.finest("......lucene IndexFieldListNoAnalyze=" + indexFieldsNoAnalyze);
+		logger.finest("......lucene IndexFieldListStore=" + indexFieldsStore);
 
 		// compute search field list
 		fieldList = new ArrayList<String>();
@@ -143,30 +144,30 @@ public class SchemaService {
 		}
 
 		// compute Index field list (Analyze)
-		fieldListAnalyse = new ArrayList<String>();
-		if (indexFieldsAnalyse != null && !indexFieldsAnalyse.isEmpty()) {
-			StringTokenizer st = new StringTokenizer(indexFieldsAnalyse, ",");
+		fieldListAnalyze = new ArrayList<String>();
+		if (indexFieldsAnalyze != null && !indexFieldsAnalyze.isEmpty()) {
+			StringTokenizer st = new StringTokenizer(indexFieldsAnalyze, ",");
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase().trim();
 				// do not add internal fields
 				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName)) {
-					fieldListAnalyse.add(sName);
+					fieldListAnalyze.add(sName);
 				}
 			}
 		}
 
 		// compute Index field list (NoAnalyze)
-		fieldListNoAnalyse = new ArrayList<String>();
+		fieldListNoAnalyze = new ArrayList<String>();
 		// add all static default field list
-		fieldListNoAnalyse.addAll(DEFAULT_NOANALYSE_FIELD_LIST);
-		if (indexFieldsNoAnalyse != null && !indexFieldsNoAnalyse.isEmpty()) {
+		fieldListNoAnalyze.addAll(DEFAULT_NOANALYZE_FIELD_LIST);
+		if (indexFieldsNoAnalyze != null && !indexFieldsNoAnalyze.isEmpty()) {
 			// add additional field list from imixs.properties
-			StringTokenizer st = new StringTokenizer(indexFieldsNoAnalyse, ",");
+			StringTokenizer st = new StringTokenizer(indexFieldsNoAnalyze, ",");
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase().trim();
-				// Issue #560 - avoid duplicates from indexFieldsAnalyse
-				if (!fieldListNoAnalyse.contains(sName) && !indexFieldsAnalyse.contains(sName)) {
-					fieldListNoAnalyse.add(sName);
+				// Issue #560 - avoid duplicates from indexFieldsAnalyze
+				if (!fieldListNoAnalyze.contains(sName) && !indexFieldsAnalyze.contains(sName)) {
+					fieldListNoAnalyze.add(sName);
 				}
 			}
 		}
@@ -187,13 +188,13 @@ public class SchemaService {
 
 		// Issue #518:
 		// if a field of the indexFieldListStore is not part of the
-		// fieldListAnalyse add not part of fieldListNoAnalyse , than we add these
-		// fields to the indexFieldListAnalyse. This is to guaranty that we store the
+		// fieldListAnalyze add not part of fieldListNoAnalyze , than we add these
+		// fields to the indexFieldListAnalyze. This is to guaranty that we store the
 		// field value in any case.
 		for (String fieldName : fieldListStore) {
-			if (!fieldListAnalyse.contains(fieldName) && !fieldListNoAnalyse.contains(fieldName)) {
-				// add this field into he indexFieldListAnalyse
-				fieldListAnalyse.add(fieldName);
+			if (!fieldListAnalyze.contains(fieldName) && !fieldListNoAnalyze.contains(fieldName)) {
+				// add this field into he indexFieldListAnalyze
+				fieldListAnalyze.add(fieldName);
 			}
 		}
 		
@@ -202,8 +203,8 @@ public class SchemaService {
 		uniqueFieldList=new HashSet<String>();
 		uniqueFieldList.add(WorkflowKernel.UNIQUEID);
 		uniqueFieldList.addAll(fieldListStore);
-		uniqueFieldList.addAll(fieldListAnalyse);
-		uniqueFieldList.addAll(fieldListNoAnalyse);
+		uniqueFieldList.addAll(fieldListAnalyze);
+		uniqueFieldList.addAll(fieldListNoAnalyze);
 		
 
 	}
@@ -224,8 +225,8 @@ public class SchemaService {
 	 * 
 	 * @return
 	 */
-	public List<String> getFieldListAnalyse() {
-		return fieldListAnalyse;
+	public List<String> getFieldListAnalyze() {
+		return fieldListAnalyze;
 	}
 
 	/**
@@ -234,8 +235,8 @@ public class SchemaService {
 	 * 
 	 * @return
 	 */
-	public List<String> getFieldListNoAnalyse() {
-		return fieldListNoAnalyse;
+	public List<String> getFieldListNoAnalyze() {
+		return fieldListNoAnalyze;
 	}
 
 	/**
@@ -265,8 +266,8 @@ public class SchemaService {
 		ItemCollection config = new ItemCollection();
 
 		config.replaceItemValue("lucence.fulltextFieldList", fieldList);
-		config.replaceItemValue("lucence.indexFieldListAnalyze", fieldListAnalyse);
-		config.replaceItemValue("lucence.indexFieldListNoAnalyze", fieldListNoAnalyse);
+		config.replaceItemValue("lucence.indexFieldListAnalyze", fieldListAnalyze);
+		config.replaceItemValue("lucence.indexFieldListNoAnalyze", fieldListNoAnalyze);
 		config.replaceItemValue("lucence.indexFieldListStore", fieldListStore);
 
 		return config;

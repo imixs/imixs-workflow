@@ -83,7 +83,7 @@ public class LuceneIndexService {
 	public static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
 	
 	public static final String ANONYMOUS = "ANONYMOUS";
-	public static final String DEFAULT_ANALYSER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
+	public static final String DEFAULT_ANALYZER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
 	public static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";	
 	
 	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
@@ -98,8 +98,8 @@ public class LuceneIndexService {
 	private String luceneIndexDir;
 
 	@Inject
-	@ConfigProperty(name = "lucence.analyzerClass", defaultValue = DEFAULT_ANALYSER)
-	private String luceneAnalyserClass;
+	@ConfigProperty(name = "lucence.analyzerClass", defaultValue = DEFAULT_ANALYZER)
+	private String luceneAnalyzerClass;
 
 
 	@Inject
@@ -128,13 +128,13 @@ public class LuceneIndexService {
 	}
 
 
-	public String getLuceneAnalyserClass() {
-		return luceneAnalyserClass;
+	public String getLuceneAnalyzerClass() {
+		return luceneAnalyzerClass;
 	}
 
 
-	public void setLuceneAnalyserClass(String luceneAnalyserClass) {
-		this.luceneAnalyserClass = luceneAnalyserClass;
+	public void setLuceneAnalyzerClass(String luceneAnalyzerClass) {
+		this.luceneAnalyzerClass = luceneAnalyzerClass;
 	}
 	
 
@@ -419,16 +419,16 @@ public class LuceneIndexService {
 		_localFieldListStore.addAll(schemaService.getFieldListStore());
 
 		// analyzed...
-		List<String> indexFieldListAnalyse = schemaService.getFieldListAnalyse();
-		for (String aFieldname : indexFieldListAnalyse) {
+		List<String> indexFieldListAnalyze = schemaService.getFieldListAnalyze();
+		for (String aFieldname : indexFieldListAnalyze) {
 			addItemValues(doc, aworkitem, aFieldname, true, _localFieldListStore.contains(aFieldname));
 			// avoid duplication.....
 			_localFieldListStore.remove(aFieldname);
 		}
 		// ... and not analyzed...
 		
-		List<String> indexFieldListNoAnalyse = schemaService.getFieldListNoAnalyse();
-		for (String aFieldname : indexFieldListNoAnalyse) {
+		List<String> indexFieldListNoAnalyze = schemaService.getFieldListNoAnalyze();
+		for (String aFieldname : indexFieldListNoAnalyze) {
 			addItemValues(doc, aworkitem, aFieldname, false, _localFieldListStore.contains(aFieldname));
 		}
 
@@ -534,10 +534,10 @@ public class LuceneIndexService {
 		// indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
 		try {
 			// issue #429
-			indexWriterConfig = new IndexWriterConfig((Analyzer) Class.forName(luceneAnalyserClass).newInstance());
+			indexWriterConfig = new IndexWriterConfig((Analyzer) Class.forName(luceneAnalyzerClass).newInstance());
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 			throw new IndexException(IndexException.INVALID_INDEX,
-					"Unable to create analyzer '" + luceneAnalyserClass + "'", e);
+					"Unable to create analyzer '" + luceneAnalyzerClass + "'", e);
 		}
 
 		return new IndexWriter(indexDir, indexWriterConfig);

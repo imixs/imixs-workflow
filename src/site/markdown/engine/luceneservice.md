@@ -17,7 +17,7 @@ In the default configuration the content of the following [workflow items](../qu
 
 The content of these items is defined by the [task element](../modelling/process.html#Workflow_Properties) in your workflow model.
 
-The following list of items are so called 'index-items'. THese items are indexed by the _LuceneService_ without using an analyser. 
+The following list of items are so called 'index-items'. THese items are indexed by the _LuceneService_ without using an analyzer. 
 
 	$modelversion, $taskid, $workitemid, $uniqueidref, type, $writeaccess, $modified,$created, $creator, 
 	$editor, $lasteditor, $workflowgroup, $workflowstatus, txtname, owner, txtworkitemref, $uniqueidsource, 

@@ -89,7 +89,7 @@ public class SolrSearchService implements SearchService {
 
 	private static Logger logger = Logger.getLogger(SolrSearchService.class.getName());
 
-	private SimpleDateFormat luceneDateFormat=new SimpleDateFormat("yyyyMMddHHmmss");
+	private SimpleDateFormat luceneDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
 	/**
 	 * Returns a collection of documents matching the provided search term. The term
@@ -122,9 +122,8 @@ public class SolrSearchService implements SearchService {
 	 *             in case the searchtem is not understandable.
 	 */
 	@Override
-	public List<ItemCollection> search(String searchTerm, int pageSize, int pageIndex,
-			SortOrder sortOrder, DefaultOperator defaultOperator, boolean loadStubs)
-			throws QueryException {
+	public List<ItemCollection> search(String _searchTerm, int pageSize, int pageIndex, SortOrder sortOrder,
+			DefaultOperator defaultOperator, boolean loadStubs) throws QueryException {
 
 		long ltime = System.currentTimeMillis();
 
@@ -140,14 +139,14 @@ public class SolrSearchService implements SearchService {
 
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
-		searchTerm = schemaService.getExtendedSearchTerm(searchTerm);
+		String searchTerm = adaptSearchTerm(_searchTerm);
 		// test if searchtem is provided
 		if (searchTerm == null || "".equals(searchTerm)) {
 			return workitems;
 		}
 
 		// post query....
-		String result = solarIndexService.query(searchTerm, pageSize,  pageIndex,sortOrder,defaultOperator, loadStubs);
+		String result = solarIndexService.query(searchTerm, pageSize, pageIndex, sortOrder, defaultOperator, loadStubs);
 		logger.finest("......Result = " + result);
 
 		if (result != null && !result.isEmpty()) {
@@ -178,8 +177,8 @@ public class SolrSearchService implements SearchService {
 	 * a users roles to test the read access level of each workitem matching the
 	 * search term.
 	 * <p>
-	 * In Solr we can get the count if we the the query param 'row=0'.
-	 * The the response contains still the numFound but not docs!
+	 * In Solr we can get the count if we the the query param 'row=0'. The the
+	 * response contains still the numFound but not docs!
 	 * 
 	 * 
 	 * @param sSearchTerm
@@ -192,30 +191,26 @@ public class SolrSearchService implements SearchService {
 	@Override
 	public int getTotalHits(final String _searchTerm, final int _maxResult, final DefaultOperator defaultOperator)
 			throws QueryException {
-		long l=System.currentTimeMillis();
-		int hits=0;
-//		if (_maxResult!=0) {
-//			logger.severe("getTotalHits should be called with maxResult==0");
-//			return 0;
-//		}
+		long l = System.currentTimeMillis();
+		int hits = 0;
 
-		String searchTerm = schemaService.getExtendedSearchTerm(_searchTerm);
+		String searchTerm=adaptSearchTerm(_searchTerm);
 		// test if searchtem is provided
 		if (searchTerm == null || "".equals(searchTerm)) {
 			return 0;
 		}
 
-		// post query with row = 0 
-		String result = solarIndexService.query(searchTerm, 0,  0,null,defaultOperator, true);
+		// post query with row = 0
+		String result = solarIndexService.query(searchTerm, 0, 0, null, defaultOperator, true);
 		try {
-			String response=JSONParser.getKey("response", result);
-			hits=Integer.parseInt(JSONParser.getKey("numFound", response));
+			String response = JSONParser.getKey("response", result);
+			hits = Integer.parseInt(JSONParser.getKey("numFound", response));
 		} catch (NumberFormatException e) {
 			logger.severe("getTotalHits - failed to parse solr result object! - " + e.getMessage());
-			hits=0;
+			hits = 0;
 		}
-		
-		logger.info("......computed totalHits in " +(System.currentTimeMillis()-l) + "ms");
+
+		logger.info("......computed totalHits in " + (System.currentTimeMillis() - l) + "ms");
 		return hits;
 	}
 
@@ -289,7 +284,7 @@ public class SolrSearchService implements SearchService {
 			logger.finest("......found item " + itemName);
 			List<?> itemValue = parseItem(parser);
 			// convert itemName and value....
-			itemName = adaptItemName(itemName);
+			itemName = solarIndexService.adaptSolrFieldName(itemName);
 			document.replaceItemValue(itemName, itemValue);
 			event = parser.next();
 		}
@@ -304,7 +299,7 @@ public class SolrSearchService implements SearchService {
 	 * @return
 	 */
 	private List<Object> parseItem(JsonParser parser) {
-		
+
 		List<Object> result = new ArrayList<Object>();
 		Event event = null;
 		while (true) {
@@ -422,24 +417,57 @@ public class SolrSearchService implements SearchService {
 	}
 
 	/**
-	 * This method adapts an item name to the corresponding Imixs Item name. Because
-	 * Solr does not accept $ char at the beginning of an field we need to replace
-	 * starting _ with $
+	 * This method addapts a given Solr search term. The method extend the search
+	 * term by read access query and also adapts the imixs item names to Solr field
+	 * names.
 	 * 
-	 * @param itemName
+	 * @param _serachTerm
+	 * @return
+	 * @throws QueryException 
+	 */
+	private String adaptSearchTerm(String _serachTerm) throws QueryException {
+		if (_serachTerm == null || "".equals(_serachTerm)) {
+			return _serachTerm;
+		}
+
+		String searchTerm = schemaService.getExtendedSearchTerm(_serachTerm);
+
+		// Because Solr does not accept $ symbol in an item name we need to replace the
+		// Imxis Item Names and adapt them into the corresponding Solr Field name
+		searchTerm = adaptQueryFieldNames(searchTerm);
+
+		return searchTerm;
+
+	}
+
+	/**
+	 * This method adapts a search query for Imixs Item names and adapts these names
+	 * with the corresponding Solr field name (replace $ with _)
+	 * 
 	 * @return
 	 */
-	private String adaptItemName(String itemName) {
-		if (itemName==null || itemName.isEmpty() || schemaService==null) {
-			return itemName;
+	private String adaptQueryFieldNames(String _query) {
+		String result = _query;
+
+		if (schemaService == null) {
+			return result;
 		}
-		if (itemName.charAt(0)=='_')  {
-			String adaptedName="$"+itemName.substring(1);
-			if (schemaService.getUniqueFieldList().contains(adaptedName)) {
-				return adaptedName;
+
+		if (_query == null || !_query.contains("$")) {
+			return result;
+		}
+
+		for (String imixsItemName : schemaService.getUniqueFieldList()) {
+			if (imixsItemName.charAt(0) == '$') {
+				// this item starts with $ and we need to parse the query for this item....
+				while (result.contains(imixsItemName + ":")) {
+					String solrField = "_" + imixsItemName.substring(1);
+					result = result.replace(imixsItemName + ":", solrField + ":");
+				}
 			}
 		}
-		return itemName;
+
+		return result;
 	}
 
 }

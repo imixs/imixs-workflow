@@ -424,7 +424,7 @@ public class LuceneSearchService implements SearchService {
 	}
 
 	/**
-	 * Returns in instance of a QueyParser based on a KeywordAnalyser. The method
+	 * Returns in instance of a QueyParser based on a KeywordAnalyzer. The method
 	 * set the lucene DefaultOperator to 'OR' if not specified otherwise in the
 	 * imixs.properties.
 	 * 

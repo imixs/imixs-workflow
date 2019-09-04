@@ -318,6 +318,9 @@ public class SolrIndexService {
 	 * fields. Only if the param 'loadStubs' is false, then only the field
 	 * '$uniqueid' will be returnded by the method. The caller is responsible to
 	 * load the full document from DocumentService.
+	 * <p>
+	 * Because fieldnames must not contain $ symbols we need to replace those field
+	 * names used in a query.
 	 * 
 	 * 
 	 * 
@@ -359,7 +362,8 @@ public class SolrIndexService {
 				}
 			}
 
-			// page size of 0 is allowed here - this will be used by the getTotalHits method of the SolrSearchService
+			// page size of 0 is allowed here - this will be used by the getTotalHits method
+			// of the SolrSearchService
 			if (pageSize < 0) {
 				pageSize = DEFAULT_PAGE_SIZE;
 			}
@@ -391,6 +395,48 @@ public class SolrIndexService {
 			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
 		}
 
+	}
+
+	/**
+	 * This method adapts an Solr field name to the corresponding Imixs Item name.
+	 * Because Solr does not accept $ char at the beginning of an field we need to
+	 * replace starting _ with $ if the item is part of the Imixs Index Schema.
+	 * 
+	 * @param itemName
+	 * @return adapted Imixs item name
+	 */
+	public String adaptSolrFieldName(String itemName) {
+		if (itemName == null || itemName.isEmpty() || schemaService == null) {
+			return itemName;
+		}
+		if (itemName.charAt(0) == '_') {
+			String adaptedName = "$" + itemName.substring(1);
+			if (schemaService.getUniqueFieldList().contains(adaptedName)) {
+				return adaptedName;
+			}
+		}
+		return itemName;
+	}
+
+	/**
+	 * This method adapts an Imixs item name to the corresponding Solr field name.
+	 * Because Solr does not accept $ char at the beginning of an field we need to
+	 * replace starting $ with _ if the item is part of the Imixs Index Schema.
+	 * 
+	 * @param itemName
+	 * @return adapted Solr field name
+	 */
+	public String adaptImixsItemName(String itemName) {
+		if (itemName == null || itemName.isEmpty() || schemaService == null) {
+			return itemName;
+		}
+		if (itemName.charAt(0) == '$') {
+			if (schemaService.getUniqueFieldList().contains(itemName)) {
+				String adaptedName = "_" + itemName.substring(1);
+				return adaptedName;
+			}
+		}
+		return itemName;
 	}
 
 	/**
@@ -435,8 +481,8 @@ public class SolrIndexService {
 
 		StringBuffer updateSchema = new StringBuffer();
 		List<String> fieldListStore = schemaService.getFieldListStore();
-		List<String> fieldListAnalyse = schemaService.getFieldListAnalyse();
-		List<String> fieldListNoAnalyse = schemaService.getFieldListNoAnalyse();
+		List<String> fieldListAnalyze = schemaService.getFieldListAnalyze();
+		List<String> fieldListNoAnalyze = schemaService.getFieldListNoAnalyze();
 
 		// remove white space from oldSchema to simplify string compare...
 		oldSchema = oldSchema.replace(" ", "");
@@ -447,15 +493,15 @@ public class SolrIndexService {
 
 		// finally add the default content field
 		addFieldDefinitionToUpdateSchema(updateSchema, oldSchema, DEFAULT_SEARCH_FIELD, "text_general", false, false);
-		// add each field from the fieldListAnalyse
-		for (String field : fieldListAnalyse) {
+		// add each field from the fieldListAnalyze
+		for (String field : fieldListAnalyze) {
 			boolean store = fieldListStore.contains(field);
 			// text_general - docValues are not supported!
 			addFieldDefinitionToUpdateSchema(updateSchema, oldSchema, field, "text_general", store, false);
 		}
 
-		// add each field from the fieldListNoAnalyse
-		for (String field : fieldListNoAnalyse) {
+		// add each field from the fieldListNoAnalyze
+		for (String field : fieldListNoAnalyze) {
 			boolean store = fieldListStore.contains(field);
 			// strings - docValues are supported so set it independently from the store flag
 			// to true. This is to increase sort and grouping performance
@@ -482,8 +528,8 @@ public class SolrIndexService {
 	protected String buildAddDoc(List<ItemCollection> documents) {
 
 		List<String> fieldList = schemaService.getFieldList();
-		List<String> fieldListAnalyse = schemaService.getFieldListAnalyse();
-		List<String> fieldListNoAnalyse = schemaService.getFieldListNoAnalyse();
+		List<String> fieldListAnalyze = schemaService.getFieldListAnalyze();
+		List<String> fieldListNoAnalyze = schemaService.getFieldListNoAnalyze();
 		SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmmss");
 
 		StringBuffer xmlContent = new StringBuffer();
@@ -491,15 +537,14 @@ public class SolrIndexService {
 		xmlContent.append("<add overwrite=\"true\">");
 
 		for (ItemCollection document : documents) {
-			
+
 			// if no UniqueID is defined we need to skip this document
 			if (document.getUniqueID().isEmpty()) {
 				continue;
 			}
-			
+
 			xmlContent.append("<doc>");
 
-			
 			xmlContent.append("<field name=\"id\">" + document.getUniqueID() + "</field>");
 
 			// add all content fields defined in the schema
@@ -544,11 +589,11 @@ public class SolrIndexService {
 			xmlContent.append("<field name=\"" + DEFAULT_SEARCH_FIELD + "\"><![CDATA[" + content + "]]></field>");
 
 			// now add all analyzed fields...
-			for (String aFieldname : fieldListAnalyse) {
+			for (String aFieldname : fieldListAnalyze) {
 				addFieldValuesToUpdateRequest(xmlContent, document, aFieldname);
 			}
 			// now add all notanalyzed fields...
-			for (String aFieldname : fieldListNoAnalyse) {
+			for (String aFieldname : fieldListNoAnalyze) {
 				addFieldValuesToUpdateRequest(xmlContent, document, aFieldname);
 			}
 
@@ -578,6 +623,9 @@ public class SolrIndexService {
 	 * <p>
 	 * To verify the existence of the field we parse the fieldname in the old schema
 	 * definition.
+	 * <p>
+	 * Note: In Solr field names must not start with $ symbol. For that reason we
+	 * adapt the $ with _ for all known index fields
 	 *
 	 * @param updateSchema
 	 *            - a stringBuffer to build the update schema
@@ -593,8 +641,11 @@ public class SolrIndexService {
 	 *            - true if docValues should be set to true
 	 * 
 	 */
-	private void addFieldDefinitionToUpdateSchema(StringBuffer updateSchema, String oldSchema, String name, String type,
-			boolean store, boolean docvalue) {
+	private void addFieldDefinitionToUpdateSchema(StringBuffer updateSchema, String oldSchema, String _name,
+			String type, boolean store, boolean docvalue) {
+
+		// replace $ with _
+		String name = adaptImixsItemName(_name);
 
 		String fieldDefinition = "{\"name\":\"" + name + "\",\"type\":\"" + type + "\",\"stored\":" + store
 				+ ",\"docValues\":" + docvalue + "}";
@@ -671,7 +722,7 @@ public class SolrIndexService {
 			// wrapp value into CDATA
 			convertedValue = "<![CDATA[" + stripControlCodes(convertedValue) + "]]>";
 
-			xmlContent.append("<field name=\"" + itemName + "\">" + convertedValue + "</field>");
+			xmlContent.append("<field name=\"" + adaptImixsItemName(itemName) + "\">" + convertedValue + "</field>");
 		}
 
 	}
