@@ -8,6 +8,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import junit.framework.Assert;
@@ -37,6 +38,7 @@ public class TestParseSolrJSONResult {
 	 * 
 	 */
 	@Test
+	@Ignore
 	public void testParseResult() {
 		List<ItemCollection> result=null;
 		String testString = "{\n" + 
