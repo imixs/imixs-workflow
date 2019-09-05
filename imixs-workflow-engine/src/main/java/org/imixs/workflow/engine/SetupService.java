@@ -101,9 +101,10 @@ public class SetupService {
 	private static Logger logger = Logger.getLogger(SetupService.class.getName());
 
 	// inject evnvironment / property for the model default data.
-	@Inject
-	@ConfigProperty(name = "MODEL_DEFAULT_DATA", defaultValue = "")
-	private String envModelDefaultData;
+//	@Inject
+//	@ConfigProperty(name = "MODEL_DEFAULT_DATA", defaultValue = "")
+//	private String envModelDefaultData;
+
 	@Inject
 	@ConfigProperty(name = "model.default.data", defaultValue = "")
 	private String modelDefaultData;
@@ -184,7 +185,7 @@ public class SetupService {
 	public void scanDefaultModels() {
 		logger.finest("......scan default models...");
 		// test if we have an environment variable or a property value...
-		String modelData = !envModelDefaultData.isEmpty() ? envModelDefaultData : modelDefaultData;
+		String modelData =  modelDefaultData;
 
 		if ("".equals(modelData)) {
 			// no model data to scan

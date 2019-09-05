@@ -8,10 +8,13 @@ A default model file can be imported during the setup if the imixs.property vari
 
 	model.default.data=my-model.bpmn
 
-You can also define the Default Model data by a environment variable. In this case the variable is written in upper-case and with underscores 
+You can also define the Default Model data by a environment variable. In this case the variable is written in upper-case and with underscores. 
 
 	MODEL_DEFAULT_DATA=my-model.bpmn
 
+**Note:** An entry in the imixs.properties will overwrite the Environment variable in any case!
+
+See also the section [Imixs Config Source ](./configsource.html)
 
 ## Default Instance Data
 

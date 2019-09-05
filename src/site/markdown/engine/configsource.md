@@ -44,3 +44,12 @@ As per SPI it is necessary to register the implementation in META-INF/services b
 This file is already provided by the Imixs-Workflow engine.
 
 
+## Handling of Environment Variables
+
+You can set imixs properties also as Environment variables. In this case the property must be written in Unix Style:
+
+	model.default.data   >>  MODEL_DEFAULT_DATA
+
+**Note:** If you use environment variables, the entry in the imixs.properties must be removed. Otherwise it will overwrite the Environment variable in any case!
+
+Find more details [here](https://github.com/eclipse/microprofile-config/blob/master/spec/src/main/asciidoc/configsources.asciidoc#default-configsources)
