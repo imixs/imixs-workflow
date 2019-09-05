@@ -421,7 +421,7 @@ public class SchemaService {
 	 * @param s
 	 * @return
 	 */
-	private final boolean containsDigit(String s) {
+	private boolean containsDigit(String s) { 
 		boolean containsDigit = false;
 		if (s != null && !s.isEmpty()) {
 			for (char c : s.toCharArray()) {
