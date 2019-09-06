@@ -24,7 +24,24 @@ These properties are defining the workflow activity which should be processed by
 
 
 
+The model version can also be specified as a regex. 
+
+	  // take best match for model version 1.x
+	  ItemCollection workitem=new ItemCollection().model("(^1.)").task(100).event(10);
+
+Another alternative to assign a new workitem with a model version is by specifying the $workflowgroup. 
+
+
+	  // create an empty workitem assigend to a workflow group
+	  ItemCollection workitem=new ItemCollection().task(100).event(10);
+	  // assign group
+	  workitem.setItemValue(WorkflowKernel.WORKFLOWGROUP, "Invoice");
+	  // assign the workitem to the latest version matching the workfow group 'invoice'
+	  workitem=workflowService.processWorkItem(workitem);
+
+
 After a new workitem is process the first time, it is under the control of the _WorkflowService_.
+
 
 ## Worklist Methods
 
