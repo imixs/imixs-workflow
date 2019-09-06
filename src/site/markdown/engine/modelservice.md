@@ -20,6 +20,17 @@ The ModelService EJB extends the interface '_org.imixs.workflow.ModelManager_' a
 |loadModelEntity(version)        | Loads an existing Model Entities from the database.|
 
 
+## Auto Detect ModelVersion
+
+With the method *getModelByWorkitem(workitem)* the ModelService provides an algorithm to find a matching model version either by the $workflowGroup or by a regex. For example
+
+	modelversion = "(^1.0)" 
+	
+will find a model version 1.0.7  
+
+If no modelversion is provided by a workitem but the $worklfowgroup matches a model the model version will be taken from the latest version of the corresponding group. 
+
+
 
 ## How to Add a Model
 

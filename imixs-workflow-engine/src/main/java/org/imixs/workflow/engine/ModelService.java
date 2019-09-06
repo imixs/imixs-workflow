@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
@@ -199,7 +200,7 @@ public class ModelService implements ModelManager {
 	@Override
 	public Model getModelByWorkitem(ItemCollection workitem) throws ModelException {
 		String modelVersion = workitem.getModelVersion();
-		String workflowGroup = workitem.getItemValueString("$workflowgroup");
+		String workflowGroup = workitem.getItemValueString(WorkflowKernel.WORKFLOWGROUP);
 		// if $workflowgroup is empty try deprecated field txtworkflowgroup
 		if (workflowGroup.isEmpty()) {
 			workflowGroup = workitem.getItemValueString("txtworkflowgroup");
@@ -209,30 +210,36 @@ public class ModelService implements ModelManager {
 		try {
 			model = getModel(modelVersion);
 		} catch (ModelException me) {
+			model = null;
 			logger.finest(me.getMessage());
-			if (!workflowGroup.isEmpty()) {
-				// find latest version
-				List<String> versions = findVersionsByGroup(workflowGroup);
+			// try to find latest version by regex....
+			List<String> versions = findVersionsByRegEx(modelVersion);
+			if (!versions.isEmpty()) {
+				// we found a match by regex!
+				String newVersion = versions.get(0);
+				logger.info("...... match version '" + newVersion + "' -> by regex '" + modelVersion + "'");
+				workitem.replaceItemValue(WorkflowKernel.MODELVERSION, newVersion);
+				model = getModel(newVersion);
+			}
+
+			// try to find model version by group
+			if (model == null && !workflowGroup.isEmpty()) {
+				versions = findVersionsByGroup(workflowGroup);
 				if (!versions.isEmpty()) {
 					String newVersion = versions.get(0);
-					logger.warning("Deprecated model version: '" + modelVersion + "' -> migrating $uniqueID="
-							+ workitem.getUniqueID() + ", workflowgroup='" + workflowGroup + "' to model version '"
-							+ newVersion + "' ");
+					logger.warning("Deprecated model version: '" + modelVersion + "' -> migrating to '" + newVersion
+							+ "',  $workflowgroup: '" + workflowGroup + "', $uniqueid: " + workitem.getUniqueID());
 					workitem.replaceItemValue(WorkflowKernel.MODELVERSION, newVersion);
 					model = getModel(newVersion);
 				}
-			} else {
-				// model not found and no match for current txtworkflowgroup
-				// defined!
-				model = null;
-			}
+			} 
 		}
 
 		// check if model was found....
 		if (model == null) {
 			throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
-					"Modelversion '" + modelVersion + "' not found! No matching version found for WorkflowGroup '"
-							+ workflowGroup + "' ($uniqueid=" + workitem.getUniqueID() + ")");
+					"No matching $modelversion found for '" + modelVersion + "', $workflowgroup: '" + workflowGroup
+							+ "', $uniqueid: " + workitem.getUniqueID());
 		}
 
 		return model;
@@ -265,6 +272,29 @@ public class ModelService implements ModelManager {
 		Collection<Model> models = getModelStore().values();
 		for (Model amodel : models) {
 			if (amodel.getGroups().contains(group)) {
+				result.add(amodel.getVersion());
+			}
+		}
+		// sort result
+		Collections.sort(result, Collections.reverseOrder());
+		return result;
+	}
+
+	/**
+	 * This method returns a sorted list of model versions matching a given regex
+	 * for a model version. The result is sorted in reverse order, so the highest
+	 * version number is the first in the result list.
+	 * 
+	 * @param group
+	 * @return
+	 */
+	public List<String> findVersionsByRegEx(String modelRegex) {
+		List<String> result = new ArrayList<String>();
+		logger.finest("......searching model versions for regex '" + modelRegex + "'...");
+		// try to find matching model version by regex
+		Collection<Model> models = getModelStore().values();
+		for (Model amodel : models) {
+			if (Pattern.compile(modelRegex).matcher(amodel.getVersion()).find()) {
 				result.add(amodel.getVersion());
 			}
 		}

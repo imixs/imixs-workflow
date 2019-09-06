@@ -86,4 +86,66 @@ public class TestModelService extends WorkflowMockEnvironment {
 
 	}
 
+	
+	
+	/**
+	 * This deprecated model version
+	 * 
+	 * 
+	 */
+	@Test
+	public void testRegexModelVersion() {
+		this.setModelPath("/bpmn/TestWorkflowService.bpmn");
+		this.loadModel();
+
+		// load test workitem
+		ItemCollection workitem = database.get("W0000-00001");
+		workitem.setModelVersion("(^1.)");
+		workitem.setTaskID(100);
+		workitem.setEventID(10);
+		
+
+		Model amodel = null;
+		try {
+			amodel = modelService.getModelByWorkitem(workitem);
+			
+		} catch (ModelException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertNotNull(amodel);
+		Assert.assertEquals("1.0.0", amodel.getVersion());
+		
+	}
+	
+	
+	/**
+	 * This deprecated model version
+	 * 
+	 * 
+	 */
+	@Test
+	public void testNoMatchModelVersion() {
+		this.setModelPath("/bpmn/TestWorkflowService.bpmn");
+		this.loadModel();
+
+		// load test workitem
+		ItemCollection workitem = database.get("W0000-00001");
+		workitem.setModelVersion("(^5.)");
+		workitem.setTaskID(100);
+		workitem.setEventID(10);
+		workitem.replaceItemValue("$WorkflowGroup", "Invoice");
+		
+
+		Model amodel = null;
+		try {
+			amodel = modelService.getModelByWorkitem(workitem);
+			Assert.fail();
+		} catch (ModelException e) {
+			// expected
+			e.printStackTrace();
+		}
+		Assert.assertNull(amodel);
+	}
+
 }
