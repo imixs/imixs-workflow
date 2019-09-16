@@ -125,7 +125,8 @@ public class SchedulerService {
 	public ItemCollection loadConfiguration(String name) {
 		try {
 			// support deprecated txtname attribure
-			String sQuery = "(type:\"" + DOCUMENT_TYPE + "\" AND (name:\"" + name + "\" OR txtname:\"" + name + "\" ) )";
+			String sQuery = "(type:\"" + DOCUMENT_TYPE + "\" AND (name:\"" + name + "\" OR txtname:\"" + name
+					+ "\" ) )";
 			Collection<ItemCollection> col = documentService.find(sQuery, 1, 0);
 			// check if we found a scheduler configuration
 			if (col.size() > 0) {
@@ -159,7 +160,7 @@ public class SchedulerService {
 		// validate and migrate deprecated 'txtname' field
 		String name = configItemCollection.getItemValueString("name");
 		if (name.isEmpty()) {
-			name=configItemCollection.getItemValueString("txtname");
+			name = configItemCollection.getItemValueString("txtname");
 			configItemCollection.replaceItemValue("name", name);
 		}
 		if (name == null || name.isEmpty()) {
@@ -198,7 +199,8 @@ public class SchedulerService {
 	 * The method returns the updated configuration. The configuration will not be
 	 * saved!
 	 * 
-	 * @param configuration - scheduler configuration
+	 * @param configuration
+	 *            - scheduler configuration
 	 * @return updated configuration
 	 * @throws AccessDeniedException
 	 * @throws ParseException
@@ -306,21 +308,31 @@ public class SchedulerService {
 		logger.info("...starting Imixs Schedulers....");
 		try {
 			String sQuery = "(type:\"" + SchedulerService.DOCUMENT_TYPE + "\" )";
-			Collection<ItemCollection> col = documentService.find(sQuery, 1, 0);
+			Collection<ItemCollection> col = documentService.find(sQuery, 101, 0);
+			if (col.size() > 100) {
+				// Issue #568 - we do not support more than 100 jobs in parallel!
+				logger.severe(
+						"More than 100 waiting scheduler jobs found but a maximum of 100 jobs will be started in parallel. Please report this issue to the imixs-workflow project!");
+			}
 			// check if we found a scheduler configuration
 			for (ItemCollection schedulerConfig : col) {
 				// is timmer running?
 				if (schedulerConfig != null && schedulerConfig.getItemValueBoolean(Scheduler.ITEM_SCHEDULER_ENABLED)
-						&& findTimer(schedulerConfig.getUniqueID()) == null) {
+						) {
 					try {
-						start(schedulerConfig);
+						
+						if (findTimer(schedulerConfig.getUniqueID()) == null) {
+							start(schedulerConfig);
+						} else {
+							logger.info("...Scheduler Service " + schedulerConfig.getUniqueID() + " already running. ");
+						}
 					} catch (Exception e) {
 						logger.severe("...start of Scheduler Service " + schedulerConfig.getUniqueID() + " failed! - "
 								+ e.getMessage());
 						e.printStackTrace();
 					}
 				} else {
-					logger.info("...Scheduler Service " + schedulerConfig.getUniqueID() + " is disabled. ");
+					logger.info("...Scheduler Service " + schedulerConfig.getUniqueID() + " is not enabled. ");
 				}
 			}
 		} catch (QueryException e1) {
@@ -351,7 +363,8 @@ public class SchedulerService {
 	 * properties netxtTimeout and timeRemaining and store them into the timer
 	 * configuration.
 	 * 
-	 * @param configuration - the current scheduler configuration to be updated.
+	 * @param configuration
+	 *            - the current scheduler configuration to be updated.
 	 */
 	public void updateTimerDetails(ItemCollection configuration) {
 		if (configuration == null)
@@ -375,8 +388,6 @@ public class SchedulerService {
 		}
 	}
 
-	
-
 	/**
 	 * Creates a new log entry stored in the item _scheduler_log. The log can be
 	 * writen optional to the scheduler configuration and a workitem.
@@ -395,7 +406,7 @@ public class SchedulerService {
 		logger.info(message);
 
 	}
-	
+
 	/**
 	 * Creates a new log entry stored in the item _scheduler_log. The log can be
 	 * writen optional to the scheduler configuration and a workitem.
@@ -414,8 +425,7 @@ public class SchedulerService {
 		logger.warning(message);
 
 	}
-	
-	
+
 	/**
 	 * This method returns a n injected JobHandler by name or null if no JobHandler
 	 * with the requested class name is injected.
@@ -455,7 +465,7 @@ public class SchedulerService {
 	 * @throws QueryException
 	 */
 	@Timeout
-	protected void onTimeout(javax.ejb.Timer timer)  {
+	protected void onTimeout(javax.ejb.Timer timer) {
 		String errorMes = "";
 		// start time....
 		long lProfiler = System.currentTimeMillis();
@@ -502,7 +512,7 @@ public class SchedulerService {
 			}
 			errorMes = e.getMessage();
 			logger.severe("Scheduler '" + id + "' failed: " + errorMes);
-			
+
 			configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Error: " + errorMes);
 
 			configuration = stop(configuration, timer);
