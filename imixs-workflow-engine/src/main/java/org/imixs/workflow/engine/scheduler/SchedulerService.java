@@ -306,21 +306,31 @@ public class SchedulerService {
 		logger.info("...starting Imixs Schedulers....");
 		try {
 			String sQuery = "(type:\"" + SchedulerService.DOCUMENT_TYPE + "\" )";
-			Collection<ItemCollection> col = documentService.find(sQuery, 1, 0);
+			Collection<ItemCollection> col = documentService.find(sQuery, 101, 0);
+			if (col.size() > 100) {
+				// Issue #568 - we do not support more than 100 jobs in parallel!
+				logger.severe(
+						"More than 100 waiting scheduler jobs found but a maximum of 100 jobs will be started in parallel. Please report this issue to the imixs-workflow project!");
+			}
 			// check if we found a scheduler configuration
 			for (ItemCollection schedulerConfig : col) {
 				// is timmer running?
 				if (schedulerConfig != null && schedulerConfig.getItemValueBoolean(Scheduler.ITEM_SCHEDULER_ENABLED)
-						&& findTimer(schedulerConfig.getUniqueID()) == null) {
+						) {
 					try {
-						start(schedulerConfig);
+						
+						if (findTimer(schedulerConfig.getUniqueID()) == null) {
+							start(schedulerConfig);
+						} else {
+							logger.info("...Scheduler Service " + schedulerConfig.getUniqueID() + " already running. ");
+						}
 					} catch (Exception e) {
 						logger.severe("...start of Scheduler Service " + schedulerConfig.getUniqueID() + " failed! - "
 								+ e.getMessage());
 						e.printStackTrace();
 					}
 				} else {
-					logger.info("...Scheduler Service " + schedulerConfig.getUniqueID() + " is disabled. ");
+					logger.info("...Scheduler Service " + schedulerConfig.getUniqueID() + " is not enabled. ");
 				}
 			}
 		} catch (QueryException e1) {
