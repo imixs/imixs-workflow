@@ -220,8 +220,7 @@ public class WorkflowKernel {
 	 * This method removes a registered plugin based on its class name.
 	 * 
 	 * @param pluginClass
-	 * @throws PluginException
-	 *             if plugin not registered
+	 * @throws PluginException if plugin not registered
 	 */
 	public void unregisterPlugin(final String pluginClass) throws PluginException {
 		logger.finest("......unregisterPlugin " + pluginClass);
@@ -265,12 +264,11 @@ public class WorkflowKernel {
 	 * depends on the model definition which can define follow-up-events,
 	 * split-events and conditional events.
 	 * <p>
-	 * The method returns an updated instance of the workitem, but did not persist
-	 * the process instance. The persitance mechanisim is covered by the
-	 * WorkflowService.
+	 * The method executes all plugin and adapter classes and returns an updated
+	 * instance of the workitem. But the method did not persist the process
+	 * instance. The persitance mechanism is covered by the WorkflowService.
 	 * 
-	 * @param workitem
-	 *            the process instance to be processed.
+	 * @param workitem the process instance to be processed.
 	 * @return updated workitem
 	 * @throws PluginException,ModelException
 	 */
@@ -317,10 +315,60 @@ public class WorkflowKernel {
 			// load event...
 			ItemCollection event = loadEvent(documentResult);
 			documentResult = processEvent(documentResult, event);
-			documentResult = updateEventList(documentResult);
+			documentResult = updateEventList(documentResult, event);
 		}
 
 		return documentResult;
+	}
+
+	/**
+	 * Evaluates the next taskID for a process instance (workitem) based on the
+	 * current model definition. A Workitem must at least provide the properties
+	 * $TASKID and $EVENTID.
+	 * <p>
+	 * During the evaluation life-cycle more than one event can be evaluated. This
+	 * depends on the model definition which can define follow-up-events,
+	 * split-events and conditional events.
+	 * <p>
+	 * The method did not persist the process instance or execute any plugin or
+	 * adapter class.
+	 * 
+	 * @param workitem the process instance to be evaluated.
+	 * @return result TaskID
+	 * @throws PluginException,ModelException
+	 */
+	public int eval(final ItemCollection workitem) throws PluginException, ModelException {
+
+		// check document context
+		if (workitem == null)
+			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_WORKITEM,
+					"processing error: workitem is null");
+
+		// check $TaskID
+		if (workitem.getTaskID() <= 0)
+			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_PROCESSID,
+					"processing error: $taskID undefined (" + workitem.getTaskID() + ")");
+
+		// check $eventId
+		if (workitem.getEventID() <= 0)
+			throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_ACTIVITYID,
+					"processing error: $eventID undefined (" + workitem.getEventID() + ")");
+
+		// clone the woritem to avoid pollution of the origin workitem
+		ItemCollection workitemClone = (ItemCollection) workitem.clone();
+
+		// now evaluate all events defined by the model
+		while (workitemClone.getEventID() > 0) {
+			// load event...
+			ItemCollection event = loadEvent(workitemClone);
+			ItemCollection task = findNextTask(workitemClone, event);
+			// Update the attributes $taskID
+			workitemClone.setTaskID(Integer.valueOf(task.getItemValueInteger("numprocessid")));
+			workitemClone = updateEventList(workitemClone, event);
+		}
+
+		// return the evaluated task id
+		return workitemClone.getTaskID();
 	}
 
 	/**
@@ -339,7 +387,7 @@ public class WorkflowKernel {
 	 * @throws ModelException
 	 * @throws PluginException
 	 */
-	public ItemCollection findNextTask(ItemCollection documentContext, ItemCollection event)
+	private ItemCollection findNextTask(ItemCollection documentContext, ItemCollection event)
 			throws ModelException, PluginException {
 
 		ItemCollection itemColNextTask = null;
@@ -385,10 +433,21 @@ public class WorkflowKernel {
 	 * more valid ActivityIDs the next activiytID will be loaded into $activity.
 	 * 
 	 **/
-	private ItemCollection updateEventList(final ItemCollection documentContext) {
+	private ItemCollection updateEventList(final ItemCollection documentContext, final ItemCollection event) {
 		ItemCollection documentResult = documentContext;
+		
+		// first clear the eventID
+		documentResult.setEventID(Integer.valueOf(0));
 
-		// is $eventid already provided?
+		// test if a FollowUp event is defined for the given event...
+		String sFollowUp = event.getItemValueString("keyFollowUp");
+		int iNextActivityID = event.getItemValueInteger("numNextActivityID");
+		if ("1".equals(sFollowUp) && iNextActivityID > 0) {
+			// append the next event id.....
+			documentResult = appendActivityID(documentResult, iNextActivityID);
+		}
+
+		// evaluate is $eventid already provided?
 		if ((documentContext.getEventID() <= 0)) {
 			// no $eventID provided, so we test for property $ActivityIDList
 			List<?> vActivityList = documentContext.getItemValue(ACTIVITYIDLIST);
@@ -502,16 +561,7 @@ public class WorkflowKernel {
 		if (!"".equals(sType)) {
 			documentResult.replaceItemValue(TYPE, sType);
 		}
-
-		// clear ActivityID
-		documentResult.setEventID(Integer.valueOf(0));
-
-		// test if a FollowUp event is defined...
-		String sFollowUp = event.getItemValueString("keyFollowUp");
-		int iNextActivityID = event.getItemValueInteger("numNextActivityID");
-		if ("1".equals(sFollowUp) && iNextActivityID > 0) {
-			documentResult = appendActivityID(documentResult, iNextActivityID);
-		}
+		
 
 		return documentResult;
 	}
@@ -847,8 +897,7 @@ public class WorkflowKernel {
 	 * The new property $UniqueIDVersions will be added to the sourceWorktiem which
 	 * points to the id of the new version.
 	 * 
-	 * @param sourceItemCollection
-	 *            the ItemCollection which should be versioned
+	 * @param sourceItemCollection the ItemCollection which should be versioned
 	 * @return new version of the source ItemCollection
 	 * 
 	 * @throws PluginException

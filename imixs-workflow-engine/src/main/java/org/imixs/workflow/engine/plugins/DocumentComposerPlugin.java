@@ -38,8 +38,6 @@ import javax.xml.bind.Marshaller;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowContext;
-import org.imixs.workflow.engine.plugins.AbstractPlugin;
-import org.imixs.workflow.engine.plugins.AccessPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.xml.XMLDocument;
@@ -86,9 +84,10 @@ public class DocumentComposerPlugin extends AbstractPlugin {
 		// get next process entity
 		ItemCollection itemColNextProcess = null;
 		try {
-			itemColNextProcess = this.getWorkflowService().evalNextTask(documentContext, documentActivity);
+			//itemColNextProcess = this.getWorkflowService().evalNextTask(documentContext, documentActivity);
+			itemColNextProcess = this.getWorkflowService().evalNextTask(documentContext);
 		} catch (ModelException e) {
-			throw new PluginException(AccessPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
+			throw new PluginException(DocumentComposerPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
 		}
 
 		ItemCollection evalItemCollection = this.getWorkflowService().evalWorkflowResult(documentActivity,

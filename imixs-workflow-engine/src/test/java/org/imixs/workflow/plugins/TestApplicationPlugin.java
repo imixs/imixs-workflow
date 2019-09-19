@@ -50,7 +50,7 @@ public class TestApplicationPlugin  {
 		}
 
 		// prepare data
-		documentContext = new ItemCollection();
+		documentContext = new ItemCollection().model("1.0.0").task(100);
 		logger.info("[TestAccessPlugin] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
@@ -58,7 +58,6 @@ public class TestApplicationPlugin  {
 		documentContext.replaceItemValue("namTeam", list);
 
 		documentContext.replaceItemValue("namCreator", "ronny");
-		documentContext.replaceItemValue("$modelversion", "1.0.0");
 	}
 
 	/**
@@ -70,6 +69,7 @@ public class TestApplicationPlugin  {
 	public void simpleTest() throws ModelException {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
+		documentContext.setEventID(10);
 		try {
 			applicationPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {

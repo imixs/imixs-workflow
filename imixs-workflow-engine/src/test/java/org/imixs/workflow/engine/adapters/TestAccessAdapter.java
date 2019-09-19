@@ -48,12 +48,8 @@ public class TestAccessAdapter {
 		participantAdapter.workflowService = workflowMockEnvironment.getWorkflowService();
 		
 		// prepare data
-		documentContext = new ItemCollection();
-		documentContext.replaceItemValue("$processid", 100);
-		documentContext.replaceItemValue("$modelversion", "1.0.0");
+		documentContext = new ItemCollection().model("1.0.0").task(100);
 		
-		
-
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -61,6 +57,7 @@ public class TestAccessAdapter {
 	public void simpleTest() throws ModelException {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
+		documentContext.setEventID(10);
 		try {
 			participantAdapter.execute(documentContext, documentActivity);
 		} catch (AdapterException e) {
@@ -79,7 +76,7 @@ public class TestAccessAdapter {
 	@Test
 	public void testNoUpdate() throws ModelException {
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
-
+		documentContext.setEventID(20);
 		try {
 			participantAdapter.execute(documentContext, documentActivity);
 		} catch (AdapterException e) {
@@ -97,7 +94,7 @@ public class TestAccessAdapter {
 	public void fieldMappingTest() throws ModelException {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
-
+		documentContext.setEventID(10);
 		logger.info("[TestAccessPlugin] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
@@ -133,6 +130,7 @@ public class TestAccessAdapter {
 	public void staticUserGroupMappingTest() throws ModelException {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 30);
+		documentContext.setEventID(30);
 		try {
 			participantAdapter.execute(documentContext, documentActivity);
 		} catch (AdapterException e) {
@@ -153,9 +151,8 @@ public class TestAccessAdapter {
 	public void fallbackTest() throws ModelException {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
-
 		documentActivity.replaceItemValue("keyaccessmode", "0");
-
+		documentContext.setEventID(10);
 		try {
 			participantAdapter.execute(documentContext, documentActivity);
 		} catch (AdapterException e) {

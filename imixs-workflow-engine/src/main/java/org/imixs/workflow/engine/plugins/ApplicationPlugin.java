@@ -99,7 +99,8 @@ public class ApplicationPlugin extends AbstractPlugin {
 
 		// get next process entity
 		try {
-			itemColNextProcess = this.getWorkflowService().evalNextTask(adocumentContext, adocumentActivity);
+			//itemColNextProcess = this.getWorkflowService().evalNextTask(adocumentContext, adocumentActivity);
+			itemColNextProcess = this.getWorkflowService().evalNextTask(adocumentContext);
 		} catch (ModelException e) {
 			throw new PluginException(ApplicationPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
 		}

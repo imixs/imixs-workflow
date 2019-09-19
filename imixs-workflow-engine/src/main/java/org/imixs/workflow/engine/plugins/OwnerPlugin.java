@@ -99,7 +99,8 @@ public class OwnerPlugin extends AbstractPlugin {
 
 		// get next process entity
 		try {
-			documentNextProcessEntity = this.getWorkflowService().evalNextTask(adocumentContext, adocumentActivity);
+			//documentNextProcessEntity = this.getWorkflowService().evalNextTask(adocumentContext, adocumentActivity);
+			documentNextProcessEntity = this.getWorkflowService().evalNextTask(adocumentContext);
 		} catch (ModelException e) {
 			throw new PluginException(OwnerPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
 		}

@@ -100,7 +100,8 @@ public class AccessAdapter implements GenericAdapter, Serializable {
 		ItemCollection nextTask = null;
 		// get next process entity
 		try {
-			nextTask = workflowService.evalNextTask(document, event);
+			//nextTask = workflowService.evalNextTask(document, event);
+			nextTask = workflowService.evalNextTask(document);
 			// in case the event is connected to a followup activity the
 			// nextProcess can be null!
 

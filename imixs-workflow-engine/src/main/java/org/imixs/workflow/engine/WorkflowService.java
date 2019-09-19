@@ -1081,25 +1081,28 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	/**
-	 * This method evaluates the next task based on a Model Event element. If the
-	 * event did not point to a new task, the current task will be returned.
-	 * 
-	 * The method supports the 'conditional-events' and 'split-events'.
-	 * 
-	 * A conditional-event contains the attribute 'keyExclusiveConditions' defining
-	 * conditional targets (tasks) or adds conditional follow up events
-	 * 
-	 * A split-event contains the attribute 'keySplitConditions' defining the target
-	 * for the current master version (condition evaluates to 'true')
+	 * The method evaluates the next task for a process instance (workitem) based on the
+	 * current model definition. A Workitem must at least provide the properties
+	 * $TASKID and $EVENTID.
+	 * <p>
+	 * During the evaluation life-cycle more than one events can be evaluated. This
+	 * depends on the model definition which can define follow-up-events,
+	 * split-events and conditional events.
+	 * <p>
+	 * The method did not persist the process instance or execute any plugin or adapter classes.
 	 * 
 	 * @return Task entity
 	 * @throws PluginException
 	 * @throws ModelException
 	 */
-	public ItemCollection evalNextTask(ItemCollection documentContext, ItemCollection event)
+	public ItemCollection evalNextTask(ItemCollection documentContext)
 			throws PluginException, ModelException {
 		WorkflowKernel workflowkernel = new WorkflowKernel(this);
-		return workflowkernel.findNextTask(documentContext, event);
+		
+		int taskID=workflowkernel.eval(documentContext);
+		ItemCollection task=this.getModelManager().getModel(documentContext.getModelVersion()).getTask(taskID);
+		return task;
+		//return workflowkernel.findNextTask(documentContext, event);
 	}
 
 	/**

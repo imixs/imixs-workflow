@@ -5,7 +5,6 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
@@ -38,10 +37,8 @@ public class TestOwnerPlugin  {
 
 		workflowMockEnvironment=new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestOwnerPlugin.bpmn");
-		
 		workflowMockEnvironment.setup();
 		
-
 		ownerPlugin = new OwnerPlugin();
 		try {
 			ownerPlugin.init(workflowMockEnvironment.getWorkflowService());
@@ -51,16 +48,13 @@ public class TestOwnerPlugin  {
 		}
 
 		// prepare data
-		documentContext = new ItemCollection();
+		documentContext = new ItemCollection().model( WorkflowMockEnvironment.DEFAULT_MODEL_VERSION).task(100).event(10);
 		logger.info("[TestOwnerPlugin] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
 		list.add("anna");
 		documentContext.replaceItemValue("namTeam", list);
-
 		documentContext.replaceItemValue("namCreator", "ronny");
-		
-		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -177,7 +171,5 @@ public class TestOwnerPlugin  {
 
 		Assert.assertEquals(0, writeAccess.size());
 	}
-
-	
 
 }
