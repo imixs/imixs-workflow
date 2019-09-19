@@ -100,14 +100,13 @@ public class SetupService {
 
 	private static Logger logger = Logger.getLogger(SetupService.class.getName());
 
-	// inject evnvironment / property for the model default data.
-//	@Inject
-//	@ConfigProperty(name = "MODEL_DEFAULT_DATA", defaultValue = "")
-//	private String envModelDefaultData;
-
 	@Inject
 	@ConfigProperty(name = "model.default.data", defaultValue = "")
 	private String modelDefaultData;
+
+	@Inject
+	@ConfigProperty(name = "model.default.data.overwrite", defaultValue = "false")
+	private boolean modelDefaultDataOverwrite;
 
 	@Inject
 	private DocumentService documentService;
@@ -146,7 +145,7 @@ public class SetupService {
 
 		// first we scan for default models
 		List<String> models = modelService.getVersions();
-		if (models.isEmpty()) {
+		if (models.isEmpty() || modelDefaultDataOverwrite==true) {
 			scanDefaultModels();
 		} else {
 			for (String model: models) {
@@ -236,10 +235,7 @@ public class SetupService {
 					return; // MODEL_INITIALIZED;
 				} catch (IOException | ModelException | ParseException | ParserConfigurationException
 						| SAXException e) {
-					logger.severe(
-							"unable to load model configuration - please check imixs.properties file for key 'setup.defaultModel'");
-					throw new RuntimeException(
-							"loadDefaultModels - unable to load model configuration - please check imixs.properties file for key 'setup.defaultModel'");
+					throw new RuntimeException("Failed to load model configuration: " + e.getMessage() + " check 'model.default.data'",e);
 				} finally {
 					if (inputStream != null) {
 						try {

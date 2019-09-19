@@ -16,6 +16,11 @@ You can also define the Default Model data by a environment variable. In this ca
 
 See also the section [Imixs Config Source ](./configsource.html)
 
+With the property 'model.default.data.overwrite' it is possible to overload existing model information:
+
+	model.default.data.overwrite=true
+
+
 ## Default Instance Data
 
 The SetupService can also be used to import any xml entity data stream. This mode can be used to import data like configuration data.
