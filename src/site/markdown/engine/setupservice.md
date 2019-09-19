@@ -20,6 +20,8 @@ With the property 'model.default.data.overwrite' it is possible to overload exis
 
 	model.default.data.overwrite=true
 
+If the property is set to 'false' (default value) then a default model file will only be imported in case no models are found in the database. 
+
 
 ## Default Instance Data
 
