@@ -33,7 +33,7 @@ You will find more information how to query a result set in the section [Full-Te
 
 The Imixs Search Index provides a feature to store item values into the search index. This is called a 'Document Stub'. Document Stubs can be fetched much faster from the search index like the full document. The items to be stored in the index can be defined by the property 
 	
-	lucence.indexFieldListStore
+	index.fields.store
 	
 To fetch the Document Stub form the serach index use the method findStubs:
 
@@ -53,26 +53,26 @@ A custom configuration for the _Lucene Search Index_ can be provided in the file
 	# Search Index Direcotry 
 	lucence.indexDir=${imixs-office.IndexDir}
 	# Fields to be added into the searchindex
-	lucence.fulltextFieldList=txtsearchstring,txtSubject,txtname,txtEmail,txtWorkflowAbstract,txtWorkflowSummary
-	lucence.indexFieldListAnalyze=
-	lucence.indexFieldListNoAnalyze=datDate,txtWorkflowGroup,txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername
+	index.fields=txtsearchstring,txtSubject,txtname,txtEmail,txtWorkflowAbstract,txtWorkflowSummary
+	index.fields.analyze=
+	index.fields.noanalyze=datDate,txtWorkflowGroup,txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername
 	lucene.defaultOperator=AND
 	lucene.splitOnWhitespace=true	
 
 
 
  
-### FulltextFieldList
-The property 'lucene.fulltextFieldList' defines a comma separated list of fields which will be indexed by the LucenePlugin. The content of these fields will be stored into the lucene field name 'content'. The values will be analyzed  with the lucene standard analyzer.
+### index.fields
+The property 'index.fields' defines a comma separated list of fields which will be indexed by the LucenePlugin. The content of these fields will be stored into the lucene field name 'content'. The values will be analyzed  with the lucene standard analyzer.
  
-### IndexFieldListAnalyze
-The property 'lucene.indexFieldListAnalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will be analyzed by the  lucene standard analyzer. 
+### index.fields.analyze
+The property 'index.fields.analyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will be analyzed by the  lucene standard analyzer. 
  
-### IndexFieldListNoAnalyze
-The property 'lucene.indexFieldListNoAnalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here.
+### index.fields.noanalyze
+The property 'index.fields.noanalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here.
  
-### IndexFieldListStore 
-The property 'lucence.indexFieldListStore' defines a comma separated list of fields to be stored into the search index. This kind of data can be requested by the method findStubs(). This finder method is faster but did not load the whole document. 
+### index.fields.store
+The property 'index.fields.store' defines a comma separated list of fields to be stored into the search index. This kind of data can be requested by the method findStubs(). This finder method is faster but did not load the whole document. 
   
  
  
