@@ -35,13 +35,10 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.QueryException;
 
 /**
@@ -60,9 +57,6 @@ public class ViewHandler implements Serializable {
 	private Map<Integer, List<ItemCollection>> data = null;
 
 	private static Logger logger = Logger.getLogger(ViewHandler.class.getName());
-
-	@Inject
-	private DocumentService documentService;
 
 	public ViewHandler() {
 		super();
@@ -114,10 +108,11 @@ public class ViewHandler implements Serializable {
 		if (viewController == null) {
 			return new ArrayList<ItemCollection>();
 		}
-
-		if (viewController.getQuery() == null || viewController.getQuery().isEmpty()) {
+		
+		String _query=viewController.getQuery();
+		if (_query == null || _query.isEmpty()) {
 			// no query defined
-			logger.finest("......ViewController - now query defined!");
+			logger.finest("......ViewController - no query defined!");
 			return new ArrayList<ItemCollection>();
 		}
 
@@ -144,4 +139,7 @@ public class ViewHandler implements Serializable {
 		String h = viewController.getQuery() + viewController.getPageIndex() + viewController.getPageSize();
 		return h.hashCode();
 	}
+	
+	
+	
 }

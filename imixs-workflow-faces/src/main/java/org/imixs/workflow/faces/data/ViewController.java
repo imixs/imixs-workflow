@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -194,22 +193,24 @@ public class ViewController implements Serializable {
 	 */
 	public List<ItemCollection> loadData() throws QueryException {
 
-		if (getQuery() == null || getQuery().isEmpty()) {
+		String _query=getQuery();
+		
+		if (_query == null || _query.isEmpty()) {
 			// no query defined
 			logger.warning("no query defined!");
 			return new ArrayList<ItemCollection>();
 		}
 
 		// load data
-		logger.finest("...... load data - query=" + getQuery() + " pageIndex=" + getPageIndex());
+		logger.finest("...... load data - query=" + _query + " pageIndex=" + getPageIndex());
 		
 		List<ItemCollection> result = null;
 		if (this.isLoadStubs()) {
-			result = documentService.findStubs(getQuery(), getPageSize(), getPageIndex(), getSortBy(),
+			result = documentService.findStubs(_query, getPageSize(), getPageIndex(), getSortBy(),
 					isSortReverse());
 
 		} else {
-			result = documentService.find(getQuery(), getPageSize(), getPageIndex(), getSortBy(),
+			result = documentService.find(_query, getPageSize(), getPageIndex(), getSortBy(),
 					isSortReverse());
 
 		}
@@ -221,7 +222,7 @@ public class ViewController implements Serializable {
 		} else {
 			// look ahead if we have more entries...
 			int iAhead = (getPageSize() * (getPageIndex() + 1)) + 1;
-			if (documentService.count(getQuery(), iAhead) < iAhead) {
+			if (documentService.count(_query, iAhead) < iAhead) {
 				// there is no more data
 				setEndOfList(true);
 			} else {
