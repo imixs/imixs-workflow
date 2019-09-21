@@ -160,7 +160,7 @@ public class SolrIndexService {
 			updateSchema(existingSchema);
 		} catch (RestAPIException e) {
 			// no schema found
-			logger.severe("...no solr core '" + core + "' found - verify the solr instance!");
+			logger.severe("...no solr core '" + core + "' found - " + e.getMessage() + ": verify the solr instance!");
 			throw e;
 		}
 
