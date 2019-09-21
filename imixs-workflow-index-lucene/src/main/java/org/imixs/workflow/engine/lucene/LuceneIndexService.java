@@ -91,8 +91,6 @@ public class LuceneIndexService {
 
 	private SimpleDateFormat luceneDateFormat=new SimpleDateFormat("yyyyMMddHHmmss");
 
-
-	
 	@Inject
 	@ConfigProperty(name = "lucence.indexDir", defaultValue = DEFAULT_INDEX_DIRECTORY)
 	private String luceneIndexDir;

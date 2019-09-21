@@ -58,7 +58,6 @@ import org.apache.lucene.search.TopFieldCollector;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
@@ -97,14 +96,6 @@ public class LuceneSearchService implements SearchService {
 																// total
 	// number of hits
 	public static final int DEFAULT_PAGE_SIZE = 100; // default docs in one page
-
-	@Inject
-	@ConfigProperty(name = "index.defaultOperator", defaultValue = "AND")
-	private String luceneDefaultOperator;
-
-	@Inject
-	@ConfigProperty(name = "index.splitOnWhitespace", defaultValue = "true")
-	private boolean luceneSplitOnWhitespace;
 
 	@Inject
 	private LuceneIndexService luceneIndexService;
@@ -184,7 +175,7 @@ public class LuceneSearchService implements SearchService {
 
 		try {
 			IndexSearcher searcher = createIndexSearcher();
-			QueryParser parser = createQueryParser();
+			QueryParser parser = createQueryParser(defaultOperator);
 
 			parser.setAllowLeadingWildcard(true);
 
@@ -327,7 +318,7 @@ public class LuceneSearchService implements SearchService {
 
 		try {
 			IndexSearcher searcher = createIndexSearcher();
-			QueryParser parser = createQueryParser();
+			QueryParser parser = createQueryParser(defaultOperator);
 
 			parser.setAllowLeadingWildcard(true);
 
@@ -432,12 +423,12 @@ public class LuceneSearchService implements SearchService {
 	 * @param prop
 	 * @return
 	 */
-	QueryParser createQueryParser() {
+	QueryParser createQueryParser(DefaultOperator defaultOperator) {
 		// use the keywordAnalyzer for searching a search term.
 		QueryParser parser = new QueryParser("content", new KeywordAnalyzer());
 		// set default operator to 'AND' if not defined by property setting
 		// String defaultOperator = prop.getProperty("lucene.defaultOperator");
-		if (luceneDefaultOperator != null && "OR".equals(luceneDefaultOperator.toUpperCase())) {
+		if (defaultOperator == DefaultOperator.OR) {
 			logger.finest("......DefaultOperator: OR");
 			parser.setDefaultOperator(org.apache.lucene.queryparser.classic.QueryParser.Operator.OR);
 		} else {
@@ -446,9 +437,8 @@ public class LuceneSearchService implements SearchService {
 		}
 
 		// set setSplitOnWhitespace (issue #438)
-		logger.finest("......SplitOnWhitespace: " + luceneSplitOnWhitespace);
-		parser.setSplitOnWhitespace(luceneSplitOnWhitespace);
-
+		// we do no longer support a config parameter here!
+		parser.setSplitOnWhitespace(true);
 		return parser;
 	}
 

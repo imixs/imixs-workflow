@@ -58,8 +58,10 @@ import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.engine.index.DefaultOperator;
 import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.index.SortOrder;
 import org.imixs.workflow.engine.index.UpdateService;
@@ -181,6 +183,11 @@ public class DocumentService {
 
 	@Inject
 	protected Event<UserGroupEvent> userGroupEvents;
+	
+	@Inject
+	@ConfigProperty(name = "index.defaultOperator", defaultValue = "AND")
+	private String indexDefaultOperator;
+
 
 	/**
 	 * Returns a comma separated list of additional Access-Roles defined for this
@@ -804,8 +811,16 @@ public class DocumentService {
 
 		// flush eventlog (see issue #411)
 		indexUpdateService.updateIndex();
-				
-		return indexSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null,false);
+		
+		// evaluate default index operator
+		DefaultOperator defaultOperator=null;
+		
+		if (indexDefaultOperator != null && "OR".equals(indexDefaultOperator.toUpperCase())) {
+			defaultOperator=DefaultOperator.OR;
+		} else {
+			defaultOperator=DefaultOperator.AND;
+		}
+		return indexSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, defaultOperator, false);
 
 	}
 
@@ -856,8 +871,16 @@ public class DocumentService {
 		// flush eventlog (see issue #411)
 		indexUpdateService.updateIndex();
 		
+		// evaluate default index operator
+		DefaultOperator defaultOperator=null;;
+		if (indexDefaultOperator != null && "OR".equals(indexDefaultOperator.toUpperCase())) {
+			defaultOperator=DefaultOperator.OR;
+		} else {
+			defaultOperator=DefaultOperator.AND;
+		}
+				
 		// find stubs only!
-		return indexSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, null, true);
+		return indexSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, defaultOperator, true);
 
 	}
 
