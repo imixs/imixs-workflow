@@ -155,7 +155,7 @@ public class RestClient {
 	 * The parameter 'contnetType' can be used to request a specific media type.
 	 * 
 	 * @param uri
-	 *            - Rest Endpoint RUI
+	 *            - Rest Endpoint URI
 	 * @param dataString
 	 *            - content
 	 * @param contentType
@@ -176,7 +176,7 @@ public class RestClient {
 	 * accept specific media types.
 	 * 
 	 * @param uri
-	 *            - Rest Endpoint RUI
+	 *            - Rest Endpoint URI
 	 * @param dataString
 	 *            - content
 	 * @param contentType
@@ -253,24 +253,58 @@ public class RestClient {
 		}
 	}
 
+	
+
 	/**
 	 * Posts a byte array to a Rest Service URI Endpoint. This method can be used to
 	 * simulate different post scenarios.
 	 * <p>
-	 * The parameter 'acceptType' can be used to request and accept specific media
-	 * types.
+	 * The parameter 'contnetType' and 'acceptType' can be used to request and
+	 * accept specific media types.
 	 * 
 	 * @param uri
-	 *            - Rest Endpoint RUI
+	 *            - Rest Endpoint URI
 	 * @param data
 	 *            - content
+	 * @param contentType
+	 *            - request MediaType
 	 * @param acceptType
 	 *            - accept MediaType
 	 * @return content
 	 * @throws RestAPIException 
 	 */
-	public String post(String uri, byte[] data, String acceptType) throws RestAPIException{
+	public String post(String uri, byte[] data, final String _contentType) throws RestAPIException{
+		return post(uri, data, _contentType, null);
+	}
+	/**
+	 * Posts a byte array to a Rest Service URI Endpoint. This method can be used to
+	 * simulate different post scenarios.
+	 * <p>
+	 * The parameter 'contnetType' and 'acceptType' can be used to request and
+	 * accept specific media types.
+	 * 
+	 * @param uri
+	 *            - Rest Endpoint URI
+	 * @param data
+	 *            - content
+	 * @param contentType
+	 *            - request MediaType
+	 * @param acceptType
+	 *            - accept MediaType
+	 * @return content
+	 * @throws RestAPIException 
+	 */
+	public String post(String uri, byte[] data, final String _contentType, String acceptType) throws RestAPIException{
+		
+		String contentType = _contentType;
 
+		if (contentType == null || contentType.isEmpty()) {
+			contentType = "application/xml";
+		}
+		if (acceptType == null || acceptType.isEmpty()) {
+			acceptType = contentType;
+		}
+		
 		HttpURLConnection urlConnection = null;
 		try {
 			serviceEndpoint = uri;
@@ -281,10 +315,12 @@ public class RestClient {
 			urlConnection.setDoOutput(true);
 			urlConnection.setDoInput(true);
 			urlConnection.setAllowUserInteraction(true);
-
+			
 			/** * HEADER ** */
+			urlConnection.setRequestProperty("Content-Type", contentType + "; charset=" + encoding);
 			urlConnection.setRequestProperty("Accept-Charset", encoding);
 			urlConnection.setRequestProperty("Accept", acceptType);
+			
 			if (requestProperties != null) {
 				for (Map.Entry<String, String> entry : requestProperties.entrySet()) {
 					urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
