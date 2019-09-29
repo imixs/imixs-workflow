@@ -135,10 +135,10 @@ public class SetupService {
 	@PostConstruct
 	public void startup() {
 		
-		logger.info("   ____      _             _      __         __    _____ ");
-		logger.info("  /  _/_ _  (_)_ __ ______| | /| / /__  ____/ /__ / _/ /__ _    __");
-		logger.info(" _/ //  ' \\/ /\\ \\ /(_-<___/ |/ |/ / _ \\/ __/  '_// _/ / _ \\ |/|/ /");
-		logger.info("/___/_/_/_/_//_\\_\\/___/   |__/|__/\\___/_/ /_/\\_\\/_//_/\\___/__,__/ 5.1");
+		logger.info("  ___");
+		logger.info(" |_ _|_ __ (_)_ __ ___      Workflow ");
+		logger.info("  | || '  \\| \\ \\ /(_-<   Engine ");
+		logger.info(" |___|_|_|_|_/_\\_\\/__/    V 5.1");
 		logger.info("");	
 		
 		logger.info("...initalizing models...");
