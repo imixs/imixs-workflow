@@ -89,7 +89,7 @@ public class WorkflowRestService {
 
 	@Inject
 	private WorkflowService workflowService;
-	
+
 	@Inject
 	private DocumentRestService documentRestService;
 
@@ -548,6 +548,7 @@ public class WorkflowRestService {
 	 */
 	@POST
 	@Path("/workitem")
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML })
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response postJSONWorkitem(InputStream requestBodyStream, @QueryParam("error") String error,
 			@QueryParam("encoding") String encoding) {
@@ -872,11 +873,14 @@ public class WorkflowRestService {
 
 		// return workitem
 		try {
-			if (workitem.hasItem("$error_code"))
+			if (workitem.hasItem("$error_code")) {
+				logger.severe(workitem.getItemValueString("$error_code") + ": "
+						+ workitem.getItemValueString("$error_message"));
 				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
 						.status(Response.Status.NOT_ACCEPTABLE).build();
-			else
+			} else {
 				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem)).build();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
@@ -909,7 +913,8 @@ public class WorkflowRestService {
 		}
 
 		if (pe instanceof WorkflowException) {
-			String message = ((WorkflowException) pe).getErrorCode();
+			// String message = ((WorkflowException) pe).getErrorCode();
+			String message = pe.getMessage();
 
 			// parse message for params
 			if (pe instanceof PluginException) {

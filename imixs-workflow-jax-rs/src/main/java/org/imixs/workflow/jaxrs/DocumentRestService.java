@@ -380,12 +380,15 @@ public class DocumentRestService {
 
 		// return workitem
 		try {
-			if (workitem.hasItem("$error_code"))
+			if (workitem.hasItem("$error_code")) {
+				logger.severe(workitem.getItemValueString("$error_code")+": " +workitem.getItemValueString("$error_message") );
 				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem), MediaType.APPLICATION_XML)
 						.status(Response.Status.NOT_ACCEPTABLE).build();
-			else
+			} else {
 				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem), MediaType.APPLICATION_XML)
 						.build();
+			}			
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
