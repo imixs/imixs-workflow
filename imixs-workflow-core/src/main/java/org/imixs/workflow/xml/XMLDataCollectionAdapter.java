@@ -180,7 +180,7 @@ public class XMLDataCollectionAdapter {
 
 		List<ItemCollection> resultList = new ArrayList<ItemCollection>();
 
-		if (byteInput == null) {
+		if (byteInput == null || byteInput.length==0) {
 			return null;
 		}
 
