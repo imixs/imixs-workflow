@@ -29,7 +29,6 @@ package org.imixs.workflow.faces.util;
 
 import java.util.List;
 
-import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;

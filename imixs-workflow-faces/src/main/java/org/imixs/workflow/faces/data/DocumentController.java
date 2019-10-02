@@ -30,7 +30,6 @@ package org.imixs.workflow.faces.data;
 import java.io.Serializable;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
 import javax.enterprise.context.ConversationScoped;
 import javax.enterprise.event.Event;
 import javax.faces.context.ExternalContext;

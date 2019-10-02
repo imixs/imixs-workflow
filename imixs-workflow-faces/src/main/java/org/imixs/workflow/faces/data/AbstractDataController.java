@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
 import javax.enterprise.context.Conversation;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;

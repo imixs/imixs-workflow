@@ -52,11 +52,12 @@ import javax.faces.convert.ConverterException;
  *   beschrieben in Kap. 20.4 in "Kito Mann - JSF in Action")
  */
 
+@SuppressWarnings("rawtypes")
 public class VectorIntegerConverter implements Converter {
 
 	String separator = "\n";
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	public Object getAsObject(FacesContext context, UIComponent component,
 			String value) throws ConverterException {
 
@@ -73,7 +74,6 @@ public class VectorIntegerConverter implements Converter {
 
 	}
 
-	@SuppressWarnings("rawtypes")
 	public String getAsString(FacesContext context, UIComponent component,
 			Object value) throws ConverterException {
 

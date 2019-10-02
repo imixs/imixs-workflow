@@ -33,6 +33,7 @@ public class ViewExpiredExceptionHandler extends
 
 	private ExceptionHandler wrapped;
 
+	@SuppressWarnings("deprecation")
 	public ViewExpiredExceptionHandler(ExceptionHandler wrapped) {
 		this.wrapped = wrapped;
 	}
