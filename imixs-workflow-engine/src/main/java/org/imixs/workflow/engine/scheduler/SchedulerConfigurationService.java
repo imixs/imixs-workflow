@@ -27,7 +27,6 @@ import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
-import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
