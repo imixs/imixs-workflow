@@ -86,7 +86,7 @@ public class EventLogRestService {
 	@GET
 	@Path("/{topic}")
 	public XMLDataCollection getEventLogEntriesByTopic(@PathParam("topic") String topic,
-			@DefaultValue("99") @QueryParam("pageSize") int maxCount) {
+			@DefaultValue("99") @QueryParam("maxCount") int maxCount) {
 
 		logger.info("......get eventLogEntry by topic: " + topic);
 		// we split the topic by , if multiple topics are provided

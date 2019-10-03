@@ -14,6 +14,7 @@ The different resources provided by Imixs-Workflow are divided in the following 
 | [/report/](./reportservice.html)     | The Report resource provides resources and methods to create or execute a report based on a report definition|
 | [/documents/](./documentservice.html)     | This resource provides methods to query documents managed by the DocumentService EJB |
 | [/adminp/](./adminp.html)     | This resource provides methods to create and monitor adminP jobs managed by the AdminPService EJB |
+| [/eventlog/](./eventlogservice.html)     | This resource provides methods to fetch event log entries |
 
  
 <strong>Note:</strong> The root context of the REST Service is defined by the web application (web.xml) containing the REST Service. The default root context is "/api/".
