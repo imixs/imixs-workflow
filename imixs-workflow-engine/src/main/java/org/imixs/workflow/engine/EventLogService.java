@@ -77,7 +77,7 @@ public class EventLogService {
 	 * @return - generated event log entry
 	 */
 	public EventLog createEvent(String topic, String refID) {
-		return createEvent(topic,refID,null);
+		return createEvent(topic, refID, null);
 	}
 
 	/**
@@ -182,7 +182,7 @@ public class EventLogService {
 	 * @param eventLog
 	 */
 	public void removeEvent(final EventLog _eventLog) {
-		EventLog eventLog=_eventLog;
+		EventLog eventLog = _eventLog;
 		if (eventLog != null && !manager.contains(eventLog)) {
 			// entity is not atached - so lookup the entity....
 			eventLog = manager.find(EventLog.class, eventLog.getId());
@@ -195,5 +195,42 @@ public class EventLogService {
 				logger.finest(e.getMessage());
 			}
 		}
+	}
+
+	
+	/**
+	 * Deletes an existing eventLog by its id. The method catches
+	 * javax.persistence.OptimisticLockException as this may occur during parallel
+	 * requests.
+	 * 
+	 * @param eventLog
+	 */
+	public void removeEvent(final String id) {
+		EventLog eventLog = null;
+		// lookup the entity....
+		eventLog = manager.find(EventLog.class, id);
+		
+		if (eventLog != null) {
+			try {
+				manager.remove(eventLog);
+			} catch (javax.persistence.OptimisticLockException e) {
+				// no todo - can occure during parallel requests
+				logger.finest(e.getMessage());
+			}
+		}
+	}
+	
+	
+	/**
+	 * Returns an detached event log entry by its ID.
+	 * 
+	 * @param id
+	 *            - id of the eventLog Entry
+	 * @return detached eventLog entry or null if not found
+	 */
+	public EventLog getEvent(String id) {
+		EventLog eventLog = manager.find(EventLog.class, id);
+		manager.detach(eventLog);
+		return eventLog;
 	}
 }
