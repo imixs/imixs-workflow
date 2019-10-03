@@ -50,8 +50,6 @@ import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
-import org.imixs.workflow.xml.XMLDocument;
-import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 /**
  * The EventLogRestService supports methods to access the event log entries by
@@ -101,10 +99,7 @@ public class EventLogRestService {
 			itemColEvent.setItemValue("ref", eventLog.getRef());
 			itemColEvent.setItemValue("created", eventLog.getCreated());
 			itemColEvent.setItemValue("topic", eventLog.getTopic());
-
-			ItemCollection data = new ItemCollection(eventLog.getData());
-			XMLDocument xmlData = XMLDocumentAdapter.getDocument(data);
-			itemColEvent.setItemValue("data", xmlData);
+			itemColEvent.setItemValue("data", eventLog.getData());
 
 			result.add(itemColEvent);
 		}
