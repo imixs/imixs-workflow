@@ -1,7 +1,7 @@
 # The EventLogService 
  
-The EventLogService is used to create an event log within a transaction. In this way, EventLog entries 
-written and processed in a an asynchronous transactional way. For example the LuceneUpdateService uses an event log to update the index only if a transaction was successful completed. This is also known as the 'Change Data Capture' design pattern.
+The EventLogService can be used to create  event log entries within a running transaction.
+EventLog entries can be processed by a client in a an asynchronous and transactional way. Only in case the transaction from the source event was committed successfully, the event log entry can be read by a client. For example the LuceneUpdateService uses an event log to update the index only if a transaction was successful completed. This is also known as the 'Change Data Capture' design pattern.
 
 ## Change Data Capture (CDC)
 An event that occurs during an update or a processing function within a transaction becomes a fact when the transaction completes successfully. The EventLogService can be used to create this kind of "Change Data Capture" events. 
