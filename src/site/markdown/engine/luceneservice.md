@@ -203,7 +203,7 @@ Apache Solr provides a lot of flexibility in configuration and offers additional
 
 There is a set of optional properties which can be set to access the solr instance: 
 
- - _solr.server_ - solr host (default http://solr:8983);
+ - _solr.api_ - solr api endpoint (default host=http://solr:8983);
  - _solr.core_ - the solr core (default 'imixs-workflow')
  - _solr.configset_ - an optional solr config set (default set is '_default')
  - _solr.user_ - optional user id to login 
@@ -217,7 +217,7 @@ The optional parameter can be set together with the  the index schema configurat
 	index.fields.analyze=
 	index.fields.noanalyze=datDate,txtWorkflowGroup,txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername	
 	# Solr configuration
-	solr.server=http://my-solr-host:8983
+	solr.api=http://my-solr-host:8983
 
 
 

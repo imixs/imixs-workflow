@@ -93,8 +93,8 @@ public class SolrIndexService {
 	private EntityManager manager;
 
 	@Inject
-	@ConfigProperty(name = "solr.server", defaultValue = "http://solr:8983")
-	private String host;
+	@ConfigProperty(name = "solr.api", defaultValue = "http://solr:8983")
+	private String api;
 
 	@Inject
 	@ConfigProperty(name = "solr.core", defaultValue = "imixs-workflow")
@@ -131,7 +131,7 @@ public class SolrIndexService {
 	@PostConstruct
 	public void init() {
 		// create rest client
-		restClient = new RestClient(host);
+		restClient = new RestClient(api);
 		if (user != null && !user.isEmpty()) {
 			BasicAuthenticator authenticator = new BasicAuthenticator(user, password);
 			restClient.registerRequestFilter(authenticator);
@@ -153,7 +153,7 @@ public class SolrIndexService {
 
 		// try to get the schma of the core...
 		try {
-			String existingSchema = restClient.get(host + "/api/cores/" + core + "/schema");
+			String existingSchema = restClient.get(api + "/api/cores/" + core + "/schema");
 			logger.info("...core   - OK ");
 
 			// update schema
@@ -188,7 +188,7 @@ public class SolrIndexService {
 		String schemaUpdate = buildUpdateSchema(schema);
 		// test if the schemaUdpate contains instructions....
 		if (!"{}".equals(schemaUpdate)) {
-			String uri = host + "/api/cores/" + core + "/schema";
+			String uri = api + "/api/cores/" + core + "/schema";
 			logger.info("...updating schema '" + core + "':");
 			logger.finest("..." + schemaUpdate);
 			restClient.post(uri, schemaUpdate, "application/json");
@@ -226,7 +226,7 @@ public class SolrIndexService {
 				logger.finest(xmlRequest);
 			}
 
-			String uri = host + "/solr/" + core + "/update?commit=true";
+			String uri = api + "/solr/" + core + "/update?commit=true";
 			restClient.post(uri, xmlRequest, "text/xml");
 		}
 
@@ -274,7 +274,7 @@ public class SolrIndexService {
 			}
 			xmlDelete.append("</delete>");
 			String xmlRequest = xmlDelete.toString();
-			String uri = host + "/solr/" + core + "/update";
+			String uri = api + "/solr/" + core + "/update";
 			logger.finest("......delete documents '" + core + "':");
 			restClient.post(uri, xmlRequest, "text/xml");
 		}
@@ -337,7 +337,7 @@ public class SolrIndexService {
 
 		// URL Encode the query string....
 		try {
-			uri.append(host + "/solr/" + core + "/query");
+			uri.append(api + "/solr/" + core + "/query");
 
 			// set default operator?
 			if (defaultOperator == DefaultOperator.OR) {
