@@ -38,6 +38,7 @@ import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.jpa.EventLog;
 
 /**
@@ -77,8 +78,24 @@ public class EventLogService {
 	 * @return - generated event log entry
 	 */
 	public EventLog createEvent(String topic, String refID) {
-		return createEvent(topic, refID, null);
+		return createEvent(topic, refID, (Map<String, List<Object>>)null);
 	}
+	
+	/**
+	 * Creates/updates a new event log entry.
+	 *
+	 * @param refID
+	 *            - uniqueId of the document to be assigned to the event
+	 * @param topic
+	 *            - the topic of the event.
+	 * @param document
+	 *            - optional document providing a data map
+	 * @return - generated event log entry
+	 */
+	public EventLog createEvent(String topic, String refID,ItemCollection document) {
+		return this.createEvent(topic, refID, document.getAllItems());
+	}
+	
 
 	/**
 	 * Creates/updates a new event log entry.
@@ -107,6 +124,10 @@ public class EventLogService {
 		return eventLog;
 	}
 
+	
+	
+	
+	
 	/**
 	 * Finds events for one or many given topics
 	 * 
