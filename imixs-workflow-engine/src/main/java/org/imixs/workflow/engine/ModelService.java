@@ -57,7 +57,6 @@ import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
-import org.imixs.workflow.exceptions.QueryException;
 
 /**
  * The ModelManager is independent form the IX JEE Entity EJBs and uses the
@@ -329,6 +328,7 @@ public class ModelService implements ModelManager {
 					"application/xml", null);
 			modelItemCol.addFileData(fileData);
 			// store model in database
+			modelItemCol.replaceItemValue(DocumentService.NOINDEX, true);
 			documentService.save(modelItemCol);
 		}
 	}
@@ -370,25 +370,24 @@ public class ModelService implements ModelManager {
 	 * @param model
 	 */
 	public ItemCollection loadModelEntity(String version) {
-		if (version != null) {
-			long loadTime = System.currentTimeMillis();
-			// find model by version
-			String searchTerm = "(type:\"model\" AND txtname:\"" + version + "\")";
-			Collection<ItemCollection> col;
-			try {
-				col = documentService.find(searchTerm, 1, 0);
-			} catch (QueryException e) {
-				logger.severe("loadModelEntity - invalid version: " + e.getMessage());
-				return null;
+		
+		if (version != null && !version.isEmpty()) {
+			logger.finest("......load BPMNModel Entity '" + version + "'...");
+
+			Collection<ItemCollection> col = documentService.getDocumentsByType("model");
+			for (ItemCollection modelEntity : col) {
+				// test version...
+				String currentVersion = modelEntity.getItemValueString("txtname");
+				if (version.equals(currentVersion)) {
+					return modelEntity;
+				}
 			}
-			if (col != null && col.size() > 0) {
-				ItemCollection model = col.iterator().next();
-				logger.fine("...load BPMNModel '" + version + "' in " + (System.currentTimeMillis() - loadTime) + "ms");
-				return model;
-			}
-			logger.finest("......BPMNModel Entity '" + version + "' not found!");
+		} else {
+			logger.severe("deleteModel - invalid model version!");
+			throw new InvalidAccessException(InvalidAccessException.INVALID_ID, "loadModelEntity - invalid model version!");
 		}
 		return null;
+		
 	}
 
 	/**
