@@ -1,5 +1,5 @@
 # The EventLog Service
-The main resource /eventlog defines a serivce endpoint to access eventLog entries by topic. 
+The main resource /eventlog defines a service endpoint to access eventLog entries by topic. 
 
 ## The /eventlog resources GET
 The /eventlog GET resource is used to fetch a list of event log entries by its topic:
@@ -9,7 +9,7 @@ The /eventlog GET resource is used to fetch a list of event log entries by its t
 |-----------------------------------------------|------------------------------------------------------------------|
 | /eventlog/{topic}                             | all eventLog entries matching a given topic (or set of topics)   |
 
-The topic parma can contain a single topic or a list of topics. In this case the topics need to be separated by comma (,).
+The topic parma can contain a single topic or a list of topics. In this case the topics need to be separated by swung dash (~).
 
 
 ## The /eventlog resources DELETE

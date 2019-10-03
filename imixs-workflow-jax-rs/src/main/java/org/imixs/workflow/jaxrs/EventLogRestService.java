@@ -54,7 +54,7 @@ import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 /**
- * The EventLogRestService supports methods to access the event log entires by
+ * The EventLogRestService supports methods to access the event log entries by
  * different kind of request URIs
  * 
  * @author rsoika
@@ -75,7 +75,7 @@ public class EventLogRestService {
 
 	/**
 	 * Returns a set of eventLog entries for a given topic. Multiple topics can be
-	 * separated by comma (,).
+	 * separated by a swung dash (~).
 	 * 
 	 * @param topic
 	 *            - topic to search event log entries.
@@ -89,8 +89,8 @@ public class EventLogRestService {
 			@DefaultValue("99") @QueryParam("maxCount") int maxCount) {
 
 		logger.info("......get eventLogEntry by topic: " + topic);
-		// we split the topic by , if multiple topics are provided
-		String[] topicList = topic.split(",");
+		// we split the topic by swung dash if multiple topics are provided
+		String[] topicList = topic.split("~");
 		List<EventLog> eventLogEntries = eventLogService.findEventsByTopic(maxCount, topicList);
 
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
