@@ -660,13 +660,34 @@ public class BPMNModelHandler extends DefaultHandler {
 		return false;
 	}
 
-	// check if this task is connected to a start event....
+	// check if this event is connected to a start event....
 	private boolean isStartEvent(String eventID) {
 		List<SequenceFlow> inFlows = findIncomingFlows(eventID);
 		if (inFlows != null && inFlows.size() > 0) {
 			for (SequenceFlow aFlow : inFlows) {
 				String id = new ElementResolver().findStartEvent(aFlow, false);
 				if (id != null) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	// check if this event is a root event, connected directly to a task....
+	private boolean isRootEvent(String eventID) {
+		List<SequenceFlow> inFlows = findIncomingFlows(eventID);
+		if (inFlows != null) {
+
+			if (inFlows.size() == 0) {
+				// this is a loop event
+				return true;
+			}
+
+			for (SequenceFlow aFlow : inFlows) {
+				List<ItemCollection> sourceTaskList = new ArrayList<ItemCollection>();
+				sourceTaskList = new ElementResolver().findAllImixsSourceTasks(aFlow, sourceTaskList);
+				if (sourceTaskList != null && sourceTaskList.size() > 0) {
 					return true;
 				}
 			}
@@ -1013,6 +1034,10 @@ public class BPMNModelHandler extends DefaultHandler {
 
 		if (isStartEvent(eventID)) {
 			event.setItemValue("startEvent", true);
+		}
+
+		if (isRootEvent(eventID)) {
+			event.setItemValue("rootEvent", true);
 		}
 
 		if (event.getItemValueInteger("numprocessID") == event.getItemValueInteger("numNextProcessID")) {

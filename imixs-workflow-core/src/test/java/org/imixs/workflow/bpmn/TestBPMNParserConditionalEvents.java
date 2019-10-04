@@ -179,6 +179,12 @@ public class TestBPMNParserConditionalEvents {
 		Assert.assertEquals("(workitem._budget && workitem._budget[0]>100)", conditions.get("task=1100"));
 		Assert.assertEquals("(workitem._budget && workitem._budget[0]<=100)", conditions.get("event=20"));
 
+		
+		// test Start Events - only the conditional event is in this case a start event
+		List<ItemCollection> startEvents = model.getStartEvents(1000);
+		Assert.assertNotNull(startEvents);
+		Assert.assertEquals(1, startEvents.size());
+		
 	}
 
 	/**

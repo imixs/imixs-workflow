@@ -220,6 +220,14 @@ public class TestBPMNParserSimple {
 		activities = model.findAllEventsByTask(1100);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(0, activities.size());
+		
+		
+		// test start event
+		List<ItemCollection> startEvents = model.getStartEvents(1000);
+		Assert.assertNotNull(startEvents);
+		Assert.assertEquals(1, startEvents.size());
+		ItemCollection startEvent=startEvents.get(0);
+		Assert.assertEquals("submit", startEvent.getItemValueString("txtname"));
 	}
 
 	

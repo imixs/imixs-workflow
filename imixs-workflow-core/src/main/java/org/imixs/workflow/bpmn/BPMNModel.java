@@ -191,9 +191,9 @@ public class BPMNModel implements Model {
 			return result;
 		}
 
-		// we have no true start event, so lets return all what is not a follow up
+		// we have no true start event, so lets return all what is a Task Root Event
 		result = eventsOfTask.stream() // convert list to stream
-				.filter(event -> !"1".equals(event.getItemValueString("keyFollowUp"))) // we care only for startEvent
+				.filter(event -> event.getItemValueBoolean("rootEvent")) // we care only for rootEvents
 				.collect(Collectors.toList()); // collect the output and convert streams to a List
 		return result;
 
