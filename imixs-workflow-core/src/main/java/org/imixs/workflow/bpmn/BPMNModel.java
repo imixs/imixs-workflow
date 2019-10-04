@@ -1,11 +1,13 @@
 package org.imixs.workflow.bpmn;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ItemCollectionComparator;
@@ -22,66 +24,62 @@ import org.imixs.workflow.exceptions.ModelException;
  * 
  */
 public class BPMNModel implements Model {
-	
-	public final static String TASK_ITEM_NAME="name";
-	public final static String TASK_ITEM_DOCUMENTATION="documentation";
-	public final static String TASK_ITEM_WORKFLOW_SUMMARY="workflow.summary";
-	public final static String TASK_ITEM_WORKFLOW_ABSTRACT="workflow.abstract";
-	public final static String TASK_ITEM_APPLICATION_EDITOR="application.editor";
-	public final static String TASK_ITEM_APPLICATION_ICON="application.icon";
-	public final static String TASK_ITEM_APPLICATION_TYPE="application.type";
-	public final static String TASK_ITEM_ACL_OWNER_LIST="acl.owner_list";
-	public final static String TASK_ITEM_ACL_OWNER_LIST_MAPPING="acl.owner_list_mapping";
-	public final static String TASK_ITEM_ACL_READACCESS_LIST="acl.readaccess_list";
-	public final static String TASK_ITEM_ACL_READACCESS_LIST_MAPPING="acl.readaccess_list_mapping";
-	public final static String TASK_ITEM_ACL_WRITEACCESS_LIST="acl.writeaccess_list";
-	public final static String TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING="acl.writeaccess_list_mapping";
-	public final static String TASK_ITEM_ACL_UPDATE="acl.update";
 
-	public final static String EVENT_ITEM_NAME="name";
-	public final static String EVENT_ITEM_DOCUMENTATION="documentation";
-	public final static String EVENT_ITEM_ACL_OWNER_LIST="acl.owner_list";
-	public final static String EVENT_ITEM_ACL_OWNER_LIST_MAPPING="acl.owner_list_mapping";
-	public final static String EVENT_ITEM_ACL_READACCESS_LIST="acl.readaccess_list";
-	public final static String EVENT_ITEM_ACL_READACCESS_LIST_MAPPING="acl.readaccess_list_mapping";
-	public final static String EVENT_ITEM_ACL_WRITEACCESS_LIST="acl.writeaccess_list";
-	public final static String EVENT_ITEM_ACL_WRITEACCESS_LIST_MAPPING="acl.writeaccess_list_mapping";
-	public final static String EVENT_ITEM_ACL_UPDATE="acl.update";
-	
-	
-	public final static String EVENT_ITEM_WORKFLOW_RESULT="workflow.result";
-	public final static String EVENT_ITEM_WORKFLOW_PUBLIC="workflow.public";
-	public final static String EVENT_ITEM_WORKFLOW_PUBLIC_ACTORS="workflow.public_actors";
-	public final static String EVENT_ITEM_READACCESS="$readaccess";
-	public final static String EVENT_ITEM_HISTORY_MESSAGE="history.message";
-	public final static String EVENT_ITEM_MAIL_SUBJECT="mail.subject";
-	public final static String EVENT_ITEM_MAIL_BODY="mail.body";
-	public final static String EVENT_ITEM_MAIL_TO_LIST="mail.to_list";
-	public final static String EVENT_ITEM_MAIL_TO_LIST_MAPPING="mail.to_list_mapping";
-	public final static String EVENT_ITEM_MAIL_CC_LIST="mail.cc_list";
-	public final static String EVENT_ITEM_MAIL_CC_LIST_MAPPING="mail.cc_list_mapping";
-	public final static String EVENT_ITEM_MAIL_BCC_LIST="mail.bcc_list";
-	public final static String EVENT_ITEM_MAIL_BCC_LIST_MAPPING="mail.bcc_list_mapping";
-	public final static String EVENT_ITEM_RULE_ENGINE="rule.engine";
-	public final static String EVENT_ITEM_RULE_DEFINITION="rule.definition";
-	
-	public final static String EVENT_ITEM_REPORT_NAME="report.name";
-	public final static String EVENT_ITEM_REPORT_PATH="report.path";
-	public final static String EVENT_ITEM_REPORT_OPTIONS="report.options";
-	public final static String EVENT_ITEM_REPORT_TARGET="report.target";
-	public final static String EVENT_ITEM_VERSION_MODE="version.mode";
-	public final static String EVENT_ITEM_VERSION_EVENT="version.event";
-	
+	public final static String TASK_ITEM_NAME = "name";
+	public final static String TASK_ITEM_DOCUMENTATION = "documentation";
+	public final static String TASK_ITEM_WORKFLOW_SUMMARY = "workflow.summary";
+	public final static String TASK_ITEM_WORKFLOW_ABSTRACT = "workflow.abstract";
+	public final static String TASK_ITEM_APPLICATION_EDITOR = "application.editor";
+	public final static String TASK_ITEM_APPLICATION_ICON = "application.icon";
+	public final static String TASK_ITEM_APPLICATION_TYPE = "application.type";
+	public final static String TASK_ITEM_ACL_OWNER_LIST = "acl.owner_list";
+	public final static String TASK_ITEM_ACL_OWNER_LIST_MAPPING = "acl.owner_list_mapping";
+	public final static String TASK_ITEM_ACL_READACCESS_LIST = "acl.readaccess_list";
+	public final static String TASK_ITEM_ACL_READACCESS_LIST_MAPPING = "acl.readaccess_list_mapping";
+	public final static String TASK_ITEM_ACL_WRITEACCESS_LIST = "acl.writeaccess_list";
+	public final static String TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING = "acl.writeaccess_list_mapping";
+	public final static String TASK_ITEM_ACL_UPDATE = "acl.update";
 
-	public final static String EVENT_ITEM_TIMER_ACTIVE="timer.active";
-	public final static String EVENT_ITEM_TIMER_SELECTION="timer.selection";
-	public final static String EVENT_ITEM_TIMER_DELAY="timer.delay";
-	public final static String EVENT_ITEM_TIMER_DELAY_UNIT="timer.delay_unit";
-	public final static String EVENT_ITEM_TIMER_DELAY_BASE="timer.delay_base";
-	public final static String EVENT_ITEM_TIMER_DELAY_BASE_PROPERTY="timer.delay_base_property";
-	
-	
-	
+	public final static String EVENT_ITEM_NAME = "name";
+	public final static String EVENT_ITEM_DOCUMENTATION = "documentation";
+	public final static String EVENT_ITEM_ACL_OWNER_LIST = "acl.owner_list";
+	public final static String EVENT_ITEM_ACL_OWNER_LIST_MAPPING = "acl.owner_list_mapping";
+	public final static String EVENT_ITEM_ACL_READACCESS_LIST = "acl.readaccess_list";
+	public final static String EVENT_ITEM_ACL_READACCESS_LIST_MAPPING = "acl.readaccess_list_mapping";
+	public final static String EVENT_ITEM_ACL_WRITEACCESS_LIST = "acl.writeaccess_list";
+	public final static String EVENT_ITEM_ACL_WRITEACCESS_LIST_MAPPING = "acl.writeaccess_list_mapping";
+	public final static String EVENT_ITEM_ACL_UPDATE = "acl.update";
+
+	public final static String EVENT_ITEM_WORKFLOW_RESULT = "workflow.result";
+	public final static String EVENT_ITEM_WORKFLOW_PUBLIC = "workflow.public";
+	public final static String EVENT_ITEM_WORKFLOW_PUBLIC_ACTORS = "workflow.public_actors";
+	public final static String EVENT_ITEM_READACCESS = "$readaccess";
+	public final static String EVENT_ITEM_HISTORY_MESSAGE = "history.message";
+	public final static String EVENT_ITEM_MAIL_SUBJECT = "mail.subject";
+	public final static String EVENT_ITEM_MAIL_BODY = "mail.body";
+	public final static String EVENT_ITEM_MAIL_TO_LIST = "mail.to_list";
+	public final static String EVENT_ITEM_MAIL_TO_LIST_MAPPING = "mail.to_list_mapping";
+	public final static String EVENT_ITEM_MAIL_CC_LIST = "mail.cc_list";
+	public final static String EVENT_ITEM_MAIL_CC_LIST_MAPPING = "mail.cc_list_mapping";
+	public final static String EVENT_ITEM_MAIL_BCC_LIST = "mail.bcc_list";
+	public final static String EVENT_ITEM_MAIL_BCC_LIST_MAPPING = "mail.bcc_list_mapping";
+	public final static String EVENT_ITEM_RULE_ENGINE = "rule.engine";
+	public final static String EVENT_ITEM_RULE_DEFINITION = "rule.definition";
+
+	public final static String EVENT_ITEM_REPORT_NAME = "report.name";
+	public final static String EVENT_ITEM_REPORT_PATH = "report.path";
+	public final static String EVENT_ITEM_REPORT_OPTIONS = "report.options";
+	public final static String EVENT_ITEM_REPORT_TARGET = "report.target";
+	public final static String EVENT_ITEM_VERSION_MODE = "version.mode";
+	public final static String EVENT_ITEM_VERSION_EVENT = "version.event";
+
+	public final static String EVENT_ITEM_TIMER_ACTIVE = "timer.active";
+	public final static String EVENT_ITEM_TIMER_SELECTION = "timer.selection";
+	public final static String EVENT_ITEM_TIMER_DELAY = "timer.delay";
+	public final static String EVENT_ITEM_TIMER_DELAY_UNIT = "timer.delay_unit";
+	public final static String EVENT_ITEM_TIMER_DELAY_BASE = "timer.delay_base";
+	public final static String EVENT_ITEM_TIMER_DELAY_BASE_PROPERTY = "timer.delay_base_property";
+
 	private Map<Integer, ItemCollection> taskList = null;
 	private Map<Integer, List<ItemCollection>> eventList = null;
 	private List<String> workflowGroups = null;
@@ -128,6 +126,55 @@ public class BPMNModel implements Model {
 	 */
 	public ItemCollection getDefinition() {
 		return new ItemCollection(definition);
+	}
+
+	/**
+	 * This method returns all Tasks coming from a Start event
+	 * 
+	 * @return
+	 */
+	public List<ItemCollection> getStartTasks() {
+
+		Collection<ItemCollection> allTasks = taskList.values();
+
+		List<ItemCollection> result = allTasks.stream() // convert list to stream
+				.filter(task -> task.getItemValueBoolean("startTask")) // we care only for startTasks
+				.collect(Collectors.toList()); // collect the output and convert streams to a List
+		return result;
+	}
+
+	/**
+	 * This method returns all Tasks followed by a End event
+	 * 
+	 * @return
+	 */
+	public List<ItemCollection> getEndTasks() {
+
+		Collection<ItemCollection> allTasks = taskList.values();
+
+		List<ItemCollection> result = allTasks.stream() // convert list to stream
+				.filter(task -> task.getItemValueBoolean("endTask")) // we care only for endTasks
+				.collect(Collectors.toList()); // collect the output and convert streams to a List
+		return result;
+	}
+
+	/**
+	 * This method returns all Events coming from a Start event
+	 * 
+	 * @return
+	 */
+	public List<ItemCollection> getStartEvents() {
+		List<ItemCollection> result = new ArrayList<ItemCollection>();
+		Collection<List<ItemCollection>> allEvents = eventList.values();
+		// List<ItemCollection>
+		for (List<ItemCollection> eventsOfTask : allEvents) {
+			List<ItemCollection> subresult = eventsOfTask.stream() // convert list to stream
+					.filter(task -> task.getItemValueBoolean("startEvent")) // we care only for startEvent
+					.collect(Collectors.toList()); // collect the output and convert streams to a List
+			result.addAll(subresult);
+		}
+		return result;
+
 	}
 
 	@Override
@@ -178,8 +225,8 @@ public class BPMNModel implements Model {
 	}
 
 	/**
-	 * Returns a list of all events for a given taskID. The result set is sorted
-	 * by event id (numactivityID)
+	 * Returns a list of all events for a given taskID. The result set is sorted by
+	 * event id (numactivityID)
 	 * 
 	 * @return list of tasks
 	 */
@@ -198,8 +245,8 @@ public class BPMNModel implements Model {
 	}
 
 	/***
-	 * Returns a list of tasks filtered by the workflow group
-	 * (txtWorkflowGroup). The result set is sorted by taskID.
+	 * Returns a list of tasks filtered by the workflow group (txtWorkflowGroup).
+	 * The result set is sorted by taskID.
 	 */
 	@Override
 	public List<ItemCollection> findTasksByGroup(String group) {

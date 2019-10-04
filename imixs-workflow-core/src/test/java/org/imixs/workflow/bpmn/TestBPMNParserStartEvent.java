@@ -10,6 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
+import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -22,17 +23,14 @@ import junit.framework.Assert;
  */
 public class TestBPMNParserStartEvent {
 
-	@Test
-	public void testSimple() throws ParseException,
-			ParserConfigurationException, SAXException, IOException, ModelException {
 
-		String VERSION="1.0.0";
-		
-		InputStream inputStream = getClass().getResourceAsStream(
-				"/bpmn/startevent.bpmn");
+	protected BPMNModel model = null;
+	
+	@Before
+	public void setUp() throws ParseException, ParserConfigurationException, SAXException, IOException {
+		InputStream inputStream = getClass().getResourceAsStream("/bpmn/startevent.bpmn");
 
-		BPMNModel model = null;
-		try { 
+		try {
 			model = BPMNParser.parseModel(inputStream, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
@@ -41,6 +39,15 @@ public class TestBPMNParserStartEvent {
 			e.printStackTrace();
 			Assert.fail();
 		}
+	}
+
+	
+	@Test
+	public void testSimple() throws ParseException,
+			ParserConfigurationException, SAXException, IOException, ModelException {
+
+		String VERSION="1.0.0";
+
 		Assert.assertNotNull(model);
 
 		// Test Environment
@@ -90,6 +97,29 @@ public class TestBPMNParserStartEvent {
 				activity.getItemValueString("txtname"));
 		Assert.assertEquals(1000,
 				activity.getItemValueInteger("numNextProcessID"));
+		
+		
+		
+		
 	}
 
+	
+	/**
+	 * Test the startEvents
+	 * @throws ModelException
+	 */
+	@Test
+	public void testStartEvents() throws ModelException {
+		Assert.assertNotNull(model);
+		
+		// test start task....
+		List<ItemCollection> startEvents = model.getStartEvents();
+		Assert.assertNotNull(startEvents);
+		Assert.assertEquals(1, startEvents.size());
+		
+		ItemCollection startEvent=startEvents.get(0);
+		Assert.assertEquals("import", startEvent.getItemValueString("txtname"));
+		
+	}
+	
 }

@@ -10,6 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
+import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -23,15 +24,12 @@ import junit.framework.Assert;
  */
 public class TestBPMNParserStartEventFollowUp {
 
-	@Test
-	public void testSimple()
-			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
-
-		String VERSION = "1.0.0";
-
+	protected BPMNModel model = null;
+	
+	@Before
+	public void setUp() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		InputStream inputStream = getClass().getResourceAsStream("/bpmn/startevent_followup.bpmn");
 
-		BPMNModel model = null;
 		try {
 			model = BPMNParser.parseModel(inputStream, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
@@ -41,6 +39,15 @@ public class TestBPMNParserStartEventFollowUp {
 			e.printStackTrace();
 			Assert.fail();
 		}
+	}
+
+	@Test
+	public void testSimple()
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+
+		String VERSION = "1.0.0";
+
+	
 		Assert.assertNotNull(model);
 
 		// Test Environment
@@ -89,4 +96,63 @@ public class TestBPMNParserStartEventFollowUp {
 
 	}
 
+	
+
+	/**
+	 * Test the startEvents
+	 * @throws ModelException
+	 */
+	@Test
+	public void testStartEvents() throws ModelException {
+		Assert.assertNotNull(model);
+		
+		// test start task....
+		List<ItemCollection> startEvents = model.getStartEvents();
+		Assert.assertNotNull(startEvents);
+		Assert.assertEquals(1, startEvents.size());
+		
+		ItemCollection startEvent=startEvents.get(0);
+		Assert.assertEquals("import", startEvent.getItemValueString("txtname"));
+		
+		
+		
+		
+	}
+	
+
+	/**
+	 * Test the startTasks 
+	 * @throws ModelException
+	 */
+	@Test
+	public void testStartTasks() throws ModelException {
+		Assert.assertNotNull(model);
+		
+		// test start task....
+		List<ItemCollection> startTasks = model.getStartTasks();
+		Assert.assertNotNull(startTasks);
+		Assert.assertEquals(1, startTasks.size());
+		
+		ItemCollection startTask=startTasks.get(0);
+		Assert.assertEquals("Task 1", startTask.getItemValueString("txtname"));
+		
+	}
+	
+	/**
+	 * Test the endTasks 
+	 * @throws ModelException
+	 */
+	@Test
+	public void testEndTasks() throws ModelException {
+		Assert.assertNotNull(model);
+		
+		// test start task....
+		List<ItemCollection> endTasks = model.getEndTasks();
+		Assert.assertNotNull(endTasks);
+		Assert.assertEquals(1, endTasks.size());
+		
+		ItemCollection endTask=endTasks.get(0);
+		Assert.assertEquals("Task 1", endTask.getItemValueString("txtname"));
+		
+	}
 }

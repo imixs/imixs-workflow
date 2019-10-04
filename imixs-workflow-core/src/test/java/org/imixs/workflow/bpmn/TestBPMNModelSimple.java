@@ -40,7 +40,41 @@ public class TestBPMNModelSimple {
 		}
 	}
 
-
+	/**
+	 * Test the startTasks 
+	 * @throws ModelException
+	 */
+	@Test
+	public void testStartTasks() throws ModelException {
+		Assert.assertNotNull(model);
+		
+		// test start task....
+		List<ItemCollection> startTasks = model.getStartTasks();
+		Assert.assertNotNull(startTasks);
+		Assert.assertEquals(1, startTasks.size());
+		
+		ItemCollection startTask=startTasks.get(0);
+		Assert.assertEquals("Task 1", startTask.getItemValueString("txtname"));
+		
+	}
+	
+	/**
+	 * Test the endTasks 
+	 * @throws ModelException
+	 */
+	@Test
+	public void testEndTasks() throws ModelException {
+		Assert.assertNotNull(model);
+		
+		// test start task....
+		List<ItemCollection> endTasks = model.getEndTasks();
+		Assert.assertNotNull(endTasks);
+		Assert.assertEquals(1, endTasks.size());
+		
+		ItemCollection endTask=endTasks.get(0);
+		Assert.assertEquals("Task 2", endTask.getItemValueString("txtname"));
+		
+	}
 
 	/**
 	 * Test the behavior of manipulating event objects.
@@ -55,7 +89,7 @@ public class TestBPMNModelSimple {
 	@Test
 	public void testModifyEvent() throws ModelException {
 
-		Assert.assertNotNull(model);
+		
 
 		// test activity 1000.10 submit
 		ItemCollection activity = model.getEvent(1000, 20);

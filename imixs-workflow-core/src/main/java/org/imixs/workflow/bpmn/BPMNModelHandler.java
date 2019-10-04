@@ -88,6 +88,7 @@ public class BPMNModelHandler extends DefaultHandler {
 	private Map<String, String> conditionCache = null;
 
 	private List<String> startEvents = null;
+	private List<String> endEvents = null;
 	private List<String> conditionalGatewayCache = null;
 	private List<String> parallelGatewayCache = null;
 
@@ -114,6 +115,7 @@ public class BPMNModelHandler extends DefaultHandler {
 		parallelGatewayCache = new ArrayList<String>();
 
 		startEvents = new ArrayList<String>();
+		endEvents = new ArrayList<String>();
 
 		sequenceCache = new HashMap<String, SequenceFlow>();
 		associationCache = new HashMap<String, SequenceFlow>();
@@ -155,6 +157,11 @@ public class BPMNModelHandler extends DefaultHandler {
 		// bpmn2:startEvent
 		if (qName.equalsIgnoreCase("bpmn2:startEvent")) {
 			startEvents.add(attributes.getValue("id"));
+		}
+
+		// bpmn2:endEvent
+		if (qName.equalsIgnoreCase("bpmn2:endEvent")) {
+			endEvents.add(attributes.getValue("id"));
 		}
 
 		// bpmn2:task - identify a Imixs Workflow Taks element
@@ -543,6 +550,13 @@ public class BPMNModelHandler extends DefaultHandler {
 				task.replaceItemValue("dataObjects", dataObjectList);
 			}
 
+			if (isStartTask(key)) {
+				task.setItemValue("startTask", true);
+			}
+			if (isEndTask(key)) {
+				task.setItemValue("endTask", true);
+			}
+
 			model.addTask(task);
 
 			// add id and resort
@@ -632,6 +646,48 @@ public class BPMNModelHandler extends DefaultHandler {
 
 	}
 
+	// check if this task is connected to a start event....
+	private boolean isStartTask(String taskID) {
+		List<SequenceFlow> inFlows = findIncomingFlows(taskID);
+		if (inFlows != null && inFlows.size() > 0) {
+			for (SequenceFlow aFlow : inFlows) {
+				String id = new ElementResolver().findStartEvent(aFlow, true);
+				if (id != null) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	// check if this task is connected to a start event....
+	private boolean isStartEvent(String eventID) {
+		List<SequenceFlow> inFlows = findIncomingFlows(eventID);
+		if (inFlows != null && inFlows.size() > 0) {
+			for (SequenceFlow aFlow : inFlows) {
+				String id = new ElementResolver().findStartEvent(aFlow, false);
+				if (id != null) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	// check if this task is connected to an end event....
+	private boolean isEndTask(String taskID) {
+		List<SequenceFlow> outFlows = findOutgoingFlows(taskID);
+		if (outFlows != null && outFlows.size() > 0) {
+			for (SequenceFlow aFlow : outFlows) {
+				String id = new ElementResolver().findEndEvent(aFlow);
+				if (id != null) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * This method returns all SourceTask Elements connected to a given eventID. The
 	 * method takes care about loop events and follow up events. Later ones are
@@ -679,7 +735,7 @@ public class BPMNModelHandler extends DefaultHandler {
 								targetTaskList = new ElementResolver().findAllImixsTargetTaskIDs(outgoingFlow,
 										targetTaskList);
 							}
-							// here we retrun all possible target tasks
+							// here we return all possible target tasks
 							for (String targetID : targetTaskList) {
 								result.add(taskCache.get(targetID));
 							}
@@ -947,14 +1003,17 @@ public class BPMNModelHandler extends DefaultHandler {
 		event.replaceItemValue("numProcessID", sourceTask.getItemValue("numProcessID"));
 		event.replaceItemValue("$modelVersion", sourceTask.getModelVersion());
 		replaceMessageTags(event);
-		
+
 		// look for optional dataObjects...
-					List<List<String>> dataObjectList = getDataObjectsForElement(eventID);
-					if (dataObjectList != null) {
-						// we take the annotation as the new documentation
-						event.replaceItemValue("dataObjects", dataObjectList);
-					}
-		
+		List<List<String>> dataObjectList = getDataObjectsForElement(eventID);
+		if (dataObjectList != null) {
+			// we take the annotation as the new documentation
+			event.replaceItemValue("dataObjects", dataObjectList);
+		}
+
+		if (isStartEvent(eventID)) {
+			event.setItemValue("startEvent", true);
+		}
 		
 		model.addEvent(verifyActiviytIdForEvent(event));
 	}
@@ -1396,6 +1455,105 @@ public class BPMNModelHandler extends DefaultHandler {
 			List<SequenceFlow> refList = findIncomingFlows(flow.source);
 			for (SequenceFlow aflow : refList) {
 				return (findImixsSourceEvent(aflow));
+			}
+			return null;
+		}
+
+		/**
+		 * This method searches a BPMN2:Start Event Element connected to the given
+		 * SequenceFlow element. If the Sequence Flow is not connected to a BPMN2:Start
+		 * Event element the method returns null.
+		 * 
+		 * @return the id of the start event or null if no event Element was found.
+		 * @return
+		 */
+		public String findStartEvent(SequenceFlow flow, boolean forTask) {
+
+			if (flow.source == null) {
+				return null;
+			}
+
+			// detect loops...
+			if (loopFlowCache.contains(flow.source)) {
+				// loop!
+				return null;
+			} else {
+				loopFlowCache.add(flow.source);
+			}
+
+			// test if the source is a Imixs task
+			if (forTask) {
+				ItemCollection imixstask = taskCache.get(flow.source);
+				if (imixstask != null) {
+					// event is connected to a task - so this is not a start Task
+					return null;
+				}
+			} else {
+				// we check for a start event...
+				ItemCollection imixsevent = eventCache.get(flow.source);
+				if (imixsevent != null) {
+					// event is connected to a task - so this is not a start Task
+					return null;
+				}
+			}
+
+			// test if the source is a Imixs Event - than we are in a follow up
+			// event!
+			int pos = startEvents.indexOf(flow.source);
+			if (pos > -1) {
+				return startEvents.get(pos);
+			}
+
+			// no start event found so we are trying to look for the next
+			// incoming flow elements.
+			List<SequenceFlow> refList = findIncomingFlows(flow.source);
+			for (SequenceFlow aflow : refList) {
+				return (findStartEvent(aflow, forTask));
+			}
+			return null;
+		}
+
+		/**
+		 * This method searches a BPMN2:End Event Element connected to the given
+		 * SequenceFlow element. If the Sequence Flow is not connected to a BPMN2:Event
+		 * Event element the method returns null.
+		 * 
+		 * @return the id of the end event or null if no event Element was found.
+		 * @return
+		 */
+		public String findEndEvent(SequenceFlow flow) {
+
+			if (flow.target == null) {
+				return null;
+			}
+
+			// detect loops...
+			if (loopFlowCache.contains(flow.target)) {
+				// loop!
+				return null;
+			} else {
+				loopFlowCache.add(flow.target);
+			}
+
+			// test if the source is a Imixs task
+			ItemCollection imixstask = taskCache.get(flow.target);
+			if (imixstask != null) {
+				// event is connected to a task - so this is not a end Task
+				return null;
+			}
+
+			// test if the source is a Imixs Event - than we are in a follow up
+			// event!
+			int pos = endEvents.indexOf(flow.target);
+			if (pos > -1) {
+				return endEvents.get(pos);
+			}
+
+			// no end task found so we are trying to look for the next
+			// incoming flow elements.
+			List<SequenceFlow> refList = findIncomingFlows(flow.target);
+			for (SequenceFlow aflow : refList) {
+				return (findEndEvent(aflow));
 			}
 			return null;
 		}
