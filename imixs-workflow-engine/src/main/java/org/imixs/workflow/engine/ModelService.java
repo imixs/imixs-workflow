@@ -231,7 +231,7 @@ public class ModelService implements ModelManager {
 					workitem.replaceItemValue(WorkflowKernel.MODELVERSION, newVersion);
 					model = getModel(newVersion);
 				}
-			} 
+			}
 		}
 
 		// check if model was found....
@@ -253,6 +253,44 @@ public class ModelService implements ModelManager {
 		// convert Set to List
 		Set<String> set = getModelStore().keySet();
 		List<String> result = new ArrayList<String>(set);
+		return result;
+	}
+
+	/**
+	 * Returns a sorted String list of the latest version for each workflowGroup
+	 * 
+	 * @return
+	 */
+	public List<String> getLatestVersions() {
+		List<String> result = new ArrayList<String>();
+		List<String> groups = getGroups();
+		for (String group : groups) {
+			List<String> versions = findVersionsByGroup(group);
+			if (versions != null && versions.size()>0) {
+				result.add(versions.get(0));
+			}
+		}
+		// sort result
+		Collections.sort(result);
+		return result;
+	}
+
+	/**
+	 * The method returns a sorted list of all available workflow groups
+	 * 
+	 * @return
+	 */
+	public List<String> getGroups() {
+		List<String> result = new ArrayList<String>();
+		Collection<Model> models = getModelStore().values();
+		for (Model amodel : models) {
+			for (String group : amodel.getGroups()) {
+
+				result.add(group);
+			}
+		}
+		// sort result
+		Collections.sort(result);
 		return result;
 	}
 
@@ -370,7 +408,7 @@ public class ModelService implements ModelManager {
 	 * @param model
 	 */
 	public ItemCollection loadModelEntity(String version) {
-		
+
 		if (version != null && !version.isEmpty()) {
 			logger.finest("......load BPMNModel Entity '" + version + "'...");
 
@@ -384,10 +422,11 @@ public class ModelService implements ModelManager {
 			}
 		} else {
 			logger.severe("deleteModel - invalid model version!");
-			throw new InvalidAccessException(InvalidAccessException.INVALID_ID, "loadModelEntity - invalid model version!");
+			throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
+					"loadModelEntity - invalid model version!");
 		}
 		return null;
-		
+
 	}
 
 	/**
