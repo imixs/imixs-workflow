@@ -102,13 +102,13 @@ public class SchemaService {
 	private Set<String> uniqueFieldList = null;
 
 	// default field lists
-	private static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
-	private static List<String> DEFAULT_NOANALYZE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
+	public static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
+	public static List<String> DEFAULT_NOANALYZE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
 			"$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator",
 			"$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "name", "txtname",
 			"$owner", "namowner", "txtworkitemref", "$uniqueidsource", "$uniqueidversions", "$lasttask", "$lastevent",
 			"$lasteventdate");
-	private static List<String> DEFAULT_STORE_FIELD_LIST = Arrays.asList("type", "$taskid", "$writeaccess",
+	public static List<String> DEFAULT_STORE_FIELD_LIST = Arrays.asList("type", "$taskid", "$writeaccess",
 			"$workflowsummary", "$workflowabstract", "$workflowgroup", "$workflowstatus", "$modified", "$created",
 			"$lasteventdate", "$creator", "$editor", "$lasteditor", "$owner", "namowner");
 

@@ -1,23 +1,23 @@
 # The Imixs Rule Engine
 
 
-The Imixs Workflow project provides to types of RuleEninges which can be used to evaluate business rules.
+The Imixs Workflow project provides two types of RuleEninges which can be used to evaluate business rules.
 
- - BPMN RuleEngine - is used to evaluate a business rule based on a BPMN model 
- - Core RuleEngine - is used to evaluate business rules during the processing life cycle
+ - **BPMN RuleEngine** - used to evaluate a business rule based on a BPMN model independent from a running process instance.
+ - **Core RuleEngine** - used to evaluate a business rule during the processing life cycle of a process instance. 
 
 
 	
 ## The BPMN Rule Engine
 
-The BPMN Rule Engine can be used to evaluate a business Rule based on a BPMN model with conditional events. This is a very powerful mechanism to build and evaluate complex business rules based on a visual model. 
+The BPMN Rule Engine can be used to evaluate a business Rule independent from a running process instance. The business rules are based on conditional events defined within a BPMN model. This is a very simple and powerful mechanism to build and evaluate complex business rules based on a visual model. 
 
-The rules are evaluated as a chain of [conditional events](../modelling/howto.html#Conditional_Events).
+The input parameter is a workitem providing a set of business values. The business rules are evaluated as a chain of [conditional events](../modelling/howto.html#Conditional_Events) by applying the business values.
 
 <img src="../images/modelling/rule_01.png"  />
 
 
-To initialize a BPMN Rule Engine a Imixs BPMN Model instance need to be loaded first. 
+The BPMN Rule Engine can be initalized with an existing Imixs BPMN Model instance. To evaluate the rules a workitem containing the business values can be applied by the eval() method: 
 
 
 	bpmnRuleEngine=new BPMNRuleEngine(model);
@@ -30,7 +30,7 @@ To initialize a BPMN Rule Engine a Imixs BPMN Model instance need to be loaded f
 	Assert.assertEquals(200, bpmnRuleEngine.eval(workitem));
 
 
-The BPMN RuleEngine is based on the Imixs Core Rule Engine which is explained in the next section. 
+See the section [conditional events](../modelling/howto.html#Conditional_Events) to learn how you can model business rules. The BPMN RuleEngine is based on the _Imixs Core Rule Engine_ which is explained in the next section. 
 
 
 ## The Core RuleEngine 
