@@ -1014,7 +1014,11 @@ public class BPMNModelHandler extends DefaultHandler {
 		if (isStartEvent(eventID)) {
 			event.setItemValue("startEvent", true);
 		}
-		
+
+		if (event.getItemValueInteger("numprocessID") == event.getItemValueInteger("numNextProcessID")) {
+			event.setItemValue("loopEvent", true);
+		}
+
 		model.addEvent(verifyActiviytIdForEvent(event));
 	}
 
@@ -1481,14 +1485,21 @@ public class BPMNModelHandler extends DefaultHandler {
 				loopFlowCache.add(flow.source);
 			}
 
-			// test if the source is a Imixs task
+			// did we search a start task?
 			if (forTask) {
+				// yes, if the source is another task than beak!
+				ItemCollection imixstask = taskCache.get(flow.source);
+				if (imixstask != null) {
+					// flow is connected to a task - so this is not a start Task
+					return null;
+				}
+			} else {
+				// we search a start event - so tasks and events are breaking!
 				ItemCollection imixstask = taskCache.get(flow.source);
 				if (imixstask != null) {
 					// event is connected to a task - so this is not a start Task
 					return null;
 				}
-			} else {
 				// we check for a start event...
 				ItemCollection imixsevent = eventCache.get(flow.source);
 				if (imixsevent != null) {

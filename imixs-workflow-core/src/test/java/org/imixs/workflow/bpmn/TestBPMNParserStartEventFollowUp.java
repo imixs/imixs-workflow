@@ -107,7 +107,7 @@ public class TestBPMNParserStartEventFollowUp {
 		Assert.assertNotNull(model);
 		
 		// test start task....
-		List<ItemCollection> startEvents = model.getStartEvents();
+		List<ItemCollection> startEvents = model.getStartEvents(1000);
 		Assert.assertNotNull(startEvents);
 		Assert.assertEquals(1, startEvents.size());
 		

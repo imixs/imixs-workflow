@@ -159,32 +159,54 @@ public class BPMNModel implements Model {
 	}
 
 	/**
-	 * This method returns all Events coming from a Start event
+	 * This method returns start Events for a given Start Task.
+	 * <p>
+	 * If the task is not a start task, the method returns null!
+	 * <p>
+	 * If one of the events is connected to the BPMN:startEvent then the method
+	 * returns this event only!
+	 * <p>
+	 * In case of none event is connected to the BPMN:startEvent then the method
+	 * returns all events which are not follow up events
 	 * 
 	 * @return
 	 */
-	public List<ItemCollection> getStartEvents() {
-		List<ItemCollection> result = new ArrayList<ItemCollection>();
-		Collection<List<ItemCollection>> allEvents = eventList.values();
-		// List<ItemCollection>
-		for (List<ItemCollection> eventsOfTask : allEvents) {
-			List<ItemCollection> subresult = eventsOfTask.stream() // convert list to stream
-					.filter(task -> task.getItemValueBoolean("startEvent")) // we care only for startEvent
-					.collect(Collectors.toList()); // collect the output and convert streams to a List
-			result.addAll(subresult);
+	public List<ItemCollection> getStartEvents(int taskID) {
+
+		ItemCollection task = taskList.get(taskID);
+		if (task == null || !task.getItemValueBoolean("startTask")) {
+			// not a start task!
+			return null;
 		}
+
+		// check the events...
+		List<ItemCollection> eventsOfTask = eventList.get(taskID);
+
+		// 1st test if we have true startEvents
+		List<ItemCollection> result = eventsOfTask.stream() // convert list to stream
+				.filter(event -> event.getItemValueBoolean("startEvent")) // we care only for startEvent
+				.collect(Collectors.toList()); // collect the output and convert streams to a List
+		if (result != null && result.size() > 0) {
+			// yes there are true start events!
+			return result;
+		}
+
+		// we have no true start event, so lets return all what is not a follow up
+		result = eventsOfTask.stream() // convert list to stream
+				.filter(event -> !"1".equals(event.getItemValueString("keyFollowUp"))) // we care only for startEvent
+				.collect(Collectors.toList()); // collect the output and convert streams to a List
 		return result;
 
 	}
 
 	@Override
-	public ItemCollection getTask(int processid) throws ModelException {
-		ItemCollection process = taskList.get(processid);
-		if (process != null) {
-			return new ItemCollection(process);
+	public ItemCollection getTask(int taskid) throws ModelException {
+		ItemCollection task = taskList.get(taskid);
+		if (task != null) {
+			return new ItemCollection(task);
 		} else {
 			throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
-					"BPMN Task " + processid + " not defined by version '" + this.getVersion() + "'");
+					"BPMN Task " + taskid + " not defined by version '" + this.getVersion() + "'");
 		}
 	}
 

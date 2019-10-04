@@ -41,7 +41,7 @@ public class TestBPMNModelSimple {
 	}
 
 	/**
-	 * Test the startTasks 
+	 * Test the startTasks and startEvents
 	 * @throws ModelException
 	 */
 	@Test
@@ -55,6 +55,10 @@ public class TestBPMNModelSimple {
 		
 		ItemCollection startTask=startTasks.get(0);
 		Assert.assertEquals("Task 1", startTask.getItemValueString("txtname"));
+		
+		// get start events
+		List<ItemCollection> startEvents = model.getStartEvents(startTask.getItemValueInteger("numProcessID"));
+		Assert.assertEquals(2, startEvents.size());
 		
 	}
 	
