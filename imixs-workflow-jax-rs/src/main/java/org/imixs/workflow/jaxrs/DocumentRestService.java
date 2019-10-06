@@ -59,10 +59,10 @@ import javax.ws.rs.core.StreamingOutput;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
-import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.index.SchemaService;
+import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.InvalidAccessException;
+import org.imixs.workflow.exceptions.ImixsExceptionHandler;
 import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.xml.XMLCount;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
@@ -372,10 +372,10 @@ public class DocumentRestService {
 
 		} catch (AccessDeniedException e) {
 			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
+			workitem = ImixsExceptionHandler.addErrorMessage(e, workitem);
 		} catch (RuntimeException e) {
 			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
+			workitem = ImixsExceptionHandler.addErrorMessage(e, workitem);
 		}
 
 		// return workitem
@@ -526,31 +526,7 @@ public class DocumentRestService {
 		return v;
 	}
 
-	/**
-	 * This helper method adds a error message to the given entity, based on the
-	 * data in a Exception. This kind of error message can be displayed in a page
-	 * evaluating the properties '$error_code' and '$error_message'. These
-	 * attributes will not be stored.
-	 * 
-	 * @param pe
-	 */
-	private ItemCollection addErrorMessage(Exception pe, ItemCollection aworkitem) {
-
-		if (pe instanceof RuntimeException && pe.getCause() != null) {
-			pe = (RuntimeException) pe.getCause();
-		}
-
-		if (pe instanceof InvalidAccessException) {
-			aworkitem.replaceItemValue("$error_code", ((InvalidAccessException) pe).getErrorCode());
-			aworkitem.replaceItemValue("$error_message", pe.getMessage());
-		} else {
-			aworkitem.replaceItemValue("$error_code", "INTERNAL ERROR");
-			aworkitem.replaceItemValue("$error_message", pe.getMessage());
-		}
-
-		return aworkitem;
-	}
-
+	
 	/**
 	 * This method converts a single ItemCollection into a Jax-rs response object.
 	 * <p>

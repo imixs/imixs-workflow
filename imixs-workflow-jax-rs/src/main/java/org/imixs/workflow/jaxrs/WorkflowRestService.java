@@ -36,6 +36,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -65,6 +66,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.ImixsExceptionHandler;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -862,13 +864,13 @@ public class WorkflowRestService {
 			workitem = workflowService.processWorkItem(workitem);
 
 		} catch (AccessDeniedException e) {
-			workitem = this.addErrorMessage(e, workitem);
+			workitem = ImixsExceptionHandler.addErrorMessage(e, workitem);
 		} catch (PluginException e) {
-			workitem = this.addErrorMessage(e, workitem);
+			workitem = ImixsExceptionHandler.addErrorMessage(e, workitem);
 		} catch (RuntimeException e) {
-			workitem = this.addErrorMessage(e, workitem);
+			workitem = ImixsExceptionHandler.addErrorMessage(e, workitem);
 		} catch (ModelException e) {
-			workitem = this.addErrorMessage(e, workitem);
+			workitem = ImixsExceptionHandler.addErrorMessage(e, workitem);
 		}
 
 		// return workitem
@@ -888,54 +890,7 @@ public class WorkflowRestService {
 
 	}
 
-	/**
-	 * This helper method adds a error message to the given workItem, based on the
-	 * data in a WorkflowException. This kind of error message can be displayed in a
-	 * page evaluating the properties '$error_code' and '$error_message'. These
-	 * attributes will not be stored.
-	 * 
-	 * 
-	 * If a PluginException or ValidationException contains an optional object array
-	 * the message is parsed for params to be replaced
-	 * 
-	 * Example:
-	 * 
-	 * <code>
-	 * $error_message=Value should not be greater than {0} or lower as {1}.
-	 * </code>
-	 * 
-	 * @param pe
-	 */
-	private ItemCollection addErrorMessage(Exception pe, ItemCollection aworkitem) {
+	
 
-		if (pe instanceof RuntimeException && pe.getCause() != null) {
-			pe = (RuntimeException) pe.getCause();
-		}
-
-		if (pe instanceof WorkflowException) {
-			// String message = ((WorkflowException) pe).getErrorCode();
-			String message = pe.getMessage();
-
-			// parse message for params
-			if (pe instanceof PluginException) {
-				PluginException p = (PluginException) pe;
-				if (p.getErrorParameters() != null && p.getErrorParameters().length > 0) {
-					for (int i = 0; i < p.getErrorParameters().length; i++) {
-						message = message.replace("{" + i + "}", p.getErrorParameters()[i].toString());
-					}
-				}
-			}
-			aworkitem.replaceItemValue("$error_code", ((WorkflowException) pe).getErrorCode());
-			aworkitem.replaceItemValue("$error_message", message);
-		} else if (pe instanceof InvalidAccessException) {
-			aworkitem.replaceItemValue("$error_code", ((InvalidAccessException) pe).getErrorCode());
-			aworkitem.replaceItemValue("$error_message", pe.getMessage());
-		} else {
-			aworkitem.replaceItemValue("$error_code", "INTERNAL ERROR");
-			aworkitem.replaceItemValue("$error_message", pe.getMessage());
-		}
-
-		return aworkitem;
-	}
-
+	
 }

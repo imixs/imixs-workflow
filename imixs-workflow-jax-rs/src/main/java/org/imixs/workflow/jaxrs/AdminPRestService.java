@@ -51,8 +51,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.InvalidAccessException;
-import org.imixs.workflow.exceptions.WorkflowException;
+import org.imixs.workflow.exceptions.ImixsExceptionHandler;
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XMLDocument;
@@ -174,10 +173,10 @@ public class AdminPRestService {
 			adminPService.createJob(workitem);
 		} catch (AccessDeniedException e) {
 			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
+			workitem = ImixsExceptionHandler.addErrorMessage(e, workitem);
 		} catch (RuntimeException e) {
 			logger.severe(e.getMessage());
-			workitem = this.addErrorMessage(e, workitem);
+			workitem = ImixsExceptionHandler.addErrorMessage(e, workitem);
 		}
 
 		// return workitem
@@ -208,30 +207,5 @@ public class AdminPRestService {
 		return Response.status(Response.Status.OK).build();
 	}
 
-	/**
-	 * This helper method adds a error message to the given entity, based on the
-	 * data in a Exception. This kind of error message can be displayed in a page
-	 * evaluating the properties '$error_code' and '$error_message'. These
-	 * attributes will not be stored.
-	 * 
-	 * @param pe
-	 */
-	private ItemCollection addErrorMessage(Exception pe, ItemCollection aworkitem) {
-		if (pe instanceof RuntimeException && pe.getCause() != null) {
-			pe = (RuntimeException) pe.getCause();
-		}
-
-		if (pe instanceof InvalidAccessException) {
-			aworkitem.replaceItemValue("$error_code", ((InvalidAccessException) pe).getErrorCode());
-			aworkitem.replaceItemValue("$error_message", pe.getMessage());
-		} else if (pe instanceof WorkflowException) {
-			aworkitem.replaceItemValue("$error_code", ((WorkflowException) pe).getErrorCode());
-			aworkitem.replaceItemValue("$error_message", pe.getMessage());
-		} else {
-			aworkitem.replaceItemValue("$error_code", "INTERNAL ERROR");
-			aworkitem.replaceItemValue("$error_message", pe.getMessage());
-		}
-
-		return aworkitem;
-	}
+	
 }
