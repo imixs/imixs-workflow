@@ -284,6 +284,52 @@ public class BPMNModel implements Model {
 		return result;
 	}
 
+	/**
+	 * This method assigns a startTask and a startEvent to a given workitem.
+	 * <p>
+	 * In case a $taskID or $eventID is already assigned, the method did not modify
+	 * the $taskID or $eventID.
+	 * 
+	 * @throws ModelException
+	 */
+	public void initStartEvent(ItemCollection workitem) throws ModelException {
+		if (workitem == null) {
+			return;
+		}
+		// is a $eventid assigned?
+		if (workitem.getEventID() > 0) {
+			// no op!
+			return;
+		}
+
+		// do we have a $taskID
+		if (workitem.getTaskID() == 0) {
+			// no so we take the first startTask from the model
+			List<ItemCollection> startTasks = this.getStartTasks();
+			if (startTasks == null || startTasks.size() == 0) {
+				throw new ModelException(ModelException.INVALID_MODEL, "Model does not define a StartTask");
+			}
+			workitem.setTaskID(startTasks.get(0).getItemValueInteger("numprocessid"));
+		}
+
+		// do we have a $eventID
+		if (workitem.getEventID() == 0) {
+			// no so we take the first startEvent from the start Task
+			int taskID = workitem.getTaskID();
+			ItemCollection task = this.getTask(taskID);
+			if (task == null) {
+				throw new ModelException(ModelException.INVALID_MODEL, "$taskid " + taskID + " not defined by model!");
+			}
+			List<ItemCollection> startEvents = this.getStartEvents(task.getItemValueInteger("numprocessid"));
+			if (startEvents == null || startEvents.size() == 0) {
+				throw new ModelException(ModelException.INVALID_MODEL,
+						"Task " + taskID + " does not define a StartEvent!");
+			}
+			workitem.setEventID(startEvents.get(0).getItemValueInteger("numactivityid"));
+		}
+
+	}
+
 	protected void setDefinition(ItemCollection profile) {
 		this.definition = profile;
 	}

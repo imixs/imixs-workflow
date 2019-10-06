@@ -104,4 +104,21 @@ public class TestBPMNParserStartEvent {
 
 	}
 
+	
+	/**
+	 * Test the method initStartEvent
+	 * 
+	 * @throws ModelException
+	 */
+	@Test
+	public void testInitStartEvent() throws ModelException {
+		Assert.assertNotNull(model);
+
+		ItemCollection workitem=new ItemCollection();
+		model.initStartEvent(workitem);
+		Assert.assertEquals(1000, workitem.getTaskID());
+		Assert.assertEquals(20, workitem.getEventID());
+		
+	}
+
 }
