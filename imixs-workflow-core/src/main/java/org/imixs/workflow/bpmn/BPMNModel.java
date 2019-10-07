@@ -287,6 +287,13 @@ public class BPMNModel implements Model {
 	/**
 	 * This method assigns a startTask and a startEvent to a given workitem.
 	 * <p>
+	 * The method updates the following items
+	 * <ul>
+	 * <li>$modelversion</li>
+	 * <li>$taskid</li>
+	 * <li>$eventid</li>
+	 * </ul>
+	 * <p>
 	 * In case a $taskID or $eventID is already assigned, the method did not modify
 	 * the $taskID or $eventID.
 	 * 
@@ -296,9 +303,13 @@ public class BPMNModel implements Model {
 		if (workitem == null) {
 			return;
 		}
-		// is a $eventid assigned?
-		if (workitem.getEventID() > 0) {
-			// no op!
+		
+		// update the model version
+		workitem.setModelVersion(this.getVersion());
+		
+		// is a $taskId and $eventId already assigned?
+		if (workitem.getEventID() > 0 && workitem.getTaskID()>0) {
+			// no op! 
 			return;
 		}
 
