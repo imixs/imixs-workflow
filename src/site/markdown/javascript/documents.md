@@ -11,6 +11,17 @@ Imixs-Script provides the object 'ItemCollection' which provides functionality t
 A item value can be accessd by the getItem methhod:
 
 	var name=myDocument.getItem('name'); // results to 'Bill'
+
+## Create an ItemCollection from XML 
+
+You can also create an ItemCollection from a Imixs XML Data Result in a ajax response:
+
+
+	xmlData=imixsXML.xml2document(response)
+	workitem=new imixs.ItemCollection(xmlData);
+	console.log('workflowgroup=' + workitem.getItem('$workflowgroup'));
+		                    	
+
 	
 ## Mulitvalues
 
