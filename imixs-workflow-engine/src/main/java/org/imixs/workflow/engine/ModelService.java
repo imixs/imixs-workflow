@@ -267,7 +267,11 @@ public class ModelService implements ModelManager {
 		for (String group : groups) {
 			List<String> versions = findVersionsByGroup(group);
 			if (versions != null && versions.size()>0) {
-				result.add(versions.get(0));
+				// add the latest version
+				String version =versions.get(0); 
+				if (!result.contains(version)) {
+					result.add(version );
+				}
 			}
 		}
 		// sort result
@@ -285,8 +289,9 @@ public class ModelService implements ModelManager {
 		Collection<Model> models = getModelStore().values();
 		for (Model amodel : models) {
 			for (String group : amodel.getGroups()) {
-
-				result.add(group);
+				if (!result.contains(group)) {
+					result.add(group);
+				}
 			}
 		}
 		// sort result
