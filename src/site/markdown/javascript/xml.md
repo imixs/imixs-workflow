@@ -13,7 +13,7 @@ The following example shows how to convert a document received form the Imixs Re
 		dataType : "xml",
 		success : function(response) {
 			console.debug(response);
-			myDocument = imixsXML.xml2entity(response);
+			myDocument = imixsXML.xml2document(response);
 		}
 	});
 		
