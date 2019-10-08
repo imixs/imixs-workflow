@@ -36,7 +36,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.ParseException;
 import java.util.List;
-import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -67,10 +66,8 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ImixsExceptionHandler;
-import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.exceptions.WorkflowException;
 import org.imixs.workflow.util.JSONParser;
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
@@ -145,7 +142,7 @@ public class WorkflowRestService {
 	 * @return
 	 */
 	@GET
-	@Path("/workitem/{uniqueid}")
+	@Path("/workitem/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
 	public Response getWorkItem(@PathParam("uniqueid") String uniqueid, @QueryParam("items") String items,
 			@QueryParam("format") String format) {
 
@@ -176,7 +173,7 @@ public class WorkflowRestService {
 	 * @return
 	 */
 	@GET
-	@Path("/workitem/{uniqueid}/file/{file}")
+	@Path("/workitem/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}/file/{file}")
 	public Response getWorkItemFile(@PathParam("uniqueid") String uniqueid, @PathParam("file") @Encoded String file,
 			@Context UriInfo uriInfo) {
 
@@ -236,7 +233,7 @@ public class WorkflowRestService {
 	 * @return list of event entities
 	 */
 	@GET
-	@Path("/workitem/events/{uniqueid}")
+	@Path("/workitem/events/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
 	public Response getEvents(@PathParam("uniqueid") String uniqueid, @QueryParam("format") String format) {
 		List<ItemCollection> result = null;
 		try {
@@ -393,7 +390,7 @@ public class WorkflowRestService {
 	}
 
 	@GET
-	@Path("/tasklist/ref/{uniqueid}")
+	@Path("/tasklist/ref/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
 	public Response getTaskListByRef(@PathParam("uniqueid") String uniqueid, @QueryParam("type") String type,
 			@DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
 			@DefaultValue("10") @QueryParam("pageSize") int pageSize,
@@ -798,7 +795,7 @@ public class WorkflowRestService {
 
 	@Deprecated
 	@POST
-	@Path("/workitem.json/{uniqueid}")
+	@Path("/workitem.json/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
 	@Consumes({ MediaType.APPLICATION_JSON })
 	public Response postWorkitemByUniqueIDJSONDeprecated(@PathParam("uniqueid") String uniqueid,
 			InputStream requestBodyStream, @QueryParam("error") String error, @QueryParam("encoding") String encoding) {
