@@ -76,6 +76,56 @@ public class TestBPMNParserSplitEvents {
 		Assert.assertEquals("true", conditions.get("task=1100"));
 	}
 
+	/**
+	 * Test case Issue #590
+	 * <p>
+	 * The initial split event should not contain the exclusiveContiditions of task
+	 * 1100!
+	 * 
+	 * @throws ParseException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ModelException
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testSplitWithConditions()
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
+		InputStream inputStream = getClass().getResourceAsStream("/bpmn/split_event_with_condition.bpmn");
+
+		BPMNModel model = null;
+		try {
+			model = BPMNParser.parseModel(inputStream, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			Assert.fail();
+		} catch (ModelException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		Assert.assertNotNull(model);
+
+		// test activity 1000.10 submit
+		ItemCollection activity = model.getEvent(1000, 10);
+		Assert.assertNotNull(activity);
+		Assert.assertEquals("split event", activity.getItemValueString("txtname"));
+
+		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
+
+		// Now we need to evaluate if the Event is marked as an conditional Event with
+		// the condition list copied from the gateway.
+		Assert.assertTrue(activity.hasItem("keySplitConditions"));
+		Map<String, String> conditions = (Map<String, String>) activity.getItemValue("keySplitConditions").get(0);
+		Assert.assertNotNull(conditions);
+		Assert.assertEquals("true", conditions.get("task=1100"));
+
+		// we do not expect a ExclusiveCondition....
+		Assert.assertFalse(activity.hasItem("keyExclusiveConditions"));
+
+		//conditions = (Map<String, String>) activity.getItemValue("keyExclusiveConditions").get(0);
+		//Assert.assertNull(conditions);
+	}
 
 }

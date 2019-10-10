@@ -1645,6 +1645,8 @@ public class BPMNModelHandler extends DefaultHandler {
 		 * This method searches a Conditional Gateway targeted from the given
 		 * SequenceFlow element. If no conditional gateway was found the method returns
 		 * null.
+		 * <p>
+		 * If a ImxisEvent or ImixsTask was found, the search must stop!
 		 * 
 		 * @return id of the conditional gateway if found.
 		 */
@@ -1671,10 +1673,25 @@ public class BPMNModelHandler extends DefaultHandler {
 			// next outgoing flow elements. (issue #211)
 			List<SequenceFlow> refList = findOutgoingFlows(flow.target);
 			for (SequenceFlow aflow : refList) {
+
+				// Issue #590
+				// a) test if the target is a Imixs Task
+				ItemCollection imixsElement = taskCache.get(aflow.target);
+				if (imixsElement != null) {
+					// stop here!
+					return null;
+				}
+				// b) test if the target is a Imixs Event
+				imixsElement = eventCache.get(aflow.target);
+				if (imixsElement != null) {
+					// stop here!
+					return null;
+				}
+
 				// recursive call....
 				String aResult = findExclusiveGateway(aflow);
 				if (aResult != null) {
-					// we got the task!
+					// we got a gateway
 					return aResult;
 				}
 			}
