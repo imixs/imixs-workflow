@@ -202,22 +202,19 @@ public class XMLItem implements Serializable {
 			if (aSingleObject instanceof XMLItem) {
 				XMLItem embeddedXMLItem = (XMLItem) aSingleObject;
 				Object[] embeddedValueArray = embeddedXMLItem.transformValue();
-				// convert to list...
-				result[j] = Arrays.asList(embeddedValueArray);
+				// convert to mutable list (Issue #593)
+				result[j] = new ArrayList<>(Arrays.asList(embeddedValueArray));
 			} else {
 
 				// is value object of type XMLItem >> Map
 				if (aSingleObject instanceof XMLItem[]) {
 					XMLItem[] innerlist = (XMLItem[]) aSingleObject;
-
 					// create map
 					HashMap<String, List<Object>> map = new HashMap<String, List<Object>>();
 					for (XMLItem x : innerlist) {
-						map.put(x.getName(), Arrays.asList(x.transformValue()));
+						// create mutable list (Issue #593)
+						map.put(x.getName(), new ArrayList<>(Arrays.asList(x.transformValue())));
 					}
-					// return resultMap;
-
-					// Map<String, List<Object>> map = XMLItem.convertXMLItemArray(innerlist);
 					result[j] = map;
 				}
 

@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -237,7 +238,7 @@ public class TestItemCollection {
 		Assert.assertNotSame(itemCollection1, itemCollection2);
 
 	}
-	
+
 	/**
 	 * Test the copy method
 	 */
@@ -1017,6 +1018,39 @@ public class TestItemCollection {
 		Assert.assertEquals(3, vaules.size());
 		Assert.assertEquals("Mark", vaules.get(1));
 		Assert.assertEquals("Jo", vaules.get(2));
+
+	}
+
+	/**
+	 * Test setting an item value null within an unmutable list See:
+	 * https://www.codebyamir.com/blog/calling-remove-on-arraylist-throws-exception-java-lang-unsupportedoperationexception-at-java-util-abstractlist-remove
+	 * 
+	 * @see Issue #593
+	 */
+	@Test
+	public void testSetItemValueNull() {
+
+		ItemCollection itemCol = new ItemCollection();
+
+		// create a mutable list with null value
+		List<String> values = new ArrayList<>(Arrays.asList("Amir", null, "Beth", "Lucy"));
+
+		itemCol.setItemValue("team", values);
+		Assert.assertTrue(itemCol.hasItem("team"));
+
+		// create a unmutable list with null value
+		values = Arrays.asList("Amir", null, "Beth", "Lucy");
+		// this will cause a java.lang.UnsupportedOperationExeption because the
+		// setItemValue method tries to remove null values. This particular
+		// implementation has a fixed size. And a remove is not allowed.
+		// It seems to make no sense to care about this case
+		try {
+			itemCol.setItemValue("team", values);
+			Assert.fail(); // exception expected
+		} catch (UnsupportedOperationException e) {
+			// exception expected
+		}
+		Assert.assertTrue(itemCol.hasItem("team"));
 
 	}
 
