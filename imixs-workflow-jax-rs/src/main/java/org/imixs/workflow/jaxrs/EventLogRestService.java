@@ -45,7 +45,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.xml.XMLDataCollection;
@@ -94,8 +93,9 @@ public class EventLogRestService {
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
 		for (EventLog eventLog : eventLogEntries) {
 			// Build a ItemCollection for each EventLog
+			
 			ItemCollection itemColEvent = new ItemCollection();
-			itemColEvent.setItemValue(WorkflowKernel.UNIQUEID, eventLog.getRef());
+			itemColEvent.setItemValue("id", eventLog.getId());
 			itemColEvent.setItemValue("ref", eventLog.getRef());
 			itemColEvent.setItemValue("created", eventLog.getCreated());
 			itemColEvent.setItemValue("topic", eventLog.getTopic());

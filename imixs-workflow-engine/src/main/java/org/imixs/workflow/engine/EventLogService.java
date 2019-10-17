@@ -78,9 +78,9 @@ public class EventLogService {
 	 * @return - generated event log entry
 	 */
 	public EventLog createEvent(String topic, String refID) {
-		return createEvent(topic, refID, (Map<String, List<Object>>)null);
+		return createEvent(topic, refID, (Map<String, List<Object>>) null);
 	}
-	
+
 	/**
 	 * Creates/updates a new event log entry.
 	 *
@@ -92,10 +92,9 @@ public class EventLogService {
 	 *            - optional document providing a data map
 	 * @return - generated event log entry
 	 */
-	public EventLog createEvent(String topic, String refID,ItemCollection document) {
+	public EventLog createEvent(String topic, String refID, ItemCollection document) {
 		return this.createEvent(topic, refID, document.getAllItems());
 	}
-	
 
 	/**
 	 * Creates/updates a new event log entry.
@@ -124,10 +123,6 @@ public class EventLogService {
 		return eventLog;
 	}
 
-	
-	
-	
-	
 	/**
 	 * Finds events for one or many given topics
 	 * 
@@ -143,7 +138,9 @@ public class EventLogService {
 		String query = "SELECT eventlog FROM EventLog AS eventlog ";
 		query += "WHERE (";
 		for (String _topic : topic) {
-			query += "eventlog.topic = '" + _topic + "' OR ";
+			if (_topic != null && !_topic.isEmpty()) {
+				query += "eventlog.topic = '" + _topic + "' OR ";
+			}
 		}
 		// cut last OR
 		query = query.substring(0, query.length() - 3);
@@ -218,7 +215,6 @@ public class EventLogService {
 		}
 	}
 
-	
 	/**
 	 * Deletes an existing eventLog by its id. The method catches
 	 * javax.persistence.OptimisticLockException as this may occur during parallel
@@ -230,7 +226,7 @@ public class EventLogService {
 		EventLog eventLog = null;
 		// lookup the entity....
 		eventLog = manager.find(EventLog.class, id);
-		
+
 		if (eventLog != null) {
 			try {
 				manager.remove(eventLog);
@@ -240,8 +236,7 @@ public class EventLogService {
 			}
 		}
 	}
-	
-	
+
 	/**
 	 * Returns an detached event log entry by its ID.
 	 * 
