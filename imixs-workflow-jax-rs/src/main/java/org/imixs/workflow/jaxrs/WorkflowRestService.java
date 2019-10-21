@@ -842,7 +842,7 @@ public class WorkflowRestService {
 		}
 
 		// validate optional uniqueId
-		if (uid != null && !uid.equals(workitem.getUniqueID())) {
+		if (uid != null && !uid.isEmpty() && !workitem.getUniqueID().isEmpty() && !uid.equals(workitem.getUniqueID())) {
 			logger.severe("@POST/@PUT workitem/" + uid
 					+ " : $UNIQUEID did not match, remove $uniqueid to create a new instnace!");
 			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
