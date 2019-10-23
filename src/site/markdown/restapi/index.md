@@ -41,6 +41,8 @@ The following example shows a business object in XML representation used for req
 		</item>
 	</document>
 
+You will find details about the XML Schema in the [section XML](../core/xml/index.html).
+
 ### JSON Business Object
 
 The following example shows a business object in JSON representation used for request and response objects:

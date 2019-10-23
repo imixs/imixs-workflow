@@ -32,17 +32,23 @@ The sub-resource _/search/_ can be used to search for a set of documents using t
 
 
 
+
+
 ### Resource Options
+
 With the following optional URI parameters the GET request can be filtered and sorted:
 
-| option      | description                       | example             		|
-|-------------|---------------- ------------------|-----------------------------|
+
+| option                  | description | example                                                        | 
+|-------------------------|-------------|--------------------------------------------------------------------|
 | pageSize    | number of documents returned      | ..?pagesize=10           	|
 | pageIndex   | page index to start               | ..?pageindex=5&pagesize=10  |
 | sortBy	  | sort item 					      | ..&sortBy=txtworkflowstatus |
-| sortReverse | sort direction (ascending/descending)   | ..&sourtReverse=true		|
-| items       | filter item values to be returned | ..&items=$taskid,$modellversion
+| sortReverse | sort direction (ascending/descending)   | ..&sourtReverse=true		  |
+| items       | filter item values to be returned | ..&items=$taskid,$modellversion   |
 | format      | optional output format JSON/XML   | ..&format=json   or   &format=xml |
+
+
  
  
 **Example:**

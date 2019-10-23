@@ -28,21 +28,23 @@ The subresource _/workflow/tasklist/_ provides GET methods to read collections o
 | /workflow/tasklist/ref/{uniqueid}             | GET    | a collection of workitems referenced to a  specific uniqueId (childs)                |
 
 
-
-
 ### Resource Options
+
 With the following optional URI parameters the GET request can be filtered and sorted:
 
-| option      | description                       | example             		|
-|-------------|---------------- ------------------|-----------------------------|
-| pageSize    | number of documents returned      | ..&pagesize=10           	|
-| pageIndex   | page index to start               | ..&pageindex=5&pagesize=10  |
+
+| option                  | description | example                                                        | 
+|-------------------------|-------------|--------------------------------------------------------------------|
+| pageSize    | number of documents returned      | ..?pagesize=10           	|
+| pageIndex   | page index to start               | ..?pageindex=5&pagesize=10  |
 | sortBy	  | sort item 					      | ..&sortBy=txtworkflowstatus |
-| sortReverse | sort direction (ascending/descending)   | ..&sourtReverse=true		|
+| sortReverse | sort direction (ascending/descending)   | ..&sourtReverse=true		  |
 | type        | filter workitems by the 'type' property | ..&type=workitem      | 
-| items       | filter item values to be returned | ..&items=$processid,$modellversion
+| items       | filter item values to be returned | ..&items=$taskid,$modellversion   |
 | format      | optional output format JSON/XML   | ..&format=json   or   &format=xml |
- 
+
+
+
  
 **Example:**
 

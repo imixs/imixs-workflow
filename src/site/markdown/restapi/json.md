@@ -19,7 +19,7 @@ See the following example:
 	  ]}
 
 
-##Creating a new process instance
+## Creating a new process instance
 
 To create a new process instance with a JSON request object, the POST method of the Imixs-Workflow REST API can be used in the following way: 
  
@@ -33,6 +33,7 @@ To create a new process instance with a JSON request object, the POST method of 
   * $processid
   * $activityid
 
+Example:
 
 	  {"item":[
 	     {"name":"$modelversion","value":{"@type":"xs:string","$":"bestandspflege-de-0.0.2"}},
@@ -43,7 +44,8 @@ To create a new process instance with a JSON request object, the POST method of 
 
 
 
-##Java RestClient Example
+## Java RestClient Example
+
 Using the RestClient provided by the Imixs-Workflow Core API the creation of a new workitem can be tested. See the following example code:
  
 	package org.imixs.workflow.jee.jaxrs;
@@ -56,17 +58,13 @@ Using the RestClient provided by the Imixs-Workflow Core API the creation of a n
 	import org.junit.Test;
 	
 	public class TestRestAPIWorkflow {
-	
 		static String USERID = "Manfred";
 		static String PASSWORD = "manfred";
 	
 		@Test
 		public void testPostJsonWorkitem() {
-	
 			RestClient restClient = new RestClient();
-	
 			restClient.setCredentials(USERID, PASSWORD);
-	
 			String uri = "http://localhost:8080/workflow/rest/workflow/workitem.json";
 	
 			// create a json test string
@@ -77,18 +75,14 @@ Using the RestClient provided by the Imixs-Workflow Core API the creation of a n
 					+ "	{\"name\":\"txtname\",\"value\":{\"@type\":\"xs:string\",\"$\":\"workitem json test\"}}"
 					+ "]}";
 			
-			
 			// http://www.jsonschema.net/
 			try {
 				int httpResult = restClient.postJsonEntity(uri, json);
-	
 				String sContent=restClient.getContent();
 				// expected result 200
 				Assert.assertEquals(200, httpResult);
-				
 				Assert.assertTrue(sContent.indexOf("$uniqueid")>-1);
 			} catch (Exception e) {
-	
 				e.printStackTrace();
 				Assert.fail();
 			}
