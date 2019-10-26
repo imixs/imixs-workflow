@@ -73,6 +73,7 @@ import org.imixs.workflow.exceptions.IndexException;
 
 /**
  * This session ejb provides functionality to maintain a local Lucene index.
+ * 
  * @version 1.0
  * @author rsoika
  */
@@ -81,15 +82,15 @@ import org.imixs.workflow.exceptions.IndexException;
 public class LuceneIndexService {
 
 	public static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
-	
+
 	public static final String ANONYMOUS = "ANONYMOUS";
 	public static final String DEFAULT_ANALYZER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
-	public static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";	
-	
+	public static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
+
 	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
 	private EntityManager manager;
 
-	private SimpleDateFormat luceneDateFormat=new SimpleDateFormat("yyyyMMddHHmmss");
+	private SimpleDateFormat luceneDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
 	@Inject
 	@ConfigProperty(name = "lucence.indexDir", defaultValue = DEFAULT_INDEX_DIRECTORY)
@@ -99,11 +100,9 @@ public class LuceneIndexService {
 	@ConfigProperty(name = "lucence.analyzerClass", defaultValue = DEFAULT_ANALYZER)
 	private String luceneAnalyzerClass;
 
-
 	@Inject
 	private LuceneItemAdapter luceneItemAdapter;
 
-	
 	private static Logger logger = Logger.getLogger(LuceneIndexService.class.getName());
 
 	@Inject
@@ -111,32 +110,28 @@ public class LuceneIndexService {
 
 	@Inject
 	private EventLogService eventLogService;
-	
+
 	@Inject
-	private SchemaService schemaService; 
+	private SchemaService schemaService;
 
-	
 	public String getLuceneIndexDir() {
-		return luceneIndexDir;
+		// issue #599
+		return luceneIndexDir.trim();
 	}
-
 
 	public void setLuceneIndexDir(String luceneIndexDir) {
-		this.luceneIndexDir = luceneIndexDir;
+		if (luceneIndexDir != null) {
+			this.luceneIndexDir = luceneIndexDir.trim();
+		}
 	}
-
 
 	public String getLuceneAnalyzerClass() {
 		return luceneAnalyzerClass;
 	}
 
-
 	public void setLuceneAnalyzerClass(String luceneAnalyzerClass) {
 		this.luceneAnalyzerClass = luceneAnalyzerClass;
 	}
-	
-
-
 
 	/**
 	 * Flush the EventLog cache. This method is called by the LuceneSerachService
@@ -213,7 +208,6 @@ public class LuceneIndexService {
 		adminPService.createJob(job);
 	}
 
-
 	/**
 	 * This method adds a collection of documents to the Lucene index. The documents
 	 * are added immediately to the index. Calling this method within a running
@@ -228,14 +222,14 @@ public class LuceneIndexService {
 	 * @throws IndexException
 	 */
 	public void indexDocuments(Collection<ItemCollection> documents) {
-	
+
 		IndexWriter awriter = null;
 		long ltime = System.currentTimeMillis();
 		try {
 			awriter = createIndexWriter();
 			// add workitem to search index....
 			for (ItemCollection workitem : documents) {
-	
+
 				if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
 					// create term
 					Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
@@ -260,13 +254,12 @@ public class LuceneIndexService {
 				}
 			}
 		}
-	
+
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("... update index block in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
 					+ " workitems total)");
 		}
 	}
-
 
 	/**
 	 * This method flushes a given count of eventLogEntries. The method return true
@@ -283,7 +276,8 @@ public class LuceneIndexService {
 		long l = System.currentTimeMillis();
 		logger.finest("......flush eventlog cache....");
 
-		List<EventLog> events = eventLogService.findEventsByTopic(count + 1, DocumentService.EVENTLOG_TOPIC_INDEX_ADD, DocumentService.EVENTLOG_TOPIC_INDEX_REMOVE);
+		List<EventLog> events = eventLogService.findEventsByTopic(count + 1, DocumentService.EVENTLOG_TOPIC_INDEX_ADD,
+				DocumentService.EVENTLOG_TOPIC_INDEX_REMOVE);
 
 		if (events != null && events.size() > 0) {
 			try {
@@ -378,7 +372,7 @@ public class LuceneIndexService {
 		// combine all search fields from the search field list into one field
 		// ('content') for the lucene document
 		String sContent = "";
-		
+
 		List<String> searchFieldList = schemaService.getFieldList();
 		for (String aFieldname : searchFieldList) {
 			sValue = "";
@@ -424,7 +418,7 @@ public class LuceneIndexService {
 			_localFieldListStore.remove(aFieldname);
 		}
 		// ... and not analyzed...
-		
+
 		List<String> indexFieldListNoAnalyze = schemaService.getFieldListNoAnalyze();
 		for (String aFieldname : indexFieldListNoAnalyze) {
 			addItemValues(doc, aworkitem, aFieldname, false, _localFieldListStore.contains(aFieldname));
@@ -508,9 +502,6 @@ public class LuceneIndexService {
 
 	}
 
-	
-
-	
 	/**
 	 * This method creates a new instance of a lucene IndexWriter.
 	 * 
@@ -522,7 +513,7 @@ public class LuceneIndexService {
 	 */
 	protected IndexWriter createIndexWriter() throws IOException {
 		// create a IndexWriter Instance
-		Directory indexDir = FSDirectory.open(Paths.get(luceneIndexDir));
+		Directory indexDir = FSDirectory.open(Paths.get(getLuceneIndexDir()));
 		// verify existence of index directory...
 		if (!DirectoryReader.indexExists(indexDir)) {
 			logger.info("...lucene index does not yet exist, initialize the index now....");
