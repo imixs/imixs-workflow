@@ -65,10 +65,10 @@ import org.imixs.workflow.exceptions.IndexException;
  */
 @Singleton
 public class LuceneUpdateService implements UpdateService {
-	
+
 	@Inject
 	private LuceneIndexService luceneIndexService;
-	
+
 	private static Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
 
 	/**
@@ -87,10 +87,8 @@ public class LuceneUpdateService implements UpdateService {
 	@Override
 	public void updateIndex(List<ItemCollection> documents) {
 		luceneIndexService.indexDocuments(documents);
-		
-	}
 
-	
+	}
 
 	/**
 	 * This method flush the event log.
@@ -107,7 +105,5 @@ public class LuceneUpdateService implements UpdateService {
 					+ (System.currentTimeMillis() - ltime) + "ms ...");
 		}
 	}
-	
 
-	
 }
