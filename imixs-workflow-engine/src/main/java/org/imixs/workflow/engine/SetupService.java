@@ -232,7 +232,7 @@ public class SetupService {
 						importXmlEntityData(result);
 					}
 
-					return; // MODEL_INITIALIZED;
+					// issue #600 return; // MODEL_INITIALIZED;
 				} catch (IOException | ModelException | ParseException | ParserConfigurationException
 						| SAXException e) {
 					throw new RuntimeException("Failed to load model configuration: " + e.getMessage() + " check 'model.default.data'",e);
