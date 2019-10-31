@@ -85,7 +85,7 @@ public class EventLogRestService {
 	public XMLDataCollection getEventLogEntriesByTopic(@PathParam("topic") String topic,
 			@DefaultValue("99") @QueryParam("maxCount") int maxCount) {
 
-		logger.info("......get eventLogEntry by topic: " + topic);
+		logger.finest("......get eventLogEntry by topic: " + topic);
 		// we split the topic by swung dash if multiple topics are provided
 		String[] topicList = topic.split("~");
 		List<EventLog> eventLogEntries = eventLogService.findEventsByTopic(maxCount, topicList);
