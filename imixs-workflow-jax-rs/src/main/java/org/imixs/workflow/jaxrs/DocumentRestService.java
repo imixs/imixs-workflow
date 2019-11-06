@@ -450,7 +450,9 @@ public class DocumentRestService {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
 		try {
-			documentService.backup(query, filepath);
+			// decode query...
+			String decodedQuery = URLDecoder.decode(query, "UTF-8");
+			documentService.backup(decodedQuery, filepath);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
