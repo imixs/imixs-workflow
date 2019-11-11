@@ -75,7 +75,7 @@ public class XMLParser {
 		}
 		return result;
 	}
-//[\"']   [\"']
+	// [\"'] [\"']
 	// /^\s?([^=]+)\s?=\s?("([^"]+)"|\'([^\']+)\')\s?/
 
 	/**
@@ -184,47 +184,84 @@ public class XMLParser {
 	 * 
 	 * Example:
 	 * 
-	 * <code>	  
-				<modelversion>1.0.0</modelversion>
-				<processid>1000</processid>
-				<activityid>10</activityid>
-				<items>namTeam</items>	  
-	 * </code>
+	 * <pre>
+	 * {@code
+	 * <item>	  
+	 *    <modelversion>1.0.0</modelversion>
+	 *    <task>1000</task>
+	 *    <event>10</event>
+	 * </item>
+	 * }
+	 * </pre>
 	 * 
 	 * @param evalItemCollection
 	 * @throws PluginException
 	 */
-	public static ItemCollection parseItemStructure(String xmlContent) throws PluginException {
+	public static ItemCollection parseItemStructure(String xmlContent) throws PluginException {		
+		return parseTag("<item>"+xmlContent+"</item>", "item");
+	}
+
+	/**
+	 * This method parses the xml content of a XML tag and returns a new
+	 * ItemCollection containing all embedded tags. Each tag is evaluated as the
+	 * item name. The tag value is returned as a item value.
+	 * <p>
+	 * MultiValues are currently not supported.
+	 * <p>
+	 * Example:
+	 * <p>
+	 * The tag 'code' of:
+	 * 
+	 * <pre>
+	 * {@code
+	 * <code>	  
+	 *    <modelversion>1.0.0</modelversion>
+	 *    <task>1000</task>
+	 *    <event>10</event>
+	 * </code>
+	 * }
+	 * </pre>
+	 * <p>
+	 * Returns an ItemCollection with 3 items (modelversion, task and event)
+	 * 
+	 * @param evalItemCollection
+	 * @throws PluginException
+	 */
+	public static ItemCollection parseTag(String xmlContent, String tag) throws PluginException {
 		logger.finest("......parseItemStructure...");
 		ItemCollection result = new ItemCollection();
 		if (xmlContent.length() > 0) {
-			// surround with a root element
-			xmlContent = "<item>" + xmlContent.trim() + "</item>";
 			try {
 
 				// parse item list...
 				DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 				Document doc = documentBuilder.parse(new InputSource(new StringReader(xmlContent)));
 				Node node = doc.importNode(doc.getDocumentElement(), true);
-				DocumentFragment docfrag = doc.createDocumentFragment();
-				while (node.hasChildNodes()) {
-					docfrag.appendChild(node.removeChild(node.getFirstChild()));
-				}
-
-				// append all items into the evalItemCollection...
-				NodeList childs = docfrag.getChildNodes();
-				int itemCount = childs.getLength();
-				for (int i = 0; i < itemCount; i++) {
-					Node childNode = childs.item(i);
-					if (childNode instanceof Element && childNode.getFirstChild() != null) {
-						String name = childNode.getNodeName();
-						// String value =
-						// childNode.getFirstChild().getNodeValue();
-						String value = innerXml(childNode);
-
-						result.replaceItemValue(name, value);
-						logger.finest("......parsing item '" + name + "' value=" + value);
+				
+				// we expect the tag name as the root tag of the xml structure!
+				if (node!=null && node.getNodeName().equals(tag)) {
+					// collect all child nodes...
+					DocumentFragment docfrag = doc.createDocumentFragment();
+					while (node.hasChildNodes()) {
+						docfrag.appendChild(node.removeChild(node.getFirstChild()));
 					}
+					
+					// append all items into the evalItemCollection...
+					NodeList childs = docfrag.getChildNodes();
+					int itemCount = childs.getLength();
+					for (int i = 0; i < itemCount; i++) {
+						Node childNode = childs.item(i);
+						if (childNode instanceof Element && childNode.getFirstChild() != null) {
+							String name = childNode.getNodeName();
+							// String value =
+							// childNode.getFirstChild().getNodeValue();
+							String value = innerXml(childNode);
+	
+							result.replaceItemValue(name, value);
+							logger.finest("......parsing item '" + name + "' value=" + value);
+						}
+					}
+				
 				}
 
 			} catch (ParserConfigurationException | TransformerFactoryConfigurationError | SAXException
@@ -250,13 +287,13 @@ public class XMLParser {
 		DOMImplementationLS lsImpl = (DOMImplementationLS) node.getOwnerDocument().getImplementation().getFeature("LS",
 				"3.0");
 		LSSerializer lsSerializer = lsImpl.createLSSerializer();
-		lsSerializer.getDomConfig().setParameter("xml-declaration", false); 
+		lsSerializer.getDomConfig().setParameter("xml-declaration", false);
 		NodeList childNodes = node.getChildNodes();
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < childNodes.getLength(); i++) {
 			Node innerNode = childNodes.item(i);
 			// verify innerNode...
-			if (innerNode!=null) {
+			if (innerNode != null) {
 				if (innerNode.hasChildNodes()) {
 					// lets do the stuff by the LSSerializer...
 					sb.append(lsSerializer.writeToString(innerNode));

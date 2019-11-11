@@ -300,4 +300,25 @@ public class TestXMLParser {
 			Assert.fail();
 		}
 	}
+
+	@Test
+	public void testParseTag() {
+
+		String data = "<api>" + "	<method>GET</method>\n" + "	<resource>http://ergo/details/100</resource>\n"
+				+ "	<mediatype>XML</mediatype>\n" + "	<items>customer.firstname,customer.lastname</items>\n"
+				+ "</api>";
+
+		ItemCollection apiData;
+		try {
+			apiData = XMLParser.parseTag(data, "api");
+			Assert.assertEquals("GET", apiData.getItemValueString("method"));
+			Assert.assertEquals("XML", apiData.getItemValueString("mediatype"));
+			Assert.assertEquals("customer.firstname,customer.lastname", apiData.getItemValueString("items"));
+
+		} catch (PluginException e) {
+			e.printStackTrace();
+		}
+
+	}
+
 }
