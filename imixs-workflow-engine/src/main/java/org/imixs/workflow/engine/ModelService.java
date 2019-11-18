@@ -210,15 +210,18 @@ public class ModelService implements ModelManager {
 			model = getModel(modelVersion);
 		} catch (ModelException me) {
 			model = null;
+			List<String> versions=null;
 			logger.finest(me.getMessage());
 			// try to find latest version by regex....
-			List<String> versions = findVersionsByRegEx(modelVersion);
-			if (!versions.isEmpty()) {
-				// we found a match by regex!
-				String newVersion = versions.get(0);
-				logger.info("...... match version '" + newVersion + "' -> by regex '" + modelVersion + "'");
-				workitem.replaceItemValue(WorkflowKernel.MODELVERSION, newVersion);
-				model = getModel(newVersion);
+			if (modelVersion!=null && !modelVersion.isEmpty()) {
+				versions = findVersionsByRegEx(modelVersion);
+				if (!versions.isEmpty()) {
+					// we found a match by regex!
+					String newVersion = versions.get(0);
+					logger.info("...... match version '" + newVersion + "' -> by regex '" + modelVersion + "'");
+					workitem.replaceItemValue(WorkflowKernel.MODELVERSION, newVersion);
+					model = getModel(newVersion);
+				}
 			}
 
 			// try to find model version by group
