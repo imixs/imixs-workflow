@@ -77,9 +77,9 @@ In OR\_OPERATOR mode terms are considered to be in conjunction: the above mentio
 The lucene index is automatically written into the Index Directory by the Imixs-Workflow engine.
 However, it is also possible to rebuild the lucene index manually. For example, this can be the case after a Database restore. To force a rebuild of the index it is sufficient to delete the Index Directory and restart the application. The Imixs-Workflow engine will recognize the missing index and start an [AdminP Job](adminp.html) called "REBUILD_LUCENE_INDEX" immediately. It can take some minutes depending on the amount of documents until the index is created. 
 
-### Configuration of the REBUILD_LUCENE_INDEX-Job
+### Configuration of the JOB\_REBUILD\_INDEX
 
-The _REBUILD_LUCENE_INDEX Job_ can be configured by the following imixs.properties settings:
+The REBUILD\_INDEX Job_ can be configured by the following imixs.properties settings:
 
  * lucene.rebuild.block_size - defines the internal block size of documents be read in one block by the indexer job. The default value is 500. It can be reduced in case the VM heap size is to small.
   
@@ -95,7 +95,7 @@ It is also possible to trigger the build process for the lucene index via the Re
 	curl --user admin:adminpassword -H "Content-Type: text/xml" -d \
        '<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema"> \
            <item name="type"><value xsi:type="xs:string">adminp</value></item> \
-           <item name="job"><value xsi:type="xs:string">REBUILD_LUCENE_INDEX</value></item> \
+           <item name="job"><value xsi:type="xs:string">JOB_REBUILD_INDEX</value></item> \
            <item name="numblocksize"><value xsi:type="xs:int">1000</value></item> \
            <item name="numindex"><value xsi:type="xs:int">0</value></item> \
            <item name="numinterval"><value xsi:type="xs:int">1</value></item> \
