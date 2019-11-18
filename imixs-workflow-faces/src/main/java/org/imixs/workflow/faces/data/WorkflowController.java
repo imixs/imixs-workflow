@@ -27,6 +27,7 @@
 
 package org.imixs.workflow.faces.data;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.logging.Logger;
 import javax.enterprise.context.ConversationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.ObserverException;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -258,8 +260,7 @@ public class WorkflowController extends AbstractDataController implements Serial
 		data.replaceItemValue(OwnerPlugin.OWNER, loginController.getUserPrincipal());
 		// support deprecated field
 		data.replaceItemValue("namowner", loginController.getUserPrincipal());
-		
-		
+
 		// set empty $workitemid
 		data.replaceItemValue("$workitemid", "");
 
@@ -322,7 +323,8 @@ public class WorkflowController extends AbstractDataController implements Serial
 			}
 
 			// test if 'faces-redirect' is included in actionResult
-			if (actionResult.contains("/") && !actionResult.contains("faces-redirect=")) {
+			if (!actionResult.startsWith("http") && actionResult.contains("/")
+					&& !actionResult.contains("faces-redirect=")) {
 				// append faces-redirect=true
 				if (!actionResult.contains("?")) {
 					actionResult = actionResult + "?faces-redirect=true";
@@ -371,8 +373,23 @@ public class WorkflowController extends AbstractDataController implements Serial
 			ErrorHandler.handleModelException(me);
 		}
 
-		// return the action result (Post-Redirect-Get). Can be null in case of an
-		// exception
+		// test if the action result is an external URL. In this case initiate a
+		// redirect
+		if (actionResult != null && actionResult.startsWith("http")) {
+			// clear action result and start redirect
+			String externalURL = actionResult;
+			actionResult = "";
+			try {
+				ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+				externalContext.redirect(externalURL);
+			} catch (IOException e) {
+				logger.warning("Failed to redirect action result: " + externalURL + " - Error: " + e.getMessage());
+				e.printStackTrace();
+			}
+		}
+
+		// return the action result (Post-Redirect-Get).
+		// can be null in case of an exception
 		return actionResult;
 	}
 
