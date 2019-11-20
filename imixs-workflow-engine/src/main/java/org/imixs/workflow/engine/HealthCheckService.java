@@ -31,7 +31,8 @@ import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
 
 /**
- * The ImixsHealthCheck implements the Microservice HealthCheck interface.
+ * The Imixs HealthCheckService implements the Microservice HealthCheck
+ * interface.
  * <p>
  * The service returns the count of workflow models
  * <p>
@@ -46,7 +47,7 @@ import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
  */
 @Health
 @ApplicationScoped
-public class ImixsHealthCheck implements HealthCheck {
+public class HealthCheckService implements HealthCheck {
 
 	@Inject
 	private SetupService setupService;
@@ -65,21 +66,19 @@ public class ImixsHealthCheck implements HealthCheck {
 	 */
 	@Override
 	public HealthCheckResponse call() {
-		int modelCount=0;
+		HealthCheckResponseBuilder builder = null;
+		int modelCount = 0;
 		try {
-			 modelCount = setupService.getModelCount();
+			modelCount = setupService.getModelCount();
 		} catch (Exception e) {
 			// failed!
-			modelCount=0;
+			modelCount = 0;
 		}
-		HealthCheckResponseBuilder builder = HealthCheckResponse.named("imixs-workflow").withData("model.count",
-				modelCount);
 
-		if (modelCount > 1) {
-			builder.up();
+		if (modelCount > 0) {
+			builder = HealthCheckResponse.named("imixs-workflow").withData("model.count", modelCount).up();
 		} else {
-			builder.down();
-
+			builder = HealthCheckResponse.named("imixs-workflow").withData("model.count", 0).down();
 		}
 
 		return builder.build();
