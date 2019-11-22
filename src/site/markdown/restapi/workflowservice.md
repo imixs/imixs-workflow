@@ -69,6 +69,8 @@ The methods PUT, POST allow to create and process a workitem or a task list:
 | /workflow/workitem           | POST    | posts a workitem, to be processed by the  workflow manager. To update an existing workitem, the attribute $uniqueid must be provided as part of the data structure. The media types application/xml, application/json and x-www-form-urlencoded are supported.   |
 | /workflow/workitem/{uniqueid}| POST    | posts a workitem by uniqueid, to be processed by the  workflow manager. The media types application/xml, application/json and x-www-form-urlencoded are supported.   |
 | /workflow/tasklist           | POST    | posts a list of workitems to be processed by the  workflow manager. The media type application/xml is supported.   |
+| /workflow/workitem/typed     | POST    | posts a workitem in the typed JSON Format, to be processed by the  workflow manager. To update an existing workitem, the attribute $uniqueid must be provided as part of the data structure. Only the media types application/json is supported.   |
+| /workflow/workitem/{uniqueid}| POST    | posts a workitem by uniqueid in the typed JSON Format, to be processed by the  workflow manager.Only the media types application/json is supported.   |
 
 
 
