@@ -20,7 +20,12 @@ The different resources provided by Imixs-Workflow are divided in the following 
 <strong>Note:</strong> The root context of the REST Service is defined by the web application (web.xml) containing the REST Service. The default root context is "/api/".
 
 ## The Representation of Business Objects
-Each resource published by the Imixs-Workflow REST API is represented by common response and request object format. This format reflects a representation of the internal Business Object [ItemCollection](../core/itemcollection.html). Business objects can be represented in XML or JSON format. 
+Each resource published by the Imixs-Workflow REST API is represented by common response and request object format. This format reflects a representation of the internal Business Object [ItemCollection](../core/itemcollection.html). Business objects can be represented different formats:
+ 
+ * text/html
+ * application/xml
+ * application/json
+ * application/x-www-form-urlencoded
 
 ### XML Business Object
 
@@ -38,6 +43,7 @@ The following example shows a business object in XML representation used for req
 		</item>
 		<item name="_subject">
 			<value xsi:type="xs:string">some data...</value>
+			<value xsi:type="xs:string">more data...</value>
 		</item>
 	</document>
 
@@ -45,32 +51,36 @@ You will find details about the XML Schema in the [section XML](../core/xml/inde
 
 ### JSON Business Object
 
-The following example shows a business object in JSON representation used for request and response objects:
-
-
-    {"item":[
-     {"name":"$modelversion","value":{"@type":"xs:string","$":"1.0.1"}},
-     {"name":"$taskid","value":{"@type":"xs:int","$":"1000"}}, 
-     {"name":"$eventid","value":{"@type":"xs:int","$":"10"}}, 
-     {"name":"_subject","value":{"@type":"xs:string","$":"Hello World"}}
-    ]}  
-
-Depending on the Rest Service Implementation the JSON format for response object can deviate in the following simplified presentation style (e.g. RESTeasy ):
+The following example shows the same business object in JSON representation which can be used for request and response objects:
 
     {"item": [
         {"name": "$modelversion", "value": ["1.0.1"] },
         {"name": "$taskid", "value": [2000] },
         {"name": "$eventid", "value": [10] },
-        {"name": "_subject", "value": ["Hello World"] }
+        {"name": "_subject", "value": ["some data...","more data..."] }
      ]}
 
+This is called 'JSON Mapped Notation'.      
+
+#### Typed JSON Format
+
+The disadvantage of the _JSON Mapped Notation_ is that you can't define the value type mapped to a java object. The Imixs Rest API supports an alternative notatin called _JSON BADGERFISH NOTATION_. This more expressive notation allows the description of complex business objects providing different xs data types. This is more precise and an equivalent for the XML format. See the following example: 
+
+    {"item":[
+     {"name":"$modelversion","value":{"@type":"xs:string","$":"1.0.1"}},
+     {"name":"$taskid","value":{"@type":"xs:int","$":"1000"}}, 
+     {"name":"$eventid","value":{"@type":"xs:int","$":"10"}}, 
+     {"name":"_orderid","value":{"@type":"xs:long","$":"42000000001"}}
+     {"name":"_subject","value":[
+             {"@type":"xs:string","$":"some data"},
+             {"@type":"xs:string","$":"more data"}
+           ]}
+    ]}  
+    
+**Note:** Depending on the Rest Service Implementation the JSON format for response object can vary. 
 
 
-The Imixs-Workflow REST API accepts the following media types to return data:
- 
- * text/html
- * application/xml
- * application/json
+
 	
 The following sections gives an detailed description of all resource groups defined by the Imixs-Workflow REST Service API:
  

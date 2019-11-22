@@ -18,33 +18,42 @@ The RestClient provides the following GET and POST core methods:
 
 ## Imixs Rest-API Data Methods
 
-The following methods can be used to get and process Imxis Workflow Data
+The following methods can be used to GET and POST Imxis Workflow Data
 
 | Method                         | Description                                                         | 
 |--------------------------------|---------------------------------------------------------------------|
-| postDocument(String, ItemCollection)     | Posts an Imixs ItemCollection to a Rest Service URI endpoint. |
-| postXMLDocument(String, XMLItemCollection)     | Posts an Imixs XMLDocument to a Rest Service URI endpoint. |
-| postXMLDataCollection(String, XMLDataCollection)     | Posts an Imixs XMLDataCollection to a Rest Service URI endpoint. |
-| postJSON(String, String)     | Posts a JSON String to a Rest Service URI endpoint. |
+| setServiceEndpoint(String)     | builds the serviceEndpoint based on a given URI |
+| setEncoding(String)            | defines the encoding used for post requests  |
+| setRequestProperty(String, String)     | Set a single header request property. |
+| post(String, String, String)     | Posts a String data object with a specific Content-Type to a Rest Service UR Endpoint |
 | postCollection(url, DocumentCollection)   |POST MEHTHOD  for a document collection |
-| getDocument(url)              | Returns a ItemCollection from a rest service endpoint.   |
-| getXMLDocument(url)              | Returns a XMLDocument from a rest service endpoint.  |
+| get(url)              |  Gets the content of a GET request from a Rest Service URI Endpoint. |
+
+
+The following example shows how to post a workitem:
+
+	ItemCollection workitem = new ItemCollection().model(MODEL_VERSION).task(1000).event(10);
+	workitem.replaceItemValue("_subject", "some data");
+    // create client
+    org.imixs.workflow.services.rest.RestClient restCLient = 
+          new org.imixs.workflow.services.rest.RestClient(BASE_URL);
+    // process workitem
+    String resultData = restCLient.post(BASE_URL + "workflow/workitem",
+                       XMLDocumentAdapter.writeItemCollection(workitem), 
+                       MediaType.APPLICATION_XML,	MediaType.APPLICATION_XML);
+    List<ItemCollection> result = XMLDataCollectionAdapter.readCollection(resultData.getBytes());
 
 
 
 
-This is a simple example how to request the tasklist of a user:
+The next example shows how to request the tasklist of a user:
 
-	// create RestClient ....
-		RestClient restClient = new RestClient();
-		try {
-			List<ItemCollection> documents = restClient.
-			     getDocumentCollection("http://localhost:8080/api/workflow/tasklist/owner/admin");
-			logger.info("Read " + documents.size() + " documents");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    // create client
+    org.imixs.workflow.services.rest.RestClient restCLient = 
+          new org.imixs.workflow.services.rest.RestClient(BASE_URL);
+          
+	String resultData = restCLient.get(BASE_URL + "workflow/tasklist/creator/admin");
+    List<ItemCollection> result = XMLDataCollectionAdapter.readCollection(resultData.getBytes());
 		
 
 ## RequestFilter & Authentication
@@ -52,8 +61,7 @@ This is a simple example how to request the tasklist of a user:
 The Imixs-RestClient supports also custom "RequestFilters". A Requestfilter implements the interface _org.imixs.workflow.services.rest.RequestFilter_ and can be used to handle a HTTP Request. 
 
 
-	public class MyFilter implements RequestFilter {
-	
+	public class MyFilter implements RequestFilter {	
 		public void filter(HttpURLConnection connection) throws IOException {
 			// your code goes here...
 		}
@@ -74,4 +82,10 @@ The following example shows how to use a BASIC authentication filter:
 	restClient.registerRequestFilter(basicAuth);
 	...		
 			
-			
+# The Imixs Melman Project
+
+The [Imixs Melman Project](https://github.com/imixs/imixs-melman) provides a more convenient  component library to interact with the Imixs-Workflow Rest API. The project is agnostic from an Imixs-Workflow Implementation and can be used in a microservice architecture. The components are based on Java JAX-RS and JAX-B.
+
+[https://github.com/imixs/imixs-melman](https://github.com/imixs/imixs-melman)
+
+

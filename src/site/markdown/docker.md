@@ -85,16 +85,15 @@ To request the current task list for the user 'admin' run:
 The next example shows how to post a new Workitem in JSON Format. The request post a JSON structure for a new workitem with the txtWorkflowGroup 'Ticket', the ProcessID 1000 and ActivityID 10. The result is a new process instance controlled by Imixs-Workflow Engine
 
 
-	curl --user admin:adminadmin -H "Content-Type: application/json" -d \
-	       '{"item":[ \
-	                 {"name":"type","value":{"@type":"xs:string","$":"workitem"}}, \
-	                 {"name":"$modelversion","value":{"@type":"xs:string","$":"1.0.0"}}, \
-	                 {"name":"$workflowgroup","value":{"@type":"xs:string","$":"Ticket"}}, \
-	                 {"name":"$taskid","value":{"@type":"xs:int","$":"1000"}}, \
-	                 {"name":"$eventid","value":{"@type":"xs:int","$":"10"}}, \
-	                 {"name":"txtname","value":{"@type":"xs:string","$":"test-json"}}\
-	         ]}' \
-	         http://localhost:8080/imixs-microservice/workflow/workitem.json
+
+	curl --user admin:adminadmin -H "Content-Type: application/json" -H "Accept: application/json"  -d \
+	'{"item":[
+	        {"name": "$modelversion", "value":["1.0"]},
+	        {"name": "$taskid", "value": [1000] }, 
+	        {"name": "$eventid", "value": [10] }, 
+	        {"name": "_subject", "value": ["some data...","more data..."]} 
+	     ]}' \
+	    http://localhost:8080/api/workflow/workitem
 
 
 ### Read a Process Instance

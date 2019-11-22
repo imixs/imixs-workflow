@@ -118,7 +118,6 @@
 				<item name="XSLT" href="./restapi/xslt.html" />
 				</item>
 				<item name="Document Service" href="./restapi/documentservice.html" />
-				<item name="JSON" href="./restapi/json.html" />
 				<item name="RestClient" href="./restapi/restclient.html" />
 				<item name="EventLog Service" href="./restapi/eventlogservice.html" />
 				<item name="AdminP Service" href="./restapi/adminp.html" />
