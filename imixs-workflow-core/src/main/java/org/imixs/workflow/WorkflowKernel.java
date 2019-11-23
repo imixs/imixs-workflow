@@ -512,10 +512,10 @@ public class WorkflowKernel {
 		ItemCollection documentResult = documentContext;
 		boolean debug = logger.isLoggable(Level.FINE);
 		// log the general processing message
-		String msg = "processing=" + documentContext.getItemValueString(UNIQUEID) + ", MODELVERSION="
-				+ documentContext.getItemValueString(MODELVERSION) + ", $taskID=" + documentContext.getTaskID()
-				+ ", $eventID=" + documentContext.getEventID();
-
+		String msg = "⚙ processing: " + documentContext.getItemValueString(UNIQUEID) + " ("
+				+ documentContext.getItemValueString(MODELVERSION) + " ▷ " + documentContext.getTaskID()
+				+ "→" + documentContext.getEventID() + ")";
+	
 		if (ctx == null) {
 			logger.warning("no WorkflowContext defined!");
 		}
