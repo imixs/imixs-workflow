@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
@@ -177,7 +178,7 @@ public class XMLDataCollectionAdapter {
 	 * @return List of ItemCollection objects
 	 */
 	public static List<ItemCollection> readCollection(byte[] byteInput) throws JAXBException, IOException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		List<ItemCollection> resultList = new ArrayList<ItemCollection>();
 
 		if (byteInput == null || byteInput.length==0) {
@@ -185,7 +186,9 @@ public class XMLDataCollectionAdapter {
 		}
 
 		XMLDataCollection ecol = null;
-		logger.finest("......readCollection importXmlEntityData - verifing  content....");
+		if (debug) {
+			logger.finest("......readCollection importXmlEntityData - verifing  content....");
+		}
 		JAXBContext context = JAXBContext.newInstance(XMLDataCollection.class);
 		Unmarshaller m = context.createUnmarshaller();
 
@@ -202,7 +205,9 @@ public class XMLDataCollectionAdapter {
 			for (XMLDocument aentity : ecol.getDocument()) {
 				resultList.add(XMLDocumentAdapter.putDocument(aentity));
 			}
-			logger.fine("readCollection" + ecol.getDocument().length + " entries sucessfull imported");
+			if (debug) {
+				logger.fine("readCollection" + ecol.getDocument().length + " entries sucessfull imported");
+			}
 		}
 		return resultList;
 

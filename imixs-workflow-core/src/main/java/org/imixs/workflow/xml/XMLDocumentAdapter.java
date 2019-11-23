@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
@@ -272,13 +273,15 @@ public class XMLDocumentAdapter {
 	 * @return List of ItemCollection objects
 	 */
 	public static XMLDocument readXMLDocument(byte[] byteInput) throws JAXBException, IOException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		if (byteInput == null) {
 			return null;
 		}
 
 		XMLDocument ecol = null;
-		logger.finest("......importXmlEntityData - verifing content....");
+		if (debug) {
+			logger.finest("......importXmlEntityData - verifing content....");
+		}
 		JAXBContext context = JAXBContext.newInstance(XMLDocument.class);
 		Unmarshaller m = context.createUnmarshaller();
 

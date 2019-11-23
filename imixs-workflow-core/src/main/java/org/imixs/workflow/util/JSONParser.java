@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.json.Json;
@@ -133,6 +134,7 @@ public class JSONParser {
 	 */
 	public final static ItemCollection parseWorkitem(final InputStream requestBodyStream, final String _encoding)
 			throws ParseException, UnsupportedEncodingException {
+		boolean debug = logger.isLoggable(Level.FINE);
 		String encoding = _encoding;
 
 		if (requestBodyStream == null) {
@@ -142,7 +144,9 @@ public class JSONParser {
 
 		// default encoding?
 		if (encoding == null || encoding.isEmpty()) {
+			if (debug) {
 			logger.finest("......parseWorkitem - switch to default encoding 'UTF-8'");
+			}
 			encoding = "UTF-8";
 		}
 
@@ -163,13 +167,17 @@ public class JSONParser {
 			// first we concat all lines
 			while ((inputLine = in.readLine()) != null) {
 				stringBuffer.append(inputLine);
-				logger.finest("......parseWorkitem - read line:" + inputLine + "");
+				if (debug) {
+					logger.finest("......parseWorkitem - read line:" + inputLine + "");
+				}
 			}
 			content = stringBuffer.toString();
 
 			// find start ...."item":[...
 			content = content.substring(content.indexOf('[') + 0);
-			logger.finest("......parseWorkitem - start parsing...");
+			if (debug) {
+				logger.finest("......parseWorkitem - start parsing...");
+			}
 			while (content != null) {
 
 				// find name => "name" : "$isauthor" ,
@@ -260,6 +268,7 @@ public class JSONParser {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static void storeValue(String name, String token, ItemCollection workitem) throws ParseException {
+		boolean debug = logger.isLoggable(Level.FINE);
 		int iPos, iStart, iEnd;
 		Object value;
 		String type = null;
@@ -294,36 +303,50 @@ public class JSONParser {
 		// convert value to Object Type
 		if ("xs:boolean".equalsIgnoreCase(type)) {
 			value = Boolean.getBoolean(stringValue);
-			logger.finest("......storeValue - datatype=xs:boolean");
+			if (debug) {
+				logger.finest("......storeValue - datatype=xs:boolean");
+			}
 		}
 		if ("xs:integer".equalsIgnoreCase(type)) {
 			value = Integer.getInteger(stringValue);
-			logger.finest("......storeValue - datatype=xs:integer");
+			if (debug) {
+				logger.finest("......storeValue - datatype=xs:integer");
+			}
 		}
 		if ("xs:long".equalsIgnoreCase(type)) {
 			value = Long.getLong(stringValue);
-			logger.finest("......storeValue - datatype=xs:long");
+			if (debug) {
+				logger.finest("......storeValue - datatype=xs:long");
+			}
 		}
 		if ("xs:float".equalsIgnoreCase(type)) {
 			value = new Float(stringValue);
-			logger.finest("......storeValue - datatype=xs:float");
+			if (debug) {
+				logger.finest("......storeValue - datatype=xs:float");
+			}
 		}
 		if ("xs:double".equalsIgnoreCase(type)) {
 			value = new Double(stringValue);
-			logger.finest("......storeValue - datatype=xs:double");
+			if (debug) {
+				logger.finest("......storeValue - datatype=xs:double");
+			}
 		}
 
 		// store value
 		if (!workitem.hasItem(name)) {
 			// frist value
 			workitem.replaceItemValue(name, value);
-			logger.finest("......storeValue: '" + name + "' = '" + value + "'");
+			if (debug) {
+				logger.finest("......storeValue: '" + name + "' = '" + value + "'");
+			}
 		} else {
 			// add value
 			List valueList = workitem.getItemValue(name);
 			valueList.add(value);
 			workitem.replaceItemValue(name, valueList);
-			logger.finest("......store multivalue: '" + name + "' = '" + value + "'");
+			if (debug) {
+				logger.finest("......store multivalue: '" + name + "' = '" + value + "'");
+			}
 		}
 
 	}

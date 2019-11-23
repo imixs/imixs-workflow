@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -122,12 +123,13 @@ public class SchemaService {
 	 */
 	@PostConstruct
 	void init() {
-
-		logger.finest("......lucene FulltextFieldList=" + indexFields);
-		logger.finest("......lucene IndexFieldListAnalyze=" + indexFieldsAnalyze);
-		logger.finest("......lucene IndexFieldListNoAnalyze=" + indexFieldsNoAnalyze);
-		logger.finest("......lucene IndexFieldListStore=" + indexFieldsStore);
-
+		boolean debug = logger.isLoggable(Level.FINE);
+		if (debug) {
+			logger.finest("......lucene FulltextFieldList=" + indexFields);
+			logger.finest("......lucene IndexFieldListAnalyze=" + indexFieldsAnalyze);
+			logger.finest("......lucene IndexFieldListNoAnalyze=" + indexFieldsNoAnalyze);
+			logger.finest("......lucene IndexFieldListStore=" + indexFieldsStore);
+		}
 		// compute search field list
 		fieldList = new ArrayList<String>();
 		// add all static default field list
@@ -197,15 +199,13 @@ public class SchemaService {
 				fieldListAnalyze.add(fieldName);
 			}
 		}
-		
-		
+
 		// build unique field list containing all field names
-		uniqueFieldList=new HashSet<String>();
+		uniqueFieldList = new HashSet<String>();
 		uniqueFieldList.add(WorkflowKernel.UNIQUEID);
 		uniqueFieldList.addAll(fieldListStore);
 		uniqueFieldList.addAll(fieldListAnalyze);
 		uniqueFieldList.addAll(fieldListNoAnalyze);
-		
 
 	}
 
@@ -249,14 +249,14 @@ public class SchemaService {
 	}
 
 	/**
-	 * Returns a unique list of all fields part of the index schema. 
+	 * Returns a unique list of all fields part of the index schema.
+	 * 
 	 * @return
 	 */
 	public Set<String> getUniqueFieldList() {
 		return uniqueFieldList;
 	}
-	
-	
+
 	/**
 	 * Returns the Lucene schema configuration
 	 * 
@@ -421,7 +421,7 @@ public class SchemaService {
 	 * @param s
 	 * @return
 	 */
-	private boolean containsDigit(String s) { 
+	private boolean containsDigit(String s) {
 		boolean containsDigit = false;
 		if (s != null && !s.isEmpty()) {
 			for (char c : s.toCharArray()) {

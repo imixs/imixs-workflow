@@ -30,6 +30,7 @@ package org.imixs.workflow.engine;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -108,6 +109,7 @@ public class EventLogService {
 	 * @return - generated event log entry
 	 */
 	public EventLog createEvent(String topic, String refID, Map<String, List<Object>> data) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		if (refID == null || refID.isEmpty()) {
 			logger.warning("create EventLog failed - given ref-id is empty!");
 			return null;
@@ -117,9 +119,9 @@ public class EventLogService {
 		// now create a new event log entry
 		EventLog eventLog = new EventLog(topic, refID, data);
 		manager.persist(eventLog);
-
-		logger.finest("......created new eventLog '" + refID + "' => " + topic);
-
+		if (debug) {
+			logger.finest("......created new eventLog '" + refID + "' => " + topic);
+		}
 		return eventLog;
 	}
 
@@ -134,6 +136,7 @@ public class EventLogService {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<EventLog> findEventsByTopic(int maxCount, String... topic) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		List<EventLog> result = new ArrayList<>();
 		String query = "SELECT eventlog FROM EventLog AS eventlog ";
 		query += "WHERE (";
@@ -150,8 +153,9 @@ public class EventLogService {
 		Query q = manager.createQuery(query);
 		q.setMaxResults(maxCount);
 		result = q.getResultList();
-		logger.fine("found " + result.size() + " event for topic " + topic);
-
+		if (debug) {
+			logger.fine("found " + result.size() + " event for topic " + topic);
+		}
 		return result;
 
 	}
@@ -172,6 +176,7 @@ public class EventLogService {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<EventLog> findEventsByRef(int maxCount, String ref, String... topic) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		List<EventLog> result = null;
 		String query = "SELECT eventlog FROM EventLog AS eventlog ";
 		query += "WHERE (eventlog.ref = '" + ref + "' AND (";
@@ -186,8 +191,9 @@ public class EventLogService {
 		Query q = manager.createQuery(query);
 		q.setMaxResults(maxCount);
 		result = q.getResultList();
-		logger.fine("found " + result.size() + " event for topic " + topic);
-
+		if (debug) {
+			logger.fine("found " + result.size() + " event for topic " + topic);
+		}
 		return result;
 
 	}
@@ -200,6 +206,7 @@ public class EventLogService {
 	 * @param eventLog
 	 */
 	public void removeEvent(final EventLog _eventLog) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		EventLog eventLog = _eventLog;
 		if (eventLog != null && !manager.contains(eventLog)) {
 			// entity is not atached - so lookup the entity....
@@ -210,7 +217,9 @@ public class EventLogService {
 				manager.remove(eventLog);
 			} catch (javax.persistence.OptimisticLockException e) {
 				// no todo - can occure during parallel requests
-				logger.finest(e.getMessage());
+				if (debug) {
+					logger.finest(e.getMessage());
+				}
 			}
 		}
 	}
@@ -224,6 +233,7 @@ public class EventLogService {
 	 */
 	public void removeEvent(final String id) {
 		EventLog eventLog = null;
+		boolean debug = logger.isLoggable(Level.FINE);
 		// lookup the entity....
 		eventLog = manager.find(EventLog.class, id);
 
@@ -232,7 +242,9 @@ public class EventLogService {
 				manager.remove(eventLog);
 			} catch (javax.persistence.OptimisticLockException e) {
 				// no todo - can occure during parallel requests
-				logger.finest(e.getMessage());
+				if (debug) {
+					logger.finest(e.getMessage());
+				}
 			}
 		}
 	}

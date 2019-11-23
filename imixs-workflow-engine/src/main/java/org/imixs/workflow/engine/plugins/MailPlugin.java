@@ -120,19 +120,23 @@ public class MailPlugin extends AbstractPlugin {
 	 */
 	@SuppressWarnings({ "rawtypes" })
 	public ItemCollection run(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		mailMessage = null;
 
 		// check if mail is active? This flag can be set by another plug-in
 		if (documentActivity.getItemValueBoolean("keyMailInactive")
 				|| "1".equals(documentActivity.getItemValueString("keyMailInactive"))) {
-			logger.finest("......keyMailInactive = true - cancel mail message.");
+			if (debug) {
+				logger.finest("......keyMailInactive = true - cancel mail message.");
+			}
 			return documentContext;
 		}
 
 		List vectorRecipients = getRecipients(documentContext, documentActivity);
 		if (vectorRecipients.isEmpty()) {
-			logger.finest("......No Receipients defined for this Activity - cancel mail message.");
+			if (debug) {
+				logger.finest("......No Receipients defined for this Activity - cancel mail message.");
+			}
 			return documentContext;
 		}
 
@@ -176,7 +180,9 @@ public class MailPlugin extends AbstractPlugin {
 
 			// set mailbody
 			MimeBodyPart messagePart = new MimeBodyPart();
-			logger.finest("......ContentType: '" + getContentType() + "'");
+			if (debug) {
+				logger.finest("......ContentType: '" + getContentType() + "'");
+			}
 			messagePart.setContent(aBodyText, getContentType());
 			// append message part
 			mimeMultipart.addBodyPart(messagePart);
@@ -184,10 +190,10 @@ public class MailPlugin extends AbstractPlugin {
 
 		} catch (MessagingException e) {
 			throw new PluginException(MailPlugin.class.getSimpleName(), ERROR_MAIL_MESSAGE, e.getMessage(), e);
-			
-//			logger.warning(" run - Warning:" + e.toString());
-//			e.printStackTrace();
-//			return documentContext;
+
+			// logger.warning(" run - Warning:" + e.toString());
+			// e.printStackTrace();
+			// return documentContext;
 		}
 
 		return documentContext;
@@ -201,6 +207,7 @@ public class MailPlugin extends AbstractPlugin {
 	@Override
 	public void close(boolean rollbackTransaction) throws PluginException {
 		if (!rollbackTransaction && mailSession != null && mailMessage != null) {
+			boolean debug = logger.isLoggable(Level.FINE);
 			// Send the message
 			try {
 
@@ -232,9 +239,9 @@ public class MailPlugin extends AbstractPlugin {
 								" unable to set mail recipients: ", e);
 					}
 				}
-
-				logger.finest("......sending message...");
-
+				if (debug) {
+					logger.finest("......sending message...");
+				}
 				mailMessage.setContent(mimeMultipart, getContentType());
 				mailMessage.saveChanges();
 
@@ -258,7 +265,9 @@ public class MailPlugin extends AbstractPlugin {
 					trans.connect();
 					trans.sendMessage(mailMessage, mailMessage.getAllRecipients());
 					trans.close();
-					logger.finest("...mail transfer in " + (System.currentTimeMillis() - l) + "ms");
+					if (debug) {
+						logger.finest("...mail transfer in " + (System.currentTimeMillis() - l) + "ms");
+					}
 				}
 				logger.info("...send mail: MessageID=" + mailMessage.getMessageID());
 
@@ -280,7 +289,7 @@ public class MailPlugin extends AbstractPlugin {
 	 * @return String - mail seder
 	 */
 	public String getFrom(ItemCollection documentContext, ItemCollection documentActivity) {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		// test if namMailReplyToUser is defined by event
 		String sFrom = documentActivity.getItemValueString("namMailFrom");
 
@@ -291,9 +300,9 @@ public class MailPlugin extends AbstractPlugin {
 		// if no default sender take the current username
 		if (sFrom == null || sFrom.isEmpty())
 			sFrom = this.getWorkflowService().getUserName();
-
-		logger.finest("......From: " + sFrom);
-
+		if (debug) {
+			logger.finest("......From: " + sFrom);
+		}
 		return sFrom;
 	}
 
@@ -307,14 +316,16 @@ public class MailPlugin extends AbstractPlugin {
 	 */
 	public String getReplyTo(ItemCollection documentContext, ItemCollection documentActivity) {
 		String sReplyTo = null;
+		boolean debug = logger.isLoggable(Level.FINE);
 
 		// check for ReplyTo...
 		if ("1".equals(documentActivity.getItemValueString("keyMailReplyToCurrentUser")))
 			sReplyTo = this.getWorkflowService().getUserName();
 		else
 			sReplyTo = documentActivity.getItemValueString("namMailReplyToUser");
-
-		logger.finest("......ReplyTo=" + sReplyTo);
+		if (debug) {
+			logger.finest("......ReplyTo=" + sReplyTo);
+		}
 		return sReplyTo;
 	}
 
@@ -328,10 +339,12 @@ public class MailPlugin extends AbstractPlugin {
 	 * @throws PluginException
 	 */
 	public String getSubject(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
+		boolean debug = logger.isLoggable(Level.FINE);
 		String subject = getWorkflowService().adaptText(documentActivity.getItemValueString("txtMailSubject"),
 				documentContext);
-		logger.finest("......Subject: " + subject);
-
+		if (debug) {
+			logger.finest("......Subject: " + subject);
+		}
 		return subject;
 	}
 
@@ -472,8 +485,11 @@ public class MailPlugin extends AbstractPlugin {
 		String encoding;
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		encoding = "UTF-8";
+		boolean debug = logger.isLoggable(Level.FINE);
 
-		logger.finest("......transfor mail body based on XSL template....");
+		if (debug) {
+			logger.finest("......transfor mail body based on XSL template....");
+		}
 		// Transform XML per XSL and generate output
 		XMLDocument xml;
 		try {
@@ -489,7 +505,7 @@ public class MailPlugin extends AbstractPlugin {
 			XSLHandler.transform(writer.toString(), xslTemplate, encoding, outputStream);
 			return outputStream.toString(encoding);
 
-		} catch ( JAXBException | UnsupportedEncodingException | TransformerException e) {
+		} catch (JAXBException | UnsupportedEncodingException | TransformerException e) {
 			logger.warning("Error processing XSL template!");
 			throw new PluginException(MailPlugin.class.getSimpleName(), ERROR_INVALID_XSL_FORMAT, e.getMessage(), e);
 		} finally {
@@ -509,8 +525,10 @@ public class MailPlugin extends AbstractPlugin {
 	 * @throws MessagingException
 	 */
 	public void initMailMessage() throws AddressException, MessagingException {
-		logger.finest("......initializeMailMessage...");
-
+		boolean debug = logger.isLoggable(Level.FINE);
+		if (debug) {
+			logger.finest("......initializeMailMessage...");
+		}
 		if (mailSession == null) {
 			logger.warning(" Lookup MailSession '" + MAIL_SESSION_NAME + "' failed: ");
 			logger.warning(" Unable to send mails! Verify server resources -> mail session.");
@@ -523,7 +541,7 @@ public class MailPlugin extends AbstractPlugin {
 			}
 
 			// log mail Properties ....
-			if (logger.isLoggable(Level.FINE)) {
+			if (debug) {
 				Properties props = mailSession.getProperties();
 				Enumeration<Object> enumer = props.keys();
 				while (enumer.hasMoreElements()) {

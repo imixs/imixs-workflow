@@ -26,6 +26,7 @@ package org.imixs.workflow.engine.scheduler;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -153,7 +154,10 @@ public class SchedulerController implements Serializable {
 	 * @return
 	 */
 	public String millisToShortDHMS(int duration) {
-		logger.finest("......confert ms " + duration);
+		boolean debug = logger.isLoggable(Level.FINE);
+		if (debug) {
+			logger.finest("......confert ms " + duration);
+		}
 		String res = "";
 		long days = TimeUnit.MILLISECONDS.toDays(duration);
 		long hours = TimeUnit.MILLISECONDS.toHours(duration)

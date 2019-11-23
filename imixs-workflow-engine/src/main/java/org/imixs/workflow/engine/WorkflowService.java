@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -575,7 +576,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 */
 	public ItemCollection processWorkItem(ItemCollection workitem)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		long lStartTime = System.currentTimeMillis();
 
 		if (workitem == null)
@@ -657,7 +658,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		try {
 			long lKernelTime = System.currentTimeMillis();
 			workitem = workflowkernel.process(workitem);
-			logger.fine("...WorkflowKernel processing time=" + (System.currentTimeMillis() - lKernelTime) + "ms");
+			if (debug) {
+				logger.fine("...WorkflowKernel processing time=" + (System.currentTimeMillis() - lKernelTime) + "ms");
+			}
 		} catch (PluginException pe) {
 			// if a plugin exception occurs we roll back the transaction.
 			logger.severe("processing workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
@@ -681,9 +684,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 		}
 
 		workitem = documentService.save(workitem);
-
-		logger.fine("...total processing time=" + (System.currentTimeMillis() - lStartTime) + "ms");
-
+		if (debug) {
+			logger.fine("...total processing time=" + (System.currentTimeMillis() - lStartTime) + "ms");
+		}
 		return workitem;
 	}
 
@@ -752,7 +755,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public ItemCollection processWorkItemByNewTransaction(ItemCollection workitem)
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
-		logger.finest(" ....processing workitem by by new transaction...");
+		boolean debug = logger.isLoggable(Level.FINE);
+		if (debug) {
+			logger.finest(" ....processing workitem by by new transaction...");
+		}
 		return processWorkItem(workitem);
 	}
 
@@ -911,7 +917,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 */
 	public ItemCollection evalWorkflowResult(ItemCollection event, ItemCollection documentContext,
 			boolean resolveItemValues) throws PluginException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		ItemCollection result = new ItemCollection();
 		String workflowResult = event.getItemValueString("txtActivityResult");
 		if (workflowResult.trim().isEmpty()) {
@@ -1012,11 +1018,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 					} else if ("date".equalsIgnoreCase(sType)) {
 						if (content == null || content.isEmpty()) {
 							// no value available - no op!
-							logger.finer("......can not convert empty string into date object");
+							if (debug) {
+								logger.finer("......can not convert empty string into date object");
+							}
 						} else {
 							// convert content value to date object
 							try {
-								logger.finer("......convert string into date object");
+								if (debug) {
+									logger.finer("......convert string into date object");
+								}
 								Date dateResult = null;
 								if (sFormat == null || sFormat.isEmpty()) {
 									// use standard formate short/short
@@ -1029,7 +1039,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 								}
 								result.appendItemValue(itemName, dateResult);
 							} catch (ParseException e) {
-								logger.finer("failed to convert string into date object: " + e.getMessage());
+								if (debug) {
+									logger.finer("failed to convert string into date object: " + e.getMessage());
+								}
 							}
 						}
 
@@ -1112,6 +1124,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	 */
 	@SuppressWarnings("unchecked")
 	protected void registerPlugins(WorkflowKernel workflowkernel, Model model) throws PluginException {
+		boolean debug = logger.isLoggable(Level.FINE);
 		// Fetch the current Profile Entity for this version.
 		ItemCollection profile = model.getDefinition();
 
@@ -1124,7 +1137,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			// aPlugin=null;
 			if (aPlugin != null) {
 				// register injected CDI Plugin
-				logger.finest("......register CDI plugin class: " + aPluginClassName + "...");
+				if (debug) {
+					logger.finest("......register CDI plugin class: " + aPluginClassName + "...");
+				}
 				workflowkernel.registerPlugin(aPlugin);
 			} else {
 				// register plugin by class name
@@ -1134,12 +1149,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	}
 
 	protected void registerAdapters(WorkflowKernel workflowkernel) {
-		if (adapters == null || !adapters.iterator().hasNext()) {
+		boolean debug = logger.isLoggable(Level.FINE);
+		if (debug && (adapters == null || !adapters.iterator().hasNext())) {
 			logger.finest("......no CDI Adapters injected");
 		} else {
 			// iterate over all injected adapters....
 			for (Adapter adapter : this.adapters) {
-				logger.finest("......register CDI Adapter class '" + adapter.getClass().getName() + "'");
+				if (debug) {
+					logger.finest("......register CDI Adapter class '" + adapter.getClass().getName() + "'");
+				}
 				workflowkernel.registerAdapter(adapter);
 			}
 		}
@@ -1202,15 +1220,20 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 	private Plugin findPluginByName(String pluginClassName) {
 		if (pluginClassName == null || pluginClassName.isEmpty())
 			return null;
+		boolean debug = logger.isLoggable(Level.FINE);
 
 		if (plugins == null || !plugins.iterator().hasNext()) {
-			logger.finest("......no CDI plugins injected");
+			if (debug) {
+				logger.finest("......no CDI plugins injected");
+			}
 			return null;
 		}
 		// iterate over all injected plugins....
 		for (Plugin plugin : this.plugins) {
 			if (plugin.getClass().getName().equals(pluginClassName)) {
-				logger.finest("......CDI plugin '" + pluginClassName + "' successful injected");
+				if (debug) {
+					logger.finest("......CDI plugin '" + pluginClassName + "' successful injected");
+				}
 				return plugin;
 			}
 		}

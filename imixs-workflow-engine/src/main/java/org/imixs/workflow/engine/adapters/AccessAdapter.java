@@ -195,7 +195,7 @@ public class AccessAdapter implements GenericAdapter, Serializable {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void updateACLByItemCollection(ItemCollection documentContext, ItemCollection modelEntity)
 			throws PluginException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		if (modelEntity == null || modelEntity.getItemValueBoolean("keyupdateacl") == false) {
 			// no update necessary
 			return;
@@ -212,7 +212,7 @@ public class AccessAdapter implements GenericAdapter, Serializable {
 
 		// update accesslist....
 		documentContext.replaceItemValue(WorkflowService.READACCESS, vectorAccess);
-		if ((logger.isLoggable(Level.FINE)) && (vectorAccess.size() > 0)) {
+		if ((debug) && (vectorAccess.size() > 0)) {
 			logger.finest("......[AccessPlugin] ReadAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
 				logger.finest("               '" + (String) vectorAccess.get(j) + "'");
@@ -229,7 +229,7 @@ public class AccessAdapter implements GenericAdapter, Serializable {
 
 		// update accesslist....
 		documentContext.replaceItemValue(WorkflowService.WRITEACCESS, vectorAccess);
-		if ((logger.isLoggable(Level.FINE)) && (vectorAccess.size() > 0)) {
+		if ((debug) && (vectorAccess.size() > 0)) {
 			logger.finest("......[AccessPlugin] WriteAccess:");
 			for (int j = 0; j < vectorAccess.size(); j++)
 				logger.finest("               '" + (String) vectorAccess.get(j) + "'");

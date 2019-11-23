@@ -30,6 +30,7 @@ package org.imixs.workflow.engine.plugins;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -98,7 +99,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	@SuppressWarnings("unchecked")
 	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
 			throws PluginException, AccessDeniedException, ProcessingErrorException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(adocumentActivity, adocumentContext,
 				false);
 
@@ -109,7 +110,9 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			// 1.) test for items with name subprocess_create and create the
 			// defined suprocesses
 			if (evalItemCollection.hasItem(SUBPROCESS_CREATE)) {
-				logger.finest("......processing " + SUBPROCESS_CREATE);
+				if (debug) {
+					logger.finest("......processing " + SUBPROCESS_CREATE);
+				}
 				// extract the create subprocess definitions...
 				List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_CREATE);
 				createSubprocesses(processValueList, adocumentContext);
@@ -118,7 +121,9 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			// 2.) test for items with name subprocess_update and create the
 			// defined suprocesses
 			if (evalItemCollection.hasItem(SUBPROCESS_UPDATE)) {
-				logger.finest("......sprocessing " + SUBPROCESS_UPDATE);
+				if (debug) {
+					logger.finest("......sprocessing " + SUBPROCESS_UPDATE);
+				}
 				// extract the create subprocess definitions...
 				List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_UPDATE);
 				updateSubprocesses(processValueList, adocumentContext);
@@ -127,7 +132,9 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			// 3.) test for items with name origin_update and update the
 			// origin workitem
 			if (evalItemCollection.hasItem(ORIGIN_UPDATE)) {
-				logger.finest("......processing " + ORIGIN_UPDATE);
+				if (debug) {
+					logger.finest("......processing " + ORIGIN_UPDATE);
+				}
 				// extract the create subprocess definitions...
 				String processValue = evalItemCollection.getItemValueString(ORIGIN_UPDATE);
 				updateOrigin(processValue, adocumentContext);
@@ -179,6 +186,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			// no definition found
 			return;
 		}
+		boolean debug = logger.isLoggable(Level.FINE);
 		// we iterate over each declaration of a SUBPROCESS_CREATE item....
 		for (String processValue : subProcessDefinitions) {
 
@@ -226,8 +234,9 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 				// process the new subprocess...
 				workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
-				
-				logger.finest("...... successful created new subprocess.");
+				if (debug) {
+					logger.finest("...... successful created new subprocess.");
+				}
 				// finally add the new workitemRef into the origin
 				// documentContext
 				addWorkitemRef(workitemSubProcess.getUniqueID(), originWorkitem);
@@ -279,6 +288,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			// no definition found
 			return;
 		}
+		boolean debug = logger.isLoggable(Level.FINE);
 		// we iterate over each declaration of a SUBPROCESS_CREATE item....
 		for (String processValue : subProcessDefinitions) {
 
@@ -314,8 +324,9 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 					if (Pattern.compile(model_pattern).matcher(subModelVersion).find()
 							&& Pattern.compile(task_pattern).matcher(subProcessID).find()) {
-
-						logger.finest("...... subprocess matches criteria.");
+						if (debug) {
+							logger.finest("...... subprocess matches criteria.");
+						}
 						// now clone the field list...
 						copyItemList(processData.getItemValueString("items"), originWorkitem, workitemSubProcess);
 
@@ -339,8 +350,9 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 								originWorkitem.replaceItemValue("action", workflowResult);
 							}
 						}
-
-						logger.finest("...... successful updated subprocess.");
+						if (debug) {
+							logger.finest("...... successful updated subprocess.");
+						}
 					}
 
 					// test for optional action result..
@@ -390,6 +402,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 			// no definition
 			return;
 		}
+		boolean debug = logger.isLoggable(Level.FINE);
 
 		// evaluate the item content (XML format expected here!)
 		ItemCollection processData = XMLParser.parseItemStructure(originProcessDefinition);
@@ -416,9 +429,9 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
 				if (Pattern.compile(model_pattern).matcher(subModelVersion).find()
 						&& Pattern.compile(task_pattern).matcher(subProcessID).find()) {
-
-					logger.finest("...... origin matches criteria.");
-
+					if (debug) {
+						logger.finest("...... origin matches criteria.");
+					}
 					// process the origin workitem
 					String event_pattern = processData.getItemValueString("event");
 					// support deprecated tag 'processid' (issue #446)
@@ -444,8 +457,9 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 						}
 
 					}
-					logger.finest("...... successful processed originprocess.");
-
+					if (debug) {
+						logger.finest("...... successful processed originprocess.");
+					}
 				}
 
 			}
@@ -513,8 +527,10 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 	 * This methods adds a new workItem reference into a workitem
 	 */
 	protected void addWorkitemRef(String aUniqueID, ItemCollection workitem) {
-
-		logger.fine("LinkController add workitem reference: " + aUniqueID);
+		boolean debug = logger.isLoggable(Level.FINE);
+		if (debug) {
+			logger.fine("LinkController add workitem reference: " + aUniqueID);
+		}
 
 		@SuppressWarnings("unchecked")
 		List<String> refList = workitem.getItemValue(LINK_PROPERTY);

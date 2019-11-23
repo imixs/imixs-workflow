@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -228,7 +229,10 @@ public class XMLParser {
 	 * @throws PluginException
 	 */
 	public static ItemCollection parseTag(String xmlContent, String tag) throws PluginException {
-		logger.finest("......parseItemStructure...");
+		boolean debug = logger.isLoggable(Level.FINE);
+		if (debug) {
+			logger.finest("......parseItemStructure...");
+		}
 		ItemCollection result = new ItemCollection();
 		if (xmlContent.length() > 0) {
 			try {
@@ -258,7 +262,9 @@ public class XMLParser {
 							String value = innerXml(childNode);
 	
 							result.replaceItemValue(name, value);
-							logger.finest("......parsing item '" + name + "' value=" + value);
+							if (debug) {
+								logger.finest("......parsing item '" + name + "' value=" + value);
+							}
 						}
 					}
 				

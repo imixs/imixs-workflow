@@ -141,7 +141,6 @@ public class DocumentService {
 	public static final String EVENTLOG_TOPIC_INDEX_ADD = "index.add";
 	public static final String EVENTLOG_TOPIC_INDEX_REMOVE = "index.remove";
 
-	
 	public static final String READACCESS = "$readaccess";
 	public static final String WRITEACCESS = "$writeaccess";
 	public static final String ISAUTHOR = "$isAuthor";
@@ -177,17 +176,16 @@ public class DocumentService {
 
 	@Inject
 	private EventLogService eventLogService;
-	
+
 	@Inject
 	protected Event<DocumentEvent> documentEvents;
 
 	@Inject
 	protected Event<UserGroupEvent> userGroupEvents;
-	
+
 	@Inject
 	@ConfigProperty(name = "index.defaultOperator", defaultValue = "AND")
 	private String indexDefaultOperator;
-
 
 	/**
 	 * Returns a comma separated list of additional Access-Roles defined for this
@@ -355,9 +353,12 @@ public class DocumentService {
 	 * @throws AccessDeniedException
 	 */
 	public ItemCollection save(ItemCollection document) throws AccessDeniedException {
+		boolean debug = logger.isLoggable(Level.FINE);
 		long lSaveTime = System.currentTimeMillis();
-		logger.finest("......save - ID=" + document.getUniqueID() + ", provided version="
-				+ document.getItemValueInteger(VERSION));
+		if (debug) {
+			logger.finest("......save - ID=" + document.getUniqueID() + ", provided version="
+					+ document.getItemValueInteger(VERSION));
+		}
 		Document persistedDocument = null;
 		// Now set flush Mode to COMMIT
 		manager.setFlushMode(FlushModeType.COMMIT);
@@ -367,7 +368,7 @@ public class DocumentService {
 		if (!sID.isEmpty()) {
 			// yes so we can try to find the Entity by its primary key
 			persistedDocument = manager.find(Document.class, sID);
-			if (persistedDocument == null) {
+			if (debug && persistedDocument == null) {
 				logger.finest("......Document '" + sID + "' not found!");
 			}
 		}
@@ -391,7 +392,9 @@ public class DocumentService {
 				persistedDocument.setCreated(cal);
 			}
 			// now persist the new EntityBean!
-			logger.finest("......persist activeEntity");
+			if (debug) {
+				logger.finest("......persist activeEntity");
+			}
 			manager.persist(persistedDocument);
 
 		} else {
@@ -410,9 +413,10 @@ public class DocumentService {
 		}
 
 		// after all the persistedDocument is now managed through JPA!
-		logger.finest(
-				"......save - ID=" + document.getUniqueID() + " managed version=" + persistedDocument.getVersion());
-
+		if (debug) {
+			logger.finest(
+					"......save - ID=" + document.getUniqueID() + " managed version=" + persistedDocument.getVersion());
+		}
 		// remove the property $isauthor
 		document.removeItem(ISAUTHOR);
 
@@ -501,13 +505,14 @@ public class DocumentService {
 		 */
 		persistedDocument.setPending(true);
 
-		logger.fine("...'" + document.getUniqueID() + "' saved in " + (System.currentTimeMillis() - lSaveTime) + "ms");
+		if (debug) {
+			logger.fine(
+					"...'" + document.getUniqueID() + "' saved in " + (System.currentTimeMillis() - lSaveTime) + "ms");
+		}
 		// return the updated document
 		return document;
 	}
-	
-	
-	
+
 	/**
 	 * This method adds a single document into the to the Lucene index. Before the
 	 * document is added to the index, a new eventLog is created. The document will
@@ -527,7 +532,7 @@ public class DocumentService {
 			eventLogService.createEvent(EVENTLOG_TOPIC_INDEX_ADD, document.getUniqueID());
 		}
 	}
-	
+
 	/**
 	 * This method adds a new eventLog for a document to be deleted from the index.
 	 * The document will be removed from the index after the method fluschEventLog
@@ -540,15 +545,14 @@ public class DocumentService {
 	 * @throws PluginException
 	 */
 	public void removeDocumentFromIndex(String uniqueID) {
-		
+		boolean debug = logger.isLoggable(Level.FINE);
 		long ltime = System.currentTimeMillis();
 		eventLogService.createEvent(EVENTLOG_TOPIC_INDEX_REMOVE, uniqueID);
-		if (logger.isLoggable(Level.FINE)) {
+		if (debug) {
 			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime)
 					+ " ms (1 document to be removed)");
 		}
 	}
-	
 
 	/**
 	 * This method saves a workitem in a new transaction. The method can be used by
@@ -600,6 +604,7 @@ public class DocumentService {
 	 * 
 	 */
 	public ItemCollection load(String id) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		long lLoadTime = System.currentTimeMillis();
 		Document persistedDocument = null;
 
@@ -614,7 +619,10 @@ public class DocumentService {
 			ItemCollection result = null;// new ItemCollection();
 			if (persistedDocument.isPending()) {
 				// we clone but do not detach
-				logger.finest("......clone manged entity '" + id + "' pending status=" + persistedDocument.isPending());
+				if (debug) {
+					logger.finest(
+							"......clone manged entity '" + id + "' pending status=" + persistedDocument.isPending());
+				}
 				result = new ItemCollection(persistedDocument.getData());
 			} else {
 				// the document is not managed, so we detach it
@@ -631,8 +639,10 @@ public class DocumentService {
 			} else {
 				logger.warning("Missing CDI support for Event<DocumentEvent> !");
 			}
-			logger.fine(
-					"...'" + result.getUniqueID() + "' loaded in " + (System.currentTimeMillis() - lLoadTime) + "ms");
+			if (debug) {
+				logger.fine("...'" + result.getUniqueID() + "' loaded in " + (System.currentTimeMillis() - lLoadTime)
+						+ "ms");
+			}
 			return result;
 		} else
 			return null;
@@ -797,9 +807,11 @@ public class DocumentService {
 	 */
 	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy, boolean sortReverse)
 			throws QueryException {
-		logger.finest("......find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber=" + pageIndex
-				+ " , sortBy=" + sortBy + " reverse=" + sortReverse);
-
+		boolean debug = logger.isLoggable(Level.FINE);
+		if (debug) {
+			logger.finest("......find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber="
+					+ pageIndex + " , sortBy=" + sortBy + " reverse=" + sortReverse);
+		}
 		// create sort object
 		SortOrder sortOrder = null;
 		if (sortBy != null && !sortBy.isEmpty()) {
@@ -811,14 +823,14 @@ public class DocumentService {
 
 		// flush eventlog (see issue #411)
 		indexUpdateService.updateIndex();
-		
+
 		// evaluate default index operator
-		DefaultOperator defaultOperator=null;
-		
+		DefaultOperator defaultOperator = null;
+
 		if (indexDefaultOperator != null && "OR".equals(indexDefaultOperator.toUpperCase())) {
-			defaultOperator=DefaultOperator.OR;
+			defaultOperator = DefaultOperator.OR;
 		} else {
-			defaultOperator=DefaultOperator.AND;
+			defaultOperator = DefaultOperator.AND;
 		}
 		return indexSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, defaultOperator, false);
 
@@ -856,29 +868,32 @@ public class DocumentService {
 	 */
 	public List<ItemCollection> findStubs(String searchTerm, int pageSize, int pageIndex, String sortBy,
 			boolean sortReverse) throws QueryException {
-		logger.finest("......find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber=" + pageIndex
-				+ " , sortBy=" + sortBy + " reverse=" + sortReverse);
-
+		boolean debug = logger.isLoggable(Level.FINE);
+		if (debug) {
+			logger.finest("......find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber="
+					+ pageIndex + " , sortBy=" + sortBy + " reverse=" + sortReverse);
+		}
 		// create sort object
 		SortOrder sortOrder = null;
 		if (sortBy != null && !sortBy.isEmpty()) {
 			// we do not support multi values here - see
 			// LuceneUpdateService.addItemValues
 			// it would be possible if we use a SortedSetSortField class here
-			sortOrder = new SortOrder(sortBy,sortReverse);
+			sortOrder = new SortOrder(sortBy, sortReverse);
 		}
-		
+
 		// flush eventlog (see issue #411)
 		indexUpdateService.updateIndex();
-		
+
 		// evaluate default index operator
-		DefaultOperator defaultOperator=null;;
+		DefaultOperator defaultOperator = null;
+		;
 		if (indexDefaultOperator != null && "OR".equals(indexDefaultOperator.toUpperCase())) {
-			defaultOperator=DefaultOperator.OR;
+			defaultOperator = DefaultOperator.OR;
 		} else {
-			defaultOperator=DefaultOperator.AND;
+			defaultOperator = DefaultOperator.AND;
 		}
-				
+
 		// find stubs only!
 		return indexSearchService.search(searchTerm, pageSize, pageIndex, sortOrder, defaultOperator, true);
 
@@ -967,6 +982,7 @@ public class DocumentService {
 	 * 
 	 */
 	public List<ItemCollection> getDocumentsByQuery(String query, int firstResult, int maxResult) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
 		Query q = manager.createQuery(query);
 
@@ -984,7 +1000,9 @@ public class DocumentService {
 		Collection<Document> documentList = q.getResultList();
 
 		if (documentList == null) {
-			logger.finest("......getDocumentsByQuery - no ducuments found.");
+			if (debug) {
+				logger.finest("......getDocumentsByQuery - no ducuments found.");
+			}
 			return result;
 		}
 
@@ -996,7 +1014,9 @@ public class DocumentService {
 
 				if (doc.isPending()) {
 					// we clone but do not detach
-					logger.finest("......clone manged entity '" + doc.getId() + "' pending status=" + doc.isPending());
+					if (debug) {
+						logger.finest("......clone manged entity '" + doc.getId() + "' pending status=" + doc.isPending());
+					}
 					_tmp = new ItemCollection(doc.getData());
 				} else {
 					// the document is not managed, so we detach it
@@ -1010,9 +1030,10 @@ public class DocumentService {
 				result.add(_tmp);
 			}
 		}
-
-		logger.fine("...getDocumentsByQuery - found " + documentList.size() + " documents in "
+		if (debug) {
+			logger.fine("...getDocumentsByQuery - found " + documentList.size() + " documents in "
 				+ (System.currentTimeMillis() - l) + " ms");
+		}
 		return result;
 	}
 

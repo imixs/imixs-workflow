@@ -28,6 +28,7 @@
 package org.imixs.workflow.engine.plugins;
 
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
@@ -112,7 +113,7 @@ public class VersionPlugin extends AbstractPlugin {
 	 */
 	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
 			throws PluginException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		documentContext = adocumentContext;
 
 		// determine mode to manage version
@@ -127,9 +128,9 @@ public class VersionPlugin extends AbstractPlugin {
 				// copy workitem
 
 				version = createVersion(documentContext);
-
-				logger.fine("[VersionPlugin] new version created");
-
+				if (debug) {
+					logger.fine("...... new version created");
+				}
 				// check if workitem should be processed
 				if (versionActivityID > 0) {
 					version.replaceItemValue("$ActivityID", versionActivityID);

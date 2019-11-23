@@ -33,6 +33,7 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
@@ -74,13 +75,15 @@ public class XSLHandler {
 
 	public static void transform(String xmlSource, String xslSource, String encoding, OutputStream output)
 			throws UnsupportedEncodingException, TransformerException {
+		boolean debug = logger.isLoggable(Level.FINE);
 		try {
 			if (encoding == null || encoding.isEmpty()) {
 				encoding = "UTF-8";
 			}
 			TransformerFactory transFact = TransformerFactory.newInstance();
-
-			logger.finest("......xslTransformation: encoding=" + encoding);
+			if (debug) {
+				logger.finest("......xslTransformation: encoding=" + encoding);
+			}
 			// generate XML InputStream Reader with encoding
 			ByteArrayInputStream baisXML = new ByteArrayInputStream(xmlSource.getBytes());
 			InputStreamReader isreaderXML;

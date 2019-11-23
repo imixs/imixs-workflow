@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -40,7 +41,7 @@ public class TextPropertyValueAdapter {
 	 */
 	public void onEvent(@Observes TextEvent event) {
 		String text = event.getText();
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		// lower case <propertyValue> into <propertyvalue>
 		if (text.contains("<propertyValue") || text.contains("</propertyValue>")) {
 			logger.warning("Deprecated <propertyValue> tag should be lowercase <propertyvalue> !");
@@ -49,7 +50,9 @@ public class TextPropertyValueAdapter {
 		}
 
 		List<String> tagList = XMLParser.findTags(text, "propertyvalue");
-		logger.finest("......" + tagList.size() + " tags found");
+		if (debug) {
+			logger.finest("......" + tagList.size() + " tags found");
+		}
 		// test if a <value> tag exists...
 		for (String tag : tagList) {
 

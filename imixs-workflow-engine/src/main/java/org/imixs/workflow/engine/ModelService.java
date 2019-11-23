@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -107,16 +108,20 @@ public class ModelService implements ModelManager {
 	 * @throws AccessDeniedException
 	 */
 	void init() throws AccessDeniedException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		// load existing models into the ModelManager....
-		logger.finest("......Initalizing ModelService...");
+		if (debug) {
+			logger.finest("......Initalizing ModelService...");
+		}
 		// first remove existing model entities
 		Collection<ItemCollection> col = documentService.getDocumentsByType("model");
 		for (ItemCollection modelEntity : col) {
 			List<FileData> files = modelEntity.getFileData();
 
 			for (FileData file : files) {
-				logger.finest("......loading file:" + file.getName());
+				if (debug) {
+					logger.finest("......loading file:" + file.getName());
+				}
 				byte[] rawData = file.getContent();
 				InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
 				try {
@@ -148,7 +153,7 @@ public class ModelService implements ModelManager {
 	 */
 	@Override
 	public void addModel(Model model) throws ModelException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		ItemCollection definition = model.getDefinition();
 		if (definition == null) {
 			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Definition not provided! ");
@@ -157,8 +162,9 @@ public class ModelService implements ModelManager {
 		if (modelVersion.isEmpty()) {
 			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Version not provided! ");
 		}
-
-		logger.finest("......add BPMNModel '" + modelVersion + "'...");
+		if (debug) {
+			logger.finest("......add BPMNModel '" + modelVersion + "'...");
+		}
 		getModelStore().put(modelVersion, model);
 	}
 
@@ -171,8 +177,11 @@ public class ModelService implements ModelManager {
 	 * @throws AccessDeniedException
 	 */
 	public void removeModel(String modelversion) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		getModelStore().remove(modelversion);
-		logger.finest("......removed BPMNModel '" + modelversion + "'...");
+		if (debug) {
+			logger.finest("......removed BPMNModel '" + modelversion + "'...");
+		}
 	}
 
 	/**
@@ -198,6 +207,7 @@ public class ModelService implements ModelManager {
 	 **/
 	@Override
 	public Model getModelByWorkitem(ItemCollection workitem) throws ModelException {
+		boolean debug = logger.isLoggable(Level.FINE);
 		String modelVersion = workitem.getModelVersion();
 		String workflowGroup = workitem.getItemValueString(WorkflowKernel.WORKFLOWGROUP);
 		// if $workflowgroup is empty try deprecated field txtworkflowgroup
@@ -211,7 +221,9 @@ public class ModelService implements ModelManager {
 		} catch (ModelException me) {
 			model = null;
 			List<String> versions=null;
-			logger.finest(me.getMessage());
+			if (debug) {
+				logger.finest(me.getMessage());
+			}
 			// try to find latest version by regex....
 			if (modelVersion!=null && !modelVersion.isEmpty()) {
 				versions = findVersionsByRegEx(modelVersion);
@@ -311,8 +323,11 @@ public class ModelService implements ModelManager {
 	 * @return
 	 */
 	public List<String> findVersionsByGroup(String group) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		List<String> result = new ArrayList<String>();
-		logger.finest("......searching model versions for workflowgroup '" + group + "'...");
+		if (debug) {
+			logger.finest("......searching model versions for workflowgroup '" + group + "'...");
+		}
 		// try to find matching model version by group
 		Collection<Model> models = getModelStore().values();
 		for (Model amodel : models) {
@@ -334,8 +349,11 @@ public class ModelService implements ModelManager {
 	 * @return
 	 */
 	public List<String> findVersionsByRegEx(String modelRegex) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		List<String> result = new ArrayList<String>();
-		logger.finest("......searching model versions for regex '" + modelRegex + "'...");
+		if (debug) {
+			logger.finest("......searching model versions for regex '" + modelRegex + "'...");
+		}
 		// try to find matching model version by regex
 		Collection<Model> models = getModelStore().values();
 		for (Model amodel : models) {
@@ -360,10 +378,13 @@ public class ModelService implements ModelManager {
 	 */
 	public void saveModel(BPMNModel model) throws ModelException {
 		if (model != null) {
+			boolean debug = logger.isLoggable(Level.FINE);
 			// first delete existing model entities
 			deleteModel(model.getVersion());
 			// store model into internal cache
-			logger.finest("......save BPMNModel '" + model.getVersion() + "'...");
+			if (debug) {
+				logger.finest("......save BPMNModel '" + model.getVersion() + "'...");
+			}
 			BPMNModel bpmnModel = (BPMNModel) model;
 			addModel(model);
 			ItemCollection modelItemCol = new ItemCollection();
@@ -391,8 +412,10 @@ public class ModelService implements ModelManager {
 	 */
 	public void deleteModel(String version) {
 		if (version != null && !version.isEmpty()) {
-			logger.finest("......delete BPMNModel '" + version + "'...");
-
+			boolean debug = logger.isLoggable(Level.FINE);
+			if (debug) {
+				logger.finest("......delete BPMNModel '" + version + "'...");
+			}
 			Collection<ItemCollection> col = documentService.getDocumentsByType("model");
 			for (ItemCollection modelEntity : col) {
 				// test version...
@@ -418,7 +441,10 @@ public class ModelService implements ModelManager {
 	public ItemCollection loadModelEntity(String version) {
 
 		if (version != null && !version.isEmpty()) {
-			logger.finest("......load BPMNModel Entity '" + version + "'...");
+			boolean debug = logger.isLoggable(Level.FINE);
+			if (debug) {
+				logger.finest("......load BPMNModel Entity '" + version + "'...");
+			}
 
 			Collection<ItemCollection> col = documentService.getDocumentsByType("model");
 			for (ItemCollection modelEntity : col) {

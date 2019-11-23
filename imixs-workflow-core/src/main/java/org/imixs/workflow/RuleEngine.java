@@ -153,7 +153,7 @@ public class RuleEngine {
 	 */
 	public ItemCollection evaluateBusinessRule(String script, ItemCollection documentContext, ItemCollection event)
 			throws PluginException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		// test if a business rule is defined
 		if ("".equals(script.trim()))
 			return null; // nothing to do
@@ -161,8 +161,9 @@ public class RuleEngine {
 		// set activity properties into engine
 		scriptEngine.put("event", convertItemCollection(event));
 		scriptEngine.put("workitem", convertItemCollection(documentContext));
-
-		logger.finest("......SCRIPT:" + script);
+		if (debug) {
+			logger.finest("......SCRIPT:" + script);
+		}
 		try {
 			scriptEngine.eval(script);
 		} catch (ScriptException e) {
@@ -220,7 +221,7 @@ public class RuleEngine {
 	 * @throws PluginException
 	 */
 	public boolean evaluateBooleanExpression(String script, ItemCollection documentContext) throws PluginException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		// test if a business rule is defined
 		if ("".equals(script.trim()))
 			return false; // nothing to do
@@ -228,7 +229,9 @@ public class RuleEngine {
 		// set activity properties into engine
 		scriptEngine.put("workitem", convertItemCollection(documentContext));
 
-		logger.finest("......SCRIPT:" + script);
+		if (debug) {
+			logger.finest("......SCRIPT:" + script);
+		}
 		Object result = null;
 		try {
 			result = scriptEngine.eval(script);
@@ -257,7 +260,7 @@ public class RuleEngine {
 	 */
 	public Object[] evaluateNativeScriptArray(String expression) {
 		Object[] params = null;
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		if (scriptEngine == null) {
 			logger.severe("evaluateScritpObject error: no script engine! - call run()");
 			return null;
@@ -293,7 +296,7 @@ public class RuleEngine {
 				return null;
 			}
 			// logging
-			if (logger.isLoggable(Level.FINE)) {
+			if (debug) {
 				logger.finest("......evalueateScript object to Java");
 				for (Object val : resultList) {
 					logger.finest("        " + val.toString());
@@ -304,7 +307,9 @@ public class RuleEngine {
 		} catch (ScriptException se) {
 			// not convertable!
 			// se.printStackTrace();
-			logger.finest("......error evaluating " + expression + " - " + se.getMessage());
+			if (debug) {
+				logger.finest("......error evaluating " + expression + " - " + se.getMessage());
+			}
 			return null;
 		}
 
@@ -357,6 +362,7 @@ public class RuleEngine {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ItemCollection convertScriptVariableToItemCollection(String variable) {
 		ItemCollection result = null;
+		boolean debug = logger.isLoggable(Level.FINE);
 		// get result object from engine
 		Map<String, Object> scriptResult = (Map) scriptEngine.get(variable);
 		// test if the json object exists and has child objects...
@@ -370,7 +376,9 @@ public class RuleEngine {
 					// test if the entry value is a single object or an array....
 					if (isBasicObjectType(entry.getValue().getClass())) {
 						// single value - build array....
-						logger.finest("......adding " + variable + " property " + entry.getKey());
+						if (debug) {
+							logger.finest("......adding " + variable + " property " + entry.getKey());
+						}
 						List<Object> list = new ArrayList();
 						list.add(entry.getValue());
 						result.replaceItemValue(entry.getKey(), list);
@@ -381,7 +389,9 @@ public class RuleEngine {
 						if (oScript == null) {
 							continue;
 						}
-						logger.finest("......adding " + variable + " property " + entry.getKey());
+						if (debug) {
+							logger.finest("......adding " + variable + " property " + entry.getKey());
+						}
 						List<?> list = new ArrayList(Arrays.asList(oScript));
 						result.replaceItemValue(entry.getKey(), list);
 					}

@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -61,6 +62,7 @@ public class TextItemValueAdapter {
 	 * 
 	 */
 	public void onEvent(@Observes TextEvent event) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		String text = event.getText();
 		ItemCollection documentContext = event.getDocument();
 
@@ -79,7 +81,9 @@ public class TextItemValueAdapter {
 		
 
 		List<String> tagList = XMLParser.findTags(text, "itemvalue");
-		logger.finest("......"+tagList.size() + " tags found");
+		if (debug) {
+			logger.finest("......"+tagList.size() + " tags found");
+		}
 		// test if a <value> tag exists...
 		for (String tag : tagList) {
 

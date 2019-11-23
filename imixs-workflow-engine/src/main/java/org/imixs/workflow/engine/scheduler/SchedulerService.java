@@ -436,9 +436,12 @@ public class SchedulerService {
 		if (schedulerClassName == null || schedulerClassName.isEmpty()) {
 			return null;
 		}
+		boolean debug = logger.isLoggable(Level.FINE);
 
 		if (schedulerHandlers == null || !schedulerHandlers.iterator().hasNext()) {
-			logger.finest("......no CDI schedulers injected");
+			if (debug) {
+				logger.finest("......no CDI schedulers injected");
+			}
 			return null;
 		}
 
@@ -446,7 +449,9 @@ public class SchedulerService {
 		// iterate over all injected JobHandlers....
 		for (Scheduler scheduler : this.schedulerHandlers) {
 			if (scheduler.getClass().getName().equals(schedulerClassName)) {
-				logger.finest("......CDI Scheduler class '" + schedulerClassName + "' successful injected");
+				if (debug) {
+					logger.finest("......CDI Scheduler class '" + schedulerClassName + "' successful injected");
+				}
 				return scheduler;
 			}
 		}

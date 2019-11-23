@@ -30,6 +30,7 @@ package org.imixs.workflow.engine.plugins;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
@@ -54,7 +55,6 @@ public abstract class AbstractPlugin implements Plugin {
 
 	private WorkflowContext ctx;
 	private WorkflowService workflowService;
-	private static Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
 
 	/**
 	 * Initialize Plugin and get an instance of the EJB Session Context
@@ -63,7 +63,6 @@ public abstract class AbstractPlugin implements Plugin {
 		ctx = actx;
 		// get WorkflowService by check for an instance of WorkflowService
 		if (actx instanceof WorkflowService) {
-			logger.finest("......adapt workflowService EJB");
 			// yes we are running in a WorkflowService EJB
 			workflowService = (WorkflowService) actx;
 		}
