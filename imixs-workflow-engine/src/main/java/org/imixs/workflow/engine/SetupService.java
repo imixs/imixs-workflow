@@ -123,10 +123,7 @@ public class SetupService {
 	@Inject
 	protected Event<SetupEvent> setupEvents;
 
-	public int getModelCount() {
-		return modelService.getVersions().size();
-	}
-
+	
 	/**
 	 * This method start the system setup during deployment
 	 * 
@@ -174,6 +171,23 @@ public class SetupService {
 		schedulerService.startAllSchedulers();
 	
 	}
+	
+	/**
+	 * Returns the count of available model versions
+	 * @return
+	 */
+	public int getModelVersionCount() {
+		return modelService.getVersions().size();
+	}
+
+	/**
+	 * Returns the count of available unique model groups
+	 * @return
+	 */
+	public int getModelGroupCount() {
+		return modelService.getGroups().size();
+	}
+	
 
 	/**
 	 * This method loads the default model if no models exist in the current
