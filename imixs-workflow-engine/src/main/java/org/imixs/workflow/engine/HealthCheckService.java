@@ -75,7 +75,6 @@ public class HealthCheckService implements HealthCheck {
 	@Override
 	public HealthCheckResponse call() {
 		HealthCheckResponseBuilder builder = null;
-		long l=System.currentTimeMillis();
 		int modelCount = 0;
 		int groupCount = 0;
 		boolean failure = false;
@@ -90,15 +89,11 @@ public class HealthCheckService implements HealthCheck {
 
 		if (!failure) {
 			builder = HealthCheckResponse.named("imixs-workflow").withData("engine.version", getWorkflowVersion())
-					.withData("model.versions", modelCount)
-					.withData("model.groups", groupCount)
-					.up();
+					.withData("model.versions", modelCount).withData("model.groups", groupCount).up();
 		} else {
 			builder = HealthCheckResponse.named("imixs-workflow").down();
 		}
 
-		logger.info(" berechnet in " + (System.currentTimeMillis() -l) + "ms");
-		
 		return builder.build();
 	}
 
@@ -110,7 +105,6 @@ public class HealthCheckService implements HealthCheck {
 	 */
 	private String getWorkflowVersion() {
 		if (workflowVersion == null) {
-			logger.info("...loading pom.properies");
 			try {
 				InputStream resourceAsStream = this.getClass()
 						.getResourceAsStream("/META-INF/maven/org.imixs.workflow/imixs-workflow-engine/pom.properties");
