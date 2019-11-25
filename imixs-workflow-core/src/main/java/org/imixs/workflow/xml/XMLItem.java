@@ -78,11 +78,11 @@ public class XMLItem implements Serializable {
 	 * values are from basic type, XMLItem or implementing the Map or List
 	 * interface.
 	 * <p>
-	 * Map or List interface will be converted into instantces of XMLItem.
+	 * Map or List interface will be converted into instances of XMLItem.
 	 * <p>
 	 * Null values will be converted into an empty vector.
 	 * <p>
-	 * In case an value is not convertable the method prints a warning into the log
+	 * In case an value is not convertible the method prints a warning into the log
 	 * file.
 	 * <p>
 	 * issue #52: the method also converts XMLGregorianCalendar into java.util.Date
