@@ -105,6 +105,8 @@ public class TestJSONParserWorkitem {
 		Assert.assertEquals(20, itemCol.getTaskID());
 
 		Assert.assertEquals("worklist", itemCol.getItemValueString("txtworkflowresultmessage"));
+		Assert.assertEquals("true", itemCol.getItemValueString("$isAuthor"));
+		Assert.assertEquals(7, itemCol.getItemValueInteger("$activityID"));
 
 		Assert.assertEquals("14194929161-1003e42a", itemCol.getItemValueString("$UniqueID"));
 

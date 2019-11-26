@@ -3,7 +3,7 @@
  {"name":"$readaccess","value":{"@type":"xs:string","$":""}},
  {"name":"txtworkflowresultmessage","value":{"@type":"xs:string","$":"worklist"}},
  {"name":"txtworkflowhistorylog","value":{"@type":"xs:string","$":"07.10.2013 22:18 : ticket updated by Manfred"}},
- {"name":"$activityid","value":{"@type":"xs:int","$":"0"}},
+ {"name":"$activityid","value":{"@type":"xs:int","$":"7"}},
  {"name":"txtworkflowhistorylogrev","value":{"@type":"xs:string","$":"07.10.2013 22:18 : ticket updated by Manfred"}},
  {"name":"txtworkflowabstract","value":{"@type":"xs:string","$":""}},
  {"name":"txtworkflowstatus","value":{"@type":"xs:string","$":"open"}},

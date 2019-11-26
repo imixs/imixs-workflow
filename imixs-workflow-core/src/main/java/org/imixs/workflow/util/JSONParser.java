@@ -302,19 +302,19 @@ public class JSONParser {
 
 		// convert value to Object Type
 		if ("xs:boolean".equalsIgnoreCase(type)) {
-			value = Boolean.getBoolean(stringValue);
+			value=	Boolean.parseBoolean(stringValue);
 			if (debug) {
 				logger.finest("......storeValue - datatype=xs:boolean");
 			}
 		}
-		if ("xs:integer".equalsIgnoreCase(type)) {
-			value = Integer.getInteger(stringValue);
+		if ("xs:integer".equalsIgnoreCase(type) || "xs:int".equalsIgnoreCase(type)) {
+			value = Integer.parseInt(stringValue);
 			if (debug) {
 				logger.finest("......storeValue - datatype=xs:integer");
 			}
 		}
 		if ("xs:long".equalsIgnoreCase(type)) {
-			value = Long.getLong(stringValue);
+			value = Long.parseLong(stringValue);
 			if (debug) {
 				logger.finest("......storeValue - datatype=xs:long");
 			}
