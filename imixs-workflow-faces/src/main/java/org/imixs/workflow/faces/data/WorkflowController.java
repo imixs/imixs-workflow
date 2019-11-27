@@ -208,8 +208,21 @@ public class WorkflowController extends AbstractDataController implements Serial
 		}
 		data.replaceItemValue("type", type);
 
+		if (loginController != null) {
+			String user = loginController.getUserPrincipal();
+			// set creator
+			data.replaceItemValue(WorkflowKernel.CREATOR, user);
+			// support deprecated field
+			data.replaceItemValue("namcreator", user);
+
+			// set default owner
+			data.replaceItemValue(OwnerPlugin.OWNER, user);
+			// support deprecated field
+			data.replaceItemValue("namowner", user);
+		}
+
 		// update $WriteAccess
-		data.replaceItemValue("$writeaccess", data.getItemValue("$creator"));
+		data.replaceItemValue("$writeaccess", data.getItemValue(WorkflowKernel.CREATOR));
 
 		// assign WorkflowGroup and editor
 		data.replaceItemValue("$workflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
@@ -256,10 +269,6 @@ public class WorkflowController extends AbstractDataController implements Serial
 		if (uniqueIdRef != null && !uniqueIdRef.isEmpty()) {
 			data.replaceItemValue(WorkflowService.UNIQUEIDREF, uniqueIdRef);
 		}
-		// set default owner
-		data.replaceItemValue(OwnerPlugin.OWNER, loginController.getUserPrincipal());
-		// support deprecated field
-		data.replaceItemValue("namowner", loginController.getUserPrincipal());
 
 		// set empty $workitemid
 		data.replaceItemValue("$workitemid", "");
