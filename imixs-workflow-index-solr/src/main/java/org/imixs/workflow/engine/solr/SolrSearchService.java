@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.security.DeclareRoles;
@@ -124,7 +125,7 @@ public class SolrSearchService implements SearchService {
 	@Override
 	public List<ItemCollection> search(String _searchTerm, int pageSize, int pageIndex, SortOrder sortOrder,
 			DefaultOperator defaultOperator, boolean loadStubs) throws QueryException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		long ltime = System.currentTimeMillis();
 
 		if (pageSize <= 0) {
@@ -134,9 +135,9 @@ public class SolrSearchService implements SearchService {
 		if (pageIndex < 0) {
 			pageIndex = 0;
 		}
-
-		logger.finest("......solr search: pageNumber=" + pageIndex + " pageSize=" + pageSize);
-
+		if (debug) {
+			logger.finest("......solr search: pageNumber=" + pageIndex + " pageSize=" + pageSize);
+		}
 		ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
 		String searchTerm = adaptSearchTerm(_searchTerm);
@@ -147,8 +148,9 @@ public class SolrSearchService implements SearchService {
 
 		// post query....
 		String result = solarIndexService.query(searchTerm, pageSize, pageIndex, sortOrder, defaultOperator, loadStubs);
-		logger.finest("......Result = " + result);
-
+		if (debug) {
+			logger.finest("......Result = " + result);
+		}
 		if (result != null && !result.isEmpty()) {
 			List<ItemCollection> documentStubs = parseQueryResult(result);
 			if (loadStubs) {
@@ -194,7 +196,7 @@ public class SolrSearchService implements SearchService {
 		long l = System.currentTimeMillis();
 		int hits = 0;
 
-		String searchTerm=adaptSearchTerm(_searchTerm);
+		String searchTerm = adaptSearchTerm(_searchTerm);
 		// test if searchtem is provided
 		if (searchTerm == null || "".equals(searchTerm)) {
 			return 0;
@@ -222,6 +224,7 @@ public class SolrSearchService implements SearchService {
 	 * @return List of ItemCollection objects
 	 */
 	protected List<ItemCollection> parseQueryResult(String json) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		long l = System.currentTimeMillis();
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
 		JsonParser parser = Json.createParser(new StringReader(json));
@@ -242,8 +245,9 @@ public class SolrSearchService implements SearchService {
 							event = parser.next();
 							while (event.name().equals(Event.START_OBJECT.toString())) {
 								// a single doc..
-
-								logger.finest("......parse doc....");
+								if (debug) {
+									logger.finest("......parse doc....");
+								}
 								ItemCollection itemCol = parseDoc(parser);
 								// now take the values
 								result.add(itemCol);
@@ -264,8 +268,9 @@ public class SolrSearchService implements SearchService {
 				break;
 			}
 		}
-
-		logger.finest("......total parsing time " + (System.currentTimeMillis() - l) + "ms");
+		if (debug) {
+			logger.finest("......total parsing time " + (System.currentTimeMillis() - l) + "ms");
+		}
 		return result;
 	}
 
@@ -276,12 +281,15 @@ public class SolrSearchService implements SearchService {
 	 * @return
 	 */
 	private ItemCollection parseDoc(JsonParser parser) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		ItemCollection document = new ItemCollection();
 		Event event = null;
 		event = parser.next(); // a single doc..
 		while (event.name().equals(Event.KEY_NAME.toString())) {
 			String itemName = parser.getString();
-			logger.finest("......found item " + itemName);
+			if (debug) {
+				logger.finest("......found item " + itemName);
+			}
 			List<?> itemValue = parseItem(parser);
 			// convert itemName and value....
 			itemName = solarIndexService.adaptSolrFieldName(itemName);
@@ -423,7 +431,7 @@ public class SolrSearchService implements SearchService {
 	 * 
 	 * @param _serachTerm
 	 * @return
-	 * @throws QueryException 
+	 * @throws QueryException
 	 */
 	private String adaptSearchTerm(String _serachTerm) throws QueryException {
 		if (_serachTerm == null || "".equals(_serachTerm)) {

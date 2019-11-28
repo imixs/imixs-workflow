@@ -183,14 +183,16 @@ public class SolrIndexService {
 	 * @throws RestAPIException
 	 */
 	public void updateSchema(String schema) throws RestAPIException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		// create the schema....
 		String schemaUpdate = buildUpdateSchema(schema);
 		// test if the schemaUdpate contains instructions....
 		if (!"{}".equals(schemaUpdate)) {
 			String uri = api + "/api/cores/" + core + "/schema";
 			logger.info("...updating schema '" + core + "':");
+			if (debug) {
 			logger.finest("..." + schemaUpdate);
+			}
 			restClient.post(uri, schemaUpdate, "application/json");
 			logger.info("...schema update - successfull ");
 			// force rebuild index
@@ -215,14 +217,14 @@ public class SolrIndexService {
 	 */
 	public void indexDocuments(List<ItemCollection> documents) throws RestAPIException {
 		long ltime = System.currentTimeMillis();
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		if (documents == null || documents.size() == 0) {
 			// no op!
 			return;
 		} else {
 
 			String xmlRequest = buildAddDoc(documents);
-			if (logger.isLoggable(Level.FINEST)) {
+			if (debug) {
 				logger.finest(xmlRequest);
 			}
 
@@ -230,7 +232,7 @@ public class SolrIndexService {
 			restClient.post(uri, xmlRequest, "text/xml");
 		}
 
-		if (logger.isLoggable(Level.FINE)) {
+		if (debug) {
 			logger.fine("... update index block in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
 					+ " workitems total)");
 		}
@@ -261,6 +263,7 @@ public class SolrIndexService {
 	 * @throws RestAPIException
 	 */
 	public void removeDocuments(List<String> documents) throws RestAPIException {
+		boolean debug = logger.isLoggable(Level.FINE);
 		long ltime = System.currentTimeMillis();
 
 		if (documents == null || documents.size() == 0) {
@@ -279,7 +282,7 @@ public class SolrIndexService {
 			restClient.post(uri, xmlRequest, "text/xml");
 		}
 
-		if (logger.isLoggable(Level.FINE)) {
+		if (debug) {
 			logger.fine("... update index block in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
 					+ " workitems total)");
 		}
@@ -330,9 +333,10 @@ public class SolrIndexService {
 	 */
 	public String query(String searchTerm, int pageSize, int pageIndex, SortOrder sortOrder,
 			DefaultOperator defaultOperator, boolean loadStubs) throws QueryException {
-
+		boolean debug = logger.isLoggable(Level.FINE);
+		if (debug) {
 		logger.fine("...search solr index: " + searchTerm + "...");
-
+		}
 		StringBuffer uri = new StringBuffer();
 
 		// URL Encode the query string....
@@ -384,13 +388,13 @@ public class SolrIndexService {
 
 			// append query
 			uri.append("&q=" + URLEncoder.encode(searchTerm, "UTF-8"));
-
+			if (debug) {
 			logger.finest("...... uri=" + uri.toString());
+			}
 			String result = restClient.get(uri.toString());
 
 			return result;
 		} catch (RestAPIException | UnsupportedEncodingException e) {
-
 			logger.severe("Solr search error: " + e.getMessage());
 			throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
 		}
@@ -478,7 +482,7 @@ public class SolrIndexService {
 	 * @return
 	 */
 	protected String buildUpdateSchema(String oldSchema) {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		StringBuffer updateSchema = new StringBuffer();
 		List<String> fieldListStore = schemaService.getFieldListStore();
 		List<String> fieldListAnalyze = schemaService.getFieldListAnalyze();
@@ -487,8 +491,9 @@ public class SolrIndexService {
 		// remove white space from oldSchema to simplify string compare...
 		oldSchema = oldSchema.replace(" ", "");
 
-		logger.finest("......old schema=" + oldSchema);
-
+		if (debug) {
+			logger.finest("......old schema=" + oldSchema);
+		}
 		updateSchema.append("{");
 
 		// finally add the default content field
@@ -526,7 +531,7 @@ public class SolrIndexService {
 	 * @return xml content to update documents
 	 */
 	protected String buildAddDoc(List<ItemCollection> documents) {
-
+		boolean debug = logger.isLoggable(Level.FINE);
 		List<String> fieldList = schemaService.getFieldList();
 		List<String> fieldListAnalyze = schemaService.getFieldListAnalyze();
 		List<String> fieldListNoAnalyze = schemaService.getFieldListNoAnalyze();
@@ -579,8 +584,9 @@ public class SolrIndexService {
 					content += sValue + ",";
 				}
 			}
+			if (debug) {
 			logger.finest("......add index field " + DEFAULT_SEARCH_FIELD + "=" + content);
-
+			}
 			// remove existing CDATA...
 			content = stripCDATA(content);
 			// strip control codes..
@@ -787,13 +793,16 @@ public class SolrIndexService {
 	 *            the max size of a eventLog engries to remove.
 	 * @return true if the cache was totally flushed.
 	 */
-	protected boolean flushEventLogByCount(int count) {
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
+	public boolean flushEventLogByCount(int count) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		Date lastEventDate = null;
 		boolean cacheIsEmpty = true;
 
 		long l = System.currentTimeMillis();
-		logger.finest("......flush eventlog cache....");
-
+		if (debug) {
+			logger.finest("......flush eventlog cache....");
+		}
 		List<EventLog> events = eventLogService.findEventsByTopic(count + 1, DocumentService.EVENTLOG_TOPIC_INDEX_ADD,
 				DocumentService.EVENTLOG_TOPIC_INDEX_REMOVE);
 
@@ -816,14 +825,18 @@ public class SolrIndexService {
 						workitem.setAllItems(doc.getData());
 						if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
 							indexDocument(workitem);
-							logger.finest("......solr added workitem '" + eventLogEntry.getId() + "' to index in "
+							if (debug) {
+								logger.finest("......solr added workitem '" + eventLogEntry.getId() + "' to index in "
 									+ (System.currentTimeMillis() - l2) + "ms");
+							}
 						}
 					} else {
 						long l2 = System.currentTimeMillis();
 						removeDocument(eventLogEntry.getId());
+						if (debug) {
 						logger.finest("......solr removed workitem '" + eventLogEntry.getId() + "' from index in "
 								+ (System.currentTimeMillis() - l2) + "ms");
+						}
 					}
 
 					// remove the eventLogEntry.
@@ -852,9 +865,10 @@ public class SolrIndexService {
 			}
 		}
 
+		if (debug) {
 		logger.fine("...flushEventLog - " + events.size() + " events in " + (System.currentTimeMillis() - l)
 				+ " ms - last log entry: " + lastEventDate);
-
+		}
 		return cacheIsEmpty;
 
 	}
@@ -878,6 +892,7 @@ public class SolrIndexService {
 	 */
 	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public boolean flushEventLog(int junkSize) {
+		boolean debug = logger.isLoggable(Level.FINE);
 		long total = 0;
 		long count = 0;
 		boolean dirtyIndex = true;
@@ -889,7 +904,7 @@ public class SolrIndexService {
 				if (dirtyIndex) {
 					total = total + EVENTLOG_ENTRY_FLUSH_COUNT;
 					count = count + EVENTLOG_ENTRY_FLUSH_COUNT;
-					if (count >= 100) {
+					if (count >= 100 && debug) {
 						logger.finest("...flush event log: " + total + " entries in " + (System.currentTimeMillis() - l)
 								+ "ms...");
 						count = 0;
@@ -900,8 +915,10 @@ public class SolrIndexService {
 					// experimental code: we break the flush method after 1024 flushs
 					// maybe we can remove this hard break
 					if (total >= junkSize) {
+						if (debug) {
 						logger.finest("...flush event: Issue #439  -> total count >=" + total
 								+ " flushEventLog will be continued...");
+						}
 						return false;
 					}
 				}

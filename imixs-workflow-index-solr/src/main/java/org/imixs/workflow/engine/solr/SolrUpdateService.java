@@ -91,7 +91,7 @@ public class SolrUpdateService implements UpdateService {
 		long ltime = System.currentTimeMillis();
 		// flush eventlog (see issue #411)
 		int flushCount = 0;
-		while (solrIndexService.flushEventLog(2048) == false) {
+		while (solrIndexService.flushEventLog(1024) == false) {
 			// repeat flush....
 			flushCount = +2048;
 			logger.info("...flush event log: " + flushCount + " entries updated in "
