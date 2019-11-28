@@ -359,10 +359,6 @@ public class DocumentService {
 			logger.finest("......save - ID=" + document.getUniqueID() + ", provided version="
 					+ document.getItemValueInteger(VERSION));
 		}
-		
-		// flush eventlog 
-		indexUpdateService.updateIndex();
-		
 		Document persistedDocument = null;
 		// Now set flush Mode to COMMIT
 		manager.setFlushMode(FlushModeType.COMMIT);

@@ -63,7 +63,6 @@ import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.WorkflowManager;
-import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
@@ -119,9 +118,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
 	@Inject
 	DocumentService documentService;
-	
-	@Inject
-	UpdateService indexUpdateService;
 
 	@Inject
 	ModelService modelService;
@@ -587,9 +583,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 			throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
 					ProcessingErrorException.INVALID_WORKITEM, "workitem Is Null!");
 
-		// flush eventlog
-		indexUpdateService.updateIndex();
-		
 		// fire event
 		if (processingEvents != null) {
 			processingEvents.fire(new ProcessingEvent(workitem, ProcessingEvent.BEFORE_PROCESS));
