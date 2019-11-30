@@ -67,8 +67,25 @@ import org.imixs.workflow.services.rest.RestAPIException;
 import org.imixs.workflow.services.rest.RestClient;
 
 /**
- * The SolrCoreService checks the existence of a solr core. If no core is found,
- * than the service tries to create a new core from scratch.
+ * The SolrIndexService provides methods to add, update and remove imixs
+ * documents from a solr index.
+ * <p>
+ * The service validates the solr index schema and updates the schema it
+ * changed.
+ * <p>
+ * The SolrIndexService is used by the SolrUpdateService and the
+ * SolrSearchService which are extending and implementing the Imix-Index
+ * concept.
+ * <p>
+ * The SolrIndexService can be configured by the following properties:
+ * <p>
+ * <ul>
+ * <li>solr.api - api endpoint for the solr index</li>
+ * <li>solr.core - name of the solr index core (default 'imixs-workflow')</li>
+ * <li>solr.configset - an optinal solr configset (default '_default')</li>
+ * <li>solr.user - userid for optional basic authentication</li>
+ * <li>solr.password - password for optional basic authentication</li>
+ * </ul>
  * 
  * @version 1.0
  * @author rsoika
@@ -82,15 +99,13 @@ import org.imixs.workflow.services.rest.RestClient;
 @Stateless
 public class SolrIndexService {
 
-	public static final String DEFAULT_SEARCH_FIELD = "_text_";
 	public static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
+
+	public static final String DEFAULT_SEARCH_FIELD = "_text_";
 	public static final int DEFAULT_MAX_SEARCH_RESULT = 9999; // limiting the
 																// total
 	// number of hits
 	public static final int DEFAULT_PAGE_SIZE = 100; // default docs in one page
-
-	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
-	private EntityManager manager;
 
 	@Inject
 	@ConfigProperty(name = "solr.api", defaultValue = "http://solr:8983")
@@ -114,12 +129,16 @@ public class SolrIndexService {
 
 	@Inject
 	private SchemaService schemaService;
-
+	
 	@Inject
 	private EventLogService eventLogService;
 
 	@Inject
 	private AdminPService adminPService;
+	
+	@PersistenceContext(unitName = "org.imixs.workflow.jpa")
+	EntityManager manager;
+
 
 	private RestClient restClient;
 
@@ -191,7 +210,7 @@ public class SolrIndexService {
 			String uri = api + "/api/cores/" + core + "/schema";
 			logger.info("...updating schema '" + core + "':");
 			if (debug) {
-			logger.finest("..." + schemaUpdate);
+				logger.finest("..." + schemaUpdate);
 			}
 			restClient.post(uri, schemaUpdate, "application/json");
 			logger.info("...schema update - successfull ");
@@ -335,7 +354,7 @@ public class SolrIndexService {
 			DefaultOperator defaultOperator, boolean loadStubs) throws QueryException {
 		boolean debug = logger.isLoggable(Level.FINE);
 		if (debug) {
-		logger.fine("...search solr index: " + searchTerm + "...");
+			logger.fine("...search solr index: " + searchTerm + "...");
 		}
 		StringBuffer uri = new StringBuffer();
 
@@ -389,7 +408,7 @@ public class SolrIndexService {
 			// append query
 			uri.append("&q=" + URLEncoder.encode(searchTerm, "UTF-8"));
 			if (debug) {
-			logger.finest("...... uri=" + uri.toString());
+				logger.finest("...... uri=" + uri.toString());
 			}
 			String result = restClient.get(uri.toString());
 
@@ -585,7 +604,7 @@ public class SolrIndexService {
 				}
 			}
 			if (debug) {
-			logger.finest("......add index field " + DEFAULT_SEARCH_FIELD + "=" + content);
+				logger.finest("......add index field " + DEFAULT_SEARCH_FIELD + "=" + content);
 			}
 			// remove existing CDATA...
 			content = stripCDATA(content);
@@ -613,6 +632,207 @@ public class SolrIndexService {
 
 		return xmlContent.toString();
 	}
+
+	/**
+	 * This helper method is to strip control codes and extended characters from a
+	 * string. We can not put those chars into the XML request send to solr.
+	 * <p>
+	 * Background:
+	 * <p>
+	 * In ASCII, the control codes have decimal codes 0 through to 31 and 127. On an
+	 * ASCII based system, if the control codes are stripped, the resultant string
+	 * would have all of its characters within the range of 32 to 126 decimal on the
+	 * ASCII table.
+	 * <p>
+	 * On a non-ASCII based system, we consider characters that do not have a
+	 * corresponding glyph on the ASCII table (within the ASCII range of 32 to 126
+	 * decimal) to be an extended character for the purpose of this task.
+	 * </p>
+	 * 
+	 * @see https://rosettacode.org/wiki/Strip_control_codes_and_extended_characters_from_a_string
+	 * 
+	 * @param s
+	 * @param include
+	 * @return
+	 */
+	protected String stripControlCodes(String s) {
+
+		// control codes stripped (but extended characters not stripped)
+		// IntPredicate include=c -> c > '\u001F' && c != '\u007F';
+
+		// control codes and extended characters stripped
+		IntPredicate include = c -> c > '\u001F' && c < '\u007F';
+		return s.codePoints().filter(include::test)
+				.collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
+	}
+
+	/**
+	 * This helper method strips CDATA blocks from a string. We can not post
+	 * embedded CDATA in an alredy existing CDATA when we post the xml to solr.
+	 * <p>
+	 * 
+	 * @param s
+	 * @return
+	 */
+	protected String stripCDATA(String s) {
+
+		if (s.contains("<![CDATA[")) {
+			String result = s.replaceAll("<!\\[CDATA\\[", "");
+			result = result.replaceAll("]]>", "");
+			return result;
+		} else {
+			return s;
+		}
+	}
+	
+	
+
+	/**
+	 * This method flushes a given count of eventLogEntries. The method return true
+	 * if no more eventLogEntries exist.
+	 * 
+	 * @param count
+	 *            the max size of a eventLog engries to remove.
+	 * @return true if the cache was totally flushed.
+	 */
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
+	public boolean flushEventLogByCount(int count) {
+		boolean debug = logger.isLoggable(Level.FINE);
+		Date lastEventDate = null;
+		boolean cacheIsEmpty = true;
+
+		long l = System.currentTimeMillis();
+		if (debug) {
+			logger.finest("......flush eventlog cache....");
+		}
+		List<EventLog> events = eventLogService.findEventsByTopic(count + 1, DocumentService.EVENTLOG_TOPIC_INDEX_ADD,
+				DocumentService.EVENTLOG_TOPIC_INDEX_REMOVE);
+
+		if (events != null && events.size() > 0) {
+			try {
+
+				int _counter = 0;
+				for (EventLog eventLogEntry : events) {
+
+					// lookup the Document Entity...
+					org.imixs.workflow.engine.jpa.Document doc = manager
+							.find(org.imixs.workflow.engine.jpa.Document.class, eventLogEntry.getRef());
+
+					// if the document was found we add/update the index. Otherwise we remove the
+					// document form the index.
+					if (doc != null && DocumentService.EVENTLOG_TOPIC_INDEX_ADD.equals(eventLogEntry.getTopic())) {
+						// add workitem to search index....
+						long l2 = System.currentTimeMillis();
+						ItemCollection workitem = new ItemCollection();
+						workitem.setAllItems(doc.getData());
+						if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
+							indexDocument(workitem);
+							if (debug) {
+								logger.finest("......solr added workitem '" + eventLogEntry.getId() + "' to index in "
+										+ (System.currentTimeMillis() - l2) + "ms");
+							}
+						}
+					} else {
+						long l2 = System.currentTimeMillis();
+						removeDocument(eventLogEntry.getId());
+						if (debug) {
+							logger.finest("......solr removed workitem '" + eventLogEntry.getId() + "' from index in "
+									+ (System.currentTimeMillis() - l2) + "ms");
+						}
+					}
+
+					// remove the eventLogEntry.
+					lastEventDate = eventLogEntry.getCreated().getTime();
+					eventLogService.removeEvent(eventLogEntry);
+
+					// break?
+					_counter++;
+					if (_counter >= count) {
+						// we skipp the last one if the maximum was reached.
+						cacheIsEmpty = false;
+						break;
+					}
+				}
+
+			} catch (RestAPIException e) {
+				logger.warning("...unable to flush lucene event log: " + e.getMessage());
+				// We just log a warning here and close the flush mode to no longer block the
+				// writer.
+				// NOTE: maybe throwing a IndexException would be an alternative:
+				//
+				// throw new IndexException(IndexException.INVALID_INDEX, "Unable to update
+				// lucene search index",
+				// luceneEx);
+				return true;
+			}
+		}
+
+		if (debug) {
+			logger.fine("...flushEventLog - " + events.size() + " events in " + (System.currentTimeMillis() - l)
+					+ " ms - last log entry: " + lastEventDate);
+		}
+		return cacheIsEmpty;
+
+	}
+
+	/**
+	 * Flush the EventLog cache. This method is called by the LuceneSerachService
+	 * only.
+	 * <p>
+	 * The method flushes the cache in smaller blocks of the given junkSize. to
+	 * avoid a heap size problem. The default flush size is 16. The eventLog cache
+	 * is tracked by the flag 'dirtyIndex'.
+	 * <p>
+	 * issue #439 - The method returns false if the event log contains more entries
+	 * as defined by the given JunkSize. In this case the caller should recall the
+	 * method which runs always in a new transaction. The goal of this mechanism is
+	 * to reduce the event log even in cases the outer transaction breaks.
+	 * 
+	 * @see LuceneSearchService
+	 * @return true if the the complete event log was flushed. If false the method
+	 *         must be recalled.
+	 */
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
+	public boolean flushEventLog(int junkSize) {
+		boolean debug = logger.isLoggable(Level.FINE);
+		long total = 0;
+		long count = 0;
+		boolean dirtyIndex = true;
+		long l = System.currentTimeMillis();
+
+		while (dirtyIndex) {
+			try {
+				dirtyIndex = !flushEventLogByCount(EVENTLOG_ENTRY_FLUSH_COUNT);
+				if (dirtyIndex) {
+					total = total + EVENTLOG_ENTRY_FLUSH_COUNT;
+					count = count + EVENTLOG_ENTRY_FLUSH_COUNT;
+					if (count >= 100 && debug) {
+						logger.finest("...flush event log: " + total + " entries in " + (System.currentTimeMillis() - l)
+								+ "ms...");
+						count = 0;
+					}
+
+					// issue #439
+					// In some cases the flush method runs endless.
+					// experimental code: we break the flush method after 1024 flushs
+					// maybe we can remove this hard break
+					if (total >= junkSize) {
+						if (debug) {
+							logger.finest("...flush event: Issue #439  -> total count >=" + total
+									+ " flushEventLog will be continued...");
+						}
+						return false;
+					}
+				}
+
+			} catch (IndexException e) {
+				logger.warning("...unable to flush lucene event log: " + e.getMessage());
+				return true;
+			}
+		}
+		return true;
+	}
+
 
 	/**
 	 * This method adds a field definition object to an updateSchema.
@@ -731,204 +951,6 @@ public class SolrIndexService {
 			xmlContent.append("<field name=\"" + adaptImixsItemName(itemName) + "\">" + convertedValue + "</field>");
 		}
 
-	}
-
-	/**
-	 * This helper method is to strip control codes and extended characters from a
-	 * string. We can not put those chars into the XML request send to solr.
-	 * <p>
-	 * Background:
-	 * <p>
-	 * In ASCII, the control codes have decimal codes 0 through to 31 and 127. On an
-	 * ASCII based system, if the control codes are stripped, the resultant string
-	 * would have all of its characters within the range of 32 to 126 decimal on the
-	 * ASCII table.
-	 * <p>
-	 * On a non-ASCII based system, we consider characters that do not have a
-	 * corresponding glyph on the ASCII table (within the ASCII range of 32 to 126
-	 * decimal) to be an extended character for the purpose of this task.
-	 * </p>
-	 * 
-	 * @see https://rosettacode.org/wiki/Strip_control_codes_and_extended_characters_from_a_string
-	 * 
-	 * @param s
-	 * @param include
-	 * @return
-	 */
-	protected String stripControlCodes(String s) {
-
-		// control codes stripped (but extended characters not stripped)
-		// IntPredicate include=c -> c > '\u001F' && c != '\u007F';
-
-		// control codes and extended characters stripped
-		IntPredicate include = c -> c > '\u001F' && c < '\u007F';
-		return s.codePoints().filter(include::test)
-				.collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
-	}
-
-	/**
-	 * This helper method strips CDATA blocks from a string. We can not post
-	 * embedded CDATA in an alredy existing CDATA when we post the xml to solr.
-	 * <p>
-	 * 
-	 * @param s
-	 * @return
-	 */
-	protected String stripCDATA(String s) {
-
-		if (s.contains("<![CDATA[")) {
-			String result = s.replaceAll("<!\\[CDATA\\[", "");
-			result = result.replaceAll("]]>", "");
-			return result;
-		} else {
-			return s;
-		}
-	}
-
-	/**
-	 * This method flushes a given count of eventLogEntries. The method return true
-	 * if no more eventLogEntries exist.
-	 * 
-	 * @param count
-	 *            the max size of a eventLog engries to remove.
-	 * @return true if the cache was totally flushed.
-	 */
-	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-	public boolean flushEventLogByCount(int count) {
-		boolean debug = logger.isLoggable(Level.FINE);
-		Date lastEventDate = null;
-		boolean cacheIsEmpty = true;
-
-		long l = System.currentTimeMillis();
-		if (debug) {
-			logger.finest("......flush eventlog cache....");
-		}
-		List<EventLog> events = eventLogService.findEventsByTopic(count + 1, DocumentService.EVENTLOG_TOPIC_INDEX_ADD,
-				DocumentService.EVENTLOG_TOPIC_INDEX_REMOVE);
-
-		if (events != null && events.size() > 0) {
-			try {
-
-				int _counter = 0;
-				for (EventLog eventLogEntry : events) {
-
-					// lookup the Document Entity...
-					org.imixs.workflow.engine.jpa.Document doc = manager
-							.find(org.imixs.workflow.engine.jpa.Document.class, eventLogEntry.getRef());
-
-					// if the document was found we add/update the index. Otherwise we remove the
-					// document form the index.
-					if (doc != null && DocumentService.EVENTLOG_TOPIC_INDEX_ADD.equals(eventLogEntry.getTopic())) {
-						// add workitem to search index....
-						long l2 = System.currentTimeMillis();
-						ItemCollection workitem = new ItemCollection();
-						workitem.setAllItems(doc.getData());
-						if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
-							indexDocument(workitem);
-							if (debug) {
-								logger.finest("......solr added workitem '" + eventLogEntry.getId() + "' to index in "
-									+ (System.currentTimeMillis() - l2) + "ms");
-							}
-						}
-					} else {
-						long l2 = System.currentTimeMillis();
-						removeDocument(eventLogEntry.getId());
-						if (debug) {
-						logger.finest("......solr removed workitem '" + eventLogEntry.getId() + "' from index in "
-								+ (System.currentTimeMillis() - l2) + "ms");
-						}
-					}
-
-					// remove the eventLogEntry.
-					lastEventDate = eventLogEntry.getCreated().getTime();
-					eventLogService.removeEvent(eventLogEntry);
-
-					// break?
-					_counter++;
-					if (_counter >= count) {
-						// we skipp the last one if the maximum was reached.
-						cacheIsEmpty = false;
-						break;
-					}
-				}
-
-			} catch (RestAPIException e) {
-				logger.warning("...unable to flush lucene event log: " + e.getMessage());
-				// We just log a warning here and close the flush mode to no longer block the
-				// writer.
-				// NOTE: maybe throwing a IndexException would be an alternative:
-				//
-				// throw new IndexException(IndexException.INVALID_INDEX, "Unable to update
-				// lucene search index",
-				// luceneEx);
-				return true;
-			}
-		}
-
-		if (debug) {
-		logger.fine("...flushEventLog - " + events.size() + " events in " + (System.currentTimeMillis() - l)
-				+ " ms - last log entry: " + lastEventDate);
-		}
-		return cacheIsEmpty;
-
-	}
-
-	/**
-	 * Flush the EventLog cache. This method is called by the LuceneSerachService
-	 * only.
-	 * <p>
-	 * The method flushes the cache in smaller blocks of the given junkSize. to
-	 * avoid a heap size problem. The default flush size is 16. The eventLog cache
-	 * is tracked by the flag 'dirtyIndex'.
-	 * <p>
-	 * issue #439 - The method returns false if the event log contains more entries
-	 * as defined by the given JunkSize. In this case the caller should recall the
-	 * method which runs always in a new transaction. The goal of this mechanism is
-	 * to reduce the event log even in cases the outer transaction breaks.
-	 * 
-	 * @see LuceneSearchService
-	 * @return true if the the complete event log was flushed. If false the method
-	 *         must be recalled.
-	 */
-	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-	public boolean flushEventLog(int junkSize) {
-		boolean debug = logger.isLoggable(Level.FINE);
-		long total = 0;
-		long count = 0;
-		boolean dirtyIndex = true;
-		long l = System.currentTimeMillis();
-
-		while (dirtyIndex) {
-			try {
-				dirtyIndex = !flushEventLogByCount(EVENTLOG_ENTRY_FLUSH_COUNT);
-				if (dirtyIndex) {
-					total = total + EVENTLOG_ENTRY_FLUSH_COUNT;
-					count = count + EVENTLOG_ENTRY_FLUSH_COUNT;
-					if (count >= 100 && debug) {
-						logger.finest("...flush event log: " + total + " entries in " + (System.currentTimeMillis() - l)
-								+ "ms...");
-						count = 0;
-					}
-
-					// issue #439
-					// In some cases the flush method runs endless.
-					// experimental code: we break the flush method after 1024 flushs
-					// maybe we can remove this hard break
-					if (total >= junkSize) {
-						if (debug) {
-						logger.finest("...flush event: Issue #439  -> total count >=" + total
-								+ " flushEventLog will be continued...");
-						}
-						return false;
-					}
-				}
-
-			} catch (IndexException e) {
-				logger.warning("...unable to flush lucene event log: " + e.getMessage());
-				return true;
-			}
-		}
-		return true;
 	}
 
 }

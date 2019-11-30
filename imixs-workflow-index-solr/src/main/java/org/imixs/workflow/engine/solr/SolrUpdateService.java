@@ -28,8 +28,12 @@
 package org.imixs.workflow.engine.solr;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.security.DeclareRoles;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
@@ -39,28 +43,32 @@ import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.services.rest.RestAPIException;
 
 /**
- * The SolrUpdateService provides methods to write Imixs Workitems into a Solr
- * search index. With the method <code>addWorkitem()</code> a ItemCollection can
- * be added to a Solr search index. The service init method reads the property
- * file 'imixs.properties' from the current classpath to determine the
- * configuration.
+ * The SolrUpdateService process the index event log entries written by the
+ * Imixs DocumentService. The service updates the solr index by flushing the
+ * Index EventLog cache.
+ * <p>
  * 
- * <ul>
- * <li>The property "solr.core" defines the Solr core for the lucene index
- * </ul>
- * 
- *
- * @version 1.0
+ * @version 1.1
  * @author rsoika
  */
+@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
+		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
+@RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
+		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
+@LocalBean
 public class SolrUpdateService implements UpdateService {
+
+	public static final String SOLR_AUTOFLUSH_DISABLED = "solr.autoflush.disabled";
+	public static final String SOLR_AUTOFLUSH_INTERVAL = "solr.autoflush.interval";
+	public static final String SOLR_AUTOFLUSH_INITIALDELAY = "solr.autoflush.initialdelay";
 
 	@Inject
 	SolrIndexService solrIndexService;
 
 	private static Logger logger = Logger.getLogger(SolrUpdateService.class.getName());
-	
 
 	/**
 	 * This method adds a collection of documents to the Lucene index. The documents
@@ -88,14 +96,20 @@ public class SolrUpdateService implements UpdateService {
 
 	@Override
 	public void updateIndex() {
+		boolean debug = logger.isLoggable(Level.FINE);
 		long ltime = System.currentTimeMillis();
 		// flush eventlog (see issue #411)
 		int flushCount = 0;
 		while (solrIndexService.flushEventLog(1024) == false) {
 			// repeat flush....
 			flushCount = +1048;
-			logger.info("...flush event log: " + flushCount + " entries updated in "
-					+ (System.currentTimeMillis() - ltime) + "ms ...");
+			if (debug) {
+				logger.fine("...flush event log: " + flushCount + " entries updated in "
+						+ (System.currentTimeMillis() - ltime) + "ms ...");
+			}
+		}
+		if (debug) {
+			logger.fine("...flush solr index completed in " + (System.currentTimeMillis() - ltime) + "ms ...");
 		}
 	}
 
