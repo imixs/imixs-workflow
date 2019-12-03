@@ -1,9 +1,9 @@
 {
 	"item":[
-			{"name":"$isauthor","value":{"@type":"xs:boolean","$":true}},
+			{"name":"$isauthor","value":{"@type":"xs:boolean","$":"true"}},
 			{"name":"$readaccess","value":{"@type":"xs:string","$":"Anna"}},
 			{"name":"txtmessage","value":{"@type":"xs:string","$":"worklist"}},
-			{"name":"$activityid","value":{"@type":"xs:int","$":10}},
-			{"name":"$processid","value":{"@type":"xs:int","$":100}}
+			{"name":"$activityid","value":{"@type":"xs:int","$":"10"}},
+			{"name":"$processid","value":{"@type":"xs:int","$":"100"}}
 		]
 }

@@ -261,6 +261,7 @@ public class JSONParser {
 	 * {"name":"$readaccess","value":{"@type":"xs:string","$":"Anna"}},
 	 * {"name":"txtmessage","value":{"@type":"xs:string","$":"worklist"}},
 	 * {"name":"$activityid","value":{"@type":"xs:int","$":10}},
+	 * {"name":"XXXX","value":{"$":10,"@type":"xs:int"}},
 	 * {"name":"$processid","value":{"@type":"xs:int","$":100}}
 	 * 
 	 * @param token
@@ -282,22 +283,36 @@ public class JSONParser {
 				throw new ParseException("Unexpected position of '}", iEnd);
 
 			type = token.substring(iStart, iEnd);
-			token = token.substring(iEnd + 1);
+			//token = token.substring(iEnd + 1);
 		}
-
-		// store value - the value can be surrounded by " or not
-		iPos = token.indexOf(":") + 1;
-		if (token.indexOf('"', iPos) > -1) {
-			iStart = token.indexOf('"', iPos) + 1;
-			iEnd = token.indexOf('"', iStart);
-		} else {
-			iStart = iPos;
-			iEnd = token.length();
+		
+		
+		
+		
+		// check if "$" exists
+		String stringValue=null;
+		iPos = token.indexOf("\"$\"");
+		if (iPos > -1) {
+			iStart = token.indexOf('"', iPos + "\"$\"".length() + 1) + 0;
+			
+			// check for ,
+			int commaPos=token.indexOf(',', iStart);
+			if (commaPos>-1) {
+				stringValue=token.substring(iStart,commaPos);
+			} else {
+				stringValue=token.substring(iStart);
+			}
 		}
-		if (iEnd < iStart)
-			throw new ParseException("Unexpected position of '}", iEnd);
-
-		String stringValue = token.substring(iStart, iEnd);
+				
+		
+		// remove " from string value
+		if (stringValue.startsWith("\"")) {
+			stringValue=stringValue.substring(1);
+		}
+		if (stringValue.endsWith("\"")) {
+			stringValue=stringValue.substring(0,stringValue.length()-1);
+		}
+		
 		value = stringValue;
 
 		// convert value to Object Type
