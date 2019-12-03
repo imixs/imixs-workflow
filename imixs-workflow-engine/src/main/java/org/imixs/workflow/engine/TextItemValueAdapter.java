@@ -1,6 +1,7 @@
 package org.imixs.workflow.engine;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -206,6 +207,39 @@ public class TextItemValueAdapter {
 	}
 
 	/**
+	 * This method converts a double value into a custom number format including an
+	 * optional locale.
+	 * 
+	 * <pre>
+	 * {@code
+	 * 
+	 * "###,###.###", "en_UK", 123456.789
+	 * 
+	 * "EUR #,###,##0.00", "de_DE", 1456.781
+	 * 
+	 * }
+	 * </pre>
+	 * 
+	 * @param pattern
+	 * @param value
+	 * @return
+	 */
+	private String customNumberFormat(String pattern, Locale _locale, double value) {
+		DecimalFormat formatter = null;
+		
+		// test if we have a locale
+		if (_locale != null) {
+			formatter = (DecimalFormat) DecimalFormat.getInstance(_locale);
+		} else {
+			formatter = (DecimalFormat) DecimalFormat.getInstance();
+		}
+		formatter.applyPattern(pattern);
+		String output = formatter.format(value);
+	
+		return output;
+	}
+
+	/**
 	 * This helper method test the type of an object provided by a itemcollection
 	 * and formats the object into a string value.
 	 * 
@@ -217,8 +251,8 @@ public class TextItemValueAdapter {
 	 * @param o
 	 * @return
 	 */
-	private static String formatObjectValue(Object o, String format, Locale locale) {
-
+	private String formatObjectValue(Object o, String format,  Locale locale) {
+		String singleValue = "";
 		Date dateValue = null;
 
 		// now test the objct type to date
@@ -233,12 +267,11 @@ public class TextItemValueAdapter {
 
 		// format date string?
 		if (dateValue != null) {
-			String singleValue = "";
 			if (format != null && !"".equals(format)) {
 				// format date with provided formater
 				try {
 					SimpleDateFormat formatter = null;
-					if (locale != null) {
+					if (locale != null ) {
 						formatter = new SimpleDateFormat(format, locale);
 					} else {
 						formatter = new SimpleDateFormat(format);
@@ -246,18 +279,35 @@ public class TextItemValueAdapter {
 					singleValue = formatter.format(dateValue);
 				} catch (Exception ef) {
 					Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
-					logger.warning("AbstractPlugin: Invalid format String '" + format + "'");
-					logger.warning("AbstractPlugin: Can not format value - error: " + ef.getMessage());
+					logger.warning("ReportService: Invalid format String '" + format + "'");
+					logger.warning("ReportService: Can not format value - error: " + ef.getMessage());
 					return "" + dateValue;
 				}
-			} else
+			} else {
 				// use standard formate short/short
 				singleValue = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(dateValue);
+			}
 
-			return singleValue;
+		} else {
+			// test if number formater is provided....
+			if (format != null && format.contains("#")) {
+				try {
+					double d = Double.parseDouble(o.toString());
+					singleValue = customNumberFormat(format, locale, d);
+				} catch (IllegalArgumentException e) {
+					logger.warning("Format Error (" + format + ") = " + e.getMessage());
+					singleValue = "0";
+				}
+
+			} else {
+				// return object as string
+				singleValue = o.toString();
+			}
 		}
 
-		return o.toString();
+		return singleValue;
+
 	}
+
 
 }

@@ -186,6 +186,44 @@ public class TestAdaptText {
 		Assert.assertEquals(expectedString, resultString);
 
 	}
+	
+	
+	
+
+	/**
+	 * Test format number string:
+	 * 
+	 * <code>
+	 * 
+	 * <itemvalue format="#,###,##0.00" locale="de_DE">price</itemvalue>
+	 * 
+	 * </code>
+	 * 
+	 * @throws PluginException
+	 * 
+	 */
+	@Test
+	public void testNumberFormat() throws PluginException {
+
+		String testString = "The price is: <itemvalue format=\"#,###,##0.00\" locale=\"de_DE\">price</itemvalue> €.";
+		String expectedString = "The price is: 1.199,99 €.";
+
+	
+		// prepare data
+		documentContext = new ItemCollection();
+
+		documentContext.replaceItemValue("price", new Float(1199.99));
+
+		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+
+		Assert.assertEquals(expectedString, resultString);
+
+	}
+
+	
+	
+	
+	
 
 	/**
 	 * Test format string of multi value with out separator:
