@@ -17,17 +17,13 @@ In the default configuration the content of the following [workflow items](../qu
 
 The content of these items is defined by the [task element](../modelling/process.html#Workflow_Properties) in your workflow model.
 
-The following list of items are so called 'index-items'. THese items are indexed by the _LuceneService_ without using an analyzer. 
+The following list of items are so called 'index-items'. These items are indexed by the _LuceneService_ without using an analyzer. S
 
 	$modelversion, $taskid, $workitemid, $uniqueidref, type, $writeaccess, $modified,$created, $creator, 
 	$editor, $lasteditor, $workflowgroup, $workflowstatus, txtname, owner, txtworkitemref, $uniqueidsource, 
 	$uniqueidversions, $lasttask,$lastevent, $lasteventdate
 
-_Index-Items_ can be used in a search term. 
-
-    (type:"workitem") and ($modelversion:"1.0.0")
-    
-You will find more information how to query a result set in the section [Full-Text-Search](queries.html).  
+The values can be used for searching and sorting. Find more information how to query a result set in the section [Full-Text-Search](queries.html).  
   
 ### Store Documents
 
@@ -50,25 +46,47 @@ A custom configuration for the _Index Schma_ can be provided in the file _imixs.
 	# Imixs-Workflow Index Schema 
 	##############################
 	# Fields to be added into the searchindex
-	index.fields=txtsearchstring,txtSubject,txtname,txtEmail,txtWorkflowAbstract,txtWorkflowSummary
+	index.fields=_searchstring,_subject,_name,_email
 	index.fields.analyze=
-	index.fields.noanalyze=datDate,txtWorkflowGroup,txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername
+	index.fields.noanalyze=datDate,email, date, util, numsequencenumber, username
 
  
 ### index.fields
-The property 'index.fields' defines a comma separated list of fields which will be indexed by the LucenePlugin. The content of these fields will be stored into the lucene field name 'content'. The values will be analyzed  with the lucene standard analyzer.
+The property 'index.fields' defines a comma separated list of fields whose values will be indexed. The content of these fields will be stored into the lucene default search field named 'content'. The text will be analyzed  with the lucene standard analyzer.
+You can search by any search phrase
+
+    (imixs workflow engine)
+ 
  
 ### index.fields.analyze
-The property 'index.fields.analyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will be analyzed by the  lucene standard analyzer. 
+The property 'index.fields.analyze' defines a comma separated list of fields whose will be added as keyword  fields into the lucene index. You can search the content by naming the field. 
+
+
+    ($workflowsummary:approved*) AND (imixs workflow engine)
+    
+
+The content of this fields will be analyzed by the  lucene standard analyzer. 
  
 ### index.fields.noanalyze
-The property 'index.fields.noanalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here.
+The property 'index.fields.noanalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here. 
+
+    ($workflowstatus:"approved for payment")
+
+These fields can also be used to sort a search result.
  
 ### index.fields.store
 The property 'index.fields.store' defines a comma separated list of fields to be stored into the search index. This kind of data can be requested by the method findStubs(). This finder method is faster but did not load the whole document. 
   
 ### index.defaultOperator
-The defaultOperator sets the boolean operator of the QueryParser. In default mode (AND\_OPERATOR) terms without any modifiers are considered optional: for example _capital of France_ is equal to _capital AND of AND France_.
+The defaultOperator sets the boolean operator of the QueryParser. In default mode (AND\_OPERATOR) terms without any modifiers are considered optional: for example the search phrase
+
+    (capital of France)
+    
+is equal to 
+
+    (capital) AND (of) AND (France)
+    
+    
 In OR\_OPERATOR mode terms are considered to be in conjunction: the above mentioned query is parsed as _capital OR of OR France_
  
  
