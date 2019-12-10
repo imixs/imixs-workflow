@@ -130,9 +130,9 @@ public class SchemaService {
 			logger.finest("......lucene IndexFieldListNoAnalyze=" + indexFieldsNoAnalyze);
 			logger.finest("......lucene IndexFieldListStore=" + indexFieldsStore);
 		}
-		// compute search field list
+		// compute the normal search field list
 		fieldList = new ArrayList<String>();
-		// add all static default field list
+		// add all entries from the default field list
 		fieldList.addAll(DEFAULT_SEARCH_FIELD_LIST);
 		if (indexFields != null && !indexFields.isEmpty()) {
 			StringTokenizer st = new StringTokenizer(indexFields, ",");
@@ -145,31 +145,33 @@ public class SchemaService {
 			}
 		}
 
-		// compute Index field list (Analyze)
+		// next we compute the NOANALYZE field list
+		fieldListNoAnalyze = new ArrayList<String>();
+		// add all entries from the default field list
+		fieldListNoAnalyze.addAll(DEFAULT_NOANALYZE_FIELD_LIST);
+		if (indexFieldsNoAnalyze != null && !indexFieldsNoAnalyze.isEmpty()) {
+			StringTokenizer st = new StringTokenizer(indexFieldsNoAnalyze, ",");
+			while (st.hasMoreElements()) {
+				String sName = st.nextToken().toLowerCase().trim();
+				// avoid duplicates
+				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName) && !fieldListNoAnalyze.contains(sName)) {
+					fieldListNoAnalyze.add(sName);
+				}
+			}
+		}
+
+		// finally compute Index ANALYZE field list
 		fieldListAnalyze = new ArrayList<String>();
 		if (indexFieldsAnalyze != null && !indexFieldsAnalyze.isEmpty()) {
 			StringTokenizer st = new StringTokenizer(indexFieldsAnalyze, ",");
 			while (st.hasMoreElements()) {
 				String sName = st.nextToken().toLowerCase().trim();
-				// do not add internal fields
-				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName)) {
+				// Now we need to avoid also duplicates with the NOANALYZE field list ANALYZE
+				// and NOANALYZE must not be mixed (#560). If we already have a field in the
+				// NOANALYZE field list we just ignore it!
+				if (!"$uniqueid".equals(sName) && !"$readaccess".equals(sName) && !fieldListAnalyze.contains(sName)
+						&& !fieldListNoAnalyze.contains(sName)) {
 					fieldListAnalyze.add(sName);
-				}
-			}
-		}
-
-		// compute Index field list (NoAnalyze)
-		fieldListNoAnalyze = new ArrayList<String>();
-		// add all static default field list
-		fieldListNoAnalyze.addAll(DEFAULT_NOANALYZE_FIELD_LIST);
-		if (indexFieldsNoAnalyze != null && !indexFieldsNoAnalyze.isEmpty()) {
-			// add additional field list from imixs.properties
-			StringTokenizer st = new StringTokenizer(indexFieldsNoAnalyze, ",");
-			while (st.hasMoreElements()) {
-				String sName = st.nextToken().toLowerCase().trim();
-				// Issue #560 - avoid duplicates from indexFieldsAnalyze
-				if (!fieldListNoAnalyze.contains(sName) && !indexFieldsAnalyze.contains(sName)) {
-					fieldListNoAnalyze.add(sName);
 				}
 			}
 		}
@@ -189,10 +191,10 @@ public class SchemaService {
 		}
 
 		// Issue #518:
-		// if a field of the indexFieldListStore is not part of the
-		// fieldListAnalyze add not part of fieldListNoAnalyze , than we add these
-		// fields to the indexFieldListAnalyze. This is to guaranty that we store the
-		// field value in any case.
+		// In case a field of the STORE field list is not already part of the ANALYZE
+		// field list add not part of NOANALYZE field list, than we add this field to
+		// the ANALYZE field list. This is to guaranty that we store the field value in
+		// any case!
 		for (String fieldName : fieldListStore) {
 			if (!fieldListAnalyze.contains(fieldName) && !fieldListNoAnalyze.contains(fieldName)) {
 				// add this field into he indexFieldListAnalyze
@@ -280,8 +282,7 @@ public class SchemaService {
 	 * 
 	 * @param sSearchTerm
 	 * @return extended search term
-	 * @throws QueryException
-	 *             in case the searchtem is not understandable.
+	 * @throws QueryException in case the searchtem is not understandable.
 	 */
 	public String getExtendedSearchTerm(String sSearchTerm) throws QueryException {
 		// test if searchtem is provided
@@ -320,8 +321,7 @@ public class SchemaService {
 	 * 
 	 * @see normalizeSearchTerm
 	 * @param searchTerm
-	 * @param ignoreBracket
-	 *            - if true brackes will not be escaped.
+	 * @param ignoreBracket - if true brackes will not be escaped.
 	 * @return escaped search term
 	 */
 	public String escapeSearchTerm(String searchTerm, boolean ignoreBracket) {
