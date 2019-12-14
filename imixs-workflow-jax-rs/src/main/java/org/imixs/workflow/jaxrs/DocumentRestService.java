@@ -198,7 +198,14 @@ public class DocumentRestService {
 			result = documentService.find(decodedQuery, pageSize, pageIndex, sortBy, sortReverse);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+		   logger.warning("Invalid Search Query: " + e.getMessage());
+		   
+		   ItemCollection error=new ItemCollection();
+		   error.setItemValue("$error_message",e.getMessage());
+		   error.setItemValue("$error_code",""+Response.Status.NOT_ACCEPTABLE);
+		   return Response.ok(XMLDataCollectionAdapter.getDataCollection(error))
+					.status(Response.Status.NOT_ACCEPTABLE).build();
+		   
 		}
 
 		return convertResultList(result, items, format);
