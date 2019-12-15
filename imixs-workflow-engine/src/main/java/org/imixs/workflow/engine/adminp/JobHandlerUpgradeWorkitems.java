@@ -173,11 +173,6 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
 			bUpgrade = true;
 		}
 
-		if (!workitem.hasItem("$lasteditor")) {
-			workitem.replaceItemValue("$lasteditor", workitem.getItemValue("namcurrenteditor"));
-			bUpgrade = true;
-		}
-
 		if (!workitem.hasItem("$creator")) {
 			workitem.replaceItemValue("$creator", workitem.getItemValue("namcreator"));
 			bUpgrade = true;
