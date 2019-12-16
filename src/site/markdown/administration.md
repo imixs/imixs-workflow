@@ -1,18 +1,34 @@
 # The Imixs Admin Client
-The Imixs Admin Client is a Web Front-End to administrate an instance of the Imixs-Workflow engine. The Client can be connected via the [Imixs Rest API](./restapi/index.html) with an instance of the Imixs-Workflow engine. The Imixs Admin Client can be deployed on any Java EE Server to administrate different instances of the Imixs-Workflow engine running on the same host. 
+The Imixs Admin Client is a Web Front-End to administrate an instance of the Imixs-Workflow engine. The Client connects to an instance of the Imixs-Workflow engine via the [Imixs Rest API](./restapi/index.html). Imixs-Admin runs as a self-contained microservice in a docker container and can also be deployedinto any Jakarta EE Server. 
+
+
  
-##Installation & Deployment
-The sources of the Imixs Admin Client can be download form [GitHub](https://github.com/imixs/imixs-admin/releases). The maven based client supports different web server profiles for GlassFish and JBoss/Wildfly. After the deployment, the Imixs Admin is accessible using the following url:
+## Installation & Deployment
 
-	http://localhost:8080/imixsadmin 
+The sources and the Imixs Admin Client application are available on [GitHub](https://github.com/imixs/imixs-admin/releases). The Imixs-Admin client can be build from source with maven. 
 
-The Imixs Admin Client requires the user to authenticate with a valid security realm. The authenticated user (Administrator) needs at least the the Role "IMIXS-WORKFLOW-Manager". The default security realm used by the Imixs Admin Client is "imixsrealm" which can to be configured on the Application Server. 
+	$ mvn clean install
 
-To connect to an instance of the Imixs-Workflow engine the corresponding Imixs Rest Service URL need to be entered. 
+The artifact '_imixs-worklfow.war_' can be deployed on a Jakarta EE Application server. 
+
+### Docker
+
+The Imixs-Admin client provides also a Docker Image to be used to run the service as a Docker container in a Docker-Swarm or Kubernetes environment. The docker image is available on DockerHub. You can start the latest version of the Imixs-Admin Tool in a docker container:
+
+	$ docker run -p 8888:8080 imixs/imixs-admin
+
+The Imixs-Admin client can be accessed from your web browser:
+
+	http://localhost:8888/
+
+
+## Connecting an Imixs Workflow Instance
+
+Connecting an Imixs-Workflow instance the Rest Service endpoint and administrative user credentials need to be provided. The authenticated user (Administrator) needs at least the the Role '_org.imixs.ACCESSLEVEL.MANAGERACCESS_'. 
 
 <img src="images/imixs-admin-client-01.png" class="screenshot" /> 
  
-Next the client can be connected to the Imixs-Workflow engine to query data using a search terms.
+After the client is connected to the Imixs-Workflow instance you can query data using a lucene search term.
 
 <img src="images/imixs-admin-client-02.png" class="screenshot"/> 
   
@@ -25,12 +41,12 @@ The Imixs Admin Client provides a interface to update or delete entities (Workit
 <img src="images/imixs-admin-client-03.png" /> 
 
 ## The Administration Process
-The Imixs-Workflow engine provides the [administration process 'AdminP'](./engine/adminp.html) which can be used to maintain the documents and process instances managed by the Imixs-Workflow engine. This process can be monitored by the Admin Client
+The Imixs-Workflow engine provides the [administration process 'AdminP'](./engine/adminp.html) used to maintain the documents and process instances managed by the Imixs-Workflow engine. This process can be monitored by the Admin Client
 
 <img src="images/imixs-admin-client-04.png" class="screenshot" /> 
 
 
-The Imixs-Workflow engine provides a set of standard AdminP Job Handlers which can be triggered directly form the Admin UI: 
+The Imixs-Workflow engine provides a set of standard AdminP Job Handlers that can be triggered form the Imixs-Admin UI: 
 
 ### Rebuild the Lucene Index
 
@@ -51,16 +67,15 @@ The new userId can either be replaced with the old one or be appended. The block
 defines the maximum number of workflow documents to be processed in one run. After the blocksize was updated, the job will pause for a given interval specified in minutes.  
 
 
-### Migration
+### Upgrade
 
-The administration process provides a feature to migrate a business application from Imixs-Workflow version 3.x to 4.x. This feature is for migration purpose only. 
+The administration process '_Upgrade_' provides a feature to upgrade a business application from an older version of Imixs-Workflow. This feature is needed for migration purpose only. 
 
 
 ## Backup & Restore
-With the Backup feature it is also possible to export entities into a file system and later re-import them into any exiting workflow instance.
+With the Backup feature data can be exported to a file system and later re-imported into any exiting workflow instance.
 
 <img src="images/imixs-admin-client-05.png" class="screenshot" /> 
 
- 
-To backup a collection of workitems a search term can be specified.
+The target file system is the local filesystem of the workflow instance the Admin-Tool is connected to. The backup of a collection of workitems is based on a lucene search term. 
  
