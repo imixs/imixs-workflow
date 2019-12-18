@@ -1,0 +1,29 @@
+{"data": [{
+	"item":[
+			{"name":"$isauthor","value":{"@type":"xs:boolean","$":"true"}},
+			{"name":"$readaccess","value":{"@type":"xs:string","$":"Anna"}},
+			{"name":"txtmessage","value":{"@type":"xs:string","$":"worklist"}},
+			{"name":"txtlog","value":[
+				{"@type":"xs:string","$":"A"},
+				{"@type":"xs:string","$":"B"},
+				{"@type":"xs:string","$":"C"}]
+			},
+			{"name":"$activityid","value":{"@type":"xs:int","$":"10"}}
+		]
+},
+
+	{"item":[
+			{"name":"$isauthor","value":{"@type":"xs:boolean","$":"true"}},
+			{"name":"$readaccess","value":{"@type":"xs:string","$":"Tom"}},
+			{"name":"txtmessage","value":{"@type":"xs:string","$":"worklist"}},
+			{"name":"txtlog","value":[
+				{"@type":"xs:string","$":"D"},
+				{"@type":"xs:string","$":"E"},
+				{"@type":"xs:string","$":"F"}]
+			},
+			{"name":"$activityid","value":{"@type":"xs:int","$":"20"}}
+		]
+}
+
+]
+}

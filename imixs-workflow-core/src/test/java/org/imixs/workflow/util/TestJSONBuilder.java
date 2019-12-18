@@ -58,7 +58,7 @@ public class TestJSONBuilder {
 
 		String jsonResult = null;
 		try {
-			jsonResult = JSONBuilder.build(workitem);
+			jsonResult = ImixsJSONBuilder.build(workitem);
 			Assert.assertNotNull(jsonResult);
 		} catch (UnsupportedEncodingException e) {
 

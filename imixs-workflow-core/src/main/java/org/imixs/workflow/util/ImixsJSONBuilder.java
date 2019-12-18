@@ -12,15 +12,16 @@ import java.util.List;
 import org.imixs.workflow.ItemCollection;
 
 /**
- * The JSONBuilder is an utility class to generate a typed json string from an
+ * The ImixsJSONBuilder is an utility class to generate a typed json string from an
  * Imixs ItemCollection.
  * <p>
  * The result can be converted back into a ItemCollection by using the
- * JSONParser class.
+ * ImixsJSONParser class.
  * 
+ * @See ImixsJSONParser
  * @author rsoika
  */
-public class JSONBuilder {
+public class ImixsJSONBuilder {
 
 	public static final String ISO8601DATEFORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 

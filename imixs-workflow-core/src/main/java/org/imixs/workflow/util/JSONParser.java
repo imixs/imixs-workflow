@@ -132,6 +132,7 @@ public class JSONParser {
 	 * @throws ParseException
 	 * @throws UnsupportedEncodingException
 	 */
+	@Deprecated
 	public final static ItemCollection parseWorkitem(final InputStream requestBodyStream, final String _encoding)
 			throws ParseException, UnsupportedEncodingException {
 		boolean debug = logger.isLoggable(Level.FINE);

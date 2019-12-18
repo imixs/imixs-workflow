@@ -18,9 +18,12 @@ import junit.framework.Assert;
  * @author rsoika
  */
 public class TestJSONParserWorkitem {
+	
+	
+	
 
 	@Test
-	public void testSimple() throws ParseException {
+	public void testSimpleDeprecated() throws ParseException {
 
 		InputStream inputStream = getClass().getResourceAsStream("/json/simple.json");
 
@@ -53,7 +56,7 @@ public class TestJSONParserWorkitem {
 	 * @throws ParseException
 	 */
 	@Test
-	public void testSimpleNumbers() throws ParseException {
+	public void testSimpleNumbersDeprecated() throws ParseException {
 
 		InputStream inputStream = getClass().getResourceAsStream("/json/simple_numbers.json");
 
