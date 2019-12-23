@@ -6,9 +6,9 @@
 
 Imixs-Workflow is an open source workflow engine to build human-centric workflow applications on a flexible and robust framework. 
 Using the Business Process Modelling Notation - BPMN 2.0, business logic can be modeled fast, easy and in a flexible way. 
-Imixs-Workflow is based on the [Jarkarta EE](https://jakarta.ee/) and the [Eclipse Microprofile](https://microprofile.io/) standards and fits with its openness in every modern microservice architecture. Imixs-Workflow runs on all modern application servers like [Wildfly](https://wildfly.org/), [Payara](https://www.payara.fish/), [Open Liberty](https://openliberty.io/) or [Apache TomEE](http://tomee.apache.org/).
+Imixs-Workflow is based on the [Jarkarta EE](https://jakarta.ee/) and the [Eclipse Microprofile](https://microprofile.io/) standards and fits into any modern microservice architecture thanks to its openness. Imixs-Workflow runs on all modern application servers like [Wildfly](https://wildfly.org/), [Payara](https://www.payara.fish/), [Open Liberty](https://openliberty.io/) or [Apache TomEE](http://tomee.apache.org/).
 
-To follow us in this project, please join GitHub by [creating an account](https://github.com/join). You can than "Watch" the project with the link above or if you like the project click on the "Star". 
+To follow us, please join GitHub by [creating an account](https://github.com/join). You can than "Watch" the project with the link above or if you like the project click on the "Star". 
 
 You will find more detailed information how to work with Imixs-Workflow on the [Project Home](http://www.imixs.org). 
 
@@ -21,14 +21,13 @@ Read more about Imixs-BPMN on the [project home](https://www.imixs.org/sub_model
 
 
 ## Imixs-RESTful API
-Imixs-Workflow provides a RESTful API to integrate the Imixs-Workflow engine into a microservice architecture. In such an architecture the Imixs-Workflow engine can be deployed as a separate microservice managing human-centric workflow tasks. The Imixs-Microservice project also includes a Docker Container to setup the workflow engine in a few minutes. See the [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) for more information.
+Imixs-Workflow provides a RESTful API to integrate the Imixs-Workflow engine into a microservice architecture. In such an architecture the Imixs-Workflow engine can be deployed as a separate microservice managing human-centric workflow tasks. See the [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) for more information.
 
 
 
 ## How to Build
 Imixs-Workflow can be build with Maven. All artifacts are provided in the [maven central repository](http://search.maven.org/#browse).
-
-This is an example how to add imixs-workflow into the dependencies of your own maven project:
+See the following example how to add imixs-workflow to your own maven project:
 
 	<dependencies> 
 	   .....
@@ -51,7 +50,7 @@ This is an example how to add imixs-workflow into the dependencies of your own m
 
 
 
-To build form the source code run:
+To build Imixs-Workflow form the source code run:
 
 	mvn install
 
@@ -66,17 +65,17 @@ Prerequisites:
 
 The [Imixs-Workflow Sample Application](https://github.com/imixs/imixs-jsf-example) demonstrates the Imixs-Workflow engine embedded into a simple JSF Web Application. The Sample Application can be used as a scaffold for custom projects.
 
-<img src="screen_002.png" alt="Imixs-BPMN"  width="640"/>
+<img src="screen_002.png" alt="Imixs-BPMN"  width="840"/>
 
 ## Imixs-Admin
 
 The [Imixs-Admin project](https://github.com/imixs/imixs-admin) provides a web based tool to administrate an Imixs-Workflow instance remotely.
 
-<img src="screen_003.png" alt="Imixs-Admin"  width="640"/>
+<img src="screen_003.png" alt="Imixs-Admin"  width="840"/>
 
 <img src="https://github.com/imixs/imixs-workflow/raw/master/small_h-trans.png">
 
-The Imixs-Workflow engine run also on Docker. The [Imixs-Micorservice project](https://github.com/imixs/imixs-microservice) provides a full service stack for a microservice architecture. Find out more on [Docker hub](https://hub.docker.com/r/imixs/imixs-microservice).
+The Imixs-Workflow engine runs also on Docker. The [Imixs-Micorservice project](https://github.com/imixs/imixs-microservice) provides a full service stack for a microservice architecture running on Kubernetes or Docker-Swarm. Find out more on [Docker hub](https://hub.docker.com/r/imixs/imixs-microservice).
 
 
 ## Joining the Project
