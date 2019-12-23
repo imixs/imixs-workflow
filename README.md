@@ -61,17 +61,18 @@ Prerequisites:
 * Jakarta EE Application Server
 
 
+## Imixs-Admin
+
+The [Imixs-Admin project](https://github.com/imixs/imixs-admin) provides a web based tool to administrate an Imixs-Workflow instance remotely.
+
+<img src="screen_003.png" alt="Imixs-Admin"  width="840"/>
+
 ## The Sample Application
 
 The [Imixs-Workflow Sample Application](https://github.com/imixs/imixs-jsf-example) demonstrates the Imixs-Workflow engine embedded into a simple JSF Web Application. The Sample Application can be used as a scaffold for custom projects.
 
 <img src="screen_002.png" alt="Imixs-BPMN"  width="840"/>
 
-## Imixs-Admin
-
-The [Imixs-Admin project](https://github.com/imixs/imixs-admin) provides a web based tool to administrate an Imixs-Workflow instance remotely.
-
-<img src="screen_003.png" alt="Imixs-Admin"  width="840"/>
 
 <img src="https://github.com/imixs/imixs-workflow/raw/master/small_h-trans.png">
 
