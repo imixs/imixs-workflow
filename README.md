@@ -4,7 +4,9 @@
 [![Join the chat at https://gitter.im/imixs/imixs-workflow](https://badges.gitter.im/imixs/imixs-workflow.svg)](https://gitter.im/imixs/imixs-workflow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![License](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/imixs/imixs-workflow/blob/master/LICENSE)
 
-Imixs-Workflow is an open source workflow engine based on the Java Enterprise Architecture (JEE). The Imixs-Workflow project provides components to build human-centric workflow applications within a flexible and robust framework. The business logic can be modeled and executed using the Business Process Modelling Notation - BPMN 2.0 standard. 
+Imixs-Workflow is an open source workflow engine to build human-centric workflow applications on a flexible and robust framework. 
+Using the Business Process Modelling Notation - BPMN 2.0, business logic can be modeled fast, easy and in a flexible way. 
+Imixs-Workflow is based on the [Jarkarta EE](https://jakarta.ee/) and the [Eclipse Microprofile](https://microprofile.io/) standards and fits with its openness in every modern microservice architecture. Imixs-Workflow runs on all modern application servers like [Wildfly](https://wildfly.org/), [Payara](https://www.payara.fish/), [Open Liberty](https://openliberty.io/) or [Apache TomEE](http://tomee.apache.org/).
 
 To follow us in this project, please join GitHub by [creating an account](https://github.com/join). You can than "Watch" the project with the link above or if you like the project click on the "Star". 
 
@@ -30,7 +32,6 @@ This is an example how to add imixs-workflow into the dependencies of your own m
 
 	<dependencies> 
 	   .....
-		<!-- Imixs Workflow -->
 		<dependency>
 			<groupId>org.imixs.workflow</groupId>
 			<artifactId>imixs-workflow-engine</artifactId>
@@ -43,10 +44,9 @@ This is an example how to add imixs-workflow into the dependencies of your own m
 		</dependency>
 		<dependency>
 			<groupId>org.imixs.workflow</groupId>
-			<artifactId>imixs-workflow-faces</artifactId>
+			<artifactId>imixs-workflow-index-lucene</artifactId>
 			<version>${org.imixs.workflow.version}</version>
 		</dependency>
-	</dependencies>
 	...
 
 
@@ -59,7 +59,7 @@ Prerequisites:
 
 * JDK8+
 * Maven 3.0.3+
-* Java EE Application Server
+* Jakarta EE Application Server
 
 
 ## The Sample Application
@@ -68,9 +68,15 @@ The [Imixs-Workflow Sample Application](https://github.com/imixs/imixs-jsf-examp
 
 <img src="screen_002.png" alt="Imixs-BPMN"  width="640"/>
 
-## Docker
+## Imixs-Admin
 
-The Imixs-Workflow engine is also available as a Docker Image running Imixs-Workflow as a microservice. Find out more on the [Imixs-Microservice project](https://github.com/imixs/imixs-microservice).
+The [Imixs-Admin project](https://github.com/imixs/imixs-admin) provides a web based tool to administrate an Imixs-Workflow instance remotely.
+
+<img src="screen_003.png" alt="Imixs-Admin"  width="640"/>
+
+<img src="https://github.com/imixs/imixs-workflow/raw/master/small_h-trans.png">
+
+The Imixs-Workflow engine run also on Docker. The [Imixs-Micorservice project](https://github.com/imixs/imixs-microservice) provides a full service stack for a microservice architecture. Find out more on [Docker hub](https://hub.docker.com/r/imixs/imixs-microservice).
 
 
 ## Joining the Project
