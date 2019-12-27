@@ -153,7 +153,6 @@ public class ModelService implements ModelManager {
 	 */
 	@Override
 	public void addModel(Model model) throws ModelException {
-		boolean debug = logger.isLoggable(Level.FINE);
 		ItemCollection definition = model.getDefinition();
 		if (definition == null) {
 			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Definition not provided! ");
@@ -162,9 +161,7 @@ public class ModelService implements ModelManager {
 		if (modelVersion.isEmpty()) {
 			throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Version not provided! ");
 		}
-		if (debug) {
-			logger.finest("......add BPMNModel '" + modelVersion + "'...");
-		}
+		logger.info("⟳ updated model version: '" + model.getVersion() + "'");
 		getModelStore().put(modelVersion, model);
 	}
 
