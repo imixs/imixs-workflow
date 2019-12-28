@@ -217,12 +217,12 @@ public class ModelService implements ModelManager {
 			model = getModel(modelVersion);
 		} catch (ModelException me) {
 			model = null;
-			List<String> versions=null;
+			List<String> versions = null;
 			if (debug) {
 				logger.finest(me.getMessage());
 			}
 			// try to find latest version by regex....
-			if (modelVersion!=null && !modelVersion.isEmpty()) {
+			if (modelVersion != null && !modelVersion.isEmpty()) {
 				versions = findVersionsByRegEx(modelVersion);
 				if (!versions.isEmpty()) {
 					// we found a match by regex!
@@ -278,11 +278,11 @@ public class ModelService implements ModelManager {
 		List<String> groups = getGroups();
 		for (String group : groups) {
 			List<String> versions = findVersionsByGroup(group);
-			if (versions != null && versions.size()>0) {
+			if (versions != null && versions.size() > 0) {
 				// add the latest version
-				String version =versions.get(0); 
+				String version = versions.get(0);
 				if (!result.contains(version)) {
-					result.add(version );
+					result.add(version);
 				}
 			}
 		}
@@ -374,6 +374,24 @@ public class ModelService implements ModelManager {
 	 * @throws ModelException
 	 */
 	public void saveModel(BPMNModel model) throws ModelException {
+		saveModel(model, null);
+	}
+
+	/**
+	 * This method saves a BPMNModel into the database and adds the model into the
+	 * internal model store. The model is attaches as an embedded file with the
+	 * given filename.
+	 * <p>
+	 * If a model with the same model version exists in the database the old version
+	 * will be deleted form the database first.
+	 * <p>
+	 * The param 'filename' is used to store the bpmn file in the correspondig model
+	 * document.
+	 * 
+	 * @param model
+	 * @throws ModelException
+	 */
+	public void saveModel(BPMNModel model, String _filename) throws ModelException {
 		if (model != null) {
 			boolean debug = logger.isLoggable(Level.FINE);
 			// first delete existing model entities
@@ -388,8 +406,14 @@ public class ModelService implements ModelManager {
 			modelItemCol.replaceItemValue("type", "model");
 			modelItemCol.replaceItemValue("namcreator", ctx.getCallerPrincipal().getName());
 			modelItemCol.replaceItemValue("txtname", bpmnModel.getVersion());
-			FileData fileData = new FileData(bpmnModel.getVersion() + ".bpmn", bpmnModel.getRawData(),
-					"application/xml", null);
+
+			String filename = _filename;
+			if (filename == null || filename.isEmpty()) {
+				// default filename
+				filename = bpmnModel.getVersion() + ".bpmn";
+			}
+
+			FileData fileData = new FileData(filename, bpmnModel.getRawData(), "application/xml", null);
 			modelItemCol.addFileData(fileData);
 			// store model in database
 			modelItemCol.replaceItemValue(DocumentService.NOINDEX, true);

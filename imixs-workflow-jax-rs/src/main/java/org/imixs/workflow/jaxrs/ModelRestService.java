@@ -371,12 +371,43 @@ public class ModelRestService {
 		logger.fine("putBPMNModel finished! ");
 		return Response.status(Response.Status.OK).build();
 	}
+	
+	/**
+	 * This method consumes a Imixs BPMN model file and updates the corresponding
+	 * model information.
+	 * <p>
+	 * The filename param is used to store the file in the corresponding bpmn document.
+	 * 
+	 * @param model
+	 * @return
+	 */
+	@PUT
+	@Path("/bpmn/{filename}")
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN })
+	public Response putBPMNModel(@PathParam("filename") String filename,BPMNModel bpmnmodel) {
+		try {
+			logger.fine("BPMN Model posted... ");
+			modelService.saveModel(bpmnmodel,filename);
+		} catch (ModelException e) {
+			logger.warning("Unable to update model: " + e.getMessage());
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+		}
+		logger.fine("putBPMNModel finished! ");
+		return Response.status(Response.Status.OK).build();
+	}
 
 	@POST
 	@Path("/bpmn")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN })
 	public Response postBPMNModel(BPMNModel bpmnmodel) {
 		return putBPMNModel(bpmnmodel);
+	}
+	
+	@POST
+	@Path("/bpmn/{filename}")
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN })
+	public Response postBPMNModel(@PathParam("filename") String filename,BPMNModel bpmnmodel) {
+		return putBPMNModel(filename,bpmnmodel);
 	}
 
 	/**
