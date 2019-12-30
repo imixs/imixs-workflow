@@ -23,10 +23,11 @@ The GET method is used to read model objects provided by the Model Manager:
 ## PUT/POST a Model
 The methods PUT and POST are used to write and update a model:
 
-| URI                        | Method| Description                                                      | 
+| URI                        | Method| Description                                               | 
 |----------------------------|-----|-------------------------------------------------------------|
-| /model/bpmn                | GET | creates or update based on a BPMN 2.0 model definition           |
-| /model/                    | GET | creates or update a model based on a Imixs EntityCollection      |
+| /model/bpmn/{filename}.bpmn| GET | creates or update a model based on a BPMN 2.0 model file    |
+| /model/bpmn                | GET | creates or update based on a BPMN 2.0 model definition (XML)|
+| /model/                    | GET | creates or update a model based on a Imixs DocumentCollection   |
 
 
 ## DELETE a Model
