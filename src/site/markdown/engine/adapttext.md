@@ -5,6 +5,7 @@ The Imixs _WorkflowService_ provides the method '_adaptText(text, document)_' wh
 The Imixs _WorkflowService_ includes two custom text adapters:
 
  * TextItemValueAdapter 
+ * TextForEachAdapter
  * TextPropertyAdapter
  
 
@@ -49,6 +50,35 @@ To format a date or number value into a language specific format the tags '_form
  
 	 The Date in german format is: <itemvalue format="EEEE, d. MMMM yyyy" locale="de_DE">datdate</itemvalue>.
 
+
+
+
+## The For-Each Adapter
+
+The TextForEachAdapter can be used to format text fragments with the 'for-each' tag. The adapter will iterate over the value list of a specified item.
+
+	 <for-each item="_partid">
+	  Order-No: <itemvalue>_orderid</itemvalue> - Part ID: <itemvalue>_partid</itemvalue><br />
+	 </for-each>  
+ 
+In this example, the for-each block will be executed for each single value of the item '_partid'. Within the for-each block it is possible to access the current value of the iteration as also any other values of the current document. The result may look like in the following example:
+ 
+	 Order-No: 111222 - Part ID: A123
+	 Order-No: 111222 - Part ID: B456
+ 
+In case the item contains an embedded list of child ItemCollections the content of the for-each block will be processed in the context for each embedded ItemCollection:
+
+	 <for-each item="_orderitems">
+	    <itemvalue>_orderid</itemvalue>: <itemvalue>_price</itemvalue>
+	  </for-each>  
+ 
+The result may look like in the following example:
+ 
+	 Order ID: A123: 50.55
+	 Order ID: B456: 150.10
+ 
+
+
 	
 ## Adapting Property Values
 The _TextPropertyAdapter_ adapts a text fragment adapts text blocks with values stored in the imixs.property file.
@@ -75,7 +105,7 @@ A application can extend the AdaptText method by implementing a service with the
 		}
 	}
 
-## Adapt a TestList
+## Adapt a TextList
 
 A custom adapter can also adapt a text into a text list. For example a Custom Adapter can compute a list of values based on a text pattern. The custom adapter can set the result test list with the method 'setTextList()'. This feature is for example used from the AccessPlugin method mergeRoles. The method expects that the adapter provide a list with roles.
 	

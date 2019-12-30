@@ -210,6 +210,11 @@ public class WorkflowMockEnvironment {
 
 						TextEvent textEvent = new TextEvent(text, document);
 
+						// for-each adapter
+						TextForEachAdapter tfea = new TextForEachAdapter();
+						tfea.onEvent(textEvent);
+
+						// ItemValue adapter
 						TextItemValueAdapter tiva = new TextItemValueAdapter();
 						tiva.onEvent(textEvent);
 
