@@ -342,14 +342,16 @@ public class DocumentRestService {
 	 * automatically.
 	 * 
 	 * @param xmlworkitem
-	 *            - entity to be saved
-	 * @return
+	 *            - document to be saved
+     * @param items
+     *            - optional item list to be returned in the result
+   	 * @return
 	 */
 	@POST
 	// @Path("/") generates jersey warning
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON, })
-	public Response postEntity(XMLDocument xmlworkitem) {
+	public Response postDocument(XMLDocument xmlworkitem, @QueryParam("items") String items) {
 		if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
@@ -392,7 +394,7 @@ public class DocumentRestService {
 				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem), MediaType.APPLICATION_XML)
 						.status(Response.Status.NOT_ACCEPTABLE).build();
 			} else {
-				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem), MediaType.APPLICATION_XML)
+				return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem,DocumentRestService.getItemList(items)), MediaType.APPLICATION_XML)
 						.build();
 			}			
 			
@@ -406,16 +408,19 @@ public class DocumentRestService {
 	 * Delegater putEntity @PUT
 	 * 
 	 * @see putWorkitemDefault
-	 * @param requestBodyStream
+     * @param xmlworkitem
+     *            - document to be saved
+     * @param items
+     *            - optional item list to be returned in the result
 	 * @return
 	 */
 	@PUT
 	// @Path("/") generates jersey warning
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON, })
-	public Response putEntity(XMLDocument xmlworkitem) {
-		logger.finest("putEntity @PUT /  delegate to POST....");
-		return postEntity(xmlworkitem);
+	public Response putDocument(XMLDocument xmlworkitem, @QueryParam("items") String items) {
+		logger.finest("putDocument @PUT /  delegate to POST....");
+		return postDocument(xmlworkitem,items);
 	}
 
 	/**
