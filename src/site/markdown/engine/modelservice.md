@@ -15,7 +15,8 @@ The ModelService EJB extends the interface '_org.imixs.workflow.ModelManager_' a
 |getModelByWorkitem(workitem)| Returns a Model matching a given workitem. The method throws a ModelException in case the model version did not exits..|
 |getVersions()        |Returns a sorted String list of all stored model versions.|
 |findVersionsByGroup(group)        | Returns a sorted list of model versions containing the workflow group. The result is sorted in reverse order, so the highest version number is the first in the result list.|
-|saveModel(model)        | Saves a BPMNModel as an Entity and adds the model into the ModelManager.|
+|saveModel(model,filename)   | Saves a BPMNModel into a Document and adds the model into the ModelManager. The model can be accessed by its filename|
+|saveModel(model)        | Saves a BPMNModel into a Document and adds the model into the ModelManager.|
 |deleteModel(version)        | Deletes an existing Model Entities from the database and removes the model form the internal ModelStore..|
 |loadModelEntity(version)        | Loads an existing Model Entities from the database.|
 
@@ -44,6 +45,6 @@ The ModelService provides a method to add a BPMNModel object. This object can be
 
 You can also persist the model into the data storage
 
-	modelService.save(ticketModel);
+	modelService.save(ticketModel,"ticket.bpmn");
 
 A persisted model will be automatically loaded when the workflow service starts. 	
