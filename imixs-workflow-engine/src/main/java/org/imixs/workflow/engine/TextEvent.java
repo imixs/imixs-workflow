@@ -8,7 +8,7 @@ import org.imixs.workflow.ItemCollection;
 /**
  * The TextEvent provides a CDI observer pattern. The TextEvent is fired by the
  * WorkflowService EJB to adapt a text fragment. An event observer can adapt the
- * text fragmetn in a given document context.
+ * text fragment in a given document context.
  * 
  * @author Ralph Soika
  * @version 1.0
