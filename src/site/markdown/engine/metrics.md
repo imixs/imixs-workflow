@@ -2,7 +2,14 @@
 
 Imixs-Workflow provides runtime metrics based on the [Microprofile Metric API](https://microprofile.io/project/eclipse/microprofile-metrics). The Eclipse Microprofile Metrics specification provides an unified way to export Monitoring data ("Telemetry") to management agents and also a unified Java API.
 
-The Imxis-Workflow metric can be collected by the following Rest Service resource:
+The Imixs-Metric Serivce is disabled per default. To enable the feature set the property 'metrics.enabled' to 'true.
+
+
+	metrics.enabled=true
+
+## How to access Imixs-Workflow Metrics
+
+The Imxis-Workflow metrics can be collected by the following Rest Service resource:
 
 	http://...../metrics
 
