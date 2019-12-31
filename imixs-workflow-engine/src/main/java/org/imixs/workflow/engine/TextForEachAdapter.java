@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Priority;
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
+import javax.interceptor.Interceptor;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.util.XMLParser;
@@ -73,11 +75,14 @@ public class TextForEachAdapter {
   /**
    * This method reacts on CDI events of the type TextEvent and parses a string for xml tag
    * <for-each>. Those tags will be replaced with the corresponding system property value.
-   * 
+   * <p>
+   * The priority of the CDI event is set to (APPLICATION-10) to ensure that the for-each adapter is
+   * triggered before the TextItemValueAdapter
    * 
    */
   @SuppressWarnings("unchecked")
-  public void onEvent(@Observes TextEvent event) {
+  public void onEvent(@Observes @Priority(Interceptor.Priority.APPLICATION - 10) TextEvent event) {
+
     String text = event.getText();
     String textResult = "";
     boolean debug = logger.isLoggable(Level.FINE);
