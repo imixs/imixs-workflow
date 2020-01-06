@@ -15,7 +15,7 @@ The code style used within the Imixs-Workflow project is based on the Java Conve
 
 Within this project we use Eclipse as the main development IDE. You can import the file 'imixs-code-style.xml' into the Eclipse IDE to get the actual formating rules (_Preferences -> Java-Code-Style Formatter Profile_).
 
-Please do not reformat existing code. If you use an other IDE like Eclipse we recommend to import an appropriate formatting style rule provided by the _[Google Coding Style Guide](https://github.com/google/styleguide)_. 
+Please do not reformat existing code. If you use an other IDE like Eclipse we recommend to import an appropriate formatting style rule. 
 
 
 ## Naming Conventions
