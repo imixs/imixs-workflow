@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,12 +18,13 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow.engine.solr;
@@ -30,87 +32,84 @@ package org.imixs.workflow.engine.solr;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.services.rest.RestAPIException;
 
 /**
- * The SolrUpdateService process the index event log entries written by the
- * Imixs DocumentService. The service updates the solr index by flushing the
- * Index EventLog cache.
+ * The SolrUpdateService process the index event log entries written by the Imixs DocumentService.
+ * The service updates the solr index by flushing the Index EventLog cache.
  * <p>
  * 
  * @version 1.1
  * @author rsoika
  */
-@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
-		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
-		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
-@RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
-		"org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
-		"org.imixs.ACCESSLEVEL.MANAGERACCESS" })
+@DeclareRoles({"org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+    "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
+    "org.imixs.ACCESSLEVEL.MANAGERACCESS"})
+@RolesAllowed({"org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+    "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
+    "org.imixs.ACCESSLEVEL.MANAGERACCESS"})
 @Stateless
 @LocalBean
 public class SolrUpdateService implements UpdateService {
 
-	public static final String SOLR_AUTOFLUSH_DISABLED = "solr.autoflush.disabled";
-	public static final String SOLR_AUTOFLUSH_INTERVAL = "solr.autoflush.interval";
-	public static final String SOLR_AUTOFLUSH_INITIALDELAY = "solr.autoflush.initialdelay";
+  public static final String SOLR_AUTOFLUSH_DISABLED = "solr.autoflush.disabled";
+  public static final String SOLR_AUTOFLUSH_INTERVAL = "solr.autoflush.interval";
+  public static final String SOLR_AUTOFLUSH_INITIALDELAY = "solr.autoflush.initialdelay";
 
-	@Inject
-	SolrIndexService solrIndexService;
+  @Inject
+  SolrIndexService solrIndexService;
 
-	private static Logger logger = Logger.getLogger(SolrUpdateService.class.getName());
+  private static Logger logger = Logger.getLogger(SolrUpdateService.class.getName());
 
-	/**
-	 * This method adds a collection of documents to the Lucene index. The documents
-	 * are added immediately to the index. Calling this method within a running
-	 * transaction leads to a uncommitted reads in the index. For transaction
-	 * control, it is recommended to use instead the the method updateDocumetns()
-	 * which takes care of uncommitted reads.
-	 * <p>
-	 * This method is used by the JobHandlerRebuildIndex only.
-	 * 
-	 * @param documents
-	 *            of ItemCollections to be indexed
-	 * @throws RestAPIException
-	 * @throws IndexException
-	 */
-	@Override
-	public void updateIndex(List<ItemCollection> documents) {
-		try {
-			solrIndexService.indexDocuments(documents);
-		} catch (RestAPIException e) {
-			logger.severe("Failed to update document collection: " + e.getMessage());
-			throw new IndexException(IndexException.INVALID_INDEX, "Unable to update solr search index", e);
-		}
-	}
+  /**
+   * This method adds a collection of documents to the Lucene index. The documents are added
+   * immediately to the index. Calling this method within a running transaction leads to a
+   * uncommitted reads in the index. For transaction control, it is recommended to use instead the
+   * the method updateDocumetns() which takes care of uncommitted reads.
+   * <p>
+   * This method is used by the JobHandlerRebuildIndex only.
+   * 
+   * @param documents of ItemCollections to be indexed
+   * @throws RestAPIException
+   * @throws IndexException
+   */
+  @Override
+  public void updateIndex(List<ItemCollection> documents) {
+    try {
+      solrIndexService.indexDocuments(documents);
+    } catch (RestAPIException e) {
+      logger.severe("Failed to update document collection: " + e.getMessage());
+      throw new IndexException(IndexException.INVALID_INDEX, "Unable to update solr search index",
+          e);
+    }
+  }
 
-	@Override
-	public void updateIndex() {
-		boolean debug = logger.isLoggable(Level.FINE);
-		long ltime = System.currentTimeMillis();
-		// flush eventlog (see issue #411)
-		int flushCount = 0;
-		while (solrIndexService.flushEventLog(1024) == false) {
-			// repeat flush....
-			flushCount = +1048;
-			if (debug) {
-				logger.fine("...flush event log: " + flushCount + " entries updated in "
-						+ (System.currentTimeMillis() - ltime) + "ms ...");
-			}
-		}
-		if (debug) {
-			logger.fine("...flush solr index completed in " + (System.currentTimeMillis() - ltime) + "ms ...");
-		}
-	}
+  @Override
+  public void updateIndex() {
+    boolean debug = logger.isLoggable(Level.FINE);
+    long ltime = System.currentTimeMillis();
+    // flush eventlog (see issue #411)
+    int flushCount = 0;
+    while (solrIndexService.flushEventLog(1024) == false) {
+      // repeat flush....
+      flushCount = +1048;
+      if (debug) {
+        logger.fine("...flush event log: " + flushCount + " entries updated in "
+            + (System.currentTimeMillis() - ltime) + "ms ...");
+      }
+    }
+    if (debug) {
+      logger.fine(
+          "...flush solr index completed in " + (System.currentTimeMillis() - ltime) + "ms ...");
+    }
+  }
 
 }
