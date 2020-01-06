@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,12 +18,13 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow.jaxrs;
@@ -33,14 +35,12 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
-
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDocument;
 
@@ -54,54 +54,46 @@ import org.imixs.workflow.xml.XMLDocument;
 @Produces(MediaType.TEXT_HTML)
 public class DocumentCollectionWriter implements MessageBodyWriter<XMLDataCollection> {
 
-	public boolean isWriteable(Class<?> type, Type genericType,
-			Annotation[] annotations, MediaType mediaType) {
-		return XMLDataCollection.class.isAssignableFrom(type);
-	}
+  public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
+      MediaType mediaType) {
+    return XMLDataCollection.class.isAssignableFrom(type);
+  }
 
-	public void writeTo(XMLDataCollection entityCollection, Class<?> type, Type genericType,
-			Annotation[] annotations, MediaType mediaType,
-			MultivaluedMap<String, Object> httpHeaders,
-			OutputStream entityStream) throws IOException,
-			WebApplicationException {
-		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-				entityStream));
-		
-		
-		
-		bw.write("<html>");
-		XMLItemCollectionWriter.printHead(bw,mediaType.toString(),null);
-		bw.write("<body>");
-		try {
-			bw.write("<h1>EntityCollection</h1>");
-			bw.write("<h2>" + entityCollection.getDocument().length + " Entries</h2>");
+  public void writeTo(XMLDataCollection entityCollection, Class<?> type, Type genericType,
+      Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders,
+      OutputStream entityStream) throws IOException, WebApplicationException {
+    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(entityStream));
 
-			for (XMLDocument xmlworkItem : entityCollection.getDocument()) {
-				XMLItemCollectionWriter.printXMLItemCollectionHTML(bw, xmlworkItem);
 
-			}
-		} catch (Exception e) {
-			bw.write("ERROR<br>");
-			//e.printStackTrace(bw.);
-		}
-		
 
-		bw.write("</body>");
-		bw.write("</html>");
-		
-		bw.flush();
-	}
+    bw.write("<html>");
+    XMLItemCollectionWriter.printHead(bw, mediaType.toString(), null);
+    bw.write("<body>");
+    try {
+      bw.write("<h1>EntityCollection</h1>");
+      bw.write("<h2>" + entityCollection.getDocument().length + " Entries</h2>");
 
-	public long getSize(XMLDataCollection arg0, Class<?> arg1, Type arg2,
-			Annotation[] arg3, MediaType arg4) {
-		return -1;
-	}
+      for (XMLDocument xmlworkItem : entityCollection.getDocument()) {
+        XMLItemCollectionWriter.printXMLItemCollectionHTML(bw, xmlworkItem);
 
-	
-	
-	
+      }
+    } catch (Exception e) {
+      bw.write("ERROR<br>");
+      // e.printStackTrace(bw.);
+    }
 
-	
-	
-	
+
+    bw.write("</body>");
+    bw.write("</html>");
+
+    bw.flush();
+  }
+
+  public long getSize(XMLDataCollection arg0, Class<?> arg1, Type arg2, Annotation[] arg3,
+      MediaType arg4) {
+    return -1;
+  }
+
+
+
 }
