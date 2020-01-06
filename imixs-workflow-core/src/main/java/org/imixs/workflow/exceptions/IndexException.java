@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,16 +22,15 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.exceptions;
 
 /**
- * An IndexException is a runtime exception which is thrown by a Imixs Workflow component if a index
- * is not read or writable. .
+ * An IndexException is a runtime exception which is thrown by a Imixs Workflow
+ * component if a index is not read or writable. .
  * 
  * @see org.imixs.workflow.engine.lucene.LuceneUpdateService
  * @author rsoika
@@ -39,58 +38,58 @@ package org.imixs.workflow.exceptions;
  */
 public class IndexException extends RuntimeException {
 
-  public static final String INVALID_INDEX = "INVALID_INDEX";
+    public static final String INVALID_INDEX = "INVALID_INDEX";
 
-  protected String errorCode = "UNDEFINED";
-  protected String errorContext = "UNDEFINED";
+    protected String errorCode = "UNDEFINED";
+    protected String errorContext = "UNDEFINED";
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public IndexException(String message) {
-    super(message);
-  }
+    public IndexException(String message) {
+        super(message);
+    }
 
-  public IndexException(String message, Exception e) {
-    super(message, e);
-  }
+    public IndexException(String message, Exception e) {
+        super(message, e);
+    }
 
-  public IndexException(String aErrorCode, String message) {
-    super(message);
-    errorCode = aErrorCode;
-  }
+    public IndexException(String aErrorCode, String message) {
+        super(message);
+        errorCode = aErrorCode;
+    }
 
-  public IndexException(String aErrorCode, String message, Exception e) {
-    super(message, e);
-    errorCode = aErrorCode;
-  }
+    public IndexException(String aErrorCode, String message, Exception e) {
+        super(message, e);
+        errorCode = aErrorCode;
+    }
 
-  public IndexException(String aErrorContext, String aErrorCode, String message) {
-    super(message);
-    errorContext = aErrorContext;
-    errorCode = aErrorCode;
+    public IndexException(String aErrorContext, String aErrorCode, String message) {
+        super(message);
+        errorContext = aErrorContext;
+        errorCode = aErrorCode;
 
-  }
+    }
 
-  public IndexException(String aErrorContext, String aErrorCode, String message, Exception e) {
-    super(message, e);
-    errorContext = aErrorContext;
-    errorCode = aErrorCode;
+    public IndexException(String aErrorContext, String aErrorCode, String message, Exception e) {
+        super(message, e);
+        errorContext = aErrorContext;
+        errorCode = aErrorCode;
 
-  }
+    }
 
-  public String getErrorContext() {
-    return errorContext;
-  }
+    public String getErrorContext() {
+        return errorContext;
+    }
 
-  public void setErrorContext(String errorContext) {
-    this.errorContext = errorContext;
-  }
+    public void setErrorContext(String errorContext) {
+        this.errorContext = errorContext;
+    }
 
-  public String getErrorCode() {
-    return errorCode;
-  }
+    public String getErrorCode() {
+        return errorCode;
+    }
 
-  public void setErrorCode(String errorCode) {
-    this.errorCode = errorCode;
-  }
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
 }

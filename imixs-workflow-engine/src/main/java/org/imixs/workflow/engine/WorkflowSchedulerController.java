@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.engine;
 
@@ -34,10 +33,11 @@ import javax.inject.Named;
 import org.imixs.workflow.engine.scheduler.SchedulerController;
 
 /**
- * The DatevController is used to configure the DatevScheduler. This service is used to generate
- * datev export workitems.
+ * The DatevController is used to configure the DatevScheduler. This service is
+ * used to generate datev export workitems.
  * <p>
- * The Controller creates a configuration entity "type=configuration; txtname=datev".
+ * The Controller creates a configuration entity "type=configuration;
+ * txtname=datev".
  * <p>
  * The following config items are defined:
  * 
@@ -56,22 +56,22 @@ import org.imixs.workflow.engine.scheduler.SchedulerController;
 @RequestScoped
 public class WorkflowSchedulerController extends SchedulerController {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  @Override
-  public String getName() {
-    return WorkflowScheduler.NAME;
-  }
+    @Override
+    public String getName() {
+        return WorkflowScheduler.NAME;
+    }
 
-  /**
-   * Returns the sepa scheduler class name. This name depends on the _export_type.
-   * 
-   * There are two export interfaces available - csv and XML
-   * 
-   */
-  @Override
-  public String getSchedulerClass() {
-    return WorkflowScheduler.class.getName();
-  }
+    /**
+     * Returns the sepa scheduler class name. This name depends on the _export_type.
+     * 
+     * There are two export interfaces available - csv and XML
+     * 
+     */
+    @Override
+    public String getSchedulerClass() {
+        return WorkflowScheduler.class.getName();
+    }
 
 }

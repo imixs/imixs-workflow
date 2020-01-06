@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,35 +22,34 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.exceptions;
 
 /**
- * An ModelException should be thrown by a service component if a model entity is invalid or does
- * not exist
+ * An ModelException should be thrown by a service component if a model entity
+ * is invalid or does not exist
  * 
  * @author rsoika
  * 
  */
 public class ModelException extends WorkflowException {
 
-  public static final String INVALID_MODEL = "INVALID_MODEL";
-  public static final String INVALID_MODEL_ENTRY = "INVALID_MODEL_ENTRY";
-  public static final String UNDEFINED_MODEL_ENTRY = "UNDEFINED_MODEL_ENTRY";
-  public static final String UNDEFINED_MODEL_VERSION = "UNDEFINED_MODEL_VERSION";
+    public static final String INVALID_MODEL = "INVALID_MODEL";
+    public static final String INVALID_MODEL_ENTRY = "INVALID_MODEL_ENTRY";
+    public static final String UNDEFINED_MODEL_ENTRY = "UNDEFINED_MODEL_ENTRY";
+    public static final String UNDEFINED_MODEL_VERSION = "UNDEFINED_MODEL_VERSION";
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public ModelException(String aErrorCode, String message) {
-    super(aErrorCode, message);
-  }
+    public ModelException(String aErrorCode, String message) {
+        super(aErrorCode, message);
+    }
 
-  public ModelException(String aErrorCode, String message, Exception e) {
-    super(aErrorCode, message, e);
-  }
+    public ModelException(String aErrorCode, String message, Exception e) {
+        super(aErrorCode, message, e);
+    }
 
 }

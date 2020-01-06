@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.engine.adminp;
 
@@ -39,15 +38,15 @@ import org.imixs.workflow.exceptions.InvalidAccessException;
  */
 public class AdminPException extends InvalidAccessException {
 
-  private static final long serialVersionUID = 1L;
-  public static final String INVALID_PARAMS = "INVALID_PARAMS";
+    private static final long serialVersionUID = 1L;
+    public static final String INVALID_PARAMS = "INVALID_PARAMS";
 
-  public AdminPException(String aErrorCode, String message) {
-    super(aErrorCode, message);
-  }
+    public AdminPException(String aErrorCode, String message) {
+        super(aErrorCode, message);
+    }
 
-  public AdminPException(String aErrorCode, String message, Exception e) {
-    super(aErrorCode, message, e);
-  }
+    public AdminPException(String aErrorCode, String message, Exception e) {
+        super(aErrorCode, message, e);
+    }
 
 }

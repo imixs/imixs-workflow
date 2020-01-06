@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.exceptions;
 
@@ -38,16 +37,16 @@ package org.imixs.workflow.exceptions;
  */
 public class QueryException extends WorkflowException {
 
-  public static final String QUERY_NOT_UNDERSTANDABLE = "QUERY_NOT_UNDERSTANDABLE";
+    public static final String QUERY_NOT_UNDERSTANDABLE = "QUERY_NOT_UNDERSTANDABLE";
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public QueryException(String aErrorCode, String message) {
-    super(aErrorCode, message);
-  }
+    public QueryException(String aErrorCode, String message) {
+        super(aErrorCode, message);
+    }
 
-  public QueryException(String aErrorCode, String message, Exception e) {
-    super(aErrorCode, message, e);
-  }
+    public QueryException(String aErrorCode, String message, Exception e) {
+        super(aErrorCode, message, e);
+    }
 
 }

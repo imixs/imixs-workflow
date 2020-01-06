@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.services.rest;
 
@@ -42,23 +41,23 @@ import java.util.logging.Logger;
  */
 public class JWTAuthenticator implements RequestFilter {
 
-  private final String jwt;
-  private final static Logger logger = Logger.getLogger(JWTAuthenticator.class.getName());
+    private final String jwt;
+    private final static Logger logger = Logger.getLogger(JWTAuthenticator.class.getName());
 
-  public JWTAuthenticator(String jwt) {
-    this.jwt = jwt;
-  }
-
-  public void filter(HttpURLConnection connection) throws IOException {
-
-    URL uri = connection.getURL();// .getUri();
-
-    String url = uri.toString();
-    if (!url.contains("jwt=")) {
-      logger.info("adding JSON Web Token...");
-      connection.setRequestProperty("jwt", jwt);
+    public JWTAuthenticator(String jwt) {
+        this.jwt = jwt;
     }
 
-  }
+    public void filter(HttpURLConnection connection) throws IOException {
+
+        URL uri = connection.getURL();// .getUri();
+
+        String url = uri.toString();
+        if (!url.contains("jwt=")) {
+            logger.info("adding JSON Web Token...");
+            connection.setRequestProperty("jwt", jwt);
+        }
+
+    }
 
 }

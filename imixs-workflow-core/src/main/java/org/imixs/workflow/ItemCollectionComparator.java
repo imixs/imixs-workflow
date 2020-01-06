@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow;
 
@@ -35,8 +34,8 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * The ItemCollectionComparator provides a Comparator for ItemColections. The item to be compared
- * can be provided in the constructor.
+ * The ItemCollectionComparator provides a Comparator for ItemColections. The
+ * item to be compared can be provided in the constructor.
  * <p>
  * Usage:
  * <p>
@@ -46,84 +45,83 @@ import java.util.Locale;
  * 
  */
 public class ItemCollectionComparator implements Comparator<ItemCollection> {
-  private final Collator collator;
-  private final boolean ascending;
-  private final String itemName;
+    private final Collator collator;
+    private final boolean ascending;
+    private final String itemName;
 
-  public ItemCollectionComparator(String aItemName, boolean ascending, Locale locale) {
-    this.collator = Collator.getInstance(locale);
-    this.ascending = ascending;
-    this.itemName = aItemName;
-  }
+    public ItemCollectionComparator(String aItemName, boolean ascending, Locale locale) {
+        this.collator = Collator.getInstance(locale);
+        this.ascending = ascending;
+        this.itemName = aItemName;
+    }
 
-  /**
-   * This method sorts by the default locale
-   * 
-   * @param aItemName
-   * @param ascending
-   */
-  public ItemCollectionComparator(String aItemName, boolean ascending) {
-    this.collator = Collator.getInstance(Locale.getDefault());
-    this.ascending = ascending;
-    this.itemName = aItemName;
-
-  }
-
-  /**
-   * This method sorts by the default locale ascending
-   * 
-   * @param aItemName
-   * @param ascending
-   */
-  public ItemCollectionComparator(String aItemName) {
-    this.collator = Collator.getInstance(Locale.getDefault());
-    this.ascending = true;
-    this.itemName = aItemName;
-
-  }
-
-  public int compare(ItemCollection a, ItemCollection b) {
-
-    // date compare?
-    if (a.isItemValueDate(itemName)) {
-
-      Date dateA = a.getItemValueDate(itemName);
-      Date dateB = b.getItemValueDate(itemName);
-      if (dateA == null && dateB != null) {
-        return 1;
-      }
-      if (dateB == null && dateA != null) {
-        return -1;
-      }
-      if (dateB == null && dateA == null) {
-        return 0;
-      }
-
-      int result = dateB.compareTo(dateA);
-      if (!this.ascending) {
-        result = -result;
-      }
-      return result;
+    /**
+     * This method sorts by the default locale
+     * 
+     * @param aItemName
+     * @param ascending
+     */
+    public ItemCollectionComparator(String aItemName, boolean ascending) {
+        this.collator = Collator.getInstance(Locale.getDefault());
+        this.ascending = ascending;
+        this.itemName = aItemName;
 
     }
 
-    // integer compare?
-    if (a.isItemValueInteger(itemName)) {
-      int result = a.getItemValueInteger(itemName) - b.getItemValueInteger(itemName);
-      if (!this.ascending) {
-        result = -result;
-      }
-      return result;
+    /**
+     * This method sorts by the default locale ascending
+     * 
+     * @param aItemName
+     * @param ascending
+     */
+    public ItemCollectionComparator(String aItemName) {
+        this.collator = Collator.getInstance(Locale.getDefault());
+        this.ascending = true;
+        this.itemName = aItemName;
 
     }
 
-    // String compare
-    int result =
-        this.collator.compare(a.getItemValueString(itemName), b.getItemValueString(itemName));
-    if (!this.ascending) {
-      result = -result;
+    public int compare(ItemCollection a, ItemCollection b) {
+
+        // date compare?
+        if (a.isItemValueDate(itemName)) {
+
+            Date dateA = a.getItemValueDate(itemName);
+            Date dateB = b.getItemValueDate(itemName);
+            if (dateA == null && dateB != null) {
+                return 1;
+            }
+            if (dateB == null && dateA != null) {
+                return -1;
+            }
+            if (dateB == null && dateA == null) {
+                return 0;
+            }
+
+            int result = dateB.compareTo(dateA);
+            if (!this.ascending) {
+                result = -result;
+            }
+            return result;
+
+        }
+
+        // integer compare?
+        if (a.isItemValueInteger(itemName)) {
+            int result = a.getItemValueInteger(itemName) - b.getItemValueInteger(itemName);
+            if (!this.ascending) {
+                result = -result;
+            }
+            return result;
+
+        }
+
+        // String compare
+        int result = this.collator.compare(a.getItemValueString(itemName), b.getItemValueString(itemName));
+        if (!this.ascending) {
+            result = -result;
+        }
+        return result;
     }
-    return result;
-  }
 
 }

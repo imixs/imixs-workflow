@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,16 +22,15 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.services.rest;
 
 /**
- * RestAPIException signals an error in the communication with the Imixs Rest API using the Imixs
- * RestClient. The error code is the HTTP responce code.
+ * RestAPIException signals an error in the communication with the Imixs Rest
+ * API using the Imixs RestClient. The error code is the HTTP responce code.
  * 
  * @see RestClient
  * @author rsoika
@@ -39,52 +38,52 @@ package org.imixs.workflow.services.rest;
  */
 public class RestAPIException extends Exception {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  protected String errorContext = "UNDEFINED";
-  protected int errorCode = 0;
+    protected String errorContext = "UNDEFINED";
+    protected int errorCode = 0;
 
-  public RestAPIException(int aErrorCode, String message) {
-    super(message);
-    errorCode = aErrorCode;
+    public RestAPIException(int aErrorCode, String message) {
+        super(message);
+        errorCode = aErrorCode;
 
-  }
+    }
 
-  public RestAPIException(String aErrorContext, int aErrorCode, String message) {
-    super(message);
-    errorContext = aErrorContext;
-    errorCode = aErrorCode;
+    public RestAPIException(String aErrorContext, int aErrorCode, String message) {
+        super(message);
+        errorContext = aErrorContext;
+        errorCode = aErrorCode;
 
-  }
+    }
 
-  public RestAPIException(String aErrorContext, int aErrorCode, String message, Exception e) {
-    super(message, e);
-    errorContext = aErrorContext;
-    errorCode = aErrorCode;
+    public RestAPIException(String aErrorContext, int aErrorCode, String message, Exception e) {
+        super(message, e);
+        errorContext = aErrorContext;
+        errorCode = aErrorCode;
 
-  }
+    }
 
-  public RestAPIException(int aErrorCode, String message, Exception e) {
-    super(message, e);
+    public RestAPIException(int aErrorCode, String message, Exception e) {
+        super(message, e);
 
-    errorCode = aErrorCode;
+        errorCode = aErrorCode;
 
-  }
+    }
 
-  public String getErrorContext() {
-    return errorContext;
-  }
+    public String getErrorContext() {
+        return errorContext;
+    }
 
-  public void setErrorContext(String errorContext) {
-    this.errorContext = errorContext;
-  }
+    public void setErrorContext(String errorContext) {
+        this.errorContext = errorContext;
+    }
 
-  public int getErrorCode() {
-    return errorCode;
-  }
+    public int getErrorCode() {
+        return errorCode;
+    }
 
-  public void setErrorCode(int errorCode) {
-    this.errorCode = errorCode;
-  }
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
 
 }

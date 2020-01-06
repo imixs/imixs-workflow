@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.engine.scheduler;
 
@@ -40,35 +39,33 @@ import org.imixs.workflow.exceptions.WorkflowException;
  */
 public class SchedulerException extends WorkflowException {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public static final String INVALID_MODELVERSION = "INVALID_MODELVERSION";
-  public static final String INVALID_WORKITEM = "INVALID_WORKITEM";
-  public static final String INVALID_PROCESSID = "INVALID_PROCESSID";
+    public static final String INVALID_MODELVERSION = "INVALID_MODELVERSION";
+    public static final String INVALID_WORKITEM = "INVALID_WORKITEM";
+    public static final String INVALID_PROCESSID = "INVALID_PROCESSID";
 
-  protected String errorContext = "UNDEFINED";
-  protected String errorCode = "UNDEFINED";
+    protected String errorContext = "UNDEFINED";
+    protected String errorCode = "UNDEFINED";
 
+    public SchedulerException(String aErrorCode, String message) {
+        super(aErrorCode, message);
+    }
 
-  public SchedulerException(String aErrorCode, String message) {
-    super(aErrorCode, message);
-  }
+    public SchedulerException(String aErrorContext, String aErrorCode, String message) {
+        super(aErrorContext, aErrorCode, message);
+    }
 
-  public SchedulerException(String aErrorContext, String aErrorCode, String message) {
-    super(aErrorContext, aErrorCode, message);
-  }
+    public SchedulerException(String aErrorContext, String aErrorCode, String message, Exception e) {
+        super(aErrorContext, aErrorCode, message, e);
+    }
 
-  public SchedulerException(String aErrorContext, String aErrorCode, String message, Exception e) {
-    super(aErrorContext, aErrorCode, message, e);
-  }
+    public SchedulerException(String aErrorCode, String message, Exception e) {
+        super(aErrorCode, message, e);
+    }
 
-
-  public SchedulerException(String aErrorCode, String message, Exception e) {
-    super(aErrorCode, message, e);
-  }
-
-  public void setErrorCode(String errorCode) {
-    this.errorCode = errorCode;
-  }
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
 
 }

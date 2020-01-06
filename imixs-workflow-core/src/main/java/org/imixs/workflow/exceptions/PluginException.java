@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.exceptions;
 
@@ -37,38 +36,32 @@ package org.imixs.workflow.exceptions;
  */
 public class PluginException extends WorkflowException {
 
-  private static final long serialVersionUID = 1L;
-  private java.lang.Object[] params = null;
+    private static final long serialVersionUID = 1L;
+    private java.lang.Object[] params = null;
 
+    public PluginException(String aErrorContext, String aErrorCode, String message) {
+        super(aErrorContext, aErrorCode, message);
+    }
 
-  public PluginException(String aErrorContext, String aErrorCode, String message) {
-    super(aErrorContext, aErrorCode, message);
-  }
+    public PluginException(String aErrorContext, String aErrorCode, String message, Exception e) {
+        super(aErrorContext, aErrorCode, message, e);
+    }
 
-  public PluginException(String aErrorContext, String aErrorCode, String message, Exception e) {
-    super(aErrorContext, aErrorCode, message, e);
-  }
+    public PluginException(AdapterException e) {
+        super(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
+    }
 
+    public PluginException(String aErrorContext, String aErrorCode, String message, java.lang.Object[] params) {
+        super(aErrorContext, aErrorCode, message);
+        this.params = params;
+    }
 
-  public PluginException(AdapterException e) {
-    super(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
-  }
+    public Object[] getErrorParameters() {
+        return params;
+    }
 
-
-  public PluginException(String aErrorContext, String aErrorCode, String message,
-      java.lang.Object[] params) {
-    super(aErrorContext, aErrorCode, message);
-    this.params = params;
-  }
-
-  public Object[] getErrorParameters() {
-    return params;
-  }
-
-  protected void setErrorParameters(java.lang.Object[] aparams) {
-    this.params = aparams;
-  }
-
-
+    protected void setErrorParameters(java.lang.Object[] aparams) {
+        this.params = aparams;
+    }
 
 }

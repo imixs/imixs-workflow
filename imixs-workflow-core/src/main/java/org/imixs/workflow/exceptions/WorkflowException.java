@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,68 +22,67 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.exceptions;
 
 /**
- * WorkflowException is the abstract super class for all Imixs Workflow Exception classes. A
- * WorkflowException signals an error in the business logic. WorkflowExceptions need to be caught.
+ * WorkflowException is the abstract super class for all Imixs Workflow
+ * Exception classes. A WorkflowException signals an error in the business
+ * logic. WorkflowExceptions need to be caught.
  * 
  * @author rsoika
  */
 public abstract class WorkflowException extends Exception {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  protected String errorContext = "UNDEFINED";
-  protected String errorCode = "UNDEFINED";
+    protected String errorContext = "UNDEFINED";
+    protected String errorCode = "UNDEFINED";
 
-  public WorkflowException(String aErrorCode, String message) {
-    super(message);
-    errorCode = aErrorCode;
+    public WorkflowException(String aErrorCode, String message) {
+        super(message);
+        errorCode = aErrorCode;
 
-  }
+    }
 
-  public WorkflowException(String aErrorContext, String aErrorCode, String message) {
-    super(message);
-    errorContext = aErrorContext;
-    errorCode = aErrorCode;
+    public WorkflowException(String aErrorContext, String aErrorCode, String message) {
+        super(message);
+        errorContext = aErrorContext;
+        errorCode = aErrorCode;
 
-  }
+    }
 
-  public WorkflowException(String aErrorContext, String aErrorCode, String message, Exception e) {
-    super(message, e);
-    errorContext = aErrorContext;
-    errorCode = aErrorCode;
+    public WorkflowException(String aErrorContext, String aErrorCode, String message, Exception e) {
+        super(message, e);
+        errorContext = aErrorContext;
+        errorCode = aErrorCode;
 
-  }
+    }
 
+    public WorkflowException(String aErrorCode, String message, Exception e) {
+        super(message, e);
 
-  public WorkflowException(String aErrorCode, String message, Exception e) {
-    super(message, e);
+        errorCode = aErrorCode;
 
-    errorCode = aErrorCode;
+    }
 
-  }
+    public String getErrorContext() {
+        return errorContext;
+    }
 
-  public String getErrorContext() {
-    return errorContext;
-  }
+    public void setErrorContext(String errorContext) {
+        this.errorContext = errorContext;
+    }
 
-  public void setErrorContext(String errorContext) {
-    this.errorContext = errorContext;
-  }
+    public String getErrorCode() {
+        return errorCode;
+    }
 
-  public String getErrorCode() {
-    return errorCode;
-  }
-
-  public void setErrorCode(String errorCode) {
-    this.errorCode = errorCode;
-  }
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
 
 }

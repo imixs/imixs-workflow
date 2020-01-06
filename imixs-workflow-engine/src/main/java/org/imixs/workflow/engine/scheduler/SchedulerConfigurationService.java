@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.engine.scheduler;
 
@@ -43,9 +42,9 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 
 /**
- * This SchedulerSaveService is used to save configurations in a new transaction. The service is
- * only called by the SchedulerService in case a scheduler throws a SchedulerException or a
- * RuntimeExcepiton.
+ * This SchedulerSaveService is used to save configurations in a new
+ * transaction. The service is only called by the SchedulerService in case a
+ * scheduler throws a SchedulerException or a RuntimeExcepiton.
  * 
  * @see SchedulerService for details
  * @author rsoika
@@ -53,27 +52,27 @@ import org.imixs.workflow.engine.DocumentService;
  */
 @Stateless
 @LocalBean
-@DeclareRoles({"org.imixs.ACCESSLEVEL.MANAGERACCESS"})
+@DeclareRoles({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @RunAs("org.imixs.ACCESSLEVEL.MANAGERACCESS")
 public class SchedulerConfigurationService {
 
-  @Resource
-  SessionContext ctx;
+    @Resource
+    SessionContext ctx;
 
-  @Inject
-  DocumentService documentService;
+    @Inject
+    DocumentService documentService;
 
-  private static Logger logger = Logger.getLogger(SchedulerConfigurationService.class.getName());
+    private static Logger logger = Logger.getLogger(SchedulerConfigurationService.class.getName());
 
-  /**
-   * This method saves a configuration in a new transaction. This is needed case of a runtime
-   * exception
-   * 
-   */
-  @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
-  public void storeConfigurationInNewTransaction(ItemCollection config) {
-    logger.finest(" ....saving scheduler configuration by new transaciton...");
-    config.removeItem("$version");
-    config = documentService.save(config);
-  }
+    /**
+     * This method saves a configuration in a new transaction. This is needed case
+     * of a runtime exception
+     * 
+     */
+    @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
+    public void storeConfigurationInNewTransaction(ItemCollection config) {
+        logger.finest(" ....saving scheduler configuration by new transaciton...");
+        config.removeItem("$version");
+        config = documentService.save(config);
+    }
 }

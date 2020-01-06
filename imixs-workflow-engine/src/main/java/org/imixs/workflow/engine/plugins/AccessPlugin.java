@@ -34,22 +34,20 @@ import org.imixs.workflow.exceptions.PluginException;
 
 /**
  * Deprecated - see PaticipantAdapter.
- *   
+ * 
  * @author Ralph Soika
  * @version 3.0
  * @see org.imixs.workflow.WorkflowManager
  */
 @Deprecated
 public class AccessPlugin extends AbstractPlugin {
-	private static Logger logger = Logger.getLogger(AccessPlugin.class.getName());
+    private static Logger logger = Logger.getLogger(AccessPlugin.class.getName());
 
-	
-	@Deprecated
-	public ItemCollection run(ItemCollection adocumentContext, ItemCollection documentActivity) throws PluginException {
+    @Deprecated
+    public ItemCollection run(ItemCollection adocumentContext, ItemCollection documentActivity) throws PluginException {
 
-		logger.warning("The AccessPlugin is deprecated and can be removed from this model!");
-		return adocumentContext;
-	}
-
+        logger.warning("The AccessPlugin is deprecated and can be removed from this model!");
+        return adocumentContext;
+    }
 
 }

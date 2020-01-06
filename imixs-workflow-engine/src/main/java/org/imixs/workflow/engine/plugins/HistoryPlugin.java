@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.engine.plugins;
 
@@ -43,8 +42,9 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * This Plugin creates a history log in the property txtWorkflowHistory. The history log contains a
- * list of history entires. Each entry provides the following information:
+ * This Plugin creates a history log in the property txtWorkflowHistory. The
+ * history log contains a list of history entires. Each entry provides the
+ * following information:
  * <ul>
  * <li>date of creation (Date)</li>
  * <li>comment (String)</li>
@@ -52,9 +52,10 @@ import org.imixs.workflow.exceptions.PluginException;
  * </ul>
  * 
  * 
- * Note: In early versions of this plugin the history entries were stored in a simple string list.
- * The date was separated by the char sequence ' : ' from the comment entry. The userId was not
- * stored explicit. This plugin converts the old format automatically (see method convertOldFormat)
+ * Note: In early versions of this plugin the history entries were stored in a
+ * simple string list. The date was separated by the char sequence ' : ' from
+ * the comment entry. The userId was not stored explicit. This plugin converts
+ * the old format automatically (see method convertOldFormat)
  * 
  * 
  * 
@@ -64,182 +65,175 @@ import org.imixs.workflow.exceptions.PluginException;
  */
 
 public class HistoryPlugin extends AbstractPlugin {
-  private ItemCollection documentContext;
-  private List<List<Object>> historyList = null;
-  private static Logger logger = Logger.getLogger(HistoryPlugin.class.getName());
+    private ItemCollection documentContext;
+    private List<List<Object>> historyList = null;
+    private static Logger logger = Logger.getLogger(HistoryPlugin.class.getName());
 
-  /**
-   * Update the Log entry.
-   * 
-   * The method tests if the deprecated property 'txtworkflowhistorylogrev' exists. In this case the
-   * old log format will be transformed into the new format see method convertOldFormat
-   */
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
-      throws PluginException {
-    String rtfItemLog;
+    /**
+     * Update the Log entry.
+     * 
+     * The method tests if the deprecated property 'txtworkflowhistorylogrev'
+     * exists. In this case the old log format will be transformed into the new
+     * format see method convertOldFormat
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+            throws PluginException {
+        String rtfItemLog;
 
-    documentContext = adocumentContext;
-    ItemCollection documentActivity = adocumentActivity;
+        documentContext = adocumentContext;
+        ItemCollection documentActivity = adocumentActivity;
 
-    // convert old format if exists (backward compatibility (< 3.1.1)
-    if (documentContext.hasItem("txtworkflowhistorylogrev")) {
-      convertOldFormat();
-      documentContext.removeItem("txtworkflowhistorylogrev");
-    }
-
-    // add logtext into history log
-    rtfItemLog = documentActivity.getItemValueString("rtfresultlog");
-    if (rtfItemLog.isEmpty())
-      return documentContext;
-
-    rtfItemLog = getWorkflowService().adaptText(rtfItemLog, documentContext);
-
-    List<?> temp = documentContext.getItemValue("txtworkflowhistory");
-    historyList = new Vector();
-    // clear null and empty values
-    Iterator<?> i = temp.iterator();
-    while (i.hasNext()) {
-      Object o = i.next();
-      if (o instanceof List)
-        historyList.add((List<Object>) o);
-    }
-
-    List<Object> newEntry = new ArrayList<Object>();
-    newEntry.add(documentContext.getItemValueDate(WorkflowKernel.LASTEVENTDATE));
-    newEntry.add(rtfItemLog);
-    newEntry.add(this.getWorkflowService().getUserName());
-    historyList.add(newEntry);
-
-    // check if maximum length of log is defined
-    int iMaxLogLength = documentContext.getItemValueInteger("numworkflowhistoryLength");
-    if (iMaxLogLength > 0) {
-      while (historyList.size() > iMaxLogLength)
-        historyList.remove(0);
-    }
-
-    documentContext.replaceItemValue("txtworkflowhistory", historyList);
-
-    // set timWorkflowLastAccess (Deprecated)
-    // issue #244
-    // documentContext.replaceItemValue("timworkflowlastaccess", new Date());
-    return documentContext;
-  }
-
-
-
-  /**
-   * This method converts the old StringList format in the new format with a list of separated
-   * values:
-   * 
-   * <ul>
-   * <li>date of creation (Date)</li>
-   * <li>comment (String)</li>
-   * <li>userID (String)</li>
-   * </ul>
-   * 
-   */
-  @SuppressWarnings("unchecked")
-  protected void convertOldFormat() {
-    List<List<Object>> newList = new ArrayList<List<Object>>();
-
-    try {
-      List<String> oldList = (List<String>) documentContext.getItemValue("txtworkflowhistorylog");
-
-      for (String oldEntry : oldList) {
-        if (oldEntry != null && !oldEntry.isEmpty() && oldEntry.indexOf(" : ") > -1) {
-          String sDate = oldEntry.substring(0, oldEntry.indexOf(" : "));
-          String sComment = oldEntry.substring(oldEntry.indexOf(" : ") + 3);
-          String sUser = "";
-          List<Object> newEntry = new ArrayList<Object>();
-          newEntry.add(convertDate(sDate));
-          newEntry.add(sComment);
-          newEntry.add(sUser);
-          newList.add(newEntry);
+        // convert old format if exists (backward compatibility (< 3.1.1)
+        if (documentContext.hasItem("txtworkflowhistorylogrev")) {
+            convertOldFormat();
+            documentContext.removeItem("txtworkflowhistorylogrev");
         }
-      }
-    } catch (ClassCastException cce) {
-      logger.warning("[HistoryPlugin] can not convert txtworkflowhistorylog into new format!");
-      logger.warning(cce.getMessage());
+
+        // add logtext into history log
+        rtfItemLog = documentActivity.getItemValueString("rtfresultlog");
+        if (rtfItemLog.isEmpty())
+            return documentContext;
+
+        rtfItemLog = getWorkflowService().adaptText(rtfItemLog, documentContext);
+
+        List<?> temp = documentContext.getItemValue("txtworkflowhistory");
+        historyList = new Vector();
+        // clear null and empty values
+        Iterator<?> i = temp.iterator();
+        while (i.hasNext()) {
+            Object o = i.next();
+            if (o instanceof List)
+                historyList.add((List<Object>) o);
+        }
+
+        List<Object> newEntry = new ArrayList<Object>();
+        newEntry.add(documentContext.getItemValueDate(WorkflowKernel.LASTEVENTDATE));
+        newEntry.add(rtfItemLog);
+        newEntry.add(this.getWorkflowService().getUserName());
+        historyList.add(newEntry);
+
+        // check if maximum length of log is defined
+        int iMaxLogLength = documentContext.getItemValueInteger("numworkflowhistoryLength");
+        if (iMaxLogLength > 0) {
+            while (historyList.size() > iMaxLogLength)
+                historyList.remove(0);
+        }
+
+        documentContext.replaceItemValue("txtworkflowhistory", historyList);
+
+        // set timWorkflowLastAccess (Deprecated)
+        // issue #244
+        // documentContext.replaceItemValue("timworkflowlastaccess", new Date());
+        return documentContext;
     }
 
-    documentContext.replaceItemValue("txtworkflowhistory", newList);
-  }
+    /**
+     * This method converts the old StringList format in the new format with a list
+     * of separated values:
+     * 
+     * <ul>
+     * <li>date of creation (Date)</li>
+     * <li>comment (String)</li>
+     * <li>userID (String)</li>
+     * </ul>
+     * 
+     */
+    @SuppressWarnings("unchecked")
+    protected void convertOldFormat() {
+        List<List<Object>> newList = new ArrayList<List<Object>>();
 
-  /**
-   * This methd is only used to convert old date formats....
-   * 
-   * @param aDateString
-   * @return
-   */
-  private Date convertDate(String aDateString) {
-    Date result;
-    DateFormat df = null;
+        try {
+            List<String> oldList = (List<String>) documentContext.getItemValue("txtworkflowhistorylog");
 
-    try {
-      df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, new Locale("de", "DE"));
+            for (String oldEntry : oldList) {
+                if (oldEntry != null && !oldEntry.isEmpty() && oldEntry.indexOf(" : ") > -1) {
+                    String sDate = oldEntry.substring(0, oldEntry.indexOf(" : "));
+                    String sComment = oldEntry.substring(oldEntry.indexOf(" : ") + 3);
+                    String sUser = "";
+                    List<Object> newEntry = new ArrayList<Object>();
+                    newEntry.add(convertDate(sDate));
+                    newEntry.add(sComment);
+                    newEntry.add(sUser);
+                    newList.add(newEntry);
+                }
+            }
+        } catch (ClassCastException cce) {
+            logger.warning("[HistoryPlugin] can not convert txtworkflowhistorylog into new format!");
+            logger.warning(cce.getMessage());
+        }
 
-      result = df.parse(aDateString);
-      return result;
-    } catch (ParseException e) {
-      // no opp
+        documentContext.replaceItemValue("txtworkflowhistory", newList);
     }
 
-    try {
-      df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM,
-          new Locale("de", "DE"));
-      result = df.parse(aDateString);
-      return result;
-    } catch (ParseException e) {
-      // no opp
-    }
+    /**
+     * This methd is only used to convert old date formats....
+     * 
+     * @param aDateString
+     * @return
+     */
+    private Date convertDate(String aDateString) {
+        Date result;
+        DateFormat df = null;
 
-    try {
-      df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT,
-          new Locale("de", "DE"));
-      result = df.parse(aDateString);
-      return result;
-    } catch (ParseException e) {
-      // no opp
-    }
+        try {
+            df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, new Locale("de", "DE"));
 
-    try {
-      df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM,
-          new Locale("de", "DE"));
-      result = df.parse(aDateString);
-      return result;
-    } catch (ParseException e) {
-      // no opp
-    }
+            result = df.parse(aDateString);
+            return result;
+        } catch (ParseException e) {
+            // no opp
+        }
 
-    try {
-      df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT,
-          new Locale("de", "DE"));
-      result = df.parse(aDateString);
-      return result;
-    } catch (ParseException e) {
-      // no opp
-    }
+        try {
+            df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, new Locale("de", "DE"));
+            result = df.parse(aDateString);
+            return result;
+        } catch (ParseException e) {
+            // no opp
+        }
 
-    try {
-      df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM,
-          new Locale("de", "DE"));
-      result = df.parse(aDateString);
-      return result;
-    } catch (ParseException e) {
-      // no opp
-    }
+        try {
+            df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, new Locale("de", "DE"));
+            result = df.parse(aDateString);
+            return result;
+        } catch (ParseException e) {
+            // no opp
+        }
 
-    try {
-      df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.LONG,
-          new Locale("de", "DE"));
-      result = df.parse(aDateString);
-      return result;
-    } catch (ParseException e) {
-      // no opp
-    }
+        try {
+            df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, new Locale("de", "DE"));
+            result = df.parse(aDateString);
+            return result;
+        } catch (ParseException e) {
+            // no opp
+        }
 
-    return null;
-  }
+        try {
+            df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, new Locale("de", "DE"));
+            result = df.parse(aDateString);
+            return result;
+        } catch (ParseException e) {
+            // no opp
+        }
+
+        try {
+            df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, new Locale("de", "DE"));
+            result = df.parse(aDateString);
+            return result;
+        } catch (ParseException e) {
+            // no opp
+        }
+
+        try {
+            df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.LONG, new Locale("de", "DE"));
+            result = df.parse(aDateString);
+            return result;
+        } catch (ParseException e) {
+            // no opp
+        }
+
+        return null;
+    }
 
 }

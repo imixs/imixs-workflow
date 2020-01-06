@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,46 +22,43 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.exceptions;
 
 /**
- * An ProcessingErrorException is a RuntimeExcption thrown by the workflowManager if an error occurs
- * during the process method
+ * An ProcessingErrorException is a RuntimeExcption thrown by the
+ * workflowManager if an error occurs during the process method
  * 
  * @author rsoika
  * 
  */
 public class ProcessingErrorException extends InvalidAccessException {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public static final String INVALID_MODELVERSION = "INVALID_MODELVERSION";
-  public static final String INVALID_WORKITEM = "INVALID_WORKITEM";
-  public static final String INVALID_PROCESSID = "INVALID_PROCESSID";
+    public static final String INVALID_MODELVERSION = "INVALID_MODELVERSION";
+    public static final String INVALID_WORKITEM = "INVALID_WORKITEM";
+    public static final String INVALID_PROCESSID = "INVALID_PROCESSID";
 
-  public ProcessingErrorException(String aErrorCode, String message) {
-    super(aErrorCode, message);
-  }
+    public ProcessingErrorException(String aErrorCode, String message) {
+        super(aErrorCode, message);
+    }
 
-  public ProcessingErrorException(String aErrorContext, String aErrorCode, String message) {
-    super(message);
-    errorContext = aErrorContext;
-    errorCode = aErrorCode;
+    public ProcessingErrorException(String aErrorContext, String aErrorCode, String message) {
+        super(message);
+        errorContext = aErrorContext;
+        errorCode = aErrorCode;
 
-  }
+    }
 
-  public ProcessingErrorException(String aErrorContext, String aErrorCode, String message,
-      Exception e) {
-    super(message, e);
-    errorContext = aErrorContext;
-    errorCode = aErrorCode;
+    public ProcessingErrorException(String aErrorContext, String aErrorCode, String message, Exception e) {
+        super(message, e);
+        errorContext = aErrorContext;
+        errorCode = aErrorCode;
 
-  }
-
+    }
 
 }

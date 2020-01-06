@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,18 +22,18 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.engine;
 
 import org.imixs.workflow.ItemCollection;
 
 /**
- * The ProcessingEvent provides a CDI event fired by the WorkflowService EJB. This even can be used
- * in a observer pattern of a service EJB to react on the life-cycle of a process instance.
+ * The ProcessingEvent provides a CDI event fired by the WorkflowService EJB.
+ * This even can be used in a observer pattern of a service EJB to react on the
+ * life-cycle of a process instance.
  * <p>
  * The ProcessingEvent defines the following event types:
  * <ul>
@@ -50,23 +50,23 @@ import org.imixs.workflow.ItemCollection;
  */
 public class ProcessingEvent {
 
-  public static final int BEFORE_PROCESS = 1;
-  public static final int AFTER_PROCESS = 2;
+    public static final int BEFORE_PROCESS = 1;
+    public static final int AFTER_PROCESS = 2;
 
-  private int eventType;
-  private ItemCollection document;
+    private int eventType;
+    private ItemCollection document;
 
-  public ProcessingEvent(ItemCollection document, int eventType) {
-    this.eventType = eventType;
-    this.document = document;
-  }
+    public ProcessingEvent(ItemCollection document, int eventType) {
+        this.eventType = eventType;
+        this.document = document;
+    }
 
-  public int getEventType() {
-    return eventType;
-  }
+    public int getEventType() {
+        return eventType;
+    }
 
-  public ItemCollection getDocument() {
-    return document;
-  }
+    public ItemCollection getDocument() {
+        return document;
+    }
 
 }

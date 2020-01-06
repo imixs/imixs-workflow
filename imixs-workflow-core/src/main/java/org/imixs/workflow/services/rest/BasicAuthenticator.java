@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.services.rest;
 
@@ -42,32 +41,32 @@ import org.imixs.workflow.util.Base64;
  */
 public class BasicAuthenticator implements RequestFilter {
 
-  private final String user;
-  private final String password;
+    private final String user;
+    private final String password;
 
-  public BasicAuthenticator(String user, String password) {
-    this.user = user;
-    this.password = password;
-  }
+    public BasicAuthenticator(String user, String password) {
+        this.user = user;
+        this.password = password;
+    }
 
-  public void filter(HttpURLConnection connection) throws IOException {
-    connection.setRequestProperty("Authorization", "Basic " + getBasicAuthentication());
+    public void filter(HttpURLConnection connection) throws IOException {
+        connection.setRequestProperty("Authorization", "Basic " + getBasicAuthentication());
 
-  }
+    }
 
-  /**
-   * This methos set the user password information for basic authentication
-   */
-  private String getBasicAuthentication() {
-    String sURLAccess = "";
-    // UserID:Passwort
-    String sUserCode = user + ":" + password;
-    // String convertieren
-    // sURLAccess = Base64.encodeBase64(sUserCode.getBytes()).toString();
-    char[] authcode = Base64.encode(sUserCode.getBytes());
+    /**
+     * This methos set the user password information for basic authentication
+     */
+    private String getBasicAuthentication() {
+        String sURLAccess = "";
+        // UserID:Passwort
+        String sUserCode = user + ":" + password;
+        // String convertieren
+        // sURLAccess = Base64.encodeBase64(sUserCode.getBytes()).toString();
+        char[] authcode = Base64.encode(sUserCode.getBytes());
 
-    sURLAccess = String.valueOf(authcode);
-    return sURLAccess;
-  }
+        sURLAccess = String.valueOf(authcode);
+        return sURLAccess;
+    }
 
 }

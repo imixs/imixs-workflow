@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.engine.adapters;
 
@@ -45,20 +44,21 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * The AccessAdapter is a generic adapter class responsible to update the ACL of a workitem. The CID
- * Bean updates the following Items
+ * The AccessAdapter is a generic adapter class responsible to update the ACL of
+ * a workitem. The CID Bean updates the following Items
  * <ul>
  * <li>$writeAccess</li>
  * <li>$readAccess</li>
  * <li>$participants</li>
  * </ul>
  * <p>
- * The read and write access for a workitem can be defined by the BPMN model with the ACL Properties
- * of the Imixs-BPMN modeler.
+ * The read and write access for a workitem can be defined by the BPMN model
+ * with the ACL Properties of the Imixs-BPMN modeler.
  * <p>
  * The participants is a computed list of all users who edited this workitem.
  * <p>
- * By defining an CDI alternative an application can overwrite the behavior of this bean.
+ * By defining an CDI alternative an application can overwrite the behavior of
+ * this bean.
  * 
  * @author rsoika
  * @version 1.0.0
@@ -66,282 +66,282 @@ import org.imixs.workflow.exceptions.PluginException;
 @Named
 public class AccessAdapter implements GenericAdapter, Serializable {
 
-  private static final long serialVersionUID = 1L;
-  private static Logger logger = Logger.getLogger(AccessAdapter.class.getName());
+    private static final long serialVersionUID = 1L;
+    private static Logger logger = Logger.getLogger(AccessAdapter.class.getName());
 
-  // See CDI Constructor
-  protected WorkflowService workflowService;
+    // See CDI Constructor
+    protected WorkflowService workflowService;
 
-  /**
-   * Default Constructor
-   */
-  public AccessAdapter() {
-    super();
-  }
-
-  /**
-   * CDI Constructor to inject WorkflowService
-   * 
-   * @param workflowService
-   */
-  @Inject
-  public AccessAdapter(WorkflowService workflowService) {
-    super();
-    this.workflowService = workflowService;
-  }
-
-  /**
-   * The Execute method updates the ACL of a process instance based on a given event.
-   * 
-   */
-  @Override
-  public ItemCollection execute(ItemCollection document, ItemCollection event)
-      throws AdapterException {
-    ItemCollection nextTask = null;
-    // get next process entity
-    try {
-      // nextTask = workflowService.evalNextTask(document, event);
-      nextTask = workflowService.evalNextTask(document);
-      // in case the event is connected to a followup activity the
-      // nextProcess can be null!
-
-      updateParticipants(document);
-      updateACL(document, event, nextTask);
-
-    } catch (ModelException | PluginException e) {
-      throw new AdapterException(AccessAdapter.class.getSimpleName(), e.getErrorCode(),
-          e.getMessage());
-    }
-    return null;
-  }
-
-  public void setWorkflowService(WorkflowService workflowService) {
-    this.workflowService = workflowService;
-
-  }
-
-  /**
-   * Update the $PARTICIPANTS.
-   * 
-   * @param workitem
-   * @return
-   */
-  @SuppressWarnings("unchecked")
-  public ItemCollection updateParticipants(ItemCollection workitem) {
-
-    List<String> participants = workitem.getItemValue(WorkflowService.PARTICIPANTS);
-    String user = workflowService.getUserName();
-    if (!participants.contains(user)) {
-      participants.add(user);
-      workitem.replaceItemValue(WorkflowService.PARTICIPANTS, participants);
+    /**
+     * Default Constructor
+     */
+    public AccessAdapter() {
+        super();
     }
 
-    return workitem;
-  }
-
-  /**
-   * This method updates the $readAccess and $writeAccess attributes of a WorkItem depending to the
-   * configuration of a Activity Entity.
-   * 
-   * The method evaluates the new model flag keyupdateacl. If 'false' then acl will not be updated.
-   * 
-   * 
-   */
-  @SuppressWarnings({"rawtypes"})
-  public ItemCollection updateACL(ItemCollection workitem, ItemCollection event,
-      ItemCollection nextTask) throws PluginException {
-
-    if (event == null && nextTask == null) {
-      // no update!
-      return workitem;
-    }
-    ItemCollection documentContext = workitem;
-
-
-    // test update mode of activity and process entity - if true clear the
-    // existing values.
-    if ((event == null || event.getItemValueBoolean("keyupdateacl") == false)
-        && (nextTask == null || nextTask.getItemValueBoolean("keyupdateacl") == false)) {
-      // no update!
-      return documentContext;
-    } else {
-      // clear existing settings!
-      documentContext.replaceItemValue(WorkflowService.READACCESS, new Vector());
-      documentContext.replaceItemValue(WorkflowService.WRITEACCESS, new Vector());
-
-      // event settings will not be merged with task settings!
-      if (event != null && event.getItemValueBoolean("keyupdateacl") == true) {
-        updateACLByItemCollection(documentContext, event);
-      } else {
-        updateACLByItemCollection(documentContext, nextTask);
-      }
+    /**
+     * CDI Constructor to inject WorkflowService
+     * 
+     * @param workflowService
+     */
+    @Inject
+    public AccessAdapter(WorkflowService workflowService) {
+        super();
+        this.workflowService = workflowService;
     }
 
-    return documentContext;
-  }
+    /**
+     * The Execute method updates the ACL of a process instance based on a given
+     * event.
+     * 
+     */
+    @Override
+    public ItemCollection execute(ItemCollection document, ItemCollection event) throws AdapterException {
+        ItemCollection nextTask = null;
+        // get next process entity
+        try {
+            // nextTask = workflowService.evalNextTask(document, event);
+            nextTask = workflowService.evalNextTask(document);
+            // in case the event is connected to a followup activity the
+            // nextProcess can be null!
 
-  /**
-   * This method updates the read/write access of a workitem depending on a given model entity The
-   * model entity should provide the following attributes:
-   * 
-   * keyupdateacl, namaddreadaccess,keyaddreadfields,keyaddwritefields,namaddwriteaccess
-   * 
-   * 
-   * The method did not clear the exiting values of $writeAccess and $readAccess
-   * 
-   * @throws PluginException
-   */
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  private void updateACLByItemCollection(ItemCollection documentContext, ItemCollection modelEntity)
-      throws PluginException {
-    boolean debug = logger.isLoggable(Level.FINE);
-    if (modelEntity == null || modelEntity.getItemValueBoolean("keyupdateacl") == false) {
-      // no update necessary
-      return;
-    }
+            updateParticipants(document);
+            updateACL(document, event, nextTask);
 
-    List vectorAccess;
-    vectorAccess = documentContext.getItemValue(WorkflowService.READACCESS);
-    // add roles
-    mergeRoles(vectorAccess, modelEntity.getItemValue("namaddreadaccess"), documentContext);
-    // add Mapped Fields
-    mergeFieldList(documentContext, vectorAccess, modelEntity.getItemValue("keyaddreadfields"));
-    // clean Vector
-    vectorAccess = uniqueList(vectorAccess);
-
-    // update accesslist....
-    documentContext.replaceItemValue(WorkflowService.READACCESS, vectorAccess);
-    if ((debug) && (vectorAccess.size() > 0)) {
-      logger.finest("......[AccessPlugin] ReadAccess:");
-      for (int j = 0; j < vectorAccess.size(); j++)
-        logger.finest("               '" + (String) vectorAccess.get(j) + "'");
-    }
-
-    // update WriteAccess
-    vectorAccess = documentContext.getItemValue(WorkflowService.WRITEACCESS);
-    // add Names
-    mergeRoles(vectorAccess, modelEntity.getItemValue("namaddwriteaccess"), documentContext);
-    // add Mapped Fields
-    mergeFieldList(documentContext, vectorAccess, modelEntity.getItemValue("keyaddwritefields"));
-    // clean Vector
-    vectorAccess = uniqueList(vectorAccess);
-
-    // update accesslist....
-    documentContext.replaceItemValue(WorkflowService.WRITEACCESS, vectorAccess);
-    if ((debug) && (vectorAccess.size() > 0)) {
-      logger.finest("......[AccessPlugin] WriteAccess:");
-      for (int j = 0; j < vectorAccess.size(); j++)
-        logger.finest("               '" + (String) vectorAccess.get(j) + "'");
-    }
-
-  }
-
-  /**
-   * This method merges the values of fieldList into valueList and test for duplicates.
-   * 
-   * If an entry of the fieldList is a single key value, than the values to be merged are read from
-   * the corresponding documentContext property
-   * 
-   * e.g. 'namTeam' -> maps the values of the documentContext property 'namteam' into the valueList
-   * 
-   * If an entry of the fieldList is in square brackets, than the comma separated elements are
-   * mapped into the valueList
-   * 
-   * e.g. '[user1,user2]' - maps the values 'user1' and 'user2' int the valueList. Also Curly
-   * brackets are allowed '{user1,user2}'
-   * 
-   * 
-   * @param valueList
-   * @param fieldList
-   */
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  public void mergeFieldList(ItemCollection documentContext, List valueList,
-      List<String> fieldList) {
-    if (valueList == null || fieldList == null)
-      return;
-    List<?> values = null;
-    if (fieldList.size() > 0) {
-      // iterate over the fieldList
-      for (String key : fieldList) {
-        if (key == null) {
-          continue;
+        } catch (ModelException | PluginException e) {
+            throw new AdapterException(AccessAdapter.class.getSimpleName(), e.getErrorCode(), e.getMessage());
         }
-        key = key.trim();
-        // test if key contains square or curly brackets?
-        if ((key.startsWith("[") && key.endsWith("]"))
-            || (key.startsWith("{") && key.endsWith("}"))) {
-          // extract the value list with regExpression (\s matches any
-          // white space, The * applies the match zero or more times.
-          // So \s* means "match any white space zero or more times".
-          // We look for this before and after the comma.)
-          values = Arrays.asList(key.substring(1, key.length() - 1).split("\\s*,\\s*"));
+        return null;
+    }
+
+    public void setWorkflowService(WorkflowService workflowService) {
+        this.workflowService = workflowService;
+
+    }
+
+    /**
+     * Update the $PARTICIPANTS.
+     * 
+     * @param workitem
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public ItemCollection updateParticipants(ItemCollection workitem) {
+
+        List<String> participants = workitem.getItemValue(WorkflowService.PARTICIPANTS);
+        String user = workflowService.getUserName();
+        if (!participants.contains(user)) {
+            participants.add(user);
+            workitem.replaceItemValue(WorkflowService.PARTICIPANTS, participants);
+        }
+
+        return workitem;
+    }
+
+    /**
+     * This method updates the $readAccess and $writeAccess attributes of a WorkItem
+     * depending to the configuration of a Activity Entity.
+     * 
+     * The method evaluates the new model flag keyupdateacl. If 'false' then acl
+     * will not be updated.
+     * 
+     * 
+     */
+    @SuppressWarnings({ "rawtypes" })
+    public ItemCollection updateACL(ItemCollection workitem, ItemCollection event, ItemCollection nextTask)
+            throws PluginException {
+
+        if (event == null && nextTask == null) {
+            // no update!
+            return workitem;
+        }
+        ItemCollection documentContext = workitem;
+
+        // test update mode of activity and process entity - if true clear the
+        // existing values.
+        if ((event == null || event.getItemValueBoolean("keyupdateacl") == false)
+                && (nextTask == null || nextTask.getItemValueBoolean("keyupdateacl") == false)) {
+            // no update!
+            return documentContext;
         } else {
-          // extract value list form documentContext
-          values = documentContext.getItemValue(key);
+            // clear existing settings!
+            documentContext.replaceItemValue(WorkflowService.READACCESS, new Vector());
+            documentContext.replaceItemValue(WorkflowService.WRITEACCESS, new Vector());
+
+            // event settings will not be merged with task settings!
+            if (event != null && event.getItemValueBoolean("keyupdateacl") == true) {
+                updateACLByItemCollection(documentContext, event);
+            } else {
+                updateACLByItemCollection(documentContext, nextTask);
+            }
         }
-        // now append the values into p_VectorDestination
-        if ((values != null) && (values.size() > 0)) {
-          for (Object o : values) {
-            // append only if not used
-            if (valueList.indexOf(o) == -1)
-              valueList.add(o);
-          }
-        }
-      }
+
+        return documentContext;
     }
 
-  }
-
-  /**
-   * This method removes duplicates and null values from a vector.
-   * 
-   * @param valueList - list of elements
-   */
-  public List<?> uniqueList(List<Object> valueList) {
-    int iVectorSize = valueList.size();
-    Vector<Object> cleanedVector = new Vector<Object>();
-
-    for (int i = 0; i < iVectorSize; i++) {
-      Object o = valueList.get(i);
-      if (o == null || cleanedVector.indexOf(o) > -1 || "".equals(o.toString()))
-        continue;
-
-      // add unique object
-      cleanedVector.add(o);
-    }
-    valueList = cleanedVector;
-    // do not work with empty vectors....
-    if (valueList.size() == 0)
-      valueList.add("");
-
-    return valueList;
-  }
-
-  /**
-   * This method merges the role names from a SourceList into a valueList and removes duplicates.
-   * 
-   * The AddaptText event is fired so a client can adapt a role name.
-   * 
-   * @param valueList
-   * @param sourceList
-   * @throws PluginException
-   */
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  public void mergeRoles(List valueList, List sourceList, ItemCollection documentContext)
-      throws PluginException {
-    if ((sourceList != null) && (sourceList.size() > 0)) {
-      for (Object o : sourceList) {
-        if (valueList.indexOf(o) == -1) {
-          if (o instanceof String) {
-            // addapt textList
-            List<String> adaptedRoles = workflowService.adaptTextList((String) o, documentContext);
-            valueList.addAll(adaptedRoles);// .add(getWorkflowService().adaptText((String)o,
-                                           // documentContext));
-          } else {
-            valueList.add(o);
-          }
+    /**
+     * This method updates the read/write access of a workitem depending on a given
+     * model entity The model entity should provide the following attributes:
+     * 
+     * keyupdateacl,
+     * namaddreadaccess,keyaddreadfields,keyaddwritefields,namaddwriteaccess
+     * 
+     * 
+     * The method did not clear the exiting values of $writeAccess and $readAccess
+     * 
+     * @throws PluginException
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void updateACLByItemCollection(ItemCollection documentContext, ItemCollection modelEntity)
+            throws PluginException {
+        boolean debug = logger.isLoggable(Level.FINE);
+        if (modelEntity == null || modelEntity.getItemValueBoolean("keyupdateacl") == false) {
+            // no update necessary
+            return;
         }
-      }
+
+        List vectorAccess;
+        vectorAccess = documentContext.getItemValue(WorkflowService.READACCESS);
+        // add roles
+        mergeRoles(vectorAccess, modelEntity.getItemValue("namaddreadaccess"), documentContext);
+        // add Mapped Fields
+        mergeFieldList(documentContext, vectorAccess, modelEntity.getItemValue("keyaddreadfields"));
+        // clean Vector
+        vectorAccess = uniqueList(vectorAccess);
+
+        // update accesslist....
+        documentContext.replaceItemValue(WorkflowService.READACCESS, vectorAccess);
+        if ((debug) && (vectorAccess.size() > 0)) {
+            logger.finest("......[AccessPlugin] ReadAccess:");
+            for (int j = 0; j < vectorAccess.size(); j++)
+                logger.finest("               '" + (String) vectorAccess.get(j) + "'");
+        }
+
+        // update WriteAccess
+        vectorAccess = documentContext.getItemValue(WorkflowService.WRITEACCESS);
+        // add Names
+        mergeRoles(vectorAccess, modelEntity.getItemValue("namaddwriteaccess"), documentContext);
+        // add Mapped Fields
+        mergeFieldList(documentContext, vectorAccess, modelEntity.getItemValue("keyaddwritefields"));
+        // clean Vector
+        vectorAccess = uniqueList(vectorAccess);
+
+        // update accesslist....
+        documentContext.replaceItemValue(WorkflowService.WRITEACCESS, vectorAccess);
+        if ((debug) && (vectorAccess.size() > 0)) {
+            logger.finest("......[AccessPlugin] WriteAccess:");
+            for (int j = 0; j < vectorAccess.size(); j++)
+                logger.finest("               '" + (String) vectorAccess.get(j) + "'");
+        }
+
     }
-  }
+
+    /**
+     * This method merges the values of fieldList into valueList and test for
+     * duplicates.
+     * 
+     * If an entry of the fieldList is a single key value, than the values to be
+     * merged are read from the corresponding documentContext property
+     * 
+     * e.g. 'namTeam' -> maps the values of the documentContext property 'namteam'
+     * into the valueList
+     * 
+     * If an entry of the fieldList is in square brackets, than the comma separated
+     * elements are mapped into the valueList
+     * 
+     * e.g. '[user1,user2]' - maps the values 'user1' and 'user2' int the valueList.
+     * Also Curly brackets are allowed '{user1,user2}'
+     * 
+     * 
+     * @param valueList
+     * @param fieldList
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void mergeFieldList(ItemCollection documentContext, List valueList, List<String> fieldList) {
+        if (valueList == null || fieldList == null)
+            return;
+        List<?> values = null;
+        if (fieldList.size() > 0) {
+            // iterate over the fieldList
+            for (String key : fieldList) {
+                if (key == null) {
+                    continue;
+                }
+                key = key.trim();
+                // test if key contains square or curly brackets?
+                if ((key.startsWith("[") && key.endsWith("]")) || (key.startsWith("{") && key.endsWith("}"))) {
+                    // extract the value list with regExpression (\s matches any
+                    // white space, The * applies the match zero or more times.
+                    // So \s* means "match any white space zero or more times".
+                    // We look for this before and after the comma.)
+                    values = Arrays.asList(key.substring(1, key.length() - 1).split("\\s*,\\s*"));
+                } else {
+                    // extract value list form documentContext
+                    values = documentContext.getItemValue(key);
+                }
+                // now append the values into p_VectorDestination
+                if ((values != null) && (values.size() > 0)) {
+                    for (Object o : values) {
+                        // append only if not used
+                        if (valueList.indexOf(o) == -1)
+                            valueList.add(o);
+                    }
+                }
+            }
+        }
+
+    }
+
+    /**
+     * This method removes duplicates and null values from a vector.
+     * 
+     * @param valueList - list of elements
+     */
+    public List<?> uniqueList(List<Object> valueList) {
+        int iVectorSize = valueList.size();
+        Vector<Object> cleanedVector = new Vector<Object>();
+
+        for (int i = 0; i < iVectorSize; i++) {
+            Object o = valueList.get(i);
+            if (o == null || cleanedVector.indexOf(o) > -1 || "".equals(o.toString()))
+                continue;
+
+            // add unique object
+            cleanedVector.add(o);
+        }
+        valueList = cleanedVector;
+        // do not work with empty vectors....
+        if (valueList.size() == 0)
+            valueList.add("");
+
+        return valueList;
+    }
+
+    /**
+     * This method merges the role names from a SourceList into a valueList and
+     * removes duplicates.
+     * 
+     * The AddaptText event is fired so a client can adapt a role name.
+     * 
+     * @param valueList
+     * @param sourceList
+     * @throws PluginException
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public void mergeRoles(List valueList, List sourceList, ItemCollection documentContext) throws PluginException {
+        if ((sourceList != null) && (sourceList.size() > 0)) {
+            for (Object o : sourceList) {
+                if (valueList.indexOf(o) == -1) {
+                    if (o instanceof String) {
+                        // addapt textList
+                        List<String> adaptedRoles = workflowService.adaptTextList((String) o, documentContext);
+                        valueList.addAll(adaptedRoles);// .add(getWorkflowService().adaptText((String)o,
+                                                       // documentContext));
+                    } else {
+                        valueList.add(o);
+                    }
+                }
+            }
+        }
+    }
 }

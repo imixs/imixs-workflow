@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,80 +22,79 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.exceptions;
 
 /**
- * An InvalidAccessException is a runtime exception which should be thrown by a Imixs Workflow
- * component if a method call is invalid or the data structure is in an invalid state.
+ * An InvalidAccessException is a runtime exception which should be thrown by a
+ * Imixs Workflow component if a method call is invalid or the data structure is
+ * in an invalid state.
  * 
- * The property errorCode specifies the exception type. Extensions of this Exception may add
- * additional errorCodes.
+ * The property errorCode specifies the exception type. Extensions of this
+ * Exception may add additional errorCodes.
  * 
  * @author rsoika
  * 
  */
 public class InvalidAccessException extends RuntimeException {
 
-  public static final String OPERATION_NOTALLOWED = "OPERATION_NOTALLOWED";
-  public static final String INVALID_ID = "INVALID_ID";
-  public static final String INVALID_INDEX = "INVALID_INDEX";
+    public static final String OPERATION_NOTALLOWED = "OPERATION_NOTALLOWED";
+    public static final String INVALID_ID = "INVALID_ID";
+    public static final String INVALID_INDEX = "INVALID_INDEX";
 
-  protected String errorCode = "UNDEFINED";
-  protected String errorContext = "UNDEFINED";
+    protected String errorCode = "UNDEFINED";
+    protected String errorContext = "UNDEFINED";
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public InvalidAccessException(String message) {
-    super(message);
-  }
+    public InvalidAccessException(String message) {
+        super(message);
+    }
 
-  public InvalidAccessException(String message, Exception e) {
-    super(message, e);
-  }
+    public InvalidAccessException(String message, Exception e) {
+        super(message, e);
+    }
 
-  public InvalidAccessException(String aErrorCode, String message) {
-    super(message);
-    errorCode = aErrorCode;
-  }
+    public InvalidAccessException(String aErrorCode, String message) {
+        super(message);
+        errorCode = aErrorCode;
+    }
 
-  public InvalidAccessException(String aErrorCode, String message, Exception e) {
-    super(message, e);
-    errorCode = aErrorCode;
-  }
+    public InvalidAccessException(String aErrorCode, String message, Exception e) {
+        super(message, e);
+        errorCode = aErrorCode;
+    }
 
-  public InvalidAccessException(String aErrorContext, String aErrorCode, String message) {
-    super(message);
-    errorContext = aErrorContext;
-    errorCode = aErrorCode;
+    public InvalidAccessException(String aErrorContext, String aErrorCode, String message) {
+        super(message);
+        errorContext = aErrorContext;
+        errorCode = aErrorCode;
 
-  }
+    }
 
-  public InvalidAccessException(String aErrorContext, String aErrorCode, String message,
-      Exception e) {
-    super(message, e);
-    errorContext = aErrorContext;
-    errorCode = aErrorCode;
+    public InvalidAccessException(String aErrorContext, String aErrorCode, String message, Exception e) {
+        super(message, e);
+        errorContext = aErrorContext;
+        errorCode = aErrorCode;
 
-  }
+    }
 
-  public String getErrorContext() {
-    return errorContext;
-  }
+    public String getErrorContext() {
+        return errorContext;
+    }
 
-  public void setErrorContext(String errorContext) {
-    this.errorContext = errorContext;
-  }
+    public void setErrorContext(String errorContext) {
+        this.errorContext = errorContext;
+    }
 
-  public String getErrorCode() {
-    return errorCode;
-  }
+    public String getErrorCode() {
+        return errorCode;
+    }
 
-  public void setErrorCode(String errorCode) {
-    this.errorCode = errorCode;
-  }
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
 }

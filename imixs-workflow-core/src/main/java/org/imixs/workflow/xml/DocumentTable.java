@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,11 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
-
+ */
 
 package org.imixs.workflow.xml;
 
@@ -34,9 +32,9 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * The JAXB DocumentTable represents a list of documents in a table format. For each document the
- * same list of items will be added into a separate row. The property labels contans the table
- * headers.
+ * The JAXB DocumentTable represents a list of documents in a table format. For
+ * each document the same list of items will be added into a separate row. The
+ * property labels contans the table headers.
  * 
  * 
  * @author rsoika
@@ -45,56 +43,53 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "data")
 public class DocumentTable implements java.io.Serializable {
 
-  private static final long serialVersionUID = 1L;
-  private XMLDocument[] document;
-  private List<String> items;
-  private List<String> labels;
-  private String encoding;
+    private static final long serialVersionUID = 1L;
+    private XMLDocument[] document;
+    private List<String> items;
+    private List<String> labels;
+    private String encoding;
 
-  public DocumentTable() {
-    setDocument(new XMLDocument[] {});
-  }
+    public DocumentTable() {
+        setDocument(new XMLDocument[] {});
+    }
 
-  public DocumentTable(XMLDocument[] documents, List<String> items, List<String> labels,
-      String encoding) {
-    setDocument(documents);
-    setItems(items);
-    setLabels(labels);
-    setEncoding(encoding);
-  }
+    public DocumentTable(XMLDocument[] documents, List<String> items, List<String> labels, String encoding) {
+        setDocument(documents);
+        setItems(items);
+        setLabels(labels);
+        setEncoding(encoding);
+    }
 
-  public XMLDocument[] getDocument() {
-    return document;
-  }
+    public XMLDocument[] getDocument() {
+        return document;
+    }
 
-  public void setDocument(XMLDocument[] document) {
-    this.document = document;
-  }
+    public void setDocument(XMLDocument[] document) {
+        this.document = document;
+    }
 
-  public List<String> getItems() {
-    return items;
-  }
+    public List<String> getItems() {
+        return items;
+    }
 
-  public void setItems(List<String> items) {
-    this.items = items;
-  }
+    public void setItems(List<String> items) {
+        this.items = items;
+    }
 
-  public List<String> getLabels() {
-    return labels;
-  }
+    public List<String> getLabels() {
+        return labels;
+    }
 
-  public void setLabels(List<String> labels) {
-    this.labels = labels;
-  }
+    public void setLabels(List<String> labels) {
+        this.labels = labels;
+    }
 
-  public String getEncoding() {
-    return encoding;
-  }
+    public String getEncoding() {
+        return encoding;
+    }
 
-  public void setEncoding(String encoding) {
-    this.encoding = encoding;
-  }
-
-
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
 
 }

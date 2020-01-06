@@ -6,10 +6,12 @@ Imixs-Workflow is an open source project and we sincerely invite you to particip
 
 ## Coding Guidelines
 
-The code style used within the Imixs-Workflow project is based on the _[Google Java Style Guide](https://google.github.io/styleguide/javaguide.html)_: 
+The code style used within the Imixs-Workflow project is based on the Java Conventions with the following details: 
 
-- indentation -> 2 Spaces 
-- line length -> 100
+- tab policy = Spaces only
+- indentation = 4 Spaces (do not use tabs)
+- tab size = 4 columns
+- line length = 120
 
 Within this project we use Eclipse as the main development IDE. You can import the file 'imixs-code-style.xml' into the Eclipse IDE to get the actual formating rules (_Preferences -> Java-Code-Style Formatter Profile_).
 

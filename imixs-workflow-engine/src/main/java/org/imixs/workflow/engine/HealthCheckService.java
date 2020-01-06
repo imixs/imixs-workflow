@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.engine;
 
@@ -41,14 +40,16 @@ import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
 
 /**
- * The Imixs HealthCheckService implements the Microservice HealthCheck interface.
+ * The Imixs HealthCheckService implements the Microservice HealthCheck
+ * interface.
  * <p>
  * The service returns the count of workflow models
  * <p>
- * Example: <code>{"data":{"model.count":1},"name":"imixs-workflow","state":"UP"}</code>
+ * Example:
+ * <code>{"data":{"model.count":1},"name":"imixs-workflow","state":"UP"}</code>
  * <p>
- * This check indicates the overall status of the workflow engine. If models are available also
- * database access and security works.
+ * This check indicates the overall status of the workflow engine. If models are
+ * available also database access and security works.
  * 
  * @author rsoika
  * @version 1.0
@@ -57,75 +58,75 @@ import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
 @ApplicationScoped
 public class HealthCheckService implements HealthCheck {
 
-  private String workflowVersion = null;
-  private static Logger logger = Logger.getLogger(HealthCheckService.class.getName());
+    private String workflowVersion = null;
+    private static Logger logger = Logger.getLogger(HealthCheckService.class.getName());
 
-  @Inject
-  private SetupService setupService;
+    @Inject
+    private SetupService setupService;
 
-  /**
-   * This is the implementation for the health check call back method.
-   * <p>
-   * The method returns the status 'UP' together with the count of workflow models
-   * <p>
-   * Example: <code>{"data":{"model.count":1},"name":"imixs-workflow","state":"UP"}</code>
-   * <p>
-   * This check indicates the overall status of the workflow engine. If models are available also
-   * database access and security works.
-   * 
-   */
-  @Override
-  public HealthCheckResponse call() {
-    HealthCheckResponseBuilder builder = null;
-    int modelCount = 0;
-    int groupCount = 0;
-    boolean failure = false;
-    try {
-      modelCount = setupService.getModelVersionCount();
-      groupCount = setupService.getModelGroupCount();
-    } catch (Exception e) {
-      // failed!
-      modelCount = 0;
-      failure = true;
-    }
-
-    if (!failure) {
-      builder = HealthCheckResponse.named("imixs-workflow")
-          .withData("engine.version", getWorkflowVersion()).withData("model.versions", modelCount)
-          .withData("model.groups", groupCount).up();
-    } else {
-      builder = HealthCheckResponse.named("imixs-workflow").down();
-    }
-
-    return builder.build();
-  }
-
-  /**
-   * This method extracts the workflow version form the maven pom.properties
-   * 
-   * META-INF/maven/${groupId}/${artifactId}/pom.properties
-   * 
-   */
-  private String getWorkflowVersion() {
-    if (workflowVersion == null) {
-      try {
-        InputStream resourceAsStream = this.getClass().getResourceAsStream(
-            "/META-INF/maven/org.imixs.workflow/imixs-workflow-engine/pom.properties");
-        if (resourceAsStream != null) {
-          Properties prop = new Properties();
-          prop.load(resourceAsStream);
-          workflowVersion = prop.getProperty("version");
+    /**
+     * This is the implementation for the health check call back method.
+     * <p>
+     * The method returns the status 'UP' together with the count of workflow models
+     * <p>
+     * Example:
+     * <code>{"data":{"model.count":1},"name":"imixs-workflow","state":"UP"}</code>
+     * <p>
+     * This check indicates the overall status of the workflow engine. If models are
+     * available also database access and security works.
+     * 
+     */
+    @Override
+    public HealthCheckResponse call() {
+        HealthCheckResponseBuilder builder = null;
+        int modelCount = 0;
+        int groupCount = 0;
+        boolean failure = false;
+        try {
+            modelCount = setupService.getModelVersionCount();
+            groupCount = setupService.getModelGroupCount();
+        } catch (Exception e) {
+            // failed!
+            modelCount = 0;
+            failure = true;
         }
-      } catch (IOException e1) {
-        logger.warning("failed to load pom.properties");
-      }
-    }
-    // if not found -> 'unknown'
-    if (workflowVersion == null || workflowVersion.isEmpty()) {
-      workflowVersion = "unknown";
+
+        if (!failure) {
+            builder = HealthCheckResponse.named("imixs-workflow").withData("engine.version", getWorkflowVersion())
+                    .withData("model.versions", modelCount).withData("model.groups", groupCount).up();
+        } else {
+            builder = HealthCheckResponse.named("imixs-workflow").down();
+        }
+
+        return builder.build();
     }
 
-    return workflowVersion;
-  }
+    /**
+     * This method extracts the workflow version form the maven pom.properties
+     * 
+     * META-INF/maven/${groupId}/${artifactId}/pom.properties
+     * 
+     */
+    private String getWorkflowVersion() {
+        if (workflowVersion == null) {
+            try {
+                InputStream resourceAsStream = this.getClass()
+                        .getResourceAsStream("/META-INF/maven/org.imixs.workflow/imixs-workflow-engine/pom.properties");
+                if (resourceAsStream != null) {
+                    Properties prop = new Properties();
+                    prop.load(resourceAsStream);
+                    workflowVersion = prop.getProperty("version");
+                }
+            } catch (IOException e1) {
+                logger.warning("failed to load pom.properties");
+            }
+        }
+        // if not found -> 'unknown'
+        if (workflowVersion == null || workflowVersion.isEmpty()) {
+            workflowVersion = "unknown";
+        }
+
+        return workflowVersion;
+    }
 
 }

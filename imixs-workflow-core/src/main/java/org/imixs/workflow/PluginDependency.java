@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,20 +22,20 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow;
 
 import java.util.List;
 
 /**
- * A plug-in may optionally implement the interface 'PluginDependency' to indicate dependencies on
- * other plug-ins. Plug-in dependencies are validated by the WorkflowKernel during processing a
- * workflow event. If a plug-in defined by the BPMN model signals dependencies which are not
- * reflected by the current model definition, a warning message is logged.
+ * A plug-in may optionally implement the interface 'PluginDependency' to
+ * indicate dependencies on other plug-ins. Plug-in dependencies are validated
+ * by the WorkflowKernel during processing a workflow event. If a plug-in
+ * defined by the BPMN model signals dependencies which are not reflected by the
+ * current model definition, a warning message is logged.
  * 
  * 
  * @author Ralph Soika
@@ -45,11 +45,11 @@ import java.util.List;
 
 public interface PluginDependency {
 
-  /**
-   * Returns a String list of plugin class names which the currend implementation depends on.
-   * 
-   */
-  public List<String> dependsOn();
-
+    /**
+     * Returns a String list of plugin class names which the currend implementation
+     * depends on.
+     * 
+     */
+    public List<String> dependsOn();
 
 }

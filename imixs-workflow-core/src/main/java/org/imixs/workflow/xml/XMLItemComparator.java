@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,17 +22,17 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.xml;
 
 import java.util.Comparator;
 
 /**
- * The XMLItemComparator provides a Comparator for XMLItems contained by a XMLItemCollection.
+ * The XMLItemComparator provides a Comparator for XMLItems contained by a
+ * XMLItemCollection.
  * <p>
  * Usage:
  * <p>
@@ -43,10 +43,9 @@ import java.util.Comparator;
  */
 public class XMLItemComparator implements Comparator<XMLItem> {
 
-  @Override
-  public int compare(XMLItem o1, XMLItem o2) {
-    return o1.getName().compareTo(o2.getName());
-  }
-
+    @Override
+    public int compare(XMLItem o1, XMLItem o2) {
+        return o1.getName().compareTo(o2.getName());
+    }
 
 }

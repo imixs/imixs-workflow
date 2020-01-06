@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.xml;
 
@@ -34,8 +33,8 @@ import java.util.Arrays;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * The XMLitemCollection is a basic serializable representation of a pojo to map a
- * org.imixs.workflow.ItemCollection into a xml representation using JAXB api
+ * The XMLitemCollection is a basic serializable representation of a pojo to map
+ * a org.imixs.workflow.ItemCollection into a xml representation using JAXB api
  * 
  * @author rsoika
  * @version 0.0.1
@@ -43,28 +42,28 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "document")
 public class XMLDocument implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-  private XMLItem[] item;
+    private static final long serialVersionUID = 1L;
+    private XMLItem[] item;
 
-  public XMLDocument() {
-    this.setItem(new XMLItem[] {});
-  }
+    public XMLDocument() {
+        this.setItem(new XMLItem[] {});
+    }
 
-  public XMLItem[] getItem() {
-    return item;
-  }
+    public XMLItem[] getItem() {
+        return item;
+    }
 
-  public void setItem(XMLItem[] item) {
-    this.item = item;
-  }
+    public void setItem(XMLItem[] item) {
+        this.item = item;
+    }
 
-  /**
-   * This method compares the item array
-   */
-  public boolean equals(Object o) {
-    if (!(o instanceof XMLDocument))
-      return false;
-    return Arrays.equals(item, ((XMLDocument) o).item);
-  }
+    /**
+     * This method compares the item array
+     */
+    public boolean equals(Object o) {
+        if (!(o instanceof XMLDocument))
+            return false;
+        return Arrays.equals(item, ((XMLDocument) o).item);
+    }
 
 }

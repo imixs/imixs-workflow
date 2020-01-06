@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,16 +22,16 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.engine;
 
 /**
- * The SetupEvent provides a CDI observer pattern. The SetupEvent is fired by the SetupService EJB.
- * An event Observer can react on this event to extend the setup routine.
+ * The SetupEvent provides a CDI observer pattern. The SetupEvent is fired by
+ * the SetupService EJB. An event Observer can react on this event to extend the
+ * setup routine.
  * 
  * 
  * @author Ralph Soika
@@ -40,10 +40,9 @@ package org.imixs.workflow.engine;
  */
 public class SetupEvent {
 
-  public SetupEvent() {
-    super();
+    public SetupEvent() {
+        super();
 
-  }
-
+    }
 
 }

@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.engine;
 
@@ -52,176 +51,176 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 
 /**
- * The SimulationService can be used to simulate a process life cycle without storing any data into
- * the database.
+ * The SimulationService can be used to simulate a process life cycle without
+ * storing any data into the database.
  * 
  * @author rsoika
  * 
  */
 
-@DeclareRoles({"org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
-    "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
-    "org.imixs.ACCESSLEVEL.MANAGERACCESS"})
-@RolesAllowed({"org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
-    "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
-    "org.imixs.ACCESSLEVEL.MANAGERACCESS"})
+@DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+        "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
+        "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
+@RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
+        "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
+        "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @LocalBean
 public class SimulationService implements WorkflowContext {
 
-  private static Logger logger = Logger.getLogger(SimulationService.class.getName());
+    private static Logger logger = Logger.getLogger(SimulationService.class.getName());
 
-  @Resource
-  private SessionContext ctx;
+    @Resource
+    private SessionContext ctx;
 
-  @Inject
-  protected Event<ProcessingEvent> events;
+    @Inject
+    protected Event<ProcessingEvent> events;
 
-  @Inject
-  @Any
-  private Instance<Plugin> plugins;
+    @Inject
+    @Any
+    private Instance<Plugin> plugins;
 
-  @Inject
-  private ModelService modelService;
+    @Inject
+    private ModelService modelService;
 
-  public ModelService getModelService() {
-    return modelService;
-  }
-
-  public void setModelService(ModelService modelService) {
-    this.modelService = modelService;
-  }
-
-  public SessionContext getCtx() {
-    return ctx;
-  }
-
-  public void setCtx(SessionContext ctx) {
-    this.ctx = ctx;
-  }
-
-
-  /**
-   * This method simulates a processing life cycle of a process instance without storing any data
-   * into the database.
-   * 
-   * @param workitem - the workItem to be processed
-   * @return updated version of the processed workItem
-   * @throws AccessDeniedException    - thrown if the user has insufficient access to update the
-   *                                  workItem
-   * @throws ProcessingErrorException - thrown if the workitem could not be processed by the
-   *                                  workflowKernel
-   * @throws PluginException          - thrown if processing by a plugin fails
-   * @throws ModelException
-   */
-  public ItemCollection processWorkItem(final ItemCollection _workitem, final List<String> vPlugins)
-      throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
-
-    ItemCollection workitem = _workitem;
-    long l = System.currentTimeMillis();
-
-    if (workitem == null)
-      throw new ProcessingErrorException(SimulationService.class.getSimpleName(),
-          ProcessingErrorException.INVALID_WORKITEM, "WorkflowService: error - workitem is null");
-
-    // fire event
-    if (events != null) {
-      events.fire(new ProcessingEvent(workitem, ProcessingEvent.BEFORE_PROCESS));
-    } else {
-      logger.warning("CDI Support is missing - ProcessingEvent will not be fired");
+    public ModelService getModelService() {
+        return modelService;
     }
-    // Fetch the current Profile Entity for this version.
-    WorkflowKernel workflowkernel = new WorkflowKernel(this);
-    // register plugins defined in the environment.profile ....
-    if (vPlugins != null && vPlugins.size() > 0) {
-      for (int i = 0; i < vPlugins.size(); i++) {
-        String aPluginClassName = vPlugins.get(i);
 
-        Plugin aPlugin = findPluginByName(aPluginClassName);
-        // aPlugin=null;
-        if (aPlugin != null) {
-          // register injected CDI Plugin
-          logger.fine("register CDI plugin class: " + aPluginClassName + "...");
-          workflowkernel.registerPlugin(aPlugin);
+    public void setModelService(ModelService modelService) {
+        this.modelService = modelService;
+    }
+
+    public SessionContext getCtx() {
+        return ctx;
+    }
+
+    public void setCtx(SessionContext ctx) {
+        this.ctx = ctx;
+    }
+
+    /**
+     * This method simulates a processing life cycle of a process instance without
+     * storing any data into the database.
+     * 
+     * @param workitem - the workItem to be processed
+     * @return updated version of the processed workItem
+     * @throws AccessDeniedException    - thrown if the user has insufficient access
+     *                                  to update the workItem
+     * @throws ProcessingErrorException - thrown if the workitem could not be
+     *                                  processed by the workflowKernel
+     * @throws PluginException          - thrown if processing by a plugin fails
+     * @throws ModelException
+     */
+    public ItemCollection processWorkItem(final ItemCollection _workitem, final List<String> vPlugins)
+            throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+
+        ItemCollection workitem = _workitem;
+        long l = System.currentTimeMillis();
+
+        if (workitem == null)
+            throw new ProcessingErrorException(SimulationService.class.getSimpleName(),
+                    ProcessingErrorException.INVALID_WORKITEM, "WorkflowService: error - workitem is null");
+
+        // fire event
+        if (events != null) {
+            events.fire(new ProcessingEvent(workitem, ProcessingEvent.BEFORE_PROCESS));
         } else {
-          // register plugin by class name
-          workflowkernel.registerPlugin(aPluginClassName);
+            logger.warning("CDI Support is missing - ProcessingEvent will not be fired");
+        }
+        // Fetch the current Profile Entity for this version.
+        WorkflowKernel workflowkernel = new WorkflowKernel(this);
+        // register plugins defined in the environment.profile ....
+        if (vPlugins != null && vPlugins.size() > 0) {
+            for (int i = 0; i < vPlugins.size(); i++) {
+                String aPluginClassName = vPlugins.get(i);
+
+                Plugin aPlugin = findPluginByName(aPluginClassName);
+                // aPlugin=null;
+                if (aPlugin != null) {
+                    // register injected CDI Plugin
+                    logger.fine("register CDI plugin class: " + aPluginClassName + "...");
+                    workflowkernel.registerPlugin(aPlugin);
+                } else {
+                    // register plugin by class name
+                    workflowkernel.registerPlugin(aPluginClassName);
+                }
+
+            }
         }
 
-      }
+        // now process the workitem
+        try {
+            workitem = workflowkernel.process(workitem);
+        } catch (PluginException pe) {
+            // if a plugin exception occurs we roll back the transaction.
+            logger.severe("processing workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
+                    + " failed, rollback transaction...");
+            throw pe;
+        }
+        logger.fine("workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID) + "' simulated in "
+                + (System.currentTimeMillis() - l) + "ms");
+
+        // fire event
+        if (events != null) {
+            events.fire(new ProcessingEvent(workitem, ProcessingEvent.AFTER_PROCESS));
+        }
+        // Now fire also events for all split versions.....
+        List<ItemCollection> splitWorkitems = workflowkernel.getSplitWorkitems();
+        for (ItemCollection splitWorkitemm : splitWorkitems) {
+            // fire event
+            if (events != null) {
+                events.fire(new ProcessingEvent(splitWorkitemm, ProcessingEvent.AFTER_PROCESS));
+            }
+        }
+
+        return workitem;
+
     }
 
-    // now process the workitem
-    try {
-      workitem = workflowkernel.process(workitem);
-    } catch (PluginException pe) {
-      // if a plugin exception occurs we roll back the transaction.
-      logger.severe("processing workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
-          + " failed, rollback transaction...");
-      throw pe;
-    }
-    logger.fine("workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
-        + "' simulated in " + (System.currentTimeMillis() - l) + "ms");
-
-    // fire event
-    if (events != null) {
-      events.fire(new ProcessingEvent(workitem, ProcessingEvent.AFTER_PROCESS));
-    }
-    // Now fire also events for all split versions.....
-    List<ItemCollection> splitWorkitems = workflowkernel.getSplitWorkitems();
-    for (ItemCollection splitWorkitemm : splitWorkitems) {
-      // fire event
-      if (events != null) {
-        events.fire(new ProcessingEvent(splitWorkitemm, ProcessingEvent.AFTER_PROCESS));
-      }
+    /**
+     * This Method returns the modelManager Instance. The current ModelVersion is
+     * automatically updated during the Method updateProfileEntity which is called
+     * from the processWorktiem method.
+     * 
+     */
+    public ModelManager getModelManager() {
+        return modelService;
     }
 
-    return workitem;
-
-  }
-
-  /**
-   * This Method returns the modelManager Instance. The current ModelVersion is automatically
-   * updated during the Method updateProfileEntity which is called from the processWorktiem method.
-   * 
-   */
-  public ModelManager getModelManager() {
-    return modelService;
-  }
-
-  /**
-   * Returns an instance of the EJB session context.
-   * 
-   * @return
-   */
-  public SessionContext getSessionContext() {
-    return ctx;
-  }
-
-  /**
-   * This method returns a n injected Plugin by name or null if not plugin with the requested class
-   * name is injected.
-   * 
-   * @param pluginClassName
-   * @return plugin class or null if not found
-   */
-  private Plugin findPluginByName(String pluginClassName) {
-    if (pluginClassName == null || pluginClassName.isEmpty())
-      return null;
-
-    if (plugins == null || !plugins.iterator().hasNext()) {
-      logger.fine("[WorkflowService] no CDI plugins injected");
-      return null;
-    }
-    // iterate over all injected plugins....
-    for (Plugin plugin : this.plugins) {
-      if (plugin.getClass().getName().equals(pluginClassName)) {
-        logger.fine("[WorkflowService] CDI plugin '" + pluginClassName + "' successful injected");
-        return plugin;
-      }
+    /**
+     * Returns an instance of the EJB session context.
+     * 
+     * @return
+     */
+    public SessionContext getSessionContext() {
+        return ctx;
     }
 
-    return null;
-  }
+    /**
+     * This method returns a n injected Plugin by name or null if not plugin with
+     * the requested class name is injected.
+     * 
+     * @param pluginClassName
+     * @return plugin class or null if not found
+     */
+    private Plugin findPluginByName(String pluginClassName) {
+        if (pluginClassName == null || pluginClassName.isEmpty())
+            return null;
+
+        if (plugins == null || !plugins.iterator().hasNext()) {
+            logger.fine("[WorkflowService] no CDI plugins injected");
+            return null;
+        }
+        // iterate over all injected plugins....
+        for (Plugin plugin : this.plugins) {
+            if (plugin.getClass().getName().equals(pluginClassName)) {
+                logger.fine("[WorkflowService] CDI plugin '" + pluginClassName + "' successful injected");
+                return plugin;
+            }
+        }
+
+        return null;
+    }
 
 }

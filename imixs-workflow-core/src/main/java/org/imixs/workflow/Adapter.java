@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,18 +22,17 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow;
 
 import org.imixs.workflow.exceptions.AdapterException;
 
 /**
- * An Adapter defines an adapter pattern used by the WorkflowKernel to call adapter implementations
- * defined by the BPMN model.
+ * An Adapter defines an adapter pattern used by the WorkflowKernel to call
+ * adapter implementations defined by the BPMN model.
  * <p>
  * 
  * 
@@ -44,14 +43,12 @@ import org.imixs.workflow.exceptions.AdapterException;
 
 public abstract interface Adapter {
 
-
-  /**
-   * @param document the workitem to be processed
-   * @param event    the workflow event containing the processing instructions
-   * @return updated workitem for further processing
-   * @throws AdapterException
-   */
-  public ItemCollection execute(ItemCollection document, ItemCollection event)
-      throws AdapterException;
+    /**
+     * @param document the workitem to be processed
+     * @param event    the workflow event containing the processing instructions
+     * @return updated workitem for further processing
+     * @throws AdapterException
+     */
+    public ItemCollection execute(ItemCollection document, ItemCollection event) throws AdapterException;
 
 }
