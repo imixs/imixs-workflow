@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.jaxrs;
 
@@ -46,29 +45,27 @@ import javax.ws.rs.core.StreamingOutput;
  * 
  */
 @Path("/")
-@Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON,
-    MediaType.TEXT_XML})
+@Produces({ MediaType.TEXT_HTML, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, MediaType.TEXT_XML })
 @Stateless
 public class RootRestService {
 
+    @GET
+    @Produces(MediaType.APPLICATION_XHTML_XML)
+    // @Path("/") generates jersey warning
+    public StreamingOutput getRoot() {
 
-  @GET
-  @Produces(MediaType.APPLICATION_XHTML_XML)
-  // @Path("/") generates jersey warning
-  public StreamingOutput getRoot() {
+        return new StreamingOutput() {
+            public void write(OutputStream out) throws IOException, WebApplicationException {
 
-    return new StreamingOutput() {
-      public void write(OutputStream out) throws IOException, WebApplicationException {
+                out.write("<div class=\"root\">".getBytes());
+                out.write("<a href=\"/documents\" type=\"application/xml\" rel=\"documents\"/>".getBytes());
+                out.write("<a href=\"/workflow\" type=\"application/xml\" rel=\"workflow\"/>".getBytes());
+                out.write("<a href=\"/model\" type=\"application/xml\" rel=\"model\"/>".getBytes());
+                out.write("<a href=\"/report\" type=\"application/xml\" rel=\"report\"/>".getBytes());
+                out.write("<a href=\"/adminp\" type=\"application/xml\" rel=\"adminp\"/>".getBytes());
+                out.write("</div>".getBytes());
+            }
+        };
 
-        out.write("<div class=\"root\">".getBytes());
-        out.write("<a href=\"/documents\" type=\"application/xml\" rel=\"documents\"/>".getBytes());
-        out.write("<a href=\"/workflow\" type=\"application/xml\" rel=\"workflow\"/>".getBytes());
-        out.write("<a href=\"/model\" type=\"application/xml\" rel=\"model\"/>".getBytes());
-        out.write("<a href=\"/report\" type=\"application/xml\" rel=\"report\"/>".getBytes());
-        out.write("<a href=\"/adminp\" type=\"application/xml\" rel=\"adminp\"/>".getBytes());
-        out.write("</div>".getBytes());
-      }
-    };
-
-  }
+    }
 }

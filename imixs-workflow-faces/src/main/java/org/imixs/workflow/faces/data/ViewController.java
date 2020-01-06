@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.faces.data;
 
@@ -42,13 +41,15 @@ import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.QueryException;
 
 /**
- * The ViewController can be used in JSF Applications to manage lists of ItemCollections.
+ * The ViewController can be used in JSF Applications to manage lists of
+ * ItemCollections.
  * <p>
- * The view property defines the view type returned by a method call of loadData. The ViewController
- * implements a lazy loading mechanism to cache the result.
+ * The view property defines the view type returned by a method call of
+ * loadData. The ViewController implements a lazy loading mechanism to cache the
+ * result.
  * <p>
- * The property 'loadStubs' can be used to define if only the Document Stubs (default) or the full
- * Document should be loaded.
+ * The property 'loadStubs' can be used to define if only the Document Stubs
+ * (default) or the full Document should be loaded.
  * <p>
  * The ViewController bean should be used in ViewScope.
  * 
@@ -59,177 +60,174 @@ import org.imixs.workflow.exceptions.QueryException;
 @ViewScoped
 public class ViewController implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private String query = null;
-  private String sortBy = null;
-  private boolean sortReverse = false;
-  private int pageSize = 10;
-  private int pageIndex = 0;
-  private boolean endOfList = false;
-  private boolean loadStubs = true;
+    private String query = null;
+    private String sortBy = null;
+    private boolean sortReverse = false;
+    private int pageSize = 10;
+    private int pageIndex = 0;
+    private boolean endOfList = false;
+    private boolean loadStubs = true;
 
+    private static Logger logger = Logger.getLogger(ViewController.class.getName());
 
-  private static Logger logger = Logger.getLogger(ViewController.class.getName());
+    @Inject
+    private DocumentService documentService;
 
-  @Inject
-  private DocumentService documentService;
-
-  public ViewController() {
-    super();
-    logger.finest("...construct...");
-  }
-
-  @PostConstruct
-  public void init() {
-    logger.finest("init...");
-  }
-
-  /**
-   * Returns the search Query
-   * 
-   * @return
-   */
-  public String getQuery() {
-    return query;
-  }
-
-  /**
-   * set the search query
-   * 
-   * @param query
-   */
-  public void setQuery(String query) {
-    this.query = query;
-  }
-
-  public String getSortBy() {
-    return sortBy;
-  }
-
-  public void setSortBy(String sortBy) {
-    this.sortBy = sortBy;
-  }
-
-  public boolean isSortReverse() {
-    return sortReverse;
-  }
-
-  public void setSortReverse(boolean sortReverse) {
-    this.sortReverse = sortReverse;
-  }
-
-  /**
-   * returns the maximum size of a search result
-   * 
-   * @return
-   */
-  public int getPageSize() {
-    return pageSize;
-  }
-
-  /**
-   * set the maximum size of a search result
-   * 
-   * @param searchCount
-   */
-  public void setPageSize(int pageSize) {
-    this.pageSize = pageSize;
-  }
-
-  public boolean isLoadStubs() {
-    return loadStubs;
-  }
-
-  public void setLoadStubs(boolean loadStubs) {
-    this.loadStubs = loadStubs;
-  }
-
-  /**
-   * resets the current result and set the page pointer to 0.
-   * 
-   * @return
-   */
-  public void reset() {
-    pageIndex = 0;
-  }
-
-  @Deprecated
-  public List<ItemCollection> getWorkitems() throws QueryException {
-    logger.warning("getWorkitems is deprected - replace with viewHandler#getData(viewController)");
-    return null;
-  }
-
-  /***************************************************************************
-   * Navigation
-   */
-
-  public int getPageIndex() {
-    return pageIndex;
-  }
-
-  public void setPageIndex(int pageIndex) {
-    this.pageIndex = pageIndex;
-  }
-
-  public boolean isEndOfList() {
-    return endOfList;
-  }
-
-  public void setEndOfList(boolean endOfList) {
-    this.endOfList = endOfList;
-  }
-
-  /**
-   * Returns the current view result. The returned result set is defined by the current query
-   * definition.
-   * <p>
-   * The method implements a lazy loading mechanism and caches the result locally.
-   * 
-   * @return view result
-   * @throws QueryException
-   */
-  public List<ItemCollection> loadData() throws QueryException {
-
-    String _query = getQuery();
-
-    if (_query == null || _query.isEmpty()) {
-      // no query defined
-      logger.warning("no query defined!");
-      return new ArrayList<ItemCollection>();
+    public ViewController() {
+        super();
+        logger.finest("...construct...");
     }
 
-    // load data
-    logger.finest("...... load data - query=" + _query + " pageIndex=" + getPageIndex());
-
-    List<ItemCollection> result = null;
-    if (this.isLoadStubs()) {
-      result = documentService.findStubs(_query, getPageSize(), getPageIndex(), getSortBy(),
-          isSortReverse());
-
-    } else {
-      result =
-          documentService.find(_query, getPageSize(), getPageIndex(), getSortBy(), isSortReverse());
-
+    @PostConstruct
+    public void init() {
+        logger.finest("init...");
     }
 
-    // The end of a list is reached when the size is below or equal the
-    // pageSize. See issue #287
-    if (result.size() < getPageSize()) {
-      setEndOfList(true);
-    } else {
-      // look ahead if we have more entries...
-      int iAhead = (getPageSize() * (getPageIndex() + 1)) + 1;
-      if (documentService.count(_query, iAhead) < iAhead) {
-        // there is no more data
-        setEndOfList(true);
-      } else {
-        setEndOfList(false);
-      }
+    /**
+     * Returns the search Query
+     * 
+     * @return
+     */
+    public String getQuery() {
+        return query;
     }
 
-    return result;
+    /**
+     * set the search query
+     * 
+     * @param query
+     */
+    public void setQuery(String query) {
+        this.query = query;
+    }
 
-  }
+    public String getSortBy() {
+        return sortBy;
+    }
+
+    public void setSortBy(String sortBy) {
+        this.sortBy = sortBy;
+    }
+
+    public boolean isSortReverse() {
+        return sortReverse;
+    }
+
+    public void setSortReverse(boolean sortReverse) {
+        this.sortReverse = sortReverse;
+    }
+
+    /**
+     * returns the maximum size of a search result
+     * 
+     * @return
+     */
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    /**
+     * set the maximum size of a search result
+     * 
+     * @param searchCount
+     */
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public boolean isLoadStubs() {
+        return loadStubs;
+    }
+
+    public void setLoadStubs(boolean loadStubs) {
+        this.loadStubs = loadStubs;
+    }
+
+    /**
+     * resets the current result and set the page pointer to 0.
+     * 
+     * @return
+     */
+    public void reset() {
+        pageIndex = 0;
+    }
+
+    @Deprecated
+    public List<ItemCollection> getWorkitems() throws QueryException {
+        logger.warning("getWorkitems is deprected - replace with viewHandler#getData(viewController)");
+        return null;
+    }
+
+    /***************************************************************************
+     * Navigation
+     */
+
+    public int getPageIndex() {
+        return pageIndex;
+    }
+
+    public void setPageIndex(int pageIndex) {
+        this.pageIndex = pageIndex;
+    }
+
+    public boolean isEndOfList() {
+        return endOfList;
+    }
+
+    public void setEndOfList(boolean endOfList) {
+        this.endOfList = endOfList;
+    }
+
+    /**
+     * Returns the current view result. The returned result set is defined by the
+     * current query definition.
+     * <p>
+     * The method implements a lazy loading mechanism and caches the result locally.
+     * 
+     * @return view result
+     * @throws QueryException
+     */
+    public List<ItemCollection> loadData() throws QueryException {
+
+        String _query = getQuery();
+
+        if (_query == null || _query.isEmpty()) {
+            // no query defined
+            logger.warning("no query defined!");
+            return new ArrayList<ItemCollection>();
+        }
+
+        // load data
+        logger.finest("...... load data - query=" + _query + " pageIndex=" + getPageIndex());
+
+        List<ItemCollection> result = null;
+        if (this.isLoadStubs()) {
+            result = documentService.findStubs(_query, getPageSize(), getPageIndex(), getSortBy(), isSortReverse());
+
+        } else {
+            result = documentService.find(_query, getPageSize(), getPageIndex(), getSortBy(), isSortReverse());
+
+        }
+
+        // The end of a list is reached when the size is below or equal the
+        // pageSize. See issue #287
+        if (result.size() < getPageSize()) {
+            setEndOfList(true);
+        } else {
+            // look ahead if we have more entries...
+            int iAhead = (getPageSize() * (getPageIndex() + 1)) + 1;
+            if (documentService.count(_query, iAhead) < iAhead) {
+                // there is no more data
+                setEndOfList(true);
+            } else {
+                setEndOfList(false);
+            }
+        }
+
+        return result;
+
+    }
 
 }

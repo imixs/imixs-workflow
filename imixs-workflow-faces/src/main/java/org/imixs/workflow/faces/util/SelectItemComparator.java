@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.faces.util;
 
@@ -42,27 +41,27 @@ import javax.faces.model.SelectItem;
  *
  */
 public class SelectItemComparator implements Comparator<SelectItem> {
-  private final Collator collator;
+    private final Collator collator;
 
-  private final boolean ascending;
+    private final boolean ascending;
 
-  public SelectItemComparator(boolean ascending) {
-    Locale locale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
-    this.collator = Collator.getInstance(locale);
-    this.ascending = ascending;
-  }
-
-  public SelectItemComparator(Locale locale, boolean ascending) {
-    this.collator = Collator.getInstance(locale);
-    this.ascending = ascending;
-  }
-
-  public int compare(SelectItem a, SelectItem b) {
-    int result = this.collator.compare(a.getLabel(), b.getLabel());
-    if (!this.ascending) {
-      result = -result;
+    public SelectItemComparator(boolean ascending) {
+        Locale locale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+        this.collator = Collator.getInstance(locale);
+        this.ascending = ascending;
     }
-    return result;
-  }
+
+    public SelectItemComparator(Locale locale, boolean ascending) {
+        this.collator = Collator.getInstance(locale);
+        this.ascending = ascending;
+    }
+
+    public int compare(SelectItem a, SelectItem b) {
+        int result = this.collator.compare(a.getLabel(), b.getLabel());
+        if (!this.ascending) {
+            result = -result;
+        }
+        return result;
+    }
 
 }

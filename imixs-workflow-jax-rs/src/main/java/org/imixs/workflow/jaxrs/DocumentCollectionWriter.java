@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.jaxrs;
 
@@ -45,7 +44,8 @@ import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDocument;
 
 /**
- * This MessageBodyWriter generates an HTML representation from a DocumetCollection
+ * This MessageBodyWriter generates an HTML representation from a
+ * DocumetCollection
  * 
  * @author rsoika
  *
@@ -54,46 +54,39 @@ import org.imixs.workflow.xml.XMLDocument;
 @Produces(MediaType.TEXT_HTML)
 public class DocumentCollectionWriter implements MessageBodyWriter<XMLDataCollection> {
 
-  public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
-      MediaType mediaType) {
-    return XMLDataCollection.class.isAssignableFrom(type);
-  }
-
-  public void writeTo(XMLDataCollection entityCollection, Class<?> type, Type genericType,
-      Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders,
-      OutputStream entityStream) throws IOException, WebApplicationException {
-    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(entityStream));
-
-
-
-    bw.write("<html>");
-    XMLItemCollectionWriter.printHead(bw, mediaType.toString(), null);
-    bw.write("<body>");
-    try {
-      bw.write("<h1>EntityCollection</h1>");
-      bw.write("<h2>" + entityCollection.getDocument().length + " Entries</h2>");
-
-      for (XMLDocument xmlworkItem : entityCollection.getDocument()) {
-        XMLItemCollectionWriter.printXMLItemCollectionHTML(bw, xmlworkItem);
-
-      }
-    } catch (Exception e) {
-      bw.write("ERROR<br>");
-      // e.printStackTrace(bw.);
+    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+        return XMLDataCollection.class.isAssignableFrom(type);
     }
 
+    public void writeTo(XMLDataCollection entityCollection, Class<?> type, Type genericType, Annotation[] annotations,
+            MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
+            throws IOException, WebApplicationException {
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(entityStream));
 
-    bw.write("</body>");
-    bw.write("</html>");
+        bw.write("<html>");
+        XMLItemCollectionWriter.printHead(bw, mediaType.toString(), null);
+        bw.write("<body>");
+        try {
+            bw.write("<h1>EntityCollection</h1>");
+            bw.write("<h2>" + entityCollection.getDocument().length + " Entries</h2>");
 
-    bw.flush();
-  }
+            for (XMLDocument xmlworkItem : entityCollection.getDocument()) {
+                XMLItemCollectionWriter.printXMLItemCollectionHTML(bw, xmlworkItem);
 
-  public long getSize(XMLDataCollection arg0, Class<?> arg1, Type arg2, Annotation[] arg3,
-      MediaType arg4) {
-    return -1;
-  }
+            }
+        } catch (Exception e) {
+            bw.write("ERROR<br>");
+            // e.printStackTrace(bw.);
+        }
 
+        bw.write("</body>");
+        bw.write("</html>");
 
+        bw.flush();
+    }
+
+    public long getSize(XMLDataCollection arg0, Class<?> arg1, Type arg2, Annotation[] arg3, MediaType arg4) {
+        return -1;
+    }
 
 }

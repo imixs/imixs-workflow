@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.faces.util;
 
@@ -40,29 +39,28 @@ import org.imixs.workflow.exceptions.WorkflowException;
  */
 public class ValidationException extends WorkflowException {
 
-  private static final long serialVersionUID = 1L;
-  private java.lang.Object[] params = null;
+    private static final long serialVersionUID = 1L;
+    private java.lang.Object[] params = null;
 
-  public ValidationException(String aErrorContext, String aErrorCode, String message) {
-    super(aErrorContext, aErrorCode, message);
-  }
+    public ValidationException(String aErrorContext, String aErrorCode, String message) {
+        super(aErrorContext, aErrorCode, message);
+    }
 
-  public ValidationException(String aErrorContext, String aErrorCode, String message, Exception e) {
-    super(aErrorContext, aErrorCode, message, e);
-  }
+    public ValidationException(String aErrorContext, String aErrorCode, String message, Exception e) {
+        super(aErrorContext, aErrorCode, message, e);
+    }
 
-  public ValidationException(String aErrorContext, String aErrorCode, String message,
-      Object[] params) {
-    super(aErrorContext, aErrorCode, message);
-    this.params = params;
-  }
+    public ValidationException(String aErrorContext, String aErrorCode, String message, Object[] params) {
+        super(aErrorContext, aErrorCode, message);
+        this.params = params;
+    }
 
-  public java.lang.Object[] getErrorParameters() {
-    return params;
-  }
+    public java.lang.Object[] getErrorParameters() {
+        return params;
+    }
 
-  protected void setErrorParameters(Object[] aparams) {
-    this.params = aparams;
-  }
+    protected void setErrorParameters(Object[] aparams) {
+        this.params = aparams;
+    }
 
 }

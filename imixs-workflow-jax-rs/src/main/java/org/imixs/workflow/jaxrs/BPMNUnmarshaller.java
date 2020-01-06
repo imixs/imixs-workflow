@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.jaxrs;
 
@@ -54,44 +53,42 @@ import org.xml.sax.SAXException;
  * @author rsoika
  */
 @Provider
-@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN})
+@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN })
 public class BPMNUnmarshaller implements MessageBodyReader<BPMNModel> {
 
-  private static Logger logger = Logger.getLogger(BPMNUnmarshaller.class.getName());
+    private static Logger logger = Logger.getLogger(BPMNUnmarshaller.class.getName());
 
-  @SuppressWarnings("rawtypes")
-  @Override
-  public boolean isReadable(Class aClass, Type type, Annotation[] annotations,
-      MediaType mediaType) {
-    if (aClass == BPMNModel.class)
-      return true;
+    @SuppressWarnings("rawtypes")
+    @Override
+    public boolean isReadable(Class aClass, Type type, Annotation[] annotations, MediaType mediaType) {
+        if (aClass == BPMNModel.class)
+            return true;
 
-    return false;
-  }
-
-  @SuppressWarnings("rawtypes")
-  @Override
-  public BPMNModel readFrom(Class aClass, Type type, Annotation[] annotations, MediaType mediaType,
-      MultivaluedMap multivaluedMap, InputStream bpmnInputStream)
-      throws IOException, WebApplicationException {
-
-    try {
-      return BPMNParser.parseModel(bpmnInputStream, "UTF-8");
-    } catch (ModelException e) {
-      logger.warning("Invalid Model: " + e.getMessage());
-      e.printStackTrace();
-    } catch (ParseException e) {
-      logger.warning("Invalid Model: " + e.getMessage());
-      e.printStackTrace();
-    } catch (ParserConfigurationException e) {
-      logger.warning("Invalid Model: " + e.getMessage());
-      e.printStackTrace();
-    } catch (SAXException e) {
-      logger.warning("Invalid Model: " + e.getMessage());
-      e.printStackTrace();
+        return false;
     }
 
-    return null;
+    @SuppressWarnings("rawtypes")
+    @Override
+    public BPMNModel readFrom(Class aClass, Type type, Annotation[] annotations, MediaType mediaType,
+            MultivaluedMap multivaluedMap, InputStream bpmnInputStream) throws IOException, WebApplicationException {
 
-  }
+        try {
+            return BPMNParser.parseModel(bpmnInputStream, "UTF-8");
+        } catch (ModelException e) {
+            logger.warning("Invalid Model: " + e.getMessage());
+            e.printStackTrace();
+        } catch (ParseException e) {
+            logger.warning("Invalid Model: " + e.getMessage());
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            logger.warning("Invalid Model: " + e.getMessage());
+            e.printStackTrace();
+        } catch (SAXException e) {
+            logger.warning("Invalid Model: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
 }

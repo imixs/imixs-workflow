@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.faces.util;
 
@@ -33,10 +32,11 @@ import javax.faces.context.ExceptionHandler;
 import javax.faces.context.ExceptionHandlerFactory;
 
 /**
- * This class is used to handle expired sessions. In case a session was expired the handler caught
- * the ViewExpiredException and redirects into a new page.
+ * This class is used to handle expired sessions. In case a session was expired
+ * the handler caught the ViewExpiredException and redirects into a new page.
  *
- * This class expects a jsf page called 'sessionexpired.xhtml' in the web root context!
+ * This class expects a jsf page called 'sessionexpired.xhtml' in the web root
+ * context!
  * 
  * 
  * @see ed burns ' dealing_gracefully_with_viewexpiredexception'
@@ -48,17 +48,17 @@ import javax.faces.context.ExceptionHandlerFactory;
  * 
  */
 public class ViewExpiredExceptionHandlerFactory extends ExceptionHandlerFactory {
-  private ExceptionHandlerFactory parent;
+    private ExceptionHandlerFactory parent;
 
-  public ViewExpiredExceptionHandlerFactory(ExceptionHandlerFactory parent) {
-    this.parent = parent;
-  }
+    public ViewExpiredExceptionHandlerFactory(ExceptionHandlerFactory parent) {
+        this.parent = parent;
+    }
 
-  @Override
-  public ExceptionHandler getExceptionHandler() {
-    ExceptionHandler result = parent.getExceptionHandler();
-    result = new ViewExpiredExceptionHandler(result);
+    @Override
+    public ExceptionHandler getExceptionHandler() {
+        ExceptionHandler result = parent.getExceptionHandler();
+        result = new ViewExpiredExceptionHandler(result);
 
-    return result;
-  }
+        return result;
+    }
 }

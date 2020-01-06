@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.faces.util;
 
@@ -38,57 +37,57 @@ import javax.faces.convert.ConverterException;
 import javax.faces.convert.FacesConverter;
 
 /**
- * für ConfigItem benutzter Converter, der einen Komma-separierten String in einen Vektor umwandelt
- * und umgekehrt.
+ * für ConfigItem benutzter Converter, der einen Komma-separierten String in
+ * einen Vektor umwandelt und umgekehrt.
  * 
- * Noch dringend zu tun: - Dem Converter im Fehlerfall noch eine eigene Fehlermeldung mitgeben -
- * müssen da nicht noch eine Menge try-catch blöcke und Typ-Prüfungen rein? Derzeit geht das alles
- * sehr optimistisch davon aus, dass in dem Vektor wirklich auch Strings drin sind; was eigentlich
- * auch der Fall ist. Interessant wird es, wenn man bestehende Felder umbiegt.
+ * Noch dringend zu tun: - Dem Converter im Fehlerfall noch eine eigene
+ * Fehlermeldung mitgeben - müssen da nicht noch eine Menge try-catch blöcke und
+ * Typ-Prüfungen rein? Derzeit geht das alles sehr optimistisch davon aus, dass
+ * in dem Vektor wirklich auch Strings drin sind; was eigentlich auch der Fall
+ * ist. Interessant wird es, wenn man bestehende Felder umbiegt.
  * 
- * Schön wäre noch folgendes: - Den Separator im converter-tag der JSP Seite definieren. Das wird
- * allerdings ein Act (Vorgehen beschrieben in Kap. 20.4 in "Kito Mann - JSF in Action")
+ * Schön wäre noch folgendes: - Den Separator im converter-tag der JSP Seite
+ * definieren. Das wird allerdings ein Act (Vorgehen beschrieben in Kap. 20.4 in
+ * "Kito Mann - JSF in Action")
  */
 @SuppressWarnings("rawtypes")
 @FacesConverter(value = "org.imixs.VectorConverter")
 public class VectorConverter implements Converter {
 
-  private String separator = "\n";
+    private String separator = "\n";
 
-  @SuppressWarnings({"unchecked"})
-  public Object getAsObject(FacesContext context, UIComponent component, String value)
-      throws ConverterException {
+    @SuppressWarnings({ "unchecked" })
+    public Object getAsObject(FacesContext context, UIComponent component, String value) throws ConverterException {
 
-    Vector v = new Vector();
-    String[] tokens = value.split(separator);
-    for (int i = 0; i < tokens.length; i++) {
-      v.addElement(tokens[i].trim());
+        Vector v = new Vector();
+        String[] tokens = value.split(separator);
+        for (int i = 0; i < tokens.length; i++) {
+            v.addElement(tokens[i].trim());
+        }
+
+        return v;
+
     }
 
-    return v;
+    public String getAsString(FacesContext context, UIComponent component, Object value) throws ConverterException {
 
-  }
+        String s = "";
+        Vector vValues = null;
 
-  public String getAsString(FacesContext context, UIComponent component, Object value)
-      throws ConverterException {
+        if (value instanceof Vector)
+            vValues = (Vector) value;
+        else
+            vValues = new Vector();
+        ListIterator li = vValues.listIterator();
+        while (li.hasNext()) {
+            if (li.hasPrevious()) {
+                s += separator;
+            }
+            s += li.next();
+        }
 
-    String s = "";
-    Vector vValues = null;
+        return s;
 
-    if (value instanceof Vector)
-      vValues = (Vector) value;
-    else
-      vValues = new Vector();
-    ListIterator li = vValues.listIterator();
-    while (li.hasNext()) {
-      if (li.hasPrevious()) {
-        s += separator;
-      }
-      s += li.next();
     }
-
-    return s;
-
-  }
 
 }

@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.jaxrs;
 
@@ -47,8 +46,8 @@ import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 /**
- * This MessageBodyWriter generates an HTML representation from a EntityTable. The output is a table
- * format where each entity has the same columns.
+ * This MessageBodyWriter generates an HTML representation from a EntityTable.
+ * The output is a table format where each entity has the same columns.
  * 
  * @author rsoika
  * 
@@ -56,81 +55,78 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
 @Provider
 public class DocumentTableWriter implements MessageBodyWriter<DocumentTable> {
 
-
-  public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
-      MediaType mediaType) {
-    return DocumentTable.class.isAssignableFrom(type);
-  }
-
-  /**
-   * This method prints the collection data into a HTML table
-   * 
-   * 
-   */
-  @SuppressWarnings({"rawtypes"})
-  public void writeTo(DocumentTable documentTable, Class<?> type, Type genericType,
-      Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders,
-      OutputStream entityStream) throws IOException, WebApplicationException {
-
-    boolean trClass = true;
-
-    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(entityStream));
-
-    bw.write("<html>");
-    XMLItemCollectionWriter.printHead(bw, mediaType.toString(), documentTable.getEncoding());
-
-    bw.write("<body>");
-
-    /* Print table header */
-    bw.write("<table><tbody>");
-    if (trClass)
-      bw.write("<tr class=\"a\">");
-    else
-      bw.write("<tr class=\"b\">");
-    trClass = !trClass;
-
-    for (String label : documentTable.getLabels()) {
-      bw.write("<th>" + label + "</th>");
+    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+        return DocumentTable.class.isAssignableFrom(type);
     }
-    bw.write("</tr>");
 
-    // print table body
-    try {
+    /**
+     * This method prints the collection data into a HTML table
+     * 
+     * 
+     */
+    @SuppressWarnings({ "rawtypes" })
+    public void writeTo(DocumentTable documentTable, Class<?> type, Type genericType, Annotation[] annotations,
+            MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
+            throws IOException, WebApplicationException {
 
-      for (XMLDocument xmlworkItem : documentTable.getDocument()) {
-        /* Print row */
+        boolean trClass = true;
+
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(entityStream));
+
+        bw.write("<html>");
+        XMLItemCollectionWriter.printHead(bw, mediaType.toString(), documentTable.getEncoding());
+
+        bw.write("<body>");
+
+        /* Print table header */
+        bw.write("<table><tbody>");
         if (trClass)
-          bw.write("<tr class=\"a\">");
+            bw.write("<tr class=\"a\">");
         else
-          bw.write("<tr class=\"b\">");
+            bw.write("<tr class=\"b\">");
         trClass = !trClass;
 
-        ItemCollection itemCol = XMLDocumentAdapter.putDocument(xmlworkItem);
-        for (String itemName : documentTable.getItems()) {
-          // test if item name contains format or converter definition
-          List vValues = itemCol.getItemValue(itemName);
-          bw.write("<td>" + XMLItemCollectionWriter.convertValuesToString(vValues) + "</td>");
+        for (String label : documentTable.getLabels()) {
+            bw.write("<th>" + label + "</th>");
         }
         bw.write("</tr>");
-      }
 
-      bw.write("</tbody></table>");
-    } catch (
+        // print table body
+        try {
 
-    Exception e) {
-      bw.write("ERROR<br>");
-      // e.printStackTrace(bw.);
+            for (XMLDocument xmlworkItem : documentTable.getDocument()) {
+                /* Print row */
+                if (trClass)
+                    bw.write("<tr class=\"a\">");
+                else
+                    bw.write("<tr class=\"b\">");
+                trClass = !trClass;
+
+                ItemCollection itemCol = XMLDocumentAdapter.putDocument(xmlworkItem);
+                for (String itemName : documentTable.getItems()) {
+                    // test if item name contains format or converter definition
+                    List vValues = itemCol.getItemValue(itemName);
+                    bw.write("<td>" + XMLItemCollectionWriter.convertValuesToString(vValues) + "</td>");
+                }
+                bw.write("</tr>");
+            }
+
+            bw.write("</tbody></table>");
+        } catch (
+
+        Exception e) {
+            bw.write("ERROR<br>");
+            // e.printStackTrace(bw.);
+        }
+
+        bw.write("</body>");
+        bw.write("</html>");
+
+        bw.flush();
     }
 
-    bw.write("</body>");
-    bw.write("</html>");
-
-    bw.flush();
-  }
-
-  public long getSize(DocumentTable arg0, Class<?> arg1, Type arg2, Annotation[] arg3,
-      MediaType arg4) {
-    return -1;
-  }
+    public long getSize(DocumentTable arg0, Class<?> arg1, Type arg2, Annotation[] arg3, MediaType arg4) {
+        return -1;
+    }
 
 }
