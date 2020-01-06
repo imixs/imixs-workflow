@@ -1,11 +1,39 @@
+/*******************************************************************************
+ * <pre>
+ *  Imixs Workflow 
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
+ *  http://www.imixs.com
+ *  
+ *  This program is free software; you can redistribute it and/or 
+ *  modify it under the terms of the GNU General Public License 
+ *  as published by the Free Software Foundation; either version 2 
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful, 
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ *  General Public License for more details.
+ *  
+ *  You can receive a copy of the GNU General Public
+ *  License at http://www.gnu.org/licenses/gpl.html
+ *  
+ *  Project: 
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
+ *  
+ *  Contributors:  
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
+ *******************************************************************************/
+
 package org.imixs.workflow.engine;
 
 import org.imixs.workflow.ItemCollection;
 
 /**
- * The ProcessingEvent provides a CDI event fired by the WorkflowService EJB.
- * This even can be used in a observer pattern of a service EJB to react on the
- * life-cycle of a process instance.
+ * The ProcessingEvent provides a CDI event fired by the WorkflowService EJB. This even can be used
+ * in a observer pattern of a service EJB to react on the life-cycle of a process instance.
  * <p>
  * The ProcessingEvent defines the following event types:
  * <ul>
@@ -22,23 +50,23 @@ import org.imixs.workflow.ItemCollection;
  */
 public class ProcessingEvent {
 
-	public static final int BEFORE_PROCESS = 1;
-	public static final int AFTER_PROCESS = 2;
+  public static final int BEFORE_PROCESS = 1;
+  public static final int AFTER_PROCESS = 2;
 
-	private int eventType;
-	private ItemCollection document;
+  private int eventType;
+  private ItemCollection document;
 
-	public ProcessingEvent(ItemCollection document, int eventType) {
-		this.eventType = eventType;
-		this.document = document;
-	}
+  public ProcessingEvent(ItemCollection document, int eventType) {
+    this.eventType = eventType;
+    this.document = document;
+  }
 
-	public int getEventType() {
-		return eventType;
-	}
+  public int getEventType() {
+    return eventType;
+  }
 
-	public ItemCollection getDocument() {
-		return document;
-	}
+  public ItemCollection getDocument() {
+    return document;
+  }
 
 }

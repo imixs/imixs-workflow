@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,18 +18,18 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow.engine.plugins;
 
 import java.util.logging.Logger;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -43,26 +44,23 @@ import org.imixs.workflow.exceptions.PluginException;
  * <li>$WorkflowSummary - Summary
  * 
  * 
- * These settings can be configured by the imixs modeler on the Application
- * Property Tab on a ProcessEntity.
+ * These settings can be configured by the imixs modeler on the Application Property Tab on a
+ * ProcessEntity.
  * 
- * The Plugin determines the new settings by fetching the next ProcessEntity.
- * The Next ProcessEntity is defined by the ActivityEntity attribute
- * 'numNextProcessID'
+ * The Plugin determines the new settings by fetching the next ProcessEntity. The Next ProcessEntity
+ * is defined by the ActivityEntity attribute 'numNextProcessID'
  * 
  * 
  * Version 1.1
  * 
- * The Plugin will test if the provided Model supports ExtendedModels. If so the
- * Plugin will fetch the next ProcessEntity by the current used modelVersion of
- * the workitem.
+ * The Plugin will test if the provided Model supports ExtendedModels. If so the Plugin will fetch
+ * the next ProcessEntity by the current used modelVersion of the workitem.
  * 
- * Version 1.2 The plugin submits the new settings directly in the run() method,
- * so other plugins can access the new properties for further operations
+ * Version 1.2 The plugin submits the new settings directly in the run() method, so other plugins
+ * can access the new properties for further operations
  * http://java.net/jira/browse/IMIXS_WORKFLOW-81
  * 
- * Version 1.3: type, workflowgroup and workfowstatus are handled by the
- * WorkflowKernel
+ * Version 1.3: type, workflowgroup and workfowstatus are handled by the WorkflowKernel
  * 
  * @author Ralph Soika
  * @version 1.3
@@ -70,80 +68,82 @@ import org.imixs.workflow.exceptions.PluginException;
  * 
  */
 public class ApplicationPlugin extends AbstractPlugin {
-	
-	
-	public final static String WORKFLOWABSTRACT="$workflowabstract";
-	public final static String WORKFLOWSUMMARY="$workflowsummary";
-	
 
-	public static final String PROCESS_UNDEFINED = "PROCESS_UNDEFINED";
 
-	private ItemCollection documentContext;
-	private String sEditorID;
-	private String sImageURL;
-	private String sAbstract;
-	private String sSummary;
-	@SuppressWarnings("unused")
-	private static Logger logger = Logger.getLogger(ApplicationPlugin.class.getName());
+  public final static String WORKFLOWABSTRACT = "$workflowabstract";
+  public final static String WORKFLOWSUMMARY = "$workflowsummary";
 
-	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
-			throws PluginException {
 
-		documentContext = adocumentContext;
+  public static final String PROCESS_UNDEFINED = "PROCESS_UNDEFINED";
 
-		sEditorID = null;
-		sImageURL = null;
-		sAbstract = null;
-		sSummary = null;
-		ItemCollection itemColNextProcess = null;
+  private ItemCollection documentContext;
+  private String sEditorID;
+  private String sImageURL;
+  private String sAbstract;
+  private String sSummary;
+  @SuppressWarnings("unused")
+  private static Logger logger = Logger.getLogger(ApplicationPlugin.class.getName());
 
-		// get next process entity
-		try {
-			//itemColNextProcess = this.getWorkflowService().evalNextTask(adocumentContext, adocumentActivity);
-			itemColNextProcess = this.getWorkflowService().evalNextTask(adocumentContext);
-		} catch (ModelException e) {
-			throw new PluginException(ApplicationPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
-		}
+  public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+      throws PluginException {
 
-		// fetch Editor and Image
-		sEditorID = itemColNextProcess.getItemValueString("txtEditorID");
-		sImageURL = itemColNextProcess.getItemValueString("txtImageURL");
+    documentContext = adocumentContext;
 
-		// fetch workflow Abstract
-		sAbstract = itemColNextProcess.getItemValueString("txtworkflowabstract");
-		if (!"".equals(sAbstract))
-			sAbstract = getWorkflowService().adaptText(sAbstract, documentContext);
+    sEditorID = null;
+    sImageURL = null;
+    sAbstract = null;
+    sSummary = null;
+    ItemCollection itemColNextProcess = null;
 
-		// fetch workflow Abstract
-		sSummary = itemColNextProcess.getItemValueString("txtworkflowsummary");
-		if (!"".equals(sSummary))
-			sSummary = getWorkflowService().adaptText(sSummary, documentContext);
+    // get next process entity
+    try {
+      // itemColNextProcess = this.getWorkflowService().evalNextTask(adocumentContext,
+      // adocumentActivity);
+      itemColNextProcess = this.getWorkflowService().evalNextTask(adocumentContext);
+    } catch (ModelException e) {
+      throw new PluginException(ApplicationPlugin.class.getSimpleName(), e.getErrorCode(),
+          e.getMessage());
+    }
 
-		// submit data now into documentcontext
+    // fetch Editor and Image
+    sEditorID = itemColNextProcess.getItemValueString("txtEditorID");
+    sImageURL = itemColNextProcess.getItemValueString("txtImageURL");
 
-		// set Editor if value is defined
-		if (sEditorID != null && !"".equals(sEditorID))
-			documentContext.replaceItemValue("txtWorkflowEditorID", sEditorID);
+    // fetch workflow Abstract
+    sAbstract = itemColNextProcess.getItemValueString("txtworkflowabstract");
+    if (!"".equals(sAbstract))
+      sAbstract = getWorkflowService().adaptText(sAbstract, documentContext);
 
-		// set ImageURl if one is defined
-		if (sImageURL != null && !"".equals(sImageURL))
-			documentContext.replaceItemValue("txtWorkflowImageURL", sImageURL);
+    // fetch workflow Abstract
+    sSummary = itemColNextProcess.getItemValueString("txtworkflowsummary");
+    if (!"".equals(sSummary))
+      sSummary = getWorkflowService().adaptText(sSummary, documentContext);
 
-		/*
-		 * We still support the deprecated fields here - see issue #265 can be removed
-		 * with version 4.3.0
-		 */
-		// set Abstract
-		if (sAbstract != null) {
-			documentContext.replaceItemValue(WORKFLOWABSTRACT, sAbstract);
-			documentContext.replaceItemValue("txtworkflowabstract", sAbstract);
-		}
-		// set Summary
-		if (sSummary != null) {
-			documentContext.replaceItemValue(WORKFLOWSUMMARY, sSummary);
-			documentContext.replaceItemValue("txtworkflowsummary", sSummary);
-		}
-		return documentContext;
-	}
+    // submit data now into documentcontext
+
+    // set Editor if value is defined
+    if (sEditorID != null && !"".equals(sEditorID))
+      documentContext.replaceItemValue("txtWorkflowEditorID", sEditorID);
+
+    // set ImageURl if one is defined
+    if (sImageURL != null && !"".equals(sImageURL))
+      documentContext.replaceItemValue("txtWorkflowImageURL", sImageURL);
+
+    /*
+     * We still support the deprecated fields here - see issue #265 can be removed with version
+     * 4.3.0
+     */
+    // set Abstract
+    if (sAbstract != null) {
+      documentContext.replaceItemValue(WORKFLOWABSTRACT, sAbstract);
+      documentContext.replaceItemValue("txtworkflowabstract", sAbstract);
+    }
+    // set Summary
+    if (sSummary != null) {
+      documentContext.replaceItemValue(WORKFLOWSUMMARY, sSummary);
+      documentContext.replaceItemValue("txtworkflowsummary", sSummary);
+    }
+    return documentContext;
+  }
 
 }

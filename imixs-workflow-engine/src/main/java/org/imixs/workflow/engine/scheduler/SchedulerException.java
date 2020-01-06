@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,12 +18,13 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow.engine.scheduler;
@@ -32,43 +34,41 @@ import org.imixs.workflow.exceptions.WorkflowException;
 /**
  * The SchedulerException is thrown from the generic scheduler service
  * 
- * @see  org.imixs.workflow.engine.scheduler.GenericScheduelrService
+ * @see org.imixs.workflow.engine.scheduler.GenericScheduelrService
  * @author rsoika
  * 
  */
 public class SchedulerException extends WorkflowException {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public static final String INVALID_MODELVERSION = "INVALID_MODELVERSION";
-	public static final String INVALID_WORKITEM = "INVALID_WORKITEM";
-	public static final String INVALID_PROCESSID = "INVALID_PROCESSID";
-	
-	protected String errorContext = "UNDEFINED";
-	protected String errorCode = "UNDEFINED";
+  public static final String INVALID_MODELVERSION = "INVALID_MODELVERSION";
+  public static final String INVALID_WORKITEM = "INVALID_WORKITEM";
+  public static final String INVALID_PROCESSID = "INVALID_PROCESSID";
+
+  protected String errorContext = "UNDEFINED";
+  protected String errorCode = "UNDEFINED";
 
 
-	public SchedulerException(String aErrorCode, String message) {
-		super(aErrorCode,message);
-	}
+  public SchedulerException(String aErrorCode, String message) {
+    super(aErrorCode, message);
+  }
 
-	public SchedulerException(String aErrorContext, String aErrorCode,
-			String message) {
-		super(aErrorContext,aErrorCode,message);
-	}
+  public SchedulerException(String aErrorContext, String aErrorCode, String message) {
+    super(aErrorContext, aErrorCode, message);
+  }
 
-	public SchedulerException(String aErrorContext, String aErrorCode,
-			String message, Exception e) {
-		super(aErrorContext,aErrorCode,message, e);
-	}
-	
+  public SchedulerException(String aErrorContext, String aErrorCode, String message, Exception e) {
+    super(aErrorContext, aErrorCode, message, e);
+  }
 
-	public SchedulerException(String aErrorCode, String message, Exception e) {
-		super(aErrorCode,message, e);
-	}
 
-	public void setErrorCode(String errorCode) {
-		this.errorCode = errorCode;
-	}
+  public SchedulerException(String aErrorCode, String message, Exception e) {
+    super(aErrorCode, message, e);
+  }
+
+  public void setErrorCode(String errorCode) {
+    this.errorCode = errorCode;
+  }
 
 }

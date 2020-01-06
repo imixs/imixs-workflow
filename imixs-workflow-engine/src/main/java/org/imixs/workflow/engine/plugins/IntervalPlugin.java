@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,12 +18,13 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow.engine.plugins;
@@ -31,16 +33,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Logger;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * The Imixs Interval Plugin implements an mechanism to adjust a date field of a
- * workitem based on a interval description. The interval description is stored
- * in a field with the prafix 'keyinterval' followed by the name of an existing
- * date field. See the following example:
+ * The Imixs Interval Plugin implements an mechanism to adjust a date field of a workitem based on a
+ * interval description. The interval description is stored in a field with the prafix 'keyinterval'
+ * followed by the name of an existing date field. See the following example:
  * 
  * <code>
  *  keyIntervalDatDate=monthly
@@ -54,92 +54,93 @@ import org.imixs.workflow.exceptions.PluginException;
  */
 public class IntervalPlugin extends AbstractPlugin {
 
-	public static final String INVALID_FORMAT = "INVALID_FORMAT";
+  public static final String INVALID_FORMAT = "INVALID_FORMAT";
 
-	private ItemCollection documentContext;
-	private static Logger logger = Logger.getLogger(IntervalPlugin.class.getName());
+  private ItemCollection documentContext;
+  private static Logger logger = Logger.getLogger(IntervalPlugin.class.getName());
 
-	/**
-	 * The method paresed for a fields with the prafix 'keyitnerval'
-	 */
-	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity) throws PluginException {
-		documentContext = adocumentContext;
-		// test if activity is a schedule activity...
-		// check if activity is scheduled
-		if (!"1".equals(adocumentActivity.getItemValueString("keyScheduledActivity"))) {
-			return documentContext;
-		}
+  /**
+   * The method paresed for a fields with the prafix 'keyitnerval'
+   */
+  public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+      throws PluginException {
+    documentContext = adocumentContext;
+    // test if activity is a schedule activity...
+    // check if activity is scheduled
+    if (!"1".equals(adocumentActivity.getItemValueString("keyScheduledActivity"))) {
+      return documentContext;
+    }
 
-		
-		Calendar calNow = Calendar.getInstance();
 
-		logger.finest("......compute next interval dates for workitem "
-				+ documentContext.getItemValueString(WorkflowKernel.UNIQUEID));
+    Calendar calNow = Calendar.getInstance();
 
-		Set<String> fieldNames = documentContext.getAllItems().keySet();
-		for (String fieldName : fieldNames) {
-			if (fieldName.toLowerCase().startsWith("keyinterval")) {
-				String sInterval = documentContext.getItemValueString(fieldName);
+    logger.finest("......compute next interval dates for workitem "
+        + documentContext.getItemValueString(WorkflowKernel.UNIQUEID));
 
-				if (sInterval.isEmpty())
-					continue;
+    Set<String> fieldNames = documentContext.getAllItems().keySet();
+    for (String fieldName : fieldNames) {
+      if (fieldName.toLowerCase().startsWith("keyinterval")) {
+        String sInterval = documentContext.getItemValueString(fieldName);
 
-				sInterval = sInterval.toLowerCase();
-				// lookup for a date value
-				String sDateField = fieldName.substring(11);
-				if (!sDateField.isEmpty() && documentContext.hasItem(sDateField)) {
-					Date date = documentContext.getItemValueDate(sDateField);
-					if (date != null) {
+        if (sInterval.isEmpty())
+          continue;
 
-						// verify if date is in the past....
-						Calendar calDate = Calendar.getInstance();
-						calDate.setTime(date);
-						if (calNow.after(calDate)) {
-							logger.finest("......compute next interval for " + sDateField);
+        sInterval = sInterval.toLowerCase();
+        // lookup for a date value
+        String sDateField = fieldName.substring(11);
+        if (!sDateField.isEmpty() && documentContext.hasItem(sDateField)) {
+          Date date = documentContext.getItemValueDate(sDateField);
+          if (date != null) {
 
-							// first set day month and year to now
-							calDate.set(Calendar.YEAR, calNow.get(Calendar.YEAR));
-							calDate.set(Calendar.MONTH, calNow.get(Calendar.MONTH));
-							calDate.set(Calendar.DAY_OF_MONTH, calNow.get(Calendar.DAY_OF_MONTH));
-							
-							
-							// test if interval is a number. In this case
-							// increase the date of the number of days
-							try {
-								int iDays = Integer.parseInt(sInterval);
-								calDate.add(Calendar.DAY_OF_MONTH, iDays);
-							} catch (NumberFormatException nfe) {
-								// check for daily, monthly, yerarliy
+            // verify if date is in the past....
+            Calendar calDate = Calendar.getInstance();
+            calDate.setTime(date);
+            if (calNow.after(calDate)) {
+              logger.finest("......compute next interval for " + sDateField);
 
-								if (sInterval.contains("daily")) {
-									calDate.add(Calendar.DAY_OF_MONTH, 1);
-								}
+              // first set day month and year to now
+              calDate.set(Calendar.YEAR, calNow.get(Calendar.YEAR));
+              calDate.set(Calendar.MONTH, calNow.get(Calendar.MONTH));
+              calDate.set(Calendar.DAY_OF_MONTH, calNow.get(Calendar.DAY_OF_MONTH));
 
-								if (sInterval.contains("weekly")) {
-									calDate.add(Calendar.DAY_OF_MONTH, 7);
-								}
 
-								if (sInterval.contains("monthly")) {
-									calDate.add(Calendar.MONTH, 1);
-								}
+              // test if interval is a number. In this case
+              // increase the date of the number of days
+              try {
+                int iDays = Integer.parseInt(sInterval);
+                calDate.add(Calendar.DAY_OF_MONTH, iDays);
+              } catch (NumberFormatException nfe) {
+                // check for daily, monthly, yerarliy
 
-								if (sInterval.contains("yearly")) {
-									calDate.add(Calendar.YEAR, 1);
-								}
-							}
+                if (sInterval.contains("daily")) {
+                  calDate.add(Calendar.DAY_OF_MONTH, 1);
+                }
 
-							documentContext.replaceItemValue(sDateField, calDate.getTime());
+                if (sInterval.contains("weekly")) {
+                  calDate.add(Calendar.DAY_OF_MONTH, 7);
+                }
 
-						}
-					}
-				}
+                if (sInterval.contains("monthly")) {
+                  calDate.add(Calendar.MONTH, 1);
+                }
 
-			}
-		}
+                if (sInterval.contains("yearly")) {
+                  calDate.add(Calendar.YEAR, 1);
+                }
+              }
 
-		return documentContext;
-	}
+              documentContext.replaceItemValue(sDateField, calDate.getTime());
 
-	
+            }
+          }
+        }
+
+      }
+    }
+
+    return documentContext;
+  }
+
+
 
 }

@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,12 +18,13 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow.engine.plugins;
@@ -31,15 +33,15 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * This Plug-In evaluates the result message provided by the Activity property
- * 'txtActivityResult'. The value will be parsed for the xml tag 'item'
+ * This Plug-In evaluates the result message provided by the Activity property 'txtActivityResult'.
+ * The value will be parsed for the xml tag 'item'
  * 
  * <code>
  * 		<item name="fieldname">value</item> 
  * </code>
  * 
- * The provided value will be assigned to the named property. The value can also
- * be evaluated with the tag 'itemValue'
+ * The provided value will be assigned to the named property. The value can also be evaluated with
+ * the tag 'itemValue'
  * 
  * <code>
  *   <item name="fieldname"><itemvalue>namCreator</itemvalue></item> 
@@ -53,17 +55,19 @@ import org.imixs.workflow.exceptions.PluginException;
  * 
  */
 public class ResultPlugin extends AbstractPlugin {
-	
-	public ItemCollection run(ItemCollection documentContext, ItemCollection adocumentActivity) throws PluginException {
-		// evaluate new items....
-		ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(adocumentActivity, documentContext, true);
-		// copy values
-		if (evalItemCollection != null) {
-			documentContext.replaceAllItems(evalItemCollection.getAllItems());
-		}
-		return documentContext;
-	}
 
-	
-	
+  public ItemCollection run(ItemCollection documentContext, ItemCollection adocumentActivity)
+      throws PluginException {
+    // evaluate new items....
+    ItemCollection evalItemCollection =
+        getWorkflowService().evalWorkflowResult(adocumentActivity, documentContext, true);
+    // copy values
+    if (evalItemCollection != null) {
+      documentContext.replaceAllItems(evalItemCollection.getAllItems());
+    }
+    return documentContext;
+  }
+
+
+
 }

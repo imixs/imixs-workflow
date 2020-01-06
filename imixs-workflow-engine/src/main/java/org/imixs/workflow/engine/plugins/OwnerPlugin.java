@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,12 +18,13 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow.engine.plugins;
@@ -31,15 +33,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * This plugin implements a ownership control by evaluating the configuration of
- * an BPMN Event element. The Plugin updates the WorkItem attribute '$owner'
- * depending on the provided information.
+ * This plugin implements a ownership control by evaluating the configuration of an BPMN Event
+ * element. The Plugin updates the WorkItem attribute '$owner' depending on the provided
+ * information.
  * 
  * <p>
  * These attributes defined in Activity Entity are evaluated by the plugin:
@@ -50,10 +51,9 @@ import org.imixs.workflow.exceptions.PluginException;
  * 
  * 
  * 
- * NOTE: Models generated with the first version of the Imixs-Workflow Modeler
- * provide a different set of attributes. Therefore the plugin implements a
- * fallback method to support deprecated models. The fallback method evaluate
- * the following list of attributes defined in Activity Entity:
+ * NOTE: Models generated with the first version of the Imixs-Workflow Modeler provide a different
+ * set of attributes. Therefore the plugin implements a fallback method to support deprecated
+ * models. The fallback method evaluate the following list of attributes defined in Activity Entity:
  * <p>
  * 
  * <ul>
@@ -66,8 +66,8 @@ import org.imixs.workflow.exceptions.PluginException;
  * 
  * #Issue 133: Extend access plug-in to resolve owner settings in process entity
  * 
- * The AccessPlugin also evaluates the ACL settings in the next ProcessEntity
- * which is supported by newer versions of the imixs-bpmn modeler.
+ * The AccessPlugin also evaluates the ACL settings in the next ProcessEntity which is supported by
+ * newer versions of the imixs-bpmn modeler.
  * 
  * 
  * 
@@ -77,124 +77,129 @@ import org.imixs.workflow.exceptions.PluginException;
  */
 
 public class OwnerPlugin extends AbstractPlugin {
-	
-	public final static String OWNER="$owner";
-	
-	private ItemCollection documentContext;
-	private ItemCollection documentActivity;
-	private ItemCollection documentNextProcessEntity;
 
-	private static Logger logger = Logger.getLogger(OwnerPlugin.class.getName());
+  public final static String OWNER = "$owner";
 
-	/**
-	 * changes the '$owner' item depending to the activityentity or
-	 * processEntity
-	 * 
-	 */
-	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
-			throws PluginException {
+  private ItemCollection documentContext;
+  private ItemCollection documentActivity;
+  private ItemCollection documentNextProcessEntity;
 
-		documentContext = adocumentContext;
-		documentActivity = adocumentActivity;
+  private static Logger logger = Logger.getLogger(OwnerPlugin.class.getName());
 
-		// get next process entity
-		try {
-			//documentNextProcessEntity = this.getWorkflowService().evalNextTask(adocumentContext, adocumentActivity);
-			documentNextProcessEntity = this.getWorkflowService().evalNextTask(adocumentContext);
-		} catch (ModelException e) {
-			throw new PluginException(OwnerPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
-		}
+  /**
+   * changes the '$owner' item depending to the activityentity or processEntity
+   * 
+   */
+  public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+      throws PluginException {
 
-		// in case the activity is connected to a followup activity the
-		// nextProcess can be null!
+    documentContext = adocumentContext;
+    documentActivity = adocumentActivity;
 
-		// test update mode of activity and process entity - if true clear the
-		// existing values.
-		if (documentActivity.getItemValueBoolean("keyupdateacl") == false && (documentNextProcessEntity == null
-				|| documentNextProcessEntity.getItemValueBoolean("keyupdateacl") == false)) {
-			// no update!
-			return documentContext;
-		} else {
-			// activity settings will not be merged with process entity
-			// settings!
-			if (documentActivity.getItemValueBoolean("keyupdateacl") == true) {
-				updateOwnerByItemCollection(documentActivity);
-			} else {
-				updateOwnerByItemCollection(documentNextProcessEntity);
-			}
-		}
+    // get next process entity
+    try {
+      // documentNextProcessEntity = this.getWorkflowService().evalNextTask(adocumentContext,
+      // adocumentActivity);
+      documentNextProcessEntity = this.getWorkflowService().evalNextTask(adocumentContext);
+    } catch (ModelException e) {
+      throw new PluginException(OwnerPlugin.class.getSimpleName(), e.getErrorCode(),
+          e.getMessage());
+    }
 
-		return documentContext;
-	}
+    // in case the activity is connected to a followup activity the
+    // nextProcess can be null!
 
-	/**
-	 * This method updates the owner of a workitem depending on a given model entity
-	 * The model entity should provide the following attributes:
-	 * 
-	 * keyupdateacl, namOwnershipNames,keyOwnershipFields
-	 * 
-	 * 
-	 * The method did not clear the exiting values of namowner
-	 * @throws PluginException 
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void updateOwnerByItemCollection(ItemCollection modelEntity) throws PluginException {
+    // test update mode of activity and process entity - if true clear the
+    // existing values.
+    if (documentActivity.getItemValueBoolean("keyupdateacl") == false
+        && (documentNextProcessEntity == null
+            || documentNextProcessEntity.getItemValueBoolean("keyupdateacl") == false)) {
+      // no update!
+      return documentContext;
+    } else {
+      // activity settings will not be merged with process entity
+      // settings!
+      if (documentActivity.getItemValueBoolean("keyupdateacl") == true) {
+        updateOwnerByItemCollection(documentActivity);
+      } else {
+        updateOwnerByItemCollection(documentNextProcessEntity);
+      }
+    }
 
-		if (modelEntity == null || modelEntity.getItemValueBoolean("keyupdateacl") == false) {
-			// no update necessary
-			return;
-		}
+    return documentContext;
+  }
 
-		List newOwnerList;
-		newOwnerList = new ArrayList<String>();
+  /**
+   * This method updates the owner of a workitem depending on a given model entity The model entity
+   * should provide the following attributes:
+   * 
+   * keyupdateacl, namOwnershipNames,keyOwnershipFields
+   * 
+   * 
+   * The method did not clear the exiting values of namowner
+   * 
+   * @throws PluginException
+   */
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private void updateOwnerByItemCollection(ItemCollection modelEntity) throws PluginException {
 
-		// add names
-		mergeRoles(newOwnerList, modelEntity.getItemValue("namOwnershipNames"),documentContext);
-		// add Mapped Fields
-		mergeFieldList(documentContext, newOwnerList, modelEntity.getItemValue("keyOwnershipFields"));
-		// clean Vector
-		newOwnerList = uniqueList(newOwnerList);
+    if (modelEntity == null || modelEntity.getItemValueBoolean("keyupdateacl") == false) {
+      // no update necessary
+      return;
+    }
 
-		// update ownerlist....
-		documentContext.replaceItemValue(OWNER, newOwnerList);
-		if ((logger.isLoggable(Level.FINE)) && (newOwnerList.size() > 0)) {
-			logger.finest("......Owners:");
-			for (int j = 0; j < newOwnerList.size(); j++)
-				logger.finest("               '" + (String) newOwnerList.get(j) + "'");
-		}
-		
-		
-		// we also need to support the deprecated iten name "namOwner" which was replaced since version 5.0.2 by "owner"
-		documentContext.replaceItemValue("namOwner", newOwnerList);
+    List newOwnerList;
+    newOwnerList = new ArrayList<String>();
 
-	}
+    // add names
+    mergeRoles(newOwnerList, modelEntity.getItemValue("namOwnershipNames"), documentContext);
+    // add Mapped Fields
+    mergeFieldList(documentContext, newOwnerList, modelEntity.getItemValue("keyOwnershipFields"));
+    // clean Vector
+    newOwnerList = uniqueList(newOwnerList);
 
-	
-	/**
-	 * This method merges the role names from a SourceList into a valueList and
-	 * removes duplicates.
-	 * 
-	 * The AddaptText event is fired so a client can adapt a role name.
-	 * 
-	 * @param valueList
-	 * @param sourceList
-	 * @throws PluginException
-	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public  void mergeRoles(List valueList, List sourceList, ItemCollection documentContext) throws PluginException {
-		if ((sourceList != null) && (sourceList.size() > 0)) {
-			for (Object o : sourceList) {
-				if (valueList.indexOf(o) == -1) {
-					if (o instanceof String) {
-						// addapt textList
-						List<String> adaptedRoles = this.getWorkflowService().adaptTextList((String) o, documentContext);
-						valueList.addAll(adaptedRoles);// .add(getWorkflowService().adaptText((String)o,
-														// documentContext));
-					} else {
-						valueList.add(o);
-					}
-				}
-			}
-		}
-	}
+    // update ownerlist....
+    documentContext.replaceItemValue(OWNER, newOwnerList);
+    if ((logger.isLoggable(Level.FINE)) && (newOwnerList.size() > 0)) {
+      logger.finest("......Owners:");
+      for (int j = 0; j < newOwnerList.size(); j++)
+        logger.finest("               '" + (String) newOwnerList.get(j) + "'");
+    }
+
+
+    // we also need to support the deprecated iten name "namOwner" which was replaced since version
+    // 5.0.2 by "owner"
+    documentContext.replaceItemValue("namOwner", newOwnerList);
+
+  }
+
+
+  /**
+   * This method merges the role names from a SourceList into a valueList and removes duplicates.
+   * 
+   * The AddaptText event is fired so a client can adapt a role name.
+   * 
+   * @param valueList
+   * @param sourceList
+   * @throws PluginException
+   */
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  public void mergeRoles(List valueList, List sourceList, ItemCollection documentContext)
+      throws PluginException {
+    if ((sourceList != null) && (sourceList.size() > 0)) {
+      for (Object o : sourceList) {
+        if (valueList.indexOf(o) == -1) {
+          if (o instanceof String) {
+            // addapt textList
+            List<String> adaptedRoles =
+                this.getWorkflowService().adaptTextList((String) o, documentContext);
+            valueList.addAll(adaptedRoles);// .add(getWorkflowService().adaptText((String)o,
+                                           // documentContext));
+          } else {
+            valueList.add(o);
+          }
+        }
+      }
+    }
+  }
 }
