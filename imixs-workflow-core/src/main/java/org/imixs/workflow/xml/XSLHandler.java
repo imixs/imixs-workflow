@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,13 +18,15 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
+
 package org.imixs.workflow.xml;
 
 import java.io.ByteArrayInputStream;
@@ -35,7 +38,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -45,128 +47,125 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
 import org.imixs.workflow.ItemCollection;
 
 /**
  * This class can be used to transform xml by XSL template.
  * 
- * The class is used by the ReportRestService to execute a report and also by
- * the MailPluign to transform the mail body
+ * The class is used by the ReportRestService to execute a report and also by the MailPluign to
+ * transform the mail body
  * 
  * @author imixs.com - Ralph Soika
  * @version 1.0
  */
 
 public class XSLHandler {
-	private static Logger logger = Logger.getLogger(XSLHandler.class.getName());
+  private static Logger logger = Logger.getLogger(XSLHandler.class.getName());
 
-	/**
-	 * This method transforms an XML source with a provided XSL template. The result
-	 * will be written into a output stream.
-	 * 
-	 * @param xmlSource -
-	 * @param xslSource
-	 * @param encoding  (default UTF-8)
-	 * @return
-	 * @throws UnsupportedEncodingException
-	 * @throws TransformerException
-	 */
+  /**
+   * This method transforms an XML source with a provided XSL template. The result will be written
+   * into a output stream.
+   * 
+   * @param xmlSource -
+   * @param xslSource
+   * @param encoding  (default UTF-8)
+   * @return
+   * @throws UnsupportedEncodingException
+   * @throws TransformerException
+   */
 
-	public static void transform(String xmlSource, String xslSource, String encoding, OutputStream output)
-			throws UnsupportedEncodingException, TransformerException {
-		boolean debug = logger.isLoggable(Level.FINE);
-		try {
-			if (encoding == null || encoding.isEmpty()) {
-				encoding = "UTF-8";
-			}
-			TransformerFactory transFact = TransformerFactory.newInstance();
-			if (debug) {
-				logger.finest("......xslTransformation: encoding=" + encoding);
-			}
-			// generate XML InputStream Reader with encoding
-			ByteArrayInputStream baisXML = new ByteArrayInputStream(xmlSource.getBytes());
-			InputStreamReader isreaderXML;
+  public static void transform(String xmlSource, String xslSource, String encoding,
+      OutputStream output) throws UnsupportedEncodingException, TransformerException {
+    boolean debug = logger.isLoggable(Level.FINE);
+    try {
+      if (encoding == null || encoding.isEmpty()) {
+        encoding = "UTF-8";
+      }
+      TransformerFactory transFact = TransformerFactory.newInstance();
+      if (debug) {
+        logger.finest("......xslTransformation: encoding=" + encoding);
+      }
+      // generate XML InputStream Reader with encoding
+      ByteArrayInputStream baisXML = new ByteArrayInputStream(xmlSource.getBytes());
+      InputStreamReader isreaderXML;
 
-			isreaderXML = new InputStreamReader(baisXML, encoding);
+      isreaderXML = new InputStreamReader(baisXML, encoding);
 
-			Source xmlSrc = new StreamSource(isreaderXML);
+      Source xmlSrc = new StreamSource(isreaderXML);
 
-			// generate XSL InputStream Reader with encoding
-			ByteArrayInputStream baisXSL = new ByteArrayInputStream(xslSource.getBytes());
-			InputStreamReader isreaderXSL = new InputStreamReader(baisXSL, encoding);
-			Source xslSrc = new StreamSource(isreaderXSL);
+      // generate XSL InputStream Reader with encoding
+      ByteArrayInputStream baisXSL = new ByteArrayInputStream(xslSource.getBytes());
+      InputStreamReader isreaderXSL = new InputStreamReader(baisXSL, encoding);
+      Source xslSrc = new StreamSource(isreaderXSL);
 
-			Transformer trans = transFact.newTransformer(xslSrc);
-			trans.transform(xmlSrc, new StreamResult(output));
+      Transformer trans = transFact.newTransformer(xslSrc);
+      trans.transform(xmlSrc, new StreamResult(output));
 
-		} finally {
+    } finally {
 
-		}
+    }
 
-	}
+  }
 
-	
-	/**
-	 * This method transforms an Collection of Documents into XML and translates the
-	 * result based on a provided XSL template. The result will be written into a
-	 * output stream.
-	 * 
-	 * @param xmlSource -
-	 * @param xslSource
-	 * @param encoding  (default UTF-8)
-	 * @return
-	 * @throws JAXBException
-	 * @throws TransformerException
-	 * @throws IOException
-	 */
-	public static void transform(List<ItemCollection> dataSource, String xslSource, String encoding,
-			OutputStream output) throws JAXBException, TransformerException, IOException {
 
-		if (encoding == null || encoding.isEmpty()) {
-			encoding = "UTF-8";
-		}
-		XMLDataCollection xmlDataCollection = XMLDataCollectionAdapter.getDataCollection(dataSource);
+  /**
+   * This method transforms an Collection of Documents into XML and translates the result based on a
+   * provided XSL template. The result will be written into a output stream.
+   * 
+   * @param xmlSource -
+   * @param xslSource
+   * @param encoding  (default UTF-8)
+   * @return
+   * @throws JAXBException
+   * @throws TransformerException
+   * @throws IOException
+   */
+  public static void transform(List<ItemCollection> dataSource, String xslSource, String encoding,
+      OutputStream output) throws JAXBException, TransformerException, IOException {
 
-		StringWriter writer = new StringWriter();
+    if (encoding == null || encoding.isEmpty()) {
+      encoding = "UTF-8";
+    }
+    XMLDataCollection xmlDataCollection = XMLDataCollectionAdapter.getDataCollection(dataSource);
 
-		JAXBContext context = JAXBContext.newInstance(XMLDataCollection.class);
-		Marshaller m = context.createMarshaller();
-		m.setProperty("jaxb.encoding", encoding);
-		m.marshal(xmlDataCollection, writer);
+    StringWriter writer = new StringWriter();
 
-		XSLHandler.transform(writer.toString(), xslSource, encoding, output);
-	}
-	
-	/**
-	 * This method transforms a single Documents (ItemCollection) into XML and translates the
-	 * result based on a provided XSL template. The result will be written into a
-	 * output stream.
-	 * 
-	 * @param xmlSource -
-	 * @param xslSource
-	 * @param encoding  (default UTF-8)
-	 * @return
-	 * @throws JAXBException
-	 * @throws TransformerException
-	 * @throws IOException
-	 */
-	public static void transform(ItemCollection dataSource, String xslSource, String encoding,
-			OutputStream output) throws JAXBException, TransformerException, IOException {
+    JAXBContext context = JAXBContext.newInstance(XMLDataCollection.class);
+    Marshaller m = context.createMarshaller();
+    m.setProperty("jaxb.encoding", encoding);
+    m.marshal(xmlDataCollection, writer);
 
-		//byte[] result=null;
-		if (encoding == null || encoding.isEmpty()) {
-			encoding = "UTF-8";
-		}
-		XMLDocument xmlDocument=XMLDocumentAdapter.getDocument(dataSource);
-		
-		StringWriter writer = new StringWriter();
+    XSLHandler.transform(writer.toString(), xslSource, encoding, output);
+  }
 
-		JAXBContext context = JAXBContext.newInstance(XMLDocument.class);
-		Marshaller m = context.createMarshaller();
-		m.setProperty("jaxb.encoding", encoding);
-		m.marshal(xmlDocument, writer);
+  /**
+   * This method transforms a single Documents (ItemCollection) into XML and translates the result
+   * based on a provided XSL template. The result will be written into a output stream.
+   * 
+   * @param xmlSource -
+   * @param xslSource
+   * @param encoding  (default UTF-8)
+   * @return
+   * @throws JAXBException
+   * @throws TransformerException
+   * @throws IOException
+   */
+  public static void transform(ItemCollection dataSource, String xslSource, String encoding,
+      OutputStream output) throws JAXBException, TransformerException, IOException {
 
-		XSLHandler.transform(writer.toString(), xslSource, encoding, output);
-	}
+    // byte[] result=null;
+    if (encoding == null || encoding.isEmpty()) {
+      encoding = "UTF-8";
+    }
+    XMLDocument xmlDocument = XMLDocumentAdapter.getDocument(dataSource);
+
+    StringWriter writer = new StringWriter();
+
+    JAXBContext context = JAXBContext.newInstance(XMLDocument.class);
+    Marshaller m = context.createMarshaller();
+    m.setProperty("jaxb.encoding", encoding);
+    m.marshal(xmlDocument, writer);
+
+    XSLHandler.transform(writer.toString(), xslSource, encoding, output);
+  }
 }

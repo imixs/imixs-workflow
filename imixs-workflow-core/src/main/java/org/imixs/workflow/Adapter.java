@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,12 +18,13 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow;
@@ -30,9 +32,9 @@ package org.imixs.workflow;
 import org.imixs.workflow.exceptions.AdapterException;
 
 /**
- * An Adapter defines an adapter pattern used by the WorkflowKernel to 
- * call adapter implementations defined by the BPMN model. 
- * <p> 
+ * An Adapter defines an adapter pattern used by the WorkflowKernel to call adapter implementations
+ * defined by the BPMN model.
+ * <p>
  * 
  * 
  * @author Ralph Soika
@@ -42,15 +44,14 @@ import org.imixs.workflow.exceptions.AdapterException;
 
 public abstract interface Adapter {
 
-	
-	/**
-	 * @param document
-	 *            the workitem to be processed
-	 * @param event
-	 *            the workflow event containing the processing instructions
-	 * @return updated workitem for further processing
-	 * @throws AdapterException
-	 */
-	public ItemCollection execute(ItemCollection document,ItemCollection event) throws AdapterException;
+
+  /**
+   * @param document the workitem to be processed
+   * @param event    the workflow event containing the processing instructions
+   * @return updated workitem for further processing
+   * @throws AdapterException
+   */
+  public ItemCollection execute(ItemCollection document, ItemCollection event)
+      throws AdapterException;
 
 }

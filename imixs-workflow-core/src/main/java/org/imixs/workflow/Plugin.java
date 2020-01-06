@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,12 +18,13 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow;
@@ -30,13 +32,12 @@ package org.imixs.workflow;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * A Plugin defines the interface between the WorkflowKernel and the
- * WorkflowManager. Each Plugin have to be registered to the WorkflowKernel by
- * the WorkflowManager. The WorkflowKernel executes all registered Plugins when
- * processing a workflow event. A Plugin may throw a PluginException in case the
- * execution failed. This will stop the execution of the process method. A
- * Plugin methods init() and close() can be implemented by Plugin to initialize
- * or tear down external resources or data.
+ * A Plugin defines the interface between the WorkflowKernel and the WorkflowManager. Each Plugin
+ * have to be registered to the WorkflowKernel by the WorkflowManager. The WorkflowKernel executes
+ * all registered Plugins when processing a workflow event. A Plugin may throw a PluginException in
+ * case the execution failed. This will stop the execution of the process method. A Plugin methods
+ * init() and close() can be implemented by Plugin to initialize or tear down external resources or
+ * data.
  * 
  * @author Ralph Soika
  * @version 2.0
@@ -45,31 +46,28 @@ import org.imixs.workflow.exceptions.PluginException;
 
 public interface Plugin {
 
-	/**
-	 * This method is called before the WorklfowKernel starts the execution. A
-	 * plugin can for example initialize external resources or data.
-	 * 
-	 * @param workflowContext
-	 *            defines the context in which the plugin runs. The context can
-	 *            be used to get information about the environment
-	 *
-	 */
-	public void init(WorkflowContext workflowContext) throws PluginException;
+  /**
+   * This method is called before the WorklfowKernel starts the execution. A plugin can for example
+   * initialize external resources or data.
+   * 
+   * @param workflowContext defines the context in which the plugin runs. The context can be used to
+   *                        get information about the environment
+   *
+   */
+  public void init(WorkflowContext workflowContext) throws PluginException;
 
-	/**
-	 * @param document
-	 *            the workitem to be processed
-	 * @param event
-	 *            the workflow event containing the processing instructions
-	 * @return updated workitem for further processing
-	 */
-	public ItemCollection run(ItemCollection document,ItemCollection event) throws PluginException;
+  /**
+   * @param document the workitem to be processed
+   * @param event    the workflow event containing the processing instructions
+   * @return updated workitem for further processing
+   */
+  public ItemCollection run(ItemCollection document, ItemCollection event) throws PluginException;
 
-	/**
-	 * This method is called after all plugins are executed by the WorkfloKernel. 
-	 * A plugin my tear down external resources. 
-	 * 
-	 * @param rollbackTransaction indicates if the current transaction will be rolled back.
-	 */
-	public void close(boolean rollbackTransaction) throws PluginException;
+  /**
+   * This method is called after all plugins are executed by the WorkfloKernel. A plugin my tear
+   * down external resources.
+   * 
+   * @param rollbackTransaction indicates if the current transaction will be rolled back.
+   */
+  public void close(boolean rollbackTransaction) throws PluginException;
 }

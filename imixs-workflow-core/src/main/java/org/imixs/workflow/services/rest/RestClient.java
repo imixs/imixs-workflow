@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,13 +18,15 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
+
 package org.imixs.workflow.services.rest;
 
 import java.io.BufferedReader;
@@ -44,413 +47,399 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * The Imixs RestClient is a helper class for a Rest based communication without
- * the use of Jax-rs.
+ * The Imixs RestClient is a helper class for a Rest based communication without the use of Jax-rs.
  * <p>
  * The Imixs RestClient provides methods to GET and POST data objects.
  * <p>
  * The client throws a RestAPIException in case of an communication error.
  * <p>
- * For a convinient way to access the Imixs-Rest API use the Imixs-Melman
- * project on Github.
+ * For a convinient way to access the Imixs-Rest API use the Imixs-Melman project on Github.
  * 
  * @author Ralph Soika
  */
 public class RestClient {
 
-	private String serviceEndpoint;
-	private Map<String, String> requestProperties = null;
-	private String encoding = "UTF-8";
-	private int iLastHTTPResult = 0;
-	private String rootURL = null;
-	private final static Logger logger = Logger.getLogger(RestClient.class.getName());
+  private String serviceEndpoint;
+  private Map<String, String> requestProperties = null;
+  private String encoding = "UTF-8";
+  private int iLastHTTPResult = 0;
+  private String rootURL = null;
+  private final static Logger logger = Logger.getLogger(RestClient.class.getName());
 
-	protected List<RequestFilter> requestFilterList;
+  protected List<RequestFilter> requestFilterList;
 
-	public RestClient() {
-		super();
-		requestFilterList = new ArrayList<RequestFilter>();
-	}
+  public RestClient() {
+    super();
+    requestFilterList = new ArrayList<RequestFilter>();
+  }
 
-	public RestClient(String rootURL) {
-		this();
-		if (rootURL != null && !rootURL.endsWith("/")) {
-			rootURL += "/";
-		}
+  public RestClient(String rootURL) {
+    this();
+    if (rootURL != null && !rootURL.endsWith("/")) {
+      rootURL += "/";
+    }
 
-		this.rootURL = rootURL;
-	}
+    this.rootURL = rootURL;
+  }
 
-	/**
-	 * Register a ClientRequestFilter instance.
-	 * 
-	 * @param filter
-	 *            - request filter instance.
-	 */
-	public void registerRequestFilter(RequestFilter filter) {
-		logger.finest("......register new request filter: " + filter.getClass().getSimpleName());
+  /**
+   * Register a ClientRequestFilter instance.
+   * 
+   * @param filter - request filter instance.
+   */
+  public void registerRequestFilter(RequestFilter filter) {
+    logger.finest("......register new request filter: " + filter.getClass().getSimpleName());
 
-		// client.register(filter);
-		requestFilterList.add(filter);
-	}
+    // client.register(filter);
+    requestFilterList.add(filter);
+  }
 
-	public String getEncoding() {
-		return encoding;
-	}
+  public String getEncoding() {
+    return encoding;
+  }
 
-	public void setEncoding(String aEncoding) {
-		encoding = aEncoding;
-	}
+  public void setEncoding(String aEncoding) {
+    encoding = aEncoding;
+  }
 
-	public String getServiceEndpoint() {
-		return serviceEndpoint;
-	}
+  public String getServiceEndpoint() {
+    return serviceEndpoint;
+  }
 
-	/**
-	 * This method builds the serviceEndpoint based on a given URI . The method
-	 * prafix the URI with the root uri if the uri starts with /
-	 * <p>
-	 * If the URI is with protocol :// then the servcieEndpoint is set directly.
-	 * 
-	 * 
-	 * @param uri
-	 * @throws RestAPIException
-	 */
-	void setServiceEndpoint(String uri) throws RestAPIException {
-		// test for protocoll
-		if (uri.contains("://")) {
-			this.serviceEndpoint = uri;
-			return;
-		}
+  /**
+   * This method builds the serviceEndpoint based on a given URI . The method prafix the URI with
+   * the root uri if the uri starts with /
+   * <p>
+   * If the URI is with protocol :// then the servcieEndpoint is set directly.
+   * 
+   * 
+   * @param uri
+   * @throws RestAPIException
+   */
+  void setServiceEndpoint(String uri) throws RestAPIException {
+    // test for protocoll
+    if (uri.contains("://")) {
+      this.serviceEndpoint = uri;
+      return;
+    }
 
-		if (rootURL == null) {
-			throw new RestAPIException(0, "rootURL is null!");
-		}
+    if (rootURL == null) {
+      throw new RestAPIException(0, "rootURL is null!");
+    }
 
-		// test for double /
-		if (uri != null && uri.startsWith("/")) {
-			uri = uri.substring(1);
-		}
+    // test for double /
+    if (uri != null && uri.startsWith("/")) {
+      uri = uri.substring(1);
+    }
 
-		// add root URL
-		uri = rootURL + uri;
-		
-		this.serviceEndpoint = uri;
-	}
+    // add root URL
+    uri = rootURL + uri;
 
-	/**
-	 * Set a single header request property
-	 */
-	public void setRequestProperty(String key, String value) {
-		if (requestProperties == null) {
-			requestProperties = new HashMap<String, String>();
-		}
-		requestProperties.put(key, value);
-	}
+    this.serviceEndpoint = uri;
+  }
 
-	/**
-	 * Posts a String data object with a specific Content-Type to a Rest Service URI
-	 * Endpoint. This method can be used to simulate different post scenarios.
-	 * <p>
-	 * The parameter 'contnetType' can be used to request a specific media type.
-	 * 
-	 * @param uri
-	 *            - Rest Endpoint URI
-	 * @param dataString
-	 *            - content
-	 * @param contentType
-	 *            - request MediaType
-	 * @return content
-	 * @throws RestAPIException 
-	 * @throws Exception 
-	 */
-	public String post(String uri, String dataString, String contentType) throws RestAPIException {
-		return post(uri, dataString, contentType, null);
-	}
+  /**
+   * Set a single header request property
+   */
+  public void setRequestProperty(String key, String value) {
+    if (requestProperties == null) {
+      requestProperties = new HashMap<String, String>();
+    }
+    requestProperties.put(key, value);
+  }
 
-	/**
-	 * Posts a String data object with a specific Content-Type to a Rest Service URI
-	 * Endpoint. This method can be used to simulate different post scenarios.
-	 * <p>
-	 * The parameter 'contnetType' and 'acceptType' can be used to request and
-	 * accept specific media types.
-	 * 
-	 * @param uri
-	 *            - Rest Endpoint URI
-	 * @param dataString
-	 *            - content
-	 * @param contentType
-	 *            - request MediaType
-	 * @param acceptType
-	 *            - accept MediaType
-	 * @return content
-	 * @throws RestAPIException 
-	 */
-	public String post(String uri, String dataString, final String _contentType, String acceptType) throws RestAPIException  {
-		PrintWriter printWriter = null;
-		String contentType = _contentType;
+  /**
+   * Posts a String data object with a specific Content-Type to a Rest Service URI Endpoint. This
+   * method can be used to simulate different post scenarios.
+   * <p>
+   * The parameter 'contnetType' can be used to request a specific media type.
+   * 
+   * @param uri         - Rest Endpoint URI
+   * @param dataString  - content
+   * @param contentType - request MediaType
+   * @return content
+   * @throws RestAPIException
+   * @throws Exception
+   */
+  public String post(String uri, String dataString, String contentType) throws RestAPIException {
+    return post(uri, dataString, contentType, null);
+  }
 
-		if (contentType == null || contentType.isEmpty()) {
-			contentType = "application/xml";
-		}
-		if (acceptType == null || acceptType.isEmpty()) {
-			acceptType = contentType;
-		}
+  /**
+   * Posts a String data object with a specific Content-Type to a Rest Service URI Endpoint. This
+   * method can be used to simulate different post scenarios.
+   * <p>
+   * The parameter 'contnetType' and 'acceptType' can be used to request and accept specific media
+   * types.
+   * 
+   * @param uri         - Rest Endpoint URI
+   * @param dataString  - content
+   * @param contentType - request MediaType
+   * @param acceptType  - accept MediaType
+   * @return content
+   * @throws RestAPIException
+   */
+  public String post(String uri, String dataString, final String _contentType, String acceptType)
+      throws RestAPIException {
+    PrintWriter printWriter = null;
+    String contentType = _contentType;
 
-		HttpURLConnection urlConnection = null;
-		try {
-			serviceEndpoint = uri;
-			iLastHTTPResult = 500;
+    if (contentType == null || contentType.isEmpty()) {
+      contentType = "application/xml";
+    }
+    if (acceptType == null || acceptType.isEmpty()) {
+      acceptType = contentType;
+    }
 
-			urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
-			urlConnection.setRequestMethod("POST");
-			urlConnection.setDoOutput(true);
-			urlConnection.setDoInput(true);
-			urlConnection.setAllowUserInteraction(false);
+    HttpURLConnection urlConnection = null;
+    try {
+      serviceEndpoint = uri;
+      iLastHTTPResult = 500;
 
-			/** * HEADER ** */
-			urlConnection.setRequestProperty("Content-Type", contentType + "; charset=" + encoding);
-			urlConnection.setRequestProperty("Accept-Charset", encoding);
-			urlConnection.setRequestProperty("Accept", acceptType);
+      urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
+      urlConnection.setRequestMethod("POST");
+      urlConnection.setDoOutput(true);
+      urlConnection.setDoInput(true);
+      urlConnection.setAllowUserInteraction(false);
 
-			// process filters....
-			for (RequestFilter filter : requestFilterList) {
-				filter.filter(urlConnection);
-			}
+      /** * HEADER ** */
+      urlConnection.setRequestProperty("Content-Type", contentType + "; charset=" + encoding);
+      urlConnection.setRequestProperty("Accept-Charset", encoding);
+      urlConnection.setRequestProperty("Accept", acceptType);
 
-			StringWriter writer = new StringWriter();
-			writer.write(dataString);
-			writer.flush();
+      // process filters....
+      for (RequestFilter filter : requestFilterList) {
+        filter.filter(urlConnection);
+      }
 
-			// compute length
-			urlConnection.setRequestProperty("Content-Length",
-					"" + Integer.valueOf(writer.toString().getBytes().length));
+      StringWriter writer = new StringWriter();
+      writer.write(dataString);
+      writer.flush();
 
-			printWriter = new PrintWriter(
-					new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), encoding)));
-			printWriter.write(writer.toString());
-			printWriter.close();
+      // compute length
+      urlConnection.setRequestProperty("Content-Length",
+          "" + Integer.valueOf(writer.toString().getBytes().length));
 
-			String sHTTPResponse = urlConnection.getHeaderField(0);
-			try {
-				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
-			} catch (Exception eNumber) {
-				// eNumber.printStackTrace();
-				iLastHTTPResult = 500;
-			}
-			String content = readResponse(urlConnection);
+      printWriter = new PrintWriter(
+          new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), encoding)));
+      printWriter.write(writer.toString());
+      printWriter.close();
 
-			return content;
+      String sHTTPResponse = urlConnection.getHeaderField(0);
+      try {
+        iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
+      } catch (Exception eNumber) {
+        // eNumber.printStackTrace();
+        iLastHTTPResult = 500;
+      }
+      String content = readResponse(urlConnection);
 
-		} catch ( IOException ioe) {
-			String error = "Error POST request '" + uri + " - " + ioe.getMessage();
-			logger.warning(error);
-			throw new RestAPIException(500, error, ioe);
-		} finally {
-			// Release current connection
-			if (printWriter != null)
-				printWriter.close();
-		}
-	}
+      return content;
 
-	
+    } catch (IOException ioe) {
+      String error = "Error POST request '" + uri + " - " + ioe.getMessage();
+      logger.warning(error);
+      throw new RestAPIException(500, error, ioe);
+    } finally {
+      // Release current connection
+      if (printWriter != null)
+        printWriter.close();
+    }
+  }
 
-	/**
-	 * Posts a byte array to a Rest Service URI Endpoint. This method can be used to
-	 * simulate different post scenarios.
-	 * <p>
-	 * The parameter 'contnetType' and 'acceptType' can be used to request and
-	 * accept specific media types.
-	 * 
-	 * @param uri
-	 *            - Rest Endpoint URI
-	 * @param data
-	 *            - content
-	 * @param contentType
-	 *            - request MediaType
-	 * @param acceptType
-	 *            - accept MediaType
-	 * @return content
-	 * @throws RestAPIException 
-	 */
-	public String post(String uri, byte[] data, final String _contentType) throws RestAPIException{
-		return post(uri, data, _contentType, null);
-	}
-	/**
-	 * Posts a byte array to a Rest Service URI Endpoint. This method can be used to
-	 * simulate different post scenarios.
-	 * <p>
-	 * The parameter 'contnetType' and 'acceptType' can be used to request and
-	 * accept specific media types.
-	 * 
-	 * @param uri
-	 *            - Rest Endpoint URI
-	 * @param data
-	 *            - content
-	 * @param contentType
-	 *            - request MediaType
-	 * @param acceptType
-	 *            - accept MediaType
-	 * @return content
-	 * @throws RestAPIException 
-	 */
-	public String post(String uri, byte[] data, final String _contentType, String acceptType) throws RestAPIException{
-		
-		String contentType = _contentType;
 
-		if (contentType == null || contentType.isEmpty()) {
-			contentType = "application/xml";
-		}
-		if (acceptType == null || acceptType.isEmpty()) {
-			acceptType = contentType;
-		}
-		
-		HttpURLConnection urlConnection = null;
-		try {
-			serviceEndpoint = uri;
-			iLastHTTPResult = 500;
 
-			urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
-			urlConnection.setRequestMethod("POST");
-			urlConnection.setDoOutput(true);
-			urlConnection.setDoInput(true);
-			urlConnection.setAllowUserInteraction(true);
-			
-			/** * HEADER ** */
-			urlConnection.setRequestProperty("Content-Type", contentType + "; charset=" + encoding);
-			urlConnection.setRequestProperty("Accept-Charset", encoding);
-			urlConnection.setRequestProperty("Accept", acceptType);
-			
-			if (requestProperties != null) {
-				for (Map.Entry<String, String> entry : requestProperties.entrySet()) {
-					urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
-				}
-			}
+  /**
+   * Posts a byte array to a Rest Service URI Endpoint. This method can be used to simulate
+   * different post scenarios.
+   * <p>
+   * The parameter 'contnetType' and 'acceptType' can be used to request and accept specific media
+   * types.
+   * 
+   * @param uri         - Rest Endpoint URI
+   * @param data        - content
+   * @param contentType - request MediaType
+   * @param acceptType  - accept MediaType
+   * @return content
+   * @throws RestAPIException
+   */
+  public String post(String uri, byte[] data, final String _contentType) throws RestAPIException {
+    return post(uri, data, _contentType, null);
+  }
 
-			// process filters....
-			for (RequestFilter filter : requestFilterList) {
-				filter.filter(urlConnection);
-			}
+  /**
+   * Posts a byte array to a Rest Service URI Endpoint. This method can be used to simulate
+   * different post scenarios.
+   * <p>
+   * The parameter 'contnetType' and 'acceptType' can be used to request and accept specific media
+   * types.
+   * 
+   * @param uri         - Rest Endpoint URI
+   * @param data        - content
+   * @param contentType - request MediaType
+   * @param acceptType  - accept MediaType
+   * @return content
+   * @throws RestAPIException
+   */
+  public String post(String uri, byte[] data, final String _contentType, String acceptType)
+      throws RestAPIException {
 
-			// transfer data
-			OutputStream outputStreamToRequestBody = urlConnection.getOutputStream();
-			BufferedWriter httpRequestBodyWriter = new BufferedWriter(
-					new OutputStreamWriter(outputStreamToRequestBody));
-			outputStreamToRequestBody.write(data); // , 0, bytesRead);
-			outputStreamToRequestBody.flush();
-			// Close the streams
-			outputStreamToRequestBody.close();
-			httpRequestBodyWriter.close();
-			String content = readResponse(urlConnection);
-			return content;
-		} catch ( IOException ioe) {
-			String error = "Error POST request '" + uri + " - " + ioe.getMessage();
-			logger.warning(error);
-			throw new RestAPIException(500, error, ioe);
-		} finally {
+    String contentType = _contentType;
 
-		}
-	}
+    if (contentType == null || contentType.isEmpty()) {
+      contentType = "application/xml";
+    }
+    if (acceptType == null || acceptType.isEmpty()) {
+      acceptType = contentType;
+    }
 
-	/**
-	 * This method returns the last HTTP Result
-	 * 
-	 * @return
-	 */
-	public int getLastHTTPResult() {
-		return iLastHTTPResult;
-	}
+    HttpURLConnection urlConnection = null;
+    try {
+      serviceEndpoint = uri;
+      iLastHTTPResult = 500;
 
-	/**
-	 * Gets the content of a GET request from a Rest Service URI Endpoint. I case of
-	 * an error the method throws a RestAPIException.
-	 * 
-	 * @param uri
-	 *            - Rest Endpoint RUI
-	 * @return - content or null if no content is available.
-	 */
-	public String get(String uri) throws RestAPIException {
-	
-		setServiceEndpoint(uri);
-		try {
-			HttpURLConnection urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
+      urlConnection = (HttpURLConnection) new URL(serviceEndpoint).openConnection();
+      urlConnection.setRequestMethod("POST");
+      urlConnection.setDoOutput(true);
+      urlConnection.setDoInput(true);
+      urlConnection.setAllowUserInteraction(true);
 
-			// optional default is GET
-			urlConnection.setRequestMethod("GET");
+      /** * HEADER ** */
+      urlConnection.setRequestProperty("Content-Type", contentType + "; charset=" + encoding);
+      urlConnection.setRequestProperty("Accept-Charset", encoding);
+      urlConnection.setRequestProperty("Accept", acceptType);
 
-			urlConnection.setDoOutput(true);
-			urlConnection.setDoInput(true);
-			urlConnection.setAllowUserInteraction(false);
+      if (requestProperties != null) {
+        for (Map.Entry<String, String> entry : requestProperties.entrySet()) {
+          urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
+        }
+      }
 
-			if (requestProperties != null) {
-				for (Map.Entry<String, String> entry : requestProperties.entrySet()) {
-					urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
-				}
-			}
+      // process filters....
+      for (RequestFilter filter : requestFilterList) {
+        filter.filter(urlConnection);
+      }
 
-			// process filters....
-			for (RequestFilter filter : requestFilterList) {
-				filter.filter(urlConnection);
-			}
+      // transfer data
+      OutputStream outputStreamToRequestBody = urlConnection.getOutputStream();
+      BufferedWriter httpRequestBodyWriter =
+          new BufferedWriter(new OutputStreamWriter(outputStreamToRequestBody));
+      outputStreamToRequestBody.write(data); // , 0, bytesRead);
+      outputStreamToRequestBody.flush();
+      // Close the streams
+      outputStreamToRequestBody.close();
+      httpRequestBodyWriter.close();
+      String content = readResponse(urlConnection);
+      return content;
+    } catch (IOException ioe) {
+      String error = "Error POST request '" + uri + " - " + ioe.getMessage();
+      logger.warning(error);
+      throw new RestAPIException(500, error, ioe);
+    } finally {
 
-			iLastHTTPResult = urlConnection.getResponseCode();
-			logger.finest("......Sending 'GET' request to URL : " + serviceEndpoint);
-			logger.finest("......Response Code : " + iLastHTTPResult);
-			// read response if response was successful
-			if (iLastHTTPResult >= 200 && iLastHTTPResult <= 299) {
-				return readResponse(urlConnection);
-			} else {
-				String error = "Error " + iLastHTTPResult + " - failed GET request from '" + uri + "'";
-				logger.warning(error);
-				throw new RestAPIException(iLastHTTPResult, error);
-			}
-		} catch (IOException e) {
-			String error = "Error GET request from '" + uri + " - " + e.getMessage();
-			logger.warning(error);
-			throw new RestAPIException(0, error, e);
+    }
+  }
 
-		}
-	}
+  /**
+   * This method returns the last HTTP Result
+   * 
+   * @return
+   */
+  public int getLastHTTPResult() {
+    return iLastHTTPResult;
+  }
 
-	/**
-	 * Reads the response from a http request.
-	 * 
-	 * @param urlConnection
-	 * @throws IOException
-	 */
-	private String readResponse(URLConnection urlConnection) throws IOException {
-		// get content of result
-		logger.finest("......readResponse....");
-		StringWriter writer = new StringWriter();
-		BufferedReader in = null;
-		try {
-			// test if content encoding is provided
-			String sContentEncoding = urlConnection.getContentEncoding();
-			if (sContentEncoding == null || sContentEncoding.isEmpty()) {
-				// no so lets see if the client has defined an encoding..
-				if (encoding != null && !encoding.isEmpty())
-					sContentEncoding = encoding;
-			}
+  /**
+   * Gets the content of a GET request from a Rest Service URI Endpoint. I case of an error the
+   * method throws a RestAPIException.
+   * 
+   * @param uri - Rest Endpoint RUI
+   * @return - content or null if no content is available.
+   */
+  public String get(String uri) throws RestAPIException {
 
-			// if an encoding is provided read stream with encoding.....
-			if (sContentEncoding != null && !sContentEncoding.isEmpty())
-				in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), sContentEncoding));
-			else
-				in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-			String inputLine;
-			while ((inputLine = in.readLine()) != null) {
-				logger.finest("......" + inputLine);
-				writer.write(inputLine);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (in != null)
-				in.close();
-		}
+    setServiceEndpoint(uri);
+    try {
+      HttpURLConnection urlConnection =
+          (HttpURLConnection) new URL(serviceEndpoint).openConnection();
 
-		return writer.toString();
+      // optional default is GET
+      urlConnection.setRequestMethod("GET");
 
-	}
+      urlConnection.setDoOutput(true);
+      urlConnection.setDoInput(true);
+      urlConnection.setAllowUserInteraction(false);
+
+      if (requestProperties != null) {
+        for (Map.Entry<String, String> entry : requestProperties.entrySet()) {
+          urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
+        }
+      }
+
+      // process filters....
+      for (RequestFilter filter : requestFilterList) {
+        filter.filter(urlConnection);
+      }
+
+      iLastHTTPResult = urlConnection.getResponseCode();
+      logger.finest("......Sending 'GET' request to URL : " + serviceEndpoint);
+      logger.finest("......Response Code : " + iLastHTTPResult);
+      // read response if response was successful
+      if (iLastHTTPResult >= 200 && iLastHTTPResult <= 299) {
+        return readResponse(urlConnection);
+      } else {
+        String error = "Error " + iLastHTTPResult + " - failed GET request from '" + uri + "'";
+        logger.warning(error);
+        throw new RestAPIException(iLastHTTPResult, error);
+      }
+    } catch (IOException e) {
+      String error = "Error GET request from '" + uri + " - " + e.getMessage();
+      logger.warning(error);
+      throw new RestAPIException(0, error, e);
+
+    }
+  }
+
+  /**
+   * Reads the response from a http request.
+   * 
+   * @param urlConnection
+   * @throws IOException
+   */
+  private String readResponse(URLConnection urlConnection) throws IOException {
+    // get content of result
+    logger.finest("......readResponse....");
+    StringWriter writer = new StringWriter();
+    BufferedReader in = null;
+    try {
+      // test if content encoding is provided
+      String sContentEncoding = urlConnection.getContentEncoding();
+      if (sContentEncoding == null || sContentEncoding.isEmpty()) {
+        // no so lets see if the client has defined an encoding..
+        if (encoding != null && !encoding.isEmpty())
+          sContentEncoding = encoding;
+      }
+
+      // if an encoding is provided read stream with encoding.....
+      if (sContentEncoding != null && !sContentEncoding.isEmpty())
+        in = new BufferedReader(
+            new InputStreamReader(urlConnection.getInputStream(), sContentEncoding));
+      else
+        in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+      String inputLine;
+      while ((inputLine = in.readLine()) != null) {
+        logger.finest("......" + inputLine);
+        writer.write(inputLine);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      if (in != null)
+        in.close();
+    }
+
+    return writer.toString();
+
+  }
 
 }

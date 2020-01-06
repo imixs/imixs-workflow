@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,51 +18,49 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
-
 package org.imixs.workflow.exceptions;
 
 /**
- * An AdapterException is thrown by an Imixs-Workflow Adapter implementation 
+ * An AdapterException is thrown by an Imixs-Workflow Adapter implementation
  * 
  * @author rsoika
  * 
  */
 public class AdapterException extends WorkflowException {
 
-	private static final long serialVersionUID = 1L;
-	private Object[] params=null;
-	
+  private static final long serialVersionUID = 1L;
+  private Object[] params = null;
 
-	public AdapterException(String aErrorContext, String aErrorCode,
-			String message) {
-		super(aErrorContext, aErrorCode, message);
-	}
 
-	public AdapterException(String aErrorContext, String aErrorCode,
-			String message, Exception e) {
-		super(aErrorContext, aErrorCode, message, e);
-	}
+  public AdapterException(String aErrorContext, String aErrorCode, String message) {
+    super(aErrorContext, aErrorCode, message);
+  }
 
-	
-	public AdapterException(String aErrorContext, String aErrorCode,
-			String message,Object[] params) {
-		super(aErrorContext, aErrorCode, message);
-		this.params=params;
-	}
-	
-	public Object[] getErrorParameters() {
-		return params;
-	}
-	
-	protected void setErrorParameters(Object[] aparams) {
-		this.params=aparams;
-	}
-	
+  public AdapterException(String aErrorContext, String aErrorCode, String message, Exception e) {
+    super(aErrorContext, aErrorCode, message, e);
+  }
+
+
+  public AdapterException(String aErrorContext, String aErrorCode, String message,
+      Object[] params) {
+    super(aErrorContext, aErrorCode, message);
+    this.params = params;
+  }
+
+  public Object[] getErrorParameters() {
+    return params;
+  }
+
+  protected void setErrorParameters(Object[] aparams) {
+    this.params = aparams;
+  }
+
 }

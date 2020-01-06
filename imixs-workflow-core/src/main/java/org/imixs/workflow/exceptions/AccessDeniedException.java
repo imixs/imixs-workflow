@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,29 +18,30 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow.exceptions;
 
 /**
- * An AccessDeniedException should be thrown by a Imixs Workflow component if the
- * callerPrincipal is not allowed to access an instance of a workitem.
+ * An AccessDeniedException should be thrown by a Imixs Workflow component if the callerPrincipal is
+ * not allowed to access an instance of a workitem.
  * 
  * @author rsoika
  * 
  */
 public class AccessDeniedException extends InvalidAccessException {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public AccessDeniedException(String aErrorCode, String message) {
-		super(aErrorCode, message);
-	}
-	
+  public AccessDeniedException(String aErrorCode, String message) {
+    super(aErrorCode, message);
+  }
+
 }

@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,12 +18,13 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow;
@@ -30,11 +32,10 @@ package org.imixs.workflow;
 import java.util.List;
 
 /**
- * A plug-in may optionally implement the interface 'PluginDependency' to
- * indicate dependencies on other plug-ins. Plug-in dependencies are validated
- * by the WorkflowKernel during processing a workflow event. If a plug-in
- * defined by the BPMN model signals dependencies which are not reflected by the
- * current model definition, a warning message is logged.
+ * A plug-in may optionally implement the interface 'PluginDependency' to indicate dependencies on
+ * other plug-ins. Plug-in dependencies are validated by the WorkflowKernel during processing a
+ * workflow event. If a plug-in defined by the BPMN model signals dependencies which are not
+ * reflected by the current model definition, a warning message is logged.
  * 
  * 
  * @author Ralph Soika
@@ -44,12 +45,11 @@ import java.util.List;
 
 public interface PluginDependency {
 
-	/**
-	 * Returns a String list of plugin class names which the currend
-	 * implementation depends on.
-	 * 
-	 */
-	public List<String> dependsOn();
+  /**
+   * Returns a String list of plugin class names which the currend implementation depends on.
+   * 
+   */
+  public List<String> dependsOn();
 
-	
+
 }

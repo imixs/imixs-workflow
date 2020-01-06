@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,21 +18,21 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow;
 
 /**
- * A GenericAdapter extends the Adapter Interface. This Adapter is independent
- * from the BPMN Model and should not be associated with a BPMN Signal Event. A
- * GenericAdapter is called by the WorkfklowKernel during the processing
- * life-cycle before the plugin life-cycle.
+ * A GenericAdapter extends the Adapter Interface. This Adapter is independent from the BPMN Model
+ * and should not be associated with a BPMN Signal Event. A GenericAdapter is called by the
+ * WorkfklowKernel during the processing life-cycle before the plugin life-cycle.
  * <p>
  * A GenericAdapter can be a CDI implementation.
  * <p>

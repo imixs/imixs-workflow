@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,12 +18,13 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow.exceptions;
@@ -30,22 +32,22 @@ package org.imixs.workflow.exceptions;
 /**
  * The QueryException is thrown in case a search query can not be pased.
  * 
- * @see  org.imixs.workflow.engine.lucene.LuceneSearchService
+ * @see org.imixs.workflow.engine.lucene.LuceneSearchService
  * @author rsoika
  * 
  */
 public class QueryException extends WorkflowException {
 
-	public static final String QUERY_NOT_UNDERSTANDABLE = "QUERY_NOT_UNDERSTANDABLE";
+  public static final String QUERY_NOT_UNDERSTANDABLE = "QUERY_NOT_UNDERSTANDABLE";
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public QueryException(String aErrorCode, String message) {
-		super(aErrorCode, message);
-	}
+  public QueryException(String aErrorCode, String message) {
+    super(aErrorCode, message);
+  }
 
-	public QueryException(String aErrorCode, String message, Exception e) {
-		super(aErrorCode,message, e);
-	}
+  public QueryException(String aErrorCode, String message, Exception e) {
+    super(aErrorCode, message, e);
+  }
 
 }

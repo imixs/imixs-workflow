@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,21 +18,21 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow;
 
 /**
- * This Interface defines the Context which is used to supply a basic enviroment
- * for the exchange between a WorkflowManager an the registered Plugin Moduls.
- * Normaly the WorkflowManager Implementation itself implents this Interface to
- * provide the Context for the Workflow components.
+ * This Interface defines the Context which is used to supply a basic enviroment for the exchange
+ * between a WorkflowManager an the registered Plugin Moduls. Normaly the WorkflowManager
+ * Implementation itself implents this Interface to provide the Context for the Workflow components.
  * 
  * @author imixs.com
  * @version 1.0
@@ -40,19 +41,19 @@ package org.imixs.workflow;
 
 public interface WorkflowContext {
 
-	/**
-	 * This Methode returns the Runtime enviroment for a workflow
-	 * Implementation. is usesd to initialize the plugin.
-	 * 
-	 * @return a Session Object
-	 */
-	public Object getSessionContext();
+  /**
+   * This Methode returns the Runtime enviroment for a workflow Implementation. is usesd to
+   * initialize the plugin.
+   * 
+   * @return a Session Object
+   */
+  public Object getSessionContext();
 
-	/**
-	 * This method returns an instance of a IModelManager to access model information
-	 * 
-	 * @return ModelManager
-	 */
-	public ModelManager getModelManager();
+  /**
+   * This method returns an instance of a IModelManager to access model information
+   * 
+   * @return ModelManager
+   */
+  public ModelManager getModelManager();
 
 }

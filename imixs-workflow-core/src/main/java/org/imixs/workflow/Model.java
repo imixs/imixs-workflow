@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,34 +18,31 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
 
 package org.imixs.workflow;
 
 import java.util.List;
-
 import org.imixs.workflow.exceptions.ModelException;
 
 /**
- * The IModel interface defines getter methods to navigate through a Imixs
- * Workflow Model. The IModel interface is used by the
- * <code>IModelManager</code>.
+ * The IModel interface defines getter methods to navigate through a Imixs Workflow Model. The
+ * IModel interface is used by the <code>IModelManager</code>.
  * 
- * A Imixs-Workflow Model is defined by a collections of Tasks and Events. A
- * Task defines the state of a process instance. The Event defines the
- * transition from one state to another. A Task contains informations about the
- * processing state e.g. the name or the status description. A Task is uniquely
- * identified by its ID. A Event is unambiguously assigned to a Task and
- * uniquely identified by by an ID.
+ * A Imixs-Workflow Model is defined by a collections of Tasks and Events. A Task defines the state
+ * of a process instance. The Event defines the transition from one state to another. A Task
+ * contains informations about the processing state e.g. the name or the status description. A Task
+ * is uniquely identified by its ID. A Event is unambiguously assigned to a Task and uniquely
+ * identified by by an ID.
  * 
- * Task and Event elements are implemented as instances of the class
- * ItemCollection.
+ * Task and Event elements are implemented as instances of the class ItemCollection.
  * 
  * A Model holds a Definition which contains general model information.
  * 
@@ -55,68 +53,68 @@ import org.imixs.workflow.exceptions.ModelException;
  */
 public interface Model {
 
-	/**
-	 * Returns the model version.
-	 * @return
-	 */
-	public String getVersion();
-	
-	/**
-	 * Returns the model definition containing general model information (e.g.
-	 * $ModelVersion).
-	 * 
-	 * @return
-	 */
-	public ItemCollection getDefinition();
+  /**
+   * Returns the model version.
+   * 
+   * @return
+   */
+  public String getVersion();
 
-	/**
-	 * Returns a Task by its Id.
-	 * 
-	 * @param taskid
-	 * @param modelVersion
-	 * @return ItemCollection
-	 */
-	public ItemCollection getTask(int taskID) throws ModelException;
+  /**
+   * Returns the model definition containing general model information (e.g. $ModelVersion).
+   * 
+   * @return
+   */
+  public ItemCollection getDefinition();
 
-	/**
-	 * Returns a Event by its Id and Task-ID.
-	 * 
-	 * @param taskid
-	 * @param eventid
-	 * @param modelVersion
-	 * @return ItemCollection
-	 */
-	public ItemCollection getEvent(int taskID, int eventID) throws ModelException;
+  /**
+   * Returns a Task by its Id.
+   * 
+   * @param taskid
+   * @param modelVersion
+   * @return ItemCollection
+   */
+  public ItemCollection getTask(int taskID) throws ModelException;
 
-	/**
-	 * Returns all Group definitions.
-	 * 
-	 * @return
-	 */
-	public List<String> getGroups();
+  /**
+   * Returns a Event by its Id and Task-ID.
+   * 
+   * @param taskid
+   * @param eventid
+   * @param modelVersion
+   * @return ItemCollection
+   */
+  public ItemCollection getEvent(int taskID, int eventID) throws ModelException;
 
-	/**
-	 * Returns all Tasks defined in the model.
-	 * 
-	 * @param modelVersion
-	 * @return List org.imixs.workflow.ItemCollection
-	 */
-	public List<ItemCollection> findAllTasks();
+  /**
+   * Returns all Group definitions.
+   * 
+   * @return
+   */
+  public List<String> getGroups();
 
-		/**
-	 * Returns all Events assigned to a task.
-	 * 
-	 * @param taskid
-	 * @return Collection org.imixs.workflow.ItemCollection
-	 */
-	public List<ItemCollection> findAllEventsByTask(int taskID);
+  /**
+   * Returns all Tasks defined in the model.
+   * 
+   * @param modelVersion
+   * @return List org.imixs.workflow.ItemCollection
+   */
+  public List<ItemCollection> findAllTasks();
 
-	/**
-	 * Returns a list of Tasks assigned to a specific workflow group.
-	 * 
-	 * @param group
-	 * @return
-	 */
-	public List<ItemCollection> findTasksByGroup(String group);
+  /**
+   * Returns all Events assigned to a task.
+   * 
+   * @param taskid
+   * @return Collection org.imixs.workflow.ItemCollection
+   */
+  public List<ItemCollection> findAllEventsByTask(int taskID);
+
+  /**
+   * Returns a list of Tasks assigned to a specific workflow group.
+   * 
+   * @param group
+   * @return
+   */
+  public List<ItemCollection> findTasksByGroup(String group);
 
 }

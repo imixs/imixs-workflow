@@ -1,6 +1,7 @@
 /*******************************************************************************
+ * <pre>
  *  Imixs Workflow 
- *  Copyright (C) 2001, 2011 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -17,20 +18,22 @@
  *  License at http://www.gnu.org/licenses/gpl.html
  *  
  *  Project: 
- *  	http://www.imixs.org
- *  	http://java.net/projects/imixs-workflow
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *  	Imixs Software Solutions GmbH - initial API and implementation
- *  	Ralph Soika - Software Developer
+ *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Ralph Soika - Software Developer
+ * </pre>
  *******************************************************************************/
+
 package org.imixs.workflow.xml;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * The XMLDataCollection represents a list of XMLItemCollections. This root element
- * is used by JAXB api
+ * The XMLDataCollection represents a list of XMLItemCollections. This root element is used by JAXB
+ * api
  * 
  * @author rsoika
  * @version 0.0.1
@@ -38,19 +41,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "data")
 public class XMLDataCollection implements java.io.Serializable {
 
-	private static final long serialVersionUID = 1L;
-	private XMLDocument[] document;
+  private static final long serialVersionUID = 1L;
+  private XMLDocument[] document;
 
-	public XMLDataCollection() {
-		setDocument(new XMLDocument[] {});
-	}
+  public XMLDataCollection() {
+    setDocument(new XMLDocument[] {});
+  }
 
-	public XMLDocument[] getDocument() {
-		return document;
-	}
+  public XMLDocument[] getDocument() {
+    return document;
+  }
 
-	public void setDocument(XMLDocument[] entity) {
-		this.document = entity;
-	}
+  public void setDocument(XMLDocument[] entity) {
+    this.document = entity;
+  }
 
 }
