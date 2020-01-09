@@ -272,29 +272,31 @@ public class SolrIndexService {
    * @param documents of collection of UniqueIDs to be removed from the index
    * @throws RestAPIException
    */
-  public void removeDocuments(List<String> documents) throws RestAPIException {
+  public void removeDocuments(List<String> documentIDs) throws RestAPIException {
     boolean debug = logger.isLoggable(Level.FINE);
     long ltime = System.currentTimeMillis();
 
-    if (documents == null || documents.size() == 0) {
+    if (documentIDs == null || documentIDs.size() == 0) {
       // no op!
       return;
     } else {
       StringBuffer xmlDelete = new StringBuffer();
       xmlDelete.append("<delete>");
-      for (String id : documents) {
+      for (String id : documentIDs) {
         xmlDelete.append("<id>" + id + "</id>");
       }
       xmlDelete.append("</delete>");
       String xmlRequest = xmlDelete.toString();
-      String uri = api + "/solr/" + core + "/update";
-      logger.finest("......delete documents '" + core + "':");
+      String uri = api + "/solr/" + core + "/update?commit=true";
+      if (debug) {
+          logger.finest("......delete documents '" + core + "':");
+      }
       restClient.post(uri, xmlRequest, "text/xml");
     }
 
     if (debug) {
       logger.fine("... update index block in " + (System.currentTimeMillis() - ltime) + " ms ("
-          + documents.size() + " workitems total)");
+          + documentIDs.size() + " workitems total)");
     }
   }
 
@@ -715,15 +717,15 @@ public class SolrIndexService {
             if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
               indexDocument(workitem);
               if (debug) {
-                logger.finest("......solr added workitem '" + eventLogEntry.getId()
+                logger.finest("......solr added workitem '" + eventLogEntry.getRef()
                     + "' to index in " + (System.currentTimeMillis() - l2) + "ms");
               }
             }
           } else {
             long l2 = System.currentTimeMillis();
-            removeDocument(eventLogEntry.getId());
+            removeDocument(eventLogEntry.getRef());
             if (debug) {
-              logger.finest("......solr removed workitem '" + eventLogEntry.getId()
+              logger.finest("......solr removed workitem '" + eventLogEntry.getRef()
                   + "' from index in " + (System.currentTimeMillis() - l2) + "ms");
             }
           }
