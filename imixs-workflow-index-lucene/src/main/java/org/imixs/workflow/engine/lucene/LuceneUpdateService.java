@@ -1,6 +1,6 @@
-/*******************************************************************************
- * <pre>
- *  Imixs Workflow 
+/*  
+ *  Imixs-Workflow 
+ *  
  *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
@@ -22,10 +22,9 @@
  *      https://github.com/imixs/imixs-workflow
  *  
  *  Contributors:  
- *      Imixs Software Solutions GmbH - initial API and implementation
+ *      Imixs Software Solutions GmbH - Project Management
  *      Ralph Soika - Software Developer
- * </pre>
- *******************************************************************************/
+ */
 
 package org.imixs.workflow.engine.lucene;
 
@@ -38,21 +37,23 @@ import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.exceptions.IndexException;
 
 /**
- * The LuceneUpdateService provides methods to write Imixs Workitems into a Lucene search index.
- * With the method <code>addWorkitem()</code> a ItemCollection can be added to a lucene search
- * index. The service init method reads the property file 'imixs.properties' from the current
- * classpath to determine the configuration.
+ * The LuceneUpdateService provides methods to write Imixs Workitems into a
+ * Lucene search index. With the method <code>addWorkitem()</code> a
+ * ItemCollection can be added to a lucene search index. The service init method
+ * reads the property file 'imixs.properties' from the current classpath to
+ * determine the configuration.
  * 
  * <ul>
  * <li>The property "IndexDir" defines the location of the lucene index
- * <li>The property "FulltextFieldList" lists all fields which should be searchable after a workitem
- * was updated
- * <li>The property "IndexFieldList" lists all fields which should be indexed as keywords by the
- * lucene search engine
+ * <li>The property "FulltextFieldList" lists all fields which should be
+ * searchable after a workitem was updated
+ * <li>The property "IndexFieldList" lists all fields which should be indexed as
+ * keywords by the lucene search engine
  * </ul>
  * 
- * The singleton pattern is used to avoid conflicts within multi-thread scenarios. The service is
- * used by the LucenPlugin to update the lucene index during a workflow processing step.
+ * The singleton pattern is used to avoid conflicts within multi-thread
+ * scenarios. The service is used by the LucenPlugin to update the lucene index
+ * during a workflow processing step.
  * 
  * 
  * @see http://stackoverflow.com/questions/34880347/why-did-lucene-indexwriter-
@@ -64,42 +65,43 @@ import org.imixs.workflow.exceptions.IndexException;
 @Singleton
 public class LuceneUpdateService implements UpdateService {
 
-  @Inject
-  private LuceneIndexService luceneIndexService;
+    @Inject
+    private LuceneIndexService luceneIndexService;
 
-  private static Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
+    private static Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
 
-  /**
-   * This method adds a collection of documents to the Lucene index. The documents are added
-   * immediately to the index. Calling this method within a running transaction leads to a
-   * uncommitted reads in the index. For transaction control, it is recommended to use instead the
-   * the method updateDocumetns() which takes care of uncommitted reads.
-   * <p>
-   * This method is used by the JobHandlerRebuildIndex only.
-   * 
-   * @param documents of ItemCollections to be indexed
-   * @throws IndexException
-   */
-  @Override
-  public void updateIndex(List<ItemCollection> documents) {
-    luceneIndexService.indexDocuments(documents);
+    /**
+     * This method adds a collection of documents to the Lucene index. The documents
+     * are added immediately to the index. Calling this method within a running
+     * transaction leads to a uncommitted reads in the index. For transaction
+     * control, it is recommended to use instead the the method updateDocumetns()
+     * which takes care of uncommitted reads.
+     * <p>
+     * This method is used by the JobHandlerRebuildIndex only.
+     * 
+     * @param documents of ItemCollections to be indexed
+     * @throws IndexException
+     */
+    @Override
+    public void updateIndex(List<ItemCollection> documents) {
+        luceneIndexService.indexDocuments(documents);
 
-  }
-
-  /**
-   * This method flush the event log.
-   */
-  @Override
-  public void updateIndex() {
-    long ltime = System.currentTimeMillis();
-    // flush eventlog (see issue #411)
-    int flushCount = 0;
-    while (luceneIndexService.flushEventLog(2048) == false) {
-      // repeat flush....
-      flushCount = +2048;
-      logger.info("...flush event log: " + flushCount + " entries updated in "
-          + (System.currentTimeMillis() - ltime) + "ms ...");
     }
-  }
+
+    /**
+     * This method flush the event log.
+     */
+    @Override
+    public void updateIndex() {
+        long ltime = System.currentTimeMillis();
+        // flush eventlog (see issue #411)
+        int flushCount = 0;
+        while (luceneIndexService.flushEventLog(2048) == false) {
+            // repeat flush....
+            flushCount = +2048;
+            logger.info("...flush event log: " + flushCount + " entries updated in "
+                    + (System.currentTimeMillis() - ltime) + "ms ...");
+        }
+    }
 
 }
