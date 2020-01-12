@@ -913,6 +913,14 @@ public class SolrIndexService {
         if (_itemName == null) {
             return;
         }
+        
+        if (vValues.size() == 0) {
+            return;
+        }
+        if (vValues.get(0) == null) {
+            return;
+        }
+
 
         String itemName = _itemName.toLowerCase().trim();
         for (Object singleValue : vValues) {

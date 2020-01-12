@@ -204,6 +204,7 @@ public class SchemaService {
         // build unique field list containing all field names
         uniqueFieldList = new HashSet<String>();
         uniqueFieldList.add(WorkflowKernel.UNIQUEID);
+        uniqueFieldList.add(DocumentService.READACCESS);
         uniqueFieldList.addAll(fieldListStore);
         uniqueFieldList.addAll(fieldListAnalyze);
         uniqueFieldList.addAll(fieldListNoAnalyze);
