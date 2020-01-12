@@ -414,8 +414,8 @@ public class LuceneIndexService {
       // avoid duplication.....
       _localFieldListStore.remove(aFieldname);
     }
+    
     // ... and not analyzed...
-
     List<String> indexFieldListNoAnalyze = schemaService.getFieldListNoAnalyze();
     for (String aFieldname : indexFieldListNoAnalyze) {
       addItemValues(doc, aworkitem, aFieldname, false, _localFieldListStore.contains(aFieldname));
@@ -425,17 +425,17 @@ public class LuceneIndexService {
     doc.add(new StringField("$uniqueid", aworkitem.getItemValueString("$uniqueid"), Store.YES));
 
     // add $readAccess not analyzed
-    List<String> vReadAccess = (List<String>) aworkitem.getItemValue("$readAccess");
+    List<String> vReadAccess = (List<String>) aworkitem.getItemValue(DocumentService.READACCESS);
     if (vReadAccess.size() == 0
         || (vReadAccess.size() == 1 && "".equals(vReadAccess.get(0).toString()))) {
       // if emtpy add the ANONYMOUS default entry
       sValue = ANONYMOUS;
-      doc.add(new StringField("$readaccess", sValue, Store.NO));
+      doc.add(new StringField(DocumentService.READACCESS, sValue, Store.NO));
     } else {
       sValue = "";
       // add each role / username as a single field value
       for (String sReader : vReadAccess) {
-        doc.add(new StringField("$readaccess", sReader, Store.NO));
+        doc.add(new StringField(DocumentService.READACCESS, sReader, Store.NO));
       }
 
     }

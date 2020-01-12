@@ -48,6 +48,7 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -97,6 +98,8 @@ import org.imixs.workflow.services.rest.RestClient;
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 public class SolrIndexService {
+
+    public static final String ANONYMOUS = "ANONYMOUS";
 
     public static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
 
@@ -527,8 +530,10 @@ public class SolrIndexService {
             addFieldDefinitionToUpdateSchema(updateSchema, oldSchema, field, "strings", store, true);
         }
 
-        // finally add the $uniqueid field
-        addFieldDefinitionToUpdateSchema(updateSchema, oldSchema, "$uniqueid", "string", true, false);
+        // finally add the $uniqueid and $readaccess field
+        addFieldDefinitionToUpdateSchema(updateSchema, oldSchema, WorkflowKernel.UNIQUEID, "string", true, false);
+
+        addFieldDefinitionToUpdateSchema(updateSchema, oldSchema, DocumentService.READACCESS, "strings", true, true);
 
         // remove last ,
         int lastComma = updateSchema.lastIndexOf(",");
@@ -544,6 +549,7 @@ public class SolrIndexService {
      * 
      * @return xml content to update documents
      */
+    @SuppressWarnings("unchecked")
     protected String buildAddDoc(List<ItemCollection> documents) {
         boolean debug = logger.isLoggable(Level.FINE);
         List<String> fieldList = schemaService.getFieldList();
@@ -610,16 +616,27 @@ public class SolrIndexService {
 
             // now add all analyzed fields...
             for (String aFieldname : fieldListAnalyze) {
-                addFieldValuesToUpdateRequest(xmlContent, document, aFieldname);
+                addFieldValuesToUpdateRequest(xmlContent, aFieldname, document.getItemValue(aFieldname));
             }
             // now add all notanalyzed fields...
             for (String aFieldname : fieldListNoAnalyze) {
-                addFieldValuesToUpdateRequest(xmlContent, document, aFieldname);
+                addFieldValuesToUpdateRequest(xmlContent, aFieldname, document.getItemValue(aFieldname));
             }
 
             // add $uniqueid not analyzed
-            addFieldValuesToUpdateRequest(xmlContent, document, WorkflowKernel.UNIQUEID);
+            addFieldValuesToUpdateRequest(xmlContent, WorkflowKernel.UNIQUEID,
+                    document.getItemValue(WorkflowKernel.UNIQUEID));
 
+            // add $readAccess not analyzed
+            List<String> vReadAccess = (List<String>) document.getItemValue(DocumentService.READACCESS);
+            if (vReadAccess.size() == 0 || (vReadAccess.size() == 1 && "".equals(vReadAccess.get(0).toString()))) {
+                // if empty than we add the ANONYMOUS default entry
+                vReadAccess = new ArrayList<String>();
+                vReadAccess.add(ANONYMOUS);
+            }
+            addFieldValuesToUpdateRequest(xmlContent, DocumentService.READACCESS, vReadAccess);
+
+            // finish doc....
             xmlContent.append("</doc>");
         }
 
@@ -889,20 +906,11 @@ public class SolrIndexService {
      * @param workitem  the workitem containing the values
      * @param _itemName the item name inside the workitem
      */
-    private void addFieldValuesToUpdateRequest(StringBuffer xmlContent, final ItemCollection workitem,
-            final String _itemName) {
+    private void addFieldValuesToUpdateRequest(StringBuffer xmlContent, final String _itemName, final List<?> vValues) {
 
         SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmmss");
 
         if (_itemName == null) {
-            return;
-        }
-
-        List<?> vValues = workitem.getItemValue(_itemName);
-        if (vValues.size() == 0) {
-            return;
-        }
-        if (vValues.get(0) == null) {
             return;
         }
 
