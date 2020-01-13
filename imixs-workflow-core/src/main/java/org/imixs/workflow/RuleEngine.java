@@ -193,6 +193,7 @@ public class RuleEngine {
         try {
             scriptEngine.eval(script);
         } catch (ScriptException e) {
+            logger.warning("Script Error in: " + script);
             // script not valid
             throw new PluginException(RuleEngine.class.getSimpleName(), INVALID_SCRIPT,
                     "BusinessRule contains invalid script:" + e.getMessage(), e);
@@ -260,6 +261,7 @@ public class RuleEngine {
         try {
             result = scriptEngine.eval(script);
         } catch (ScriptException e) {
+            logger.warning("Script Error in: " + script);
             // script not valid
             throw new PluginException(RuleEngine.class.getSimpleName(), INVALID_SCRIPT,
                     "BusinessRule contains invalid script:" + e.getMessage(), e);
