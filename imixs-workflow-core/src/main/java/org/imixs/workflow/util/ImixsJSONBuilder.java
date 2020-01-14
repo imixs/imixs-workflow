@@ -89,8 +89,11 @@ public class ImixsJSONBuilder {
         for (int i = 0; i < itemNames.size(); i++) {
 
             String itemName = itemNames.get(i);
-            out.append("{\"name\":\"" + itemName + "\",\"value\":");
             List<Object> values = workitem.getItemValue(itemName);
+            if (values == null || values.size() == 0) {
+                continue;
+            }
+            out.append("{\"name\":\"" + itemName + "\",\"value\":");
             buildValues(values, out);
 
             // add comma?
