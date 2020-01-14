@@ -71,8 +71,8 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 @ApplicationScoped
 public class MetricService {
 
-    public static final String METRIC_DOCUMENTS_TOTAL = "documents_total";
-    public static final String METRIC_WORKITEMS_TOTAL = "workitems_total";
+    public static final String METRIC_DOCUMENTS = "documents";
+    public static final String METRIC_WORKITEMS = "workitems";
 
     @Inject
     @ConfigProperty(name = "metrics.enabled", defaultValue = "false")
@@ -165,7 +165,7 @@ public class MetricService {
         // - tags - The tags of the metric - cannot be null
         // - reusable - If true, this metric name is permitted to be used at multiple
 
-        Metadata metadata = Metadata.builder().withName(METRIC_DOCUMENTS_TOTAL)
+        Metadata metadata = Metadata.builder().withName(METRIC_DOCUMENTS)
                 .withDescription("Imixs-Workflow count documents").withType(MetricType.COUNTER).build();
 
         String method = null;
@@ -206,7 +206,7 @@ public class MetricService {
         // - tags - The tags of the metric - cannot be null
         // - reusable - If true, this metric name is permitted to be used at multiple
 
-        Metadata metadata = Metadata.builder().withName(METRIC_WORKITEMS_TOTAL)
+        Metadata metadata = Metadata.builder().withName(METRIC_WORKITEMS)
                 .withDescription("Imixs-Workflow count procssed workitems").withType(MetricType.COUNTER).build();
 
         // build tags...

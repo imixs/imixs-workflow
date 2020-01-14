@@ -76,7 +76,7 @@ The [Imixs-Workflow Sample Application](https://github.com/imixs/imixs-jsf-examp
 
 <img src="https://github.com/imixs/imixs-workflow/raw/master/small_h-trans.png">
 
-The Imixs-Workflow engine runs also on Docker. The [Imixs-Micorservice project](https://github.com/imixs/imixs-microservice) provides a full service stack for a microservice architecture running on Kubernetes or Docker-Swarm. Find out more on [Docker hub](https://hub.docker.com/r/imixs/imixs-microservice).
+The Imixs-Workflow engine runs also on Docker. The [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) provides a full service stack for a microservice architecture running on Kubernetes or Docker-Swarm. Find out more on [Docker hub](https://hub.docker.com/r/imixs/imixs-microservice).
 
 
 ## Joining the Project
