@@ -33,22 +33,13 @@ import javax.inject.Named;
 import org.imixs.workflow.engine.scheduler.SchedulerController;
 
 /**
- * The DatevController is used to configure the DatevScheduler. This service is
- * used to generate datev export workitems.
+ * The WorkflowSchedulerController is used to start and stop the standard workflow scheduler.
  * <p>
- * The Controller creates a configuration entity "type=configuration;
- * txtname=datev".
+ * The Controller creates a configuration entity "type=scheduler;
+ * txtname=org.imixs.workflow.scheduler".
  * <p>
- * The following config items are defined:
  * 
- * The following config items are defined:
- * 
- * <pre>
- * _model_version = model version for the SEPA export
- * _initial_task = inital task ID
- * </pre>
- * 
- * 
+ * @see SchedulerController
  * @author rsoika
  * 
  */
@@ -64,9 +55,7 @@ public class WorkflowSchedulerController extends SchedulerController {
     }
 
     /**
-     * Returns the sepa scheduler class name. This name depends on the _export_type.
-     * 
-     * There are two export interfaces available - csv and XML
+     * Returns the workflow scheduler class name. 
      * 
      */
     @Override

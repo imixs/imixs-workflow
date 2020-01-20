@@ -33,11 +33,13 @@ import java.text.ParseException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.faces.event.ActionEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 
@@ -97,7 +99,9 @@ public class SchedulerController implements Serializable {
     public ItemCollection getConfiguration() {
         if (configuration == null) {
             configuration = new ItemCollection();
+            configuration.setItemValue("$workflowsummary", getName());
             configuration.setItemValue(Scheduler.ITEM_SCHEDULER_NAME, getName());
+            configuration.setItemValue(Scheduler.ITEM_SCHEDULER_CLASS, getSchedulerClass());
         }
         return configuration;
     }
