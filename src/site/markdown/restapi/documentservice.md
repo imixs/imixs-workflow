@@ -116,5 +116,19 @@ The Document Rest Service provides resource URIs for administrative purpose. To 
 
 
 
+
+## Error Codes
+
+The Imixs workflow rest API may send an HTTP error code if a request could not be processed for various reasons:
+
+
+| HTTP Error Code      | Method               | Description                               | 
+|----------------------|----------------------|-------------------------------------------|
+| 404 (Not Found)      | GET/PUT/POST/DELTE   | The requested document was not found or is read protected. See also the section [security model](../engine/acl.html).
+| 406 (Not Acceptable) | PUT/POST             | The data in the request was incomplete or could not be processed. 
+
+
+In case of a PUT/POST request a HTTP Error Code 406 may also includes a response object with a detailed error message and an error code. 
+The error code is stored in the item '$error\_code'. An error message is stored in the item '$error\_message',
      
    
