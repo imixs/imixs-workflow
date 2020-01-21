@@ -136,6 +136,7 @@ public class DocumentController extends AbstractDataController implements Serial
      */
     public void setDocument(ItemCollection document) {
         this.data = document;
+        events.fire(new WorkflowEvent(data, WorkflowEvent.DOCUMENT_CHANGED));
     }
 
     /**
