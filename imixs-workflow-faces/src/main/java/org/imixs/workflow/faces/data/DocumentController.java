@@ -30,12 +30,14 @@ package org.imixs.workflow.faces.data;
 
 import java.io.Serializable;
 import java.util.logging.Logger;
+
 import javax.enterprise.context.ConversationScoped;
 import javax.enterprise.event.Event;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -136,7 +138,13 @@ public class DocumentController extends AbstractDataController implements Serial
      */
     public void setDocument(ItemCollection document) {
         this.data = document;
-        events.fire(new WorkflowEvent(data, WorkflowEvent.DOCUMENT_CHANGED));
+
+        if (events != null) {
+            events.fire(new WorkflowEvent(data, WorkflowEvent.DOCUMENT_CHANGED));
+        } else {
+            logger.warning("Missing CDI support for Event<WorkflowEvent> !");
+        }
+
     }
 
     /**
@@ -155,8 +163,11 @@ public class DocumentController extends AbstractDataController implements Serial
         data.replaceItemValue("namCreator", sUser); // backward compatibility
 
         startConversation();
-
-        events.fire(new WorkflowEvent(data, WorkflowEvent.DOCUMENT_CREATED));
+        if (events != null) {
+            events.fire(new WorkflowEvent(data, WorkflowEvent.DOCUMENT_CREATED));
+        } else {
+            logger.warning("Missing CDI support for Event<WorkflowEvent> !");
+        }
         logger.finest("......document created");
     }
 
@@ -170,12 +181,16 @@ public class DocumentController extends AbstractDataController implements Serial
      * @throws AccessDeniedException - if user has insufficient access rights.
      */
     public void save() throws AccessDeniedException {
-
         // save workItem ...
-        events.fire(new WorkflowEvent(data, WorkflowEvent.DOCUMENT_BEFORE_SAVE));
+        if (events != null) {
+            events.fire(new WorkflowEvent(data, WorkflowEvent.DOCUMENT_BEFORE_SAVE));
+        } else {
+            logger.warning("Missing CDI support for Event<WorkflowEvent> !");
+        }
         data = documentService.save(data);
-        events.fire(new WorkflowEvent(data, WorkflowEvent.DOCUMENT_AFTER_SAVE));
-
+        if (events != null) {
+            events.fire(new WorkflowEvent(data, WorkflowEvent.DOCUMENT_AFTER_SAVE));
+        }
         // close conversation
         close();
 
@@ -192,9 +207,16 @@ public class DocumentController extends AbstractDataController implements Serial
     public void delete(String uniqueID) throws AccessDeniedException {
         ItemCollection _workitem = documentService.load(uniqueID);
         if (_workitem != null) {
-            events.fire(new WorkflowEvent(getDocument(), WorkflowEvent.DOCUMENT_BEFORE_DELETE));
+
+            if (events != null) {
+                events.fire(new WorkflowEvent(getDocument(), WorkflowEvent.DOCUMENT_BEFORE_DELETE));
+            } else {
+                logger.warning("Missing CDI support for Event<WorkflowEvent> !");
+            }
             documentService.remove(_workitem);
-            events.fire(new WorkflowEvent(getDocument(), WorkflowEvent.DOCUMENT_AFTER_DELETE));
+            if (events != null) {
+                events.fire(new WorkflowEvent(getDocument(), WorkflowEvent.DOCUMENT_AFTER_DELETE));
+            }
             setDocument(null);
             logger.fine("......document " + uniqueID + " deleted");
         } else {
@@ -211,7 +233,7 @@ public class DocumentController extends AbstractDataController implements Serial
      */
     public void load(String uniqueid) {
         super.load(uniqueid);
-        if (data != null) {
+        if (data != null && events != null) {
             // fire event
             events.fire(new WorkflowEvent(data, WorkflowEvent.DOCUMENT_CHANGED));
         }
