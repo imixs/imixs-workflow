@@ -902,11 +902,16 @@ public class DocumentService {
     /**
      * Returns an unordered list of all documents of a specific type. The method
      * throws an InvalidAccessException in case no type attribute is defined.
+     * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
      * 
      * @param type
      * @return
      * @throws InvalidAccessException
      */
+    @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
     public List<ItemCollection> getDocumentsByType(String type) {
         if (type == null || type.isEmpty()) {
             throw new InvalidAccessException(INVALID_PARAMETER, "undefined type attribute");
@@ -920,11 +925,16 @@ public class DocumentService {
 
     /**
      * Returns all documents of by JPQL statement
+     * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
      * 
      * @param query - JPQL statement
      * @return
      * 
      */
+    @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
     public List<ItemCollection> getDocumentsByQuery(String query) {
         return getDocumentsByQuery(query, -1);
 
@@ -932,24 +942,34 @@ public class DocumentService {
 
     /**
      * Returns all documents of by JPQL statement.
+     * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
      * 
      * @param query     - JPQL statement
      * @param maxResult - maximum result set
      * @return
      * 
      */
+    @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
     public List<ItemCollection> getDocumentsByQuery(String query, int maxResult) {
         return getDocumentsByQuery(query, 0, maxResult);
     }
 
     /**
      * Returns all documents of by JPQL statement.
+     * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
      * 
      * @param query     - JPQL statement
      * @param maxResult - maximum result set
      * @return
      * 
      */
+    @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
     public List<ItemCollection> getDocumentsByQuery(String query, int firstResult, int maxResult) {
         boolean debug = logger.isLoggable(Level.FINE);
         List<ItemCollection> result = new ArrayList<ItemCollection>();
