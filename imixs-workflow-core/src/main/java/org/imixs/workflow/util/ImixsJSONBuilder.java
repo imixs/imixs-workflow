@@ -157,7 +157,7 @@ public class ImixsJSONBuilder {
                 type = "\"@type\":\"xs:long\"";
             }
             if (valueObject instanceof Float) {
-                type = "\"@type\":\"xs:floatt\"";
+                type = "\"@type\":\"xs:float\"";
             }
             if (valueObject instanceof Double) {
                 type = "\"@type\":\"xs:double\"";
