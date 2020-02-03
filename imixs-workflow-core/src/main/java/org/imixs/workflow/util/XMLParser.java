@@ -90,7 +90,6 @@ public class XMLParser {
         // Pattern.compile("([\\w\\-]+)=\"*((?<=\")[^\"]+(?=\")|([^\\s]+))\"*");
         // Pattern p =
         // Pattern.compile("([\\w\\-]+)=\"*((?<=\")[^\"]+(?=\")|([^\\s]+))\"*");
-
         // Pattern p =
         // Pattern.compile("(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?");
 
@@ -102,8 +101,7 @@ public class XMLParser {
         }
         return result;
     }
-    // [\"'] [\"']
-    // /^\s?([^=]+)\s?=\s?("([^"]+)"|\'([^\']+)\')\s?/
+
 
     /**
      * This method parses a xml tag for a single named attribute. The method returns
@@ -132,13 +130,12 @@ public class XMLParser {
      * or a tag with content:
      * <p>
      * {@code<date field="abc">def</date>}
-     * 
      * <p>
-     * 
      * <strong>Note:</strong> In case of complex XML with not empty tags use the
      * method 'findNoEmptyTags'
      * 
-     * @param content
+     * @param content - XML data
+     * @param tag - XML tag
      * @return
      */
     public static List<String> findTags(String content, String tag) {
@@ -167,7 +164,8 @@ public class XMLParser {
      * <p>
      * <strong>Note:</strong> To fine also empty tags use 'findTags'
      * 
-     * @param content
+     * @param content - XML data
+     * @param tag     - XML tag
      * @return
      */
     public static List<String> findNoEmptyTags(String content, String tag) {
@@ -182,41 +180,97 @@ public class XMLParser {
     }
 
     /**
-     * This method returns the tag values of a specific xml tag
+     * This method returns all tag values within a string with multiple xml tags.
+     * E.g.
+     * <p>
+     * {@code<date>2016-12-31</date>...<date>2016-11-30</date>}
+     * <p>
+     * returns
+     * <p>
+     * {@code 2016-12-31|2016-12-31}
      * 
-     * e.g. <date field="abc">2016-12-31</date>
-     * 
-     * returns 2016-12-31
-     * 
-     * @param content
+     * @param content - XML data
+     * @param tag     - XML tag
      * @return
      */
     public static List<String> findTagValues(String content, String tag) {
         List<String> result = new ArrayList<String>();
         List<String> tags = findTags(content, tag);
-        // opening tag can contain optional attributes
-        String regex = "(<" + tag + ".+?>|<" + tag + ">)(.+?)(</" + tag + ")";
+
         for (String singleTag : tags) {
-            Pattern p = Pattern.compile(regex);
-            Matcher m = p.matcher(singleTag);
-            while (m.find()) {
-                result.add(m.group(2));
-            }
+            result.add(extractTagValue(singleTag, tag));
         }
+
         return result;
     }
 
     /**
      * This method returns the tag value of a single tag. The method returns the
-     * first match! Use findTagValues to parse multiple tags in one string. e.g.
-     * <date field="abc">2016-12-31</date>
+     * first match! Use findTagValues to parse all tag values in a string with
+     * multiple tags.
+     * <p>
+     * E.g.
+     * <p>
+     * {@code<date>2016-12-31</date>...<date>2016-11-30</date>}
+     * <p>
+     * returns
+     * <p>
+     * {@code 2016-12-31}
      * 
-     * returns 2016-12-31
-     * 
-     * @param content
+     * @see findTagValues
+     * @param content - XML data
+     * @param tag     - XML tag
      * @return
      */
     public static String findTagValue(String content, String tag) {
+        List<String> tags = findTags(content, tag);
+        if (tags.size() > 0) {
+            // only first tag...
+            content = tags.get(0);
+        }
+        return extractTagValue(content, tag);
+    }
+
+    /**
+     * This helper method extracts the tag value of a single tag.
+     * <p>
+     * {@code<date>2016-12-31</date>}
+     * <p>
+     * returns
+     * <p>
+     * {@code 2016-12-31}
+     * 
+     * @param content - XML data
+     * @param tag     - XML tag
+     * @return
+     */
+    private static String extractTagValue(String content, String tag) {
+        String startTag = "<" + tag;
+        String endTag = "</" + tag + ">";
+
+        // search the start tag.....
+        int iStart = content.indexOf(startTag);
+        if (iStart < 0) {
+            // not found - no value!
+            return "";
+        } else {
+            // find the closing tag position '>'
+            iStart = content.indexOf('>', startTag.length()) + 1;
+        }
+
+        // search the last occurrence of the end tag 
+        int iEnd = content.lastIndexOf(endTag);
+        if (iEnd < 0) {
+            // no end tag found so this tag has no value at all
+            return "";
+        }
+        // extract the tag content
+        String value = content.substring(iStart, iEnd);
+        return value;
+    }
+
+    @Deprecated
+    public static String findTagValueOld(String content, String tag) {
         // opening tag can contain optional attributes
         List<String> tags = findTags(content, tag);
         if (tags.size() > 0) {
