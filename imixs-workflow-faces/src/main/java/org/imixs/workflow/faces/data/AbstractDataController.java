@@ -88,6 +88,10 @@ public abstract class AbstractDataController implements Serializable {
     @Inject
     private DocumentService documentService;
 
+    public DocumentService getDocumentService() {
+        return documentService;
+    }
+
     /**
      * This method returns the Default 'type' attribute of the local workitem.
      */
