@@ -958,6 +958,20 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                             // append 0 value
                             result.appendItemValue(itemName, new Double(0));
                         }
+                    } else if ("float".equalsIgnoreCase(sType)) {
+                        try {
+                            result.appendItemValue(itemName, Float.valueOf(content));
+                        } catch (NumberFormatException e) {
+                            // append 0 value
+                            result.appendItemValue(itemName, new Float(0));
+                        }
+                    } else if ("long".equalsIgnoreCase(sType)) {
+                        try {
+                            result.appendItemValue(itemName, Long.valueOf(content));
+                        } catch (NumberFormatException e) {
+                            // append 0 value
+                            result.appendItemValue(itemName, new Long(0));
+                        }
                     } else if ("date".equalsIgnoreCase(sType)) {
                         if (content == null || content.isEmpty()) {
                             // no value available - no op!
@@ -972,7 +986,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                                 }
                                 Date dateResult = null;
                                 if (sFormat == null || sFormat.isEmpty()) {
-                                    // use standard formate short/short
+                                    // use standard format short/short
                                     dateResult = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
                                             .parse(content);
                                 } else {
