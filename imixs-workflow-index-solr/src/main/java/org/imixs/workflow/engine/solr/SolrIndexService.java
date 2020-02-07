@@ -653,13 +653,8 @@ public class SolrIndexService {
      * <p>
      * In ASCII, the control codes have decimal codes 0 through to 31 and 127. On an
      * ASCII based system, if the control codes are stripped, the resultant string
-     * would have all of its characters within the range of 32 to 126 decimal on the
-     * ASCII table.
+     * would have all of its characters above 32 and not 127
      * <p>
-     * On a non-ASCII based system, we consider characters that do not have a
-     * corresponding glyph on the ASCII table (within the ASCII range of 32 to 126
-     * decimal) to be an extended character for the purpose of this task.
-     * </p>
      * 
      * @see https://rosettacode.org/wiki/Strip_control_codes_and_extended_characters_from_a_string
      * 
@@ -670,10 +665,8 @@ public class SolrIndexService {
     protected String stripControlCodes(String s) {
 
         // control codes stripped (but extended characters not stripped)
-        // IntPredicate include=c -> c > '\u001F' && c != '\u007F';
-
-        // control codes and extended characters stripped
-        IntPredicate include = c -> c > '\u001F' && c < '\u007F';
+        // See issue #640
+        IntPredicate include = c -> c > '\u001F' && c != '\u007F';
         return s.codePoints().filter(include::test)
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
     }
@@ -913,14 +906,13 @@ public class SolrIndexService {
         if (_itemName == null) {
             return;
         }
-        
+
         if (vValues.size() == 0) {
             return;
         }
         if (vValues.get(0) == null) {
             return;
         }
-
 
         String itemName = _itemName.toLowerCase().trim();
         for (Object singleValue : vValues) {
