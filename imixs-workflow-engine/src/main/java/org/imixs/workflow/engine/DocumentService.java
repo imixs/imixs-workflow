@@ -754,6 +754,10 @@ public class DocumentService {
      * <p>
      * The method returns only ItemCollections which are readable by the
      * CallerPrincipal. With the pageSize and pageNumber it is possible to paginate.
+     * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
      * 
      * @param searchTerm - Lucene search term
      * @param pageSize   - total docs per page
@@ -763,6 +767,7 @@ public class DocumentService {
      * 
      * @see org.imixs.workflow.engine.index.SearchService
      */
+    @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
     public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex) throws QueryException {
         return find(searchTerm, pageSize, pageIndex, null, false);
     }
@@ -774,6 +779,10 @@ public class DocumentService {
      * The method expects an valid Lucene search term. The method returns only
      * ItemCollections which are readable by the CallerPrincipal. With the pageSize
      * and pageNumber it is possible to paginate.
+     * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
      * 
      * @param searchTerm  - Lucene search term
      * @param pageSize    - total docs per page
@@ -787,6 +796,7 @@ public class DocumentService {
      * 
      * @see org.imixs.workflow.engine.index.SearchService
      */
+    @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
     public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy, boolean sortReverse)
             throws QueryException {
         boolean debug = logger.isLoggable(Level.FINE);
@@ -881,7 +891,10 @@ public class DocumentService {
      * <p>
      * The method returns only ItemCollections which are readable by the
      * CallerPrincipal. With the pageSize and pageNumber it is possible to paginate.
-     * 
+     * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
      * 
      * @param uniqueIdRef - $uniqueId to be referred by the collected documents
      * @param pageSize    - total docs per page
@@ -889,6 +902,7 @@ public class DocumentService {
      * @return resultset
      * 
      */
+    @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
     public List<ItemCollection> findDocumentsByRef(String uniqueIdRef, int pageSize, int pageIndex) {
         String searchTerm = "(" + "$uniqueidref:\"" + uniqueIdRef + "\")";
         try {
