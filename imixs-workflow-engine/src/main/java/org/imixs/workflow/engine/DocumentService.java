@@ -696,7 +696,11 @@ public class DocumentService {
 	 * <p>
 	 * The method returns only ItemCollections which are readable by the
 	 * CallerPrincipal. With the pageSize and pageNumber it is possible to paginate.
-	 * 
+	 * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
+     *  
 	 * @param searchTerm
 	 *            - Lucene search term
 	 * @param pageSize
@@ -708,6 +712,7 @@ public class DocumentService {
 	 * 
 	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
 	 */
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex) throws QueryException {
 		return find(searchTerm, pageSize, pageIndex, null, false);
 	}
@@ -720,7 +725,11 @@ public class DocumentService {
 	 * The method expects an valid Lucene search term. The method returns only
 	 * ItemCollections which are readable by the CallerPrincipal. With the pageSize
 	 * and pageNumber it is possible to paginate.
-	 * 
+	 * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
+     * 
 	 * @param searchTerm
 	 *            - Lucene search term
 	 * @param pageSize
@@ -738,6 +747,7 @@ public class DocumentService {
 	 * 
 	 * @see org.imixs.workflow.engine.lucene.LuceneSearchService
 	 */
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public List<ItemCollection> find(String searchTerm, int pageSize, int pageIndex, String sortBy, boolean sortReverse)
 			throws QueryException {
 		logger.finest("......find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber=" + pageIndex
@@ -761,8 +771,11 @@ public class DocumentService {
 	 * <p>
 	 * The method returns only ItemCollections which are readable by the
 	 * CallerPrincipal. With the pageSize and pageNumber it is possible to paginate.
-	 * 
-	 * 
+	 * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
+     * 
 	 * @param uniqueIdRef
 	 *            - $uniqueId to be referred by the collected documents
 	 * @param pageSize
@@ -772,6 +785,7 @@ public class DocumentService {
 	 * @return resultset
 	 * 
 	 */
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public List<ItemCollection> findDocumentsByRef(String uniqueIdRef, int pageSize, int pageIndex) {
 		String searchTerm = "(" + "$uniqueidref:\"" + uniqueIdRef + "\")";
 		try {
@@ -785,11 +799,17 @@ public class DocumentService {
 	/**
 	 * Returns an unordered list of all documents of a specific type. The method
 	 * throws an InvalidAccessException in case no type attribute is defined.
-	 * 
-	 * @param type
-	 * @return
-	 * @throws InvalidAccessException
+	 * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
+     * 
+     * @param type
+     * @return
+     * @throws InvalidAccessException
+     *
 	 */
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public List<ItemCollection> getDocumentsByType(String type) {
 		if (type == null || type.isEmpty()) {
 			throw new InvalidAccessException(INVALID_PARAMETER, "undefined type attribute");
@@ -803,12 +823,17 @@ public class DocumentService {
 
 	/**
 	 * Returns all documents of by JPQL statement
-	 * 
+	 * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
+     *  
 	 * @param query
 	 *            - JPQL statement
 	 * @return
 	 * 
 	 */
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public List<ItemCollection> getDocumentsByQuery(String query) {
 		return getDocumentsByQuery(query, -1);
 
@@ -816,7 +841,11 @@ public class DocumentService {
 
 	/**
 	 * Returns all documents of by JPQL statement.
-	 * 
+	 * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
+     * 
 	 * @param query
 	 *            - JPQL statement
 	 * @param maxResult
@@ -824,13 +853,18 @@ public class DocumentService {
 	 * @return
 	 * 
 	 */
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public List<ItemCollection> getDocumentsByQuery(String query, int maxResult) {
 		return getDocumentsByQuery(query, 0, maxResult);
 	}
 
 	/**
 	 * Returns all documents of by JPQL statement.
-	 * 
+	 * <p>
+     * The Transactiontype REQUIRES_NEW ensure that during the processing lifecycle
+     * an external service call did not overwrite the current document jpa object
+     * (see Issue #634)
+     * 
 	 * @param query
 	 *            - JPQL statement
 	 * @param maxResult
@@ -838,6 +872,7 @@ public class DocumentService {
 	 * @return
 	 * 
 	 */
+	@TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
 	public List<ItemCollection> getDocumentsByQuery(String query, int firstResult, int maxResult) {
 		List<ItemCollection> result = new ArrayList<ItemCollection>();
 		Query q = manager.createQuery(query);
