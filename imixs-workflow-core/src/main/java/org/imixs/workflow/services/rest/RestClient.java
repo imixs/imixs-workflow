@@ -226,15 +226,11 @@ public class RestClient {
             printWriter.write(writer.toString());
             printWriter.close();
 
-            String sHTTPResponse = urlConnection.getHeaderField(0);
-            try {
-                iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9, 12));
-            } catch (Exception eNumber) {
-                // eNumber.printStackTrace();
-                iLastHTTPResult = 500;
-            }
+            iLastHTTPResult = urlConnection.getResponseCode();
+            logger.finest("......Sending 'POST' request to URL : " + serviceEndpoint);
+            logger.finest("......Response Code : " + iLastHTTPResult);
+            
             String content = readResponse(urlConnection);
-
             return content;
 
         } catch (IOException ioe) {
@@ -327,6 +323,12 @@ public class RestClient {
             // Close the streams
             outputStreamToRequestBody.close();
             httpRequestBodyWriter.close();
+            
+            iLastHTTPResult = urlConnection.getResponseCode();
+            logger.finest("......Sending 'POST' request to URL : " + serviceEndpoint);
+            logger.finest("......Response Code : " + iLastHTTPResult);
+
+            
             String content = readResponse(urlConnection);
             return content;
         } catch (IOException ioe) {
