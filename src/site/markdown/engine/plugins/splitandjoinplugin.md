@@ -131,9 +131,10 @@ The following example computes a new action result based on the uniqueId of the 
 
 ## Linking
 
-After a new sub-process instance was created, both workitems are connected to each other by the items ' _$uniqueidRef_' and '_txtworkitemRef_'.
+After a new sub-process instance was created, both workitems are connected to each other by the items ' _$uniqueidRef_' and 
+'_$workitemRef_'.
 
 <img src="../../images/engine/split-and-join-ref.png"/> 
 
-After a _split_ the new sub-process instance is linked to the origin process instance by the item _$uniqueidRef_. The origin process holds the $uniqueids of all sub-process instances in the item _txtworkitemRef_. So both workitems are linked together.
+After a _split_ the new sub-process instance is linked to the origin process instance by the item _$uniqueidRef_. The origin process holds the $uniqueids of all sub-process instances in the item _$workitemRef_. So both workitems are linked together.
  
