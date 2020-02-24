@@ -381,6 +381,11 @@ public class TestSplitAndJoinPlugin {
 
 		Assert.assertEquals("", subprocess.getItemValueString("$snapshotid"));
 		// ("$snapshotid", "11112222");
+
+		// test the deprecated LIst
+	    List<String> workitemRefListDeprecated = documentContext.getItemValue("txtworkitemref");
+	    Assert.assertEquals(workitemRefList,workitemRefListDeprecated);
+	
 	}
 
 	/**

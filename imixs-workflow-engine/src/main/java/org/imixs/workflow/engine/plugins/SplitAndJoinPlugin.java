@@ -71,7 +71,8 @@ import org.imixs.workflow.util.XMLParser;
  * 
  */
 public class SplitAndJoinPlugin extends AbstractPlugin {
-    public static final String LINK_PROPERTY = "txtworkitemref";
+    public static final String LINK_PROPERTY = "$workitemref";
+    private static final String LINK_PROPERTY_DEPRECATED = "txtworkitemref";
     public static final String INVALID_FORMAT = "INVALID_FORMAT";
     public static final String SUBPROCESS_CREATE = "subprocess_create";
     public static final String SUBPROCESS_UPDATE = "subprocess_update";
@@ -279,6 +280,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
      * @throws PluginException
      * @throws ModelException
      */
+    @SuppressWarnings("unchecked")
     protected void updateSubprocesses(final List<String> subProcessDefinitions, final ItemCollection originWorkitem)
             throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
@@ -310,8 +312,12 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                             "...subprocess_update uses deprecated tag 'processid' instead of 'task'. Please check your model");
                 }
 
-                @SuppressWarnings("unchecked")
                 List<String> subProcessRefList = originWorkitem.getItemValue(LINK_PROPERTY);
+                if (subProcessRefList.isEmpty() && originWorkitem.hasItem(LINK_PROPERTY_DEPRECATED)) {
+                    // test for deprecated link property!
+                    subProcessRefList = originWorkitem.getItemValue(LINK_PROPERTY_DEPRECATED);
+                }
+
                 for (String subProcessRef : subProcessRefList) {
                     ItemCollection workitemSubProcess = this.getWorkflowService().getWorkItem(subProcessRef);
 
@@ -522,14 +528,18 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
     /**
      * This methods adds a new workItem reference into a workitem
      */
+    @SuppressWarnings("unchecked")
     protected void addWorkitemRef(String aUniqueID, ItemCollection workitem) {
         boolean debug = logger.isLoggable(Level.FINE);
         if (debug) {
             logger.fine("LinkController add workitem reference: " + aUniqueID);
         }
 
-        @SuppressWarnings("unchecked")
         List<String> refList = workitem.getItemValue(LINK_PROPERTY);
+        if (refList.isEmpty() && workitem.hasItem(LINK_PROPERTY_DEPRECATED)) {
+            // test for deprecated link property!
+            refList = workitem.getItemValue(LINK_PROPERTY_DEPRECATED);
+        }
 
         // clear empty entry if set
         if (refList.size() == 1 && "".equals(refList.get(0)))
@@ -539,6 +549,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
         if (refList.indexOf(aUniqueID) == -1) {
             refList.add(aUniqueID);
             workitem.replaceItemValue(LINK_PROPERTY, refList);
+            // support deprecated field name
+            workitem.replaceItemValue(LINK_PROPERTY_DEPRECATED, refList);
         }
 
     }
