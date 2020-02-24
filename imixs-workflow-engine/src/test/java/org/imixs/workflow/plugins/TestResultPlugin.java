@@ -215,6 +215,7 @@ public class TestResultPlugin {
 	public void testTypeProperty() throws PluginException {
 
 		ItemCollection adocumentContext = new ItemCollection();
+		adocumentContext.setType("workitem");
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		String sResult = "<item name='type' >workitemdeleted</item>";
@@ -225,9 +226,9 @@ public class TestResultPlugin {
 		// run plugin
 		try {
 			adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-			Assert.fail();
+			Assert.assertEquals("workitem", adocumentContext.getType());
 		} catch (PluginException e) {
-			// expected exception - type attribute can not be modified by plugin!
+            Assert.fail();
 		}
 		Assert.assertNotNull(adocumentContext);
 

@@ -28,6 +28,9 @@
 
 package org.imixs.workflow.engine.plugins;
 
+import java.util.List;
+import java.util.logging.Logger;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
 
@@ -55,12 +58,27 @@ import org.imixs.workflow.exceptions.PluginException;
  */
 public class ResultPlugin extends AbstractPlugin {
 
+    private static Logger logger = Logger.getLogger(ResultPlugin.class.getName());
+
     public ItemCollection run(ItemCollection documentContext, ItemCollection adocumentActivity) throws PluginException {
         // evaluate new items....
         ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(adocumentActivity, documentContext,
                 true);
-        // copy values
+
         if (evalItemCollection != null) {
+            List<String> itemNameList = evalItemCollection.getItemNames();
+            for (String itemName : itemNameList) {
+                // do not accept items starting with $
+                // allow $file - Issue #644
+                if ((itemName.startsWith("$") && !itemName.equalsIgnoreCase("$file"))
+                        || "type".equalsIgnoreCase(itemName)) {
+                    logger.warning("<item> tag contains invalid attribute name '" + itemName
+                            + "' - verify event result definition!");
+                    
+                    evalItemCollection.removeItem(itemName);
+                }
+            }
+            // copy values (invalid items are already removed)
             documentContext.replaceAllItems(evalItemCollection.getAllItems());
         }
         return documentContext;

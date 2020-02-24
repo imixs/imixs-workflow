@@ -1156,6 +1156,16 @@ public class ItemCollection implements Cloneable {
     public String getType() {
         return getItemValueString(WorkflowKernel.TYPE);
     }
+    
+    /**
+     * set type
+     * 
+     * @param type
+     */
+    public void setType(String type) {
+        replaceItemValue(WorkflowKernel.TYPE, type);
+    }
+
 
     /**
      * @return current $TaskID

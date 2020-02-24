@@ -924,11 +924,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                             "<item> tag contains no name attribute.");
                 }
 
-                if (itemName.startsWith("$") || "type".equalsIgnoreCase(itemName)) {
-                    throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_ITEM_FORMAT,
-                            "<item> tag contains invalid attribute name '" + itemName + "'.");
-                }
-
                 // now add optional attributes if available
                 for (String attrName : attrMap.keySet()) {
                     // we need to skip the 'name' attribute
