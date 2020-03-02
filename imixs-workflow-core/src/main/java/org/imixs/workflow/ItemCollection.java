@@ -876,6 +876,9 @@ public class ItemCollection implements Cloneable {
      */
     @SuppressWarnings("unchecked")
     public void addFileData(FileData filedata) {
+        
+        // purge $file....
+        purgeItemValue("$file");
         if (filedata != null) {
             List<Object> vectorFileInfo = null;
 
@@ -970,7 +973,7 @@ public class ItemCollection implements Cloneable {
      * @param filename
      * @return FileData object
      */
-    public FileData getFileData(String filename) {
+    public FileData getFileData(String filename) {        
         if (filename == null || filename.isEmpty()) {
             return null;
         }
@@ -993,7 +996,7 @@ public class ItemCollection implements Cloneable {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public List<FileData> getFileData() {
-
+        purgeItemValue("$file");
         List<FileData> result = new ArrayList<FileData>();
         List<?> vFiles = getItemValue("$file");
         if (vFiles != null && vFiles.size() > 0) {
