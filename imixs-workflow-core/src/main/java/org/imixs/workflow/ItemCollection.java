@@ -201,7 +201,37 @@ public class ItemCollection implements Cloneable {
      */
 
     public ItemCollection setItemValue(String itemName, Object itemValue) {
-        setItemValue(itemName, itemValue, false);
+        setItemValue(itemName, itemValue, false, false);
+        return this;
+    }
+
+    /**
+     * Set the value of an item. If the ItemCollection does not contain an item with
+     * the specified name, the method creates a new item and adds it to the
+     * ItemCollection. The ItemName is not case sensitive. Use hasItem to verify the
+     * existence of an item. All item names will be lower cased.
+     * <p>
+     * Each item can contain a list of values (multivalue item). If a single value
+     * is provided the method creates a List with one single value (singlevalue
+     * item).
+     * <p>
+     * If the value is null the method will remove the item. This is equal to the
+     * method call removeItem()
+     * <p>
+     * If the ItemValue is not serializable the item will be removed.
+     * <p>
+     * This method ensures that all values are unique and null or empty values will
+     * be removed
+     * 
+     * 
+     * @param itemName  The name of the item or items you want to replace.
+     * @param itemValue The value of the new item. The data type of the item depends
+     *                  upon the data type of value, and does not need to match the
+     *                  data type of the old item.
+     */
+
+    public ItemCollection setItemValueUnique(String itemName, Object itemValue) {
+        setItemValue(itemName, itemValue, false, true);
         return this;
     }
 
@@ -210,12 +240,12 @@ public class ItemCollection implements Cloneable {
      * an item with the specified name, the method creates a new item and adds it to
      * the ItemCollection. The ItemName is not case sensitive. Use hasItem to verify
      * the existence of an item. All item names will be lower cased.
-     * 
+     * <p>
      * If a value list is provided the method appends each single value.
-     * 
+     * <p>
      * If the value is null the method will remove the item. This is equal to the
      * method call removeItem()
-     * 
+     * <p>
      * If the ItemValue is not serializable the item will be removed.
      * 
      * 
@@ -225,7 +255,34 @@ public class ItemCollection implements Cloneable {
      *                  data type of the old item.
      */
     public ItemCollection appendItemValue(String itemName, Object itemValue) {
-        setItemValue(itemName, itemValue, true);
+        setItemValue(itemName, itemValue, true, false);
+        return this;
+    }
+
+    /**
+     * Appends a value to an existing item. If the ItemCollection does not contain
+     * an item with the specified name, the method creates a new item and adds it to
+     * the ItemCollection. The ItemName is not case sensitive. Use hasItem to verify
+     * the existence of an item. All item names will be lower cased.
+     * <p>
+     * If a value list is provided the method appends each single value.
+     * <p>
+     * If the value is null the method will remove the item. This is equal to the
+     * method call removeItem()
+     * <p>
+     * If the ItemValue is not serializable the item will be removed.
+     * <p>
+     * This method ensures that all values are unique and null or empty values will
+     * be removed
+     * 
+     * 
+     * @param itemName  The name of the item or items you want to replace.
+     * @param itemValue The value of the new item. The data type of the item depends
+     *                  upon the data type of value, and does not need to match the
+     *                  data type of the old item.
+     */
+    public ItemCollection appendItemValueUnique(String itemName, Object itemValue) {
+        setItemValue(itemName, itemValue, true, true);
         return this;
     }
 
@@ -518,8 +575,7 @@ public class ItemCollection implements Cloneable {
      *                  data type of the old item.
      */
     public void replaceItemValue(String itemName, Object itemValue) {
-        setItemValue(itemName, itemValue, false);
-
+        setItemValue(itemName, itemValue, false, false);
     }
 
     /**
@@ -876,7 +932,7 @@ public class ItemCollection implements Cloneable {
      */
     @SuppressWarnings("unchecked")
     public void addFileData(FileData filedata) {
-        
+
         // purge $file....
         purgeItemValue("$file");
         if (filedata != null) {
@@ -973,7 +1029,7 @@ public class ItemCollection implements Cloneable {
      * @param filename
      * @return FileData object
      */
-    public FileData getFileData(String filename) {        
+    public FileData getFileData(String filename) {
         if (filename == null || filename.isEmpty()) {
             return null;
         }
@@ -1159,7 +1215,7 @@ public class ItemCollection implements Cloneable {
     public String getType() {
         return getItemValueString(WorkflowKernel.TYPE);
     }
-    
+
     /**
      * set type
      * 
@@ -1168,7 +1224,6 @@ public class ItemCollection implements Cloneable {
     public void setType(String type) {
         replaceItemValue(WorkflowKernel.TYPE, type);
     }
-
 
     /**
      * @return current $TaskID
@@ -1399,7 +1454,7 @@ public class ItemCollection implements Cloneable {
      * @param append    - true if the value should be appended to an existing list
      */
     @SuppressWarnings("unchecked")
-    private void setItemValue(String itemName, Object itemValue, boolean append) {
+    private void setItemValue(String itemName, Object itemValue, boolean append, boolean unique) {
         List<Object> itemValueList = null;
 
         if (itemName == null)
@@ -1462,14 +1517,44 @@ public class ItemCollection implements Cloneable {
         // replace item value?
         if (append) {
             // append item value
-            List<Object> oldValueList = (List<Object>) getItemValue(itemName);
+            List<Object> newValueList = (List<Object>) getItemValue(itemName);
+            newValueList.addAll(itemValueList);
 
-            oldValueList.addAll(itemValueList);
+            if (unique) {
+                // build a unique list of values
+                List<Object> uniqueItemValueList = new ArrayList<Object>();
+                for (Object entry : newValueList) {
+                    // skip null|empty|dupplicates
+                    if (entry == null || ((entry instanceof String) && ((String) entry).isEmpty())
+                            || uniqueItemValueList.contains(entry)) {
+                        // skip
+                        continue;
+                    }
+                    uniqueItemValueList.add(entry);
+                }
+                hash.put(itemName, (List<Object>) uniqueItemValueList);
+            } else {
+                hash.put(itemName, (List<Object>) newValueList);
+            }
+        } else {
+            if (unique) {
+                // build a unique list of values
+                List<Object> uniqueItemValueList = new ArrayList<Object>();
+                for (Object entry : itemValueList) {
+                    // skip null|empty|duplicates
+                    if (entry == null || ((entry instanceof String) && ((String) entry).isEmpty())
+                            || uniqueItemValueList.contains(entry)) {
+                        // skip
+                        continue;
+                    }
+                    uniqueItemValueList.add(entry);
+                }
+                hash.put(itemName, (List<Object>) uniqueItemValueList);
+            } else {
+                hash.put(itemName, itemValueList);
+            }
 
-            hash.put(itemName, (List<Object>) oldValueList);
-        } else
-            hash.put(itemName, itemValueList);
-
+        }
     }
 
     /**
