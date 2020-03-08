@@ -54,6 +54,8 @@ import org.imixs.workflow.exceptions.PluginException;
  * 
  * Missing workflow items will be added.
  * 
+ * Version 5.1.10 : new space.|process. Items
+ * 
  * 
  * @author rsoika
  *
@@ -208,6 +210,27 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
             workitem.replaceItemValue("$taskid", workitem.getItemValue("$processid"));
             bUpgrade = true;
         }
+        
+        
+        if (!workitem.hasItem("process.name")) {
+            workitem.replaceItemValue("process.name", workitem.getItemValue("txtprocessname"));
+            workitem.replaceItemValue("process.ref", workitem.getItemValue("txtprocessRef"));
+            workitem.replaceItemValue("space.name", workitem.getItemValue("txtspacename"));
+            workitem.replaceItemValue("space.ref", workitem.getItemValue("txtspaceRef"));
+            
+            workitem.replaceItemValue("space.assist", workitem.getItemValue("namspaceassist"));
+            workitem.replaceItemValue("space.team", workitem.getItemValue("namspaceTeam"));
+            workitem.replaceItemValue("space.manager", workitem.getItemValue("namspaceManager"));
+            
+            workitem.replaceItemValue("process.assist", workitem.getItemValue("namprocessassist"));
+            workitem.replaceItemValue("process.team", workitem.getItemValue("namprocessTeam"));
+            workitem.replaceItemValue("process.manager", workitem.getItemValue("namprocessManager"));
+
+            bUpgrade = true;
+        }
+        
+        
+        
 
         if (!workitem.hasItem(OwnerPlugin.OWNER)) {
             workitem.replaceItemValue(OwnerPlugin.OWNER, workitem.getItemValue("namowner"));
