@@ -1032,6 +1032,10 @@ public class DocumentService {
                 updateMetaData(_tmp, doc);
 
                 result.add(_tmp);
+                // issue #647 
+                if (documentEvents != null) {
+                    documentEvents.fire(new DocumentEvent(_tmp, DocumentEvent.ON_DOCUMENT_LOAD));
+                }
             }
         }
         if (debug) {
