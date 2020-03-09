@@ -211,6 +211,13 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
             bUpgrade = true;
         }
         
+
+        if (!workitem.hasItem(OwnerPlugin.OWNER)) {
+            workitem.replaceItemValue(OwnerPlugin.OWNER, workitem.getItemValue("namowner"));
+            bUpgrade = true;
+        }
+        
+        
         
         if (!workitem.hasItem("process.name")) {
             workitem.replaceItemValue("process.name", workitem.getItemValue("txtprocessname"));
@@ -231,11 +238,6 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
         
         
         
-
-        if (!workitem.hasItem(OwnerPlugin.OWNER)) {
-            workitem.replaceItemValue(OwnerPlugin.OWNER, workitem.getItemValue("namowner"));
-            bUpgrade = true;
-        }
 
         return bUpgrade;
     }
