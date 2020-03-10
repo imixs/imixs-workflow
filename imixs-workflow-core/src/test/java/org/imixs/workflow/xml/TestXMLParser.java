@@ -350,4 +350,31 @@ public class TestXMLParser {
 
     }
 
+    /**
+     * This test parses an event model tag used in an event entity to switch the
+     * model version
+     * 
+     */
+    @Test
+    public void testParseEventModelTag() {
+
+        String data = "<!-- test --> <model>\n"
+
+                + "   <version>1.42.0</version>\n"
+
+                + "   <event>10</event>\n"
+
+                + "</model>";
+
+        ItemCollection modelData;
+        try {
+            modelData = XMLParser.parseTag(data, "model");
+            Assert.assertEquals("1.42.0", modelData.getItemValueString("version"));
+            Assert.assertEquals(10, modelData.getItemValueInteger("event"));
+        } catch (PluginException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 }

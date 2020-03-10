@@ -43,6 +43,7 @@ import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.imixs.workflow.util.XMLParser;
 
 /**
  * The Workflowkernel is the core component of this Framework to control the
@@ -322,6 +323,8 @@ public class WorkflowKernel {
             ItemCollection event = loadEvent(documentResult);
             documentResult = processEvent(documentResult, event);
             documentResult = updateEventList(documentResult, event);
+            // test if a new model version was assigend by the last event
+            documentResult = updateModelVersionByEvent(documentResult, event);
         }
 
         return documentResult;
@@ -439,14 +442,16 @@ public class WorkflowKernel {
      * This method controls the Event-Chain. If the attribute $activityidlist has
      * more valid ActivityIDs the next activiytID will be loaded into $activity.
      * 
+     * @throws ModelException
      **/
-    private ItemCollection updateEventList(final ItemCollection documentContext, final ItemCollection event) {
+    private ItemCollection updateEventList(final ItemCollection documentContext, final ItemCollection event)
+            throws ModelException {
         ItemCollection documentResult = documentContext;
         boolean debug = logger.isLoggable(Level.FINE);
         // first clear the eventID
         documentResult.setEventID(Integer.valueOf(0));
 
-        // test if a FollowUp event is defined for the given event...
+        // test if a FollowUp event is defined for the given event (Deprecated)...
         String sFollowUp = event.getItemValueString("keyFollowUp");
         int iNextActivityID = event.getItemValueInteger("numNextActivityID");
         if ("1".equals(sFollowUp) && iNextActivityID > 0) {
@@ -491,16 +496,52 @@ public class WorkflowKernel {
     }
 
     /**
+     * This method updates the model version if the workflow result for a given
+     * event contains a model tag. The model version and event will be updated based
+     * on the configuration. The $taskID within the model configuration is optional.
+     * The method is called during the processing live-cycle of the workflowKernel.
+     * 
+     * @throws ModelException
+     * @throws PluginException
+     * 
+     **/
+    private ItemCollection updateModelVersionByEvent(final ItemCollection documentContext, final ItemCollection event)
+            throws ModelException, PluginException {
+        ItemCollection documentResult = documentContext;
+        // test if a <model> tag is defined
+        String eventResult = event.getItemValueString("txtActivityResult");
+        if (eventResult.contains("<model")) {
+            // extract the model tag information - version and event are mandatory
+            ItemCollection modelData;
+            modelData = XMLParser.parseTag(eventResult, "model");
+            String version = modelData.getItemValueString("version");
+            int iNextEvent = modelData.getItemValueInteger("event");
+            int iTask = modelData.getItemValueInteger("task");
+            if (version.trim().isEmpty() || iNextEvent <= 0) {
+                String sErrorMessage = "Invalid model tag in event " + event.getItemValueInteger("numProcessid") + "."
+                        + event.getItemValueInteger("numActivityid") + " (" + event.getModelVersion();
+                logger.warning(sErrorMessage);
+                throw new ModelException(ModelException.INVALID_MODEL, sErrorMessage);
+            }
+            // apply new model version and event id
+            documentResult.setModelVersion(version);
+            documentResult.setEventID(Integer.valueOf(iNextEvent));
+            if (iTask > 0) {
+                // optional
+                documentResult.task(iTask);
+            }
+            logger.info("⚙ set model : " + documentResult.getItemValueString(UNIQUEID) + " ("
+                    + documentResult.getItemValueString(MODELVERSION) + ")");
+        }
+        return documentResult;
+    }
+
+    /**
      * This method processes a single event on a workflow instance. All registered
-     * adapter and plug-in classes will be executed.
-     * <p>
-     * During the processing life-cycle more than one event can be processed. This
-     * depends on the model definition which can define follow-up-events,
-     * split-events and conditional events.
-     * <p>
-     * After all adapter and plug-in classes have been executed, the attributes
-     * type, $taskID, $workflowstatus and $workflowgroup are updated based on the
-     * definition of the target task element.
+     * adapter and plug-in classes will be executed. After all adapter and plug-in
+     * classes have been executed, the attributes type, $taskID, $workflowstatus and
+     * $workflowgroup are updated based on the definition of the target task
+     * element.
      * <p>
      * In case of an AdapterException, the exception data will be wrapped into items
      * with the prefix 'adapter.'
