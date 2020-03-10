@@ -499,6 +499,17 @@ public class WorkflowKernel {
      * This method updates the model version if the workflow result for a given
      * event contains a model tag. The model version and event will be updated based
      * on the configuration. The $taskID within the model configuration is optional.
+     * 
+     * <pre>
+     * {@code
+     * <model>     
+     *    <version>sub-model-1.0.0</version>
+     *    <task>1000</task>
+     *    <event>10</event>
+     * </model>
+     * }
+     * </pre>
+     * 
      * The method is called during the processing live-cycle of the workflowKernel.
      * 
      * @throws ModelException
