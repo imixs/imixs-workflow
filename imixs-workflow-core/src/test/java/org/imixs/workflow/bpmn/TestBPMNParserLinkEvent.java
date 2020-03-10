@@ -283,7 +283,6 @@ public class TestBPMNParserLinkEvent {
                 activity.getItemValueString("$ModelVersion"));
 
         // the event is still connected to the source task 1000
-        Assert.assertEquals("confirm2", activity.getItemValueString("txtName"));
         Assert.assertEquals("1000", activity.getItemValueString("numNextProcessID"));
 
         
