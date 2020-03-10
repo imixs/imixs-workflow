@@ -829,12 +829,12 @@ public class BPMNModelHandler extends DefaultHandler {
     /**
      * This method computes the target for an event and adds the event to a source
      * task. The method call recursive if the target is a followUp Event.
-     * 
+     * <p>
      * If a event has no target the method throws an exception
-     * 
+     * <p>
      * If a event has more than one targets (task or event elements) then the event
      * is handled as a loop event.
-     * 
+     * <p>
      * If a event is already assigned to the sourceTask, the method returns without
      * adding the event.
      * 
@@ -866,7 +866,7 @@ public class BPMNModelHandler extends DefaultHandler {
         try {
             if (model.getEvent(sourceTask.getItemValueInteger("numProcessID"),
                     event.getItemValueInteger("numactivityid")) != null) {
-                logger.finest("......Imixs BPMN Event '" + eventName + "' is already assigned tosource task!");
+                logger.finest("......Imixs BPMN Event '" + eventName + "' is already assigned to a source task!");
                 return;
             }
         } catch (ModelException me1) {
@@ -889,7 +889,8 @@ public class BPMNModelHandler extends DefaultHandler {
             targetList = new ElementResolver().findAllImixsTargetIDs(outgoingFlow, targetList);
         }
         if (targetList.size() > 1) {
-            // we have a multi event which need to be handled like a loop event
+            // MULTI target - the event has MANY outgoing targets
+            
             event.removeItem("keyFollowUp");
             event.replaceItemValue("numNextProcessID", sourceTask.getItemValue("numProcessID"));
 
@@ -1002,14 +1003,11 @@ public class BPMNModelHandler extends DefaultHandler {
             }
 
         } else {
-            // normal case - the event has one outgoing target and we test the
-            // target element now
-
+            // SINGLE target - the event has only ONE outgoing target
             // test target element....
-            // SequenceFlow outgoingFlow = outFlows.get(0);
             String followUpEventID = null;
             for (SequenceFlow outgoingFlow : outFlows) {
-                // is this Event connected to a followUp Activity?
+                // is this Event connected to a followUp Event?
                 followUpEventID = new ElementResolver().findImixsTargetEventID(outgoingFlow);
                 if (followUpEventID != null) {
                     break;
@@ -1022,7 +1020,6 @@ public class BPMNModelHandler extends DefaultHandler {
                 ItemCollection followUpEvent = eventCache.get(followUpEventID);
                 event.replaceItemValue("keyFollowUp", "1");
                 event.replaceItemValue("numNextActivityID", followUpEvent.getItemValue("numactivityid"));
-
             } else {
                 // test if we found a target task.
                 ItemCollection targetTask = null;
@@ -1039,9 +1036,24 @@ public class BPMNModelHandler extends DefaultHandler {
                     }
                 }
                 if (targetTask == null) {
-                    // invalid model!! - no target task
-                    throw new ModelException(ModelException.INVALID_MODEL,
-                            "Imixs BPMN Event '" + eventName + "' has no target task element!");
+                    // test if the event is associated with a LinkThrowEvent
+                    String outgoingLink =null;
+                    List<SequenceFlow> outLinkFlows = findOutgoingFlows(eventID);
+                    for (SequenceFlow _outLink: outLinkFlows) {
+                        if (linkThrowEventCache.containsKey(_outLink.target)) {
+                            outgoingLink=_outLink.target;
+                            logger.fine("...event is associated with link event: " + outgoingLink);
+                        }
+                    }
+                    if (outgoingLink!=null) {
+                        // accept this as a valid situation - e.g. linking into another model
+                        event.removeItem("keyFollowUp");
+                        event.replaceItemValue("numNextProcessID", sourceTask.getItemValue("numProcessID"));
+                    } else {
+                        // we found no target task or link event !
+                        throw new ModelException(ModelException.INVALID_MODEL,
+                            "Imixs BPMN Event '" + eventName + "' has no target task or link element!");
+                    }
                 }
             }
         }

@@ -225,6 +225,74 @@ public class TestBPMNParserLinkEvent {
 	
 	
 	
+
+    /**
+     * This test test intermediate link events within an exit situation (e.g. model switch)
+     * @throws ParseException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     * @throws IOException
+     * @throws ModelException 
+     */
+    @Test
+    public void testLinkEventExit() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+
+        String VERSION = "1.0.0";
+
+        InputStream inputStream = getClass().getResourceAsStream("/bpmn/link-event_exit.bpmn");
+
+        BPMNModel model = null;
+        try {
+            model = BPMNParser.parseModel(inputStream, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            Assert.fail();
+        } catch (ModelException e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+        Assert.assertNotNull(model);
+
+        // Test Environment
+        ItemCollection profile = model.getDefinition();
+        Assert.assertNotNull(profile);
+        Assert.assertEquals("environment.profile", profile.getItemValueString("txtname"));
+        Assert.assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));
+        Assert.assertEquals(VERSION, profile.getItemValueString("$ModelVersion"));
+
+        Assert.assertTrue(model.getGroups().contains("Simple"));
+
+        // test count of elements
+        Assert.assertEquals(2, model.findAllTasks().size());
+
+        // test task 1000
+        ItemCollection task = model.getTask(1000 );
+        Assert.assertNotNull(task);
+        Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
+        Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
+
+        // test activity for task 1000
+        List<ItemCollection> events = model.findAllEventsByTask(1000 );
+        Assert.assertEquals(2, events.size());
+ 
+        
+        /* Test confirm1 Event 1000.20 with link event */
+        ItemCollection activity = model.getEvent(1000, 20 );
+        Assert.assertNotNull(activity);
+        Assert.assertEquals("1.0.0",
+                activity.getItemValueString("$ModelVersion"));
+
+        // the event is still connected to the source task 1000
+        Assert.assertEquals("confirm2", activity.getItemValueString("txtName"));
+        Assert.assertEquals("1000", activity.getItemValueString("numNextProcessID"));
+
+        
+    }
+    
+    
+    
+	
+	
 	@Test
 	public void testComplexParserTest() throws ParseException,
 			ParserConfigurationException, SAXException, IOException {
