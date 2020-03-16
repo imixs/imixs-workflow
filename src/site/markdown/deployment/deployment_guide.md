@@ -1,11 +1,9 @@
 # Deployment Guide
-The following section gives an overview how to deploy the Imixs-Workflow engine into a Java EE container. Imixs-Workflow consists of different modules which simply can be bundled together with other components of a business application. All Imixs-Workflow components are based on the Java EE component model.
+The following section gives an overview how to deploy the Imixs-Workflow engine into a Jakarta EE container. Imixs-Workflow consists of different modules which simply can be bundled together with other components of a business application. All Imixs-Workflow components are based on the [Jakarta EE](https://jakarta.ee/) and the [Eclipse Microprofile](https://microprofile.io/) component model. 
  
-The examples illustrate how to deploy the components on a [JBoss/Wildfly Application server](http://www.wildfly.org) which is an open source application server based on the Java EE specification. The deployment is similar to all other Java EE application servers (e.g. [Glassfish](http://www.glassfish.org), [Payara](http://www.payara.fish/)...).
+The examples illustrate how to deploy the components on a [Wildfly Application server](http://www.wildfly.org) which is an open source application server based on the Jakarta EE specification. The deployment is similar to all other application servers (e.g. [Glassfish](http://www.glassfish.org), [Payara](http://www.payara.fish/)...).
  
-The Imixs-Workflow engine is based on JDK 1.8 and can be deployed into a Java EE web or EJB container. The packaging will differ in some details. Both deployment concepts will be explained in the following section. 
-
-To deploy the Imixs-Workflow engine on a specific platform see also the chapters:
+The Imixs-Workflow engine is based on JDK 1.8. The packaging will differ in some details depending on the environment you use. To deploy the Imixs-Workflow engine on a specific platform see also the chapters:
 
  * [Deployment Guide Wildfly](./wildfly.html)
  * [Deployment Guide GlassFish](./glassfish.html)
@@ -16,11 +14,11 @@ To bundle the Imixs-Workflow engine together with a business application the fol
  
   * _imixs-workflow-core-x.x.x.jar_  - contains the core api and xml api
   * _imixs-workflow-engine-x.x.x.jar_ - the workflow engine containing jpa and ejb components
+  * _imixs-workflow-jax-rs-x.x.x.jar_ - contains the Imixs RESTful Web Service
 
-For following components are used for web applications or the Rest API
+For JSF Web Applications add also:
   
   * _imixs-workflow-faces-x.x.x.jar_ - contains optional JSF components
-  * _imixs-workflow-jax-rs-x.x.x.jar_ - contains the Imixs RESTful Web Service
   
 All artifacts can be downloaded from the [Maven central repository page](https://search.maven.org/). In case of maven the components will be downloaded and bundled automatically during the maven build process.
   
@@ -42,11 +40,11 @@ To install and deploy the Imixs-Workflow engine into a web application it is suf
 	  +- WEB-INF/
 	  |  |- ejb-jar.xml  (optional)
 	  |  +- lib/
-	  |  |  |- imixs-workflow-core-5.1.0.jar
-	  |  |  |- imixs-workflow-engine-5.1.0.jar
-	  |  |  |- imixs-workflow-faces-5.1.0.jar
-	  |  |  |- imixs-workflow-jax-rs-5.1.0.jar
-	  |  |  |- imixs-workflow-index-lucene-5.1.0.jar
+	  |  |  |- imixs-workflow-core-x.x.x.jar
+	  |  |  |- imixs-workflow-engine-x.x.x.jar
+	  |  |  |- imixs-workflow-faces-x.x.x.jar
+	  |  |  |- imixs-workflow-jax-rs-x.x.x.jar
+	  |  |  |- imixs-workflow-index-lucene-x.x.x.jar
 	  |  |  |- ....
 	  |  +- classes/
 	  |  |  +- META-INF/
@@ -57,8 +55,7 @@ The following example shows the maven dependencies used in a maven project:
 
 	...
 	<properties>
-		<org.imixs.workflow.version>4.1.2</org.imixs.workflow.version>
-		<lucene.version>6.3.0</lucene.version>
+		<org.imixs.workflow.version>5.1.9</org.imixs.workflow.version>
 	</properties>
 	... 
 	<dependencies>
@@ -71,11 +68,6 @@ The following example shows the maven dependencies used in a maven project:
 		<dependency>
 			<groupId>org.imixs.workflow</groupId>
 			<artifactId>imixs-workflow-jax-rs</artifactId>
-			<version>${org.imixs.workflow.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.imixs.workflow</groupId>
-			<artifactId>imixs-workflow-faces</artifactId>
 			<version>${org.imixs.workflow.version}</version>
 		</dependency>
 		<dependency>
@@ -100,8 +92,8 @@ If the imixs-workflow-engine.jar is bundled directly into a web module, the pers
 	  +- WEB-INF/classes/META-INF/
 	  |  |- persistence.xml
 	  +- WEB-INF/lib/
-	  |  |- imixs-workflow-core-3.0.0.jar
-	  |  |- imixs-workflow-engine-3.0.0.jar
+	  |  |- imixs-workflow-core-x.x.x.jar
+	  |  |- imixs-workflow-engine-x.x.x.jar
 
 ### persistence.xml in a ejb module 
 In case the imixs-workflow-engine.jar is bundled into a EJB module of an enterprise archive (ear), the persistence.xml need to be placed into the /META-INF folder together with the ejb-jar.xml: 

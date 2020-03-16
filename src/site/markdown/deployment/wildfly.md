@@ -3,13 +3,14 @@ This section will explain the configuration steps needed to successfully deploy 
 
 
 ## Install Wildfly
-The Wildfly Server is supporting the EE7 specification and can be downloaded from the [Wildfly project site](http://www.wildfly.org). The site also includes an installation guide how to install Wildfly server on different platforms. 
+The Wildfly Server is supporting the Jakarta EE specification and can be downloaded in the latest version from the [Wildfly project site](http://www.wildfly.org). The site also includes an installation guide how to install Wildfly server on different platforms. Please note that at least version 18.0.1 is needed as this version includes [Eclipse Microprofile](https://microprofile.io/). 
 
 After the server is started it can be opened from a web browser with the following URL:
 
     http://localhost:8080/
       
 ## Setting up a Imixs-Workflow database pool
+
 The [Imixs-Sample Application](../sampleapplication.html) expects a database resource with the name "jdbc/workflow". The corresponding datasource configuration can be added into the file _wildfly/standalone/configuration/standalone.xml_ in the subsystem section 'datasources' 
 
 
