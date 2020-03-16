@@ -11,7 +11,7 @@ After the server is started you can access the GlassFish web console from your w
     http://localhost:4848/
       
 ## Setting up a Imixs-Workflow database pool
-The [Imixs-Sample Application](../sampleapplication.html) expects a database resource with the name "jdbc/workflow-db". Thus you need first to set up a Database Pool and a JDBC resource before you can deploy the application successful. In this example we create a database pool for the build in derby database from GlassFish.  You can also configure any other database like MySQL, Oracle, Informix, Microsoft SQL Server,....
+The [Imixs-Sample Application](../sampleapplication.html) expects a database resource with the name "jdbc/workflow". Thus you need first to set up a Database Pool and a JDBC resource before you can deploy the application successful. In this example we create a database pool for the build in derby database from GlassFish.  You can also configure any other database like MySQL, Oracle, Informix, Microsoft SQL Server,....
 
 To create a new database pool in GlassFish follow these steps:
 
@@ -34,7 +34,7 @@ To create a new database pool in GlassFish follow these steps:
       * portnumber: 1527
    6. Now create a JDBC Resource - Navigate to "Application Server  >>  Resources  >>  JDBC  >>  JDBC Resources"
    7. click "new" to create a new resource
-       - jndiName: jdbc/workflow-db
+       - jndiName: jdbc/workflow
        - PoolName: imixs_db_pool 
 
 ## Setup a Security Realm

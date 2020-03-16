@@ -11,7 +11,7 @@ After the server is started you can access the TomEE web console from your web b
       
 ## Setting up a Imixs-Workflow database pool
 
-The [Imixs-Sample Application](../sampleapplication.html) expects a database resource with the name "jdbc/workflow-db". 
+The [Imixs-Sample Application](../sampleapplication.html) expects a database resource with the name "jdbc/workflow". 
 
 Thus you need first to set up a Database Pool and a JDBC resource before you can deploy the application successful. You can run any SQL database like MySQL, Oracle, Informix, Microsoft SQL Server, ...
 

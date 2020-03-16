@@ -15,10 +15,10 @@ To run Imixs-Workflow in a container start the Docker Image imixs/workflow:
 
 	docker run --name="imixs-workflow" -d -p 8080:8080 -p 9990:9990 \
 	         -e WILDFLY_PASS="adminadmin" \
-	         --link imixs-workflow-db:postgres \
+	         --link imixs-workflow:postgres \
 	         imixs/imixs-workflow
 
-The container need to be linked to the postgres container providing a database name 'workflow-db'. See the [docker project home](https://hub.docker.com/r/imixs/imixs-microservice/) for more information. 
+The container need to be linked to the postgres container providing a database name 'workflow'. See the [docker project home](https://hub.docker.com/r/imixs/imixs-microservice/) for more information. 
 
 ### ...via docker-compose
 
@@ -29,7 +29,7 @@ The following example shows a docker-compose.yml file to run imixs-workflow:
 	  image: postgres
 	  environment:
 	    POSTGRES_PASSWORD: adminadmin
-	    POSTGRES_DB: workflow-db
+	    POSTGRES_DB: workflow
 	
 	imixsworkflow:
 	  image: imixs/workflow

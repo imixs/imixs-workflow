@@ -10,7 +10,7 @@ After the server is started it can be opened from a web browser with the followi
     http://localhost:8080/
       
 ## Setting up a Imixs-Workflow database pool
-The [Imixs-Sample Application](../sampleapplication.html) expects a database resource with the name "jdbc/workflow-db". The corresponding datasource configuration can be added into the file _wildfly/standalone/configuration/standalone.xml_ in the subsystem section 'datasources' 
+The [Imixs-Sample Application](../sampleapplication.html) expects a database resource with the name "jdbc/workflow". The corresponding datasource configuration can be added into the file _wildfly/standalone/configuration/standalone.xml_ in the subsystem section 'datasources' 
 
 
 ### MySQL
@@ -19,7 +19,7 @@ For MySQL the corresponding JDBC driver need to be deployed into Wildfly first. 
 Next a datasource can be configured in the standlone.xml:
 
 	...
-	    <datasource jta="true" jndi-name="java:/jdbc/workflow-db" pool-name="workflow-db" enabled="true" use-ccm="true">
+	    <datasource jta="true" jndi-name="java:/jdbc/workflow" pool-name="workflow" enabled="true" use-ccm="true">
 	    	 <connection-url>jdbc:mysql://localhost:3306/workflow_db</connection-url>
 	    	 <driver-class>com.mysql.jdbc.Driver</driver-class>
 	        <driver>mysql-connector-java-5.1.7-bin.jar</driver>
@@ -41,8 +41,8 @@ For PostgreSQL the corresponding JDBC driver need to be deployed into Wildfly fi
 Next a datasource can be configured in the standlone.xml:
 
 	...                
-	    <datasource jta="true" jndi-name="java:/jdbc/workflow-db" pool-name="workflow-db" enabled="true" use-ccm="true">
-		   	<connection-url>jdbc:postgresql://localhost/workflow-db</connection-url>
+	    <datasource jta="true" jndi-name="java:/jdbc/workflow" pool-name="workflow" enabled="true" use-ccm="true">
+		   	<connection-url>jdbc:postgresql://localhost/workflow</connection-url>
 	   		<driver-class>org.postgresql.Driver</driver-class>
 	       	<driver>postgresql-9.3-1102.jdbc41.jar</driver>
 	       	<security>

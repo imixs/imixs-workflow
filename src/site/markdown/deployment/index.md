@@ -17,7 +17,7 @@ See the following example of a persistence.xml:
 	<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence">
 		<persistence-unit name="org.imixs.workflow.jpa" transaction-type="JTA">	
 			<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>	
-			<jta-data-source>jdbc/workflow-db</jta-data-source>
+			<jta-data-source>jdbc/workflow</jta-data-source>
 			<jar-file>lib/imixs-workflow-engine-${org.imixs.workflow.version}.jar</jar-file>
 			<properties>
 				<!-- target-database Auto MySQL PostgreSQL  -->
@@ -29,7 +29,7 @@ See the following example of a persistence.xml:
 		</persistence-unit>
 	</persistence> 
 
- * The **jta-data-source** (in this example 'jdbc/workflow-db') must match the database pool in your application server. 
+ * The **jta-data-source** (in this example 'jdbc/workflow') must match the database pool in your application server. 
  * The **persistence-unit** name refers to the Imixs-Workflow engine and must always be set to _org.imixs.workflow.jpa_.  
  * The **jar-file** must match the deployed version of the Imixs-Workflow engine jar within your application (be careful with the right version number)
 

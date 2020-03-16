@@ -118,7 +118,7 @@ The persistence.xml describes the location of the database and the entity beans 
 	<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence">
 		<persistence-unit name="org.imixs.workflow.jpa" transaction-type="JTA">	
 			<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>	
-			<jta-data-source>jdbc/workflow-db</jta-data-source>
+			<jta-data-source>jdbc/workflow</jta-data-source>
 			<jar-file>lib/imixs-workflow-engine-${org.imixs.workflow.version}.jar</jar-file>
 			<properties>
 				<property name="eclipselink.target-database" value="Auto" />
@@ -141,6 +141,6 @@ The jta-data-source points to a JNDI Database resource located on the applicatio
 The jar-file defines the java library containing the Entity Beans to be persisted into the Database.
 This tag should always point to the imixs-workflow-engine Jar File. The version number must match the deployed component version.
 	
-In the example the jta-data-source point to a JDBC Resource with the JNDI Name 'jdbc/workflow-db'. The jar-file points to the imixs-workflow-engine.jar part of your application. 
+In the example the jta-data-source point to a JDBC Resource with the JNDI Name 'jdbc/workflow'. The jar-file points to the imixs-workflow-engine.jar part of your application. 
  
   
