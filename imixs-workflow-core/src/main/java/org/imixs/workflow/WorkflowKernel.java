@@ -521,10 +521,16 @@ public class WorkflowKernel {
         ItemCollection documentResult = documentContext;
         // test if a <model> tag is defined
         String eventResult = event.getItemValueString("txtActivityResult");
-        if (eventResult.contains("<model")) {
+        
+        List<String> modelTags = XMLParser.findNoEmptyTags(eventResult, "model");
+        if (modelTags!=null && modelTags.size()>0) {
+        //if (eventResult.contains("<model")) {
             // extract the model tag information - version and event are mandatory
             ItemCollection modelData;
-            modelData = XMLParser.parseTag(eventResult, "model");
+            //modelData = XMLParser.parseTag(eventResult, "model");
+            
+            modelData = XMLParser.parseTag(modelTags.get(0), "model");
+            
             String version = modelData.getItemValueString("version");
             int iNextEvent = modelData.getItemValueInteger("event");
             int iTask = modelData.getItemValueInteger("task");
