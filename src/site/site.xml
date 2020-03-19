@@ -92,22 +92,22 @@
 			
 			<item name="Plugin API" href="./engine/plugins/index.html"
 					collapse="true">
-					<item name="How to Extend" href="./engine/plugins/howto_extend.html" />
-					<item name="Access Plugin" href="./engine/plugins/accessplugin.html" />
-					<item name="Analysis Plugin" href="./engine/plugins/analysisplugin.html" />
-					<item name="Application Plugin" href="./engine/plugins/applicationplugin.html" />
-					<item name="DocumentComposer Plugin" href="./engine/plugins/documentcomposerplugin.html" />
-					<item name="Owner Plugin" href="./engine/plugins/ownerplugin.html" />
-					<item name="History Plugin" href="./engine/plugins/historyplugin.html" />
-					<item name="Interval Plugin" href="./engine/plugins/intervalplugin.html" />
-					<item name="Mail Plugin" href="./engine/plugins/mailplugin.html" />
-					<item name="Result Plugin" href="./engine/plugins/resultplugin.html" />
-					<item name="Rule Plugin" href="./engine/plugins/ruleplugin.html" />
-					<item name="Approver Plugin" href="./engine/plugins/approverplugin.html" />
-					<item name="Split &amp; Join" href="./engine/plugins/splitandjoinplugin.html" />
-					<item name="Version Plugin" href="./engine/plugins/versionplugin.html" />
-					<item name="Exception handling" href="./engine/plugins/exception_handling.html" />
-				</item>
+				<item name="How to Extend" href="./engine/plugins/howto_extend.html" />
+				<item name="Exception handling" href="./engine/plugins/exception_handling.html" />
+				<item name="Access Plugin" href="./engine/plugins/accessplugin.html" />
+				<item name="Analysis Plugin" href="./engine/plugins/analysisplugin.html" />
+				<item name="Application Plugin" href="./engine/plugins/applicationplugin.html" />
+				<item name="Approver Plugin" href="./engine/plugins/approverplugin.html" />
+				<item name="DocumentComposer Plugin" href="./engine/plugins/documentcomposerplugin.html" />
+				<item name="History Plugin" href="./engine/plugins/historyplugin.html" />
+				<item name="Interval Plugin" href="./engine/plugins/intervalplugin.html" />
+				<item name="Mail Plugin" href="./engine/plugins/mailplugin.html" />
+				<item name="Owner Plugin" href="./engine/plugins/ownerplugin.html" />
+				<item name="Result Plugin" href="./engine/plugins/resultplugin.html" />
+				<item name="Rule Plugin" href="./engine/plugins/ruleplugin.html" />
+				<item name="Split &amp; Join" href="./engine/plugins/splitandjoinplugin.html" />
+				<item name="Version Plugin" href="./engine/plugins/versionplugin.html" />
+			</item>
 			
 
 			

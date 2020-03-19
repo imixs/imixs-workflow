@@ -11,15 +11,16 @@ Each model can import a different set of plugins to provide different functional
 The Imixs-Workflow Engine already ofers a set of plugins that can be used to extend the functionality of your business application. 
 
  * [Access Plugin](accessplugin.html) - controls the ACL of a process instance
+ * [Analysis Plugin](analysisplugin.html) - analyze different phases of your business process
  * [Application Plugin](applicationplugin.html) - provide application specific data (Forms, Icons)
+ * [Approver Plugin](applicationplugin.html) - to manage an approval process
+ * [Document-Composer](documentcomposerplugin.html) - compose documents 
  * [History Plugin](historyplugin.html) - generates a human readable processing history 
+ * [Interval Plugin](intervalplugin.html) - compute time points on a interval definition
  * [Mail Plugin](mailplugin.html) - sends E-Mail notifications
  * [Result Plugin](resultplugin.html) - computes optional processing results
- * [Split & Join Plugin](splitandjoinplugin.html) - supports split and joins
  * [Rule Plugin](ruleplugin.html) - computes business rules
- * [Analysis Plugin](analysisplugin.html) - analyze different phases of your business process
- * [Document-Composer](documentcomposerplugin.html) - compose documents 
- * [Interval Plugin](intervalplugin.html) - compute time points on a interval definition
+ * [Split & Join Plugin](splitandjoinplugin.html) - supports split and joins
 
 
 ## The Adapter API
