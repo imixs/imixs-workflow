@@ -2,7 +2,7 @@
 
 The ApproverPlugin can be used to manage an approval process, involving multiple users.
 
-    org.imixs.workflow.plugins.engine.ApproverPlugin
+    org.imixs.workflow.engine.plugins.ApproverPlugin
 
 The list of approvers must be defined by an item stored in the current process instance. The approval process can be started from an event with the following workflow result:
  
