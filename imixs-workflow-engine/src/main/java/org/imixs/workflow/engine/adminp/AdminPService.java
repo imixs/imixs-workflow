@@ -30,10 +30,12 @@ package org.imixs.workflow.engine.adminp;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
+import javax.ejb.EJBException;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
@@ -199,6 +201,7 @@ public class AdminPService {
     @Timeout
     public void scheduleTimer(javax.ejb.Timer timer) {
         String sTimerID = null;
+        boolean debug = logger.isLoggable(Level.FINE);
 
         // Startzeit ermitteln
         long lProfiler = System.currentTimeMillis();
@@ -280,9 +283,11 @@ public class AdminPService {
                 } else {
                     logger.warning("Unable to update adminp job status - adminp document is null!");
                 }
-            } catch (Exception e2) {
-                logger.warning("Unable to update adminp job status: " + e2.getMessage());
-                e2.printStackTrace();
+            } catch (AccessDeniedException | EJBException e2) {
+                logger.warning("Unable to update adminp job status - reason: " + e2.getMessage());
+                if (debug) {
+                    e2.printStackTrace();
+                }
             }
         }
 
