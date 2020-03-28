@@ -100,7 +100,7 @@ public class LoginController {
     public String getUserPrincipal() {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
-        return externalContext.getUserPrincipal() != null ? externalContext.getUserPrincipal().toString() : null;
+        return externalContext.getUserPrincipal() != null ? externalContext.getUserPrincipal().getName() : null;
     }
 
     /**
