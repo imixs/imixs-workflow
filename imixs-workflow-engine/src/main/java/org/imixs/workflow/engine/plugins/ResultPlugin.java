@@ -28,6 +28,7 @@
 
 package org.imixs.workflow.engine.plugins;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -52,11 +53,13 @@ import org.imixs.workflow.exceptions.PluginException;
  * 
  * 
  * @author Ralph Soika
- * @version 1.0
+ * @version 1.1
  * @see org.imixs.workflow.WorkflowManager
  * 
  */
 public class ResultPlugin extends AbstractPlugin {
+
+    public static List<String> SPPORTED_KERNEL_ITEMS = Arrays.asList("$file", "$snapshot.history");
 
     private static Logger logger = Logger.getLogger(ResultPlugin.class.getName());
 
@@ -70,11 +73,10 @@ public class ResultPlugin extends AbstractPlugin {
             for (String itemName : itemNameList) {
                 // do not accept items starting with $
                 // allow $file - Issue #644
-                if ((itemName.startsWith("$") && !itemName.equalsIgnoreCase("$file"))
-                        || "type".equalsIgnoreCase(itemName)) {
-                    logger.warning("<item> tag contains invalid attribute name '" + itemName
+                if (!isValidItemName(itemName)) {
+                    logger.warning("<item> tag contains unsupported item name '" + itemName
                             + "' - verify event result definition!");
-                    
+
                     evalItemCollection.removeItem(itemName);
                 }
             }
@@ -84,4 +86,19 @@ public class ResultPlugin extends AbstractPlugin {
         return documentContext;
     }
 
+    /**
+     * Returns true if the given itemName is valid to be set by this plugin.
+     * 
+     * @param itemname
+     * @return
+     */
+    public boolean isValidItemName(String itemName) {
+        // only if name starts with $ we need to check the SPPORTED_KERNEL_ITEMS
+        if (itemName.startsWith("$")) {
+            if (!SPPORTED_KERNEL_ITEMS.contains(itemName.toLowerCase())) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
