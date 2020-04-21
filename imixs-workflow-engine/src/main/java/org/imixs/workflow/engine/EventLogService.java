@@ -29,15 +29,19 @@
 package org.imixs.workflow.engine;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.jpa.EventLog;
 
@@ -62,6 +66,8 @@ import org.imixs.workflow.engine.jpa.EventLog;
 
 @Stateless
 public class EventLogService {
+
+    public static final String EVENTLOG_LOCK_DATE = "eventlog.lock.date";
 
     @PersistenceContext(unitName = "org.imixs.workflow.jpa")
     private EntityManager manager;
@@ -247,4 +253,79 @@ public class EventLogService {
         manager.detach(eventLog);
         return eventLog;
     }
+
+    /**
+     * This method locks an eventLog entry for processing. The topic will be
+     * suffixed with '.lock' to indicate that this topic is locked by a process. If
+     * a lock is successful a client can exclusive process this eventLog entry.
+     * <p>
+     * The method adds a item 'eventlog.lock.date' with a timestamp. This timestamp
+     * is used by the method 'autoUnlock' to release locked entries.
+     * 
+     * @param eventLogEntry
+     * @return
+     */
+    public void lock(EventLog _eventLogEntry) {
+        EventLog eventLog = manager.find(EventLog.class, _eventLogEntry.getId());
+        if (eventLog != null) {
+            eventLog.setTopic(eventLog.getTopic() + ".lock");
+            ItemCollection data = new ItemCollection(eventLog.getData());
+            data.setItemValue(EVENTLOG_LOCK_DATE, new Date());
+            manager.merge(eventLog);
+        }
+    }
+
+    /**
+     * This method unlocks an eventLog entry. The topic suffix '.lock' will be
+     * removed.
+     * 
+     * @param eventLogEntry
+     * @return
+     */
+    public void unlock(EventLog _eventLogEntry) {
+        EventLog eventLog = _eventLogEntry;
+        if (eventLog != null && !manager.contains(eventLog)) {
+            // entity is not attached - so lookup the entity....
+            eventLog = manager.find(EventLog.class, eventLog.getId());
+        }
+        if (eventLog != null) {
+            // remove lock
+            eventLog.setTopic(eventLog.getTopic().substring(0, eventLog.getTopic().lastIndexOf(".lock")));
+            ItemCollection data = new ItemCollection(eventLog.getData());
+            data.removeItem(EVENTLOG_LOCK_DATE);
+            manager.merge(eventLog);
+        }
+    }
+
+    /**
+     * This method unlocks eventlog entries which are older than 1 minute. We assume
+     * that these events are deadlocks.
+     */
+    @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
+    public void releaseDeadLocks(long deadLockInterval, String... topic) {
+
+        // test if we have dead locks....
+        List<EventLog> events = findEventsByTopic(100, topic + ".lock");
+        Date now = new Date();
+        for (EventLog eventLogEntry : events) {
+
+            // test if batch.event.lock.date is older than 1 minute
+            ItemCollection data = new ItemCollection(eventLogEntry.getData());
+            Date lockDate = data.getItemValueDate(EVENTLOG_LOCK_DATE);
+            long age = 0;
+            if (lockDate != null) {
+                age = now.getTime() - lockDate.getTime();
+                if (age > deadLockInterval) {
+                    logger.warning("Deadlock detected! - snapshot.event.id=" + eventLogEntry.getId()
+                            + " will be unlocked! (deadlock since " + age + "ms)");
+                    unlock(eventLogEntry);
+                }
+            } else {
+                logger.warning("Invalid Deadlock state detected, missing lock date! - snapshot.event.id="
+                        + eventLogEntry.getId() + " will be deleted");
+                removeEvent(eventLogEntry.getId());
+            }
+        }
+    }
+
 }
