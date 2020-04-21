@@ -305,7 +305,10 @@ public class EventLogService {
     public void releaseDeadLocks(long deadLockInterval, String... topic) {
 
         // test if we have dead locks....
-        List<EventLog> events = findEventsByTopic(100, topic + ".lock");
+        for (int i=0;i<topic.length; i++) {
+            topic[i]=topic[i]+ ".lock";
+        }
+        List<EventLog> events = findEventsByTopic(100, topic );
         Date now = new Date();
         for (EventLog eventLogEntry : events) {
 
