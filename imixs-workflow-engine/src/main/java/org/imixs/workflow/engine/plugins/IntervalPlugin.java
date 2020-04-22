@@ -28,13 +28,17 @@
 
 package org.imixs.workflow.engine.plugins;
 
-import java.util.Calendar;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.util.XMLParser;
 
 /**
  * The Imixs Interval Plugin implements an mechanism to adjust a date field of a
@@ -42,10 +46,14 @@ import org.imixs.workflow.exceptions.PluginException;
  * in a field with the prafix 'keyinterval' followed by the name of an existing
  * date field. See the following example:
  * 
- * <code>
- *  keyIntervalDatDate=monthly
- *  datDate=01.01.2014 
- * </code>
+ * <pre>
+ * {@code
+<item name="interval">
+    <ref>reminder</ref>
+    <cron>5 15 * * 1-5</cron>
+</item>}
+ * </pre>
+ * 
  * 
  * @author Ralph Soika
  * @version 1.0
@@ -53,6 +61,8 @@ import org.imixs.workflow.exceptions.PluginException;
  * 
  */
 public class IntervalPlugin extends AbstractPlugin {
+
+    public static final String EVAL_INTERVAL = "interval";
 
     public static final String INVALID_FORMAT = "INVALID_FORMAT";
 
@@ -71,72 +81,187 @@ public class IntervalPlugin extends AbstractPlugin {
             return documentContext;
         }
 
-        Calendar calNow = Calendar.getInstance();
-
-        logger.finest("......compute next interval dates for workitem "
-                + documentContext.getItemValueString(WorkflowKernel.UNIQUEID));
-
+        // validate deprecated configuration via keyinterval
         Set<String> fieldNames = documentContext.getAllItems().keySet();
-        for (String fieldName : fieldNames) {
-            if (fieldName.toLowerCase().startsWith("keyinterval")) {
-                String sInterval = documentContext.getItemValueString(fieldName);
-
-                if (sInterval.isEmpty())
-                    continue;
-
-                sInterval = sInterval.toLowerCase();
-                // lookup for a date value
-                String sDateField = fieldName.substring(11);
-                if (!sDateField.isEmpty() && documentContext.hasItem(sDateField)) {
-                    Date date = documentContext.getItemValueDate(sDateField);
-                    if (date != null) {
-
-                        // verify if date is in the past....
-                        Calendar calDate = Calendar.getInstance();
-                        calDate.setTime(date);
-                        if (calNow.after(calDate)) {
-                            logger.finest("......compute next interval for " + sDateField);
-
-                            // first set day month and year to now
-                            calDate.set(Calendar.YEAR, calNow.get(Calendar.YEAR));
-                            calDate.set(Calendar.MONTH, calNow.get(Calendar.MONTH));
-                            calDate.set(Calendar.DAY_OF_MONTH, calNow.get(Calendar.DAY_OF_MONTH));
-
-                            // test if interval is a number. In this case
-                            // increase the date of the number of days
-                            try {
-                                int iDays = Integer.parseInt(sInterval);
-                                calDate.add(Calendar.DAY_OF_MONTH, iDays);
-                            } catch (NumberFormatException nfe) {
-                                // check for daily, monthly, yerarliy
-
-                                if (sInterval.contains("daily")) {
-                                    calDate.add(Calendar.DAY_OF_MONTH, 1);
-                                }
-
-                                if (sInterval.contains("weekly")) {
-                                    calDate.add(Calendar.DAY_OF_MONTH, 7);
-                                }
-
-                                if (sInterval.contains("monthly")) {
-                                    calDate.add(Calendar.MONTH, 1);
-                                }
-
-                                if (sInterval.contains("yearly")) {
-                                    calDate.add(Calendar.YEAR, 1);
-                                }
-                            }
-
-                            documentContext.replaceItemValue(sDateField, calDate.getTime());
-
-                        }
-                    }
-                }
-
-            }
+        Optional<String> optional = fieldNames.stream().filter(x -> x.toLowerCase().startsWith("keyinterval"))
+                .findFirst();
+        if (optional.isPresent()) {// Check whether optional has element you are looking for
+            throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT,
+                    "Note: keyinterval is no longer supported by the intervalPlugin. Use instead a cron configuration.");
         }
 
+        // evaluate interval configuration
+        long l = System.currentTimeMillis();
+        ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(adocumentActivity, adocumentContext,
+                false);
+        logger.warning("evaluation takes " + (System.currentTimeMillis() - l) + "ms");
+
+        if (evalItemCollection == null) {
+            return adocumentContext;
+        }
+
+        if (evalItemCollection.hasItem(EVAL_INTERVAL)) {
+
+            String invervalDef = evalItemCollection.getItemValueString(EVAL_INTERVAL);
+
+            if (invervalDef.trim().isEmpty()) {
+                // no definition - skip
+                return adocumentContext;
+            }
+            // evaluate the item content (XML format expected here!)
+            ItemCollection processData = XMLParser.parseItemStructure(invervalDef);
+
+            String cron = processData.getItemValueString("cron");
+            cron = adaptNonstandardPredefinedSchedulingDefinitions(cron);
+
+            String ref = processData.getItemValueString("ref");
+            logger.info("......cron=" + cron);
+            logger.info("......ref=" + ref);
+
+            Date refDate = documentContext.getItemValueDate(ref);
+            if (refDate == null) {
+                // no date!
+                logger.warning(
+                        "...date item '" + ref + "' is missing - validate you bpmn model interval configuration");
+                return adocumentContext;
+            }
+
+            // compute cron interval
+            Date newRefDate = evalCron(cron);
+            documentContext.replaceItemValue(ref, newRefDate);
+        }
         return documentContext;
     }
 
+    /**
+     * evaluates a cron definition
+     * 
+     * 00 15 * * 1-5
+     *
+     * @param cron
+     * @param date
+     * @return
+     * @throws PluginException
+     */
+    public Date evalCron(String cron) throws PluginException {
+
+        // split conr
+        String[] cronDef = cron.split(" ");
+        if (cronDef.length != 5) {
+            throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT, "invalid cron format: " + cron);
+        }
+
+        LocalDateTime ldt = LocalDateTime.now().withSecond(0);
+        boolean increase = true;
+        try {
+            // adjust minute
+            String minute = cronDef[0];
+            if (minute.equals("*")) {
+                if (increase) {
+                    increase = false;
+                    ldt = ldt.plusMinutes(1);
+                }
+            } else {
+                ldt = ldt.withMinute(Integer.parseInt(minute));
+            }
+
+            // adjust hour
+            String hour = cronDef[1];
+            if (hour.equals("*")) {
+                if (increase) {
+                    increase = false;
+                    ldt = ldt.plusHours(1);
+                }
+            } else {
+                ldt = ldt.withHour(Integer.parseInt(hour));
+            }
+
+            // adjust dayofmonth
+            String dayofmonth = cronDef[2];
+            if (dayofmonth.equals("*")) {
+                if (increase) {
+                    increase = false;
+                    ldt = ldt.plusDays(1);
+                }
+            } else {
+                ldt = ldt.withDayOfMonth(Integer.parseInt(dayofmonth));
+            }
+
+            // adjust month
+            String month = cronDef[3];
+            if (month.equals("*")) {
+                if (increase) {
+                    increase = false;
+                    ldt = ldt.plusMonths(1);
+                }
+            } else {
+                ldt = ldt.withMonth(Integer.parseInt(month));
+            }
+        } catch (NumberFormatException e) {
+            // we do not support all kind of patterns
+            throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT,
+                    "invalid cron format: " + cron + " Note: we do not yet support all kind of patterns.");
+        }
+
+        // adjust day of week by regex or Year
+        String dayofweek = cronDef[4];
+        if ("*".equals(dayofweek)) {
+            if (increase) {
+                increase = false;
+                ldt = ldt.plusYears(1);
+            }
+        } else {
+            // we assume that this is a regex like [1-5]
+            // try to evaluate....
+            if (!dayofweek.startsWith("[")) {
+                dayofweek = "[" + dayofweek + "]";
+            }
+            int count = 0;
+            while (true) {
+                int dow = ldt.getDayOfWeek().getValue() - 1;
+                if (Pattern.compile(dayofweek).matcher("" + dow).find()) {
+                    break;
+                }
+                ldt = ldt.plusDays(1);
+                count++;
+                if (count > 7) {
+                    // seems to be a wrong regex!
+                    throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT,
+                            "invalid cron format 'DayOfWeek' : " + cron);
+                }
+            }
+
+        }
+
+        // convert to Date...
+        Date result = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+        return result;
+    }
+
+    /**
+     * This method adapts Nonstandard predefined scheduling definitions
+     * 
+     * @param cron
+     * @return
+     */
+    private String adaptNonstandardPredefinedSchedulingDefinitions(String cron) {
+
+        if ("@yearly".equals(cron)) {
+            return "0 0 1 1 *";
+        }
+        if ("@monthly".equals(cron)) {
+            return "0 0 1 * *";
+        }
+        if ("@weekly".equals(cron)) {
+            return "0 0 * * 0";
+        }
+        if ("@daily".equals(cron)) {
+            return "0 0 * * *";
+        }
+        if ("@hourly".equals(cron)) {
+            return "0 * * * *";
+        }
+
+        return cron;
+    }
 }
