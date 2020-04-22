@@ -1,6 +1,9 @@
 package org.imixs.workflow;
 
 import java.awt.Color;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -295,7 +298,6 @@ public class TestItemCollection {
 	 * ItemCollection with embedded collections!
 	 * 
 	 */
-	@SuppressWarnings("unused")
 	@Test
 	public void testCopyValuesWithEmbeddedCollection() {
 
@@ -1270,4 +1272,41 @@ public class TestItemCollection {
 
 	}
 
+	/**
+	 * Test the method getItemValueDate and getItemValueLocalDate and the
+	 * corresponding setter method
+	 * 
+	 */
+	@Test
+	public void testLocalDateValues() {
+		ItemCollection itemCol = new ItemCollection();
+
+		Date nowDate = new Date();
+		itemCol.setItemValue("date", nowDate);
+		Date testDate = itemCol.getItemValueDate("date");
+		Assert.assertEquals(nowDate, testDate);
+
+		// test with LocalDateTime
+		LocalDate localDate = itemCol.getItemValueLocalDate("date");
+
+		// test if equal....
+		Date out = Date.from(localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Assert.assertEquals(dateFormat.format(nowDate), dateFormat.format(out));
+
+		// now set a LocalDateTime Value...
+		LocalDate ldt = nowDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+		itemCol.setItemValue("localdate", ldt);
+
+		LocalDate localDateTest = itemCol.getItemValueLocalDate("localdate");
+		Assert.assertNotNull(localDateTest);
+		Assert.assertEquals(ldt, localDateTest);
+
+		// test date convertion....
+		Date dateTest2 = itemCol.getItemValueDate("localDAte");
+
+		Assert.assertEquals(dateFormat.format(nowDate), dateFormat.format(dateTest2));
+
+	}
 }
