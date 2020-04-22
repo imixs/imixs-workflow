@@ -1,7 +1,8 @@
 # Interval Plugin 
 
-The Imixs Interval Plugin implements an mechanism to adjust a date field of a workitem based on a cron definition. The interval can be defined in the workflow result by setting a reference item by name and a cron definition. See the following example:
-
+The Imixs *IntervalPlugin* provides an easy way for scheduling periodical intervals.  
+The Plugin implements an mechanism to adjust the value of a date item based on a macro or a cron definition.
+ The interval can be defined in the workflow result by setting a reference item by name and a cron definition. See the following example:
 
 	<item name="interval">
 	    <ref>reminder</ref>
@@ -10,9 +11,15 @@ The Imixs Interval Plugin implements an mechanism to adjust a date field of a wo
 
 This example will adjust the date item 'reminder' to 3:00pm the next working day (Mo-Fr). 
 
+	<item name="interval">
+	    <ref>reminder</ref>
+	    <macro>@monthly</macro>
+	</item>
+
+this example will adjust the value of the date item 'reminder' per 1 month. For example: 15.01.2020 => 15.02.2020 
 
 
-The Plugin only runs on scheduled activities. So using the interval plugin in a workflow model provides an easy way for scheduling periodical intervals.  
+**Note:** The IntervalPlugin only runs on scheduled activities. 
 
 ## Cron Expression
 
@@ -29,17 +36,29 @@ The syntax of a cron expression is  made of five fields:
 	 * * * * * 
 
 
-is stored in a field with the prafix 'keyinterval' followed by the name of an  existing DateTime field. See the following example:
 
-###  Nonstandard predefined scheduling definitions
+See the following examples how you can schedule workitems on intervals:
 
-Also the following non-standard macros are supported by Imixs-Workflow:
+| Cron        |Description                                    |       
+|-------------|:---------------------------------------------:|
+| 0 0 1 1 *   | Schedule once a year at midnight of 1 January      |
+| 0 0 1 * *   | Schedule once a month at midnight of the first day of the month   |	
+| 0 0 * * 0   | Schedule once a week at midnight on Sunday morning |
+| 0 0 * * *   | Schedule once a day at midnight                    |
+| 0 * * * *   | Schedule once an hour at the beginning of the hour |
+| 0 15 * * 7  | Schedule every Sunday on 3:00 pm |
 
-|Entry        |Description                                    |Equivalent   |       
-|-------------|:---------------------------------------------:|:-----------:|
-|@yearly      | Run once a year at midnight of 1 January      | 0 0 1 1 *   |
-|@monthly     | Run once a month at midnight of the first day of the month   |	0 0 1 * *   |
-|@weekly      | Run once a week at midnight on Sunday morning | 0 0 * * 0  |
-|@daily       | Run once a day at midnight                    | 0 0 * * *  |
-|@hourly      | Run once an hour at the beginning of the hour | 0 * * * *  |
+
+###  Macro Definitions
+
+The following macros can be used to schedule a workitem based on given date item value:
+
+|Entry        |Description                                    |  
+|-------------|:---------------------------------------------:|
+|@yearly      | Run every year on the same day and month      |
+|@monthly     | Run every month on the same day               |
+|@weekly      | Run every week on the same day of week        |
+|@daily       | Run every day on the same hour and the same minute     |
+|@hourly      | Run every hour on the same minute             |
+
 

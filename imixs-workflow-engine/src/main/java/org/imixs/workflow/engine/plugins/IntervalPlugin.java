@@ -29,8 +29,6 @@
 package org.imixs.workflow.engine.plugins;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -62,206 +60,230 @@ import org.imixs.workflow.util.XMLParser;
  */
 public class IntervalPlugin extends AbstractPlugin {
 
-    public static final String EVAL_INTERVAL = "interval";
+	public static final String EVAL_INTERVAL = "interval";
 
-    public static final String INVALID_FORMAT = "INVALID_FORMAT";
+	public static final String INVALID_FORMAT = "INVALID_FORMAT";
 
-    private ItemCollection documentContext;
-    private static Logger logger = Logger.getLogger(IntervalPlugin.class.getName());
+	private ItemCollection documentContext;
+	private static Logger logger = Logger.getLogger(IntervalPlugin.class.getName());
 
-    /**
-     * The method paresed for a fields with the prafix 'keyitnerval'
-     */
-    public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
-            throws PluginException {
-        documentContext = adocumentContext;
-        // test if activity is a schedule activity...
-        // check if activity is scheduled
-        if (!"1".equals(adocumentActivity.getItemValueString("keyScheduledActivity"))) {
-            return documentContext;
-        }
+	/**
+	 * The method paresed for a fields with the prafix 'keyitnerval'
+	 */
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+			throws PluginException {
 
-        // validate deprecated configuration via keyinterval
-        Set<String> fieldNames = documentContext.getAllItems().keySet();
-        Optional<String> optional = fieldNames.stream().filter(x -> x.toLowerCase().startsWith("keyinterval"))
-                .findFirst();
-        if (optional.isPresent()) {// Check whether optional has element you are looking for
-            throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT,
-                    "Note: keyinterval is no longer supported by the intervalPlugin. Use instead a cron configuration.");
-        }
+		LocalDateTime result = null;
 
-        // evaluate interval configuration
-        long l = System.currentTimeMillis();
-        ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(adocumentActivity, adocumentContext,
-                false);
-        logger.warning("evaluation takes " + (System.currentTimeMillis() - l) + "ms");
+		documentContext = adocumentContext;
+		// test if activity is a schedule activity...
+		// check if activity is scheduled
+		if (!"1".equals(adocumentActivity.getItemValueString("keyScheduledActivity"))) {
+			return documentContext;
+		}
 
-        if (evalItemCollection == null) {
-            return adocumentContext;
-        }
+		// validate deprecated configuration via keyinterval
+		Set<String> fieldNames = documentContext.getAllItems().keySet();
+		Optional<String> optional = fieldNames.stream().filter(x -> x.toLowerCase().startsWith("keyinterval"))
+				.findFirst();
+		if (optional.isPresent()) {// Check whether optional has element you are looking for
+			throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT,
+					"Note: keyinterval is no longer supported by the intervalPlugin. Use instead a cron configuration.");
+		}
 
-        if (evalItemCollection.hasItem(EVAL_INTERVAL)) {
+		// evaluate interval configuration
+		long l = System.currentTimeMillis();
+		ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(adocumentActivity, adocumentContext,
+				false);
+		logger.warning("evaluation takes " + (System.currentTimeMillis() - l) + "ms");
 
-            String invervalDef = evalItemCollection.getItemValueString(EVAL_INTERVAL);
+		if (evalItemCollection == null) {
+			return adocumentContext;
+		}
 
-            if (invervalDef.trim().isEmpty()) {
-                // no definition - skip
-                return adocumentContext;
-            }
-            // evaluate the item content (XML format expected here!)
-            ItemCollection processData = XMLParser.parseItemStructure(invervalDef);
+		if (evalItemCollection.hasItem(EVAL_INTERVAL)) {
 
-            String cron = processData.getItemValueString("cron");
-            cron = adaptNonstandardPredefinedSchedulingDefinitions(cron);
+			String invervalDef = evalItemCollection.getItemValueString(EVAL_INTERVAL);
 
-            String ref = processData.getItemValueString("ref");
-            logger.info("......cron=" + cron);
-            logger.info("......ref=" + ref);
+			if (invervalDef.trim().isEmpty()) {
+				// no definition - skip
+				return adocumentContext;
+			}
+			// evaluate the item content (XML format expected here!)
+			ItemCollection processData = XMLParser.parseItemStructure(invervalDef);
 
-            Date refDate = documentContext.getItemValueDate(ref);
-            if (refDate == null) {
-                // no date!
-                logger.warning(
-                        "...date item '" + ref + "' is missing - validate you bpmn model interval configuration");
-                return adocumentContext;
-            }
+			String cron = processData.getItemValueString("cron").trim().toLowerCase();
+			String macro = processData.getItemValueString("macro").trim().toLowerCase();
+			String ref = processData.getItemValueString("ref").trim().toLowerCase();
 
-            // compute cron interval
-            Date newRefDate = evalCron(cron);
-            documentContext.replaceItemValue(ref, newRefDate);
-        }
-        return documentContext;
-    }
+			if (!cron.isEmpty() && !macro.isEmpty()) {
+				throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT,
+						"invalid interval configuration: cron and macro can not be combined!");
+			}
 
-    /**
-     * evaluates a cron definition
-     * 
-     * 00 15 * * 1-5
-     *
-     * @param cron
-     * @param date
-     * @return
-     * @throws PluginException
-     */
-    public Date evalCron(String cron) throws PluginException {
+			LocalDateTime refDate = documentContext.getItemValueLocalDateTime(ref);
+			if (!macro.isEmpty() && refDate == null) {
+				throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT,
+						"invalid interval configuration: ref item is missing for " + "macro!");
+			}
 
-        // split conr
-        String[] cronDef = cron.split(" ");
-        if (cronDef.length != 5) {
-            throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT, "invalid cron format: " + cron);
-        }
+			logger.info("......cron=" + cron);
+			logger.info("......macro=" + macro);
+			logger.info("......ref=" + ref);
 
-        LocalDateTime ldt = LocalDateTime.now().withSecond(0);
-        boolean increase = true;
-        try {
-            // adjust minute
-            String minute = cronDef[0];
-            if (minute.equals("*")) {
-                if (increase) {
-                    increase = false;
-                    ldt = ldt.plusMinutes(1);
-                }
-            } else {
-                ldt = ldt.withMinute(Integer.parseInt(minute));
-            }
+			// compute cron or macro interval
+			if (!cron.isEmpty()) {
+				result = evalCron(cron);
+			} else {
+				result = evalMacro(macro, refDate);
+			}
 
-            // adjust hour
-            String hour = cronDef[1];
-            if (hour.equals("*")) {
-                if (increase) {
-                    increase = false;
-                    ldt = ldt.plusHours(1);
-                }
-            } else {
-                ldt = ldt.withHour(Integer.parseInt(hour));
-            }
+			// update ref item
+			if (result != null) {
+				documentContext.replaceItemValue(ref, result);
+			}
+		}
+		return documentContext;
+	}
 
-            // adjust dayofmonth
-            String dayofmonth = cronDef[2];
-            if (dayofmonth.equals("*")) {
-                if (increase) {
-                    increase = false;
-                    ldt = ldt.plusDays(1);
-                }
-            } else {
-                ldt = ldt.withDayOfMonth(Integer.parseInt(dayofmonth));
-            }
+	/**
+	 * evaluates a cron definition
+	 * 
+	 * @param cron
+	 * @return new schedule date
+	 * @throws PluginException
+	 */
+	public LocalDateTime evalCron(String cron) throws PluginException {
 
-            // adjust month
-            String month = cronDef[3];
-            if (month.equals("*")) {
-                if (increase) {
-                    increase = false;
-                    ldt = ldt.plusMonths(1);
-                }
-            } else {
-                ldt = ldt.withMonth(Integer.parseInt(month));
-            }
-        } catch (NumberFormatException e) {
-            // we do not support all kind of patterns
-            throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT,
-                    "invalid cron format: " + cron + " Note: we do not yet support all kind of patterns.");
-        }
+		// split conr
+		String[] cronDef = cron.split(" ");
+		if (cronDef.length != 5) {
+			throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT, "invalid cron format: " + cron);
+		}
 
-        // adjust day of week by regex or Year
-        String dayofweek = cronDef[4];
-        if ("*".equals(dayofweek)) {
-            if (increase) {
-                increase = false;
-                ldt = ldt.plusYears(1);
-            }
-        } else {
-            // we assume that this is a regex like [1-5]
-            // try to evaluate....
-            if (!dayofweek.startsWith("[")) {
-                dayofweek = "[" + dayofweek + "]";
-            }
-            int count = 0;
-            while (true) {
-                int dow = ldt.getDayOfWeek().getValue() - 1;
-                if (Pattern.compile(dayofweek).matcher("" + dow).find()) {
-                    break;
-                }
-                ldt = ldt.plusDays(1);
-                count++;
-                if (count > 7) {
-                    // seems to be a wrong regex!
-                    throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT,
-                            "invalid cron format 'DayOfWeek' : " + cron);
-                }
-            }
+		LocalDateTime result = LocalDateTime.now().withSecond(0);
+		boolean increase = true;
+		try {
+			// adjust minute
+			String minute = cronDef[0];
+			if (minute.equals("*")) {
+				if (increase) {
+					increase = false;
+					result = result.plusMinutes(1);
+				}
+			} else {
+				result = result.withMinute(Integer.parseInt(minute));
+			}
 
-        }
+			// adjust hour
+			String hour = cronDef[1];
+			if (hour.equals("*")) {
+				if (increase) {
+					increase = false;
+					result = result.plusHours(1);
+				}
+			} else {
+				result = result.withHour(Integer.parseInt(hour));
+			}
 
-        // convert to Date...
-        Date result = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
-        return result;
-    }
+			// adjust dayofmonth
+			String dayofmonth = cronDef[2];
+			if (dayofmonth.equals("*")) {
+				if (increase) {
+					increase = false;
+					result = result.plusDays(1);
+				}
+			} else {
+				result = result.withDayOfMonth(Integer.parseInt(dayofmonth));
+			}
 
-    /**
-     * This method adapts Nonstandard predefined scheduling definitions
-     * 
-     * @param cron
-     * @return
-     */
-    private String adaptNonstandardPredefinedSchedulingDefinitions(String cron) {
+			// adjust month
+			String month = cronDef[3];
+			if (month.equals("*")) {
+				if (increase) {
+					increase = false;
+					result = result.plusMonths(1);
+				}
+			} else {
+				result = result.withMonth(Integer.parseInt(month));
+			}
+		} catch (NumberFormatException e) {
+			// we do not support all kind of patterns
+			throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT,
+					"invalid cron format: " + cron + " Note: we do not yet support all kind of patterns.");
+		}
 
-        if ("@yearly".equals(cron)) {
-            return "0 0 1 1 *";
-        }
-        if ("@monthly".equals(cron)) {
-            return "0 0 1 * *";
-        }
-        if ("@weekly".equals(cron)) {
-            return "0 0 * * 0";
-        }
-        if ("@daily".equals(cron)) {
-            return "0 0 * * *";
-        }
-        if ("@hourly".equals(cron)) {
-            return "0 * * * *";
-        }
+		// adjust day of week by regex or Year
+		String dayofweek = cronDef[4];
+		if ("*".equals(dayofweek)) {
+			if (increase) {
+				increase = false;
+				result = result.plusYears(1);
+			}
+		} else {
+			// we assume that this is a regex like [1-5]
+			// try to evaluate....
+			if (!dayofweek.startsWith("[")) {
+				dayofweek = "[" + dayofweek + "]";
+			}
+			int count = 0;
+			while (true) {
+				int dow = result.getDayOfWeek().getValue() - 1;
+				if (Pattern.compile(dayofweek).matcher("" + dow).find()) {
+					break;
+				}
+				result = result.plusDays(1);
+				count++;
+				if (count > 7) {
+					// seems to be a wrong regex!
+					throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT,
+							"invalid cron format 'DayOfWeek' : " + cron);
+				}
+			}
 
-        return cron;
-    }
+		}
+
+		return result;
+	}
+
+	/**
+	 * The method evaluates a macro. Possible values:
+	 * <ul>
+	 * <li>@yearly</li>
+	 * <li>@monthly</li>
+	 * <li>@weekly</li>
+	 * <li>@daily</li>
+	 * <li>@hourly</li>
+	 *
+	 * @param macro
+	 * @param date
+	 * @return
+	 * @throws PluginException
+	 */
+	public LocalDateTime evalMacro(String macro, LocalDateTime ldt) throws PluginException {
+
+		switch (macro) {
+		case "@yearly":
+			ldt = ldt.plusYears(1);
+			break;
+		case "@monthly":
+			ldt = ldt.plusMonths(1);
+			break;
+		case "@weekly":
+			ldt = ldt.plusWeeks(1);
+			break;
+		case "@daily":
+			ldt = ldt.plusDays(1);
+			break;
+		case "@hourly":
+			ldt = ldt.plusHours(1);
+			break;
+		default:
+			throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT, "invalid macro format: " + macro);
+		}
+
+		return ldt;
+
+	}
+
 }
