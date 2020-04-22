@@ -40,7 +40,7 @@ The syntax of a cron expression is  made of five fields:
 See the following examples how you can schedule workitems on intervals:
 
 | Cron        |Description                                    |       
-|-------------|:---------------------------------------------:|
+|-------------|:---------------------------------------------|
 | 0 0 1 1 *   | Schedule once a year at midnight of 1 January      |
 | 0 0 1 * *   | Schedule once a month at midnight of the first day of the month   |	
 | 0 0 * * 0   | Schedule once a week at midnight on Sunday morning |
@@ -53,8 +53,8 @@ See the following examples how you can schedule workitems on intervals:
 
 The following macros can be used to schedule a workitem based on given date item value:
 
-|Entry        |Description                                    |  
-|-------------|:---------------------------------------------:|
+|Macro        |Description                                    |  
+|-------------|:---------------------------------------------|
 |@yearly      | Run every year on the same day and month      |
 |@monthly     | Run every month on the same day               |
 |@weekly      | Run every week on the same day of week        |
