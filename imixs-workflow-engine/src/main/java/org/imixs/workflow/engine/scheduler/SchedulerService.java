@@ -173,6 +173,7 @@ public class SchedulerService {
 
         // update write and read access
         configItemCollection.replaceItemValue("type", DOCUMENT_TYPE);
+        configItemCollection.replaceItemValue("$snapshot.history", 1);
         configItemCollection.replaceItemValue("$writeAccess", "org.imixs.ACCESSLEVEL.MANAGERACCESS");
         configItemCollection.replaceItemValue("$readAccess", "org.imixs.ACCESSLEVEL.MANAGERACCESS");
 

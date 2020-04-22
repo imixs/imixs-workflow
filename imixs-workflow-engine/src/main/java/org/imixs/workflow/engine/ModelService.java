@@ -403,6 +403,11 @@ public class ModelService implements ModelManager {
             addModel(model);
             ItemCollection modelItemCol = new ItemCollection();
             modelItemCol.replaceItemValue("type", "model");
+            modelItemCol.replaceItemValue("$snapshot.history", 1);
+            modelItemCol.replaceItemValue("$reator", ctx.getCallerPrincipal().getName());
+            modelItemCol.replaceItemValue("name", bpmnModel.getVersion());
+            
+            // deprecated item names
             modelItemCol.replaceItemValue("namcreator", ctx.getCallerPrincipal().getName());
             modelItemCol.replaceItemValue("txtname", bpmnModel.getVersion());
 

@@ -147,6 +147,7 @@ public class AdminPService {
 
         // set default type
         adminp.replaceItemValue("type", "adminp");
+        adminp.replaceItemValue("$snapshot.history", 1);
 
         String jobtype = adminp.getItemValueString("job");
 

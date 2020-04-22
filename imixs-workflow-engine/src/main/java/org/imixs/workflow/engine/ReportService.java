@@ -158,6 +158,7 @@ public class ReportService {
     public void updateReport(ItemCollection aReport) throws AccessDeniedException {
 
         aReport.replaceItemValue("type", "ReportEntity");
+        aReport.replaceItemValue("$snapshot.history", 1);
 
         // check if Report has a $uniqueid
         String sUniqueID = aReport.getItemValueString("$uniqueID");
