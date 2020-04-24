@@ -172,7 +172,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         }
 
         // support deprecated namowner field
-        searchTerm += " (namowner:\"" + name + "\" OR owner:\"" + name + "\") )";
+        searchTerm += " (namowner:\"" + name + "\" OR $owner:\"" + name + "\") )";
         try {
             return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
         } catch (QueryException e) {
