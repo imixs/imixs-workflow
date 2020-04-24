@@ -7,7 +7,7 @@
       <imixs:value><![CDATA[Team|namTeam]]></imixs:value>
     </imixs:item>
     <imixs:item name="txttimefieldmapping" type="xs:string">
-      <imixs:value><![CDATA[Date|datDate]]></imixs:value>
+      <imixs:value><![CDATA[Date|reminder]]></imixs:value>
     </imixs:item>
     <imixs:item name="txtplugins" type="xs:string">
       <imixs:value><![CDATA[org.imixs.workflow.plugins.AccessPlugin]]></imixs:value>
@@ -80,17 +80,26 @@
         <imixs:item name="txtactivityresult" type="CDATA">
           <imixs:value><![CDATA[<item name="interval">
     <ref>reminder</ref>
-    <cron>5 15 * * 1-5</cron>
+    <cron>0 8 * * 1-5</cron>
 </item>]]></imixs:value>
         </imixs:item>
         <imixs:item name="keyscheduledactivity" type="xs:string">
           <imixs:value><![CDATA[1]]></imixs:value>
         </imixs:item>
         <imixs:item name="keytimecomparefield" type="xs:string">
-          <imixs:value><![CDATA[datDate]]></imixs:value>
+          <imixs:value><![CDATA[reminder]]></imixs:value>
         </imixs:item>
         <imixs:item name="keypublicresult" type="xs:string">
           <imixs:value><![CDATA[0]]></imixs:value>
+        </imixs:item>
+        <imixs:item name="numactivitydelay" type="xs:string">
+          <imixs:value><![CDATA[0]]></imixs:value>
+        </imixs:item>
+        <imixs:item name="keyactivitydelayunit" type="xs:string">
+          <imixs:value><![CDATA[1]]></imixs:value>
+        </imixs:item>
+        <imixs:item name="keyscheduledbaseobject" type="xs:string">
+          <imixs:value><![CDATA[4]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
       <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
