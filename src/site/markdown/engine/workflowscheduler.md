@@ -1,10 +1,29 @@
 # The Workflow Scheduler
-The Imixs WorkflowScheduler provides a TimerService to schedule  workitems based on scheduled Workflow Events.  A scheduled Workflow Event can be defined using the [Imixs-BPM Modeler](../modelling/index.html) by the property tab 'Timer'. If a workitem is in a status where scheduled events are defined, the WorkflowScheduler will process  this workitem automatically based on the model definition.  The Workflow Scheduler can be used to automatically process workflow tasks - e.g. a reminder or a escalation task.
+
+The Imixs-Workflow Scheduler is used for the automated processing of *scheduled events*. A *scheduled event* is a BPMN event assigned to a BPMN task. *Scheduled events* can be used e.g. for a auto reminding or an escalation task.
+
+The Imixs WorkflowScheduler implements a TimerService for processing workitems based on *scheduled events*.  A *scheduled event* can be configured, using the [Imixs-BPM Modeler](../modelling/index.html), on the property tab 'Timer'. If a workitem is in a status with scheduled events, the Imixs-Workflow Scheduler will process this workitem automatically based on the corresponding configuration.  
  
 <center><img src="../images/modelling/bpmn_screen_35.png" style="max-width: 750px;" /></center>
+
+## The Scheduled Event
+
+A *scheduled event* can be configured in the property tab 'Timer'. 
+
+  
+|            | Description                                                                  |
+|------------|------------------------------------------------------------------------------| 
+|enabled     | choose 'yes' to enable a scheduled event (default 'no')                      |
+|selection   | optional definition to select workitems based on a query or selector class   |
+|delay       | delay in minutes, hours, days or working days                                | 
+|from        | base item to compute the delay  | 
+
+**Note:** A scheduled event must define a base datetime item to compute schedule. You can choose a standard item like '$created', '$modified' or '$lastprocessdate' or you can define a application managed item (e.g. a due-date or an invoice-date) . 
+
+
  
  
-## The Configuration
+## The Timer Configuration
 
 The  _WorkflowSchedulerService_ expects the scheduling configuration document. The scheduling configuration defines the timer interval to run the workflow scheduler. 
 
@@ -27,7 +46,7 @@ A timer configuration can be created with the following item definitions:
 	</document>
 
 
-## Scheduling
+### Scheduling
 
 The Imixs WorkflowSchedulerService uses a calendar-based syntax for scheduling based on  the EJB 3.1 Timer Service specification. The syntax takes its roots from the Unix cron utility.
 The following attributes can be stored in the txtConfiguration property of the workflowScheulderSercice  configuration:
@@ -57,31 +76,31 @@ Each attribute of an expression supports values in different formats. For exampl
 
 So you can configure the scheduler is several ways. Here a some typical exampls for possible configuration:
  
-###Every hour
+### Every hour
     hour=*
  
-###Every five minutes with the hour
+### Every five minutes with the hour
 
     minute=*/15
     hour=*
 
-###Every hour from Monday to Friday
+### Every hour from Monday to Friday
 
     hour=*
     dayOfWeek=1-5
 
-###Every 30 minutes with the hours from 8:00 AM to 5:00 PM, from Monday to Friday
+### Every 30 minutes with the hours from 8:00 AM to 5:00 PM, from Monday to Friday
 
     minute=*/30
     hour=8-17
     dayOfWeek=1-5
 
-###Only Sunday on 1:00 AM 
+### Only Sunday on 1:00 AM 
 
     hour=1
     dayOfWeek=7
  
-The scheudler information is stored in the property 'txtConfiguration' as a String List.
+The scheduler information is stored in the property 'txtConfiguration' as a String List.
 The configuration entity for the WorkflowSchedulerService holds the following additional information. 
  
 | property   |type      | description                                                  |       
@@ -91,8 +110,8 @@ The configuration entity for the WorkflowSchedulerService holds the following ad
 |statusmessage|String   | last status message (read only)                               |
 |Schedule    | String   | scheduling information (read only)                            |
 |nextTimeout | Date     | Timestamp for next timeout                                    |
-|timeRemaining | Long   | milisecnds until next timeout                                 |
-|datLastRun  | Date     | Timestamp of last sucessfull run (read only)                  |
+|timeRemaining | Long   | milliseconds until next timeout                                 |
+|datLastRun  | Date     | Timestamp of last successful run (read only)                  |
 |numInterval | int      | optional- timer interval if no txtConfiguration is defined    |
 |datStart    | Date      | optional- start date for timer  if no txtConfiguration is defined    |
 |datStop     | Date      | optional- stop date for timer  if no txtConfiguration is defined    |
@@ -111,8 +130,16 @@ The selector can be overwritten by the BPMN event. For example the modelversion 
 	($taskid:"[TASKID]" AND $workflowgroup:"[MY-WORKLFOWGROUP]")
 
 
+### Custom QuerySelector
+
+An application can implement a *QuerySelector* CDI bean to provide a custom selection of scheduled workitems. The full qualified class name of a QuerySelector can be used instead of a search query. 
+
+	myapp.selectors.MyCustomSelector
   
-## Ignored Workitems
+If a   *QuerySelector* is defined, the WorkflowScheduler tries to inject the selector CDI Bean and calls the find method to select the workitems to be scheduled. 
+
+### Ignored Workitems
+
 The _WorkflowSchedulerService_ processes all kinds of workitems which are assigned to a valid workflow model definition with scheduled events. 
 A workitem is ignored by the _WorkflowSchedulerService_  only in case the workitem type ends with the sufix 'deleted' 
 
@@ -124,66 +151,4 @@ or the workitem is marked as immutable
 
 See the [DocumentService](./documentservice.html) for details. 
   
-
-## The WorkflowSchedulerService EJB
-The WorkflowSchedulerService EJB implements the following methods:
- 
-	public ItemCollection loadConfiguration() ;
-	
-	public ItemCollection saveConfiguration(ItemCollection configItemCollection)
-			throws AccessDeniedException;
-
-	public ItemCollection start() throws AccessDeniedException;
-	
-	public ItemCollection stop() throws AccessDeniedException ;
-	
-	public boolean isRunning();
-
-The methods "_loadConfiguration()_" and "_saveConfiguration()_" can be used to lookup
-or update the current workflow scheduler configuration entity.  The methods "_start()_" and "_stop()_" can be used to start or stop the timer service. The method "_isRunning()_" returns true if the TimerService was started. If the workflowScheduler was started the timerService can be identified by the $UniqueID of the scheduler configuration entity.
-
-
-### Security & Deployment
-The ScheduledWorkflowService EJB is embedded into the security concepts of the Imixs  Workflow Engine. As the ScheduledWorkflowService needs full access rights to all workitems 
-to perform a scheduled activity the EJB is annotated with the @RunAs declaration:
-
-	@DeclareRoles( { "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
-	@Stateless
-	@RunAs("org.imixs.ACCESSLEVEL.MANAGERACCESS")
-	@Remote(org.imixs.workflow.jee.ejb.WorkflowScheduler.class)
-	public class WorkflowSchedulerService implements WorkflowSchedulerServiceRemote {
-	 ....
-	}
-
-This means that the WorkflowSchedulerService EJB need to be deployed with sufficient  security role mappings. For Glassfish it is necessary to declare a principal-name which will be used by the EJB Container calling the @TimeOut method.  You can use the glassfish specific glassfish-application.xml deployment descriptor  in the jee module. To declare a principal-name with manager access use the following  example where the userID "IMIXS-WORKFLOW-Service" is mapped to the Role "org.imixs.ACCESSLEVEL.MANAGER" in the  realm "imixsrealm": 
-
-	<glassfish-application>
-	....
-	    <security-role-mapping>
-	        <role-name>org.imixs.ACCESSLEVEL.MANAGERACCESS</role-name>
-	        <group-name>Manager</group-name>
-	        <principal-name>IMIXS-WORKFLOW-Service</principal-name>
-	    </security-role-mapping>
-	    <realm>imixsrealm</realm>
-	 ...
-	</glassfish-application>
- 
-So in this case the TimerService will be performed by the user "Manfred".
-
-<strong>Note:</strong> Be careful to declare this role and principal-name with care and a setting which is reasonable in your server environment. For example use a reserved user account like "IMIXS-WORKFLOW-Service" which is not used by persons in your  organization.
-          
-
-### galssfish-ejb-jar.xml
-
-Using the galssfish-ejb-jar.xml descriptor it is also necessary to add a principal user to  the ejb declaration which will be associate to the @RunAs annotation. If no principal is defined in galssfish-ejb-jar.xml, the application server uses a principal  from the security-role-mapping. If there is only one principal associated with the role,  that principal will be taken as the default run-as principal value. But if there is more  than one principal associated with the role, you need to explicitly set the run-as  principal in the galssfish-ejb-jar.xml. The following example demonstrates setting the run-as principal in galssfish-ejb-jar.xml:
-
-	 ...
-	<ejb>
-		<ejb-name>WorkflowSchedulerService</ejb-name>
-		<principal>
-			<name>IMIXS-WORKFLOW-Service</name>
-		</principal>
-	</ejb>
-	 ...
- 
  

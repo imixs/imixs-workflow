@@ -37,16 +37,23 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.QuerySelector;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.scheduler.Scheduler;
 import org.imixs.workflow.engine.scheduler.SchedulerException;
 import org.imixs.workflow.engine.scheduler.SchedulerService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.QueryException;
 
 /**
  * This EJB implements a Imixs Scheduler Interface and scans workitems for
@@ -66,6 +73,8 @@ public class WorkflowScheduler implements Scheduler {
     final static public int OFFSET_HOURS = 2;
     final static public int OFFSET_DAYS = 3;
     final static public int OFFSET_WORKDAYS = 4;
+    
+    final static private int MAX_WORKITEM_COUNT=1000;
 
     private static Logger logger = Logger.getLogger(WorkflowScheduler.class.getName());
 
@@ -80,6 +89,11 @@ public class WorkflowScheduler implements Scheduler {
 
     @Inject
     private SchedulerService schedulerService;
+    
+    @Inject
+    @Any
+    protected Instance<QuerySelector> selectors;
+
 
     @Resource
     private SessionContext ctx;
@@ -385,9 +399,10 @@ public class WorkflowScheduler implements Scheduler {
      * event is identified by the attribute keyScheduledActivity="1"
      * 
      * The method goes through the latest or a specific Model Version
+     * @throws ModelException 
      * 
      */
-    protected Collection<ItemCollection> findScheduledEvents(String aModelVersion) throws Exception {
+    protected Collection<ItemCollection> findScheduledEvents(String aModelVersion) throws ModelException  {
         Vector<ItemCollection> vectorActivities = new Vector<ItemCollection>();
         Collection<ItemCollection> colProcessList = null;
 
@@ -424,9 +439,11 @@ public class WorkflowScheduler implements Scheduler {
      * lates model version. (issue #482)
      * 
      * @param event - a event model element
+     * @throws ModelException 
+     * @throws QueryException 
      * @throws Exception
      */
-    protected void processWorkListByEvent(ItemCollection event, ItemCollection configItemCollection) throws Exception {
+    protected void processWorkListByEvent(ItemCollection event, ItemCollection configItemCollection) throws ModelException, QueryException  {
 
         // get task and event id form the event model entity....
         int taskID = event.getItemValueInteger("numprocessid");
@@ -442,14 +459,23 @@ public class WorkflowScheduler implements Scheduler {
 
         if (searchTerm.isEmpty()) {
             // build the default selector....
-            // searchTerm = "($taskid:\"" + taskID + "\" AND $modelversion:\"" +
-            // modelVersionEvent + "\")";
-            // we are build the default selector based on workflowgroup (see isseu #482)....
             searchTerm = "($taskid:\"" + taskID + "\" AND $workflowgroup:\"" + workflowGroup + "\")";
-        }
+        } 
 
-        schedulerService.logMessage("...selector = " + searchTerm + " ...", configItemCollection, null);
-        Collection<ItemCollection> worklist = documentService.find(searchTerm, 1000, 0);
+        List<ItemCollection> worklist =null;
+        // test if selector is a CDI Bean
+        String classPattern="^[a-z][a-z0-9_]*(\\.[A-Za-z0-9_]+)+$";
+        if (Pattern.compile(classPattern).matcher(searchTerm).find()) {            
+            QuerySelector selector=findSelectorByName(searchTerm);
+            if (selector!=null) {
+                schedulerService.logMessage("...CDI selector = " + searchTerm , configItemCollection, null);
+                worklist=selector.find(MAX_WORKITEM_COUNT,0);
+            }
+        } else {
+            schedulerService.logMessage("...selector = " + searchTerm , configItemCollection, null);
+            worklist = documentService.find(searchTerm, MAX_WORKITEM_COUNT, 0);     
+        }
+         
         logger.finest("......" + worklist.size() + " workitems found");
         for (ItemCollection workitem : worklist) {
 
@@ -548,4 +574,37 @@ public class WorkflowScheduler implements Scheduler {
             return null;
     }
 
+    
+    
+    
+    /**
+     * This method returns an injected Plugin by name or null if no plugin with the
+     * requested class name is injected.
+     * 
+     * @param selectorClassName
+     * @return plugin class or null if not found
+     */
+    private QuerySelector findSelectorByName(String selectorClassName) {
+        if (selectorClassName == null || selectorClassName.isEmpty())
+            return null;
+        boolean debug = logger.isLoggable(Level.FINE);
+
+        if (selectors == null || !selectors.iterator().hasNext()) {
+            if (debug) {
+                logger.finest("......no CDI selectors injected");
+            }
+            return null;
+        }
+        // iterate over all injected selectors....
+        for (QuerySelector selector : this.selectors) {
+            if (selector.getClass().getName().equals(selectorClassName)) {
+                if (debug) {
+                    logger.finest("......CDI selector '" + selectorClassName + "' successful injected");
+                }
+                return selector;
+            }
+        }
+
+        return null;
+    }
 }
