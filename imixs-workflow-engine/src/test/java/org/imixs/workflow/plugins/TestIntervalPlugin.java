@@ -113,7 +113,7 @@ public class TestIntervalPlugin {
 	@Test
 	public void test1stDayOfWeek() throws PluginException {
 		// @weekly
-		String cron = "0 0 * * 0 ";
+		String cron = "0 0 * * 1 ";
 		LocalDateTime date = intervalPlugin.evalCron(cron);
 		logger.info("Result monthyl=" + date);
 		// move to past one day...
