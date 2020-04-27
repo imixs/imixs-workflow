@@ -228,7 +228,7 @@ public class IntervalPlugin extends AbstractPlugin {
 			}
 			int count = 0;
 			while (true) {
-				int dow = result.getDayOfWeek().getValue() - 1;
+				int dow = result.getDayOfWeek().getValue();
 				if (Pattern.compile(dayofweek).matcher("" + dow).find()) {
 					break;
 				}
