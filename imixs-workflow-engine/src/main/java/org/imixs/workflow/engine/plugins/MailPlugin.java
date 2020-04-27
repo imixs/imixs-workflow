@@ -150,7 +150,17 @@ public class MailPlugin extends AbstractPlugin {
             }
 
             // set FROM
-            mailMessage.setFrom(getInternetAddress(getFrom(documentContext, documentActivity)));
+            InternetAddress adr = getInternetAddress(getFrom(documentContext, documentActivity));
+            if (adr==null) {
+                // in case of null we set an emtpy address here. This can happen in case
+                // of a RunAs Service EJB where the user context can not be resoved to a valid smtp address
+                if (debug) {
+                    logger.warning("...from address was resolved to null");
+                }
+                // will force a MessagingException...
+                adr=new InternetAddress("");
+            }
+            mailMessage.setFrom(adr);
 
             // set Recipient
             mailMessage.setRecipients(Message.RecipientType.TO, getInternetAddressArray(vectorRecipients));
@@ -189,10 +199,6 @@ public class MailPlugin extends AbstractPlugin {
 
         } catch (MessagingException e) {
             throw new PluginException(MailPlugin.class.getSimpleName(), ERROR_MAIL_MESSAGE, e.getMessage(), e);
-
-            // logger.warning(" run - Warning:" + e.toString());
-            // e.printStackTrace();
-            // return documentContext;
         }
 
         return documentContext;
