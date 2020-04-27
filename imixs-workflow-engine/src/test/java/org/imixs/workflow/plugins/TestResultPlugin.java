@@ -226,7 +226,7 @@ public class TestResultPlugin {
 		// run plugin
 		try {
 			adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-			Assert.assertEquals("workitem", adocumentContext.getType());
+			Assert.assertEquals("workitemdeleted", adocumentContext.getType());
 		} catch (PluginException e) {
             Assert.fail();
 		}
