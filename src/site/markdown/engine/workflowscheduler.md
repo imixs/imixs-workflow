@@ -1,8 +1,8 @@
 # The Workflow Scheduler
 
-The Imixs-Workflow Scheduler is used for the automated processing of *scheduled events*. A *scheduled event* is a BPMN event assigned to a BPMN task. *Scheduled events* can be used e.g. for a auto reminding or an escalation task.
+The Imixs-Workflow Scheduler is responsible for the automated processing of *scheduled events*. A *scheduled event* is a BPMN event assigned to a BPMN task. *Scheduled events* can be used e.g. for a auto reminding or an escalation task.
 
-The Imixs WorkflowScheduler implements a TimerService for processing workitems based on *scheduled events*.  A *scheduled event* can be configured, using the [Imixs-BPM Modeler](../modelling/index.html), on the property tab 'Timer'. If a workitem is in a status with scheduled events, the Imixs-Workflow Scheduler will process this workitem automatically based on the corresponding configuration.  
+The Imixs WorkflowScheduler implements a TimerService to process workitems based on *scheduled events*.  A *scheduled event* can be configured, using the [Imixs-BPM Modeler](../modelling/index.html), on the property tab 'Timer'. If a workitem is in a status having scheduled events, the Imixs-Workflow Scheduler will process this workitem automatically based on the event definition.  
  
 <center><img src="../images/modelling/bpmn_screen_35.png" style="max-width: 750px;" /></center>
 
@@ -16,22 +16,23 @@ A *scheduled event* can be configured in the property tab 'Timer'.
 |enabled     | choose 'yes' to enable a scheduled event (default 'no')                      |
 |selection   | optional definition to select workitems based on a query or selector class   |
 |delay       | delay in minutes, hours, days or working days                                | 
-|from        | base item to compute the delay  | 
+|from        | base item to calculate the schedule                                          | 
 
-**Note:** A scheduled event must define a base datetime item to compute schedule. You can choose a standard item like '$created', '$modified' or '$lastprocessdate' or you can define a application managed item (e.g. a due-date or an invoice-date) . 
+**Note:** A scheduled event must define a base datetime item to calculate the schedule.
+You can choose a standard datetime item like '$created', '$modified' or '$lastprocessdate' or you can define any datetime item managed by your application (e.g. a due-date or an invoice-date) . 
 
 
  
  
 ## The Timer Configuration
 
-The  _WorkflowSchedulerService_ expects the scheduling configuration document. The scheduling configuration defines the timer interval to run the workflow scheduler. 
+The *WorkflowSchedulerService* expects the scheduling configuration document. The scheduling configuration defines the timer interval to run the workflow scheduler. 
 
 A timer configuration can be created with the following item definitions:
 
 	<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	       <item name="type">
-	       		<value xsi:type="xs:string">configuration</value>
+	       		<value xsi:type="xs:string">scheduler</value>
 	       	</item> 
 	       <item name="txtname">
 	       		<value xsi:type="xs:string">org.imixs.workflow.scheduler</value>
@@ -49,7 +50,7 @@ A timer configuration can be created with the following item definitions:
 ### Scheduling
 
 The Imixs WorkflowSchedulerService uses a calendar-based syntax for scheduling based on  the EJB 3.1 Timer Service specification. The syntax takes its roots from the Unix cron utility.
-The following attributes can be stored in the txtConfiguration property of the workflowScheulderSercice  configuration:
+The following attributes can be stored as a value list in the item 'txtConfiguration':
   
 |Attriubte   |Description          | Possible Values                             |Default Value |       
 |------------|---------------------|---------------------------------------------|--------------| 
@@ -100,34 +101,33 @@ So you can configure the scheduler is several ways. Here a some typical exampls 
     hour=1
     dayOfWeek=7
  
-The scheduler information is stored in the property 'txtConfiguration' as a String List.
-The configuration entity for the WorkflowSchedulerService holds the following additional information. 
+The configuration entity will be updated by the WorkflowSchedulerService in each iteration and provides the following additional information. 
  
-| property   |type      | description                                                  |       
-|------------|----------|--------------------------------------------------------------| 
+| property   |type      | description                                                   |       
+|------------|----------|---------------------------------------------------------------| 
 |$uniqueid   | String   | defines the unique ID the for the corresponding TimerService  |
 |txtConfiguration| String List   | Holds information about the calendar based scheduling|
 |statusmessage|String   | last status message (read only)                               |
 |Schedule    | String   | scheduling information (read only)                            |
 |nextTimeout | Date     | Timestamp for next timeout                                    |
-|timeRemaining | Long   | milliseconds until next timeout                                 |
+|timeRemaining | Long   | milliseconds until next timeout                               |
 |datLastRun  | Date     | Timestamp of last successful run (read only)                  |
 |numInterval | int      | optional- timer interval if no txtConfiguration is defined    |
-|datStart    | Date      | optional- start date for timer  if no txtConfiguration is defined    |
-|datStop     | Date      | optional- stop date for timer  if no txtConfiguration is defined    |
+|datStart    | Date     | optional- start date for timer  if no txtConfiguration is defined    |
+|datStop     | Date     | optional- stop date for timer  if no txtConfiguration is defined    |
 
-<strong>Note:</strong> The properties "statusmessage", "schedule", "nextTimeout" and "timeRemaining" are read only and will be updated computed if the method findConfiguration() was called.
+<strong>Note:</strong> The properties "statusmessage", "schedule", "nextTimeout" and "timeRemaining" are read only.
 
 
 ## Selector
 
-The workitems processed by the scheduler are selected by a default selector based on the TaskID, EventID and ModelVersion. 
-
-	($taskid:"[TASKID]" AND $modelversion:"[MODELVERSION]")
-	
-The selector can be overwritten by the BPMN event. For example the modelversion can be replaced by the workflow group to make the scheduling independent from a model version:
+The workitems processed by the scheduler are selected by a default selector based on the $TaskID and the $workflowgroup. 
 
 	($taskid:"[TASKID]" AND $workflowgroup:"[MY-WORKLFOWGROUP]")
+	
+The selector can be overwritten by a BPMN event. For example the workflow group can be replaced by the modelversion to select only a subset of process instances:
+
+	($taskid:"[TASKID]" AND $modelversion:"1.0.0")
 
 
 ### Custom QuerySelector
