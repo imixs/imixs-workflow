@@ -4,6 +4,7 @@ With the _Split & Join_ functionality you can split up a process instance (origi
 
 	org.imixs.workflow.engine.plugins.SplitAndJoinPlugin
 
+<img src="../../images/modelling/splitandjoin-example-01.png"/>
 
 Depending on the model configuration a sub-process instances can also update the origin process instance. This means that data and the state can join the origin process instance.  
 
