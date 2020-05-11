@@ -46,18 +46,28 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.jpa.EventLog;
 
 /**
- * The EventLogService is a service to create and access log events.
+ * The EventLogService is a service to create and access an event log .
  * <p>
  * An event that occurs during an update or a processing function within a
  * transaction becomes a fact when the transaction completes successfully. The
- * EventLogService can be used to create this kind of "Change Data Capture"
- * events. An example is the LuceneUpdateService, which should update the index
- * of a document only if the document was successfully written to the database.
+ * EventLogService can be used to store this kind of "Change Data Capture"
+ * events in a log. An example is the LuceneUpdateService, which should update
+ * the index of a document only if the document was successfully written to the
+ * database.
  * <p>
- * The service is bound to the current PersistenceContext and stores a defined
- * type of document entity directly in the database to represent an event. These
- * types of events can be queried by clients through the service.
+ * The service is bound to the current PersistenceContext and stores a EventLog
+ * entity directly in the database to represent an event. These types of events
+ * can be queried by clients through the service.
+ * <p>
+ * The EventLogService provides a lock/unlock mechanism. An eventLog entry can
+ * optional be locked for processing. The topic of the event will be suffixed
+ * with '.lock' to indicate that this topic is locked by a running process. If a
+ * lock is successful a client can exclusive process this eventLog entry.
+ * <p>
+ * The method releaseDeadLocks unlocks eventlog entries which are older than 1
+ * minute. We assume that these events are deadlocks.
  * 
+ * @see org.imixs.workflow.engine.jpa.EventLog
  * @see org.imixs.workflow.engine.index.UpdateService
  * @author rsoika
  * @version 1.0
@@ -305,10 +315,10 @@ public class EventLogService {
     public void releaseDeadLocks(long deadLockInterval, String... topic) {
 
         // test if we have dead locks....
-        for (int i=0;i<topic.length; i++) {
-            topic[i]=topic[i]+ ".lock";
+        for (int i = 0; i < topic.length; i++) {
+            topic[i] = topic[i] + ".lock";
         }
-        List<EventLog> events = findEventsByTopic(100, topic );
+        List<EventLog> events = findEventsByTopic(100, topic);
         Date now = new Date();
         for (EventLog eventLogEntry : events) {
 
