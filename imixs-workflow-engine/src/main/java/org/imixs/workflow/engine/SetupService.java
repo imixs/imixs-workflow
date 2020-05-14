@@ -135,7 +135,8 @@ public class SetupService {
     @PostConstruct
     public void startup() {
 
-        logger.info("   ____ ");
+        // created with linux figlet
+        logger.info("   ____      _");
         logger.info("  /  _/_ _  (_)_ __ ___   Workflow");
         logger.info(" _/ //  ' \\/ /\\ \\ /(_-<   Engine");
         logger.info("/___/_/_/_/_//_\\_\\/___/   V5.1");
