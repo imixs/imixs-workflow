@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.imixs.workflow</groupId>
 	<artifactId>imixs-workflow</artifactId>
@@ -135,35 +137,8 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
-				<version>3.7.1</version>
-				<configuration>
-					<locales>en</locales>
-
-					<reportPlugins>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-project-info-reports-plugin</artifactId>
-							<version>3.0.0</version>
-							<reports>
-
-								<report>index</report>
-								<report>project-team</report>
-								<report>license</report>
-								<report>mailing-list</report>
-								<report>dependencies</report>
-								<report>dependency-convergence</report>
-								<report>plugin-management</report>
-								<report>cim</report>
-								<report>issue-tracking</report>
-								<report>scm</report>
-								<report>summary</report>
-
-							</reports>
-						</plugin>
-					</reportPlugins>
-
-
-				</configuration>
+				<version>3.9.0</version>
+				
 			</plugin>
 
 			<plugin>
@@ -281,7 +256,7 @@
 			<version>${microprofile.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<!-- JUnit Tests -->
 		<dependency>
 			<groupId>junit</groupId>

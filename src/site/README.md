@@ -7,10 +7,6 @@ The pages are written using markdown.
     $ mvn clean site
 
 
-To skip the report generation:
-
-    $ mvn clean site -DgenerateReports=false
-
 
 
 ## open tasks:
