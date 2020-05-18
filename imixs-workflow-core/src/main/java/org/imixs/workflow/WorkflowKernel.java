@@ -28,6 +28,8 @@
 
 package org.imixs.workflow;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +41,7 @@ import java.util.UUID;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -76,6 +79,7 @@ public class WorkflowKernel {
     public static final String UNIQUEIDVERSIONS = "$uniqueidversions";
     public static final String WORKITEMID = "$workitemid";
     public static final String MODELVERSION = "$modelversion";
+    public static final String TRANSACTIONID = "$transactionid";
 
     @Deprecated
     public static final String PROCESSID = "$processid";
@@ -134,11 +138,24 @@ public class WorkflowKernel {
      * 
      * @see https://docs.oracle.com/javase/8/docs/api/java/util/UUID.html
      * 
-     * @return
+     * @return UUID
      */
     public static String generateUniqueID() {
         String id = UUID.randomUUID().toString();
         return id;
+    }
+
+    /**
+     * This method generates an secure 8 byte random secure id. The ID is returned
+     * as a hex decimal value.
+     * 
+     * @return transactionID
+     */
+    public static String generateTransactionID() {
+        SecureRandom random = new SecureRandom();
+        byte bytes[] = new byte[8];
+        random.nextBytes(bytes);
+        return new BigInteger(1, bytes).toString(16);
     }
 
     /**
@@ -306,6 +323,9 @@ public class WorkflowKernel {
             // generating a new one
             documentResult.replaceItemValue(UNIQUEID, generateUniqueID());
         }
+        
+        // Generate a $TransactionID
+        documentResult.replaceItemValue(TRANSACTIONID,generateTransactionID());
 
         // store last $lastTask
         documentResult.replaceItemValue("$lastTask", workitem.getTaskID());
@@ -521,16 +541,13 @@ public class WorkflowKernel {
         ItemCollection documentResult = documentContext;
         // test if a <model> tag is defined
         String eventResult = event.getItemValueString("txtActivityResult");
-        
+
         List<String> modelTags = XMLParser.findNoEmptyTags(eventResult, "model");
-        if (modelTags!=null && modelTags.size()>0) {
-        //if (eventResult.contains("<model")) {
+        if (modelTags != null && modelTags.size() > 0) {
             // extract the model tag information - version and event are mandatory
             ItemCollection modelData;
-            //modelData = XMLParser.parseTag(eventResult, "model");
-            
             modelData = XMLParser.parseTag(modelTags.get(0), "model");
-            
+
             String version = modelData.getItemValueString("version");
             int iNextEvent = modelData.getItemValueInteger("event");
             int iTask = modelData.getItemValueInteger("task");
