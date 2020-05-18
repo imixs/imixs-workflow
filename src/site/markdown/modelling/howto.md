@@ -51,6 +51,18 @@ Follow-Up Events are typically used in more complex scenarios where additional b
 
 In this example a business rule is applied after the new order was accepted. In case the amount is below 100,- EUR the order is processed by the sales team. In case the amount is greater than 100,- EUR the order will be forwarded to the management by the follow-up event 'forward'. The follow-up event can be used to change the properties of the workitem like ACL settings or additional notifications. A follow-up event is typically not visible. See the [section Event Properties](./activities.html) for further details. 
  
+
+## Stream Events
+
+A stream event is an asynchronous event executed after a processing life-cycle. In difference to *Follow-Up Events* the process instance will be persisted in a new status before a stream event is executed. 
+
+Stream Events are modeled as a BPMN Bounder Event with an outgoing sequence flow to an Imixs-Event element: 
+
+<img src="../images/modelling/example_13.png"/>  
+
+The event element connected to the boundary event will be executed by the Imixs-Workflow engine after a process instances reaches the corresponding task. 
+See the section [Stream Events](../engine/streamevents.html) for more details.
+
  
 ## Conditional Events
 

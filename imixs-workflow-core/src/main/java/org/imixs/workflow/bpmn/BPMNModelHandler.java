@@ -78,6 +78,9 @@ public class BPMNModelHandler extends DefaultHandler {
     private boolean bItemValue = false;
     private boolean bdocumentation = false;
     private boolean bSequenceFlow = false;
+    private boolean bBoundaryEvent = false;
+    private boolean bTimerEventDefinition = false;
+    private boolean btimeDuration = false;
 
     private boolean bconditionExpression = false;
 
@@ -93,6 +96,7 @@ public class BPMNModelHandler extends DefaultHandler {
     private String currentSignalName = null;
     private String currentSignalRefID = null;
     private String currentLinkName = null;
+    private ItemCollection currentBoundaryEvent = null;
 
     private String bpmnID = null;
     private StringBuilder characterStream = null;
@@ -119,6 +123,8 @@ public class BPMNModelHandler extends DefaultHandler {
     private List<String> conditionalGatewayCache = null;
     private List<String> parallelGatewayCache = null;
 
+    private List<ItemCollection> boundaryEventCache = null;
+
     private ItemCollection definition = null;
 
     private List<String> ignoreItemList = null;
@@ -140,6 +146,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
         conditionalGatewayCache = new ArrayList<String>();
         parallelGatewayCache = new ArrayList<String>();
+        boundaryEventCache = new ArrayList<ItemCollection>();
 
         startEvents = new ArrayList<String>();
         endEvents = new ArrayList<String>();
@@ -344,6 +351,21 @@ public class BPMNModelHandler extends DefaultHandler {
             currentSignalRefID = attributes.getValue("signalRef");
         }
 
+        if (qName.equalsIgnoreCase("bpmn2:boundaryEvent")) {
+            bBoundaryEvent = true;
+            currentBoundaryEvent = new ItemCollection();
+            currentBoundaryEvent.setItemValue("attachedToRef", attributes.getValue("attachedToRef"));
+            currentBoundaryEvent.setItemValue("id", attributes.getValue("id"));
+        }
+
+        if (qName.equalsIgnoreCase("bpmn2:timerEventDefinition")) {
+            bTimerEventDefinition = true;
+        }
+        if (qName.equalsIgnoreCase("bpmn2:timeDuration")) {
+            btimeDuration = true;
+            characterStream = new StringBuilder();
+        }
+
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -484,13 +506,35 @@ public class BPMNModelHandler extends DefaultHandler {
             conditionCache.put(bpmnID, svalue);
         }
 
+        if (bBoundaryEvent && qName.equalsIgnoreCase("bpmn2:boundaryEvent")) {
+            bBoundaryEvent = false;
+            boundaryEventCache.add(currentBoundaryEvent);
+        }
+
+        if (qName.equalsIgnoreCase("bpmn2:timerEventDefinition")) {
+            bTimerEventDefinition = false;
+        }
+
+        if (qName.equalsIgnoreCase("bpmn2:timeDuration") && bTimerEventDefinition && btimeDuration) {
+            long l = 0;
+            try {
+                l = Long.parseLong(characterStream.toString());
+            } catch (java.lang.NumberFormatException e) {
+                // no op
+                logger.warning("bpmn2:timeDuration contains invalid format - number format exprected");
+            }
+            currentBoundaryEvent.setItemValue("timerEventDefinition.timeDuration", l);
+            btimeDuration = false;
+            characterStream = null;
+        }
+
     }
 
     // @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void characters(char ch[], int start, int length) throws SAXException {
 
-        if (bdocumentation || bconditionExpression) {
+        if (bdocumentation || bconditionExpression || btimeDuration) {
             characterStream = characterStream.append(new String(ch, start, length));
         }
 
@@ -582,6 +626,38 @@ public class BPMNModelHandler extends DefaultHandler {
             }
             if (isEndTask(key)) {
                 task.setItemValue("endTask", true);
+            }
+
+            // iterate over all boundaryEvents and test if we found one attached to the
+            // current task...
+            for (ItemCollection boundaryEvent : boundaryEventCache) {
+                String taskRef = boundaryEvent.getItemValueString("attachedToRef");
+                if (taskRef.equals(key)) {
+                    // copy boundary properties...
+
+                    // boundaryEvent.timerEventDefinition.timeDuration=1000
+                    // boundaryEvent.targetEvent=30
+                    task.setItemValue("boundaryEvent.timerEventDefinition.timeDuration",
+                            boundaryEvent.getItemValueLong("timerEventDefinition.timeDuration"));
+
+                    // find target event....
+                    List<SequenceFlow> outFlows = findOutgoingFlows(boundaryEvent.getItemValueString("id"));
+                    if (outFlows != null) {
+                        if (outFlows.size() != 1) {
+                            logger.warning(
+                                    "A boundary Event attached to a task must contain exactly one outgoing flow!");
+                        }
+                        // lookup the target event....
+                        String targetEventID = new ElementResolver().findImixsTargetEventID(outFlows.get(0));
+                        ItemCollection targetEvent=eventCache.get(targetEventID);
+                        if (targetEvent!=null) {
+                            task.setItemValue("boundaryEvent.targetEvent",
+                                    targetEvent.getItemValueInteger("numactivityid"));
+                        } else {
+                            logger.warning("Invalid Target for BoundaryEvent "+key);
+                        }
+                    }
+                }
             }
 
             model.addTask(task);
@@ -890,7 +966,7 @@ public class BPMNModelHandler extends DefaultHandler {
         }
         if (targetList.size() > 1) {
             // MULTI target - the event has MANY outgoing targets
-            
+
             event.removeItem("keyFollowUp");
             event.replaceItemValue("numNextProcessID", sourceTask.getItemValue("numProcessID"));
 
@@ -1037,22 +1113,22 @@ public class BPMNModelHandler extends DefaultHandler {
                 }
                 if (targetTask == null) {
                     // test if the event is associated with a LinkThrowEvent
-                    String outgoingLink =null;
+                    String outgoingLink = null;
                     List<SequenceFlow> outLinkFlows = findOutgoingFlows(eventID);
-                    for (SequenceFlow _outLink: outLinkFlows) {
+                    for (SequenceFlow _outLink : outLinkFlows) {
                         if (linkThrowEventCache.containsKey(_outLink.target)) {
-                            outgoingLink=_outLink.target;
+                            outgoingLink = _outLink.target;
                             logger.fine("...event is associated with link event: " + outgoingLink);
                         }
                     }
-                    if (outgoingLink!=null) {
+                    if (outgoingLink != null) {
                         // accept this as a valid situation - e.g. linking into another model
                         event.removeItem("keyFollowUp");
                         event.replaceItemValue("numNextProcessID", sourceTask.getItemValue("numProcessID"));
                     } else {
                         // we found no target task or link event !
                         throw new ModelException(ModelException.INVALID_MODEL,
-                            "Imixs BPMN Event '" + eventName + "' has no target task or link element!");
+                                "Imixs BPMN Event '" + eventName + "' has no target task or link element!");
                     }
                 }
             }
