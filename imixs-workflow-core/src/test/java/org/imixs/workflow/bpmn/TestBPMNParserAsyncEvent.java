@@ -16,9 +16,9 @@ import org.xml.sax.SAXException;
 import junit.framework.Assert;
 
 /**
- * Test class test the Imixs BPMNParser concerning StreamEvents.
+ * Test class test the Imixs BPMNParser concerning AsyncEvents.
  * <p>
- * A stream event is a boundery event attached to a task and will result in the
+ * An Async event is a boundary event attached to a task and will result in the
  * following task attributes:
  * <ul>
  * <li>boundaryEvent.targetEvent</li>
@@ -27,13 +27,13 @@ import junit.framework.Assert;
  * 
  * @author rsoika
  */
-public class TestBPMNParserStreamEvent {
+public class TestBPMNParserAsyncEvent {
 
     protected BPMNModel model = null;
 
     @Before
     public void setUp() throws ParseException, ParserConfigurationException, SAXException, IOException {
-        InputStream inputStream = getClass().getResourceAsStream("/bpmn/streamEventSimple.bpmn");
+        InputStream inputStream = getClass().getResourceAsStream("/bpmn/asyncEventSimple.bpmn");
 
         try {
             model = BPMNParser.parseModel(inputStream, "UTF-8");
