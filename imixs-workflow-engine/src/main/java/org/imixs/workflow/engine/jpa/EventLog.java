@@ -55,6 +55,7 @@ import org.imixs.workflow.exceptions.InvalidAccessException;
  * <li>topic - the topic of the eventlog
  * <li>created - the creation timestamp
  * <li>data - an optional data field
+ * <li>timeout - an optional timestamp indicated the earliest processing time.
  * </ul>
  * <p>
  * The 'data' attribute of an eventLog is optional and can hold any kind of
@@ -84,6 +85,7 @@ public class EventLog implements java.io.Serializable {
     private Integer version;
     private Calendar created;
     private Map<String, List<Object>> data;
+    private Calendar timeout;
 
     /**
      * default constructor for JPA
@@ -108,6 +110,7 @@ public class EventLog implements java.io.Serializable {
         this.topic = topic;
         this.ref = ref;
         this.data = data;
+        this.timeout= cal; // default timeout = now
     }
 
     /**
@@ -172,6 +175,21 @@ public class EventLog implements java.io.Serializable {
 
     public void setCreated(Calendar created) {
         this.created = created;
+    }
+
+    /**
+     * returns an optional timeout information indicated the earliest processing
+     * time.
+     * 
+     * @return time of creation
+     */
+    @Temporal(TemporalType.TIMESTAMP)
+    public Calendar getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(Calendar timeout) {
+        this.timeout = timeout;
     }
 
     /**

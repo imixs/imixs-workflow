@@ -28,6 +28,7 @@
 
 package org.imixs.workflow.engine;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -125,18 +126,23 @@ public class AsyncEventService {
             ItemCollection task = model.getTask(taskID);
             if (task != null) {
                 int boundaryTarget = task.getItemValueInteger("boundaryEvent.targetEvent");
-                long boundaryDuration = task.getItemValueInteger("boundaryEvent.timerEventDefinition.timeDuration");
+                int boundaryDuration = task.getItemValueInteger("boundaryEvent.timerEventDefinition.timeDuration");
                 // create new eventLog ?
                 if (boundaryTarget > 0) {
-
                     if (debug) {
-                        logger.finest("...create new async event - eventId=" + boundaryTarget);
+                        logger.finest("......create new async event - eventId=" + boundaryTarget);
                     }
+                    // compute timeout
+                    Calendar cal = Calendar.getInstance();
+                    cal.add(Calendar.MILLISECOND, boundaryDuration);
+
                     // create EventLogEntry....
                     ItemCollection asyncEventData = new ItemCollection().event(boundaryTarget);
                     asyncEventData.setItemValue("timeDuration", boundaryDuration);
+                    asyncEventData.setItemValue(WorkflowKernel.TRANSACTIONID,
+                            processingEvent.getDocument().getItemValueString(WorkflowKernel.TRANSACTIONID));
                     eventLogService.createEvent(AsyncEventScheduler.EVENTLOG_TOPIC_ASYNC_EVENT,
-                            processingEvent.getDocument().getUniqueID(), asyncEventData);
+                            processingEvent.getDocument().getUniqueID(), asyncEventData, cal);
 
                 }
             }
@@ -159,8 +165,13 @@ public class AsyncEventService {
         long l = System.currentTimeMillis();
         boolean debug = logger.isLoggable(Level.FINE);
 
-        // test for new event log entries...
-        List<EventLog> events = eventLogService.findEventsByTopic(100, AsyncEventScheduler.EVENTLOG_TOPIC_ASYNC_EVENT);
+        // test for new event log entries by timeout...
+        List<EventLog> events = eventLogService.findEventsByTimeout(100,
+                AsyncEventScheduler.EVENTLOG_TOPIC_ASYNC_EVENT);
+
+        if (debug) {
+            logger.finest("......found " + events.size() + " eventLog entries");
+        }
         for (EventLog eventLogEntry : events) {
 
             try {
@@ -173,19 +184,22 @@ public class AsyncEventService {
                     // process workitem....
                     try {
                         // get the data object
-                        ItemCollection batchData = new ItemCollection(eventLogEntry.getData());
+                        ItemCollection syncEventData = new ItemCollection(eventLogEntry.getData());
                         // verify the $transactionID
                         // we only process the workitem if the last transactionID matches the
                         // transactionID form the eventLog entry
+
                         if (workitem.getItemValueString(WorkflowKernel.TRANSACTIONID)
-                                .equals(batchData.getItemValueString(WorkflowKernel.TRANSACTIONID))) {
+                                .equals(syncEventData.getItemValueString(WorkflowKernel.TRANSACTIONID))) {
                             // set the event id....
-                            workitem.setEventID(batchData.getEventID());
+                            workitem.setEventID(syncEventData.getEventID());
                             workitem = workflowService.processWorkItemByNewTransaction(workitem);
                         } else {
                             // just a normal log message
-                            logger.info("...AsyncEvent " + batchData.getEventID() + " for " + workitem.getUniqueID()
-                                    + " is deprecated and will be removed.");
+                            logger.info("...AsyncEvent " + syncEventData.getEventID() + " for " + workitem.getUniqueID()
+                                    + " is deprecated and will be removed. ("
+                                    + workitem.getItemValueString(WorkflowKernel.TRANSACTIONID) + " ≠ "
+                                    + syncEventData.getItemValueString(WorkflowKernel.TRANSACTIONID));
                         }
                         // finally remove the event log entry...
                         eventLogService.removeEvent(eventLogEntry.getId());

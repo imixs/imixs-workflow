@@ -29,6 +29,7 @@
 package org.imixs.workflow.engine;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TemporalType;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.jpa.EventLog;
@@ -92,9 +94,22 @@ public class EventLogService {
      * @return - generated event log entry
      */
     public EventLog createEvent(String topic, String refID) {
-        return createEvent(topic, refID, (Map<String, List<Object>>) null);
+        return createEvent(topic, refID, (Map<String, List<Object>>) null,null);
     }
 
+    /**
+     * Creates/updates a new event log entry.
+     * 
+     * @param refID - uniqueid of the document to be assigned to the event
+     * @param topic - the topic of the event.
+     * @param timeout - optional timeout calendar object
+     * @return - generated event log entry
+     */
+    public EventLog createEvent(String topic, String refID, Calendar timeout) {
+        return createEvent(topic, refID, (Map<String, List<Object>>) null,timeout);
+    }
+
+    
     /**
      * Creates/updates a new event log entry.
      *
@@ -104,7 +119,19 @@ public class EventLogService {
      * @return - generated event log entry
      */
     public EventLog createEvent(String topic, String refID, ItemCollection document) {
-        return this.createEvent(topic, refID, document.getAllItems());
+        return this.createEvent(topic, refID, document.getAllItems(),null);
+    }
+    /**
+     * Creates/updates a new event log entry.
+     *
+     * @param refID    - uniqueId of the document to be assigned to the event
+     * @param topic    - the topic of the event.
+     * @param document - optional document providing a data map
+     * @param timeout - optional timeout calendar object
+     * @return - generated event log entry
+     */
+    public EventLog createEvent(String topic, String refID, ItemCollection document, Calendar timeout) {
+        return this.createEvent(topic, refID, document.getAllItems(),timeout);
     }
 
     /**
@@ -115,7 +142,7 @@ public class EventLogService {
      * @param data  - optional data map
      * @return - generated event log entry
      */
-    public EventLog createEvent(String topic, String refID, Map<String, List<Object>> data) {
+    public EventLog createEvent(String topic, String refID, Map<String, List<Object>> data, Calendar timeout) {
         boolean debug = logger.isLoggable(Level.FINE);
         if (refID == null || refID.isEmpty()) {
             logger.warning("create EventLog failed - given ref-id is empty!");
@@ -125,6 +152,9 @@ public class EventLogService {
         manager.setFlushMode(FlushModeType.COMMIT);
         // now create a new event log entry
         EventLog eventLog = new EventLog(topic, refID, data);
+        if (timeout!=null) {
+            eventLog.setTimeout(timeout);
+        }
         manager.persist(eventLog);
         if (debug) {
             logger.finest("......created new eventLog '" + refID + "' => " + topic);
@@ -156,6 +186,46 @@ public class EventLogService {
 
         // find all eventLogEntries....
         Query q = manager.createQuery(query);
+        q.setMaxResults(maxCount);
+        result = q.getResultList();
+        if (debug) {
+            logger.fine("found " + result.size() + " event for topic " + topic);
+        }
+        return result;
+
+    }
+
+    /**
+     * Finds events for one or many given topics within the current timeout.
+     * <p>
+     * The attribte 'timeout' is optional. If the timeout is set to a future point
+     * of time, the event will be ignored by this method.
+     * 
+     * @param maxCount - maximum count of events to be returned
+     * @param topic    - list of topics
+     * @return - list of eventLogEntries
+     */
+    @SuppressWarnings("unchecked")
+    public List<EventLog> findEventsByTimeout(int maxCount, String... topic) {
+        boolean debug = logger.isLoggable(Level.FINE);
+        List<EventLog> result = new ArrayList<>();
+        String query = "SELECT eventlog FROM EventLog AS eventlog ";
+        query += "WHERE (eventlog.timeout <= :now) AND ";
+        query += " (";
+        for (String _topic : topic) {
+            if (_topic != null && !_topic.isEmpty()) {
+                query += "eventlog.topic = '" + _topic + "' OR ";
+            }
+        }
+        // cut last OR
+        query = query.substring(0, query.length() - 3);
+        query += ") ORDER BY eventlog.created ASC";
+
+        // find all eventLogEntries....
+        Query q = manager.createQuery(query);
+        // set timestamp
+        q.setParameter("now", new Date(), TemporalType.TIMESTAMP);
+        
         q.setMaxResults(maxCount);
         result = q.getResultList();
         if (debug) {

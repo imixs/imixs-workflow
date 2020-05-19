@@ -45,6 +45,7 @@ An EventLog is an immutable entity. The object contains the following properties
  * topic - the topic of the eventlog
  * created - the creation timestamp
  * data - an optional data field
+ * timeout - an optional timestamp indicated the earliest processing time. 
 
 The 'data' attribute of an eventLog is optional and can hold any kind of event specific data (e.g. a Mail Message).
 
