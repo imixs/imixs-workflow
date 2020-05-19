@@ -27,6 +27,14 @@ In BPMN2 the definition of a Async Event looks like this:
 
 The *AsyncEventProcessor* is a managed execution service observing the life cycle of a process instance. If a process instance reaches a task with a Async Event a asynchronous log event will be created and the targetEvent will be executed after the processing life-cycle is completed. 
 
+### The TransactionID
+
+A workitem entity is holding a *$transactionID* identifying the last processing life-cycle. 
+An *AsyncEvent* is only processed in case the *$transactionID* matches the last transactionID from the workitem. 
+In case the *$transactionID* has changed the *AsyncEventProcessor* discards the eventLog entry. 
+This mechanism ensures that AsyncEvents are not fired twice or outside the corresponding status.
+
+
 ### Configuration
 
 The AsyncEventProcessor runs on a scheduled base defined by the following environment settings:

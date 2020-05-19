@@ -46,6 +46,7 @@ import javax.persistence.OptimisticLockException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -171,18 +172,27 @@ public class AsyncEventService {
                 if (workitem != null) {
                     // process workitem....
                     try {
-                        // get the batch event id....
+                        // get the data object
                         ItemCollection batchData = new ItemCollection(eventLogEntry.getData());
-                        workitem.setEventID(batchData.getEventID());
-                        workitem = workflowService.processWorkItemByNewTransaction(workitem);
-
+                        // verify the $transactionID
+                        // we only process the workitem if the last transactionID matches the
+                        // transactionID form the eventLog entry
+                        if (workitem.getItemValueString(WorkflowKernel.TRANSACTIONID)
+                                .equals(batchData.getItemValueString(WorkflowKernel.TRANSACTIONID))) {
+                            // set the event id....
+                            workitem.setEventID(batchData.getEventID());
+                            workitem = workflowService.processWorkItemByNewTransaction(workitem);
+                        } else {
+                            // just a normal log message
+                            logger.info("...AsyncEvent " + batchData.getEventID() + " for " + workitem.getUniqueID()
+                                    + " is deprecated and will be removed.");
+                        }
                         // finally remove the event log entry...
                         eventLogService.removeEvent(eventLogEntry.getId());
                     } catch (WorkflowException | InvalidAccessException | EJBException e) {
                         // we also catch EJBExceptions here because we do not want to cancel the
                         // ManagedScheduledExecutorService
-                        logger.severe(
-                                "AsyncEvent " + workitem.getUniqueID() + " processing failed: " + e.getMessage());
+                        logger.severe("AsyncEvent " + workitem.getUniqueID() + " processing failed: " + e.getMessage());
                         // now we need to remove the batch event
                         logger.warning("AsyncEvent " + workitem.getUniqueID() + " will be removed!");
                         eventLogService.removeEvent(eventLogEntry.getId());
@@ -197,8 +207,7 @@ public class AsyncEventService {
         }
 
         if (debug) {
-            logger.fine(
-                    "..." + events.size() + " AsyncEvents processed in " + (System.currentTimeMillis() - l) + "ms");
+            logger.fine("..." + events.size() + " AsyncEvents processed in " + (System.currentTimeMillis() - l) + "ms");
         }
     }
 
