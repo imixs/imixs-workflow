@@ -34,23 +34,43 @@ A timer configuration can be created with the following item definitions:
 	       <item name="type">
 	       		<value xsi:type="xs:string">scheduler</value>
 	       	</item> 
-	       <item name="txtname">
+	       <item name="name">
 	       		<value xsi:type="xs:string">org.imixs.workflow.scheduler</value>
 	       	</item> 
-	       <item name="txtconfiguration">
+	       <item name="_scheduler_class">
+	       		<value xsi:type="xs:string">org.imixs.workflow.engine.WorkflowScheduler</value>
+	       	</item> 
+	       <item name="_scheduler_definition">
 	       		<value xsi:type="xs:string">hour=*</value>
 	       		<value xsi:type="xs:string">minute=30</value>
 	       	</item>
-	       	<item name="_enabled">
+	       	<item name="_scheduler_enabled">
 	       		<value xsi:type="xs:boolean">true</value>
 	       	</item>  
 	</document>
 
+The Scheduler configuration object can also be created by the *WorkflowSchedulerController* bean:
+
+	@Inject 
+	WorkflowSchedulerController workflowSchedulerController;
+    
+    public void setup() {
+        ItemCollection config=workflowSchedulerController.getConfiguration();
+        config.setItemValue("_scheduler_definition", "hour=*");
+        config.appendItemValue("_scheduler_definition", "minute=/5");
+        workflowSchedulerController.setConfiguration(config);
+        workflowSchedulerController.saveConfiguration();
+        workflowSchedulerController.startScheduler();
+    }
+
+With the method call startScheduler() the workflow scheduler will be started. 
+
+
 
 ### Scheduling
 
-The Imixs WorkflowSchedulerService uses a calendar-based syntax for scheduling based on  the EJB 3.1 Timer Service specification. The syntax takes its roots from the Unix cron utility.
-The following attributes can be stored as a value list in the item 'txtConfiguration':
+The *Imixs WorkflowSchedulerService* uses a calendar-based syntax for scheduling based on  the EJB 3.1 Timer Service specification. The syntax takes its roots from the Unix cron utility.
+The following attributes can be stored as a value list in the item *'_scheduler_definition'*:
   
 |Attriubte   |Description          | Possible Values                             |Default Value |       
 |------------|---------------------|---------------------------------------------|--------------| 
@@ -103,20 +123,19 @@ So you can configure the scheduler is several ways. Here a some typical exampls 
  
 The configuration entity will be updated by the WorkflowSchedulerService in each iteration and provides the following additional information. 
  
-| property   |type      | description                                                   |       
-|------------|----------|---------------------------------------------------------------| 
-|$uniqueid   | String   | defines the unique ID the for the corresponding TimerService  |
-|txtConfiguration| String List   | Holds information about the calendar based scheduling|
-|statusmessage|String   | last status message (read only)                               |
-|Schedule    | String   | scheduling information (read only)                            |
-|nextTimeout | Date     | Timestamp for next timeout                                    |
-|timeRemaining | Long   | milliseconds until next timeout                               |
-|datLastRun  | Date     | Timestamp of last successful run (read only)                  |
-|numInterval | int      | optional- timer interval if no txtConfiguration is defined    |
-|datStart    | Date     | optional- start date for timer  if no txtConfiguration is defined    |
-|datStop     | Date     | optional- stop date for timer  if no txtConfiguration is defined    |
+| property               |type           | description                                                   |       
+|------------------------|---------------|---------------------------------------------------------------| 
+|$uniqueid               | String        | defines the unique ID the for the corresponding TimerService  |
+|_scheduler_definition   | String List   | Holds information about the calendar based scheduling         |
+|_scheduler_enabled      | Boolean       | indicates if the scheduler is enabled                         |
+|_scheduler_logmessage   | String List   | message log (read only)                                       |
+|_scheduler_errormessage | String        | Error message details (read only)                             |
+|_scheduler_status       | String        | current status (read only) |
+|_scheduler_class        | String        | read only must be set to "org.imixs.workflow.engine.WorkflowScheduler"  |
+|nextTimeout             | Date          | Timestamp for next timeout  (read only)                       |
+|timeRemaining           | Long          | milliseconds until next timeout  (read only)                  |
 
-<strong>Note:</strong> The properties "statusmessage", "schedule", "nextTimeout" and "timeRemaining" are read only.
+
 
 
 ## Selector
