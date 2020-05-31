@@ -1,5 +1,5 @@
 # Deployment
-The Imixs-Workflow engine can be deployed in various ways depending on the kind of your server environment. As Imixs-Workflow is based on Jakarta EE, the engine runs in a n EJB and Web Container. This concept gives you the flexibility to setup the Imixs-Workflow engine individually for custom applicatios and server infrastructure. 
+The Imixs-Workflow engine can be deployed in various ways depending on the kind of your server environment. As Imixs-Workflow is based on Jakarta EE, the engine runs in a n EJB and Web Container. This concept gives you the flexibility to setup the Imixs-Workflow engine individually for custom applications and server infrastructure. 
 
 Before you deploy the Imixs-Workflow engine into an application server, consider the following:
  
@@ -7,6 +7,8 @@ Before you deploy the Imixs-Workflow engine into an application server, consider
   * Configure a [security realm](./deployment/security.html) for granting access to different actors
   * Optional configure a OR-Mapper like [EclipseLink](https://www.eclipse.org/eclipselink/) 
 
+If you want to start Imixs-Workflow out of the box follow the [Docker Setup Guide](../docker.html).
+ 
 ## Database
 The Imixs-Workflow engine stores its workflow data into a database. Therefore a database pool need to be provided before you deploy Imixs-Workflow into an application server. The connection between Imixs-Workflow and the database pool is established by the Java Persistence API (JPA). So there is no need to create ad database schema manually. 
 
@@ -22,7 +24,7 @@ See the following example of a persistence.xml:
 			<properties>
 				<!-- target-database Auto MySQL PostgreSQL  -->
 				<property name="eclipselink.target-database" value="Auto" />
-				<property name="eclipselink.ddl-generation" value="create-tables" />
+				<property name="eclipselink.ddl-generation" value="create-or-extend-tables" />
 				<property name="eclipselink.deploy-on-startup" value="true" />
 				<property name="eclipselink.logging.level" value="INFO" />	
 			</properties>				

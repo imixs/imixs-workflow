@@ -14,7 +14,26 @@ Next lets see how you can integrate Imixs-Workflow in your own Java application.
 
 ## How to Integrate Imixs-Workflow
 
-The Imixs-Workflow engine is based on Jakarta EE and so it can be integrated easily into a business application by injection.
+The Imixs-Workflow engine is based on Jakarta EE and so it can be integrated easily into a business application by just adding the maven depdencies:
+
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-engine</artifactId>
+			<version>${org.imixs.workflow.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-jax-rs</artifactId>
+			<version>${org.imixs.workflow.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.imixs.workflow</groupId>
+			<artifactId>imixs-workflow-index-lucene</artifactId>
+			<version>${org.imixs.workflow.version}</version>
+		</dependency>
+
+
+From you code you can access the Imixs-Workflow engine by injection.
 
 Let's see what this looks like in your Java code:
 

@@ -10,43 +10,32 @@ The subproject [Imixs-Microservice](https://github.com/imixs/imixs-microservice)
 
 ## How to run a Imixs Docker Container
 
-To use Imixs-Workflow out of the box, the Imixs-Microservice is also available as a [docker image on Docker Hub](https://hub.docker.com/r/imixs/imixs-microservice/) which can be deployed into any [Docker Environment](https://www.docker.com/). 
-To run Imixs-Workflow in a container start the Docker Image imixs/workflow:
+To use Imixs-Workflow out of the box, you can create a 'docker-compose' file:
 
-	docker run --name="imixs-workflow" -d -p 8080:8080 -p 9990:9990 \
-	         -e WILDFLY_PASS="adminadmin" \
-	         --link imixs-workflow:postgres \
-	         imixs/imixs-workflow
-
-The container need to be linked to the postgres container providing a database name 'workflow'. See the [docker project home](https://hub.docker.com/r/imixs/imixs-microservice/) for more information. 
-
-### ...via docker-compose
-
-You can simplify the start process of Imixs-Workflow by using 'docker-compose'.
-The following example shows a docker-compose.yml file to run imixs-workflow:
-
-	postgres:
-	  image: postgres
-	  environment:
-	    POSTGRES_PASSWORD: adminadmin
-	    POSTGRES_DB: workflow
-	
-	imixsworkflow:
-	  image: imixs/workflow
-	  environment:
-	    WILDFLY_PASS: adminadmin
-	  ports:
-	    - "8080:8080"
-	    - "9990:9990"
-	  links: 
-	    - postgres:postgres
-    
-Take care about the link to the postgres container. The host 'postgres' name need to be used in the standalone.xml configuration file in wildfly to access the postgres server.
+	version: '3.3'
+	services:
+	  db:
+	    image: postgres:9.6.1
+	    environment:
+	      POSTGRES_PASSWORD: adminadmin
+	      POSTGRES_DB: workflow
+	  app:
+	    image: imixs/imixs-microservice
+	    environment:
+	      WILDFLY_PASS: adminadmin
+	      POSTGRES_HOST: "db"
+	      POSTGRES_USER: "postgres"
+	      POSTGRES_PASSWORD: "adminadmin"
+	      POSTGRES_DATABASE: "workflow"
+	      POSTGRES_CONNECTION: "jdbc:postgresql://db/workflow"
+	    ports:
+	      - "8080:8080"
 
 Run start imixs-wokflow with docker-compose run:
 
 	docker-compose up
-
+	    
+**Note:** The container is linked to the postgres container providing a database name 'workflow'. See the [docker project home](https://hub.docker.com/r/imixs/imixs-microservice/) for more information. 
 
 ## Testing the Imixs-Microservice
 
