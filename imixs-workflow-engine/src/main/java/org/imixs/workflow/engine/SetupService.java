@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
@@ -52,6 +53,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.bpmn.BPMNModel;
@@ -208,13 +210,10 @@ public class SetupService {
 
         String[] modelResources = modelData.split(";");
         for (String modelResource : modelResources) {
-
-            // try to load this model
-
-            // test if bpmn model?
+            // try to load the resource file....
             if (modelResource.endsWith(".bpmn") || modelResource.endsWith(".xml")) {
                 logger.info("...uploading default model file: '" + modelResource + "'....");
-                // if resource starts with '/' then we pickp the file form the filesystem.
+                // if resource starts with '/' then we pickup the file form the filesystem.
                 // otherwise we load it as a resource bundle.
                 InputStream inputStream = null;
                 try {
@@ -223,9 +222,11 @@ public class SetupService {
                         inputStream = new FileInputStream(initialFile);
                     } else {
                         inputStream = SetupService.class.getClassLoader().getResourceAsStream(modelResource);
+                        if (inputStream == null) {
+                            throw new IOException("the resource '" + modelResource + "' could not be found!");
+                        }
                     }
                     // parse model file....
-
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     int next;
 
@@ -237,7 +238,7 @@ public class SetupService {
                     bos.flush();
                     byte[] result = bos.toByteArray();
 
-                    // is BPMN?
+                    // test if it is a bpmn model?
                     if (modelResource.endsWith(".bpmn")) {
                         BPMNModel model = BPMNParser.parseModel(result, "UTF-8");
                         modelService.saveModel(model);
