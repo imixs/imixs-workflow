@@ -33,7 +33,7 @@ To use Imixs-Workflow out of the box, you can create a 'docker-compose' file:
 
 Run start imixs-wokflow with docker-compose run:
 
-	docker-compose up
+	$ docker-compose up
 	    
 **Note:** The container is linked to the postgres container providing a database name 'workflow'. See the [docker project home](https://hub.docker.com/r/imixs/imixs-microservice/) for more information. 
 
