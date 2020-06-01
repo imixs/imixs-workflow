@@ -1,4 +1,59 @@
-# Migration Notes 4.0.0
+This document contains migration notes from older version of Imixs-Workflow. 
+
+# Migration 5.1 -> 5.2
+
+Since version 5.2.x the EventLog JPA entity was extended with a new column 'timeout'. For that the table schema need to be updated.
+
+**Solution 1)**
+
+In persistence.xml set the eclipse property 'eclipselink.ddl-generation' to 'create-or-extend-tables'
+
+		....
+		<properties>
+		   .....
+			<!-- optional extend schema... --> 
+			<property name="eclipselink.ddl-generation" value="create-or-extend-tables" />
+			.....
+		</properties>
+		....
+
+
+**Solution 2)**
+
+As an alternative you can also drop the table 
+
+	$ docker exec -it f637718e09be bash
+	...
+	root@f637718e09be:/# psql workflow-db -Upostgres
+	workflow-db=# drop table eventlog;
+	DROP TABLE
+	
+After a redeployment the table will be recreated.
+
+
+
+# Migration 4.x -> 5.0
+
+This document contains migration notes about the migration from Imixs-Workflow version 4.x to version 5.x.
+
+With version 5.0.0 the Eclipse Microprofile 2.0 is supported. 
+
+
+### Migrate imixs.properties
+
+With version 5.0 the MP config API is introduced. The ImixsConfigSource provides the imixs.properties file so there is **no** need to rename or move the imixs.properties file to /META-INF/microprofile-config.properties
+
+Of course it is possible to set property values also into the file /META-INF/microprofile-config.properties
+
+Imixs property values can be set in:
+
+* System.getProperties()
+* System.getenv()
+* All META-INF/microprofile-config.properties on the classpath
+* The imixs.properties on the classpath 		
+
+
+# Migration 3.x -> 4.0
 
 This document contains migration notes about the migration from Imixs-Workflow version 3.x to version 4.x.
 
@@ -36,12 +91,12 @@ To migrate data form version 3.x to version 4.x the latest [Imixs-Admin Client](
  
 
 
-# Coding Guidelines
+## Coding Guidelines
 
 The following section contains information about new coding guidelines to be followed in a migration from Imixs-Workflow version 3.x to version 4.x.
 
 
-## How to Migrate BPMN Models
+### How to Migrate BPMN Models
 
 In Imixs-Workflow 4.x the plug-in package has changed from 'org.imixs.workflow.plugins....'  to 'org.imixs.workflow.engine.plugins...'.
 The plugin 'org.imixs.workflow.lucene.LucenePlugin' can be removed form the model. 
@@ -51,7 +106,7 @@ You need to change the plugin classes in your model files and upload the new mod
 	curl --user admin:adminadmin --request POST -Tmymodel.bpmn http://localhost:8080/workflow/rest-service/model/bpmn
  
 
-## Packages
+### Packages
 
 The following java packages are deprecated in version 4.x but still available to support the migration:
 
@@ -68,7 +123,7 @@ The following new packages are introduced with version 4.x :
   * org.imixs.workflow.engine.jpa - contains the persistence JPA classes
   * org.imixs.workflow.engine.plugins - contains all plug-in classes
  
-## Persistence API
+### Persistence API
 
 With version 4.x a new persistence layer was introduced. There is now only one single JPA entity bean class
 
@@ -79,11 +134,11 @@ The Document class replaces the deprecated Entity Class with all additional inde
 The package 'org.imxis.workflow.jee.jpa' is still available in version 4.x to support the migration path. We will drop this package with version 4.1.x finally. 
  
  
-## EJBs
+### EJBs
 
 All Imixs Service EJBs are moved into the package '_org.imixs.workflow.ejb_'. The EntityService EJB was replaced with the new [DocumentService](http://www.imixs.org/doc/engine/documentservice.html) EJB.  
 
-## Migrate JPQL Statements
+### Migrate JPQL Statements
 
 JPQL Statements can be replaced with corresponding Lucene Search terms.
 
@@ -99,7 +154,7 @@ JPQL Statements can be replaced with corresponding Lucene Search terms.
 		
 Read the [Query Syntax](http://www.imixs.org/doc/engine/queries.html) for more details.
 
-## Rest API
+### Rest API
 
 The old rest api to post workitems in JSON/XML format is supported by a backport using the resource /v3/
 
@@ -109,7 +164,7 @@ The old rest api to post workitems in JSON/XML format is supported by a backport
 
 **NOTE:** This api is deprecated and will be droped with future releases!
 
-## XML
+### XML
 
 The XML schema changed. The tag 'entity' was renamed with 'document'. The tag 'name' is now an attribute of the document tag.
 See example below:
@@ -134,4 +189,3 @@ See example below:
 	        </item>
 	        .....
 	    </document>
-
