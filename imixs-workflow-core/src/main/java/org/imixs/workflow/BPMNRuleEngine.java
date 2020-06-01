@@ -52,9 +52,9 @@ public class BPMNRuleEngine {
     /**
      * Evaluates a BPMN Business Rule based on the data provided by a workitem.
      * 
-     * @param workitem
-     * @return evaluated task id
-     * @throws ModelException
+     * @param workitem workitem to be evaluated
+     * @return evaluated task id 
+     * @throws ModelException if model is invalid
      */
     public int eval(ItemCollection workitem) throws ModelException {
         // setup the workflow rule context

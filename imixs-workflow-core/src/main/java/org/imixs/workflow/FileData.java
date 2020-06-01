@@ -42,7 +42,7 @@ import javax.xml.bind.DatatypeConverter;
  * 'contentType'. The optional object custom attributes can be added. It
  * represents a {@code Map<String, List<Object>>}
  * 
- * @see ItemCollection.addFile
+ * @see ItemCollection addFile
  * @author rsoika
  * @version 2.0
  */
@@ -107,7 +107,6 @@ public class FileData {
      * method setAttribute().
      * 
      * @param name a String specifying the name of the custom attribute
-     * 
      * @return: an Object containing the value of the attribute, or null if the
      *          attribute does not exist
      **/
@@ -135,9 +134,8 @@ public class FileData {
     /**
      * Generates a MD5 from a current file content
      * 
-     * @param b
-     * @return
-     * @throws NoSuchAlgorithmException
+     * @throws NoSuchAlgorithmException - invalid algorithm
+     * @return md5 string
      */
     public String generateMD5() throws NoSuchAlgorithmException {
         byte[] hash_bytes = MessageDigest.getInstance("MD5").digest(content);
@@ -147,8 +145,9 @@ public class FileData {
     /**
      * Validates a given MD5 checksum
      * 
+     * @param checksum - checksum to validate
+     * @throws NoSuchAlgorithmException - invalid algorithm
      * @return true if equal
-     * @throws NoSuchAlgorithmException
      */
     public boolean validateMD5(String checksum) throws NoSuchAlgorithmException {
         String testChecksum = generateMD5();

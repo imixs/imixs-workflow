@@ -123,10 +123,10 @@ public class ItemCollection implements Cloneable {
 	 * Creates a new ItemCollection by a reference to a given value Map. This method
 	 * does not make a deep copy of the given map and sets the value map by
 	 * reference. This method can be used in cases where values are only read. In
-	 * all other cases, the constructor method 'ItemCollection(Map<String,
-	 * List<Object>> map)' should be used.
+	 * all other cases, the constructor method 'ItemCollection(map)' should be used.
 	 * 
 	 * @param map - reference with item values
+	 * @return new reference
 	 */
 	public static ItemCollection createByReference(final Map<String, List<Object>> map) {
 		ItemCollection reference = new ItemCollection();
@@ -200,8 +200,8 @@ public class ItemCollection implements Cloneable {
 	 * @param itemValue The value of the new item. The data type of the item depends
 	 *                  upon the data type of value, and does not need to match the
 	 *                  data type of the old item.
+	 * @return current instance
 	 */
-
 	public ItemCollection setItemValue(String itemName, Object itemValue) {
 		setItemValue(itemName, itemValue, false, false);
 		return this;
@@ -230,8 +230,8 @@ public class ItemCollection implements Cloneable {
 	 * @param itemValue The value of the new item. The data type of the item depends
 	 *                  upon the data type of value, and does not need to match the
 	 *                  data type of the old item.
+     * @return current instance
 	 */
-
 	public ItemCollection setItemValueUnique(String itemName, Object itemValue) {
 		setItemValue(itemName, itemValue, false, true);
 		return this;
@@ -255,6 +255,7 @@ public class ItemCollection implements Cloneable {
 	 * @param itemValue The value of the new item. The data type of the item depends
 	 *                  upon the data type of value, and does not need to match the
 	 *                  data type of the old item.
+     * @return current instance
 	 */
 	public ItemCollection appendItemValue(String itemName, Object itemValue) {
 		setItemValue(itemName, itemValue, true, false);
@@ -282,6 +283,7 @@ public class ItemCollection implements Cloneable {
 	 * @param itemValue The value of the new item. The data type of the item depends
 	 *                  upon the data type of value, and does not need to match the
 	 *                  data type of the old item.
+     * @return current instance
 	 */
 	public ItemCollection appendItemValueUnique(String itemName, Object itemValue) {
 		setItemValue(itemName, itemValue, true, true);
@@ -294,7 +296,7 @@ public class ItemCollection implements Cloneable {
 	 * The values have the same object type as set by calling the method
 	 * <code>setItemValue(String itemName, Object itemValue)</code>. To get a typed
 	 * value list, see the method
-	 * <code>getItemValue(String itemName, Class<T> itemType)</code> .
+	 * <code>getItemValue(itemName, itemType)</code> .
 	 * 
 	 * <p>
 	 * If the item does not exist or has no values, the method returns an empty
@@ -305,7 +307,6 @@ public class ItemCollection implements Cloneable {
 	 * 
 	 * @param itemName The name of an item.
 	 * @return an untyped list of values contained by the item.
-	 * 
 	 */
 	@SuppressWarnings("rawtypes")
 	public List getItemValue(String itemName) {
@@ -401,7 +402,7 @@ public class ItemCollection implements Cloneable {
 	/**
 	 * removes a attribute from the item collection
 	 * 
-	 * @param name
+	 * @param name - item name
 	 */
 	public void removeItem(String name) {
 		if (name != null) {
@@ -413,7 +414,7 @@ public class ItemCollection implements Cloneable {
 	/**
 	 * Indicates whether an item exists in the document.
 	 * 
-	 * @param aName The name of an item.
+	 * @param aName - item name
 	 * @return true if an item with name exists in the document, false if no item
 	 *         with name exists in the document
 	 * 
@@ -430,7 +431,7 @@ public class ItemCollection implements Cloneable {
 	 * Returns true if the value of an item with a single numeric value is from type
 	 * 'Integer'
 	 * 
-	 * @param aName
+	 * @param aName - item name
 	 * @return boolean true if object is from type Double
 	 * 
 	 */
@@ -449,7 +450,7 @@ public class ItemCollection implements Cloneable {
 	 * Returns true if the value of an item with a single numeric value is from type
 	 * 'Long'
 	 * 
-	 * @param aName
+	 * @param aName - item name
 	 * @return boolean true if object is from type Double
 	 * 
 	 */
@@ -468,7 +469,7 @@ public class ItemCollection implements Cloneable {
 	 * Returns true if the value of an item with a single numeric value is from type
 	 * 'Double'
 	 * 
-	 * @param aName
+	 * @param aName - item name
 	 * @return boolean true if object is from type Double
 	 * 
 	 */
@@ -487,7 +488,7 @@ public class ItemCollection implements Cloneable {
 	 * Returns true if the value of an item with a single numeric value is from type
 	 * 'Float'
 	 * 
-	 * @param aName
+	 * @param aName - item name
 	 * @return boolean true if object is from type Double
 	 * 
 	 */
@@ -505,7 +506,7 @@ public class ItemCollection implements Cloneable {
 	/**
 	 * Returns true if the value of an item is from type 'Date'
 	 * 
-	 * @param aName
+	 * @param aName - item name
 	 * @return boolean true if object is from type Double
 	 * 
 	 */

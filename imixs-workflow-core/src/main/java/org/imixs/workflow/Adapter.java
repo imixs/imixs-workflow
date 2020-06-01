@@ -47,7 +47,7 @@ public abstract interface Adapter {
      * @param document the workitem to be processed
      * @param event    the workflow event containing the processing instructions
      * @return updated workitem for further processing
-     * @throws AdapterException
+     * @throws AdapterException interrupt processing
      */
     public ItemCollection execute(ItemCollection document, ItemCollection event) throws AdapterException;
 

@@ -41,7 +41,7 @@ package org.imixs.workflow;
  * 
  * @author Ralph Soika
  * @version 1.0
- * @see org.imixs.workflow.engine.WorkflowKernel
+ * @see org.imixs.workflow.WorkflowKernel
  */
 
 public interface GenericAdapter extends Adapter {
