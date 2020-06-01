@@ -137,8 +137,35 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
-				<version>3.9.0</version>
-				
+				<version>3.7.1</version>
+				<configuration>
+					<locales>en</locales>
+
+					<reportPlugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-project-info-reports-plugin</artifactId>
+							<version>3.0.0</version>
+							<reports>
+
+								<report>index</report>
+								<report>project-team</report>
+								<report>license</report>
+								<report>mailing-list</report>
+								<report>dependencies</report>
+								<report>dependency-convergence</report>
+								<report>plugin-management</report>
+								<report>cim</report>
+								<report>issue-tracking</report>
+								<report>scm</report>
+								<report>summary</report>
+
+							</reports>
+						</plugin>
+					</reportPlugins>
+
+
+				</configuration>
 			</plugin>
 
 			<plugin>
