@@ -8,11 +8,15 @@ You create your workflow model with the Eclipse based modeling tool [Imixs-BPMN]
 <img src="./images/modelling/order-01.png" />
 
 The blue boxes symbolize **Task** elements, while the yellow symbols describe **Event** elements. The later can change the state within the process.
-An event is typically triggered by a process participant within your application. The example model can be download from [Github](https://github.com/imixs/imixs-workflow/tree/master/src/site/resources/bpmn). 
+An event is typically triggered by a process participant within your application. The example model can be download from [Github](https://github.com/imixs/imixs-workflow/tree/master/src/site/resources/bpmn). You will find more examples about modeling in the section [How to Model with Imixs-BPMN](./modelling/howto.html).
 
 Next lets see how you can integrate Imixs-Workflow in your own Java application. 
 
-## How to Integrate Imixs-Workflow
+**Notice:** In case you plan to use Imixs-Workflow as a microservice you can start an Imixs-Workflow instance with one single command in a container. Learn more about how to containerize Imixs-Workflow in the section [Docker](docker.html). See also the [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) on Github which provides full Docker support.
+
+
+
+## How to Integrate Imixs-Workflow into you Business Application
 
 The Imixs-Workflow engine is based on Jakarta EE and so it can be integrated easily into a business application by just adding the maven depdencies:
 
