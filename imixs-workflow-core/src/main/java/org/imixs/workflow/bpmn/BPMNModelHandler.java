@@ -508,20 +508,25 @@ public class BPMNModelHandler extends DefaultHandler {
 
         if (bBoundaryEvent && qName.equalsIgnoreCase("bpmn2:boundaryEvent")) {
             bBoundaryEvent = false;
-            boundaryEventCache.add(currentBoundaryEvent);
+            if (currentBoundaryEvent!=null) {
+                boundaryEventCache.add(currentBoundaryEvent);
+            }
         }
 
         if (qName.equalsIgnoreCase("bpmn2:timerEventDefinition")) {
             bTimerEventDefinition = false;
         }
 
-        if (qName.equalsIgnoreCase("bpmn2:timeDuration") && bTimerEventDefinition && btimeDuration) {
+        if (bTimerEventDefinition && btimeDuration && currentBoundaryEvent!=null && qName.equalsIgnoreCase("bpmn2:timeDuration") ) {
             long l = 0;
             try {
-                l = Long.parseLong(characterStream.toString());
+                String v=characterStream.toString().trim();
+                if (!v.isEmpty()) {
+                    l = Long.parseLong(v);
+                }
             } catch (java.lang.NumberFormatException e) {
                 // no op
-                logger.warning("bpmn2:timeDuration contains invalid format - number format exprected");
+                logger.warning("bpmn2:timeDuration contains invalid format - number format expected");
             }
             currentBoundaryEvent.setItemValue("timerEventDefinition.timeDuration", l);
             btimeDuration = false;
@@ -534,6 +539,10 @@ public class BPMNModelHandler extends DefaultHandler {
     @Override
     public void characters(char ch[], int start, int length) throws SAXException {
 
+        if (characterStream==null) {
+            return;
+        }
+        
         if (bdocumentation || bconditionExpression || btimeDuration) {
             characterStream = characterStream.append(new String(ch, start, length));
         }
