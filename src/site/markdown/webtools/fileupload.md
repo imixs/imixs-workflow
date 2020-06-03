@@ -2,11 +2,11 @@
 
 Imixs-Faces Fileupload is a custom component to provide a fileUpload widget.  The component consists of the following parts
  
-  * the FileUploadConroller which provides an frontend controller to extract and store uploaded files into a workitem
-  * the AjaxFIleUploadServicel with is a Multipart-Servlet 3.0. to handle file uploads from a ajax component.
-  * the i:imixsFileUpload JSF widget
+  * the FileUploadController - a front-end controller to push uploaded files into a workitem
+  * the AjaxFileUploadServlet - a Multipart-Servlet 3.0. to handle file uploads from a ajax component.
+  * the i:imixsFileUpload  - a JSF widget
  
-This i:imixsFileUpload component can be included directly into any JSF form with the enctype="multipart/form-data".  To add the FileUpload component into a JSF page use the tag 'imixsFileUpload'
+The i:imixsFileUpload JSF widget can be included into any JSF form using the tag 'imixsFileUpload'
  
 
 	<i:imixsFileUpload id="file_upload_id" />
@@ -28,12 +28,13 @@ The FileUpload component provides a set of style classes which can be used to cu
 |.imixsfileuploadtable  | general table layout                                  |
 
 
-## The FileUploadConroller 
-The FileUploadConroller provides methods to extract a file from a mulitpart http request. So the controller can be used in JSF pages to provide a fileUpload feature. The controller provides a build-in functionality to store the uploaded files into a ItemCollection. A client can set a target WorkItem by calling setWorkitem(). If the WorkItem contains a property "$BlobWorkitem" than the controller stores and adds files into the WorkItem referenced by this property. (The property "$BlobWorkitem" than contains then the $UniqueID of the blobWorkItem)  The list of all currently uploaded files will be stored into the property $file.
- 
+## The FileUploadController 
+The FileUploadController provides methods to extract a file from a mulitpart http request. In this way the controller can be used in JSF pages 
+to provide a fileUpload feature. The controller provides a build-in functionality to store the uploaded files into a ItemCollection. A client can set a target WorkItem by calling setWorkitem().  The list of all currently uploaded files will be stored into the workitem property $file.
+
 
 ### Ajax support
-The component can not be wrapped with an f:ajax tag because of the restriction that   ajax requests can not deal with "multipart/form-data" forms. For that reason the component imixsFileUploadFrame is provided and included into a iFrame. 
+The component can not be wrapped with an f:ajax tag because of the restriction that  ajax requests can not deal with "multipart/form-data" forms. For that reason the component imixsFileUploadFrame is provided and included into a iFrame. 
  
  
 ### File Size

@@ -46,11 +46,11 @@ import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 /**
- * This MessageBodyWriter generates an HTML representation from a EntityTable.
- * The output is a table format where each entity has the same columns.
+ * This MessageBodyWriter generates an HTML representation from a DocumentTable.
+ * The output is a data table in HTML format where each item is represented in a
+ * row which has the same columns.
  * 
  * @author rsoika
- * 
  */
 @Provider
 public class DocumentTableWriter implements MessageBodyWriter<DocumentTable> {
