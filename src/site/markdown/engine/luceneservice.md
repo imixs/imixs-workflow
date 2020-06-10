@@ -57,7 +57,7 @@ You can search by any search phrase
 
     (imixs workflow engine)
 
-A client can extend the computed text content by reacting on the CDI event 'org.imixs.workflow.engine.index.IndexEvent'. The event is fired immediately before the computed text content for the current document will be added into the index. For example the CDI Bean 'FileDataIndexer' extends the text content with the text content from attached files. 
+A client can extend the computed text content by reacting on the CDI event 'org.imixs.workflow.engine.index.IndexEvent'. The event is fired immediately before the computed text content for the current document will be added into the index. 
  
 ### index.fields.analyze
 The property 'index.fields.analyze' defines a comma separated list of fields whose values will be added as keyword  fields into the lucene index. You can search the content by naming the field in lucene serach query. 
