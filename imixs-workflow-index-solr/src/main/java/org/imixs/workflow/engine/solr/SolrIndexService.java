@@ -44,6 +44,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -57,6 +58,7 @@ import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.SetupEvent;
 import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.engine.index.DefaultOperator;
+import org.imixs.workflow.engine.index.IndexEvent;
 import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.index.SortOrder;
 import org.imixs.workflow.engine.jpa.EventLog;
@@ -137,6 +139,9 @@ public class SolrIndexService {
 
     @Inject
     private AdminPService adminPService;
+    
+    @Inject
+    protected Event<IndexEvent> indexEvents;
 
     @PersistenceContext(unitName = "org.imixs.workflow.jpa")
     EntityManager manager;
@@ -569,11 +574,10 @@ public class SolrIndexService {
             }
 
             xmlContent.append("<doc>");
-
             xmlContent.append("<field name=\"id\">" + document.getUniqueID() + "</field>");
 
             // add all content fields defined in the schema
-            String content = "";
+            String textContent = "";
             for (String field : fieldList) {
                 String sValue = "";
                 // check value list - skip empty fields
@@ -601,18 +605,30 @@ public class SolrIndexService {
                         sValue += o.toString() + ",";
                 }
                 if (sValue != null) {
-                    content += sValue + ",";
+                    textContent += sValue + ",";
                 }
             }
+            
+            // fire IndexEvent to update the text content if needed
+            if (indexEvents != null) {
+                IndexEvent indexEvent=new IndexEvent(IndexEvent.ON_INDEX_UPDATE,document);
+                indexEvent.setTextContent(textContent);
+                indexEvents.fire(indexEvent);
+                textContent=indexEvent.getTextContent();
+            } else {
+                logger.warning("Missing CDI support for Event<IndexEvent> !");
+            }
+              
+            
             if (debug) {
-                logger.finest("......add index field " + DEFAULT_SEARCH_FIELD + "=" + content);
+                logger.finest("......add index field " + DEFAULT_SEARCH_FIELD + "=" + textContent);
             }
             // remove existing CDATA...
-            content = stripCDATA(content);
+            textContent = stripCDATA(textContent);
             // strip control codes..
-            content = stripControlCodes(content);
+            textContent = stripControlCodes(textContent);
             // We need to add a wrapping CDATA, allow xml in general..
-            xmlContent.append("<field name=\"" + DEFAULT_SEARCH_FIELD + "\"><![CDATA[" + content + "]]></field>");
+            xmlContent.append("<field name=\"" + DEFAULT_SEARCH_FIELD + "\"><![CDATA[" + textContent + "]]></field>");
 
             // now add all analyzed fields...
             for (String aFieldname : fieldListAnalyze) {

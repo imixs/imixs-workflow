@@ -42,6 +42,7 @@ import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -66,6 +67,7 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.adminp.AdminPService;
+import org.imixs.workflow.engine.index.IndexEvent;
 import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.exceptions.IndexException;
@@ -113,6 +115,10 @@ public class LuceneIndexService {
 
   @Inject
   private SchemaService schemaService;
+  
+  @Inject
+  protected Event<IndexEvent> indexEvents;
+
 
   public String getLuceneIndexDir() {
     // issue #599
@@ -295,6 +301,8 @@ public class LuceneIndexService {
             ItemCollection workitem = new ItemCollection();
             workitem.setAllItems(doc.getData());
             if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
+                
+            
               indexWriter.updateDocument(term, createDocument(workitem));
               logger.finest("......lucene add/update workitem '" + doc.getId() + "' to index in "
                   + (System.currentTimeMillis() - l2) + "ms");
@@ -359,22 +367,22 @@ public class LuceneIndexService {
    * The property 'AnalyzeIndexFields' defines if a indexfield value should by analyzed by the
    * Lucene Analyzer (default=false)
    * 
-   * @param aworkitem
-   * @return
+   * @param document  - the Imixs document to be indexed
+   * @return - a lucene document instance 
    */
   @SuppressWarnings("unchecked")
-  protected Document createDocument(ItemCollection aworkitem) {
+  protected Document createDocument(ItemCollection document) {
     String sValue = null;
     Document doc = new Document();
     // combine all search fields from the search field list into one field
     // ('content') for the lucene document
-    String sContent = "";
+    String textContent = "";
 
     List<String> searchFieldList = schemaService.getFieldList();
     for (String aFieldname : searchFieldList) {
       sValue = "";
       // check value list - skip empty fields
-      List<?> vValues = aworkitem.getItemValue(aFieldname);
+      List<?> vValues = document.getItemValue(aFieldname);
       if (vValues.size() == 0)
         continue;
       // get all values of a value list field
@@ -397,11 +405,24 @@ public class LuceneIndexService {
           sValue += o.toString() + ",";
       }
       if (sValue != null) {
-        sContent += sValue + ",";
+        textContent += sValue + ",";
       }
     }
-    logger.finest("......add lucene field content=" + sContent);
-    doc.add(new TextField("content", sContent, Store.NO));
+    
+    // fire IndexEvent to update the text content if needed
+    if (indexEvents != null) {
+        IndexEvent indexEvent=new IndexEvent(IndexEvent.ON_INDEX_UPDATE,document);
+        indexEvent.setTextContent(textContent);
+        indexEvents.fire(indexEvent);
+        textContent=indexEvent.getTextContent();
+    } else {
+        logger.warning("Missing CDI support for Event<IndexEvent> !");
+    }
+      
+    
+    
+    logger.finest("......add lucene field content=" + textContent);
+    doc.add(new TextField("content", textContent, Store.NO));
 
     // add each field from the indexFieldList into the lucene document
     List<String> _localFieldListStore = new ArrayList<String>();
@@ -410,7 +431,7 @@ public class LuceneIndexService {
     // analyzed...
     List<String> indexFieldListAnalyze = schemaService.getFieldListAnalyze();
     for (String aFieldname : indexFieldListAnalyze) {
-      addItemValues(doc, aworkitem, aFieldname, true, _localFieldListStore.contains(aFieldname));
+      addItemValues(doc, document, aFieldname, true, _localFieldListStore.contains(aFieldname));
       // avoid duplication.....
       _localFieldListStore.remove(aFieldname);
     }
@@ -418,14 +439,14 @@ public class LuceneIndexService {
     // ... and not analyzed...
     List<String> indexFieldListNoAnalyze = schemaService.getFieldListNoAnalyze();
     for (String aFieldname : indexFieldListNoAnalyze) {
-      addItemValues(doc, aworkitem, aFieldname, false, _localFieldListStore.contains(aFieldname));
+      addItemValues(doc, document, aFieldname, false, _localFieldListStore.contains(aFieldname));
     }
 
     // add $uniqueid not analyzed
-    doc.add(new StringField("$uniqueid", aworkitem.getItemValueString("$uniqueid"), Store.YES));
+    doc.add(new StringField("$uniqueid", document.getItemValueString("$uniqueid"), Store.YES));
 
     // add $readAccess not analyzed
-    List<String> vReadAccess = (List<String>) aworkitem.getItemValue(DocumentService.READACCESS);
+    List<String> vReadAccess = (List<String>) document.getItemValue(DocumentService.READACCESS);
     if (vReadAccess.size() == 0
         || (vReadAccess.size() == 1 && "".equals(vReadAccess.get(0).toString()))) {
       // if emtpy add the ANONYMOUS default entry
