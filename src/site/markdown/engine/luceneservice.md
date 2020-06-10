@@ -56,10 +56,11 @@ The property 'index.fields' defines a comma separated list of fields whose value
 You can search by any search phrase
 
     (imixs workflow engine)
- 
+
+A client can extend the computed text content by reacting on the CDI event 'org.imixs.workflow.engine.index.IndexEvent'. The event is fired immediately before the computed text content for the current document will be added into the index. For example the CDI Bean 'FileDataIndexer' extends the text content with the text content from attached files. 
  
 ### index.fields.analyze
-The property 'index.fields.analyze' defines a comma separated list of fields whose will be added as keyword  fields into the lucene index. You can search the content by naming the field. 
+The property 'index.fields.analyze' defines a comma separated list of fields whose values will be added as keyword  fields into the lucene index. You can search the content by naming the field in lucene serach query. 
 
 
     ($workflowsummary:approved*) AND (imixs workflow engine)
@@ -68,7 +69,7 @@ The property 'index.fields.analyze' defines a comma separated list of fields who
 The content of this fields will be analyzed by the  lucene standard analyzer. 
  
 ### index.fields.noanalyze
-The property 'index.fields.noanalyze' defines a comma separated list of fields which will be added as keyword  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here. 
+The property 'index.fields.noanalyze' defines a comma separated list of fields whose values will be added as keyword  fields into the lucene index. The content of this fields will not be analyzed. So a exact phrase search is possible here. 
 
     ($workflowstatus:"approved for payment")
 
