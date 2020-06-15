@@ -270,6 +270,42 @@ public class EventLogService {
         return result;
 
     }
+    
+    
+    
+    /**
+     * Returns all event log entries
+     * 
+     * @param firstResult - first result
+     * @param maxResult - maximum count of events to be returned
+     * @return - list of eventLogEntries
+     */
+    @SuppressWarnings("unchecked")
+    public List<EventLog> findAllEvents(int firstResult, int maxResult) {
+        boolean debug = logger.isLoggable(Level.FINE);
+        List<EventLog> result = new ArrayList<>();
+        String query = "SELECT eventlog FROM EventLog AS eventlog ";
+        query += " ORDER BY eventlog.created ASC";
+
+        // find all eventLogEntries....
+        Query q = manager.createQuery(query);
+     
+        // setMaxResults ?
+        if (maxResult > 0) {
+            q.setMaxResults(maxResult);
+        }
+        // setFirstResult?
+        if (firstResult > 0) {
+            q.setFirstResult(firstResult);
+        }
+        
+        result = q.getResultList();
+        if (debug) {
+            logger.fine("found " + result.size() + " event log entries");
+        }
+        return result;
+
+    }
 
     /**
      * Deletes an existing eventLog. The method catches

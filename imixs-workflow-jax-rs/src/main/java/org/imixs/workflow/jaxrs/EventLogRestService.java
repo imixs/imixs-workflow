@@ -45,6 +45,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.EventLogService;
+import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
@@ -70,6 +71,36 @@ public class EventLogRestService {
     private static Logger logger = Logger.getLogger(EventLogRestService.class.getName());
 
     /**
+     * Returns all eventLog entries.
+     * 
+     * @param pageSize  - page size
+     * @param pageIndex - page index (default = 0)
+     * @param items     - optional list of items
+     * @return result set.
+     * 
+     * @param maxCount - max count of returned eventLogEntries (default 99)
+     * @return - xmlDataCollection containing all matching eventLog entries
+     */
+    @GET
+    @Path("/")
+    public XMLDataCollection getAllEventLogEntries(
+            @DefaultValue("" + SearchService.DEFAULT_PAGE_SIZE) @QueryParam("pageSize") int pageSize,
+            @DefaultValue("0") @QueryParam("pageIndex") int pageIndex) {
+
+        logger.finest("......get all eventLogEntries");
+        int firstResult = pageIndex * pageSize;
+        // we split the topic by swung dash if multiple topics are provided
+        List<EventLog> eventLogEntries = eventLogService.findAllEvents(firstResult, pageSize);
+
+        List<ItemCollection> result = new ArrayList<ItemCollection>();
+        for (EventLog eventLog : eventLogEntries) {
+            // Build a ItemCollection for each EventLog
+            result.add(buildItemCollection(eventLog));
+        }
+        return XMLDataCollectionAdapter.getDataCollection(result);
+    }
+
+    /**
      * Returns a set of eventLog entries for a given topic. Multiple topics can be
      * separated by a swung dash (~).
      * 
@@ -90,15 +121,7 @@ public class EventLogRestService {
         List<ItemCollection> result = new ArrayList<ItemCollection>();
         for (EventLog eventLog : eventLogEntries) {
             // Build a ItemCollection for each EventLog
-
-            ItemCollection itemColEvent = new ItemCollection();
-            itemColEvent.setItemValue("id", eventLog.getId());
-            itemColEvent.setItemValue("ref", eventLog.getRef());
-            itemColEvent.setItemValue("created", eventLog.getCreated());
-            itemColEvent.setItemValue("topic", eventLog.getTopic());
-            itemColEvent.setItemValue("data", eventLog.getData());
-
-            result.add(itemColEvent);
+            result.add(buildItemCollection(eventLog));
         }
         return XMLDataCollectionAdapter.getDataCollection(result);
     }
@@ -113,6 +136,25 @@ public class EventLogRestService {
     public void deleteEventLogEntry(@PathParam("id") String id) {
         // remove eventLogEntry....
         eventLogService.removeEvent(id);
+    }
+
+    /**
+     * This helper method converts a EventLog entity into a ItemCollection.
+     * 
+     * @param eventLog - event log entity
+     * @return - ItemCollection
+     */
+    private ItemCollection buildItemCollection(EventLog eventLog) {
+        if (eventLog==null) {
+            return null;
+        }
+        ItemCollection itemColEvent = new ItemCollection();
+        itemColEvent.setItemValue("id", eventLog.getId());
+        itemColEvent.setItemValue("ref", eventLog.getRef());
+        itemColEvent.setItemValue("created", eventLog.getCreated());
+        itemColEvent.setItemValue("topic", eventLog.getTopic());
+        itemColEvent.setItemValue("data", eventLog.getData());
+        return itemColEvent;
     }
 
 }
