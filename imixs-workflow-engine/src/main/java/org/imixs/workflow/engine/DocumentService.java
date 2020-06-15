@@ -979,8 +979,9 @@ public class DocumentService {
      * (see Issue #634)
      * 
      * @param query     - JPQL statement
+     * @param firstResult - first result
      * @param maxResult - maximum result set
-     * @return
+     * @return - result set
      * 
      */
     @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
@@ -993,7 +994,7 @@ public class DocumentService {
         if (maxResult > 0) {
             q.setMaxResults(maxResult);
         }
-
+        // setFirstResult?
         if (firstResult > 0) {
             q.setFirstResult(firstResult);
         }

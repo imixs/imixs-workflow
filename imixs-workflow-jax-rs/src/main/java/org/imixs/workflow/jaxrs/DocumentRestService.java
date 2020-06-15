@@ -213,11 +213,11 @@ public class DocumentRestService {
     /**
      * Returns a resultset for a JPQL statement
      * 
-     * @param query
-     * @param pageSize
-     * @param pageIndex
-     * @param items
-     * @return
+     * @param query - JPQL statement
+     * @param pageSize - page size
+     * @param pageIndex - page index (default = 0)
+     * @param items - optional list of items
+     * @return result set.
      */
     @GET
     @Path("/jpql/{query}")
