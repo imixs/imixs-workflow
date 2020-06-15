@@ -1,15 +1,16 @@
 # Imixs-Workflow Plugin API
 
-The **Imixs-Workflow Plugin API** is the standard extension mechanism of the Imixs-Workflow Engine. With this API you can extend the processing cycle of a BPMN Event.
+The **Imixs-Workflow Plugin API** provides a microkernel architecture pattern and is the standard extension mechanism of the Imixs-Workflow Engine. 
+The microkernel pattern allows you to add additional features to the Imixs-Workflow engine. The Plugin API is providing extensibility to the processing cycle of a BPMN Event as well as feature separation and isolation.
 
 A Plug-In can be bound to one or many different BPMN models. Each time a BPMN Event is triggered, an associated Plug-In will be executed. 
-In this way a Plug-In extends the processing life-cylce of a BPMN Event.
+In this way a Plug-In extends the processing life-cycle of a BPMN Event.
 A Plug-In can exchange data or execute platform specific technical functionality. For example a Plug-In can apply a business rule, send an E-Mail notification, or call a Microservice. 
 
 <img src="../images/plugin_api.png"/>  
 
 
-The Imixs workflow project already offers a number of Plug-Ins that cover many of the standard features of a workflow engine. For more information, see the  section [Plugin-API](../engine/plugins/index.html).
+The Imixs workflow project already offers a number of Plug-Ins that cover many of the standard features of a workflow engine. You will find an overview in the section [Plugin-API](../engine/plugins/index.html). As an alternative extension mechanism see the [Imixs Adapter API](./adapter-api.html) which is also part of the Imixs microkernel architecture pattern 
 
 
 ## Adding a Plug-In to a BPMN Model 

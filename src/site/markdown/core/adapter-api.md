@@ -1,9 +1,8 @@
 # Imixs-Workflow Adapter API
 
-The **Imixs-Workflow Adapter API** is an extension mechanism to adapt the processing life cycle of a BPMN Event. 
-An Adapter class can execute business logic and adapt the data of a process instance. For example, an adapter can call an external Microservice to send or receive data. 
+The **Imixs-Workflow Adapter API** is part of the microkernel architecture pattern providing an extension mechanism to adapt the processing life cycle of a BPMN Event. An Adapter class can execute business logic and adapt the data of a process instance. For example, an adapter can call an external Microservice to send or receive data. 
 
-Adapters can be implemented either as a _SignalAdapter_ or _GenericAdapter_ class. Depending on its type, the Adapter class is executed before or after the plug-in processing life-cycle, controlled by the _WorkflowKernel_:
+Adapters can be implemented either as a _SignalAdapter_ or _GenericAdapter_ class. Depending on its type, the Adapter class is executed before or after the plug-in processing life-cycle, controlled by the *WorkflowKernel*:
 
 <img src="../images/adapter_api.png"/>  
 
@@ -14,7 +13,7 @@ The SignalAdapter is defined by the Interface:
 
 	org.imixs.workflow.SignalAdapter
 
-In different to the [Plugin API](./plugin-api.html) the _SignalAdapter_ is bound to a single Event within a BPMN 2.0 model. This allows a fine grained configuration. 
+In different to the [Plugin API](./plugin-api.html) the *SignalAdapter* is bound to a single Event within a BPMN 2.0 model. This allows a fine grained configuration. 
 
 The BPMN signal definition contains the adapter class name:
 

@@ -28,16 +28,16 @@ The WorkflowKernel implements the core functionality of the Imixs-Workflow API. 
 See the section [WorkflowKernel](./workflowkernel.html) for more information.
  
 
-### The Plugin API
+### The Microkernel Architecture Pattern 
 
-The Imixs Plugin-API is the extension concept of the Imixs-Workflow Engine. The business logic of an application as also technical interfaces can be implemented by plugins which can easily be activated through the workflow model. 
+Imixs-Workflow provides a *microkernel architecture pattern* as an extension mechanism to the Imixs-Workflow Engine. The Imixs microkernel pattern allows you to add additional features to the Imixs-Workflow engine extending the processing cycle of a BPMN Event as well as a concept for separation and isolation. 
 
-See the section [Plugin-API](./plugin-api.html) for more information. The Imixs-Workflow Engine defines a set of [standard plugins](../engine/plugins/index.html) to be used in a workflow model. 
+Find more details in the sections [Plugin-API](./plugin-api.html) and [Adapter-API](./adapter-api.html).
 
 
 
 ### The Workflow Manager
 
-The WorkflowManager interface defines the uppermost layer of each workflow system based on the _Imixs-Workflow API_. The interface _org.imixs.workflow.WorkflowManager_ provides basic methods to create and control a process instance.
+The *WorkflowManager* interface defines the uppermost layer of each workflow system based on the Imixs-Workflow API. The interface *org.imixs.workflow.WorkflowManager* provides basic methods to create and control a process instance.
 
-If you develop your own workflow engine you need to implement this interface. The Imixs WorkflowKernel expects an instance of WorkflowManager when processing a workflow instance. 	
+The [Imixs-Workflow Engine](../engine/index.html) is the standard implementation of a Workflow Manager. If you might want to develop your own workflow engine, you must implement this interface.
