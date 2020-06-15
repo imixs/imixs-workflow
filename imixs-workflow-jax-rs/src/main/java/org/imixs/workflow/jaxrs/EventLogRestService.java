@@ -31,18 +31,21 @@ package org.imixs.workflow.jaxrs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.index.SearchService;
@@ -127,6 +130,39 @@ public class EventLogRestService {
     }
 
     /**
+     * This method locks an eventLog entry for processing. The topic will be
+     * suffixed with '.lock' to indicate that this topic is locked by a process. If
+     * a lock is successful a client can exclusive process this eventLog entry.
+     * 
+     * @param id - id of the event log entry
+     */
+    @POST
+    @Path("/lock/{id}")
+    public void lockEventLogEntry(@PathParam("id") String id) {
+        EventLog _eventLogEntry = eventLogService.getEvent(id);
+        if (_eventLogEntry != null) {
+            // lock eventLogEntry....
+            eventLogService.lock(_eventLogEntry);
+        }
+    }
+
+    /**
+     * This method unlocks an eventLog entry. The topic suffix '.lock' will be
+     * removed.
+     * 
+     * @param id - id of the event log entry
+     */
+    @POST
+    @Path("/unlock/{id}")
+    public void unlockEventLogEntry(@PathParam("id") String id) {
+        EventLog _eventLogEntry = eventLogService.getEvent(id);
+        if (_eventLogEntry != null) {
+            // unlock eventLogEntry....
+            eventLogService.unlock(_eventLogEntry);
+        }
+    }
+
+    /**
      * Deletes a eventLog entry by its $uniqueID
      * 
      * @param name of report or uniqueid
@@ -145,7 +181,7 @@ public class EventLogRestService {
      * @return - ItemCollection
      */
     private ItemCollection buildItemCollection(EventLog eventLog) {
-        if (eventLog==null) {
+        if (eventLog == null) {
             return null;
         }
         ItemCollection itemColEvent = new ItemCollection();

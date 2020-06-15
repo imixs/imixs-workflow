@@ -22,6 +22,16 @@ The /eventlog DELETE resource URI is used to delete an eventLog entry:
 
 
 
+## The /eventlog resources POST
+The /eventlog POST resource URI is used to lock and unlock an eventLog entry:
+
+
+| URI                                           | Description                                 | 
+|-----------------------------------------------|---------------------------------------------|
+| /eventlog/lock/{id}                           | locks a specified evenLog entry by its id   |
+| /eventlog/unlock/{id}                         | unlocks a specified evenLog entry by its id |
+
+
 
  
 ## Resource Options
