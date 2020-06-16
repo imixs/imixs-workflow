@@ -188,6 +188,22 @@ public class EventLogRestService {
     }
 
     /**
+     * This method unlocks eventlog entries which are older than 1 minute. We assume
+     * that these events are deadlocks.
+     *
+     * @param interval - interval in millis
+     * @param topic    - topic to search event log entries.
+     */
+    @POST
+    @Path("/release/{interval}/{topic}")
+    public void releaseDeadLocks(@PathParam("interval") long deadLockInterval, @PathParam("topic") String topic) {
+        logger.finest("......releaseDeadLocks: " + topic);
+        // we split the topic by swung dash if multiple topics are provided
+        String[] topicList = topic.split("~");
+        eventLogService.releaseDeadLocks(deadLockInterval, topicList);
+    }
+
+    /**
      * Deletes a eventLog entry by its $uniqueID
      * 
      * @param name of report or uniqueid
