@@ -173,49 +173,49 @@ public class AsyncEventService {
             logger.finest("......found " + events.size() + " eventLog entries");
         }
         for (EventLog eventLogEntry : events) {
-
             try {
                 // first try to lock the eventLog entry....
-                eventLogService.lock(eventLogEntry);
+                if (eventLogService.lock(eventLogEntry)) {
+                    // now load the workitem
+                    ItemCollection workitem = workflowService.getWorkItem(eventLogEntry.getRef());
+                    if (workitem != null) {
+                        // process workitem....
+                        try {
+                            // get the data object
+                            ItemCollection syncEventData = new ItemCollection(eventLogEntry.getData());
+                            // verify the $transactionID
+                            // we only process the workitem if the last transactionID matches the
+                            // transactionID form the eventLog entry
 
-                // now load the workitem
-                ItemCollection workitem = workflowService.getWorkItem(eventLogEntry.getRef());
-                if (workitem != null) {
-                    // process workitem....
-                    try {
-                        // get the data object
-                        ItemCollection syncEventData = new ItemCollection(eventLogEntry.getData());
-                        // verify the $transactionID
-                        // we only process the workitem if the last transactionID matches the
-                        // transactionID form the eventLog entry
-
-                        if (workitem.getItemValueString(WorkflowKernel.TRANSACTIONID)
-                                .equals(syncEventData.getItemValueString(WorkflowKernel.TRANSACTIONID))) {
-                            // set the event id....
-                            workitem.setEventID(syncEventData.getEventID());
-                            workitem = workflowService.processWorkItemByNewTransaction(workitem);
-                        } else {
-                            // just a normal log message
-                            logger.info("...AsyncEvent " + syncEventData.getEventID() + " for " + workitem.getUniqueID()
-                                    + " is deprecated and will be removed. ("
-                                    + workitem.getItemValueString(WorkflowKernel.TRANSACTIONID) + " ≠ "
-                                    + syncEventData.getItemValueString(WorkflowKernel.TRANSACTIONID));
+                            if (workitem.getItemValueString(WorkflowKernel.TRANSACTIONID)
+                                    .equals(syncEventData.getItemValueString(WorkflowKernel.TRANSACTIONID))) {
+                                // set the event id....
+                                workitem.setEventID(syncEventData.getEventID());
+                                workitem = workflowService.processWorkItemByNewTransaction(workitem);
+                            } else {
+                                // just a normal log message
+                                logger.info("...AsyncEvent " + syncEventData.getEventID() + " for "
+                                        + workitem.getUniqueID() + " is deprecated and will be removed. ("
+                                        + workitem.getItemValueString(WorkflowKernel.TRANSACTIONID) + " ≠ "
+                                        + syncEventData.getItemValueString(WorkflowKernel.TRANSACTIONID));
+                            }
+                            // finally remove the event log entry...
+                            eventLogService.removeEvent(eventLogEntry.getId());
+                        } catch (WorkflowException | InvalidAccessException | EJBException e) {
+                            // we also catch EJBExceptions here because we do not want to cancel the
+                            // ManagedScheduledExecutorService
+                            logger.severe(
+                                    "AsyncEvent " + workitem.getUniqueID() + " processing failed: " + e.getMessage());
+                            // now we need to remove the batch event
+                            logger.warning("AsyncEvent " + workitem.getUniqueID() + " will be removed!");
+                            eventLogService.removeEvent(eventLogEntry.getId());
                         }
-                        // finally remove the event log entry...
-                        eventLogService.removeEvent(eventLogEntry.getId());
-                    } catch (WorkflowException | InvalidAccessException | EJBException e) {
-                        // we also catch EJBExceptions here because we do not want to cancel the
-                        // ManagedScheduledExecutorService
-                        logger.severe("AsyncEvent " + workitem.getUniqueID() + " processing failed: " + e.getMessage());
-                        // now we need to remove the batch event
-                        logger.warning("AsyncEvent " + workitem.getUniqueID() + " will be removed!");
-                        eventLogService.removeEvent(eventLogEntry.getId());
                     }
                 }
 
             } catch (OptimisticLockException e) {
                 // lock was not possible - continue....
-                logger.info("...unable to lock batch event: " + e.getMessage());
+                logger.info("...unable to lock AsyncEvent: " + e.getMessage());
             }
 
         }

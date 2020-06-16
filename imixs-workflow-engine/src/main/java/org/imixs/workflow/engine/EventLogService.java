@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -94,22 +95,21 @@ public class EventLogService {
      * @return - generated event log entry
      */
     public EventLog createEvent(String topic, String refID) {
-        return createEvent(topic, refID, (Map<String, List<Object>>) null,null);
+        return createEvent(topic, refID, (Map<String, List<Object>>) null, null);
     }
 
     /**
      * Creates/updates a new event log entry.
      * 
-     * @param refID - uniqueid of the document to be assigned to the event
-     * @param topic - the topic of the event.
+     * @param refID   - uniqueid of the document to be assigned to the event
+     * @param topic   - the topic of the event.
      * @param timeout - optional timeout calendar object
      * @return - generated event log entry
      */
     public EventLog createEvent(String topic, String refID, Calendar timeout) {
-        return createEvent(topic, refID, (Map<String, List<Object>>) null,timeout);
+        return createEvent(topic, refID, (Map<String, List<Object>>) null, timeout);
     }
 
-    
     /**
      * Creates/updates a new event log entry.
      *
@@ -119,19 +119,20 @@ public class EventLogService {
      * @return - generated event log entry
      */
     public EventLog createEvent(String topic, String refID, ItemCollection document) {
-        return this.createEvent(topic, refID, document.getAllItems(),null);
+        return this.createEvent(topic, refID, document.getAllItems(), null);
     }
+
     /**
      * Creates/updates a new event log entry.
      *
      * @param refID    - uniqueId of the document to be assigned to the event
      * @param topic    - the topic of the event.
      * @param document - optional document providing a data map
-     * @param timeout - optional timeout calendar object
+     * @param timeout  - optional timeout calendar object
      * @return - generated event log entry
      */
     public EventLog createEvent(String topic, String refID, ItemCollection document, Calendar timeout) {
-        return this.createEvent(topic, refID, document.getAllItems(),timeout);
+        return this.createEvent(topic, refID, document.getAllItems(), timeout);
     }
 
     /**
@@ -152,7 +153,7 @@ public class EventLogService {
         manager.setFlushMode(FlushModeType.COMMIT);
         // now create a new event log entry
         EventLog eventLog = new EventLog(topic, refID, data);
-        if (timeout!=null) {
+        if (timeout != null) {
             eventLog.setTimeout(timeout);
         }
         manager.persist(eventLog);
@@ -225,7 +226,7 @@ public class EventLogService {
         Query q = manager.createQuery(query);
         // set timestamp
         q.setParameter("now", new Date(), TemporalType.TIMESTAMP);
-        
+
         q.setMaxResults(maxCount);
         result = q.getResultList();
         if (debug) {
@@ -270,14 +271,12 @@ public class EventLogService {
         return result;
 
     }
-    
-    
-    
+
     /**
      * Returns all event log entries
      * 
      * @param firstResult - first result
-     * @param maxResult - maximum count of events to be returned
+     * @param maxResult   - maximum count of events to be returned
      * @return - list of eventLogEntries
      */
     @SuppressWarnings("unchecked")
@@ -289,7 +288,7 @@ public class EventLogService {
 
         // find all eventLogEntries....
         Query q = manager.createQuery(query);
-     
+
         // setMaxResults ?
         if (maxResult > 0) {
             q.setMaxResults(maxResult);
@@ -298,7 +297,7 @@ public class EventLogService {
         if (firstResult > 0) {
             q.setFirstResult(firstResult);
         }
-        
+
         result = q.getResultList();
         if (debug) {
             logger.fine("found " + result.size() + " event log entries");
@@ -379,16 +378,25 @@ public class EventLogService {
      * is used by the method 'autoUnlock' to release locked entries.
      * 
      * @param eventLogEntry
-     * @return
+     * @return - true if lock was successful
      */
-    public void lock(EventLog _eventLogEntry) {
+    public boolean lock(EventLog _eventLogEntry) {
         EventLog eventLog = manager.find(EventLog.class, _eventLogEntry.getId());
         if (eventLog != null) {
-            eventLog.setTopic(eventLog.getTopic() + ".lock");
-            ItemCollection data = new ItemCollection(eventLog.getData());
-            data.setItemValue(EVENTLOG_LOCK_DATE, new Date());
-            manager.merge(eventLog);
+            // verfiy exclusive lock...
+            if (eventLog.getTopic().equals(_eventLogEntry.getTopic())) {
+                eventLog.setTopic(_eventLogEntry.getTopic() + ".lock");
+                ItemCollection data = new ItemCollection(eventLog.getData());
+                data.setItemValue(EVENTLOG_LOCK_DATE, new Date());
+                manager.merge(eventLog);
+                return true;
+            } else {
+                // unable to lock!
+                logger.warning("unable to lock eventLogEntry '" + _eventLogEntry.getId() + "' - already locked!");
+
+            }
         }
+        return false;
     }
 
     /**
@@ -396,21 +404,29 @@ public class EventLogService {
      * removed.
      * 
      * @param eventLogEntry
-     * @return
+     * @return - true if unlock was successful
      */
-    public void unlock(EventLog _eventLogEntry) {
+    public boolean unlock(EventLog _eventLogEntry) {
         EventLog eventLog = _eventLogEntry;
         if (eventLog != null && !manager.contains(eventLog)) {
             // entity is not attached - so lookup the entity....
             eventLog = manager.find(EventLog.class, eventLog.getId());
         }
         if (eventLog != null) {
-            // remove lock
-            eventLog.setTopic(eventLog.getTopic().substring(0, eventLog.getTopic().lastIndexOf(".lock")));
-            ItemCollection data = new ItemCollection(eventLog.getData());
-            data.removeItem(EVENTLOG_LOCK_DATE);
-            manager.merge(eventLog);
+            // verify exclusive lock...
+            if (eventLog.getTopic().equals(_eventLogEntry.getTopic())) {
+                // remove lock
+                eventLog.setTopic(eventLog.getTopic().substring(0, eventLog.getTopic().lastIndexOf(".lock")));
+                ItemCollection data = new ItemCollection(eventLog.getData());
+                data.removeItem(EVENTLOG_LOCK_DATE);
+                manager.merge(eventLog);
+                return true;
+            } else {
+                // unable to lock!
+                logger.warning("unable to lock eventLogEntry '" + _eventLogEntry.getId() + "' - already locked!");
+            }
         }
+        return false;
     }
 
     /**
@@ -428,7 +444,7 @@ public class EventLogService {
         Date now = new Date();
         for (EventLog eventLogEntry : events) {
 
-            // test if batch.event.lock.date is older than 1 minute
+            // test if event.lock.date is older than the deadLockInterval
             ItemCollection data = new ItemCollection(eventLogEntry.getData());
             Date lockDate = data.getItemValueDate(EVENTLOG_LOCK_DATE);
             long age = 0;

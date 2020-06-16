@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.persistence.OptimisticLockException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -45,6 +46,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.EventLogService;
@@ -135,15 +137,28 @@ public class EventLogRestService {
      * a lock is successful a client can exclusive process this eventLog entry.
      * 
      * @param id - id of the event log entry
+     * @return the method returns a Response OK in case of a successful lock.
      */
     @POST
     @Path("/lock/{id}")
-    public void lockEventLogEntry(@PathParam("id") String id) {
+    public Response lockEventLogEntry(@PathParam("id") String id) {
         EventLog _eventLogEntry = eventLogService.getEvent(id);
         if (_eventLogEntry != null) {
             // lock eventLogEntry....
-            eventLogService.lock(_eventLogEntry);
+            try {
+                if (eventLogService.lock(_eventLogEntry)) {
+                    return Response.status(Response.Status.OK).build();
+                } else {
+                    return Response.status(Response.Status.CONFLICT).build();
+                }
+
+            } catch (OptimisticLockException e) {
+                // lock was not possible - continue....
+                logger.info("...unable to lock EventLock: " + e.getMessage());
+
+            }
         }
+        return Response.status(Response.Status.CONFLICT).build();
     }
 
     /**
@@ -154,12 +169,22 @@ public class EventLogRestService {
      */
     @POST
     @Path("/unlock/{id}")
-    public void unlockEventLogEntry(@PathParam("id") String id) {
+    public Response unlockEventLogEntry(@PathParam("id") String id) {
         EventLog _eventLogEntry = eventLogService.getEvent(id);
         if (_eventLogEntry != null) {
-            // unlock eventLogEntry....
-            eventLogService.unlock(_eventLogEntry);
+            try {
+                // unlock eventLogEntry....
+                if (eventLogService.unlock(_eventLogEntry)) {
+                    return Response.status(Response.Status.OK).build();
+                } else {
+                    return Response.status(Response.Status.CONFLICT).build();
+                }
+            } catch (OptimisticLockException e) {
+                // lock was not possible - continue....
+                logger.info("...unable to lock EventLock: " + e.getMessage());
+            }
         }
+        return Response.status(Response.Status.CONFLICT).build();
     }
 
     /**
