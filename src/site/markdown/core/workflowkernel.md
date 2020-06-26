@@ -46,11 +46,11 @@ In Imixs-Workflow a BPMN _Event_ followed by a _Parallel Gateway_ is called a _s
 
 <img src="../images/modelling/example_11.png"/>
 
-The _WorklfowKernel_ evaluates the conditions assigned to the outcome of the _Parallel Gateway_. The conditions are either evaluated to the boolean value _true_ or _false_. 
+The *WorkflowKernel* evaluates the conditions assigned to the outcome of the _Parallel Gateway_. The conditions are either evaluated to the boolean value _true_ or _false_. 
 If the condition evaluates to '_true_', this outcome is followed by the current process instance (Source Workitem).
 If the condition evaluates to '_false_', then a new version of the Source Workitem is created.  
 
-**Note:** The _WorklfowKernel_ expects that each outcome evaluated to '_false_' is followed by an Imixs-Event element. 
+**Note:** The *WorkflowKernel* expects that each outcome evaluated to '_false_' is followed by an Imixs-Event element. 
 This event will be processed by the new created version. If an outcome evaluated to '_false_' is not followed by an Imixs-Event, a _ModelException_ is thrown. See the section ['How to model'](../modelling/howto.html#Split_Events) for details about modeling Split Events.  
  
   

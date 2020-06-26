@@ -42,7 +42,7 @@ Each report defines at least a [Lucene Query](../engine/queries.html). The query
 
 	 (type:"workitem") AND ($workflowgroup:"Ticket")
 
-This example query will select all running workitems in the worklfow group 'Ticket'. 
+This example query will select all running workitems in the workflow group 'Ticket'. 
 
 ### Providing Parameters
 The query statement of a report can contain dynamic parameters. These parameters can be provided through the [Imixs Report REST API](../restapi/reportservice.html). See the following example of a query defining a parameter named '1':

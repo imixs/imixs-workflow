@@ -70,7 +70,7 @@ The _ViewController_ provides the following properties to define a data selectio
  * sortReverse - optional defining ascending or descending (true=default) sorting. 
  * loadStubs - if true (default) only the Lucene Document Stubs will be loaded (see Lucene Search) 
 
-Read more about the search functionality of Imixs-Worklfow in the [section LuceneService](../engine/luceneservice.html). 
+Read more about the search functionality of Imixs-Workflow in the [section LuceneService](../engine/luceneservice.html). 
 
 To implement custom filters and converters the _ViewController_ can be easily extended. At least you just need to overwrite the method _init()_ in your sub-class. See the following example defining a query and a sorting:
 

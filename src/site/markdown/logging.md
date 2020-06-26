@@ -1,6 +1,6 @@
 # Imixs-Workflow - Logging
 
-The Imixs-Worklfow engine provides a logging mechanism based on the Java Logging. There are several log levels defined:
+The Imixs-Workflow engine provides a logging mechanism based on the Java Logging. There are several log levels defined:
 
 ## Loglevel INFO
 

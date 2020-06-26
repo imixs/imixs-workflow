@@ -29,7 +29,7 @@ With the method *getModelByWorkitem(workitem)* the ModelService provides an algo
 	
 will find a model version 1.0.7  
 
-If no modelversion is provided by a workitem but the $worklfowgroup matches a model the model version will be taken from the latest version of the corresponding group. 
+If no modelversion is provided by a workitem but the $workflowgroup matches a model the model version will be taken from the latest version of the corresponding group. 
 
 
 

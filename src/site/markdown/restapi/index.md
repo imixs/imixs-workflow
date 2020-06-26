@@ -77,7 +77,7 @@ The disadvantage of the _JSON Mapped Notation_ is that you can't define the valu
            ]}
     ]}  
 
-The typed JSON format is supported only by the [workflow resource](workflowservice.html) (/workflow/) to post business data to be processed by the Imixs-Worklfow engine.
+The typed JSON format is supported only by the [workflow resource](workflowservice.html) (/workflow/) to post business data to be processed by the Imixs-Workflow engine.
      
 **Note:** Depending on the Rest Service Implementation the JSON format for response object can vary. 
 

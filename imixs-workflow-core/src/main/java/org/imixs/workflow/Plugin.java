@@ -47,7 +47,7 @@ import org.imixs.workflow.exceptions.PluginException;
 public interface Plugin {
 
     /**
-     * This method is called before the WorklfowKernel starts the execution. A
+     * This method is called before the WorkflowKernel starts the execution. A
      * plugin can for example initialize external resources or data.
      * 
      * @param workflowContext defines the context in which the plugin runs. The

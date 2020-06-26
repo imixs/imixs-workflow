@@ -25,7 +25,7 @@ The Imixs-Workflow engine can be integrated in different ways:
 
  * Imixs-Workflow can be embedded into a **Jakarta EE** Application and extended by the  **Imixs-Plugin API**.
  
- * Or you can run Imixs-Worklfow as a **Microservice** and interact with the engine through the **Imixs-Rest API**.
+ * Or you can run Imixs-Workflow as a **Microservice** and interact with the engine through the **Imixs-Rest API**.
 
 
 ### Imixs-Workflow in the Embedded Mode
@@ -37,7 +37,7 @@ On Github you will find an [JSF Example application](https://github.com/imixs/im
 See also the [Deployment Guide](./deployment/deployment_guide.html) for information how to deploy the Imixs-Workflow engine on an application server.  
    
 
-### Imixs-Worklfow as Part of a Microservice Architecture 
+### Imixs-Workflow as Part of a Microservice Architecture 
 
 Imixs-Workflow provides a [Rest Service API](restapi/index.html) and can be run as a service in a microservice architecture. In this architectural style the workflow engine can be bound to any existing business application, independent from the technology behind. Business logic can be changed without changing a single line of code.
 
@@ -46,7 +46,7 @@ You can start with the [Imixs-Microservice Project](https://github.com/imixs/imi
 
 <center><img src="./images/docker_small_h-trans.png"  /></center>
 
-The Imixs-Worklfow project also supports the use of [Docker](https://www.docker.com/). With this technology you can start an Imixs-Workflow instance with one single command in a container. Learn more about how to containerize Imixs-Workflow in the section [Docker](docker.html). See also the [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) on Github which provides full Docker support.
+The Imixs-Workflow project also supports the use of [Docker](https://www.docker.com/). With this technology you can start an Imixs-Workflow instance with one single command in a container. Learn more about how to containerize Imixs-Workflow in the section [Docker](docker.html). See also the [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) on Github which provides full Docker support.
 
 
 ## What's Next...
@@ -59,11 +59,11 @@ Get started now and read more about:
  * [Why You Should Use Imixs-Workflow](./quickstart/why.html)
  * [What Means Human Centric Workflow?](./quickstart/human.html)
  * [Imixs-BPMN - The Modeler User Guide](./modelling/index.html)
- * [The Imixs-Worklfow Plugin API](./engine/plugins/index.html)
- * [The Imixs-Worklfow Rest API](./restapi/index.html)
+ * [The Imixs-Workflow Plugin API](./engine/plugins/index.html)
+ * [The Imixs-Workflow Rest API](./restapi/index.html)
 
 
 ## Need Help?
 
-If you have any questions about the Imixs-Worklfow project or how you can best integrate Imixs-Workflow in your own project, 
+If you have any questions about the Imixs-Workflow project or how you can best integrate Imixs-Workflow in your own project, 
 [join the Imixs Community](https://www.imixs.org/sub_community.html).

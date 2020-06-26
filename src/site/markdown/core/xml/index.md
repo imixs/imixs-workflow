@@ -66,7 +66,7 @@ The complex data type _"xmlDataCollection"_ holds a collection of the XML elemen
 
 <img src="../../images/xml/xmlDataCollection.png"/>
 
-This datatype represents a view of workitems or documents managed by the Imixs-Worklfow engine. 
+This datatype represents a view of workitems or documents managed by the Imixs-Workflow engine. 
 This data type is mapped to the java class
  
     org.imixs.workflow.xml.XMLDataCollection

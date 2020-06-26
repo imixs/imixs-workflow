@@ -44,7 +44,7 @@ Optional scheduler Jobs will be started by the service.
 
 ## Workflow Instance Status
 
-With the method 'getModelCount()' a client can check the status of the worklfow instance. The method returns the number of available workflow models. 
+With the method 'getModelCount()' a client can check the status of the workflow instance. The method returns the number of available workflow models. 
 
 
 

@@ -27,7 +27,7 @@ import org.mockito.Mockito;
 /**
  * Test class for Imixs WorkflowKernel using a static default model. The test
  * class verifies basic functionality. See the test class
- * TestWorklfowKernelTestModels for more complex model tests.
+ * TestWorkflowKernelTestModels for more complex model tests.
  * 
  * @author rsoika
  */

@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
  * tests. The WorkflowSimulationEnvironment uses the SimulationService EJB to
  * simulate the processing life cycle of a process instance.
  * 
- * This test class mocks the ModelService and WorklfowContext. The Environment
+ * This test class mocks the ModelService and WorkflowContext. The Environment
  * did not store any data, so a test class can not read processed workitems. The
  * enviroment is typical used to verify the process flow of a model.
  * 

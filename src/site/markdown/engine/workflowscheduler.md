@@ -142,7 +142,7 @@ The configuration entity will be updated by the WorkflowSchedulerService in each
 
 The workitems processed by the scheduler are selected by a default selector based on the $TaskID and the $workflowgroup. 
 
-	($taskid:"[TASKID]" AND $workflowgroup:"[MY-WORKLFOWGROUP]")
+	($taskid:"[TASKID]" AND $workflowgroup:"[MY-WORKFLOWGROUP]")
 	
 The selector can be overwritten by a BPMN event. For example the workflow group can be replaced by the modelversion to select only a subset of process instances:
 

@@ -719,7 +719,7 @@ public class TestItemCollection {
         itemCol1.replaceItemValue(" a", "hello");
         itemCol1.replaceItemValue(" b ", "world");
         itemCol1.replaceItemValue("c", "of");
-        itemCol1.replaceItemValue("d", "Imixs-Worklfow");
+        itemCol1.replaceItemValue("d", "Imixs-Workflow");
 
         Assert.assertEquals("hello", itemCol1.getItemValueString("a"));
         Assert.assertEquals("hello", itemCol1.getItemValueString(" a"));

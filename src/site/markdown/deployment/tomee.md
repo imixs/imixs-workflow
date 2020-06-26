@@ -31,7 +31,7 @@ The Imixs-Sample Application uses EclipseLink for JPA. So you need to download E
 
 ## Setup Security
 
-To run Imixs-Worklfow you need to authenticate against your application with one of the Imixs Access Roles. 
+To run Imixs-Workflow you need to authenticate against your application with one of the Imixs Access Roles. 
 
 So fist create a user role in tomcat-users.xml (conf folder) 
 

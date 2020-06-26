@@ -25,7 +25,7 @@ This is an example how a Imixs-Workflow metric looks like:
 	application_transactions_total 5.0
 
 
-The Document and Workflow metrics are shown here. Each metric provides a set of tags defining the method and additional metadata like the WorklfowVersion or the current workflow event processed by the Imixs-Workflow Engine.
+The Document and Workflow metrics are shown here. Each metric provides a set of tags defining the method and additional metadata like the WorkflowVersion or the current workflow event processed by the Imixs-Workflow Engine.
 
 
 ## Anonymised Metrics

@@ -60,7 +60,7 @@ Instead of defining groups in the model, you can define your organizational grou
 
 <img src="../images/modelling/roles_03.png" width="700px" />
 
-In this case Imixs-Worklfow expects the group members of the group 'Marketing' in the property 'group.marketing'. Your application is now responsible to resolve the corresponding group at runtime and transfer the members of the group into the custom attribute.
+In this case Imixs-Workflow expects the group members of the group 'Marketing' in the property 'group.marketing'. Your application is now responsible to resolve the corresponding group at runtime and transfer the members of the group into the custom attribute.
 This can be done by a custom Plug-In:
 
 

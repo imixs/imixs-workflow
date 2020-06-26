@@ -9,7 +9,7 @@ The sources and the Imixs Admin Client application are available on [GitHub](htt
 
 	$ mvn clean install
 
-The artifact '_imixs-worklfow.war_' can be deployed on a Jakarta EE Application server. 
+The artifact '_imixs-workflow.war_' can be deployed on a Jakarta EE Application server. 
 
 ### Docker
 

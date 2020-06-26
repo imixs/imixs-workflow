@@ -200,26 +200,26 @@ public class WorkflowRestService {
                     Response.ResponseBuilder builder = Response.ok(fileData.getContent(), fileData.getContentType());
                     return builder.build();
                 } else {
-                    logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
+                    logger.warning("WorkflowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
                             + "' - error: Filename not found!");
                     // workitem not found
                     return Response.status(Response.Status.NOT_FOUND).build();
                 }
 
             } else {
-                logger.warning("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
+                logger.warning("WorkflowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
                         + "' - error: Workitem not found!");
                 // workitem not found
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
 
         } catch (Exception e) {
-            logger.severe("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
+            logger.severe("WorkflowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
                     + "' - error: " + e.getMessage());
             e.printStackTrace();
         }
 
-        logger.severe("WorklfowRestService unable to open file: '" + file + "' in workitem '" + uniqueid + "'");
+        logger.severe("WorkflowRestService unable to open file: '" + file + "' in workitem '" + uniqueid + "'");
         return Response.status(Response.Status.NOT_FOUND).build();
 
     }

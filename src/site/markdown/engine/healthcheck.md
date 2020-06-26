@@ -6,7 +6,7 @@ Health checks are used to probe the state of a computing node from another machi
 The Imixs Health Check is used to determine the status of the Imixs-Workflow instance. 
 
 
-The Imixs Health Check  returns the count of workflow models available in the current worklfow instance.
+The Imixs Health Check  returns the count of workflow models available in the current workflow instance.
 
 Example:
 

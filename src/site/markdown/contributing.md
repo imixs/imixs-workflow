@@ -20,7 +20,7 @@ Please do not reformat existing code. If you use an other IDE like Eclipse we re
 
 ## Naming Conventions
 
-There are no explicit name conventions within the Imixs-Worklfow project. But some rules are recommended to make your workflow code more easy to reuse. 
+There are no explicit name conventions within the Imixs-Workflow project. But some rules are recommended to make your workflow code more easy to reuse. 
 
 ### ItemCollection Item Names
 

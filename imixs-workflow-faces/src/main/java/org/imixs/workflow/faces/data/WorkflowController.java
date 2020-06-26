@@ -166,7 +166,7 @@ public class WorkflowController extends AbstractDataController implements Serial
      * 
      * @param action - the action returned by this method
      * @return - action
-     * @throws ModelException is thrown in case not valid worklfow task if defined
+     * @throws ModelException is thrown in case not valid workflow task if defined
      *                        by the current model.
      */
     public void create() throws ModelException {

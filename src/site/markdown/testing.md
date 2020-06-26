@@ -1,6 +1,6 @@
 # Imixs-Workflow - Simulation and Testing
 
-The Imixs-Worklfow project provides a set of test environments allowing to simulate and to test the processing live cycle of a spcific model or workitem. 
+The Imixs-Workflow project provides a set of test environments allowing to simulate and to test the processing live cycle of a spcific model or workitem. 
 
 ## The Simulation Service
 
