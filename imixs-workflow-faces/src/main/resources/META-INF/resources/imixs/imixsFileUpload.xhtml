@@ -47,32 +47,31 @@
 			<!-- show no attachments from workitem -->
 			<ui:fragment rendered="#{!cc.attrs.hideatachments}">
 				<!-- attached files -->
-				
 				<h:dataTable value="#{fileUploadController.persistedFiles}" var="fileData"
-					styleClass="imixsFileUpload_uploadlist">
+					styleClass="imixsFileUpload_uploadlist" >
 
-					<h:column>
-						<h:outputText escape="false" value="&lt;a target='_balnk' href='" />
-						<h:outputText escape="false"
-							value="#{cc.attrs.context_url}/file/#{fileData.name}" />
-						<h:outputText escape="false" value="'&gt;#{fileData.name}&lt;/a&gt;" />
-					</h:column>
-
-					<h:column>
-							#{fileUploadController.getFileSize(fileData.name)}
-					</h:column>
-					<!--  delete stored file  -->
-					<h:column>
-						<h:commandLink value="#{global.delete}"
-							styleClass="imixsFileUpload_delete"
-							actionListener="#{fileUploadController.removePersistedFile(fileData.name)}">
-							<f:ajax
-								render=":#{component.parent.parent.parent.parent.clientId}"
-								onevent="function(data) { $('.imixsFileUpload').imixsLayout();updateFileUpload(); }" />
-							<f:param name="cid" value="#{fileUploadController.getCID()}" />
-						</h:commandLink>
-					</h:column>
-
+					<ui:fragment rendered="#{!empty fileData.name}">
+						<h:column>
+							<h:outputText escape="false" value="&lt;a target='_balnk' href='" />
+							<h:outputText escape="false"
+								value="#{cc.attrs.context_url}/file/#{fileData.name}" />
+							<h:outputText escape="false" value="'&gt;#{fileData.name}&lt;/a&gt;" />
+						</h:column>
+						<h:column>
+								#{fileUploadController.getFileSize(fileData.name)}
+						</h:column>
+						<!--  delete stored file  -->
+						<h:column>
+							<h:commandLink value="#{global.delete}"
+								styleClass="imixsFileUpload_delete"
+								actionListener="#{fileUploadController.removePersistedFile(fileData.name)}">
+								<f:ajax
+									render=":#{component.parent.parent.parent.parent.clientId}"
+									onevent="function(data) { $('.imixsFileUpload').imixsLayout();updateFileUpload(); }" />
+								<f:param name="cid" value="#{fileUploadController.getCID()}" />
+							</h:commandLink>
+						</h:column>
+					</ui:fragment>
 				</h:dataTable>
 			</ui:fragment>
 		</h:panelGroup>
