@@ -12,7 +12,7 @@ Imixs-BPMN is installed the same way as any other Eclipse plugin.To install the 
  
 Enter the following update site URL:
  
- * http://www.imixs.org/org.imixs.eclipse.bpmn2.updatesite/
+ * https://www.imixs.org/org.imixs.eclipse.bpmn2.updatesite/
  
 <img src="../images/modelling/bpmn_screen_02.png"/>
 
@@ -23,8 +23,8 @@ Finally you have to restart your Eclipse IDE.
 Imixs-BPMN is build and tested for Eclipse Oxygen and Eclipse Neon. The Eclipse BPMN2 Plugin is based on the graphiti framework 0.12.0. 
 If those dependencies are missing you can install the Eclipse BPMN2 Plugin manually the following update sites:
  
- * http://www.imixs.org/org.imixs.eclipse.bpmn2.updatesite_neon/
- * http://www.imixs.org/org.imixs.eclipse.bpmn2.updatesite_mars/
+ * https://www.imixs.org/org.imixs.eclipse.bpmn2.updatesite_neon/
+ * https://www.imixs.org/org.imixs.eclipse.bpmn2.updatesite_mars/
  
 You can install the Neon version of Eclipse BPMN2 from: 
 
@@ -35,11 +35,3 @@ plugin at: https://www.eclipse.org/bpmn2-modeler/
 
 	
  
-### Installation of Imixs-BPMN in Eclipse Luna
-If you run Imixs-BPMN in earlier version of Eclipse (e.g. Eclipse Luna) you first need to install the graphiti framework 0.12.0. In the Eclipse Install Dialog enter the following update site:
- 
- * http://download.eclipse.org/graphiti/updates/0.12.0/
-
-You will find additional information about the Eclipse BPMN2 Modeler 
-plugin at: https://www.eclipse.org/bpmn2-modeler/
-

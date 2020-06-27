@@ -50,9 +50,8 @@
 				<h:dataTable value="#{fileUploadController.persistedFiles}" var="fileData"
 					styleClass="imixsFileUpload_uploadlist" >
 
-					<ui:fragment rendered="#{!empty fileData.name}">
 						<h:column>
-							<h:outputText escape="false" value="&lt;a target='_balnk' href='" />
+							<h:outputText escape="false" value="&lt;a class='imixsFileUpload_file' target='_blank' href='" />
 							<h:outputText escape="false"
 								value="#{cc.attrs.context_url}/file/#{fileData.name}" />
 							<h:outputText escape="false" value="'&gt;#{fileData.name}&lt;/a&gt;" />
@@ -71,7 +70,6 @@
 								<f:param name="cid" value="#{fileUploadController.getCID()}" />
 							</h:commandLink>
 						</h:column>
-					</ui:fragment>
 				</h:dataTable>
 			</ui:fragment>
 		</h:panelGroup>
