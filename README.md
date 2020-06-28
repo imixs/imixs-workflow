@@ -71,16 +71,15 @@ The [Imixs-Admin project](https://github.com/imixs/imixs-admin) provides a web b
 ## The Imixs Process Manager
 
 The [Imixs Process Manger](https://github.com/imixs/imixs-process-manager) allows you to start within seconds.
-The integrated Business Process Management Suite can be used for development, testing and productive environments. It provides you with a generic user interface which can be easily adapted. The Imixs Process Manager comes with a Docker image that can be deployed locally or in a containerized environment like Docker Swarm or Kubernetes. 
+The integrated Business Process Management Suite can be used for development, testing and productive environments. It provides you with a generic user interface which can be easily adapted. 
 
 <img src="screen_002.png" alt="Imixs-BPMN"  width="840"/>
-
-Read more about the Imixs Process Manager on [GitHub](https://github.com/imixs/imixs-process-manager).
 
 <br />
 <img src="https://github.com/imixs/imixs-workflow/raw/master/small_h-trans.png">
 
-The Imixs Process Manager comes with a Docker image. Download the [docker-compose.yml](https://raw.githubusercontent.com/imixs/imixs-process-manager/master/docker-compose.yml) file and run:
+The Imixs Process Manager comes with a Docker image that can be deployed locally or in a containerized environment like Docker Swarm or Kubernetes. 
+Download the [docker-compose.yml](https://raw.githubusercontent.com/imixs/imixs-process-manager/master/docker-compose.yml) file and run:
 
 	$ docker-compose up
 
