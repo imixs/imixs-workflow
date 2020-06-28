@@ -1,12 +1,12 @@
 # How Imixs-Workflow Works
 
-**Imixs-Workflow** is an Open Source Workflow engine optimized for a human-centric business process management. 
+Imixs-Workflow is an open source workflow engine optimized for a human-centric business process management. It follows these goals:
 
- * Imixs-Workflow controls your business processes and distributes tasks within an organization. 
+ * control a business process and distribute tasks within an organization based on BPMN 2.0. 
  
- * Imixs-Workflow ensures that all tasks are processed in accordance to your Compliance Guidelines and Business Rules.
+ * ensure that all tasks are processed in accordance to compliance guidelines and business rules.
 
- * Imixs-Workflow stores your business data and protects it from unauthorized access. 
+ * securely store business data and protect it from unauthorized access. 
  
 In this way Imixs-Workflow improves your business processes and supports human skills and activities in a task oriented and event driven way. 
 
