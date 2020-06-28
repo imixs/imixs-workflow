@@ -2,11 +2,9 @@
 
 Imixs-Workflow is an open source workflow engine optimized for a human-centric business process management. It follows these goals:
 
- * control a business process and distribute tasks within an organization based on BPMN 2.0. 
- 
- * ensure that all tasks are processed in accordance to compliance guidelines and business rules.
-
- * securely store business data and protect it from unauthorized access. 
+ - control a business process and distribute tasks within an organization based on BPMN 2.0. 
+ - ensure that all tasks are processed in accordance to compliance guidelines and business rules.
+ - securely store business data and protect it from unauthorized access. 
  
 In this way Imixs-Workflow improves your business processes and supports human skills and activities in a task oriented and event driven way. 
 
@@ -23,9 +21,9 @@ You will learn to design your own business process in the section "[How to Model
 
 The Imixs-Workflow engine can be integrated in different ways: 
 
- * Imixs-Workflow can be embedded into a **Jakarta EE** Application and extended by the  **Imixs-Plugin API**.
- 
- * Or you can run Imixs-Workflow as a **Microservice** and interact with the engine through the **Imixs-Rest API**.
+ - start the [Imixs Process Manager](https://github.com/imixs/imixs-process-manager) within seconds with the help of Docker
+ - embed Imixs-Workflow into your **Jakarta EE** Application and extend it by the **microkernel architecture**.
+ - or you can run Imixs-Workflow as a **Microservice** and interact with the engine through the **Imixs-Rest API**.
 
 
 ### Imixs-Workflow in the Embedded Mode

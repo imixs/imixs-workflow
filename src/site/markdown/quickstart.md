@@ -14,7 +14,21 @@ Next lets see how you can integrate Imixs-Workflow in your own Java application.
 
 **Notice:** In case you plan to use Imixs-Workflow as a microservice you can start an Imixs-Workflow instance with one single command in a container. Learn more about how to containerize Imixs-Workflow in the section [Docker](docker.html). See also the [Imixs-Microservice project](https://github.com/imixs/imixs-microservice) on Github which provides full Docker support.
 
+## The Imixs Process Manger
 
+With the Imixs Process Managager you can start within seconds. The Business Process Management Suite can be used for development, testing and productive environments. It provides you with a generic user interface which can be easily adapted. The Imixs Process Manager comes with a Docker image that can be deployed locally or in a containerized environment like Docker Swarm or Kubernetes. 
+
+Download the [docker-compose.yml](https://raw.githubusercontent.com/imixs/imixs-process-manager/master/docker-compose.yml) file and run:
+
+	$ docker-compose up
+
+You can access the Process Manger from your Browser
+
+http://localhost:8080
+
+<img class="screenshot" src="./images/process-manager-002.png" width="80%" />
+
+Find more about the Imixs Process Manager on [GitHub](https://github.com/imixs/imixs-process-manager).
 
 ## How to Integrate Imixs-Workflow into you Business Application
 
