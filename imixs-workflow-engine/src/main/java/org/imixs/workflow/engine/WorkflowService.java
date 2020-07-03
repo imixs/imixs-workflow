@@ -1058,6 +1058,22 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         return evalWorkflowResult(event, tag, documentContext, true);
     }
 
+    @Deprecated
+    public ItemCollection evalWorkflowResult(ItemCollection event, ItemCollection documentContext,
+            boolean resolveItemValues) throws PluginException {
+        logger.warning(
+                "Method call evalWorkflowResult(event, workitem, resolve) is deprecated, use method evalWorkflowResult(event, tag, workitem, resolve) instead!");
+        return this.evalWorkflowResult(event, "item", documentContext, resolveItemValues);
+    }
+
+    @Deprecated
+    public ItemCollection evalWorkflowResult(ItemCollection event, ItemCollection documentContext)
+            throws PluginException {
+        logger.warning(
+                "Method call evalWorkflowResult(event, workitem) is deprecated, use method evalWorkflowResult(event, tag, workitem) instead!");
+        return this.evalWorkflowResult(event, "item", documentContext);
+    }
+
     /**
      * The method evaluates the next task for a process instance (workitem) based on
      * the current model definition. A Workitem must at least provide the properties
