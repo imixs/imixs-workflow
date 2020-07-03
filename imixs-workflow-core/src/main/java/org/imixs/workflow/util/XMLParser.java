@@ -372,7 +372,8 @@ public class XMLParser {
                             // childNode.getFirstChild().getNodeValue();
                             String value = innerXml(childNode);
 
-                            result.replaceItemValue(name, value);
+                            result.appendItemValue(name, value);
+                            //result.replaceItemValue(name, value);
                             if (debug) {
                                 logger.finest("......parsing item '" + name + "' value=" + value);
                             }
