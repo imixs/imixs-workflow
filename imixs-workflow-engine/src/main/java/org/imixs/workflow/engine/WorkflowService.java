@@ -105,7 +105,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
     public static final int SORT_ORDER_MODIFIED_ASC = 3;
 
     public static final String INVALID_ITEMVALUE_FORMAT = "INVALID_ITEMVALUE_FORMAT";
-    public static final String INVALID_ITEM_FORMAT = "INVALID_ITEM_FORMAT";
+    public static final String INVALID_TAG_FORMAT = "INVALID_TAG_FORMAT";
 
     @Inject
     @Any
@@ -833,32 +833,33 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
     /**
      * The method evaluates the WorkflowResult for a given BPMN event and returns a
-     * ItemColleciton containing all item definitions. Each item definition of a
-     * WorkflowResult contains a name and a optional list of additional attributes.
-     * The method generates a item for each content element and attribute value.
-     * <br>
+     * ItemColleciton containing all item values of a specified tag name. Each tag
+     * definition of a WorkflowResult contains a name and a optional list of
+     * additional attributes. The method generates a item for each content element
+     * and attribute value. <br>
      * e.g. <item name="comment" ignore="true">text</item> <br>
      * will result in the attributes 'comment' with value 'text' and
      * 'comment.ignore' with the value 'true'
-     * 
+     * <p>
      * Also embedded itemVaues can be resolved (resolveItemValues=true):
-     * 
-     * <code>
+     * <p>
+     * {@code
      * 		<somedata>ABC<itemvalue>$uniqueid</itemvalue></somedata>
-     * </code>
-     * 
+     * }
+     * <p>
      * This example will result in a new item 'somedata' with the $uniqueid prefixed
      * with 'ABC'
      * 
      * @see https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags
      * @param event
+     * @param tag               - tag to be evaluated
      * @param documentContext
      * @param resolveItemValues - if true, itemValue tags will be resolved.
-     * @return eval itemCollection or null if no items are contained in the workflow
+     * @return eval itemCollection or null if no tags are contained in the workflow
      *         result.
      * @throws PluginException if the xml structure is invalid
      */
-    public ItemCollection evalWorkflowResult(ItemCollection event, ItemCollection documentContext,
+    public ItemCollection evalWorkflowResult(ItemCollection event, String tag, ItemCollection documentContext,
             boolean resolveItemValues) throws PluginException {
         boolean debug = logger.isLoggable(Level.FINE);
         ItemCollection result = new ItemCollection();
@@ -866,30 +867,34 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         if (workflowResult.trim().isEmpty()) {
             return null;
         }
+        if (tag == null || tag.isEmpty()) {
+            logger.warning("cannot eval workflow result - no tag name specified. Verify model!");
+            return null;
+        }
+
+        // if no <tag exists we skip the evaluation...
+        if (workflowResult.indexOf("<" + tag) == -1) {
+            return null;
+        }
+
         // replace dynamic values?
         if (resolveItemValues) {
             workflowResult = adaptText(workflowResult, documentContext);
         }
 
-        // if no <item tag exists we skip the evaluation...
-        if (workflowResult.indexOf("<item") == -1) {
-            return null;
-        }
-
-        // Extract all <item> tags with attributes using regex (including empty tags)
+        // Extract all tags with attributes using regex (including empty tags)
         // see also:
         // https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags
-        // <item(.*?)>(.*?)</item>|<item(.*?)./>
-        Pattern pattern = Pattern.compile(
-                "(?s)(?:(<item(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<=/>))|(<item(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<!/>))(.*?)(</item\\s*>))",
-                Pattern.DOTALL);
+        // e.g. <item(.*?)>(.*?)</item>|<item(.*?)./>
+        Pattern pattern = Pattern.compile("(?s)(?:(<" + tag + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<=/>))|(<" + tag
+                + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<!/>))(.*?)(</" + tag + "\\s*>))", Pattern.DOTALL);
 
         boolean invalidPattern = true;
         Matcher matcher = pattern.matcher(workflowResult);
         while (matcher.find()) {
             invalidPattern = false;
             // we expect up to 4 different result groups
-            // group 0 contains complete item string
+            // group 0 contains complete tag string
             // groups 1 or 2 contain the attributes
 
             String content = "";
@@ -905,7 +910,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                 content = "";
             }
 
-            // now extract the attributes to verify the item name..
+            // now extract the attributes to verify the tag name..
             if (attributes != null && !attributes.isEmpty()) {
                 // parse attributes...
                 String spattern = "(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?";
@@ -918,54 +923,54 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                     attrMap.put(attrName, attrValue);
                 }
 
-                String itemName = attrMap.get("name");
-                if (itemName == null) {
-                    throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_ITEM_FORMAT,
-                            "<item> tag contains no name attribute.");
+                String tagName = attrMap.get("name");
+                if (tagName == null) {
+                    throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
+                            "<" + tag + "> tag contains no name attribute.");
                 }
 
                 // now add optional attributes if available
                 for (String attrName : attrMap.keySet()) {
                     // we need to skip the 'name' attribute
                     if (!"name".equals(attrName)) {
-                        result.appendItemValue(itemName + "." + attrName, attrMap.get(attrName));
+                        result.appendItemValue(tagName + "." + attrName, attrMap.get(attrName));
                     }
                 }
 
                 // test if the type attribute was provided to convert content?
-                String sType = result.getItemValueString(itemName + ".type");
-                String sFormat = result.getItemValueString(itemName + ".format");
+                String sType = result.getItemValueString(tagName + ".type");
+                String sFormat = result.getItemValueString(tagName + ".format");
                 if (!sType.isEmpty()) {
                     // convert content type
                     if ("boolean".equalsIgnoreCase(sType)) {
-                        result.appendItemValue(itemName, Boolean.valueOf(content));
+                        result.appendItemValue(tagName, Boolean.valueOf(content));
                     } else if ("integer".equalsIgnoreCase(sType)) {
                         try {
-                            result.appendItemValue(itemName, Integer.valueOf(content));
+                            result.appendItemValue(tagName, Integer.valueOf(content));
                         } catch (NumberFormatException e) {
                             // append 0 value
-                            result.appendItemValue(itemName, new Integer(0));
+                            result.appendItemValue(tagName, new Integer(0));
                         }
                     } else if ("double".equalsIgnoreCase(sType)) {
                         try {
-                            result.appendItemValue(itemName, Double.valueOf(content));
+                            result.appendItemValue(tagName, Double.valueOf(content));
                         } catch (NumberFormatException e) {
                             // append 0 value
-                            result.appendItemValue(itemName, new Double(0));
+                            result.appendItemValue(tagName, new Double(0));
                         }
                     } else if ("float".equalsIgnoreCase(sType)) {
                         try {
-                            result.appendItemValue(itemName, Float.valueOf(content));
+                            result.appendItemValue(tagName, Float.valueOf(content));
                         } catch (NumberFormatException e) {
                             // append 0 value
-                            result.appendItemValue(itemName, new Float(0));
+                            result.appendItemValue(tagName, new Float(0));
                         }
                     } else if ("long".equalsIgnoreCase(sType)) {
                         try {
-                            result.appendItemValue(itemName, Long.valueOf(content));
+                            result.appendItemValue(tagName, Long.valueOf(content));
                         } catch (NumberFormatException e) {
                             // append 0 value
-                            result.appendItemValue(itemName, new Long(0));
+                            result.appendItemValue(tagName, new Long(0));
                         }
                     } else if ("date".equalsIgnoreCase(sType)) {
                         if (content == null || content.isEmpty()) {
@@ -989,7 +994,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                                     DateFormat dateFormat = new SimpleDateFormat(sFormat);
                                     dateResult = dateFormat.parse(content);
                                 }
-                                result.appendItemValue(itemName, dateResult);
+                                result.appendItemValue(tagName, dateResult);
                             } catch (ParseException e) {
                                 if (debug) {
                                     logger.finer("failed to convert string into date object: " + e.getMessage());
@@ -999,49 +1004,58 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
                     } else
                         // no type conversion
-                        result.appendItemValue(itemName, content);
+                        result.appendItemValue(tagName, content);
                 } else {
                     // no type definition
-                    result.appendItemValue(itemName, content);
+                    result.appendItemValue(tagName, content);
                 }
 
             } else {
-                throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_ITEM_FORMAT,
-                        "<item> tag contains no name attribute.");
+                throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
+                        "<" + tag + "> tag contains no name attribute.");
 
             }
         }
 
         // test for general invalid format
         if (invalidPattern) {
-            throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_ITEM_FORMAT,
-                    "invalid <item> tag format in workflowResult: " + workflowResult
-                            + "  , expected format is <item name=\"...\">...</item> ");
+            throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
+                    "invalid <" + tag + "> tag format in workflowResult: " + workflowResult + "  , expected format is <"
+                            + tag + " name=\"...\">...</item> ");
         }
         return result;
     }
 
     /**
-     * The method evaluates the WorkflowResult of a BPMN event and resolves embedded
-     * ItemValues.
-     * 
-     * * <code>
-     * 		<somedata>ABC<itemvalue>$uniqueid</itemvalue></somedata>
-     * </code>
-     * 
-     * This example will result in a new item 'somedata' with the $uniqueid prafixed
+     * The method evaluates the WorkflowResult for a given BPMN event and returns a
+     * ItemColleciton containing all item values of a specified tag name. Each tag
+     * definition of a WorkflowResult contains a name and a optional list of
+     * additional attributes. The method generates a item for each content element
+     * and attribute value. <br>
+     * e.g. <item name="comment" ignore="true">text</item> <br>
+     * will result in the attributes 'comment' with value 'text' and
+     * 'comment.ignore' with the value 'true'
+     * <p>
+     * Also embedded itemVaues can be resolved (resolveItemValues=true):
+     * <p>
+     * {@code
+     *      <somedata>ABC<itemvalue>$uniqueid</itemvalue></somedata>
+     * }
+     * <p>
+     * This example will result in a new item 'somedata' with the $uniqueid prefixed
      * with 'ABC'
      * 
-     * @see evalWorkflowResult(ItemCollection activityEntity, ItemCollection
+     * @see evalWorkflowResult(ItemCollection event, String tag, ItemCollection
      *      documentContext,boolean resolveItemValues)
-     * @param activityEntity
+     * @param event
+     * @param tag             - tag to be evaluated
      * @param documentContext
      * @return
      * @throws PluginException
      */
-    public ItemCollection evalWorkflowResult(ItemCollection activityEntity, ItemCollection documentContext)
+    public ItemCollection evalWorkflowResult(ItemCollection event, String tag, ItemCollection documentContext)
             throws PluginException {
-        return evalWorkflowResult(activityEntity, documentContext, true);
+        return evalWorkflowResult(event, tag, documentContext, true);
     }
 
     /**
@@ -1062,11 +1076,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
      */
     public ItemCollection evalNextTask(ItemCollection documentContext) throws PluginException, ModelException {
         WorkflowKernel workflowkernel = new WorkflowKernel(this);
-
         int taskID = workflowkernel.eval(documentContext);
         ItemCollection task = this.getModelManager().getModel(documentContext.getModelVersion()).getTask(taskID);
         return task;
-        // return workflowkernel.findNextTask(documentContext, event);
     }
 
     /**

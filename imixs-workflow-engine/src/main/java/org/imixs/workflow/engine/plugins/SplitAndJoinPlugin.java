@@ -96,10 +96,10 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
      * 
      */
     @SuppressWarnings("unchecked")
-    public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+    public ItemCollection run(ItemCollection adocumentContext, ItemCollection event)
             throws PluginException, AccessDeniedException, ProcessingErrorException {
         boolean debug = logger.isLoggable(Level.FINE);
-        ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(adocumentActivity, adocumentContext,
+        ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(event, "item", adocumentContext,
                 false);
 
         if (evalItemCollection == null)

@@ -63,9 +63,9 @@ public class ResultPlugin extends AbstractPlugin {
 
     private static Logger logger = Logger.getLogger(ResultPlugin.class.getName());
 
-    public ItemCollection run(ItemCollection documentContext, ItemCollection adocumentActivity) throws PluginException {
+    public ItemCollection run(ItemCollection documentContext, ItemCollection event) throws PluginException {
         // evaluate new items....
-        ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(adocumentActivity, documentContext,
+        ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(event, "item", documentContext,
                 true);
 
         if (evalItemCollection != null) {

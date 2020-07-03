@@ -33,7 +33,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.exceptions.PluginException;
 
 /**
@@ -91,11 +90,11 @@ public class ApproverPlugin extends AbstractPlugin {
      **/
     @SuppressWarnings("unchecked")
     @Override
-    public ItemCollection run(ItemCollection workitem, ItemCollection documentActivity) throws PluginException {
+    public ItemCollection run(ItemCollection workitem, ItemCollection event) throws PluginException {
         boolean refresh = false;
         boolean reset = false;
 
-        ItemCollection evalItemCollection = this.getWorkflowService().evalWorkflowResult(documentActivity, workitem);
+        ItemCollection evalItemCollection = this.getWorkflowService().evalWorkflowResult(event, "item", workitem);
 
         // test for items with name 'approvedby'
         if (evalItemCollection != null && evalItemCollection.hasItem(EVAL_APPROVEDBY)) {

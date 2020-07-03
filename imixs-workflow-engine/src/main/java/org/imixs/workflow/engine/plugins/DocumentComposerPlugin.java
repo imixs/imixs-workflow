@@ -78,19 +78,17 @@ public class DocumentComposerPlugin extends AbstractPlugin {
      * This method adds the attachments of the blob workitem to the MimeMessage
      */
     @Override
-    public ItemCollection run(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
+    public ItemCollection run(ItemCollection documentContext, ItemCollection event) throws PluginException {
         long l = System.currentTimeMillis();
         // get next process entity
         ItemCollection itemColNextProcess = null;
         try {
-            // itemColNextProcess = this.getWorkflowService().evalNextTask(documentContext,
-            // documentActivity);
             itemColNextProcess = this.getWorkflowService().evalNextTask(documentContext);
         } catch (ModelException e) {
             throw new PluginException(DocumentComposerPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
         }
 
-        ItemCollection evalItemCollection = this.getWorkflowService().evalWorkflowResult(documentActivity,
+        ItemCollection evalItemCollection = this.getWorkflowService().evalWorkflowResult(event,"item",
                 documentContext);
 
         // find the data object

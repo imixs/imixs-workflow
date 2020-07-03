@@ -70,7 +70,7 @@ public class IntervalPlugin extends AbstractPlugin {
 	/**
 	 * The method paresed for a fields with the prafix 'keyitnerval'
 	 */
-	public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+	public ItemCollection run(ItemCollection adocumentContext, ItemCollection event)
 			throws PluginException {
 
 		LocalDateTime result = null;
@@ -78,7 +78,7 @@ public class IntervalPlugin extends AbstractPlugin {
 		documentContext = adocumentContext;
 		// test if activity is a schedule activity...
 		// check if activity is scheduled
-		if (!"1".equals(adocumentActivity.getItemValueString("keyScheduledActivity"))) {
+		if (!"1".equals(event.getItemValueString("keyScheduledActivity"))) {
 			return documentContext;
 		}
 
@@ -93,7 +93,7 @@ public class IntervalPlugin extends AbstractPlugin {
 
 		// evaluate interval configuration
 		long l = System.currentTimeMillis();
-		ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(adocumentActivity, adocumentContext,
+		ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(event, "item", adocumentContext,
 				false);
 		logger.warning("evaluation takes " + (System.currentTimeMillis() - l) + "ms");
 
