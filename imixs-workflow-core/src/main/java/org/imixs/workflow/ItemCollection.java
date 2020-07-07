@@ -1502,7 +1502,7 @@ public class ItemCollection implements Cloneable {
      * @param itemValue - value
      * @param append    - true if the value should be appended to an existing list
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void setItemValue(String itemName, Object itemValue, boolean append, boolean unique) {
         List<Object> itemValueList = null;
 
@@ -1525,6 +1525,12 @@ public class ItemCollection implements Cloneable {
             // just warn - do not remove
             logger.warning("replaceItemValue '" + itemName
                     + "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
+        }
+
+        // test if value is a Set
+        if (itemValue instanceof Set) {
+            // Let's do a conversion from a Set to a List
+            itemValue = new ArrayList<>((Set) itemValue);
         }
 
         // test if value is serializable
