@@ -28,7 +28,6 @@
 
 package org.imixs.workflow.engine;
 
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -38,24 +37,29 @@ import javax.annotation.security.RunAs;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
- * The AsyncEventScheduler starts a ManagedScheduledExecutorService to process
- * async events in an asynchronous way by calling the AsyncEventService.
+ * The AsyncEventScheduler starts a scheduler service to process async events in
+ * an asynchronous way by calling the AsyncEventService.
  * <p>
- * The AsyncEventScheduler runs on a ManagedScheduledExecutorService with the
- * interval 'ASYNCEVENT_PROCESSOR_INTERVAL' and an optional delay defined by
+ * The AsyncEventScheduler runs on a non-persistent ejb timer with the interval
+ * 'ASYNCEVENT_PROCESSOR_INTERVAL' and an optional delay defined by
  * 'ASYNCEVENT_PROCESSOR_INITIALDELAY'. To enable the processor
  * 'ASYNCEVENT_PROCESSOR_ENABLED' must be set to true (default=false).
  * 'ASYNCEVENT_PROCESSOR_DEADLOCK' deadlock timeout
  * <p>
+ * In a clustered environment this timer runs in each cluster member that
+ * contains the EJB. So this means the non-persistent EJB Timer scales
+ * horizontal within a clustered environment – e.g. a Kubernetes cluster.
  *
  * @see AsyncEventService
- * @version 1.0
+ * @version 1.1
  * @author rsoika
  *
  */
@@ -96,7 +100,7 @@ public class AsyncEventScheduler {
     private static Logger logger = Logger.getLogger(AsyncEventScheduler.class.getName());
 
     @Resource
-    ManagedScheduledExecutorService scheduler;
+    javax.ejb.TimerService timerService;
 
     @Inject
     AsyncEventService asyncEventService;
@@ -109,7 +113,12 @@ public class AsyncEventScheduler {
         if (enabled) {
             logger.info(
                     "Starting AsyncEventScheduler - initalDelay=" + initialDelay + "  inverval=" + interval + " ....");
-            this.scheduler.scheduleAtFixedRate(this::run, initialDelay, interval, TimeUnit.MILLISECONDS);
+
+            // Registering a non-persistent Timer Service.
+            final TimerConfig timerConfig = new TimerConfig();
+            timerConfig.setInfo("Imixs-Workflow AsyncEventScheduler");
+            timerConfig.setPersistent(false);
+            timerService.createIntervalTimer(initialDelay, interval, timerConfig);
         }
     }
 
@@ -121,7 +130,8 @@ public class AsyncEventScheduler {
      * Both methods are running in separate transactions
      * 
      */
-    public void run() {
+    @Timeout
+    public void run(Timer timer) {
         eventLogService.releaseDeadLocks(deadLockInterval, EVENTLOG_TOPIC_ASYNC_EVENT);
         asyncEventService.processEventLog();
     }
