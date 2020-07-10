@@ -63,3 +63,14 @@ These settings can be overwritten with the following web.xml settings:
 			<url-pattern>/fileupload/*</url-pattern>
 		</servlet-mapping>
 	....
+
+	
+## Callback Method onFileUploadChange
+
+The optional JavaScript callback method *onFileUploadChange* can be implemented by a web front end to react on new uploaded or removed files. This callback method is triggered immediately when the user added or removed a file but before the data is submitted to the Imixs backend. The callback method must not be registered on a special component. 
+
+	function onFileUploadChange() {
+		// do something
+	}
+
+

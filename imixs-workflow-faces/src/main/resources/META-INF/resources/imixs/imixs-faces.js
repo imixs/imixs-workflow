@@ -1,6 +1,6 @@
 // default jQuery date format
 var dateDisplayFormat = "yy-mm-dd";
-
+var onFileChange = null;
 /*
  * This method converts a Java Date String into the jQuery format. See:
  * http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
@@ -335,6 +335,11 @@ function refreshFileList(files) {
 	$('button','.imixsFileUpload_uploadlist').button({
 	      icons: {primary: "ui-icon-close"}
 	});
+	
+	// callback method
+	if (onFileUploadChange && onFileUploadChange instanceof Function) {
+		onFileUploadChange();
+	}
 }
 
 
