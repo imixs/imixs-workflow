@@ -337,8 +337,10 @@ function refreshFileList(files) {
 	});
 	
 	// callback method
-	if (onFileUploadChange && onFileUploadChange instanceof Function) {
+	if (typeof onFileUploadChange !== 'undefined') {
+	 if (onFileUploadChange instanceof Function) {
 		onFileUploadChange();
+	 }
 	}
 }
 
