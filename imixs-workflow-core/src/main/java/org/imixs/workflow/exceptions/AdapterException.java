@@ -50,6 +50,10 @@ public class AdapterException extends WorkflowException {
         super(aErrorContext, aErrorCode, message);
         this.params = params;
     }
+    
+    public AdapterException(PluginException e) {
+        super(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
+    }
 
     public Object[] getErrorParameters() {
         return params;
