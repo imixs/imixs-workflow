@@ -1,0 +1,87 @@
+
+# Creation of JQuery-UI Theme for Imixs-Office-Workflow 
+
+
+########################
+# Main Colors
+########################
+
+main: 	#61B1D0  
+light: 	#ECF3F8
+dark: 	#206B87  (buttons)
+
+contrast: #FAA732
+          #22A976
+
+
+
+########################
+# Theme Roller:
+########################
+
+https://jqueryui.templersmc.net/
+
+Font: 
+====================================
+font-weight: normal
+font-size: 1.0
+
+
+Corner-Radius: 
+====================================
+0px
+
+
+              
+Header toolbar
+====================================
+background	#fff
+border 		#fff;
+text:		#333333
+   
+   
+Content:
+====================================
+background:	#fff
+icon		#fff
+text:		#333
+   
+
+Clickable-default: 
+====================================
+			#206B87 , none , 0%
+Text: 		#fff
+border: 	#206B87
+icon: 		#fff
+
+
+Clickable-hover: 
+====================================
+            #2a8aad
+border : 	#2a8aad
+text:		#fff	      
+           
+Clickable-Activ
+====================================
+            #faa732
+border : 	#faa732
+text: 		#fff	   
+
+ 
+   
+Higlight: 
+====================================
+
+background: #ECF3F8
+border: 	#206B87 
+text		#333333
+icon		#206B87
+
+
+Error:
+====================================
+
+background:	#ffa4a7
+text		#333333
+border: 	#cc0000
+icon:		#cc0000
