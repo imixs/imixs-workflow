@@ -40,28 +40,31 @@ Item names starting with a '$' are controlled by the Imixs-Workflow engine only.
 
 #### Dot.Case Format
 
-For application specific item names the 'dot.Case' format is recommended. It's basically a convention that makes it easier to see what properties are related.
+For application specific item names the 'dot.Case' format is recommended. It's basically a convention that makes it easier to see what properties are related by using a prefix.
 
 For example:
 
 	person.title="Title" 
 	person.surname="Surname" 
 	person.job.description="Some description"
+	person.skill.description="Some description"
 
-It's easy to see which items are related. You can easily collect similar properties by filtering the prefix like 'person.' to only see the properties for person. 
+It's easy to see which items are related. The example defines 3 items related to a person object. Two 'description' fields are related to the item categories 'job' and the 'skill'. 
+
+In addition it is possible to collect similar properties by filtering the prefix like 'person.' using regular expressions:
 
 	 Map<String, Object> result = workitem.entrySet()
          .stream()
-         .filter(p -> p.getKey().startsWith("person.")) //filter by key prefix
+         .filter(p -> p.getKey().matches("^person\\.")) //filter by key prefix
          .collect(Collectors.toMap(map -> map.getKey(), map -> map.getValue()));
          
 
-You can leave the Dot.Case format if a item name is for general usage over all workflows. For example:
+You can leave the *Dot.Case* format if a item name is for general usage over all workflows. For example:
 
 	name="..."
 	description="..."
 	
-Note: you should not use the general format in different input forms or plug-ins if there meaning is not unique over the complete process.
+**Note:** You should not use the general format in different input forms or plug-ins if there meaning is not unique over the complete process. It is recommended to always use a prefix!  
 
 
 
