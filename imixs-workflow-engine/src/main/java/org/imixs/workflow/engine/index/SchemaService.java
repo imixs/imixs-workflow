@@ -107,7 +107,7 @@ public class SchemaService {
             "$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator",
             "$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "name", "txtname",
             "$owner", "namowner", "txtworkitemref", "$workitemref", "$uniqueidsource", "$uniqueidversions", "$lasttask", "$lastevent",
-            "$lasteventdate");
+            "$lasteventdate","$file.count","$file.names");
     public static List<String> DEFAULT_STORE_FIELD_LIST = Arrays.asList("type", "$taskid", "$writeaccess",
             "$workflowsummary", "$workflowabstract", "$workflowgroup", "$workflowstatus", "$modified", "$created",
             "$lasteventdate", "$creator", "$editor", "$lasteditor", "$owner", "namowner");

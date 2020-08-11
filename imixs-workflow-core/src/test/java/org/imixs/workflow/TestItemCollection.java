@@ -860,7 +860,19 @@ public class TestItemCollection {
         file1Data1 = itemColTarget.getFileData("test1.txt").getContent();
         // we expect the new dummy array { 1, 2, 3 }
         Assert.assertArrayEquals(empty, file1Data1);
-
+        
+        // test getFileNames
+        Assert.assertEquals(1, itemColSource.getItemValueInteger("$file.count"));
+        List<String> fileNames = itemColSource.getFileNames();
+        Assert.assertEquals(1,fileNames.size());
+        Assert.assertEquals("test1.txt",fileNames.get(0));
+        
+        // remove file....
+        itemColSource.removeFile("test1.txt");
+        Assert.assertEquals(0, itemColSource.getItemValueInteger("$file.count"));
+        fileNames = itemColSource.getFileNames();
+        Assert.assertEquals(0,fileNames.size());
+        
     }
 
     /*

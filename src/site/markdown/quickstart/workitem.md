@@ -69,8 +69,11 @@ The following table provides an overview about all data items managed by the Imi
 |$immutable    	  |Boolean |yes    		| no 	  | If set to 'true' updateing the workitem is no longer allowed. (See [DocumentService](../engine/documentservice.html) for details.) |
 |$Participants    |List    |no    		| yes 	  | String list of Users having executed this WorkItem. 		|
 |$owner           |List    |no    		| yes 	  | String list of User/Roles, that are owners of that WorkItem. 	|
-|$workflowsummary |String|no 			| yes 	  | A short description of the current status      				|
-|$workflowabstract|String|no 			| yes 	  | A long description of the current status       				|
+|$workflowsummary |String  |no 			| yes 	  | A short description of the current status      				|
+|$workflowabstract|String  |no 			| yes 	  | A long description of the current status       				|
+|$file            |List    |yes			| no      | List of FileData objects							        |
+|$file.count      |Integer |no			| yes     | Count of FileData objects							        |
+|$file.filenames  |List    |yes			| yes     | List of file names
 |txtworkflowimageurl|String|no 			| no 	  | A link to an image which displays the current status 		|
 |txtworkflowresultmessage  |String |no  | no 	  | The result message of last process step 					|
  

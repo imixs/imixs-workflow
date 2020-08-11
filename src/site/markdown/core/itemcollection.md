@@ -123,7 +123,7 @@ In this code example the values of the ItemCollection "teamMemer" are stored as 
 
 ### Working with FileData
 
-The class _org.imixs.workflow.FileData_ can be used to transfere files into a ItemCollection. A FileData object contains the following attributes:
+The class _org.imixs.workflow.FileData_ can be used to transfer files into a ItemCollection. A FileData object contains the following attributes:
 
  * name - the file name
  * content - a byte array of the file data
@@ -139,6 +139,16 @@ To get an attached file form a ItemCollection the method getFileData can be used
 
 
 	myFileData=myItemCollection.getFileData("test.jpg");
+
+To remove an existing fileData object the method removeFileDat can be called:
+
+	myItemCollection.removeFileData("test.jpg");
+
+
+In addition the following $file meta data items are computed:
+
+ - $file.count - count of files
+ - $file.filenames - list of all file names
 	    
   
 ### Get and Set all Items

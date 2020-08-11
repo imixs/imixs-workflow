@@ -981,14 +981,14 @@ public class ItemCollection implements Cloneable {
      */
     @SuppressWarnings("unchecked")
     public void addFileData(FileData filedata) {
-
+        Map<String, List<Object>> mapFiles = null;
         // purge $file....
         purgeItemValue("$file");
         if (filedata != null) {
             List<Object> vectorFileInfo = null;
 
             // Store files using a map....
-            Map<String, List<Object>> mapFiles = null;
+
             List<?> vFiles = getItemValue("$file");
             if (vFiles != null && vFiles.size() > 0)
                 mapFiles = (Map<String, List<Object>>) vFiles.get(0);
@@ -1009,6 +1009,13 @@ public class ItemCollection implements Cloneable {
 
             // addFile(filedata.content, filedata.name, filedata.contentType);
         }
+
+        // Update $file meta data...
+        if (mapFiles != null) {
+            replaceItemValue("$file.count", mapFiles.size());
+            replaceItemValue("$file.names", mapFiles.keySet());
+        }
+
     }
 
     /**
@@ -1052,6 +1059,12 @@ public class ItemCollection implements Cloneable {
             vectorFileInfo.add(data);
             mapFiles.put(fileName, vectorFileInfo);
             replaceItemValue("$file", mapFiles);
+            
+            // Update $file meta data...
+            if (mapFiles != null) {
+                replaceItemValue("$file.count", mapFiles.size());
+                replaceItemValue("$file.names", mapFiles.keySet());
+            }
         }
     }
 
@@ -1165,6 +1178,12 @@ public class ItemCollection implements Cloneable {
             mapFiles = (Map<String, List<Object>>) vFiles.get(0);
             mapFiles.remove(aFilename);
             replaceItemValue("$file", mapFiles);
+            
+            // Update $file meta data...
+            if (mapFiles != null) {
+                replaceItemValue("$file.count", mapFiles.size());
+                replaceItemValue("$file.names", mapFiles.keySet());
+            }
         }
 
     }
@@ -1212,23 +1231,25 @@ public class ItemCollection implements Cloneable {
      */
     @SuppressWarnings("unchecked")
     public List<String> getFileNames() {
-        // File attachments...
-        List<String> files = new ArrayList<String>();
-
-        Map<String, List<Object>> mapFiles = null;
-        List<?> vFiles = getItemValue("$file");
-        if (vFiles != null && vFiles.size() > 0) {
-            mapFiles = (Map<String, List<Object>>) vFiles.get(0);
-            // files = new String[mapFiles.entrySet().size()];
-            Iterator<?> iter = mapFiles.entrySet().iterator();
-            while (iter.hasNext()) {
-                Map.Entry<String, List<Object>> mapEntry = (Map.Entry<String, List<Object>>) iter.next();
-                String aFileName = mapEntry.getKey().toString();
-                files.add(aFileName);
-            }
-        }
-
-        return files;
+        
+        return this.getItemValue("$file.names");
+//        // File attachments...
+//        List<String> files = new ArrayList<String>();
+//
+//        Map<String, List<Object>> mapFiles = null;
+//        List<?> vFiles = getItemValue("$file");
+//        if (vFiles != null && vFiles.size() > 0) {
+//            mapFiles = (Map<String, List<Object>>) vFiles.get(0);
+//            // files = new String[mapFiles.entrySet().size()];
+//            Iterator<?> iter = mapFiles.entrySet().iterator();
+//            while (iter.hasNext()) {
+//                Map.Entry<String, List<Object>> mapEntry = (Map.Entry<String, List<Object>>) iter.next();
+//                String aFileName = mapEntry.getKey().toString();
+//                files.add(aFileName);
+//            }
+//        }
+//
+//        return files;
     }
 
     /**
