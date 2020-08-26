@@ -92,10 +92,8 @@ public class IntervalPlugin extends AbstractPlugin {
 		}
 
 		// evaluate interval configuration
-		long l = System.currentTimeMillis();
 		ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(event, "item", adocumentContext,
 				false);
-		logger.warning("evaluation takes " + (System.currentTimeMillis() - l) + "ms");
 
 		if (evalItemCollection == null) {
 			return adocumentContext;
