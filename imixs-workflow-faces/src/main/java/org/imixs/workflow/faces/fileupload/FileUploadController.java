@@ -234,14 +234,29 @@ public class FileUploadController implements Serializable {
 
     /**
      * get the file size for a given filename in human readable format
+     * <p>
+     * In case the Imixs-Archive API is connected, the file size is stored in the
+     * attriubte 'size'
      * 
      * @param sFilename - filename to be removed
      * @return - filsize in human readable string
      */
+    @SuppressWarnings("unchecked")
     public String getFileSize(String aFilename) {
         if (workitem != null) {
             FileData fileData = workitem.getFileData(aFilename);
             double bytes = fileData.getContent().length;
+            if (bytes == 0) {
+                // test if we have the attribute size
+                List<Object> sizeAttribute = (List<Object>) fileData.getAttribute("size");
+                if (sizeAttribute != null && sizeAttribute.size() > 0) {
+                    try {
+                        bytes = Double.parseDouble(sizeAttribute.get(0).toString());
+                    } catch (NumberFormatException n) {
+                        logger.warning("unable to parse size attribute in FileData for file '" + aFilename + "'");
+                    }
+                }
+            }
             if (bytes >= 1000000000) {
                 bytes = (bytes / 1000000000);
                 return round(bytes) + " GB";
