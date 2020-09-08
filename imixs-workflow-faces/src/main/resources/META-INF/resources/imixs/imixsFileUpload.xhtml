@@ -8,7 +8,7 @@
 	xmlns:cc="http://java.sun.com/jsf/composite">
 
 <cc:interface>
-	<cc:attribute name="hideatachments" default="false"	type="java.lang.Boolean"></cc:attribute>
+	<cc:attribute name="hideattachments" default="false"	type="java.lang.Boolean"></cc:attribute>
 	<cc:attribute name="workitem"></cc:attribute>
 	<cc:attribute name="context_url"></cc:attribute>
 	<cc:attribute name="styleClass"></cc:attribute>
@@ -39,17 +39,16 @@
 		<h:panelGroup id="imixsFileUpload_dataTable">
 
 			<!-- show no attachments (dummy table) -->
-			<ui:fragment rendered="#{cc.attrs.hideatachments}">
+			<ui:fragment rendered="#{cc.attrs.hideattachments}">
 				<table class="imixsFileUpload_uploadlist">
 				</table>
 			</ui:fragment>
 
 			<!-- show no attachments from workitem -->
-			<ui:fragment rendered="#{!cc.attrs.hideatachments}">
+			<ui:fragment rendered="#{!cc.attrs.hideattachments}">
 				<!-- attached files -->
 				<h:dataTable value="#{fileUploadController.persistedFiles}" var="fileData"
 					styleClass="imixsFileUpload_uploadlist" >
-
 						<h:column>
 							<h:outputText escape="false" value="&lt;a class='imixsFileUpload_file' target='_blank' href='" />
 							<h:outputText escape="false"
