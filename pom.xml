@@ -67,7 +67,7 @@
 		<connection>scm:git:https://github.com/imixs/imixs-workflow.git</connection>
 		<developerConnection>scm:git:https://github.com/imixs/imixs-workflow.git</developerConnection>
 		<url>https://github.com/imixs/imixs-workflow/</url>
-		<tag>imixs-workflow-4.5.7</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<issueManagement>
@@ -94,7 +94,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
+				<version>3.8.1</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -126,79 +126,52 @@
 				</configuration>
 			</plugin>
 
-			<!-- temporarily fix issue #442 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<useSystemClassLoader>false</useSystemClassLoader>
-				</configuration>
-				<version>2.22.1</version>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.9.0</version>
 			</plugin>
-			-->
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>3.1.0</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.2.0</version>
+				<configuration>
+					<additionalOptions>-Xdoclint:none</additionalOptions>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<version>3.0.0</version>
+			</plugin>
 		</plugins>
 	</build>
 
 	<reporting>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.7</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-site-plugin</artifactId>
-				<version>3.7.1</version>
-				<configuration>
-					<locales>en</locales>
-					<reportPlugins>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-project-info-reports-plugin</artifactId>
-							<version>2.9</version>
-							<reports>
-								<report>index</report>
-								<report>project-team</report>
-								<report>license</report>
-								<report>mailing-list</report>
-								<report>dependencies</report>
-								<report>dependency-convergence</report>
-								<report>plugin-management</report>
-								<report>cim</report>
-								<report>issue-tracking</report>
-								<report>scm</report>
-								<report>summary</report>
-							</reports>
-						</plugin>
-					</reportPlugins>
-				</configuration>
-			</plugin>
-
 			<!-- java doc -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.4</version>
-			</plugin>
-
-			<!-- Findbugs -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>3.0.4</version>
+				<version>3.2.0</version>
 				<configuration>
-					<effort>Default</effort><!-- Min, Default, Max -->
-					<threshold>Default</threshold><!-- High, Default, Low, Ignore -->
+					<additionalOptions>-Xdoclint:none</additionalOptions>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jxr-plugin</artifactId>
-				<version>2.1</version>
+				<version>3.0.0</version>
 			</plugin>
 		</plugins>
-
 	</reporting>
 
 	<profiles>
