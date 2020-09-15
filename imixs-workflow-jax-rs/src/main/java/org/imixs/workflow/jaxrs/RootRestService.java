@@ -30,7 +30,13 @@ package org.imixs.workflow.jaxrs;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Logger;
+
 import javax.ejb.Stateless;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -48,6 +54,16 @@ import javax.ws.rs.core.StreamingOutput;
 @Produces({ MediaType.TEXT_HTML, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, MediaType.TEXT_XML })
 @Stateless
 public class RootRestService {
+    
+    @javax.ws.rs.core.Context
+    private HttpServletRequest servletRequest;
+   
+    @javax.ws.rs.core.Context
+    private HttpServletResponse servletResponse;
+   
+    
+    private static Logger logger = Logger.getLogger(RootRestService.class.getName());
+
 
     @GET
     @Produces(MediaType.APPLICATION_XHTML_XML)
@@ -68,4 +84,29 @@ public class RootRestService {
         };
 
     }
+    
+    
+    /**
+     * Method to invalidate the current user session 
+     * <p>
+     * Should be called by a client 
+     */
+    @GET
+    @Path("/logout")
+    public void logout() {
+        try {
+            servletRequest.logout();
+            HttpSession session = servletRequest.getSession(false);
+            if (servletRequest.isRequestedSessionIdValid() && session != null) {
+                session.invalidate();
+            }
+        }
+        catch (ServletException e) {
+            logger.warning("Failed to logout from API endpoint /logout : " + e.getMessage());
+            return;
+        }
+        logger.finest("Logout successfull");
+    }
+    
+  
 }
