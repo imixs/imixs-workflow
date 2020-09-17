@@ -582,7 +582,7 @@ public class MailPlugin extends AbstractPlugin {
         if (aAddr == null) {
             return null;
         }
-
+        aAddr=aAddr.trim();
         try {
             // surround with "" if space
             if (aAddr.indexOf(" ") > -1)
