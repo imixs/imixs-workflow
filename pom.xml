@@ -19,7 +19,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- dependency versions -->
 		<jakarta.version>8.0</jakarta.version>
-		<microprofile.version>2.2</microprofile.version>
+		<microprofile.version>3.0</microprofile.version>
+		<microprofile-metrics.version>2.3</microprofile-metrics.version>
 		<lucene.version>7.5.0</lucene.version>
 	</properties>
 
@@ -260,7 +261,7 @@
 		<dependency>
 			<groupId>org.eclipse.microprofile.metrics</groupId>
 			<artifactId>microprofile-metrics-api</artifactId>
-			<version>${microprofile.version}</version>
+			<version>${microprofile-metrics.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
