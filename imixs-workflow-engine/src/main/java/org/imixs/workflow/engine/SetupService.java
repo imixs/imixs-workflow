@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -107,8 +108,8 @@ public class SetupService {
     private static Logger logger = Logger.getLogger(SetupService.class.getName());
 
     @Inject
-    @ConfigProperty(name = "model.default.data", defaultValue = "")
-    private String modelDefaultData;
+    @ConfigProperty(name = "model.default.data")
+    private Optional<String> modelDefaultData;
 
     @Inject
     @ConfigProperty(name = "model.default.data.overwrite", defaultValue = "false")
@@ -201,12 +202,14 @@ public class SetupService {
     public void scanDefaultModels() {
         logger.finest("......scan default models...");
         // test if we have an environment variable or a property value...
-        String modelData = modelDefaultData;
-
-        if ("".equals(modelData)) {
+       
+        if (!modelDefaultData.isPresent() || modelDefaultData.get().isEmpty()) {
             // no model data to scan
             return;
         }
+        
+        String modelData = modelDefaultData.get();
+
 
         String[] modelResources = modelData.split(";");
         for (String modelResource : modelResources) {

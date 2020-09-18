@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.IntPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -124,12 +125,12 @@ public class SolrIndexService {
     private String configset;
 
     @Inject
-    @ConfigProperty(name = "solr.user", defaultValue = "")
-    private String user;
+    @ConfigProperty(name = "solr.user")
+    private Optional<String> user;
 
     @Inject
-    @ConfigProperty(name = "solr.password", defaultValue = "")
-    private String password;
+    @ConfigProperty(name = "solr.password")
+    private Optional<String> password;
 
     @Inject
     private SchemaService schemaService;
@@ -157,8 +158,8 @@ public class SolrIndexService {
     public void init() {
         // create rest client
         restClient = new RestClient(api);
-        if (user != null && !user.isEmpty()) {
-            BasicAuthenticator authenticator = new BasicAuthenticator(user, password);
+        if (user.isPresent() && !user.get().isEmpty()) {
+            BasicAuthenticator authenticator = new BasicAuthenticator(user.get(), password.get());
             restClient.registerRequestFilter(authenticator);
         }
     }

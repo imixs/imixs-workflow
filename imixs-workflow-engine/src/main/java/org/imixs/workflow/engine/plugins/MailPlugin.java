@@ -35,6 +35,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -89,19 +90,19 @@ public class MailPlugin extends AbstractPlugin {
 
     // Mail objects
     @Resource(lookup = MAIL_SESSION_NAME)
-    private Session mailSession;
+    Session mailSession;
 
     @Inject
-    @ConfigProperty(name = "mail.testRecipients", defaultValue = "")
-    private String mailTestRecipients;
+    @ConfigProperty(name = "mail.testRecipients")
+    Optional<String> mailTestRecipients;
 
     @Inject
-    @ConfigProperty(name = "mail.defaultSender", defaultValue = "")
-    private String mailDefaultSender;
+    @ConfigProperty(name = "mail.defaultSender")
+    Optional<String> mailDefaultSender;
 
     @Inject
-    @ConfigProperty(name = "mail.charSet", defaultValue = "")
-    private String mailCharSet;
+    @ConfigProperty(name = "mail.charSet", defaultValue = "ISO-8859-1")
+    String mailCharSet;
 
     private MimeMessage mailMessage = null;
     private Multipart mimeMultipart = null;
@@ -219,10 +220,10 @@ public class MailPlugin extends AbstractPlugin {
                 // Check if we are running in a Test MODE
 
                 // test if TestReceipiens are defined...
-                if (mailTestRecipients != null && !"".equals(mailTestRecipients)) {
+                if (mailTestRecipients.isPresent() && !mailTestRecipients.get().isEmpty()) {
                     List<String> vRecipients = new Vector<String>();
                     // split multivalues
-                    StringTokenizer st = new StringTokenizer(mailTestRecipients, ",", false);
+                    StringTokenizer st = new StringTokenizer(mailTestRecipients.get(), ",", false);
                     while (st.hasMoreElements()) {
                         vRecipients.add(st.nextToken().trim());
                     }
@@ -299,8 +300,8 @@ public class MailPlugin extends AbstractPlugin {
         String sFrom = documentActivity.getItemValueString("namMailFrom");
 
         // if no from was defined by teh event, we test if a default sender is defined
-        if (sFrom.isEmpty()) {
-            sFrom = mailDefaultSender;
+        if (sFrom.isEmpty() && mailDefaultSender.isPresent()) {
+            sFrom = mailDefaultSender.get();
         }
         // if no default sender take the current username
         if (sFrom == null || sFrom.isEmpty())

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -77,20 +78,20 @@ public class SchemaService {
     public static final String ANONYMOUS = "ANONYMOUS";
 
     @Inject
-    @ConfigProperty(name = "index.fields", defaultValue = "")
-    private String indexFields;
+    @ConfigProperty(name = "index.fields")
+    Optional<String> indexFields; 
 
     @Inject
-    @ConfigProperty(name = "index.fields.analyze", defaultValue = "")
-    private String indexFieldsAnalyze;
+    @ConfigProperty(name = "index.fields.analyze")
+    Optional<String> indexFieldsAnalyze;
 
     @Inject
-    @ConfigProperty(name = "index.fields.noanalyze", defaultValue = "")
-    private String indexFieldsNoAnalyze;
+    @ConfigProperty(name = "index.fields.noanalyze")
+    Optional<String> indexFieldsNoAnalyze;
 
     @Inject
-    @ConfigProperty(name = "index.fields.store", defaultValue = "")
-    private String indexFieldsStore;
+    @ConfigProperty(name = "index.fields.store")
+    Optional<String> indexFieldsStore;
 
     @Inject
     private DocumentService documentService;
@@ -133,8 +134,8 @@ public class SchemaService {
         fieldList = new ArrayList<String>();
         // add all entries from the default field list
         fieldList.addAll(DEFAULT_SEARCH_FIELD_LIST);
-        if (indexFields != null && !indexFields.isEmpty()) {
-            StringTokenizer st = new StringTokenizer(indexFields, ",");
+        if (indexFields.isPresent() && !indexFields.get().isEmpty()) {
+            StringTokenizer st = new StringTokenizer(indexFields.get(), ",");
             while (st.hasMoreElements()) {
                 String sName = st.nextToken().toLowerCase().trim();
                 // do not add internal fields
@@ -148,8 +149,8 @@ public class SchemaService {
         fieldListNoAnalyze = new ArrayList<String>();
         // add all entries from the default field list
         fieldListNoAnalyze.addAll(DEFAULT_NOANALYZE_FIELD_LIST);
-        if (indexFieldsNoAnalyze != null && !indexFieldsNoAnalyze.isEmpty()) {
-            StringTokenizer st = new StringTokenizer(indexFieldsNoAnalyze, ",");
+        if (indexFieldsNoAnalyze.isPresent() && !indexFieldsNoAnalyze.get().isEmpty()) {
+            StringTokenizer st = new StringTokenizer(indexFieldsNoAnalyze.get(), ",");
             while (st.hasMoreElements()) {
                 String sName = st.nextToken().toLowerCase().trim();
                 // avoid duplicates
@@ -161,8 +162,8 @@ public class SchemaService {
 
         // finally compute Index ANALYZE field list
         fieldListAnalyze = new ArrayList<String>();
-        if (indexFieldsAnalyze != null && !indexFieldsAnalyze.isEmpty()) {
-            StringTokenizer st = new StringTokenizer(indexFieldsAnalyze, ",");
+        if (indexFieldsAnalyze.isPresent() && !indexFieldsAnalyze.get().isEmpty()) {
+            StringTokenizer st = new StringTokenizer(indexFieldsAnalyze.get(), ",");
             while (st.hasMoreElements()) {
                 String sName = st.nextToken().toLowerCase().trim();
                 // Now we need to avoid also duplicates with the NOANALYZE field list ANALYZE
@@ -179,9 +180,9 @@ public class SchemaService {
         fieldListStore = new ArrayList<String>();
         // add all static default field list
         fieldListStore.addAll(DEFAULT_STORE_FIELD_LIST);
-        if (indexFieldsStore != null && !indexFieldsStore.isEmpty()) {
+        if (indexFieldsStore.isPresent() && !indexFieldsStore.get().isEmpty()) {
             // add additional field list from imixs.properties
-            StringTokenizer st = new StringTokenizer(indexFieldsStore, ",");
+            StringTokenizer st = new StringTokenizer(indexFieldsStore.get(), ",");
             while (st.hasMoreElements()) {
                 String sName = st.nextToken().toLowerCase().trim();
                 if (!fieldListStore.contains(sName))
