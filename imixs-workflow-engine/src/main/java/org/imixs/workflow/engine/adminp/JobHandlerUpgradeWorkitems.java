@@ -272,6 +272,10 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
             sType = sType.substring(0, sType.length() - 1);
             query += " AND document.type IN(" + sType + ")";
             bAddAnd = true;
+        } else {
+        	// default to workitem
+        	  query += " AND document.type IN('workitem')";
+        	  bAddAnd = true;
         }
 
         if (datFilterFrom != null) {
