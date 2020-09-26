@@ -21,7 +21,7 @@
 		<jakarta.version>8.0</jakarta.version>
 		<microprofile.version>3.0</microprofile.version>
 		<microprofile-metrics.version>2.3</microprofile-metrics.version>
-		<lucene.version>7.5.0</lucene.version>
+		<lucene.version>7.7.3</lucene.version>
 	</properties>
 
 
