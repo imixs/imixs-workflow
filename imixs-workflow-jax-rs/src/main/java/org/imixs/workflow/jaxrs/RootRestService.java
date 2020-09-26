@@ -79,6 +79,7 @@ public class RootRestService {
                 out.write("<a href=\"/model\" type=\"application/xml\" rel=\"model\"/>".getBytes());
                 out.write("<a href=\"/report\" type=\"application/xml\" rel=\"report\"/>".getBytes());
                 out.write("<a href=\"/adminp\" type=\"application/xml\" rel=\"adminp\"/>".getBytes());
+                out.write("<a href=\"/eventlog\" type=\"application/xml\" rel=\"eventlog\"/>".getBytes());
                 out.write("</div>".getBytes());
             }
         };
