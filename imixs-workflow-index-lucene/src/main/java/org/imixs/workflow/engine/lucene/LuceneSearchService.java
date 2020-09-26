@@ -29,17 +29,18 @@
 package org.imixs.workflow.engine.lucene;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -57,7 +58,6 @@ import org.apache.lucene.search.TopDocsCollector;
 import org.apache.lucene.search.TopFieldCollector;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
@@ -361,23 +361,6 @@ public class LuceneSearchService implements SearchService {
     }
 
     /**
-     * Creates a Lucene FSDirectory Instance. The method uses the proeprty
-     * LockFactory to set a custom LockFactory.
-     * 
-     * For example: org.apache.lucene.store.SimpleFSLockFactory
-     * 
-     * @return
-     * @throws IOException
-     */
-
-    Directory createIndexDirectory() throws IOException {
-        logger.finest("......createIndexDirectory...");
-        Directory indexDir;
-        indexDir = FSDirectory.open(Paths.get(luceneIndexService.getLuceneIndexDir()));
-        return indexDir;
-    }
-
-    /**
      * Returns a IndexSearcher instance.
      * <p>
      * In case no index yet exits, the method tries to create a new index. This
@@ -391,27 +374,15 @@ public class LuceneSearchService implements SearchService {
     IndexSearcher createIndexSearcher() throws IOException {
         IndexReader reader = null;
         logger.finest("......createIndexSearcher...");
-
-        Directory indexDir = createIndexDirectory();
-
-        // if the index dose not yet exits we got a IO Exception (issue #329)
+        Directory indexDir = luceneIndexService.createIndexDirectory();
         try {
+            // if the index dose not yet exits we got a IO Exception (issue #329)
             reader = DirectoryReader.open(indexDir);
         } catch (IOException ioe) {
-            // verify if the index is missing. In this case we try to fix the issue by
-            // creating a new index dir...
-            if (!DirectoryReader.indexExists(indexDir)) {
-                logger.info("...lucene index does not yet exist, trying to initialize the index....");
-                luceneIndexService.rebuildIndex(indexDir);
-                // now try to reopen once again.
-                // If this dose not work we really have a IO problem
-                reader = DirectoryReader.open(indexDir);
-            } else {
-                // throw the origin exception....
-                throw ioe;
-            }
+            logger.warning("lucene index can not be opened: " + ioe.getMessage());
+            // throw the origin exception....
+            throw ioe;
         }
-
         IndexSearcher searcher = new IndexSearcher(reader);
         return searcher;
     }
