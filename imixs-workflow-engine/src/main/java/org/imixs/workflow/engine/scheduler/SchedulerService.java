@@ -511,17 +511,24 @@ public class SchedulerService {
 
                 stop(configuration);
             }
-        } catch (RuntimeException | SchedulerException e) {
-            // in case of an exception we did not cancel the Timer service
+        } catch (SchedulerException e) {
+            // in case of an SchedulerException we cancel the Timer service
             if (logger.isLoggable(Level.FINEST)) {
                 e.printStackTrace();
             }
             errorMes = e.getMessage();
             logger.severe("Scheduler '" + id + "' failed: " + errorMes);
-
             configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Error: " + errorMes);
-
             configuration = stop(configuration, timer);
+            
+        } catch (RuntimeException e) {
+            // in case of an RuntimeException we did not cancel the Timer service
+            e.printStackTrace();
+            errorMes = e.getMessage();
+            logger.severe("Scheduler '" + id + "' failed: " + errorMes);
+            configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Error: " + errorMes);
+            configuration = stop(configuration, timer);
+            
         } finally {
             // Save statistic in configuration
             if (configuration != null) {
