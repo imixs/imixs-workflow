@@ -7,10 +7,10 @@ import java.io.InputStream;
 import javax.script.ScriptException;
 
 import org.imixs.workflow.exceptions.PluginException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import junit.framework.Assert;
 
 /**
  * Test class for RuleEngine

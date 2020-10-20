@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Test the ACL plugin.

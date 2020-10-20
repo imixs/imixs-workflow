@@ -10,7 +10,7 @@ import javax.xml.bind.JAXBException;
 import org.imixs.workflow.ItemCollection;
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Test class write a ItemColleciton into a byte array and reads is via the

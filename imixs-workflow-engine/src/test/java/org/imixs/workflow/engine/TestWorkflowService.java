@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Test class for WorkflowService

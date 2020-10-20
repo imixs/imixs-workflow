@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Test class for testing the BPMN Rule Engine. The method loads a test model

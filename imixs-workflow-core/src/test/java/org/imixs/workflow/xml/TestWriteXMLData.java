@@ -14,7 +14,7 @@ import javax.xml.bind.Marshaller;
 import org.imixs.workflow.ItemCollection;
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Test class writes a simple ItemCollection into a xml file.

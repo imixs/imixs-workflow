@@ -8,7 +8,7 @@ import java.util.List;
 import org.imixs.workflow.ItemCollection;
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Test class test the parsing of a Imixs JSON file used by the workflowRestService

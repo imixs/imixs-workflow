@@ -11,7 +11,7 @@ import javax.xml.bind.Marshaller;
 import org.imixs.workflow.ItemCollection;
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Test class reads the "/document-example.xml" file via the
@@ -46,7 +46,7 @@ public class TestReadWriteXMLData {
 		// test values
 		ItemCollection workitem=col.get(0);
 		Assert.assertEquals("1.0.1", workitem.getItemValueString("$modelversion"));
-		Assert.assertEquals(55.123, workitem.getItemValueDouble("amount"));
+		Assert.assertEquals(55.123, workitem.getItemValueDouble("amount"),0);
 
 	}
 

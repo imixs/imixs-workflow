@@ -8,7 +8,7 @@ import java.text.ParseException;
 import org.imixs.workflow.ItemCollection;
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert; 
 
 /**
  * Test class test the parsing of different json structures.
@@ -41,7 +41,7 @@ public class TestJSONParserSimple {
 		try {
 			resultWorkitem = JSONParser.parseWorkitem(responseDataStream, "UTF-8");
 			
-			Assert.assertEquals(new Float(199.99), resultWorkitem.getItemValueFloat("price"));
+			Assert.assertEquals(new Float(199.99), resultWorkitem.getItemValueFloat("price"),0);
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

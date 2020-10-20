@@ -18,7 +18,7 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Before;
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Test class for WorkflowService
@@ -432,7 +432,7 @@ public class TestResultPlugin {
         workitem = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(event, "item", workitem);
         Assert.assertNotNull(workitem);
         Assert.assertTrue(workitem.hasItem("count"));
-        Assert.assertEquals(55.332, workitem.getItemValueDouble("count"));
+        Assert.assertEquals(55.332, workitem.getItemValueDouble("count"),0);
 
     }
 }

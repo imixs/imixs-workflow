@@ -13,7 +13,7 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Test class test the Imixs BPMNParser group resolution

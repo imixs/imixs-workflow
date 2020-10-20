@@ -5,7 +5,7 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
 import org.junit.Test;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Test the WorkflowService method 'adaptText'

@@ -9,7 +9,7 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Test class for WorkflowService
@@ -98,7 +98,7 @@ public class TestEvaluateWorkflowResult {
                     "item", new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("count"));
-            Assert.assertEquals(55.11, result.getItemValueDouble("count"));
+            Assert.assertEquals(55.11, result.getItemValueDouble("count"),0);
         } catch (PluginException e) {
             e.printStackTrace();
             Assert.fail();
@@ -111,7 +111,7 @@ public class TestEvaluateWorkflowResult {
                     "item", new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("count"));
-            Assert.assertEquals(0.0, result.getItemValueDouble("count"));
+            Assert.assertEquals(0.0, result.getItemValueDouble("count"),0);
         } catch (PluginException e) {
             e.printStackTrace();
             Assert.fail();
@@ -153,7 +153,7 @@ public class TestEvaluateWorkflowResult {
                     "item", source);
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("count"));
-            Assert.assertEquals(55.123, result.getItemValueDouble("count"));
+            Assert.assertEquals(55.123, result.getItemValueDouble("count"),0);
         } catch (PluginException e) {
             e.printStackTrace();
             Assert.fail();

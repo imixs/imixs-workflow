@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Test class for ApproverPlugin

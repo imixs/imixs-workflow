@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import org.imixs.workflow.ItemCollection;
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Test class test the Imixs JSONBuilder class to build a JSON String form an
@@ -68,7 +68,7 @@ public class TestJSONBuilder {
 
 		// now convert the json string back using the Imixs JSONParser
 		InputStream jsonStream = new ByteArrayInputStream(jsonResult.getBytes());
-		try {
+		try { 
 			ItemCollection testItemCol = JSONParser.parseWorkitem(jsonStream, "UTF-8");
 			Assert.assertNotNull(testItemCol);
 
@@ -80,8 +80,8 @@ public class TestJSONBuilder {
 
 			List valueList = testItemCol.getItemValue("count");
 			Assert.assertTrue(valueList.get(0) instanceof Integer);
-			Assert.assertEquals(workitem.getItemValueInteger("count"), testItemCol.getItemValueInteger("count"));
-			Assert.assertEquals(workitem.getItemValueDouble("amount"), testItemCol.getItemValueDouble("amount"));
+			Assert.assertEquals(workitem.getItemValueInteger("count"), testItemCol.getItemValueInteger("count"),0);
+			Assert.assertEquals(workitem.getItemValueDouble("amount"), testItemCol.getItemValueDouble("amount"),0);
 
 			// test value list
 			valueList = testItemCol.getItemValue("txtlog");
