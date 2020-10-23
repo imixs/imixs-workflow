@@ -527,8 +527,7 @@ public class SchedulerService {
             errorMes = e.getMessage();
             logger.severe("Scheduler '" + id + "' failed: " + errorMes);
             configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Error: " + errorMes);
-            configuration = stop(configuration, timer);
-            
+            //configuration = stop(configuration, timer);
         } finally {
             // Save statistic in configuration
             if (configuration != null) {
