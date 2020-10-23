@@ -75,16 +75,23 @@ Range Queries allow to search for documents whose item values are between the lo
 
 Range Queries can be inclusive or exclusive of the upper and lower bounds. Sorting is done lexicographically.
 
-### Query Date Ranges
+### Query Date Time Ranges
 
-To search for a date range, the date has to be formated inot
+To search for a date range, the date has to be formated into
 
 	YYYYMMDD
 	
 The following example searches for documents created between 20020101 and 20030101, inclusive. 
 
 	$created:[20020101 TO 20030101]
+
+To search for a date time range use:
+
+	YYYYMMDDThh:mm:ss
 	
+for example:
+
+	$created:[20200101T00:00:00 TO 20201020T03:00:00]
 
 In java you can format a Date object into the lucene syntax with a Forater object:
 
