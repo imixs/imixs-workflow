@@ -79,7 +79,7 @@ public class SchemaService {
 
     @Inject
     @ConfigProperty(name = "index.fields")
-    Optional<String> indexFields; 
+    Optional<String> indexFields;
 
     @Inject
     @ConfigProperty(name = "index.fields.analyze")
@@ -105,13 +105,14 @@ public class SchemaService {
     // default field lists
     public static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
     public static List<String> DEFAULT_NOANALYZE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
-            "$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator",
-            "$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "name", "txtname",
-            "$owner", "namowner", "txtworkitemref", "$workitemref", "$uniqueidsource", "$uniqueidversions", "$lasttask", "$lastevent",
-            "$lasteventdate","$file.count","$file.names");
+            "$workitemid", "$uniqueidref", "type", "$writeaccess", "$snapshotid", "$modified", "$created", "namcreator",
+            "$creator", "$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "name",
+            "txtname", "$owner", "namowner", "txtworkitemref", "$workitemref", "$uniqueidsource", "$uniqueidversions",
+            "$lasttask", "$lastevent", "$lasteventdate", "$file.count", "$file.names");
     public static List<String> DEFAULT_STORE_FIELD_LIST = Arrays.asList("type", "$taskid", "$writeaccess",
-            "$workflowsummary", "$workflowabstract", "$workflowgroup", "$workflowstatus", "$modified", "$created",
-            "$lasteventdate", "$creator", "$editor", "$lasteditor", "$owner", "namowner");
+            "$snapshotid", "$modelversion", "$workflowsummary", "$workflowabstract", "$workflowgroup",
+            "$workflowstatus", "$modified", "$created", "$lasteventdate", "$creator", "$editor", "$lasteditor",
+            "$owner", "namowner");
 
     private static Logger logger = Logger.getLogger(SchemaService.class.getName());
 
