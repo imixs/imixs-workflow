@@ -32,12 +32,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.logging.Logger;
+
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -56,6 +54,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
 import org.imixs.workflow.bpmn.BPMNModel;
@@ -63,7 +62,6 @@ import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.ModelService;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.xml.XMLDataCollection;
-import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 
@@ -92,6 +90,9 @@ public class ModelRestService {
 
     @Inject
     private ModelService modelService;
+
+    @Inject
+    private DocumentRestService documentRestService;
 
     @javax.ws.rs.core.Context
     private HttpServletRequest servletRequest;
@@ -223,17 +224,15 @@ public class ModelRestService {
 
     @GET
     @Path("/{version}/tasks/")
-    public XMLDataCollection findAllTasks(@PathParam("version") String version, @QueryParam("items") String items) {
-        Collection<ItemCollection> col = null;
+    public Response findAllTasks(@PathParam("version") String version, @QueryParam("items") String items,
+            @QueryParam("format") String format) {
+        List<ItemCollection> result = null;
         try {
-
-            col = modelService.getModel(version).findAllTasks();
-            return XMLDataCollectionAdapter.getDataCollection(col, getItemList(items));
-
+            result = modelService.getModel(version).findAllTasks();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new XMLDataCollection();
+        return documentRestService.convertResultList(result, items, format);
     }
 
     @GET
@@ -255,45 +254,41 @@ public class ModelRestService {
      */
     @GET
     @Path("/{version}/definition")
-    public XMLDataCollection getDefiniton(@PathParam("version") String version, @QueryParam("items") String items) {
+    public Response getDefiniton(@PathParam("version") String version, @QueryParam("items") String items,
+            @QueryParam("format") String format) {
         ItemCollection definition = null;
         try {
             definition = modelService.getModel(version).getDefinition();
-            return XMLDataCollectionAdapter.getDataCollection(definition, getItemList(items));
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new XMLDataCollection();
+        return documentRestService.convertResult(definition, items, format);
     }
 
     @GET
     @Path("/{version}/tasks/{taskid}")
-    public XMLDataCollection getTask(@PathParam("version") String version, @PathParam("taskid") int processid,
-            @QueryParam("items") String items) {
-        ItemCollection process = null;
+    public Response getTask(@PathParam("version") String version, @PathParam("taskid") int processid,
+            @QueryParam("items") String items, @QueryParam("format") String format) {
+        ItemCollection task = null;
         try {
-            process = modelService.getModel(version).getTask(processid);
-            return XMLDataCollectionAdapter.getDataCollection(process, getItemList(items));
-
+            task = modelService.getModel(version).getTask(processid);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new XMLDataCollection();
+        return documentRestService.convertResult(task, items, format);
     }
 
     @GET
     @Path("/{version}/tasks/{taskid}/events")
-    public XMLDataCollection findAllEventsByTask(@PathParam("version") String version,
-            @PathParam("taskid") int processid, @QueryParam("items") String items) {
-        Collection<ItemCollection> col = null;
+    public Response findAllEventsByTask(@PathParam("version") String version, @PathParam("taskid") int processid,
+            @QueryParam("items") String items, @QueryParam("format") String format) {
+        List<ItemCollection> result = null;
         try {
-            col = modelService.getModel(version).findAllEventsByTask(processid);
-            return XMLDataCollectionAdapter.getDataCollection(col, getItemList(items));
+            result = modelService.getModel(version).findAllEventsByTask(processid);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new XMLDataCollection();
+        return documentRestService.convertResultList(result, items, format);
     }
 
     /**
@@ -307,10 +302,8 @@ public class ModelRestService {
     public List<String> getGroups(@PathParam("version") String version, @QueryParam("items") String items) {
         List<String> col = null;
         try {
-
             col = modelService.getModel(version).getGroups();
             return col;
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -325,17 +318,15 @@ public class ModelRestService {
      */
     @GET
     @Path("/{version}/groups/{group}")
-    public XMLDataCollection findTasksByGroup(@PathParam("version") String version, @PathParam("group") String group,
-            @QueryParam("items") String items) {
-        Collection<ItemCollection> col = null;
+    public Response findTasksByGroup(@PathParam("version") String version, @PathParam("group") String group,
+            @QueryParam("items") String items, @QueryParam("format") String format) {
+        List<ItemCollection> result = null;
         try {
-            col = modelService.getModel(version).findTasksByGroup(group);
-            return XMLDataCollectionAdapter.getDataCollection(col, getItemList(items));
-
+            result = modelService.getModel(version).findTasksByGroup(group);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new XMLDataCollection();
+        return documentRestService.convertResultList(result, items, format);
     }
 
     @DELETE
@@ -502,23 +493,4 @@ public class ModelRestService {
         putModel(ecol);
     }
 
-    /**
-     * This method returns a List object from a given comma separated string. The
-     * method returns null if no elements are found. The provided parameter looks
-     * typical like this: <code>
-     *   txtWorkflowStatus,numProcessID,txtName
-     * </code>
-     * 
-     * @param items
-     * @return
-     */
-    private List<String> getItemList(String items) {
-        if (items == null || "".equals(items))
-            return null;
-        Vector<String> v = new Vector<String>();
-        StringTokenizer st = new StringTokenizer(items, ",");
-        while (st.hasMoreTokens())
-            v.add(st.nextToken());
-        return v;
-    }
 }
