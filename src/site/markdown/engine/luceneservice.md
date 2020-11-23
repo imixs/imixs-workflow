@@ -20,7 +20,7 @@ The content of these items is defined by the [task element](../modelling/process
 The following list of items are so called 'index-items'. These items are indexed by the _LuceneService_ without using an analyzer. S
 
 	$modelversion, $taskid, $workitemid, $uniqueidref, type, $writeaccess, $modified,$created, $creator, 
-	$editor, $lasteditor, $workflowgroup, $workflowstatus, txtname, owner, txtworkitemref, $uniqueidsource, 
+	$editor, $lasteditor, $workflowgroup, $workflowstatus, txtname, owner, $workitemref, $uniqueidsource, 
 	$uniqueidversions, $lasttask,$lastevent, $lasteventdate
 
 The values can be used for searching and sorting. Find more information how to query a result set in the section [Full-Text-Search](queries.html).  
