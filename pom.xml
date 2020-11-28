@@ -18,7 +18,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- dependency versions -->
-		<jakarta.version>8.0</jakarta.version>
+		<jakarta.version>9.0</jakarta.version>
 		<microprofile.version>3.0</microprofile.version>
 		<microprofile-metrics.version>2.3</microprofile-metrics.version>
 		<lucene.version>7.7.3</lucene.version>
@@ -102,8 +102,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>11</source>
+					<target>11</target>
 				</configuration>
 			</plugin>
 
@@ -132,19 +132,17 @@
 				</configuration>
 			</plugin>
 
-
+			<!--  maven site, doc and reporting -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
 				<version>3.9.0</version>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
 				<version>3.1.0</version>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -153,11 +151,23 @@
 					<additionalOptions>-Xdoclint:none</additionalOptions>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jxr-plugin</artifactId>
 				<version>3.0.0</version>
+			</plugin>
+
+			<!--  finding the latest plugin or dependency versions
+			    mvn versions:display-plugin-updates
+			    
+			 -->
+			<plugin>
+			    <groupId>org.codehaus.mojo</groupId>
+			    <artifactId>versions-maven-plugin</artifactId>
+			    <version>2.5</version>
+			    <configuration>
+			        <generateBackupPoms>false</generateBackupPoms>
+			    </configuration>
 			</plugin>
 
 
@@ -242,11 +252,19 @@
 
 	<dependencies>
 		<!-- Jakarta EE -->
+		<!--  
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-api</artifactId>
 			<version>${jakarta.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		-->
+		<dependency>
+		    <groupId>jakarta.platform</groupId>
+		    <artifactId>jakarta.jakartaee-api</artifactId>
+		    <version>9.0.0</version>
+		    <scope>provided</scope>
 		</dependency>
 
 		<!-- Microprofile -->
@@ -290,6 +308,7 @@
 			<version>1.1.4</version>
 			<scope>test</scope>
 		</dependency>
+	
 
 	</dependencies>
 
