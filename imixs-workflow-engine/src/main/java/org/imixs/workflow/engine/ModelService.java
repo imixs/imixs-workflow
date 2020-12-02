@@ -40,13 +40,12 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Singleton;
 import javax.inject.Inject;
+
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
@@ -57,6 +56,9 @@ import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
+
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Singleton;
 
 /**
  * The ModelManager is independent form the IX JEE Entity EJBs and uses the
@@ -84,7 +86,6 @@ import org.imixs.workflow.exceptions.ModelException;
         "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Singleton
-@LocalBean
 public class ModelService implements ModelManager {
 
     private Map<String, Model> modelStore = null;

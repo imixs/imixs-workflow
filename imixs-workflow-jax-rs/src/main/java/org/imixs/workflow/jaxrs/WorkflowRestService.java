@@ -40,9 +40,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
+
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.Encoded;
@@ -59,6 +58,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
+
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -72,6 +72,9 @@ import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
+
+import jakarta.ejb.Stateless;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * The WorkflowService Handler supports methods to process different kind of

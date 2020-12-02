@@ -38,7 +38,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.Stateless;
 import javax.inject.Inject;
 
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -66,6 +65,8 @@ import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
+
+import jakarta.ejb.Stateless;
 
 /**
  * This session ejb provides a service to search the lucene index. The EJB uses

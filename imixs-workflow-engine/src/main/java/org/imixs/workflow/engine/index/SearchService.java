@@ -29,9 +29,11 @@
 package org.imixs.workflow.engine.index;
 
 import java.util.List;
-import javax.ejb.Local;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.QueryException;
+
+import jakarta.ejb.Stateless;
 
 /**
  * This SearchService defines methods to search workitems or collections of
@@ -40,7 +42,7 @@ import org.imixs.workflow.exceptions.QueryException;
  * @version 1.0
  * @author rsoika
  */
-@Local
+@Stateless
 public interface SearchService {
 
     public static final int DEFAULT_MAX_SEARCH_RESULT = 9999; // limiting the

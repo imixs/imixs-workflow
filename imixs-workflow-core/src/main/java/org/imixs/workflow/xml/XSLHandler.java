@@ -37,16 +37,19 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+
 import org.imixs.workflow.ItemCollection;
+
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 
 /**
  * This class can be used to transform xml by XSL template.
@@ -69,7 +72,7 @@ public class XSLHandler {
      * @param xslSource
      * @param encoding  (default UTF-8)
      * @return
-     * @throws UnsupportedEncodingException
+     * @throws UnsupportedEncodingException 
      * @throws TransformerException
      */
 

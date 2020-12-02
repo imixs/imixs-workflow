@@ -36,13 +36,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
@@ -52,6 +50,11 @@ import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.index.SortOrder;
 import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.util.JSONParser;
+
+import jakarta.ejb.Stateless;
+import jakarta.json.Json;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParser.Event;
 
 /**
  * This session ejb provides a service to search the solr index.

@@ -38,18 +38,18 @@ import java.util.logging.Logger;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.FlushModeType;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TemporalType;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.jpa.EventLog;
+
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TemporalType;
 
 /**
  * The EventLogService is a service to create and access an event log .
@@ -87,7 +87,6 @@ import org.imixs.workflow.engine.jpa.EventLog;
     "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
     "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
-@LocalBean
 public class EventLogService {
 
     public static final String EVENTLOG_LOCK_DATE = "eventlog.lock.date";
@@ -333,7 +332,7 @@ public class EventLogService {
         if (eventLog != null) {
             try {
                 manager.remove(eventLog);
-            } catch (javax.persistence.OptimisticLockException e) {
+            } catch (jakarta.persistence.OptimisticLockException e) {
                 // no todo - can occure during parallel requests
                 if (debug) {
                     logger.finest(e.getMessage());
@@ -358,7 +357,7 @@ public class EventLogService {
         if (eventLog != null) {
             try {
                 manager.remove(eventLog);
-            } catch (javax.persistence.OptimisticLockException e) {
+            } catch (jakarta.persistence.OptimisticLockException e) {
                 // no todo - can occure during parallel requests
                 if (debug) {
                     logger.finest(e.getMessage());

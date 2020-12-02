@@ -42,10 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
+
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -63,14 +61,13 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
+
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FopFactory;
@@ -84,6 +81,12 @@ import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.imixs.workflow.xml.XSLHandler;
+
+import jakarta.ejb.Stateless;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 
 /**
  * The WorkflowService Handler supports methods to process different kind of

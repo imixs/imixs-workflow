@@ -31,15 +31,17 @@ package org.imixs.workflow.engine.jpa;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import javax.persistence.Basic;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Version;
+
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.InvalidAccessException;
+
+import jakarta.persistence.Basic;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
 
 /**
  * The EventLog entity bean is used by the EventLogService to create and access
@@ -75,7 +77,7 @@ import org.imixs.workflow.exceptions.InvalidAccessException;
  * @version 1.0
  */
 
-@javax.persistence.Entity
+@jakarta.persistence.Entity
 public class EventLog implements java.io.Serializable {
 
     private static final long serialVersionUID = 1L;

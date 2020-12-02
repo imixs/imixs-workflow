@@ -8,7 +8,6 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.ejb.SessionContext;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.exceptions.ModelException;
@@ -19,6 +18,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 import org.xml.sax.SAXException;
+
+import jakarta.ejb.SessionContext;
 
 /**
  * Test class for Imixs WorkflowKernel using the test models. The test class

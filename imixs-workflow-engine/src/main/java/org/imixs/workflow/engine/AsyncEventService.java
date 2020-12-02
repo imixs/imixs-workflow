@@ -35,14 +35,8 @@ import java.util.logging.Logger;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.EJBException;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import javax.persistence.OptimisticLockException;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
@@ -52,6 +46,12 @@ import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.WorkflowException;
+
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.OptimisticLockException;
 
 /**
  * The AsyncEventService can be used to process workflow events in an
@@ -85,7 +85,6 @@ import org.imixs.workflow.exceptions.WorkflowException;
         "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
-@LocalBean
 public class AsyncEventService {
 
     // enabled

@@ -30,9 +30,12 @@ package org.imixs.workflow.engine.index;
 
 import java.util.Arrays;
 import java.util.List;
-import javax.ejb.Local;
+
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.IndexException;
+
+import jakarta.ejb.Stateless;
 
 /**
  * The UpdateService defines methods to update the search index. These methods
@@ -49,7 +52,7 @@ import org.imixs.workflow.exceptions.IndexException;
  * @version 1.0
  * @author rsoika
  */
-@Local
+@Stateless
 public interface UpdateService {
 
     // default field lists

@@ -28,14 +28,14 @@
 			<version>${project.version}</version>
 		</dependency>
 		
-		<!-- apache fop dependency -->
+		<!-- apache fop dependency 
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>fop</artifactId>
 			<version>1.0</version>
 			<scope>provided</scope>
 		</dependency>
-
+-->
 		<!-- JUnit Test dependencies -->
 		<dependency>
 			<groupId>javax.mail</groupId>

@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import org.eclipse.microprofile.config.Config;

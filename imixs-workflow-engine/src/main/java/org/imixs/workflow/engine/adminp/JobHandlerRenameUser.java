@@ -34,15 +34,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
+
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
-import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
@@ -51,6 +48,11 @@ import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
+
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * The JobHandlerRenameUser updates the name fields of workitems. A name can be
@@ -87,9 +89,8 @@ import org.imixs.workflow.exceptions.QueryException;
  * 
  */
 @DeclareRoles({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
-@Stateless
 @RunAs("org.imixs.ACCESSLEVEL.MANAGERACCESS")
-@LocalBean
+@Stateless
 public class JobHandlerRenameUser implements JobHandler {
 
     @Resource

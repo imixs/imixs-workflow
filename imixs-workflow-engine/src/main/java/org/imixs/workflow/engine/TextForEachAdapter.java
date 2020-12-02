@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Priority;
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;

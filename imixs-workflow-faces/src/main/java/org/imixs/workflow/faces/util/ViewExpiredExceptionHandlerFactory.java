@@ -28,8 +28,8 @@
 
 package org.imixs.workflow.faces.util;
 
-import javax.faces.context.ExceptionHandler;
-import javax.faces.context.ExceptionHandlerFactory;
+import jakarta.faces.context.ExceptionHandler;
+import jakarta.faces.context.ExceptionHandlerFactory;
 
 /**
  * This class is used to handle expired sessions. In case a session was expired

@@ -12,7 +12,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import javax.ejb.SessionContext;
 
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -23,6 +22,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
+
+import jakarta.ejb.SessionContext;
 
 /**
  * Test class for Imixs WorkflowKernel using a static default model. The test

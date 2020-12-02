@@ -29,7 +29,7 @@
 package org.imixs.workflow.xml;
 
 import java.util.List;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  * The JAXB DocumentTable represents a list of documents in a table format. For

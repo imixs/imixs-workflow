@@ -28,7 +28,7 @@
 
 package org.imixs.workflow.xml;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  * The XMLDataCollection represents a list of XMLItemCollections. This root

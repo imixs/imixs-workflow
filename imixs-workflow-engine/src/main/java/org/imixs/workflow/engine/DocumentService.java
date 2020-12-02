@@ -43,20 +43,13 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.FlushModeType;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -69,6 +62,15 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.QueryException;
+
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 /**
  * The DocumentService is used to save and load instances of ItemCollections
@@ -124,7 +126,6 @@ import org.imixs.workflow.exceptions.QueryException;
         "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
-@LocalBean
 public class DocumentService {
 
     public static final String ACCESSLEVEL_NOACCESS = "org.imixs.ACCESSLEVEL.NOACCESS";

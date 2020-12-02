@@ -32,10 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.persistence.OptimisticLockException;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -54,6 +51,10 @@ import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
+
+import jakarta.ejb.Stateless;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * The EventLogRestService supports methods to access the event log entries by

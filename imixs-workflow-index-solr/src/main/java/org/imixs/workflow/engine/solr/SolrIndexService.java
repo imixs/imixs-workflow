@@ -39,17 +39,13 @@ import java.util.Optional;
 import java.util.function.IntPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
@@ -68,6 +64,12 @@ import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.services.rest.BasicAuthenticator;
 import org.imixs.workflow.services.rest.RestAPIException;
 import org.imixs.workflow.services.rest.RestClient;
+
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * The SolrIndexService provides methods to add, update and remove imixs

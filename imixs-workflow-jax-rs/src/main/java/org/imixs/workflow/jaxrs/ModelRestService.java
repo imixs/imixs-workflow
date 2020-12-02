@@ -36,9 +36,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -64,6 +62,9 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
+
+import jakarta.ejb.Stateless;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * The WorkflowService Handler supports methods to process different kind of

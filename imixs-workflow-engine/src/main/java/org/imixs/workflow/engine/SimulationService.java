@@ -30,16 +30,15 @@ package org.imixs.workflow.engine;
 
 import java.util.List;
 import java.util.logging.Logger;
+
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.Plugin;
@@ -49,6 +48,9 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
 
 /**
  * The SimulationService can be used to simulate a process life cycle without
@@ -65,7 +67,6 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
         "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
-@LocalBean
 public class SimulationService implements WorkflowContext {
 
     private static Logger logger = Logger.getLogger(SimulationService.class.getName());

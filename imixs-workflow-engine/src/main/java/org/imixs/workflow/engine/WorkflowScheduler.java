@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import javax.annotation.Resource;
-import javax.ejb.SessionContext;
+import jakarta.ejb.SessionContext;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;

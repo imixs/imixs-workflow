@@ -45,14 +45,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
+
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
-import javax.xml.bind.JAXBException;
-import javax.xml.transform.TransformerException;
+
+import jakarta.xml.bind.JAXBException;
+
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ItemCollectionComparator;
@@ -62,6 +62,8 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.util.XMLParser;
 import org.imixs.workflow.xml.XSLHandler;
+import javax.xml.transform.TransformerException;
+import jakarta.ejb.Stateless;
 
 /**
  * The ReportService supports methods to create, process and find report
@@ -87,7 +89,6 @@ import org.imixs.workflow.xml.XSLHandler;
         "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
-@LocalBean
 public class ReportService {
 
     private static Logger logger = Logger.getLogger(ReportService.class.getName());
@@ -303,7 +304,7 @@ public class ReportService {
      * @throws IOException
      */
     public FileData transformDataSource(ItemCollection report, List<ItemCollection> data, String fileName)
-            throws JAXBException, TransformerException, IOException {
+            throws JAXBException, IOException, TransformerException {
 
         String xslTemplate = report.getItemValueString("xsl").trim();
         // execute the transformation based on the report defintion....

@@ -37,9 +37,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
+
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -55,6 +54,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
@@ -67,6 +67,9 @@ import org.imixs.workflow.xml.XMLCount;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
+
+import jakarta.ejb.Stateless;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * The DocumentService provides methods to access the DocumentService EJB

@@ -5,9 +5,9 @@
 )
 package org.imixs.workflow.xml;
 
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlNsForm;
-import javax.xml.bind.annotation.XmlSchema;
+import jakarta.xml.bind.annotation.XmlNs;
+import jakarta.xml.bind.annotation.XmlNsForm;
+import jakarta.xml.bind.annotation.XmlSchema;
 
 /**
  * package-info.java is used to define the general xml name spaces used by the

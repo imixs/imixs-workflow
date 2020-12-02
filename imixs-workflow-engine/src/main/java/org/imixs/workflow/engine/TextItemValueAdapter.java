@@ -38,7 +38,7 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import javax.enterprise.event.Observes;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.plugins.AbstractPlugin;

@@ -45,7 +45,6 @@ import org.imixs.workflow.exceptions.PluginException;
  * @see org.imixs.workflow.WorkflowManager
  * 
  */
-
 public abstract class AbstractPlugin implements Plugin {
 
     public static final String INVALID_ITEMVALUE_FORMAT = "INVALID_ITEMVALUE_FORMAT";

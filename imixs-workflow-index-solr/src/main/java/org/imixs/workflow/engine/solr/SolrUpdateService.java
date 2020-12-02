@@ -31,15 +31,17 @@ package org.imixs.workflow.engine.solr;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
 import javax.inject.Inject;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.services.rest.RestAPIException;
+
+import jakarta.ejb.Stateless;
 
 /**
  * The SolrUpdateService process the index event log entries written by the
@@ -57,7 +59,6 @@ import org.imixs.workflow.services.rest.RestAPIException;
         "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
-@LocalBean
 public class SolrUpdateService implements UpdateService {
 
     public static final String SOLR_AUTOFLUSH_DISABLED = "solr.autoflush.disabled";

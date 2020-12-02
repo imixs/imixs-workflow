@@ -39,10 +39,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
+
 import org.imixs.workflow.ItemCollection;
+
+import jakarta.json.Json;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParser.Event;
 
 /**
  * The JSONParser is an utility class to parse JSON structures. The parser

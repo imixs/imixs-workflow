@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
-import javax.faces.event.ActionEvent;
+import jakarta.faces.event.ActionEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
 
