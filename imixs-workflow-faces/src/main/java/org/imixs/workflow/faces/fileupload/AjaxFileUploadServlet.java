@@ -110,7 +110,9 @@ public class AjaxFileUploadServlet extends HttpServlet {
 
         // now update the fileUploadController and the list of uploaded files....
         if (fileUploadController != null) {
-            fileUploadController.removeAttachedFile(filename);
+            // we need to decode the filename here...
+            String decodedFilename=URLDecoder.decode(filename, "UTF-8");
+            fileUploadController.removeAttachedFile(decodedFilename);
         }
 
         String contextURL = httpRequest.getRequestURI();
