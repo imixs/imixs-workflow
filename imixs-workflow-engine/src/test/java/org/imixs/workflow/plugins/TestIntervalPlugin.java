@@ -86,7 +86,12 @@ public class TestIntervalPlugin {
 		LocalDateTime date = intervalPlugin.evalCron(cron);
 		logger.info("Result monthyl=" + date);
 		LocalDateTime now = LocalDateTime.now();
-		Assert.assertEquals(date.getMonthValue(), now.getMonthValue() + 1);
+		int exptectedMonth= now.getMonthValue() +1;
+		if (exptectedMonth==13) {
+		    // year switch
+		    exptectedMonth=1;
+		}		
+		Assert.assertEquals(date.getMonthValue(),exptectedMonth);
 	}
 
 	/**
@@ -135,7 +140,12 @@ public class TestIntervalPlugin {
 		logger.info("Now            =" + now);
 		logger.info("Result @monthly=" + date);
 		Assert.assertEquals(now.getDayOfMonth(), date.getDayOfMonth());
-		Assert.assertEquals(now.getMonthValue() + 1, date.getMonthValue());
+		int exptectedMonth= now.getMonthValue() +1;
+        if (exptectedMonth==13) {
+            // year switch
+            exptectedMonth=1;
+        }   
+		Assert.assertEquals(exptectedMonth, date.getMonthValue());
 	}
 
 	/**
