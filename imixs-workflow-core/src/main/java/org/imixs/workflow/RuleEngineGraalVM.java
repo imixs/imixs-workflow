@@ -31,6 +31,7 @@ package org.imixs.workflow;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Named;
 import javax.script.ScriptException;
 
 import org.graalvm.polyglot.Context;
@@ -38,64 +39,36 @@ import org.graalvm.polyglot.PolyglotException;
 import org.graalvm.polyglot.Value;
 import org.imixs.workflow.exceptions.PluginException;
 
+import jakarta.enterprise.context.RequestScoped;
+
 /**
- * The Imixs RuleEngine evaluates a business rule provided by an Event.
- * 
- * A business rule can be written in any script language supported by the JVM.
- * The Script Language is defined by the property 'txtBusinessRuleEngine' from
- * the current Event element. The script is defined by the property
- * 'txtBusinessRule'.
- * 
- * The Script can access all basic item values from the current workItem and
- * also the event by the provided JSON objects 'workitem' and 'event'.
- * 
- * <code>
- *  // test first value of the workitem attribute 'txtname'
- *  var isValid = ('Anna'==workitem.txtname[0]);
- * </code>
- * 
- * A script can add new values for the current workitem by providing the JSON
- * object 'result'.
- * 
- * <code>
- *     var result={ someitem:'Hello World', somenumber:1};
- * </code>
- * 
- * Also change values of the event object can be made by the script. These
- * changes will be reflected back for further processing.
- * 
- * <code>
- *  // disable mail 
- *   event.keymailenabled='0';
- * </code>
- * 
- * A script can set the variables 'isValid' and 'followUp' to validate a
- * workItem or set a new followUp activity.
- * 
- * <code>
- *   result={ isValid:false };
- * </code>
- * 
- * If the script set the variable 'isValid' to false then the plugin throws a
- * PluginExcpetion. The Plugin evaluates the variables 'errorCode' and
- * errorMessage. If these variables are set by the Script then the
- * PluginException will be updates with the corresponding errorCode and the
- * 'errorMessage' as params[]. If no errorCode is set then the errorCode of the
- * PluginException will default to 'VALIDATION_ERROR'.
- * 
- * If the script set the variable 'followUp' the follow-up behavior of the
- * current ActivityEntity will be updated.
- * 
- * If a script can not be evaluated by the scriptEngin a PluginExcpetion with
- * the errorCode 'INVALID_SCRIPT' will be thrown.
- * 
- * NOTE: all variable names are case sensitive! All JSON object elements are
- * lower case!
+ * The Imixs RuleEngine is a CDI bean called by the WorkflowKernel to evaluate
+ * business rules part of an BPMN model.
+ * <p>
+ * The engine is based on the GraalVM script engine which provides an advanced
+ * polyglot language feature. This allows to evaluate scripts in different
+ * programming languages (e.g. Java, JavaScript, Ruby, Python, R, LLVM,
+ * WebAssembly, etc.).
+ * <p>
+ * The Script Language can be defined by the property 'txtBusinessRuleEngine'
+ * within a BPMN Event element or by a a comment added to the first line of a
+ * script in the following format:
+ * <p>
+ * {@code // graalvm.languageId=js}
+ * <p>
+ * A Script can access all basic item values from the current workItem and also
+ * the event by the provided member variables 'workitem' and 'event'.
+ * <p>
+ * The CDI bean can be replaced by an alternative CDI implementation to provide
+ * an extended functionality.
+ * <p>
  * 
  * @author Ralph Soika
- * @version 3.0
+ * @version 4.0
  * 
  */
+@Named
+@RequestScoped
 public class RuleEngineGraalVM {
 	public static final String DEFAULT_LANGUAGE_ID = "js";
 	public static final String INVALID_SCRIPT = "INVALID_SCRIPT";
@@ -130,9 +103,7 @@ public class RuleEngineGraalVM {
 	 */
 	void init(final String languageId) {
 		this.languageId = languageId;
-		//context = Context.create();
-		
-		 context = Context.newBuilder(languageId).allowAllAccess(true).build();
+		context = Context.newBuilder(languageId).allowAllAccess(true).build();
 	}
 
 	/**
@@ -160,46 +131,153 @@ public class RuleEngineGraalVM {
 		return result;
 	}
 
-	
-	
-	   /**
-     * This method evaluates a boolean expression. The method takes a
-     * documentContext as argument.
-     * 
-     * @param adocumentContext
-     * @return ScriptEngine instance
-     * @throws PluginException
-     */
-    public boolean evaluateBooleanExpression(String script, ItemCollection documentContext) throws PluginException {
-        boolean debug = logger.isLoggable(Level.FINE);
-        // test if a business rule is defined
-        if ("".equals(script.trim()))
-            return false; // nothing to do
+	/**
+	 * This method evaluates a boolean expression. An optional documentContext can
+	 * be provided as member Variables to be used by the script
+	 * 
+	 * @param documentContext optional workitem context
+	 * @return boolean
+	 * @throws PluginException
+	 */
+	public boolean evaluateBooleanExpression(String script, ItemCollection documentContext) throws PluginException {
+		boolean debug = logger.isLoggable(Level.FINE);
+		// test if a business rule is defined
+		if ("".equals(script.trim()))
+			return false; // nothing to do
 
-        // test if return value is part of the script
-//        if (!script.trim().startsWith("return ")) {
-//        	script="return " + script;
-//        }
-        // set activity properties into engine
-        if (documentContext!=null) {
-        	putMember("workitem", documentContext);
-        }
-        if (debug) {
-            logger.finest("......SCRIPT:" + script);
-        }
-        Value result = null;
-        try {
-        	result=eval(script);
-           
-        	
-        } catch (PolyglotException  e) {
-            logger.warning("Script Error in: " + script);
-            // script not valid
-            throw new PluginException(RuleEngine.class.getSimpleName(), INVALID_SCRIPT,
-                    "BusinessRule contains invalid script:" + e.getMessage(), e);
-        }
-        
-        return result.asBoolean();
-    }
+		// set activity properties into engine
+		if (documentContext != null) {
+			putMember("workitem", documentContext);
+		}
+		if (debug) {
+			logger.finest("......SCRIPT:" + script);
+		}
+		Value result = null;
+		try {
+			result = eval(script);
 
+		} catch (PolyglotException e) {
+			logger.warning("Script Error in: " + script);
+			// script not valid
+			throw new PluginException(RuleEngine.class.getSimpleName(), INVALID_SCRIPT,
+					"BusinessRule contains invalid script:" + e.getMessage(), e);
+		}
+
+		return result.asBoolean();
+	}
+
+	/**
+	 * This method evaluates the business rule. The method returns the instance of
+	 * the evaluated result object which can be used to continue evaluation. If a
+	 * rule evaluation was not successful, the method returns null.
+	 * <p>
+	 * An optional documentContext and a event object can be provided as member
+	 * Variables to be used by the script
+	 * 
+	 * @param documentContext optional workitem context
+	 * @param event           optional bpmn event context
+	 * @return evaluated result instance
+	 * @throws PluginException
+	 */
+	public ItemCollection evaluateBusinessRule(String script, ItemCollection documentContext, ItemCollection event)
+			throws PluginException {
+		boolean debug = logger.isLoggable(Level.FINE);
+		// test if a business rule is defined
+		if ("".equals(script.trim()))
+			return null; // nothing to do
+
+		// set member variables...
+		boolean deprecatedScript = isDeprecatedScript(script);
+		if (!deprecatedScript) {
+			if (documentContext != null) {
+				putMember("workitem", documentContext);
+			}
+			if (event != null) {
+				putMember("event", event);
+			}
+		} else {
+			// we have a deprecated script so we need to convert the member variables
+			if (documentContext != null) {
+				putMember("workitem", RuleEngineNashornConverter.convertItemCollection(documentContext));
+			}
+			if (event != null) {
+				putMember("event", RuleEngineNashornConverter.convertItemCollection(event));
+			}
+		}
+
+		if (debug) {
+			logger.finest("......SCRIPT:" + script);
+		}
+
+		Value result = null;
+		try {			 
+			result = eval(script);
+			
+			Value testTeil = context.getBindings(languageId).getMember("workitem");
+			
+			if (testTeil!=null) {
+				logger.info("....");
+			}
+		} catch (PolyglotException e) {
+			logger.warning("Script Error: " + e.getMessage() + " in: " + script);
+			// script not valid
+			throw new PluginException(RuleEngine.class.getSimpleName(), INVALID_SCRIPT,
+					"BusinessRule contains invalid script:" + e.getMessage(), e);
+		}
+
+		// eval result
+		ItemCollection resultItemCol = null;
+		if (deprecatedScript) {
+			resultItemCol= RuleEngineNashornConverter.convertScriptVariableToItemCollection(context.getBindings(languageId),"result");
+		} else {
+			resultItemCol = result.as(ItemCollection.class);
+		}
+		return resultItemCol;
+	}
+
+	/**
+	 * This method returns true if the script is deprecated and was implemented
+	 * Initially for the version 3.0 (Nashorn engine). In this case the member
+	 * variables are not added as ItemCollection instances but as object arrays.
+	 * 
+	 * @param script
+	 * @return
+	 */
+	private boolean isDeprecatedScript(String script) {
+
+		if (script.contains("graalvm.languageId=nashorn")) {
+			return true;
+		}
+		
+		// all other languageIs default to graalVM...
+		if (script.contains("graalvm.languageId=")) {
+			return false;
+		}
+		
+		// test workitem.get( => deprecated
+		if (script.contains("workitem.get(") || script.contains("event.get(")) {
+			return true;
+		}
+
+		// all other getter methods indicate new GraalVM
+		if (script.contains("workitem.get") || script.contains("event.get")) {
+			return false;
+		}
+
+		// hasItem, isItem
+		if (script.contains("workitem.hasItem") || script.contains("workitem.isItem")) {
+			return false;
+		}
+
+		// if we still found something like workitem.***[ it indeicates a deprecated
+		// script
+
+		// first test if the ItemCollection getter methods are used in the script
+		if (script.contains("workitem.") || script.contains("event.")) {
+			return true;
+		}
+
+		// default to GaalVM
+		return false;
+	}
 }
