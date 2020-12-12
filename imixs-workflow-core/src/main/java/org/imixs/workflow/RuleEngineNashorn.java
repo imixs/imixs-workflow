@@ -48,7 +48,10 @@ import org.imixs.workflow.exceptions.PluginException;
 
 /**
  * The Imixs RuleEngine evaluates a business rule provided by an Event.
- * 
+ * <p>
+ * NOTE: The Nashorn Engine is deprecated since Java 11. The new rule engine
+ * implementation of Imixs-Workflow is now based on the GraalVM.
+ * <p>
  * A business rule can be written in any script language supported by the JVM.
  * The Script Language is defined by the property 'txtBusinessRuleEngine' from
  * the current Event element. The script is defined by the property
@@ -104,6 +107,7 @@ import org.imixs.workflow.exceptions.PluginException;
  * @version 3.0
  * 
  */
+@Deprecated
 public class RuleEngineNashorn {
     public static final String DEFAULT_SCRIPT_LANGUAGE = "javascript";
     public static final String INVALID_SCRIPT = "INVALID_SCRIPT";

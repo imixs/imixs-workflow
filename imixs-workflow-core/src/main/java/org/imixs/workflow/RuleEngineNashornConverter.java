@@ -28,157 +28,103 @@
 
 package org.imixs.workflow;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
-import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.Value;
-import org.imixs.workflow.exceptions.PluginException;
 
 /**
- * This is a helper class to convert ItemCollection objects into map objects
- * used by the deprecated scripts (nashorn). The converter is called by the
- * RuleEngine only in case a deprecated script need to be evaluated.
+ * This is a helper class to convert a deprecated script into the new format.
+ * The RuleEngineNashornConverter is called by the RuleEngine.
  * 
  * @author Ralph Soika
  * @version 1.0
  * 
  */
 public class RuleEngineNashornConverter {
-	   private static final HashSet<Class<?>> BASIC_OBJECT_TYPES = getBasicObjectTypes();
 
-	    private static Logger logger = Logger.getLogger(RuleEngineNashornConverter.class.getName());
+    private static Logger logger = Logger.getLogger(RuleEngineNashornConverter.class.getName());
 
-	/**
-	 * This method converts the values of an ItemCollection into a Map Object with
-	 * Arrays of Objects for each value
-	 * 
-	 * @param itemCol
-	 * @return
-	 */
-	public static Map<String, Object[]> convertItemCollection(ItemCollection itemCol) {
-		Map<String, Object[]> result = new HashMap<String, Object[]>();
-		Map<String, List<Object>> itemList = itemCol.getAllItems();
-		for (Map.Entry<String, List<Object>> entry : itemList.entrySet()) {
-			String key = entry.getKey().toLowerCase();
-			List<?> value = (List<?>) entry.getValue();
-			// do only put basic values
-			if (value.size() > 0) {
-				if (isBasicObjectType(value.get(0).getClass())) {
-					result.put(key, value.toArray());
-				}
+    /**
+     * This method returns true if the script is detected as deprecated. A
+     * deprecated script was implemented Initially for the version 3.0 (Nashorn
+     * engine).
+     * 
+     * @param script
+     * @return
+     */
+    public static boolean isDeprecatedScript(String script) {
 
-			}
-		}
-		return result;
-	}
+        if (script.contains("graalvm.languageId=nashorn")) {
+            return true;
+        }
 
-	/**
-	 * This method converts a JSON variable by name into a ItemCollection. The
-	 * variable is expected as a JSON object holding single values or arrays in the
-	 * following format
-	 * 
-	 * <code>
-	 * 
-	 * {'single_item':'Hello World', 'multi_item':[ 'Hello World', 'Hello Imixs' ]
-	 * };
-	 * 
-	 * <code>
-	 * 
-	 * The converted object is expected as an Map interface.
-	 * 
-	 * @param engine
-	 * @return ItemCollection holding the item values of the variable or null if no
-	 *         variable with the given name exists or the variable has not
-	 *         properties.
-	 * @throws ScriptException
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static ItemCollection convertScriptVariableToItemCollection(Value bindings , String variable) {
-		ItemCollection result = null;
-		boolean debug = logger.isLoggable(Level.FINE);
-		// get result object from engine
-		Value dingens = bindings.getMember(variable);
-		
-		Map<String, Object> scriptResult = (Map) bindings.getMember(variable).as(Map.class);
-		// test if the json object exists and has child objects...
-		if (scriptResult != null) {
-			result = new ItemCollection();
-			// evaluate values if available...
-			if (scriptResult.entrySet().size() > 0) {
-				// iterate over all entries
-				for (Map.Entry<String, Object> entry : scriptResult.entrySet()) {
+        // all other languageIs default to graalVM...
+        if (script.contains("graalvm.languageId=")) {
+            return false;
+        }
 
-					// test if the entry value is a single object or an array....
-					if (isBasicObjectType(entry.getValue().getClass())) {
-						// single value - build array....
-						if (debug) {
-							logger.finest("......adding " + variable + " property " + entry.getKey());
-						}
-						List<Object> list = new ArrayList();
-						list.add(entry.getValue());
-						result.replaceItemValue(entry.getKey(), list);
-					} else {
-						// test if array...
-						String expression = "result['" + entry.getKey() + "']";
-						Object[] oScript = null;// evaluateNativeScriptArray(expression);
-						logger.warning("eval script array not yet implemented!");
-						if (oScript == null) {
-							continue;
-						}
-						if (debug) {
-							logger.finest("......adding " + variable + " property " + entry.getKey());
-						}
-						List<?> list = new ArrayList(Arrays.asList(oScript));
-						result.replaceItemValue(entry.getKey(), list);
-					}
-				}
-			}
-		}
-		return result;
-	}
+        // test workitem.get( => deprecated
+        if (script.contains("workitem.get(") || script.contains("event.get(")) {
+            return true;
+        }
 
-	
-	  private static boolean isBasicObjectType(Class<?> clazz) {
-		return BASIC_OBJECT_TYPES.contains(clazz);
-	}
+        // all other getter methods indicate new GraalVM
+        if (script.contains("workitem.get") || script.contains("event.get")) {
+            return false;
+        }
 
-	private static HashSet<Class<?>> getBasicObjectTypes() {
-		HashSet<Class<?>> ret = new HashSet<Class<?>>();
-		ret.add(Boolean.class);
-		ret.add(Character.class);
-		ret.add(Byte.class);
-		ret.add(Short.class);
-		ret.add(Integer.class);
-		ret.add(Long.class);
-		ret.add(Float.class);
-		ret.add(Double.class);
-		ret.add(Void.class);
+        // hasItem, isItem
+        if (script.contains("workitem.hasItem") || script.contains("workitem.isItem")) {
+            return false;
+        }
 
-		ret.add(BigDecimal.class);
-		ret.add(BigInteger.class);
+        // if we still found something like workitem.***[ it indeicates a deprecated
+        // script
 
-		ret.add(String.class);
-		ret.add(Object.class);
-		ret.add(Date.class);
-		ret.add(Calendar.class);
-		ret.add(GregorianCalendar.class);
+        // first test if the ItemCollection getter methods are used in the script
+        if (script.contains("workitem.") || script.contains("event.")) {
+            return true;
+        }
 
-		return ret;
-	}
+        // default to GaalVM
+        return false;
+    }
+
+    /**
+     * This method tries to convert a deprecated Nashorn script into a new script
+     * dialect.
+     * 
+     * @param script
+     * @param documentContext
+     * @param event
+     * @return
+     */
+    public static String rewrite(String script, ItemCollection workitem, ItemCollection event) {
+
+        logger.fine("rewrite scipt: " + script);
+
+        List<String> itemNames = workitem.getItemNames();
+        for (String itemName : itemNames) {
+
+            String phrase;
+            String newPhrase;
+
+            // replace : workitem.txtname[0] => workitem.getItemValueString('txtname')
+            phrase = "workitem." + itemName + "[0]";
+            newPhrase = "workitem.getItemValueString('" + itemName + "')";
+            script = script.replace(phrase, newPhrase);
+
+            // replace : workitem.txtname => workitem.hasItem('txtname')
+            phrase = "workitem." + itemName;
+            newPhrase = "workitem.hasItem('" + itemName + "')";
+            script = script.replace(phrase, newPhrase);
+
+            // replace : workitem.get('txtname') => workitem.getItemValueString('txtname')
+            phrase = "workitem.get('" + itemName + "')";
+            newPhrase = "workitem.getItemValueString('" + itemName + "')";
+            script = script.replace(phrase, newPhrase);
+        }
+        return script;
+
+    }
 
 }

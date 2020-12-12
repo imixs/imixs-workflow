@@ -30,96 +30,72 @@ package org.imixs.workflow;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+
+import javax.inject.Named;
+
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.PolyglotException;
+import org.graalvm.polyglot.Value;
 import org.imixs.workflow.exceptions.PluginException;
 
+import jakarta.enterprise.context.RequestScoped;
+
 /**
- * The Imixs RuleEngine evaluates a business rule provided by an Event.
- * 
- * A business rule can be written in any script language supported by the JVM.
- * The Script Language is defined by the property 'txtBusinessRuleEngine' from
- * the current Event element. The script is defined by the property
- * 'txtBusinessRule'.
- * 
- * The Script can access all basic item values from the current workItem and
- * also the event by the provided JSON objects 'workitem' and 'event'.
- * 
- * <code>
- *  // test first value of the workitem attribute 'txtname'
- *  var isValid = ('Anna'==workitem.txtname[0]);
- * </code>
- * 
- * A script can add new values for the current workitem by providing the JSON
- * object 'result'.
- * 
- * <code>
- *     var result={ someitem:'Hello World', somenumber:1};
- * </code>
- * 
- * Also change values of the event object can be made by the script. These
- * changes will be reflected back for further processing.
- * 
- * <code>
- *  // disable mail 
- *   event.keymailenabled='0';
- * </code>
- * 
- * A script can set the variables 'isValid' and 'followUp' to validate a
- * workItem or set a new followUp activity.
- * 
- * <code>
- *   result={ isValid:false };
- * </code>
- * 
- * If the script set the variable 'isValid' to false then the plugin throws a
- * PluginExcpetion. The Plugin evaluates the variables 'errorCode' and
- * errorMessage. If these variables are set by the Script then the
- * PluginException will be updates with the corresponding errorCode and the
- * 'errorMessage' as params[]. If no errorCode is set then the errorCode of the
- * PluginException will default to 'VALIDATION_ERROR'.
- * 
- * If the script set the variable 'followUp' the follow-up behavior of the
- * current ActivityEntity will be updated.
- * 
- * If a script can not be evaluated by the scriptEngin a PluginExcpetion with
- * the errorCode 'INVALID_SCRIPT' will be thrown.
- * 
- * NOTE: all variable names are case sensitive! All JSON object elements are
- * lower case!
+ * The Imixs RuleEngine is a CDI bean called by the WorkflowKernel to evaluate
+ * business rules part of an BPMN model.
+ * <p>
+ * The engine is based on the GraalVM script engine which provides an advanced
+ * polyglot language feature. This allows to evaluate scripts in different
+ * programming languages (e.g. Java, JavaScript, Ruby, Python, R, LLVM,
+ * WebAssembly, etc.).
+ * <p>
+ * From a BPMN Event element, the Script Language can be defined by the property
+ * 'txtBusinessRuleEngine' or by a a comment added to the first line of a script
+ * in the following format:
+ * <p>
+ * {@code // graalvm.languageId=js}
+ * <p>
+ * A Script can access all basic item values from the current workItem and also
+ * the event by the provided member variables 'workitem' and 'event'.
+ * <p>
+ * The CDI bean can be replaced by an alternative CDI implementation to provide
+ * an extended functionality.
+ * <p>
+ * NOTE: The implementation replaces the old RuleEngien which was based on the
+ * Nashorn Script Engine. The engine to detect deprecated scripts and convert
+ * them automatically into the new format. It is recommended to replace
+ * deprecated scripts.
  * 
  * @author Ralph Soika
- * @version 3.0
+ * @version 4.0
  * 
  */
+@Named
+@RequestScoped
 public class RuleEngine {
-    public static final String DEFAULT_SCRIPT_LANGUAGE = "javascript";
+    public static final String DEFAULT_LANGUAGE_ID = "js";
     public static final String INVALID_SCRIPT = "INVALID_SCRIPT";
     private static final HashSet<Class<?>> BASIC_OBJECT_TYPES = getBasicObjectTypes();
 
     private static Logger logger = Logger.getLogger(RuleEngine.class.getName());
 
-    private ScriptEngineManager scriptEngineManager;
-    private ScriptEngine scriptEngine = null;
+    private Context context = null;
+    private String languageId;
 
     /**
      * This method initializes the default script engine.
      */
     public RuleEngine() {
         super();
-        init(DEFAULT_SCRIPT_LANGUAGE);
+        init(DEFAULT_LANGUAGE_ID);
     }
 
     /**
@@ -127,301 +103,185 @@ public class RuleEngine {
      * 
      * @param scriptLanguage
      */
-    public RuleEngine(final String scriptLanguage) {
+    public RuleEngine(final String languageID) {
         super();
-        init(scriptLanguage);
+        init(languageID);
     }
 
     /**
-     * This method initializes the script engine.
+     * This method initializes a context with default configuration.
      * 
-     * @param scriptLanguage
+     * @param languageId
      */
-    void init(final String _scriptLanguage) {
-        String scriptLanguage = _scriptLanguage;
-        // set default engine to javascript if no engine is specified
-        if ("".equals(scriptLanguage)) {
-            scriptLanguage = DEFAULT_SCRIPT_LANGUAGE;
-        }
-        // initialize the script engine...
-        scriptEngineManager = new ScriptEngineManager();
-        scriptEngine = scriptEngineManager.getEngineByName(scriptLanguage);
+    void init(final String languageId) {
+        this.languageId = languageId;
+        context = Context.newBuilder(languageId).allowAllAccess(true).build();
     }
 
     /**
-     * Returns the instance of the current scriptEngineManager
+     * Returns the current polyglot context
      * 
      * @return
      */
-    public ScriptEngineManager getScriptEngineManager() {
-        return scriptEngineManager;
+    public Context getContext() {
+        return context;
     }
 
     /**
-     * Returns the instance of the current ScriptEngine
+     * Sets the value of a member using an identifier. The member value is subject
+     * to polyglot value mapping rules as described in Context.asValue(Object).
      * 
-     * @return
+     * @param identifier
+     * @param value
      */
-    public ScriptEngine getScriptEngine() {
-        return scriptEngine;
+    public void putMember(String identifier, Object value) {
+        context.getBindings(languageId).putMember(identifier, value);
+    }
+
+    public Value eval(String script) {
+        Value result = context.eval(languageId, script);
+        return result;
     }
 
     /**
-     * This method evaluates the business rule defined by the provided event. The
-     * method returns the instance of the evaluated result object which can be used
-     * to continue evaluation. If a rule evaluation was not successful, the method
-     * returns null.
+     * This method evaluates a boolean expression. An optional documentContext can
+     * be provided as member Variables to be used by the script
      * 
-     * @param adocumentContext
-     * @param adocumentActivity
-     * @return ScriptEngine instance
+     * @param documentContext optional workitem context
+     * @return boolean
      * @throws PluginException
      */
-    public ItemCollection evaluateBusinessRule(String script, ItemCollection documentContext, ItemCollection event)
+    public boolean evaluateBooleanExpression(String script, ItemCollection workitem) throws PluginException {
+        boolean debug = logger.isLoggable(Level.FINE);
+        // test if a business rule is defined
+        if ("".equals(script.trim()))
+            return false; // nothing to do
+
+        // set member variables...
+        if (workitem != null) {
+            putMember("workitem", workitem);
+        }
+
+        if (debug) {
+            logger.finest("......SCRIPT:" + script);
+        }
+
+        // Test if we have a deprecated Script...
+        if (RuleEngineNashornConverter.isDeprecatedScript(script)) {
+            logger.warning("evaluate deprecated nashorn script");
+            // here we rewrite the script as best as we can.
+            script = RuleEngineNashornConverter.rewrite(script, workitem, null);
+            logger.info("New Script: \n=========================\n" + script + "\n=========================");
+        }
+
+        Value result = null;
+        try {
+            result = eval(script);
+        } catch (PolyglotException e) {
+            logger.warning("Script Error in: " + script);
+            // script not valid
+            throw new PluginException(RuleEngine.class.getSimpleName(), INVALID_SCRIPT,
+                    "BusinessRule contains invalid script:" + e.getMessage(), e);
+        }
+
+        return result.asBoolean();
+    }
+
+    /**
+     * This method evaluates the business rule. The method returns the instance of
+     * the evaluated result object which can be used to continue evaluation. If a
+     * rule evaluation was not successful, the method returns null.
+     * <p>
+     * An optional documentContext and a event object can be provided as member
+     * Variables to be used by the script
+     * 
+     * @param workitem optional document context
+     * @param event    optional bpmn event context
+     * @return evaluated result instance
+     * @throws PluginException
+     */
+    public ItemCollection evaluateBusinessRule(String script, ItemCollection workitem, ItemCollection event)
             throws PluginException {
         boolean debug = logger.isLoggable(Level.FINE);
         // test if a business rule is defined
         if ("".equals(script.trim()))
             return null; // nothing to do
 
-        // set activity properties into engine
-        scriptEngine.put("event", convertItemCollection(event));
-        scriptEngine.put("workitem", convertItemCollection(documentContext));
-        if (debug) {
-            logger.finest("......SCRIPT:" + script);
+        // set member variables...
+        if (workitem != null) {
+            putMember("workitem", workitem);
         }
+        if (event != null) {
+            putMember("event", event);
+        }
+
+        if (debug) {
+            logger.finest("......SCRIPT: " + script);
+        }
+
+        // Test if we have a deprecated Script...
+        if (RuleEngineNashornConverter.isDeprecatedScript(script)) {
+            logger.warning("evaluate deprecated nashorn script");
+            // here we rewrite the script as best as we can.
+            script = RuleEngineNashornConverter.rewrite(script, workitem, event);
+            logger.info("New Script: \n=========================\n" + script + "\n=========================");
+        }
+
+        // evaluate the script....
         try {
-            scriptEngine.eval(script);
-        } catch (ScriptException e) {
-            logger.warning("Script Error in: " + script);
+            eval(script);
+            // try to convert the result object, if provided...
+            ItemCollection result = convertResult();
+            return result;
+        } catch (PolyglotException e) {
+            logger.warning("Script Error: " + e.getMessage() + " in: " + script);
             // script not valid
             throw new PluginException(RuleEngine.class.getSimpleName(), INVALID_SCRIPT,
                     "BusinessRule contains invalid script:" + e.getMessage(), e);
         }
 
-        // get the optional result object
-        ItemCollection result = convertScriptVariableToItemCollection("result");
-
-        return result;
     }
 
     /**
-     * This method converts a JSON String into a JavaScript JSON Object and
-     * evaluates a script.
-     * <p>
-     * The JSON Object is set as a input variable named 'data' so that the script
-     * can access the json structure in an easy way.
-     * <p>
-     * Example: <code>
-     *   var result={}; result.name=data.name;
-     * </code>
-     * <p>
-     * The method returns an ItemCollection with the result object.
+     * This helper method converts the member variable 'result' of the current
+     * context into a Map object and returns a new instance of a ItemCollection
+     * holding the values of the map.
      * 
-     * @param json   - a JSON data string
-     * @param script - a Script to be evaluated
-     * @return an ItemCollection returning the Result Object.
-     * @throws ScriptException
-     */
-    public ItemCollection evaluateJsonByScript(String json, String script) throws ScriptException {
-
-        // create a data object
-        scriptEngine.put("data", json);
-        Object jsonDataObject = scriptEngine.eval("JSON.parse(data);");
-        // set the parsed JSON object again as 'data'.
-        scriptEngine.put("data", jsonDataObject);
-        // evaluate the script
-        scriptEngine.eval(script);
-        // get the result object
-        ItemCollection result = convertScriptVariableToItemCollection("result");
-        return result;
-    }
-
-    /**
-     * This method evaluates a boolean expression. The method takes a
-     * documentContext as argument.
-     * 
-     * @param adocumentContext
-     * @return ScriptEngine instance
-     * @throws PluginException
-     */
-    public boolean evaluateBooleanExpression(String script, ItemCollection documentContext) throws PluginException {
-        boolean debug = logger.isLoggable(Level.FINE);
-        // test if a business rule is defined
-        if ("".equals(script.trim()))
-            return false; // nothing to do
-
-        // set activity properties into engine
-        scriptEngine.put("workitem", convertItemCollection(documentContext));
-
-        if (debug) {
-            logger.finest("......SCRIPT:" + script);
-        }
-        Object result = null;
-        try {
-            result = scriptEngine.eval(script);
-        } catch (ScriptException e) {
-            logger.warning("Script Error in: " + script);
-            // script not valid
-            throw new PluginException(RuleEngine.class.getSimpleName(), INVALID_SCRIPT,
-                    "BusinessRule contains invalid script:" + e.getMessage(), e);
-        }
-        if (result instanceof Boolean) {
-            return (boolean) result;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * This method evaluates a script variable as an native Script array from the
-     * script engine. The method returns a Object array with the variable values. If
-     * the javaScript var is a String a new Array will be created. If the javaScript
-     * var is a NativeArray the method tries to create a java List object.
-     * 
-     * See the following examples used by the Rhino JavaScript engine bundled with
-     * Java 6. http://www.rgagnon.com/javadetails/java-0640.html
-     * 
-     * @return
-     */
-    public Object[] evaluateNativeScriptArray(String expression) {
-        Object[] params = null;
-        boolean debug = logger.isLoggable(Level.FINE);
-        if (scriptEngine == null) {
-            logger.severe("evaluateScritpObject error: no script engine! - call run()");
-            return null;
-        }
-
-        // first test if expression is a basic string var
-        Object objectResult = scriptEngine.get(expression);
-        if (objectResult != null && objectResult instanceof String) {
-            // just return a simple array with one value
-            params = new String[1];
-            params[0] = objectResult.toString();
-            return params;
-        }
-
-        // now try to pass the object to engine and convert it into a
-        // ArryList....
-        try {
-            // Nashorn: check for importClass function and then load if missing
-            // See: issue #124
-            String jsNashorn = " if (typeof importClass != 'function') { load('nashorn:mozilla_compat.js');}";
-
-            String jsCode = "importPackage(java.util);" + "var _evaluateScriptParam = Arrays.asList(" + expression
-                    + "); ";
-            // pass a collection from javascript to java;
-            scriptEngine.eval(jsNashorn + jsCode);
-
-            @SuppressWarnings("unchecked")
-            List<Object> resultList = (List<Object>) scriptEngine.get("_evaluateScriptParam");
-            if (resultList == null) {
-                return null;
-            }
-            if ("[undefined]".equals(resultList.toString())) {
-                return null;
-            }
-            // logging
-            if (debug) {
-                logger.finest("......evalueateScript object to Java");
-                for (Object val : resultList) {
-                    logger.finest("        " + val.toString());
-                }
-            }
-
-            return resultList.toArray();
-        } catch (ScriptException se) {
-            // not convertable!
-            // se.printStackTrace();
-            if (debug) {
-                logger.finest("......error evaluating " + expression + " - " + se.getMessage());
-            }
-            return null;
-        }
-
-    }
-
-    /**
-     * This method converts the values of an ItemCollection into a Map Object with
-     * Arrays of Objects for each value
-     * 
-     * @param itemCol
-     * @return
-     */
-    private Map<String, Object[]> convertItemCollection(ItemCollection itemCol) {
-        Map<String, Object[]> result = new HashMap<String, Object[]>();
-        Map<String, List<Object>> itemList = itemCol.getAllItems();
-        for (Map.Entry<String, List<Object>> entry : itemList.entrySet()) {
-            String key = entry.getKey().toLowerCase();
-            List<?> value = (List<?>) entry.getValue();
-            // do only put basic values
-            if (value.size() > 0) {
-                if (isBasicObjectType(value.get(0).getClass())) {
-                    result.put(key, value.toArray());
-                }
-
-            }
-        }
-        return result;
-    }
-
-    /**
-     * This method converts a JSON variable by name into a ItemCollection. The
-     * variable is expected as a JSON object holding single values or arrays in the
-     * following format
-     * 
-     * <code>
-     * 
-     * {'single_item':'Hello World', 'multi_item':[ 'Hello World', 'Hello Imixs' ]
-     * };
-     * 
-     * <code>
-     * 
-     * The converted object is expected as an Map interface.
+     * <code> var result={};result.name='xxx';result.count=42; <code>
      * 
      * @param engine
      * @return ItemCollection holding the item values of the variable or null if no
      *         variable with the given name exists or the variable has not
      *         properties.
-     * @throws ScriptException
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public ItemCollection convertScriptVariableToItemCollection(String variable) {
-        ItemCollection result = null;
-        boolean debug = logger.isLoggable(Level.FINE);
-        // get result object from engine
-        Map<String, Object> scriptResult = (Map) scriptEngine.get(variable);
-        // test if the json object exists and has child objects...
-        if (scriptResult != null) {
-            result = new ItemCollection();
-            // evaluate values if available...
-            if (scriptResult.entrySet().size() > 0) {
-                // iterate over all entries
-                for (Map.Entry<String, Object> entry : scriptResult.entrySet()) {
+    @SuppressWarnings({ "rawtypes" })
+    public ItemCollection convertResult() {
+        Map mapResult = null;
 
-                    // test if the entry value is a single object or an array....
-                    if (isBasicObjectType(entry.getValue().getClass())) {
-                        // single value - build array....
-                        if (debug) {
-                            logger.finest("......adding " + variable + " property " + entry.getKey());
-                        }
-                        List<Object> list = new ArrayList();
-                        list.add(entry.getValue());
-                        result.replaceItemValue(entry.getKey(), list);
-                    } else {
-                        // test if array...
-                        String expression = "result['" + entry.getKey() + "']";
-                        Object[] oScript = evaluateNativeScriptArray(expression);
-                        if (oScript == null) {
-                            continue;
-                        }
-                        if (debug) {
-                            logger.finest("......adding " + variable + " property " + entry.getKey());
-                        }
-                        List<?> list = new ArrayList(Arrays.asList(oScript));
-                        result.replaceItemValue(entry.getKey(), list);
-                    }
-                }
+        // do we have a result object?
+        Value resultValue = context.getBindings(languageId).getMember("result");
+        if (resultValue == null) {
+            return null;
+        }
+
+        // try to convert the result object into a Map
+        try {
+            mapResult = resultValue.as(Map.class);
+        } catch (ClassCastException | IllegalStateException | PolyglotException e) {
+            logger.warning("Unable to convert result object to an ItemCollection");
+            return null;
+        }
+
+        // Now build a new ItemCollection form the provided values...
+        // we can not do a deep copy here because of the embedded polyglot value objects
+        ItemCollection result = new ItemCollection();
+        Iterator it = mapResult.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            String itemName = pair.getKey().toString();
+            Object itemObject = pair.getValue();
+            if (isBasicObjectType(itemObject.getClass())) {
+                result.replaceItemValue(itemName, itemObject);
             }
         }
         return result;

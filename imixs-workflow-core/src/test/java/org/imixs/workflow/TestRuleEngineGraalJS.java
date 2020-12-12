@@ -17,12 +17,12 @@ import org.junit.Test;
  * @author rsoika
  */
 public class TestRuleEngineGraalJS {
-	protected RuleEngineGraalVM ruleEngine = null;
+	protected RuleEngine ruleEngine = null;
 	private static Logger logger = Logger.getLogger(TestRuleEngineGraalJS.class.getName());
 
 	@Before
 	public void setup() throws PluginException {
-		ruleEngine = new RuleEngineGraalVM();
+		ruleEngine = new RuleEngine();
 
 	}
 
@@ -107,4 +107,28 @@ public class TestRuleEngineGraalJS {
 
 	}
 
+	
+	 /**
+     * This test verifies if a script can update the value of a workitem
+     * 
+     * @throws ScriptException
+     * @throws PluginException
+     */
+    @Test
+    public void testEvalUpdteWorkitem() throws ScriptException, PluginException {
+
+        ItemCollection workitem = new ItemCollection();
+        workitem.replaceItemValue("name", "Anna");
+        ItemCollection event = new ItemCollection();
+
+        // access single value
+        String script = "var result={};\n \n  workitem.replaceItemValue('name','John');";
+
+        // run plugin
+        ItemCollection result = ruleEngine.evaluateBusinessRule(script, workitem, event);
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(workitem);
+        // txtname should be changed to 'John'
+        Assert.assertEquals("John", workitem.getItemValueString("name"));
+    }
 }
