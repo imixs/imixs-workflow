@@ -105,7 +105,11 @@ public class RuleEngine {
      */
     public RuleEngine(final String languageID) {
         super();
-        init(languageID);
+        if (languageID == null || languageID.isEmpty()) {
+            init(DEFAULT_LANGUAGE_ID);
+        } else {
+            init(languageID);
+        }
     }
 
     /**

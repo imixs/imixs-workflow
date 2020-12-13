@@ -42,11 +42,12 @@ public class TestSimulationService {
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowSimulationEnvironment.DEFAULT_MODEL_VERSION);
 
 		// test none condition ...
-		workitem.setTaskID(1000);
-		workitem.setEventID(10);
-		workitem = wse.processWorkItem(workitem);
-		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
-		Assert.assertEquals(1000, workitem.getTaskID());
+//		workitem.setTaskID(1000);
+//		workitem.setEventID(10);
+//		workitem.setItemValue("_budget", itemValue)
+//		workitem = wse.processWorkItem(workitem);
+//		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
+//		Assert.assertEquals(1000, workitem.getTaskID());
 
 		// test _budget<100
 		workitem.setTaskID(1000);

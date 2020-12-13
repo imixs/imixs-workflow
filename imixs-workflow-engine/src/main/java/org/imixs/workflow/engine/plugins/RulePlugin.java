@@ -31,7 +31,7 @@ package org.imixs.workflow.engine.plugins;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.script.ScriptException;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.RuleEngine;
 import org.imixs.workflow.exceptions.PluginException;
@@ -119,22 +119,23 @@ public class RulePlugin extends AbstractPlugin {
      * evaluate these changes and update the ItemCollection for further processing.
      * 
      */
-    public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
+    public ItemCollection run(ItemCollection workitem, ItemCollection event)
             throws PluginException {
 
         // test if a business rule is defined
-        String script = adocumentActivity.getItemValueString("txtBusinessRule");
+        String script = event.getItemValueString("txtBusinessRule");
         if ("".equals(script.trim()))
-            return adocumentContext; // nothing to do
+            return workitem; // nothing to do
 
-        String sEngineType = adocumentActivity.getItemValueString("txtBusinessRuleEngine");
+        String sEngineType = event.getItemValueString("txtBusinessRuleEngine");
         RuleEngine ruleEngine = new RuleEngine(sEngineType);
 
-        ItemCollection result = ruleEngine.evaluateBusinessRule(script, adocumentContext, adocumentActivity);
+        ItemCollection result = ruleEngine.evaluateBusinessRule(script, workitem, event);
 
         // support deprecated scripts without a 'result' JSON object ...
         if (result == null) {
-            evaluateDeprecatedScript(ruleEngine, adocumentActivity);
+            throw new PluginException(RulePlugin.class.getName(), INVALID_SCRIPT,
+                    "Deprecated script - result object is missing in: " + script);            
         } else {
             // first we test for the isValid variable
             Boolean isValidActivity = true;
@@ -182,8 +183,8 @@ public class RulePlugin extends AbstractPlugin {
                 Double d = Double.valueOf(followUp.toString());
                 Long followUpActivity = d.longValue();
                 if (followUpActivity != null && followUpActivity > 0) {
-                    adocumentActivity.replaceItemValue("keyFollowUp", "1");
-                    adocumentActivity.replaceItemValue("numNextActivityID", followUpActivity);
+                    event.replaceItemValue("keyFollowUp", "1");
+                    event.replaceItemValue("numNextActivityID", followUpActivity);
                 }
             }
 
@@ -195,105 +196,12 @@ public class RulePlugin extends AbstractPlugin {
                 // skip fieldnames starting with '$'
                 if (!itemName.startsWith("$")) {
                     logger.finest("......Update item '" + itemName + "'");
-                    adocumentContext.replaceItemValue(itemName, entry.getValue());
+                    workitem.replaceItemValue(itemName, entry.getValue());
                 }
             }
         }
 
-        // Finally update the Activity entity. Values can be provided optional
-        // by the script variable 'event'...
-        updateEvent(ruleEngine, adocumentActivity);
-
-        return adocumentContext;
-
-    }
-
-    /**
-     * This method evaluates the script result without a 'result' JSON object. This
-     * kind of scripts is marked as deprecated.
-     * 
-     * @param ruleEngine
-     * @param adocumentActivity
-     * @throws PluginException
-     */
-    private void evaluateDeprecatedScript(RuleEngine ruleEngine, ItemCollection adocumentActivity)
-            throws PluginException {
-        // deprecated evaluation:
-        logger.warning("Script is deprecated - use JSON object 'result'");
-        // first we test for the isValid variable
-        Boolean isValidActivity = true;
-
-        // if isValid is not provided by result then we look for a
-        // direct var definition (this is for backward compatibility of
-        // older scripts)
-        isValidActivity = (Boolean) ruleEngine.getScriptEngine().get("isValid");
-
-        // if isValid==false then throw a PluginException....
-        if (isValidActivity != null && !isValidActivity) {
-            // test if a error code is provided!
-            String sErrorCode = VALIDATION_ERROR;
-            Object oErrorCode = null;
-
-            // if errorCode is not provided by result then we look for a
-            // direct var definition (this is for backward compatibility
-            // of older scripts)
-            oErrorCode = ruleEngine.getScriptEngine().get("errorCode");
-
-            if (oErrorCode != null && oErrorCode instanceof String) {
-                sErrorCode = oErrorCode.toString();
-            }
-
-            // next test for errorMessage (this can be a string or an array
-            // of strings
-            Object[] params = null;
-
-            params = ruleEngine.evaluateNativeScriptArray("errorMessage");
-
-            // finally we throw the Plugin Exception
-            throw new PluginException(RulePlugin.class.getName(), sErrorCode,
-                    "BusinessRule: validation failed - ErrorCode=" + sErrorCode, params);
-        }
-
-        // now test the variable 'followUp'
-        Object followUp = null;
-        // first test result object
-
-        // if followUp is not provided by result then we look for a
-        // direct
-        // var definition (this is for backward compatibility of older
-        // scripts)
-        followUp = ruleEngine.getScriptEngine().get("followUp");
-
-        // If followUp is defined we update now the activityEntity....
-        if (followUp != null) {
-            // try to get double value...
-            Double d = Double.valueOf(followUp.toString());
-            Long followUpActivity = d.longValue();
-            if (followUpActivity != null && followUpActivity > 0) {
-                adocumentActivity.replaceItemValue("keyFollowUp", "1");
-                adocumentActivity.replaceItemValue("numNextActivityID", followUpActivity);
-            }
-        }
-
-    }
-
-    /**
-     * This method injects new properties provided by the script element 'event'
-     * into the current ActivityEntity. The new value can be used for further
-     * processing.
-     * 
-     * @param engine
-     * @param event
-     * @throws ScriptException
-     */
-    private void updateEvent(RuleEngine ruleEngine, ItemCollection event) {
-        ItemCollection newEvent = ruleEngine.convertScriptVariableToItemCollection("event");
-        for (Map.Entry<String, List<Object>> entry : newEvent.getAllItems().entrySet()) {
-            String key = entry.getKey();
-            List<Object> newValue = entry.getValue();
-            logger.finest("......update event property " + entry.getKey());
-            event.replaceItemValue(key, newValue);
-        }
+        return workitem;
 
     }
 

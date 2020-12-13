@@ -103,28 +103,88 @@ public class RuleEngineNashornConverter {
         logger.fine("rewrite scipt: " + script);
 
         List<String> itemNames = workitem.getItemNames();
+//        for (String itemName : itemNames) {
+//
+//            String phrase;
+//            String newPhrase;
+            
+            script=convertByItemCollection(script,workitem,"workitem");
+//
+//            // replace : workitem.txtname[0] => workitem.getItemValueString('txtname')
+//            phrase = "workitem." + itemName + "[0]";
+//            newPhrase = "workitem.getItemValueString('" + itemName + "')";
+//            script = script.replace(phrase, newPhrase);
+//
+//
+//            // replace : workitem.txtname => workitem.hasItem('txtname')
+//            phrase = "workitem." + itemName;
+//            newPhrase = "workitem.hasItem('" + itemName + "')";
+//            script = script.replace(phrase, newPhrase);
+//
+//
+//            
+//            phrase = "workitem.get(";
+//            newPhrase = "workitem.getItemValueString(";
+//            script = script.replace(phrase, newPhrase);
+//
+
+            
+            
+           
+       // }
+        
+            script=convertByItemCollection(script,event,"event");
+//         itemNames = event.getItemNames();
+//        for (String itemName : itemNames) {
+//
+//            String phrase;
+//            String newPhrase;
+//            
+//            script=convertByItemCollection(script,workitem,"event");
+//        }
+        
+        
+        
+
+     // here it may happen the something like 
+        //    workitem.getItemValueString(refField)[0]
+        // is the result. We need to remove the [0] here!
+        script = script.replace(")[0]", ")");
+        
+        
+        return script;
+
+    }
+    
+    private static String convertByItemCollection(String script, ItemCollection documentContext,String contextName) {
+        List<String> itemNames = documentContext.getItemNames();
         for (String itemName : itemNames) {
 
             String phrase;
             String newPhrase;
 
             // replace : workitem.txtname[0] => workitem.getItemValueString('txtname')
-            phrase = "workitem." + itemName + "[0]";
-            newPhrase = "workitem.getItemValueString('" + itemName + "')";
+            phrase = contextName+"." + itemName + "[0]";
+            newPhrase = contextName+".getItemValueString('" + itemName + "')";
             script = script.replace(phrase, newPhrase);
+
 
             // replace : workitem.txtname => workitem.hasItem('txtname')
-            phrase = "workitem." + itemName;
-            newPhrase = "workitem.hasItem('" + itemName + "')";
+            phrase = contextName+"." + itemName;
+            newPhrase = contextName+".hasItem('" + itemName + "')";
             script = script.replace(phrase, newPhrase);
 
-            // replace : workitem.get('txtname') => workitem.getItemValueString('txtname')
-            phrase = "workitem.get('" + itemName + "')";
-            newPhrase = "workitem.getItemValueString('" + itemName + "')";
+
+            
+            phrase = contextName+".get(";
+            newPhrase = contextName+".getItemValueString(";
             script = script.replace(phrase, newPhrase);
+
+
+          
         }
         return script;
-
+        
     }
 
 }

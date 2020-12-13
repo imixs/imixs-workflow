@@ -59,11 +59,11 @@ public class TestWorkflowServiceGateways {
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 
 		// test none condition ...
-		workitem.setTaskID(1000);
-		workitem.setEventID(10);
-		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
-		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
-		Assert.assertEquals(1000, workitem.getTaskID());
+//		workitem.setTaskID(1000);
+//		workitem.setEventID(10);
+//		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
+//		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
+//		Assert.assertEquals(1000, workitem.getTaskID());
 
 		// test _budget<100
 		workitem.setTaskID(1000);

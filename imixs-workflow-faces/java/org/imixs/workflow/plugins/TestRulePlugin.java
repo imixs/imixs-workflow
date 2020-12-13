@@ -47,7 +47,7 @@ public class TestRulePlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// set a business rule
-		String script = "var a=1;var b=2;var test = ((a<b) && 'Anna'==workitem.get('txtname')[0]);";
+		String script = "var result={};var a=1;var b=2;var test = ((a<b) && 'Anna'==workitem.get('txtname')[0]);";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -140,7 +140,7 @@ public class TestRulePlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// set a business rule
-		String script = "var a=1;var b=2;var isValid = (a>b);";
+		String script = "var result={};var a=1;var b=2;result.isValid = (a>b);";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -231,7 +231,7 @@ public class TestRulePlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// set a business rule
-		String script = "var a=1.0;var b=2;var followUp =a+b;";
+		String script = "var result={};var a=1.0;var b=2;result.followUp =a+b;";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -338,47 +338,7 @@ public class TestRulePlugin {
 
 	}
 
-	/**
-	 * See: http://www.rgagnon.com/javadetails/java-0640.html
-	 */
-	@Test
-	public void testArray() {
-
-		ScriptEngineManager mgr = new ScriptEngineManager();
-		// we are using the rhino javascript engine
-		ScriptEngine engine = mgr.getEngineByName("javascript");
-
-		// pass a Java collection to javascript
-		List<String> list1 = Arrays.asList("Homer", "Bart", "Marge", "Maggie", "Lisa");
-		engine.put("list1", list1);
-
-		// Nashorn: check for importClass function and then load if missing ...
-		String jsNashorn = " if (typeof importClass != 'function') { load('nashorn:mozilla_compat.js');}";
-
-		String jsCode = "var index; " + "var values =list1.toArray();" + "print('*** Java object to Javascript');"
-				+ "for(index in values) {" + "  print(values[index]);" + "}";
-		try {
-			engine.eval(jsNashorn + jsCode);
-		} catch (ScriptException se) {
-			se.printStackTrace();
-		}
-
-		// pass a collection from javascript to java
-		jsCode = "importPackage(java.util);" + "var list2 = Arrays.asList(['Moe', 'Barney', 'Ned']); ";
-		try {
-			engine.eval(jsNashorn + jsCode);
-		} catch (ScriptException se) {
-			se.printStackTrace();
-		}
-
-		@SuppressWarnings("unchecked")
-		List<String> list2 = (List<String>) engine.get("list2");
-		System.out.println("*** Javascript object to Java");
-		for (String val : list2) {
-			System.out.println(val);
-		}
-
-	}
+	
 
 	/**
 	 * This test tests if a the properties of an activity entity can be evaluated by
@@ -398,7 +358,7 @@ public class TestRulePlugin {
 		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
 
 		// set a business rule
-		String script = "var isValid =  '1'==event.keymailenabled[0];";
+		String script = "var result={}; result.isValid =  '1'==event.keymailenabled[0];";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -513,8 +473,7 @@ public class TestRulePlugin {
 		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
 
 		// set a business rule
-		// String script = "var isValid = 1000==workitem.get('$processid')[0];";
-		String script = "var isValid =  1000==workitem.get('$processid')[0];";
+		String script = "var result={}; result.isValid =  1000==workitem.get('$taskid')[0];";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -539,9 +498,9 @@ public class TestRulePlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// 2) test true case
-		String script = " var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " var isValid=true;"
-				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     isValid=false;"
-				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
+		String script = "var result={}; var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " result.isValid=true;"
+				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     result.isValid=false;"
+				+ "     result.errorMessage='Please enter a date!';" + " }  ";
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
@@ -555,9 +514,9 @@ public class TestRulePlugin {
 		// 2) test false case
 		adocumentContext = new ItemCollection();
 		adocumentActivity = new ItemCollection();
-		script = " var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " var isValid=true;"
-				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     isValid=false;"
-				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
+		script = "var result={}; var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " result.isValid=true;"
+				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     result.isValid=false;"
+				+ "     result.errorMessage='Please enter a date!';" + " }  ";
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
@@ -581,9 +540,9 @@ public class TestRulePlugin {
 		adocumentActivity = new ItemCollection();
 
 		// 2a) test true case
-		script = " var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " var isValid=true;"
-				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     isValid=false;"
-				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
+		script = "var result={}; var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " result.isValid=true;"
+				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     result.isValid=false;"
+				+ "     result.errorMessage='Please enter a date!';" + " }  ";
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
@@ -613,10 +572,10 @@ public class TestRulePlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// 2) test true case
-		String script = " var refField1=\"txtbetrag\";" + "		 var refField2=\"txtgutschift\";"
+		String script = "var result={}; var refField1=\"txtbetrag\";" + "		 var refField2=\"txtgutschift\";"
 				+ "		 var isValid=true;"
 				+ "		 if ( ( workitem.get(refField1) == null || ''==workitem.get(refField1)[0]) || ( workitem.get(refField2) == null || ''==workitem.get(refField2)[0])) {"
-				+ "		     isValid=false;" + "		     var errorMessage='Bitte geben Sie den Betrag an! ';"
+				+ "		    result.isValid=false;" + "		    result.errorMessage='Bitte geben Sie den Betrag an! ';"
 				+ "		  } ";
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -697,9 +656,9 @@ public class TestRulePlugin {
 
 		System.out.println("testUndefineErroCode - test case 1:");
 		// 2) test undefined case
-		String script = " var isValid=true;" + " var errorCode,errorMessage;" + "refField='_contact';"
-				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {" + "     isValid=false;"
-				+ "     errorMessage='Please enter subject';" + " }";
+		String script = "var result={}; result.isValid=true;" + " var errorCode,errorMessage;" + "refField='_contact';"
+				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {" + "     result.isValid=false;"
+				+ "     result.errorMessage='Please enter subject';" + " }";
 
 		adocumentActivity.replaceItemValue("txtBusinessRule", script);
 
@@ -723,9 +682,9 @@ public class TestRulePlugin {
 
 		// test the same case if errorCode is defined
 		// 2) test true case
-		script = " var isValid=true;" + " var errorCode,errorMessage;" + "refField='_contact';"
-				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {" + "     isValid=false;"
-				+ "     errorCode='SOME_ERROR';" + " }";
+		script = "var result={}; result.isValid=true;; refField='_contact';"
+				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {" + "     result.isValid=false;"
+				+ "     result.errorCode='SOME_ERROR';" + " }";
 
 		adocumentActivity.replaceItemValue("txtBusinessRule", script);
 
