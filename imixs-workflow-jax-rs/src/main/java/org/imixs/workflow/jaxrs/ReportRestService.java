@@ -30,6 +30,7 @@ package org.imixs.workflow.jaxrs;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -551,10 +552,12 @@ public class ReportRestService {
     public void fopTranformation(String xmlSource, String xslSource, String aEncoding, OutputStream output)
             throws Exception {
         // configure fopFactory as desired
-        FopFactory fopFactory = FopFactory.newInstance();
+        // # changed during jakarta ee 9 migration / fop v 2.5
+        FopFactory fopFactory = FopFactory.newInstance(new File(".").toURI());
+        // FopFactory fopFactory = FopFactory.newInstance();
 
         FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
-        foUserAgent.setBaseURL(fopFactory.getBaseURL());
+        // foUserAgent.setBaseURL(fopFactory.getBaseURL());
 
         // configure foUserAgent as desired
         // OutputStream out =null;
