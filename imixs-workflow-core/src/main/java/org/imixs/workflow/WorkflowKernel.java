@@ -563,7 +563,14 @@ public class WorkflowKernel {
             if (iTask > 0) {
                 // optional
                 documentResult.task(iTask);
+                // test if we can load the target task...
+                ItemCollection itemColNextTask = this.ctx.getModelManager().getModel(version).getTask(iTask);
+                if (itemColNextTask!=null) {
+            	   // compute new workflow group
+            	   documentResult.setWorkflowGroup(itemColNextTask.getItemValueString("txtworkflowgroup"));
+               }
             }
+            
             logger.info("⚙ set model : " + documentResult.getItemValueString(UNIQUEID) + " ("
                     + documentResult.getItemValueString(MODELVERSION) + ")");
         }
