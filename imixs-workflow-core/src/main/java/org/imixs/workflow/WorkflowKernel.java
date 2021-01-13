@@ -563,7 +563,13 @@ public class WorkflowKernel {
             if (iTask > 0) {
                 // optional
                 documentResult.task(iTask);
+                // test if we can load the target task...            
+                ItemCollection itemColNextTask = this.ctx.getModelManager().getModel(version).getTask(iTask);
+                if (itemColNextTask!=null) {
+                	updateWorkflowStatus(documentResult, itemColNextTask);
+                }
             }
+            
             logger.info("⚙ set model : " + documentResult.getItemValueString(UNIQUEID) + " ("
                     + documentResult.getItemValueString(MODELVERSION) + ")");
         }
@@ -629,7 +635,41 @@ public class WorkflowKernel {
         // instance.
         evaluateSplitEvent(event, documentResult);
 
-        // Update the attributes $taskID and $WorkflowStatus
+        // Issue #722
+//        // Update the attributes $taskID and $WorkflowStatus
+//        documentResult.setTaskID(Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
+//        if (debug) {
+//            logger.finest("......new $taskID=" + documentResult.getTaskID());
+//        }
+//        documentResult.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString("txtname"));
+//        documentResult.replaceItemValue(WORKFLOWGROUP, itemColNextTask.getItemValueString("txtworkflowgroup"));
+//        if (debug) {
+//            logger.finest("......new $workflowStatus=" + documentResult.getItemValueString(WORKFLOWSTATUS));
+//        }
+//        // update deprecated attributes txtworkflowStatus and txtworkflowGroup
+//        documentResult.replaceItemValue("txtworkflowStatus", documentResult.getItemValueString(WORKFLOWSTATUS));
+//        documentResult.replaceItemValue("txtworkflowGroup", documentResult.getItemValueString(WORKFLOWGROUP));
+//
+//        // update the type attribute if defined.
+//        // the type attribute can only be overwritten by a plug-in if the type is not
+//        // defined by the task!
+//        String sType = itemColNextTask.getItemValueString("txttype");
+//        if (!"".equals(sType)) {
+//            documentResult.replaceItemValue(TYPE, sType);
+//        }
+        updateWorkflowStatus(documentResult, itemColNextTask);
+        
+
+        return documentResult;
+    }
+    
+    
+    /**
+     * Helper method to update the items $taskid, $worklfowstatus, $workflowgroup and type 
+     */
+    private void updateWorkflowStatus(ItemCollection documentResult, ItemCollection itemColNextTask) {
+    	  boolean debug = logger.isLoggable(Level.FINE);
+    	// Update the attributes $taskID and $WorkflowStatus
         documentResult.setTaskID(Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
         if (debug) {
             logger.finest("......new $taskID=" + documentResult.getTaskID());
@@ -650,9 +690,8 @@ public class WorkflowKernel {
         if (!"".equals(sType)) {
             documentResult.replaceItemValue(TYPE, sType);
         }
-
-        return documentResult;
     }
+    
 
     /**
      * This method executes all SignalAdapters associated with the model.

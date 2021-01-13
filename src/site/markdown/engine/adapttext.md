@@ -24,7 +24,7 @@ This message text-block will be automatically adapted with the workitem properti
 
 To format a number you can also use the Java standard number formating:
 
-	<itemvalue format=\"#,###,##0.00\" locale=\"de_DE\">price</itemvalue>
+	<itemvalue format="#,###,##0.00" locale="de_DE">price</itemvalue>
 
  
 ### Format multi-value Items
