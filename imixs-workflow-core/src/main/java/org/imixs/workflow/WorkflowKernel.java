@@ -323,9 +323,9 @@ public class WorkflowKernel {
             // generating a new one
             documentResult.replaceItemValue(UNIQUEID, generateUniqueID());
         }
-        
+
         // Generate a $TransactionID
-        documentResult.replaceItemValue(TRANSACTIONID,generateTransactionID());
+        documentResult.replaceItemValue(TRANSACTIONID, generateTransactionID());
 
         // store last $lastTask
         documentResult.replaceItemValue("$lastTask", workitem.getTaskID());
@@ -403,12 +403,12 @@ public class WorkflowKernel {
     /**
      * This method computes the next task based on a Model Event element. If the
      * event did not point to a new task, the current task will be returned.
-     * 
+     * <p>
      * The method supports the 'conditional-events' and 'split-events'.
-     * 
+     * <p>
      * A conditional-event contains the attribute 'keyExclusiveConditions' defining
      * conditional targets (tasks) or adds conditional follow up events
-     * 
+     * <p>
      * A split-event contains the attribute 'keySplitConditions' defining the target
      * for the current master version (condition evaluates to 'true')
      * 
@@ -563,13 +563,13 @@ public class WorkflowKernel {
             if (iTask > 0) {
                 // optional
                 documentResult.task(iTask);
-                // test if we can load the target task...            
+                // test if we can load the target task...
                 ItemCollection itemColNextTask = this.ctx.getModelManager().getModel(version).getTask(iTask);
-                if (itemColNextTask!=null) {
-                	updateWorkflowStatus(documentResult, itemColNextTask);
+                if (itemColNextTask != null) {
+                    updateWorkflowStatus(documentResult, itemColNextTask);
                 }
             }
-            
+
             logger.info("⚙ set model : " + documentResult.getItemValueString(UNIQUEID) + " ("
                     + documentResult.getItemValueString(MODELVERSION) + ")");
         }
@@ -658,18 +658,17 @@ public class WorkflowKernel {
 //            documentResult.replaceItemValue(TYPE, sType);
 //        }
         updateWorkflowStatus(documentResult, itemColNextTask);
-        
 
         return documentResult;
     }
-    
-    
+
     /**
-     * Helper method to update the items $taskid, $worklfowstatus, $workflowgroup and type 
+     * Helper method to update the items $taskid, $worklfowstatus, $workflowgroup
+     * and type
      */
     private void updateWorkflowStatus(ItemCollection documentResult, ItemCollection itemColNextTask) {
-    	  boolean debug = logger.isLoggable(Level.FINE);
-    	// Update the attributes $taskID and $WorkflowStatus
+        boolean debug = logger.isLoggable(Level.FINE);
+        // Update the attributes $taskID and $WorkflowStatus
         documentResult.setTaskID(Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
         if (debug) {
             logger.finest("......new $taskID=" + documentResult.getTaskID());
@@ -691,7 +690,6 @@ public class WorkflowKernel {
             documentResult.replaceItemValue(TYPE, sType);
         }
     }
-    
 
     /**
      * This method executes all SignalAdapters associated with the model.
@@ -812,9 +810,20 @@ public class WorkflowKernel {
             conditions = (Map<String, String>) event.getItemValue("keyExclusiveConditions").get(0);
 
             if (conditions != null && conditions.size() > 0) {
-
-                // evaluate all conditions and return the fist match...
+                // we support also an optional default flow (Issue #723)
+                // a default flow is evaluated always as the last option!
+                List<Map.Entry<String, String>> orderedConditionList = new ArrayList<Map.Entry<String, String>>();
                 for (Map.Entry<String, String> entry : conditions.entrySet()) {
+                    if ("true".equals(entry.getValue())) {
+                        // we move a default condition (true) to the end of the list
+                        orderedConditionList.add(entry);
+                    } else {
+                        // put it to the beginning of the list
+                        orderedConditionList.add(0, entry);
+                    }
+                }
+                // now the list is ordered and the default condition is the last one
+                for (Map.Entry<String, String> entry : orderedConditionList) {
                     String key = entry.getKey();
                     String expression = entry.getValue();
                     if (key.startsWith("task=")) {
@@ -845,7 +854,6 @@ public class WorkflowKernel {
                                     .getEvent(documentContext.getTaskID(), eventID);
                             if (itemColEvent != null) {
                                 // create follow up event....
-
                                 event.replaceItemValue("keyFollowUp", "1");
                                 event.replaceItemValue("numNextActivityID", eventID);
 
@@ -859,6 +867,7 @@ public class WorkflowKernel {
                         }
                     }
                 }
+
                 if (debug) {
                     logger.finest("......conditional event: no matching condition found.");
                 }

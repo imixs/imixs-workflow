@@ -117,10 +117,12 @@ public class BPMNModelHandler extends DefaultHandler {
     private Map<String, String> signalCache = null;
 
     private Map<String, String> conditionCache = null;
+    private Map<String, String> conditionDefaultFlows = null;
 
     private List<String> startEvents = null;
     private List<String> endEvents = null;
     private List<String> conditionalGatewayCache = null;
+
     private List<String> parallelGatewayCache = null;
 
     private List<ItemCollection> boundaryEventCache = null;
@@ -140,6 +142,7 @@ public class BPMNModelHandler extends DefaultHandler {
         dataObjectCache = new HashMap<String, List<String>>();
         signalCache = new HashMap<String, String>();
         conditionCache = new HashMap<String, String>();
+        conditionDefaultFlows = new HashMap<String, String>();
 
         linkThrowEventCache = new HashMap<String, String>();
         linkCatchEventCache = new HashMap<String, String>();
@@ -311,14 +314,20 @@ public class BPMNModelHandler extends DefaultHandler {
             currentMessageName = attributes.getValue("name");
         }
 
-        // parallel gateway
+        // exclusive gateway
         if (qName.equalsIgnoreCase("bpmn2:exclusiveGateway") || qName.equalsIgnoreCase("bpmn2:inclusiveGateway")
                 || qName.equalsIgnoreCase("bpmn2:eventBasedGateway")) {
             // Put conditional Gateway ID into the gateway cache...
             conditionalGatewayCache.add(attributes.getValue("id"));
+
+            // test if the gateway has a default sequence flow..
+            String defaultSequenceFlow = attributes.getValue("default");
+            if (defaultSequenceFlow != null && !defaultSequenceFlow.isEmpty()) {
+                conditionDefaultFlows.put(attributes.getValue("id"), defaultSequenceFlow);
+            }
         }
 
-        // conditional gateway
+        // parallel gateway
         if (qName.equalsIgnoreCase("bpmn2:parallelGateway")) {
             // Put parallel Gateway ID into the gateway cache...
             parallelGatewayCache.add(attributes.getValue("id"));
@@ -508,7 +517,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
         if (bBoundaryEvent && qName.equalsIgnoreCase("bpmn2:boundaryEvent")) {
             bBoundaryEvent = false;
-            if (currentBoundaryEvent!=null) {
+            if (currentBoundaryEvent != null) {
                 boundaryEventCache.add(currentBoundaryEvent);
             }
         }
@@ -517,10 +526,11 @@ public class BPMNModelHandler extends DefaultHandler {
             bTimerEventDefinition = false;
         }
 
-        if (bTimerEventDefinition && btimeDuration && currentBoundaryEvent!=null && qName.equalsIgnoreCase("bpmn2:timeDuration") ) {
+        if (bTimerEventDefinition && btimeDuration && currentBoundaryEvent != null
+                && qName.equalsIgnoreCase("bpmn2:timeDuration")) {
             long l = 0;
             try {
-                String v=characterStream.toString().trim();
+                String v = characterStream.toString().trim();
                 if (!v.isEmpty()) {
                     l = Long.parseLong(v);
                 }
@@ -539,10 +549,10 @@ public class BPMNModelHandler extends DefaultHandler {
     @Override
     public void characters(char ch[], int start, int length) throws SAXException {
 
-        if (characterStream==null) {
+        if (characterStream == null) {
             return;
         }
-        
+
         if (bdocumentation || bconditionExpression || btimeDuration) {
             characterStream = characterStream.append(new String(ch, start, length));
         }
@@ -658,12 +668,12 @@ public class BPMNModelHandler extends DefaultHandler {
                         }
                         // lookup the target event....
                         String targetEventID = new ElementResolver().findImixsTargetEventID(outFlows.get(0));
-                        ItemCollection targetEvent=eventCache.get(targetEventID);
-                        if (targetEvent!=null) {
+                        ItemCollection targetEvent = eventCache.get(targetEventID);
+                        if (targetEvent != null) {
                             task.setItemValue("boundaryEvent.targetEvent",
                                     targetEvent.getItemValueInteger("numactivityid"));
                         } else {
-                            logger.warning("Invalid Target for BoundaryEvent "+key);
+                            logger.warning("Invalid Target for BoundaryEvent " + key);
                         }
                     }
                 }
@@ -983,6 +993,7 @@ public class BPMNModelHandler extends DefaultHandler {
             List<SequenceFlow> outgoingList = this.findOutgoingFlows(eventID);
             if (outgoingList != null && outgoingList.size() > 0) {
                 Map<String, String> conditions = new HashMap<String, String>();
+                String defaultCondition = null;
                 for (SequenceFlow flow : outgoingList) {
                     // lookup for a exclusive gateway....
                     String exclusiveGatewayID = new ElementResolver().findExclusiveGateway(flow);
@@ -1001,6 +1012,16 @@ public class BPMNModelHandler extends DefaultHandler {
                                             + targetTask.getItemValueInteger("numProcessid") + "=" + sExpression);
                                     conditions.put("task=" + targetTask.getItemValueInteger("numProcessid"),
                                             sExpression);
+                                } else {
+                                    // the sequence flow has no condition.
+                                    // check if it is a default flow?
+                                    String defaultSequenceFlow = conditionDefaultFlows.get(conditionalGatewayID);
+                                    if (defaultSequenceFlow != null && !defaultSequenceFlow.isEmpty()) {
+                                        logger.finest("......add default condition: "
+                                                + targetTask.getItemValueInteger("numProcessid"));
+                                        defaultCondition = "task=" + targetTask.getItemValueInteger("numProcessid");
+
+                                    }
                                 }
                             } else {
                                 // test for an event....
@@ -1013,6 +1034,16 @@ public class BPMNModelHandler extends DefaultHandler {
                                                 + targetEvent.getItemValueInteger("numActivityid") + "=" + sExpression);
                                         conditions.put("event=" + targetEvent.getItemValueInteger("numActivityid"),
                                                 sExpression);
+                                    } else {
+                                        // the sequence flow has no condition.
+                                        // check if it is a default flow?
+                                        String defaultSequenceFlow = conditionDefaultFlows.get(conditionalGatewayID);
+                                        if (defaultSequenceFlow != null && !defaultSequenceFlow.isEmpty()) {
+                                            logger.finest("......add devault condition: "
+                                                    + targetEvent.getItemValueInteger("numActivityid"));
+                                            defaultCondition = "event="
+                                                    + targetEvent.getItemValueInteger("numActivityid");
+                                        }
                                     }
                                 }
 
@@ -1022,6 +1053,13 @@ public class BPMNModelHandler extends DefaultHandler {
                     }
 
                 }
+
+                // do we have a default condition?
+                if (defaultCondition != null) {
+                    // yes
+                    conditions.put(defaultCondition, "true");
+                }
+
                 // add the attribute 'keyExclusiveConditions' if available...
                 if (!conditions.isEmpty()) {
                     event.replaceItemValue("keyExclusiveConditions", conditions);
