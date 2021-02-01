@@ -85,7 +85,11 @@ The second condition defines a Follow-Up Event in case the '_budget' is <= 100:
 
 The script language for the boolean expression is 'JavaScript'. See the [RulePlugin](../engine/plugins/ruleplugin.html) for further details about business rules in Imixs-Workflow. 
 
+**Note:** In BPMN one so called "Default Flow" can be defined for an exclusive gateway.
 
+<img src="../images/modelling/example_14.png"/>
+
+The default flow is evaluated only if none of the other conditions matches. 
 
 ## Split Events
 
