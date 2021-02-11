@@ -80,7 +80,7 @@ See the following example handling a jax-rs client communication:
 			.....
 		} 
 
-In this example an Adapter throws an _AdapterException_ when the rest api call failed. The Exception contains the  Adapter name, an Error Code, and a Error Message. The processing life-cycle will not be interrupted by an AdapterException. But the Exception inforration will be added into the current process instance in the following items:
+In this example an Adapter throws an _AdapterException_ when the rest api call failed. The Exception contains the  Adapter name, an Error Code, and a Error Message. The processing life-cycle will not be interrupted by an AdapterException. But the Exception information will be added into the current process instance in the following items:
 
 
 * adapter.error_code - the exception code
