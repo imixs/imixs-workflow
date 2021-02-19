@@ -30,7 +30,7 @@ package org.imixs.workflow.services.rest;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import org.imixs.workflow.util.Base64;
+import java.util.Base64;
 
 /**
  * Client Request Filter for basic authentication
@@ -63,9 +63,8 @@ public class BasicAuthenticator implements RequestFilter {
         String sUserCode = user + ":" + password;
         // String convertieren
         // sURLAccess = Base64.encodeBase64(sUserCode.getBytes()).toString();
-        char[] authcode = Base64.encode(sUserCode.getBytes());
+        sURLAccess = Base64.getEncoder().encodeToString(sUserCode.getBytes());
 
-        sURLAccess = String.valueOf(authcode);
         return sURLAccess;
     }
 
