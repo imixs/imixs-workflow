@@ -5,7 +5,7 @@ The Imixs-Workflow Service provides a HealthCheck implementation based on the [M
 Health checks are used to probe the state of a computing node from another machine (i.e. a kubernetes service controller).
 The Imixs Health Check is used to determine the status of the Imixs-Workflow instance. 
 
-This check indicates the overall status of the workflow engine. If models are available and also database access and security works the result looks like this:
+This check indicates the overall status of the workflow engine. If models are available and also database access and security works the service answers with HTTP 200 and a body that looks like this:
  
 	{
 		"status": "UP",
@@ -28,7 +28,7 @@ This check indicates the overall status of the workflow engine. If models are av
 		]
 	}
  
-The Health Check return the status 'DOWN' in case no workflow model is available the database and index checks failed.  For example in case of a database error the result looks like this:
+The Health Check return the status 'DOWN' with HTTP 503 in case no workflow model is available the database and index checks failed.  For example in case of a database error the result looks like this:
 
 	{
 		"status": "DOWN",
@@ -65,13 +65,15 @@ To validate the health status in Kubernetes you can do a readinessProbe and live
 	  containers:
 	    ...
 	    livenessProbe:
-	      exec:
-	        command: ["sh", "-c", "curl -s http://localhost:9990/health| grep -q imixs-workflow"]
-	      initialDelaySeconds: 60
-	    readinessProbe:
-	      exec:
-	        command: ["sh", "-c", "curl -s http://localhost:9990/health | grep -q imixs-workflow"]
-	      initialDelaySeconds: 40
+	      httpGet:
+	        path: /health
+	        port: 9990
+	      initialDelaySeconds: 120
+	      periodSeconds: 10
+	      failureThreshold: 3
 		...
+
+**Note:** You need to publish port 9990 in a service. 		
+			
   
 	
