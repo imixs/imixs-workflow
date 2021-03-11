@@ -63,7 +63,7 @@ In this example the adapter injects the Imixs ModelService to ask for available 
  
 ### Exception Handling
     
-An adapter can also extend the processing phase by throwing an _AdapterException_. For example in case of a communication error.
+An adapter can also extend the processing phase by throwing an *AdapterException*. For example in case of a communication error an Adapter could send and error code back to the processing life cycle.
 
 See the following example handling a jax-rs client communication:
 
@@ -80,7 +80,7 @@ See the following example handling a jax-rs client communication:
 			.....
 		} 
 
-In this example an Adapter throws an _AdapterException_ when the rest api call failed. The Exception contains the  Adapter name, an Error Code, and a Error Message. The processing life-cycle will not be interrupted by an AdapterException. But the Exception information will be added into the current process instance in the following items:
+In this example an Adapter throws an *AdapterException_* when the Rest API call failed. The Exception contains the  Adapter name, an Error Code, and a Error Message. The processing life-cycle will not be interrupted by an AdapterException. But the Exception information will be added into the current process instance in the following items:
 
 
 * adapter.error_code - the exception code
@@ -105,7 +105,10 @@ Of course, a Plugin can investigate the Adapter Exception data and interrupt the
 	}
 
 
-If you want to interrupt the processing imideately your Adapter Implementaion can throw a ProcessingErrorException
+If you want to interrupt the processing immediately, your Adapter Implementation can throw either a PluginException or a ProcessingErrorException
+
+A PluginException is handled the same way as defined in the Plugin API and can be handled by the workflow application.  An *ProcessingErrorException* interrupts the processing life cycle immediately. 
+
 
 		public ItemCollection execute(ItemCollection workitem, ItemCollection event) throws AdapterException {
 			...
@@ -113,6 +116,12 @@ If you want to interrupt the processing imideately your Adapter Implementaion ca
 			try {
 				Response response = client.target(uri).request(MediaType.APPLICATION_XML)
 					.post(Entity.entity(data, MediaType.APPLICATION_XML));
+					
+				if (response==null) 
+				    // interrupt the processing life cycle
+					throw new PluginException(
+						MyAdapter.class.getSimpleName(),ERROR_API_COMMUNICATION,"An error occurred...");	
+					
 			} catch (ResponseProcessingException e) {
 				// interrupt current transaction
 				throw new ProcessingErrorException(
@@ -121,6 +130,6 @@ If you want to interrupt the processing imideately your Adapter Implementaion ca
 			.....
 		}
 
-In case of a ProcessingErrorException a running transaction will be automatically rolled back because it is a Runtime Exception. 
+In both cases the running transaction will be automatically rolled back. 
 
 
