@@ -588,6 +588,7 @@ public class WorkflowKernel {
      * 
      * @throws PluginException,ModelException
      */
+    @SuppressWarnings("unused")
     private ItemCollection processEvent(final ItemCollection documentContext, final ItemCollection event)
             throws PluginException, ModelException {
         ItemCollection documentResult = documentContext;
@@ -740,8 +741,9 @@ public class WorkflowKernel {
      * 
      * @param documentResult
      * @param event
+     * @throws PluginException 
      */
-    private void executeGenericAdapters(ItemCollection documentResult, ItemCollection event) {
+    private void executeGenericAdapters(ItemCollection documentResult, ItemCollection event) throws PluginException {
         boolean debug = logger.isLoggable(Level.FINE);
         if (debug) {
             logger.finest("......executing GenericAdapters...");
@@ -766,8 +768,10 @@ public class WorkflowKernel {
      * @param adapter
      * @param workitem
      * @param event
+     * @throws PluginException 
      */
-    private void executeAdaper(Adapter adapter, ItemCollection workitem, ItemCollection event) {
+    private void executeAdaper(Adapter adapter, ItemCollection workitem, ItemCollection event) throws PluginException {
+        boolean debug = logger.isLoggable(Level.FINE);
         // execute...
         try {
             // remove adapter errors..
@@ -783,7 +787,9 @@ public class WorkflowKernel {
             workitem.setItemValue("adapter.error_code", e.getErrorCode());
             workitem.setItemValue("adapter.error_params", e.getErrorParameters());
             workitem.setItemValue("adapter.error_message", e.getMessage());
-            e.printStackTrace();
+            if (debug) {
+                e.printStackTrace();
+            }
         }
     }
 
