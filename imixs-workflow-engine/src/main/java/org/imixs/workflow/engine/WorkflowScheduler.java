@@ -502,7 +502,7 @@ public class WorkflowScheduler implements Scheduler {
                     continue;
                 } catch (ModelException me) {
                     // ModelException - we migrate the model ...
-                    logger.warning("...deprecated model version '" + workitem.getModelVersion()
+                    logger.fine("...deprecated model version '" + workitem.getModelVersion()
                             + "' no longer exists -> migrating to new model version '" + modelVersionEvent + "'");
                     workitem.model(modelVersionEvent);
                 }
