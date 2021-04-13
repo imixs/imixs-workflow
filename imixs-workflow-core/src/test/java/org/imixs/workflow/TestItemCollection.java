@@ -537,13 +537,17 @@ public class TestItemCollection {
 
         ItemCollection itemCol1 = new ItemCollection();
         itemCol1.replaceItemValue("a", 1);
+        itemCol1.replaceItemValue("$a", true);
         itemCol1.replaceItemValue("b", "hello");
         itemCol1.replaceItemValue("c", "world");
+        itemCol1.replaceItemValue("d", "cats & dogs");
+        
 
         // clone only some attributes
         List<String> attributes = new ArrayList<String>();
         attributes.add("a");
         attributes.add("b");
+        attributes.add("d | animals");
         ItemCollection itemCol2 = itemCol1.clone(attributes);
 
         Assert.assertNotNull(itemCol2);
@@ -552,6 +556,8 @@ public class TestItemCollection {
         Assert.assertEquals(1, itemCol2.getItemValueInteger("a"));
         Assert.assertEquals("hello", itemCol2.getItemValueString("b"));
         Assert.assertEquals("", itemCol2.getItemValueString("c"));
+        Assert.assertEquals("cats & dogs", itemCol2.getItemValueString("animals"));
+        Assert.assertFalse(itemCol2.hasItem("d"));
 
         // test full clone
         ItemCollection itemCol3 = null;
