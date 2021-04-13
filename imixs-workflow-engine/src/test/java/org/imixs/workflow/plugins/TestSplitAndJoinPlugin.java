@@ -2,11 +2,13 @@ package org.imixs.workflow.plugins;
 
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
@@ -165,6 +167,73 @@ public class TestSplitAndJoinPlugin {
 		Assert.assertTrue(team.contains("anna"));
 
 	}
+	
+	
+	   /**
+     * Test creation of subprocess
+     * 
+     * @throws ModelException
+     ***/
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateSubProcessWithFile() throws ModelException {
+
+        
+        // add a dummy file
+        byte[] empty = { 0 };
+        FileData fileData=new FileData("test1.txt", empty, "application/xml", null);
+        
+        List<Object> textlist = new ArrayList<Object>();
+        textlist.add("\n\n\n\n hello world");
+        fileData.setAttribute("text", textlist);
+        documentContext.addFileData(fileData);
+        
+        
+        
+        try {
+            documentActivity = workflowMockEnvironment.getModel().getEvent(100, 60);
+            splitAndJoinPlugin.run(documentContext, documentActivity);
+        } catch (PluginException e) {
+
+            e.printStackTrace();
+            Assert.fail();
+        }
+
+        Assert.assertNotNull(documentContext);
+
+        List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+
+        Assert.assertEquals(1, workitemRefList.size());
+
+        String subprocessUniqueid = workitemRefList.get(0);
+
+        // get the subprocess...
+        ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
+
+        // test data in subprocess
+        Assert.assertNotNull(subprocess);
+
+        Assert.assertEquals(100, subprocess.getTaskID());
+
+        logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
+
+        // test if the field namTeam is available
+        List<String> team = subprocess.getItemValue("_sub_Team");
+        Assert.assertEquals(2, team.size());
+        Assert.assertTrue(team.contains("manfred"));
+        Assert.assertTrue(team.contains("anna"));
+        
+        
+        
+        // verify file content....
+        Assert.assertNotNull(subprocess);
+        List<FileData> targetFileList = subprocess.getFileData();
+        Assert.assertEquals(1,targetFileList.size());
+        
+        List<Object> result=(List<Object>) targetFileList.get(0).getAttribute("text");
+        
+        Assert.assertNotNull(result);
+    }
 
 	/**
 	 * Test multi creation of subprocesses
