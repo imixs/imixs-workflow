@@ -191,7 +191,7 @@ public class TestSplitAndJoinPlugin {
         
         
         try {
-            documentActivity = workflowMockEnvironment.getModel().getEvent(100, 60);
+            documentActivity = workflowMockEnvironment.getModel().getEvent(100, 61);
             splitAndJoinPlugin.run(documentContext, documentActivity);
         } catch (PluginException e) {
 
@@ -427,7 +427,6 @@ public class TestSplitAndJoinPlugin {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testCreateSubProcessCopyItemByRegex() throws ModelException {
-
 		try {
 			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 70);
 			splitAndJoinPlugin.run(documentContext, documentActivity);
@@ -436,7 +435,6 @@ public class TestSplitAndJoinPlugin {
 			e.printStackTrace();
 			Assert.fail();
 		}
-
 		Assert.assertNotNull(documentContext);
 
 		// load the new subprocess....
@@ -447,9 +445,7 @@ public class TestSplitAndJoinPlugin {
 
 		Assert.assertEquals("manfred", subprocess.getItemValue("namTeam", String.class));
 		Assert.assertEquals("ronny", subprocess.getItemValue("namcreator", String.class));
-
 		Assert.assertEquals("", subprocess.getItemValueString("$snapshotid"));
-		// ("$snapshotid", "11112222");
 
 		// test the deprecated LIst
 	    List<String> workitemRefListDeprecated = documentContext.getItemValue("txtworkitemref");
