@@ -207,6 +207,33 @@ public class ItemCollection implements Cloneable {
     }
 
     /**
+     * This method makes a deep copy of a single item value from a given source
+     * ItemCollection. The method can be used in cases the item to copy represents a
+     * complex data structure and can not be copied by reference. See also
+     * deepCopyOfMap.
+     * 
+     * @param itemvalue
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public void cloneItem(String itemName, ItemCollection source) {
+        try {
+            List<Object> sourceValue = source.getItemValue(itemName);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            // serialize and pass the object
+            oos.writeObject(sourceValue);
+            oos.flush();
+            ByteArrayInputStream bais = new ByteArrayInputStream(bos.toByteArray());
+            ObjectInputStream ois = new ObjectInputStream(bais);
+            List<Object> copy = (List<Object>) ois.readObject();
+            hash.put(itemName, copy);
+        } catch (IOException | ClassNotFoundException e) {
+            logger.warning("Unable to clone values of Item '" + itemName + "' - " + e);
+        }
+    }
+
+    /**
      * This method compares the values of two item collections by comparing the hash
      * maps. This did not garantie that also embedded arrays are equal.
      */
@@ -1601,10 +1628,10 @@ public class ItemCollection implements Cloneable {
         // test if value is a list and remove null values
         if (itemValue instanceof List) {
             itemValueList = (List<Object>) itemValue;
-            itemValueList.removeAll(Collections.singleton(null));
             // scan List for null values and remove them
+            itemValueList.removeAll(Collections.singleton(null));
+            // scan List for embedded ItemCollection objects
             for (int i = 0; i < itemValueList.size(); i++) {
-                // test if ItemCollection
                 if (itemValueList.get(i) instanceof ItemCollection) {
                     // just warn - do not remove
                     logger.warning("replaceItemValue '" + itemName
@@ -1617,7 +1644,7 @@ public class ItemCollection implements Cloneable {
             itemValueList.add(itemValue);
         }
 
-        // now itemValue is of instance List
+        // now we can be sure the itemValue is an instance of List
         convertItemValue(itemValueList);
         if (!validateItemValue(itemValueList)) {
             String message = "setItemValue failed for item '" + itemName
