@@ -700,8 +700,9 @@ public class WorkflowKernel {
      * @param documentResult
      * @param event
      * @throws PluginException
+     * @throws ModelException 
      */
-    private void executeSignalAdapters(ItemCollection documentResult, ItemCollection event) throws PluginException {
+    private void executeSignalAdapters(ItemCollection documentResult, ItemCollection event) throws PluginException, ModelException {
         boolean debug = logger.isLoggable(Level.FINE);
         if (debug) {
             logger.finest("......executing SignalAdapters...");
@@ -714,14 +715,13 @@ public class WorkflowKernel {
 
                 if (adapter instanceof GenericAdapter) {
                     logger.warning(
-                            "...GenericAdapter '" + adapterClass + "' should not be associated with a Signal Event!");
+                            "...GenericAdapter '" + adapterClass + "' should not be associated with a Signal Event. Adapter will not be executed.");
                     // ...stop execution as the GenericAdapter was already executed by the method
                     // executeGenericAdapters...
                 } else {
                     // execute only instance of signal Adapters...
                     if (adapter instanceof SignalAdapter) {
                         executeAdaper(adapter, documentResult, event);
-
                     } else {
                         throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_ERROR,
                                 "Abstract Adapter '" + adapterClass
@@ -729,8 +729,8 @@ public class WorkflowKernel {
 
                     }
                 }
-            } else {
-                logger.warning("...Adapter '" + adapterClass + "' not registered - verify model!");
+            } else {                
+                throw new ModelException(ModelException.INVALID_MODEL, "...Adapter '" + adapterClass + "' not registered - verify model!");
             }
         }
     }
