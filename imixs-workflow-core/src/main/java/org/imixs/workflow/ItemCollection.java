@@ -54,6 +54,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.imixs.workflow.exceptions.InvalidAccessException;
@@ -150,24 +151,86 @@ public class ItemCollection implements Cloneable {
      * This method clones the current ItemCollection with a subset of items. The
      * method makes a deep copy of the current instance and removes items not
      * defined by the list of itemNames.
+     * <p>
+     * The list of itemNames can contain exact names or a regular expression.
+     * <p>
+     * A itemName can also be mapped into a new itemName by separating the target
+     * name with a | (e.g. name|parentName)
      * 
-     * @param itemNames - list of properties to be copied into the clone
+     * @param itemNames - list of items to be copied into the clone
      * @return new ItemCollection
      */
-    @SuppressWarnings("unchecked")
     public ItemCollection clone(final List<String> itemNames) {
         ItemCollection clone = (ItemCollection) this.clone();
-        // remove all undefined items
+        // remove all undefined items if a list of itemNames is defined.
         if (itemNames != null && itemNames.size() > 0) {
-            Iterator<?> it = hash.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String, List<Object>> entry = (Map.Entry<String, List<Object>>) it.next();
-                if (!itemNames.contains(entry.getKey())) {
-                    clone.removeItem(entry.getKey());
+            // we build a list with all items to be cloned...
+            List<String> cloneItemList = new ArrayList<String>();
+            Set<String> originItemNameList = hash.keySet();
+            for (String itemPattern : itemNames) {
+                // first test an exact match....
+                if (originItemNameList.contains(itemPattern.toLowerCase())) {
+                    cloneItemList.add(itemPattern.toLowerCase());
+                } else {
+
+                    // if we have a | char than copy the item into a new itemname....
+                    // default behavior without reg ex
+                    if (itemPattern.indexOf('|') > -1) {
+                        String targetItemName = itemPattern.substring(itemPattern.indexOf('|') + 1).trim();
+                        String sourceItemName = itemPattern.substring(0, itemPattern.indexOf('|')).trim();
+                        // dose the sourceItemName exist?
+                        if (clone.hasItem(sourceItemName)) {
+                            clone.replaceItemValue(targetItemName, clone.getItemValue(sourceItemName));
+                            cloneItemList.add(targetItemName);
+                            continue;
+                        }
+                    }
+                    // finally we test if field is a reg ex
+                    Pattern pattern = Pattern.compile(itemPattern);
+                    for (String originItemName : originItemNameList) {
+                        if (pattern.matcher(originItemName).find()) {
+                            cloneItemList.add(originItemName);
+                        }
+                    }
+
+                }
+            }
+            // now we have list with all items to be cloned
+            for (String itemName : originItemNameList) {
+                if (!cloneItemList.contains(itemName)) {
+                    // remove not matching items....
+                    clone.removeItem(itemName);
                 }
             }
         }
         return clone;
+    }
+
+    /**
+     * This method makes a deep copy of a single item value from a given source
+     * ItemCollection. The method can be used in cases the item to copy represents a
+     * complex data structure and can not be copied by reference. See also
+     * deepCopyOfMap.
+     * 
+     * @param itemvalue
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public void cloneItem(String itemName, ItemCollection source) {
+        try {
+            List<Object> sourceValue = source.getItemValue(itemName);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            // serialize and pass the object
+            oos.writeObject(sourceValue);
+            oos.flush();
+            ByteArrayInputStream bais = new ByteArrayInputStream(bos.toByteArray());
+            ObjectInputStream ois = new ObjectInputStream(bais);
+            List<Object> copy = (List<Object>) ois.readObject();
+            hash.put(itemName, copy);
+        } catch (IOException | ClassNotFoundException e) {
+            logger.warning("Unable to clone values of Item '" + itemName + "' - " + e);
+        }
     }
 
     /**
@@ -1565,10 +1628,10 @@ public class ItemCollection implements Cloneable {
         // test if value is a list and remove null values
         if (itemValue instanceof List) {
             itemValueList = (List<Object>) itemValue;
-            itemValueList.removeAll(Collections.singleton(null));
             // scan List for null values and remove them
+            itemValueList.removeAll(Collections.singleton(null));
+            // scan List for embedded ItemCollection objects
             for (int i = 0; i < itemValueList.size(); i++) {
-                // test if ItemCollection
                 if (itemValueList.get(i) instanceof ItemCollection) {
                     // just warn - do not remove
                     logger.warning("replaceItemValue '" + itemName
@@ -1581,7 +1644,7 @@ public class ItemCollection implements Cloneable {
             itemValueList.add(itemValue);
         }
 
-        // now itemValue is of instance List
+        // now we can be sure the itemValue is an instance of List
         convertItemValue(itemValueList);
         if (!validateItemValue(itemValueList)) {
             String message = "setItemValue failed for item '" + itemName

@@ -32,12 +32,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Logger;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import org.eclipse.microprofile.health.Health;
+
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
+import org.eclipse.microprofile.health.Liveness;
 
 /**
  * The Imixs HealthCheckService implements the Microservice HealthCheck
@@ -54,7 +56,8 @@ import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
  * @author rsoika
  * @version 1.0
  */
-@Health
+@Liveness
+//@Readiness
 @ApplicationScoped
 public class HealthCheckService implements HealthCheck {
 
@@ -82,6 +85,8 @@ public class HealthCheckService implements HealthCheck {
         int modelCount = 0;
         int groupCount = 0;
         boolean failure = false;
+        boolean databaseFailure = false;
+        boolean indexFailure = false;
         try {
             modelCount = setupService.getModelVersionCount();
             groupCount = setupService.getModelGroupCount();
@@ -91,11 +96,36 @@ public class HealthCheckService implements HealthCheck {
             failure = true;
         }
 
+        // check database and index....
+
+        databaseFailure = !setupService.checkDatabase();
+        indexFailure = !setupService.checkIndex();
+
+        if (databaseFailure || indexFailure) {
+            failure = true;
+        }
+
         if (!failure) {
             builder = HealthCheckResponse.named("imixs-workflow").withData("engine.version", getWorkflowVersion())
-                    .withData("model.versions", modelCount).withData("model.groups", groupCount).up();
+                    .withData("model.versions", modelCount).withData("model.groups", groupCount)
+                    .withData("database.status", "ok").withData("index.status", "ok").up();
         } else {
-            builder = HealthCheckResponse.named("imixs-workflow").down();
+
+            builder = HealthCheckResponse.named("imixs-workflow");
+            // add details
+            if (databaseFailure) {
+                builder.withData("database.status", "failure");
+            } else {
+                builder.withData("database.status", "ok");
+            }
+
+            if (indexFailure) {
+                builder.withData("index.status", "failure");
+            } else {
+                builder.withData("index.status", "ok");
+            }
+
+            builder.down();
         }
 
         return builder.build();

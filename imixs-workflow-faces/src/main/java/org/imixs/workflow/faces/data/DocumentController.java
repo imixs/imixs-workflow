@@ -188,6 +188,12 @@ public class DocumentController extends AbstractDataController implements Serial
         } else {
             logger.warning("Missing CDI support for Event<WorkflowEvent> !");
         }
+        
+        // initialize new ItemCollection
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        String sUser = externalContext.getRemoteUser();
+        data.replaceItemValue("$editor", sUser);
         data = documentService.save(data);
         if (events != null) {
             events.fire(new WorkflowEvent(data, WorkflowEvent.DOCUMENT_AFTER_SAVE));

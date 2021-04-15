@@ -51,8 +51,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
+import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.scheduler.Scheduler;
 import org.imixs.workflow.engine.scheduler.SchedulerService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -118,6 +120,9 @@ public class SetupService {
 
     @Inject
     private DocumentService documentService;
+
+    @Inject
+    private SearchService indexSearchService;
 
     @Inject
     private ModelService modelService;
@@ -195,6 +200,43 @@ public class SetupService {
     }
 
     /**
+     * Check database access
+     * <p>
+     * 
+     * @return true if database access was successful
+     */
+    public boolean checkDatabase() {
+        try {
+            // check database access - with a random uniqueid
+            documentService.load(WorkflowKernel.generateUniqueID());
+            // we do not care about the result - just if the call was sucessful
+        } catch (Exception e) {
+            // database/index failed!
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check database index
+     * <p>
+     * 
+     * @return true if database index access was successful
+     */
+    public boolean checkIndex() {
+        try {
+            // check the index
+            // findStubs...
+            indexSearchService.search("type:workitem", 1, 0, null, null, true);
+            // we do not care about the result - just if the call was successful
+        } catch (Exception e) {
+            // database/index failed!
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * This method loads the default model if no models exist in the current
      * instance
      * 
@@ -203,14 +245,13 @@ public class SetupService {
     public void scanDefaultModels() {
         logger.finest("......scan default models...");
         // test if we have an environment variable or a property value...
-       
+
         if (!modelDefaultData.isPresent() || modelDefaultData.get().isEmpty()) {
             // no model data to scan
             return;
         }
-        
-        String modelData = modelDefaultData.get();
 
+        String modelData = modelDefaultData.get();
 
         String[] modelResources = modelData.split(";");
         for (String modelResource : modelResources) {

@@ -346,7 +346,7 @@ public class WorkflowController extends AbstractDataController implements Serial
                 logger.finest("......[process] '" + getWorkitem().getItemValueString(WorkflowKernel.UNIQUEID)
                         + "' completed in " + (System.currentTimeMillis() - lTotal) + "ms");
             }
-            // Finally we close the converstaion. In case of an exception, the conversation
+            // Finally we close the conversation. In case of an exception, the conversation
             // will stay open
             close();
 

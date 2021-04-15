@@ -238,8 +238,10 @@ public class ModelService implements ModelManager {
                 versions = findVersionsByGroup(workflowGroup);
                 if (!versions.isEmpty()) {
                     String newVersion = versions.get(0);
-                    logger.warning("Deprecated model version: '" + modelVersion + "' -> migrating to '" + newVersion
+                    if (!modelVersion.isEmpty()) {
+                        logger.warning("Deprecated model version: '" + modelVersion + "' -> migrating to '" + newVersion
                             + "',  $workflowgroup: '" + workflowGroup + "', $uniqueid: " + workitem.getUniqueID());
+                    }
                     workitem.replaceItemValue(WorkflowKernel.MODELVERSION, newVersion);
                     model = getModel(newVersion);
                 }
