@@ -86,9 +86,11 @@ import jakarta.ejb.Singleton;
         "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Singleton
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class ModelService implements ModelManager {
 
-    private Map<String, Model> modelStore = null;
+    private ConcurrentHashMap<String, Model> modelStore = null;
+    
     private static Logger logger = Logger.getLogger(ModelService.class.getName());
     @Inject
     private DocumentService documentService;
@@ -526,7 +528,7 @@ public class ModelService implements ModelManager {
     private Map<String, Model> getModelStore() {
         if (modelStore == null) {
             // create store (sorted map)
-            modelStore = new TreeMap<String, Model>();
+            modelStore = new ConcurrentHashMap<String, Model>();
             init();
         }
         return modelStore;

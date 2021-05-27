@@ -31,6 +31,7 @@ package org.imixs.workflow.engine;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -60,6 +61,11 @@ public class ImixsConfigSource implements ConfigSource {
     public static final String NAME = "ImixsConfigSource";
     private Map<String, String> properties = null;
     private static Logger logger = Logger.getLogger(ImixsConfigSource.class.getName());
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return getProperties().keySet();
+    }
 
     @Override
     public int getOrdinal() {
