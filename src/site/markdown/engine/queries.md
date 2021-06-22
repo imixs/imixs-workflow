@@ -81,19 +81,21 @@ To search for a date range, the date has to be formated into
 
 	YYYYMMDD
 	
-The following example searches for documents created between 20020101 and 20030101, inclusive. 
+The following example searches for documents created between Jan 01 2021 and Feb 01 2021, inclusive. 
 
-	$created:[20020101 TO 20030101]
+	$created:[20210101 TO 20210201]
 
 To search for a date time range use:
 
-	YYYYMMDDThh:mm:ss
+	YYYYMMDDhhmmss
 	
 for example:
 
-	$created:[20200101T00:00:00 TO 20201020T03:00:00]
+	$created:[20210130000000 TO 20210130120000]
 
-In java you can format a Date object into the lucene syntax with a Forater object:
+This example selects all documents created between Jan 30 2021 00:00 to Jan 30 2021 12:00
+
+In java you can format a Date object into the lucene syntax with a Formater object:
 
 	SimpleDateFormat luceneFormat = new SimpleDateFormat("yyyyMMdd");
 	String query = "($created:["+luceneFormat.format(fromDate)+ " TO " + luceneFormat.format(toDate) + "])";
