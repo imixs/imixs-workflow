@@ -395,7 +395,7 @@ public class SetupService {
     }
 
     /**
-     * This method migrates the deprecated WorkflowScheduelr configuraiton into the
+     * This method migrates the deprecated WorkflowScheduelr configuration into the
      * new Imixs Scheduler API
      */
     public void migrateWorkflowScheduler() {
