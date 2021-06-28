@@ -309,9 +309,11 @@ public class SchedulerService {
      */
     public void startAllSchedulers() {
         logger.info("...starting Imixs Schedulers....");
-        try {
-            String sQuery = "(type:\"" + SchedulerService.DOCUMENT_TYPE + "\" )";
-            Collection<ItemCollection> col = documentService.find(sQuery, 101, 0);
+        //try {
+            //String sQuery = "(type:\"" + SchedulerService.DOCUMENT_TYPE + "\" )";
+            //Collection<ItemCollection> col = documentService.find(sQuery, 101, 0);
+            // issue #748
+            Collection<ItemCollection> col = documentService.getDocumentsByType(SchedulerService.DOCUMENT_TYPE);
             if (col.size() > 100) {
                 // Issue #568 - we do not support more than 100 jobs in parallel!
                 logger.severe(
@@ -337,9 +339,9 @@ public class SchedulerService {
                     logger.info("...Scheduler Service " + schedulerConfig.getUniqueID() + " is not enabled. ");
                 }
             }
-        } catch (QueryException e1) {
-            e1.printStackTrace();
-        }
+        //} catch (QueryException e1) {
+        //    e1.printStackTrace();
+        //}
     }
 
     /**
