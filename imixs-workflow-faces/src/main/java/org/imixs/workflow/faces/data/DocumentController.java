@@ -31,10 +31,10 @@ package org.imixs.workflow.faces.data;
 import java.io.Serializable;
 import java.util.logging.Logger;
 
-import javax.enterprise.context.ConversationScoped;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.enterprise.context.ConversationScoped;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;

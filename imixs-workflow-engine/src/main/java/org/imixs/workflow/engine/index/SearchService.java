@@ -42,7 +42,7 @@ import jakarta.ejb.Stateless;
  * @version 1.0
  * @author rsoika
  */
-@Stateless
+//@Stateless
 public interface SearchService {
 
     public static final int DEFAULT_MAX_SEARCH_RESULT = 9999; // limiting the

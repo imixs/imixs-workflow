@@ -42,8 +42,8 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.Resource;
-import javax.inject.Inject;
+import jakarta.annotation.Resource;
+import jakarta.inject.Inject;
 import javax.xml.transform.TransformerException;
 
 import jakarta.xml.bind.JAXBContext;

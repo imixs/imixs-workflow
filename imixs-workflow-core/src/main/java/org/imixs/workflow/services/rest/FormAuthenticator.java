@@ -44,7 +44,7 @@ import java.util.logging.Logger;
 
 /**
  * This RequestFilter performs a form based authentication. The filter can be
- * used with a javax.ws.rs.client.Client.
+ * used with a jakarta.ws.rs.client.Client.
  * 
  * @author rsoika
  *

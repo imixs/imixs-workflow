@@ -41,10 +41,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import javax.annotation.Resource;
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RolesAllowed;
-import javax.inject.Inject;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.inject.Inject;
 
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
@@ -58,6 +58,7 @@ import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 
 import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.LocalBean;
 import jakarta.ejb.SessionContext;
 import jakarta.ejb.Singleton;
 
@@ -87,6 +88,7 @@ import jakarta.ejb.Singleton;
         "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Singleton
+@LocalBean
 @ConcurrencyManagement
 //(ConcurrencyManagementType.BEAN)
 public class ModelService implements ModelManager {

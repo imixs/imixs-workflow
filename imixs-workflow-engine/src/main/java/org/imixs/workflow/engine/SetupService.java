@@ -41,12 +41,12 @@ import java.util.Optional;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;

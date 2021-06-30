@@ -52,7 +52,7 @@ import jakarta.ejb.Stateless;
  * @version 1.0
  * @author rsoika
  */
-@Stateless
+//@Stateless
 public interface UpdateService {
 
     // default field lists

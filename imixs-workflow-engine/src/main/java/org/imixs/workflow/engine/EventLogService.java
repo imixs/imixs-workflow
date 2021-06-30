@@ -36,8 +36,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.jpa.EventLog;
@@ -317,7 +317,7 @@ public class EventLogService {
 
     /**
      * Deletes an existing eventLog. The method catches
-     * javax.persistence.OptimisticLockException as this may occur during parallel
+     * jakarta.persistence.OptimisticLockException as this may occur during parallel
      * requests.
      * 
      * @param eventLog
@@ -343,7 +343,7 @@ public class EventLogService {
 
     /**
      * Deletes an existing eventLog by its id. The method catches
-     * javax.persistence.OptimisticLockException as this may occur during parallel
+     * jakarta.persistence.OptimisticLockException as this may occur during parallel
      * requests.
      * 
      * @param eventLog
