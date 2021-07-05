@@ -31,18 +31,14 @@ public class TestRuleEngine {
 	@Test
 	public void testBasicScript() throws ScriptException, PluginException {
 
-		ItemCollection workitem = new ItemCollection();
-		workitem.replaceItemValue("txtName", "Anna");
-		ItemCollection event = new ItemCollection();
-
-		// access single value
-		String script = "var result={}; if (workitem.txtname && workitem.txtname[0]==='Anna') result.numage=50;";
-
-		// run plugin
-		workitem = ruleEngine.evaluateBusinessRule(script, workitem, event);
-		Assert.assertNotNull(workitem);
-
-		Assert.assertEquals(50, workitem.getItemValueInteger("numage"));
+	    ItemCollection workitem = new ItemCollection();
+	    workitem.setItemValue("name", "Anna");
+	    // define a script
+	    String js = "var result={}; if ('Anna' == workitem.getItemValueString('name')) result.colleague='Melman';";
+	    // evaluate the business rule
+	    workitem = ruleEngine.evaluateBusinessRule(js, workitem, null);
+	    Assert.assertNotNull(workitem);
+	    Assert.assertEquals("Melman", workitem.getItemValueString("colleague"));
 	}
 
 	/**
