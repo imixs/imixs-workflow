@@ -28,6 +28,7 @@
 
 package org.imixs.workflow;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -125,6 +126,14 @@ public class RuleEngineNashornConverter {
             return script;
         }
         List<String> itemNames = documentContext.getItemNames();
+
+        // resort the name list by length.
+        // it may happen that two item names start with the name of another item
+        // (e.g. 'team', 'team$approvers') in that case it is important that the longer
+        // item name is checked first!
+        
+        Collections.sort(itemNames, (a, b)->Integer.compare(b.length(), a.length()));
+
         for (String itemName : itemNames) {
 
             String phrase;

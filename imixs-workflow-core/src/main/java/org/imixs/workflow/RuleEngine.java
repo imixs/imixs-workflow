@@ -30,16 +30,15 @@ package org.imixs.workflow;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jakarta.inject.Named;
 
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.PolyglotException;
@@ -47,6 +46,7 @@ import org.graalvm.polyglot.Value;
 import org.imixs.workflow.exceptions.PluginException;
 
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Named;
 
 /**
  * The Imixs RuleEngine is a CDI bean called by the WorkflowKernel to evaluate
@@ -172,7 +172,8 @@ public class RuleEngine {
 
         // Test if we have a deprecated Script...
         if (RuleEngineNashornConverter.isDeprecatedScript(script)) {
-            logger.warning("evaluate deprecated nashorn script");
+            logger.warning("converting deprecated nashorn script");
+            logger.info("Old Script: \n=========================\n" + script + "\n=========================");
             // here we rewrite the script as best as we can.
             script = RuleEngineNashornConverter.rewrite(script, workitem, null);
             logger.info("New Script: \n=========================\n" + script + "\n=========================");
@@ -262,9 +263,7 @@ public class RuleEngine {
      *         variable with the given name exists or the variable has not
      *         properties.
      */
-    @SuppressWarnings({ "rawtypes" })
     public ItemCollection convertResult() {
-        Map mapResult = null;
 
         // do we have a result object?
         Value resultValue = context.getBindings(languageId).getMember("result");
@@ -272,26 +271,38 @@ public class RuleEngine {
             return null;
         }
 
-        // try to convert the result object into a Map
-        try {
-            mapResult = resultValue.as(Map.class);
-        } catch (ClassCastException | IllegalStateException | PolyglotException e) {
-            logger.warning("Unable to convert result object to an ItemCollection");
-            return null;
-        }
-
         // Now build a new ItemCollection form the provided values...
-        // we can not do a deep copy here because of the embedded polyglot value objects
         ItemCollection result = new ItemCollection();
-        Iterator it = mapResult.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
-            String itemName = pair.getKey().toString();
-            Object itemObject = pair.getValue();
-            if (isBasicObjectType(itemObject.getClass())) {
-                result.replaceItemValue(itemName, itemObject);
+        // we can not do a deep copy here because of the embedded polyglot value objects
+        Set<String> memberKeys = resultValue.getMemberKeys();
+        for (String itemName : memberKeys) {
+            Value itemObject = resultValue.getMember(itemName);
+            if (itemObject == null || itemObject.isNull() || itemName == null || itemName.isEmpty()) {
+                continue;
+            }
+
+            if (itemObject.hasArrayElements()) {
+                // build an object array with all values...
+                long arraySize = itemObject.getArraySize();
+                List<Object> arrayValues = new ArrayList<Object>();
+                for (long i = 0; i < arraySize; i++) {
+                    Value arrayValue = itemObject.getArrayElement(i);
+                    Object objectValue = arrayValue.as(Object.class);
+                    if (isBasicObjectType(objectValue.getClass())) {
+                        arrayValues.add(objectValue);
+                    }
+                }
+                // update the value list
+                result.replaceItemValue(itemName, arrayValues);
+            } else {
+                // treat as single basic object type
+                Object objectValue = itemObject.as(Object.class);
+                if (isBasicObjectType(objectValue.getClass())) {
+                    result.replaceItemValue(itemName, objectValue);
+                }
             }
         }
+
         return result;
     }
 

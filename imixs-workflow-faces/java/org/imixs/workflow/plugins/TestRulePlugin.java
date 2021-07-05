@@ -6,9 +6,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.plugins.RulePlugin;
