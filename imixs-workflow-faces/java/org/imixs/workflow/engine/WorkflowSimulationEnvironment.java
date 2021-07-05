@@ -9,7 +9,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.ejb.SessionContext;
+import jakarta.ejb.SessionContext;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
@@ -27,6 +27,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.xml.sax.SAXException;
+       
 
 /**
  * The WorkflowSimulationEnvironment provides a test environment for jUnit

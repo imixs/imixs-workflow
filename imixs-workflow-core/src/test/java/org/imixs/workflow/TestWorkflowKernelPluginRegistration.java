@@ -5,8 +5,6 @@ import static org.mockito.Mockito.when;
 import java.security.Principal;
 import java.util.List;
 
-import javax.ejb.SessionContext;
-
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Assert;
@@ -14,6 +12,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
+
+import jakarta.ejb.SessionContext;
 
 /**
  * Test class for Imixs WorkflowKernel. The test verifies the plugin

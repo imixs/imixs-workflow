@@ -32,23 +32,25 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Resource;
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.ejb.EJBException;
-import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
+
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+
+import jakarta.ejb.EJBException;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.Timer;
 
 /**
  * The AmdinPService provides a mechanism to start long running jobs. Those jobs
@@ -80,9 +82,8 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
  * 
  */
 @DeclareRoles({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
-@Stateless
 @RunAs("org.imixs.ACCESSLEVEL.MANAGERACCESS")
-@LocalBean
+@Stateless
 public class AdminPService {
 
     public static final String JOB_RENAME_USER = "RENAME_USER";
@@ -95,7 +96,7 @@ public class AdminPService {
     SessionContext ctx;
 
     @Resource
-    javax.ejb.TimerService timerService;
+    jakarta.ejb.TimerService timerService;
 
     @Inject
     DocumentService documentService;
@@ -200,7 +201,7 @@ public class AdminPService {
      * @param timer
      */
     @Timeout
-    public void scheduleTimer(javax.ejb.Timer timer) {
+    public void scheduleTimer(jakarta.ejb.Timer timer) {
         String sTimerID = null;
         boolean debug = logger.isLoggable(Level.FINE);
 
@@ -363,7 +364,7 @@ public class AdminPService {
             return null;
 
         for (Object obj : timerService.getTimers()) {
-            Timer timer = (javax.ejb.Timer) obj;
+            Timer timer = (jakarta.ejb.Timer) obj;
             if (timer.getInfo() instanceof String) {
                 String timerid = timer.getInfo().toString();
                 if (id.equals(timerid)) {

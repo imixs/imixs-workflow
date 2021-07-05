@@ -31,8 +31,9 @@ package org.imixs.workflow.faces.util;
 import java.text.Collator;
 import java.util.Comparator;
 import java.util.Locale;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
+
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.SelectItem;
 
 /**
  * Sorts a ArrayList of SelectItems by label

@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
-
+import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
+import org.junit.Assert;
 import org.junit.Test;
 
-import org.junit.Assert;
+import jakarta.xml.bind.JAXBException;
 
 /**
  * Test class write a ItemColleciton into a byte array and reads is via the
@@ -65,8 +65,8 @@ public class TestReadWriteByteArray {
 		itemColSource.replaceItemValue("_mapdata", mapList);
 
 		// add a file
-
-		itemColSource.addFile(empty, "test.txt", null);
+		FileData fileData=new FileData("test.txt",empty,null,null);
+		itemColSource.addFileData(fileData);
 
 		// PHASE II.
 		// write into byte[]
@@ -95,12 +95,14 @@ public class TestReadWriteByteArray {
 			List<String> fileNames = itemColSource.getFileNames();
 			Assert.assertNotNull(fileNames);
 			Assert.assertEquals(1, fileNames.size());
-			Map<String, List<Object>> files = itemColSource.getFiles();
-			Assert.assertNotNull(files);
-			List<Object> testFile = files.get("test.txt");
-			Assert.assertEquals(2, testFile.size());
-			Assert.assertEquals("application/unknown", testFile.get(0).toString());
-			Assert.assertEquals(empty, testFile.get(1));
+			
+			FileData afileData = itemColSource.getFileData("test.txt");
+			Assert.assertNotNull(afileData);
+			
+			
+		
+			Assert.assertEquals("application/unknown",afileData.getContentType());
+			Assert.assertEquals(empty, afileData.getContent());
 
 		} catch (JAXBException | IOException e) {
 			e.printStackTrace();

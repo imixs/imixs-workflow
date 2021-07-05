@@ -29,7 +29,7 @@ public class TestJSONParserWorkitem {
 
 		ItemCollection itemCol = null;
 		try {
-			itemCol = JSONParser.parseWorkitem(inputStream, "UTF-8");
+			itemCol = ImixsJSONParser.parse(inputStream).get(0);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -62,7 +62,7 @@ public class TestJSONParserWorkitem {
 
 		ItemCollection itemCol = null;
 		try {
-			itemCol = JSONParser.parseWorkitem(inputStream, "UTF-8");
+			itemCol =  ImixsJSONParser.parse(inputStream).get(0);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -74,20 +74,21 @@ public class TestJSONParserWorkitem {
 		Assert.assertEquals(100, itemCol.getTaskID());
 	}
 
-	@Test(expected = ParseException.class)
+	@Test()
 	public void testCorrupted() throws ParseException {
 
 		InputStream inputStream = getClass().getResourceAsStream("/json/corrupted.json");
 
 		ItemCollection itemCol = null;
 		try {
-			itemCol = JSONParser.parseWorkitem(inputStream, "UTF-8");
+			itemCol =  ImixsJSONParser.parse(inputStream).get(0);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
+        Assert.assertNotNull(itemCol);
 
-		Assert.assertNull(itemCol);
+		Assert.assertFalse(itemCol.hasItem("worklist"));
 	}
 
 	@Test
@@ -97,7 +98,7 @@ public class TestJSONParserWorkitem {
 
 		ItemCollection itemCol = null;
 		try {
-			itemCol = JSONParser.parseWorkitem(inputStream, "UTF-8");
+			itemCol =  ImixsJSONParser.parse(inputStream).get(0);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 			Assert.fail();

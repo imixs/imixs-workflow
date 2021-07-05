@@ -30,7 +30,8 @@ package org.imixs.workflow.xml;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import javax.xml.bind.annotation.XmlRootElement;
+
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  * The XMLitemCollection is a basic serializable representation of a pojo to map

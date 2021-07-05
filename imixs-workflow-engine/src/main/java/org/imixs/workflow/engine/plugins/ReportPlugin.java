@@ -32,8 +32,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.StringWriter;
 import java.util.logging.Logger;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
@@ -65,7 +65,6 @@ import org.imixs.workflow.xml.XSLHandler;
  * @author Ralph Soika
  * @version 2.0
  */
-
 public class ReportPlugin extends AbstractPlugin {
 
     public static final String INVALID_CONTEXT = "INVALID_CONTEXT";

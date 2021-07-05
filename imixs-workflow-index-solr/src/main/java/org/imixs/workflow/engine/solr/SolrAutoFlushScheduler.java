@@ -30,16 +30,18 @@ package org.imixs.workflow.engine.solr;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.ejb.LocalBean;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
-import javax.inject.Inject;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
+import jakarta.inject.Inject;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
 
 /**
  * The SolrAutoFlushScheduler starts a ManagedScheduledExecutorService to flush
@@ -67,7 +69,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @RunAs("org.imixs.ACCESSLEVEL.MANAGERACCESS")
 @Startup
 @Singleton
-@LocalBean
 public class SolrAutoFlushScheduler {
 
     public static final String SOLR_AUTOFLUSH_DISABLED = "solr.autoflush.disabled";

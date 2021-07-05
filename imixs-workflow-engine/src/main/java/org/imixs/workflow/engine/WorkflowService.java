@@ -42,18 +42,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.Resource;
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.enterprise.event.Event;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
+
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+
 import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
@@ -69,6 +66,12 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.QueryException;
+
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * The WorkflowService is the Java EE Implementation for the Imixs Workflow Core
@@ -126,7 +129,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
     @Resource
     SessionContext ctx;
-
+   
     @Inject
     protected Event<ProcessingEvent> processingEvents;
 
@@ -134,6 +137,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
     protected Event<TextEvent> textEvents;
 
     private static Logger logger = Logger.getLogger(WorkflowService.class.getName());
+
+    
+    
+    
+    public WorkflowService() {
+        super();
+    }
 
     /**
      * This method loads a Workitem with the corresponding uniqueid.

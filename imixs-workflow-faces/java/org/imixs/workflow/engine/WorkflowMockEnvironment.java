@@ -14,8 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.ejb.SessionContext;
 import javax.xml.parsers.ParserConfigurationException;
+
+import jakarta.ejb.SessionContext;
+
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
@@ -36,6 +38,7 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.xml.sax.SAXException;
+
 
 /**
  * The WorkflowMockEnvironment provides a mocked database environment for jUnit
@@ -336,7 +339,7 @@ public class WorkflowMockEnvironment {
 
                 this.modelService.addModel(model);
                 logger.fine("...loadModel processing time=" + (System.currentTimeMillis() - lLoadTime) + "ms");
-            } catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e) {
+            } catch (ModelException | ParseException | ParserConfigurationException | IOException | SAXException e) {
                 e.printStackTrace();
             }
 

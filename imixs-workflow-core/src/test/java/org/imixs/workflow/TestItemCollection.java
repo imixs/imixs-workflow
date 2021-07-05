@@ -195,8 +195,8 @@ public class TestItemCollection {
 
         itemCollection1.replaceItemValue("txtName", "Manfred");
         itemCollection2.replaceItemValue("txtname", "Manfred");
-        itemCollection1.replaceItemValue("numID", new Integer(20));
-        itemCollection2.replaceItemValue("numID", new Integer(20));
+        itemCollection1.replaceItemValue("numID", Integer.valueOf(20));
+        itemCollection2.replaceItemValue("numID", Integer.valueOf(20));
 
         Assert.assertEquals(itemCollection1, itemCollection2);
         Assert.assertNotSame(itemCollection1, itemCollection2);
@@ -207,7 +207,7 @@ public class TestItemCollection {
 
         Assert.assertFalse(itemCollection1.equals(itemCollection2));
         itemCollection2.replaceItemValue("txtname", "Manfred");
-        itemCollection2.replaceItemValue("numID", new Integer(21));
+        itemCollection2.replaceItemValue("numID", Integer.valueOf(21));
         Assert.assertFalse(itemCollection1.equals(itemCollection2));
         Assert.assertNotSame(itemCollection1, itemCollection2);
 
@@ -225,7 +225,7 @@ public class TestItemCollection {
         ItemCollection itemCollection2 = new ItemCollection();
 
         itemCollection1.replaceItemValue("txtName", "Manfred");
-        itemCollection1.replaceItemValue("numID", new Integer(20));
+        itemCollection1.replaceItemValue("numID",Integer.valueOf(20));
 
         // copy values
         itemCollection2.replaceAllItems(itemCollection1.getAllItems());
@@ -252,7 +252,7 @@ public class TestItemCollection {
         ItemCollection itemCollection2 = new ItemCollection();
 
         itemCollection1.replaceItemValue("txtName", "Manfred");
-        itemCollection1.replaceItemValue("numID", new Integer(20));
+        itemCollection1.replaceItemValue("numID", Integer.valueOf(20));
 
         // copy values
         itemCollection2.copy(itemCollection1);
@@ -279,7 +279,7 @@ public class TestItemCollection {
 
         ItemCollection itemCollection1 = new ItemCollection();
         itemCollection1.replaceItemValue("txtName", "Manfred");
-        itemCollection1.replaceItemValue("numID", new Integer(20));
+        itemCollection1.replaceItemValue("numID", Integer.valueOf(20));
 
         ItemCollection itemCollection2 = new ItemCollection(itemCollection1);
 
@@ -306,10 +306,10 @@ public class TestItemCollection {
         ItemCollection child1 = new ItemCollection();
 
         itemCollection1.replaceItemValue("txtName", "Manfred");
-        itemCollection1.replaceItemValue("numID", new Integer(20));
+        itemCollection1.replaceItemValue("numID", Integer.valueOf(20));
 
         child1.replaceItemValue("txtName", "Thor");
-        child1.replaceItemValue("numID", new Integer(2));
+        child1.replaceItemValue("numID", Integer.valueOf(2));
 
         try {
             itemCollection1.replaceItemValue("child", XMLDocumentAdapter.getDocument(child1));
@@ -330,7 +330,7 @@ public class TestItemCollection {
         Assert.assertEquals(2, testChild.getItemValueInteger("numID"));
 
         // manipulate child1 and repeat the test!
-        child1.replaceItemValue("numID", new Integer(3));
+        child1.replaceItemValue("numID", Integer.valueOf(3));
         Assert.assertEquals(itemCollection1, itemCollection2);
         Assert.assertNotSame(itemCollection1, itemCollection2);
 
@@ -370,12 +370,12 @@ public class TestItemCollection {
         ItemCollection child2 = new ItemCollection();
 
         itemCollection1.replaceItemValue("txtName", "Manfred");
-        itemCollection1.replaceItemValue("numID", new Integer(20));
+        itemCollection1.replaceItemValue("numID", Integer.valueOf(20));
 
         child1.replaceItemValue("txtName", "Thor");
-        child1.replaceItemValue("numID", new Integer(2));
+        child1.replaceItemValue("numID", Integer.valueOf(2));
         child2.replaceItemValue("txtName", "Ilias");
-        child2.replaceItemValue("numID", new Integer(3));
+        child2.replaceItemValue("numID", Integer.valueOf(3));
         List childs = new ArrayList<>();
         try {
             childs.add(XMLDocumentAdapter.getDocument(child1));
@@ -433,10 +433,10 @@ public class TestItemCollection {
         Map child1 = new HashMap();
 
         itemCollection1.replaceItemValue("txtName", "Manfred");
-        itemCollection1.replaceItemValue("numID", new Integer(20));
+        itemCollection1.replaceItemValue("numID", Integer.valueOf(20));
 
         child1.put("txtName", "Thor");
-        child1.put("numID", new Integer(2));
+        child1.put("numID", Integer.valueOf(2));
 
         itemCollection1.replaceItemValue("child", child1);
 
@@ -448,7 +448,7 @@ public class TestItemCollection {
         Assert.assertEquals(2, testChild.get("numID"));
 
         // manipulate child1 and repeat the test!
-        child1.put("numID", new Integer(3));
+        child1.put("numID", Integer.valueOf(3));
         Assert.assertFalse(itemCollection1.equals(itemCollection2));
         Assert.assertNotSame(itemCollection1, itemCollection2);
 
@@ -1003,7 +1003,7 @@ public class TestItemCollection {
 
         ItemCollection itemCol = new ItemCollection();
         itemCol.setItemValue("txtname", "hello");
-        itemCol.setItemValue("numage", new Long(7));
+        itemCol.setItemValue("numage", Long.valueOf(7));
 
         // test int values....
         long l1 = itemCol.getItemValue("numage", Long.class);
@@ -1111,7 +1111,7 @@ public class TestItemCollection {
         ItemCollection itemCol = new ItemCollection();
         itemCol.setItemValue("txtname", "hello");
         itemCol.appendItemValue("txtname", "world");
-        itemCol.appendItemValue("txtname", new Integer(47));
+        itemCol.appendItemValue("txtname", Integer.valueOf(47));
 
         // test String list...
         List<String> slist = itemCol.getItemValueList("txtname", String.class);
@@ -1123,16 +1123,16 @@ public class TestItemCollection {
         // test int list
         List<Integer> integerlist = itemCol.getItemValueList("txtname", Integer.class);
         Assert.assertEquals(3, integerlist.size());
-        Assert.assertEquals(new Integer(0), integerlist.get(0));
-        Assert.assertEquals(new Integer(0), integerlist.get(1));
-        Assert.assertEquals(new Integer(47), integerlist.get(2));
+        Assert.assertEquals(Integer.valueOf(0), integerlist.get(0));
+        Assert.assertEquals(Integer.valueOf(0), integerlist.get(1));
+        Assert.assertEquals(Integer.valueOf(47), integerlist.get(2));
 
         // test int list
         List<Integer> intlist = itemCol.getItemValueList("txtname", int.class);
         Assert.assertEquals(3, intlist.size());
-        Assert.assertEquals(new Integer(0), intlist.get(0));
-        Assert.assertEquals(new Integer(0), intlist.get(1));
-        Assert.assertEquals(new Integer(47), intlist.get(2));
+        Assert.assertEquals(Integer.valueOf(0), intlist.get(0));
+        Assert.assertEquals(Integer.valueOf(0), intlist.get(1));
+        Assert.assertEquals(Integer.valueOf(47), intlist.get(2));
 
     }
 
@@ -1156,7 +1156,7 @@ public class TestItemCollection {
     public void testGetItemValueListNonConvertable() {
         ItemCollection itemCol = new ItemCollection();
         itemCol.setItemValue("txtname", "hello");
-        itemCol.appendItemValue("txtname", new Integer(47));
+        itemCol.appendItemValue("txtname", Integer.valueOf(47));
         Map<String, String> map = new HashMap<String, String>();
         map.put("_subject", "some data");
         itemCol.appendItemValue("txtname", map);
@@ -1171,16 +1171,16 @@ public class TestItemCollection {
         // test int list
         List<Integer> integerlist = itemCol.getItemValueList("txtname", Integer.class);
         Assert.assertEquals(3, integerlist.size());
-        Assert.assertEquals(new Integer(0), integerlist.get(0));
-        Assert.assertEquals(new Integer(47), integerlist.get(1));
-        Assert.assertEquals(new Integer(0), integerlist.get(2));
+        Assert.assertEquals(Integer.valueOf(0), integerlist.get(0));
+        Assert.assertEquals(Integer.valueOf(47), integerlist.get(1));
+        Assert.assertEquals(Integer.valueOf(0), integerlist.get(2));
 
         // test int list
         List<Integer> intlist = itemCol.getItemValueList("txtname", int.class);
         Assert.assertEquals(3, intlist.size());
-        Assert.assertEquals(new Integer(0), intlist.get(0));
-        Assert.assertEquals(new Integer(47), intlist.get(1));
-        Assert.assertEquals(new Integer(0), intlist.get(2));
+        Assert.assertEquals(Integer.valueOf(0), intlist.get(0));
+        Assert.assertEquals(Integer.valueOf(47), intlist.get(1));
+        Assert.assertEquals(Integer.valueOf(0), intlist.get(2));
 
     }
 

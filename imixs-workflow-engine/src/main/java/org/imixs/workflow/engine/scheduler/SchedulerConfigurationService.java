@@ -29,17 +29,19 @@
 package org.imixs.workflow.engine.scheduler;
 
 import java.util.logging.Logger;
-import javax.annotation.Resource;
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.inject.Inject;
+
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
+import jakarta.inject.Inject;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
+
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * This SchedulerSaveService is used to save configurations in a new
@@ -50,10 +52,9 @@ import org.imixs.workflow.engine.DocumentService;
  * @author rsoika
  * @version 1.0
  */
-@Stateless
-@LocalBean
 @DeclareRoles({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @RunAs("org.imixs.ACCESSLEVEL.MANAGERACCESS")
+@Stateless
 public class SchedulerConfigurationService {
 
     @Resource

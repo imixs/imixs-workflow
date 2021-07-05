@@ -41,15 +41,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import javax.annotation.Resource;
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Singleton;
-import javax.inject.Inject;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.inject.Inject;
 
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
@@ -61,6 +56,11 @@ import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
+
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Singleton;
 
 /**
  * The ModelManager is independent form the IX JEE Entity EJBs and uses the
@@ -89,7 +89,8 @@ import org.imixs.workflow.exceptions.ModelException;
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Singleton
 @LocalBean
-@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+@ConcurrencyManagement
+//(ConcurrencyManagementType.BEAN)
 public class ModelService implements ModelManager {
 
     private ConcurrentHashMap<String, Model> modelStore = null;

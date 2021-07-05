@@ -34,11 +34,13 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import javax.json.Json;
-import javax.json.stream.JsonLocation;
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
+
 import org.imixs.workflow.ItemCollection;
+
+import jakarta.json.Json;
+import jakarta.json.stream.JsonLocation;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParser.Event;
 
 /**
  * The ImixsJSONParser is an utility class to parse JSON structures of Imixs
@@ -291,10 +293,10 @@ public class ImixsJSONParser {
                         value = Long.parseLong(stringValue);
                     }
                     if ("xs:float".equalsIgnoreCase(type)) {
-                        value = new Float(stringValue);
+                        value = Float.valueOf(stringValue);
                     }
                     if ("xs:double".equalsIgnoreCase(type)) {
-                        value = new Double(stringValue);
+                        value = Double.valueOf(stringValue);
                     }
                     // default to string
                     if (value == null) {

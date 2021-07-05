@@ -30,19 +30,20 @@ package org.imixs.workflow.engine;
 
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.ejb.LocalBean;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
+import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerConfig;
+import jakarta.ejb.TimerService;
 
 /**
  * The AsyncEventScheduler starts a scheduler service to process async events in
@@ -67,7 +68,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @RunAs("org.imixs.ACCESSLEVEL.MANAGERACCESS")
 @Startup
 @Singleton
-@LocalBean
 public class AsyncEventScheduler {
 
     public static final String ASYNCEVENT_PROCESSOR_ENABLED = "asyncevent.processor.enabled";
@@ -100,7 +100,7 @@ public class AsyncEventScheduler {
     private static Logger logger = Logger.getLogger(AsyncEventScheduler.class.getName());
 
     @Resource
-    javax.ejb.TimerService timerService;
+    TimerService timerService;
 
     @Inject
     AsyncEventService asyncEventService;

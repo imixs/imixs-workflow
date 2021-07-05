@@ -59,11 +59,11 @@ public class TestWorkflowServiceGateways {
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 
 		// test none condition ...
-		workitem.setTaskID(1000);
-		workitem.setEventID(10);
-		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
-		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
-		Assert.assertEquals(1000, workitem.getTaskID());
+//		workitem.setTaskID(1000);
+//		workitem.setEventID(10);
+//		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
+//		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
+//		Assert.assertEquals(1000, workitem.getTaskID());
 
 		// test _budget<100
 		workitem.setTaskID(1000);
@@ -81,53 +81,6 @@ public class TestWorkflowServiceGateways {
 
 	}
 
-	
-	/**
-     * This test tests the conditional event gateways with a default condition....
-     * 
-     * @throws ProcessingErrorException
-     * @throws AccessDeniedException
-     * @throws ModelException
-     * @throws AdapterException 
-     * 
-     */
-    @Test
-    public void testConditionalDefaultEvent()
-            throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
-
-        workflowMockEnvironment.loadModel("/bpmn/conditional_default_event.bpmn");
-
-        // load test workitem
-        ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
-        workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
-
-    
-        // test _budget<100
-        workitem.setTaskID(1000);
-        workitem.replaceItemValue("_budget", 99);
-        workitem.setEventID(10);
-        workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
-        Assert.assertEquals(1200, workitem.getTaskID());
-
-        // test _budget>100
-        workitem.setTaskID(1000);
-        workitem.replaceItemValue("_budget", 9999);
-        workitem.setEventID(10);
-        workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
-        Assert.assertEquals(1300, workitem.getTaskID());
-        
-        
-        // test withou any budget
-        workitem.setTaskID(1000);
-        workitem.removeItem("_budget");
-        workitem.setEventID(10);
-        workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
-        Assert.assertEquals(1100, workitem.getTaskID());
-
-    }
-
-    
-    
 	/**
 	 * This test tests the conditional event gateways....
 	 * 
