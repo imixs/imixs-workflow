@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.imixs.workflow</groupId>
 		<artifactId>imixs-workflow</artifactId>
-		<version>6.0.0</version>
+		<version>6.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>imixs-workflow-index-lucene</artifactId>
 	<name>Search Index Apache Lucene</name>
