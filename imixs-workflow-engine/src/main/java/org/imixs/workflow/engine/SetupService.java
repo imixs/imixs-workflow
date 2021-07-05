@@ -148,7 +148,7 @@ public class SetupService {
         logger.info("   ____      _");
         logger.info("  /  _/_ _  (_)_ __ ___   Workflow");
         logger.info(" _/ //  ' \\/ /\\ \\ /(_-<   Engine");
-        logger.info("/___/_/_/_/_//_\\_\\/___/   V5.2");
+        logger.info("/___/_/_/_/_//_\\_\\/___/   V6.0");
         logger.info("");
 
         logger.info("...initalizing models...");
