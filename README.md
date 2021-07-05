@@ -13,6 +13,12 @@ To follow us, please join GitHub by [creating an account](https://github.com/joi
 
 You will find more detailed information how to work with Imixs-Workflow on the [Project Home](http://www.imixs.org). 
 
+<img src="jakarta_ee_logo.png" alt="Jakarta EE 9"  width="240"/>
+
+**Imixs-Worflow has full Jakarta EE 9 support!**  This means you can run Imixs-Workflow on every modern application server supporting Jakarata EE 9. 
+
+If you want to run Imixs-Workflow on Jakarta EE 8 you can use version 5.2. This version is still fully supported!
+
 ## Imixs-BPMN
 Imixs-BPMN is an Eclipse modeling tool to design a business process based on the BPMN 2.0 standard. These models can be executed by the Imixs-Workflow engine. 
 
