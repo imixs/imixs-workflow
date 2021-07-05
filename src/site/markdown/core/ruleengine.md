@@ -41,7 +41,7 @@ The BPMN RuleEngine is based on the _Imixs Core Rule Engine_ which is explained 
 
 The Core RuleEngine evaluates business rules based on the build-in Java Script Engine.
   
-A business rule can be written in any script language supported by the JVM. The RuleEngine can be used in a BPMN event to evaluate business rules based on a Script Language. See the [Imixs RulePlugin](../engine/plugins/ruleplugin.html) for more details.
+A business rule can be written in any script language supported by the GraalVM. The RuleEngine can be used in a BPMN event to evaluate business rules based on a Script Language. See the [Imixs RulePlugin](../engine/plugins/ruleplugin.html) for more details.
 
 The RuleEngine provides different methods to access item values from a given current workItem. 
  
@@ -60,7 +60,7 @@ The method _evaluateBusinessRule_ evaluates the business rule defined by the pro
  
 ### evaluateJsonByScript 
  
-Th method _evaluateJsonByScript_ converts a JSON String into a JavaScript JSON Object and
+The method _evaluateJsonByScript_ converts a JSON String into a JavaScript JSON Object and
 evaluates a script.
 
 The JSON Object is set as a input variable named 'data' so that the script can access the json structure in an easy way.
@@ -84,7 +84,7 @@ The method _evaluateBooleanExpression_ evaluates a boolean expression. The metho
 	ItemCollection workitem = new ItemCollection();
 	workitem.replaceItemValue("_budget", 1000);
 
-	boolean result = ruleEngine.evaluateBooleanExpression("(workitem._budget && workitem._budget[0]>100)", workitem);
+	boolean result = ruleEngine.evaluateBooleanExpression("(workitem.getItemValueDouble('_budget')>100)", workitem);
 	Assert.assertTrue(result);
 
 All kind of rules can also be evaluated in [conditional events](../modelling/howto.html#Conditional_Events).

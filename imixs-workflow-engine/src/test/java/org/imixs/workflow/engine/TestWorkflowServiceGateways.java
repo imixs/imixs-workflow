@@ -117,7 +117,7 @@ public class TestWorkflowServiceGateways {
         Assert.assertEquals(1300, workitem.getTaskID());
         
         
-        // test withou any budget
+        // test without any budget
         workitem.setTaskID(1000);
         workitem.removeItem("_budget");
         workitem.setEventID(10);

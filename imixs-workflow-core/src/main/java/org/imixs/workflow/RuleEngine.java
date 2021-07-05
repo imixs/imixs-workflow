@@ -188,7 +188,11 @@ public class RuleEngine {
                     "BusinessRule contains invalid script:" + e.getMessage(), e);
         }
 
-        return result.asBoolean();
+        if (result.isBoolean()) {
+            return result.asBoolean();
+        } else {
+            return false;
+        }
     }
 
     /**

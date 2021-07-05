@@ -47,7 +47,7 @@ public class TestRulePlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// set a business rule
-		String script = "var a=1;var b=2;var test = ((a<b) && 'Anna'==workitem.get('txtname')[0]);";
+		String script = "var result={}; var a=1;var b=2;result.isValid = ((a<b) && 'Anna'==workitem.get('txtname')[0]);";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -231,7 +231,7 @@ public class TestRulePlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// set a business rule
-		String script = "var a=1.0;var b=2;var followUp =a+b;";
+		String script = "var result={}; var a=1.0;var b=2;result.followUp =a+b;";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -264,11 +264,11 @@ public class TestRulePlugin {
 
 		// set a business rule
 		// workitem.get(refField1)[0])
-		String script = " var followUp=null;" + " if (workitem._amount_brutto[0]>5000)" + "    followUp=90;";
+		String script = " var result={}; result.followUp=null;" + " if (workitem._amount_brutto[0]>5000)" + "    result.followUp=90;";
 		System.out.println("Script=" + script);
 
 		ItemCollection adocumentContext = new ItemCollection();
-		adocumentContext.replaceItemValue("_amount_brutto", new Double(6000));
+		adocumentContext.replaceItemValue("_amount_brutto",  Double.valueOf(6000));
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -288,7 +288,7 @@ public class TestRulePlugin {
 		 */
 
 		adocumentContext = new ItemCollection();
-		adocumentContext.replaceItemValue("_amount_brutto", new Double(3000));
+		adocumentContext.replaceItemValue("_amount_brutto",  Double.valueOf(3000));
 		adocumentActivity = new ItemCollection();
 
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -457,7 +457,8 @@ public class TestRulePlugin {
 		adocumentActivity.replaceItemValue("keyMailEnabled", "1");
 
 		// set a business rule
-		String script = "var isValid =event.keymailenabled[0]=='1'; event.keymailenabled='0';";
+		//String script = "var result={}; result.isValid =event.keymailenabled[0]=='1'; event.keymailenabled='0';";
+		String script = "var result={}; result.isValid =event.keymailenabled[0]=='1'; event.setItemValue('keymailenabled','0');";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -514,7 +515,7 @@ public class TestRulePlugin {
 
 		// set a business rule
 		// String script = "var isValid = 1000==workitem.get('$processid')[0];";
-		String script = "var isValid =  1000==workitem.get('$processid')[0];";
+		String script = "var result={}; result.isValid =  1000==workitem.get('$processid')[0];";
 
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
@@ -539,9 +540,9 @@ public class TestRulePlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		// 2) test true case
-		String script = " var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " var isValid=true;"
-				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     isValid=false;"
-				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
+		String script = "var result={}; var refField1=\"_contact\";" + " var refField2=\"datdate\";" + "  result.isValid=true;"
+				+ " if (   ( workitem.get(refField2) == null)   ) {" + "    result.isValid=false;"
+				+ "      result.errorMessage='1) Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
@@ -555,9 +556,9 @@ public class TestRulePlugin {
 		// 2) test false case
 		adocumentContext = new ItemCollection();
 		adocumentActivity = new ItemCollection();
-		script = " var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " var isValid=true;"
-				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     isValid=false;"
-				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
+		script = "var result={}; var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " result.isValid=true;"
+				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     result.isValid=false;"
+				+ "      result.errorMessage='2) Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
 		System.out.println("Script=" + script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
@@ -580,16 +581,16 @@ public class TestRulePlugin {
 		adocumentContext.replaceItemValue("datDate", cal);
 		adocumentActivity = new ItemCollection();
 
-		// 2a) test true case
-		script = " var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " var isValid=true;"
-				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     isValid=false;"
-				+ "     var errorMessage='Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
-		System.out.println("Script=" + script);
-		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
+		   // 2a) test true case
+        script = "var result={}; var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " result.isValid=true;"
+                + " if (   ( workitem.get(refField2) == null)   ) {" + "     result.isValid=false;"
+                + "     result.errorMessage='3) Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
+        System.out.println("Script=" + script);
+        adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
-		// run plugin
-		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+        // run plugin
+        adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
+        Assert.assertNotNull(adocumentContext);
 
 	}
 
@@ -697,9 +698,9 @@ public class TestRulePlugin {
 
 		System.out.println("testUndefineErroCode - test case 1:");
 		// 2) test undefined case
-		String script = " var isValid=true;" + " var errorCode,errorMessage;" + "refField='_contact';"
-				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {" + "     isValid=false;"
-				+ "     errorMessage='Please enter subject';" + " }";
+		String script = " var result={}; result.isValid=true;" + " var errorCode,errorMessage;" + "refField='_contact';"
+				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {" + "     result.isValid=false;"
+				+ "     result.errorMessage='Please enter subject';" + " }";
 
 		adocumentActivity.replaceItemValue("txtBusinessRule", script);
 
@@ -723,9 +724,9 @@ public class TestRulePlugin {
 
 		// test the same case if errorCode is defined
 		// 2) test true case
-		script = " var isValid=true;" + " var errorCode,errorMessage;" + "refField='_contact';"
-				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {" + "     isValid=false;"
-				+ "     errorCode='SOME_ERROR';" + " }";
+		script = " var result={}; result.isValid=true;" + " var errorCode,errorMessage;" + "refField='_contact';"
+				+ "if ( workitem.get(refField) == null || workitem.get(refField)[0] == ''  ) {" + "     result.isValid=false;"
+				+ "     result.errorCode='SOME_ERROR';" + " }";
 
 		adocumentActivity.replaceItemValue("txtBusinessRule", script);
 
