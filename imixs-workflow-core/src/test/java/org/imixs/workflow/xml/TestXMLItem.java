@@ -240,7 +240,7 @@ public class TestXMLItem {
 		xmlItem.setName("maps");
 
 		Date date = new Date();
-		Double _double1=new Double(1.47);
+		Double _double1= Double.valueOf(1.47);
 		
 		
 		List<Map<String, Object>> commentList = new ArrayList<>();

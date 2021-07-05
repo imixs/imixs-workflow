@@ -51,7 +51,7 @@ public class TestJSONBuilder {
 		workitem.setItemValue("$readaccess", "Anna");
 
 		workitem.setItemValue("count", 42);
-		workitem.setItemValue("amount", new Double(100.99));
+		workitem.setItemValue("amount", Double.valueOf(100.99));
 		workitem.appendItemValue("txtlog", "A");
 		workitem.appendItemValue("txtlog", "B");
 		workitem.appendItemValue("txtlog", "C");
@@ -69,9 +69,9 @@ public class TestJSONBuilder {
 		// now convert the json string back using the Imixs JSONParser
 		InputStream jsonStream = new ByteArrayInputStream(jsonResult.getBytes());
 		try { 
-			ItemCollection testItemCol = JSONParser.parseWorkitem(jsonStream, "UTF-8");
-			Assert.assertNotNull(testItemCol);
-
+			List<ItemCollection> testItemColList = ImixsJSONParser.parse(jsonStream);
+			Assert.assertNotNull(testItemColList);
+			ItemCollection testItemCol = testItemColList.get(0);
 			// convert data....
 			Assert.assertEquals(workitem.getItemValueBoolean("$isauthor"),
 					testItemCol.getItemValueBoolean("$isauthor"));

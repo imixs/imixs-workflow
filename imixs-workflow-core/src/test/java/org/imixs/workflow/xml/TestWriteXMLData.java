@@ -11,6 +11,7 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 
+import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.junit.Test;
 
@@ -84,7 +85,7 @@ public class TestWriteXMLData {
 
 		// add a file
 
-		itemColSource.addFile(empty, "test.txt", null);
+		itemColSource.addFileData(new FileData("test.txt", empty,  null,null));
 
 		// PHASE II.
 		// write the write-example.xml....
@@ -136,16 +137,10 @@ public class TestWriteXMLData {
 					resultItemCollection.getItemValue("_listdata"));
 			Assert.assertEquals(itemColSource.getItemValue("_mapdata"), resultItemCollection.getItemValue("_mapdata"));
 
-			List<String> fileNames = itemColSource.getFileNames();
-			Assert.assertNotNull(fileNames);
-			Assert.assertEquals(1, fileNames.size());
-			Map<String, List<Object>> files = itemColSource.getFiles();
-
-			Assert.assertNotNull(files);
-			List<Object> testFile = files.get("test.txt");
-			Assert.assertEquals(2, testFile.size());
-			Assert.assertEquals("application/unknown", testFile.get(0).toString());
-			Assert.assertEquals(empty, testFile.get(1));
+			FileData afileData = itemColSource.getFileData("test.txt");
+			Assert.assertNotNull(afileData);
+			Assert.assertEquals("application/unknown",afileData.getContentType());
+			Assert.assertEquals(empty,afileData.getContent());
 
 		} catch (JAXBException e) {
 			e.printStackTrace();

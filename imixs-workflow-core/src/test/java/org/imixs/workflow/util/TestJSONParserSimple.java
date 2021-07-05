@@ -39,9 +39,9 @@ public class TestJSONParserSimple {
 		InputStream responseDataStream = new ByteArrayInputStream(json.getBytes());
 		ItemCollection resultWorkitem;
 		try {
-			resultWorkitem = JSONParser.parseWorkitem(responseDataStream, "UTF-8");
+			resultWorkitem = ImixsJSONParser.parse(responseDataStream).get(0);
 			
-			Assert.assertEquals(new Float(199.99), resultWorkitem.getItemValueFloat("price"),0);
+			Assert.assertEquals( Float.valueOf(199.99f), resultWorkitem.getItemValueFloat("price"),0);
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -239,7 +239,7 @@ public class TestXMLItemCollectionAdapter {
 		long[] valueArray2 = { 1, 2, 3 };
 		itemColSource.replaceItemValue("_longArrayData", valueArray2);
 
-		Long[] valueArray3 = { new Long(1), new Long(2), new Long(3) };
+		Long[] valueArray3 = {Long.valueOf(1), Long.valueOf(2), Long.valueOf(3) };
 		itemColSource.replaceItemValue("_longObjectArrayData", valueArray3);
 
 		XMLDocument xmlItemCollection = null;
@@ -277,9 +277,9 @@ public class TestXMLItemCollectionAdapter {
 		Assert.assertEquals(1, listOfList.size());
 		Long[] resultLongObjectArray = (Long[]) listOfList.get(0);
 		Assert.assertNotNull(resultStringArray);
-		Assert.assertEquals(new Long(1), resultLongObjectArray[0]);
-		Assert.assertEquals(new Long(2), resultLongObjectArray[1]);
-		Assert.assertEquals(new Long(3), resultLongObjectArray[2]);
+		Assert.assertEquals(Long.valueOf(1), resultLongObjectArray[0]);
+		Assert.assertEquals(Long.valueOf(2), resultLongObjectArray[1]);
+		Assert.assertEquals(Long.valueOf(3), resultLongObjectArray[2]);
 
 	}
 	
@@ -295,7 +295,7 @@ public class TestXMLItemCollectionAdapter {
 		ItemCollection itemColSource = new ItemCollection();
 		itemColSource.replaceItemValue("txtTitel", "Hello");
 
-		Object[] valueArray1 = { "ABC", 4, new Long(5) };
+		Object[] valueArray1 = { "ABC", 4, Long.valueOf(5) };
 		itemColSource.replaceItemValue("_mixedArrayData", valueArray1);
 
 		XMLDocument xmlItemCollection = null;
@@ -317,7 +317,7 @@ public class TestXMLItemCollectionAdapter {
 		Assert.assertNotNull(resultStringArray);
 		Assert.assertEquals("ABC", resultStringArray[0]);
 		Assert.assertEquals(4, resultStringArray[1]);
-		Assert.assertEquals(new Long(5), resultStringArray[2]);
+		Assert.assertEquals(Long.valueOf(5), resultStringArray[2]);
 
 		
 	}
@@ -388,7 +388,7 @@ public class TestXMLItemCollectionAdapter {
 
 		Map map1 = new HashMap<>();
 		map1.put("_date", date);
-		map1.put("_amount", new Double(5.47));
+		map1.put("_amount",  Double.valueOf(5.47));
 
 		mapList.add(map1);
 		itemColSource.replaceItemValue("_mapdata", mapList);
@@ -427,7 +427,7 @@ public class TestXMLItemCollectionAdapter {
 		byte[] empty = { 0 };
 		// add the file name (with empty data) into the
 		// parentWorkitem.
-		itemColSource.addFile(empty, "test.txt", "png");
+		itemColSource.addFileData(new FileData("test.txt",empty , "png",null));
 
 		XMLDocument xmlItemCollection = null;
 		try {
@@ -443,12 +443,11 @@ public class TestXMLItemCollectionAdapter {
 		Assert.assertEquals(itemColTest.getItemValueString("txttitel"), "Hello");
 
 		// test file
-		Map<String, List<Object>> files = itemColTest.getFiles();
-		List<Object> testFile = files.get("test.txt");
-		Assert.assertEquals(2, testFile.size());
-		Assert.assertEquals("png", testFile.get(0).toString());
+		FileData afileData = itemColTest.getFileData("test.txt");
+		Assert.assertNotNull(afileData);
+		Assert.assertEquals("png", afileData.getContentType());
 		// compare content
-		Assert.assertTrue(Arrays.equals(empty, (byte[]) testFile.get(1)));
+		Assert.assertTrue(Arrays.equals(empty, afileData.getContent()));
 
 	}
 
