@@ -35,6 +35,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +62,7 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.engine.index.SearchService;
+import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.engine.scheduler.Scheduler;
 import org.imixs.workflow.engine.scheduler.SchedulerService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -122,6 +124,9 @@ public class SetupService {
 
     @Inject
     private SearchService indexSearchService;
+    
+    @Inject
+    private UpdateService indexUpdateService;
 
     @Inject
     private ModelService modelService;
@@ -225,9 +230,24 @@ public class SetupService {
     public boolean checkIndex() {
         try {
             // check the index
-            // findStubs...
-            indexSearchService.search("type:workitem", 1, 0, null, null, true);
-            // we do not care about the result - just if the call was successful
+        	// write dummy 
+        	ItemCollection dummy=new ItemCollection();
+        	// ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)
+        	dummy.setItemValueUnique(WorkflowKernel.UNIQUEID,"00000000-aaaa-0000-0000-luceneindexcheck");
+        	String checksum=""+System.currentTimeMillis();
+        	dummy.setItemValue("$workflowsummary", checksum);
+        	List<ItemCollection> dummyList=new ArrayList<ItemCollection>();
+        	dummyList.add(dummy);
+        	indexUpdateService.updateIndex(dummyList);
+        	
+            // findStubs with the dummy unqiueid...
+            List<ItemCollection> result = indexSearchService.search("$uniqueid:00000000-aaaa-0000-0000-luceneindexcheck", 1, 0, null, null, true);
+            // verify checksum
+            dummy=result.get(0);
+            if (!checksum.equals(dummy.getItemValueString("$workflowsummary"))) {
+            	logger.warning("SetupService - CheckIndex failed!");
+            	throw new Exception("lucene index check failed!");
+            }
         } catch (Exception e) {
             // database/index failed!
             return false;
