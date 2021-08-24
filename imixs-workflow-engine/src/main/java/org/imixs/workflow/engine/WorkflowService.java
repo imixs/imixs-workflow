@@ -882,138 +882,145 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
             workflowResult = adaptText(workflowResult, documentContext);
         }
 
-        // Extract all tags with attributes using regex (including empty tags)
-        // see also:
-        // https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags
-        // e.g. <item(.*?)>(.*?)</item>|<item(.*?)./>
-        Pattern pattern = Pattern.compile("(?s)(?:(<" + tag + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<=/>))|(<" + tag
-                + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<!/>))(.*?)(</" + tag + "\\s*>))", Pattern.DOTALL);
+        boolean invalidPattern = false;
+        // Fast first test if the tag really exists....
+        Pattern patternSimple = Pattern.compile("<" + tag + " (.*?)>(.*?)|<" + tag + " (.*?)./>", Pattern.DOTALL);
+        Matcher matcherSimple = patternSimple.matcher(workflowResult);
+        if (matcherSimple.find()) {
+            invalidPattern = true;
+            // we found the starting tag.....
 
-        boolean invalidPattern = true;
-        Matcher matcher = pattern.matcher(workflowResult);
-        while (matcher.find()) {
-            invalidPattern = false;
-            // we expect up to 4 different result groups
-            // group 0 contains complete tag string
-            // groups 1 or 2 contain the attributes
+            // Extract all tags with attributes using regex (including empty tags)
+            // see also:
+            // https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags
+            // e.g. <item(.*?)>(.*?)</item>|<item(.*?)./>
+            Pattern pattern = Pattern.compile("(?s)(?:(<" + tag + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<=/>))|(<" + tag
+                    + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<!/>))(.*?)(</" + tag + "\\s*>))", Pattern.DOTALL);
+            Matcher matcher = pattern.matcher(workflowResult);
+            while (matcher.find()) {
+                invalidPattern = false;
+                // we expect up to 4 different result groups
+                // group 0 contains complete tag string
+                // groups 1 or 2 contain the attributes
 
-            String content = "";
-            String attributes = matcher.group(1);
-            if (attributes == null) {
-                attributes = matcher.group(2);
-                content = matcher.group(3);
-            } else {
-                content = matcher.group(2);
-            }
-
-            if (content == null) {
-                content = "";
-            }
-
-            // now extract the attributes to verify the tag name..
-            if (attributes != null && !attributes.isEmpty()) {
-                // parse attributes...
-                String spattern = "(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?";
-                Pattern attributePattern = Pattern.compile(spattern);
-                Matcher attributeMatcher = attributePattern.matcher(attributes);
-                Map<String, String> attrMap = new HashMap<String, String>();
-                while (attributeMatcher.find()) {
-                    String attrName = attributeMatcher.group(1); // name
-                    String attrValue = attributeMatcher.group(2); // value
-                    attrMap.put(attrName, attrValue);
+                String content = "";
+                String attributes = matcher.group(1);
+                if (attributes == null) {
+                    attributes = matcher.group(2);
+                    content = matcher.group(3);
+                } else {
+                    content = matcher.group(2);
                 }
 
-                String tagName = attrMap.get("name");
-                if (tagName == null) {
+                if (content == null) {
+                    content = "";
+                }
+
+                // now extract the attributes to verify the tag name..
+                if (attributes != null && !attributes.isEmpty()) {
+                    // parse attributes...
+                    String spattern = "(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?";
+                    Pattern attributePattern = Pattern.compile(spattern);
+                    Matcher attributeMatcher = attributePattern.matcher(attributes);
+                    Map<String, String> attrMap = new HashMap<String, String>();
+                    while (attributeMatcher.find()) {
+                        String attrName = attributeMatcher.group(1); // name
+                        String attrValue = attributeMatcher.group(2); // value
+                        attrMap.put(attrName, attrValue);
+                    }
+
+                    String tagName = attrMap.get("name");
+                    if (tagName == null) {
+                        throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
+                                "<" + tag + "> tag contains no name attribute.");
+                    }
+
+                    // now add optional attributes if available
+                    for (String attrName : attrMap.keySet()) {
+                        // we need to skip the 'name' attribute
+                        if (!"name".equals(attrName)) {
+                            result.appendItemValue(tagName + "." + attrName, attrMap.get(attrName));
+                        }
+                    }
+
+                    // test if the type attribute was provided to convert content?
+                    String sType = result.getItemValueString(tagName + ".type");
+                    String sFormat = result.getItemValueString(tagName + ".format");
+                    if (!sType.isEmpty()) {
+                        // convert content type
+                        if ("boolean".equalsIgnoreCase(sType)) {
+                            result.appendItemValue(tagName, Boolean.valueOf(content));
+                        } else if ("integer".equalsIgnoreCase(sType)) {
+                            try {
+                                result.appendItemValue(tagName, Integer.valueOf(content));
+                            } catch (NumberFormatException e) {
+                                // append 0 value
+                                result.appendItemValue(tagName, new Integer(0));
+                            }
+                        } else if ("double".equalsIgnoreCase(sType)) {
+                            try {
+                                result.appendItemValue(tagName, Double.valueOf(content));
+                            } catch (NumberFormatException e) {
+                                // append 0 value
+                                result.appendItemValue(tagName, new Double(0));
+                            }
+                        } else if ("float".equalsIgnoreCase(sType)) {
+                            try {
+                                result.appendItemValue(tagName, Float.valueOf(content));
+                            } catch (NumberFormatException e) {
+                                // append 0 value
+                                result.appendItemValue(tagName, new Float(0));
+                            }
+                        } else if ("long".equalsIgnoreCase(sType)) {
+                            try {
+                                result.appendItemValue(tagName, Long.valueOf(content));
+                            } catch (NumberFormatException e) {
+                                // append 0 value
+                                result.appendItemValue(tagName, new Long(0));
+                            }
+                        } else if ("date".equalsIgnoreCase(sType)) {
+                            if (content == null || content.isEmpty()) {
+                                // no value available - no op!
+                                if (debug) {
+                                    logger.finer("......can not convert empty string into date object");
+                                }
+                            } else {
+                                // convert content value to date object
+                                try {
+                                    if (debug) {
+                                        logger.finer("......convert string into date object");
+                                    }
+                                    Date dateResult = null;
+                                    if (sFormat == null || sFormat.isEmpty()) {
+                                        // use standard format short/short
+                                        dateResult = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                                                .parse(content);
+                                    } else {
+                                        // use given formatter (see: TextItemValueAdapter)
+                                        DateFormat dateFormat = new SimpleDateFormat(sFormat);
+                                        dateResult = dateFormat.parse(content);
+                                    }
+                                    result.appendItemValue(tagName, dateResult);
+                                } catch (ParseException e) {
+                                    if (debug) {
+                                        logger.finer("failed to convert string into date object: " + e.getMessage());
+                                    }
+                                }
+                            }
+
+                        } else
+                            // no type conversion
+                            result.appendItemValue(tagName, content);
+                    } else {
+                        // no type definition
+                        result.appendItemValue(tagName, content);
+                    }
+
+                } else {
                     throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
                             "<" + tag + "> tag contains no name attribute.");
+
                 }
-
-                // now add optional attributes if available
-                for (String attrName : attrMap.keySet()) {
-                    // we need to skip the 'name' attribute
-                    if (!"name".equals(attrName)) {
-                        result.appendItemValue(tagName + "." + attrName, attrMap.get(attrName));
-                    }
-                }
-
-                // test if the type attribute was provided to convert content?
-                String sType = result.getItemValueString(tagName + ".type");
-                String sFormat = result.getItemValueString(tagName + ".format");
-                if (!sType.isEmpty()) {
-                    // convert content type
-                    if ("boolean".equalsIgnoreCase(sType)) {
-                        result.appendItemValue(tagName, Boolean.valueOf(content));
-                    } else if ("integer".equalsIgnoreCase(sType)) {
-                        try {
-                            result.appendItemValue(tagName, Integer.valueOf(content));
-                        } catch (NumberFormatException e) {
-                            // append 0 value
-                            result.appendItemValue(tagName, new Integer(0));
-                        }
-                    } else if ("double".equalsIgnoreCase(sType)) {
-                        try {
-                            result.appendItemValue(tagName, Double.valueOf(content));
-                        } catch (NumberFormatException e) {
-                            // append 0 value
-                            result.appendItemValue(tagName, new Double(0));
-                        }
-                    } else if ("float".equalsIgnoreCase(sType)) {
-                        try {
-                            result.appendItemValue(tagName, Float.valueOf(content));
-                        } catch (NumberFormatException e) {
-                            // append 0 value
-                            result.appendItemValue(tagName, new Float(0));
-                        }
-                    } else if ("long".equalsIgnoreCase(sType)) {
-                        try {
-                            result.appendItemValue(tagName, Long.valueOf(content));
-                        } catch (NumberFormatException e) {
-                            // append 0 value
-                            result.appendItemValue(tagName, new Long(0));
-                        }
-                    } else if ("date".equalsIgnoreCase(sType)) {
-                        if (content == null || content.isEmpty()) {
-                            // no value available - no op!
-                            if (debug) {
-                                logger.finer("......can not convert empty string into date object");
-                            }
-                        } else {
-                            // convert content value to date object
-                            try {
-                                if (debug) {
-                                    logger.finer("......convert string into date object");
-                                }
-                                Date dateResult = null;
-                                if (sFormat == null || sFormat.isEmpty()) {
-                                    // use standard format short/short
-                                    dateResult = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-                                            .parse(content);
-                                } else {
-                                    // use given formatter (see: TextItemValueAdapter)
-                                    DateFormat dateFormat = new SimpleDateFormat(sFormat);
-                                    dateResult = dateFormat.parse(content);
-                                }
-                                result.appendItemValue(tagName, dateResult);
-                            } catch (ParseException e) {
-                                if (debug) {
-                                    logger.finer("failed to convert string into date object: " + e.getMessage());
-                                }
-                            }
-                        }
-
-                    } else
-                        // no type conversion
-                        result.appendItemValue(tagName, content);
-                } else {
-                    // no type definition
-                    result.appendItemValue(tagName, content);
-                }
-
-            } else {
-                throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
-                        "<" + tag + "> tag contains no name attribute.");
-
             }
         }
 
