@@ -75,4 +75,5 @@ Imixs-Faces provides UI widgets to be used in a JSF Page.
  * [WYSIWIG Editor](./tinymce.html) - a WYSIWYG editor based on tinymce
  * [Tooltips](./tooltip.html) - jQuery tooltip component
  * [Workflow Action Toolbar](./workflowactions.html) - a action toolbar to show workflow actions for a workitem controlled by the WorkflowController 
+ * [ResourceBundleHandler](./resourcebundle.html) - a helper CDI bean to lookup  a label in different bundles. 
     
