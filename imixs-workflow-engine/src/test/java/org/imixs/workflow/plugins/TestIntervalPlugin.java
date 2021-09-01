@@ -139,7 +139,6 @@ public class TestIntervalPlugin {
 		LocalDateTime date = intervalPlugin.evalMacro("@monthly", ldt);
 		logger.info("Now            =" + now);
 		logger.info("Result @monthly=" + date);
-		Assert.assertEquals(now.getDayOfMonth(), date.getDayOfMonth());
 		int exptectedMonth= now.getMonthValue() +1;
         if (exptectedMonth==13) {
             // year switch
