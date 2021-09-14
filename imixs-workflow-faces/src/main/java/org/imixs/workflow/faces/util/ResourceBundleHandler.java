@@ -30,10 +30,10 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
  * multiple times if it has been cached. For that reason a RequestScoped bean is
  * used here.
  * <p>
- * The class searches for the resource bundles named 'bundle.messages', 'bundle.app' and
- * 'bundle.custom'. You can overwrite the bundle names with the imixs property value
- * 'resourcebundle.names'. The later entries have a higher priority in case a
- * key is stored in multiple bundles.
+ * The class searches for the resource bundles named 'bundle.messages',
+ * 'bundle.app' and 'bundle.custom'. You can overwrite the bundle names with the
+ * imixs property value 'resourcebundle.names'. The later entries have a higher
+ * priority in case a key is stored in multiple bundles.
  * 
  * @author rsoika
  * @version 1.0
@@ -63,9 +63,13 @@ public class ResourceBundleHandler {
         String[] bundleNameList = bundNameProperty.split(",");
         for (String bundleName : bundleNameList) {
             ResourceBundle bundle = null;
-            bundle = ResourceBundle.getBundle(bundleName, browserLocale);
-            if (bundle != null) {
-                resourceBundleList.add(bundle);
+            try {
+                bundle = ResourceBundle.getBundle(bundleName, browserLocale);
+                if (bundle != null) {
+                    resourceBundleList.add(bundle);
+                }
+            } catch (MissingResourceException e) {
+                // bundle not defined -> skip
             }
         }
     }
