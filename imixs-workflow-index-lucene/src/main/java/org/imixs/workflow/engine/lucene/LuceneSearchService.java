@@ -42,12 +42,21 @@ import jakarta.inject.Inject;
 
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.facet.FacetResult;
+import org.apache.lucene.facet.Facets;
+import org.apache.lucene.facet.FacetsCollector;
+import org.apache.lucene.facet.FacetsConfig;
+import org.apache.lucene.facet.LabelAndValue;
+import org.apache.lucene.facet.taxonomy.FastTaxonomyFacetCounts;
+import org.apache.lucene.facet.taxonomy.TaxonomyReader;
+import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
@@ -60,6 +69,7 @@ import org.apache.lucene.store.Directory;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.index.Category;
 import org.imixs.workflow.engine.index.DefaultOperator;
 import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.index.SearchService;
@@ -287,6 +297,47 @@ public class LuceneSearchService implements SearchService {
         return workitems;
     }
 
+    @Override
+    public List<Category> getTaxonomy(String ... categories) {
+        List<Category> results = new ArrayList<>();
+        try {
+            IndexSearcher searcher = createIndexSearcher();
+            TaxonomyReader taxoReader = createTaxonomyReader();
+            FacetsConfig config = luceneIndexService.getFacetsConfig();
+            FacetsCollector fc = new FacetsCollector();
+        
+            // MatchAllDocsQuery is for "browsing" (counts facets
+    		// for all non-deleted docs in the index); normally
+    		// you'd use a "normal" query:
+    		searcher.search(new MatchAllDocsQuery(), fc);
+    		Facets facets = new FastTaxonomyFacetCounts(taxoReader, config, fc);
+            
+            // count each result
+            for (String cat:categories) {
+                // Count the dimensions (we use a index field prefix to avoid conflicts with existing indices.
+            	FacetResult facetResult = facets.getTopChildren(10, cat+LuceneIndexService.TAXONOMY_INDEXFIELD_PRAFIX);
+                if (facetResult!=null) {
+                	Category category=new Category(cat,facetResult.childCount);
+                	for (LabelAndValue lav: facetResult.labelValues) {
+                		category.setLabel(lav.label, lav.value.intValue());
+                	}
+                    results.add(category);
+                }
+            }
+            searcher.getIndexReader().close();
+            taxoReader.close();
+        } catch (IOException e) {
+            // in case of an IOException we just print an error message and
+            // return an empty result
+            logger.severe("Lucene index error: " + e.getMessage());
+            throw new InvalidAccessException(InvalidAccessException.INVALID_INDEX, e.getMessage(), e);
+        }
+        return results;   
+    }
+    
+    
+    
+
     /**
      * Returns the total hits for a given search term from the lucene index. The
      * method did not load any data. The provided search term will we extended with
@@ -386,6 +437,28 @@ public class LuceneSearchService implements SearchService {
         }
         IndexSearcher searcher = new IndexSearcher(reader);
         return searcher;
+    }
+    
+    
+    /**
+     * Returns a IndexSearcher instance.
+     * <p>
+     * In case no index yet exits, the method tries to create a new index. This
+     * typically is necessary after first deployment.
+     * 
+     * @param prop
+     * @return
+     * @throws IOException
+     * @throws Exception
+     */
+    TaxonomyReader createTaxonomyReader() throws IOException {
+        
+        logger.finest("......createTaxonomyReader...");
+        Directory taxoDir = luceneIndexService.createTaxonomyDirectory();
+        TaxonomyReader taxoReader = new DirectoryTaxonomyReader(taxoDir);
+        
+       
+        return taxoReader;
     }
 
     /**

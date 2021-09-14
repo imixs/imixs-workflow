@@ -56,6 +56,7 @@ import org.imixs.workflow.exceptions.QueryException;
  * <li>index.fields.analyze - fields indexed as analyzed keyword fields</li>
  * <li>index.fields.noanalyze - fields indexed without analyze</li>
  * <li>index.fields.store - fields stored in the index</li>
+ * <li>index.fields.category - fields indexed as categories for a faceted search</li>
  * <li>index.operator - default operator</li>
  * <li>index.splitwhitespace - split text on whitespace prior to analysis</li>
  * </ul>
@@ -92,6 +93,10 @@ public class SchemaService {
     @Inject
     @ConfigProperty(name = "index.fields.store")
     Optional<String> indexFieldsStore;
+    
+    @Inject
+    @ConfigProperty(name = "index.fields.category")
+    Optional<String> indexFieldsCategory;
 
     @Inject
     private DocumentService documentService;
@@ -100,6 +105,7 @@ public class SchemaService {
     private List<String> fieldListAnalyze = null;
     private List<String> fieldListNoAnalyze = null;
     private List<String> fieldListStore = null;
+    private List<String> fieldListCategory = null;
     private Set<String> uniqueFieldList = null;
 
     // default field lists
@@ -113,6 +119,9 @@ public class SchemaService {
             "$snapshotid", "$modelversion", "$workflowsummary", "$workflowabstract", "$workflowgroup",
             "$workflowstatus", "$modified", "$created", "$lasteventdate", "$creator", "$editor", "$lasteditor",
             "$owner", "namowner");
+    public static List<String> DEFAULT_CATEGORY_FIELD_LIST = Arrays.asList("type", "$taskid","$workflowgroup", "$workflowstatus"
+            , "$creator", "$editor",  "$owner");
+    
 
     private static Logger logger = Logger.getLogger(SchemaService.class.getName());
 
@@ -130,6 +139,7 @@ public class SchemaService {
             logger.finest("......lucene IndexFieldListAnalyze=" + indexFieldsAnalyze);
             logger.finest("......lucene IndexFieldListNoAnalyze=" + indexFieldsNoAnalyze);
             logger.finest("......lucene IndexFieldListStore=" + indexFieldsStore);
+            logger.finest("......lucene IndexFieldListCategory=" + indexFieldsCategory);
         }
         // compute the normal search field list
         fieldList = new ArrayList<String>();
@@ -202,6 +212,21 @@ public class SchemaService {
                 fieldListAnalyze.add(fieldName);
             }
         }
+        
+
+        // compute Index category list ()
+        fieldListCategory = new ArrayList<String>();
+        // add all static default field list
+        fieldListCategory.addAll(DEFAULT_CATEGORY_FIELD_LIST);
+        if (indexFieldsCategory.isPresent() && !indexFieldsCategory.get().isEmpty()) {
+            // add additional field list from imixs.properties
+            StringTokenizer st = new StringTokenizer(indexFieldsCategory.get(), ",");
+            while (st.hasMoreElements()) {
+                String sName = st.nextToken().toLowerCase().trim();
+                if (!fieldListCategory.contains(sName))
+                    fieldListCategory.add(sName);
+            }
+        }
 
         // build unique field list containing all field names
         uniqueFieldList = new HashSet<String>();
@@ -261,6 +286,15 @@ public class SchemaService {
         return uniqueFieldList;
     }
 
+    /**
+     * Returns the field list of category fields.
+     * 
+     * @return
+     */
+    public List<String> getFieldListCategory() {
+        return fieldListCategory;
+    }
+    
     /**
      * Returns the Lucene schema configuration
      * 

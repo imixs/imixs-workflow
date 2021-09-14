@@ -50,6 +50,9 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.facet.FacetField;
+import org.apache.lucene.facet.FacetsConfig;
+import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyWriter;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
@@ -89,6 +92,7 @@ public class LuceneIndexService {
     public static final String ANONYMOUS = "ANONYMOUS";
     public static final String DEFAULT_ANALYZER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
     public static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
+    public static final String TAXONOMY_INDEXFIELD_PRAFIX = ".taxonomy"; 
 
     @PersistenceContext(unitName = "org.imixs.workflow.jpa")
     private EntityManager manager;
@@ -227,11 +231,12 @@ public class LuceneIndexService {
      * @throws IndexException
      */
     public void indexDocuments(Collection<ItemCollection> documents) {
-
-        IndexWriter awriter = null;
+        IndexWriter indexWriter = null;
+        DirectoryTaxonomyWriter taxonomyWriter = null;
         long ltime = System.currentTimeMillis();
         try {
-            awriter = createIndexWriter();
+            indexWriter = createIndexWriter();
+            taxonomyWriter = createTaxonomyWriter();
             // add workitem to search index....
             for (ItemCollection workitem : documents) {
 
@@ -240,7 +245,10 @@ public class LuceneIndexService {
                     Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
                     logger.finest("......lucene add/update uncommitted workitem '"
                             + workitem.getItemValueString(WorkflowKernel.UNIQUEID) + "' to index...");
-                    awriter.updateDocument(term, createDocument(workitem));
+                    
+                    //awriter.updateDocument(term, createDocument(workitem));
+                    Document lucenedoc = createDocument(workitem);
+                    updateLuceneIndex(term, lucenedoc, indexWriter, taxonomyWriter);
                 }
             }
         } catch (IOException luceneEx) {
@@ -248,14 +256,25 @@ public class LuceneIndexService {
             throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index", luceneEx);
         } finally {
             // close writer!
-            if (awriter != null) {
+            if (indexWriter != null) {
                 logger.finest("......lucene close IndexWriter...");
                 try {
-                    awriter.close();
+                    indexWriter.close();
                 } catch (CorruptIndexException e) {
                     throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
                 } catch (IOException e) {
                     throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
+                }
+            }
+            // close taxonomyWriter!
+            if (taxonomyWriter != null) {
+                logger.finest("......lucene close taxonomyWriter...");
+                try {
+                    taxonomyWriter.close();
+                } catch (CorruptIndexException e) {
+                    throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene taxonomyWriter: ", e);
+                } catch (IOException e) {
+                    throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene taxonomyWriter: ", e);
                 }
             }
         }
@@ -276,6 +295,7 @@ public class LuceneIndexService {
     protected boolean flushEventLogByCount(int count) {
         Date lastEventDate = null;
         boolean cacheIsEmpty = true;
+        DirectoryTaxonomyWriter taxonomyWriter = null;
         IndexWriter indexWriter = null;
         long l = System.currentTimeMillis();
         logger.finest("......flush eventlog cache....");
@@ -286,6 +306,7 @@ public class LuceneIndexService {
         if (events != null && events.size() > 0) {
             try {
                 indexWriter = createIndexWriter();
+                taxonomyWriter = createTaxonomyWriter();
                 int _counter = 0;
                 for (EventLog eventLogEntry : events) {
                     Term term = new Term("$uniqueid", eventLogEntry.getRef());
@@ -301,8 +322,10 @@ public class LuceneIndexService {
                         ItemCollection workitem = new ItemCollection();
                         workitem.setAllItems(doc.getData());
                         if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
+                            Document lucenedoc = createDocument(workitem);
+                            // indexWriter.updateDocument(term,lucenedoc );
 
-                            indexWriter.updateDocument(term, createDocument(workitem));
+                            updateLuceneIndex(term, lucenedoc, indexWriter, taxonomyWriter);
                             logger.finest("......lucene add/update workitem '" + doc.getId() + "' to index in "
                                     + (System.currentTimeMillis() - l2) + "ms");
                         }
@@ -349,7 +372,21 @@ public class LuceneIndexService {
                                 e);
                     }
                 }
+                // close taxonomyWriter!
+                if (taxonomyWriter != null) {
+                    logger.finest("......lucene close taxoWriter...");
+                    try {
+                        taxonomyWriter.close();
+                    } catch (CorruptIndexException e) {
+                        throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene taxonomyWriter: ",
+                                e);
+                    } catch (IOException e) {
+                        throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene taxonomyWriter: ",
+                                e);
+                    }
+                }
             }
+            
         }
 
         logger.fine("...flushEventLog - " + events.size() + " events in " + (System.currentTimeMillis() - l)
@@ -359,6 +396,37 @@ public class LuceneIndexService {
 
     }
 
+    /**
+     * THis helper method is used to write the lucene document into the search index
+     * and into the taxonomy index.
+     * 
+     * @param term
+     * @param lucenedoc
+     * @param indexWriter
+     * @param taxoWriter
+     * @throws IOException
+     */
+    private void updateLuceneIndex(Term term, Document lucenedoc, IndexWriter indexWriter,
+            DirectoryTaxonomyWriter taxoWriter) throws IOException {
+
+        FacetsConfig config = getFacetsConfig();
+        // update the indices....
+        indexWriter.updateDocument(term, config.build(taxoWriter, lucenedoc));
+    }
+
+    public FacetsConfig getFacetsConfig() {
+        // build the facetsConfig object based on the category field list
+        FacetsConfig config = new FacetsConfig();
+        /* place to customize the taxonomy - currently not used */
+        /*
+        for (String aFieldname : indexFieldListCategory) {
+            config.setIndexFieldName(aFieldname+TAXONOMY_INDEXFIELD_PRAFIX, aFieldname);
+            config.setMultiValued(aFieldname, true);
+        }
+        */
+        return config;
+    }
+    
     /**
      * This method creates a lucene document based on a ItemCollection. The Method
      * creates for each field specified in the FieldList a separate index field for
@@ -457,6 +525,20 @@ public class LuceneIndexService {
             }
 
         }
+
+        // add optional categories
+        List<String> indexFieldListCategory = schemaService.getFieldListCategory();
+        // example
+        // doc.add(new FacetField("Author", "Bob"));
+        for (String aFieldname : indexFieldListCategory) {
+            // a facetField can only be written if we have a value
+            String value=document.getItemValueString(aFieldname);
+            if (value!=null && !value.isEmpty()) {
+            	// with the TAXONOMY_INDEXFIELD_PRAFIX we avoid conflicts with existing indices 
+                doc.add(new FacetField(aFieldname+TAXONOMY_INDEXFIELD_PRAFIX, value));
+            }
+        }
+
         return doc;
     }
 
@@ -540,6 +622,20 @@ public class LuceneIndexService {
     }
 
     /**
+     * Create taxonomyWriter in a separate directory from the main index with the
+     * paefix '_taxÄ'
+     *
+     * @return
+     * @throws IOException
+     */
+    protected DirectoryTaxonomyWriter createTaxonomyWriter() throws IOException {
+        logger.finest("......createTaxonomyWriter...");
+        // create a IndexWriter Instance
+        Directory taxoDir = createTaxonomyDirectory();
+        return new DirectoryTaxonomyWriter(taxoDir);
+    }
+
+    /**
      * Creates a Lucene FSDirectory Instance. The method uses the property
      * LockFactory to set a custom LockFactory.
      * 
@@ -555,6 +651,34 @@ public class LuceneIndexService {
         Directory indexDir = FSDirectory.open(luceneIndexDir);
         if (!DirectoryReader.indexExists(indexDir)) {
             logger.info("...lucene index directory is empty or does not yet exist, initialize the index now....");
+            rebuildIndex(indexDir);
+        }
+        return indexDir;
+    }
+
+    /**
+     * Creates a Lucene FSDirectory Instance. The method uses the property
+     * LockFactory to set a custom LockFactory.
+     * <p>
+     * The taxonomy directory is identified by the LuceneIndexDir with the praefix
+     * '_tax'
+     * 
+     * @return
+     * @throws IOException
+     */
+    public Directory createTaxonomyDirectory() throws IOException {
+        String sPath = getLuceneIndexDir();
+        if (sPath.endsWith("/")) {
+            sPath = sPath.substring(0, sPath.lastIndexOf("/"));
+        }
+        sPath = sPath + "_tax";
+        logger.finest("......create lucene taxonomy Directory - path=" + sPath);
+        // create Lucene Directory Instance
+        Path luceneIndexDir = Paths.get(sPath);
+        Directory indexDir = FSDirectory.open(luceneIndexDir);
+        if (!DirectoryReader.indexExists(indexDir)) {
+            logger.info(
+                    "...lucene taxonomy directory is empty or does not yet exist, initialize the Taxonomy index now....");
             rebuildIndex(indexDir);
         }
         return indexDir;

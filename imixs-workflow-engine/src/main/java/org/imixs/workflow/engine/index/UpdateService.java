@@ -56,6 +56,7 @@ import jakarta.ejb.Stateless;
 public interface UpdateService {
 
     // default field lists
+    /*
     public static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
     public static List<String> DEFAULT_NOANALYSE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
             "$workitemid", "$uniqueidref", "type", "$writeaccess", "$modified", "$created", "namcreator", "$creator",
@@ -65,6 +66,12 @@ public interface UpdateService {
     public static List<String> DEFAULT_STORE_FIELD_LIST = Arrays.asList("type", "$taskid", "$writeaccess",
             "$workflowsummary", "$workflowabstract", "$workflowgroup", "$workflowstatus", "$modified", "$created",
             "$lasteventdate", "$creator", "$editor", "$lasteditor", "$owner", "namowner");
+    
+    
+    
+    public static List<String> DEFAULT_CATEGORY_FIELD_LIST = Arrays.asList("type", "$taskid","$workflowgroup", "$workflowstatus"
+            , "$creator", "$editor",  "$owner");
+    */
 
     /**
      * This method adds a collection of documents to the index. The documents are
