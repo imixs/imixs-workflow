@@ -38,6 +38,11 @@
 			<artifactId>lucene-queryparser</artifactId>
 			<version>${lucene.version}</version>
 		</dependency>
+		<dependency>
+            <artifactId>lucene-facet</artifactId>
+            <groupId>org.apache.lucene</groupId>
+            <version>${lucene.version}</version>
+        </dependency>
 	</dependencies>
 	<description>Serach Index based on Apache Lucene Core</description>
 </project>

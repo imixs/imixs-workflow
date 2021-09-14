@@ -46,6 +46,7 @@ import javax.json.stream.JsonParser.Event;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.index.Category;
 import org.imixs.workflow.engine.index.DefaultOperator;
 import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.index.SearchService;
@@ -206,6 +207,12 @@ public class SolrSearchService implements SearchService {
 
         logger.info("......computed totalHits in " + (System.currentTimeMillis() - l) + "ms");
         return hits;
+    }
+
+    @Override
+    public List<Category> getTaxonomy(String ... categories) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     /**
