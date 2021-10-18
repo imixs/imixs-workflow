@@ -47,7 +47,6 @@ import javax.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.QuerySelector;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.scheduler.Scheduler;
 import org.imixs.workflow.engine.scheduler.SchedulerException;
 import org.imixs.workflow.engine.scheduler.SchedulerService;
@@ -73,8 +72,8 @@ public class WorkflowScheduler implements Scheduler {
     final static public int OFFSET_HOURS = 2;
     final static public int OFFSET_DAYS = 3;
     final static public int OFFSET_WORKDAYS = 4;
-    
-    final static private int MAX_WORKITEM_COUNT=1000;
+
+    final static private int MAX_WORKITEM_COUNT = 1000;
 
     private static Logger logger = Logger.getLogger(WorkflowScheduler.class.getName());
 
@@ -89,11 +88,10 @@ public class WorkflowScheduler implements Scheduler {
 
     @Inject
     private SchedulerService schedulerService;
-    
+
     @Inject
     @Any
     protected Instance<QuerySelector> selectors;
-
 
     @Resource
     private SessionContext ctx;
@@ -399,10 +397,11 @@ public class WorkflowScheduler implements Scheduler {
      * event is identified by the attribute keyScheduledActivity="1"
      * 
      * The method goes through the latest or a specific Model Version
-     * @throws ModelException 
+     * 
+     * @throws ModelException
      * 
      */
-    protected Collection<ItemCollection> findScheduledEvents(String aModelVersion) throws ModelException  {
+    protected Collection<ItemCollection> findScheduledEvents(String aModelVersion) throws ModelException {
         Vector<ItemCollection> vectorActivities = new Vector<ItemCollection>();
         Collection<ItemCollection> colProcessList = null;
 
@@ -434,16 +433,14 @@ public class WorkflowScheduler implements Scheduler {
      * {@code
      * ($taskid:"[TASKID]" AND $modelversion:"[MODELVERSION]")
      * }
-     * <p>
-     * In case an old modelversion was deleted, the method tries to migrate to the
-     * lates model version. (issue #482)
      * 
      * @param event - a event model element
-     * @throws ModelException 
-     * @throws QueryException 
+     * @throws ModelException
+     * @throws QueryException
      * @throws Exception
      */
-    protected void processWorkListByEvent(ItemCollection event, ItemCollection configItemCollection) throws ModelException, QueryException  {
+    protected void processWorkListByEvent(ItemCollection event, ItemCollection configItemCollection)
+            throws ModelException, QueryException {
 
         // get task and event id form the event model entity....
         int taskID = event.getItemValueInteger("numprocessid");
@@ -460,23 +457,94 @@ public class WorkflowScheduler implements Scheduler {
         if (searchTerm.isEmpty()) {
             // build the default selector....
             searchTerm = "($taskid:\"" + taskID + "\" AND $workflowgroup:\"" + workflowGroup + "\")";
-        } 
-
-        List<ItemCollection> worklist =null;
-        // test if selector is a CDI Bean
-        String classPattern="^[a-z][a-z0-9_]*(\\.[A-Za-z0-9_]+)+$";
-        if (Pattern.compile(classPattern).matcher(searchTerm).find()) {            
-            QuerySelector selector=findSelectorByName(searchTerm);
-            if (selector!=null) {
-                schedulerService.logMessage("...CDI selector = " + searchTerm , configItemCollection, null);
-                worklist=selector.find(MAX_WORKITEM_COUNT,0);
-            }
-        } else {
-            schedulerService.logMessage("...selector = " + searchTerm , configItemCollection, null);
-            worklist = documentService.find(searchTerm, MAX_WORKITEM_COUNT, 0);     
         }
-         
-        logger.finest("......" + worklist.size() + " workitems found");
+
+        // In the following code we use a pagination to iterate over all workitems
+        // defined by the selector
+        // this is necessary because in some cases the workitems in selection are more
+        // than defined by MAX_WORKITEM_COUNT
+        int currentPageIndex = 0;
+        List<ItemCollection> worklistCollector = new ArrayList<ItemCollection>();
+        while (true) {
+            List<ItemCollection> worklist = null;
+            // test if selector is a CDI Bean
+            String classPattern = "^[a-z][a-z0-9_]*(\\.[A-Za-z0-9_]+)+$";
+            if (Pattern.compile(classPattern).matcher(searchTerm).find()) {
+                QuerySelector selector = findSelectorByName(searchTerm);
+                if (selector != null) {
+                    schedulerService.logMessage("...CDI selector = " + searchTerm, configItemCollection, null);
+                    worklist = selector.find(MAX_WORKITEM_COUNT, currentPageIndex);
+                }
+            } else {
+                schedulerService.logMessage("...selector = " + searchTerm, configItemCollection, null);
+                worklist = documentService.find(searchTerm, MAX_WORKITEM_COUNT, currentPageIndex);
+            }
+
+            // if we do not found any workitems we can break here
+            if (worklist.size() == 0) {
+                break;
+            } else {
+                logger.finest("......" + worklist.size() + " workitems found in total, collect due date...");
+                // update collector.....
+                collectWorkitemsInDue(event, modelVersionEvent, worklist, worklistCollector);
+                // increase current page index
+                currentPageIndex++;
+            }
+
+            // if the worklistCollector size is > than the MAX_WOKITEM_COUNT we break
+            if (worklistCollector.size() >= MAX_WORKITEM_COUNT) {
+                schedulerService.logMessage(
+                        "...more than " + MAX_WORKITEM_COUNT + " workitems in due found in current selector!",
+                        configItemCollection, null);
+                break;
+            }
+            schedulerService.logMessage("...verify next " + MAX_WORKITEM_COUNT + " workitems for current selector...",
+                    configItemCollection, null);
+        }
+
+        // Now we iterate all workitems in the collector
+        if (worklistCollector.size() > 0) {
+            schedulerService.logMessage("...processing " + worklistCollector.size() + " workitems in due...",
+                    configItemCollection, null);
+            for (ItemCollection workitem : worklistCollector) {
+                workitem.setEventID(eventID);
+                try {
+                    logger.finest("......getBusinessObject.....");
+                    // call from new instance because of transaction new...
+                    // see: http://blog.imixs.org/?p=155
+                    // see: https://www.java.net/node/705304
+                    workitem = workflowService.processWorkItemByNewTransaction(workitem);
+                    iProcessWorkItems++;
+                } catch (Exception e) {
+                    logger.warning("error processing workitem: " + workitem.getUniqueID() + " Error=" + e.getMessage());
+                    if (logger.isLoggable(Level.FINEST)) {
+                        e.printStackTrace();
+                    }
+                    unprocessedIDs.add(workitem.getUniqueID());
+                }
+            }
+        }
+    }
+
+    /**
+     * This helper method iterates over a collection of workitems and tests for each
+     * workitem if its duedate matches a given BPMN event. If so the workitem is
+     * added to the given workitemCollector.
+     * <p>
+     * The method is called form processWorklistByEvent which iterates over a all
+     * worktems selected by specific selector.
+     * <p>
+     * In case an old modelversion was deleted, the method tries to migrate to the
+     * lates model version. (issue #482)
+     * 
+     * @param event
+     * @param eventID
+     * @param modelVersionEvent
+     * @param worklist
+     */
+    private void collectWorkitemsInDue(ItemCollection event, String modelVersionEvent, List<ItemCollection> worklist,
+            List<ItemCollection> collector) {
+
         for (ItemCollection workitem : worklist) {
 
             String type = workitem.getType();
@@ -510,23 +578,8 @@ public class WorkflowScheduler implements Scheduler {
 
             // verify due date
             if (workItemInDue(workitem, event)) {
-                String sID = workitem.getItemValueString(WorkflowKernel.UNIQUEID);
-                logger.finest("......document " + sID + "is in due");
-                workitem.setEventID(eventID);
-                try {
-                    logger.finest("......getBusinessObject.....");
-                    // call from new instance because of transaction new...
-                    // see: http://blog.imixs.org/?p=155
-                    // see: https://www.java.net/node/705304
-                    workitem = workflowService.processWorkItemByNewTransaction(workitem);
-                    iProcessWorkItems++;
-                } catch (Exception e) {
-                    logger.warning("error processing workitem: " + sID + " Error=" + e.getMessage());
-                    if (logger.isLoggable(Level.FINEST)) {
-                        e.printStackTrace();
-                    }
-                    unprocessedIDs.add(sID);
-                }
+                logger.finest("......document " + workitem.getUniqueID() + "is in due");
+                collector.add(workitem);
             }
 
         }
@@ -574,9 +627,6 @@ public class WorkflowScheduler implements Scheduler {
             return null;
     }
 
-    
-    
-    
     /**
      * This method returns an injected Plugin by name or null if no plugin with the
      * requested class name is injected.
