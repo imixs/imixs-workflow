@@ -357,7 +357,7 @@ public class WorkflowScheduler implements Scheduler {
             for (String version : modelVersions) {
                 // find scheduled Activities
                 Collection<ItemCollection> scheduledEvents = findScheduledEvents(version);
-                schedulerService.logMessage(version + " (" + scheduledEvents.size() + " scheduled events)",
+                schedulerService.logMessage("...Model="+version + " (" + scheduledEvents.size() + " scheduled events)",
                         configItemCollection, null);
                 // process all workitems for coresponding activities
                 for (ItemCollection aactivityEntity : scheduledEvents) {
@@ -373,9 +373,7 @@ public class WorkflowScheduler implements Scheduler {
         }
 
         schedulerService.logMessage("================================", configItemCollection, null);
-        schedulerService.logMessage("... WorkflowScheduler completed.", configItemCollection, null);
-
-        schedulerService.logMessage("..." + iProcessWorkItems + " workitems processed", configItemCollection, null);
+        schedulerService.logMessage( iProcessWorkItems + " workitems processed in total", configItemCollection, null);
 
         if (unprocessedIDs.size() > 0) {
             schedulerService.logWarning(unprocessedIDs.size() + " workitems could not be processed:",
@@ -472,11 +470,11 @@ public class WorkflowScheduler implements Scheduler {
             if (Pattern.compile(classPattern).matcher(searchTerm).find()) {
                 QuerySelector selector = findSelectorByName(searchTerm);
                 if (selector != null) {
-                    schedulerService.logMessage("...CDI selector = " + searchTerm, configItemCollection, null);
+                    schedulerService.logMessage("......CDI selector = " + searchTerm, configItemCollection, null);
                     worklist = selector.find(MAX_WORKITEM_COUNT, currentPageIndex);
                 }
             } else {
-                schedulerService.logMessage("...selector = " + searchTerm, configItemCollection, null);
+                schedulerService.logMessage("......selector = " + searchTerm, configItemCollection, null);
                 worklist = documentService.find(searchTerm, MAX_WORKITEM_COUNT, currentPageIndex);
             }
 
@@ -487,8 +485,12 @@ public class WorkflowScheduler implements Scheduler {
                 logger.finest("......" + worklist.size() + " workitems found in total, collect due date...");
                 // update collector.....
                 collectWorkitemsInDue(event, modelVersionEvent, worklist, worklistCollector);
-                // increase current page index
-                currentPageIndex++;
+                if (worklist.size() < MAX_WORKITEM_COUNT) {
+                    break;
+                } else {
+                    // increase current page index
+                    currentPageIndex++;
+                }
             }
 
             // if the worklistCollector size is > than the MAX_WOKITEM_COUNT we break
@@ -504,7 +506,7 @@ public class WorkflowScheduler implements Scheduler {
 
         // Now we iterate all workitems in the collector
         if (worklistCollector.size() > 0) {
-            schedulerService.logMessage("...processing " + worklistCollector.size() + " workitems in due...",
+            schedulerService.logMessage("......processing " + worklistCollector.size() + " workitems in due...",
                     configItemCollection, null);
             for (ItemCollection workitem : worklistCollector) {
                 workitem.setEventID(eventID);
