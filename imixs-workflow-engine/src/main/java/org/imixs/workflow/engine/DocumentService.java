@@ -366,6 +366,11 @@ public class DocumentService {
 
         // check if a $uniqueid is available
         String sID = document.getItemValueString(WorkflowKernel.UNIQUEID);
+        
+        if (!sID.isEmpty() && !isValidUIDPattern(sID)) {
+            throw new InvalidAccessException(INVALID_PARAMETER, "invalid UUID pattern - " + sID);
+        }
+        
         if (!sID.isEmpty()) {
             // yes so we can try to find the Entity by its primary key
             persistedDocument = manager.find(Document.class, sID);
