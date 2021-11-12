@@ -117,6 +117,20 @@ public class JobHandlerRebuildIndex implements JobHandler {
         int totalCount = adminp.getItemValueInteger("numUpdates");
         int blockCount = 0;
 
+        
+        // test if the job document provide a blocksize otherwise we take the defaults.
+        int jobBlockSize=adminp.getItemValueInteger("blocksize");
+        if (jobBlockSize>0) {
+            //overwrite default blocksize
+            block_size=jobBlockSize;
+        }
+        // test if the job document provide a time_out otherwise we take the defaults.
+        int jobTimeOut=adminp.getItemValueInteger("numinterval");
+        if (jobTimeOut>0) {
+            //overwrite default time_out
+            time_out=jobTimeOut;
+        }
+        
         // read blocksize and timeout....
         logger.info("...Job " + AdminPService.JOB_REBUILD_INDEX + " (" + adminp.getUniqueID()
                 + ") - lucene.rebuild.block_size=" + block_size);
