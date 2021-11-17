@@ -297,45 +297,57 @@ public class LuceneSearchService implements SearchService {
     }
 
     @Override
-    public List<Category> getTaxonomy(String ... categories) {
+    public List<Category> getTaxonomy(String... categories) {
+        return getTaxonomyByQuery(null, categories);
+    }
+
+    @Override
+    public List<Category> getTaxonomyByQuery(String searchTerm, String... categories) {
         List<Category> results = new ArrayList<>();
         try {
             IndexSearcher searcher = createIndexSearcher();
             TaxonomyReader taxoReader = createTaxonomyReader();
             FacetsConfig config = luceneIndexService.getFacetsConfig();
             FacetsCollector fc = new FacetsCollector();
-        
+
             // MatchAllDocsQuery is for "browsing" (counts facets
-    		// for all non-deleted docs in the index); normally
-    		// you'd use a "normal" query:
-    		searcher.search(new MatchAllDocsQuery(), fc);
-    		Facets facets = new FastTaxonomyFacetCounts(taxoReader, config, fc);
-            
+            // for all non-deleted docs in the index); normally
+            // you'd use a "normal" query:
+            if (searchTerm == null || searchTerm.isEmpty()) {
+                searcher.search(new MatchAllDocsQuery(), fc);
+            } else {
+                searchTerm = schemaService.getExtendedSearchTerm(searchTerm);
+                QueryParser parser = createQueryParser(DefaultOperator.OR);
+                // parser.setAllowLeadingWildcard(true);
+                Query query = parser.parse(searchTerm);
+                searcher.search(query, fc);
+            }
+            Facets facets = new FastTaxonomyFacetCounts(taxoReader, config, fc);
+
             // count each result
-            for (String cat:categories) {
-                // Count the dimensions (we use a index field prefix to avoid conflicts with existing indices.
-            	FacetResult facetResult = facets.getTopChildren(10, cat+LuceneIndexService.TAXONOMY_INDEXFIELD_PRAFIX);
-                if (facetResult!=null) {
-                	Category category=new Category(cat,facetResult.childCount);
-                	for (LabelAndValue lav: facetResult.labelValues) {
-                		category.setLabel(lav.label, lav.value.intValue());
-                	}
+            for (String cat : categories) {
+                // Count the dimensions (we use a index field prefix to avoid conflicts with
+                // existing indices.
+                FacetResult facetResult = facets.getTopChildren(10,
+                        cat + LuceneIndexService.TAXONOMY_INDEXFIELD_PRAFIX);
+                if (facetResult != null) {
+                    Category category = new Category(cat, facetResult.childCount);
+                    for (LabelAndValue lav : facetResult.labelValues) {
+                        category.setLabel(lav.label, lav.value.intValue());
+                    }
                     results.add(category);
                 }
             }
             searcher.getIndexReader().close();
             taxoReader.close();
-        } catch (IOException e) {
+        } catch (IOException | QueryException | ParseException e) {
             // in case of an IOException we just print an error message and
             // return an empty result
             logger.severe("Lucene index error: " + e.getMessage());
             throw new InvalidAccessException(InvalidAccessException.INVALID_INDEX, e.getMessage(), e);
         }
-        return results;   
+        return results;
     }
-    
-    
-    
 
     /**
      * Returns the total hits for a given search term from the lucene index. The
@@ -437,8 +449,7 @@ public class LuceneSearchService implements SearchService {
         IndexSearcher searcher = new IndexSearcher(reader);
         return searcher;
     }
-    
-    
+
     /**
      * Returns a IndexSearcher instance.
      * <p>
@@ -451,12 +462,11 @@ public class LuceneSearchService implements SearchService {
      * @throws Exception
      */
     TaxonomyReader createTaxonomyReader() throws IOException {
-        
+
         logger.finest("......createTaxonomyReader...");
         Directory taxoDir = luceneIndexService.createTaxonomyDirectory();
         TaxonomyReader taxoReader = new DirectoryTaxonomyReader(taxoDir);
-        
-       
+
         return taxoReader;
     }
 
