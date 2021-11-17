@@ -107,4 +107,15 @@ public interface SearchService {
 	 * @throws QueryException in case the searchterm is not understandable.
 	 */
 	public List<Category> getTaxonomy(String... categories);
+	
+	/**
+     * Returns the total hits for a given set of categories from the lucene taxonomy
+     * index based on a search query. The method did not load any data.
+     * 
+     * @param searchTerm - a lucene search term
+     * @param categories - a list of categories.
+     * @return total hits of search result
+     * @throws QueryException in case the searchterm is not understandable.
+     */
+	public List<Category> getTaxonomyByQuery(String searchTerm, String... categories);
 }

@@ -92,7 +92,7 @@ public class LuceneIndexService {
     public static final String ANONYMOUS = "ANONYMOUS";
     public static final String DEFAULT_ANALYZER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
     public static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
-    public static final String TAXONOMY_INDEXFIELD_PRAFIX = ".taxonomy"; 
+    public static final String TAXONOMY_INDEXFIELD_PRAFIX = ".taxonomy";
 
     @PersistenceContext(unitName = "org.imixs.workflow.jpa")
     private EntityManager manager;
@@ -245,8 +245,8 @@ public class LuceneIndexService {
                     Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
                     logger.finest("......lucene add/update uncommitted workitem '"
                             + workitem.getItemValueString(WorkflowKernel.UNIQUEID) + "' to index...");
-                    
-                    //awriter.updateDocument(term, createDocument(workitem));
+
+                    // awriter.updateDocument(term, createDocument(workitem));
                     Document lucenedoc = createDocument(workitem);
                     updateLuceneIndex(term, lucenedoc, indexWriter, taxonomyWriter);
                 }
@@ -272,9 +272,11 @@ public class LuceneIndexService {
                 try {
                     taxonomyWriter.close();
                 } catch (CorruptIndexException e) {
-                    throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene taxonomyWriter: ", e);
+                    throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene taxonomyWriter: ",
+                            e);
                 } catch (IOException e) {
-                    throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene taxonomyWriter: ", e);
+                    throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene taxonomyWriter: ",
+                            e);
                 }
             }
         }
@@ -378,15 +380,15 @@ public class LuceneIndexService {
                     try {
                         taxonomyWriter.close();
                     } catch (CorruptIndexException e) {
-                        throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene taxonomyWriter: ",
-                                e);
+                        throw new IndexException(IndexException.INVALID_INDEX,
+                                "Unable to close lucene taxonomyWriter: ", e);
                     } catch (IOException e) {
-                        throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene taxonomyWriter: ",
-                                e);
+                        throw new IndexException(IndexException.INVALID_INDEX,
+                                "Unable to close lucene taxonomyWriter: ", e);
                     }
                 }
             }
-            
+
         }
 
         logger.fine("...flushEventLog - " + events.size() + " events in " + (System.currentTimeMillis() - l)
@@ -414,19 +416,24 @@ public class LuceneIndexService {
         indexWriter.updateDocument(term, config.build(taxoWriter, lucenedoc));
     }
 
+    /**
+     * This method builds a facetcConfig for the taxonomy index writer where each
+     * category item is marked as a multiValued field.
+     * 
+     * @return
+     */
     public FacetsConfig getFacetsConfig() {
         // build the facetsConfig object based on the category field list
         FacetsConfig config = new FacetsConfig();
         /* place to customize the taxonomy - currently not used */
-        /*
+        List<String> indexFieldListCategory = schemaService.getFieldListCategory();
         for (String aFieldname : indexFieldListCategory) {
-            config.setIndexFieldName(aFieldname+TAXONOMY_INDEXFIELD_PRAFIX, aFieldname);
-            config.setMultiValued(aFieldname, true);
+            aFieldname = aFieldname.toLowerCase().trim();
+            config.setMultiValued(aFieldname + TAXONOMY_INDEXFIELD_PRAFIX, true);
         }
-        */
         return config;
     }
-    
+
     /**
      * This method creates a lucene document based on a ItemCollection. The Method
      * creates for each field specified in the FieldList a separate index field for
@@ -531,11 +538,23 @@ public class LuceneIndexService {
         // example
         // doc.add(new FacetField("Author", "Bob"));
         for (String aFieldname : indexFieldListCategory) {
+            // item name must be LowerCased and trimmed because of later usage in
+            // doc.add(...)
+            aFieldname = aFieldname.toLowerCase().trim();
+            /**
+             * SINGLE VALUE VARIANT * String value=document.getItemValueString(aFieldname);
+             * if (!value.isEmpty()) { doc.add(new
+             * FacetField(aFieldname+TAXONOMY_INDEXFIELD_PRAFIX, value)); }
+             */
+
+            /** MULTI VALUE VARIANT **/
             // a facetField can only be written if we have a value
-            String value=document.getItemValueString(aFieldname);
-            if (value!=null && !value.isEmpty()) {
-            	// with the TAXONOMY_INDEXFIELD_PRAFIX we avoid conflicts with existing indices 
-                doc.add(new FacetField(aFieldname+TAXONOMY_INDEXFIELD_PRAFIX, value));
+            List<?> valueList = document.getItemValue(aFieldname);
+            if (valueList.size() > 0 && valueList.get(0) != null) {
+                for (Object singleValue : valueList) {
+                    String stringValue = luceneItemAdapter.convertItemValue(singleValue);
+                    doc.add(new FacetField(aFieldname + TAXONOMY_INDEXFIELD_PRAFIX, stringValue));
+                }
             }
         }
 

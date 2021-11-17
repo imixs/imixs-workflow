@@ -213,8 +213,14 @@ public class SolrSearchService implements SearchService {
     }
 
     @Override
+    public List<Category> getTaxonomyByQuery(String searchTerm,String ... categories) {
+        // TODO Auto-generated method stub
+        logger.warning("method getTaxonomy not implemented");
+        return null;
+    }
     public List<Category> getTaxonomy(String ... categories) {
         // TODO Auto-generated method stub
+        logger.warning("method getTaxonomy not implemented");
         return null;
     }
 
