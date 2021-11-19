@@ -172,7 +172,7 @@ public class AdminPService {
         adminp = documentService.save(adminp);
 
         // start timer...
-        Timer timer = timerService.createTimer(terminationDate, (60 * interval * 1000),
+        Timer timer = timerService.createTimer(terminationDate, (interval * 1000),
                 adminp.getItemValueString(WorkflowKernel.UNIQUEID));
 
         logger.info("Job " + jobtype + " (" + timer.getInfo().toString() + ") started... ");
