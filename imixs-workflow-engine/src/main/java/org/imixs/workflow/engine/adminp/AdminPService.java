@@ -90,7 +90,7 @@ public class AdminPService {
     public static final String JOB_REBUILD_INDEX = "JOB_REBUILD_INDEX";
     public static final String JOB_UPGRADE = "UPGRADE";
     public static final String JOB_MIGRATION = "MIGRATION";
-    private static final int DEFAULT_INTERVAL = 1;
+    public static final int DEFAULT_INTERVAL = 60;
 
     @Resource
     SessionContext ctx;

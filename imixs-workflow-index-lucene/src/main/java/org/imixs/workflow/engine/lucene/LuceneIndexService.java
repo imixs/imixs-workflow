@@ -124,6 +124,8 @@ public class LuceneIndexService {
     @Inject
     protected Event<IndexEvent> indexEvents;
 
+    private boolean bRebuildIndex; // indicator if we have triggered a rebuild index job.
+
     public String getLuceneIndexDir() {
         // issue #599
         return luceneIndexDir.trim();
@@ -203,6 +205,7 @@ public class LuceneIndexService {
      * the index directory if it does not yet exist.
      */
     public void rebuildIndex(Directory indexDir) throws IOException {
+
         // create a IndexWriter Instance to make sure we have created the index
         // directory..
         IndexWriterConfig indexWriterConfig;
@@ -210,12 +213,16 @@ public class LuceneIndexService {
         indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
         IndexWriter indexWriter = new IndexWriter(indexDir, indexWriterConfig);
         indexWriter.close();
-        // now starting index job....
-        logger.info("...rebuild lucene index job created...");
-        ItemCollection job = new ItemCollection();
-        job.replaceItemValue("numinterval", 2); // 2 minutes
-        job.replaceItemValue("job", AdminPService.JOB_REBUILD_INDEX);
-        adminPService.createJob(job);
+
+        // already triggered?
+        if (bRebuildIndex == false) {
+            // now starting index job....
+            logger.info("...rebuild lucene index job created...");
+            ItemCollection job = new ItemCollection();
+            job.replaceItemValue("job", AdminPService.JOB_REBUILD_INDEX);
+            adminPService.createJob(job);
+            bRebuildIndex = true;
+        }
     }
 
     /**
@@ -554,11 +561,11 @@ public class LuceneIndexService {
                 for (Object singleValue : valueList) {
                     String stringValue = luceneItemAdapter.convertItemValue(singleValue);
                     try {
-                    	if (stringValue!=null && !stringValue.isEmpty()) {
-                    		doc.add(new FacetField(aFieldname + TAXONOMY_INDEXFIELD_PRAFIX, stringValue));
-                    	}
+                        if (stringValue != null && !stringValue.isEmpty()) {
+                            doc.add(new FacetField(aFieldname + TAXONOMY_INDEXFIELD_PRAFIX, stringValue));
+                        }
                     } catch (IllegalArgumentException iae) {
-                    	logger.warning("Failed to build facete: " + iae.getMessage());
+                        logger.warning("Failed to build facete: " + iae.getMessage());
                     }
                 }
             }
