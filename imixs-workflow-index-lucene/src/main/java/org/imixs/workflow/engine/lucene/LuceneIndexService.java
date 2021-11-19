@@ -553,7 +553,13 @@ public class LuceneIndexService {
             if (valueList.size() > 0 && valueList.get(0) != null) {
                 for (Object singleValue : valueList) {
                     String stringValue = luceneItemAdapter.convertItemValue(singleValue);
-                    doc.add(new FacetField(aFieldname + TAXONOMY_INDEXFIELD_PRAFIX, stringValue));
+                    try {
+                    	if (stringValue!=null && !stringValue.isEmpty()) {
+                    		doc.add(new FacetField(aFieldname + TAXONOMY_INDEXFIELD_PRAFIX, stringValue));
+                    	}
+                    } catch (IllegalArgumentException iae) {
+                    	logger.warning("Failed to build facete: " + iae.getMessage());
+                    }
                 }
             }
         }
