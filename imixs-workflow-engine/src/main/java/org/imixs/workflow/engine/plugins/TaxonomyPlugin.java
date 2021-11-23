@@ -133,7 +133,7 @@ public class TaxonomyPlugin extends AbstractPlugin {
 
 			// the length of stop list must be the same as the start list
 			if (valuesStart.size() != valuesStop.size()) {
-				logger.warning("Invalid taxonomy defintion '" + name
+				logger.warning("Invalid taxonomy definition '" + name
 						+ "' starttime without stoptime! - please check model event " + documentContext.getTaskID()
 						+ "." + documentContext.getEventID() + " taxonomy will be ignored!");
 				return;
@@ -154,7 +154,7 @@ public class TaxonomyPlugin extends AbstractPlugin {
 		if ("stop".equals(type)) {
 
 			if (valuesStop.size() != (valuesStart.size() - 1)) {
-				logger.warning("Invalid taxonomy defintion '" + name
+				logger.warning("Invalid taxonomy definition '" + name
 						+ "' stoptime without starttime! - please check model entry " + documentContext.getTaskID()
 						+ "." + documentContext.getEventID() + " taxonomy will be ignored!");
 				return;
