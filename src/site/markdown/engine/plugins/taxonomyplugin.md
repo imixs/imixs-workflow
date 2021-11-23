@@ -12,7 +12,7 @@ The plugin can be used to collect data about the processing time of a certain ph
 
     <taxonomy name="approval">
     	<type>start</type>
-    	<anonymized>true</anonymized>
+    	<anonymised>true</anonymised>
     </taxonomy>
     
 
@@ -20,7 +20,7 @@ defines a start point named 'approval'
 
     <taxonomy name="approval">
     	<type>stop</type>
-    	<anonymized>true</anonymized>
+    	<anonymised>true</anonymised>
     </taxonomy>
     
 

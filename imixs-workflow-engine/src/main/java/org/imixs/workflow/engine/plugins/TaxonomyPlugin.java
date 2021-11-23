@@ -81,7 +81,7 @@ public class TaxonomyPlugin extends AbstractPlugin {
 
 	@Override
 	public ItemCollection run(ItemCollection documentContext, ItemCollection event) throws PluginException {
-		logger.info("running TaxonomyPlugin");
+		logger.finest("running TaxonomyPlugin");
 		// parse for taxonomy definition....
 		ItemCollection taxonomyConfig = this.getWorkflowService().evalWorkflowResult(event, "taxonomy", documentContext,
 				true);
@@ -92,18 +92,18 @@ public class TaxonomyPlugin extends AbstractPlugin {
 
 		// now iterate over all taxonomy definitions....
 		for (String name : taxonomyConfig.getItemNames()) {
-			logger.info("found taxonomy name=" + name);
+			logger.finest("found taxonomy name=" + name);
 			// for each taxonomy definition evaluate the taxonomy data....
 			String xmlDef = taxonomyConfig.getItemValueString(name);
 			ItemCollection taxonomyData = XMLParser.parseItemStructure(xmlDef);
 
 			if (taxonomyData != null) {
 				String type = taxonomyData.getItemValueString("type");
-				boolean anonymised = taxonomyData.getItemValueBoolean("anonymised");
-
-				logger.info("... type=" + type + "  anonymised=" + anonymised);
-				
-				
+				boolean anonymised = true;
+				if (taxonomyData.hasItem("anonymised")) {
+					anonymised=taxonomyData.getItemValueBoolean("anonymised");
+				}
+				logger.finest("... type=" + type + "  anonymised=" + anonymised);
 				evalTaxonomyDefinition(documentContext, name, type,anonymised);
 			}
 
@@ -145,7 +145,7 @@ public class TaxonomyPlugin extends AbstractPlugin {
 
 			// anonymised ?
 			if (!anonymised) {
-				List owners = documentContext.getItemValue("$owners");
+				List owners = documentContext.getItemValue("$owner");
 				documentContext.replaceItemValue("taxonomy." + name + ".start.by", owners);
 
 			}
