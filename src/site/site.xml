@@ -107,6 +107,7 @@
 				<item name="Result Plugin" href="./engine/plugins/resultplugin.html" />
 				<item name="Rule Plugin" href="./engine/plugins/ruleplugin.html" />
 				<item name="Split &amp; Join" href="./engine/plugins/splitandjoinplugin.html" />
+				<item name="Taxonomy Plugin" href="./engine/plugins/taxonomyplugin.html" />
 				<item name="Version Plugin" href="./engine/plugins/versionplugin.html" />
 			</item>
 			

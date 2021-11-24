@@ -49,5 +49,18 @@ The following diagram illustrates two taxonomy definitions in a ticket-workflow:
 The first taxonomy definition 'P1' will measure the total processing time for a ticket. The second taxonomy definition 'P2' will measure the duration of the processing time (in seconds) for accepting the ticket.
 
 
+### Anonymised Data
+
+Per default the taxonomy plugin generates anomymised data entries. This means there is no reference to the user who started or stopped specific stages of a business process.
+
+You can disable this GDPR feature by setting the tag 'anonymised' to 'false:
 
 
+    <taxonomy name="approval">
+    	<type>stop</type>
+    	<anonymised>false</anonymised>
+    </taxonomy>
+
+    
+    
+   
