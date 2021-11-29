@@ -131,8 +131,8 @@ public class RuleEngineNashornConverter {
         // it may happen that two item names start with the name of another item
         // (e.g. 'team', 'team$approvers') in that case it is important that the longer
         // item name is checked first!
-        
-        Collections.sort(itemNames, (a, b)->Integer.compare(b.length(), a.length()));
+
+        Collections.sort(itemNames, (a, b) -> Integer.compare(b.length(), a.length()));
 
         for (String itemName : itemNames) {
 
@@ -141,7 +141,13 @@ public class RuleEngineNashornConverter {
 
             // replace : workitem.txtname[0] => workitem.getItemValueString('txtname')
             phrase = contextName + "." + itemName + "[0]";
-            newPhrase = contextName + ".getItemValueString('" + itemName + "')";
+
+            // is it a number?
+            if (documentContext.isItemValueNumeric(itemName)) {
+                newPhrase = contextName + ".getItemValueDouble('" + itemName + "')";
+            } else {
+                newPhrase = contextName + ".getItemValueString('" + itemName + "')";
+            }
             script = script.replace(phrase, newPhrase);
 
             // replace : workitem.txtname => workitem.hasItem('txtname')
@@ -149,8 +155,15 @@ public class RuleEngineNashornConverter {
             newPhrase = contextName + ".hasItem('" + itemName + "')";
             script = script.replace(phrase, newPhrase);
 
+            
+            // replace : workitem.txtname 
             phrase = contextName + ".get(";
-            newPhrase = contextName + ".getItemValueString(";
+            // is it a number?
+            if (documentContext.isItemValueNumeric(itemName)) {
+                newPhrase = contextName + ".getItemValueDouble(";
+            } else {
+                newPhrase = contextName + ".getItemValueString(";
+            }
             script = script.replace(phrase, newPhrase);
 
         }

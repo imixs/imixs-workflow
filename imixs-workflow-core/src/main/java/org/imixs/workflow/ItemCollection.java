@@ -581,6 +581,24 @@ public class ItemCollection implements Cloneable {
     }
 
     /**
+     * Returns true if the value of an item is a numeric value (e.g.
+     * float,double,int,long)
+     * 
+     * @param aName
+     * @return
+     */
+    public boolean isItemValueNumeric(String aName) {
+        List<?> v = getItemValue(aName);
+        if (v.size() == 0)
+            return false;
+        else {
+            // test for numeric type...
+            Object o = v.get(0);
+            return (o instanceof Number);
+        }
+    }
+
+    /**
      * Returns true if the value of an item is from type 'Date'
      * 
      * @param aName - item name
