@@ -66,14 +66,10 @@ import org.imixs.workflow.exceptions.PluginException;
 @LocalBean
 public class JobHandlerRebuildIndex implements JobHandler {
 
-    private static final String BLOCK_SIZE_DEFAULT = "10000";
+    private static final int BLOCK_SIZE = 1000;
 
     @Inject
-    @ConfigProperty(name = "lucene.rebuild.block_size", defaultValue = BLOCK_SIZE_DEFAULT)
-    int block_size;
-
-    @Inject
-    @ConfigProperty(name = "lucene.rebuild.time_out", defaultValue = ""+AdminPService.DEFAULT_INTERVAL)
+    @ConfigProperty(name = "lucene.rebuild.time_out", defaultValue = "" + AdminPService.DEFAULT_INTERVAL) 
     int time_out;
 
     private static final int READ_AHEAD = 32;
@@ -112,36 +108,24 @@ public class JobHandlerRebuildIndex implements JobHandler {
         long syncPoint = adminp.getItemValueLong("_syncpoint");
         int totalCount = adminp.getItemValueInteger("numUpdates");
         int blockCount = 0;
+        // The job blocksize will be ignored by the index job. Only the timeout matters
 
-        // test if the job document provide a blocksize otherwise we take the defaults.
-        int jobBlockSize = adminp.getItemValueInteger("blocksize");
-        if (jobBlockSize > 0) {
-            // overwrite default blocksize
-            block_size = jobBlockSize;
-        } else {
-            // set default blocksize
-            adminp.setItemValue("blocksize", block_size);
-        }
         // test if the job document provide a time_out otherwise we take the defaults.
         int jobTimeOut = adminp.getItemValueInteger("numinterval");
         if (jobTimeOut > 0) {
             // fix deprecated invtervall unit
             if (jobTimeOut <= 5) { // <5 seconds
-                logger.warning("fix deprecated interval of " + jobTimeOut + " - set new job interval to " + time_out + "sec");
-                jobTimeOut=time_out;
+                logger.warning(
+                        "fix deprecated interval of " + jobTimeOut + " - set new job interval to " + time_out + "sec");
+                jobTimeOut = time_out;
             }
             // overwrite default time_out
             time_out = jobTimeOut;
         }
         // update interval
         adminp.setItemValue("numinterval", time_out);
-
-        // read blocksize and timeout....
-        logger.info("...Job " + AdminPService.JOB_REBUILD_INDEX + " (" + adminp.getUniqueID()
-                + ") - lucene.rebuild.block_size=" + block_size);
         logger.info("...Job " + AdminPService.JOB_REBUILD_INDEX + " (" + adminp.getUniqueID()
                 + ") - lucene.rebuild.time_out=" + time_out);
-
         try {
             while (true) {
                 List<ItemCollection> resultList = new ArrayList<ItemCollection>();
@@ -167,7 +151,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
                     // update count
                     totalCount += resultList.size();
                     blockCount += resultList.size();
-                    if (blockCount >= block_size) {
+                    if (blockCount >= BLOCK_SIZE) {
                         long time = (System.currentTimeMillis() - lProfiler) / 1000;
                         if (time == 0) {
                             time = 1;
@@ -285,7 +269,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
                     query += " ORDER BY document.created ASC";
                     q = manager.createQuery(query);
                     q.setFirstResult(0);
-                    q.setMaxResults(block_size);
+                    q.setMaxResults(READ_AHEAD);
                     documentList.addAll(q.getResultList());
                     return documentList;
 
