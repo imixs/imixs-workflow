@@ -1311,24 +1311,24 @@ public class DocumentService {
 		return true;
 	}
 
-	/**
-	 * This method returns true if the given id is a valid UUID or SnapshotID (UUI +
-	 * timestamp
-	 * <p>
-	 * We also need to support the old uid formats
-	 * <code>4832b09a1a-20c38abd-1519421083952</code>
-	 * 
-	 * @param uid
-	 * @return
-	 */
-	public static boolean isValidUIDPattern(String uid) {
-		boolean valid = uid.matches(REGEX_UUID);
-		if (!valid) {
-			// check old snapshot pattern
-			valid = uid.matches(REGEX_OLDUID);
-		}
+	 /**
+     * This method returns true if the given id is a valid UUID or SnapshotID (UUI +
+     * timestamp
+     * <p>
+     * We also need to support the old uid formats
+     * <code>4832b09a1a-20c38abd-1519421083952</code>
+     * 
+     * @param uid
+     * @return
+     */
+    public boolean isValidUIDPattern(String uid) {
+        boolean valid = uid.matches(REGEX_UUID);
+        if (!valid) {
+            // check old snapshot pattern
+            valid = uid.matches(REGEX_OLDUID);
+        }
 
-		return valid;
+        return valid;
 
-	}
+    }
 }
