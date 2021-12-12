@@ -149,9 +149,9 @@ public class DocumentService {
 
     public static final String USER_GROUP_LIST = "org.imixs.USER.GROUPLIST";
 
-	private static final String REGEX_UUID = "([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})|([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}-[0-9]{13,15})";
-	private static final String REGEX_OLDUID = "([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)";
-	
+    private static final String REGEX_UUID = "([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})|([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}-[0-9]{13,15})";
+    private static final String REGEX_OLDUID = "([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)";
+
     private final static Logger logger = Logger.getLogger(DocumentService.class.getName());
 
     public static final String OPERATION_NOTALLOWED = "OPERATION_NOTALLOWED";
@@ -366,11 +366,11 @@ public class DocumentService {
 
         // check if a $uniqueid is available
         String sID = document.getItemValueString(WorkflowKernel.UNIQUEID);
-        
+
         if (!sID.isEmpty() && !isValidUIDPattern(sID)) {
             throw new InvalidAccessException(INVALID_PARAMETER, "invalid UUID pattern - " + sID);
         }
-        
+
         if (!sID.isEmpty()) {
             // yes so we can try to find the Entity by its primary key
             persistedDocument = manager.find(Document.class, sID);
@@ -986,9 +986,9 @@ public class DocumentService {
      * an external service call did not overwrite the current document jpa object
      * (see Issue #634)
      * 
-     * @param query     - JPQL statement
+     * @param query       - JPQL statement
      * @param firstResult - first result
-     * @param maxResult - maximum result set
+     * @param maxResult   - maximum result set
      * @return - result set
      * 
      */
@@ -1041,7 +1041,7 @@ public class DocumentService {
                 updateMetaData(_tmp, doc);
 
                 result.add(_tmp);
-                // issue #647 
+                // issue #647
                 if (documentEvents != null) {
                     documentEvents.fire(new DocumentEvent(_tmp, DocumentEvent.ON_DOCUMENT_LOAD));
                 }
@@ -1310,24 +1310,24 @@ public class DocumentService {
         return true;
     }
 
-	/**
-	 * This method returns true if the given id is a valid UUID or SnapshotID (UUI +
-	 * timestamp
-	 * <p>
-	 * We also need to support the old uid formats
-	 * <code>4832b09a1a-20c38abd-1519421083952</code>
-	 * 
-	 * @param uid
-	 * @return
-	 */
-	public static boolean isValidUIDPattern(String uid) {
-		boolean valid = uid.matches(REGEX_UUID);
-		if (!valid) {
-			// check old snapshot pattern
-			valid = uid.matches(REGEX_OLDUID);
-		}
+    /**
+     * This method returns true if the given id is a valid UUID or SnapshotID (UUI +
+     * timestamp
+     * <p>
+     * We also need to support the old uid formats
+     * <code>4832b09a1a-20c38abd-1519421083952</code>
+     * 
+     * @param uid
+     * @return
+     */
+    public boolean isValidUIDPattern(String uid) {
+        boolean valid = uid.matches(REGEX_UUID);
+        if (!valid) {
+            // check old snapshot pattern
+            valid = uid.matches(REGEX_OLDUID);
+        }
 
-		return valid;
+        return valid;
 
-	}
+    }
 }
