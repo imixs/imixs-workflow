@@ -28,12 +28,14 @@
 
 package org.imixs.workflow.engine;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 /**
@@ -118,9 +120,7 @@ public class ImixsConfigSource implements ConfigSource {
         properties = new HashMap<String, String>();
         Properties fileProperties = new Properties();
         try {
-            fileProperties
-                    .load(Thread.currentThread().getContextClassLoader().getResource("imixs.properties").openStream());
-
+            fileProperties.load(getFileFromResourceAsStream("imixs.properties"));
             // now we put the values into the property Map.....
             for (Object key : fileProperties.keySet()) {
                 String value = fileProperties.getProperty(key.toString());
@@ -178,4 +178,25 @@ public class ImixsConfigSource implements ConfigSource {
 
         return null;
     }
+
+    /**
+     * Helper method to get a file from the resources folder works everywhere, IDEA,
+     * unit test and JAR file.
+     * 
+     * @see https://mkyong.com/java/java-read-a-file-from-resources-folder/
+     * @param fileName
+     * @return
+     */
+    private InputStream getFileFromResourceAsStream(String fileName) {
+        // The class loader that loaded the class
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream inputStream = classLoader.getResourceAsStream(fileName);
+        // the stream holding the file content
+        if (inputStream == null) {
+            throw new IllegalArgumentException("file not found! " + fileName);
+        } else {
+            return inputStream;
+        }
+    }
+
 }
