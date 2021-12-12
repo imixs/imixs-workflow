@@ -19,8 +19,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- dependency versions -->
 		<jakarta.version>8.0</jakarta.version>
-		<microprofile.version>3.0</microprofile.version>
-		<microprofile-metrics.version>2.3</microprofile-metrics.version>
+		<microprofile.version>3.3</microprofile.version>
 		<lucene.version>7.7.3</lucene.version>
 	</properties>
 
@@ -259,13 +258,14 @@
 			<scope>provided</scope>
 		</dependency>
 
+<!-- 
 		<dependency>
 			<groupId>org.eclipse.microprofile.metrics</groupId>
 			<artifactId>microprofile-metrics-api</artifactId>
 			<version>${microprofile-metrics.version}</version>
 			<scope>provided</scope>
 		</dependency>
-
+ -->
 		<!-- JUnit Tests -->
 		<dependency>
 			<groupId>junit</groupId>
