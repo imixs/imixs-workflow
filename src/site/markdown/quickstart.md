@@ -1,6 +1,6 @@
 # Quickstart
 
-To start with **Imixs-Workflow** you first create a workflow-model. The model describes your business logic. You can change the logic later without changing one line of code.
+Starting with **Imixs-Workflow** you first of all create a workflow-model. The model describes your business logic. You can change this  logic during runtime without changing one line of code.
 Imixs-Workflow is based on the [BPMN 2.0 modeling standard](http://www.bpmn.org/). BPMN is useful for visualizing both - the business process and the responsibilities. 
 
 You create your workflow model with the Eclipse based modeling tool [Imixs-BPMN](./modelling/). Let's take look at a simple example:
@@ -16,7 +16,7 @@ Next lets see how you can integrate Imixs-Workflow in your own Java application.
 
 ## The Imixs Process Manger
 
-With the Imixs Process Managager you can start within seconds. The Business Process Management Suite can be used for development, testing and productive environments. It provides you with a generic user interface which can be easily adapted. The Imixs Process Manager comes with a Docker image that can be deployed locally or in a containerized environment like Docker Swarm or Kubernetes. 
+With the [Imixs Process Managager](https://github.com/imixs/imixs-process-manager) you can start within seconds. The Business Process Management Suite can be used for development, testing and productive environments. It provides you with a generic user interface which can be easily adapted. The Imixs Process Manager comes with a Docker image that can be deployed locally or in a containerized environment like Docker Swarm or Kubernetes. 
 
 Download the [docker-compose.yaml](https://raw.githubusercontent.com/imixs/imixs-process-manager/master/docker-compose.yaml) file and run:
 
@@ -25,6 +25,8 @@ Download the [docker-compose.yaml](https://raw.githubusercontent.com/imixs/imixs
 You can access the Process Manger from your Browser
 
 http://localhost:8080
+
+Login with the default user `admin` and the password `adminadmin`. 
 
 <img class="screenshot" src="./images/process-manager-002.png" width="80%" />
 
