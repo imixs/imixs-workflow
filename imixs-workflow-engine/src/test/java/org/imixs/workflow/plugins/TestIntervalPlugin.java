@@ -227,8 +227,29 @@ public class TestIntervalPlugin {
             logger.info(" => now=" + now + "  result=" + date);
             // expected 9:00 next day
             Assert.assertTrue(date.getHour()==9);
-            Assert.assertTrue(now.getDayOfYear()==date.getDayOfYear()-1);
+            Assert.assertTrue(date.getDayOfYear()==now.getDayOfYear()+1);
     
+            
+            
+            
+            cron = "15,30 * * * *";
+            now = now.with(ChronoField.HOUR_OF_DAY,10);
+            date = intervalPlugin.evalCron(cron,now);
+            logger.info(" => now=" + now + "  result=" + date);
+            // expected 10:15
+            Assert.assertTrue(date.getHour()==10);
+            Assert.assertTrue(date.getMinute()==15);
+            
+            
+            now = now.with(ChronoField.HOUR_OF_DAY,10);
+            now = now.with(ChronoField.MINUTE_OF_HOUR,25);
+            date = intervalPlugin.evalCron(cron,now);
+            logger.info(" => now=" + now + "  result=" + date);
+            // expected 10:30 
+            Assert.assertTrue(date.getHour()==10);
+            Assert.assertTrue(date.getMinute()==30);
+            
+            
             
         } catch (PluginException e) {
             e.printStackTrace();
