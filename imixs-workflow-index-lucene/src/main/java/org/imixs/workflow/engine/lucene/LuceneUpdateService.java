@@ -30,6 +30,8 @@ package org.imixs.workflow.engine.lucene;
 
 import java.util.List;
 import java.util.logging.Logger;
+
+import javax.ejb.AccessTimeout;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
 import org.imixs.workflow.ItemCollection;
@@ -54,7 +56,9 @@ import org.imixs.workflow.exceptions.IndexException;
  * The singleton pattern is used to avoid conflicts within multi-thread
  * scenarios. The service is used by the LucenPlugin to update the lucene index
  * during a workflow processing step.
- * 
+ * <p>
+ * Since version 5.2.15 we increase the default access timeout from 5000ms to
+ * 30000ms (30sec)
  * 
  * @see http://stackoverflow.com/questions/34880347/why-did-lucene-indexwriter-
  *      did-not-update-the-index-when-called-from-a-web-modul
@@ -63,6 +67,7 @@ import org.imixs.workflow.exceptions.IndexException;
  * @author rsoika
  */
 @Singleton
+@AccessTimeout(value = 30000) // set to 30sec to support slow io (e.g ceph)
 public class LuceneUpdateService implements UpdateService {
 
     @Inject
