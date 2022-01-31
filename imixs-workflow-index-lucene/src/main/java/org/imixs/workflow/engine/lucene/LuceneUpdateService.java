@@ -107,6 +107,12 @@ public class LuceneUpdateService implements UpdateService {
             logger.info("...flush event log: " + flushCount + " entries updated in "
                     + (System.currentTimeMillis() - ltime) + "ms ...");
         }
+        // print warning if updateIndex took longer than 5 seconds
+        long updateTime=(System.currentTimeMillis() - ltime);
+        if (updateTime>5000) {
+            logger.warning("...Slow lucene updateIndex take " + (updateTime) + "ms !");
+            
+        }
     }
 
 }
