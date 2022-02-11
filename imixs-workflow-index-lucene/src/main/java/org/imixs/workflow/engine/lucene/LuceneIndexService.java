@@ -288,9 +288,13 @@ public class LuceneIndexService {
             }
         }
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("... update index block in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
-                    + " workitems total)");
+        long updateTime = (System.currentTimeMillis() - ltime);
+        if (updateTime > 5000) {
+            logger.warning("... update index block in took " + (updateTime) + " ms ! (" + documents.size()
+                    + " documents in total)");
+        } else if (logger.isLoggable(Level.FINE)) {
+            logger.fine(
+                    "... update index block in " + (updateTime) + " ms (" + documents.size() + " documents in total)");
         }
     }
 
