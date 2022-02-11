@@ -94,7 +94,6 @@ public class ApproverPlugin extends AbstractPlugin {
         boolean refresh = false;
         boolean reset = false;
 
-        logger.warning("The ApproverPlugin is deprecated and will be removed in future releases. Please migrate to the new TaxonomyPlugin.");
         ItemCollection evalItemCollection = this.getWorkflowService().evalWorkflowResult(event, "item", workitem);
 
         // test for items with name 'approvedby'
