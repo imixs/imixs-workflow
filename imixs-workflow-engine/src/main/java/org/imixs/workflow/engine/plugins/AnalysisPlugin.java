@@ -77,6 +77,8 @@ public class AnalysisPlugin extends AbstractPlugin {
     @Override
     public ItemCollection run(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
 
+        logger.warning("The AnalysisPlugin is deprecated and will be removed in future releases. Please migrate to the new TaxonomyPlugin.");
+
         // parse for intem name=measurepoint....
         String sActivityResult = documentActivity.getItemValueString("txtActivityResult");
         List<MeasurePoint> measurePoints = evaluate(sActivityResult, documentContext);
