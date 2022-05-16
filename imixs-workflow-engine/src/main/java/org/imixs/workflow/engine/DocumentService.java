@@ -1059,12 +1059,18 @@ public class DocumentService {
      * The document list will be stored into the file system. The method stores the
      * Map from the ItemCollection to be independent from version upgrades. To
      * manage large dataSets the method reads the documents in smaller blocks
+     * <p>
+     * The optional parameter 'snapshots' can be set to 'true' to indicate that only
+     * the referred snapshot workitem should be stored. The snapshot is referred by
+     *  the item $snapshotId.
      * 
-     * @param entities
+     * @param query - a Lucene search statement
+     * @param filePath - the target file path in the server local file system
+     * @param snapshots - optional - if true, than only snapshots will be backuped. Default = false
      * @throws IOException
      * @throws QueryException
      */
-    public void backup(String query, String filePath) throws IOException, QueryException {
+    public void backup(String query, String filePath, boolean snapshots) throws IOException, QueryException {
         boolean hasMoreData = true;
         int JUNK_SIZE = 100;
         long totalcount = 0;
@@ -1098,8 +1104,22 @@ public class DocumentService {
             }
 
             for (ItemCollection aworkitem : col) {
-                // get serialized data
-                Map<?, ?> hmap = aworkitem.getAllItems();
+                Map<?, ?> hmap=null;
+                if (snapshots==true) {
+                    // load the snapshot
+                    String snapshotID = aworkitem.getItemValueString("$snapshotid");
+                    if (!snapshotID.isEmpty()) {
+                        ItemCollection snapshotDoc = load(snapshotID);
+                        if (snapshotDoc!=null) {
+                            hmap = snapshotDoc.getAllItems();
+                        }
+                    } 
+                }
+                
+                if (hmap==null) {
+                    // get serialized data
+                    hmap = aworkitem.getAllItems();
+                }
                 // write object
                 out.writeObject(hmap);
                 icount++;
@@ -1107,6 +1127,11 @@ public class DocumentService {
         }
         out.close();
         logger.info("backup - finished: " + icount + " documents read totaly.");
+    }
+    
+    // default method 
+    public void backup(String query, String filePath) throws IOException, QueryException {
+        this.backup(query, filePath,false);
     }
 
     /**
@@ -1125,7 +1150,7 @@ public class DocumentService {
 
         FileInputStream fis = new FileInputStream(filePath);
         ObjectInputStream in = new ObjectInputStream(fis);
-        logger.info("...starting restor form file " + filePath + "...");
+        logger.info("...starting restore form file " + filePath + "...");
         long l = System.currentTimeMillis();
         while (true) {
             try {
