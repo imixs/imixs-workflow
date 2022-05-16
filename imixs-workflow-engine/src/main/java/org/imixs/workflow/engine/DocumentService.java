@@ -1055,17 +1055,23 @@ public class DocumentService {
 		return result;
 	}
 
-	/**
-	 * This method creates a backup of the result set form a Lucene search query.
-	 * The document list will be stored into the file system. The method stores the
-	 * Map from the ItemCollection to be independent from version upgrades. To
-	 * manage large dataSets the method reads the documents in smaller blocks
-	 * 
-	 * @param entities
-	 * @throws IOException
-	 * @throws QueryException
-	 */
-	public void backup(String query, String filePath) throws IOException, QueryException {
+    /**
+     * This method creates a backup of the result set form a Lucene search query.
+     * The document list will be stored into the file system. The method stores the
+     * Map from the ItemCollection to be independent from version upgrades. To
+     * manage large dataSets the method reads the documents in smaller blocks
+     * <p>
+     * The optional parameter 'snapshots' can be set to 'true' to indicate that only
+     * the referred snapshot workitem should be stored. The snapshot is referred by
+     *  the item $snapshotId.
+     * 
+     * @param query - a Lucene search statement
+     * @param filePath - the target file path in the server local file system
+     * @param snapshots - optional - if true, than only snapshots will be backuped. Default = false
+     * @throws IOException
+     * @throws QueryException
+     */
+	public void backup(String query, String filePath, boolean snapshots) throws IOException, QueryException {
 		boolean hasMoreData = true;
 		int JUNK_SIZE = 100;
 		long totalcount = 0;
@@ -1098,18 +1104,36 @@ public class DocumentService {
 				logger.finest("......next page...");
 			}
 
-			for (ItemCollection aworkitem : col) {
-				// get serialized data
-				Map<?, ?> hmap = aworkitem.getAllItems();
-				// write object
-				out.writeObject(hmap);
-				icount++;
-			}
+            for (ItemCollection aworkitem : col) {
+                Map<?, ?> hmap=null;
+                if (snapshots==true) {
+                    // load the snapshot
+                    String snapshotID = aworkitem.getItemValueString("$snapshotid");
+                    if (!snapshotID.isEmpty()) {
+                        ItemCollection snapshotDoc = load(snapshotID);
+                        if (snapshotDoc!=null) {
+                            hmap = snapshotDoc.getAllItems();
+                        }
+                    } 
+                }
+                
+                if (hmap==null) {
+                    // get serialized data
+                    hmap = aworkitem.getAllItems();
+                }
+                // write object
+                out.writeObject(hmap);
+                icount++;
+            }
 		}
 		out.close();
 		logger.info("backup - finished: " + icount + " documents read totaly.");
 	}
 
+    // default method 
+    public void backup(String query, String filePath) throws IOException, QueryException {
+        this.backup(query, filePath,false);
+    }
 	/**
 	 * This method restores a backup from the file system and imports the Documents
 	 * into the database.

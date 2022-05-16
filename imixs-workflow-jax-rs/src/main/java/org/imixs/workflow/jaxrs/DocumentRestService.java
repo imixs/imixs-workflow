@@ -448,22 +448,22 @@ public class DocumentRestService {
      * 
      * 
      * @param query
-     * @param start
-     * @param count
      * @param filepath - path in server filesystem
+     * @param snapshots - opitonal backup snapshots only
      * @return
      */
     @PUT
     @Path("/backup/{query}")
-    public Response backup(@PathParam("query") String query, @QueryParam("filepath") String filepath) {
-
+    public Response backup(@PathParam("query") String query, @QueryParam("filepath") String filepath,
+            @QueryParam("snapshots") boolean snapshots) {
+        
         if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         try {
             // decode query...
             String decodedQuery = URLDecoder.decode(query, "UTF-8");
-            documentService.backup(decodedQuery, filepath);
+            documentService.backup(decodedQuery, filepath,snapshots);
         } catch (IOException e) {
             e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
