@@ -14,8 +14,8 @@ The ItemCollection provides different methods to set or update items values. Any
     myItemCollection.appendItemValue("team","mark");
     myItemCollection.appendItemValue("team","anna");
 
-The method _setItemValue_ adds a new Item or replaces the value of an existing item. This code example creates a new empty ItemCollection and adds three new items. The first Item with the name "FirstName" contains a String value and the second item "CostCenter" contains an Integer value. 
-For the third item 'team' the  method _appendItemValue_ is used, which allows to add multiple values into one item. 
+The method `setItemValue` adds a new Item or replaces the value of an existing item. This code example creates a new empty ItemCollection and adds three new items. The first Item with the name "FirstName" contains a String value and the second item "CostCenter" contains an Integer value. 
+For the third item 'team' the  method `appendItemValue` is used, which allows to add multiple values into one item. 
 
 The following table gives an overview about the setter methods:
 
@@ -75,23 +75,40 @@ The ItemCollection provides also methods to test the existence of an Item. See t
 
 
 ### Multivalue Attributes
-The value of an Item can also be a value list (multi-value). Multi-values can be added to an ItemCollection with the method _appendItemValue_ or as a List of objects:
+
+An Item can also store a list of values (multi-value). Multi-values can be added to an ItemCollection with the method `appendItemValue` :
+
+    myItemCollection.appendItemValue("team", "Anna");
+    myItemCollection.appendItemValue("team", "John");
+
+This code example adds a teamlist with two String values as an item with the Name "team" to an ItemCollection. 
+
+Alternatively you can also set a List of object values:
 
     List<String> multiValue=new ArrayList<String>();
     multiValue.add("Anna");
     multiValue.add("John");
     myItemCollection.setItemValue("team", multiValue);
 
-The method _appendItemValue_ creates the same list:
-
-    myItemCollection.appendItemValue("team", "Anna");
-    myItemCollection.appendItemValue("team", "John");
-
+To access a value list, use the method `getItemValueList()` which always returns a List of values of the specified type:
   
-This code example adds a teamlist with two String values as an item with the Name "team" to an ItemCollection. To access a multi-value list you can use the method getItemValue() which always returns a List of values:
+    List<String> team = myItemCollection.getItemValueList("team", String.class);
+    
+#### Mixed Value Types 
+
+An item can hold different types of values: 
+
+	myItemCollection.appendItemValue("mydata", "Anna");
+	myItemCollection.appendItemValue("mydata", 42);
+	myItemCollection.appendItemValue("mydata", new Date());
+
+Use the method `getItemValue()` to get the raw type list of values:
   
-    List multiValue=myItemCollection.getItemValue("team");
+    List<?> multiValue=myItemCollection.getItemValue("mydata");
     String name=(String)multiValue.firstElement();
+
+       
+#### Serialized Data Values
 
 Using the ItemCollection it is possible to store not only basic data types but also any serializable Java Object:
   
@@ -107,7 +124,7 @@ Using the ItemCollection it is possible to store not only basic data types but a
     // read hashMap form itemCollection
     hashMap = (HashMap) myItemCollection.getItemValue("MyData").firstElement();
   
-As an ItemCollection is not serializable it is not recommanded to store a ItemCollection as a value into another ItemCollection. Instead use the method getAllItems() which returns a serializable Map interface:
+As an ItemCollection is not serializable it is not recommended to store a ItemCollection as a value into another ItemCollection. Instead use the method getAllItems() which returns a serializable Map interface:
   
     ItemCollection teamMember=new ItemCollection();
     teamMember.setItemValue("name", "Ralph");
@@ -152,7 +169,7 @@ In addition the following $file meta data items are computed:
 	    
   
 ### Get and Set all Items
-With the methods setAllItems() and getAllItems() it is possible to set and get the internal Map ValueObject. See the following example:
+The methods `setAllItems()` and `getAllItems()` can be used to set and get the raw data from the internal Map ValueObject. See the following example:
 
     // create a Java HashMap
     HashMap hashMap = new HashMap();
@@ -174,7 +191,7 @@ The ItemCollection provides convenience methods to access typical attributes of 
 |getEventID()	| returns the $eventID attribute of an workitem 	|
 |setEventID(id)	| set the $eventID attribute of a workitem 		|
 |getModelVersion()	| returns the $modelversion attribute of a workitem |
-|getUniqueID()		| returns the $uniqueid attribute of a workitem 	|
+|getUniqueID()		| returns the $uniqueId attribute of a workitem 	|
 
 
 ### Create an ItemCollection by Reference
@@ -189,10 +206,12 @@ This method call is equal to clone an instance:
 	// clone ItemCollection from an existing instance
 	ItemCollection myItemCollection = (ItemCollection)origin.clone();
 
-In both cases a deep copy of the given value map is created. A deep copy avoids write conflicts with value references. Particular in cases of embedded value arrays a deep copy is recommended. In cases where the values of a map are only read, a given value map can also be copied by reference. The method call _createByReference()_ has a better performance but copies the values by reference.
+In both cases a deep copy of the given value map is created. A deep copy avoids write conflicts with value references. Particular in cases of embedded value arrays a deep copy is recommended. 
+
+In cases where the values of a map are readonly, a given value map can alternatively be copied by reference. The method call `createByReference()` has a better performance but copies the values by reference.
 
 	// create a ItemCollection by reference
 	ItemCollection myItemCollection = ItemCollection.createByReference(origin);
  	
-It is recommended to use the constructor methods if the origin of the reference is not clear. 	
-For more information see the [javaDoc](http://www.imixs.org/doc/apidocs/org/imixs/workflow/ItemCollection.html).
+It is recommended to use the constructor methods if the origin of the reference is not clear.  For more information see the [javaDoc](http://www.imixs.org/doc/apidocs/org/imixs/workflow/ItemCollection.html).
+
