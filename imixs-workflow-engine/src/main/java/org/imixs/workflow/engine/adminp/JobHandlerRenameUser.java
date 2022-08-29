@@ -156,7 +156,7 @@ public class JobHandlerRenameUser implements JobHandler {
         sQuery = sQuery.substring(0, sQuery.length() - 4);
         sQuery += ")";
         // !! We do ignore the creator!! - see issue #350
-        sQuery += " AND ($writeaccess:\"" + fromUserID + "\" OR $readaccess:\"" + fromUserID + "\" OR owner:\""
+        sQuery += " AND ($writeaccess:\"" + fromUserID + "\" OR $readaccess:\"" + fromUserID + "\" OR $owner:\""
                 + fromUserID + "\" OR namowner:\"" + fromUserID + "\")";
 
         if (datFilterFrom != null && datFilterTo != null) {
