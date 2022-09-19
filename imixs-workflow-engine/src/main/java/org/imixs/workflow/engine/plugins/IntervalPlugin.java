@@ -92,8 +92,7 @@ public class IntervalPlugin extends AbstractPlugin {
         Optional<String> optional = fieldNames.stream().filter(x -> x.toLowerCase().startsWith("keyinterval"))
                 .findFirst();
         if (optional.isPresent()) {// Check whether optional has element you are looking for
-            throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT,
-                    "Note: keyinterval is no longer supported by the intervalPlugin. Use instead a cron configuration.");
+            logger.warning("Note: keyinterval is no longer supported by the intervalPlugin. Use instead a cron configuration.");
         }
 
         // evaluate interval configuration
@@ -269,7 +268,8 @@ public class IntervalPlugin extends AbstractPlugin {
             ldt = ldt.plusHours(1);
             break;
         default:
-            throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT, "invalid macro format: " + macro);
+        	// unknown makro return null
+        	return null;
         }
     
         return ldt;
