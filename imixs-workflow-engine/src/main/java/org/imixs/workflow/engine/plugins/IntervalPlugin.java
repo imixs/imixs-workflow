@@ -97,7 +97,7 @@ public class IntervalPlugin extends AbstractPlugin {
 
         // evaluate interval configuration
         ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(event, "item", adocumentContext,
-                false);
+                true);
 
         if (evalItemCollection == null) {
             return adocumentContext;
