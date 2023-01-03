@@ -38,6 +38,8 @@ import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
+import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -47,6 +49,7 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -213,6 +216,24 @@ public class EventLogRestService {
     public void deleteEventLogEntry(@PathParam("id") String id) {
         // remove eventLogEntry....
         eventLogService.removeEvent(id);
+    }
+
+    /**
+     * Creates/updates a new event log entry.
+     *
+     * @param topic    - the topic of the event.
+     * @param id       - uniqueId of the document to be assigned to the event
+     * @param document - optional document data to be stored in the event log entry
+     */
+    @PUT
+    @Path("/{topic}/{id}")
+    public void createEventLogEntry(@PathParam("topic") String topic, @PathParam("id") String refID,
+            XMLDocument xmlworkitem) {
+        if (xmlworkitem != null) {
+            eventLogService.createEvent(topic, refID, XMLDocumentAdapter.putDocument(xmlworkitem));
+        } else {
+            eventLogService.createEvent(topic, refID);
+        }
     }
 
     /**
