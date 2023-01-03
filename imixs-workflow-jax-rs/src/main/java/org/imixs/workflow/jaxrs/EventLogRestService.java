@@ -217,6 +217,24 @@ public class EventLogRestService {
     }
 
     /**
+     * Creates/updates a new event log entry.
+     *
+     * @param topic    - the topic of the event.
+     * @param id       - uniqueId of the document to be assigned to the event
+     * @param document - optional document data to be stored in the event log entry
+     */
+    @PUT
+    @Path("/{topic}/{id}")
+    public void createEventLogEntry(@PathParam("topic") String topic, @PathParam("id") String refID,
+            XMLDocument xmlworkitem) {
+        if (xmlworkitem != null) {
+            eventLogService.createEvent(topic, refID, XMLDocumentAdapter.putDocument(xmlworkitem));
+        } else {
+            eventLogService.createEvent(topic, refID);
+        }
+    }
+
+    /**
      * This helper method converts a EventLog entity into a ItemCollection.
      * 
      * @param eventLog - event log entity
