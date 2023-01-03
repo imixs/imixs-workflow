@@ -32,7 +32,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.EventLogService;
+import org.imixs.workflow.engine.index.SearchService;
+import org.imixs.workflow.engine.jpa.EventLog;
+import org.imixs.workflow.xml.XMLDataCollection;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
+
+import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
@@ -44,17 +54,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
-import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.EventLogService;
-import org.imixs.workflow.engine.index.SearchService;
-import org.imixs.workflow.engine.jpa.EventLog;
-import org.imixs.workflow.xml.XMLDataCollection;
-import org.imixs.workflow.xml.XMLDataCollectionAdapter;
-
-import jakarta.ejb.Stateless;
-import jakarta.persistence.OptimisticLockException;
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * The EventLogRestService supports methods to access the event log entries by
@@ -214,24 +213,6 @@ public class EventLogRestService {
     public void deleteEventLogEntry(@PathParam("id") String id) {
         // remove eventLogEntry....
         eventLogService.removeEvent(id);
-    }
-
-    /**
-     * Creates/updates a new event log entry.
-     *
-     * @param topic    - the topic of the event.
-     * @param id       - uniqueId of the document to be assigned to the event
-     * @param document - optional document data to be stored in the event log entry
-     */
-    @PUT
-    @Path("/{topic}/{id}")
-    public void createEventLogEntry(@PathParam("topic") String topic, @PathParam("id") String refID,
-            XMLDocument xmlworkitem) {
-        if (xmlworkitem != null) {
-            eventLogService.createEvent(topic, refID, XMLDocumentAdapter.putDocument(xmlworkitem));
-        } else {
-            eventLogService.createEvent(topic, refID);
-        }
     }
 
     /**
