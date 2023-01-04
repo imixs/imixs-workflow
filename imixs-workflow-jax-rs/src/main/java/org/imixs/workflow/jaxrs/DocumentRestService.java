@@ -170,13 +170,17 @@ public class DocumentRestService {
         ItemCollection document = null;
         try {
             document = documentService.load(uniqueid);
+            if (document == null) {
+                // document not found
+                return Response.status(Response.Status.NOT_FOUND).build();      
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
         return convertResult(document, items, format);
     }
-
+ 
     /**
      * Returns a resultset for a lucene Search Query
      * 
@@ -550,9 +554,9 @@ public class DocumentRestService {
      * @param format - optional format string (json|xml)
      * @return jax-rs Response object.
      */
-    public Response convertResult(ItemCollection workitem, String items, String format) {
+    protected Response convertResult(ItemCollection workitem, String items, String format) {
         if (workitem == null) {
-            workitem = new ItemCollection();
+            return Response.status(Response.Status.NOT_FOUND).build();            
         }
         if ("json".equals(format)) {
             return Response
