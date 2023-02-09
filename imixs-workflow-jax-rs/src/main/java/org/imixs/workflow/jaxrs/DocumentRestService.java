@@ -529,7 +529,7 @@ public class DocumentRestService {
      * @param items
      * @return
      */
-    protected static List<String> getItemList(String items) {
+    public static List<String> getItemList(String items) {
         if (items == null || "".equals(items))
             return null;
         Vector<String> v = new Vector<String>();
@@ -551,7 +551,7 @@ public class DocumentRestService {
      * @param format - optional format string (json|xml)
      * @return jax-rs Response object.
      */
-    protected Response convertResult(ItemCollection workitem, String items, String format) {
+    public Response convertResult(ItemCollection workitem, String items, String format) {
         if (workitem == null) {
             return Response.status(Response.Status.NOT_FOUND).build();            
         }
