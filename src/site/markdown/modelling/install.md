@@ -1,6 +1,18 @@
 # Installation
 
-For installation of the Imixs-BPMN Modeler, you will need an executable Eclipse installation (version Eclipse Oxygen or higher) or any other Eclipse based IDE (e.g. Oracle, SAP, IBM). If you do not have an Eclipse installation yet, you can download Eclipse from the [Eclipse website](http://www.eclipse.org/).
+Imixs-BPMN is based on <a href="https://github.com/imixs/open-bpmn/" target="_blank" >Open-BPMN</a> - a free BPMN 2.0 modelling platform. It can be used in <strong>Visual Studio Code</strong>, as a <strong>Eclipse Plugin</strong> or in a Web Browser. Further more, Open BPMN provides an extension mechanism to adapt the modeling platform to the individual requirements in any business process project. Read more about <a href="https://github.com/imixs/open-bpmn/"
+target="_blank">Open BPMN</a>.
+
+## Visual Studio Code
+
+To install Imixs-BPMN in Visual Studio Code (VSCode), go to the 'Extensions Settings' and search for 'Open-BPMN' to install.
+
+<img src="../images/modelling/install-vscode-01.png"/>
+
+After installing the extension you can create and edit .bpmn and .bpmn2 files within your IDE.
+## Eclipse IDE
+
+For installation of the Imixs-BPMN Modeler in Eclipse. If you do not have an Eclipse installation yet, you can download Eclipse from the [Eclipse website](http://www.eclipse.org/).
 
 You can install Imixs-BPMN directly from the Eclipse Marketplace by dragging the install button to your running Eclipse workspace:
 
