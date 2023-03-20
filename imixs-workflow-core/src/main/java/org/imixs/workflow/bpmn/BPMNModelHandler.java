@@ -410,15 +410,9 @@ public class BPMNModelHandler extends DefaultHandler {
             // adapt deprecated proptery format
             adaptDeprecatedEventProperties(currentEntity);
 
-            // adapter ?
+            // If we have a adapter ref we store this id for later?
             if (currentSignalRefID != null && !currentSignalRefID.isEmpty()) {
-                String signalName = signalCache.get(currentSignalRefID);
-                if (signalName != null && !signalName.isEmpty()) {
-                    currentEntity.setItemValue("adapter.id", signalName);
-                } else {
-                    logger.warning("Event " + currentEntity.getItemValueInteger("id") + " Signal Ref " + signalName
-                            + " is not defined!");
-                }
+                currentEntity.setItemValue("signal.ref.id", currentSignalRefID);               
             }
 
             // we need to cache the activities because the sequence flows must be
@@ -691,6 +685,8 @@ public class BPMNModelHandler extends DefaultHandler {
         for (String eventID : eventCache.keySet()) {
             List<ItemCollection> sourceTaskList = findSourceTasks(eventID);
             for (ItemCollection sourceTask : sourceTaskList) {
+
+                // resolve signal information (Issue #811)
                 addImixsEvent(eventID, sourceTask);
             }
         }
@@ -1204,6 +1200,18 @@ public class BPMNModelHandler extends DefaultHandler {
             event.setItemValue("loopEvent", true);
         }
 
+        /* Resolve Adapter */
+        String signalRefID=event.getItemValueString("signal.ref.id");
+        if (signalRefID != null && !signalRefID.isEmpty()) {
+            String signalName = signalCache.get(signalRefID);
+            if (signalName != null && !signalName.isEmpty()) {
+                event.setItemValue("adapter.id", signalName);
+            } else {
+                logger.warning("Event " + event.getItemValueInteger("id") + " Signal Ref " + signalRefID
+                        + " is not defined!");
+            }
+        }
+
         model.addEvent(verifyActiviytIdForEvent(event));
     }
 
@@ -1486,7 +1494,7 @@ public class BPMNModelHandler extends DefaultHandler {
         // timer
         if (!eventEntity.hasItem(BPMNModel.EVENT_ITEM_TIMER_ACTIVE)) {
             eventEntity.setItemValue(BPMNModel.EVENT_ITEM_TIMER_ACTIVE,
-                    new Boolean("1".equals(eventEntity.getItemValueString("keyscheduledactivity"))));
+                     Boolean.valueOf("1".equals(eventEntity.getItemValueString("keyscheduledactivity"))));
         }
         if (!eventEntity.hasItem("keyscheduledactivity")) {
             if (eventEntity.getItemValueBoolean(BPMNModel.EVENT_ITEM_TIMER_ACTIVE)) {
