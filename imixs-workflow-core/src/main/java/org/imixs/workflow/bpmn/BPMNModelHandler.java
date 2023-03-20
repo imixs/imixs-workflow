@@ -1494,7 +1494,7 @@ public class BPMNModelHandler extends DefaultHandler {
         // timer
         if (!eventEntity.hasItem(BPMNModel.EVENT_ITEM_TIMER_ACTIVE)) {
             eventEntity.setItemValue(BPMNModel.EVENT_ITEM_TIMER_ACTIVE,
-                    new Boolean("1".equals(eventEntity.getItemValueString("keyscheduledactivity"))));
+                     Boolean.valueOf("1".equals(eventEntity.getItemValueString("keyscheduledactivity"))));
         }
         if (!eventEntity.hasItem("keyscheduledactivity")) {
             if (eventEntity.getItemValueBoolean(BPMNModel.EVENT_ITEM_TIMER_ACTIVE)) {
