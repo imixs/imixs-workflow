@@ -1,7 +1,7 @@
 # Imixs-Workflow
 [![Java CI with Maven](https://github.com/imixs/imixs-workflow/actions/workflows/maven.yml/badge.svg)](https://github.com/imixs/imixs-workflow/actions/workflows/maven.yml)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1694/badge)](https://bestpractices.coreinfrastructure.org/projects/1694)
-[![Join a discussion at https://gitter.im/imixs/imixs-workflow](https://img.shields.io/badge/discuss-on%20github-4CB697)](https://github.com/imixs/imixs-workflow/discussions)
+[![Join a discussion](https://img.shields.io/badge/discuss-on%20github-4CB697)](https://github.com/imixs/imixs-workflow/discussions)
 [![License](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/imixs/imixs-workflow/blob/master/LICENSE)
 
 Imixs-Workflow is an open source workflow engine to build human-centric workflow applications on a flexible and robust framework. 
