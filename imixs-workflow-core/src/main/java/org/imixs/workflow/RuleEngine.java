@@ -115,11 +115,22 @@ public class RuleEngine {
     /**
      * This method initializes a context with default configuration.
      * 
+     * We set the option 'WarnInterpreterOnly' to false.
+     * See also here: https://www.graalvm.org/22.0/reference-manual/js/FAQ/
+     * 
+     * Issue #821
+     * 
      * @param languageId
      */
     void init(final String languageId) {
+        long l=System.currentTimeMillis();
         this.languageId = languageId;
-        context = Context.newBuilder(languageId).allowAllAccess(true).build();
+        // context = Context.newBuilder(languageId).allowAllAccess(true).build();
+        context = Context.newBuilder(languageId) //
+            .option("engine.WarnInterpreterOnly", "false") //
+            .allowAllAccess(true) //
+            .build();
+       logger.info("...init RuleEngine took " + (System.currentTimeMillis()-l) + "ms");
     }
 
     /**
