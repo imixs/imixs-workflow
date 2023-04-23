@@ -87,7 +87,7 @@ public class RuleEngine {
 
     private static Logger logger = Logger.getLogger(RuleEngine.class.getName());
 
-    private Context context = null;
+    private Context _context = null;
     private String languageId;
 
     /**
@@ -99,7 +99,7 @@ public class RuleEngine {
     }
 
     /**
-     * This method initializes the script engine.
+     * This method initializes the script engine with a specific languageId.
      * 
      * @param scriptLanguage
      */
@@ -115,31 +115,37 @@ public class RuleEngine {
     /**
      * This method initializes a context with default configuration.
      * 
-     * We set the option 'WarnInterpreterOnly' to false.
-     * See also here: https://www.graalvm.org/22.0/reference-manual/js/FAQ/
-     * 
-     * Issue #821
-     * 
      * @param languageId
      */
     void init(final String languageId) {
-        long l=System.currentTimeMillis();
         this.languageId = languageId;
-        // context = Context.newBuilder(languageId).allowAllAccess(true).build();
-        context = Context.newBuilder(languageId) //
-            .option("engine.WarnInterpreterOnly", "false") //
-            .allowAllAccess(true) //
-            .build();
-       logger.info("...init RuleEngine took " + (System.currentTimeMillis()-l) + "ms");
+        // lazy initialization - see getContext()
+        _context=null;
     }
 
     /**
      * Returns the current polyglot context
      * 
+     * This method implements a lazy initialization of the context. 
+     * See Issue #822
+     * 
+     * We also set the option 'WarnInterpreterOnly' to false.
+     * See also here: https://www.graalvm.org/22.0/reference-manual/js/FAQ/
+     * 
+     * Issue #821
      * @return
      */
     public Context getContext() {
-        return context;
+        // init context the first time?
+        if (_context==null) {
+            long l=System.currentTimeMillis();
+            _context = Context.newBuilder(languageId) //
+                .option("engine.WarnInterpreterOnly", "false") //
+                .allowAllAccess(true) //
+                .build();
+            logger.info("...init RuleEngine took " + (System.currentTimeMillis()-l) + "ms");
+        }
+        return _context;
     }
 
     /**
@@ -150,11 +156,11 @@ public class RuleEngine {
      * @param value
      */
     public void putMember(String identifier, Object value) {
-        context.getBindings(languageId).putMember(identifier, value);
+        getContext().getBindings(languageId).putMember(identifier, value);
     }
 
     public Value eval(String script) {
-        Value result = context.eval(languageId, script);
+        Value result = getContext().eval(languageId, script);
         return result;
     }
 
@@ -277,7 +283,7 @@ public class RuleEngine {
     public ItemCollection convertResult() {
 
         // do we have a result object?
-        Value resultValue = context.getBindings(languageId).getMember("result");
+        Value resultValue = getContext().getBindings(languageId).getMember("result");
         if (resultValue == null) {
             return null;
         }
