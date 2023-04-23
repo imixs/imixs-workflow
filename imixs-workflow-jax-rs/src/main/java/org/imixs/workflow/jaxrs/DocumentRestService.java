@@ -400,7 +400,7 @@ public class DocumentRestService {
                         .status(Response.Status.NOT_ACCEPTABLE).build();
             } else {
                 return Response.ok(
-                        XMLDataCollectionAdapter.getDataCollection(workitem, DocumentRestService.getItemList(items)),
+                        XMLDataCollectionAdapter.getDataCollection(workitem, RestAPIUtil.getItemList(items)),
                         MediaType.APPLICATION_XML).build();
             }
 
@@ -522,25 +522,7 @@ public class DocumentRestService {
         return convertResult(config, null, format);
     }
 
-    /**
-     * This method returns a List object from a given comma separated string. The
-     * method returns null if no elements are found. The provided parameter looks
-     * typical like this: <code>
-     *   txtWorkflowStatus,numProcessID,txtName
-     * </code>
-     * 
-     * @param items
-     * @return
-     */
-    public static List<String> getItemList(String items) {
-        if (items == null || "".equals(items))
-            return null;
-        Vector<String> v = new Vector<String>();
-        StringTokenizer st = new StringTokenizer(items, ",");
-        while (st.hasMoreTokens())
-            v.add(st.nextToken());
-        return v;
-    }
+   
 
     /**
      * This method converts a single ItemCollection into a Jax-rs response object.
@@ -561,14 +543,14 @@ public class DocumentRestService {
         if ("json".equals(format)) {
             return Response
                     // Set the status and Put your entity here.
-                    .ok(XMLDataCollectionAdapter.getDataCollection(workitem, DocumentRestService.getItemList(items)))
+                    .ok(XMLDataCollectionAdapter.getDataCollection(workitem, RestAPIUtil.getItemList(items)))
                     // Add the Content-Type header to tell Jersey which format it should marshall
                     // the entity into.
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
         } else if ("xml".equals(format)) {
             return Response
                     // Set the status and Put your entity here.
-                    .ok(XMLDataCollectionAdapter.getDataCollection(workitem, DocumentRestService.getItemList(items)))
+                    .ok(XMLDataCollectionAdapter.getDataCollection(workitem, RestAPIUtil.getItemList(items)))
                     // Add the Content-Type header to tell Jersey which format it should marshall
                     // the entity into.
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML).build();
@@ -576,7 +558,7 @@ public class DocumentRestService {
             // default header param
             return Response
                     // Set the status and Put your entity here.
-                    .ok(XMLDataCollectionAdapter.getDataCollection(workitem, DocumentRestService.getItemList(items)))
+                    .ok(XMLDataCollectionAdapter.getDataCollection(workitem, RestAPIUtil.getItemList(items)))
                     .build();
         }
     }
@@ -600,14 +582,14 @@ public class DocumentRestService {
         if ("json".equals(format)) {
             return Response
                     // Set the status and Put your entity here.
-                    .ok(XMLDataCollectionAdapter.getDataCollection(result, DocumentRestService.getItemList(items)))
+                    .ok(XMLDataCollectionAdapter.getDataCollection(result, RestAPIUtil.getItemList(items)))
                     // Add the Content-Type header to tell Jersey which format it should marshall
                     // the entity into.
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
         } else if ("xml".equals(format)) {
             return Response
                     // Set the status and Put your entity here.
-                    .ok(XMLDataCollectionAdapter.getDataCollection(result, DocumentRestService.getItemList(items)))
+                    .ok(XMLDataCollectionAdapter.getDataCollection(result, RestAPIUtil.getItemList(items)))
                     // Add the Content-Type header to tell Jersey which format it should marshall
                     // the entity into.
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML).build();
@@ -615,7 +597,7 @@ public class DocumentRestService {
             // default header param
             return Response
                     // Set the status and Put your entity here.
-                    .ok(XMLDataCollectionAdapter.getDataCollection(result, DocumentRestService.getItemList(items)))
+                    .ok(XMLDataCollectionAdapter.getDataCollection(result, RestAPIUtil.getItemList(items)))
                     .build();
         }
     }

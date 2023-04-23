@@ -846,7 +846,7 @@ public class WorkflowRestService {
                         .status(Response.Status.NOT_ACCEPTABLE).build();
             } else {
                 return Response.ok(
-                        XMLDataCollectionAdapter.getDataCollection(workitem, DocumentRestService.getItemList(items)))
+                        XMLDataCollectionAdapter.getDataCollection(workitem, RestAPIUtil.getItemList(items)))
                         .build();
             }
         } catch (Exception e) {
