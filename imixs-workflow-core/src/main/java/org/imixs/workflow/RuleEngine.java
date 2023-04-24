@@ -189,11 +189,8 @@ public class RuleEngine {
 
         // Test if we have a deprecated Script...
         if (RuleEngineNashornConverter.isDeprecatedScript(script)) {
-            logger.warning("converting deprecated nashorn script");
-            logger.info("Old Script: \n=========================\n" + script + "\n=========================");
             // here we rewrite the script as best as we can.
-            script = RuleEngineNashornConverter.rewrite(script, workitem, null);
-            logger.info("New Script: \n=========================\n" + script + "\n=========================");
+            script = RuleEngineNashornConverter.rewrite(script, workitem, null);            
         }
 
         Value result = null;
@@ -247,10 +244,8 @@ public class RuleEngine {
 
         // Test if we have a deprecated Script...
         if (RuleEngineNashornConverter.isDeprecatedScript(script)) {
-            logger.warning("evaluate deprecated nashorn script");
             // here we rewrite the script as best as we can.
             script = RuleEngineNashornConverter.rewrite(script, workitem, event);
-            logger.info("New Script: \n=========================\n" + script + "\n=========================");
         }
 
         // evaluate the script....

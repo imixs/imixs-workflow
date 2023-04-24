@@ -100,13 +100,27 @@ public class RuleEngineNashornConverter {
      * @return
      */
     public static String rewrite(String script, ItemCollection workitem, ItemCollection event) {
-        logger.fine("rewrite scipt: " + script);
+
+        String converterLog="";
+        converterLog=converterLog+"\n***************************************************";
+        converterLog=converterLog+"\n*** DEPRECATED NASHORN SCRIPT FOUND:            ***";
+        converterLog=converterLog+"\n***************************************************\n";
+
+        converterLog=converterLog+"\n" + script + "\n\n";
+
         script = convertByItemCollection(script, workitem, "workitem");
         script = convertByItemCollection(script, event, "event");
         // here it may happen the something like
         // workitem.getItemValueString(refField)[0]
         // is the result. We need to remove the [0] here!
         script = script.replace(")[0]", ")");
+
+        converterLog=converterLog+"\n***************************************************";
+        converterLog=converterLog+"\n*** PLEASE REPLACE YOUR SCRIPT WITH:            ***";
+        converterLog=converterLog+"\n***************************************************\n";
+        converterLog=converterLog+"\n" + script + "\n";
+        converterLog=converterLog+"\n***************************************************\n";
+        logger.warning(converterLog);
         return script;
 
     }
