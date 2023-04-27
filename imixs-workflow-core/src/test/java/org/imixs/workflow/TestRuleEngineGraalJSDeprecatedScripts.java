@@ -1,6 +1,8 @@
 package org.imixs.workflow;
 
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.script.ScriptException;
 
@@ -124,6 +126,52 @@ public class TestRuleEngineGraalJSDeprecatedScripts {
 		Assert.assertTrue(bmatch);
 		
 		
+	}
+
+
+
+	/**
+	 * This test verifies the evaluation of a simple scripts
+	 * 
+	 * workitem['space.team'] && workitem['space.team'][0]!=""
+	 * 
+	 * !workitem['space.team'] || workitem['space.team'][0]==""
+	 * 
+	 * See Issue #824
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testBasicScript_Issue824() throws ScriptException, PluginException {
+		ItemCollection workitem = new ItemCollection();
+		workitem.replaceItemValue("space.team", "Anna");
+		workitem.appendItemValue("space.team", "Rico");
+
+		// access single value
+		String script = "workitem['space.team'] && workitem['space.team'][0]!=\"\"";
+
+		Assert.assertTrue( ruleEngine.evaluateBooleanExpression(script, workitem));
+
+		// test empty sting szenario...
+		workitem.replaceItemValue("space.team", "");
+		Assert.assertFalse( ruleEngine.evaluateBooleanExpression(script, workitem));
+
+		// test missing item szenario...
+		workitem.removeItem("space.team");
+		Assert.assertFalse( ruleEngine.evaluateBooleanExpression(script, workitem));
+
+		// test inverted script
+		script = "!workitem['space.team'] || workitem['space.team'][0]===\"\"";
+		Assert.assertTrue( ruleEngine.evaluateBooleanExpression(script, workitem));
+
+		// test empty sting szenario...
+		workitem.replaceItemValue("space.team", "");
+		Assert.assertTrue( ruleEngine.evaluateBooleanExpression(script, workitem));
+
+		// test empty sting value...
+		workitem.replaceItemValue("space.team", "some value");
+		Assert.assertFalse( ruleEngine.evaluateBooleanExpression(script, workitem));
 	}
 
 }

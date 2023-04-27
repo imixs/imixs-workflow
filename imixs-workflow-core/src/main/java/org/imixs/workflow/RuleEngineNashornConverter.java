@@ -31,6 +31,8 @@ package org.imixs.workflow;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This is a helper class to convert a deprecated script into the new format.
@@ -85,6 +87,17 @@ public class RuleEngineNashornConverter {
         if (script.contains("workitem.") || script.contains("event.")) {
             return true;
         }
+
+        // test for things like  workitem['space.team']  or  workitem['space.team'][0]
+        // workitem\['\w+'\]
+        String regex = "workitem\\['[._\\w]+'\\]";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(script);
+        if (matcher.find()) {
+            return true;
+        }
+    
+
 
         // default to GaalVM
         return false;
@@ -153,9 +166,9 @@ public class RuleEngineNashornConverter {
             String phrase;
             String newPhrase;
 
+            // CASE-1
             // replace : workitem.txtname[0] => workitem.getItemValueString('txtname')
             phrase = contextName + "." + itemName + "[0]";
-
             // is it a number?
             if (documentContext.isItemValueNumeric(itemName)) {
                 newPhrase = contextName + ".getItemValueDouble('" + itemName + "')";
@@ -164,12 +177,36 @@ public class RuleEngineNashornConverter {
             }
             script = script.replace(phrase, newPhrase);
 
+
+
+
+            // CASE-2
+            // replace :workitem['txtname'][0] => workitem.getItemValueString('txtname')
+            phrase = contextName + "['" + itemName +"'][0]";
+            // is it a number?
+            if (documentContext.isItemValueNumeric(itemName)) {
+                newPhrase = contextName + ".getItemValueDouble('" + itemName + "')";
+            } else {
+                newPhrase = contextName + ".getItemValueString('" + itemName + "')";
+            }
+            script = script.replace(phrase, newPhrase);
+
+
+            // CASE-3
             // replace : workitem.txtname => workitem.hasItem('txtname')
             phrase = contextName + "." + itemName;
             newPhrase = contextName + ".hasItem('" + itemName + "')";
             script = script.replace(phrase, newPhrase);
 
+
+             // CASE-4
+            // replace : workitem['txtname'] => workitem.hasItem('txtname')
+            phrase = contextName + "['" + itemName +"']";
+            newPhrase = contextName + ".hasItem('" + itemName + "')";
+            script = script.replace(phrase, newPhrase);
+
             
+            // CASE-5
             // replace : workitem.txtname 
             phrase = contextName + ".get(";
             // is it a number?
