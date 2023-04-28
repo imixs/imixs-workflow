@@ -293,8 +293,7 @@ public class WorkflowRestService {
     }
 
     /**
-     * Returns a collection of workitems representing the worklist by the current
-     * user
+     * Returns a collection of workitems for which the specified user has explicit write permission.
      * 
      * @param start
      * @param count
@@ -320,6 +319,33 @@ public class WorkflowRestService {
 
             result = workflowService.getWorkListByAuthor(user, type, pageSize, pageIndex, sortBy, sortReverse);
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return documentRestService.convertResultList(result, items, format);
+    }
+
+    /**
+     * Returns a collection of workitems where the current user has a write permission.
+     * This means that the current userID or at least one of its roles is contained in
+     * the $writeaccess property.
+     * 
+     * @param start
+     * @param count
+     * @param type
+     * @param sortorder
+     */
+    @GET
+    @Path("/tasklist/writeaccess")
+    public Response getTaskListByWriteAccess( @QueryParam("type") String type,
+            @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
+            @DefaultValue("10") @QueryParam("pageSize") int pageSize,
+            @DefaultValue("") @QueryParam("sortBy") String sortBy,
+            @DefaultValue("false") @QueryParam("sortReverse") Boolean sortReverse, @QueryParam("items") String items,
+            @QueryParam("format") String format) {
+        List<ItemCollection> result = null;
+        try {
+            result = workflowService.getWorkListByWriteAccess(type, pageSize, pageIndex, sortBy, sortReverse);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -9,23 +9,25 @@ The resource _/workflow_ provides methods to create, process and read workitems 
 The subresource _/workflow/workitem/_ provides GET methods to read the content of a workitem:
 
 
-| URI                                           | Method | Description                               | 
-|-----------------------------------------------|--------|-----------------------------------|
-| /workflow/workitem/{uniqueid}                 | GET    | a single workitem represented by the   provided uniqueid                              |
-| /workflow/workitem/{uniqueid}/file/{file}     | GET    | a file attachment located in the property   $file of the spcified workitem           |
+| URI                                           | Method | Description                                                                  |
+|-----------------------------------------------|--------|------------------------------------------------------------------------------|
+| /workflow/workitem/{uniqueid}                 | GET    | a single workitem represented by the   provided uniqueid                     |
+| /workflow/workitem/{uniqueid}/file/{file}     | GET    | a file attachment located in the property   $file of the spcified workitem   |
 
 
 ## GET a Task List 
 The subresource _/workflow/tasklist/_ provides GET methods to read collections of workitems:
 
-| URI                                           | Method | Description                               | 
-|-----------------------------------------------|--------|-----------------------------------|
-| /workflow/worklist                            | GET    | a collection of workitems representing the worklist for the current user |             
+| URI                                           | Method | Description                                                                                  |
+|-----------------------------------------------|--------|----------------------------------------------------------------------------------------------|
+| /workflow/worklist                            | GET    | a collection of workitems owned by the current user (the default tasklist)                     |
 | /workflow/tasklist/owner/{owner}              | GET    | a collection of workitems owned by a specific  user (or value 'null' for the current user)   |
 | /workflow/tasklist/creator/{creator}          | GET    | a collection of workitems created by a specific user (or value 'null' for the current user)                           |
-| /workflow/tasklist/processid/{processid}      | GET    | a collection of workitems in a specific    process state             |
-| /workflow/tasklist/group/{processgroup}       | GET    | a collection of workitems in a specific    process group                             |
-| /workflow/tasklist/ref/{uniqueid}             | GET    | a collection of workitems referenced to a  specific uniqueId (childs)                |
+| /workflow/tasklist/author/{author}            | GET    | a collection of workitems for which a specific user has explicit write permission (or value 'null' for the current user)|
+| /workflow/tasklist/writeaccess                | GET    | a collection of workitems, the current user has a write permission. This means that the current userID or at least one of its roles is contained in the $writeaccess property.                                              |
+| /workflow/tasklist/processid/{processid}      | GET    | a collection of workitems in a specific    process state                                     |
+| /workflow/tasklist/group/{processgroup}       | GET    | a collection of workitems in a specific    process group                                     |
+| /workflow/tasklist/ref/{uniqueid}             | GET    | a collection of workitems referenced to a  specific uniqueId (childs)                        |
 
 
 ### Resource Options
@@ -33,13 +35,13 @@ The subresource _/workflow/tasklist/_ provides GET methods to read collections o
 With the following optional URI parameters the GET request can be filtered and sorted:
 
 
-| option                  | description | example                                                        | 
-|-------------------------|-------------|--------------------------------------------------------------------|
-| pageSize    | number of documents returned      | ..?pagesize=10           	|
-| pageIndex   | page index to start               | ..?pageindex=5&pagesize=10  |
-| sortBy	  | sort item 					      | ..&sortBy=txtworkflowstatus |
+| option                  | description | example                                     |
+|-------------------------|-------------|---------------------------------------------|
+| pageSize    | number of documents returned      | ..?pagesize=10           	      |
+| pageIndex   | page index to start               | ..?pageindex=5&pagesize=10        |
+| sortBy	  | sort item 					      | ..&sortBy=txtworkflowstatus       |
 | sortReverse | sort direction (ascending/descending)   | ..&sourtReverse=true		  |
-| type        | filter workitems by the 'type' property | ..&type=workitem      | 
+| type        | filter workitems by the 'type' property | ..&type=workitem            |
 | items       | filter item values to be returned | ..&items=$taskid,$modellversion   |
 | format      | optional output format JSON/XML   | ..&format=json   or   &format=xml |
 

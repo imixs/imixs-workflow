@@ -192,8 +192,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
     }
 
     /**
-     * Returns a collection of workItems belonging to a specified username. The name
-     * is a username or role contained in the $WriteAccess attribute of the
+     * Returns a collection of workitems for which the specified user has explicit write permission.
+     * The name is a username or role contained in the $WriteAccess attribute of the
      * workItem.
      * 
      * The method returns only workitems the call has sufficient read access for.
@@ -202,8 +202,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
      *                    current username will be used
      * @param pageSize    = optional page count (default 20)
      * @param pageIndex   = optional start position
-     * @param type        = defines the type property of the workitems to be
-     *                    returnd. can be null
+     * @param type        = defines the type property of the workitems to be returned. can be null
      * @param sortBy      -optional field to sort the result
      * @param sortReverse - optional sort direction
      * 
@@ -268,8 +267,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
     /**
      * Returns a collection of workitems where the current user has a writeAccess.
-     * This means the either the username or one of the userroles is contained in
-     * the $writeaccess property
+     * This means that at least one of the userNames is contained in
+     * the $writeaccess property.
      * 
      * 
      * @param pageSize    = optional page count (default 20)
@@ -288,31 +287,22 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
     public List<ItemCollection> getWorkListByWriteAccess(String type, int pageSize, int pageIndex, String sortBy,
             boolean sortReverse) {
         StringBuffer nameListBuffer = new StringBuffer();
-
-        String name = ctx.getCallerPrincipal().getName();
-
-        // construct nameList. Begin with empty string '' and username
-        nameListBuffer.append("($writeaccess:\"" + name + "\"");
-        // now construct role list
-
-        String accessRoles = documentService.getAccessRoles();
-
-        String roleList = "org.imixs.ACCESSLEVEL.READERACCESS,org.imixs.ACCESSLEVEL.AUTHORACCESS,org.imixs.ACCESSLEVEL.EDITORACCESS,"
-                + accessRoles;
-        // add each role the user is in to the name list
-        StringTokenizer roleListTokens = new StringTokenizer(roleList, ",");
-        while (roleListTokens.hasMoreTokens()) {
-            String testRole = roleListTokens.nextToken().trim();
-            if (!"".equals(testRole) && ctx.isCallerInRole(testRole))
-                nameListBuffer.append(" OR $writeaccess:\"" + testRole + "\"");
+        nameListBuffer.append("(");
+        // construct a name list query for $writeaccess
+        List<String> userNames = documentService.getUserNameList();
+        for (int i=0; i<userNames.size(); i++) {
+            String userName= userNames.get(i);
+            if (i>0) {
+                nameListBuffer.append(" OR ");
+            }
+            nameListBuffer.append(" $writeaccess:\"" + userName + "\" ");            
         }
         nameListBuffer.append(")");
 
-        String searchTerm = "(";
+        String searchTerm = nameListBuffer.toString();
         if (type != null && !"".equals(type)) {
-            searchTerm += " type:\"" + type + "\" AND " + nameListBuffer.toString();
+            searchTerm += " AND type:\"" + type + "\"";
         }
-        searchTerm += " $writeaccess:\"" + name + "\" )";
         try {
             return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
         } catch (QueryException e) {
