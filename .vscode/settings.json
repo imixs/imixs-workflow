@@ -1,0 +1,16 @@
+// If one would like to add/remove/modify user preferences without modifying the content of the
+// workspace settings file, then one would need to modify the `settings.json` under here:
+// - Windows: %APPDATA%\Code\User\settings.json
+// - Linux: $HOME/.config/Code/User/settings.json
+// - Mac: $HOME/Library/Application Support/Code/User/settings.json
+{
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    },
+    "java.checkstyle.version": "8.44",
+    "java.checkstyle.autocheck": true,
+    "java.checkstyle.configuration": "https://raw.githubusercontent.com/imixs/imixs-workflow/master/imixs-checkstyle-8.44.xml",
+    "java.configuration.updateBuildConfiguration": "automatic"
+  }
+  
