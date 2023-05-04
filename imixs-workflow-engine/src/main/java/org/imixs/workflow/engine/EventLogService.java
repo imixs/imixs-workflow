@@ -36,12 +36,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RolesAllowed;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.jpa.EventLog;
 
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
@@ -81,11 +80,11 @@ import jakarta.persistence.TemporalType;
  */
 
 @DeclareRoles({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
-    "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
-    "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
+        "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
+        "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @RolesAllowed({ "org.imixs.ACCESSLEVEL.NOACCESS", "org.imixs.ACCESSLEVEL.READERACCESS",
-    "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
-    "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
+        "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
+        "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 public class EventLogService {
 
@@ -208,7 +207,7 @@ public class EventLogService {
     /**
      * Finds events for one or many given topics within the current timeout.
      * <p>
-     * The attribte 'timeout' is optional. If the timeout is set to a future point
+     * The attribute 'timeout' is optional. If the timeout is set to a future point
      * of time, the event will be ignored by this method.
      * 
      * @param maxCount - maximum count of events to be returned
