@@ -32,20 +32,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.ObserverException;
-import jakarta.enterprise.event.Observes;
-import jakarta.inject.Inject;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.Tag;
-import org.eclipse.microprofile.metrics.annotation.RegistryType;
+import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.ObserverException;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
 
 /**
  * The Imixs MetricSerivce is a monitoring resource for Imixs-Workflow in the
@@ -88,7 +87,7 @@ public class MetricService {
 	private boolean metricsAnonymised;
 
 	@Inject
-	@RegistryType(type = MetricRegistry.Type.APPLICATION)
+	@RegistryScope(scope = MetricRegistry.APPLICATION_SCOPE)
 	MetricRegistry metricRegistry;
 
 	boolean mpMetricNoSupport = false;
@@ -175,7 +174,7 @@ public class MetricService {
 		// - reusable - If true, this metric name is permitted to be used at multiple
 
 		Metadata metadata = Metadata.builder().withName(METRIC_DOCUMENTS)
-				.withDescription("Imixs-Workflow count documents").withType(MetricType.COUNTER).build();
+				.withDescription("Imixs-Workflow count documents").build();
 
 		String method = null;
 		// build tags...
@@ -215,13 +214,11 @@ public class MetricService {
 		// - tags - The tags of the metric - cannot be null
 		// - reusable - If true, this metric name is permitted to be used at multiple
 
-		
-
 		// BEFORE_PROCESS
 		if (event.getEventType() == ProcessingEvent.BEFORE_PROCESS) {
 			// only transaction count - independent form the result
 			Metadata metadata = Metadata.builder().withName(METRIC_TRANSACTIONS)
-					.withDescription("Imixs-Workflow transactions").withType(MetricType.COUNTER).build();
+					.withDescription("Imixs-Workflow transactions").build();
 			Counter counter = metricRegistry.counter(metadata);
 			return counter;
 
@@ -243,7 +240,7 @@ public class MetricService {
 			}
 			tags.add(new Tag("event", event.getDocument().getItemValueInteger("$lastevent") + ""));
 			Metadata metadata = Metadata.builder().withName(METRIC_WORKITEMS)
-					.withDescription("Imixs-Workflow count processed workitems").withType(MetricType.COUNTER).build();
+					.withDescription("Imixs-Workflow count processed workitems").build();
 			Tag[] tagArr = tags.toArray(new Tag[tags.size()]);
 			Counter counter = metricRegistry.counter(metadata, tagArr);
 

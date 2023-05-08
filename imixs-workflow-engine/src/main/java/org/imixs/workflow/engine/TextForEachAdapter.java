@@ -32,15 +32,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.plugins.AbstractPlugin;
+import org.imixs.workflow.util.XMLParser;
+
 import jakarta.annotation.Priority;
 import jakarta.ejb.Stateless;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
-import javax.interceptor.Interceptor;
-import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.plugins.AbstractPlugin;
-import org.imixs.workflow.util.XMLParser;
+import jakarta.interceptor.Interceptor;
 
 /**
  * The TextForEachAdapter can be used to format text fragments with the
