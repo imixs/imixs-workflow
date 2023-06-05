@@ -34,6 +34,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.WorkflowService;
@@ -77,6 +78,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
     public static final String SUBPROCESS_CREATE = "subprocess_create";
     public static final String SUBPROCESS_UPDATE = "subprocess_update";
     public static final String ORIGIN_UPDATE = "origin_update";
+    public static final String SUBPROCESS_SYNC = "subprocess_sync"; // synchronize items from parent
 
     private static Logger logger = Logger.getLogger(SplitAndJoinPlugin.class.getName());
 
@@ -92,18 +94,30 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
      * For each item a corresponding processing cycle will be started.
      * 
      * @throws @throws ProcessingErrorException @throws
-     *         AccessDeniedException @throws
+     *                 AccessDeniedException @throws
      * 
      */
     @SuppressWarnings("unchecked")
-    public ItemCollection run(ItemCollection adocumentContext, ItemCollection event)
+    public ItemCollection run(ItemCollection workitem, ItemCollection event)
             throws PluginException, AccessDeniedException, ProcessingErrorException {
         boolean debug = logger.isLoggable(Level.FINE);
-        ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(event, "item", adocumentContext,
-                false);
 
-        if (evalItemCollection == null)
-            return adocumentContext;
+        ItemCollection evalItemCollection = null;
+        // test for deprecated configuration using the <item> tag....
+        if (isDeprecatedConfiguration(workitem, event)) {
+            logger.warning(
+                    "SplitAndJoinPlugin is using deprecated configuration! Please use <split type='.,.'> instead of <item name='...'> ");
+            evalItemCollection = getWorkflowService().evalWorkflowResult(event, "item", workitem,
+                    false);
+        } else {
+            evalItemCollection = getWorkflowService().evalWorkflowResult(event, "split", workitem,
+                    false);
+        }
+
+        if (evalItemCollection == null) {
+            // no configuration found!
+            return workitem;
+        }
 
         try {
             // 1.) test for items with name subprocess_create and create the
@@ -114,18 +128,18 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                 }
                 // extract the create subprocess definitions...
                 List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_CREATE);
-                createSubprocesses(processValueList, adocumentContext);
+                createSubprocesses(processValueList, workitem);
             }
 
             // 2.) test for items with name subprocess_update and create the
             // defined suprocesses
             if (evalItemCollection.hasItem(SUBPROCESS_UPDATE)) {
                 if (debug) {
-                    logger.finest("......sprocessing " + SUBPROCESS_UPDATE);
+                    logger.finest("......processing " + SUBPROCESS_UPDATE);
                 }
                 // extract the create subprocess definitions...
                 List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_UPDATE);
-                updateSubprocesses(processValueList, adocumentContext);
+                updateSubprocesses(processValueList, workitem);
             }
 
             // 3.) test for items with name origin_update and update the
@@ -136,14 +150,53 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                 }
                 // extract the create subprocess definitions...
                 String processValue = evalItemCollection.getItemValueString(ORIGIN_UPDATE);
-                updateOrigin(processValue, adocumentContext);
+                updateOrigin(processValue, workitem);
+            }
+
+            // 4.) test for items with name sync_parent_items to update
+            if (evalItemCollection.hasItem(SUBPROCESS_SYNC)) {
+                if (debug) {
+                    logger.finest("......" + SUBPROCESS_SYNC);
+                }
+                // extract the sync items definition...
+                String processValue = evalItemCollection.getItemValueString(SUBPROCESS_SYNC);
+                syncSubprocesses(processValue, workitem);
             }
         } catch (ModelException e) {
             throw new PluginException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
 
         }
 
-        return adocumentContext;
+        return workitem;
+    }
+
+    /**
+     * This method tests if the BPMN configuration is still using the deprecated tag
+     * 
+     * <item name="..">
+     * 
+     * instead of the new
+     * 
+     * <split type="..">
+     * 
+     * @param event
+     * @return
+     * @throws PluginException
+     */
+    private boolean isDeprecatedConfiguration(ItemCollection workitem, ItemCollection event) throws PluginException {
+
+        ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(event, "item", workitem,
+                false);
+
+        if (evalItemCollection != null
+                && (evalItemCollection.hasItem(SUBPROCESS_CREATE)
+                        || evalItemCollection.hasItem(SUBPROCESS_UPDATE)
+                        || evalItemCollection.hasItem(ORIGIN_UPDATE)
+                        || evalItemCollection.hasItem(SUBPROCESS_SYNC))) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -375,6 +428,49 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
     }
 
     /**
+     * This method syncs the items from the parent into this process instance
+     * 
+     * @param subProcessDefinitions
+     * @param originWorkitem
+     * @throws AccessDeniedException
+     * @throws ProcessingErrorException
+     * @throws PluginException
+     * @throws ModelException
+     */
+    @SuppressWarnings("unchecked")
+    protected void syncSubprocesses(final String originProcessDefinition, final ItemCollection subprocessWorkitem)
+            throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+        boolean debug = logger.isLoggable(Level.FINE);
+        ItemCollection originWorkitem = null;
+
+        if (originProcessDefinition == null) {
+            // no definition found
+            return;
+        }
+
+        // evaluate the item content (XML format expected here!)
+        ItemCollection processData = XMLParser.parseItemStructure(originProcessDefinition);
+
+        // first we need to lookup the corresponding origin process instance
+        List<String> refs = subprocessWorkitem.getItemValue(WorkflowService.UNIQUEIDREF);
+        String workitemRef = subprocessWorkitem.getItemValueString(LINK_PROPERTY);
+        if (refs.contains(workitemRef)) {
+            // parent found..
+            originWorkitem = getWorkflowService().getWorkItem(workitemRef);
+            if (originWorkitem != null) {
+                // now clone the field list...
+                copyItemList(processData.getItemValueString("items"), originWorkitem, subprocessWorkitem);
+                if (debug) {
+                    logger.finest("...... successful synced items.");
+                }
+                return;
+            }
+
+        }
+        logger.warning("Parent Workitem not found!");
+    }
+
+    /**
      * This method expects a single process definitions to update the origin process
      * for a subprocess. The origin workitem will be loaded by the $uniqueidRef
      * stored in the subprocess
@@ -411,6 +507,10 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
         ItemCollection processData = XMLParser.parseItemStructure(originProcessDefinition);
 
         String model_pattern = processData.getItemValueString("modelversion");
+        if (model_pattern.isEmpty()) {
+            // default to current model
+            model_pattern = subprocessWorkitem.getModelVersion();
+        }
         String task_pattern = processData.getItemValueString("task");
         // support deprecated tag 'processid' (issue #446)
         if (task_pattern.isEmpty() && processData.hasItem("processid")) {

@@ -19,14 +19,14 @@
   <bpmn2:process id="ticket" isExecutable="false" name="Ticket" processType="Public">
     <bpmn2:startEvent id="StartEvent_1" name="Start">
       <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
-      <bpmn2:documentation id="documentation_XJ5thQ"/>
+      <bpmn2:documentation id="documentation_xL7xtA"/>
     </bpmn2:startEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="StartEvent_1" targetRef="Task_1">
-      <bpmn2:documentation id="documentation_lWi6FA"/>
+      <bpmn2:documentation id="documentation_NugxJw"/>
     </bpmn2:sequenceFlow>
     <bpmn2:endEvent id="EndEvent_1" name="End">
       <bpmn2:incoming>SequenceFlow_5</bpmn2:incoming>
-      <bpmn2:documentation id="documentation_7xgegA"/>
+      <bpmn2:documentation id="documentation_SNGtMg"/>
     </bpmn2:endEvent>
     <bpmn2:task id="Task_1" imixs:processid="100" name="New Ticket">
       <bpmn2:extensionElements>
@@ -64,7 +64,7 @@
       <bpmn2:incoming>SequenceFlow_9</bpmn2:incoming>
       <bpmn2:incoming>SequenceFlow_16</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_5</bpmn2:outgoing>
-      <bpmn2:documentation id="documentation_GaZjuQ"/>
+      <bpmn2:documentation id="documentation_0mWyTw"/>
     </bpmn2:task>
     <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_1" imixs:activityid="20" name="Single Split">
       <bpmn2:extensionElements>
@@ -79,17 +79,14 @@
           <imixs:value><![CDATA[namTeam]]></imixs:value>
           <imixs:value><![CDATA[namManager]]></imixs:value>
         </imixs:item>
-        <imixs:item name="txtactivityresult" type="xs:string">
-          <imixs:value><![CDATA[<split name="subprocess_create"> 
+        <imixs:item name="txtactivityresult" type="CDATA">
+          <imixs:value><![CDATA[<item name="subprocess_create"> 
    <modelversion>1.0.0</modelversion>
    <task>100</task>
    <event>10</event>
    <items>namTeam</items>
    <action>/pages/workitems/workitem.jsf?id=<itemvalue>$uniqueid</itemvalue></action>
-</split>]]></imixs:value>
-        </imixs:item>
-        <imixs:item name="keypublicresult" type="xs:string">
-          <imixs:value><![CDATA[1]]></imixs:value>
+</item>]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
       <bpmn2:documentation id="Documentation_1">&lt;b&gt;Submitt&lt;/b&gt; new ticket</bpmn2:documentation>
@@ -98,16 +95,16 @@
     </bpmn2:intermediateCatchEvent>
     <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_2" imixs:activityid="10" name="save">
       <bpmn2:outgoing>SequenceFlow_6</bpmn2:outgoing>
-      <bpmn2:documentation id="documentation_s7mXlA"/>
+      <bpmn2:documentation id="documentation_6F3MTw"/>
     </bpmn2:intermediateCatchEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_3" sourceRef="IntermediateCatchEvent_1" targetRef="ExclusiveGateway_1">
-      <bpmn2:documentation id="documentation_mQx2Qw"/>
+      <bpmn2:documentation id="documentation_7rL6YQ"/>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="SequenceFlow_6" sourceRef="IntermediateCatchEvent_2" targetRef="Task_2">
-      <bpmn2:documentation id="documentation_nDJ6Xg"/>
+      <bpmn2:documentation id="documentation_FEmv5w"/>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="SequenceFlow_5" sourceRef="Task_2" targetRef="EndEvent_1">
-      <bpmn2:documentation id="documentation_0pU0Cw"/>
+      <bpmn2:documentation id="documentation_kuNa1Q"/>
     </bpmn2:sequenceFlow>
     <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_3" imixs:activityid="10" name="save">
       <bpmn2:extensionElements>
@@ -127,7 +124,7 @@
       <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
     </bpmn2:intermediateCatchEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_2" sourceRef="IntermediateCatchEvent_3" targetRef="Task_1">
-      <bpmn2:documentation id="documentation_wMkpKQ"/>
+      <bpmn2:documentation id="documentation_9dDIhg"/>
     </bpmn2:sequenceFlow>
     <bpmn2:eventBasedGateway gatewayDirection="Diverging" id="EventBasedGateway_1">
       <bpmn2:incoming>SequenceFlow_7</bpmn2:incoming>
@@ -137,13 +134,13 @@
       <bpmn2:outgoing>SequenceFlow_4</bpmn2:outgoing>
       <bpmn2:outgoing>SequenceFlow_17</bpmn2:outgoing>
       <bpmn2:outgoing>SequenceFlow_19</bpmn2:outgoing>
-      <bpmn2:documentation id="documentation_WZuk0g"/>
+      <bpmn2:documentation id="documentation_t9pdZA"/>
     </bpmn2:eventBasedGateway>
     <bpmn2:sequenceFlow id="SequenceFlow_7" sourceRef="Task_1" targetRef="EventBasedGateway_1">
-      <bpmn2:documentation id="documentation_yDk0eg"/>
+      <bpmn2:documentation id="documentation_dX7MmQ"/>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="SequenceFlow_8" sourceRef="EventBasedGateway_1" targetRef="IntermediateCatchEvent_1">
-      <bpmn2:documentation id="documentation_K0gMUg"/>
+      <bpmn2:documentation id="documentation_SNnTXA"/>
     </bpmn2:sequenceFlow>
     <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_5" imixs:activityid="30" name="Multi Split">
       <bpmn2:extensionElements>
@@ -158,23 +155,20 @@
           <imixs:value><![CDATA[namTeam]]></imixs:value>
           <imixs:value><![CDATA[namManager]]></imixs:value>
         </imixs:item>
-        <imixs:item name="txtactivityresult" type="xs:string">
-          <imixs:value><![CDATA[<split name="subprocess_create"> 
+        <imixs:item name="txtactivityresult" type="CDATA">
+          <imixs:value><![CDATA[<item name="subprocess_create"> 
    <modelversion>1.0.0</modelversion>
    <task>100</task>
    <event>10</event>
    <items>namTeam</items>
-</split>
+</item>
 
-<split name="subprocess_create"> 
+<item name="subprocess_create"> 
    <modelversion>1.0.0</modelversion>
    <task>100</task>
    <event>10</event>
    <items>namTeam</items>
-</split>]]></imixs:value>
-        </imixs:item>
-        <imixs:item name="keypublicresult" type="xs:string">
-          <imixs:value><![CDATA[1]]></imixs:value>
+</item>]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
       <bpmn2:documentation id="Documentation_15">&lt;b&gt;Submitt&lt;/b&gt; new ticket</bpmn2:documentation>
@@ -189,16 +183,16 @@
       <bpmn2:incoming>SequenceFlow_18</bpmn2:incoming>
       <bpmn2:incoming>SequenceFlow_20</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_9</bpmn2:outgoing>
-      <bpmn2:documentation id="documentation_lsXBaA"/>
+      <bpmn2:documentation id="documentation_amQddg"/>
     </bpmn2:exclusiveGateway>
     <bpmn2:sequenceFlow id="SequenceFlow_9" sourceRef="ExclusiveGateway_1" targetRef="Task_2">
-      <bpmn2:documentation id="documentation_2Vd6Lg"/>
+      <bpmn2:documentation id="documentation_mKapaA"/>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="SequenceFlow_10" sourceRef="EventBasedGateway_1" targetRef="IntermediateCatchEvent_5">
-      <bpmn2:documentation id="documentation_OIE4VA"/>
+      <bpmn2:documentation id="documentation_hPV0nw"/>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="SequenceFlow_12" sourceRef="IntermediateCatchEvent_5" targetRef="ExclusiveGateway_1">
-      <bpmn2:documentation id="documentation_XXJN0g"/>
+      <bpmn2:documentation id="documentation_a8XXrA"/>
     </bpmn2:sequenceFlow>
     <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_6" imixs:activityid="40" name="Parsing error Split">
       <bpmn2:extensionElements>
@@ -213,16 +207,13 @@
           <imixs:value><![CDATA[namTeam]]></imixs:value>
           <imixs:value><![CDATA[namManager]]></imixs:value>
         </imixs:item>
-        <imixs:item name="txtactivityresult" type="xs:string">
-          <imixs:value><![CDATA[<split name="subprocess_create"> 
+        <imixs:item name="txtactivityresult" type="CDATA">
+          <imixs:value><![CDATA[<item name="subprocess_create"> 
    <modelversion>1.0.0</modelversion>
    <task>1000</xxxtask>
    <event>10</event>
    <items>namTeam</items>
-</split>]]></imixs:value>
-        </imixs:item>
-        <imixs:item name="keypublicresult" type="xs:string">
-          <imixs:value><![CDATA[1]]></imixs:value>
+</item>]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
       <bpmn2:documentation id="Documentation_29">&lt;b&gt;Submitt&lt;/b&gt; new ticket</bpmn2:documentation>
@@ -230,10 +221,10 @@
       <bpmn2:outgoing>SequenceFlow_14</bpmn2:outgoing>
     </bpmn2:intermediateCatchEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_13" sourceRef="EventBasedGateway_1" targetRef="IntermediateCatchEvent_6">
-      <bpmn2:documentation id="documentation_jAn9Hg"/>
+      <bpmn2:documentation id="documentation_qxD9Nw"/>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="SequenceFlow_14" sourceRef="IntermediateCatchEvent_6" targetRef="ExclusiveGateway_1">
-      <bpmn2:documentation id="documentation_tw00bA"/>
+      <bpmn2:documentation id="documentation_aaBIvw"/>
     </bpmn2:sequenceFlow>
     <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_7" imixs:activityid="50" name="update origin">
       <bpmn2:extensionElements>
@@ -248,24 +239,21 @@
           <imixs:value><![CDATA[anna]]></imixs:value>
           <imixs:value><![CDATA[joe]]></imixs:value>
         </imixs:item>
-        <imixs:item name="txtactivityresult" type="xs:string">
-          <imixs:value><![CDATA[<split name="origin_update"> 
+        <imixs:item name="txtactivityresult" type="CDATA">
+          <imixs:value><![CDATA[<item name="origin_update"> 
     <modelversion>1.0.0</modelversion>
     <task>100</task>
     <event>10</event>
     <items>namTeam,_sub_data</items>
     <action>/pages/workitems/workitem.jsf?id=<itemValue>$uniqueid</itemValue></action>
-</split>]]></imixs:value>
-        </imixs:item>
-        <imixs:item name="keypublicresult" type="xs:string">
-          <imixs:value><![CDATA[1]]></imixs:value>
+</item>]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
       <bpmn2:documentation id="Documentation_32">&lt;b&gt;Submitt&lt;/b&gt; new ticket</bpmn2:documentation>
       <bpmn2:outgoing>SequenceFlow_15</bpmn2:outgoing>
     </bpmn2:intermediateCatchEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_15" sourceRef="IntermediateCatchEvent_7" targetRef="Task_1">
-      <bpmn2:documentation id="documentation_1BKKMA"/>
+      <bpmn2:documentation id="documentation_OsCWFA"/>
     </bpmn2:sequenceFlow>
     <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_4" imixs:activityid="60" name="Single Split change target fields">
       <bpmn2:extensionElements>
@@ -280,17 +268,14 @@
           <imixs:value><![CDATA[namTeam]]></imixs:value>
           <imixs:value><![CDATA[namManager]]></imixs:value>
         </imixs:item>
-        <imixs:item name="txtactivityresult" type="xs:string">
-          <imixs:value><![CDATA[<split name="subprocess_create"> 
+        <imixs:item name="txtactivityresult" type="CDATA">
+          <imixs:value><![CDATA[<item name="subprocess_create"> 
    <modelversion>1.0.0</modelversion>
    <task>100</task>
    <event>10</event>
    <items>namTeam|_sub_team,$workflowsummary|_parentworkflowsummary</items>
-</split>
+</item>
 ]]></imixs:value>
-        </imixs:item>
-        <imixs:item name="keypublicresult" type="xs:string">
-          <imixs:value><![CDATA[1]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
       <bpmn2:documentation id="Documentation_2">&lt;b&gt;Submitt&lt;/b&gt; new ticket</bpmn2:documentation>
@@ -298,30 +283,27 @@
       <bpmn2:outgoing>SequenceFlow_11</bpmn2:outgoing>
     </bpmn2:intermediateCatchEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_4" sourceRef="EventBasedGateway_1" targetRef="IntermediateCatchEvent_4">
-      <bpmn2:documentation id="documentation_LLhxLA"/>
+      <bpmn2:documentation id="documentation_uko1OQ"/>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="SequenceFlow_11" sourceRef="IntermediateCatchEvent_4" targetRef="ExclusiveGateway_1">
-      <bpmn2:documentation id="documentation_RWKwkA"/>
+      <bpmn2:documentation id="documentation_0DeGnQ"/>
     </bpmn2:sequenceFlow>
     <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_8" imixs:activityid="20" name="update Subprocess">
       <bpmn2:extensionElements>
-        <imixs:item name="txtactivityresult" type="xs:string">
-          <imixs:value><![CDATA[<split name="subprocess_update">
+        <imixs:item name="txtactivityresult" type="CDATA">
+          <imixs:value><![CDATA[<item name="subprocess_update">
    <modelversion>1.0.0</modelversion>
    <task>100</task>
    <event>10</event>
    <items>namTeam</items>
-</split>]]></imixs:value>
-        </imixs:item>
-        <imixs:item name="keypublicresult" type="xs:string">
-          <imixs:value><![CDATA[1]]></imixs:value>
+</item>]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
       <bpmn2:outgoing>SequenceFlow_16</bpmn2:outgoing>
-      <bpmn2:documentation id="documentation_Y6b8sg"/>
+      <bpmn2:documentation id="documentation_EUA6Nw"/>
     </bpmn2:intermediateCatchEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_16" sourceRef="IntermediateCatchEvent_8" targetRef="Task_2">
-      <bpmn2:documentation id="documentation_XPK06A"/>
+      <bpmn2:documentation id="documentation_6VH6yQ"/>
     </bpmn2:sequenceFlow>
     <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_9" imixs:activityid="70" name="regex item copy">
       <bpmn2:extensionElements>
@@ -336,17 +318,14 @@
           <imixs:value><![CDATA[namTeam]]></imixs:value>
           <imixs:value><![CDATA[namManager]]></imixs:value>
         </imixs:item>
-        <imixs:item name="txtactivityresult" type="xs:string">
-          <imixs:value><![CDATA[<split name="subprocess_create"> 
+        <imixs:item name="txtactivityresult" type="CDATA">
+          <imixs:value><![CDATA[<item name="subprocess_create"> 
    <modelversion>1.0.0</modelversion>
    <task>100</task>
    <event>10</event>
    <items>$workflowsummary|_parentworkflowsummary,(^[a-zA-Z]|^_)</items>
-</split>
+</item>
 ]]></imixs:value>
-        </imixs:item>
-        <imixs:item name="keypublicresult" type="xs:string">
-          <imixs:value><![CDATA[1]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
       <bpmn2:documentation id="Documentation_6">&lt;b&gt;Submitt&lt;/b&gt; new ticket</bpmn2:documentation>
@@ -354,10 +333,10 @@
       <bpmn2:outgoing>SequenceFlow_18</bpmn2:outgoing>
     </bpmn2:intermediateCatchEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_17" sourceRef="EventBasedGateway_1" targetRef="IntermediateCatchEvent_9">
-      <bpmn2:documentation id="documentation_HPCaqQ"/>
+      <bpmn2:documentation id="documentation_rOqBQQ"/>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="SequenceFlow_18" sourceRef="IntermediateCatchEvent_9" targetRef="ExclusiveGateway_1">
-      <bpmn2:documentation id="documentation_SMGT8Q"/>
+      <bpmn2:documentation id="documentation_1P8h5Q"/>
     </bpmn2:sequenceFlow>
     <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_10" imixs:activityid="61" name="Single Split change target fields with $file">
       <bpmn2:extensionElements>
@@ -372,17 +351,14 @@
           <imixs:value><![CDATA[namTeam]]></imixs:value>
           <imixs:value><![CDATA[namManager]]></imixs:value>
         </imixs:item>
-        <imixs:item name="txtactivityresult" type="xs:string">
-          <imixs:value><![CDATA[<split name="subprocess_create"> 
+        <imixs:item name="txtactivityresult" type="CDATA">
+          <imixs:value><![CDATA[<item name="subprocess_create"> 
    <modelversion>1.0.0</modelversion>
    <task>100</task>
    <event>10</event>
    <items>$file,namTeam|_sub_team,$workflowsummary|_parentworkflowsummary</items>
-</split>
+</item>
 ]]></imixs:value>
-        </imixs:item>
-        <imixs:item name="keypublicresult" type="xs:string">
-          <imixs:value><![CDATA[1]]></imixs:value>
         </imixs:item>
       </bpmn2:extensionElements>
       <bpmn2:documentation id="Documentation_3">&lt;b&gt;Submitt&lt;/b&gt; new ticket</bpmn2:documentation>
@@ -390,12 +366,18 @@
       <bpmn2:outgoing>SequenceFlow_20</bpmn2:outgoing>
     </bpmn2:intermediateCatchEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_19" sourceRef="EventBasedGateway_1" targetRef="IntermediateCatchEvent_10">
-      <bpmn2:documentation id="documentation_YMRdNw"/>
+      <bpmn2:documentation id="documentation_Me600Q"/>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="SequenceFlow_20" sourceRef="IntermediateCatchEvent_10" targetRef="ExclusiveGateway_1">
-      <bpmn2:documentation id="documentation_WhfG1w"/>
+      <bpmn2:documentation id="documentation_8q772Q"/>
     </bpmn2:sequenceFlow>
-    <bpmn2:documentation id="documentation_ikeUQQ"/>
+    <bpmn2:documentation id="documentation_HKtMhg"/>
+    <bpmn2:textAnnotation id="textAnnotation_d2Is0Q">
+      <bpmn2:text id="text_DX8tZg"><![CDATA[This configuration uses the deprecated item tag and should no longer be used. 
+
+See the new configuration in the file TestSplitAndJoinPlugin.bpmn.]]></bpmn2:text>
+      <bpmn2:documentation id="documentation_7W15Aw"/>
+    </bpmn2:textAnnotation>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1" name="Default Process Diagram">
     <bpmndi:BPMNPlane bpmnElement="ticket" id="BPMNPlane_1">
@@ -490,9 +472,9 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="IntermediateCatchEvent_10" id="BPMNShape_IntermediateCatchEvent_10">
-        <dc:Bounds height="36.0" width="36.0" x="441.0" y="195.0"/>
+        <dc:Bounds height="36.0" width="36.0" x="443.0" y="195.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_34">
-          <dc:Bounds height="56.0" width="73.0" x="423.0" y="231.0"/>
+          <dc:Bounds height="56.0" width="73.0" x="425.0" y="231.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_1" id="BPMNEdge_SequenceFlow_1" sourceElement="BPMNShape_1" targetElement="BPMNShape_Task_1">
@@ -604,16 +586,21 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_19" id="BPMNEdge_SequenceFlow_19" sourceElement="BPMNShape_EventBasedGateway_1" targetElement="BPMNShape_IntermediateCatchEvent_10">
         <bpmndi:BPMNLabel id="BPMNLabel_35"/>
-        <di:waypoint x="320.0" y="288.0"/>
-        <di:waypoint x="320.0" y="215.0"/>
-        <di:waypoint x="441.1114561800017" y="215.0"/>
+        <di:waypoint x="346.0" y="312.0"/>
+        <di:waypoint x="356.0" y="312.0"/>
+        <di:waypoint x="356.0" y="244.0"/>
+        <di:waypoint x="461.0" y="244.0"/>
+        <di:waypoint x="461.0" y="231.0"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_20" id="BPMNEdge_SequenceFlow_20" sourceElement="BPMNShape_IntermediateCatchEvent_10" targetElement="BPMNShape_ExclusiveGateway_1">
         <bpmndi:BPMNLabel id="BPMNLabel_36"/>
-        <di:waypoint x="477.0" y="213.0"/>
+        <di:waypoint x="479.0" y="213.0"/>
         <di:waypoint x="627.0" y="213.0"/>
         <di:waypoint x="627.0" y="288.0"/>
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape bpmnElement="textAnnotation_d2Is0Q" id="BPMNShape_tFN9uA">
+        <dc:Bounds height="120.0" width="220.0" x="15.0" y="25.0"/>
+      </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
     <bpmndi:BPMNLabelStyle id="BPMNLabelStyle_1">
       <dc:Font name="arial" size="9.0"/>
