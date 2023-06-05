@@ -1,12 +1,23 @@
 # Split & Joins
 
-With the _Split & Join_ functionality you can split up a process instance (origin) in one or more sub-process instances. The _Split & Join_ functionality is added by the plug-in '_SplitAndJoinPlugin_'.
+With the _Split & Join_ functionality of Imixs-Workflow it is possible to split one process instance (origin workitem) in one or more sub-process instances (sub workitems). This functionality is provided by the '_SplitAndJoinPlugin_'.
 
     org.imixs.workflow.engine.plugins.SplitAndJoinPlugin
 
+The _Split & Join_ functionality can be defined within the [Imixs-BPMN modelling tool](../../modelling/index.html) by adding a _Split & Join_ function definition into the workflow result of the corresponding BPMN Event.
+
 <img src="../../images/modelling/splitandjoin-example-01.png"/>
 
-Depending on the model configuration a sub-process instances can also update the origin process instance. This means that data and the state can join the origin process instance.
+After a new sub-process instance was created, the origin workitem and the new sub-workitem are connected to each other by the item `$workitemRef`.
+In addition the sub-workitem contains the item `$uniqueIdRef` with a reference to the origin workitem.
+
+<center><img src="../../images/engine/split-and-join-ref.png"/></center>
+
+In this way it is possible to navigate in both directions.
+
+## Functions & Definitions
+
+The _Split & Join_ functionality can be defined in the workflow result of a BPMN event. The SplitAndJoinPlugin provides different functions to create, update or synchronize process instances. This means that data and the state can be split and joined in various ways.
 
 The _Split & Join_ defines the following functions:
 
@@ -15,20 +26,16 @@ The _Split & Join_ defines the following functions:
 - <strong>origin_update</strong> = updates the origin process
 - <strong>subprocess_sync</strong> = synchronizes a list of item values from the origin process
 
-The _Split & Join_ functionality can be defined within the [Imixs-BPMN modelling tool](../../modelling/index.html) by adding a _Split & Join_ function into the workflow result of a Imixs-BPMN Event.
-
-<img src="../../images/modelling/bpmn_screen_36.png"/> 
- 
 ## Creating a New Sub-Process Instance
- 
-To create a new sub-process instance, the following XML definition need to be added into the workflow result of an Imixs-BPMN Event: 
- 
-	<split name="subprocess_create">
-		<modelversion>1.0.0</modelversion>
-		<task>100</task>
-		<event>10</event>
-		<items>namTeam</items>
-	</split>
+
+To create a new sub-process instance, the following XML definition need to be added into the workflow result of an Imixs-BPMN Event:
+
+    <split name="subprocess_create">
+    	<modelversion>1.0.0</modelversion>
+    	<task>100</task>
+    	<event>10</event>
+    	<items>namTeam</items>
+    </split>
 
 The `name` attribute of the `split` tag defines the function name. In this example Plugin will create a new subprocess instance with the model version `1.0.0` and the initial task `100`, which will be processed by the eventID `10`.
 
@@ -128,22 +135,3 @@ To synchronize the data of a sub-process instance with the origin process, the f
     </split>
 
 This function will copy the values of the items `facility` and `project` from the origin process instance. Also here regular expressions are allowed as explained before.
-
-### The Action result
-
-After the origin process was updated, an optional action result can be evaluated to overwrite the action result provided by the ResultPlugin.
-The following example computes a new action result based on the uniqueId of the newly created subprocess:
-
-    <split name="subprocess_create">
-        <modelversion>1.1.0</modelversion>
-        <task>1000</task>
-        <event>10</event>
-        <action>/pages/workitems/workitem.jsf?id=<itemvalue>$uniqueid</itemvalue></action>
-    </split>
-
-## Linking
-
-After a new sub-process instance was created, the parent workitem and the sub-workitem are connected to each other by the item `$workitemRef`.
-The sub-workitem has the additional item `$uniqueIdRef` with a reference to the parent workitem.
-
-<img src="../../images/engine/split-and-join-ref.png"/>
