@@ -37,19 +37,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import jakarta.annotation.Resource;
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.enterprise.event.Event;
-import jakarta.enterprise.inject.Any;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
 
 import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
@@ -67,11 +58,18 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.QueryException;
 
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.LocalBean;
 import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 /**
  * The WorkflowService is the Java EE Implementation for the Imixs Workflow Core
@@ -456,30 +454,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                 continue;
             }
 
-            // test user access level
-            List<String> readAccessList = event.getItemValue("$readaccess");
-            if (!bManagerAccess && !readAccessList.isEmpty()) {
-                /**
-                 * check read access for current user
-                 */
-                boolean accessGranted = false;
-                // get user name list
-                List<String> auserNameList = getUserNameList();
-
-                // check each read access
-                for (String aReadAccess : readAccessList) {
-                    if (aReadAccess != null && !aReadAccess.isEmpty()) {
-                        if (auserNameList.indexOf(aReadAccess) > -1) {
-                            accessGranted = true;
-                            break;
-                        }
-                    }
-                }
-                if (!accessGranted) {
-                    // user has no read access!
-                    continue;
-                }
-            }
+            // it is not necessary to evaluate $readaccess here (see Issue #832)
 
             // test RestrictedVisibility
             List<String> restrictedList = event.getItemValue("keyRestrictedVisibility");
