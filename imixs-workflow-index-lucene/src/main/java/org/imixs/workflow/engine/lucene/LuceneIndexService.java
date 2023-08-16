@@ -40,9 +40,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.enterprise.event.Event;
-import jakarta.inject.Inject;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.ClassicAnalyzer;
 import org.apache.lucene.document.Document;
@@ -75,6 +72,8 @@ import org.imixs.workflow.exceptions.IndexException;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
@@ -686,7 +685,8 @@ public class LuceneIndexService {
         Path luceneIndexDir = Paths.get(getLuceneIndexDir());
         Directory indexDir = FSDirectory.open(luceneIndexDir);
         if (!DirectoryReader.indexExists(indexDir)) {
-            logger.info("...lucene index directory is empty or does not yet exist, initialize the index now....");
+            logger.info("...lucene index directory '" + getLuceneIndexDir()
+                    + "' is empty or does not yet exist, rebuild index now....");
             rebuildIndex(indexDir);
         }
         return indexDir;
