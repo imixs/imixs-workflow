@@ -1,0 +1,48 @@
+@startuml
+autonumber
+
+box "Imixs-Workflow Instance" #LightBlue
+participant WorkflowService
+end box
+
+box "Imixs Microservice" #EEEEEE
+participant AdapterService
+end box
+
+box "External Service API" #EEEEEE
+participant RestAPI
+end box
+
+== Workflow Life-Cycle ==
+
+activate WorkflowService #EEEEEE
+
+WorkflowService -> WorkflowService : process workitem
+
+WorkflowService --> AdapterService : create event log entry
+deactivate WorkflowService #EEEEEE
+
+
+
+
+
+activate AdapterService
+AdapterService -> AdapterService : poll event log
+AdapterService -> RestAPI : call external RestAPI
+
+
+
+activate RestAPI
+RestAPI -> RestAPI : execute
+RestAPI -> AdapterService: 
+deactivate RestAPI
+
+
+AdapterService --> WorkflowService : callback 
+deactivate AdapterService
+activate WorkflowService #EEEEEE
+WorkflowService -> WorkflowService: update process instance
+
+
+
+@enduml
