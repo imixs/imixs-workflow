@@ -41,11 +41,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Resource;
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.inject.Inject;
-
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Model;
@@ -57,10 +52,14 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.ConcurrencyManagement;
 import jakarta.ejb.LocalBean;
 import jakarta.ejb.SessionContext;
 import jakarta.ejb.Singleton;
+import jakarta.inject.Inject;
 
 /**
  * The ModelManager is independent form the IX JEE Entity EJBs and uses the
@@ -413,7 +412,7 @@ public class ModelService implements ModelManager {
             ItemCollection modelItemCol = new ItemCollection();
             modelItemCol.replaceItemValue("type", "model");
             modelItemCol.replaceItemValue("$snapshot.history", 1);
-            modelItemCol.replaceItemValue("$reator", ctx.getCallerPrincipal().getName());
+            modelItemCol.replaceItemValue(WorkflowKernel.CREATOR, ctx.getCallerPrincipal().getName());
             modelItemCol.replaceItemValue("name", bpmnModel.getVersion());
             
             // deprecated item names
