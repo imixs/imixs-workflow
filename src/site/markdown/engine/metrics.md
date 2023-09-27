@@ -17,13 +17,17 @@ The Imxis-Workflow metrics can be collected by the metric rest endpoint dependin
     
 
 This is an example how a Imixs-Workflow metric looks like:
-	application_workitems_total{event="20",modelversion="invoice-1.2",task="2001",type="workitem",workflowgroup="Invoice",workflowstatus="Open"} 1.0
-	application_workitems_total{event="1",modelversion="todo-1.0.0",task="2000",type="workitem",workflowgroup="ToDo",workflowstatus="Offen"} 3.0
-	application_documents_total{method="save"} 8.0
-	application_documents_total{method="delete"} 3.0
-	application_documents_total{method="load"} 133.0
-	application_transactions_total 5.0
 
+```
+....
+application_workitems_total{event="20",modelversion="invoice-1.2",task="2001",type="workitem",workflowgroup="Invoice",workflowstatus="Open"} 1.0
+application_workitems_total{event="1",modelversion="todo-1.0.0",task="2000",type="workitem",workflowgroup="ToDo",workflowstatus="Offen"} 3.0
+application_documents_total{method="save"} 8.0
+application_documents_total{method="delete"} 3.0
+application_documents_total{method="load"} 133.0
+application_transactions_total 5.0
+.....
+```
 
 The Document and Workflow metrics are shown here. Each metric provides a set of tags defining the method and additional metadata like the WorkflowVersion or the current workflow event processed by the Imixs-Workflow Engine.
 
@@ -103,4 +107,17 @@ A Prometheus configuration to scrape the metrics from Imixs-Workflow can look li
 	      - targets: ['app:8080']        
  
 
+
+### Prometheus Dashboard
       
+From the Prometheus Dashboard you can test the data within your web browser:
+
+<img src="../images/engine/imixs-metrics-prometheus-768x448.png" />
+
+### Monitoring Metrics with Grafana
+
+To monitor you workflow you can easily connect your Prometheus server with a Grafana Instance. This allows you to visualize your metrics in an individual and more detailed dashboard. 
+
+<img src="../images/engine/imixs-metrics-grafana-768x376.png" />
+
+There are a huge amount of functions available in Grafana to analyze and monitor data. You can also activate individual alerts to notify your process owner about the load of your business processes. 
