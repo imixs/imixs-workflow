@@ -28,7 +28,8 @@
 
 package org.imixs.workflow.jaxrs;
 
-import jakarta.annotation.security.RolesAllowed;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -89,8 +90,8 @@ public class DocumentRestService {
     @Inject
     private SchemaService schemaService;
 
-    @jakarta.ws.rs.core.Context
-    private HttpServletRequest servletRequest;
+    @Resource
+    private SessionContext ctx;
 
     private static Logger logger = Logger.getLogger(DocumentRestService.class.getName());
 
@@ -356,8 +357,10 @@ public class DocumentRestService {
     // @Path("/") generates jersey warning
     @Produces(MediaType.APPLICATION_XML)
     @Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON, })
-    @RolesAllowed("org.imixs.ACCESSLEVEL.MANAGERACCESS")
     public Response postDocument(XMLDocument xmlworkitem, @QueryParam("items") String items) {
+        if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
         ItemCollection workitem;
         workitem = XMLDocumentAdapter.putDocument(xmlworkitem);
 
@@ -432,8 +435,10 @@ public class DocumentRestService {
      */
     @DELETE
     @Path("/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
-    @RolesAllowed("org.imixs.ACCESSLEVEL.MANAGERACCESS")
     public Response deleteEntity(@PathParam("uniqueid") String uniqueid) {
+        if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
         ItemCollection entity = documentService.load(uniqueid);
         if (entity != null) {
             documentService.remove(entity);
@@ -455,10 +460,12 @@ public class DocumentRestService {
      */
     @PUT
     @Path("/backup/{query}")
-    @RolesAllowed("org.imixs.ACCESSLEVEL.MANAGERACCESS")
     public Response backup(@PathParam("query") String query, @QueryParam("filepath") String filepath,
             @QueryParam("snapshots") boolean snapshots) {
         
+        if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
         try {
             // decode query...
             String decodedQuery = URLDecoder.decode(query, "UTF-8");
@@ -483,9 +490,11 @@ public class DocumentRestService {
      */
     @GET
     @Path("/restore")
-    @RolesAllowed("org.imixs.ACCESSLEVEL.MANAGERACCESS")
     public Response restore(@QueryParam("filepath") String filepath) {
 
+        if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
         try {
             documentService.restore(filepath);
         } catch (IOException e) {
@@ -506,8 +515,10 @@ public class DocumentRestService {
     @GET
     @Path("/configuration")
     @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-    @RolesAllowed("org.imixs.ACCESSLEVEL.MANAGERACCESS")
     public Response getConfiguration(@QueryParam("format") String format) throws Exception {
+        if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
         ItemCollection config = schemaService.getConfiguration();
 
         return convertResult(config, null, format);

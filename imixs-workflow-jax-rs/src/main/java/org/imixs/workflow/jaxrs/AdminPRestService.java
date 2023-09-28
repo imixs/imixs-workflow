@@ -28,7 +28,8 @@
 
 package org.imixs.workflow.jaxrs;
 
-import jakarta.annotation.security.RolesAllowed;
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
@@ -77,8 +78,8 @@ public class AdminPRestService {
     @Inject
     private AdminPService adminPService;
 
-    @jakarta.ws.rs.core.Context
-    private HttpServletRequest servletRequest;
+    @Resource
+    private SessionContext ctx;
 
     private static Logger logger = Logger.getLogger(AdminPRestService.class.getName());
 
@@ -160,8 +161,10 @@ public class AdminPRestService {
     @Path("/jobs/")
     @Produces(MediaType.APPLICATION_XML)
     @Consumes({ MediaType.APPLICATION_XML, "text/xml" })
-    @RolesAllowed("org.imixs.ACCESSLEVEL.MANAGERACCESS")
     public Response putJob(XMLDocument xmlworkitem) {
+        if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
         ItemCollection workitem;
         workitem = XMLDocumentAdapter.putDocument(xmlworkitem);
 
@@ -199,8 +202,10 @@ public class AdminPRestService {
      */
     @DELETE
     @Path("/jobs/{uniqueid}")
-    @RolesAllowed("org.imixs.ACCESSLEVEL.MANAGERACCESS")
     public Response deleteJob(@PathParam("uniqueid") String uniqueid) {
+        if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
         adminPService.deleteJob(uniqueid);
         return Response.status(Response.Status.OK).build();
     }
