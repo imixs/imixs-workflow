@@ -28,6 +28,8 @@
 
 package org.imixs.workflow.jaxrs;
 
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -88,8 +90,8 @@ public class DocumentRestService {
     @Inject
     private SchemaService schemaService;
 
-    @jakarta.ws.rs.core.Context
-    private HttpServletRequest servletRequest;
+    @Resource
+    private SessionContext ctx;
 
     private static Logger logger = Logger.getLogger(DocumentRestService.class.getName());
 
@@ -356,7 +358,7 @@ public class DocumentRestService {
     @Produces(MediaType.APPLICATION_XML)
     @Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON, })
     public Response postDocument(XMLDocument xmlworkitem, @QueryParam("items") String items) {
-        if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+        if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         ItemCollection workitem;
@@ -434,7 +436,7 @@ public class DocumentRestService {
     @DELETE
     @Path("/{uniqueid : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
     public Response deleteEntity(@PathParam("uniqueid") String uniqueid) {
-        if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+        if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         ItemCollection entity = documentService.load(uniqueid);
@@ -461,7 +463,7 @@ public class DocumentRestService {
     public Response backup(@PathParam("query") String query, @QueryParam("filepath") String filepath,
             @QueryParam("snapshots") boolean snapshots) {
         
-        if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+        if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         try {
@@ -490,7 +492,7 @@ public class DocumentRestService {
     @Path("/restore")
     public Response restore(@QueryParam("filepath") String filepath) {
 
-        if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+        if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         try {
@@ -514,8 +516,8 @@ public class DocumentRestService {
     @Path("/configuration")
     @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
     public Response getConfiguration(@QueryParam("format") String format) throws Exception {
-        if (servletRequest.isUserInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
-            return null;
+        if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         ItemCollection config = schemaService.getConfiguration();
 
