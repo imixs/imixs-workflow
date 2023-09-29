@@ -45,6 +45,7 @@ import org.imixs.workflow.engine.DocumentService;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.logging.Level;
 
 /**
  * This is the abstract base class for the CDI beans DocumentController and
@@ -79,7 +80,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public abstract class AbstractDataController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static Logger logger = Logger.getLogger(AbstractDataController.class.getName());
+    private static final Logger logger = Logger.getLogger(AbstractDataController.class.getName());
 
     private String defaultType;
 
@@ -196,7 +197,7 @@ public abstract class AbstractDataController implements Serializable {
      */
     public void load(String uniqueid) {
         if (uniqueid != null && !uniqueid.isEmpty()) {
-            logger.finest("......load uniqueid=" + uniqueid);
+            logger.log(Level.FINEST, "......load uniqueid={0}", uniqueid);
             data = documentService.load(uniqueid);
             if (data == null) {
                 data = new ItemCollection();
@@ -213,7 +214,7 @@ public abstract class AbstractDataController implements Serializable {
      */
     public void close() {
         if (!conversation.isTransient()) {
-            logger.finest("......stopping conversation, id=" + conversation.getId());
+            logger.log(Level.FINEST, "......stopping conversation, id={0}", conversation.getId());
             conversation.end();
         }
     }
@@ -227,7 +228,7 @@ public abstract class AbstractDataController implements Serializable {
                     ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
                             .getSession().getMaxInactiveInterval() * 1000);
             conversation.begin();
-            logger.finest("......start new conversation, id=" + conversation.getId());
+            logger.log(Level.FINEST, "......start new conversation, id={0}", conversation.getId());
         }
     }
 

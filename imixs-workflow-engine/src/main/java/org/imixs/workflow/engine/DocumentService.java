@@ -358,8 +358,8 @@ public class DocumentService {
 		boolean debug = logger.isLoggable(Level.FINE);
 		long lSaveTime = System.currentTimeMillis();
 		if (debug) {
-			logger.finest("......save - ID=" + document.getUniqueID() + ", provided version="
-					+ document.getItemValueInteger(VERSION));
+			logger.log(Level.FINEST, "......save - ID={0}, provided version={1}",
+                                new Object[]{document.getUniqueID(), document.getItemValueInteger(VERSION)});
 		}
 		Document persistedDocument = null;
 		// Now set flush Mode to COMMIT
@@ -376,7 +376,7 @@ public class DocumentService {
 			// yes so we can try to find the Entity by its primary key
 			persistedDocument = manager.find(Document.class, sID);
 			if (debug && persistedDocument == null) {
-				logger.finest("......Document '" + sID + "' not found!");
+				logger.log(Level.FINEST, "......Document ''{0}'' not found!", sID);
 			}
 		}
 
@@ -421,8 +421,8 @@ public class DocumentService {
 
 		// after all the persistedDocument is now managed through JPA!
 		if (debug) {
-			logger.finest(
-					"......save - ID=" + document.getUniqueID() + " managed version=" + persistedDocument.getVersion());
+			logger.log(Level.FINEST, "......save - ID={0} managed version={1}",
+                                new Object[]{document.getUniqueID(), persistedDocument.getVersion()});
 		}
 		// remove the property $isauthor
 		document.removeItem(ISAUTHOR);
@@ -513,8 +513,8 @@ public class DocumentService {
 		persistedDocument.setPending(true);
 
 		if (debug) {
-			logger.fine(
-					"...'" + document.getUniqueID() + "' saved in " + (System.currentTimeMillis() - lSaveTime) + "ms");
+			logger.log(Level.FINE, "...''{0}'' saved in {1}ms",
+                                new Object[]{document.getUniqueID(), System.currentTimeMillis() - lSaveTime});
 		}
 		// return the updated document
 		return document;
@@ -555,8 +555,8 @@ public class DocumentService {
 		long ltime = System.currentTimeMillis();
 		eventLogService.createEvent(EVENTLOG_TOPIC_INDEX_REMOVE, uniqueID);
 		if (debug) {
-			logger.fine("... update eventLog cache in " + (System.currentTimeMillis() - ltime)
-					+ " ms (1 document to be removed)");
+			logger.log(Level.FINE, "... update eventLog cache in {0} ms (1 document to be removed)",
+                                System.currentTimeMillis() - ltime);
 		}
 	}
 
@@ -625,8 +625,8 @@ public class DocumentService {
 			if (persistedDocument.isPending()) {
 				// we clone but do not detach
 				if (debug) {
-					logger.finest(
-							"......clone manged entity '" + id + "' pending status=" + persistedDocument.isPending());
+					logger.log(Level.FINEST, "......clone manged entity ''{0}'' pending status={1}",
+                                                new Object[]{id, persistedDocument.isPending()});
 				}
 				result = new ItemCollection(persistedDocument.getData());
 			} else {
@@ -645,8 +645,8 @@ public class DocumentService {
 				logger.warning("Missing CDI support for Event<DocumentEvent> !");
 			}
 			if (debug) {
-				logger.fine("...'" + result.getUniqueID() + "' loaded in " + (System.currentTimeMillis() - lLoadTime)
-						+ "ms");
+				logger.log(Level.FINE, "...''{0}'' loaded in {1}ms",
+                                        new Object[]{result.getUniqueID(), System.currentTimeMillis() - lLoadTime});
 			}
 			return result;
 		} else
@@ -810,8 +810,8 @@ public class DocumentService {
 			throws QueryException {
 		boolean debug = logger.isLoggable(Level.FINE);
 		if (debug) {
-			logger.finest("......find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber="
-					+ pageIndex + " , sortBy=" + sortBy + " reverse=" + sortReverse);
+			logger.log(Level.FINEST, "......find - SearchTerm={0}  , pageSize={1} pageNumber={2} , sortBy={3} reverse={4}",
+                                new Object[]{searchTerm, pageSize, pageIndex, sortBy, sortReverse});
 		}
 		// create sort object
 		SortOrder sortOrder = null;
@@ -866,8 +866,8 @@ public class DocumentService {
 			boolean sortReverse) throws QueryException {
 		boolean debug = logger.isLoggable(Level.FINE);
 		if (debug) {
-			logger.finest("......find - SearchTerm=" + searchTerm + "  , pageSize=" + pageSize + " pageNumber="
-					+ pageIndex + " , sortBy=" + sortBy + " reverse=" + sortReverse);
+			logger.log(Level.FINEST, "......find - SearchTerm={0}  , pageSize={1} pageNumber={2} , sortBy={3} reverse={4}",
+                                new Object[]{searchTerm, pageSize, pageIndex, sortBy, sortReverse});
 		}
 		// create sort object
 		SortOrder sortOrder = null;
@@ -917,7 +917,7 @@ public class DocumentService {
 		try {
 			return find(searchTerm, pageSize, pageIndex);
 		} catch (QueryException e) {
-			logger.severe("findDocumentsByRef - invalid query: " + e.getMessage());
+			logger.log(Level.SEVERE, "findDocumentsByRef - invalid query: {0}", e.getMessage());
 			return null;
 		}
 	}
@@ -1028,8 +1028,8 @@ public class DocumentService {
 				if (doc.isPending()) {
 					// we clone but do not detach
 					if (debug) {
-						logger.finest(
-								"......clone manged entity '" + doc.getId() + "' pending status=" + doc.isPending());
+						logger.log(Level.FINEST, "......clone manged entity ''{0}'' pending status={1}",
+                                                        new Object[]{doc.getId(), doc.isPending()});
 					}
 					_tmp = new ItemCollection(doc.getData());
 				} else {
@@ -1049,8 +1049,8 @@ public class DocumentService {
 			}
 		}
 		if (debug) {
-			logger.fine("...getDocumentsByQuery - found " + documentList.size() + " documents in "
-					+ (System.currentTimeMillis() - l) + " ms");
+			logger.log(Level.FINE, "...getDocumentsByQuery - found {0} documents in {1} ms",
+                                new Object[]{documentList.size(), System.currentTimeMillis() - l});
 		}
 		return result;
 	}
@@ -1079,8 +1079,8 @@ public class DocumentService {
 		int icount = 0;
 
 		logger.info("backup - starting...");
-		logger.info("backup - query=" + query);
-		logger.info("backup - target=" + filePath);
+		logger.log(Level.INFO, "backup - query={0}", query);
+		logger.log(Level.INFO, "backup - target={0}", filePath);
 
 		if (filePath == null || filePath.isEmpty()) {
 			logger.severe("Invalid FilePath!");
@@ -1094,7 +1094,7 @@ public class DocumentService {
 
 			Collection<ItemCollection> col = find(query, JUNK_SIZE, pageIndex);
 			totalcount = totalcount + col.size();
-			logger.info("backup - processing...... " + col.size() + " documents read....");
+			logger.log(Level.INFO, "backup - processing...... {0} documents read....", col.size());
 
 			if (col.size() < JUNK_SIZE) {
 				hasMoreData = false;
@@ -1127,7 +1127,7 @@ public class DocumentService {
             }
 		}
 		out.close();
-		logger.info("backup - finished: " + icount + " documents read totaly.");
+		logger.log(Level.INFO, "backup - finished: {0} documents read totaly.", icount);
 	}
 
     // default method 
@@ -1150,7 +1150,7 @@ public class DocumentService {
 
 		FileInputStream fis = new FileInputStream(filePath);
 		ObjectInputStream in = new ObjectInputStream(fis);
-		logger.info("...starting restor form file " + filePath + "...");
+		logger.log(Level.INFO, "...starting restor form file {0}...", filePath);
 		long l = System.currentTimeMillis();
 		while (true) {
 			try {
@@ -1167,8 +1167,7 @@ public class DocumentService {
 				icount++;
 				if (icount >= JUNK_SIZE) {
 					icount = 0;
-					logger.info("...restored " + totalcount + " document in " + (System.currentTimeMillis() - l)
-							+ "ms....");
+					logger.log(Level.INFO, "...restored {0} document in {1}ms....", new Object[]{totalcount, System.currentTimeMillis() - l});
 					l = System.currentTimeMillis();
 				}
 
@@ -1176,12 +1175,12 @@ public class DocumentService {
 				break;
 			} catch (ClassNotFoundException e) {
 				errorCount++;
-				logger.warning("...error importing workitem at position " + (totalcount + errorCount) + " Error: "
-						+ e.getMessage());
+				logger.log(Level.WARNING, "...error importing workitem at position {0}{1} Error: {2}",
+                                        new Object[]{totalcount, errorCount, e.getMessage()});
 			} catch (AccessDeniedException e) {
 				errorCount++;
-				logger.warning("...error importing workitem at position " + (totalcount + errorCount) + " Error: "
-						+ e.getMessage());
+				logger.log(Level.WARNING, "...error importing workitem at position {0}{1} Error: {2}",
+                                        new Object[]{totalcount, errorCount, e.getMessage()});
 			}
 		}
 		in.close();

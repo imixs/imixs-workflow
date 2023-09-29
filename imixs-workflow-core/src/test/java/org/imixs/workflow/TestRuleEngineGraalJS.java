@@ -1,5 +1,6 @@
 package org.imixs.workflow;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.script.ScriptException;
@@ -18,7 +19,7 @@ import org.junit.Test;
  */
 public class TestRuleEngineGraalJS {
 	protected RuleEngine ruleEngine = null;
-	private static Logger logger = Logger.getLogger(TestRuleEngineGraalJS.class.getName());
+	private static final Logger logger = Logger.getLogger(TestRuleEngineGraalJS.class.getName());
 
 	@Before
 	public void setup() throws PluginException {
@@ -53,7 +54,7 @@ public class TestRuleEngineGraalJS {
 		Context context = Context.newBuilder("js").allowAllAccess(true).build();
 		context.getBindings("js").putMember("workitem", workitem);
 		context.eval("js", "var x = workitem.getItemValueInteger('age');");
-		logger.info("result="+context.getBindings("js").getMember("x").asInt());
+		logger.log(Level.INFO, "result={0}", context.getBindings("js").getMember("x").asInt());
 	}
 
 	/**
@@ -70,7 +71,7 @@ public class TestRuleEngineGraalJS {
 
 		context.eval("js", "var x = workitem.getItemValueInteger('age');");
 
-		logger.info("result="+context.getBindings("js").getMember("x").asInt());
+		logger.log(Level.INFO, "result={0}", context.getBindings("js").getMember("x").asInt());
 
 	}
 	

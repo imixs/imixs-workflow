@@ -3,6 +3,7 @@ package org.imixs.workflow;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -49,7 +50,7 @@ public class TestRuleEngineBPMN {
 
 			bpmnRuleEngine=new BPMNRuleEngine(model);
 
-			logger.fine("...loadModel processing time=" + (System.currentTimeMillis() - lLoadTime) + "ms");
+			logger.log(Level.FINE, "...loadModel processing time={0}ms", System.currentTimeMillis() - lLoadTime);
 		} catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		}
@@ -67,7 +68,7 @@ public class TestRuleEngineBPMN {
 
 		try {
 			Assert.assertEquals(200, bpmnRuleEngine.eval(workitem));
-			logger.info("evaluate BPMN-Rule in " + (System.currentTimeMillis() - l) + "ms");
+			logger.log(Level.INFO, "evaluate BPMN-Rule in {0}ms", System.currentTimeMillis() - l);
 
 			// task and event must still be set to 100.10
 			Assert.assertEquals(10, workitem.getEventID());
@@ -88,7 +89,7 @@ public class TestRuleEngineBPMN {
 
 		try {
 			Assert.assertEquals(900, bpmnRuleEngine.eval(workitem));
-			logger.info("evaluate BPMN-Rule in " + (System.currentTimeMillis() - l) + "ms");
+			logger.log(Level.INFO, "evaluate BPMN-Rule in {0}ms", System.currentTimeMillis() - l);
 
 			// task and event must still be set to 100.10
 			Assert.assertEquals(10, workitem.getEventID());

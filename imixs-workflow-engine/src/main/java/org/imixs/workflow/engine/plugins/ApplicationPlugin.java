@@ -82,7 +82,7 @@ public class ApplicationPlugin extends AbstractPlugin {
     private String sAbstract;
     private String sSummary;
     @SuppressWarnings("unused")
-    private static Logger logger = Logger.getLogger(ApplicationPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(ApplicationPlugin.class.getName());
 
     public ItemCollection run(ItemCollection adocumentContext, ItemCollection adocumentActivity)
             throws PluginException {

@@ -63,7 +63,7 @@ public class SchedulerConfigurationService {
     @Inject
     DocumentService documentService;
 
-    private static Logger logger = Logger.getLogger(SchedulerConfigurationService.class.getName());
+    private static final Logger logger = Logger.getLogger(SchedulerConfigurationService.class.getName());
 
     /**
      * This method saves a configuration in a new transaction. This is needed case

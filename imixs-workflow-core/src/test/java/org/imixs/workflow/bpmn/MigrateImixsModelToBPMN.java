@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import jakarta.xml.bind.JAXBException;
+import java.util.logging.Level;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
@@ -48,19 +49,18 @@ public class MigrateImixsModelToBPMN {
 	}
 
 	private static void readModel() {
-		logger.info("read Model file " + sourceModelFile + "...");
+		logger.log(Level.INFO, "read Model file {0}...", sourceModelFile);
 
 		try {
  
 			modelItemCollection = XMLDataCollectionAdapter
 					.readCollectionFromInputStream(MigrateImixsModelToBPMN.class
 							.getClass().getResourceAsStream(sourceModelFile));
-			logger.info("Model contains " + modelItemCollection.size()
-					+ " elements");
+			logger.log(Level.INFO, "Model contains {0} elements", modelItemCollection.size());
 		} catch (JAXBException e) {
-			logger.severe("Error reding model file " + e.getMessage());
+			logger.log(Level.SEVERE, "Error reding model file {0}", e.getMessage());
 		} catch (IOException e) {
-			logger.severe("Error reding model file " + e.getMessage());
+			logger.log(Level.SEVERE, "Error reding model file {0}", e.getMessage());
 		}
 
 	}
@@ -74,7 +74,7 @@ public class MigrateImixsModelToBPMN {
 
 			List<String> groups = findGroups();
 			for (String group : groups) {
-				logger.info("Profile migrate workflow group: " + group);
+				logger.log(Level.INFO, "Profile migrate workflow group: {0}", group);
 
 				// find model version
 				List<ItemCollection> tasks = findProcessEntitiesByGroup(group);
@@ -83,7 +83,7 @@ public class MigrateImixsModelToBPMN {
 						.getItemValueString("$modelversion");
 
 				sModelVersion = group.toLowerCase() + "-" + sModelVersion;
-				logger.info(" - $modelversion=" + sModelVersion);
+				logger.log(Level.INFO, " - $modelversion={0}", sModelVersion);
 
 				// now create a new bpmn file...
 				PrintWriter writer;
@@ -140,8 +140,7 @@ public class MigrateImixsModelToBPMN {
 
 						// test if follow up.....
 
-						logger.fine("TEST Followup " + processID + "_"
-								+ activityID);
+						logger.log(Level.FINE, "TEST Followup {0}_{1}", new Object[]{processID, activityID});
 						if (!followUpIds.contains(processID + "_" + activityID)) {
 							// outgoing...
 							String from = "Task_" + processID;
@@ -178,8 +177,7 @@ public class MigrateImixsModelToBPMN {
 										+ "\" targetRef=\"" + to + "\"/>");
 
 								followUpIds.add(processID + "_" + nextID);
-								logger.fine("ADD follow up " + processID + "_"
-										+ nextID);
+								logger.log(Level.FINE, "ADD follow up {0}_{1}", new Object[]{processID, nextID});
 								flowCount++;
 
 							} else {

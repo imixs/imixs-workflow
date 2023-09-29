@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.script.ScriptException;
@@ -48,7 +49,7 @@ public class TestRulePlugin {
         // set a business rule
         String script = "var result={}; var a=1;var b=2;result.isValid = ((a<b) && 'Anna'==workitem.getItemValueString('txtname'));";
 
-        logger.info("Script=" + script);
+        logger.log(Level.INFO, "Script={0}", script);
         event.replaceItemValue("txtBusinessRUle", script);
 
         // run plugin
@@ -73,7 +74,7 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = "var result={}; var a=1;var b=2;result.isValid = ((a<b) && 'Anna'==workitem.get('txtname')[0]);";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		event.replaceItemValue("txtBusinessRUle", script);
 
 		// run plugin
@@ -166,7 +167,7 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = "var a=1;var b=2;var isValid = (a>b);";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 		rulePlugin.run(adocumentContext, adocumentActivity);
 		Assert.fail();
@@ -182,7 +183,7 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = "var result={ isValid:false };";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 		rulePlugin.run(adocumentContext, adocumentActivity);
 		Assert.fail();
@@ -207,7 +208,7 @@ public class TestRulePlugin {
 		String script = "var result={};var a=1;var b=2;result.isValid = (a>b);" + " result.errorCode='MY_ERROR';"
 				+ " result.errorMessage='Somehing go wrong!';";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		event.replaceItemValue("txtBusinessRUle", script);
 		try {
 			rulePlugin.run(workitem, event);
@@ -225,7 +226,7 @@ public class TestRulePlugin {
 		script = "var result={};var a=1;var b=2;result.isValid = (a>b);" + " result.errorMessage = new Array();"
 				+ " result.errorMessage[0]='Somehing go wrong!';" + " result.errorMessage[1]='Somehingelse go wrong!';";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		event.replaceItemValue("txtBusinessRUle", script);
 		try {
 			rulePlugin.run(workitem, event);
@@ -258,7 +259,7 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = "var result={}; var a=1.0;var b=2;result.followUp =a+b;";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		// run plugin
@@ -290,7 +291,7 @@ public class TestRulePlugin {
 		// set a business rule 
 		// workitem.get(refField1)[0])
 		String script = " var result={}; result.followUp=null;" + " if (workitem._amount_brutto[0]>5000)" + "    result.followUp=90;";
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 
 		ItemCollection workitem = new ItemCollection();
 		workitem.replaceItemValue("_amount_brutto",  Double.valueOf(6000));
@@ -342,7 +343,7 @@ public class TestRulePlugin {
 
 		// set a business rule
 		String script = " var result={};" + " if (workitem._amount_brutto[0]>5000.50)" + "    result.followUp=90;";
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 
 		ItemCollection adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("_amount_brutto", BigDecimal.valueOf(5000.51d));
@@ -385,7 +386,7 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = "var result={}; result.isValid =  '1'==event.keymailenabled[0];";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		// run plugin
@@ -413,7 +414,7 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = "var result={}; event.setItemValue('nammailreplytouser','test@me.com');";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		event.replaceItemValue("txtBusinessRUle", script);
 
 		// run plugin
@@ -445,7 +446,7 @@ public class TestRulePlugin {
 		//String script = "var result={}; result.isValid =event.keymailenabled[0]=='1'; event.keymailenabled='0';";
 		String script = "var result={}; result.isValid =event.keymailenabled[0]=='1'; event.setItemValue('keymailenabled','0');";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		// run plugin
@@ -476,7 +477,7 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = "var result={}; result.isValid =  1000==workitem.get('$taskid')[0];";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		// run plugin
@@ -502,7 +503,7 @@ public class TestRulePlugin {
 		// String script = "var isValid = 1000==workitem.get('$processid')[0];";
 		String script = "var result={}; result.isValid =  1000==workitem.get('$processid')[0];";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		// run plugin
@@ -528,7 +529,7 @@ public class TestRulePlugin {
 		String script = "var result={}; var refField1=\"_contact\";" + " var refField2=\"datdate\";" + "  result.isValid=true;"
 				+ " if (   ( workitem.get(refField2) == null)   ) {" + "    result.isValid=false;"
 				+ "      result.errorMessage='1) Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		// run plugin
@@ -544,7 +545,7 @@ public class TestRulePlugin {
 		script = "var result={}; var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " result.isValid=true;"
 				+ " if (   ( workitem.get(refField2) == null)   ) {" + "     result.isValid=false;"
 				+ "      result.errorMessage='2) Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		try {
@@ -570,7 +571,7 @@ public class TestRulePlugin {
         script = "var result={}; var refField1=\"_contact\";" + " var refField2=\"datdate\";" + " result.isValid=true;"
                 + " if (   ( workitem.get(refField2) == null)   ) {" + "     result.isValid=false;"
                 + "     result.errorMessage='3) Bitte geben Sie ein Datum fuer das Zahlungsziel an!';" + " }  ";
-        logger.info("Script=" + script);
+        logger.log(Level.INFO, "Script={0}", script);
         adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
         // run plugin
@@ -751,7 +752,7 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = "var result={ someitem:'Hello World', somenumber:1};";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		// run plugin
@@ -781,7 +782,7 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = "var a=1.0;var b=2;var result={}; result.followUp =a+b;";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		// run plugin
@@ -814,7 +815,7 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = "var a=1.0;var b=2;var result={}; result.someitem='Hello World'; result.somenumber=1";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		// run plugin
@@ -843,7 +844,7 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = "var a=1.0;var b=2;var result={}; result.some_item=[]; result.some_item[0]='Hello World'; result.some_item[1]='Hello Imixs';";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		// run plugin
@@ -875,7 +876,7 @@ public class TestRulePlugin {
 		// set a business rule
 		String script = "var a=1.0;var b=2;var result={'single_item':'Hello World', 'multi_item':['Hello World','Hello Imixs']};";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 
 		// run plugin
@@ -918,7 +919,7 @@ public class TestRulePlugin {
 		// now add a manipulation!
 		script += " event.setItemValue('keymailenabled','0');";
 
-		logger.info("Script=" + script);
+		logger.log(Level.INFO, "Script={0}", script);
 		event.replaceItemValue("txtBusinessRUle", script);
 		
 		event.replaceItemValue("txtBusinessRuleEngine", "js");

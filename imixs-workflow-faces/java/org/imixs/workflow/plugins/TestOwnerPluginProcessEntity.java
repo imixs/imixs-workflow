@@ -68,7 +68,7 @@ public class TestOwnerPluginProcessEntity {
 
 		// prepare data
 		documentContext = new ItemCollection().model(WorkflowMockEnvironment.DEFAULT_MODEL_VERSION).task(100).event(10);
-		logger.info("[TestOwnerPlugin] setup test data...");
+		logger.info("[TestOwnerPluginProcessEntity] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
 		list.add("anna");

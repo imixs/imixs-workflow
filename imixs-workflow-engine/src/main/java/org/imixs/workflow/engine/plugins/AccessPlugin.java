@@ -41,7 +41,7 @@ import org.imixs.workflow.exceptions.PluginException;
  */
 @Deprecated
 public class AccessPlugin extends AbstractPlugin {
-    private static Logger logger = Logger.getLogger(AccessPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(AccessPlugin.class.getName());
 
     @Deprecated
     public ItemCollection run(ItemCollection adocumentContext, ItemCollection documentActivity) throws PluginException {

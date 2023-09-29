@@ -54,6 +54,7 @@ import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import java.util.logging.Level;
 
 /**
  * The JobHandlerRenameUser updates the name fields of workitems. A name can be
@@ -102,7 +103,7 @@ public class JobHandlerRenameUser implements JobHandler {
     DocumentService documentService;
 
     private static final int DEFAULT_COUNT = 100;
-    private static Logger logger = Logger.getLogger(JobHandlerRenameUser.class.getName());
+    private static final Logger logger = Logger.getLogger(JobHandlerRenameUser.class.getName());
 
     /**
      * This method creates a new AdminP Job to rename userId in workitems.
@@ -201,9 +202,9 @@ public class JobHandlerRenameUser implements JobHandler {
             time = 1;
         }
 
-        logger.info("Job " + AdminPService.JOB_RENAME_USER + " (" + adminp.getUniqueID() + ") - " + colSize
-                + " documents processed, " + iUpdates + " updates in " + time + " sec.  (in total: " + iProcessed
-                + " processed, " + iUpdates + " updates)");
+        logger.log(Level.INFO, "Job " + AdminPService.JOB_RENAME_USER + " ({0}) - {1} documents processed,"
+                + " {2} updates in {3} sec.  (in total: {4} processed, {5} updates)",
+                new Object[]{adminp.getUniqueID(), colSize, iUpdates, time, iProcessed, iUpdates});
 
         // if colSize<numBlockSize we can stop the timer
         if (colSize < iBlockSize) {
@@ -266,7 +267,7 @@ public class JobHandlerRenameUser implements JobHandler {
             String summary = "Rename: " + from + " -> " + to + " (replace=" + replace + ")";
             entity.appendItemValue("txtAdminpLog", new Date(System.currentTimeMillis()) + " " + summary);
             documentService.save(entity);
-            logger.finest("......updated: " + entity.getItemValueString(WorkflowKernel.UNIQUEID));
+            logger.log(Level.FINEST, "......updated: {0}", entity.getItemValueString(WorkflowKernel.UNIQUEID));
         }
         return bUpdate;
     }

@@ -67,7 +67,7 @@ import org.imixs.workflow.exceptions.PluginException;
 public class AccessAdapter implements GenericAdapter, Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static Logger logger = Logger.getLogger(AccessAdapter.class.getName());
+    private static final Logger logger = Logger.getLogger(AccessAdapter.class.getName());
 
     // See CDI Constructor
     protected WorkflowService workflowService;
@@ -214,7 +214,7 @@ public class AccessAdapter implements GenericAdapter, Serializable {
         if ((debug) && (vectorAccess.size() > 0)) {
             logger.finest("......[AccessPlugin] ReadAccess:");
             for (int j = 0; j < vectorAccess.size(); j++)
-                logger.finest("               '" + (String) vectorAccess.get(j) + "'");
+                logger.log(Level.FINEST, "               ''{0}''", (String) vectorAccess.get(j));
         }
 
         // update WriteAccess
@@ -231,7 +231,7 @@ public class AccessAdapter implements GenericAdapter, Serializable {
         if ((debug) && (vectorAccess.size() > 0)) {
             logger.finest("......[AccessPlugin] WriteAccess:");
             for (int j = 0; j < vectorAccess.size(); j++)
-                logger.finest("               '" + (String) vectorAccess.get(j) + "'");
+                logger.log(Level.FINEST, "               ''{0}''", (String) vectorAccess.get(j));
         }
 
     }

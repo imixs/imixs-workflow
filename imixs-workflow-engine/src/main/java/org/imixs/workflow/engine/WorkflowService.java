@@ -134,7 +134,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
     @Inject
     protected Event<TextEvent> textEvents;
 
-    private static Logger logger = Logger.getLogger(WorkflowService.class.getName());
+    private static final Logger logger = Logger.getLogger(WorkflowService.class.getName());
 
     
     
@@ -184,7 +184,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         try {
             return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
         } catch (QueryException e) {
-            logger.severe("getWorkListByOwner - invalid param: " + e.getMessage());
+            logger.log(Level.SEVERE, "getWorkListByOwner - invalid param: {0}", e.getMessage());
             return null;
         }
     }
@@ -222,7 +222,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         try {
             return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
         } catch (QueryException e) {
-            logger.severe("getWorkListByAuthor - invalid param: " + e.getMessage());
+            logger.log(Level.SEVERE, "getWorkListByAuthor - invalid param: {0}", e.getMessage());
             return null;
         }
     }
@@ -258,7 +258,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         try {
             return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
         } catch (QueryException e) {
-            logger.severe("getWorkListByCreator - invalid param: " + e.getMessage());
+            logger.log(Level.SEVERE, "getWorkListByCreator - invalid param: {0}", e.getMessage());
             return null;
         }
     }
@@ -304,7 +304,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         try {
             return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
         } catch (QueryException e) {
-            logger.severe("getWorkListByWriteAccess - invalid param: " + e.getMessage());
+            logger.log(Level.SEVERE, "getWorkListByWriteAccess - invalid param: {0}", e.getMessage());
             return null;
         }
     }
@@ -336,7 +336,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         try {
             return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
         } catch (QueryException e) {
-            logger.severe("getWorkListByGroup - invalid param: " + e.getMessage());
+            logger.log(Level.SEVERE, "getWorkListByGroup - invalid param: {0}", e.getMessage());
             return null;
         }
     }
@@ -368,7 +368,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         try {
             return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
         } catch (QueryException e) {
-            logger.severe("getWorkListByProcessID - invalid param: " + e.getMessage());
+            logger.log(Level.SEVERE, "getWorkListByProcessID - invalid param: {0}", e.getMessage());
             return null;
         }
     }
@@ -400,7 +400,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         try {
             return documentService.find(searchTerm, pageSize, pageIndex, sortBy, sortReverse);
         } catch (QueryException e) {
-            logger.severe("getWorkListByRef - invalid param: " + e.getMessage());
+            logger.log(Level.SEVERE, "getWorkListByRef - invalid param: {0}", e.getMessage());
             return null;
         }
     }
@@ -589,12 +589,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
             long lKernelTime = System.currentTimeMillis();
             workitem = workflowkernel.process(workitem);
             if (debug) {
-                logger.fine("...WorkflowKernel processing time=" + (System.currentTimeMillis() - lKernelTime) + "ms");
+                logger.log(Level.FINE, "...WorkflowKernel processing time={0}ms", System.currentTimeMillis() - lKernelTime);
             }
         } catch (PluginException pe) {
             // if a plugin exception occurs we roll back the transaction.
-            logger.severe("processing workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
-                    + " failed, rollback transaction...");
+            logger.log(Level.SEVERE, "processing workitem ''{0} failed, rollback transaction...",
+                    workitem.getItemValueString(WorkflowKernel.UNIQUEID));
             ctx.setRollbackOnly();
             throw pe;
         }
@@ -615,7 +615,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
         workitem = documentService.save(workitem);
         if (debug) {
-            logger.fine("...total processing time=" + (System.currentTimeMillis() - lStartTime) + "ms");
+            logger.log(Level.FINE, "...total processing time={0}ms", System.currentTimeMillis() - lStartTime);
         }
         return workitem;
     }
@@ -978,7 +978,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                                     result.appendItemValue(tagName, dateResult);
                                 } catch (ParseException e) {
                                     if (debug) {
-                                        logger.finer("failed to convert string into date object: " + e.getMessage());
+                                        logger.log(Level.FINER, "failed to convert string into date object: {0}", e.getMessage());
                                     }
                                 }
                             }
@@ -1100,7 +1100,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
             if (aPlugin != null) {
                 // register injected CDI Plugin
                 if (debug) {
-                    logger.finest("......register CDI plugin class: " + aPluginClassName + "...");
+                    logger.log(Level.FINEST, "......register CDI plugin class: {0}...", aPluginClassName);
                 }
                 workflowkernel.registerPlugin(aPlugin);
             } else {
@@ -1118,7 +1118,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
             // iterate over all injected adapters....
             for (Adapter adapter : this.adapters) {
                 if (debug) {
-                    logger.finest("......register CDI Adapter class '" + adapter.getClass().getName() + "'");
+                    logger.log(Level.FINEST, "......register CDI Adapter class ''{0}''", adapter.getClass().getName());
                 }
                 workflowkernel.registerAdapter(adapter);
             }
@@ -1194,7 +1194,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         for (Plugin plugin : this.plugins) {
             if (plugin.getClass().getName().equals(pluginClassName)) {
                 if (debug) {
-                    logger.finest("......CDI plugin '" + pluginClassName + "' successful injected");
+                    logger.log(Level.FINEST, "......CDI plugin ''{0}'' successful injected", pluginClassName);
                 }
                 return plugin;
             }

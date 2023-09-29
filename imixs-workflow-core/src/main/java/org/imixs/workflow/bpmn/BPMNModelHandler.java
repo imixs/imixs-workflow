@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -61,7 +62,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class BPMNModelHandler extends DefaultHandler {
 
-    private static Logger logger = Logger.getLogger(BPMNModelHandler.class.getName());
+    private static final Logger logger = Logger.getLogger(BPMNModelHandler.class.getName());
 
     private boolean bDefinitions = false;
     private boolean bMessage = false;
@@ -165,7 +166,7 @@ public class BPMNModelHandler extends DefaultHandler {
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        logger.finest("......Start Element :" + qName);
+        logger.log(Level.FINEST, "......Start Element :{0}", qName);
 
         // bpmn2:definitions
         if (qName.equalsIgnoreCase("bpmn2:definitions")) {
@@ -504,7 +505,7 @@ public class BPMNModelHandler extends DefaultHandler {
         // test conditional sequence flow...
         if (bSequenceFlow && bconditionExpression && qName.equalsIgnoreCase("bpmn2:conditionExpression")) {
             String svalue = characterStream.toString();
-            logger.finest("......conditional SequenceFlow:" + bpmnID + "=" + svalue);
+            logger.log(Level.FINEST, "......conditional SequenceFlow:{0}={1}", new Object[]{bpmnID, svalue});
             bconditionExpression = false;
             conditionCache.put(bpmnID, svalue);
         }
@@ -607,9 +608,10 @@ public class BPMNModelHandler extends DefaultHandler {
                 // we need a new pid!
                 pId = processIDList.get(processIDList.size() - 1);
                 pId = pId + 100;
-                logger.warning("Task " + task.getItemValueInteger("numProcessID") + " ("
-                        + task.getItemValueString("txtname") + ") is not unique, assigning new ProcessID " + pId
-                        + ". Please verify the XML content.");
+                logger.log(Level.WARNING, "Task {0} ({1}) is not unique,"
+                        + " assigning new ProcessID {2}. Please verify the XML content.",
+                        new Object[]{task.getItemValueInteger("numProcessID"),
+                            task.getItemValueString("txtname"), pId});
                 task.replaceItemValue("numProcessID", pId);
                 // update task in cache
                 taskCache.put(key, task);
@@ -667,7 +669,7 @@ public class BPMNModelHandler extends DefaultHandler {
                             task.setItemValue("boundaryEvent.targetEvent",
                                     targetEvent.getItemValueInteger("numactivityid"));
                         } else {
-                            logger.warning("Invalid Target for BoundaryEvent " + key);
+                            logger.log(Level.WARNING, "Invalid Target for BoundaryEvent {0}", key);
                         }
                     }
                 }
@@ -912,8 +914,8 @@ public class BPMNModelHandler extends DefaultHandler {
             }
         }
 
-        logger.finest(
-                "......Imixs BPMN Event '" + eventID + "' is directly assigend to " + result.size() + " task elements");
+        logger.log(Level.FINEST, "......Imixs BPMN Event ''{0}'' is directly assigend to {1} task elements",
+                new Object[]{eventID, result.size()});
         return result;
     }
 
@@ -957,14 +959,14 @@ public class BPMNModelHandler extends DefaultHandler {
         try {
             if (model.getEvent(sourceTask.getItemValueInteger("numProcessID"),
                     event.getItemValueInteger("numactivityid")) != null) {
-                logger.finest("......Imixs BPMN Event '" + eventName + "' is already assigned to a source task!");
+                logger.log(Level.FINEST, "......Imixs BPMN Event ''{0}'' is already assigned to a source task!", eventName);
                 return;
             }
         } catch (ModelException me1) {
             // ok we need to add the event....
         }
 
-        logger.finest("......adding event '" + eventName + "'");
+        logger.log(Level.FINEST, "......adding event ''{0}''", eventName);
 
         List<SequenceFlow> outFlows = findOutgoingFlows(eventID);
         if (outFlows == null || outFlows.size() == 0) {
@@ -1004,8 +1006,8 @@ public class BPMNModelHandler extends DefaultHandler {
                             if (targetTask != null) {
                                 String sExpression = findConditionBySquenceFlow(condFlow);
                                 if (sExpression != null && !sExpression.trim().isEmpty()) {
-                                    logger.finest("......add condition: "
-                                            + targetTask.getItemValueInteger("numProcessid") + "=" + sExpression);
+                                    logger.log(Level.FINEST, "......add condition: {0}={1}",
+                                            new Object[]{targetTask.getItemValueInteger("numProcessid"), sExpression});
                                     conditions.put("task=" + targetTask.getItemValueInteger("numProcessid"),
                                             sExpression);
                                 } else {
@@ -1013,8 +1015,8 @@ public class BPMNModelHandler extends DefaultHandler {
                                     // check if it is a default flow?
                                     String defaultSequenceFlow = conditionDefaultFlows.get(conditionalGatewayID);
                                     if (defaultSequenceFlow != null && !defaultSequenceFlow.isEmpty()) {
-                                        logger.finest("......add default condition: "
-                                                + targetTask.getItemValueInteger("numProcessid"));
+                                        logger.log(Level.FINEST, "......add default condition: {0}",
+                                                targetTask.getItemValueInteger("numProcessid"));
                                         defaultCondition = "task=" + targetTask.getItemValueInteger("numProcessid");
 
                                     }
@@ -1026,8 +1028,8 @@ public class BPMNModelHandler extends DefaultHandler {
                                 if (targetEvent != null) {
                                     String sExpression = findConditionBySquenceFlow(condFlow);
                                     if (sExpression != null && !sExpression.trim().isEmpty()) {
-                                        logger.finest("......add condition: "
-                                                + targetEvent.getItemValueInteger("numActivityid") + "=" + sExpression);
+                                        logger.log(Level.FINEST, "......add condition: {0}={1}",
+                                                new Object[]{targetEvent.getItemValueInteger("numActivityid"), sExpression});
                                         conditions.put("event=" + targetEvent.getItemValueInteger("numActivityid"),
                                                 sExpression);
                                     } else {
@@ -1035,8 +1037,8 @@ public class BPMNModelHandler extends DefaultHandler {
                                         // check if it is a default flow?
                                         String defaultSequenceFlow = conditionDefaultFlows.get(conditionalGatewayID);
                                         if (defaultSequenceFlow != null && !defaultSequenceFlow.isEmpty()) {
-                                            logger.finest("......add devault condition: "
-                                                    + targetEvent.getItemValueInteger("numActivityid"));
+                                            logger.log(Level.FINEST, "......add devault condition: {0}",
+                                                    targetEvent.getItemValueInteger("numActivityid"));
                                             defaultCondition = "event="
                                                     + targetEvent.getItemValueInteger("numActivityid");
                                         }
@@ -1079,8 +1081,8 @@ public class BPMNModelHandler extends DefaultHandler {
                             if (targetTask != null) {
                                 String sExpression = findConditionBySquenceFlow(parallelFlow);
                                 if (sExpression != null && !sExpression.trim().isEmpty()) {
-                                    logger.finest("......add condition: "
-                                            + targetTask.getItemValueInteger("numProcessid") + "=" + sExpression);
+                                    logger.log(Level.FINEST, "......add condition: {0}={1}",
+                                            new Object[]{targetTask.getItemValueInteger("numProcessid"), sExpression});
                                     conditions.put("task=" + targetTask.getItemValueInteger("numProcessid"),
                                             sExpression);
                                 }
@@ -1091,8 +1093,8 @@ public class BPMNModelHandler extends DefaultHandler {
                                 if (targetEvent != null) {
                                     String sExpression = findConditionBySquenceFlow(parallelFlow);
                                     if (sExpression != null && !sExpression.trim().isEmpty()) {
-                                        logger.finest("......add condition: "
-                                                + targetEvent.getItemValueInteger("numActivityid") + "=" + sExpression);
+                                        logger.log(Level.FINEST, "......add condition: {0}={1}",
+                                                new Object[]{targetEvent.getItemValueInteger("numActivityid"), sExpression});
                                         conditions.put("event=" + targetEvent.getItemValueInteger("numActivityid"),
                                                 sExpression);
                                     }
@@ -1161,7 +1163,7 @@ public class BPMNModelHandler extends DefaultHandler {
                     for (SequenceFlow _outLink : outLinkFlows) {
                         if (linkThrowEventCache.containsKey(_outLink.target)) {
                             outgoingLink = _outLink.target;
-                            logger.fine("...event is associated with link event: " + outgoingLink);
+                            logger.log(Level.FINE, "...event is associated with link event: {0}", outgoingLink);
                         }
                     }
                     if (outgoingLink != null) {
@@ -1207,8 +1209,8 @@ public class BPMNModelHandler extends DefaultHandler {
             if (signalName != null && !signalName.isEmpty()) {
                 event.setItemValue("adapter.id", signalName);
             } else {
-                logger.warning("Event " + event.getItemValueInteger("id") + " Signal Ref " + signalRefID
-                        + " is not defined!");
+                logger.log(Level.WARNING, "Event {0} Signal Ref {1} is not defined!",
+                        new Object[]{event.getItemValueInteger("id"), signalRefID});
             }
         }
 
@@ -1238,7 +1240,8 @@ public class BPMNModelHandler extends DefaultHandler {
             if (aid == activityid) {
                 // problem!
                 String name = event.getItemValueString("txtname");
-                logger.warning("ActivityID " + name + " ID=" + activityid + " is not unique for task " + processid);
+                logger.log(Level.WARNING, "ActivityID {0} ID={1} is not unique for task {2}",
+                        new Object[]{name, activityid, processid});
                 activityid = -1;
             }
         }
@@ -1246,7 +1249,7 @@ public class BPMNModelHandler extends DefaultHandler {
         // suggest new activityid?
         if (activityid <= 0) {
             // replace id
-            logger.warning("new ActivityID suggested for task " + processid + "=" + bestID);
+            logger.log(Level.WARNING, "new ActivityID suggested for task {0}={1}", new Object[]{processid, bestID});
             event.replaceItemValue("numactivityid", bestID);
 
             // processCache.put(eventID, event);

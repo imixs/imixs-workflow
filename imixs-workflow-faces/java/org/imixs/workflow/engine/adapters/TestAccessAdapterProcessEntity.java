@@ -64,7 +64,7 @@ public class TestAccessAdapterProcessEntity {
 
 		// prepare data
 		documentContext = new ItemCollection().model(WorkflowMockEnvironment.DEFAULT_MODEL_VERSION).task(100);
-		logger.info("[TestAccessPlugin] setup test data...");
+		logger.info("[TestAccessAdapterProcessEntity] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
 		list.add("anna");

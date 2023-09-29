@@ -30,6 +30,7 @@ package org.imixs.workflow.engine.plugins;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
@@ -100,7 +101,7 @@ public class RulePlugin extends AbstractPlugin {
 
     public static final String INVALID_SCRIPT = "INVALID_SCRIPT";
     public static final String VALIDATION_ERROR = "VALIDATION_ERROR";
-    private static Logger logger = Logger.getLogger(RulePlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(RulePlugin.class.getName());
 
     /**
      * The run method evaluates a script provided by an activityEntity with the
@@ -195,7 +196,7 @@ public class RulePlugin extends AbstractPlugin {
                 String itemName = entry.getKey();
                 // skip fieldnames starting with '$'
                 if (!itemName.startsWith("$")) {
-                    logger.finest("......Update item '" + itemName + "'");
+                    logger.log(Level.FINEST, "......Update item ''{0}''", itemName);
                     workitem.replaceItemValue(itemName, entry.getValue());
                 }
             }

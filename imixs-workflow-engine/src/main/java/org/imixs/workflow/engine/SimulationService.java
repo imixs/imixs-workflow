@@ -51,6 +51,7 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 
 import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
+import java.util.logging.Level;
 
 /**
  * The SimulationService can be used to simulate a process life cycle without
@@ -69,7 +70,7 @@ import jakarta.ejb.Stateless;
 @Stateless
 public class SimulationService implements WorkflowContext {
 
-    private static Logger logger = Logger.getLogger(SimulationService.class.getName());
+    private static final Logger logger = Logger.getLogger(SimulationService.class.getName());
 
     @Resource
     private SessionContext ctx;
@@ -140,7 +141,7 @@ public class SimulationService implements WorkflowContext {
                 // aPlugin=null;
                 if (aPlugin != null) {
                     // register injected CDI Plugin
-                    logger.fine("register CDI plugin class: " + aPluginClassName + "...");
+                    logger.log(Level.FINE, "register CDI plugin class: {0}...", aPluginClassName);
                     workflowkernel.registerPlugin(aPlugin);
                 } else {
                     // register plugin by class name
@@ -155,12 +156,13 @@ public class SimulationService implements WorkflowContext {
             workitem = workflowkernel.process(workitem);
         } catch (PluginException pe) {
             // if a plugin exception occurs we roll back the transaction.
-            logger.severe("processing workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID)
-                    + " failed, rollback transaction...");
+            logger.log(Level.SEVERE, "processing workitem ''{0} failed, rollback transaction...",
+                    workitem.getItemValueString(WorkflowKernel.UNIQUEID));
             throw pe;
         }
-        logger.fine("workitem '" + workitem.getItemValueString(WorkflowKernel.UNIQUEID) + "' simulated in "
-                + (System.currentTimeMillis() - l) + "ms");
+        logger.log(Level.FINE, "workitem ''{0}'' simulated in {1}ms",
+                new Object[]{workitem.getItemValueString(WorkflowKernel.UNIQUEID),
+                    System.currentTimeMillis() - l});
 
         // fire event
         if (events != null) {
@@ -210,13 +212,13 @@ public class SimulationService implements WorkflowContext {
             return null;
 
         if (plugins == null || !plugins.iterator().hasNext()) {
-            logger.fine("[WorkflowService] no CDI plugins injected");
+            logger.fine("[SimulationService] no CDI plugins injected");
             return null;
         }
         // iterate over all injected plugins....
         for (Plugin plugin : this.plugins) {
             if (plugin.getClass().getName().equals(pluginClassName)) {
-                logger.fine("[WorkflowService] CDI plugin '" + pluginClassName + "' successful injected");
+                logger.log(Level.FINE, "[SimulationService] CDI plugin ''{0}'' successful injected", pluginClassName);
                 return plugin;
             }
         }

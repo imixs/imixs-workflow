@@ -44,6 +44,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
+import java.util.logging.Level;
 
 /**
  * Represents a single item inside a XMLItemCollection. An XMLItem has a name
@@ -57,7 +58,7 @@ import jakarta.xml.bind.annotation.XmlSeeAlso;
 public class XMLItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static Logger logger = Logger.getLogger(XMLItem.class.getName());
+    private static final Logger logger = Logger.getLogger(XMLItem.class.getName());
 
     private String name;
 
@@ -136,8 +137,8 @@ public class XMLItem implements Serializable {
                         listOfObjects.add(xmlVal);
                     } else {
                         conversionSuccessfull = false;
-                        logger.warning("WARNING : XMLItem - property '" + this.name
-                                + "' contains unsupported java types: " + aSingleObject.getClass().getName());
+                        logger.log(Level.WARNING, "WARNING : XMLItem - property ''{0}'' contains unsupported java types: {1}",
+                                new Object[]{this.name, aSingleObject.getClass().getName()});
                         break;
                     }
                 }
@@ -174,7 +175,7 @@ public class XMLItem implements Serializable {
                     || ((current >= 0x10000) && (current <= 0x10FFFF))) {
                 out.append(current);
             } else {
-                logger.warning("invalid xml character at position " + i + " in item '" + name + "'");
+                logger.log(Level.WARNING, "invalid xml character at position {0} in item ''{1}''", new Object[]{i, name});
             }
         }
         return out.toString();

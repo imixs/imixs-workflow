@@ -126,17 +126,17 @@ public class WorkflowScheduler implements Scheduler {
                                                             // 3=day, 4=workdays
 
                 if (iOffsetUnit < 1 || iOffsetUnit > 4) {
-                    logger.warning(
-                            "error parsing delay in ActivityEntity " + docActivity.getItemValueInteger("numProcessID")
-                                    + "." + docActivity.getItemValueInteger("numActivityID")
-                                    + " : unsuported keyActivityDelayUnit=" + sDelayUnit);
+                    logger.log(Level.WARNING, "error parsing delay in ActivityEntity {0}.{1} :"
+                            + " unsuported keyActivityDelayUnit={2}",
+                            new Object[]{docActivity.getItemValueInteger("numProcessID"),
+                                docActivity.getItemValueInteger("numActivityID"), sDelayUnit});
                     return false;
                 }
 
             } catch (NumberFormatException nfe) {
-                logger.warning(
-                        "error parsing delay in ActivityEntity " + docActivity.getItemValueInteger("numProcessID") + "."
-                                + docActivity.getItemValueInteger("numActivityID") + " :" + nfe.getMessage());
+                logger.log(Level.WARNING, "error parsing delay in ActivityEntity {0}.{1} :{2}",
+                        new Object[]{docActivity.getItemValueInteger("numProcessID"),
+                            docActivity.getItemValueInteger("numActivityID"), nfe.getMessage()});
                 return false;
             }
             // get activityDelay from Event
@@ -151,7 +151,7 @@ public class WorkflowScheduler implements Scheduler {
             if ("4".equals(sDelayUnit))
                 sDelayUnit = "workdays";
 
-            logger.finest("......" + suniqueid + " offset =" + iOffset + " " + sDelayUnit);
+            logger.log(Level.FINEST, "......{0} offset ={1} {2}", new Object[]{suniqueid, iOffset, sDelayUnit});
 
             iCompareType = docActivity.getItemValueInteger("keyScheduledBaseObject");
 
@@ -161,7 +161,7 @@ public class WorkflowScheduler implements Scheduler {
             switch (iCompareType) {
             // last process -
             case 1: {
-                logger.finest("......" + suniqueid + ": CompareType = last event");
+                logger.log(Level.FINEST, "......{0}: CompareType = last event", suniqueid);
 
                 // support deprecated fields $lastProcessingDate and timWorkflowLastAccess
                 if (!doc.hasItem("$lastEventDate")) {
@@ -174,12 +174,12 @@ public class WorkflowScheduler implements Scheduler {
                 }
                 dateTimeCompare = doc.getItemValueDate("$lastEventDate");
                 if (dateTimeCompare == null) {
-                    logger.warning(suniqueid + ": item '$lastEventDate' is missing!");
+                    logger.log(Level.WARNING, "{0}: item ''$lastEventDate'' is missing!", suniqueid);
                     return false;
                 }
 
                 // compute scheduled time
-                logger.finest("......" + suniqueid + ": $lastEventDate=" + dateTimeCompare);
+                logger.log(Level.FINEST, "......{0}: $lastEventDate={1}", new Object[]{suniqueid, dateTimeCompare});
                 dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
                 if (dateTimeCompare != null)
                     return dateTimeCompare.before(dateTimeNow);
@@ -189,11 +189,11 @@ public class WorkflowScheduler implements Scheduler {
 
             // last modification
             case 2: {
-                logger.finest("......" + suniqueid + ": CompareType = last modify");
+                logger.log(Level.FINEST, "......{0}: CompareType = last modify", suniqueid);
 
                 dateTimeCompare = doc.getItemValueDate("$modified");
 
-                logger.finest("......" + suniqueid + ": modified=" + dateTimeCompare);
+                logger.log(Level.FINEST, "......{0}: modified={1}", new Object[]{suniqueid, dateTimeCompare});
 
                 dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
 
@@ -205,10 +205,10 @@ public class WorkflowScheduler implements Scheduler {
 
             // creation
             case 3: {
-                logger.finest("......" + suniqueid + ": CompareType = creation");
+                logger.log(Level.FINEST, "......{0}: CompareType = creation", suniqueid);
 
                 dateTimeCompare = doc.getItemValueDate("$created");
-                logger.finest("......" + suniqueid + ": doc.getCreated() =" + dateTimeCompare);
+                logger.log(Level.FINEST, "......{0}: doc.getCreated() ={1}", new Object[]{suniqueid, dateTimeCompare});
 
                 // Nein -> Creation date ist masstab
                 dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
@@ -222,23 +222,23 @@ public class WorkflowScheduler implements Scheduler {
             // field
             case 4: {
                 String sNameOfField = docActivity.getItemValueString("keyTimeCompareField");
-                logger.finest("......" + suniqueid + ": CompareType = field: '" + sNameOfField + "'");
+                logger.log(Level.FINEST, "......{0}: CompareType = field: ''{1}''", new Object[]{suniqueid, sNameOfField});
 
                 if (!doc.hasItem(sNameOfField)) {
-                    logger.finest("......" + suniqueid + ": CompareType =" + sNameOfField + " no value found!");
+                    logger.log(Level.FINEST, "......{0}: CompareType ={1} no value found!", new Object[]{suniqueid, sNameOfField});
                     return false;
                 }
 
                 dateTimeCompare = doc.getItemValueDate(sNameOfField);
 
-                logger.finest("......" + suniqueid + ": " + sNameOfField + "=" + dateTimeCompare);
+                logger.log(Level.FINEST, "......{0}: {1}={2}", new Object[]{suniqueid, sNameOfField, dateTimeCompare});
 
                 dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
                 if (dateTimeCompare != null) {
-                    logger.finest("......" + suniqueid + ": Compare " + dateTimeCompare + " <-> " + dateTimeNow);
+                    logger.log(Level.FINEST, "......{0}: Compare {1} <-> {2}", new Object[]{suniqueid, dateTimeCompare, dateTimeNow});
 
                     if (dateTimeCompare.before(dateTimeNow)) {
-                        logger.finest("......" + suniqueid + " isInDue!");
+                        logger.log(Level.FINEST, "......{0} isInDue!", suniqueid);
                     }
                     return dateTimeCompare.before(dateTimeNow);
                 } else
@@ -323,8 +323,8 @@ public class WorkflowScheduler implements Scheduler {
             }
         }
         if (resultDate != null) {
-            logger.finest(
-                    "......addWorkDays (" + baseDate.getTime() + ") + " + days + " = (" + resultDate.getTime() + ")");
+            logger.log(Level.FINEST, "......addWorkDays ({0}) + {1} = ({2})",
+                    new Object[]{baseDate.getTime(), days, resultDate.getTime()});
         }
         return resultDate;
     }
@@ -366,7 +366,7 @@ public class WorkflowScheduler implements Scheduler {
             }
 
         } catch (Exception e) {
-            logger.severe("Error processing worklist: " + e.getMessage());
+            logger.log(Level.SEVERE, "Error processing worklist: {0}", e.getMessage());
             if (logger.isLoggable(Level.FINE)) {
                 e.printStackTrace();
             }
@@ -408,12 +408,12 @@ public class WorkflowScheduler implements Scheduler {
         for (ItemCollection aprocessentity : colProcessList) {
             // select all activities for this process entity...
             int processid = aprocessentity.getItemValueInteger("numprocessid");
-            logger.finest("......analyse processentity '" + processid + "'");
+            logger.log(Level.FINEST, "......analyse processentity ''{0}''", processid);
             Collection<ItemCollection> aActivityList = modelService.getModel(aModelVersion)
                     .findAllEventsByTask(processid);
 
             for (ItemCollection aactivityEntity : aActivityList) {
-                logger.finest("......analyse acitity '" + aactivityEntity.getItemValueString("txtname") + "'");
+                logger.log(Level.FINEST, "......analyse acitity ''{0}''", aactivityEntity.getItemValueString("txtname"));
 
                 // check if activity is scheduled
                 if ("1".equals(aactivityEntity.getItemValueString("keyScheduledActivity")))
@@ -482,7 +482,7 @@ public class WorkflowScheduler implements Scheduler {
             if (worklist.size() == 0) {
                 break;
             } else {
-                logger.finest("......" + worklist.size() + " workitems found in total, collect due date...");
+                logger.log(Level.FINEST, "......{0} workitems found in total, collect due date...", worklist.size());
                 // update collector.....
                 collectWorkitemsInDue(event, modelVersionEvent, worklist, worklistCollector);
                 if (worklist.size() < MAX_WORKITEM_COUNT) {
@@ -518,7 +518,8 @@ public class WorkflowScheduler implements Scheduler {
                     workitem = workflowService.processWorkItemByNewTransaction(workitem);
                     iProcessWorkItems++;
                 } catch (Exception e) {
-                    logger.warning("error processing workitem: " + workitem.getUniqueID() + " Error=" + e.getMessage());
+                    logger.log(Level.WARNING, "error processing workitem: {0} Error={1}",
+                            new Object[]{workitem.getUniqueID(), e.getMessage()});
                     if (logger.isLoggable(Level.FINEST)) {
                         e.printStackTrace();
                     }
@@ -572,15 +573,16 @@ public class WorkflowScheduler implements Scheduler {
                     continue;
                 } catch (ModelException me) {
                     // ModelException - we migrate the model ...
-                    logger.fine("...deprecated model version '" + workitem.getModelVersion()
-                            + "' no longer exists -> migrating to new model version '" + modelVersionEvent + "'");
+                    logger.log(Level.FINE, "...deprecated model version ''{0}'' no longer exists ->"
+                            + " migrating to new model version ''{1}''",
+                            new Object[]{workitem.getModelVersion(), modelVersionEvent});
                     workitem.model(modelVersionEvent);
                 }
             }
 
             // verify due date
             if (workItemInDue(workitem, event)) {
-                logger.finest("......document " + workitem.getUniqueID() + "is in due");
+                logger.log(Level.FINEST, "......document {0}is in due", workitem.getUniqueID());
                 collector.add(workitem);
             }
 
@@ -651,7 +653,7 @@ public class WorkflowScheduler implements Scheduler {
         for (QuerySelector selector : this.selectors) {
             if (selector.getClass().getName().equals(selectorClassName)) {
                 if (debug) {
-                    logger.finest("......CDI selector '" + selectorClassName + "' successful injected");
+                    logger.log(Level.FINEST, "......CDI selector ''{0}'' successful injected", selectorClassName);
                 }
                 return selector;
             }

@@ -33,6 +33,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -56,7 +57,7 @@ import org.xml.sax.SAXException;
  */
 public class BPMNParser {
 
-    private static Logger logger = Logger.getLogger(BPMNParser.class.getName());
+    private static final Logger logger = Logger.getLogger(BPMNParser.class.getName());
 
     /**
      * This method parses a BPMN model from a input stream and returns a instance of
@@ -96,8 +97,8 @@ public class BPMNParser {
         // store file content from input stream into the BPMNmodel
         model.setRawData(rawData);
 
-        logger.fine(
-                "...BPMN Model '" + model.getVersion() + "' parsed in " + (System.currentTimeMillis() - lTime) + "ms");
+        logger.log(Level.FINE, "...BPMN Model ''{0}'' parsed in {1}ms",
+                new Object[]{model.getVersion(), System.currentTimeMillis() - lTime});
         return model;
 
     }

@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.imixs.workflow.ItemCollection;
@@ -112,7 +113,7 @@ public class BPMNModel implements Model {
     private List<String> workflowGroups = null;
     private ItemCollection definition = null;
     private byte[] rawData = null;
-    private static Logger logger = Logger.getLogger(BPMNModel.class.getName());
+    private static final Logger logger = Logger.getLogger(BPMNModel.class.getName());
 
     public BPMNModel() {
         taskList = new TreeMap<Integer, ItemCollection>();
@@ -383,7 +384,7 @@ public class BPMNModel implements Model {
             return;
 
         if (!"ProcessEntity".equals(entity.getItemValueString("type"))) {
-            logger.warning("Invalid Process Entity - wrong type '" + entity.getItemValueString("type") + "'");
+            logger.log(Level.WARNING, "Invalid Process Entity - wrong type ''{0}''", entity.getItemValueString("type"));
             throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
                     "Invalid Process Entity - wrong type '" + entity.getItemValueString("type") + "'");
         }
@@ -409,7 +410,7 @@ public class BPMNModel implements Model {
         ItemCollection clonedEntity = new ItemCollection(aentity);
 
         if (!"ActivityEntity".equals(clonedEntity.getItemValueString("type"))) {
-            logger.warning("Invalid Activity Entity - wrong type '" + clonedEntity.getItemValueString("type") + "'");
+            logger.log(Level.WARNING, "Invalid Activity Entity - wrong type ''{0}''", clonedEntity.getItemValueString("type"));
         }
 
         int pID = clonedEntity.getItemValueInteger("numprocessid");
@@ -423,8 +424,7 @@ public class BPMNModel implements Model {
         String activitymodelversion = clonedEntity.getItemValueString(WorkflowKernel.MODELVERSION);
         ItemCollection process = this.getTask(pID);
         if (process == null) {
-            logger.warning("Invalid Activiyt Entity - no numprocessid defined in model version '" + activitymodelversion
-                    + "' ");
+            logger.log(Level.WARNING, "Invalid Activiyt Entity - no numprocessid defined in model version ''{0}'' ", activitymodelversion);
             throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
                     "Invalid Activiyt Entity - no numprocessid defined!");
         }

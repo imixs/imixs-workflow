@@ -68,7 +68,7 @@ public class SchedulerController implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private static Logger logger = Logger.getLogger(SchedulerController.class.getName());
+    private static final Logger logger = Logger.getLogger(SchedulerController.class.getName());
 
     /**
      * This method load the config entity after postContstruct. If no Entity exists
@@ -163,7 +163,7 @@ public class SchedulerController implements Serializable {
     public String millisToShortDHMS(int duration) {
         boolean debug = logger.isLoggable(Level.FINE);
         if (debug) {
-            logger.finest("......confert ms " + duration);
+            logger.log(Level.FINEST, "......confert ms {0}", duration);
         }
         String res = "";
         long days = TimeUnit.MILLISECONDS.toDays(duration);

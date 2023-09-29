@@ -38,6 +38,7 @@ import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.exceptions.IndexException;
 
 import jakarta.ejb.Singleton;
+import java.util.logging.Level;
 
 /**
  * The LuceneUpdateService provides methods to write Imixs Workitems into a
@@ -71,7 +72,7 @@ public class LuceneUpdateService implements UpdateService {
     @Inject
     private LuceneIndexService luceneIndexService;
 
-    private static Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
+    private static final Logger logger = Logger.getLogger(LuceneUpdateService.class.getName());
 
     /**
      * This method adds a collection of documents to the Lucene index. The documents
@@ -102,8 +103,8 @@ public class LuceneUpdateService implements UpdateService {
         while (luceneIndexService.flushEventLog(2048) == false) {
             // repeat flush....
             flushCount = +2048;
-            logger.info("...flush event log: " + flushCount + " entries updated in "
-                    + (System.currentTimeMillis() - ltime) + "ms ...");
+            logger.log(Level.INFO, "...flush event log: {0} entries updated in {1}ms ...",
+                    new Object[]{flushCount, System.currentTimeMillis() - ltime});
         }
     }
 

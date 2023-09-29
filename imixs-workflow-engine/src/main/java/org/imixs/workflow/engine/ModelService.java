@@ -94,7 +94,7 @@ public class ModelService implements ModelManager {
 
     private ConcurrentHashMap<String, Model> modelStore = null;
     
-    private static Logger logger = Logger.getLogger(ModelService.class.getName());
+    private static final Logger logger = Logger.getLogger(ModelService.class.getName());
     @Inject
     private DocumentService documentService;
     @Resource
@@ -125,7 +125,7 @@ public class ModelService implements ModelManager {
 
             for (FileData file : files) {
                 if (debug) {
-                    logger.finest("......loading file:" + file.getName());
+                    logger.log(Level.FINEST, "......loading file:{0}", file.getName());
                 }
                 byte[] rawData = file.getContent();
                 InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
@@ -137,8 +137,7 @@ public class ModelService implements ModelManager {
                         try {
                             if (getModel(modelVersion) != null) {
                                 // no op
-                                logger.warning("Model '" + modelVersion
-                                        + "' is dupplicated! Please update the model version!");
+                                logger.log(Level.WARNING, "Model ''{0}'' is dupplicated! Please update the model version!", modelVersion);
                             }
                         } catch (ModelException e) {
                             // exception is expected
@@ -146,7 +145,7 @@ public class ModelService implements ModelManager {
                         }
                     }
                 } catch (Exception e) {
-                    logger.warning("Failed to load model '" + file.getName() + "' : " + e.getMessage());
+                    logger.log(Level.WARNING, "Failed to load model ''{0}'' : {1}", new Object[]{file.getName(), e.getMessage()});
                 }
             }
         }
@@ -166,7 +165,7 @@ public class ModelService implements ModelManager {
         if (modelVersion.isEmpty()) {
             throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Version not provided! ");
         }
-        logger.info("⟳ updated model version: '" + model.getVersion() + "'");
+        logger.log(Level.INFO, "\u27f3 updated model version: ''{0}''", model.getVersion());
         getModelStore().put(modelVersion, model);
     }
 
@@ -182,7 +181,7 @@ public class ModelService implements ModelManager {
         boolean debug = logger.isLoggable(Level.FINE);
         getModelStore().remove(modelversion);
         if (debug) {
-            logger.finest("......removed BPMNModel '" + modelversion + "'...");
+            logger.log(Level.FINEST, "......removed BPMNModel ''{0}''...", modelversion);
         }
     }
 
@@ -232,7 +231,8 @@ public class ModelService implements ModelManager {
                 if (!versions.isEmpty()) {
                     // we found a match by regex!
                     String newVersion = versions.get(0);
-                    logger.info("...... match version '" + newVersion + "' -> by regex '" + modelVersion + "'");
+                    logger.log(Level.INFO, "...... match version ''{0}'' -> by regex ''{1}''", 
+                            new Object[]{newVersion, modelVersion});
                     workitem.replaceItemValue(WorkflowKernel.MODELVERSION, newVersion);
                     model = getModel(newVersion);
                 }
@@ -244,8 +244,9 @@ public class ModelService implements ModelManager {
                 if (!versions.isEmpty()) {
                     String newVersion = versions.get(0);
                     if (!modelVersion.isEmpty()) {
-                        logger.warning("Deprecated model version: '" + modelVersion + "' -> migrating to '" + newVersion
-                            + "',  $workflowgroup: '" + workflowGroup + "', $uniqueid: " + workitem.getUniqueID());
+                        logger.log(Level.WARNING, "Deprecated model version: ''{0}'' -> migrating to ''{1}'',"
+                                + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
+                                new Object[]{modelVersion, newVersion, workflowGroup, workitem.getUniqueID()});
                     }
                     workitem.replaceItemValue(WorkflowKernel.MODELVERSION, newVersion);
                     model = getModel(newVersion);
@@ -330,7 +331,7 @@ public class ModelService implements ModelManager {
         boolean debug = logger.isLoggable(Level.FINE);
         List<String> result = new ArrayList<String>();
         if (debug) {
-            logger.finest("......searching model versions for workflowgroup '" + group + "'...");
+            logger.log(Level.FINEST, "......searching model versions for workflowgroup ''{0}''...", group);
         }
         // try to find matching model version by group
         Collection<Model> models = getModelStore().values();
@@ -356,7 +357,7 @@ public class ModelService implements ModelManager {
         boolean debug = logger.isLoggable(Level.FINE);
         List<String> result = new ArrayList<String>();
         if (debug) {
-            logger.finest("......searching model versions for regex '" + modelRegex + "'...");
+            logger.log(Level.FINEST, "......searching model versions for regex ''{0}''...", modelRegex);
         }
         // try to find matching model version by regex
         Collection<Model> models = getModelStore().values();
@@ -405,7 +406,7 @@ public class ModelService implements ModelManager {
             deleteModel(model.getVersion());
             // store model into internal cache
             if (debug) {
-                logger.finest("......save BPMNModel '" + model.getVersion() + "'...");
+                logger.log(Level.FINEST, "......save BPMNModel ''{0}''...", model.getVersion());
             }
             BPMNModel bpmnModel = (BPMNModel) model;
             addModel(model);
@@ -447,7 +448,7 @@ public class ModelService implements ModelManager {
         if (version != null && !version.isEmpty()) {
             boolean debug = logger.isLoggable(Level.FINE);
             if (debug) {
-                logger.finest("......delete BPMNModel '" + version + "'...");
+                logger.log(Level.FINEST, "......delete BPMNModel ''{0}''...", version);
             }
             Collection<ItemCollection> col = documentService.getDocumentsByType("model");
             for (ItemCollection modelEntity : col) {
@@ -476,7 +477,7 @@ public class ModelService implements ModelManager {
         if (version != null && !version.isEmpty()) {
             boolean debug = logger.isLoggable(Level.FINE);
             if (debug) {
-                logger.finest("......load BPMNModel Entity '" + version + "'...");
+                logger.log(Level.FINEST, "......load BPMNModel Entity ''{0}''...", version);
             }
 
             Collection<ItemCollection> col = documentService.getDocumentsByType("model");

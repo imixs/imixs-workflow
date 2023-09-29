@@ -88,7 +88,7 @@ public class VersionPlugin extends AbstractPlugin {
     private ItemCollection documentContext = null;
 
     private static final String PROCESSING_VERSION_ATTRIBUTE = "$processingversion";
-    private static Logger logger = Logger.getLogger(VersionPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(VersionPlugin.class.getName());
 
     public ItemCollection getVersion() {
         return version;

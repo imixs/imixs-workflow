@@ -44,6 +44,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.logging.Level;
 
 /**
  * The RootService provides the api description
@@ -63,7 +64,7 @@ public class RootRestService {
     private HttpServletResponse servletResponse;
    
     
-    private static Logger logger = Logger.getLogger(RootRestService.class.getName());
+    private static final Logger logger = Logger.getLogger(RootRestService.class.getName());
 
 
     @GET
@@ -104,7 +105,7 @@ public class RootRestService {
             }
         }
         catch (ServletException e) {
-            logger.warning("Failed to logout from API endpoint /logout : " + e.getMessage());
+            logger.log(Level.WARNING, "Failed to logout from API endpoint /logout : {0}", e.getMessage());
             return;
         }
         logger.finest("Logout successfull");

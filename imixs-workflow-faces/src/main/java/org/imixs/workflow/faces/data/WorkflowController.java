@@ -114,7 +114,7 @@ import org.imixs.workflow.faces.util.ValidationException;
 public class WorkflowController extends AbstractDataController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static Logger logger = Logger.getLogger(WorkflowController.class.getName());
+    private static final Logger logger = Logger.getLogger(WorkflowController.class.getName());
 
     @Inject
     ModelService modelService;
@@ -309,7 +309,7 @@ public class WorkflowController extends AbstractDataController implements Serial
         try {
             long l1 = System.currentTimeMillis();
             events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_BEFORE_PROCESS));
-            logger.finest("......fire WORKITEM_BEFORE_PROCESS event: ' in " + (System.currentTimeMillis() - l1) + "ms");
+            logger.log(Level.FINEST, "......fire WORKITEM_BEFORE_PROCESS event: '' in {0}ms", System.currentTimeMillis() - l1);
 
             // process workItem now...
             data = workflowService.processWorkItem(data);
@@ -334,17 +334,17 @@ public class WorkflowController extends AbstractDataController implements Serial
                     actionResult = actionResult + "&faces-redirect=true";
                 }
             }
-            logger.fine("... new actionResult=" + actionResult);
+            logger.log(Level.FINE, "... new actionResult={0}", actionResult);
 
             // fire event
             long l2 = System.currentTimeMillis();
             events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_AFTER_PROCESS));
-            logger.finest("......[process] fire WORKITEM_AFTER_PROCESS event: ' in " + (System.currentTimeMillis() - l2)
-                    + "ms");
+            logger.log(Level.FINEST, "......[process] fire WORKITEM_AFTER_PROCESS event: '' in {0}ms", System.currentTimeMillis() - l2);
 
             if (logger.isLoggable(Level.FINEST)) {
-                logger.finest("......[process] '" + getWorkitem().getItemValueString(WorkflowKernel.UNIQUEID)
-                        + "' completed in " + (System.currentTimeMillis() - lTotal) + "ms");
+                logger.log(Level.FINEST, "......[process] ''{0}'' completed in {1}ms",
+                        new Object[]{getWorkitem().getItemValueString(WorkflowKernel.UNIQUEID),
+                            System.currentTimeMillis() - lTotal});
             }
             // Finally we close the conversation. In case of an exception, the conversation
             // will stay open
@@ -385,7 +385,7 @@ public class WorkflowController extends AbstractDataController implements Serial
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
                 externalContext.redirect(externalURL);
             } catch (IOException e) {
-                logger.warning("Failed to redirect action result: " + externalURL + " - Error: " + e.getMessage());
+                logger.log(Level.WARNING, "Failed to redirect action result: {0} - Error: {1}", new Object[]{externalURL, e.getMessage()});
                 e.printStackTrace();
             }
         }
@@ -409,7 +409,7 @@ public class WorkflowController extends AbstractDataController implements Serial
         if (data == null) {
             logger.finest("......process workitem is null");
         } else {
-            logger.finest("......process workitem id: " + data.getUniqueID());
+            logger.log(Level.FINEST, "......process workitem id: {0}", data.getUniqueID());
         }
         this.getWorkitem().setEventID(id);
         return process();
@@ -433,7 +433,7 @@ public class WorkflowController extends AbstractDataController implements Serial
         try {
             activityList = workflowService.getEvents(getWorkitem());
         } catch (ModelException e) {
-            logger.warning("Unable to get workflow event list: " + e.getMessage());
+            logger.log(Level.WARNING, "Unable to get workflow event list: {0}", e.getMessage());
         }
 
         return activityList;

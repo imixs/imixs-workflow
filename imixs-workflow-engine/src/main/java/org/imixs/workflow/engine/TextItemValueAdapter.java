@@ -41,7 +41,6 @@ import java.util.logging.Logger;
 import jakarta.ejb.Stateless;
 import jakarta.enterprise.event.Observes;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.util.XMLParser;
 
 /**
@@ -54,7 +53,7 @@ import org.imixs.workflow.util.XMLParser;
 @Stateless
 public class TextItemValueAdapter {
 
-    private static Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(TextItemValueAdapter.class.getName());
 
     /**
      * This method reacts on CDI events of the type TextEvent and parses a string
@@ -94,7 +93,7 @@ public class TextItemValueAdapter {
 
         List<String> tagList = XMLParser.findTags(text, "itemvalue");
         if (debug) {
-            logger.finest("......" + tagList.size() + " tags found");
+            logger.log(Level.FINEST, "......{0} tags found", tagList.size());
         }
         // test if a <value> tag exists...
         for (String tag : tagList) {
@@ -288,9 +287,8 @@ public class TextItemValueAdapter {
                     }
                     singleValue = formatter.format(dateValue);
                 } catch (Exception ef) {
-                    Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
-                    logger.warning("ReportService: Invalid format String '" + format + "'");
-                    logger.warning("ReportService: Can not format value - error: " + ef.getMessage());
+                    logger.log(Level.WARNING, "TextItemValueAdapter: Invalid format String ''{0}''", format);
+                    logger.log(Level.WARNING, "TextItemValueAdapter: Can not format value - error: {0}", ef.getMessage());
                     return "" + dateValue;
                 }
             } else {
@@ -305,7 +303,7 @@ public class TextItemValueAdapter {
                     double d = Double.parseDouble(o.toString());
                     singleValue = customNumberFormat(format, locale, d);
                 } catch (IllegalArgumentException e) {
-                    logger.warning("Format Error (" + format + ") = " + e.getMessage());
+                    logger.log(Level.WARNING, "Format Error ({0}) = {1}", new Object[]{format, e.getMessage()});
                     singleValue = "0";
                 }
 

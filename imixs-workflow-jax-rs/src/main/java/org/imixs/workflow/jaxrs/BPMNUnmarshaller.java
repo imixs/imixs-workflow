@@ -40,6 +40,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.ext.MessageBodyReader;
 import jakarta.ws.rs.ext.Provider;
+import java.util.logging.Level;
 import javax.xml.parsers.ParserConfigurationException;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
@@ -56,7 +57,7 @@ import org.xml.sax.SAXException;
 @Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN })
 public class BPMNUnmarshaller implements MessageBodyReader<BPMNModel> {
 
-    private static Logger logger = Logger.getLogger(BPMNUnmarshaller.class.getName());
+    private static final Logger logger = Logger.getLogger(BPMNUnmarshaller.class.getName());
 
     @SuppressWarnings("rawtypes")
     @Override
@@ -74,17 +75,8 @@ public class BPMNUnmarshaller implements MessageBodyReader<BPMNModel> {
 
         try {
             return BPMNParser.parseModel(bpmnInputStream, "UTF-8");
-        } catch (ModelException e) {
-            logger.warning("Invalid Model: " + e.getMessage());
-            e.printStackTrace();
-        } catch (ParseException e) {
-            logger.warning("Invalid Model: " + e.getMessage());
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            logger.warning("Invalid Model: " + e.getMessage());
-            e.printStackTrace();
-        } catch (SAXException e) {
-            logger.warning("Invalid Model: " + e.getMessage());
+        } catch (ModelException | ParseException | ParserConfigurationException | SAXException e) {
+            logger.log(Level.WARNING, "Invalid Model: {0}", e.getMessage());
             e.printStackTrace();
         }
 

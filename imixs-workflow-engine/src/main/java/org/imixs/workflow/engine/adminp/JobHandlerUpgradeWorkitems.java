@@ -51,6 +51,7 @@ import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import java.util.logging.Level;
 
 /**
  * JobHandler to upgrate existing workItems to the latest workflow version.
@@ -123,22 +124,22 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
         int iProcessed = adminp.getItemValueInteger("numProcessed");
 
         String query = buildQuery(adminp);
-        logger.finest("......JQPL query: " + query);
+        logger.log(Level.FINEST, "......JQPL query: {0}", query);
         adminp.replaceItemValue("txtQuery", query);
 
         logger.info("... selecting workitems...");
         List<ItemCollection> workitemList = documentService.getDocumentsByQuery(query, iIndex, iBlockSize);
         int colSize = workitemList.size();
         // Update index
-        logger.info("Job " + AdminPService.JOB_UPGRADE + " (" + adminp.getUniqueID() + ") - verifeing " + colSize
-                + " workitems...");
+        logger.log(Level.INFO,"Job " + AdminPService.JOB_UPGRADE
+                + " ({0}) - verifeing {1} workitems...", new Object[]{adminp.getUniqueID(), colSize});
         int iCount = 0;
         for (ItemCollection workitem : workitemList) {
             // only look into documents with a model version...
             if (workitem.hasItem(WorkflowKernel.MODELVERSION)) {
                 if (upgradeWorkitem(workitem)) {
                     // update workitem...
-                    logger.info("...upgrade '" + workitem.getUniqueID() + "' ...");
+                    logger.log(Level.INFO, "...upgrade ''{0}'' ...", workitem.getUniqueID());
                     documentService.saveByNewTransaction(workitem);
                     iCount++;
                 }
@@ -158,9 +159,9 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
             time = 1;
         }
 
-        logger.info("Job " + AdminPService.JOB_UPGRADE + " (" + adminp.getUniqueID() + ") - " + colSize
-                + " documents processed, " + iCount + " updates in " + time + " sec.  (in total: " + iProcessed
-                + " processed, " + iUpdates + " updates)");
+        logger.log(Level.INFO,"Job " + AdminPService.JOB_UPGRADE + " ({0}) - {1} documents processed,"
+                + " {2} updates in {3} sec.  (in total: {4} processed, {5} updates)",
+                new Object[]{adminp.getUniqueID(), colSize, iCount, time, iProcessed, iUpdates});
 
         // if colSize<numBlockSize we can stop the timer
         if (colSize < iBlockSize) {

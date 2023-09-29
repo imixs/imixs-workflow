@@ -20,7 +20,7 @@ import org.junit.Assert;
  * @author rsoika
  */
 public class TestJSONBuilder {
-	private static Logger logger = Logger.getLogger(TestJSONBuilder.class.getName());
+	private static final Logger logger = Logger.getLogger(TestJSONBuilder.class.getName());
 
 	/**
 	 * Expected Output: <code>

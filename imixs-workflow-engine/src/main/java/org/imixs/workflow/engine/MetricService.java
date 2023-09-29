@@ -92,7 +92,7 @@ public class MetricService {
 
 	boolean mpMetricNoSupport = false;
 
-	private static Logger logger = Logger.getLogger(MetricService.class.getName());
+	private static final Logger logger = Logger.getLogger(MetricService.class.getName());
 
 	/**
 	 * ProcessingEvent listener to generate a metric.
@@ -119,7 +119,7 @@ public class MetricService {
 			counter.inc();
 		} catch (IncompatibleClassChangeError | ObserverException oe) {
 			mpMetricNoSupport = true;
-			logger.warning("...Microprofile Metrics v2.2 not supported!");
+			logger.warning("...Microprofile Metrics not supported!");
 		}
 	}
 
@@ -149,7 +149,7 @@ public class MetricService {
 
 		} catch (IncompatibleClassChangeError | ObserverException oe) {
 			mpMetricNoSupport = true;
-			logger.warning("...Microprofile Metrics v2.0 not supported!");
+			logger.warning("...Microprofile Metrics not supported!");
 			oe.printStackTrace();
 		}
 	}

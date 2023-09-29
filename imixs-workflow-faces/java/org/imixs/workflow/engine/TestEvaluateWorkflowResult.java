@@ -1,6 +1,7 @@
 package org.imixs.workflow.engine;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
@@ -216,7 +217,7 @@ public class TestEvaluateWorkflowResult {
         evalItemCollection = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                 new ItemCollection());
 
-        logger.info("...evaluated result in " + (System.currentTimeMillis() - l) + "ms...");
+        logger.log(Level.INFO, "...evaluated result in {0}ms...", System.currentTimeMillis() - l);
 
         // expected: comment_ignore=true
         Assert.assertTrue(evalItemCollection.hasItem("comment.ignore"));
@@ -237,7 +238,7 @@ public class TestEvaluateWorkflowResult {
         evalItemCollection = new ItemCollection();
         evalItemCollection = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                 new ItemCollection());
-        logger.info("...evaluated result in " + (System.currentTimeMillis() - l) + "ms...");
+        logger.log(Level.INFO, "...evaluated result in {0}ms...", System.currentTimeMillis() - l);
 
         // expected: comment_ignore=true
         Assert.assertTrue(evalItemCollection.hasItem("comment.ignore"));

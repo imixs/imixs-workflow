@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
+import java.util.logging.Level;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.exceptions.ModelException;
@@ -65,7 +66,7 @@ public class DocumentComposerPlugin extends AbstractPlugin {
     public static String INVALID_DATA_OBJECT = "INVALID_DATA_OBJECT";
     public static String INVALID_XSL_FORMAT = "INVALID_XSL_FORMAT";
 
-    private static Logger logger = Logger.getLogger(DocumentComposerPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(DocumentComposerPlugin.class.getName());
 
     @Override
     public void init(WorkflowContext actx) throws PluginException {
@@ -106,7 +107,7 @@ public class DocumentComposerPlugin extends AbstractPlugin {
                 String output = transformXSLTemplate(documentContext, template);
                 documentContext.replaceItemValue(outputItem, output);
 
-                logger.fine("...composed document in " + (System.currentTimeMillis() - l) + "ms");
+                logger.log(Level.FINE, "...composed document in {0}ms", System.currentTimeMillis() - l);
             }
         }
 

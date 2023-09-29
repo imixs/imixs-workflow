@@ -34,7 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.util.XMLParser;
 
 import jakarta.annotation.Priority;
@@ -100,7 +99,7 @@ import jakarta.interceptor.Interceptor;
 @Stateless
 public class TextForEachAdapter {
 
-    private static Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(TextForEachAdapter.class.getName());
 
     @Inject
     protected Event<TextEvent> textEvents;
@@ -123,7 +122,7 @@ public class TextForEachAdapter {
 
         List<String> tagList = XMLParser.findNoEmptyTags(text, "for-each");
         if (debug) {
-            logger.finest("......" + tagList.size() + " tags found");
+            logger.log(Level.FINEST, "......{0} tags found", tagList.size());
         }
         // test if a <for-each> tag exists...
         for (String tag : tagList) {

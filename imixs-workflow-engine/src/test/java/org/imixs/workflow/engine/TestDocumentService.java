@@ -1,5 +1,6 @@
 package org.imixs.workflow.engine;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.WorkflowKernel;
@@ -34,22 +35,22 @@ public class TestDocumentService extends WorkflowMockEnvironment {
 
         // test standard uid
         String uid = WorkflowKernel.generateUniqueID();
-        logger.info("verify uid pattern: " + uid);
+        logger.log(Level.INFO, "verify uid pattern: {0}", uid);
         Assert.assertTrue(documentService.isValidUIDPattern(uid));
 
         // test UUID + snapshot
         uid = WorkflowKernel.generateUniqueID() + "-" + System.currentTimeMillis();
-        logger.info("verify uid snapshot pattern: " + uid);
+        logger.log(Level.INFO, "verify uid snapshot pattern: {0}", uid);
         Assert.assertTrue(documentService.isValidUIDPattern(uid));
 
         // test old pattern
         uid = "14c1463c9ef-13f6ef4e";
-        logger.info("verify old uid pattern: " + uid);
+        logger.log(Level.INFO, "verify old uid pattern: {0}", uid);
         Assert.assertTrue(documentService.isValidUIDPattern(uid));
 
         // test old snapshot pattern
         uid = "14c1463c9ef-13f6ef4e" + "-" + System.currentTimeMillis();
-        logger.info("verify old uid snapshot pattern: " + uid);
+        logger.log(Level.INFO, "verify old uid snapshot pattern: {0}", uid);
         Assert.assertTrue(documentService.isValidUIDPattern(uid));
 
     }

@@ -81,7 +81,7 @@ public class AdminPRestService {
     @Resource
     private SessionContext ctx;
 
-    private static Logger logger = Logger.getLogger(AdminPRestService.class.getName());
+    private static final Logger logger = Logger.getLogger(AdminPRestService.class.getName());
 
     @GET
     @Produces("text/html")

@@ -57,6 +57,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.logging.Level;
 
 /**
  * The EventLogRestService supports methods to access the event log entries by
@@ -76,7 +77,7 @@ public class EventLogRestService {
     @Context
     private HttpServletRequest servletRequest;
 
-    private static Logger logger = Logger.getLogger(EventLogRestService.class.getName());
+    private static final Logger logger = Logger.getLogger(EventLogRestService.class.getName());
 
     /**
      * Returns all eventLog entries.
@@ -121,7 +122,7 @@ public class EventLogRestService {
     public XMLDataCollection getEventLogEntriesByTopic(@PathParam("topic") String topic,
             @DefaultValue("99") @QueryParam("maxCount") int maxCount) {
 
-        logger.finest("......get eventLogEntry by topic: " + topic);
+        logger.log(Level.FINEST, "......get eventLogEntry by topic: {0}", topic);
         // we split the topic by swung dash if multiple topics are provided
         String[] topicList = topic.split("~");
         List<EventLog> eventLogEntries = eventLogService.findEventsByTopic(maxCount, topicList);
@@ -157,7 +158,7 @@ public class EventLogRestService {
 
             } catch (OptimisticLockException e) {
                 // lock was not possible - continue....
-                logger.info("...unable to lock EventLock: " + e.getMessage());
+                logger.log(Level.INFO, "...unable to lock EventLock: {0}", e.getMessage());
 
             }
         }
@@ -184,7 +185,7 @@ public class EventLogRestService {
                 }
             } catch (OptimisticLockException e) {
                 // lock was not possible - continue....
-                logger.info("...unable to lock EventLock: " + e.getMessage());
+                logger.log(Level.INFO, "...unable to lock EventLock: {0}", e.getMessage());
             }
         }
         return Response.status(Response.Status.CONFLICT).build();
@@ -200,7 +201,7 @@ public class EventLogRestService {
     @POST
     @Path("/release/{interval}/{topic}")
     public void releaseDeadLocks(@PathParam("interval") long deadLockInterval, @PathParam("topic") String topic) {
-        logger.finest("......releaseDeadLocks: " + topic);
+        logger.log(Level.FINEST, "......releaseDeadLocks: {0}", topic);
         // we split the topic by swung dash if multiple topics are provided
         String[] topicList = topic.split("~");
         eventLogService.releaseDeadLocks(deadLockInterval, topicList);

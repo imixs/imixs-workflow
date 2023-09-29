@@ -42,6 +42,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
+import java.util.logging.Level;
 
 /**
  * The SolrAutoFlushScheduler starts a ManagedScheduledExecutorService to flush
@@ -89,7 +90,7 @@ public class SolrAutoFlushScheduler {
     @ConfigProperty(name = SOLR_AUTOFLUSH_INITIALDELAY, defaultValue = "0")
     long initialDelay;
 
-    private static Logger logger = Logger.getLogger(SolrAutoFlushScheduler.class.getName());
+    private static final Logger logger = Logger.getLogger(SolrAutoFlushScheduler.class.getName());
 
     @Resource
     ManagedScheduledExecutorService scheduler;
@@ -104,7 +105,8 @@ public class SolrAutoFlushScheduler {
     @PostConstruct
     public void init() {
         if (!flushDisabled) {
-            logger.info("Starting Solr auto flush - initalDelay=" + initialDelay + "  inverval=" + interval + " ....");
+            logger.log(Level.INFO, "Starting Solr auto flush - initalDelay={0}  inverval={1} ....",
+                    new Object[]{initialDelay, interval});
             this.scheduler.scheduleAtFixedRate(this::run, initialDelay, interval, TimeUnit.MILLISECONDS);
         }
     }

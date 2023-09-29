@@ -1,5 +1,6 @@
 package org.imixs.workflow.engine.index;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.exceptions.ModelException;
@@ -18,7 +19,7 @@ import org.junit.Assert;
 public class TestNormalizePhrase {
 
 	SchemaService schemaService = null;
-	private static Logger logger = Logger.getLogger(TestNormalizePhrase.class.getName());
+	private static final Logger logger = Logger.getLogger(TestNormalizePhrase.class.getName());
 
 	@Before
 	public void setUp() throws PluginException, ModelException {
@@ -36,7 +37,7 @@ public class TestNormalizePhrase {
 		String result = null;
 		
 			result = schemaService.normalizeSearchTerm(searchTerm);
-			logger.info(searchTerm + "  -->  " + result);
+			logger.log(Level.INFO, "{0}  -->  {1}", new Object[]{searchTerm, result});
 	
 
 		Assert.assertEquals("lukas podolski", result);
@@ -55,7 +56,7 @@ public class TestNormalizePhrase {
 		String result = null;
 		
 			result = schemaService.normalizeSearchTerm(searchTerm);
-			logger.info(searchTerm + "  -->  " + result);
+			logger.log(Level.INFO, "{0}  -->  {1}", new Object[]{searchTerm, result});
 		
 
 		Assert.assertEquals("europe berlin", result);
@@ -72,7 +73,7 @@ public class TestNormalizePhrase {
 		String result = null;
 		
 			result = schemaService.normalizeSearchTerm(searchTerm);
-			logger.info(searchTerm + "  -->  " + result);
+			logger.log(Level.INFO, "{0}  -->  {1}", new Object[]{searchTerm, result});
 		
 
 		Assert.assertEquals("rs\\/82550\\/201618", result);
@@ -89,7 +90,7 @@ public class TestNormalizePhrase {
 		String result = null;
 		
 			result = schemaService.normalizeSearchTerm(searchTerm);
-			logger.info(searchTerm + "  -->  " + result);
+			logger.log(Level.INFO, "{0}  -->  {1}", new Object[]{searchTerm, result});
 		
 		Assert.assertEquals("rs\\-82550\\/201618", result);
 

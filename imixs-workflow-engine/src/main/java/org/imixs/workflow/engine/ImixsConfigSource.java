@@ -62,7 +62,7 @@ public class ImixsConfigSource implements ConfigSource {
 
     public static final String NAME = "ImixsConfigSource";
     private Map<String, String> properties = null;
-    private static Logger logger = Logger.getLogger(ImixsConfigSource.class.getName());
+    private static final Logger logger = Logger.getLogger(ImixsConfigSource.class.getName());
 
     @Override
     public Set<String> getPropertyNames() {
@@ -87,8 +87,8 @@ public class ImixsConfigSource implements ConfigSource {
             if (keyAlternative != null && !keyAlternative.isEmpty()) {
                 value = properties.get(keyAlternative);
                 if (value != null && !value.isEmpty()) {
-                    logger.warning(
-                            "Deprecated imixs.property '" + keyAlternative + "' should be replaced by '" + key + "'");
+                    logger.log(Level.WARNING, "Deprecated imixs.property ''{0}'' should be replaced by ''{1}''",
+                            new Object[]{keyAlternative, key});
                 }
             }
 

@@ -59,7 +59,7 @@ import jakarta.json.stream.JsonParser.Event;
  */
 public class JSONParser {
 
-    private static Logger logger = Logger.getLogger(JSONParser.class.getName());
+    private static final Logger logger = Logger.getLogger(JSONParser.class.getName());
 
     /**
      * This method extracts a single key from a JSON structure. It does not matter
@@ -196,7 +196,7 @@ public class JSONParser {
             while ((inputLine = in.readLine()) != null) {
                 stringBuffer.append(inputLine);
                 if (debug) {
-                    logger.finest("......parseWorkitem - read line:" + inputLine + "");
+                    logger.log(Level.FINEST, "......parseWorkitem - read line:{0}", inputLine);
                 }
             }
             content = stringBuffer.toString();
@@ -376,7 +376,7 @@ public class JSONParser {
             // frist value
             workitem.replaceItemValue(name, value);
             if (debug) {
-                logger.finest("......storeValue: '" + name + "' = '" + value + "'");
+                logger.log(Level.FINEST, "......storeValue: ''{0}'' = ''{1}''", new Object[]{name, value});
             }
         } else {
             // add value
@@ -384,7 +384,7 @@ public class JSONParser {
             valueList.add(value);
             workitem.replaceItemValue(name, valueList);
             if (debug) {
-                logger.finest("......store multivalue: '" + name + "' = '" + value + "'");
+                logger.log(Level.FINEST, "......store multivalue: ''{0}'' = ''{1}''", new Object[]{name, value});
             }
         }
 

@@ -51,7 +51,7 @@ public class TestApplicationPlugin  {
 
 		// prepare data
 		documentContext = new ItemCollection().model("1.0.0").task(100);
-		logger.info("[TestAccessPlugin] setup test data...");
+		logger.info("[TestApplicationPlugin] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
 		list.add("anna");

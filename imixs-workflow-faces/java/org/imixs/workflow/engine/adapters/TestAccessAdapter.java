@@ -95,7 +95,7 @@ public class TestAccessAdapter {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
 		documentContext.setEventID(10);
-		logger.info("[TestAccessPlugin] setup test data...");
+		logger.info("[TestAccessAdapter] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
 		list.add("anna");

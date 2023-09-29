@@ -33,6 +33,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Logger;
 import jakarta.inject.Named;
+import java.util.logging.Level;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
@@ -56,7 +57,7 @@ import org.imixs.workflow.engine.index.UpdateService;
 @Named
 public class LuceneItemAdapter {
 
-    private static Logger logger = Logger.getLogger(UpdateService.class.getName());
+    private static final Logger logger = Logger.getLogger(UpdateService.class.getName());
 
     /**
      * Creates a Indexable Lucene Field to be added into a Lucene document. The
@@ -97,7 +98,8 @@ public class LuceneItemAdapter {
      */
     public IndexableField adaptItemValue(String itemName, Object itemValue, boolean doAnalyze, Store stored) {
         String stringValue = convertItemValue(itemValue);
-        logger.finest("......lucene add IndexField (analyzed=" + doAnalyze + "): " + itemName + "=" + stringValue);
+        logger.log(Level.FINEST, "......lucene add IndexField (analyzed={0}): {1}={2}",
+                new Object[]{doAnalyze, itemName, stringValue});
         if (doAnalyze) {
             // just create a text field to be indexed
             return new TextField(itemName, stringValue, stored);
@@ -118,7 +120,8 @@ public class LuceneItemAdapter {
      */
     public SortedDocValuesField adaptSortableItemValue(String itemName, Object itemValue) {
         String stringValue = convertItemValue(itemValue);
-        logger.finest("......lucene add sortable IndexValue: " + itemName + "=" + stringValue);
+        logger.log(Level.FINEST, "......lucene add sortable IndexValue: {0}={1}",
+                new Object[]{itemName, stringValue});
         return new SortedDocValuesField(itemName, new BytesRef(stringValue));
     }
 

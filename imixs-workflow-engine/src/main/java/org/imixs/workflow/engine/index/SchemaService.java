@@ -123,7 +123,7 @@ public class SchemaService {
             , "$creator", "$editor",  "$owner");
     
 
-    private static Logger logger = Logger.getLogger(SchemaService.class.getName());
+    private static final Logger logger = Logger.getLogger(SchemaService.class.getName());
 
     /**
      * PostContruct event - The method loads the lucene index properties from the
@@ -135,11 +135,11 @@ public class SchemaService {
     void init() {
         boolean debug = logger.isLoggable(Level.FINE);
         if (debug) {
-            logger.finest("......lucene FulltextFieldList=" + indexFields);
-            logger.finest("......lucene IndexFieldListAnalyze=" + indexFieldsAnalyze);
-            logger.finest("......lucene IndexFieldListNoAnalyze=" + indexFieldsNoAnalyze);
-            logger.finest("......lucene IndexFieldListStore=" + indexFieldsStore);
-            logger.finest("......lucene IndexFieldListCategory=" + indexFieldsCategory);
+            logger.log(Level.FINEST, "......lucene FulltextFieldList={0}", indexFields);
+            logger.log(Level.FINEST, "......lucene IndexFieldListAnalyze={0}", indexFieldsAnalyze);
+            logger.log(Level.FINEST, "......lucene IndexFieldListNoAnalyze={0}", indexFieldsNoAnalyze);
+            logger.log(Level.FINEST, "......lucene IndexFieldListStore={0}", indexFieldsStore);
+            logger.log(Level.FINEST, "......lucene IndexFieldListCategory={0}", indexFieldsCategory);
         }
         // compute the normal search field list
         fieldList = new ArrayList<String>();
@@ -339,7 +339,7 @@ public class SchemaService {
             sAccessTerm += ") AND ";
             sSearchTerm = sAccessTerm + sSearchTerm;
         }
-        logger.finest("......lucene final searchTerm=" + sSearchTerm);
+        logger.log(Level.FINEST, "......lucene final searchTerm={0}", sSearchTerm);
 
         return sSearchTerm;
     }

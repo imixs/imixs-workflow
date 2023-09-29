@@ -75,6 +75,7 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 import jakarta.ejb.Stateless;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.logging.Level;
 
 /**
  * The WorkflowService Handler supports methods to process different kind of
@@ -97,7 +98,7 @@ public class WorkflowRestService {
     @jakarta.ws.rs.core.Context
     private HttpServletRequest servletRequest;
 
-    private static Logger logger = Logger.getLogger(WorkflowRestService.class.getName());
+    private static final Logger logger = Logger.getLogger(WorkflowRestService.class.getName());
 
     @GET
     @Produces("text/html")
@@ -203,26 +204,27 @@ public class WorkflowRestService {
                     Response.ResponseBuilder builder = Response.ok(fileData.getContent(), fileData.getContentType());
                     return builder.build();
                 } else {
-                    logger.warning("WorkflowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
-                            + "' - error: Filename not found!");
+                    logger.log(Level.WARNING, "WorkflowRestService unable to open file: ''{0}''"
+                            + " in workitem ''{1}'' - error: Filename not found!", new Object[]{file, uniqueid});
                     // workitem not found
                     return Response.status(Response.Status.NOT_FOUND).build();
                 }
 
             } else {
-                logger.warning("WorkflowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
-                        + "' - error: Workitem not found!");
+                logger.log(Level.WARNING, "WorkflowRestService unable to open file: ''{0}''"
+                        + " in workitem ''{1}'' - error: Workitem not found!", new Object[]{file, uniqueid});
                 // workitem not found
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
 
         } catch (Exception e) {
-            logger.severe("WorkflowRestService unable to open file: '" + file + "' in workitem '" + uniqueid
-                    + "' - error: " + e.getMessage());
+            logger.log(Level.SEVERE, "WorkflowRestService unable to open file: ''{0}''"
+                    + " in workitem ''{1}'' - error: {2}", new Object[]{file, uniqueid, e.getMessage()});
             e.printStackTrace();
         }
 
-        logger.severe("WorkflowRestService unable to open file: '" + file + "' in workitem '" + uniqueid + "'");
+        logger.log(Level.SEVERE, "WorkflowRestService unable to open file: ''{0}''"
+                + " in workitem ''{1}''", new Object[]{file, uniqueid});
         return Response.status(Response.Status.NOT_FOUND).build();
 
     }
@@ -531,7 +533,7 @@ public class WorkflowRestService {
     @Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON })
     public Response postWorkitemByUniqueID(@PathParam("uniqueid") String uniqueid, XMLDocument xmlworkitem,
             @QueryParam("items") String items) {
-        logger.fine("postWorkitemByUniqueID @POST /workitem/" + uniqueid + "  method:postWorkitemXML....");
+        logger.log(Level.FINE, "postWorkitemByUniqueID @POST /workitem/{0}  method:postWorkitemXML....", uniqueid);
         ItemCollection workitem;
         workitem = XMLDocumentAdapter.putDocument(xmlworkitem);
         return processWorkitem(workitem, uniqueid, items);
@@ -663,7 +665,7 @@ public class WorkflowRestService {
     @Consumes({ MediaType.APPLICATION_JSON })
     public Response postTypedWorkitemJSONByUniqueID(@PathParam("uniqueid") String uniqueid,
             InputStream requestBodyStream, @QueryParam("error") String error, @QueryParam("items") String items) {
-        logger.fine("postJSONWorkitemByUniqueID @POST /workitem/" + uniqueid + "....");
+        logger.log(Level.FINE, "postJSONWorkitemByUniqueID @POST /workitem/{0}....", uniqueid);
 
         ItemCollection workitem = null;
         try {
@@ -742,7 +744,7 @@ public class WorkflowRestService {
                 StringTokenizer st = new StringTokenizer(inputLine, "&", false);
                 while (st.hasMoreTokens()) {
                     String fieldValue = st.nextToken();
-                    logger.finest("[WorkflowRestService] parse line:" + fieldValue + "");
+                    logger.log(Level.FINEST, "[WorkflowRestService] parse line:{0}", fieldValue);
                     try {
                         fieldValue = URLDecoder.decode(fieldValue, "UTF-8");
 
@@ -765,7 +767,7 @@ public class WorkflowRestService {
                         if (fieldValue.indexOf('=') == fieldValue.length()) {
                             // no value
                             workitem.replaceItemValue(fieldName, "");
-                            logger.fine("[WorkflowRestService] no value for '" + fieldName + "'");
+                            logger.log(Level.FINE, "[WorkflowRestService] no value for ''{0}''", fieldName);
                         } else {
                             fieldValue = fieldValue.substring(fieldValue.indexOf('=') + 1);
                             // test for a multiValue field - did we know
@@ -776,13 +778,13 @@ public class WorkflowRestService {
 
                                 List v = workitem.getItemValue(fieldName);
                                 v.add(fieldValue);
-                                logger.fine("[WorkflowRestService] multivalue for '" + fieldName + "' = '" + fieldValue
-                                        + "'");
+                                logger.log(Level.FINE, "[WorkflowRestService] multivalue for ''{0}'' = ''{1}''",
+                                        new Object[]{fieldName, fieldValue});
                                 workitem.replaceItemValue(fieldName, v);
                             } else {
                                 // first single value....
-                                logger.fine(
-                                        "[WorkflowRestService] value for '" + fieldName + "' = '" + fieldValue + "'");
+                                logger.log(Level.FINE, "[WorkflowRestService] value for ''{0}'' = ''{1}''",
+                                        new Object[]{fieldName, fieldValue});
                                 workitem.replaceItemValue(fieldName, fieldValue);
                                 vMultiValueFieldNames.add(fieldName);
                             }
@@ -836,8 +838,8 @@ public class WorkflowRestService {
 
         // validate optional uniqueId
         if (uid != null && !uid.isEmpty() && !workitem.getUniqueID().isEmpty() && !uid.equals(workitem.getUniqueID())) {
-            logger.severe("@POST/@PUT workitem/" + uid
-                    + " : $UNIQUEID did not match, remove $uniqueid to create a new instnace!");
+            logger.log(Level.SEVERE, "@POST/@PUT workitem/{0} : $UNIQUEID did not match,"
+                    + " remove $uniqueid to create a new instnace!", uid);
             return Response.status(Response.Status.NOT_ACCEPTABLE).build();
         }
 
@@ -866,8 +868,8 @@ public class WorkflowRestService {
         // return workitem
         try {
             if (workitem.hasItem("$error_code")) {
-                logger.severe(workitem.getItemValueString("$error_code") + ": "
-                        + workitem.getItemValueString("$error_message"));
+                logger.log(Level.SEVERE, "{0}: {1}",
+                        new Object[]{workitem.getItemValueString("$error_code"), workitem.getItemValueString("$error_message")});
                 return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
                         .status(Response.Status.NOT_ACCEPTABLE).build();
             } else {

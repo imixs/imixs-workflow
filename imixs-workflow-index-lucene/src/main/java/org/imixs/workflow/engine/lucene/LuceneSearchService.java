@@ -117,7 +117,7 @@ public class LuceneSearchService implements SearchService {
     @Inject
     private SchemaService schemaService;
 
-    private static Logger logger = Logger.getLogger(LuceneSearchService.class.getName());
+    private static final Logger logger = Logger.getLogger(LuceneSearchService.class.getName());
 
     /**
      * Returns a collection of documents matching the provided search term. The term
@@ -171,7 +171,7 @@ public class LuceneSearchService implements SearchService {
         }
 
         if (debug) {
-            logger.finest("......lucene search: pageNumber=" + pageIndex + " pageSize=" + pageSize);
+            logger.log(Level.FINEST, "......lucene search: pageNumber={0} pageSize={1}", new Object[]{pageIndex, pageSize});
         }
         ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
@@ -208,15 +208,16 @@ public class LuceneSearchService implements SearchService {
             if ((startIndex + pageSize) > DEFAULT_MAX_SEARCH_RESULT) {
                 // adjust maxSearchResult
                 maxSearchResult = startIndex + (3 * pageSize);
-                logger.warning("PageIndex (" + pageSize + "x" + pageIndex + ") exeeded DEFAULT_MAX_SEARCH_RESULT("
-                        + DEFAULT_MAX_SEARCH_RESULT + ") -> new MAX_SEARCH_RESULT is set to " + maxSearchResult);
+                logger.log(Level.WARNING, "PageIndex ({0}x{1}) exeeded DEFAULT_MAX_SEARCH_RESULT({2}) ->"
+                        + " new MAX_SEARCH_RESULT is set to {3}",
+                        new Object[]{pageSize, pageIndex, DEFAULT_MAX_SEARCH_RESULT, maxSearchResult});
             }
 
             Query query = parser.parse(searchTerm);
             if (sortOrder != null) {
                 // sorted by sortoder
                 if (debug) {
-                    logger.finest("......lucene result sorted by sortOrder= '" + sortOrder + "' ");
+                    logger.log(Level.FINEST, "......lucene result sorted by sortOrder= ''{0}'' ", sortOrder);
                 }
                 // MAX_SEARCH_RESULT is limiting the total number of hits
                 collector = TopFieldCollector.create(buildLuceneSort(sortOrder), maxSearchResult, false, false, false,
@@ -245,8 +246,8 @@ public class LuceneSearchService implements SearchService {
             ScoreDoc[] scoreDosArray = topDocs.scoreDocs;
 
             if (debug) {
-                logger.finest("...returned " + scoreDosArray.length + " documents in "
-                        + (System.currentTimeMillis() - lsearchtime) + " ms - total hits=" + topDocs.totalHits);
+                logger.log(Level.FINEST, "...returned {0} documents in {1} ms - total hits={2}",
+                        new Object[]{scoreDosArray.length, System.currentTimeMillis() - lsearchtime, topDocs.totalHits});
             }
             SimpleDateFormat luceneDateformat = new SimpleDateFormat("yyyyMMddHHmmss");
             for (ScoreDoc scoredoc : scoreDosArray) {
@@ -261,14 +262,14 @@ public class LuceneSearchService implements SearchService {
                     imixsDoc.replaceItemValue(WorkflowKernel.UNIQUEID, sID);
                 } else {
                     // load the full imixs document from the database
-                    logger.finest("......lucene lookup $uniqueid=" + sID);
+                    logger.log(Level.FINEST, "......lucene lookup $uniqueid={0}", sID);
                     imixsDoc = documentService.load(sID);
                 }
 
                 if (imixsDoc != null) {
                     workitems.add(imixsDoc);
                 } else {
-                    logger.warning("lucene index returned unreadable workitem : " + sID);
+                    logger.log(Level.WARNING, "lucene index returned unreadable workitem : {0}", sID);
                     documentService.removeDocumentFromIndex(sID);
                     // this situation happens if the search index returned
                     // documents the current user has no read access.
@@ -281,16 +282,16 @@ public class LuceneSearchService implements SearchService {
             searcher.getIndexReader().close();
 
             if (debug) {
-                logger.fine("...search result computed in " + (System.currentTimeMillis() - ltime) + " ms - loadStubs="
-                        + loadStubs);
+                logger.log(Level.FINE, "...search result computed in {0} ms - loadStubs={1}",
+                        new Object[]{System.currentTimeMillis() - ltime, loadStubs});
             }
         } catch (IOException e) {
             // in case of an IOException we just print an error message and
             // return an empty result
-            logger.severe("Lucene index error: " + e.getMessage());
+            logger.log(Level.SEVERE, "Lucene index error: {0}", e.getMessage());
             throw new InvalidAccessException(InvalidAccessException.INVALID_INDEX, e.getMessage(), e);
         } catch (ParseException e) {
-            logger.severe("Lucene search error: " + e.getMessage());
+            logger.log(Level.SEVERE, "Lucene search error: {0}", e.getMessage());
             throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
         }
 
@@ -344,7 +345,7 @@ public class LuceneSearchService implements SearchService {
         } catch (IOException | QueryException | ParseException e) {
             // in case of an IOException we just print an error message and
             // return an empty result
-            logger.severe("Lucene index error: " + e.getMessage());
+            logger.log(Level.SEVERE, "Lucene index error: {0}", e.getMessage());
             throw new InvalidAccessException(InvalidAccessException.INVALID_INDEX, e.getMessage(), e);
         }
         return results;
@@ -410,14 +411,14 @@ public class LuceneSearchService implements SearchService {
             searcher.search(query, collector);
             result = collector.getTotalHits();
 
-            logger.finest("......lucene count result = " + result);
+            logger.log(Level.FINEST, "......lucene count result = {0}", result);
         } catch (IOException e) {
             // in case of an IOException we just print an error message and
             // return an empty result
-            logger.severe("Lucene index error: " + e.getMessage());
+            logger.log(Level.SEVERE, "Lucene index error: {0}", e.getMessage());
             throw new InvalidAccessException(InvalidAccessException.INVALID_INDEX, e.getMessage(), e);
         } catch (ParseException e) {
-            logger.severe("Lucene search error: " + e.getMessage());
+            logger.log(Level.SEVERE, "Lucene search error: {0}", e.getMessage());
             throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
         }
 
@@ -443,7 +444,7 @@ public class LuceneSearchService implements SearchService {
             // if the index dose not yet exits we got a IO Exception (issue #329)
             reader = DirectoryReader.open(indexDir);
         } catch (IOException ioe) {
-            logger.warning("lucene index can not be opened: " + ioe.getMessage());
+            logger.log(Level.WARNING, "lucene index can not be opened: {0}", ioe.getMessage());
             // throw the origin exception....
             throw ioe;
         }
@@ -538,7 +539,7 @@ public class LuceneSearchService implements SearchService {
             if (objectValue == null) {
                 objectValue = stringValue;
             }
-            logger.finest(".........append " + indexableField.name() + " = " + objectValue);
+            logger.log(Level.FINEST, ".........append {0} = {1}", new Object[]{indexableField.name(), objectValue});
             imixsDoc.appendItemValue(indexableField.name(), objectValue);
         }
 

@@ -69,7 +69,7 @@ import org.xml.sax.SAXException;
  */
 public class XMLParser {
 
-    private static Logger logger = Logger.getLogger(XMLParser.class.getName());
+    private static final Logger logger = Logger.getLogger(XMLParser.class.getName());
 
     /**
      * This method parses a xml tag for attributes. The method returns a Map with
@@ -375,7 +375,7 @@ public class XMLParser {
                             result.appendItemValue(name, value);
                             //result.replaceItemValue(name, value);
                             if (debug) {
-                                logger.finest("......parsing item '" + name + "' value=" + value);
+                                logger.log(Level.FINEST, "......parsing item ''{0}'' value={1}", new Object[]{name, value});
                             }
                         }
                     }

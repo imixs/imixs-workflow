@@ -59,7 +59,7 @@ import org.imixs.workflow.ItemCollection;
  */
 
 public class XMLDocumentAdapter {
-    private static Logger logger = Logger.getLogger(XMLDocumentAdapter.class.getName());
+    private static final Logger logger = Logger.getLogger(XMLDocumentAdapter.class.getName());
 
     /**
      * This Method converts a <code>org.imixs.workflow.xml.XMLItemCollection</code>
@@ -169,7 +169,7 @@ public class XMLDocumentAdapter {
                             i++;
                         }
                     } else {
-                        logger.warning("putItemCollection - itemName=" + itemName + " has null value");
+                        logger.log(Level.WARNING, "putItemCollection - itemName={0} has null value", itemName);
                     }
                 }
             }
