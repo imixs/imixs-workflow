@@ -84,7 +84,7 @@ The integrated Business Process Management Suite can be used for development, te
 <img src="https://github.com/imixs/imixs-workflow/raw/master/small_h-trans.png">
 
 The Imixs Process Manager comes with a Docker image that can be deployed locally or in a containerized environment like Docker Swarm or Kubernetes. 
-Download the [docker-compose.yml](https://raw.githubusercontent.com/imixs/imixs-process-manager/master/docker-compose.yml) file and run:
+Download the [docker-compose.yml](https://github.com/imixs/imixs-process-manager/blob/master/docker-compose.yaml) file and run:
 
 	$ docker-compose up
 
