@@ -31,6 +31,7 @@ package org.imixs.workflow.engine.plugins;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
@@ -71,7 +72,7 @@ import org.imixs.workflow.exceptions.PluginException;
 public class AnalysisPlugin extends AbstractPlugin {
     public static final String INVALID_FORMAT = "INVALID_FORMAT";
 
-    private static Logger logger = Logger.getLogger(AnalysisPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(AnalysisPlugin.class.getName());
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
@@ -92,10 +93,10 @@ public class AnalysisPlugin extends AbstractPlugin {
 
                 // the length of stop list must be the same as the start list
                 if (valuesStart.size() != valuesStop.size()) {
-                    logger.warning("[AnalysisPlugin] Wrong measure point '" + point.name
-                            + "' starttime without stoptime! - please check model entry "
-                            + documentActivity.getItemValueInteger("numProcessID") + "."
-                            + documentActivity.getItemValueInteger("numActivityID") + " measurepoint will be ignored!");
+                    logger.log(Level.WARNING, "[AnalysisPlugin] Wrong measure point ''{0}'' starttime without stoptime!"
+                            + " - please check model entry {1}.{2} measurepoint will be ignored!",
+                            new Object[]{point.name, documentActivity.getItemValueInteger("numProcessID"),
+                                documentActivity.getItemValueInteger("numActivityID")});
                     continue;
                 }
 
@@ -109,10 +110,10 @@ public class AnalysisPlugin extends AbstractPlugin {
                 List valuesStop = documentContext.getItemValue("datMeasurePointStop_" + point.name);
 
                 if (valuesStop.size() != (valuesStart.size() - 1)) {
-                    logger.warning("[AnalysisPlugin] Wrong measure point '" + point.name
-                            + "' stoptime without starttime! - please check model entry "
-                            + documentActivity.getItemValueInteger("numProcessID") + "."
-                            + documentActivity.getItemValueInteger("numActivityID") + " measurepoint will be ignored!");
+                    logger.log(Level.WARNING, "[AnalysisPlugin] Wrong measure point ''{0}'' stoptime without starttime!"
+                            + " - please check model entry {1}.{2} measurepoint will be ignored!",
+                            new Object[]{point.name, documentActivity.getItemValueInteger("numProcessID"),
+                                documentActivity.getItemValueInteger("numActivityID")});
                     continue;
 
                 }

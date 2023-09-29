@@ -65,6 +65,7 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 import jakarta.ejb.Stateless;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.logging.Level;
 
 /**
  * The WorkflowService Handler supports methods to process different kind of
@@ -78,7 +79,7 @@ import jakarta.servlet.http.HttpServletRequest;
         MediaType.TEXT_XML })
 @Stateless
 public class ModelRestService {
-    private static Logger logger = Logger.getLogger(ModelRestService.class.getName());
+    private static final Logger logger = Logger.getLogger(ModelRestService.class.getName());
 
     static List<String> modelEntityTypes = Arrays.asList("WorkflowEnvironmentEntity", "processentity",
             "activityentity");
@@ -356,7 +357,7 @@ public class ModelRestService {
             logger.fine("BPMN Model posted... ");
             modelService.saveModel(bpmnmodel);
         } catch (ModelException e) {
-            logger.warning("Unable to update model: " + e.getMessage());
+            logger.log(Level.WARNING, "Unable to update model: {0}", e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).build();
         }
         logger.fine("putBPMNModel finished! ");
@@ -381,7 +382,7 @@ public class ModelRestService {
             logger.fine("BPMN Model posted... ");
             modelService.saveModel(bpmnmodel, filename);
         } catch (ModelException e) {
-            logger.warning("Unable to update model: " + e.getMessage());
+            logger.log(Level.WARNING, "Unable to update model: {0}", e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).build();
         }
         logger.fine("putBPMNModel finished! ");

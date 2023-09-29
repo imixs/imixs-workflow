@@ -2,6 +2,7 @@ package org.imixs.workflow.plugins;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.script.ScriptException;
@@ -32,7 +33,7 @@ import org.junit.Assert;
 public class TestResultPlugin {
     protected ResultPlugin resultPlugin = null;
     public static final String DEFAULT_MODEL_VERSION = "1.0.0";
-    private static Logger logger = Logger.getLogger(TestResultPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(TestResultPlugin.class.getName());
 
     protected WorkflowMockEnvironment workflowMockEnvironment;
 
@@ -68,7 +69,7 @@ public class TestResultPlugin {
         ItemCollection adocumentActivity = new ItemCollection();
 
         String sResult = "<item name=\"txtName\">Manfred</item>";
-        logger.info("txtActivityResult=" + sResult);
+        logger.log(Level.INFO, "txtActivityResult={0}", sResult);
         adocumentActivity.replaceItemValue("txtActivityResult", sResult);
         // run plugin
         adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
@@ -78,7 +79,7 @@ public class TestResultPlugin {
 
         // test with ' instead of "
         sResult = "<item name='txtName'>Manfred</item>";
-        logger.info("txtActivityResult=" + sResult);
+        logger.log(Level.INFO, "txtActivityResult={0}", sResult);
         adocumentActivity.replaceItemValue("txtActivityResult", sResult);
         // run plugin
         adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
@@ -96,7 +97,7 @@ public class TestResultPlugin {
 
         String sResult = "<item name='txtName' type='boolean'>true</item>";
 
-        logger.info("txtActivityResult=" + sResult);
+        logger.log(Level.INFO, "txtActivityResult={0}", sResult);
         adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
         // run plugin
@@ -115,7 +116,7 @@ public class TestResultPlugin {
 
         String sResult = "<item name='numValue' type='integer'>47</item>";
 
-        logger.info("txtActivityResult=" + sResult);
+        logger.log(Level.INFO, "txtActivityResult={0}", sResult);
         adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
         // run plugin
@@ -134,7 +135,7 @@ public class TestResultPlugin {
 
         String sResult = "<item name='datValue' type='date' format='yyyy-MM-dd'>2017-12-31</item>";
 
-        logger.info("txtActivityResult=" + sResult);
+        logger.log(Level.INFO, "txtActivityResult={0}", sResult);
         adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
         // run plugin
@@ -162,7 +163,7 @@ public class TestResultPlugin {
 
         String sResult = "<item name='datValue' type='date' format='yyyy-MM-dd'></item>";
 
-        logger.info("txtActivityResult=" + sResult);
+        logger.log(Level.INFO, "txtActivityResult={0}", sResult);
         adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
         // run plugin
@@ -185,7 +186,7 @@ public class TestResultPlugin {
 
         String sResult = "<item name='datValue' type='date'><itemvalue>$lastEventDate</itemvalue></item>";
 
-        logger.info("txtActivityResult=" + sResult);
+        logger.log(Level.INFO, "txtActivityResult={0}", sResult);
         adocumentActivity.replaceItemValue("txtActivityResult", sResult);
         // run plugin
         adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
@@ -220,7 +221,7 @@ public class TestResultPlugin {
 
         String sResult = "<item name='type' >workitemdeleted</item>";
 
-        logger.info("txtActivityResult=" + sResult);
+        logger.log(Level.INFO, "txtActivityResult={0}", sResult);
         adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
         // run plugin
@@ -249,7 +250,7 @@ public class TestResultPlugin {
         // wrong format
         String sResult = "<item name='txtName' >Anna<item>";
 
-        logger.info("txtActivityResult=" + sResult);
+        logger.log(Level.INFO, "txtActivityResult={0}", sResult);
         adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
         int result;
@@ -266,7 +267,7 @@ public class TestResultPlugin {
         // wrong format missing "
         sResult = "<item name=\"txtName >Anna</itemxxxxx>";
 
-        logger.info("txtActivityResult=" + sResult);
+        logger.log(Level.INFO, "txtActivityResult={0}", sResult);
         adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
         try {
@@ -336,7 +337,7 @@ public class TestResultPlugin {
         // test new line...
         String sResult = "  \r\n  some data \r\n <item name='subtype' >workitemdeleted</item> \r\n ";
 
-        logger.info("txtActivityResult=" + sResult);
+        logger.log(Level.INFO, "txtActivityResult={0}", sResult);
         adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
         // run plugin
@@ -365,7 +366,7 @@ public class TestResultPlugin {
 
         // clear value...
         String sResult = "<item name=\"txtName\"></item>";
-        logger.info("txtActivityResult=" + sResult);
+        logger.log(Level.INFO, "txtActivityResult={0}", sResult);
 
         adocumentActivity.replaceItemValue("txtActivityResult", sResult);
         // run plugin
@@ -397,7 +398,7 @@ public class TestResultPlugin {
         String sResult = "<item name=\"txtName\">some data</item>";
         sResult = sResult + "<immediate>true</immediate>";
         sResult = sResult + "<item name=\"txtName2\">some other data</item>";
-        logger.info("txtActivityResult=" + sResult);
+        logger.log(Level.INFO, "txtActivityResult={0}", sResult);
 
         adocumentActivity.replaceItemValue("txtActivityResult", sResult);
         // run plugin

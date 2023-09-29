@@ -92,7 +92,7 @@ public class AsyncEventService {
     @ConfigProperty(name = AsyncEventScheduler.ASYNCEVENT_PROCESSOR_ENABLED, defaultValue = "false")
     boolean enabled;
 
-    private static Logger logger = Logger.getLogger(AsyncEventService.class.getName());
+    private static final Logger logger = Logger.getLogger(AsyncEventService.class.getName());
 
     @Inject
     EventLogService eventLogService;
@@ -129,7 +129,7 @@ public class AsyncEventService {
                 // create new eventLog ?
                 if (boundaryTarget > 0) {
                     if (debug) {
-                        logger.finest("......create new async event - eventId=" + boundaryTarget);
+                        logger.log(Level.FINEST, "......create new async event - eventId={0}", boundaryTarget);
                     }
                     // compute timeout
                     Calendar cal = Calendar.getInstance();
@@ -169,7 +169,7 @@ public class AsyncEventService {
                 AsyncEventScheduler.EVENTLOG_TOPIC_ASYNC_EVENT);
 
         if (debug) {
-            logger.finest("......found " + events.size() + " eventLog entries");
+            logger.log(Level.FINEST, "......found {0} eventLog entries", events.size());
         }
         for (EventLog eventLogEntry : events) {
             try {
@@ -193,20 +193,20 @@ public class AsyncEventService {
                                 workitem = workflowService.processWorkItemByNewTransaction(workitem);
                             } else {
                                 // just a normal log message
-                                logger.info("...AsyncEvent " + syncEventData.getEventID() + " for "
-                                        + workitem.getUniqueID() + " is deprecated and will be removed. ("
-                                        + workitem.getItemValueString(WorkflowKernel.TRANSACTIONID) + " ≠ "
-                                        + syncEventData.getItemValueString(WorkflowKernel.TRANSACTIONID));
+                                logger.log(Level.INFO, "...AsyncEvent {0} for {1} is deprecated and will be removed. ({2} \u2260 {3}",
+                                        new Object[]{syncEventData.getEventID(), workitem.getUniqueID(),
+                                            workitem.getItemValueString(WorkflowKernel.TRANSACTIONID),
+                                            syncEventData.getItemValueString(WorkflowKernel.TRANSACTIONID)});
                             }
                             // finally remove the event log entry...
                             eventLogService.removeEvent(eventLogEntry.getId());
                         } catch (WorkflowException | InvalidAccessException | EJBException e) {
                             // we also catch EJBExceptions here because we do not want to cancel the
                             // ManagedScheduledExecutorService
-                            logger.severe(
-                                    "AsyncEvent " + workitem.getUniqueID() + " processing failed: " + e.getMessage());
+                            logger.log(Level.SEVERE, "AsyncEvent {0} processing failed: {1}",
+                                    new Object[]{workitem.getUniqueID(), e.getMessage()});
                             // now we need to remove the batch event
-                            logger.warning("AsyncEvent " + workitem.getUniqueID() + " will be removed!");
+                            logger.log(Level.WARNING, "AsyncEvent {0} will be removed!", workitem.getUniqueID());
                             eventLogService.removeEvent(eventLogEntry.getId());
                         }
                     }
@@ -214,13 +214,14 @@ public class AsyncEventService {
 
             } catch (OptimisticLockException e) {
                 // lock was not possible - continue....
-                logger.info("...unable to lock AsyncEvent: " + e.getMessage());
+                logger.log(Level.INFO, "...unable to lock AsyncEvent: {0}", e.getMessage());
             }
 
         }
 
         if (debug) {
-            logger.fine("..." + events.size() + " AsyncEvents processed in " + (System.currentTimeMillis() - l) + "ms");
+            logger.log(Level.FINE, "...{0} AsyncEvents processed in {1}ms",
+                    new Object[]{events.size(), System.currentTimeMillis() - l});
         }
     }
 

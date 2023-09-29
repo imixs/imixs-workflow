@@ -24,6 +24,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import jakarta.ejb.SessionContext;
+import java.util.logging.Level;
 
 /**
  * Test class for Imixs WorkflowKernel using a static default model. The test
@@ -37,7 +38,7 @@ public class TestWorkflowKernel {
     protected WorkflowKernel kernel = null;
     protected SessionContext ctx;
     protected WorkflowContext workflowContext;
-    private static Logger logger = Logger.getLogger(TestWorkflowKernel.class.getName());
+    private static final Logger logger = Logger.getLogger(TestWorkflowKernel.class.getName());
 
     @Before
     public void setup() throws PluginException {
@@ -295,7 +296,7 @@ public class TestWorkflowKernel {
         Assert.assertNotNull(log);
         Assert.assertEquals(2, log.size());
 
-        logger.info("'$eventlog'=" + log);
+        logger.log(Level.INFO, "''$eventlog''={0}", log);
 
         // test log entries
         // Format: timestamp|model-version|1000.10|1000|userid|
@@ -397,7 +398,7 @@ public class TestWorkflowKernel {
         Assert.assertNotNull(log);
         Assert.assertEquals(30, log.size());
 
-        logger.info("'$eventlog'=" + log);
+        logger.log(Level.INFO, "''$eventlog''={0}", log);
 
         // test log entries
         // Format: timestamp|model-version|1000.10|1000|userid|
@@ -453,7 +454,7 @@ public class TestWorkflowKernel {
     @Category(org.imixs.workflow.WorkflowKernel.class)
     public void testUUID() {
         String uid = WorkflowKernel.generateUniqueID();
-        logger.info("UUID=" + uid);
+        logger.log(Level.INFO, "UUID={0}", uid);
         // expected length is 36
         Assert.assertEquals(36, uid.length());
     }
@@ -467,7 +468,7 @@ public class TestWorkflowKernel {
     public void testTransactionID() {
         String tid = null;
         tid = WorkflowKernel.generateTransactionID();
-        logger.info("TransactionID=" + tid);
+        logger.log(Level.INFO, "TransactionID={0}", tid);
         // expected length is > 8
         Assert.assertTrue(tid.length() > 8);
     }

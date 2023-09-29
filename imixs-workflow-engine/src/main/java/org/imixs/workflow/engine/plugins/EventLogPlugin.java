@@ -69,7 +69,7 @@ import jakarta.inject.Inject;
 public class EventLogPlugin extends AbstractPlugin {
 	public static final String INVALID_FORMAT = "INVALID_FORMAT";
 
-	private static Logger logger = Logger.getLogger(EventLogPlugin.class.getName());
+	private static final Logger logger = Logger.getLogger(EventLogPlugin.class.getName());
 
 	@Inject
 	EventLogService eventLogService;

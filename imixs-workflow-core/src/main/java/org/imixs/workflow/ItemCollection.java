@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -87,7 +88,7 @@ import org.imixs.workflow.xml.XMLItem;
 public class ItemCollection implements Cloneable {
     // NOTE: ItemCollection is not serializable
 
-    private static Logger logger = Logger.getLogger(ItemCollection.class.getName());
+    private static final Logger logger = Logger.getLogger(ItemCollection.class.getName());
 
     private Map<String, List<Object>> hash = new Hashtable<String, List<Object>>();
 
@@ -229,7 +230,7 @@ public class ItemCollection implements Cloneable {
             List<Object> copy = (List<Object>) ois.readObject();
             hash.put(itemName, copy);
         } catch (IOException | ClassNotFoundException e) {
-            logger.warning("Unable to clone values of Item '" + itemName + "' - " + e);
+            logger.log(Level.WARNING, "Unable to clone values of Item ''{0}'' - {1}", new Object[]{itemName, e});
         }
     }
 
@@ -1626,8 +1627,9 @@ public class ItemCollection implements Cloneable {
         // test if value is ItemCollection
         if (itemValue instanceof ItemCollection) {
             // just warn - do not remove
-            logger.warning("replaceItemValue '" + itemName
-                    + "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
+            logger.log(Level.WARNING, "replaceItemValue ''{0}'':"
+                    + " ItemCollection can not be stored into an existing"
+                    + " ItemCollection - use XMLItemCollection instead.", itemName);
         }
 
         // test if value is a Set
@@ -1638,7 +1640,8 @@ public class ItemCollection implements Cloneable {
 
         // test if value is serializable
         if (!(itemValue instanceof java.io.Serializable)) {
-            logger.warning("replaceItemValue '" + itemName + "': object is not serializable!");
+            logger.log(Level.WARNING, "replaceItemValue ''{0}'':"
+                    + " object is not serializable!", itemName);
             this.removeItem(itemName);
             return;
         }
@@ -1652,8 +1655,9 @@ public class ItemCollection implements Cloneable {
             for (int i = 0; i < itemValueList.size(); i++) {
                 if (itemValueList.get(i) instanceof ItemCollection) {
                     // just warn - do not remove
-                    logger.warning("replaceItemValue '" + itemName
-                            + "': ItemCollection can not be stored into an existing ItemCollection - use XMLItemCollection instead.");
+                    logger.log(Level.WARNING, "replaceItemValue ''{0}'':"
+                            + " ItemCollection can not be stored into an existing"
+                            + " ItemCollection - use XMLItemCollection instead.", itemName);
                 }
             }
         } else {
@@ -1665,9 +1669,9 @@ public class ItemCollection implements Cloneable {
         // now we can be sure the itemValue is an instance of List
         convertItemValue(itemValueList);
         if (!validateItemValue(itemValueList)) {
-            String message = "setItemValue failed for item '" + itemName
-                    + "', the value is a non supported object type: " + itemValue.getClass().getName() + " value="
-                    + itemValueList;
+            String message = new StringBuilder("setItemValue failed for item '").append(itemName)
+                    .append("', the value is a non supported object type: ").append(itemValue.getClass().getName())
+                    .append(" value=").append(itemValueList).toString();
             logger.warning(message);
             throw new InvalidAccessException(message);
         }
@@ -1855,10 +1859,10 @@ public class ItemCollection implements Cloneable {
             ObjectInputStream ois = new ObjectInputStream(bais);
             return ois.readObject();
         } catch (IOException e) {
-            logger.warning("Unable to clone values of ItemCollection - " + e);
+            logger.log(Level.WARNING, "Unable to clone values of ItemCollection - {0}", e);
             return null;
         } catch (ClassNotFoundException e) {
-            logger.warning("Unable to clone values of ItemCollection - " + e);
+            logger.log(Level.WARNING, "Unable to clone values of ItemCollection - {0}", e);
             return null;
         }
     }
@@ -1909,7 +1913,7 @@ public class ItemCollection implements Cloneable {
             }
         } else {
             // Value is not a list!
-            logger.warning("getStringValueFromMap - wrong value object found '" + aName + "'");
+            logger.log(Level.WARNING, "getStringValueFromMap - wrong value object found ''{0}''", aName);
             return obj.toString();
         }
     }

@@ -93,7 +93,7 @@ public class EventLogService {
     @PersistenceContext(unitName = "org.imixs.workflow.jpa")
     private EntityManager manager;
 
-    private static Logger logger = Logger.getLogger(EventLogService.class.getName());
+    private static final Logger logger = Logger.getLogger(EventLogService.class.getName());
 
     /**
      * Creates/updates a new event log entry.
@@ -166,7 +166,7 @@ public class EventLogService {
         }
         manager.persist(eventLog);
         if (debug) {
-            logger.finest("......created new eventLog '" + refID + "' => " + topic);
+            logger.log(Level.FINEST, "......created new eventLog ''{0}'' => {1}", new Object[]{refID, topic});
         }
         return eventLog;
     }
@@ -198,7 +198,7 @@ public class EventLogService {
         q.setMaxResults(maxCount);
         result = q.getResultList();
         if (debug) {
-            logger.fine("found " + result.size() + " event for topic " + topic);
+            logger.log(Level.FINE, "found {0} event for topic {1}", new Object[]{result.size(), topic});
         }
         return result;
 
@@ -238,7 +238,7 @@ public class EventLogService {
         q.setMaxResults(maxCount);
         result = q.getResultList();
         if (debug) {
-            logger.fine("found " + result.size() + " event for topic " + topic);
+            logger.log(Level.FINE, "found {0} event for topic {1}", new Object[]{result.size(), topic});
         }
         return result;
 
@@ -274,7 +274,7 @@ public class EventLogService {
         q.setMaxResults(maxCount);
         result = q.getResultList();
         if (debug) {
-            logger.fine("found " + result.size() + " event for topic " + topic);
+            logger.log(Level.FINE, "found {0} event for topic {1}", new Object[]{result.size(), topic});
         }
         return result;
 
@@ -308,7 +308,7 @@ public class EventLogService {
 
         result = q.getResultList();
         if (debug) {
-            logger.fine("found " + result.size() + " event log entries");
+            logger.log(Level.FINE, "found {0} event log entries", result.size());
         }
         return result;
 
@@ -400,7 +400,7 @@ public class EventLogService {
                 return true;
             } else {
                 // unable to lock!
-                logger.warning("unable to lock eventLogEntry '" + _eventLogEntry.getId() + "' - already locked!");
+                logger.log(Level.WARNING, "unable to lock eventLogEntry ''{0}'' - already locked!", _eventLogEntry.getId());
 
             }
         }
@@ -431,7 +431,7 @@ public class EventLogService {
                 return true;
             } else {
                 // unable to lock!
-                logger.warning("unable to lock eventLogEntry '" + _eventLogEntry.getId() + "' - already locked!");
+                logger.log(Level.WARNING, "unable to lock eventLogEntry ''{0}'' - already locked!", _eventLogEntry.getId());
             }
         }
         return false;
@@ -459,13 +459,13 @@ public class EventLogService {
             if (lockDate != null) {
                 age = now.getTime() - lockDate.getTime();
                 if (age > deadLockInterval) {
-                    logger.warning("Deadlock detected! - eventlog.id=" + eventLogEntry.getId()
-                            + " will be unlocked! (deadlock since " + age + "ms)");
+                    logger.log(Level.WARNING, "Deadlock detected! - eventlog.id={0} will be unlocked!"
+                            + " (deadlock since {1}ms)", new Object[]{eventLogEntry.getId(), age});
                     unlock(eventLogEntry);
                 }
             } else {
-                logger.warning("Invalid Deadlock state detected, missing lock date! - eventlog.id="
-                        + eventLogEntry.getId() + " will be deleted");
+                logger.log(Level.WARNING, "Invalid Deadlock state detected, missing lock date!"
+                        + " - eventlog.id={0} will be deleted", eventLogEntry.getId());
                 removeEvent(eventLogEntry.getId());
             }
         }

@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -61,7 +62,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 
 		// prepare test workitem
 		documentContext = new ItemCollection();
-		logger.info("[TestAccessPlugin] setup test data...");
+		logger.info("[TestSplitAndJoinPluginDeprecatedItemTag] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
 		list.add("anna");
@@ -113,7 +114,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 
 		Assert.assertEquals(100, subprocess.getTaskID());
 
-		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
+		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test if the field namTeam is available
 		List<String> team = subprocess.getItemValue("namTeam");
@@ -157,7 +158,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 
 		Assert.assertEquals(100, subprocess.getTaskID());
 
-		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
+		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test if the field namTeam is available
 		List<String> team = subprocess.getItemValue("_sub_Team");
@@ -210,7 +211,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 
 		Assert.assertEquals(100, subprocess.getTaskID());
 
-		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
+		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test if the field namTeam is available
 		List<String> team = subprocess.getItemValue("_sub_Team");
@@ -259,14 +260,14 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getTaskID());
-		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
+		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test second subprocess instance... 100.20 -> $processId=200
 		subprocessUniqueid = workitemRefList.get(1);
 		subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getTaskID());
-		logger.info("Created Subprocess UniqueID=" + subprocess.getUniqueID());
+		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 	}
 
@@ -285,7 +286,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 			Assert.fail();
 		} catch (PluginException e) {
 			// Plugin exception is expected
-			logger.info("Exprected exception message: " + e.getMessage());
+			logger.log(Level.INFO, "Exprected exception message: {0}", e.getMessage());
 			Assert.assertTrue(e.getMessage().startsWith("Parsing item content failed:"));
 		}
 

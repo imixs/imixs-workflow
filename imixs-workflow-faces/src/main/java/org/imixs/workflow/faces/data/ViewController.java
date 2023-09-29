@@ -36,6 +36,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.util.logging.Level;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.QueryException;
@@ -70,7 +71,7 @@ public class ViewController implements Serializable {
     private boolean endOfList = false;
     private boolean loadStubs = true;
 
-    private static Logger logger = Logger.getLogger(ViewController.class.getName());
+    private static final Logger logger = Logger.getLogger(ViewController.class.getName());
 
     @Inject
     private DocumentService documentService;
@@ -200,7 +201,7 @@ public class ViewController implements Serializable {
         }
 
         // load data
-        logger.finest("...... load data - query=" + _query + " pageIndex=" + getPageIndex());
+        logger.log(Level.FINEST, "...... load data - query={0} pageIndex={1}", new Object[]{_query, getPageIndex()});
 
         List<ItemCollection> result = null;
         if (this.isLoadStubs()) {

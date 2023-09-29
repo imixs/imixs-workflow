@@ -1,5 +1,6 @@
 package org.imixs.workflow.plugins;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
@@ -17,7 +18,7 @@ import org.junit.Assert;
  */
 public class TestAnalysisPlugin {
 	protected AnalysisPlugin analysisPlugin = null;
-	private static Logger logger = Logger.getLogger(TestAnalysisPlugin.class.getName());
+	private static final Logger logger = Logger.getLogger(TestAnalysisPlugin.class.getName());
 
 	@Before
 	public void setUp() throws PluginException {
@@ -44,7 +45,7 @@ public class TestAnalysisPlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		String sResult = "<item name='measurepoint' type='start'>M1</item>";
-		logger.info("txtActivityResult=" + sResult);
+		logger.log(Level.INFO, "txtActivityResult={0}", sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
 		adocumentContext = analysisPlugin.run(adocumentContext, adocumentActivity);
@@ -52,7 +53,7 @@ public class TestAnalysisPlugin {
 
 		Assert.assertTrue(adocumentContext.hasItem("datMeasurePointStart_M1"));
 		
-		logger.info("datMeasurePointStart_M1= " + adocumentContext.getItemValueDate("datMeasurePointStart_M1"));
+		logger.log(Level.INFO, "datMeasurePointStart_M1= {0}", adocumentContext.getItemValueDate("datMeasurePointStart_M1"));
 		
 
 	}
@@ -74,7 +75,7 @@ public class TestAnalysisPlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		String sResult = "<item name='measurepoint' type='start'>M1</item>";
-		logger.info("txtActivityResult=" + sResult);
+		logger.log(Level.INFO, "txtActivityResult={0}", sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
 		adocumentContext = analysisPlugin.run(adocumentContext, adocumentActivity);
@@ -82,13 +83,13 @@ public class TestAnalysisPlugin {
 
 		Assert.assertTrue(adocumentContext.hasItem("datMeasurePointStart_M1"));
 		
-		logger.info("datMeasurePointStart_M1= " + adocumentContext.getItemValueDate("datMeasurePointStart_M1"));
+		logger.log(Level.INFO, "datMeasurePointStart_M1= {0}", adocumentContext.getItemValueDate("datMeasurePointStart_M1"));
 		
 
 		
 		
 		sResult = "<item name='measurepoint' type='start'>M1</item>";
-		logger.info("txtActivityResult=" + sResult);
+		logger.log(Level.INFO, "txtActivityResult={0}", sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
 		adocumentContext = analysisPlugin.run(adocumentContext, adocumentActivity);
@@ -119,7 +120,7 @@ public class TestAnalysisPlugin {
 		ItemCollection adocumentActivity = new ItemCollection();
 
 		String sResult = "<item name='measurepoint' type='start'>M1</item>";
-		logger.info("txtActivityResult=" + sResult);
+		logger.log(Level.INFO, "txtActivityResult={0}", sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
 		adocumentContext = analysisPlugin.run(adocumentContext, adocumentActivity);
@@ -127,7 +128,7 @@ public class TestAnalysisPlugin {
 
 		Assert.assertTrue(adocumentContext.hasItem("datMeasurePointStart_M1"));
 		
-		logger.info("datMeasurePointStart_M1= " + adocumentContext.getItemValueDate("datMeasurePointStart_M1"));
+		logger.log(Level.INFO, "datMeasurePointStart_M1= {0}", adocumentContext.getItemValueDate("datMeasurePointStart_M1"));
 		
 
 		
@@ -140,7 +141,7 @@ public class TestAnalysisPlugin {
 		
 		
 		sResult = "<item name='measurepoint' type='stop'>M1</item>";
-		logger.info("txtActivityResult=" + sResult);
+		logger.log(Level.INFO, "txtActivityResult={0}", sResult);
 		adocumentActivity.replaceItemValue("txtActivityResult", sResult);
 
 		adocumentContext = analysisPlugin.run(adocumentContext, adocumentActivity);

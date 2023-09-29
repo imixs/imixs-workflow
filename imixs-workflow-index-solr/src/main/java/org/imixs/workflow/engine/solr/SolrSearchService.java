@@ -91,7 +91,7 @@ public class SolrSearchService implements SearchService {
     @Inject
     private DocumentService documentService;
 
-    private static Logger logger = Logger.getLogger(SolrSearchService.class.getName());
+    private static final Logger logger = Logger.getLogger(SolrSearchService.class.getName());
 
     private SimpleDateFormat luceneDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
@@ -134,7 +134,7 @@ public class SolrSearchService implements SearchService {
             pageIndex = 0;
         }
         if (debug) {
-            logger.finest("......solr search: pageNumber=" + pageIndex + " pageSize=" + pageSize);
+            logger.log(Level.FINEST, "......solr search: pageNumber={0} pageSize={1}", new Object[]{pageIndex, pageSize});
         }
         ArrayList<ItemCollection> workitems = new ArrayList<ItemCollection>();
 
@@ -147,7 +147,7 @@ public class SolrSearchService implements SearchService {
         // post query....
         String result = solarIndexService.query(searchTerm, pageSize, pageIndex, sortOrder, defaultOperator, loadStubs);
         if (debug) {
-            logger.finest("......Result = " + result);
+            logger.log(Level.FINEST, "......Result = {0}", result);
         }
         if (result != null && !result.isEmpty()) {
             List<ItemCollection> documentStubs = parseQueryResult(result);
@@ -165,8 +165,8 @@ public class SolrSearchService implements SearchService {
 
         }
         if (debug) {
-            logger.fine("...search result computed in " + (System.currentTimeMillis() - ltime) + " ms - loadStubs="
-                    + loadStubs);
+            logger.log(Level.FINE, "...search result computed in {0} ms - loadStubs={1}",
+                    new Object[]{System.currentTimeMillis() - ltime, loadStubs});
         }
         return workitems;
     }
@@ -204,11 +204,11 @@ public class SolrSearchService implements SearchService {
             String response = JSONParser.getKey("response", result);
             hits = Integer.parseInt(JSONParser.getKey("numFound", response));
         } catch (NumberFormatException e) {
-            logger.severe("getTotalHits - failed to parse solr result object! - " + e.getMessage());
+            logger.log(Level.SEVERE, "getTotalHits - failed to parse solr result object! - {0}", e.getMessage());
             hits = 0;
         }
 
-        logger.info("......computed totalHits in " + (System.currentTimeMillis() - l) + "ms");
+        logger.log(Level.INFO, "......computed totalHits in {0}ms", System.currentTimeMillis() - l);
         return hits;
     }
 
@@ -276,7 +276,7 @@ public class SolrSearchService implements SearchService {
             }
         }
         if (debug) {
-            logger.finest("......total parsing time " + (System.currentTimeMillis() - l) + "ms");
+            logger.log(Level.FINEST, "......total parsing time {0}ms", System.currentTimeMillis() - l);
         }
         return result;
     }
@@ -295,7 +295,7 @@ public class SolrSearchService implements SearchService {
         while (event.name().equals(Event.KEY_NAME.toString())) {
             String itemName = parser.getString();
             if (debug) {
-                logger.finest("......found item " + itemName);
+                logger.log(Level.FINEST, "......found item {0}", itemName);
             }
             List<?> itemValue = parseItem(parser);
             // convert itemName and value....

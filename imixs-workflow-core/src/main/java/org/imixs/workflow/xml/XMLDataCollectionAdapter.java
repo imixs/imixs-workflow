@@ -58,7 +58,7 @@ import jakarta.xml.bind.Unmarshaller;
  */
 
 public class XMLDataCollectionAdapter {
-    private static Logger logger = Logger.getLogger(XMLDataCollectionAdapter.class.getName());
+    private static final Logger logger = Logger.getLogger(XMLDataCollectionAdapter.class.getName());
 
     /**
      * This Method converts a <code>org.imixs.workflow.xml.DocumentCollection</code>
@@ -204,7 +204,7 @@ public class XMLDataCollectionAdapter {
                 resultList.add(XMLDocumentAdapter.putDocument(aentity));
             }
             if (debug) {
-                logger.fine("readCollection" + ecol.getDocument().length + " entries sucessfull imported");
+                logger.log(Level.FINE, "readCollection{0} entries sucessfull imported", ecol.getDocument().length);
             }
         }
         return resultList;

@@ -109,7 +109,7 @@ public class LuceneIndexService {
     @Inject
     private LuceneItemAdapter luceneItemAdapter;
 
-    private static Logger logger = Logger.getLogger(LuceneIndexService.class.getName());
+    private static final Logger logger = Logger.getLogger(LuceneIndexService.class.getName());
 
     @Inject
     private AdminPService adminPService;
@@ -175,8 +175,8 @@ public class LuceneIndexService {
                     total = total + EVENTLOG_ENTRY_FLUSH_COUNT;
                     count = count + EVENTLOG_ENTRY_FLUSH_COUNT;
                     if (count >= 100) {
-                        logger.finest("...flush event log: " + total + " entries in " + (System.currentTimeMillis() - l)
-                                + "ms...");
+                        logger.log(Level.FINEST, "...flush event log: {0} entries in {1}ms...",
+                                new Object[]{total, System.currentTimeMillis() - l});
                         count = 0;
                     }
 
@@ -185,14 +185,14 @@ public class LuceneIndexService {
                     // experimental code: we break the flush method after 1024 flushs
                     // maybe we can remove this hard break
                     if (total >= junkSize) {
-                        logger.finest("...flush event: Issue #439  -> total count >=" + total
-                                + " flushEventLog will be continued...");
+                        logger.log(Level.FINEST, "...flush event: Issue #439  ->"
+                                + " total count >={0} flushEventLog will be continued...", total);
                         return false;
                     }
                 }
 
             } catch (IndexException e) {
-                logger.warning("...unable to flush lucene event log: " + e.getMessage());
+                logger.log(Level.WARNING, "...unable to flush lucene event log: {0}", e.getMessage());
                 return true;
             }
         }
@@ -249,8 +249,8 @@ public class LuceneIndexService {
                 if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
                     // create term
                     Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
-                    logger.finest("......lucene add/update uncommitted workitem '"
-                            + workitem.getItemValueString(WorkflowKernel.UNIQUEID) + "' to index...");
+                    logger.log(Level.FINEST, "......lucene add/update uncommitted workitem ''{0}'' to index...",
+                            workitem.getItemValueString(WorkflowKernel.UNIQUEID));
 
                     // awriter.updateDocument(term, createDocument(workitem));
                     Document lucenedoc = createDocument(workitem);
@@ -258,7 +258,7 @@ public class LuceneIndexService {
                 }
             }
         } catch (IOException luceneEx) {
-            logger.warning("lucene error: " + luceneEx.getMessage());
+            logger.log(Level.WARNING, "lucene error: {0}", luceneEx.getMessage());
             throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index", luceneEx);
         } finally {
             // close writer!
@@ -289,11 +289,11 @@ public class LuceneIndexService {
 
         long updateTime = (System.currentTimeMillis() - ltime);
         if (updateTime > 5000) {
-            logger.warning("... update index block in took " + (updateTime) + " ms ! (" + documents.size()
-                    + " documents in total)");
+            logger.log(Level.WARNING, "... update index block in took {0} ms ! ({1} documents in total)",
+                    new Object[]{updateTime, documents.size()});
         } else if (logger.isLoggable(Level.FINE)) {
-            logger.fine(
-                    "... update index block in " + (updateTime) + " ms (" + documents.size() + " documents in total)");
+            logger.log(Level.FINE, "... update index block in {0} ms ({1} documents in total)",
+                    new Object[]{updateTime, documents.size()});
         }
     }
 
@@ -338,14 +338,14 @@ public class LuceneIndexService {
                             // indexWriter.updateDocument(term,lucenedoc );
 
                             updateLuceneIndex(term, lucenedoc, indexWriter, taxonomyWriter);
-                            logger.finest("......lucene add/update workitem '" + doc.getId() + "' to index in "
-                                    + (System.currentTimeMillis() - l2) + "ms");
+                            logger.log(Level.FINEST, "......lucene add/update workitem ''{0}'' to index in {1}ms",
+                                    new Object[]{doc.getId(), System.currentTimeMillis() - l2});
                         }
                     } else {
                         long l2 = System.currentTimeMillis();
                         indexWriter.deleteDocuments(term);
-                        logger.finest("......lucene remove workitem '" + term + "' from index in "
-                                + (System.currentTimeMillis() - l2) + "ms");
+                        logger.log(Level.FINEST, "......lucene remove workitem ''{0}'' from index in {1}ms",
+                                new Object[]{term, System.currentTimeMillis() - l2});
                     }
 
                     // remove the eventLogEntry.
@@ -361,7 +361,7 @@ public class LuceneIndexService {
                     }
                 }
             } catch (IOException luceneEx) {
-                logger.warning("...unable to flush lucene event log: " + luceneEx.getMessage());
+                logger.log(Level.WARNING, "...unable to flush lucene event log: {0}", luceneEx.getMessage());
                 // We just log a warning here and close the flush mode to no longer block the
                 // writer.
                 // NOTE: maybe throwing a IndexException would be an alternative:
@@ -401,8 +401,8 @@ public class LuceneIndexService {
 
         }
 
-        logger.fine("...flushEventLog - " + events.size() + " events in " + (System.currentTimeMillis() - l)
-                + " ms - last log entry: " + lastEventDate);
+        logger.log(Level.FINE, "...flushEventLog - {0} events in {1} ms - last log entry: {2}",
+                new Object[]{events.size(), System.currentTimeMillis() - l, lastEventDate});
 
         return cacheIsEmpty;
 
@@ -504,7 +504,7 @@ public class LuceneIndexService {
             logger.warning("Missing CDI support for Event<IndexEvent> !");
         }
 
-        logger.finest("......add lucene field content=" + textContent);
+        logger.log(Level.FINEST, "......add lucene field content={0}", textContent);
         doc.add(new TextField("content", textContent, Store.NO));
 
         // add each field from the indexFieldList into the lucene document
@@ -568,7 +568,7 @@ public class LuceneIndexService {
                             doc.add(new FacetField(aFieldname + TAXONOMY_INDEXFIELD_PRAFIX, stringValue));
                         }
                     } catch (IllegalArgumentException iae) {
-                        logger.warning("Failed to build facete: " + iae.getMessage());
+                        logger.log(Level.WARNING, "Failed to build facete: {0}", iae.getMessage());
                     }
                 }
             }
@@ -680,13 +680,13 @@ public class LuceneIndexService {
      * @throws IOException
      */
     public Directory createIndexDirectory() throws IOException {
-        logger.finest("......create lucene Index Directory - path=" + getLuceneIndexDir());
+        logger.log(Level.FINEST, "......create lucene Index Directory - path={0}", getLuceneIndexDir());
         // create Lucene Directory Instance
         Path luceneIndexDir = Paths.get(getLuceneIndexDir());
         Directory indexDir = FSDirectory.open(luceneIndexDir);
         if (!DirectoryReader.indexExists(indexDir)) {
-            logger.info("...lucene index directory '" + getLuceneIndexDir()
-                    + "' is empty or does not yet exist, rebuild index now....");
+            logger.log(Level.INFO, "...lucene index directory ''{0}'' is empty or does not yet exist,"
+                    + " rebuild index now....", getLuceneIndexDir());
             rebuildIndex(indexDir);
         }
         return indexDir;
@@ -708,7 +708,7 @@ public class LuceneIndexService {
             sPath = sPath.substring(0, sPath.lastIndexOf("/"));
         }
         sPath = sPath + "_tax";
-        logger.finest("......create lucene taxonomy Directory - path=" + sPath);
+        logger.log(Level.FINEST, "......create lucene taxonomy Directory - path={0}", sPath);
         // create Lucene Directory Instance
         Path luceneIndexDir = Paths.get(sPath);
         Directory indexDir = FSDirectory.open(luceneIndexDir);

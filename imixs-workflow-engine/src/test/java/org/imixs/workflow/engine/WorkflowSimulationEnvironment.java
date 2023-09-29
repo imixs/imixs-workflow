@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import jakarta.ejb.SessionContext;
+import java.util.logging.Level;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
@@ -133,7 +134,7 @@ public class WorkflowSimulationEnvironment {
 		if (this.modelPath != null) {
 			InputStream inputStream = getClass().getResourceAsStream(this.modelPath);
 			try {
-				logger.info("loading model: " + this.modelPath + "....");
+				logger.log(Level.INFO, "loading model: {0}....", this.modelPath);
 				model = BPMNParser.parseModel(inputStream, "UTF-8");
 
 				this.modelService.addModel(model);

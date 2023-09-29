@@ -37,6 +37,7 @@ import java.util.logging.Logger;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Named;
+import java.util.logging.Level;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.QueryException;
 
@@ -55,7 +56,7 @@ public class ViewHandler implements Serializable {
 
     private Map<Integer, List<ItemCollection>> data = null;
 
-    private static Logger logger = Logger.getLogger(ViewHandler.class.getName());
+    private static final Logger logger = Logger.getLogger(ViewHandler.class.getName());
 
     public ViewHandler() {
         super();
@@ -124,7 +125,7 @@ public class ViewHandler implements Serializable {
 
         // load data
         result = viewController.loadData();
-        logger.finest("......cache with hash=" + getHashKey(viewController));
+        logger.log(Level.FINEST, "......cache with hash={0}", getHashKey(viewController));
         // cache result
         data.put(getHashKey(viewController), result);
 

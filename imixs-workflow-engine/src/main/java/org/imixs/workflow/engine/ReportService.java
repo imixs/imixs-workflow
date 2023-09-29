@@ -64,6 +64,7 @@ import org.imixs.workflow.util.XMLParser;
 import org.imixs.workflow.xml.XSLHandler;
 import javax.xml.transform.TransformerException;
 import jakarta.ejb.Stateless;
+import java.util.logging.Level;
 
 /**
  * The ReportService supports methods to create, process and find report
@@ -91,7 +92,7 @@ import jakarta.ejb.Stateless;
 @Stateless
 public class ReportService {
 
-    private static Logger logger = Logger.getLogger(ReportService.class.getName());
+    private static final Logger logger = Logger.getLogger(ReportService.class.getName());
 
     @Inject
     DocumentService documentService;
@@ -119,7 +120,7 @@ public class ReportService {
             try {
                 col = documentService.find(searchTerm, 1, 0);
             } catch (QueryException e) {
-                logger.severe("findReport - invalid id: " + e.getMessage());
+                logger.log(Level.SEVERE, "findReport - invalid id: {0}", e.getMessage());
                 return null;
             }
             if (col.size() > 0) {
@@ -223,7 +224,7 @@ public class ReportService {
         List<ItemCollection> clonedResult = new ArrayList<ItemCollection>();
 
         long l = System.currentTimeMillis();
-        logger.finest("......executeReport: " + reportEntity.getItemValueString("txtname"));
+        logger.log(Level.FINEST, "......executeReport: {0}", reportEntity.getItemValueString("txtname"));
 
         String query = reportEntity.getItemValueString("txtquery");
 
@@ -238,14 +239,14 @@ public class ReportService {
                 // test if key is contained in query
                 if (query.indexOf("{" + sKeyName + "}") > -1) {
                     query = query.replace("{" + sKeyName + "}", sParamValue);
-                    logger.finest("......executeReport set param " + sKeyName + "=" + sParamValue);
+                    logger.log(Level.FINEST, "......executeReport set param {0}={1}", new Object[]{sKeyName, sParamValue});
                 } else {
                     // support old param format
                     if (query.indexOf("?" + sKeyName) > -1) {
                         query = query.replace("?" + sKeyName, sParamValue);
-                        logger.warning("......query definition in Report '" + reportEntity.getItemValueString("txtname")
-                                + "' is deprecated! Please replace the param '?" + sKeyName + "' with '{" + sKeyName
-                                + "}'");
+                        logger.log(Level.WARNING, "......query definition in Report ''{0}'' is deprecated!"
+                                + " Please replace the param ''?{1}'' with '''{'{2}'}'''",
+                                new Object[]{reportEntity.getItemValueString("txtname"), sKeyName, sKeyName});
                     }
                 }
 
@@ -256,7 +257,7 @@ public class ReportService {
         query = replaceDateString(query);
 
         // execute query
-        logger.finest("......executeReport query=" + query);
+        logger.log(Level.FINEST, "......executeReport query={0}", query);
         List<ItemCollection> result = documentService.find(query, pageSize, pageIndex, sortBy, sortReverse);
 
         // test if a itemList is provided or defined in the reportEntity...
@@ -285,8 +286,8 @@ public class ReportService {
                 clonedResult.add(clone);
             }
         }
-        logger.fine("...executed report '" + reportEntity.getItemValueString("txtname") + "' in "
-                + (System.currentTimeMillis() - l) + "ms");
+        logger.log(Level.FINE, "...executed report ''{0}'' in {1}ms",
+                new Object[]{reportEntity.getItemValueString("txtname"), System.currentTimeMillis() - l});
         return clonedResult;
 
     }
@@ -632,9 +633,8 @@ public class ReportService {
                     }
                     singleValue = formatter.format(dateValue);
                 } catch (Exception ef) {
-                    Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
-                    logger.warning("ReportService: Invalid format String '" + format + "'");
-                    logger.warning("ReportService: Can not format value - error: " + ef.getMessage());
+                    logger.log(Level.WARNING, "ReportService: Invalid format String ''{0}''", format);
+                    logger.log(Level.WARNING, "ReportService: Can not format value - error: {0}", ef.getMessage());
                     return "" + dateValue;
                 }
             } else {
@@ -649,7 +649,7 @@ public class ReportService {
                     double d = Double.parseDouble(o.toString());
                     singleValue = customNumberFormat(format, locale, d);
                 } catch (IllegalArgumentException e) {
-                    logger.warning("Format Error (" + format + ") = " + e.getMessage());
+                    logger.log(Level.WARNING, "Format Error ({0}) = {1}", new Object[]{format, e.getMessage()});
                     singleValue = "0";
                 }
 
@@ -688,11 +688,11 @@ public class ReportService {
         List<String> adaptedValueList = null;
         if (converter.startsWith("<") && converter.endsWith(">")) {
             try {
-                logger.finest("......converter = " + converter);
+                logger.log(Level.FINEST, "......converter = {0}", converter);
                 // adapt the value list...
                 adaptedValueList = workflowService.adaptTextList(converter, itemcol);
             } catch (PluginException e) {
-                logger.warning("Unable to adapt text converter: " + converter);
+                logger.log(Level.WARNING, "Unable to adapt text converter: {0}", converter);
             }
         }
 

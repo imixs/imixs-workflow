@@ -30,6 +30,7 @@ package org.imixs.workflow.engine.plugins;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
@@ -61,7 +62,7 @@ public class ResultPlugin extends AbstractPlugin {
 
     public static List<String> SPPORTED_KERNEL_ITEMS = Arrays.asList("$file", "$snapshot.history");
 
-    private static Logger logger = Logger.getLogger(ResultPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(ResultPlugin.class.getName());
 
     public ItemCollection run(ItemCollection documentContext, ItemCollection event) throws PluginException {
         // evaluate new items....
@@ -74,8 +75,8 @@ public class ResultPlugin extends AbstractPlugin {
                 // do not accept items starting with $
                 // allow $file - Issue #644
                 if (!isValidItemName(itemName)) {
-                    logger.warning("<item> tag contains unsupported item name '" + itemName
-                            + "' - verify event result definition!");
+                    logger.log(Level.WARNING, "<item> tag contains unsupported item name ''{0}''"
+                            + " - verify event result definition!", itemName);
 
                     evalItemCollection.removeItem(itemName);
                 }

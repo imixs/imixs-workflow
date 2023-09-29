@@ -118,7 +118,7 @@ public class AdminPService {
     @Any
     private Instance<Plugin> plugins;
 
-    private static Logger logger = Logger.getLogger(AdminPService.class.getName());
+    private static final Logger logger = Logger.getLogger(AdminPService.class.getName());
 
     /**
      * This Method starts a new TimerService for a given job.
@@ -175,7 +175,7 @@ public class AdminPService {
         Timer timer = timerService.createTimer(terminationDate, (interval * 1000),
                 adminp.getItemValueString(WorkflowKernel.UNIQUEID));
 
-        logger.info("Job " + jobtype + " (" + timer.getInfo().toString() + ") started... ");
+        logger.log(Level.INFO, "Job {0} ({1}) started... ", new Object[]{jobtype, timer.getInfo().toString()});
         return adminp;
     }
 
@@ -215,7 +215,7 @@ public class AdminPService {
             // verify if admin entity still exists
             if (adminp == null) {
                 // configuration was removed - so stop the timer!
-                logger.info("Process " + sTimerID + " was removed - timer will be canceled");
+                logger.log(Level.INFO, "Process {0} was removed - timer will be canceled", sTimerID);
                 // stop timer
                 timer.cancel();
                 // go out!
@@ -223,7 +223,7 @@ public class AdminPService {
             }
 
             String job = adminp.getItemValueString("job");
-            logger.info("Job " + job + " (" + adminp.getUniqueID() + ")  processing...");
+            logger.log(Level.INFO, "Job {0} ({1})  processing...", new Object[]{job, adminp.getUniqueID()});
 
             // boolean jobfound = false;
 
@@ -256,16 +256,16 @@ public class AdminPService {
                 if (adminp.getItemValueBoolean("iscompleted")) {
                     timer.cancel();
                     adminp.replaceItemValue("$workflowStatus", "COMPLETED");
-                    logger.info("Job " + job + " (" + adminp.getUniqueID() + ") completed - timer stopped");
+                    logger.log(Level.INFO, "Job {0} ({1}) completed - timer stopped", new Object[]{job, adminp.getUniqueID()});
                 } else {
                     adminp.replaceItemValue("$workflowStatus", "WAITING");
                 }
 
             } else {
-                logger.warning("Unable to start AdminP Job. JobHandler class '" + job + "' not defined!");
+                logger.log(Level.WARNING, "Unable to start AdminP Job. JobHandler class ''{0}'' not defined!", job);
                 timer.cancel();
                 adminp.replaceItemValue("$workflowStatus", "FAILED");
-                logger.info("Job " + adminp.getUniqueID() + " - timer stopped");
+                logger.log(Level.INFO, "Job {0} - timer stopped", adminp.getUniqueID());
             }
 
         } catch (AdminPException e) {
@@ -286,14 +286,14 @@ public class AdminPService {
                     logger.warning("Unable to update adminp job status - adminp document is null!");
                 }
             } catch (AccessDeniedException | EJBException e2) {
-                logger.warning("Unable to update adminp job status - reason: " + e2.getMessage());
+                logger.log(Level.WARNING, "Unable to update adminp job status - reason: {0}", e2.getMessage());
                 if (debug) {
                     e2.printStackTrace();
                 }
             }
         }
 
-        logger.fine("...timer call finished successfull after " + ((System.currentTimeMillis()) - lProfiler) + " ms");
+        logger.log(Level.FINE, "...timer call finished successfull after {0} ms", (System.currentTimeMillis()) - lProfiler);
 
     }
 
@@ -315,7 +315,7 @@ public class AdminPService {
         // iterate over all injected JobHandlers....
         for (JobHandler jobHandler : this.jobHandlers) {
             if (jobHandler.getClass().getName().equals(jobHandlerClassName)) {
-                logger.finest("......CDI JobHandler '" + jobHandlerClassName + "' successful injected");
+                logger.log(Level.FINEST, "......CDI JobHandler ''{0}'' successful injected", jobHandlerClassName);
                 return jobHandler;
             }
         }
@@ -332,18 +332,18 @@ public class AdminPService {
      */
     private ItemCollection cancelTimer(String id) {
 
-        logger.finest("......cancelTimer - id:" + id + " ....");
+        logger.log(Level.FINEST, "......cancelTimer - id:{0} ....", id);
         ItemCollection adminp = documentService.load(id);
         if (adminp == null) {
-            logger.warning("failed to load timer data ID:" + id + " ");
+            logger.log(Level.WARNING, "failed to load timer data ID:{0} ", id);
         }
         // try to cancel an existing timer
         Timer timer = this.findTimer(id);
         if (timer != null) {
             timer.cancel();
-            logger.info("cancelTimer - id:" + id + " successful.");
+            logger.log(Level.INFO, "cancelTimer - id:{0} successful.", id);
         } else {
-            logger.info("cancelTimer - id:" + id + " failed - timer does no longer exist.");
+            logger.log(Level.INFO, "cancelTimer - id:{0} failed - timer does no longer exist.", id);
         }
         if (adminp != null) {
             adminp.replaceItemValue("txtTimerStatus", "Stopped");
@@ -372,7 +372,7 @@ public class AdminPService {
                 }
             }
         }
-        logger.warning("findTimer - id:" + id + " does no longer exist.");
+        logger.log(Level.WARNING, "findTimer - id:{0} does no longer exist.", id);
         return null;
     }
 }

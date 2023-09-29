@@ -62,7 +62,7 @@ import org.eclipse.microprofile.health.Liveness;
 public class HealthCheckService implements HealthCheck {
 
     private String workflowVersion = null;
-    private static Logger logger = Logger.getLogger(HealthCheckService.class.getName());
+    private static final Logger logger = Logger.getLogger(HealthCheckService.class.getName());
 
     @Inject
     private SetupService setupService;

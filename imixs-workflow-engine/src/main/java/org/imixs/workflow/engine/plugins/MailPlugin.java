@@ -113,7 +113,7 @@ public class MailPlugin extends AbstractPlugin {
     private String charSet = "ISO-8859-1";
 
     private boolean bHTMLMail = false;
-    private static Logger logger = Logger.getLogger(MailPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(MailPlugin.class.getName());
 
     /**
      * The run method creates a mailMessage object if recipients are defined by the
@@ -195,7 +195,7 @@ public class MailPlugin extends AbstractPlugin {
             // set mailbody
             MimeBodyPart messagePart = new MimeBodyPart();
             if (debug) {
-                logger.finest("......ContentType: '" + getContentType() + "'");
+                logger.log(Level.FINEST, "......ContentType: ''{0}''", getContentType());
             }
             messagePart.setContent(aBodyText, getContentType());
             // append message part
@@ -234,7 +234,7 @@ public class MailPlugin extends AbstractPlugin {
 
                     logger.info("Running in TestMode, forwarding mails to:");
                     for (String adr : vRecipients) {
-                        logger.info("     " + adr);
+                        logger.log(Level.INFO, "     {0}", adr);
                     }
                     try {
                         getMailMessage().setRecipients(Message.RecipientType.CC, null);
@@ -276,13 +276,13 @@ public class MailPlugin extends AbstractPlugin {
                     trans.sendMessage(mailMessage, mailMessage.getAllRecipients());
                     trans.close();
                     if (debug) {
-                        logger.finest("...mail transfer in " + (System.currentTimeMillis() - l) + "ms");
+                        logger.log(Level.FINEST, "...mail transfer in {0}ms", System.currentTimeMillis() - l);
                     }
                 }
-                logger.info("...send mail: MessageID=" + mailMessage.getMessageID());
+                logger.log(Level.INFO, "...send mail: MessageID={0}", mailMessage.getMessageID());
 
             } catch (Exception esend) {
-                logger.warning("close failed with exception: " + esend.toString());
+                logger.log(Level.WARNING, "close failed with exception: {0}", esend.toString());
             }
         }
     }
@@ -311,7 +311,7 @@ public class MailPlugin extends AbstractPlugin {
         if (sFrom == null || sFrom.isEmpty())
             sFrom = this.getWorkflowService().getUserName();
         if (debug) {
-            logger.finest("......From: " + sFrom);
+            logger.log(Level.FINEST, "......From: {0}", sFrom);
         }
         return sFrom;
     }
@@ -334,7 +334,7 @@ public class MailPlugin extends AbstractPlugin {
         else
             sReplyTo = documentActivity.getItemValueString("namMailReplyToUser");
         if (debug) {
-            logger.finest("......ReplyTo=" + sReplyTo);
+            logger.log(Level.FINEST, "......ReplyTo={0}", sReplyTo);
         }
         return sReplyTo;
     }
@@ -353,7 +353,7 @@ public class MailPlugin extends AbstractPlugin {
         String subject = getWorkflowService().adaptText(documentActivity.getItemValueString("txtMailSubject"),
                 documentContext);
         if (debug) {
-            logger.finest("......Subject: " + subject);
+            logger.log(Level.FINEST, "......Subject: {0}", subject);
         }
         return subject;
     }
@@ -380,9 +380,9 @@ public class MailPlugin extends AbstractPlugin {
 
         // write debug Log
         if (logger.isLoggable(Level.FINE)) {
-            logger.finest("......" + vectorRecipients.size() + " Receipients: ");
+            logger.log(Level.FINEST, "......{0} Receipients: ", vectorRecipients.size());
             for (String rez : vectorRecipients)
-                logger.finest("     " + rez);
+                logger.log(Level.FINEST, "     {0}", rez);
         }
 
         return vectorRecipients;
@@ -409,9 +409,9 @@ public class MailPlugin extends AbstractPlugin {
 
         // write debug Log
         if (logger.isLoggable(Level.FINE)) {
-            logger.finest("......" + vectorRecipients.size() + " ReceipientsCC: ");
+            logger.log(Level.FINEST, "......{0} ReceipientsCC: ", vectorRecipients.size());
             for (String rez : vectorRecipients)
-                logger.finest("     " + rez);
+                logger.log(Level.FINEST, "     {0}", rez);
         }
         return vectorRecipients;
     }
@@ -437,9 +437,9 @@ public class MailPlugin extends AbstractPlugin {
 
         // write debug Log
         if (logger.isLoggable(Level.FINE)) {
-            logger.finest("......" + vectorRecipients.size() + " ReceipientsBCC: ");
+            logger.log(Level.FINEST, "......{0} ReceipientsBCC: ", vectorRecipients.size());
             for (String rez : vectorRecipients)
-                logger.finest("     " + rez);
+                logger.log(Level.FINEST, "     {0}", rez);
         }
         return vectorRecipients;
     }
@@ -556,12 +556,12 @@ public class MailPlugin extends AbstractPlugin {
                 Enumeration<Object> enumer = props.keys();
                 while (enumer.hasMoreElements()) {
                     String aKey = enumer.nextElement().toString();
-                    logger.finest("...... ProperyName= " + aKey);
+                    logger.log(Level.FINEST, "...... ProperyName= {0}", aKey);
                     Object value = props.getProperty(aKey);
                     if (value == null)
                         logger.finest("...... PropertyValue=null");
                     else
-                        logger.finest("...... PropertyValue= " + props.getProperty(aKey).toString());
+                        logger.log(Level.FINEST, "...... PropertyValue= {0}", props.getProperty(aKey));
                 }
             }
             mailMessage = new MimeMessage(mailSession);

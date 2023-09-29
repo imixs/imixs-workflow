@@ -80,7 +80,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
     public static final String ORIGIN_UPDATE = "origin_update";
     public static final String SUBPROCESS_SYNC = "subprocess_sync"; // synchronize items from parent
 
-    private static Logger logger = Logger.getLogger(SplitAndJoinPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(SplitAndJoinPlugin.class.getName());
 
     /**
      * The method evaluates the workflow activity result for items with name:
@@ -632,7 +632,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
     protected void addWorkitemRef(String aUniqueID, ItemCollection workitem) {
         boolean debug = logger.isLoggable(Level.FINE);
         if (debug) {
-            logger.fine("LinkController add workitem reference: " + aUniqueID);
+            logger.log(Level.FINE, "LinkController add workitem reference: {0}", aUniqueID);
         }
 
         List<String> refList = workitem.getItemValue(LINK_PROPERTY);

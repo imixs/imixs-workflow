@@ -33,7 +33,7 @@ public class TestWorkflowKernelModels {
 	protected WorkflowKernel kernel = null;
 	protected SessionContext ctx;
 	protected WorkflowContext workflowContext;
-	private static Logger logger = Logger.getLogger(TestWorkflowKernelModels.class.getName());
+	private static final Logger logger = Logger.getLogger(TestWorkflowKernelModels.class.getName());
 
 	@Before
 	public void setup() throws PluginException, ModelException, ParseException, ParserConfigurationException,

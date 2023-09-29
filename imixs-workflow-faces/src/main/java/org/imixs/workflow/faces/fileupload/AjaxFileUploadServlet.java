@@ -71,7 +71,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
     private static final String CONTENT_DISPOSITION_FILENAME = "filename";
     public static final String IMIXS_FILEDATA_LIST = "IMIXS_FILEDATA_LIST";
 
-    private static Logger logger = Logger.getLogger(AjaxFileUploadServlet.class.getName());
+    private static final Logger logger = Logger.getLogger(AjaxFileUploadServlet.class.getName());
 
     @Inject
     FileUploadController fileUploadController;
@@ -170,7 +170,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
      */
     private boolean isPostFileUploadRequest(HttpServletRequest httpRequest) {
         String sContentType = httpRequest.getContentType();
-        logger.finest("......contentType=" + sContentType);
+        logger.log(Level.FINEST, "......contentType={0}", sContentType);
 
         return (REQUEST_METHOD_POST.equalsIgnoreCase(httpRequest.getMethod()) && httpRequest.getContentType() != null
                 && sContentType.toLowerCase().startsWith(CONTENT_TYPE_MULTIPART));
@@ -279,7 +279,7 @@ public class AjaxFileUploadServlet extends HttpServlet {
 
                     // extract the file content...
                     FileData fileData = null;
-                    logger.finest("......filename : " + fileName + ", contentType " + p.getContentType());
+                    logger.log(Level.FINEST, "......filename : {0}, contentType {1}", new Object[]{fileName, p.getContentType()});
                     fileData = new FileData(fileName, b, p.getContentType(), null);
                     fileDataList.add(fileData);
 

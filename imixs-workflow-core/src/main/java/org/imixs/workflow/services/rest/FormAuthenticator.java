@@ -40,6 +40,7 @@ import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -58,7 +59,7 @@ public class FormAuthenticator implements RequestFilter {
     public FormAuthenticator(String baseUri, String username, String password) {
         // extend the base uri with /j_security_check....
         baseUri += "/j_security_check";
-        logger.finest("......baseUIR= " + baseUri);
+        logger.log(Level.FINEST, "......baseUIR= {0}", baseUri);
         // Access secure page on server. In response to this request we will receive
         // the JSESSIONID to be used for further requests.
         try {
@@ -85,7 +86,7 @@ public class FormAuthenticator implements RequestFilter {
             wr.flush();
             wr.close();
             int responseCode = con.getResponseCode();
-            logger.finest(".....Response Code : " + responseCode);
+            logger.log(Level.FINEST, ".....Response Code : {0}", responseCode);
             con.connect();
             // get cookies from underlying CookieStore
             CookieStore cookieJar = manager.getCookieStore();

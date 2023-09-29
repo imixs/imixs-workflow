@@ -42,6 +42,7 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
+import java.util.logging.Level;
 
 /**
  * The DocumentController is a @ConversationScoped CDI bean to control the life
@@ -105,7 +106,7 @@ import jakarta.faces.context.FacesContext;
 public class DocumentController extends AbstractDataController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static Logger logger = Logger.getLogger(DocumentController.class.getName());
+    private static final Logger logger = Logger.getLogger(DocumentController.class.getName());
 
     @Inject
     protected Event<WorkflowEvent> events;
@@ -225,9 +226,9 @@ public class DocumentController extends AbstractDataController implements Serial
                 events.fire(new WorkflowEvent(getDocument(), WorkflowEvent.DOCUMENT_AFTER_DELETE));
             }
             setDocument(null);
-            logger.fine("......document " + uniqueID + " deleted");
+            logger.log(Level.FINE, "......document {0} deleted", uniqueID);
         } else {
-            logger.fine("......document '" + uniqueID + "' not found (null)");
+            logger.log(Level.FINE, "......document ''{0}'' not found (null)", uniqueID);
         }
     }
 

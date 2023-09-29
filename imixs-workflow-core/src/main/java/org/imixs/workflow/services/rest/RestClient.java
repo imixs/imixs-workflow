@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -89,7 +90,7 @@ public class RestClient {
      * @param filter - request filter instance.
      */
     public void registerRequestFilter(RequestFilter filter) {
-        logger.finest("......register new request filter: " + filter.getClass().getSimpleName());
+        logger.log(Level.FINEST, "......register new request filter: {0}", filter.getClass().getSimpleName());
 
         // client.register(filter);
         requestFilterList.add(filter);
@@ -227,20 +228,22 @@ public class RestClient {
             printWriter.close();
 
             iLastHTTPResult = urlConnection.getResponseCode();
-            logger.finest("......Sending 'POST' request to URL : " + serviceEndpoint);
-            logger.finest("......Response Code : " + iLastHTTPResult);
+            logger.log(Level.FINEST, "......Sending ''POST'' request to URL : {0}", serviceEndpoint);
+            logger.log(Level.FINEST, "......Response Code : {0}", iLastHTTPResult);
 
             // read response if response was successful
             if (iLastHTTPResult >= 200 && iLastHTTPResult <= 299) {
                 return readResponse(urlConnection);
             } else {
-                String error = "Error " + iLastHTTPResult + " - failed POST request: '" + uri + "'";
+                String error = new StringBuilder("Error ").append(iLastHTTPResult)
+                        .append(" - failed POST request: '").append(uri).append("'").toString();
                 logger.warning(error);
                 throw new RestAPIException(iLastHTTPResult, error);
             }
 
         } catch (IOException ioe) {
-            String error = "Error POST request '" + uri + " - " + ioe.getMessage();
+            String error = new StringBuilder("Error POST request '").append(uri).append(" - ")
+                    .append(ioe.getMessage()).toString();
             logger.warning(error);
             throw new RestAPIException(500, error, ioe);
         } finally {
@@ -331,20 +334,22 @@ public class RestClient {
             httpRequestBodyWriter.close();
 
             iLastHTTPResult = urlConnection.getResponseCode();
-            logger.finest("......Sending 'POST' request to URL : " + serviceEndpoint);
-            logger.finest("......Response Code : " + iLastHTTPResult);
+            logger.log(Level.FINEST, "......Sending ''POST'' request to URL : {0}", serviceEndpoint);
+            logger.log(Level.FINEST, "......Response Code : {0}", iLastHTTPResult);
 
             // read response if response was successful
             if (iLastHTTPResult >= 200 && iLastHTTPResult <= 299) {
                 return readResponse(urlConnection);
             } else {
-                String error = "Error " + iLastHTTPResult + " - failed POST request: '" + uri + "'";
+                String error = new StringBuilder("Error ").append(iLastHTTPResult)
+                        .append(" - failed POST request: '").append(uri).append("'").toString();
                 logger.warning(error);
                 throw new RestAPIException(iLastHTTPResult, error);
             }
 
         } catch (IOException ioe) {
-            String error = "Error POST request '" + uri + " - " + ioe.getMessage();
+            String error = new StringBuilder("Error POST request '")
+                    .append(uri).append(" - ").append(ioe.getMessage()).toString();
             logger.warning(error);
             throw new RestAPIException(500, error, ioe);
         } finally {
@@ -393,18 +398,20 @@ public class RestClient {
             }
 
             iLastHTTPResult = urlConnection.getResponseCode();
-            logger.finest("......Sending 'GET' request to URL : " + serviceEndpoint);
-            logger.finest("......Response Code : " + iLastHTTPResult);
+            logger.log(Level.FINEST, "......Sending ''GET'' request to URL : {0}", serviceEndpoint);
+            logger.log(Level.FINEST, "......Response Code : {0}", iLastHTTPResult);
             // read response if response was successful
             if (iLastHTTPResult >= 200 && iLastHTTPResult <= 299) {
                 return readResponse(urlConnection);
             } else {
-                String error = "Error " + iLastHTTPResult + " - failed GET request from '" + uri + "'";
+                String error = new StringBuilder("Error ").append(iLastHTTPResult)
+                        .append(" - failed GET request from '").append(uri).append("'").toString();
                 logger.warning(error);
                 throw new RestAPIException(iLastHTTPResult, error);
             }
         } catch (IOException e) {
-            String error = "Error GET request from '" + uri + " - " + e.getMessage();
+            String error = new StringBuilder("Error GET request from '")
+                    .append(uri).append(" - ").append(e.getMessage()).toString();
             logger.warning(error);
             throw new RestAPIException(0, error, e);
 
@@ -438,7 +445,7 @@ public class RestClient {
                 in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
-                logger.finest("......" + inputLine);
+                logger.log(Level.FINEST, "......{0}", inputLine);
                 writer.write(inputLine);
             }
         } catch (IOException e) {

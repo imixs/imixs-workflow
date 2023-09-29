@@ -19,7 +19,7 @@ import org.junit.Test;
 public class TestRuleEngineGraalJSDeprecatedScripts {
 	protected RuleEngine ruleEngine = null;
 	@SuppressWarnings("unused")
-	private static Logger logger = Logger.getLogger(TestRuleEngineGraalJSDeprecatedScripts.class.getName());
+	private static final Logger logger = Logger.getLogger(TestRuleEngineGraalJSDeprecatedScripts.class.getName());
 
 	@Before
 	public void setup() throws PluginException {

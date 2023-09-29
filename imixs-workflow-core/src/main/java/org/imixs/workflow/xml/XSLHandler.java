@@ -62,7 +62,7 @@ import jakarta.xml.bind.Marshaller;
  */
 
 public class XSLHandler {
-    private static Logger logger = Logger.getLogger(XSLHandler.class.getName());
+    private static final Logger logger = Logger.getLogger(XSLHandler.class.getName());
 
     /**
      * This method transforms an XML source with a provided XSL template. The result
@@ -85,7 +85,7 @@ public class XSLHandler {
             }
             TransformerFactory transFact = TransformerFactory.newInstance();
             if (debug) {
-                logger.finest("......xslTransformation: encoding=" + encoding);
+                logger.log(Level.FINEST, "......xslTransformation: encoding={0}", encoding);
             }
             // generate XML InputStream Reader with encoding
             ByteArrayInputStream baisXML = new ByteArrayInputStream(xmlSource.getBytes());

@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 
 import jakarta.ejb.SessionContext;
+import java.util.logging.Level;
 
 
 import org.imixs.workflow.ItemCollection;
@@ -334,11 +335,11 @@ public class WorkflowMockEnvironment {
             long lLoadTime = System.currentTimeMillis();
             InputStream inputStream = WorkflowMockEnvironment.class.getResourceAsStream(this.modelPath);
             try {
-                logger.info("loading model: " + this.modelPath + "....");
+                logger.log(Level.INFO, "loading model: {0}....", this.modelPath);
                 model = BPMNParser.parseModel(inputStream, "UTF-8");
 
                 this.modelService.addModel(model);
-                logger.fine("...loadModel processing time=" + (System.currentTimeMillis() - lLoadTime) + "ms");
+                logger.log(Level.FINE, "...loadModel processing time={0}ms", System.currentTimeMillis() - lLoadTime);
             } catch (ModelException | ParseException | ParserConfigurationException | IOException | SAXException e) {
                 e.printStackTrace();
             }

@@ -151,7 +151,7 @@ public class SolrIndexService {
 
     private RestClient restClient;
 
-    private static Logger logger = Logger.getLogger(SolrIndexService.class.getName());
+    private static final Logger logger = Logger.getLogger(SolrIndexService.class.getName());
 
     /**
      * Create a rest client instance
@@ -177,7 +177,7 @@ public class SolrIndexService {
      */
     public void setup(@Observes SetupEvent setupEvent) throws RestAPIException {
 
-        logger.info("...verify solr core '" + core + "'...");
+        logger.log(Level.INFO, "...verify solr core ''{0}''...", core);
 
         // try to get the schma of the core...
         try {
@@ -188,7 +188,8 @@ public class SolrIndexService {
             updateSchema(existingSchema);
         } catch (RestAPIException e) {
             // no schema found
-            logger.severe("...no solr core '" + core + "' found - " + e.getMessage() + ": verify the solr instance!");
+            logger.log(Level.SEVERE, "...no solr core ''{0}'' found - {1}: verify the solr instance!",
+                    new Object[]{core, e.getMessage()});
             throw e;
         }
 
@@ -216,9 +217,9 @@ public class SolrIndexService {
         // test if the schemaUdpate contains instructions....
         if (!"{}".equals(schemaUpdate)) {
             String uri = api + "/api/cores/" + core + "/schema";
-            logger.info("...updating schema '" + core + "':");
+            logger.log(Level.INFO, "...updating schema ''{0}'':", core);
             if (debug) {
-                logger.finest("..." + schemaUpdate);
+                logger.log(Level.FINEST, "...{0}", schemaUpdate);
             }
             restClient.post(uri, schemaUpdate, "application/json");
             logger.info("...schema update - successfull ");
@@ -259,8 +260,8 @@ public class SolrIndexService {
         }
 
         if (debug) {
-            logger.fine("... update index block in " + (System.currentTimeMillis() - ltime) + " ms (" + documents.size()
-                    + " workitems total)");
+            logger.log(Level.FINE, "... update index block in {0} ms ({1} workitems total)",
+                    new Object[]{System.currentTimeMillis() - ltime, documents.size()});
         }
     }
 
@@ -303,14 +304,14 @@ public class SolrIndexService {
             String xmlRequest = xmlDelete.toString();
             String uri = api + "/solr/" + core + "/update?commit=true";
             if (debug) {
-                logger.finest("......delete documents '" + core + "':");
+                logger.log(Level.FINEST, "......delete documents ''{0}'':", core);
             }
             restClient.post(uri, xmlRequest, "text/xml");
         }
 
         if (debug) {
-            logger.fine("... update index block in " + (System.currentTimeMillis() - ltime) + " ms ("
-                    + documentIDs.size() + " workitems total)");
+            logger.log(Level.FINE, "... update index block in {0} ms ({1} workitems total)",
+                    new Object[]{System.currentTimeMillis() - ltime, documentIDs.size()});
         }
     }
 
@@ -360,7 +361,7 @@ public class SolrIndexService {
             DefaultOperator defaultOperator, boolean loadStubs) throws QueryException {
         boolean debug = logger.isLoggable(Level.FINE);
         if (debug) {
-            logger.fine("...search solr index: " + searchTerm + "...");
+            logger.log(Level.FINE, "...search solr index: {0}...", searchTerm);
         }
         StringBuffer uri = new StringBuffer();
 
@@ -414,13 +415,13 @@ public class SolrIndexService {
             // append query
             uri.append("&q=" + URLEncoder.encode(searchTerm, "UTF-8"));
             if (debug) {
-                logger.finest("...... uri=" + uri.toString());
+                logger.log(Level.FINEST, "...... uri={0}", uri.toString());
             }
             String result = restClient.get(uri.toString());
 
             return result;
         } catch (RestAPIException | UnsupportedEncodingException e) {
-            logger.severe("Solr search error: " + e.getMessage());
+            logger.log(Level.SEVERE, "Solr search error: {0}", e.getMessage());
             throw new QueryException(QueryException.QUERY_NOT_UNDERSTANDABLE, e.getMessage(), e);
         }
 
@@ -517,7 +518,7 @@ public class SolrIndexService {
         oldSchema = oldSchema.replace(" ", "");
 
         if (debug) {
-            logger.finest("......old schema=" + oldSchema);
+            logger.log(Level.FINEST, "......old schema={0}", oldSchema);
         }
         updateSchema.append("{");
 
@@ -624,7 +625,7 @@ public class SolrIndexService {
               
             
             if (debug) {
-                logger.finest("......add index field " + DEFAULT_SEARCH_FIELD + "=" + textContent);
+                logger.log(Level.FINEST,"......add index field " + DEFAULT_SEARCH_FIELD + "={0}", textContent);
             }
             // remove existing CDATA...
             textContent = stripCDATA(textContent);
@@ -749,16 +750,16 @@ public class SolrIndexService {
                         if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
                             indexDocument(workitem);
                             if (debug) {
-                                logger.finest("......solr added workitem '" + eventLogEntry.getRef() + "' to index in "
-                                        + (System.currentTimeMillis() - l2) + "ms");
+                                logger.log(Level.FINEST, "......solr added workitem ''{0}'' to index in {1}ms",
+                                        new Object[]{eventLogEntry.getRef(), System.currentTimeMillis() - l2});
                             }
                         }
                     } else {
                         long l2 = System.currentTimeMillis();
                         removeDocument(eventLogEntry.getRef());
                         if (debug) {
-                            logger.finest("......solr removed workitem '" + eventLogEntry.getRef() + "' from index in "
-                                    + (System.currentTimeMillis() - l2) + "ms");
+                            logger.log(Level.FINEST, "......solr removed workitem ''{0}'' from index in {1}ms",
+                                    new Object[]{eventLogEntry.getRef(), System.currentTimeMillis() - l2});
                         }
                     }
 
@@ -776,7 +777,7 @@ public class SolrIndexService {
                 }
 
             } catch (RestAPIException e) {
-                logger.warning("...unable to flush lucene event log: " + e.getMessage());
+                logger.log(Level.WARNING, "...unable to flush lucene event log: {0}", e.getMessage());
                 // We just log a warning here and close the flush mode to no longer block the
                 // writer.
                 // NOTE: maybe throwing a IndexException would be an alternative:
@@ -789,8 +790,8 @@ public class SolrIndexService {
         }
 
         if (debug) {
-            logger.fine("...flushEventLog - " + events.size() + " events in " + (System.currentTimeMillis() - l)
-                    + " ms - last log entry: " + lastEventDate);
+            logger.log(Level.FINE, "...flushEventLog - {0} events in {1} ms - last log entry: {2}",
+                    new Object[]{events.size(), System.currentTimeMillis() - l, lastEventDate});
         }
         return cacheIsEmpty;
 
@@ -828,8 +829,8 @@ public class SolrIndexService {
                     total = total + EVENTLOG_ENTRY_FLUSH_COUNT;
                     count = count + EVENTLOG_ENTRY_FLUSH_COUNT;
                     if (count >= 100 && debug) {
-                        logger.finest("...flush event log: " + total + " entries in " + (System.currentTimeMillis() - l)
-                                + "ms...");
+                        logger.log(Level.FINEST, "...flush event log: {0} entries in {1}ms...",
+                                new Object[]{total, System.currentTimeMillis() - l});
                         count = 0;
                     }
 
@@ -839,15 +840,15 @@ public class SolrIndexService {
                     // maybe we can remove this hard break
                     if (total >= junkSize) {
                         if (debug) {
-                            logger.finest("...flush event: Issue #439  -> total count >=" + total
-                                    + " flushEventLog will be continued...");
+                            logger.log(Level.FINEST, "...flush event: Issue #439  ->"
+                                    + " total count >={0} flushEventLog will be continued...", total);
                         }
                         return false;
                     }
                 }
 
             } catch (IndexException e) {
-                logger.warning("...unable to flush lucene event log: " + e.getMessage());
+                logger.log(Level.WARNING, "...unable to flush lucene event log: {0}", e.getMessage());
                 return true;
             }
         }

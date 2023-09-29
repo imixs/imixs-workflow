@@ -56,7 +56,7 @@ public class TextPropertyValueAdapter {
     @Inject
     private Config config;
 
-    private static Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(TextPropertyValueAdapter.class.getName());
 
     /**
      * This method reacts on CDI events of the type TextEvent and parses a string
@@ -77,7 +77,7 @@ public class TextPropertyValueAdapter {
 
         List<String> tagList = XMLParser.findTags(text, "propertyvalue");
         if (debug) {
-            logger.finest("......" + tagList.size() + " tags found");
+            logger.log(Level.FINEST, "......{0} tags found", tagList.size());
         }
         // test if a <value> tag exists...
         for (String tag : tagList) {
@@ -92,7 +92,7 @@ public class TextPropertyValueAdapter {
             try {
                 vValue = config.getValue(sPropertyKey, String.class);
             } catch (java.util.NoSuchElementException e) {
-                logger.warning("propertyvalue '" + sPropertyKey + "' is not defined in imixs.properties!");
+                logger.log(Level.WARNING, "propertyvalue ''{0}'' is not defined in imixs.properties!", sPropertyKey);
                 vValue = "";
             }
 
@@ -203,9 +203,8 @@ public class TextPropertyValueAdapter {
                     }
                     singleValue = formatter.format(dateValue);
                 } catch (Exception ef) {
-                    Logger logger = Logger.getLogger(AbstractPlugin.class.getName());
-                    logger.warning("AbstractPlugin: Invalid format String '" + format + "'");
-                    logger.warning("AbstractPlugin: Can not format value - error: " + ef.getMessage());
+                    logger.log(Level.WARNING, "TextPropertyValueAdapter: Invalid format String ''{0}''", format);
+                    logger.log(Level.WARNING, "TextPropertyValueAdapter: Can not format value - error: {0}", ef.getMessage());
                     return "" + dateValue;
                 }
             } else

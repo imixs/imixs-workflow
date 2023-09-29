@@ -35,6 +35,7 @@ import java.time.temporal.TemporalField;
 import java.time.temporal.TemporalUnit;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -71,7 +72,7 @@ public class IntervalPlugin extends AbstractPlugin {
     public boolean increase = false;
 
     private ItemCollection documentContext;
-    private static Logger logger = Logger.getLogger(IntervalPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(IntervalPlugin.class.getName());
 
     /**
      * The method paresed for a fields with the prafix 'keyitnerval'
@@ -129,9 +130,9 @@ public class IntervalPlugin extends AbstractPlugin {
                         "invalid interval configuration: ref item is missing for " + "macro!");
             }
 
-            logger.info("......cron=" + cron);
-            logger.info("......macro=" + macro);
-            logger.info("......ref=" + ref);
+            logger.log(Level.INFO, "......cron={0}", cron);
+            logger.log(Level.INFO, "......macro={0}", macro);
+            logger.log(Level.INFO, "......ref={0}", ref);
 
             // compute cron or macro interval
             if (!cron.isEmpty()) {
@@ -296,7 +297,7 @@ public class IntervalPlugin extends AbstractPlugin {
             if (cronUnit.contains(",")) {
                 String[] units = cronUnit.split(",");
                 // 9,15
-                logger.info(" unit now = " + nowUnit);
+                logger.log(Level.INFO, " unit now = {0}", nowUnit);
                 boolean found = false;
                 for (String singleUnit : units) {
                     if (Integer.parseInt(singleUnit) >= nowUnit) {

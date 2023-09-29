@@ -48,6 +48,7 @@ import org.imixs.workflow.faces.data.WorkflowEvent;
 
 import jakarta.faces.context.FacesContext;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.logging.Level;
 
 /**
  * The FileUploadController is a conversation scoped bean and used to hold the
@@ -69,7 +70,7 @@ public class FileUploadController implements Serializable {
     private List<FileData> _tmpFiles = null; // temporarly file list.
     private List<FileData> _persistedFiles = null; // persisted file list.
 
-    private static Logger logger = Logger.getLogger(FileUploadController.class.getName());
+    private static final Logger logger = Logger.getLogger(FileUploadController.class.getName());
 
     @Inject
     private Conversation conversation;
@@ -101,7 +102,7 @@ public class FileUploadController implements Serializable {
                         ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
                                 .getSession().getMaxInactiveInterval() * 1000);
                 conversation.begin();
-                logger.finest("......starting new conversation, id=" + conversation.getId());
+                logger.log(Level.FINEST, "......starting new conversation, id={0}", conversation.getId());
             }
             reset();
             for (FileData fileData : workitem.getFileData()) {
@@ -256,7 +257,7 @@ public class FileUploadController implements Serializable {
                     try {
                         bytes = Double.parseDouble(sizeAttribute.get(0).toString());
                     } catch (NumberFormatException n) {
-                        logger.warning("unable to parse size attribute in FileData for file '" + aFilename + "'");
+                        logger.log(Level.WARNING, "unable to parse size attribute in FileData for file ''{0}''", aFilename);
                     }
                 }
             }

@@ -85,7 +85,7 @@ public class RuleEngine {
     public static final String INVALID_SCRIPT = "INVALID_SCRIPT";
     private static final HashSet<Class<?>> BASIC_OBJECT_TYPES = getBasicObjectTypes();
 
-    private static Logger logger = Logger.getLogger(RuleEngine.class.getName());
+    private static final Logger logger = Logger.getLogger(RuleEngine.class.getName());
 
     private Context _context = null;
     private String languageId;
@@ -143,7 +143,7 @@ public class RuleEngine {
                 .option("engine.WarnInterpreterOnly", "false") //
                 .allowAllAccess(true) //
                 .build();
-            logger.info("...init RuleEngine took " + (System.currentTimeMillis()-l) + "ms");
+            logger.log(Level.INFO, "...init RuleEngine took {0}ms", System.currentTimeMillis()-l);
         }
         return _context;
     }
@@ -184,7 +184,7 @@ public class RuleEngine {
         }
 
         if (debug) {
-            logger.finest("......SCRIPT:" + script);
+            logger.log(Level.FINEST, "......SCRIPT:{0}", script);
         }
 
         // Test if we have a deprecated Script...
@@ -197,7 +197,7 @@ public class RuleEngine {
         try {
             result = eval(script);
         } catch (PolyglotException e) {
-            logger.warning("Script Error in: " + script);
+            logger.log(Level.WARNING, "Script Error in: {0}", script);
             // script not valid
             throw new PluginException(RuleEngine.class.getSimpleName(), INVALID_SCRIPT,
                     "BusinessRule contains invalid script:" + e.getMessage(), e);
@@ -239,7 +239,7 @@ public class RuleEngine {
         }
 
         if (debug) {
-            logger.finest("......SCRIPT: " + script);
+            logger.log(Level.FINEST, "......SCRIPT: {0}", script);
         }
 
         // Test if we have a deprecated Script...
@@ -255,7 +255,7 @@ public class RuleEngine {
             ItemCollection result = convertResult();
             return result;
         } catch (PolyglotException e) {
-            logger.warning("Script Error: " + e.getMessage() + " in: " + script);
+            logger.log(Level.WARNING, "Script Error: {0} in: {1}", new Object[]{e.getMessage(), script});
             // script not valid
             throw new PluginException(RuleEngine.class.getSimpleName(), INVALID_SCRIPT,
                     "BusinessRule contains invalid script:" + e.getMessage(), e);

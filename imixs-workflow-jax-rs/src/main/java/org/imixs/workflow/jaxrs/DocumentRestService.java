@@ -72,6 +72,7 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 import jakarta.ejb.Stateless;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.logging.Level;
 
 /**
  * The DocumentService provides methods to access the DocumentService EJB
@@ -93,7 +94,7 @@ public class DocumentRestService {
     @Resource
     private SessionContext ctx;
 
-    private static Logger logger = Logger.getLogger(DocumentRestService.class.getName());
+    private static final Logger logger = Logger.getLogger(DocumentRestService.class.getName());
 
     @GET
     @Produces(MediaType.APPLICATION_XHTML_XML)
@@ -206,7 +207,7 @@ public class DocumentRestService {
             result = documentService.find(decodedQuery, pageSize, pageIndex, sortBy, sortReverse);
 
         } catch (Exception e) {
-            logger.warning("Invalid Search Query: " + e.getMessage());
+            logger.log(Level.WARNING, "Invalid Search Query: {0}", e.getMessage());
 
             ItemCollection error = new ItemCollection();
             error.setItemValue("$error_message", e.getMessage());
@@ -396,8 +397,7 @@ public class DocumentRestService {
         // return workitem
         try {
             if (workitem.hasItem("$error_code")) {
-                logger.severe(workitem.getItemValueString("$error_code") + ": "
-                        + workitem.getItemValueString("$error_message"));
+                logger.log(Level.SEVERE, "{0}: {1}", new Object[]{workitem.getItemValueString("$error_code"), workitem.getItemValueString("$error_message")});
                 return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem), MediaType.APPLICATION_XML)
                         .status(Response.Status.NOT_ACCEPTABLE).build();
             } else {

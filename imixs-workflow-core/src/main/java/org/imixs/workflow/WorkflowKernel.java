@@ -114,7 +114,7 @@ public class WorkflowKernel {
     private List<ItemCollection> splitWorkitems = null;
     private RuleEngine ruleEngine = null;
 
-    private static Logger logger = Logger.getLogger(WorkflowKernel.class.getName());
+    private static final Logger logger = Logger.getLogger(WorkflowKernel.class.getName());
 
     /**
      * Constructor initialize the contextObject and plugin vectors
@@ -182,8 +182,8 @@ public class WorkflowKernel {
                     }
                 }
                 if (!found) {
-                    logger.warning("Plugin '" + plugin.getClass().getName() + "' depends on unregistered Plugin class '"
-                            + dependency + "'");
+                    logger.log(Level.WARNING, "Plugin ''{0}'' depends on unregistered Plugin class ''{1}''",
+                            new Object[]{plugin.getClass().getName(), dependency});
                 }
             }
         }
@@ -212,7 +212,7 @@ public class WorkflowKernel {
 
         if ((pluginClass != null) && (!"".equals(pluginClass))) {
             if (logger.isLoggable(Level.FINEST))
-                logger.finest("......register plugin class: " + pluginClass + "...");
+                logger.log(Level.FINEST, "......register plugin class: {0}...", pluginClass);
 
             Class<?> clazz = null;
             try {
@@ -244,7 +244,7 @@ public class WorkflowKernel {
     public void unregisterPlugin(final String pluginClass) throws PluginException {
         boolean debug = logger.isLoggable(Level.FINE);
         if (debug) {
-            logger.finest("......unregisterPlugin " + pluginClass);
+            logger.log(Level.FINEST, "......unregisterPlugin {0}", pluginClass);
         }
         for (Plugin plugin : pluginRegistry) {
             if (plugin.getClass().getName().equals(pluginClass)) {
@@ -424,7 +424,7 @@ public class WorkflowKernel {
 
         int iNewProcessID = event.getItemValueInteger("numnextprocessid");
         if (debug) {
-            logger.finest("......next $taskID=" + iNewProcessID + "");
+            logger.log(Level.FINEST, "......next $taskID={0}", iNewProcessID);
         }
         // test if we have an conditional exclusive Task exits...
         itemColNextTask = findConditionalExclusiveTask(event, documentContext);
@@ -503,8 +503,8 @@ public class WorkflowKernel {
                 if (iNextID > 0) {
                     // load activity
                     if (debug) {
-                        logger.finest("......processing=" + documentContext.getItemValueString(UNIQUEID)
-                                + " -> loading next activityID = " + iNextID);
+                        logger.log(Level.FINEST, "......processing={0} -> loading next activityID = {1}",
+                                new Object[]{documentContext.getItemValueString(UNIQUEID), iNextID});
                     }
                     vActivityList.remove(0);
                     // update document context
@@ -571,8 +571,9 @@ public class WorkflowKernel {
                 }
             }
 
-            logger.info("⚙ set model : " + documentResult.getItemValueString(UNIQUEID) + " ("
-                    + documentResult.getItemValueString(MODELVERSION) + ")");
+            logger.log(Level.INFO, "\u2699 set model : {0} ({1})",
+                    new Object[]{documentResult.getItemValueString(UNIQUEID),
+                        documentResult.getItemValueString(MODELVERSION)});
         }
         return documentResult;
     }
@@ -673,12 +674,12 @@ public class WorkflowKernel {
         // Update the attributes $taskID and $WorkflowStatus
         documentResult.setTaskID(Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
         if (debug) {
-            logger.finest("......new $taskID=" + documentResult.getTaskID());
+            logger.log(Level.FINEST, "......new $taskID={0}", documentResult.getTaskID());
         }
         documentResult.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString("txtname"));
         documentResult.replaceItemValue(WORKFLOWGROUP, itemColNextTask.getItemValueString("txtworkflowgroup"));
         if (debug) {
-            logger.finest("......new $workflowStatus=" + documentResult.getItemValueString(WORKFLOWSTATUS));
+            logger.log(Level.FINEST, "......new $workflowStatus={0}", documentResult.getItemValueString(WORKFLOWSTATUS));
         }
         // update deprecated attributes txtworkflowStatus and txtworkflowGroup
         documentResult.replaceItemValue("txtworkflowStatus", documentResult.getItemValueString(WORKFLOWSTATUS));
@@ -716,8 +717,8 @@ public class WorkflowKernel {
             if (adapter != null) {
 
                 if (adapter instanceof GenericAdapter) {
-                    logger.warning("...GenericAdapter '" + adapterClass
-                            + "' should not be associated with a Signal Event. Adapter will not be executed.");
+                    logger.log(Level.WARNING, "...GenericAdapter ''{0}'' should not be associated with a Signal Event."
+                            + " Adapter will not be executed.", adapterClass);
                     // ...stop execution as the GenericAdapter was already executed by the method
                     // executeGenericAdapters...
                 } else {
@@ -784,7 +785,7 @@ public class WorkflowKernel {
             workitem.removeItem("adapter.error_message");
             workitem = adapter.execute(workitem, event);
         } catch (AdapterException e) {
-            logger.warning("...execution of adapter failed: " + e.getMessage());
+            logger.log(Level.WARNING, "...execution of adapter failed: {0}", e.getMessage());
             // update workitem with adapter exception....
             workitem.setItemValue("adapter.error_context", e.getErrorContext());
             workitem.setItemValue("adapter.error_code", e.getErrorCode());
@@ -840,7 +841,7 @@ public class WorkflowKernel {
                         boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
                         if (bmatch) {
                             if (debug) {
-                                logger.finest("......matching conditional event: " + expression);
+                                logger.log(Level.FINEST, "......matching conditional event: {0}", expression);
                             }
                             ItemCollection conditionslTask = this.ctx.getModelManager()
                                     .getModel(documentContext.getModelVersion()).getTask(taskID);
@@ -855,7 +856,7 @@ public class WorkflowKernel {
                         boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
                         if (bmatch) {
                             if (debug) {
-                                logger.finest("......matching conditional event: " + expression);
+                                logger.log(Level.FINEST, "......matching conditional event: {0}", expression);
                             }
                             // we update the documentContext....
                             ItemCollection itemColEvent = this.ctx.getModelManager()
@@ -920,7 +921,7 @@ public class WorkflowKernel {
                         boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
                         if (bmatch) {
                             if (debug) {
-                                logger.finest("......matching split Task found: " + expression);
+                                logger.log(Level.FINEST, "......matching split Task found: {0}", expression);
                             }
                             ItemCollection itemColNextTask = this.ctx.getModelManager()
                                     .getModel(documentContext.getModelVersion()).getTask(taskID);
@@ -936,7 +937,7 @@ public class WorkflowKernel {
                         boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
                         if (bmatch) {
                             if (debug) {
-                                logger.finest("......matching split Event found: " + expression);
+                                logger.log(Level.FINEST, "......matching split Event found: {0}", expression);
                             }
                             // we update the documentContext....
                             ItemCollection itemColEvent = this.ctx.getModelManager()
@@ -1006,7 +1007,7 @@ public class WorkflowKernel {
                                     + "." + +event.getItemValueInteger("numActivityid") + " (" + event.getModelVersion()
                                     + ") evaluate to false must not be connected to a task. ";
 
-                            logger.warning(sErrorMessage + " Condition = " + expression);
+                            logger.log(Level.WARNING, "{0} Condition = {1}", new Object[]{sErrorMessage, expression});
                             throw new ModelException(ModelException.INVALID_MODEL, sErrorMessage);
                         }
                     }
@@ -1016,7 +1017,7 @@ public class WorkflowKernel {
                         boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
                         if (!bmatch) {
                             if (debug) {
-                                logger.finest("......matching conditional event: " + expression);
+                                logger.log(Level.FINEST, "......matching conditional event: {0}", expression);
                             }
                             // we update the documentContext....
                             ItemCollection itemColEvent = this.ctx.getModelManager()
@@ -1031,7 +1032,7 @@ public class WorkflowKernel {
                                 // clone current instance to a new version...
                                 ItemCollection cloned = createVersion(documentContext);
                                 if (debug) {
-                                    logger.finest("......created new version=" + cloned.getUniqueID());
+                                    logger.log(Level.FINEST, "......created new version={0}", cloned.getUniqueID());
                                 }
                                 // set new $taskID
                                 cloned.setTaskID(Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
@@ -1118,7 +1119,7 @@ public class WorkflowKernel {
 
         documentResult.replaceItemValue(ACTIVITYIDLIST, vActivityList);
         if (debug) {
-            logger.finest("......append new Activity ID=" + aID);
+            logger.log(Level.FINEST, "......append new Activity ID={0}", aID);
         }
 
         return documentResult;
@@ -1178,8 +1179,8 @@ public class WorkflowKernel {
         // test if the log has exceeded the maximum count of entries
         while (logEntries.size() > MAXIMUM_ACTIVITYLOGENTRIES) {
             if (debug) {
-                logger.finest("......maximum activity log entries=" + MAXIMUM_ACTIVITYLOGENTRIES
-                        + " exceeded, remove first entry...");
+                logger.log(Level.FINEST, "......maximum activity log entries={0} exceeded, remove first entry...",
+                        MAXIMUM_ACTIVITYLOGENTRIES);
             }
             logEntries.remove(0);
         }
@@ -1222,7 +1223,7 @@ public class WorkflowKernel {
                     "[loadEvent] model entry " + taskID + "." + eventID + " not found for model version '" + version
                             + "'");
         if (debug) {
-            logger.finest(".......event: " + taskID + "." + eventID + " loaded");
+            logger.log(Level.FINEST, ".......event: {0}.{1} loaded", new Object[]{taskID, eventID});
         }
         // Check for loop in edge history
         if (vectorEdgeHistory != null && vectorEdgeHistory.indexOf((taskID + "." + eventID)) != -1) {
@@ -1252,18 +1253,18 @@ public class WorkflowKernel {
 
                 sPluginName = plugin.getClass().getName();
                 if (debug) {
-                    logger.finest("......running Plugin: " + sPluginName + "...");
+                    logger.log(Level.FINEST, "......running Plugin: {0}...", sPluginName);
                 }
                 long lPluginTime = System.currentTimeMillis();
                 documentResult = plugin.run(documentResult, event);
                 if (debug) {
-                    logger.fine("...Plugin '" + sPluginName + "' processing time="
-                            + (System.currentTimeMillis() - lPluginTime) + "ms");
+                    logger.log(Level.FINE, "...Plugin ''{0}'' processing time={1}ms",
+                            new Object[]{sPluginName, System.currentTimeMillis() - lPluginTime});
                 }
                 if (documentResult == null) {
-                    logger.severe("[runPlugins] PLUGIN_ERROR: " + sPluginName);
+                    logger.log(Level.SEVERE, "[runPlugins] PLUGIN_ERROR: {0}", sPluginName);
                     for (String sLogEntry : localPluginLog)
-                        logger.severe("[runPlugins]   " + sLogEntry);
+                        logger.log(Level.SEVERE, "[runPlugins]   {0}", sLogEntry);
 
                     throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_ERROR,
                             "plugin: " + sPluginName + " returned null");
@@ -1279,12 +1280,12 @@ public class WorkflowKernel {
 
         } catch (PluginException e) {
             // log plugin stack!....
-            logger.severe(
-                    "Plugin-Error at " + e.getErrorContext() + ": " + e.getErrorCode() + " (" + e.getMessage() + ")");
+            logger.log(Level.SEVERE, "Plugin-Error at {0}: {1} ({2})",
+                    new Object[]{e.getErrorContext(), e.getErrorCode(), e.getMessage()});
             if (debug) {
                 logger.severe("Last Plugins run successfull:");
                 for (String sLogEntry : localPluginLog)
-                    logger.severe("   ..." + sLogEntry);
+                    logger.log(Level.SEVERE, "   ...{0}", sLogEntry);
             }
             throw e;
         }
@@ -1295,7 +1296,7 @@ public class WorkflowKernel {
         for (int i = 0; i < pluginRegistry.size(); i++) {
             Plugin plugin = (Plugin) pluginRegistry.get(i);
             if (logger.isLoggable(Level.FINEST))
-                logger.finest("closing Plugin: " + plugin.getClass().getName() + "...");
+                logger.log(Level.FINEST, "closing Plugin: {0}...", plugin.getClass().getName());
             plugin.close(rollbackTransaction);
         }
     }

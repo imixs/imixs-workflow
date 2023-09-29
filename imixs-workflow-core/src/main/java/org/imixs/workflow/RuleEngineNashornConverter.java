@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
  */
 public class RuleEngineNashornConverter {
 
-    private static Logger logger = Logger.getLogger(RuleEngineNashornConverter.class.getName());
+    private static final Logger logger = Logger.getLogger(RuleEngineNashornConverter.class.getName());
 
     /**
      * This method returns true if the script is detected as deprecated. A
@@ -114,12 +114,12 @@ public class RuleEngineNashornConverter {
      */
     public static String rewrite(String script, ItemCollection workitem, ItemCollection event) {
 
-        String converterLog="";
-        converterLog=converterLog+"\n***************************************************";
-        converterLog=converterLog+"\n*** DEPRECATED NASHORN SCRIPT FOUND:            ***";
-        converterLog=converterLog+"\n***************************************************\n";
+        StringBuilder converterLog = new StringBuilder()
+        .append("\n***************************************************")
+        .append("\n*** DEPRECATED NASHORN SCRIPT FOUND:            ***")
+        .append("\n***************************************************\n")
 
-        converterLog=converterLog+"\n" + script + "\n\n";
+        .append("\n").append(script).append("\n\n");
 
         script = convertByItemCollection(script, workitem, "workitem");
         script = convertByItemCollection(script, event, "event");
@@ -128,12 +128,12 @@ public class RuleEngineNashornConverter {
         // is the result. We need to remove the [0] here!
         script = script.replace(")[0]", ")");
 
-        converterLog=converterLog+"\n***************************************************";
-        converterLog=converterLog+"\n*** PLEASE REPLACE YOUR SCRIPT WITH:            ***";
-        converterLog=converterLog+"\n***************************************************\n";
-        converterLog=converterLog+"\n" + script + "\n";
-        converterLog=converterLog+"\n***************************************************\n";
-        logger.warning(converterLog);
+        converterLog.append("\n***************************************************")
+        .append("\n*** PLEASE REPLACE YOUR SCRIPT WITH:            ***")
+        .append("\n***************************************************\n")
+        .append("\n").append(script).append("\n")
+        .append("\n***************************************************\n");
+        logger.warning(converterLog.toString());
         return script;
 
     }

@@ -68,7 +68,7 @@ public class SolrUpdateService implements UpdateService {
     @Inject
     SolrIndexService solrIndexService;
 
-    private static Logger logger = Logger.getLogger(SolrUpdateService.class.getName());
+    private static final Logger logger = Logger.getLogger(SolrUpdateService.class.getName());
 
     /**
      * This method adds a collection of documents to the Lucene index. The documents
@@ -88,7 +88,7 @@ public class SolrUpdateService implements UpdateService {
         try {
             solrIndexService.indexDocuments(documents);
         } catch (RestAPIException e) {
-            logger.severe("Failed to update document collection: " + e.getMessage());
+            logger.log(Level.SEVERE, "Failed to update document collection: {0}", e.getMessage());
             throw new IndexException(IndexException.INVALID_INDEX, "Unable to update solr search index", e);
         }
     }
@@ -103,12 +103,13 @@ public class SolrUpdateService implements UpdateService {
             // repeat flush....
             flushCount = +1048;
             if (debug) {
-                logger.fine("...flush event log: " + flushCount + " entries updated in "
-                        + (System.currentTimeMillis() - ltime) + "ms ...");
+                logger.log(Level.FINE, "...flush event log: {0} entries updated in {1}ms ...",
+                        new Object[]{flushCount, System.currentTimeMillis() - ltime});
             }
         }
         if (debug) {
-            logger.fine("...flush solr index completed in " + (System.currentTimeMillis() - ltime) + "ms ...");
+            logger.log(Level.FINE, "...flush solr index completed in {0}ms ...",
+                    System.currentTimeMillis() - ltime);
         }
     }
 

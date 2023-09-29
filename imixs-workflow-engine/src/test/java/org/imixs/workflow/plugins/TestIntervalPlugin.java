@@ -4,6 +4,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
@@ -24,7 +25,7 @@ import org.junit.Test;
 public class TestIntervalPlugin {
     protected IntervalPlugin intervalPlugin = null;
 
-    private static Logger logger = Logger.getLogger(TestIntervalPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(TestIntervalPlugin.class.getName());
     WorkflowMockEnvironment workflowMockEnvironment;
     ItemCollection documentContext;
     ItemCollection documentActivity;
@@ -47,7 +48,7 @@ public class TestIntervalPlugin {
 
         // prepare test workitem
         documentContext = new ItemCollection();
-        logger.info("[TestAccessPlugin] setup test data...");
+        logger.info("[TestIntervalPlugin] setup test data...");
 
         documentContext.replaceItemValue("reminder", new Date());
 
@@ -62,7 +63,7 @@ public class TestIntervalPlugin {
      */
     @Test
     public void testBPMNModel() throws PluginException {
-        logger.info("------------------ Ref Date   =" + documentContext.getItemValueDate("reminder"));
+        logger.log(Level.INFO, "------------------ Ref Date   ={0}", documentContext.getItemValueDate("reminder"));
         try {
             documentActivity = workflowMockEnvironment.getModel().getEvent(100, 99);
             intervalPlugin.run(documentContext, documentActivity);
@@ -71,7 +72,7 @@ public class TestIntervalPlugin {
             Assert.fail();
         }
         Date result = documentContext.getItemValueDate("reminder");
-        logger.info("------------------  Result Date=" + result);
+        logger.log(Level.INFO, "------------------  Result Date={0}", result);
     }
 
     /**
@@ -84,7 +85,7 @@ public class TestIntervalPlugin {
         // @monthly
         String cron = "0 0 1 * *";
         LocalDateTime date = intervalPlugin.evalCron(cron);
-        logger.info("Result monthyl=" + date);
+        logger.log(Level.INFO, "Result monthyl={0}", date);
         LocalDateTime now = LocalDateTime.now();
         int exptectedMonth = now.getMonthValue() + 1;
         if (exptectedMonth == 13) {
@@ -104,7 +105,7 @@ public class TestIntervalPlugin {
         // @monthly
         String cron = "0 0 1 1 *";
         LocalDateTime date = intervalPlugin.evalCron(cron);
-        logger.info("Result monthly=" + date);
+        logger.log(Level.INFO, "Result monthly={0}", date);
         LocalDateTime now = LocalDateTime.now();
         Assert.assertEquals(date.getYear(), now.getYear() + 1);
         Assert.assertEquals(1, date.getMonthValue());
@@ -120,7 +121,7 @@ public class TestIntervalPlugin {
         // @weekly
         String cron = "0 0 * * 1 ";
         LocalDateTime date = intervalPlugin.evalCron(cron);
-        logger.info("Result monthyl=" + date);
+        logger.log(Level.INFO, "Result monthyl={0}", date);
         // move to past one day...
         Assert.assertEquals(DayOfWeek.MONDAY, date.getDayOfWeek());
     }
@@ -137,8 +138,8 @@ public class TestIntervalPlugin {
         LocalDateTime ldt = LocalDateTime.now();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime date = intervalPlugin.evalMacro("@monthly", ldt);
-        logger.info("Now            =" + now);
-        logger.info("Result @monthly=" + date);
+        logger.log(Level.INFO, "Now            ={0}", now);
+        logger.log(Level.INFO, "Result @monthly={0}", date);
         int exptectedMonth = now.getMonthValue() + 1;
         if (exptectedMonth == 13) {
             // year switch
@@ -159,8 +160,8 @@ public class TestIntervalPlugin {
         LocalDateTime ldt = LocalDateTime.now();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime date = intervalPlugin.evalMacro("@yearly", ldt);
-        logger.info("Now           =" + now);
-        logger.info("Result @yearly=" + date);
+        logger.log(Level.INFO, "Now           ={0}", now);
+        logger.log(Level.INFO, "Result @yearly={0}", date);
         Assert.assertEquals(now.getDayOfMonth(), date.getDayOfMonth());
         Assert.assertEquals(now.getMonthValue(), date.getMonthValue());
         Assert.assertEquals(now.getYear() + 1, date.getYear());
@@ -178,8 +179,8 @@ public class TestIntervalPlugin {
         LocalDateTime ldt = LocalDateTime.now();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime date = intervalPlugin.evalMacro("@weekly", ldt);
-        logger.info("Now           =" + now);
-        logger.info("Result @weekly=" + date);
+        logger.log(Level.INFO, "Now           ={0}", now);
+        logger.log(Level.INFO, "Result @weekly={0}", date);
         Assert.assertTrue(now.getDayOfMonth() != date.getDayOfMonth());
         Assert.assertEquals(now.getDayOfWeek(), date.getDayOfWeek());
     }
@@ -206,7 +207,7 @@ public class TestIntervalPlugin {
             now = now.with(ChronoField.HOUR_OF_DAY,8);
             String cron = "0 9,18 * * *";
             date = intervalPlugin.evalCron(cron,now);
-            logger.info(" => now=" + now + "  result=" + date);
+            logger.log(Level.INFO, " => now={0}  result={1}", new Object[]{now, date});
             // expected 9:00
             Assert.assertTrue(date.getHour()==9);
         
@@ -215,7 +216,7 @@ public class TestIntervalPlugin {
             now = now.with(ChronoField.MINUTE_OF_HOUR,0);
             now = now.with(ChronoField.HOUR_OF_DAY,10);
             date = intervalPlugin.evalCron(cron,now);
-            logger.info(" => now=" + now + "  result=" + date);
+            logger.log(Level.INFO, " => now={0}  result={1}", new Object[]{now, date});
             // expected 18:00
             Assert.assertTrue(date.getHour()==18);
             
@@ -224,7 +225,7 @@ public class TestIntervalPlugin {
             now = now.with(ChronoField.MINUTE_OF_HOUR,0);
             now = now.with(ChronoField.HOUR_OF_DAY,22);
             date = intervalPlugin.evalCron(cron,now);
-            logger.info(" => now=" + now + "  result=" + date);
+            logger.log(Level.INFO, " => now={0}  result={1}", new Object[]{now, date});
             // expected 9:00 next day
             Assert.assertTrue(date.getHour()==9);
             Assert.assertTrue(date.getDayOfYear()==now.getDayOfYear()+1);
@@ -235,7 +236,7 @@ public class TestIntervalPlugin {
             cron = "15,30 * * * *";
             now = now.with(ChronoField.HOUR_OF_DAY,10);
             date = intervalPlugin.evalCron(cron,now);
-            logger.info(" => now=" + now + "  result=" + date);
+            logger.log(Level.INFO, " => now={0}  result={1}", new Object[]{now, date});
             // expected 10:15
             Assert.assertTrue(date.getHour()==10);
             Assert.assertTrue(date.getMinute()==15);
@@ -244,7 +245,7 @@ public class TestIntervalPlugin {
             now = now.with(ChronoField.HOUR_OF_DAY,10);
             now = now.with(ChronoField.MINUTE_OF_HOUR,25);
             date = intervalPlugin.evalCron(cron,now);
-            logger.info(" => now=" + now + "  result=" + date);
+            logger.log(Level.INFO, " => now={0}  result={1}", new Object[]{now, date});
             // expected 10:30 
             Assert.assertTrue(date.getHour()==10);
             Assert.assertTrue(date.getMinute()==30);

@@ -84,7 +84,7 @@ public class OwnerPlugin extends AbstractPlugin {
     private ItemCollection documentActivity;
     private ItemCollection documentNextProcessEntity;
 
-    private static Logger logger = Logger.getLogger(OwnerPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(OwnerPlugin.class.getName());
 
     /**
      * changes the '$owner' item depending to the activityentity or processEntity
@@ -162,7 +162,7 @@ public class OwnerPlugin extends AbstractPlugin {
         if ((logger.isLoggable(Level.FINE)) && (newOwnerList.size() > 0)) {
             logger.finest("......Owners:");
             for (int j = 0; j < newOwnerList.size(); j++)
-                logger.finest("               '" + (String) newOwnerList.get(j) + "'");
+                logger.log(Level.FINEST, "               ''{0}''", (String) newOwnerList.get(j));
         }
 
         // we also need to support the deprecated iten name "namOwner" which was

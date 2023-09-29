@@ -44,6 +44,7 @@ import jakarta.ejb.Timeout;
 import jakarta.ejb.Timer;
 import jakarta.ejb.TimerConfig;
 import jakarta.ejb.TimerService;
+import java.util.logging.Level;
 
 /**
  * The AsyncEventScheduler starts a scheduler service to process async events in
@@ -97,7 +98,7 @@ public class AsyncEventScheduler {
     @ConfigProperty(name = AsyncEventScheduler.ASYNCEVENT_PROCESSOR_DEADLOCK, defaultValue = "60000")
     long deadLockInterval;
 
-    private static Logger logger = Logger.getLogger(AsyncEventScheduler.class.getName());
+    private static final Logger logger = Logger.getLogger(AsyncEventScheduler.class.getName());
 
     @Resource
     TimerService timerService;
@@ -111,8 +112,8 @@ public class AsyncEventScheduler {
     @PostConstruct
     public void init() {
         if (enabled) {
-            logger.info(
-                    "Starting AsyncEventScheduler - initalDelay=" + initialDelay + "  inverval=" + interval + " ....");
+            logger.log(Level.INFO, "Starting AsyncEventScheduler - initalDelay={0}  inverval={1} ....",
+                    new Object[]{initialDelay, interval});
 
             // Registering a non-persistent Timer Service.
             final TimerConfig timerConfig = new TimerConfig();

@@ -53,7 +53,7 @@ public class TestAdaptText {
 
 	
 		// prepare data
-		logger.info("[TestAbstractPlugin] setup test data...");
+		logger.info("[TestAdaptText] setup test data...");
 		documentContext = new ItemCollection();
 		documentContext.replaceItemValue("txtName", "Anna");
 
@@ -77,7 +77,7 @@ public class TestAdaptText {
 
 	
 		// prepare data
-		logger.info("[TestAbstractPlugin] setup test data...");
+		logger.info("[TestAdaptText] setup test data...");
 		documentContext = new ItemCollection();
 		documentContext.replaceItemValue("txtName", "Anna");
 
@@ -114,7 +114,7 @@ public class TestAdaptText {
 
 			// prepare data
 		documentContext = new ItemCollection();
-		logger.info("[TestHisotryPlugin] setup test data...");
+		logger.info("[TestAdaptText] setup test data...");
 
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.DATE, 27);
@@ -137,7 +137,7 @@ public class TestAdaptText {
 
 		// prepare data
 		documentContext = new ItemCollection();
-		logger.info("[TestHisotryPlugin] setup test data...");
+		logger.info("[TestAdaptText] setup test data...");
 
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.DATE, 27);
@@ -173,7 +173,7 @@ public class TestAdaptText {
 	
 		// prepare data
 		documentContext = new ItemCollection();
-		logger.info("[TestHisotryPlugin] setup test data...");
+		logger.info("[TestAdaptText] setup test data...");
 
 		Vector<Integer> value = new Vector<Integer>();
 		value.add(1);
@@ -246,7 +246,7 @@ public class TestAdaptText {
 		
 		// prepare data
 		documentContext = new ItemCollection();
-		logger.info("[TestHisotryPlugin] setup test data...");
+		logger.info("[TestAdaptText] setup test data...");
 
 		Vector<Integer> value = new Vector<Integer>();
 		value.add(1);
@@ -283,7 +283,7 @@ public class TestAdaptText {
 		
 		// prepare data
 		documentContext = new ItemCollection();
-		logger.info("[TestHisotryPlugin] setup test data...");
+		logger.info("[TestAdaptText] setup test data...");
 
 		Vector<Integer> values = new Vector<Integer>();
 		values.add(1);
@@ -301,7 +301,7 @@ public class TestAdaptText {
 
 		// prepare data
 		documentContext = new ItemCollection();
-		logger.info("[TestHisotryPlugin] setup test data...");
+		logger.info("[TestAdaptText] setup test data...");
 
 		documentContext.replaceItemValue("_numbers", values);
 

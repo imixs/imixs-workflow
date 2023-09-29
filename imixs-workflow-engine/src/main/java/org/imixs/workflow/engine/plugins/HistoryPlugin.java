@@ -67,7 +67,7 @@ import org.imixs.workflow.exceptions.PluginException;
 public class HistoryPlugin extends AbstractPlugin {
     private ItemCollection documentContext;
     private List<List<Object>> historyList = null;
-    private static Logger logger = Logger.getLogger(HistoryPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(HistoryPlugin.class.getName());
 
     /**
      * Update the Log entry.

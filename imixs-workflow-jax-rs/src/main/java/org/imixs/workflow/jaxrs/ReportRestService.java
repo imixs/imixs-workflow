@@ -88,6 +88,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
+import java.util.logging.Level;
 
 /**
  * The WorkflowService Handler supports methods to process different kind of
@@ -110,7 +111,7 @@ public class ReportRestService {
     @Context
     private HttpServletRequest servletRequest;
 
-    private static Logger logger = Logger.getLogger(ReportRestService.class.getName());
+    private static final Logger logger = Logger.getLogger(ReportRestService.class.getName());
 
     @GET
     @Produces("text/html")
@@ -211,7 +212,7 @@ public class ReportRestService {
 
             ItemCollection report = reportService.findReport(reportName);
             if (report == null) {
-                logger.severe("Report '" + reportName + "' not defined!");
+                logger.log(Level.SEVERE, "Report ''{0}'' not defined!", reportName);
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
 
@@ -353,7 +354,7 @@ public class ReportRestService {
                 }
             }
 
-            logger.fine("set encoding :" + encoding);
+            logger.log(Level.FINE, "set encoding :{0}", encoding);
             servlerResponse.setContentType(MediaType.TEXT_HTML + "; charset=" + encoding);
 
             return documentTable;
@@ -384,7 +385,7 @@ public class ReportRestService {
 
         ItemCollection report = reportService.findReport(reportName);
         if (report == null) {
-            logger.severe("Report '" + reportName + "' not defined!");
+            logger.log(Level.SEVERE, "Report ''{0}'' not defined!", reportName);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
         if (encoding == null || "".equals(encoding)) {
@@ -404,7 +405,7 @@ public class ReportRestService {
         }
 
         // set content type and character encoding
-        logger.fine("set encoding :" + encoding);
+        logger.log(Level.FINE, "set encoding :{0}", encoding);
         servlerResponse.setContentType(sContentType + "; charset=" + encoding);
 
         return Response.ok(documentTable, sContentType).build();
@@ -452,7 +453,7 @@ public class ReportRestService {
                 }
             }
 
-            logger.fine("set encoding :" + encoding);
+            logger.log(Level.FINE, "set encoding :{0}", encoding);
             servlerResponse.setContentType(MediaType.APPLICATION_XML + "; charset=" + encoding);
 
             return XMLDataCollectionAdapter.getDataCollection(col);

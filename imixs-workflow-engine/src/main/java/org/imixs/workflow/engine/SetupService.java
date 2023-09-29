@@ -74,6 +74,7 @@ import jakarta.inject.Inject;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
+import java.util.logging.Level;
 
 /**
  * The SetupService EJB initializes the Imxis-Workflow engine and returns the
@@ -110,7 +111,7 @@ public class SetupService {
     public static String SETUP_OK = "OK";
     public static String MODEL_INITIALIZED = "MODEL_INITIALIZED";
 
-    private static Logger logger = Logger.getLogger(SetupService.class.getName());
+    private static final Logger logger = Logger.getLogger(SetupService.class.getName());
 
     @Inject
     @ConfigProperty(name = "model.default.data")
@@ -164,7 +165,7 @@ public class SetupService {
             scanDefaultModels();
         } else {
             for (String model : models) {
-                logger.info("...model: " + model + " ...OK");
+                logger.log(Level.INFO, "...model: {0} ...OK", model);
             }
         }
 
@@ -277,7 +278,7 @@ public class SetupService {
         for (String modelResource : modelResources) {
             // try to load the resource file....
             if (modelResource.endsWith(".bpmn") || modelResource.endsWith(".xml")) {
-                logger.info("...uploading default model file: '" + modelResource + "'....");
+                logger.log(Level.INFO, "...uploading default model file: ''{0}''....", modelResource);
                 // if resource starts with '/' then we pickup the file form the filesystem.
                 // otherwise we load it as a resource bundle.
                 InputStream inputStream = null;
@@ -328,7 +329,7 @@ public class SetupService {
                 }
 
             } else {
-                logger.severe("Wrong model format: '" + modelResource + "' - expected *.bpmn or *.xml");
+                logger.log(Level.SEVERE, "Wrong model format: ''{0}'' - expected *.bpmn or *.xml", modelResource);
             }
 
         }
@@ -393,8 +394,7 @@ public class SetupService {
                 }
                 // now remove old model entries....
                 for (String aModelVersion : vModelVersions) {
-                    logger.fine("importXmlEntityData - removing existing configuration for model version '"
-                            + aModelVersion + "'");
+                    logger.log(Level.FINE, "importXmlEntityData - removing existing configuration for model version ''{0}''", aModelVersion);
                     modelService.removeModel(aModelVersion);
                 }
                 // save new entities into database and update modelversion.....
@@ -405,7 +405,7 @@ public class SetupService {
                     documentService.save(itemCollection);
                 }
 
-                logger.fine("importXmlEntityData - " + ecol.getDocument().length + " entries sucessfull imported");
+                logger.log(Level.FINE, "importXmlEntityData - {0} entries sucessfull imported", ecol.getDocument().length);
             }
 
         } catch (Exception e) {
@@ -427,7 +427,7 @@ public class SetupService {
         try {
             col = documentService.find(searchTerm, 1, 0);
         } catch (QueryException e) {
-            logger.severe("loadConfiguration - invalid param: " + e.getMessage());
+            logger.log(Level.SEVERE, "loadConfiguration - invalid param: {0}", e.getMessage());
             throw new InvalidAccessException(InvalidAccessException.INVALID_ID, e.getMessage(), e);
         }
 
@@ -477,7 +477,7 @@ public class SetupService {
             String timerID = atimer.getInfo().toString();
             if (id.equals(timerID)) {
                 if (timer != null) {
-                    logger.severe("more then one timer with id " + id + " was found!");
+                    logger.log(Level.SEVERE, "more then one timer with id {0} was found!", id);
                 }
                 timer = atimer;
             }

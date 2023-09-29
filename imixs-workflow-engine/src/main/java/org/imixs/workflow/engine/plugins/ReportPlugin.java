@@ -71,7 +71,7 @@ public class ReportPlugin extends AbstractPlugin {
     public static final String REPORT_UNDEFINED = "REPORT_UNDEFINED";
     public static final String INVALID_REPORT_DEFINITION = "INVALID_REPORT_DEFINITION";
 
-    private static Logger logger = Logger.getLogger(ReportPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(ReportPlugin.class.getName());
 
     /**
      * Executes a report defined defined by the event in the attribute

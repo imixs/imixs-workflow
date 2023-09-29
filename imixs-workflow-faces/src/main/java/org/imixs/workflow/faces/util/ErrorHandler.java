@@ -44,7 +44,7 @@ import jakarta.faces.context.FacesContext;
 
 public class ErrorHandler {
 
-    private static Logger logger = Logger.getLogger(ErrorHandler.class.getName());
+    private static final Logger logger = Logger.getLogger(ErrorHandler.class.getName());
 
     /**
      * The Method expects a PluginException and adds the corresponding Faces Error
@@ -68,7 +68,7 @@ public class ErrorHandler {
                 ResourceBundle rb = ResourceBundle.getBundle("bundle.app", browserLocale);
                 errorCode = rb.getString(pe.getErrorCode());
             } catch (MissingResourceException mre) {
-                logger.warning("ErrorHandler: " + mre.getMessage());
+                logger.log(Level.WARNING, "ErrorHandler: {0}", mre.getMessage());
             }
             // create a faces message for each parameter
             Object[] messages = pe.getErrorParameters();
@@ -82,8 +82,8 @@ public class ErrorHandler {
             addErrorMessage(pe);
         }
 
-        logger.warning(
-                "ErrorHandler cauth PluginException - error code=" + pe.getErrorCode() + " - " + pe.getMessage());
+        logger.log(Level.WARNING, "ErrorHandler cauth PluginException - error code={0} - {1}",
+                new Object[]{pe.getErrorCode(), pe.getMessage()});
         if (logger.isLoggable(Level.FINE)) {
 
             pe.printStackTrace(); // Or use a logger.
@@ -107,13 +107,14 @@ public class ErrorHandler {
             ResourceBundle rb = ResourceBundle.getBundle("bundle.app", browserLocale);
             message = rb.getString(me.getErrorCode());
         } catch (MissingResourceException mre) {
-            logger.warning("ErrorHandler: " + mre.getMessage());
+            logger.log(Level.WARNING, "ErrorHandler: {0}", mre.getMessage());
         }
 
         FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, message, me.getMessage()));
 
-        logger.warning("ErrorHandler cauth ModelException - error code=" + me.getErrorCode() + " - " + me.getMessage());
+        logger.log(Level.WARNING, "ErrorHandler cauth ModelException - error code={0} - {1}",
+                new Object[]{me.getErrorCode(), me.getMessage()});
         if (logger.isLoggable(Level.FINE)) {
             me.printStackTrace(); // Or use a logger.
         }
@@ -150,7 +151,7 @@ public class ErrorHandler {
                 message = messageFromBundle;
             }
         } catch (MissingResourceException mre) {
-            logger.warning("ErrorHandler: " + mre.getMessage());
+            logger.log(Level.WARNING, "ErrorHandler: {0}", mre.getMessage());
         }
 
         // parse message for params
@@ -205,7 +206,7 @@ public class ErrorHandler {
                 }
 
             } catch (MissingResourceException mre) {
-                logger.warning("ErrorHandler: " + mre.getMessage());
+                logger.log(Level.WARNING, "ErrorHandler: {0}", mre.getMessage());
             }
         }
 
