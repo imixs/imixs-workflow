@@ -80,13 +80,7 @@ public class IntervalPlugin extends AbstractPlugin {
     public ItemCollection run(ItemCollection adocumentContext, ItemCollection event) throws PluginException {
 
         LocalDateTime result = null;
-
         documentContext = adocumentContext;
-        // test if activity is a schedule activity...
-        // check if activity is scheduled
-        if (!"1".equals(event.getItemValueString("keyScheduledActivity"))) {
-            return documentContext;
-        }
 
         // validate deprecated configuration via keyinterval
         Set<String> fieldNames = documentContext.getAllItems().keySet();
@@ -99,13 +93,8 @@ public class IntervalPlugin extends AbstractPlugin {
         // evaluate interval configuration
         ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(event, "item", adocumentContext,
                 true);
-
-        if (evalItemCollection == null) {
-            return adocumentContext;
-        }
-
-        if (evalItemCollection.hasItem(EVAL_INTERVAL)) {
-
+        // We run only if an item 'inteval' is defined in the current event (issue #841)
+        if (evalItemCollection != null && evalItemCollection.hasItem(EVAL_INTERVAL)) {
             String invervalDef = evalItemCollection.getItemValueString(EVAL_INTERVAL);
 
             if (invervalDef.trim().isEmpty()) {
