@@ -1,6 +1,6 @@
 # Interval Plugin 
 
-The Imixs *IntervalPlugin* provides an easy way for scheduling periodical intervals.  
+The Imixs *IntervalPlugin* provides an easy way for computing periodical intervals.  
 The Plugin implements an mechanism to adjust the value of a date item based on a macro or a cron definition.
  The interval can be defined in the workflow result by setting a reference item by name and a cron definition. See the following example:
 
@@ -16,10 +16,8 @@ This example will adjust the date item 'reminder' to 3:00pm the next working day
 	    <macro>@monthly</macro>
 	</item>
 
-this example will adjust the value of the date item 'reminder' per 1 month. For example: 15.01.2020 => 15.02.2020 
+This example will adjust the value of the date item 'reminder' per 1 month. For example: 15.01.2020 => 15.02.2020 
 
-
-**Note:** The IntervalPlugin only runs on scheduled activities. 
 
 ## Cron Expression
 
