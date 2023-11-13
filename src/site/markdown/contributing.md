@@ -18,8 +18,7 @@ Please do not reformat existing code. If you use an other IDE like Eclipse we re
 
 ## Checkstyle
 
-[Checkstyle](https://checkstyle.sourceforge.io/) is used for static code analysis in Imixs-Workflow Java projects. A [custom checkstyle configuration](../../../imixs-checkstyle-8.44.xml) is provided and
-can be integrated in the build process via maven as well as directly into your IDE.
+[Checkstyle](https://checkstyle.sourceforge.io/) is used for static code analysis in Imixs-Workflow Java projects. A [custom checkstyle configuration](../../../imixs-checkstyle-8.44.xml) is provided and can be integrated in the build process via maven as well as directly into your IDE.
 
 The file [imixs-checkstyle-8.44.xml](https://raw.githubusercontent.com/imixs/imixs-workflow/master/imixs-checkstyle-8.44.xml) contains the Imixs-Workflow settings for formatting and clean-up of Java code as well as code templates.
 
@@ -30,14 +29,13 @@ To activate the checkstyle rules add the following configuration into your `.vsc
 
 ```yaml
 {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": true
-    },
-    "java.checkstyle.version": "8.44",
-    "java.checkstyle.autocheck": true,
-    "java.checkstyle.configuration": "https://raw.githubusercontent.com/imixs/imixs-workflow/master/imixs-checkstyle-8.44.xml",
-    "java.configuration.updateBuildConfiguration": "automatic"
+  // Organize Java Imports
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true,
+  },
+  // Format with Checkstyle
+  "java.checkstyle.configuration": "https://raw.githubusercontent.com/imixs/imixs-workflow/master/imixs-checkstyle-8.44.xml",
+  "editor.formatOnSave": true
 }
 ```
 
