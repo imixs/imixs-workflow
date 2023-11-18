@@ -171,7 +171,8 @@ Internally a report is stored in a document with the type 'ReportEntity'. The fo
 |----------------|--------------------------------|-----------
 | txtName        | Report name                    | my report
 | txtQuery       | Lucene search term             | (type:"workitem") AND ($processid:1200)
-| xslResource    | Optional XSL Resource File     |   |
+| xsl            | Optional XSL Template          |   |
+| xslresource    | Optional XSL File location     |   |
 | contenttype    | Optional content type for XSL transformation   |  application/json
 | encoding       | Optional encoding for XSL transformation     | ISO-8859-1
 | attributes     | attribute list for result set  |  |
