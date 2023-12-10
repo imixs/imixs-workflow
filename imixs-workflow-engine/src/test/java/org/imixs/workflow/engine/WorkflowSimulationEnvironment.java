@@ -7,10 +7,9 @@ import java.io.InputStream;
 import java.security.Principal;
 import java.text.ParseException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.ejb.SessionContext;
-import java.util.logging.Level;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
@@ -28,6 +27,8 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.xml.sax.SAXException;
+
+import jakarta.ejb.SessionContext;
 
 /**
  * The WorkflowSimulationEnvironment provides a test environment for jUnit
@@ -55,22 +56,22 @@ public class WorkflowSimulationEnvironment {
 	protected SessionContext ctx;
 
 	protected WorkflowContext workflowContext;
-	protected SimulationService simulationService;
-	protected List<String> plugins=null;
 
-	@SuppressWarnings("unchecked")
+	@Spy
+	protected SimulationService simulationService;
+	protected List<String> plugins = null;
+
 	@Before
 	public void setUp() throws PluginException, ModelException, AccessDeniedException, ProcessingErrorException {
-		MockitoAnnotations.initMocks(this);
+		// MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 
 		// mock session context
 		ctx = Mockito.mock(SessionContext.class);
-		// simulate SessionContext ctx.getCallerPrincipal().getName()
+		// simulate Principal
 		Principal principal = Mockito.mock(Principal.class);
 		when(principal.getName()).thenReturn("manfred");
 		when(ctx.getCallerPrincipal()).thenReturn(principal);
-
-		// mock Entity service
 
 		// Mock modelService (using the @spy) annotation
 		Mockito.doNothing().when(modelService).init();
@@ -91,20 +92,13 @@ public class WorkflowSimulationEnvironment {
 		workflowContext = Mockito.mock(WorkflowContext.class);
 		when(workflowContext.getModelManager()).thenReturn(modelManager);
 
-		// Mock WorkflowService
-		simulationService = Mockito.mock(SimulationService.class);
-		// workflowService.documentService = documentService;
+		// setup SimulationService
 		simulationService.setCtx(ctx);
-
 		simulationService.setModelService(modelService);
 		when(simulationService.getModelManager()).thenReturn(modelService);
 
-		when(simulationService.processWorkItem(Mockito.any(ItemCollection.class), Mockito.any(List.class)))
-				.thenCallRealMethod();
-
 	}
 
-	
 	public String getModelPath() {
 		return modelPath;
 	}
@@ -136,38 +130,35 @@ public class WorkflowSimulationEnvironment {
 			try {
 				logger.log(Level.INFO, "loading model: {0}....", this.modelPath);
 				model = BPMNParser.parseModel(inputStream, "UTF-8");
-
 				this.modelService.addModel(model);
 			} catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e) {
 				e.printStackTrace();
 			}
-
 		}
-
 	}
 
 	public List<String> getPlugins() {
 		return plugins;
 	}
 
-
 	public void setPlugins(List<String> plugins) {
 		this.plugins = plugins;
 	}
 
-
 	/**
-	 * Simulates a processing life cycle 
+	 * Simulates a processing life cycle
+	 * 
 	 * @param workitem
 	 * @return
-	 * @throws ModelException 
-	 * @throws PluginException 
-	 * @throws ProcessingErrorException 
-	 * @throws AccessDeniedException 
+	 * @throws ModelException
+	 * @throws PluginException
+	 * @throws ProcessingErrorException
+	 * @throws AccessDeniedException
 	 */
-	public ItemCollection processWorkItem(ItemCollection workitem) throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+	public ItemCollection processWorkItem(ItemCollection workitem)
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 		workitem = simulationService.processWorkItem(workitem, plugins);
 		return workitem;
 	}
-	
+
 }

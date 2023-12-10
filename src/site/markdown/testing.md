@@ -38,9 +38,7 @@ The Test class 'WorkflowSimulationEnvironment' can be used in jUnit Tests to sim
 	
 			// setup a test workitem
 			ItemCollection workitem = new ItemCollection();
-			workitem.replaceItemValue(WorkflowKernel.MODELVERSION,"1.0.0");
-			workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
-			workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
+			workitem.model("1.0.0").task(1000).event(10);
 			// setup test data for simulation
 			workitem.replaceItemValue("_budget", 99);
 			workitem = wse.simulationService.processWorkItem(workitem, null);
@@ -73,9 +71,7 @@ The Test class 'WorkflowMockEnvironment' mocks a full workflow environment inclu
 	
 			// load test workitem form database
 			ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
-			workitem.replaceItemValue(WorkflowKernel.MODELVERSION, "1.0.0");
-			workitem.replaceItemValue(WorkflowKernel.PROCESSID, 1000);
-			workitem.replaceItemValue(WorkflowKernel.ACTIVITYID, 10);
+			workitem.model("1.0.0").task(1000).event(10);
 	
 			// test _budget<100
 			workitem.replaceItemValue("_budget", 99);

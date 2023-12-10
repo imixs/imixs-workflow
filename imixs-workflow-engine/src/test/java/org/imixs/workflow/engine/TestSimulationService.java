@@ -1,14 +1,12 @@
 package org.imixs.workflow.engine;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
-import org.junit.Test;
-
 import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Test class for the SimulationService
@@ -18,7 +16,7 @@ import org.junit.Assert;
  * 
  * @author rsoika
  */
-public class TestSimulationService { 
+public class TestSimulationService {
 
 	/**
 	 * This test tests the conditional event gateways....
@@ -27,7 +25,7 @@ public class TestSimulationService {
 	 * 
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
-	 * @throws ModelException 
+	 * @throws ModelException
 	 */
 	@Test
 	public void testConditionalEvent1()
@@ -37,29 +35,23 @@ public class TestSimulationService {
 		wse.setUp();
 		wse.loadModel("/bpmn/conditional_event1.bpmn");
 
-		// load test workitem
+		// Setup test workitem
 		ItemCollection workitem = new ItemCollection();
-		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowSimulationEnvironment.DEFAULT_MODEL_VERSION);
-
-		// test none condition ...
-		workitem.setTaskID(1000);
-		workitem.setEventID(10);
+		workitem.model(WorkflowSimulationEnvironment.DEFAULT_MODEL_VERSION).task(1000).event(10);
 		workitem = wse.processWorkItem(workitem);
 		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
 		Assert.assertEquals(1000, workitem.getTaskID());
 
 		// test _budget<100
-		workitem.setTaskID(1000);
+		workitem.task(1000).event(10);
 		workitem.replaceItemValue("_budget", 99);
-		workitem.setEventID(10);
-		workitem = wse.simulationService.processWorkItem(workitem, null);
+		workitem = wse.processWorkItem(workitem);
 		Assert.assertEquals(1200, workitem.getTaskID());
 
 		// test _budget>100
-		workitem.setTaskID(1000);
+		workitem.task(1000).event(10);
 		workitem.replaceItemValue("_budget", 9999);
-		workitem.setEventID(10);
-		workitem = wse.simulationService.processWorkItem(workitem, null);
+		workitem = wse.processWorkItem(workitem);
 		Assert.assertEquals(1100, workitem.getTaskID());
 
 	}
