@@ -46,7 +46,7 @@
 				<item name="Deployment" href="modelling/deployment.html" />
 
 			</item>
-			
+
 			<item name="Workflow Engine" href="./engine/index.html"
 				collapse="true">
 				<item name="WorkflowService" href="./engine/workflowservice.html" />
@@ -70,9 +70,8 @@
 				<item name="Health Check" href="./engine/healthcheck.html" />
 				<item name="Metrics" href="./engine/metrics.html" />
 				<item name="Event Log" href="./engine/eventlogservice.html" />
-				
+
 			</item>
-			
 
 
 			<item name="Core API" href="core/index.html" collapse="true">
@@ -90,16 +89,17 @@
 				</item>
 				<item name="Rule Engine" href="./core/ruleengine.html" />
 			</item>
-			
+
 			<item name="Plugin API" href="./engine/plugins/index.html"
-					collapse="true">
+				collapse="true">
 				<item name="How to Extend" href="./engine/plugins/howto_extend.html" />
 				<item name="Exception handling" href="./engine/plugins/exception_handling.html" />
 				<item name="Access Plugin" href="./engine/plugins/accessplugin.html" />
 				<item name="Analysis Plugin" href="./engine/plugins/analysisplugin.html" />
 				<item name="Application Plugin" href="./engine/plugins/applicationplugin.html" />
 				<item name="Approver Plugin" href="./engine/plugins/approverplugin.html" />
-				<item name="DocumentComposer Plugin" href="./engine/plugins/documentcomposerplugin.html" />
+				<item name="DocumentComposer Plugin"
+					href="./engine/plugins/documentcomposerplugin.html" />
 				<item name="History Plugin" href="./engine/plugins/historyplugin.html" />
 				<item name="Interval Plugin" href="./engine/plugins/intervalplugin.html" />
 				<item name="Mail Plugin" href="./engine/plugins/mailplugin.html" />
@@ -110,14 +110,13 @@
 				<item name="Taxonomy Plugin" href="./engine/plugins/taxonomyplugin.html" />
 				<item name="Version Plugin" href="./engine/plugins/versionplugin.html" />
 			</item>
-			
 
-			
+
 			<item name="REST API" href="./restapi/index.html" collapse="true">
 				<item name="Workflow Service" href="./restapi/workflowservice.html" />
 				<item name="Model Service" href="./restapi/modelservice.html" />
 				<item name="Report Service" href="./restapi/reportservice.html" collapse="true">
-				<item name="XSLT" href="./restapi/xslt.html" />
+					<item name="XSLT" href="./restapi/xslt.html" />
 				</item>
 				<item name="Document Service" href="./restapi/documentservice.html" />
 				<item name="RestClient" href="./restapi/restclient.html" />
@@ -125,20 +124,20 @@
 				<item name="AdminP Service" href="./restapi/adminp.html" />
 			</item>
 
-		
 
-			<item name="JSF Components" href="./webtools/index.html"  collapse="true">
+			<item name="JSF Components" href="./webtools/index.html" collapse="true">
 
 				<item name="jQuery" href="./webtools/header.html" />
 				<item name="ImixsWorkflowActions" href="./webtools/workflowactions.html" />
 				<item name="DatePicker" href="./webtools/datepicker.html" />
+				<item name="DateConverter" href="./webtools/dateConverter.html" />
 				<item name="Controller" href="./webtools/controller.html" />
 				<item name="FileUpload" href="./webtools/fileupload.html" />
 				<item name="Tooltip" href="./webtools/tooltip.html" />
 				<item name="Examples" href="./webtools/examples.html" />
 			</item>
 
-			<item name="JavaScript" href="./javascript/index.html"  collapse="true">
+			<item name="JavaScript" href="./javascript/index.html" collapse="true">
 				<item name="Documents" href="./javascript/documents.html" />
 				<item name="XML" href="./javascript/xml.html" />
 				<item name="Layout / UI" href="./javascript/layout.html" />
