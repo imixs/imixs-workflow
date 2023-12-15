@@ -130,7 +130,6 @@
 				<item name="jQuery" href="./webtools/header.html" />
 				<item name="ImixsWorkflowActions" href="./webtools/workflowactions.html" />
 				<item name="DatePicker" href="./webtools/datepicker.html" />
-				<item name="DateConverter" href="./webtools/dateConverter.html" />
 				<item name="Controller" href="./webtools/controller.html" />
 				<item name="FileUpload" href="./webtools/fileupload.html" />
 				<item name="Tooltip" href="./webtools/tooltip.html" />
