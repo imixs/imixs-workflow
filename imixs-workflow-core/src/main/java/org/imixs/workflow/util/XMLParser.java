@@ -39,6 +39,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -49,6 +50,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
 import org.w3c.dom.Document;
@@ -102,7 +104,6 @@ public class XMLParser {
         return result;
     }
 
-
     /**
      * This method parses a xml tag for a single named attribute. The method returns
      * the value of the attribute found in the content string
@@ -135,7 +136,7 @@ public class XMLParser {
      * method 'findNoEmptyTags'
      * 
      * @param content - XML data
-     * @param tag - XML tag
+     * @param tag     - XML tag
      * @return
      */
     public static List<String> findTags(String content, String tag) {
@@ -258,7 +259,7 @@ public class XMLParser {
             iStart = content.indexOf('>', startTag.length()) + 1;
         }
 
-        // search the last occurrence of the end tag 
+        // search the last occurrence of the end tag
         int iEnd = content.lastIndexOf(endTag);
         if (iEnd < 0) {
             // no end tag found so this tag has no value at all
@@ -373,9 +374,10 @@ public class XMLParser {
                             String value = innerXml(childNode);
 
                             result.appendItemValue(name, value);
-                            //result.replaceItemValue(name, value);
+                            // result.replaceItemValue(name, value);
                             if (debug) {
-                                logger.log(Level.FINEST, "......parsing item ''{0}'' value={1}", new Object[]{name, value});
+                                logger.log(Level.FINEST, "......parsing item ''{0}'' value={1}",
+                                        new Object[] { name, value });
                             }
                         }
                     }
@@ -388,6 +390,46 @@ public class XMLParser {
                         "Parsing item content failed: " + e.getMessage());
 
             }
+        }
+        return result;
+    }
+
+    /**
+     * This method parses the xml content and returns a list of
+     * ItemCollection elements for each tag with the given tag name
+     * <p>
+     *
+     * Example:
+     * <p>
+     * The tag 'code' of:
+     * 
+     * <pre>
+     * {@code
+     * <code>	  
+     *    <modelversion>1.0.0</modelversion>
+     *    <task>1000</task>
+     *    <event>10</event>
+     * </code>
+     * <code>	  
+     *    <modelversion>2.0.0</modelversion>
+     *    <task>2000</task>
+     *    <event>20</event>
+     * </code>
+     * }
+     * </pre>
+     * <p>
+     * Returns a List with two ItemCollections each with 3 items (modelversion, task
+     * and event)
+     * 
+     * @param evalItemCollection
+     * @throws PluginException
+     */
+    public static List<ItemCollection> parseTagList(String content, String tag) throws PluginException {
+        List<ItemCollection> result = new ArrayList<>();
+        List<String> _tagList = XMLParser.findNoEmptyTags(content, tag);
+        logger.finest("..found " + _tagList.size() + " tags matching " + tag);
+        for (String _tag : _tagList) {
+            result.add(XMLParser.parseTag(_tag, tag));
         }
         return result;
     }
