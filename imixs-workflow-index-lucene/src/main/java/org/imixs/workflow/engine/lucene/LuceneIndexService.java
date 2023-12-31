@@ -176,7 +176,7 @@ public class LuceneIndexService {
                     count = count + EVENTLOG_ENTRY_FLUSH_COUNT;
                     if (count >= 100) {
                         logger.log(Level.FINEST, "...flush event log: {0} entries in {1}ms...",
-                                new Object[]{total, System.currentTimeMillis() - l});
+                                new Object[] { total, System.currentTimeMillis() - l });
                         count = 0;
                     }
 
@@ -290,10 +290,10 @@ public class LuceneIndexService {
         long updateTime = (System.currentTimeMillis() - ltime);
         if (updateTime > 5000) {
             logger.log(Level.WARNING, "... update index block in took {0} ms ! ({1} documents in total)",
-                    new Object[]{updateTime, documents.size()});
+                    new Object[] { updateTime, documents.size() });
         } else if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "... update index block in {0} ms ({1} documents in total)",
-                    new Object[]{updateTime, documents.size()});
+                    new Object[] { updateTime, documents.size() });
         }
     }
 
@@ -339,13 +339,13 @@ public class LuceneIndexService {
 
                             updateLuceneIndex(term, lucenedoc, indexWriter, taxonomyWriter);
                             logger.log(Level.FINEST, "......lucene add/update workitem ''{0}'' to index in {1}ms",
-                                    new Object[]{doc.getId(), System.currentTimeMillis() - l2});
+                                    new Object[] { doc.getId(), System.currentTimeMillis() - l2 });
                         }
                     } else {
                         long l2 = System.currentTimeMillis();
                         indexWriter.deleteDocuments(term);
                         logger.log(Level.FINEST, "......lucene remove workitem ''{0}'' from index in {1}ms",
-                                new Object[]{term, System.currentTimeMillis() - l2});
+                                new Object[] { term, System.currentTimeMillis() - l2 });
                     }
 
                     // remove the eventLogEntry.
@@ -402,7 +402,7 @@ public class LuceneIndexService {
         }
 
         logger.log(Level.FINE, "...flushEventLog - {0} events in {1} ms - last log entry: {2}",
-                new Object[]{events.size(), System.currentTimeMillis() - l, lastEventDate});
+                new Object[] { events.size(), System.currentTimeMillis() - l, lastEventDate });
 
         return cacheIsEmpty;
 
@@ -713,8 +713,8 @@ public class LuceneIndexService {
         Path luceneIndexDir = Paths.get(sPath);
         Directory indexDir = FSDirectory.open(luceneIndexDir);
         if (!DirectoryReader.indexExists(indexDir)) {
-            logger.info(
-                    "...lucene taxonomy directory is empty or does not yet exist, initialize the Taxonomy index now....");
+            logger.log(Level.INFO, "...lucene taxonomy directory ''{0}'' is empty or does not yet exist,"
+                    + " rebuild taxonomy index now....", getLuceneIndexDir());
             rebuildIndex(indexDir);
         }
         return indexDir;
