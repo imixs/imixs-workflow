@@ -159,11 +159,11 @@ public class XMLParser {
 
     /**
      * This method find not-empty tags inside a string and returns a list with all
-     * tags.
+     * tags including the tag itself.
      * <p>
      * e.g.: {@code<date field="abc">def</date>}
      * <p>
-     * <strong>Note:</strong> To fine also empty tags use 'findTags'
+     * <strong>Note:</strong> To find also empty tags use 'findTags'
      * 
      * @param content - XML data
      * @param tag     - XML tag
@@ -171,11 +171,12 @@ public class XMLParser {
      */
     public static List<String> findNoEmptyTags(String content, String tag) {
         List<String> result = new ArrayList<String>();
-        String regex = "<" + tag + ".*>((.|\n)*?)<\\/" + tag + ">";
-        Pattern p = Pattern.compile(regex);
-        Matcher m = p.matcher(content);
-        while (m.find()) {
-            result.add(m.group());
+        // Use a regular expression to extract the tag
+        String regex = "(<" + tag + "[^>]*>[\\s\\S]*?</" + tag + ">)";
+        Pattern pattern = java.util.regex.Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(content);
+        while (matcher.find()) {
+            result.add(matcher.group());
         }
         return result;
     }
