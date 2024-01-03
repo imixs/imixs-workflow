@@ -428,7 +428,11 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
     }
 
     /**
-     * This method syncs the items from the parent into this process instance
+     * This method syncs the items from the parent worktiem referred by $workitemref
+     * into this process instance
+     * 
+     * In this case the $uniqueidref is ignored as it is not relevant and provides
+     * more usescases to use this plugin feature.
      * 
      * @param subProcessDefinitions
      * @param originWorkitem
@@ -437,35 +441,26 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
      * @throws PluginException
      * @throws ModelException
      */
-    @SuppressWarnings("unchecked")
     protected void syncSubprocesses(final String originProcessDefinition, final ItemCollection subprocessWorkitem)
             throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
         boolean debug = logger.isLoggable(Level.FINE);
         ItemCollection originWorkitem = null;
-
         if (originProcessDefinition == null) {
             // no definition found
             return;
         }
-
         // evaluate the item content (XML format expected here!)
         ItemCollection processData = XMLParser.parseItemStructure(originProcessDefinition);
-
-        // first we need to lookup the corresponding origin process instance
-        List<String> refs = subprocessWorkitem.getItemValue(WorkflowService.UNIQUEIDREF);
+        // first we need to lookup the referred process instance
         String workitemRef = subprocessWorkitem.getItemValueString(LINK_PROPERTY);
-        if (refs.contains(workitemRef)) {
-            // parent found..
-            originWorkitem = getWorkflowService().getWorkItem(workitemRef);
-            if (originWorkitem != null) {
-                // now clone the field list...
-                copyItemList(processData.getItemValueString("items"), originWorkitem, subprocessWorkitem);
-                if (debug) {
-                    logger.finest("...... successful synced items.");
-                }
-                return;
+        originWorkitem = getWorkflowService().getWorkItem(workitemRef);
+        if (originWorkitem != null) {
+            // now clone the field list...
+            copyItemList(processData.getItemValueString("items"), originWorkitem, subprocessWorkitem);
+            if (debug) {
+                logger.finest("...... successful synced items.");
             }
-
+            return;
         }
         logger.warning("Parent Workitem not found!");
     }
