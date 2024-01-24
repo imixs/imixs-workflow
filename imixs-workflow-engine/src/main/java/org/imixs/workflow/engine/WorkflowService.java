@@ -456,30 +456,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                 continue;
             }
 
-            // test user access level
-            List<String> readAccessList = event.getItemValue("$readaccess");
-            if (!bManagerAccess && !readAccessList.isEmpty()) {
-                /**
-                 * check read access for current user
-                 */
-                boolean accessGranted = false;
-                // get user name list
-                List<String> auserNameList = getUserNameList();
-
-                // check each read access
-                for (String aReadAccess : readAccessList) {
-                    if (aReadAccess != null && !aReadAccess.isEmpty()) {
-                        if (auserNameList.indexOf(aReadAccess) > -1) {
-                            accessGranted = true;
-                            break;
-                        }
-                    }
-                }
-                if (!accessGranted) {
-                    // user has no read access!
-                    continue;
-                }
-            }
+            // it is not necessary to evaluate $readaccess here (see Issue #849)
 
             // test RestrictedVisibility
             List<String> restrictedList = event.getItemValue("keyRestrictedVisibility");
