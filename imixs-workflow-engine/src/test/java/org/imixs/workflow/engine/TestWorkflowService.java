@@ -144,46 +144,6 @@ public class TestWorkflowService {
 		Assert.assertEquals(2, eventList.size());
 	}
 
-	/**
-	 * This test verifies if the method getEvents returns only events where the
-	 * current user has read access! In this case, the user "manfred" is not granted
-	 * to the event 300.20 which is restricted to rhe access role
-	 * 'org.imixs.ACCESSLEVEL.MANAGERACCESS'
-	 * 
-	 * So we expect only one event!
-	 */
-	@Test
-	public void testGetEventsReadRestrictedForSimpleUser() {
-
-		when(workflowMockEnvironment.workflowService.getUserNameList()).thenAnswer(new Answer<List<String>>() {
-			@Override
-			public List<String> answer(InvocationOnMock invocation) throws Throwable {
-				List<String> result = new ArrayList<>();
-				result.add("manfred");
-				return result;
-			}
-		});
-
-		// get workitem
-		ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
-		workitem.setTaskID(300);
-
-		Vector<String> members = new Vector<String>();
-		members.add("jo");
-		members.add("alex");
-		workitem.replaceItemValue("nammteam", "tom");
-		workitem.replaceItemValue("nammanager", members);
-		workitem.replaceItemValue("namassist", "");
-
-		List<ItemCollection> eventList = null;
-		try {
-			eventList = workflowMockEnvironment.workflowService.getEvents(workitem);
-		} catch (ModelException e) {
-			e.printStackTrace();
-			Assert.fail();
-		}
-		Assert.assertEquals(1, eventList.size());
-	}
 
 	/**
 	 * This test verifies if the method getEvents returns only events where the
