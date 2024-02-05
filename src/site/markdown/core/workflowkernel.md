@@ -67,6 +67,7 @@ The current process instance is called the _Source Workitem_. The _Source Workit
 |$workitemId    	| x      | x       |A unique shared key across all versions and the source workitem.	|
 |$uniqueIdSource	|        | x       |A reference to the $UniqueID of the Source workitem.				|  	 	
 |$uniqueIdVersions	| x      |         |A list of $UniqueIDs of all created versions.	|
+|$created.version   |        | x       |Date of creation of a version. 
 |$isVersion			| 		 | x	   |This temporary attribute indicates that the current instance is a version. | 
  
 The temporary attribute _'$isVersion'_ flags the version during the processing phase and can be used by Plugins to handle these workitems. See also the section: [Workflow Data](../quickstart/workitem.html#Temporary_Attributes).

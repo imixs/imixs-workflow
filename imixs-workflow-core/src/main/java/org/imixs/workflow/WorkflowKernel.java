@@ -1057,12 +1057,14 @@ public class WorkflowKernel {
 
     }
 
-    /**
+
+ /**
      * This method creates a new instance of a sourceWorkitem. The method did not
      * save the workitem!.
      * <p>
      * The new property $UniqueIDSource will be added to the new version, which
      * points to the $uniqueID of the sourceWorkitem.
+     * In addtion the item $created.version marks the point of time. 
      * <p>
      * The new property $UniqueIDVersions will be added to the sourceWorktiem which
      * points to the id of the new version.
@@ -1084,7 +1086,8 @@ public class WorkflowKernel {
 
         // update $unqiueIDSource
         itemColNewVersion.replaceItemValue(UNIQUEIDSOURCE, id);
-
+        itemColNewVersion.replaceItemValue(CREATED+".version", sourceItemCollection.getItemValueDate(LASTEVENTDATE));
+        
         // remove $UniqueIDVersions
         itemColNewVersion.removeItem(UNIQUEIDVERSIONS);
 
