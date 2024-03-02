@@ -1,6 +1,7 @@
 package org.imixs.workflow.xml;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
@@ -358,11 +359,8 @@ public class TestXMLParser {
     public void testParseEventModelTag() {
 
         String data = "<!-- test --> <model>\n"
-
                 + "   <version>1.42.0</version>\n"
-
                 + "   <event>10</event>\n"
-
                 + "</model>";
 
         ItemCollection modelData;
@@ -376,9 +374,12 @@ public class TestXMLParser {
 
     }
 
+    /**
+     * Simple test showing how to find tags...
+     */
     @Test
-    public void testParseTagList(){
-        //arrange
+    public void testParseTagList() {
+        // arrange
         String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<library>\n" +
                 "    <book>\n" +
@@ -391,9 +392,9 @@ public class TestXMLParser {
                 "    </book>\n" +
                 "</library>";
         try {
-            //act
+            // act
             var result = XMLParser.parseTagList(xmlString, "book");
-            //assert
+            // assert
             Assert.assertEquals(2, result.size());
             Assert.assertEquals("Harry Potter and the Philosopher's Stone", result.get(0).getItemValue("title").get(0));
         } catch (PluginException e) {
