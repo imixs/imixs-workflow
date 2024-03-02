@@ -393,6 +393,7 @@ public class TestXMLParser {
         try {
             //act
             var result = XMLParser.parseTagList(xmlString, "book");
+            //assert
             Assert.assertEquals(2, result.size());
             Assert.assertEquals("Harry Potter and the Philosopher's Stone", result.get(0).getItemValue("title").get(0));
         } catch (PluginException e) {
