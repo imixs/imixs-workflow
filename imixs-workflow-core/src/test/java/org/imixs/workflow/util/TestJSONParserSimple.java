@@ -4,11 +4,15 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.imixs.workflow.ItemCollection;
 import org.junit.Test;
 
-import org.junit.Assert; 
+import org.junit.Assert;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * Test class test the parsing of different json structures.
@@ -16,7 +20,18 @@ import org.junit.Assert;
  * 
  * @author rsoika
  */
+@RunWith(Parameterized.class)
 public class TestJSONParserSimple {
+
+	private String jsonString;
+	private String key;
+	private String response;
+
+	public TestJSONParserSimple(String jsonString, String key, String response) {
+		this.jsonString = jsonString;
+		this.key = key;
+		this.response = response;
+	}
 
 	/**
 	 * Parse a single key value.
@@ -48,6 +63,39 @@ public class TestJSONParserSimple {
 			Assert.fail();
 		}
 		
+	}
+
+	@Test
+	public void testKeyNotPresent() {
+		String json = "{\"key1\":\"value1\",\"key2\": 2}";
+		String key = "randomKey";
+		Assert.assertNull(JSONParser.getKey(key, json));
+	}
+
+	@Test
+	public void testNullValue() {
+		String json = "{\"key1\":null}";
+		Assert.assertNull(JSONParser.getKey("key1", json));
+	}
+
+	// Arrange for different key types in the json
+	@Parameterized.Parameters
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] {
+				{ "{\"key\":{\"nestedKey\":\"nestedValue\"}}", "key", "{\"nestedKey\":\"nestedValue\"}" },
+				{ "{\"key\":[1,2,3] }", "key", "[1,2,3]" },
+				{ "{\"key\":true }", "key", "true" },
+				{ "{\"key\":false }", "key", "false" },
+				{ "{\"key\":42 }", "key", "42" },
+		});
+	}
+
+	@Test
+	public void testGettingDifferentKeyTypesFromJson() {
+		// act
+		String actual = JSONParser.getKey(key, jsonString);
+		//assert
+		Assert.assertEquals(response, actual);
 	}
 
 }

@@ -1,7 +1,6 @@
 package org.imixs.workflow.xml;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
@@ -375,6 +374,29 @@ public class TestXMLParser {
             e.printStackTrace();
         }
 
+    }
+
+    @Test
+    public void testParseTagList(){
+        //arrange
+        String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<library>\n" +
+                "    <book>\n" +
+                "        <title>Harry Potter and the Philosopher's Stone</title>\n" +
+                "        <author>J.K. Rowling</author>\n" +
+                "    </book>\n" +
+                "    <book>\n" +
+                "        <title>The Great Gatsby</title>\n" +
+                "        <author>F. Scott Fitzgerald</author>\n" +
+                "    </book>\n" +
+                "</library>";
+        try {
+            //act
+            var result = XMLParser.parseTagList(xmlString, "book");
+            Assert.assertEquals(2, result.size());
+            Assert.assertEquals("Harry Potter and the Philosopher's Stone", result.get(0).getItemValue("title").get(0));
+        } catch (PluginException e) {
+        }
     }
 
 }
