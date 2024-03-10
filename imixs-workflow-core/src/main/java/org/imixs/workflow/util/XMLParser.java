@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -477,7 +478,10 @@ public class XMLParser {
         StringWriter writer = new StringWriter();
         String xml = null;
         Transformer transformer;
-        transformer = TransformerFactory.newInstance().newTransformer();
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        // Set secure process - see #852
+        transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
+        transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         transformer.transform(new DOMSource(node), new StreamResult(writer));
         // now we remove the outer tag....

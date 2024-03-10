@@ -42,26 +42,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.MultivaluedMap;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
-import jakarta.ws.rs.core.UriInfo;
+import javax.xml.XMLConstants;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -84,11 +68,28 @@ import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.imixs.workflow.xml.XSLHandler;
 
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
+import jakarta.ws.rs.core.UriInfo;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
-import java.util.logging.Level;
 
 /**
  * The WorkflowService Handler supports methods to process different kind of
@@ -567,31 +568,28 @@ public class ReportRestService {
             Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, output);
 
             // Setup XSLT
-            TransformerFactory factory = TransformerFactory.newInstance();
-            ByteArrayInputStream baisXSL = new ByteArrayInputStream(xslSource.getBytes());
-            InputStreamReader isreaderXSL = new InputStreamReader(baisXSL, aEncoding);
-            Source xslSrc = new StreamSource(isreaderXSL);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            // Set secure process - see #852
+            transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            ByteArrayInputStream baseXSL = new ByteArrayInputStream(xslSource.getBytes());
+            InputStreamReader isReaderXSL = new InputStreamReader(baseXSL, aEncoding);
+            Source xslSrc = new StreamSource(isReaderXSL);
 
-            Transformer transformer = factory.newTransformer(xslSrc);
+            Transformer transformer = transformerFactory.newTransformer(xslSrc);
 
             // Setup input for XSLT transformation
             ByteArrayInputStream baisXML = new ByteArrayInputStream(xmlSource.getBytes());
-            InputStreamReader isreaderXML;
+            InputStreamReader isReaderXML;
+            isReaderXML = new InputStreamReader(baisXML, aEncoding);
+            Source xmlSrc = new StreamSource(isReaderXML);
 
-            isreaderXML = new InputStreamReader(baisXML, aEncoding);
-
-            Source xmlSrc = new StreamSource(isreaderXML);
-
-            // Resulting SAX events (the generated FO) must be piped through to
-            // FOP
+            // Resulting SAX events (the generated FO) must be piped through to FOP
             Result res = new SAXResult(fop.getDefaultHandler());
 
             // Start XSLT transformation and FOP processing
             transformer.transform(xmlSrc, res);
 
-            // return res.toString();
         } finally {
-
             // out.close();
             // output.flush();
             // output.close();

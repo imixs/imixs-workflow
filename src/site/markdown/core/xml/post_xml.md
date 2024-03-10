@@ -10,8 +10,10 @@ template provided in a file:
 		String sXSLPath="/home/imixs.xsl";
 		StreamSource stylesource = new StreamSource(sXSLPath);
 		// create a transformer factory
-		TransformerFactory factory = TransformerFactory.newInstance();
-		Transformer transformer = factory.newTransformer(stylesource);
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+		Transformer transformer = transformerFactory.newTransformer(stylesource);
 		// create a ByteArray Output Stream
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		transformer.transform(domSource, new StreamResult(outputStream));
