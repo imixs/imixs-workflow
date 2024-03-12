@@ -37,6 +37,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -80,7 +82,12 @@ public class XSLHandler {
             if (encoding == null || encoding.isEmpty()) {
                 encoding = "UTF-8";
             }
-            TransformerFactory transFact = TransformerFactory.newInstance();
+            // Setup XSLT
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            // Set secure process - see #852
+            transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+
             if (debug) {
                 logger.finest("......xslTransformation: encoding=" + encoding);
             }
@@ -97,7 +104,7 @@ public class XSLHandler {
             InputStreamReader isreaderXSL = new InputStreamReader(baisXSL, encoding);
             Source xslSrc = new StreamSource(isreaderXSL);
 
-            Transformer trans = transFact.newTransformer(xslSrc);
+            Transformer trans = transformerFactory.newTransformer(xslSrc);
             trans.transform(xmlSrc, new StreamResult(output));
 
         } finally {
