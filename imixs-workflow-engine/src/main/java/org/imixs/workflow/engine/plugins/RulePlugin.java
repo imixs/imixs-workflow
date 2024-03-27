@@ -135,8 +135,7 @@ public class RulePlugin extends AbstractPlugin {
 
         // support deprecated scripts without a 'result' JSON object ...
         if (result == null) {
-            throw new PluginException(RulePlugin.class.getName(), INVALID_SCRIPT,
-                    "Deprecated script - result object is missing in: " + script);            
+            logger.warning("Business Rule does not return a result object: " + script);
         } else {
             // first we test for the isValid variable
             Boolean isValidActivity = true;
