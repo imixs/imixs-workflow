@@ -110,6 +110,11 @@ public class BPMNRuleEngine {
             return model;
         }
 
+        @Override
+        public String modelVersionTableToString(String rootContext) throws ModelException {
+            return null;
+        }
+
     }
 
 }

@@ -155,23 +155,7 @@ public class ErrorHandler {
         }
 
         // parse message for params
-        if (pe instanceof PluginException) {
-            PluginException p = (PluginException) pe;
-            if (p.getErrorParameters() != null && p.getErrorParameters().length > 0) {
-                for (int i = 0; i < p.getErrorParameters().length; i++) {
-                    message = message.replace("{" + i + "}", p.getErrorParameters()[i].toString());
-                }
-            }
-        } else {
-            if (pe instanceof ValidationException) {
-                ValidationException p = (ValidationException) pe;
-                if (p.getErrorParameters() != null && p.getErrorParameters().length > 0) {
-                    for (int i = 0; i < p.getErrorParameters().length; i++) {
-                        message = message.replace("{" + i + "}", p.getErrorParameters()[i].toString());
-                    }
-                }
-            }
-        }
+        pe.formatErrorMessageWithParameters(message);
         FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, errorCode, message));
 

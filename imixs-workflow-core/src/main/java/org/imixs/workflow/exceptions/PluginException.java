@@ -64,4 +64,14 @@ public class PluginException extends WorkflowException {
         this.params = aparams;
     }
 
+    @Override
+    public String formatErrorMessageWithParameters(String message){
+        if (params != null && params.length > 0) {
+            for (int i = 0; i < params.length; i++) {
+                message = message.replace("{" + i + "}", params[i].toString());
+            }
+        }
+
+        return message;
+    }
 }

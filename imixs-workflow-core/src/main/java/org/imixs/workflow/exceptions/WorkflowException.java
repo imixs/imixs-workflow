@@ -85,4 +85,7 @@ public abstract class WorkflowException extends Exception {
         this.errorCode = errorCode;
     }
 
+    public String formatErrorMessageWithParameters(String message){
+        return message;
+    }
 }

@@ -53,6 +53,9 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.OptimisticLockException;
 
+import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.ASYNCEVENT_PROCESSOR_ENABLED;
+import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.EVENTLOG_TOPIC_ASYNC_EVENT;
+
 /**
  * The AsyncEventService can be used to process workflow events in an
  * asynchronous batch process. The AsyncEventService lookup eventLog entries of
@@ -89,7 +92,7 @@ public class AsyncEventService {
 
     // enabled
     @Inject
-    @ConfigProperty(name = AsyncEventScheduler.ASYNCEVENT_PROCESSOR_ENABLED, defaultValue = "false")
+    @ConfigProperty(name = ASYNCEVENT_PROCESSOR_ENABLED, defaultValue = "false")
     boolean enabled;
 
     private static final Logger logger = Logger.getLogger(AsyncEventService.class.getName());
@@ -140,7 +143,7 @@ public class AsyncEventService {
                     asyncEventData.setItemValue("timeDuration", boundaryDuration);
                     asyncEventData.setItemValue(WorkflowKernel.TRANSACTIONID,
                             processingEvent.getDocument().getItemValueString(WorkflowKernel.TRANSACTIONID));
-                    eventLogService.createEvent(AsyncEventScheduler.EVENTLOG_TOPIC_ASYNC_EVENT,
+                    eventLogService.createEvent(EVENTLOG_TOPIC_ASYNC_EVENT,
                             processingEvent.getDocument().getUniqueID(), asyncEventData, cal);
 
                 }
@@ -166,7 +169,7 @@ public class AsyncEventService {
 
         // test for new event log entries by timeout...
         List<EventLog> events = eventLogService.findEventsByTimeout(100,
-                AsyncEventScheduler.EVENTLOG_TOPIC_ASYNC_EVENT);
+                EVENTLOG_TOPIC_ASYNC_EVENT);
 
         if (debug) {
             logger.log(Level.FINEST, "......found {0} eventLog entries", events.size());

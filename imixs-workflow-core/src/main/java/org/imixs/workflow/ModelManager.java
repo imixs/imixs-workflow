@@ -81,4 +81,12 @@ public interface ModelManager {
      */
     public Model getModelByWorkitem(ItemCollection workitem) throws ModelException;
 
+    /**
+     * Returns the current model information in html format
+     * @param rootContext
+     * @return model version table as a html string
+     * @throws ModelException
+     */
+    String modelVersionTableToString(String rootContext) throws ModelException;
+
 }
