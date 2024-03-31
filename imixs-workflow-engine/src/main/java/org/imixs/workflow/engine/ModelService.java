@@ -520,50 +520,6 @@ public class ModelService implements ModelManager {
 
     }
 
-    public String modelVersionTableToString(String rootContext) throws ModelException{
-        List<String> modelVersionList = getVersions();
-        StringBuffer buffer = new StringBuffer();
-
-        for (String modelVersion : modelVersionList) {
-
-            Model model = getModel(modelVersion);
-            ItemCollection modelEntity = loadModelEntity(modelVersion);
-
-            // now check groups...
-            List<String> groupList = model.getGroups();
-
-            buffer.append("<tr>");
-
-            if (modelEntity != null) {
-
-                buffer.append("<td><a href=\"" + rootContext + "/model/" + modelVersion + "/bpmn\">" + modelVersion
-                        + "</a></td>");
-
-                // print upload date...
-                if (modelEntity != null) {
-                    Date dat = modelEntity.getItemValueDate("$Modified");
-                    SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    buffer.append("<td>" + formater.format(dat) + "</td>");
-                }
-            } else {
-                buffer.append("<td>" + modelVersion + "</td>");
-                buffer.append("<td> - </td>");
-            }
-
-            // Groups
-            buffer.append("<td>");
-            for (String group : groupList) {
-                // build a link for each group to get the Tasks
-
-                buffer.append("<a href=\"" + rootContext + "/model/" + modelVersion + "/groups/" + group + "\">"
-                        + group + "</a></br>");
-            }
-            buffer.append("</td>");
-            buffer.append("</tr>");
-        }
-        return buffer.toString();
-    }
-
     /**
      * This method returns the modelStore or initialize it if not yet created.
      * 

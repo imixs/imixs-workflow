@@ -109,12 +109,6 @@ public class BPMNRuleEngine {
         public Model getModelByWorkitem(ItemCollection workitem) throws ModelException {
             return model;
         }
-
-        @Override
-        public String modelVersionTableToString(String rootContext) throws ModelException {
-            return null;
-        }
-
     }
 
 }
