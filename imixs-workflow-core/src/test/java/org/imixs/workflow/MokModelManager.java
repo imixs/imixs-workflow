@@ -84,9 +84,4 @@ public class MokModelManager implements ModelManager {
 		return getModel(workitem.getModelVersion());
 	}
 
-	@Override
-	public String modelVersionTableToString(String rootContext) throws ModelException {
-		return null;
-	}
-
 }
