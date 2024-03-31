@@ -170,15 +170,24 @@ public class XMLItem implements Serializable {
         for (int i = 0; i < itemValue.length(); i++) {
             current = itemValue.charAt(i); // NOTE: No IndexOutOfBoundsException caught here; it should
                                            // not happen.
-            if ((current == 0x9) || (current == 0xA) || (current == 0xD) || ((current >= 0x20) && (current <= 0xD7FF))
-                    || ((current >= 0xE000) && (current <= 0xFFFD))
-                    || ((current >= 0x10000) && (current <= 0x10FFFF))) {
+            if (isValidXmlCharacter(current)) {
                 out.append(current);
             } else {
                 logger.log(Level.WARNING, "invalid xml character at position {0} in item ''{1}''", new Object[]{i, name});
             }
         }
         return out.toString();
+    }
+
+    /**
+     * checks if current character is a valid xml character
+     * @param current character to check
+     * @return boolean based on character match
+     */
+    private boolean isValidXmlCharacter(char current){
+        return current == 0x9 || current == 0xA || current == 0xD || (current >= 0x20 && current <= 0xD7FF)
+                || (current >= 0xE000 && current <= 0xFFFD)
+                || (current >= 0x10000 && current <= 0x10FFFF);
     }
 
     /**

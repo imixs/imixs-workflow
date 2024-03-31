@@ -358,32 +358,14 @@ public class XMLParser {
 
                 // we expect the tag name as the root tag of the xml structure!
                 if (node != null && node.getNodeName().equals(tag)) {
-                    // collect all child nodes...
                     DocumentFragment docfrag = doc.createDocumentFragment();
                     while (node.hasChildNodes()) {
                         docfrag.appendChild(node.removeChild(node.getFirstChild()));
                     }
 
                     // append all items into the evalItemCollection...
-                    NodeList childs = docfrag.getChildNodes();
-                    int itemCount = childs.getLength();
-                    for (int i = 0; i < itemCount; i++) {
-                        Node childNode = childs.item(i);
-                        if (childNode instanceof Element && childNode.getFirstChild() != null) {
-                            String name = childNode.getNodeName();
-                            // String value =
-                            // childNode.getFirstChild().getNodeValue();
-                            String value = innerXml(childNode);
-
-                            result.appendItemValue(name, value);
-                            // result.replaceItemValue(name, value);
-                            if (debug) {
-                                logger.log(Level.FINEST, "......parsing item ''{0}'' value={1}",
-                                        new Object[] { name, value });
-                            }
-                        }
-                    }
-
+                    NodeList children = docfrag.getChildNodes();
+                    parseAndAppendChildNodes(children, result, debug);
                 }
 
             } catch (ParserConfigurationException | TransformerFactoryConfigurationError | SAXException
@@ -394,6 +376,28 @@ public class XMLParser {
             }
         }
         return result;
+    }
+
+    private static void parseAndAppendChildNodes(NodeList children, ItemCollection result, boolean debug){
+        // collect all child nodes...
+
+        int itemCount = children.getLength();
+        for (int i = 0; i < itemCount; i++) {
+            Node childNode = children.item(i);
+            if (childNode instanceof Element && childNode.getFirstChild() != null) {
+                String name = childNode.getNodeName();
+                // String value =
+                // childNode.getFirstChild().getNodeValue();
+                String value = innerXml(childNode);
+
+                result.appendItemValue(name, value);
+                // result.replaceItemValue(name, value);
+                if (debug) {
+                    logger.log(Level.FINEST, "......parsing item ''{0}'' value={1}",
+                            new Object[] { name, value });
+                }
+            }
+        }
     }
 
     /**
