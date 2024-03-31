@@ -378,20 +378,21 @@ public class XMLParser {
         return result;
     }
 
+    /**
+     * This helper method parses all child elements and creates / or appends the tag value as an Item value into the
+     result ItemCollection.
+     * The method is called from parseTag.
+     **/
     private static void parseAndAppendChildNodes(NodeList children, ItemCollection result, boolean debug){
         // collect all child nodes...
-
         int itemCount = children.getLength();
         for (int i = 0; i < itemCount; i++) {
             Node childNode = children.item(i);
             if (childNode instanceof Element && childNode.getFirstChild() != null) {
                 String name = childNode.getNodeName();
-                // String value =
-                // childNode.getFirstChild().getNodeValue();
                 String value = innerXml(childNode);
-
                 result.appendItemValue(name, value);
-                // result.replaceItemValue(name, value);
+
                 if (debug) {
                     logger.log(Level.FINEST, "......parsing item ''{0}'' value={1}",
                             new Object[] { name, value });
