@@ -146,51 +146,13 @@ public class ModelRestService {
         try {
             StringBuffer buffer = new StringBuffer();
 
-            List<String> modelVersionList = modelService.getVersions();
-
             // compute rootContext:
             String rootContext = servletRequest.getContextPath() + servletRequest.getServletPath();
 
             buffer.append("<table>");
             buffer.append("<tr><th>Version</th><th>Uploaded</th><th>Workflow Groups</th></tr>");
-            for (String modelVersion : modelVersionList) {
-
-                Model model = modelService.getModel(modelVersion);
-                ItemCollection modelEntity = modelService.loadModelEntity(modelVersion);
-
-                // now check groups...
-                List<String> groupList = model.getGroups();
-
-                buffer.append("<tr>");
-
-                if (modelEntity != null) {
-
-                    buffer.append("<td><a href=\"" + rootContext + "/model/" + modelVersion + "/bpmn\">" + modelVersion
-                            + "</a></td>");
-
-                    // print upload date...
-                    if (modelEntity != null) {
-                        Date dat = modelEntity.getItemValueDate("$Modified");
-                        SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        buffer.append("<td>" + formater.format(dat) + "</td>");
-                    }
-                } else {
-                    buffer.append("<td>" + modelVersion + "</td>");
-                    buffer.append("<td> - </td>");
-                }
-
-                // Groups
-                buffer.append("<td>");
-                for (String group : groupList) {
-                    // build a link for each group to get the Tasks
-
-                    buffer.append("<a href=\"" + rootContext + "/model/" + modelVersion + "/groups/" + group + "\">"
-                            + group + "</a></br>");
-                }
-                buffer.append("</td>");
-                buffer.append("</tr>");
-
-            }
+            // append current model version table as a html string
+            buffer.append(modelVersionTableToString(rootContext));
 
             buffer.append("</table>");
             out.write(buffer.toString().getBytes());
@@ -495,4 +457,57 @@ public class ModelRestService {
         putModel(ecol);
     }
 
+    /**
+     * Returns the current model information in html format
+     * @param rootContext
+     * @return model version table as a html string
+     * @throws ModelException
+     */
+    private String modelVersionTableToString(String rootContext) throws ModelException{
+        List<String> modelVersionList = modelService.getVersions();
+        StringBuffer buffer = new StringBuffer();
+
+        for (String modelVersion : modelVersionList) {
+
+            appendTagsToBuffer(modelVersion, rootContext, buffer);
+        }
+        return buffer.toString();
+    }
+
+    private void appendTagsToBuffer(String modelVersion, String rootContext, StringBuffer buffer) throws ModelException{
+        Model model = modelService.getModel(modelVersion);
+        ItemCollection modelEntity = modelService.loadModelEntity(modelVersion);
+
+        // now check groups...
+        List<String> groupList = model.getGroups();
+
+        buffer.append("<tr>");
+
+        if (modelEntity != null) {
+
+            buffer.append("<td><a href=\"" + rootContext + "/model/" + modelVersion + "/bpmn\">" + modelVersion
+                    + "</a></td>");
+
+            // print upload date...
+            if (modelEntity != null) {
+                Date dat = modelEntity.getItemValueDate("$Modified");
+                SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                buffer.append("<td>" + formater.format(dat) + "</td>");
+            }
+        } else {
+            buffer.append("<td>" + modelVersion + "</td>");
+            buffer.append("<td> - </td>");
+        }
+
+        // Groups
+        buffer.append("<td>");
+        for (String group : groupList) {
+            // build a link for each group to get the Tasks
+
+            buffer.append("<a href=\"" + rootContext + "/model/" + modelVersion + "/groups/" + group + "\">"
+                    + group + "</a></br>");
+        }
+        buffer.append("</td>");
+        buffer.append("</tr>");
+    }
 }

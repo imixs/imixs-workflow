@@ -46,6 +46,8 @@ import jakarta.ejb.TimerConfig;
 import jakarta.ejb.TimerService;
 import java.util.logging.Level;
 
+import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.*;
+
 /**
  * The AsyncEventScheduler starts a scheduler service to process async events in
  * an asynchronous way by calling the AsyncEventService.
@@ -71,12 +73,7 @@ import java.util.logging.Level;
 @Singleton
 public class AsyncEventScheduler {
 
-    public static final String ASYNCEVENT_PROCESSOR_ENABLED = "asyncevent.processor.enabled";
-    public static final String ASYNCEVENT_PROCESSOR_INTERVAL = "asyncevent.processor.interval";
-    public static final String ASYNCEVENT_PROCESSOR_INITIALDELAY = "asyncevent.processor.initialdelay";
-    public static final String ASYNCEVENT_PROCESSOR_DEADLOCK = "asyncevent.processor.deadlock";
 
-    public static final String EVENTLOG_TOPIC_ASYNC_EVENT = "async.event";
 
     // enabled
     @Inject
@@ -95,7 +92,7 @@ public class AsyncEventScheduler {
 
     // deadlock timeout interval in ms
     @Inject
-    @ConfigProperty(name = AsyncEventScheduler.ASYNCEVENT_PROCESSOR_DEADLOCK, defaultValue = "60000")
+    @ConfigProperty(name = ASYNCEVENT_PROCESSOR_DEADLOCK, defaultValue = "60000")
     long deadLockInterval;
 
     private static final Logger logger = Logger.getLogger(AsyncEventScheduler.class.getName());
