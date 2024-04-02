@@ -37,7 +37,6 @@ package org.imixs.workflow.exceptions;
 public class PluginException extends WorkflowException {
 
     private static final long serialVersionUID = 1L;
-    private java.lang.Object[] params = null;
 
     public PluginException(String aErrorContext, String aErrorCode, String message) {
         super(aErrorContext, aErrorCode, message);
@@ -56,22 +55,4 @@ public class PluginException extends WorkflowException {
         this.params = params;
     }
 
-    public Object[] getErrorParameters() {
-        return params;
-    }
-
-    protected void setErrorParameters(java.lang.Object[] aparams) {
-        this.params = aparams;
-    }
-
-    @Override
-    public String formatErrorMessageWithParameters(String message){
-        if (params != null && params.length > 0) {
-            for (int i = 0; i < params.length; i++) {
-                message = message.replace("{" + i + "}", params[i].toString());
-            }
-        }
-
-        return message;
-    }
 }

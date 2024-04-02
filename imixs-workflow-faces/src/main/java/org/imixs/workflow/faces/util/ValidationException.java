@@ -40,7 +40,6 @@ import org.imixs.workflow.exceptions.WorkflowException;
 public class ValidationException extends WorkflowException {
 
     private static final long serialVersionUID = 1L;
-    private java.lang.Object[] params = null;
 
     public ValidationException(String aErrorContext, String aErrorCode, String message) {
         super(aErrorContext, aErrorCode, message);
@@ -52,26 +51,7 @@ public class ValidationException extends WorkflowException {
 
     public ValidationException(String aErrorContext, String aErrorCode, String message, Object[] params) {
         super(aErrorContext, aErrorCode, message);
-        this.params = params;
-    }
-
-    public java.lang.Object[] getErrorParameters() {
-        return params;
-    }
-
-    protected void setErrorParameters(Object[] aparams) {
-        this.params = aparams;
-    }
-
-    @Override
-    public String formatErrorMessageWithParameters(String message){
-        if (params != null && params.length > 0) {
-            for (int i = 0; i < params.length; i++) {
-                message = message.replace("{" + i + "}", params[i].toString());
-            }
-        }
-
-        return message;
+        this.setErrorParameters(params);
     }
 
 }

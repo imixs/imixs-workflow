@@ -41,32 +41,28 @@ public abstract class WorkflowException extends Exception {
 
     protected String errorContext = "UNDEFINED";
     protected String errorCode = "UNDEFINED";
+    protected java.lang.Object[] params = null;
 
     public WorkflowException(String aErrorCode, String message) {
         super(message);
         errorCode = aErrorCode;
-
     }
 
     public WorkflowException(String aErrorContext, String aErrorCode, String message) {
         super(message);
         errorContext = aErrorContext;
         errorCode = aErrorCode;
-
     }
 
     public WorkflowException(String aErrorContext, String aErrorCode, String message, Exception e) {
         super(message, e);
         errorContext = aErrorContext;
         errorCode = aErrorCode;
-
     }
 
     public WorkflowException(String aErrorCode, String message, Exception e) {
         super(message, e);
-
         errorCode = aErrorCode;
-
     }
 
     public String getErrorContext() {
@@ -85,7 +81,20 @@ public abstract class WorkflowException extends Exception {
         this.errorCode = errorCode;
     }
 
-    public String formatErrorMessageWithParameters(String message){
+    public Object[] getErrorParameters() {
+        return params;
+    }
+
+    protected void setErrorParameters(java.lang.Object[] aparams) {
+        this.params = aparams;
+    }
+
+    public String formatErrorMessageWithParameters(String message) {
+        if (params != null && params.length > 0) {
+            for (int i = 0; i < params.length; i++) {
+                message = message.replace("{" + i + "}", params[i].toString());
+            }
+        }
         return message;
     }
 }
