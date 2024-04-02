@@ -559,9 +559,9 @@ public class ReportService {
         while (iter.hasNext()) {
             Map.Entry mapEntry = (Map.Entry) iter.next();
             String sName = mapEntry.getKey().toString();
-            Object o = mapEntry.getValue();
+            Object currentReportItemValue = mapEntry.getValue();
             if (isValidAttributeName(sName)) {
-                oldReport.replaceItemValue(sName, o);
+                oldReport.replaceItemValue(sName, currentReportItemValue);
             }
         }
         return oldReport;
