@@ -2,15 +2,20 @@
 
 The Imixs _WorkflowService_ provides the method '_adaptText(text, document)_' which can be called when a text fragment should be adapted to a custom format or custom values.
 
-The Imixs _WorkflowService_ includes two custom text adapters:
+```jav
+ String result=workflowService.adaptText(text, workitem);
+```
+
+The Imixs `WorkflowService` provides the following adapter classes:
 
  * TextItemValueAdapter 
  * TextForEachAdapter
  * TextPropertyAdapter
  
+ The adapter classes are called by the CDI observer pattern which allows to implement custom text adapters as well.  See the section 'Custom Text Adapters' below for more details. 
 
 ## Adapting Item Values
-The _TextItemValueAdapter_ adapts a text fragment containing the XML tag _itemvalue_ with the item values of a given Document. This adapter is useful if a string constant need to be updated with values from the current workitem. 
+The `TextItemValueAdapter` adapts a text fragment containing the XML tag `<itemvalue>` with the item value of a item. This adapter is useful if a string constant need to be updated with values from the current workitem. 
 
 For example, a BPMN mail message text can be adapted with information from the current workitem. 
 
