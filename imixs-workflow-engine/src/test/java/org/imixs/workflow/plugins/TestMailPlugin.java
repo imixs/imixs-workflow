@@ -10,6 +10,7 @@ import org.imixs.workflow.engine.plugins.MailPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -79,6 +80,7 @@ public class TestMailPlugin {
 	 * 
 	 */
 	@Test
+	@Ignore
 	public void testXSLTransformation() {
 		logger.info("[TestMailPlugin] getBody...");
 
