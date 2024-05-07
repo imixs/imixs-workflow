@@ -23,6 +23,8 @@
 		<jakarta.version>8.0</jakarta.version>
 		<microprofile.version>3.3</microprofile.version>
 		<lucene.version>7.7.3</lucene.version>
+		<!--  20.2.0  22.3.1  -->
+		<graalvm.version>22.3.2</graalvm.version>
 	</properties>
 
 
@@ -110,7 +112,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>2.5.3</version>
+				<version>3.0.1</version>
 				<configuration>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<useReleaseProfile>false</useReleaseProfile>
@@ -122,7 +124,7 @@
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.6.8</version>
+				<version>1.6.13</version>
 				<extensions>true</extensions>
 				<configuration>
 					<serverId>ossrh</serverId>
@@ -288,8 +290,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<version>1.9.5</version>
+			<artifactId>mockito-core</artifactId>
+			<version>5.8.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -304,6 +306,15 @@
 			<version>1.1.4</version>
 			<scope>test</scope>
 		</dependency>
+
+	    <dependency>
+			<groupId>org.openjdk.nashorn</groupId>
+			<artifactId>nashorn-core</artifactId>
+			<version>15.4</version>
+			<scope>test</scope>
+		</dependency>
+			
+		
 
 	</dependencies>
 
