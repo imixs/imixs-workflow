@@ -10,7 +10,7 @@ The Search-Index stores also parts of a document, which dramatically speeds up t
 
 A search term can be specified either as a simple string or as an combination of multiple parentheses expressions.
 
-    the imixs workflow egine
+    the imixs workflow engine
     
 expressions may contain parentheses expressions:
  
