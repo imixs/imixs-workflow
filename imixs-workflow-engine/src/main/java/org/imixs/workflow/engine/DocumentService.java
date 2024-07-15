@@ -44,12 +44,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.annotation.Resource;
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.enterprise.event.Event;
-import jakarta.inject.Inject;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -63,10 +57,15 @@ import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.QueryException;
 
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.PersistenceContext;
@@ -359,7 +358,7 @@ public class DocumentService {
 		long lSaveTime = System.currentTimeMillis();
 		if (debug) {
 			logger.log(Level.FINEST, "......save - ID={0}, provided version={1}",
-                                new Object[]{document.getUniqueID(), document.getItemValueInteger(VERSION)});
+					new Object[] { document.getUniqueID(), document.getItemValueInteger(VERSION) });
 		}
 		Document persistedDocument = null;
 		// Now set flush Mode to COMMIT
@@ -367,11 +366,11 @@ public class DocumentService {
 
 		// check if a $uniqueid is available
 		String sID = document.getItemValueString(WorkflowKernel.UNIQUEID);
-		
+
 		if (!sID.isEmpty() && !isValidUIDPattern(sID)) {
 			throw new InvalidAccessException(INVALID_PARAMETER, "invalid UUID pattern - " + sID);
 		}
-		
+
 		if (!sID.isEmpty()) {
 			// yes so we can try to find the Entity by its primary key
 			persistedDocument = manager.find(Document.class, sID);
@@ -422,7 +421,7 @@ public class DocumentService {
 		// after all the persistedDocument is now managed through JPA!
 		if (debug) {
 			logger.log(Level.FINEST, "......save - ID={0} managed version={1}",
-                                new Object[]{document.getUniqueID(), persistedDocument.getVersion()});
+					new Object[] { document.getUniqueID(), persistedDocument.getVersion() });
 		}
 		// remove the property $isauthor
 		document.removeItem(ISAUTHOR);
@@ -514,7 +513,7 @@ public class DocumentService {
 
 		if (debug) {
 			logger.log(Level.FINE, "...''{0}'' saved in {1}ms",
-                                new Object[]{document.getUniqueID(), System.currentTimeMillis() - lSaveTime});
+					new Object[] { document.getUniqueID(), System.currentTimeMillis() - lSaveTime });
 		}
 		// return the updated document
 		return document;
@@ -556,7 +555,7 @@ public class DocumentService {
 		eventLogService.createEvent(EVENTLOG_TOPIC_INDEX_REMOVE, uniqueID);
 		if (debug) {
 			logger.log(Level.FINE, "... update eventLog cache in {0} ms (1 document to be removed)",
-                                System.currentTimeMillis() - ltime);
+					System.currentTimeMillis() - ltime);
 		}
 	}
 
@@ -626,7 +625,7 @@ public class DocumentService {
 				// we clone but do not detach
 				if (debug) {
 					logger.log(Level.FINEST, "......clone manged entity ''{0}'' pending status={1}",
-                                                new Object[]{id, persistedDocument.isPending()});
+							new Object[] { id, persistedDocument.isPending() });
 				}
 				result = new ItemCollection(persistedDocument.getData());
 			} else {
@@ -646,7 +645,7 @@ public class DocumentService {
 			}
 			if (debug) {
 				logger.log(Level.FINE, "...''{0}'' loaded in {1}ms",
-                                        new Object[]{result.getUniqueID(), System.currentTimeMillis() - lLoadTime});
+						new Object[] { result.getUniqueID(), System.currentTimeMillis() - lLoadTime });
 			}
 			return result;
 		} else
@@ -810,8 +809,9 @@ public class DocumentService {
 			throws QueryException {
 		boolean debug = logger.isLoggable(Level.FINE);
 		if (debug) {
-			logger.log(Level.FINEST, "......find - SearchTerm={0}  , pageSize={1} pageNumber={2} , sortBy={3} reverse={4}",
-                                new Object[]{searchTerm, pageSize, pageIndex, sortBy, sortReverse});
+			logger.log(Level.FINEST,
+					"......find - SearchTerm={0}  , pageSize={1} pageNumber={2} , sortBy={3} reverse={4}",
+					new Object[] { searchTerm, pageSize, pageIndex, sortBy, sortReverse });
 		}
 		// create sort object
 		SortOrder sortOrder = null;
@@ -866,8 +866,9 @@ public class DocumentService {
 			boolean sortReverse) throws QueryException {
 		boolean debug = logger.isLoggable(Level.FINE);
 		if (debug) {
-			logger.log(Level.FINEST, "......find - SearchTerm={0}  , pageSize={1} pageNumber={2} , sortBy={3} reverse={4}",
-                                new Object[]{searchTerm, pageSize, pageIndex, sortBy, sortReverse});
+			logger.log(Level.FINEST,
+					"......find - SearchTerm={0}  , pageSize={1} pageNumber={2} , sortBy={3} reverse={4}",
+					new Object[] { searchTerm, pageSize, pageIndex, sortBy, sortReverse });
 		}
 		// create sort object
 		SortOrder sortOrder = null;
@@ -1029,7 +1030,7 @@ public class DocumentService {
 					// we clone but do not detach
 					if (debug) {
 						logger.log(Level.FINEST, "......clone manged entity ''{0}'' pending status={1}",
-                                                        new Object[]{doc.getId(), doc.isPending()});
+								new Object[] { doc.getId(), doc.isPending() });
 					}
 					_tmp = new ItemCollection(doc.getData());
 				} else {
@@ -1050,27 +1051,28 @@ public class DocumentService {
 		}
 		if (debug) {
 			logger.log(Level.FINE, "...getDocumentsByQuery - found {0} documents in {1} ms",
-                                new Object[]{documentList.size(), System.currentTimeMillis() - l});
+					new Object[] { documentList.size(), System.currentTimeMillis() - l });
 		}
 		return result;
 	}
 
-    /**
-     * This method creates a backup of the result set form a Lucene search query.
-     * The document list will be stored into the file system. The method stores the
-     * Map from the ItemCollection to be independent from version upgrades. To
-     * manage large dataSets the method reads the documents in smaller blocks
-     * <p>
-     * The optional parameter 'snapshots' can be set to 'true' to indicate that only
-     * the referred snapshot workitem should be stored. The snapshot is referred by
-     *  the item $snapshotId.
-     * 
-     * @param query - a Lucene search statement
-     * @param filePath - the target file path in the server local file system
-     * @param snapshots - optional - if true, than only snapshots will be backuped. Default = false
-     * @throws IOException
-     * @throws QueryException
-     */
+	/**
+	 * This method creates a backup of the result set form a Lucene search query.
+	 * The document list will be stored into the file system. The method stores the
+	 * Map from the ItemCollection to be independent from version upgrades. To
+	 * manage large dataSets the method reads the documents in smaller blocks
+	 * <p>
+	 * The optional parameter 'snapshots' can be set to 'true' to indicate that only
+	 * the referred snapshot workitem should be stored. The snapshot is referred by
+	 * the item $snapshotId.
+	 * 
+	 * @param query     - a Lucene search statement
+	 * @param filePath  - the target file path in the server local file system
+	 * @param snapshots - optional - if true, than only snapshots will be backuped.
+	 *                  Default = false
+	 * @throws IOException
+	 * @throws QueryException
+	 */
 	public void backup(String query, String filePath, boolean snapshots) throws IOException, QueryException {
 		boolean hasMoreData = true;
 		int JUNK_SIZE = 100;
@@ -1104,36 +1106,37 @@ public class DocumentService {
 				logger.finest("......next page...");
 			}
 
-            for (ItemCollection aworkitem : col) {
-                Map<?, ?> hmap=null;
-                if (snapshots==true) {
-                    // load the snapshot
-                    String snapshotID = aworkitem.getItemValueString("$snapshotid");
-                    if (!snapshotID.isEmpty()) {
-                        ItemCollection snapshotDoc = load(snapshotID);
-                        if (snapshotDoc!=null) {
-                            hmap = snapshotDoc.getAllItems();
-                        }
-                    } 
-                }
-                
-                if (hmap==null) {
-                    // get serialized data
-                    hmap = aworkitem.getAllItems();
-                }
-                // write object
-                out.writeObject(hmap);
-                icount++;
-            }
+			for (ItemCollection aworkitem : col) {
+				Map<?, ?> hmap = null;
+				if (snapshots == true) {
+					// load the snapshot
+					String snapshotID = aworkitem.getItemValueString("$snapshotid");
+					if (!snapshotID.isEmpty()) {
+						ItemCollection snapshotDoc = load(snapshotID);
+						if (snapshotDoc != null) {
+							hmap = snapshotDoc.getAllItems();
+						}
+					}
+				}
+
+				if (hmap == null) {
+					// get serialized data
+					hmap = aworkitem.getAllItems();
+				}
+				// write object
+				out.writeObject(hmap);
+				icount++;
+			}
 		}
 		out.close();
 		logger.log(Level.INFO, "backup - finished: {0} documents read totaly.", icount);
 	}
 
-    // default method 
-    public void backup(String query, String filePath) throws IOException, QueryException {
-        this.backup(query, filePath,false);
-    }
+	// default method
+	public void backup(String query, String filePath) throws IOException, QueryException {
+		this.backup(query, filePath, false);
+	}
+
 	/**
 	 * This method restores a backup from the file system and imports the Documents
 	 * into the database.
@@ -1167,7 +1170,8 @@ public class DocumentService {
 				icount++;
 				if (icount >= JUNK_SIZE) {
 					icount = 0;
-					logger.log(Level.INFO, "...restored {0} document in {1}ms....", new Object[]{totalcount, System.currentTimeMillis() - l});
+					logger.log(Level.INFO, "...restored {0} document in {1}ms....",
+							new Object[] { totalcount, System.currentTimeMillis() - l });
 					l = System.currentTimeMillis();
 				}
 
@@ -1176,11 +1180,11 @@ public class DocumentService {
 			} catch (ClassNotFoundException e) {
 				errorCount++;
 				logger.log(Level.WARNING, "...error importing workitem at position {0}{1} Error: {2}",
-                                        new Object[]{totalcount, errorCount, e.getMessage()});
+						new Object[] { totalcount, errorCount, e.getMessage() });
 			} catch (AccessDeniedException e) {
 				errorCount++;
 				logger.log(Level.WARNING, "...error importing workitem at position {0}{1} Error: {2}",
-                                        new Object[]{totalcount, errorCount, e.getMessage()});
+						new Object[] { totalcount, errorCount, e.getMessage() });
 			}
 		}
 		in.close();
@@ -1334,24 +1338,24 @@ public class DocumentService {
 		return true;
 	}
 
-	 /**
-     * This method returns true if the given id is a valid UUID or SnapshotID (UUI +
-     * timestamp
-     * <p>
-     * We also need to support the old uid formats
-     * <code>4832b09a1a-20c38abd-1519421083952</code>
-     * 
-     * @param uid
-     * @return
-     */
-    public boolean isValidUIDPattern(String uid) {
-        boolean valid = uid.matches(REGEX_UUID);
-        if (!valid) {
-            // check old snapshot pattern
-            valid = uid.matches(REGEX_OLDUID);
-        }
+	/**
+	 * This method returns true if the given id is a valid UUID or SnapshotID (UUI +
+	 * timestamp
+	 * <p>
+	 * We also need to support the old uid formats
+	 * <code>4832b09a1a-20c38abd-1519421083952</code>
+	 * 
+	 * @param uid
+	 * @return
+	 */
+	public boolean isValidUIDPattern(String uid) {
+		boolean valid = uid.matches(REGEX_UUID);
+		if (!valid) {
+			// check old snapshot pattern
+			valid = uid.matches(REGEX_OLDUID);
+		}
 
-        return valid;
+		return valid;
 
-    }
+	}
 }

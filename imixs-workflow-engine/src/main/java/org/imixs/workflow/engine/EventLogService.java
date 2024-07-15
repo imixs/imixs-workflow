@@ -465,13 +465,15 @@ public class EventLogService {
             if (lockDate != null) {
                 age = now.getTime() - lockDate.getTime();
                 if (age > deadLockInterval) {
-                    logger.log(Level.WARNING, "Deadlock detected! - eventlog.id={0} will be unlocked!"
-                            + " (deadlock since {1}ms)", new Object[] { eventLogEntry.getId(), age });
+                    logger.log(Level.WARNING, "Deadlock detected! - eventlog.id={0} topic={1} will be unlocked!"
+                            + " (deadlock since {2}ms)",
+                            new Object[] { eventLogEntry.getId(), Arrays.toString(topic), age });
                     unlock(eventLogEntry);
                 }
             } else {
                 logger.log(Level.WARNING, "Invalid Deadlock state detected, missing lock date!"
-                        + " - eventlog.id={0} will be deleted", eventLogEntry.getId());
+                        + " - eventlog.id={0} topic={1} will be deleted",
+                        new Object[] { eventLogEntry.getId(), Arrays.toString(topic) });
                 removeEvent(eventLogEntry.getId());
             }
         }
