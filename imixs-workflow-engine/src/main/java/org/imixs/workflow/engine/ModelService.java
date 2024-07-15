@@ -281,6 +281,8 @@ public class ModelService implements ModelManager {
         // convert Set to List
         Set<String> set = getModelStore().keySet();
         List<String> result = new ArrayList<String>(set);
+        // sort the list
+        result.sort(String::compareTo);
         return result;
     }
 
@@ -482,14 +484,13 @@ public class ModelService implements ModelManager {
      * @param model
      */
     public ItemCollection findModelEntity(String version) {
-
         ItemCollection result = modelEntityStore.get(version);
         if (result == null) {
             logger.severe("invalid model version!");
             throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
                     "findModelEntity - invalid model version: " + version);
         }
-        return null;
+        return result;
 
     }
 
