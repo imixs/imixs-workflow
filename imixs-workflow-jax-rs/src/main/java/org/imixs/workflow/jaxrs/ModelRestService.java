@@ -34,9 +34,22 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.Model;
+import org.imixs.workflow.bpmn.BPMNModel;
+import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.ModelService;
+import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.xml.XMLDataCollection;
+import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
+
+import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -52,20 +65,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 import jakarta.ws.rs.core.UriInfo;
-
-import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Model;
-import org.imixs.workflow.bpmn.BPMNModel;
-import org.imixs.workflow.engine.DocumentService;
-import org.imixs.workflow.engine.ModelService;
-import org.imixs.workflow.exceptions.ModelException;
-import org.imixs.workflow.xml.XMLDataCollection;
-import org.imixs.workflow.xml.XMLDocument;
-import org.imixs.workflow.xml.XMLDocumentAdapter;
-
-import jakarta.ejb.Stateless;
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.logging.Level;
 
 /**
  * The WorkflowService Handler supports methods to process different kind of
@@ -202,7 +201,7 @@ public class ModelRestService {
     @GET
     @Path("/{version}/bpmn")
     public Response getModelFile(@PathParam("version") String version, @Context UriInfo uriInfo) {
-        ItemCollection modelEntity = modelService.loadModelEntity(version);
+        ItemCollection modelEntity = modelService.findModelEntity(version);
         if (modelEntity != null) {
             return workflowRestService.getWorkItemFile(modelEntity.getUniqueID(), modelEntity.getFileNames().get(0),
                     uriInfo);
@@ -459,24 +458,25 @@ public class ModelRestService {
 
     /**
      * Returns the current model information in html format
+     * 
      * @param rootContext
      * @return model version table as a html string
      * @throws ModelException
      */
-    private String modelVersionTableToString(String rootContext) throws ModelException{
+    private String modelVersionTableToString(String rootContext) throws ModelException {
         List<String> modelVersionList = modelService.getVersions();
         StringBuffer buffer = new StringBuffer();
 
         for (String modelVersion : modelVersionList) {
-
             appendTagsToBuffer(modelVersion, rootContext, buffer);
         }
         return buffer.toString();
     }
 
-    private void appendTagsToBuffer(String modelVersion, String rootContext, StringBuffer buffer) throws ModelException{
+    private void appendTagsToBuffer(String modelVersion, String rootContext, StringBuffer buffer)
+            throws ModelException {
         Model model = modelService.getModel(modelVersion);
-        ItemCollection modelEntity = modelService.loadModelEntity(modelVersion);
+        ItemCollection modelEntity = modelService.findModelEntity(modelVersion);
 
         // now check groups...
         List<String> groupList = model.getGroups();

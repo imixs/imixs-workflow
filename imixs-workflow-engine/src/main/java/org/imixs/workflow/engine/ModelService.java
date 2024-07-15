@@ -30,8 +30,13 @@ package org.imixs.workflow.engine;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,14 +90,18 @@ import jakarta.inject.Inject;
 @Singleton
 @LocalBean
 @ConcurrencyManagement
-//(ConcurrencyManagementType.BEAN)
+// (ConcurrencyManagementType.BEAN)
 public class ModelService implements ModelManager {
 
     private ConcurrentHashMap<String, Model> modelStore = null;
-    
+
     private static final Logger logger = Logger.getLogger(ModelService.class.getName());
+
+    private Map<String, ItemCollection> modelEntityStore;
+
     @Inject
     private DocumentService documentService;
+
     @Resource
     private SessionContext ctx;
 
@@ -110,15 +119,15 @@ public class ModelService implements ModelManager {
      */
     void init() throws AccessDeniedException {
         boolean debug = logger.isLoggable(Level.FINE);
+        modelEntityStore = new HashMap();
         // load existing models into the ModelManager....
         if (debug) {
-            logger.finest("......Initalizing ModelService...");
+            logger.finest("......Initializing ModelService...");
         }
         // first remove existing model entities
         Collection<ItemCollection> col = documentService.getDocumentsByType("model");
         for (ItemCollection modelEntity : col) {
             List<FileData> files = modelEntity.getFileData();
-
             for (FileData file : files) {
                 if (debug) {
                     logger.log(Level.FINEST, "......loading file:{0}", file.getName());
@@ -133,15 +142,18 @@ public class ModelService implements ModelManager {
                         try {
                             if (getModel(modelVersion) != null) {
                                 // no op
-                                logger.log(Level.WARNING, "Model ''{0}'' is dupplicated! Please update the model version!", modelVersion);
+                                logger.log(Level.WARNING,
+                                        "Model ''{0}'' is duplicated! Please update the model version!", modelVersion);
                             }
                         } catch (ModelException e) {
                             // exception is expected
                             addModel(model);
+                            modelEntityStore.put(modelVersion, modelEntity);
                         }
                     }
                 } catch (Exception e) {
-                    logger.log(Level.WARNING, "Failed to load model ''{0}'' : {1}", new Object[]{file.getName(), e.getMessage()});
+                    logger.log(Level.WARNING, "Failed to load model ''{0}'' : {1}",
+                            new Object[] { file.getName(), e.getMessage() });
                 }
             }
         }
@@ -227,8 +239,8 @@ public class ModelService implements ModelManager {
                 if (!versions.isEmpty()) {
                     // we found a match by regex!
                     String newVersion = versions.get(0);
-                    logger.log(Level.INFO, "...... match version ''{0}'' -> by regex ''{1}''", 
-                            new Object[]{newVersion, modelVersion});
+                    logger.log(Level.INFO, "...... match version ''{0}'' -> by regex ''{1}''",
+                            new Object[] { newVersion, modelVersion });
                     workitem.replaceItemValue(WorkflowKernel.MODELVERSION, newVersion);
                     model = getModel(newVersion);
                 }
@@ -242,7 +254,7 @@ public class ModelService implements ModelManager {
                     if (!modelVersion.isEmpty()) {
                         logger.log(Level.WARNING, "Deprecated model version: ''{0}'' -> migrating to ''{1}'',"
                                 + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
-                                new Object[]{modelVersion, newVersion, workflowGroup, workitem.getUniqueID()});
+                                new Object[] { modelVersion, newVersion, workflowGroup, workitem.getUniqueID() });
                     }
                     workitem.replaceItemValue(WorkflowKernel.MODELVERSION, newVersion);
                     model = getModel(newVersion);
@@ -411,7 +423,7 @@ public class ModelService implements ModelManager {
             modelItemCol.replaceItemValue("$snapshot.history", 1);
             modelItemCol.replaceItemValue(WorkflowKernel.CREATOR, ctx.getCallerPrincipal().getName());
             modelItemCol.replaceItemValue("name", bpmnModel.getVersion());
-            
+
             // deprecated item names
             modelItemCol.replaceItemValue("namcreator", ctx.getCallerPrincipal().getName());
             modelItemCol.replaceItemValue("txtname", bpmnModel.getVersion());
@@ -427,6 +439,7 @@ public class ModelService implements ModelManager {
             // store model in database
             modelItemCol.replaceItemValue(DocumentService.NOINDEX, true);
             documentService.save(modelItemCol);
+            modelEntityStore.put(bpmnModel.getVersion(), modelItemCol);
         }
     }
 
@@ -456,6 +469,7 @@ public class ModelService implements ModelManager {
             }
 
             removeModel(version);
+            modelEntityStore.remove(version);
         } else {
             logger.severe("deleteModel - invalid model version!");
             throw new InvalidAccessException(InvalidAccessException.INVALID_ID, "deleteModel - invalid model version!");
@@ -463,35 +477,54 @@ public class ModelService implements ModelManager {
     }
 
     /**
-     * This method loads an existing Model Entities from the database. A model
-     * entity is identified by its name (model version).
+     * This method fetches an existing Model Entity from the model store
      * 
      * @param model
      */
-    public ItemCollection loadModelEntity(String version) {
+    public ItemCollection findModelEntity(String version) {
 
-        if (version != null && !version.isEmpty()) {
-            boolean debug = logger.isLoggable(Level.FINE);
-            if (debug) {
-                logger.log(Level.FINEST, "......load BPMNModel Entity ''{0}''...", version);
-            }
-
-            Collection<ItemCollection> col = documentService.getDocumentsByType("model");
-            for (ItemCollection modelEntity : col) {
-                // test version...
-                String currentVersion = modelEntity.getItemValueString("txtname");
-                if (version.equals(currentVersion)) {
-                    return modelEntity;
-                }
-            }
-        } else {
-            logger.severe("deleteModel - invalid model version!");
+        ItemCollection result = modelEntityStore.get(version);
+        if (result == null) {
+            logger.severe("invalid model version!");
             throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
-                    "loadModelEntity - invalid model version!");
+                    "findModelEntity - invalid model version: " + version);
         }
         return null;
 
     }
+
+    /**
+     * This method loads an existing Model Entities from the database. A model
+     * entity is identified by its name (model version).
+     * 
+     * @param model
+     * 
+     * @see issue #863
+     */
+    // public ItemCollection loadModelEntity(String version) {
+
+    // if (version != null && !version.isEmpty()) {
+    // boolean debug = logger.isLoggable(Level.FINE);
+    // if (debug) {
+    // logger.log(Level.FINEST, "......load BPMNModel Entity ''{0}''...", version);
+    // }
+
+    // Collection<ItemCollection> col = documentService.getDocumentsByType("model");
+    // for (ItemCollection modelEntity : col) {
+    // // test version...
+    // String currentVersion = modelEntity.getItemValueString("txtname");
+    // if (version.equals(currentVersion)) {
+    // return modelEntity;
+    // }
+    // }
+    // } else {
+    // logger.severe("deleteModel - invalid model version!");
+    // throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
+    // "loadModelEntity - invalid model version!");
+    // }
+    // return null;
+
+    // }
 
     /**
      * Returns a BPMN DataObject, part of a Task or Event element, by its name

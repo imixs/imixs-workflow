@@ -1015,7 +1015,8 @@ public class DocumentService {
 
 		if (documentList == null) {
 			if (debug) {
-				logger.finest("......getDocumentsByQuery - no ducuments found.");
+				logger.log(Level.FINE, "......getDocumentsByQuery: {0} - no ducuments found im {1} ms",
+						new Object[] { query, System.currentTimeMillis() - l });
 			}
 			return result;
 		}
@@ -1023,9 +1024,7 @@ public class DocumentService {
 		// filter result set by read access
 		for (Document doc : documentList) {
 			if (isCallerReader(doc)) {
-
 				ItemCollection _tmp = null;
-
 				if (doc.isPending()) {
 					// we clone but do not detach
 					if (debug) {
@@ -1039,9 +1038,7 @@ public class DocumentService {
 					_tmp.setAllItems(doc.getData());
 					manager.detach(doc);
 				}
-
 				updateMetaData(_tmp, doc);
-
 				result.add(_tmp);
 				// issue #647
 				if (documentEvents != null) {
@@ -1050,8 +1047,8 @@ public class DocumentService {
 			}
 		}
 		if (debug) {
-			logger.log(Level.FINE, "...getDocumentsByQuery - found {0} documents in {1} ms",
-					new Object[] { documentList.size(), System.currentTimeMillis() - l });
+			logger.log(Level.FINE, "...getDocumentsByQuery: {0} - found {1} documents in {2} ms",
+					new Object[] { query, documentList.size(), System.currentTimeMillis() - l });
 		}
 		return result;
 	}
