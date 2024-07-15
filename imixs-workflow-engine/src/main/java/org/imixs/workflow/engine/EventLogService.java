@@ -29,6 +29,7 @@
 package org.imixs.workflow.engine;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -166,7 +167,7 @@ public class EventLogService {
         }
         manager.persist(eventLog);
         if (debug) {
-            logger.log(Level.FINEST, "......created new eventLog ''{0}'' => {1}", new Object[]{refID, topic});
+            logger.log(Level.FINEST, "......created new eventLog ''{0}'' => {1}", new Object[] { refID, topic });
         }
         return eventLog;
     }
@@ -198,7 +199,8 @@ public class EventLogService {
         q.setMaxResults(maxCount);
         result = q.getResultList();
         if (debug) {
-            logger.log(Level.FINE, "found {0} event for topic {1}", new Object[]{result.size(), topic});
+            logger.log(Level.FINE, "found {0} events for topics {1}",
+                    new Object[] { result.size(), Arrays.toString(topic) });
         }
         return result;
 
@@ -238,7 +240,8 @@ public class EventLogService {
         q.setMaxResults(maxCount);
         result = q.getResultList();
         if (debug) {
-            logger.log(Level.FINE, "found {0} event for topic {1}", new Object[]{result.size(), topic});
+            logger.log(Level.FINE, "found {0} events for topics {1}",
+                    new Object[] { result.size(), Arrays.toString(topic) });
         }
         return result;
 
@@ -274,7 +277,8 @@ public class EventLogService {
         q.setMaxResults(maxCount);
         result = q.getResultList();
         if (debug) {
-            logger.log(Level.FINE, "found {0} event for topic {1}", new Object[]{result.size(), topic});
+            logger.log(Level.FINE, "found {0} events for topics {1}",
+                    new Object[] { result.size(), Arrays.toString(topic) });
         }
         return result;
 
@@ -400,7 +404,8 @@ public class EventLogService {
                 return true;
             } else {
                 // unable to lock!
-                logger.log(Level.WARNING, "unable to lock eventLogEntry ''{0}'' - already locked!", _eventLogEntry.getId());
+                logger.log(Level.WARNING, "unable to lock eventLogEntry ''{0}'' - already locked!",
+                        _eventLogEntry.getId());
 
             }
         }
@@ -431,7 +436,8 @@ public class EventLogService {
                 return true;
             } else {
                 // unable to lock!
-                logger.log(Level.WARNING, "unable to lock eventLogEntry ''{0}'' - already locked!", _eventLogEntry.getId());
+                logger.log(Level.WARNING, "unable to lock eventLogEntry ''{0}'' - already locked!",
+                        _eventLogEntry.getId());
             }
         }
         return false;
@@ -460,7 +466,7 @@ public class EventLogService {
                 age = now.getTime() - lockDate.getTime();
                 if (age > deadLockInterval) {
                     logger.log(Level.WARNING, "Deadlock detected! - eventlog.id={0} will be unlocked!"
-                            + " (deadlock since {1}ms)", new Object[]{eventLogEntry.getId(), age});
+                            + " (deadlock since {1}ms)", new Object[] { eventLogEntry.getId(), age });
                     unlock(eventLogEntry);
                 }
             } else {
