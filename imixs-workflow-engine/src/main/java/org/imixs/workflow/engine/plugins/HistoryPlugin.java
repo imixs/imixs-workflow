@@ -31,12 +31,13 @@ package org.imixs.workflow.engine.plugins;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Vector;
 import java.util.logging.Logger;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
@@ -66,8 +67,10 @@ import org.imixs.workflow.exceptions.PluginException;
 
 public class HistoryPlugin extends AbstractPlugin {
     private ItemCollection documentContext;
-    private List<List<Object>> historyList = null;
+    // private List<List<Object>> historyList = null;
     private static final Logger logger = Logger.getLogger(HistoryPlugin.class.getName());
+
+    public static final String ITEM_HISTORY_LOG = "workflow.history";
 
     /**
      * Update the Log entry.
@@ -97,34 +100,36 @@ public class HistoryPlugin extends AbstractPlugin {
 
         rtfItemLog = getWorkflowService().adaptText(rtfItemLog, documentContext);
 
-        List<?> temp = documentContext.getItemValue("txtworkflowhistory");
-        historyList = new Vector();
-        // clear null and empty values
-        Iterator<?> i = temp.iterator();
-        while (i.hasNext()) {
-            Object o = i.next();
-            if (o instanceof List)
-                historyList.add((List<Object>) o);
+        List<List<?>> temp = null;
+        // test deprecated field
+        if (!documentContext.hasItem(ITEM_HISTORY_LOG) && documentContext.hasItem("txtworkflowhistory")) {
+            // migrate deprecated field name
+            temp = documentContext.getItemValue("txtworkflowhistory");
+        } else {
+            temp = documentContext.getItemValue(ITEM_HISTORY_LOG);
         }
 
+        // insert new entry
         List<Object> newEntry = new ArrayList<Object>();
         newEntry.add(documentContext.getItemValueDate(WorkflowKernel.LASTEVENTDATE));
         newEntry.add(rtfItemLog);
         newEntry.add(this.getWorkflowService().getUserName());
-        historyList.add(newEntry);
+        temp.add(newEntry);
+        // Sort the list by date in descending order
+        Collections.sort(temp, new Comparator<List<?>>() {
+            @Override
+            public int compare(List<?> entry1, List<?> entry2) {
+                Date date1 = (Date) entry1.get(0);
+                Date date2 = (Date) entry2.get(0);
+                // Compare in descending order
+                return date1.compareTo(date2);
+            }
+        });
 
-        // check if maximum length of log is defined
-        int iMaxLogLength = documentContext.getItemValueInteger("numworkflowhistoryLength");
-        if (iMaxLogLength > 0) {
-            while (historyList.size() > iMaxLogLength)
-                historyList.remove(0);
-        }
+        documentContext.replaceItemValue(ITEM_HISTORY_LOG, temp);
+        // we still support the deprecated item name
+        documentContext.replaceItemValue("txtworkflowhistory", temp);
 
-        documentContext.replaceItemValue("txtworkflowhistory", historyList);
-
-        // set timWorkflowLastAccess (Deprecated)
-        // issue #244
-        // documentContext.replaceItemValue("timworkflowlastaccess", new Date());
         return documentContext;
     }
 
