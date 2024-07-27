@@ -46,18 +46,19 @@ The Imixs Adapter-API defines the call-back method '_execute_'. This method is c
 
 The Imixs-Workflow Adapter API also supports CDI. In this way an EJB or Resource can be injected into an adapter class by the corresponding CDI annotation. See the following example:
 
-
-	public class DemoAdapter implements org.imixs.workflow.SignalAdapter {
-	    // inject services...
-	    @EJB
-	    ModelService modelService;
-	    ...
-	    @Override
-		public ItemCollection execute(ItemCollection document, ItemCollection event) throws AdapterException {
-			List<String> versions = modelService.getVersions();
-			....
-		}
+```java
+public class DemoAdapter implements org.imixs.workflow.SignalAdapter {
+	// inject services...
+	@EJB
+	ModelService modelService;
+	...
+	@Override
+	public ItemCollection execute(ItemCollection document, ItemCollection event) throws AdapterException {
+		List<String> versions = modelService.getVersions();
+		....
 	}
+}
+```
 
 In this example the adapter injects the Imixs ModelService to ask for available model versions. 
  
@@ -67,18 +68,20 @@ An adapter can also extend the processing phase by throwing an *AdapterException
 
 See the following example handling a jax-rs client communication:
 
-		public ItemCollection execute(ItemCollection workitem, ItemCollection event) throws AdapterException {
-			...
-			// call external Rest API....
-			try {
-				Response response = client.target(uri).request(MediaType.APPLICATION_XML)
-					.post(Entity.entity(data, MediaType.APPLICATION_XML));
-			} catch (ResponseProcessingException e) {
-				throw new AdapterException(
-						MyAdapter.class.getSimpleName(),ERROR_API_COMMUNICATION,"Failed to call rest api!");
-			}
-			.....
-		} 
+```java
+public ItemCollection execute(ItemCollection workitem, ItemCollection event) throws AdapterException {
+	...
+	// call external Rest API....
+	try {
+		Response response = client.target(uri).request(MediaType.APPLICATION_XML)
+			.post(Entity.entity(data, MediaType.APPLICATION_XML));
+	} catch (ResponseProcessingException e) {
+		throw new AdapterException(
+				MyAdapter.class.getSimpleName(),ERROR_API_COMMUNICATION,"Failed to call rest api!");
+	}
+	.....
+} 
+```
 
 In this example an Adapter throws an *AdapterException_* when the Rest API call failed. The Exception contains the  Adapter name, an Error Code, and a Error Message. The processing life-cycle will not be interrupted by an AdapterException. But the Exception information will be added into the current process instance in the following items:
 
@@ -92,43 +95,44 @@ These data can be used to control the processing flow. For example a conditional
 
 Of course, a Plugin can investigate the Adapter Exception data and interrupt the processing life-cycle by throwing a PluginException. In this case a running transaction will be automatically rolled back. 
 
-	...
-	public ItemCollection run(ItemCollection documentContext, ItemCollection adocumentActivity)
-		throws PluginException {
-		....
-		if (documentContext.hasItem("adapter.error_code") {
-			throw new PluginException(documentContext.getItemValueString("adapter.error_context"),
-		 	 documentContext.getItemValueString("adapter.error_code"),
-			 documentContext.getItemValueString("adapter.error_message")
-			);
-		}
+```java
+public ItemCollection run(ItemCollection documentContext, ItemCollection adocumentActivity)
+	throws PluginException {
+	....
+	if (documentContext.hasItem("adapter.error_code") {
+		throw new PluginException(documentContext.getItemValueString("adapter.error_context"),
+			documentContext.getItemValueString("adapter.error_code"),
+			documentContext.getItemValueString("adapter.error_message")
+		);
 	}
-
+}
+```
 
 If you want to interrupt the processing immediately, your Adapter Implementation can throw either a PluginException or a ProcessingErrorException
 
 A PluginException is handled the same way as defined in the Plugin API and can be handled by the workflow application.  An *ProcessingErrorException* interrupts the processing life cycle immediately. 
 
-
-		public ItemCollection execute(ItemCollection workitem, ItemCollection event) throws AdapterException {
-			...
-			// call external Rest API....
-			try {
-				Response response = client.target(uri).request(MediaType.APPLICATION_XML)
-					.post(Entity.entity(data, MediaType.APPLICATION_XML));
-					
-				if (response==null) 
-				    // interrupt the processing life cycle
-					throw new PluginException(
-						MyAdapter.class.getSimpleName(),ERROR_API_COMMUNICATION,"An error occurred...");	
-					
-			} catch (ResponseProcessingException e) {
-				// interrupt current transaction
-				throw new ProcessingErrorException(
-						MyAdapter.class.getSimpleName(),ERROR_API_COMMUNICATION,"Failed to call rest api!");
-			}
-			.....
-		}
+```java
+public ItemCollection execute(ItemCollection workitem, ItemCollection event) throws AdapterException {
+	...
+	// call external Rest API....
+	try {
+		Response response = client.target(uri).request(MediaType.APPLICATION_XML)
+			.post(Entity.entity(data, MediaType.APPLICATION_XML));
+			
+		if (response==null) 
+			// interrupt the processing life cycle
+			throw new PluginException(
+				MyAdapter.class.getSimpleName(),ERROR_API_COMMUNICATION,"An error occurred...");	
+			
+	} catch (ResponseProcessingException e) {
+		// interrupt current transaction
+		throw new ProcessingErrorException(
+				MyAdapter.class.getSimpleName(),ERROR_API_COMMUNICATION,"Failed to call rest api!");
+	}
+	.....
+}
+```
 
 In both cases the running transaction will be automatically rolled back. 
 

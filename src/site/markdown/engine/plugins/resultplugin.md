@@ -17,13 +17,17 @@ With the [Imixs-BPMN modeler](../../modelling/activities.html) the Workflow Resu
 ## The Item Tag
 
 By defining a single XML tag  `<item>` a new item value can be set or an existing item value can be changed. 
- 
-    <item name="[NAME]">[VALUE]</item> 
+
+```xml
+<item name="[NAME]">[VALUE]</item> 
+```
 
 See the following examples:
- 
-	<item name="name">Some Title</item> 
-	<item name="account" type="integer">500</item> 
+
+```xml
+<item name="name">Some Title</item> 
+<item name="account" type="integer">500</item> 
+```
 
 This example will update two properties of the current workitem. The property 'name' is set to the value 'Some Title'. The property 'account' will be set to the integer value 500. 
  
@@ -34,9 +38,10 @@ The processing information to be evaluated is defined in the bpmn-extension prop
 ### The Item Value 
 
 The Item value can also be evaluated by the tag `<itemValue>` to assign a value form any existing item. See the following example which computes the value of the property 'responsible' to the value of the existing item 'team':
- 
-    <item name="responsible"><itemvalue>team</itemvalue></item> 
 
+```xml
+<item name="responsible"><itemvalue>team</itemvalue></item> 
+```
 
 ### Item Value Type
 
@@ -48,29 +53,36 @@ With the optional attribute 'type' the item value type can be specified. The fol
 * date - results in type java.util.Date
  
 Example Boolean: 
- 
-	<item name="isManager" type="boolean">true</item>
-	
+
+```xml
+<item name="isManager" type="boolean">true</item>
+```	
+
 This will store the boolean value true into the item 'isManager'.  
 
 
 Example Integer: 
- 
-	<item name="count" type="integer">55</item>
-	
+
+```xml
+<item name="count" type="integer">55</item>
+```
+
 This will store the integer value 55 into the item 'count'.  
 
 
 Example Date: 
- 
-	<item name="reminder" type="date" format="yyyy-MM-dd" >2018-12-31</item>
-	
+```xml
+<item name="reminder" type="date" format="yyyy-MM-dd" >2018-12-31</item>
+```
+
 This will store a date value into the item 'reminder'. The attribute "format" must match the given string value.
 
 The date value can also be taken from an existing itemvalue: 
 
-	<item name="reminder" type="date" ><itemvalue>$modified</itemvalue></item>
-  
+```xml
+<item name="reminder" type="date" ><itemvalue>$modified</itemvalue></item>
+```  
+
 In this case formating is not necessary. 
 
 
@@ -79,7 +91,9 @@ In this case formating is not necessary.
 ### Clear an Item Value
 It is also possible to clear an existing item value:
 
-	<item name="txtName"></item> 
+```xml
+<item name="txtName"></item> 
+```
 
 This will reset the item 'txtname' with an empty string. It is not possible to set a null value. 
 
@@ -87,12 +101,16 @@ This will reset the item 'txtname' with an empty string. It is not possible to s
 ### Custom Attributes
 A item definition can also contain optional custom attributes. These attributes can be used for extended plugin computation: 
 
-    <item name="[NAME]" [OPTION]="[OPTION-VALUE]">[VALUE]</item> 
 
+```xml
+<item name="[NAME]" [OPTION]="[OPTION-VALUE]">[VALUE]</item> 
+```
 
 The following example will create an additional field _'comment.ignore'_ with the value _'true'_:
  
-	<item name="comment" ignore="true">some data</item> 
+ ```xml 
+<item name="comment" ignore="true">some data</item> 
+ ```
 
 ## XML Configurations
 
@@ -100,10 +118,10 @@ A processing configuration can also be provided in a custom xml tag. A custom XM
 See the follwoing example XML configuration:
 
 ```xml 
-	<imixs-sepa name="CONFIG">
-		<textblock>....</textblock>
-		<template>....</template>
-	</imixs-sepa>
+<imixs-sepa name="CONFIG">
+	<textblock>....</textblock>
+	<template>....</template>
+</imixs-sepa>
 ```
 
 This custom configuration with the tag name `imixs-sepa` and the name `CONFIG` defines two config items 'textblock' and 'template'. 
@@ -115,12 +133,14 @@ A result definition can have multiple custom XML tags with the same name attribu
 
 The `WorkflowService` provides the methods to evaluate the processing information in various ways. The method  `evalWorkflowResult()` returns a `ItemCollection` with all item names and values. In the following example shows how to get the evaluated item values form the current workflow result.
 	
-	
-	ItemCollection result = getWorkflowService().evalWorkflowResult(event, documentContext, true);
-	Assert.assertNotNull(result);
-	Assert.assertTrue(result.hasItem("comment"));
-	Assert.assertEquals("some data", result.getItemValueString("comment"));
-	Assert.assertEquals("true", result.getItemValueString("comment.ignore"));
+
+```java 
+ItemCollection result = getWorkflowService().evalWorkflowResult(event, documentContext, true);
+Assert.assertNotNull(result);
+Assert.assertTrue(result.hasItem("comment"));
+Assert.assertEquals("some data", result.getItemValueString("comment"));
+Assert.assertEquals("true", result.getItemValueString("comment.ignore"));
+```
 
 ### Evaluate XML Configurations
 
@@ -129,19 +149,17 @@ A custom configuration can have any XML tag with the mandatory attribute `name`.
 To extract this configuration in a a Java code you can use the method `evalWorkflowResultXMLTag` from the `WorkflowService`. See the following code example extracting the tags of the xml configuration above:
 
 ```java 
-  	List<ItemCollection> sepaConfigList = workflowService.evalWorkflowResultXMLTag(event, 
-  				"imixs-sepa", "CONFIG",
-                sepaExport,
-                false);
-	if (sepaConfigList == null || sepaConfigList.size() == 0) {
-		// no configuration found!
-		throw new PluginException(OpenAIAPIAdapter.class.getSimpleName(), ERROR_CONFIG,
-				"Missing or invalid imixs-sepa definition in Event!");
-	}
+List<ItemCollection> sepaConfigList = workflowService.evalWorkflowResultXMLTag(
+	event, "imixs-sepa", "CONFIG", sepaExport, false);
+if (sepaConfigList == null || sepaConfigList.size() == 0) {
+	// no configuration found!
+	throw new PluginException(OpenAIAPIAdapter.class.getSimpleName(), ERROR_CONFIG,
+			"Missing or invalid imixs-sepa definition in Event!");
+}
 
-	ItemCollection sepaConf = sepaConfigList.get(0);
-	String template = sepaConf.getItemValueString("template");
-	...
+ItemCollection sepaConf = sepaConfigList.get(0);
+String template = sepaConf.getItemValueString("template");
+...
 ```
 
 If you just need the XML defintiion itself you can also call the method `evalWorkflowResultXMLTagList`. This method returns a single ItemCollection with the plain tag value of the given tag. The values are stored in the item with the coresponding `name'  attribute. A item can have multiple values in case the xml tag with one name occurs more then once in the result definition.
