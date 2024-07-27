@@ -12,10 +12,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.ejb.SessionContext;
-import java.util.logging.Level;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
@@ -37,6 +36,8 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.xml.sax.SAXException;
+
+import jakarta.ejb.SessionContext;
 
 /**
  * The WorkflowMockEnvironment provides a mocked database environment for jUnit
@@ -110,7 +111,8 @@ public class WorkflowMockEnvironment {
 
     @Before
     public void setup() throws PluginException, ModelException {
-        MockitoAnnotations.initMocks(this);
+        // MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         // setup db
         createTestDatabase();
 
@@ -240,12 +242,19 @@ public class WorkflowMockEnvironment {
                     }
                 });
 
-//		when(workflowService.evalNextTask(Mockito.any(ItemCollection.class), Mockito.any(ItemCollection.class)))
-//				.thenCallRealMethod();
+        // when(workflowService.evalNextTask(Mockito.any(ItemCollection.class),
+        // Mockito.any(ItemCollection.class)))
+        // .thenCallRealMethod();
         when(workflowService.evalNextTask(Mockito.any(ItemCollection.class))).thenCallRealMethod();
         when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class), Mockito.anyString(),
                 Mockito.any(ItemCollection.class))).thenCallRealMethod();
         when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class), Mockito.anyString(),
+                Mockito.any(ItemCollection.class), Mockito.anyBoolean())).thenCallRealMethod();
+        when(workflowService.evalWorkflowResultXMLTagList(Mockito.any(ItemCollection.class),
+                Mockito.anyString(),
+                Mockito.any(ItemCollection.class), Mockito.anyBoolean())).thenCallRealMethod();
+        when(workflowService.evalWorkflowResultXMLTag(Mockito.any(ItemCollection.class), Mockito.anyString(),
+                Mockito.anyString(),
                 Mockito.any(ItemCollection.class), Mockito.anyBoolean())).thenCallRealMethod();
         when(workflowService.processWorkItem(Mockito.any(ItemCollection.class))).thenCallRealMethod();
         when(workflowService.getUserName()).thenCallRealMethod();

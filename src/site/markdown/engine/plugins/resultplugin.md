@@ -105,3 +105,33 @@ The WorkflowService Result plugin provides the method evalWorkflowResult() retur
 	Assert.assertEquals("some data", result.getItemValueString("comment"));
 	Assert.assertEquals("true", result.getItemValueString("comment.ignore"));
 
+## Evaluate XML Configurations
+
+You can also define custom XML configurations in a Imixs BPMN Event:
+
+```xml 
+	<imixs-sepa name="CONFIG">
+		<textblock>....</textblock>
+		<template>....</template>
+	</imixs-sepa>
+```
+
+A custom configuration can have any XML tag with at list the attribute `name` which is mandatory. The example above defines a custom XML configuration with the tag name 'imixs-sepa' and the name `CONFIG` . 
+
+To extract this configuration in a a Java code you can use the method `evalWorkflowResultXMLTag` from the `WorkflowService`. See the following code example extracting the tags of the xml configuration above:
+
+```java 
+  	List<ItemCollection> sepaConfigList = workflowService.evalWorkflowResultXMLTag(event, 
+  				"imixs-sepa", "CONFIG",
+                sepaExport,
+                false);
+	if (sepaConfigList == null || sepaConfigList.size() == 0) {
+		// no configuration found!
+		throw new PluginException(OpenAIAPIAdapter.class.getSimpleName(), ERROR_CONFIG,
+				"Missing or invalid imixs-sepa definition in Event!");
+	}
+
+	ItemCollection sepaConf = sepaConfigList.get(0);
+	String template = sepaConf.getItemValueString("template");
+	...
+```

@@ -57,6 +57,7 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.QueryException;
+import org.imixs.workflow.util.XMLParser;
 
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.DeclareRoles;
@@ -127,7 +128,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
     @Resource
     SessionContext ctx;
-   
+
     @Inject
     protected Event<ProcessingEvent> processingEvents;
 
@@ -136,9 +137,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
     private static final Logger logger = Logger.getLogger(WorkflowService.class.getName());
 
-    
-    
-    
     public WorkflowService() {
         super();
     }
@@ -190,7 +188,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
     }
 
     /**
-     * Returns a collection of workitems for which the specified user has explicit write permission.
+     * Returns a collection of workitems for which the specified user has explicit
+     * write permission.
      * The name is a username or role contained in the $WriteAccess attribute of the
      * workItem.
      * 
@@ -200,7 +199,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
      *                    current username will be used
      * @param pageSize    = optional page count (default 20)
      * @param pageIndex   = optional start position
-     * @param type        = defines the type property of the workitems to be returned. can be null
+     * @param type        = defines the type property of the workitems to be
+     *                    returned. can be null
      * @param sortBy      -optional field to sort the result
      * @param sortReverse - optional sort direction
      * 
@@ -288,12 +288,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         nameListBuffer.append("(");
         // construct a name list query for $writeaccess
         List<String> userNames = documentService.getUserNameList();
-        for (int i=0; i<userNames.size(); i++) {
-            String userName= userNames.get(i);
-            if (i>0) {
+        for (int i = 0; i < userNames.size(); i++) {
+            String userName = userNames.get(i);
+            if (i > 0) {
                 nameListBuffer.append(" OR ");
             }
-            nameListBuffer.append(" $writeaccess:\"" + userName + "\" ");            
+            nameListBuffer.append(" $writeaccess:\"" + userName + "\" ");
         }
         nameListBuffer.append(")");
 
@@ -589,7 +589,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
             long lKernelTime = System.currentTimeMillis();
             workitem = workflowkernel.process(workitem);
             if (debug) {
-                logger.log(Level.FINE, "...WorkflowKernel processing time={0}ms", System.currentTimeMillis() - lKernelTime);
+                logger.log(Level.FINE, "...WorkflowKernel processing time={0}ms",
+                        System.currentTimeMillis() - lKernelTime);
             }
         } catch (PluginException pe) {
             // if a plugin exception occurs we roll back the transaction.
@@ -978,7 +979,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                                     result.appendItemValue(tagName, dateResult);
                                 } catch (ParseException e) {
                                     if (debug) {
-                                        logger.log(Level.FINER, "failed to convert string into date object: {0}", e.getMessage());
+                                        logger.log(Level.FINER, "failed to convert string into date object: {0}",
+                                                e.getMessage());
                                     }
                                 }
                             }
@@ -1054,6 +1056,107 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         logger.warning(
                 "Method call evalWorkflowResult(event, workitem) is deprecated, use method evalWorkflowResult(event, tag, workitem) instead!");
         return this.evalWorkflowResult(event, "item", documentContext);
+    }
+
+    /**
+     * The method evaluates the WorkflowResult for a given BPMN event and returns a
+     * ItemCollection containing all matching XML tag. A XML tag must have the not
+     * empty attribute 'name'
+     * 
+     * Example:
+     * 
+     * <pre>
+     * {@code
+            <imixs-config name="TEMPLATE">
+                <textblock>....</textblock>
+                <name>....</name>
+            </imixs-config>
+            <imixs-config name="PROCESS">
+                ....
+            </imixs-config>            
+     * }
+     * </pre>
+     * 
+     * evalWorkflowResultXMLTagList(event,"imixs-config",workitem,true)
+     * 
+     * The method returns a ItemCollection with all XML data for the given xml tag
+     * stored in the corresponding Item
+     * 
+     * @param event
+     * @param tag             - tag to be evaluated
+     * @param documentContext
+     * 
+     * @return eval itemCollection or null if no tags are contained in the workflow
+     *         result.
+     * @throws PluginException if the xml structure is invalid
+     */
+    public ItemCollection evalWorkflowResultXMLTagList(ItemCollection event, String tagName,
+            ItemCollection workitem,
+            boolean resolveItemValues) throws PluginException {
+        ItemCollection configItemCol = evalWorkflowResult(event, tagName, workitem, resolveItemValues);
+        if (configItemCol == null) {
+            // no configuration found!
+            throw new PluginException(WorkflowService.class.getSimpleName(), INVALID_TAG_FORMAT,
+                    "Missing XML definition '" + tagName + "' in Event!");
+        }
+        return configItemCol;
+
+    }
+
+    /**
+     * The method evaluates the WorkflowResult for a given BPMN event and returns a
+     * list of ItemCollecitons matching the given XML tag and name attribtue.
+     * 
+     * A custom XML configuriaton may contain one or many XML tags with the same
+     * name. Each result ItemCollection holds the tag values of each XML tag.
+     * 
+     * Example:
+     * 
+     * <pre>
+     * {@code
+            <imixs-config name="CONFIG">
+                <textblock>....</textblock>
+                <template>....</template>
+            </imixs-config>
+     * }
+     * </pre>
+     * 
+     * evalWorkflowResultByTag(event,"imixs-config", "CONFIG",workitem,true)
+     * 
+     * 
+     * @param event
+     * @param tag               - tag to be evaluated
+     * @param documentContext
+     * @param resolveItemValues - if true, itemValue tags will be resolved.
+     * @return eval itemCollection or null if no tags are contained in the workflow
+     *         result.
+     * @throws PluginException if the xml structure is invalid
+     */
+    public List<ItemCollection> evalWorkflowResultXMLTag(ItemCollection event, String tagName, String name,
+            ItemCollection workitem,
+            boolean resolveItemValues) throws PluginException {
+
+        List<ItemCollection> result = new ArrayList<ItemCollection>();
+        // find all xml configs with the given tat name
+        ItemCollection configItemCol = evalWorkflowResultXMLTagList(event, tagName, workitem, resolveItemValues);
+
+        List<String> xmlDefinitions = configItemCol.getItemValueList(name, String.class);
+        if (xmlDefinitions != null) {
+            for (String definitionXML : xmlDefinitions) {
+                if (definitionXML.trim().isEmpty()) {
+                    // no definition
+                    continue;
+                }
+                // evaluate the definition (XML format expected here!)
+                ItemCollection xmlItemCol = XMLParser.parseItemStructure(definitionXML);
+                if (xmlItemCol != null) {
+                    result.add(xmlItemCol);
+                }
+            }
+        }
+
+        return result;
+
     }
 
     /**
