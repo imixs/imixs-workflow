@@ -1,13 +1,14 @@
 # The ResultPlugin
 
-The Imixs-Workflow Result Plugin is used to provide model based processing information. These information is provided by additional property values assigned to an Imixs BPMN Event. The plugin evaluates these processing information which can be used by different modules. 
+The Imixs-Workflow Result Plugin evaluates optional processing information assigned to an Imixs BPMN Event.
+The processing information can be defined by additional item values or custom XML tags. 
 
 _Plugin Class Name:_
 
     org.imixs.workflow.engine.plugins.ResultPlugin
 
 The Result plugin should run in the first place, so that processing information can be provided to following plugins.
-With the [Imixs-BPMN modeler](../../modelling/activities.html) the Workflow Result can be edited in the 'Workflow' section of an event. 
+With the [Imixs-BPMN modeler](../../modelling/activities.html) the Workflow Result can be edited in the 'Workflow' section of an BPMN Event node. 
 
 
 <img src="../../images/modelling/bpmn_screen_20.png"/>
@@ -15,29 +16,30 @@ With the [Imixs-BPMN modeler](../../modelling/activities.html) the Workflow Resu
 
 ## The Item Tag
 
-The ResultPlugin evaluates the tag _'item'_. This tag can be used to set or change a item value of the current workitem. The  tag _'item'_ has the following XML format: 
+By defining a single XML tag  `<item>` a new item value can be set or an existing item value can be changed. 
  
     <item name="[NAME]">[VALUE]</item> 
 
 See the following examples:
  
-	<item name="txtName">Some Title</item> 
-	<item name="numAccount" type="integer">500</item> 
+	<item name="name">Some Title</item> 
+	<item name="account" type="integer">500</item> 
 
-This example will update two properties of the current workitem. The property 'txtName' is set to the value 'Some Title'. The property 'numAccount' will be set to the integer value 500. 
+This example will update two properties of the current workitem. The property 'name' is set to the value 'Some Title'. The property 'account' will be set to the integer value 500. 
  
 <strong>Note:</strong> It is not possible to update any internal [workflow data items](../../quickstart/workitem.html) beginning with an  '$' character. 
 
-The processing information to be evaluated is stored in the bpmn-extension property 'txtActivityResult' of an Imixs BPMN Event. 
+The processing information to be evaluated is defined in the bpmn-extension property 'txtActivityResult' of an Imixs BPMN Event. 
 
 ### The Item Value 
 
-The Item value can also be evaluated by the tag 'itemValue' to assign a value form any existing item. See the following example which computes the value of the property 'responsible' to the value of the existing item 'namCreator':
+The Item value can also be evaluated by the tag `<itemValue>` to assign a value form any existing item. See the following example which computes the value of the property 'responsible' to the value of the existing item 'team':
  
-    <item name="responsible"><itemvalue>namCreator</itemvalue></item> 
+    <item name="responsible"><itemvalue>team</itemvalue></item> 
 
 
 ### Item Value Type
+
 With the optional attribute 'type' the item value type can be specified. The following types are supported:
 
 * boolean - results in type Boolean
@@ -50,7 +52,6 @@ Example Boolean:
 	<item name="isManager" type="boolean">true</item>
 	
 This will store the boolean value true into the item 'isManager'.  
-
 
 
 Example Integer: 
@@ -93,21 +94,10 @@ The following example will create an additional field _'comment.ignore'_ with th
  
 	<item name="comment" ignore="true">some data</item> 
 
+## XML Configurations
 
-### Eval Workflow Result
-
-The WorkflowService Result plugin provides the method evalWorkflowResult() returning a ItemCollection with all item names and there attributes. In the following example shows how to get the evaluated item values form the current workflow result.
-	
-	
-	ItemCollection result = getWorkflowService().evalWorkflowResult(event, documentContext, true);
-	Assert.assertNotNull(result);
-	Assert.assertTrue(result.hasItem("comment"));
-	Assert.assertEquals("some data", result.getItemValueString("comment"));
-	Assert.assertEquals("true", result.getItemValueString("comment.ignore"));
-
-## Evaluate XML Configurations
-
-You can also define custom XML configurations in a Imixs BPMN Event:
+A processing configuration can also be provided in a custom xml tag. A custom XML tag must provide the atribute `name`, simmilar to the `<item>` tag.  
+See the follwoing example XML configuration:
 
 ```xml 
 	<imixs-sepa name="CONFIG">
@@ -116,7 +106,25 @@ You can also define custom XML configurations in a Imixs BPMN Event:
 	</imixs-sepa>
 ```
 
-A custom configuration can have any XML tag with at list the attribute `name` which is mandatory. The example above defines a custom XML configuration with the tag name 'imixs-sepa' and the name `CONFIG` . 
+This custom configuration with the tag name `imixs-sepa` and the name `CONFIG` defines two config items 'textblock' and 'template'. 
+
+A result definition can have multiple custom XML tags with the same name attribute. The `WorkflowService` provides methods to evaluate these configuration during a procssing lifec-cycle phase. 
+
+
+## Evaluate the Workflow Result
+
+The `WorkflowService` provides the methods to evaluate the processing information in various ways. The method  `evalWorkflowResult()` returns a `ItemCollection` with all item names and values. In the following example shows how to get the evaluated item values form the current workflow result.
+	
+	
+	ItemCollection result = getWorkflowService().evalWorkflowResult(event, documentContext, true);
+	Assert.assertNotNull(result);
+	Assert.assertTrue(result.hasItem("comment"));
+	Assert.assertEquals("some data", result.getItemValueString("comment"));
+	Assert.assertEquals("true", result.getItemValueString("comment.ignore"));
+
+### Evaluate XML Configurations
+
+A custom configuration can have any XML tag with the mandatory attribute `name`.
 
 To extract this configuration in a a Java code you can use the method `evalWorkflowResultXMLTag` from the `WorkflowService`. See the following code example extracting the tags of the xml configuration above:
 
@@ -134,4 +142,11 @@ To extract this configuration in a a Java code you can use the method `evalWorkf
 	ItemCollection sepaConf = sepaConfigList.get(0);
 	String template = sepaConf.getItemValueString("template");
 	...
+```
+
+If you just need the XML defintiion itself you can also call the method `evalWorkflowResultXMLTagList`. This method returns a single ItemCollection with the plain tag value of the given tag. The values are stored in the item with the coresponding `name'  attribute. A item can have multiple values in case the xml tag with one name occurs more then once in the result definition.
+
+```java 
+ ItemCollection configItemCol = evalWorkflowResultXMLTagList(event, tagName, workitem, resolveItemValues);
+ List<String> xmlDefinitions = configItemCol.getItemValueList(name, String.class);
 ```
