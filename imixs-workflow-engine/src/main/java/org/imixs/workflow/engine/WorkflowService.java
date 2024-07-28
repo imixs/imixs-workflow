@@ -809,13 +809,17 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
     /**
      * The method evaluates the WorkflowResult for a given BPMN event and returns a
-     * ItemColleciton containing all item values of a specified tag name. Each tag
-     * definition of a WorkflowResult contains a name and a optional list of
-     * additional attributes. The method generates a item for each content element
-     * and attribute value. <br>
-     * e.g. <item name="comment" ignore="true">text</item> <br>
-     * will result in the attributes 'comment' with value 'text' and
-     * 'comment.ignore' with the value 'true'
+     * ItemColleciton containing all item values of a specified xml tag. Each tag
+     * definition must contain at least a name attribute and may contain an optional
+     * list of additional attributes.
+     * <p>
+     * The method generates a item for each content element
+     * and attribute value. e.g.:
+     * <p>
+     * {@code<item name="comment" ignore="true">text</item>}
+     * <p>
+     * This example will result in an ItemCollection with the attributes 'comment'
+     * with value 'text' and 'comment.ignore' with the value 'true'
      * <p>
      * Also embedded itemVaues can be resolved (resolveItemValues=true):
      * <p>
@@ -828,14 +832,14 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
      * 
      * @see https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags
      * @param event
-     * @param tag               - tag to be evaluated
+     * @param xmlTag            - XML tag to be evaluated
      * @param documentContext
      * @param resolveItemValues - if true, itemValue tags will be resolved.
      * @return eval itemCollection or null if no tags are contained in the workflow
      *         result.
      * @throws PluginException if the xml structure is invalid
      */
-    public ItemCollection evalWorkflowResult(ItemCollection event, String tag, ItemCollection documentContext,
+    public ItemCollection evalWorkflowResult(ItemCollection event, String xmlTag, ItemCollection documentContext,
             boolean resolveItemValues) throws PluginException {
         boolean debug = logger.isLoggable(Level.FINE);
         ItemCollection result = new ItemCollection();
@@ -843,13 +847,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         if (workflowResult.trim().isEmpty()) {
             return null;
         }
-        if (tag == null || tag.isEmpty()) {
+        if (xmlTag == null || xmlTag.isEmpty()) {
             logger.warning("cannot eval workflow result - no tag name specified. Verify model!");
             return null;
         }
 
         // if no <tag exists we skip the evaluation...
-        if (workflowResult.indexOf("<" + tag) == -1) {
+        if (workflowResult.indexOf("<" + xmlTag) == -1) {
             return null;
         }
 
@@ -860,7 +864,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
         boolean invalidPattern = false;
         // Fast first test if the tag really exists....
-        Pattern patternSimple = Pattern.compile("<" + tag + " (.*?)>(.*?)|<" + tag + " (.*?)./>", Pattern.DOTALL);
+        Pattern patternSimple = Pattern.compile("<" + xmlTag + " (.*?)>(.*?)|<" + xmlTag + " (.*?)./>", Pattern.DOTALL);
         Matcher matcherSimple = patternSimple.matcher(workflowResult);
         if (matcherSimple.find()) {
             invalidPattern = true;
@@ -870,8 +874,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
             // see also:
             // https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags
             // e.g. <item(.*?)>(.*?)</item>|<item(.*?)./>
-            Pattern pattern = Pattern.compile("(?s)(?:(<" + tag + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<=/>))|(<" + tag
-                    + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<!/>))(.*?)(</" + tag + "\\s*>))", Pattern.DOTALL);
+            Pattern pattern = Pattern
+                    .compile("(?s)(?:(<" + xmlTag + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<=/>))|(<" + xmlTag
+                            + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<!/>))(.*?)(</" + xmlTag + "\\s*>))", Pattern.DOTALL);
             Matcher matcher = pattern.matcher(workflowResult);
             while (matcher.find()) {
                 invalidPattern = false;
@@ -908,7 +913,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                     String tagName = attrMap.get("name");
                     if (tagName == null) {
                         throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
-                                "<" + tag + "> tag contains no name attribute.");
+                                "<" + xmlTag + "> tag contains no name attribute.");
                     }
 
                     // now add optional attributes if available
@@ -995,7 +1000,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
                 } else {
                     throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
-                            "<" + tag + "> tag contains no name attribute.");
+                            "<" + xmlTag + "> tag contains no name attribute.");
 
                 }
             }
@@ -1004,8 +1009,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         // test for general invalid format
         if (invalidPattern) {
             throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
-                    "invalid <" + tag + "> tag format in workflowResult: " + workflowResult + "  , expected format is <"
-                            + tag + " name=\"...\">...</item> ");
+                    "invalid <" + xmlTag + "> tag format in workflowResult: " + workflowResult
+                            + "  , expected format is <"
+                            + xmlTag + " name=\"...\">...</item> ");
         }
         return result;
     }
@@ -1042,103 +1048,45 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         return evalWorkflowResult(event, tag, documentContext, true);
     }
 
-    @Deprecated
-    public ItemCollection evalWorkflowResult(ItemCollection event, ItemCollection documentContext,
-            boolean resolveItemValues) throws PluginException {
-        logger.warning(
-                "Method call evalWorkflowResult(event, workitem, resolve) is deprecated, use method evalWorkflowResult(event, tag, workitem, resolve) instead!");
-        return this.evalWorkflowResult(event, "item", documentContext, resolveItemValues);
-    }
-
-    @Deprecated
-    public ItemCollection evalWorkflowResult(ItemCollection event, ItemCollection documentContext)
-            throws PluginException {
-        logger.warning(
-                "Method call evalWorkflowResult(event, workitem) is deprecated, use method evalWorkflowResult(event, tag, workitem) instead!");
-        return this.evalWorkflowResult(event, "item", documentContext);
-    }
-
     /**
-     * The method evaluates the WorkflowResult for a given BPMN event and returns a
-     * ItemCollection containing all matching XML tag. A XML tag must have the not
-     * empty attribute 'name'
-     * 
-     * Example:
-     * 
-     * <pre>
-     * {@code
-            <imixs-config name="TEMPLATE">
-                <textblock>....</textblock>
-                <name>....</name>
-            </imixs-config>
-            <imixs-config name="PROCESS">
-                ....
-            </imixs-config>            
-     * }
-     * </pre>
-     * 
-     * evalWorkflowResultXMLTagList(event,"imixs-config",workitem,true)
-     * 
-     * The method returns a ItemCollection with all XML data for the given xml tag
-     * stored in the corresponding Item
-     * 
-     * @param event
-     * @param tag             - tag to be evaluated
-     * @param documentContext
-     * 
-     * @return eval itemCollection or null if no tags are contained in the workflow
-     *         result.
-     * @throws PluginException if the xml structure is invalid
-     */
-    public ItemCollection evalWorkflowResultXMLTagList(ItemCollection event, String tagName,
-            ItemCollection workitem,
-            boolean resolveItemValues) throws PluginException {
-        ItemCollection configItemCol = evalWorkflowResult(event, tagName, workitem, resolveItemValues);
-        if (configItemCol == null) {
-            // no configuration found!
-            throw new PluginException(WorkflowService.class.getSimpleName(), INVALID_TAG_FORMAT,
-                    "Missing XML definition '" + tagName + "' in Event!");
-        }
-        return configItemCol;
-
-    }
-
-    /**
-     * The method evaluates the WorkflowResult for a given BPMN event and returns a
-     * list of ItemCollecitons matching the given XML tag and name attribtue.
-     * 
-     * A custom XML configuriaton may contain one or many XML tags with the same
+     * The method evaluates a XML tag from the WorkflowResult for a given BPMN
+     * event.
+     * The method returns a list of ItemCollecitons matching the given XML tag and
+     * name attribtue. A custom XML configuriaton may contain one or many XML tags
+     * with the same
      * name. Each result ItemCollection holds the tag values of each XML tag.
      * 
      * Example:
      * 
      * <pre>
      * {@code
-            <imixs-config name="CONFIG">
-                <textblock>....</textblock>
-                <template>....</template>
-            </imixs-config>
+     * <imixs-config name="CONFIG">
+     *   <textblock>....</textblock>
+     *   <template>....</template>
+     * </imixs-config>
      * }
      * </pre>
      * 
-     * evalWorkflowResultByTag(event,"imixs-config", "CONFIG",workitem,true)
-     * 
-     * 
      * @param event
-     * @param tag               - tag to be evaluated
+     * @param xmlTag            - xml tag to be evaluated
+     * @param name              - value of the matching name attribute
      * @param documentContext
      * @param resolveItemValues - if true, itemValue tags will be resolved.
-     * @return eval itemCollection or null if no tags are contained in the workflow
-     *         result.
+     * @return list of ItemCollections
      * @throws PluginException if the xml structure is invalid
      */
-    public List<ItemCollection> evalWorkflowResultXMLTag(ItemCollection event, String tagName, String name,
-            ItemCollection workitem,
+    public List<ItemCollection> evalWorkflowResultXML(ItemCollection event, String xmlTag, String name,
+            ItemCollection documentContext,
             boolean resolveItemValues) throws PluginException {
 
         List<ItemCollection> result = new ArrayList<ItemCollection>();
         // find all xml configs with the given tat name
-        ItemCollection configItemCol = evalWorkflowResultXMLTagList(event, tagName, workitem, resolveItemValues);
+        ItemCollection configItemCol = evalWorkflowResult(event, xmlTag, documentContext, resolveItemValues);
+        if (configItemCol == null) {
+            // no configuration found!
+            throw new PluginException(WorkflowService.class.getSimpleName(), INVALID_TAG_FORMAT,
+                    "Missing XML definition '" + xmlTag + "' in Event!");
+        }
 
         List<String> xmlDefinitions = configItemCol.getItemValueList(name, String.class);
         if (xmlDefinitions != null) {
@@ -1157,6 +1105,22 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
         return result;
 
+    }
+
+    @Deprecated
+    public ItemCollection evalWorkflowResult(ItemCollection event, ItemCollection documentContext,
+            boolean resolveItemValues) throws PluginException {
+        logger.warning(
+                "Method call evalWorkflowResult(event, workitem, resolve) is deprecated, use method evalWorkflowResult(event, tag, workitem, resolve) instead!");
+        return this.evalWorkflowResult(event, "item", documentContext, resolveItemValues);
+    }
+
+    @Deprecated
+    public ItemCollection evalWorkflowResult(ItemCollection event, ItemCollection documentContext)
+            throws PluginException {
+        logger.warning(
+                "Method call evalWorkflowResult(event, workitem) is deprecated, use method evalWorkflowResult(event, tag, workitem) instead!");
+        return this.evalWorkflowResult(event, "item", documentContext);
     }
 
     /**

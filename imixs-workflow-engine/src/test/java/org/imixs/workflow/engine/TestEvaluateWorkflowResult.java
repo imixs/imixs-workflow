@@ -475,33 +475,6 @@ public class TestEvaluateWorkflowResult {
      * @throws PluginException
      */
     @Test
-    public void testEvaluateWorkflowResultXMLtagList() {
-        ItemCollection activityEntity = new ItemCollection();
-        try {
-            activityEntity.replaceItemValue("txtActivityResult",
-                    "  <imixs-config name=\"CONFIG\">\n"
-                            + "            <items>abc</items>\n"
-                            + "            <mode>123</mode>\n"
-                            + "        </imixs-config>");
-            ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResultXMLTagList(
-                    activityEntity,
-                    "imixs-config", new ItemCollection(), false);
-            Assert.assertNotNull(result);
-
-        } catch (PluginException e) {
-            e.printStackTrace();
-            Assert.fail();
-        }
-
-    }
-
-    /**
-     * This test evaluates a event XML result by calling the the method
-     * evalWorkflowResultXMLTag
-     * 
-     * @throws PluginException
-     */
-    @Test
     public void testEvaluateWorkflowResultXML() {
         ItemCollection activityEntity = new ItemCollection();
 
@@ -511,7 +484,7 @@ public class TestEvaluateWorkflowResult {
                             + "            <items>abc</items>\n"
                             + "            <mode>123</mode>\n"
                             + "        </imixs-config>");
-            List<ItemCollection> result = workflowMockEnvironment.getWorkflowService().evalWorkflowResultXMLTag(
+            List<ItemCollection> result = workflowMockEnvironment.getWorkflowService().evalWorkflowResultXML(
                     activityEntity,
                     "imixs-config", "CONFIG", new ItemCollection(), false);
             Assert.assertNotNull(result);

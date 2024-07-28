@@ -146,10 +146,10 @@ Assert.assertEquals("true", result.getItemValueString("comment.ignore"));
 
 A custom configuration can have any XML tag with the mandatory attribute `name`.
 
-To extract this configuration in a a Java code you can use the method `evalWorkflowResultXMLTag` from the `WorkflowService`. See the following code example extracting the tags of the xml configuration above:
+To extract this configuration use the method `evalWorkflowResultXML` from the `WorkflowService`. See the following code example extracting the tags of the xml configuration above:
 
 ```java 
-List<ItemCollection> sepaConfigList = workflowService.evalWorkflowResultXMLTag(
+List<ItemCollection> sepaConfigList = workflowService.evalWorkflowResultXML(
 	event, "imixs-sepa", "CONFIG", sepaExport, false);
 if (sepaConfigList == null || sepaConfigList.size() == 0) {
 	// no configuration found!
@@ -162,9 +162,34 @@ String template = sepaConf.getItemValueString("template");
 ...
 ```
 
-If you just need the XML defintiion itself you can also call the method `evalWorkflowResultXMLTagList`. This method returns a single ItemCollection with the plain tag value of the given tag. The values are stored in the item with the coresponding `name'  attribute. A item can have multiple values in case the xml tag with one name occurs more then once in the result definition.
+### Evaluate custom XML Objects
+
+A workflow result can also contain more complex xml structures. In that case you can embed the XML object in a root element with at least the `name` attribute:
+
+```xml 
+<my-config name="bookstore">
+	<bookstore name="LIBRARY">
+		<book category="COOKING">  
+			<title lang="en">Everyday Italian</title>  
+			<author>Giada De Laurentiis</author>  
+			<year>2005</year>  
+		</book> 
+		<book category="CHILDREN">  
+			<title lang="en">Harry Potter</title>  
+			<author>J K. Rowling</author>  
+			<year>2005</year>   
+		</book>  	
+	</bookstore>
+</my-config>	
+```
+
+You can extract the XML content and parse the the structure manually. 
 
 ```java 
- ItemCollection configItemCol = evalWorkflowResultXMLTagList(event, tagName, workitem, resolveItemValues);
- List<String> xmlDefinitions = configItemCol.getItemValueList(name, String.class);
+ ItemCollection configItemCol = evalWorkflowResult(event, "my-config", documentContext, false);
+ List<String> xmlDefinitions = configItemCol.getItemValueList("bookstore", String.class);
+ // parse xml
+ ...
 ```
+
+**Note:** A xml configuration may occur more then once in a workflow result definition.

@@ -242,18 +242,12 @@ public class WorkflowMockEnvironment {
                     }
                 });
 
-        // when(workflowService.evalNextTask(Mockito.any(ItemCollection.class),
-        // Mockito.any(ItemCollection.class)))
-        // .thenCallRealMethod();
         when(workflowService.evalNextTask(Mockito.any(ItemCollection.class))).thenCallRealMethod();
         when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class), Mockito.anyString(),
                 Mockito.any(ItemCollection.class))).thenCallRealMethod();
         when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class), Mockito.anyString(),
                 Mockito.any(ItemCollection.class), Mockito.anyBoolean())).thenCallRealMethod();
-        when(workflowService.evalWorkflowResultXMLTagList(Mockito.any(ItemCollection.class),
-                Mockito.anyString(),
-                Mockito.any(ItemCollection.class), Mockito.anyBoolean())).thenCallRealMethod();
-        when(workflowService.evalWorkflowResultXMLTag(Mockito.any(ItemCollection.class), Mockito.anyString(),
+        when(workflowService.evalWorkflowResultXML(Mockito.any(ItemCollection.class), Mockito.anyString(),
                 Mockito.anyString(),
                 Mockito.any(ItemCollection.class), Mockito.anyBoolean())).thenCallRealMethod();
         when(workflowService.processWorkItem(Mockito.any(ItemCollection.class))).thenCallRealMethod();
