@@ -1085,7 +1085,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         if (configItemCol == null) {
             // no configuration found!
             throw new PluginException(WorkflowService.class.getSimpleName(), INVALID_TAG_FORMAT,
-                    "Missing XML definition '" + xmlTag + "' in Event!");
+                    "Missing XML definition '" + xmlTag + "' in Event " + event.getItemValueInteger("numprocessid")
+                            + "." + event.getItemValueInteger("numactivityid"));
         }
 
         List<String> xmlDefinitions = configItemCol.getItemValueList(name, String.class);
