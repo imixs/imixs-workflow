@@ -34,6 +34,7 @@ import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -72,6 +73,11 @@ public class WorkflowKernel {
     public static final String PLUGIN_NOT_CREATEABLE = "PLUGIN_NOT_CREATEABLE";
     public static final String PLUGIN_NOT_REGISTERED = "PLUGIN_NOT_REGISTERED";
     public static final String PLUGIN_ERROR = "PLUGIN_ERROR";
+
+    public static final String ADAPTER_ERROR_CONTEXT = "adapter.error_context";
+    public static final String ADAPTER_ERROR_CODE = "adapter.error_code";
+    public static final String ADAPTER_ERROR_PARAMS = "adapter.error_params";
+    public static final String ADAPTER_ERROR_MESSAGE = "adapter.error_message";
 
     public static final String ISO8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
@@ -183,7 +189,7 @@ public class WorkflowKernel {
                 }
                 if (!found) {
                     logger.log(Level.WARNING, "Plugin ''{0}'' depends on unregistered Plugin class ''{1}''",
-                            new Object[]{plugin.getClass().getName(), dependency});
+                            new Object[] { plugin.getClass().getName(), dependency });
                 }
             }
         }
@@ -335,6 +341,12 @@ public class WorkflowKernel {
         if ("".equals(workitem.getItemValueString(WorkflowKernel.WORKITEMID))) {
             documentResult.replaceItemValue(WorkflowKernel.WORKITEMID, generateUniqueID());
         }
+
+        // clear all existing adapter errors..
+        documentResult.removeItem(ADAPTER_ERROR_CONTEXT);
+        documentResult.removeItem(ADAPTER_ERROR_CODE);
+        documentResult.removeItem(ADAPTER_ERROR_PARAMS);
+        documentResult.removeItem(ADAPTER_ERROR_MESSAGE);
 
         // now process all events defined by the model
         while (documentResult.getEventID() > 0) {
@@ -504,7 +516,7 @@ public class WorkflowKernel {
                     // load activity
                     if (debug) {
                         logger.log(Level.FINEST, "......processing={0} -> loading next activityID = {1}",
-                                new Object[]{documentContext.getItemValueString(UNIQUEID), iNextID});
+                                new Object[] { documentContext.getItemValueString(UNIQUEID), iNextID });
                     }
                     vActivityList.remove(0);
                     // update document context
@@ -572,8 +584,8 @@ public class WorkflowKernel {
             }
 
             logger.log(Level.INFO, "\u2699 set model : {0} ({1})",
-                    new Object[]{documentResult.getItemValueString(UNIQUEID),
-                        documentResult.getItemValueString(MODELVERSION)});
+                    new Object[] { documentResult.getItemValueString(UNIQUEID),
+                            documentResult.getItemValueString(MODELVERSION) });
         }
         return documentResult;
     }
@@ -639,27 +651,32 @@ public class WorkflowKernel {
         evaluateSplitEvent(event, documentResult);
 
         // Issue #722
-//        // Update the attributes $taskID and $WorkflowStatus
-//        documentResult.setTaskID(Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
-//        if (debug) {
-//            logger.finest("......new $taskID=" + documentResult.getTaskID());
-//        }
-//        documentResult.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString("txtname"));
-//        documentResult.replaceItemValue(WORKFLOWGROUP, itemColNextTask.getItemValueString("txtworkflowgroup"));
-//        if (debug) {
-//            logger.finest("......new $workflowStatus=" + documentResult.getItemValueString(WORKFLOWSTATUS));
-//        }
-//        // update deprecated attributes txtworkflowStatus and txtworkflowGroup
-//        documentResult.replaceItemValue("txtworkflowStatus", documentResult.getItemValueString(WORKFLOWSTATUS));
-//        documentResult.replaceItemValue("txtworkflowGroup", documentResult.getItemValueString(WORKFLOWGROUP));
-//
-//        // update the type attribute if defined.
-//        // the type attribute can only be overwritten by a plug-in if the type is not
-//        // defined by the task!
-//        String sType = itemColNextTask.getItemValueString("txttype");
-//        if (!"".equals(sType)) {
-//            documentResult.replaceItemValue(TYPE, sType);
-//        }
+        // // Update the attributes $taskID and $WorkflowStatus
+        // documentResult.setTaskID(Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
+        // if (debug) {
+        // logger.finest("......new $taskID=" + documentResult.getTaskID());
+        // }
+        // documentResult.replaceItemValue(WORKFLOWSTATUS,
+        // itemColNextTask.getItemValueString("txtname"));
+        // documentResult.replaceItemValue(WORKFLOWGROUP,
+        // itemColNextTask.getItemValueString("txtworkflowgroup"));
+        // if (debug) {
+        // logger.finest("......new $workflowStatus=" +
+        // documentResult.getItemValueString(WORKFLOWSTATUS));
+        // }
+        // // update deprecated attributes txtworkflowStatus and txtworkflowGroup
+        // documentResult.replaceItemValue("txtworkflowStatus",
+        // documentResult.getItemValueString(WORKFLOWSTATUS));
+        // documentResult.replaceItemValue("txtworkflowGroup",
+        // documentResult.getItemValueString(WORKFLOWGROUP));
+        //
+        // // update the type attribute if defined.
+        // // the type attribute can only be overwritten by a plug-in if the type is not
+        // // defined by the task!
+        // String sType = itemColNextTask.getItemValueString("txttype");
+        // if (!"".equals(sType)) {
+        // documentResult.replaceItemValue(TYPE, sType);
+        // }
         updateWorkflowStatus(documentResult, itemColNextTask);
 
         return documentResult;
@@ -679,7 +696,8 @@ public class WorkflowKernel {
         documentResult.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString("txtname"));
         documentResult.replaceItemValue(WORKFLOWGROUP, itemColNextTask.getItemValueString("txtworkflowgroup"));
         if (debug) {
-            logger.log(Level.FINEST, "......new $workflowStatus={0}", documentResult.getItemValueString(WORKFLOWSTATUS));
+            logger.log(Level.FINEST, "......new $workflowStatus={0}",
+                    documentResult.getItemValueString(WORKFLOWSTATUS));
         }
         // update deprecated attributes txtworkflowStatus and txtworkflowGroup
         documentResult.replaceItemValue("txtworkflowStatus", documentResult.getItemValueString(WORKFLOWSTATUS));
@@ -774,23 +792,35 @@ public class WorkflowKernel {
      * @param event
      * @throws PluginException
      */
+    @SuppressWarnings("unchecked")
     private void executeAdaper(Adapter adapter, ItemCollection workitem, ItemCollection event) throws PluginException {
         boolean debug = logger.isLoggable(Level.FINE);
         // execute...
         try {
-            // remove adapter errors..
-            workitem.removeItem("adapter.error_context");
-            workitem.removeItem("adapter.error_code");
-            workitem.removeItem("adapter.error_params");
-            workitem.removeItem("adapter.error_message");
             workitem = adapter.execute(workitem, event);
         } catch (AdapterException e) {
-            logger.log(Level.WARNING, "...execution of adapter failed: {0}", e.getMessage());
+            logger.log(Level.WARNING, "...execution of adapter " + adapter.getClass().getSimpleName() + " failed: {0}",
+                    e.getMessage());
             // update workitem with adapter exception....
-            workitem.setItemValue("adapter.error_context", e.getErrorContext());
-            workitem.setItemValue("adapter.error_code", e.getErrorCode());
-            workitem.setItemValue("adapter.error_params", e.getErrorParameters());
-            workitem.setItemValue("adapter.error_message", e.getMessage());
+            workitem.appendItemValue(ADAPTER_ERROR_CONTEXT, e.getErrorContext());
+            workitem.appendItemValue(ADAPTER_ERROR_CODE, e.getErrorCode());
+            workitem.appendItemValue(ADAPTER_ERROR_PARAMS, e.getErrorParameters());
+            workitem.appendItemValue(ADAPTER_ERROR_MESSAGE, e.getMessage());
+
+            // revert order of error list
+            List<Object> valueList = workitem.getItemValue(ADAPTER_ERROR_CONTEXT);
+            Collections.reverse(valueList);
+            workitem.setItemValue(ADAPTER_ERROR_CONTEXT, valueList);
+            valueList = workitem.getItemValue(ADAPTER_ERROR_CODE);
+            Collections.reverse(valueList);
+            workitem.setItemValue(ADAPTER_ERROR_CODE, valueList);
+            valueList = workitem.getItemValue(ADAPTER_ERROR_PARAMS);
+            Collections.reverse(valueList);
+            workitem.setItemValue(ADAPTER_ERROR_PARAMS, valueList);
+            valueList = workitem.getItemValue(ADAPTER_ERROR_MESSAGE);
+            Collections.reverse(valueList);
+            workitem.setItemValue(ADAPTER_ERROR_MESSAGE, valueList);
+
             if (debug) {
                 e.printStackTrace();
             }
@@ -1007,7 +1037,8 @@ public class WorkflowKernel {
                                     + "." + +event.getItemValueInteger("numActivityid") + " (" + event.getModelVersion()
                                     + ") evaluate to false must not be connected to a task. ";
 
-                            logger.log(Level.WARNING, "{0} Condition = {1}", new Object[]{sErrorMessage, expression});
+                            logger.log(Level.WARNING, "{0} Condition = {1}",
+                                    new Object[] { sErrorMessage, expression });
                             throw new ModelException(ModelException.INVALID_MODEL, sErrorMessage);
                         }
                     }
@@ -1057,14 +1088,13 @@ public class WorkflowKernel {
 
     }
 
-
- /**
+    /**
      * This method creates a new instance of a sourceWorkitem. The method did not
      * save the workitem!.
      * <p>
      * The new property $UniqueIDSource will be added to the new version, which
      * points to the $uniqueID of the sourceWorkitem.
-     * In addtion the item $created.version marks the point of time. 
+     * In addtion the item $created.version marks the point of time.
      * <p>
      * The new property $UniqueIDVersions will be added to the sourceWorktiem which
      * points to the id of the new version.
@@ -1086,8 +1116,8 @@ public class WorkflowKernel {
 
         // update $unqiueIDSource
         itemColNewVersion.replaceItemValue(UNIQUEIDSOURCE, id);
-        itemColNewVersion.replaceItemValue(CREATED+".version", sourceItemCollection.getItemValueDate(LASTEVENTDATE));
-        
+        itemColNewVersion.replaceItemValue(CREATED + ".version", sourceItemCollection.getItemValueDate(LASTEVENTDATE));
+
         // remove $UniqueIDVersions
         itemColNewVersion.removeItem(UNIQUEIDVERSIONS);
 
@@ -1226,7 +1256,7 @@ public class WorkflowKernel {
                     "[loadEvent] model entry " + taskID + "." + eventID + " not found for model version '" + version
                             + "'");
         if (debug) {
-            logger.log(Level.FINEST, ".......event: {0}.{1} loaded", new Object[]{taskID, eventID});
+            logger.log(Level.FINEST, ".......event: {0}.{1} loaded", new Object[] { taskID, eventID });
         }
         // Check for loop in edge history
         if (vectorEdgeHistory != null && vectorEdgeHistory.indexOf((taskID + "." + eventID)) != -1) {
@@ -1262,7 +1292,7 @@ public class WorkflowKernel {
                 documentResult = plugin.run(documentResult, event);
                 if (debug) {
                     logger.log(Level.FINE, "...Plugin ''{0}'' processing time={1}ms",
-                            new Object[]{sPluginName, System.currentTimeMillis() - lPluginTime});
+                            new Object[] { sPluginName, System.currentTimeMillis() - lPluginTime });
                 }
                 if (documentResult == null) {
                     logger.log(Level.SEVERE, "[runPlugins] PLUGIN_ERROR: {0}", sPluginName);
@@ -1284,7 +1314,7 @@ public class WorkflowKernel {
         } catch (PluginException e) {
             // log plugin stack!....
             logger.log(Level.SEVERE, "Plugin-Error at {0}: {1} ({2})",
-                    new Object[]{e.getErrorContext(), e.getErrorCode(), e.getMessage()});
+                    new Object[] { e.getErrorContext(), e.getErrorCode(), e.getMessage() });
             if (debug) {
                 logger.severe("Last Plugins run successfull:");
                 for (String sLogEntry : localPluginLog)
