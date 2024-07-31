@@ -49,15 +49,15 @@ The optional tag `items` defines a list of attributes to be copied from the orig
 
     <items>namTeam,txtName,_orderNumber</items>
 
-To avoid item name conflicts the item name in the target workitem can be mapped by separating the new item name with the a '|' char.
+To avoid name conflicts, the item name can be mapped to a different name by separating the new name with the '|' char.
 
     <items>namTeam,txtName,_orderNumber|_origin_orderNumber</items>
 
-In this example the item '\_ordernumber' will be copied into the target workitem with the new item name '\_origin_ordernumber'.
+In this example the item `_ordernumber` will be copied into the target workitem with the new item name `_origin_ordernumber`.
 
 ### Copy Items by Regex
 
-The _items_ tag also suppors regular expression. See the following example with will copy all items starting with alphabetical characters or '\_':
+The _items_ tag also supports regular expression. See the following example with will copy all items starting with alphabetical characters or `_`:
 
     <items>$workflowsummary|_parentworkflowsummary,(^[a-zA-Z]|^_)</items>
 
