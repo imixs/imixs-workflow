@@ -201,8 +201,17 @@ public class ModelService implements ModelManager {
     public Model getModel(String version) throws ModelException {
         Model model = getModelStore().get(version);
         if (model == null) {
-            throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
-                    "Modelversion '" + version + "' not found!");
+            // try to find model by regex....
+            List<String> modelList = findVersionsByRegEx(version);
+            if (modelList != null && modelList.size() > 0) {
+                version = modelList.get(0);
+                model = getModelStore().get(version);
+            }
+            // still not found!
+            if (model == null) {
+                throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
+                        "Modelversion '" + version + "' not found!");
+            }
         }
         return model;
     }
@@ -218,6 +227,7 @@ public class ModelService implements ModelManager {
     public Model getModelByWorkitem(ItemCollection workitem) throws ModelException {
         boolean debug = logger.isLoggable(Level.FINE);
         String modelVersion = workitem.getModelVersion();
+
         String workflowGroup = workitem.getItemValueString(WorkflowKernel.WORKFLOWGROUP);
         // if $workflowgroup is empty try deprecated field txtworkflowgroup
         if (workflowGroup.isEmpty()) {
