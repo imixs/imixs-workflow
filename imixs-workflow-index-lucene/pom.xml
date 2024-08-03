@@ -1,15 +1,17 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.imixs.workflow</groupId>
 		<artifactId>imixs-workflow</artifactId>
-		<version>6.0.8-SNAPSHOT</version>
+		<version>6.1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>imixs-workflow-index-lucene</artifactId>
 	<name>Search Index Apache Lucene</name>
 
 	<dependencies>
-	
+
 		<!-- Imixs Workflow core dependencies -->
 		<dependency>
 			<groupId>org.imixs.workflow</groupId>
@@ -21,7 +23,7 @@
 			<artifactId>imixs-workflow-engine</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-	
+
 		<!-- Apache Lucene -->
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
@@ -39,10 +41,10 @@
 			<version>${lucene.version}</version>
 		</dependency>
 		<dependency>
-            <artifactId>lucene-facet</artifactId>
-            <groupId>org.apache.lucene</groupId>
-            <version>${lucene.version}</version>
-        </dependency>
+			<artifactId>lucene-facet</artifactId>
+			<groupId>org.apache.lucene</groupId>
+			<version>${lucene.version}</version>
+		</dependency>
 	</dependencies>
 	<description>Serach Index based on Apache Lucene Core</description>
 </project>
