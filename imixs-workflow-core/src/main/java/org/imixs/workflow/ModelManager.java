@@ -34,17 +34,27 @@ import org.openbpmn.bpmn.BPMNModel;
 /**
  * The interface ModelManager manages instances of a Model. A Model instance is
  * uniquely identified by the ModelVersion. The ModelManager is used by the
- * <code>WorkflowKernel</code> to manage the workflow of a workitem.
+ * {@link WorkflowKernel} to manage the processing live cycle of a workitem.
  * <p>
  * By analyzing the workitem model version the WorkflowKernel determines the
- * corresponding model and get the Tasks and Events from the model to process
- * the workitem and assign the workitem to the next Task defined by the Model.
- * 
+ * corresponding model and get the Tasks and Events from the ModelManager to
+ * process the workitem and assign the workitem to the next Task defined by the
+ * BPMN Model.
  * 
  * @author rsoika
- *
  */
 public interface ModelManager {
+
+    public final static String TASK_ELEMENT = "TASK";
+    public final static String EVENT_ELEMENT = "EVENT";
+
+    /**
+     * Adds a new Model to the ModelManager.
+     * 
+     * @param model
+     * @throws ModelException
+     */
+    public void addModel(BPMNModel model) throws ModelException;;
 
     /**
      * Returns a Model by version. The method throws a ModelException in case the
@@ -57,28 +67,73 @@ public interface ModelManager {
     public BPMNModel getModel(String version) throws ModelException;;
 
     /**
-     * Adds a new Model to the ModelManager.
-     * 
-     * @param model
-     * @throws ModelException
-     */
-    public void addModel(BPMNModel model) throws ModelException;;
-
-    /**
-     * Removes a Model from the ModelManager
+     * Removes a BPMNModel from the ModelManager
      * 
      * @param version
      */
     public void removeModel(String version);
 
     /**
-     * Returns a Model matching a given workitem. The method throws a ModelException
-     * in case the model version did not exits.
+     * Returns a BPMNModel instance matching the $modelVersion of a given workitem.
+     * The method throws a ModelException in case the model version did not exits.
+     * <p>
+     * A ModelManager may resolve a model also by regular expressions.
      * 
      * @param version
      * @throws ModelException
-     * @return Model
+     * @return BPMNModel
      */
-    public BPMNModel getModelByWorkitem(ItemCollection workitem) throws ModelException;
+    public BPMNModel findModelByWorkitem(ItemCollection workitem) throws ModelException;
+
+    /**
+     * Returns the BPMN Task entity associated with a given workitem, based on its
+     * attributes "$modelVersion" and "$taskID".
+     * <p>
+     * The method throws a {@link ModelException} if no Task can be resolved based
+     * on the given model information.
+     * <p>
+     * The method is called by the {@link WorkflowKernel} during the the processing
+     * live cycle.
+     * 
+     * @param workitem
+     * @return BPMN Event entity - {@link ItemCollection}
+     * @throws ModelException if no event was found
+     */
+    public ItemCollection loadTask(ItemCollection workitem) throws ModelException;
+
+    /**
+     * Returns the BPMN Event entity associated with a given workitem, based on its
+     * attributes "$modelVersion", "$taskID" and "$eventID".
+     * <p>
+     * The method throws a {@link ModelException} if no Event can be resolved based
+     * on the given model information.
+     * <p>
+     * The method is called by the {@link WorkflowKernel} to start the processing
+     * live cycle.
+     * 
+     * @param workitem
+     * @return BPMN Event entity - {@link ItemCollection}
+     * @throws ModelException if no event was found
+     */
+    public ItemCollection loadEvent(ItemCollection workitem) throws ModelException;
+
+    /**
+     * Finds the next BPMN Element associated with a given workitem, based on its
+     * attributes "$modelVersion", "$taskID" and "$eventID". The returned BPMN
+     * Element must either be an Activity (Task) element, an Intermediate Catch
+     * Event or a End Event. The method must not return any other BPMN elements
+     * (e.g. Gateways, Intermediate Throw Events).
+     * <p>
+     * The method throws a {@link ModelException} if no Event can be resolved based
+     * on the given model information.
+     * <p>
+     * The method is called by the {@link WorkflowKernel} during the processing live
+     * cycle. The ModelManager is responsible to resolve conditional sequence flows.
+     * 
+     * @param workitem
+     * @return a BPMN Element entity - {@link ItemCollection}
+     * @throws ModelException - if no valid element was found
+     */
+    public ItemCollection nextModelElement(ItemCollection workitem) throws ModelException;
 
 }

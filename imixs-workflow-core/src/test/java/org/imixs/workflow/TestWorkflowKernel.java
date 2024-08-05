@@ -10,9 +10,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
+import org.imixs.workflow.bpmn.OpenBPMNModelManager;
+import org.imixs.workflow.bpmn.OpenBPMNUtil;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -22,9 +24,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
+import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
+import org.openbpmn.bpmn.util.BPMNModelFactory;
 
 import jakarta.ejb.SessionContext;
-import java.util.logging.Level;
 
 /**
  * Test class for Imixs WorkflowKernel using a static default model. The test
@@ -52,7 +56,7 @@ public class TestWorkflowKernel {
         workflowContext = Mockito.mock(WorkflowContext.class);
 
         // provide a mock modelManger class
-        when(workflowContext.getModelManager()).thenReturn(new MokModelManager());
+        when(workflowContext.getModelManager()).thenReturn(new OpenBPMNModelManager());
 
         // MokWorkflowContext ctx = new MokWorkflowContext();
         kernel = new WorkflowKernel(workflowContext);
@@ -65,17 +69,32 @@ public class TestWorkflowKernel {
     @Test
     @Category(org.imixs.workflow.WorkflowKernel.class)
     public void testProcess() {
+
+        BPMNModel model = null;
+        // Load Model
+        try {
+            model = BPMNModelFactory.read("/bpmn/simple.bpmn");
+            workflowContext.getModelManager().addModel(model);
+        } catch (BPMNModelException | ModelException e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+
         ItemCollection itemCollectionProcessed = null;
         ItemCollection itemCollection = new ItemCollection();
+        itemCollection.model(OpenBPMNUtil.getVersion(model))
+                .task(1000)
+                .event(10);
         itemCollection.replaceItemValue("txtTitel", "Hello");
-        itemCollection.setTaskID(100);
-        itemCollection.setEventID(10);
-        itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
         Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
         try {
             itemCollectionProcessed = kernel.process(itemCollection);
+
+        } catch (ModelException e) {
+            Assert.fail(e.getMessage());
+            e.printStackTrace();
         } catch (WorkflowException e) {
             Assert.fail();
             e.printStackTrace();
@@ -85,7 +104,7 @@ public class TestWorkflowKernel {
         }
 
         Assert.assertEquals(1, itemCollectionProcessed.getItemValueInteger("runs"));
-        Assert.assertEquals(100, itemCollectionProcessed.getTaskID());
+        Assert.assertEquals(1000, itemCollectionProcessed.getTaskID());
 
         // initial and processed workitems should be the same and should be equals!
         Assert.assertSame(itemCollection, itemCollectionProcessed);

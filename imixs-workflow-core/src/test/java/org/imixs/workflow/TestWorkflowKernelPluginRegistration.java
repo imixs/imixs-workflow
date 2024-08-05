@@ -39,7 +39,7 @@ public class TestWorkflowKernelPluginRegistration {
 		workflowContext = Mockito.mock(WorkflowContext.class);
 
 		// provide a mock modelManger class
-		when(workflowContext.getModelManager()).thenReturn(new MokModelManager());
+		when(workflowContext.getModelManager()).thenReturn(new MockModelManager());
 
 	}
 
@@ -69,21 +69,21 @@ public class TestWorkflowKernelPluginRegistration {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		
+
 		// try plugin registration without conext..
 		kernel.unregisterAllPlugins();
 		try {
-			workflowContext=null;
+			workflowContext = null;
 			kernel.registerPlugin(mokPlugin);
 		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		
+
 		List<Plugin> plugins = kernel.getPluginRegistry();
 		Assert.assertNotNull(plugins);
 		Assert.assertEquals(1, plugins.size());
-		
+
 		// unregister plugin
 		try {
 			kernel.unregisterPlugin(MokPlugin.class.getName());
@@ -94,7 +94,7 @@ public class TestWorkflowKernelPluginRegistration {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		
+
 		// register 2 plugins
 		try {
 			kernel.registerPlugin(mokPlugin);

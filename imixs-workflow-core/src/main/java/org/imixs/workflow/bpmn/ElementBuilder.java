@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ModelManager;
 import org.openbpmn.bpmn.BPMNNS;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.Event;
@@ -126,11 +127,13 @@ public class ElementBuilder {
         if (bpmnElement instanceof Activity) {
             result.setItemValue("taskID",
                     Long.parseLong(bpmnElement.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "processid")));
+            result.setType(ModelManager.TASK_ELEMENT);
 
         }
         if (bpmnElement instanceof Event) {
             result.setItemValue("eventID",
                     Long.parseLong(bpmnElement.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "activityid")));
+            result.setType(ModelManager.EVENT_ELEMENT);
         }
 
         // parse imixs extension attributes

@@ -70,7 +70,7 @@ public class TestWorkflowKernelModels {
 	public void testSimpleModel() {
 		try {
 			// provide a mock modelManger class
-			when(workflowContext.getModelManager()).thenReturn(new MokModelManager("/bpmn/simple.bpmn"));
+			when(workflowContext.getModelManager()).thenReturn(new MockModelManager("/bpmn/simple.bpmn"));
 
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
@@ -110,7 +110,7 @@ public class TestWorkflowKernelModels {
 	public void testTicketModel() {
 		try {
 			// provide a mock modelManger class
-			when(workflowContext.getModelManager()).thenReturn(new MokModelManager("/bpmn/ticket.bpmn"));
+			when(workflowContext.getModelManager()).thenReturn(new MockModelManager("/bpmn/ticket.bpmn"));
 
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
@@ -154,7 +154,7 @@ public class TestWorkflowKernelModels {
 	public void testConditionalEventModel1() {
 		try {
 			// provide a mock modelManger class
-			when(workflowContext.getModelManager()).thenReturn(new MokModelManager("/bpmn/conditional_event1.bpmn"));
+			when(workflowContext.getModelManager()).thenReturn(new MockModelManager("/bpmn/conditional_event1.bpmn"));
 
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
@@ -207,7 +207,7 @@ public class TestWorkflowKernelModels {
 	public void testConditionalEventModel2() {
 		try {
 			// provide a mock modelManger class
-			when(workflowContext.getModelManager()).thenReturn(new MokModelManager("/bpmn/conditional_event2.bpmn"));
+			when(workflowContext.getModelManager()).thenReturn(new MockModelManager("/bpmn/conditional_event2.bpmn"));
 
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
@@ -257,7 +257,7 @@ public class TestWorkflowKernelModels {
 	public void testSplitEventModel1() {
 		try {
 			// provide a mock modelManger class
-			when(workflowContext.getModelManager()).thenReturn(new MokModelManager("/bpmn/split_event1.bpmn"));
+			when(workflowContext.getModelManager()).thenReturn(new MockModelManager("/bpmn/split_event1.bpmn"));
 
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
@@ -319,7 +319,7 @@ public class TestWorkflowKernelModels {
 
 		// provide a mock modelManger class
 		try {
-			when(workflowContext.getModelManager()).thenReturn(new MokModelManager("/bpmn/split_event1_invalid.bpmn"));
+			when(workflowContext.getModelManager()).thenReturn(new MockModelManager("/bpmn/split_event1_invalid.bpmn"));
 		} catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e1) {
 			e1.printStackTrace();
 			Assert.fail();

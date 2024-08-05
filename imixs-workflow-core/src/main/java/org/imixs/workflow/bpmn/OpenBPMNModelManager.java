@@ -1,13 +1,20 @@
 package org.imixs.workflow.bpmn;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.exceptions.ModelException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
 import org.openbpmn.bpmn.elements.Activity;
@@ -18,41 +25,147 @@ import org.openbpmn.bpmn.navigation.BPMNFlowIterator;
 import org.w3c.dom.Element;
 
 /**
- * This helper class provides methods to access extension tags within a
- * Open-BPMN Model
- * 
- * 
- * Example:
- * 
- * <pre>{@code  
- * <bpmn2:task id="Task_2" imixs:processid="1900" name="Approve">
-      <bpmn2:extensionElements>
-        <imixs:item name="user.name" type="xs:string">John</imixs:item>
-        ....
-      </bpmn2:extensionElements>
-        }</pre>
+ * This OpenBPMNModelManager is a static ModelManger to handle Open BPMN Models.
+ * The implementation is based on the OpenBPMN Meta model.
  * 
  */
-public class OpenBPMNManager {
+public class OpenBPMNModelManager implements ModelManager {
 
-    private static Logger logger = Logger.getLogger(OpenBPMNManager.class.getName());
+    private static Logger logger = Logger.getLogger(OpenBPMNModelManager.class.getName());
+
+    // Model store
+    private static final Map<String, BPMNModel> modelStore = new ConcurrentHashMap<>();
 
     // cache
-    private static final Map<String, ItemCollection> itemColCache = new ConcurrentHashMap<>();
-    private static final Map<String, BPMNElement> bpmnCache = new ConcurrentHashMap<>();
+    private static final Map<String, ItemCollection> bpmnEntityCache = new ConcurrentHashMap<>();
+    private static final Map<String, BPMNElement> bpmnElementCache = new ConcurrentHashMap<>();
 
     /**
      * Private constructor to prevent instantiation
      */
-    private OpenBPMNManager() {
+    public OpenBPMNModelManager() {
+    }
+
+    /**
+     * Adds a new model into the local model store
+     */
+    @Override
+    public void addModel(BPMNModel model) throws ModelException {
+        String version = OpenBPMNUtil.getVersion(model);
+        modelStore.put(version, model);
+        clearCache();
+    }
+
+    /**
+     * Returns a BPMNModel by its version from the local model store
+     */
+    @Override
+    public BPMNModel getModel(String version) throws ModelException {
+        return modelStore.get(version);
+    }
+
+    /**
+     * Removes a BPMNModel form the local model store
+     */
+    @Override
+    public void removeModel(String version) {
+        modelStore.remove(version);
+        clearCache();
+    }
+
+    @Override
+    public BPMNModel findModelByWorkitem(ItemCollection workitem) throws ModelException {
+        BPMNModel result = null;
+        String version = workitem.getModelVersion();
+        // first try a direct fetch....
+        result = modelStore.get(version);
+        if (result != null) {
+            return result;
+        } else {
+            // try to find model by regex...
+            List<String> matchingVersions = findVersionsByRegEx(version);
+            for (String matchingVersion : matchingVersions) {
+                result = modelStore.get(matchingVersion);
+                if (result != null) {
+                    // match
+                    return result;
+                }
+            }
+            // no match!
+            throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION, "$modelversion " + version + " not found");
+        }
+    }
+
+    /**
+     * This method returns a sorted list of model versions matching a given regex
+     * for a model version. The result is sorted in reverse order, so the highest
+     * version number is the first in the result list.
+     * 
+     * @param group
+     * @return
+     */
+    public List<String> findVersionsByRegEx(String modelRegex) {
+        boolean debug = logger.isLoggable(Level.FINE);
+        List<String> result = new ArrayList<String>();
+        if (debug) {
+            logger.log(Level.FINEST, "......searching model versions for regex ''{0}''...", modelRegex);
+        }
+        // try to find matching model version by regex
+        Collection<BPMNModel> models = modelStore.values();
+        for (BPMNModel amodel : models) {
+            String _version = OpenBPMNUtil.getVersion(amodel);
+            if (Pattern.compile(modelRegex).matcher(_version).find()) {
+                result.add(_version);
+            }
+        }
+        // sort result
+        Collections.sort(result, Collections.reverseOrder());
+        return result;
+    }
+
+    @Override
+    public ItemCollection loadTask(ItemCollection workitem) throws ModelException {
+        BPMNModel model = findModelByWorkitem(workitem);
+        ItemCollection task = findTaskByID(model, workitem.getTaskID());
+        if (task == null) {
+            throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
+                    "task " + workitem.getTaskID() + " not defined in model '" + workitem.getModelVersion() + "'");
+        }
+        return task;
+    }
+
+    @Override
+    public ItemCollection loadEvent(ItemCollection workitem) throws ModelException {
+
+        BPMNModel model = findModelByWorkitem(workitem);
+        ItemCollection event = findEventByID(model, workitem.getTaskID(), workitem.getEventID());
+        if (event == null) {
+            throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY, "Event " + workitem.getTaskID() + "."
+                    + workitem.getEventID() + " not defined in model '" + workitem.getModelVersion() + "'");
+        }
+        return event;
+    }
+
+    @Override
+    public ItemCollection nextModelElement(ItemCollection workitem) throws ModelException {
+        logger.warning("Unimplemented method 'nextModelElement'");
+
+        // return current task....
+        BPMNModel model = findModelByWorkitem(workitem);
+        ItemCollection task = findTaskByID(model, workitem.getTaskID());
+        if (task == null) {
+            throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
+                    "Task " + workitem.getTaskID() + " not defined in model '" + workitem.getModelVersion() + "'");
+        }
+        return task;
     }
 
     /**
      * Reset the internal BPMN Element cache
      */
-    public static void clearCache() {
-        itemColCache.clear();
-        bpmnCache.clear();
+    private static void clearCache() {
+        bpmnEntityCache.clear();
+        bpmnElementCache.clear();
     }
 
     /**
@@ -69,7 +182,8 @@ public class OpenBPMNManager {
      */
     public static ItemCollection findTaskByID(final BPMNModel model, int taskID) {
         String key = OpenBPMNUtil.getVersion(model) + "~" + taskID;
-        ItemCollection result = (ItemCollection) itemColCache.computeIfAbsent(key, k -> lookupTaskByID(model, taskID));
+        ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key,
+                k -> lookupTaskByID(model, taskID));
         // clone instance to protect for manipulation
         if (result != null) {
             return (ItemCollection) result.clone();
@@ -89,7 +203,7 @@ public class OpenBPMNManager {
      */
     public static ItemCollection findEventByID(final BPMNModel model, int taskID, int eventID) {
         String key = OpenBPMNUtil.getVersion(model) + "~" + taskID + "." + eventID;
-        ItemCollection result = (ItemCollection) itemColCache.computeIfAbsent(key,
+        ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key,
                 k -> lookupEventByID(model, taskID, eventID));
         // clone instance to protect for manipulation
         if (result != null) {
@@ -110,7 +224,7 @@ public class OpenBPMNManager {
      */
     public static ItemCollection findDefinition(final BPMNModel model) {
         String key = OpenBPMNUtil.getVersion(model);
-        ItemCollection result = (ItemCollection) itemColCache.computeIfAbsent(key, k -> lookupDefinition(model));
+        ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key, k -> lookupDefinition(model));
         // clone instance to protect for manipulation
         if (result != null) {
             return (ItemCollection) result.clone();
@@ -192,7 +306,7 @@ public class OpenBPMNManager {
      */
     private static ItemCollection lookupTaskByID(final BPMNModel model, int taskID) {
         String key = OpenBPMNUtil.getVersion(model) + "~" + taskID;
-        Activity activity = (Activity) bpmnCache.computeIfAbsent(key, k -> lookupTaskElementByID(model, taskID));
+        Activity activity = (Activity) bpmnElementCache.computeIfAbsent(key, k -> lookupTaskElementByID(model, taskID));
         if (activity != null) {
             return ElementBuilder.buildItemCollectionFromBPMNElement(activity);
         } else {
@@ -211,7 +325,7 @@ public class OpenBPMNManager {
      */
     private static ItemCollection lookupEventByID(final BPMNModel model, int taskID, int eventID) {
         String key = OpenBPMNUtil.getVersion(model) + "~" + taskID;
-        Activity task = (Activity) bpmnCache.computeIfAbsent(key, k -> lookupTaskElementByID(model, taskID));
+        Activity task = (Activity) bpmnElementCache.computeIfAbsent(key, k -> lookupTaskElementByID(model, taskID));
         // Activity task = lookupTaskByID(model, taskID);
         if (task == null) {
             logger.warning("TaskID: " + taskID + " does not exist!");

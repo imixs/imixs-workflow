@@ -41,14 +41,14 @@ public class TestBPMNUtil {
 	public void testFindTasks() {
 		Assert.assertNotNull(model);
 
-		ItemCollection task = OpenBPMNManager.findTaskByID(model, 1000);
+		ItemCollection task = OpenBPMNModelManager.findTaskByID(model, 1000);
 		Assert.assertNotNull(task);
 
-		task = OpenBPMNManager.findTaskByID(model, 1100);
+		task = OpenBPMNModelManager.findTaskByID(model, 1100);
 		Assert.assertNotNull(task);
 
 		// test non existing task
-		task = OpenBPMNManager.findTaskByID(model, 2000);
+		task = OpenBPMNModelManager.findTaskByID(model, 2000);
 		Assert.assertNull(task);
 	}
 
@@ -61,17 +61,17 @@ public class TestBPMNUtil {
 	public void testFindEvents() {
 		Assert.assertNotNull(model);
 
-		ItemCollection event = OpenBPMNManager.findEventByID(model, 1000, 10);
+		ItemCollection event = OpenBPMNModelManager.findEventByID(model, 1000, 10);
 		Assert.assertNotNull(event);
 
-		event = OpenBPMNManager.findEventByID(model, 1000, 20);
+		event = OpenBPMNModelManager.findEventByID(model, 1000, 20);
 		Assert.assertNotNull(event);
 
 		// test non existing event
-		event = OpenBPMNManager.findEventByID(model, 1100, 10);
+		event = OpenBPMNModelManager.findEventByID(model, 1100, 10);
 		Assert.assertNull(event);
 
-		event = OpenBPMNManager.findEventByID(model, 2000, 10);
+		event = OpenBPMNModelManager.findEventByID(model, 2000, 10);
 		Assert.assertNull(event);
 	}
 
