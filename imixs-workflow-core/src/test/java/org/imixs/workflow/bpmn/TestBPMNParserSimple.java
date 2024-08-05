@@ -11,10 +11,12 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
 import org.junit.Assert;
+import org.junit.Test;
+import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
+import org.openbpmn.bpmn.util.BPMNModelFactory;
+import org.xml.sax.SAXException;
 
 /**
  * Test class test the Imixs BPMNParser
@@ -22,7 +24,6 @@ import org.junit.Assert;
  * @author rsoika
  */
 public class TestBPMNParserSimple {
-
 
 	@Test
 	public void testSimple()
@@ -89,7 +90,7 @@ public class TestBPMNParserSimple {
 		Assert.assertNotNull(activity);
 		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
 		Assert.assertEquals("update", activity.getItemValueString("txtname"));
-		
+
 		// test activity 1000.20 submit
 		activity = model.getEvent(1000, 20);
 		Assert.assertNotNull(activity);
@@ -103,19 +104,16 @@ public class TestBPMNParserSimple {
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		String VERSION = "1.0.0";
-
-		InputStream inputStream = getClass().getResourceAsStream("/bpmn/simple_loop.bpmn");
-
 		BPMNModel model = null;
 		try {
-			model = BPMNParser.parseModel(inputStream, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			Assert.fail();
-		} catch (ModelException e) {
+			model = BPMNModelFactory.read("/bpmn/simple_loop.bpmn");
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
+
+		InputStream inputStream = getClass().getResourceAsStream("/bpmn/simple_loop.bpmn");
+
 		Assert.assertNotNull(model);
 
 		// Test Environment
@@ -220,17 +218,15 @@ public class TestBPMNParserSimple {
 		activities = model.findAllEventsByTask(1100);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(0, activities.size());
-		
-		
+
 		// test start event
 		List<ItemCollection> startEvents = model.getStartEvents(1000);
 		Assert.assertNotNull(startEvents);
 		Assert.assertEquals(1, startEvents.size());
-		ItemCollection startEvent=startEvents.get(0);
+		ItemCollection startEvent = startEvents.get(0);
 		Assert.assertEquals("submit", startEvent.getItemValueString("txtname"));
 	}
 
-	
 	/**
 	 * This test test a more complex start scenario where a start event has
 	 * possible more than one target tasks
@@ -296,8 +292,7 @@ public class TestBPMNParserSimple {
 		Assert.assertEquals(1100, activity.getItemValueInteger("numprocessid"));
 
 	}
-	
-	
+
 	/**
 	 * This test verifies if the stream data can be stored in a byte array to be
 	 * parsed again. rawData is used by the ModelService to store the file

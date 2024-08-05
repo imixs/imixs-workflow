@@ -28,5 +28,10 @@ Imixs-Workflow Core provides various components in a Java framework that allow t
 			<artifactId>js-scriptengine</artifactId>
 			<version>${graalvm.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.imixs.bpmn</groupId>
+			<artifactId>open-bpmn.metamodel</artifactId>
+			<version>${openbpmn.version}</version>
+		</dependency>
 	</dependencies>
 </project>

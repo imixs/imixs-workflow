@@ -30,6 +30,7 @@ package org.imixs.workflow;
 
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * The BPMN Rule Engine can be used to evaluate a business Rule based on a BPMN
@@ -42,9 +43,9 @@ import org.imixs.workflow.exceptions.PluginException;
  */
 public class BPMNRuleEngine {
 
-    private Model model = null;
+    private BPMNModel model = null;
 
-    public BPMNRuleEngine(Model model) {
+    public BPMNRuleEngine(BPMNModel model) {
         super();
         this.model = model;
     }
@@ -53,7 +54,7 @@ public class BPMNRuleEngine {
      * Evaluates a BPMN Business Rule based on the data provided by a workitem.
      * 
      * @param workitem workitem to be evaluated
-     * @return evaluated task id 
+     * @return evaluated task id
      * @throws ModelException if model is invalid
      */
     public int eval(ItemCollection workitem) throws ModelException {
@@ -79,7 +80,7 @@ public class BPMNRuleEngine {
      */
     class RuleContext implements WorkflowContext, ModelManager {
 
-        private Model model = null;
+        private BPMNModel model = null;
 
         @Override
         public Object getSessionContext() {
@@ -92,12 +93,12 @@ public class BPMNRuleEngine {
         }
 
         @Override
-        public Model getModel(String version) throws ModelException {
+        public BPMNModel getModel(String version) throws ModelException {
             return model;
         }
 
         @Override
-        public void addModel(Model model) throws ModelException {
+        public void addModel(BPMNModel model) throws ModelException {
             this.model = model;
         }
 
@@ -106,7 +107,7 @@ public class BPMNRuleEngine {
         }
 
         @Override
-        public Model getModelByWorkitem(ItemCollection workitem) throws ModelException {
+        public BPMNModel getModelByWorkitem(ItemCollection workitem) throws ModelException {
             return model;
         }
     }

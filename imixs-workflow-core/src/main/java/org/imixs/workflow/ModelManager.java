@@ -29,18 +29,18 @@
 package org.imixs.workflow;
 
 import org.imixs.workflow.exceptions.ModelException;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * The interface ModelManager manages instances of a Model. A Model instance is
  * uniquely identified by the ModelVersion. The ModelManager is used by the
  * <code>WorkflowKernel</code> to manage the workflow of a workitem.
  * <p>
- * By analyzing the workitem model version the Workflowkernel determines the
+ * By analyzing the workitem model version the WorkflowKernel determines the
  * corresponding model and get the Tasks and Events from the model to process
  * the workitem and assign the workitem to the next Task defined by the Model.
  * 
  * 
- * @see Model
  * @author rsoika
  *
  */
@@ -54,7 +54,7 @@ public interface ModelManager {
      * @throws ModelException
      * @return Model
      */
-    public Model getModel(String version) throws ModelException;;
+    public BPMNModel getModel(String version) throws ModelException;;
 
     /**
      * Adds a new Model to the ModelManager.
@@ -62,7 +62,7 @@ public interface ModelManager {
      * @param model
      * @throws ModelException
      */
-    public void addModel(Model model) throws ModelException;;
+    public void addModel(BPMNModel model) throws ModelException;;
 
     /**
      * Removes a Model from the ModelManager
@@ -79,6 +79,6 @@ public interface ModelManager {
      * @throws ModelException
      * @return Model
      */
-    public Model getModelByWorkitem(ItemCollection workitem) throws ModelException;
+    public BPMNModel getModelByWorkitem(ItemCollection workitem) throws ModelException;
 
 }

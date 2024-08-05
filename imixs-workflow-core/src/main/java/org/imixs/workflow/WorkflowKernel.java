@@ -49,6 +49,7 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.util.XMLParser;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * The Workflowkernel is the core component of this Framework to control the
@@ -297,7 +298,7 @@ public class WorkflowKernel {
      * <p>
      * The method executes all plugin and adapter classes and returns an updated
      * instance of the workitem. But the method did not persist the process
-     * instance. The persitance mechanism is covered by the WorkflowService.
+     * instance. The persistance mechanism is covered by the WorkflowService.
      * 
      * @param workitem the process instance to be processed.
      * @return updated workitem
@@ -1245,7 +1246,8 @@ public class WorkflowKernel {
         String version = documentContext.getItemValueString(MODELVERSION);
 
         try {
-            Model model = ctx.getModelManager().getModelByWorkitem(documentContext);
+            BPMNModel model = ctx.getModelManager().getModelByWorkitem(documentContext);
+
             event = model.getEvent(taskID, eventID);
         } catch (ModelException e) {
             throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MODEL_ERROR, e.getMessage());
