@@ -44,7 +44,6 @@ import java.util.regex.Pattern;
 
 import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Model;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
@@ -70,6 +69,7 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.Model;
 import jakarta.inject.Inject;
 
 /**

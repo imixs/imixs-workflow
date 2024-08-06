@@ -34,21 +34,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.bpmn.BPMNModel;
-import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.engine.scheduler.Scheduler;
@@ -60,7 +56,9 @@ import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
-import org.xml.sax.SAXException;
+import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
+import org.openbpmn.bpmn.util.BPMNModelFactory;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -74,7 +72,6 @@ import jakarta.inject.Inject;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
-import java.util.logging.Level;
 
 /**
  * The SetupService EJB initializes the Imxis-Workflow engine and returns the
@@ -126,7 +123,7 @@ public class SetupService {
 
     @Inject
     private SearchService indexSearchService;
-    
+
     @Inject
     private UpdateService indexUpdateService;
 
@@ -202,7 +199,7 @@ public class SetupService {
      * @return
      */
     public int getModelGroupCount() {
-        return modelService.getGroups().size();
+        return modelService.getWorkflowGroups().size();
     }
 
     /**
@@ -232,23 +229,24 @@ public class SetupService {
     public boolean checkIndex() {
         try {
             // check the index
-        	// write dummy 
-        	ItemCollection dummy=new ItemCollection();
-        	// ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)
-        	dummy.setItemValueUnique(WorkflowKernel.UNIQUEID,"00000000-aaaa-0000-0000-luceneindexcheck");
-        	String checksum=""+System.currentTimeMillis();
-        	dummy.setItemValue("$workflowsummary", checksum);
-        	List<ItemCollection> dummyList=new ArrayList<ItemCollection>();
-        	dummyList.add(dummy);
-        	indexUpdateService.updateIndex(dummyList);
-        	
+            // write dummy
+            ItemCollection dummy = new ItemCollection();
+            // ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)
+            dummy.setItemValueUnique(WorkflowKernel.UNIQUEID, "00000000-aaaa-0000-0000-luceneindexcheck");
+            String checksum = "" + System.currentTimeMillis();
+            dummy.setItemValue("$workflowsummary", checksum);
+            List<ItemCollection> dummyList = new ArrayList<ItemCollection>();
+            dummyList.add(dummy);
+            indexUpdateService.updateIndex(dummyList);
+
             // findStubs with the dummy unqiueid...
-            List<ItemCollection> result = indexSearchService.search("$uniqueid:00000000-aaaa-0000-0000-luceneindexcheck", 1, 0, null, null, true);
+            List<ItemCollection> result = indexSearchService
+                    .search("$uniqueid:00000000-aaaa-0000-0000-luceneindexcheck", 1, 0, null, null, true);
             // verify checksum
-            dummy=result.get(0);
+            dummy = result.get(0);
             if (!checksum.equals(dummy.getItemValueString("$workflowsummary"))) {
-            	logger.warning("SetupService - CheckIndex failed!");
-            	throw new Exception("lucene index check failed!");
+                logger.warning("SetupService - CheckIndex failed!");
+                throw new Exception("lucene index check failed!");
             }
         } catch (Exception e) {
             // database/index failed!
@@ -292,30 +290,28 @@ public class SetupService {
                             throw new IOException("the resource '" + modelResource + "' could not be found!");
                         }
                     }
-                    // parse model file....
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    int next;
-
-                    next = inputStream.read();
-                    while (next > -1) {
-                        bos.write(next);
-                        next = inputStream.read();
-                    }
-                    bos.flush();
-                    byte[] result = bos.toByteArray();
 
                     // test if it is a bpmn model?
                     if (modelResource.endsWith(".bpmn")) {
-                        BPMNModel model = BPMNParser.parseModel(result, "UTF-8");
+                        // parse model file....
+                        BPMNModel model = BPMNModelFactory.read(inputStream);
                         modelService.saveModel(model);
                     } else {
-                        // XML
+                        // read Imixs XML Data Set
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                        int next;
+                        next = inputStream.read();
+                        while (next > -1) {
+                            bos.write(next);
+                            next = inputStream.read();
+                        }
+                        bos.flush();
+                        byte[] result = bos.toByteArray();
                         importXmlEntityData(result);
                     }
 
                     // issue #600 return; // MODEL_INITIALIZED;
-                } catch (IOException | ModelException | ParseException | ParserConfigurationException
-                        | SAXException e) {
+                } catch (IOException | ModelException | BPMNModelException e) {
                     throw new RuntimeException(
                             "Failed to load model configuration: " + e.getMessage() + " check 'model.default.data'", e);
                 } finally {
@@ -327,14 +323,12 @@ public class SetupService {
                         }
                     }
                 }
-
             } else {
                 logger.log(Level.SEVERE, "Wrong model format: ''{0}'' - expected *.bpmn or *.xml", modelResource);
             }
 
         }
         // SETUP_OK;
-
     }
 
     /**
@@ -394,7 +388,9 @@ public class SetupService {
                 }
                 // now remove old model entries....
                 for (String aModelVersion : vModelVersions) {
-                    logger.log(Level.FINE, "importXmlEntityData - removing existing configuration for model version ''{0}''", aModelVersion);
+                    logger.log(Level.FINE,
+                            "importXmlEntityData - removing existing configuration for model version ''{0}''",
+                            aModelVersion);
                     modelService.removeModel(aModelVersion);
                 }
                 // save new entities into database and update modelversion.....
@@ -405,7 +401,8 @@ public class SetupService {
                     documentService.save(itemCollection);
                 }
 
-                logger.log(Level.FINE, "importXmlEntityData - {0} entries sucessfull imported", ecol.getDocument().length);
+                logger.log(Level.FINE, "importXmlEntityData - {0} entries sucessfull imported",
+                        ecol.getDocument().length);
             }
 
         } catch (Exception e) {

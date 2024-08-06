@@ -225,7 +225,7 @@ public class TestItemCollection {
         ItemCollection itemCollection2 = new ItemCollection();
 
         itemCollection1.replaceItemValue("txtName", "Manfred");
-        itemCollection1.replaceItemValue("numID",Integer.valueOf(20));
+        itemCollection1.replaceItemValue("numID", Integer.valueOf(20));
 
         // copy values
         itemCollection2.replaceAllItems(itemCollection1.getAllItems());
@@ -541,7 +541,6 @@ public class TestItemCollection {
         itemCol1.replaceItemValue("b", "hello");
         itemCol1.replaceItemValue("c", "world");
         itemCol1.replaceItemValue("d", "cats & dogs");
-        
 
         // clone only some attributes
         List<String> attributes = new ArrayList<String>();
@@ -866,19 +865,19 @@ public class TestItemCollection {
         file1Data1 = itemColTarget.getFileData("test1.txt").getContent();
         // we expect the new dummy array { 1, 2, 3 }
         Assert.assertArrayEquals(empty, file1Data1);
-        
+
         // test getFileNames
         Assert.assertEquals(1, itemColSource.getItemValueInteger("$file.count"));
         List<String> fileNames = itemColSource.getFileNames();
-        Assert.assertEquals(1,fileNames.size());
-        Assert.assertEquals("test1.txt",fileNames.get(0));
-        
+        Assert.assertEquals(1, fileNames.size());
+        Assert.assertEquals("test1.txt", fileNames.get(0));
+
         // remove file....
         itemColSource.removeFile("test1.txt");
         Assert.assertEquals(0, itemColSource.getItemValueInteger("$file.count"));
         fileNames = itemColSource.getFileNames();
-        Assert.assertEquals(0,fileNames.size());
-        
+        Assert.assertEquals(0, fileNames.size());
+
     }
 
     /*
@@ -903,19 +902,22 @@ public class TestItemCollection {
 
     /*
      * Test fluent event interface with a event list
+     * With OpenBPMN this method is no longer supported
      */
-    @Test
-    @Category(ItemCollection.class)
-    public void testFluentInterfaceFollowUpEvents() {
-        ItemCollection itemCollection = new ItemCollection().model("1.0.0").task(1).event(10).event(11);
-        Assert.assertEquals("1.0.0", itemCollection.getModelVersion());
-        Assert.assertEquals(1, itemCollection.getTaskID());
-        Assert.assertEquals(10, itemCollection.getEventID());
-        @SuppressWarnings("unchecked")
-        List<Integer> followups = itemCollection.getItemValue(WorkflowKernel.ACTIVITYIDLIST);
-        Assert.assertEquals(1, followups.size());
-        Assert.assertEquals(11, followups.get(0).intValue());
-    }
+    // @Test
+    // @Category(ItemCollection.class)
+    // public void testFluentInterfaceFollowUpEvents() {
+    // ItemCollection itemCollection = new
+    // ItemCollection().model("1.0.0").task(1).event(10).event(11);
+    // Assert.assertEquals("1.0.0", itemCollection.getModelVersion());
+    // Assert.assertEquals(1, itemCollection.getTaskID());
+    // Assert.assertEquals(10, itemCollection.getEventID());
+    // @SuppressWarnings("unchecked")
+    // List<Integer> followups =
+    // itemCollection.getItemValue(WorkflowKernel.ACTIVITYIDLIST);
+    // Assert.assertEquals(1, followups.size());
+    // Assert.assertEquals(11, followups.get(0).intValue());
+    // }
 
     /**
      * Test issue #383, #384

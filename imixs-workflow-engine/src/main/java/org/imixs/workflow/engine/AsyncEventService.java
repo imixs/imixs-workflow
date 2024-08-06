@@ -28,33 +28,31 @@
 
 package org.imixs.workflow.engine;
 
+import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.ASYNCEVENT_PROCESSOR_ENABLED;
+import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.EVENTLOG_TOPIC_ASYNC_EVENT;
+
 import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.enterprise.event.Observes;
-import jakarta.inject.Inject;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Model;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.WorkflowException;
 
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
 import jakarta.persistence.OptimisticLockException;
-
-import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.ASYNCEVENT_PROCESSOR_ENABLED;
-import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.EVENTLOG_TOPIC_ASYNC_EVENT;
 
 /**
  * The AsyncEventService can be used to process workflow events in an
@@ -121,11 +119,8 @@ public class AsyncEventService {
         }
         boolean debug = logger.isLoggable(Level.FINE);
         if (ProcessingEvent.AFTER_PROCESS == processingEvent.getEventType()) {
-
             // load target task
-            int taskID = processingEvent.getDocument().getTaskID();
-            Model model = modelService.getModelByWorkitem(processingEvent.getDocument());
-            ItemCollection task = model.getTask(taskID);
+            ItemCollection task = modelService.loadTask(processingEvent.getDocument());
             if (task != null) {
                 int boundaryTarget = task.getItemValueInteger("boundaryEvent.targetEvent");
                 int boundaryDuration = task.getItemValueInteger("boundaryEvent.timerEventDefinition.timeDuration");
@@ -196,10 +191,11 @@ public class AsyncEventService {
                                 workitem = workflowService.processWorkItemByNewTransaction(workitem);
                             } else {
                                 // just a normal log message
-                                logger.log(Level.INFO, "...AsyncEvent {0} for {1} is deprecated and will be removed. ({2} \u2260 {3}",
-                                        new Object[]{syncEventData.getEventID(), workitem.getUniqueID(),
-                                            workitem.getItemValueString(WorkflowKernel.TRANSACTIONID),
-                                            syncEventData.getItemValueString(WorkflowKernel.TRANSACTIONID)});
+                                logger.log(Level.INFO,
+                                        "...AsyncEvent {0} for {1} is deprecated and will be removed. ({2} \u2260 {3}",
+                                        new Object[] { syncEventData.getEventID(), workitem.getUniqueID(),
+                                                workitem.getItemValueString(WorkflowKernel.TRANSACTIONID),
+                                                syncEventData.getItemValueString(WorkflowKernel.TRANSACTIONID) });
                             }
                             // finally remove the event log entry...
                             eventLogService.removeEvent(eventLogEntry.getId());
@@ -207,7 +203,7 @@ public class AsyncEventService {
                             // we also catch EJBExceptions here because we do not want to cancel the
                             // ManagedScheduledExecutorService
                             logger.log(Level.SEVERE, "AsyncEvent {0} processing failed: {1}",
-                                    new Object[]{workitem.getUniqueID(), e.getMessage()});
+                                    new Object[] { workitem.getUniqueID(), e.getMessage() });
                             // now we need to remove the batch event
                             logger.log(Level.WARNING, "AsyncEvent {0} will be removed!", workitem.getUniqueID());
                             eventLogService.removeEvent(eventLogEntry.getId());
@@ -224,7 +220,7 @@ public class AsyncEventService {
 
         if (debug) {
             logger.log(Level.FINE, "...{0} AsyncEvents processed in {1}ms",
-                    new Object[]{events.size(), System.currentTimeMillis() - l});
+                    new Object[] { events.size(), System.currentTimeMillis() - l });
         }
     }
 

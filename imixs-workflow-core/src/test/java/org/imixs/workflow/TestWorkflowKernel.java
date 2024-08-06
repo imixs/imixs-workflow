@@ -277,19 +277,34 @@ public class TestWorkflowKernel {
         Assert.assertEquals(1100, workItem.getTaskID());
     }
 
+    /**
+     * Test processing a follow up event
+     * 
+     * The test loads the model 'followup.bpmn'
+     */
     @Test
     @Category(org.imixs.workflow.WorkflowKernel.class)
     public void testFollowup() {
-        ItemCollection itemCollection = new ItemCollection();
-        itemCollection.replaceItemValue("txtTitel", "Hello");
-        itemCollection.setTaskID(100);
-        itemCollection.setEventID(11);
-        itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
 
-        Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+        // load followup model
+        try {
+            BPMNModel model = BPMNModelFactory.read("/bpmn/followup.bpmn");
+            workflowContext.getModelManager().addModel(model);
+        } catch (BPMNModelException | ModelException e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+
+        ItemCollection workItem = new ItemCollection();
+        workItem.replaceItemValue("txtTitel", "Hello");
+        workItem.model("1.0.0")
+                .task(1000)
+                .event(10);
+
+        Assert.assertEquals(workItem.getItemValueString("txttitel"), "Hello");
 
         try {
-            itemCollection = kernel.process(itemCollection);
+            workItem = kernel.process(workItem);
         } catch (WorkflowException e) {
             Assert.fail();
             e.printStackTrace();
@@ -299,9 +314,9 @@ public class TestWorkflowKernel {
         }
 
         // runs should be 2
-        Assert.assertEquals(2, itemCollection.getItemValueInteger("runs"));
+        Assert.assertEquals(2, workItem.getItemValueInteger("runs"));
         // test next state
-        Assert.assertEquals(200, itemCollection.getTaskID());
+        Assert.assertEquals(1100, workItem.getTaskID());
     }
 
     @Test

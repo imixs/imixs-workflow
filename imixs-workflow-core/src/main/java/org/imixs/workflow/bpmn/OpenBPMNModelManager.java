@@ -18,6 +18,7 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
 import org.openbpmn.bpmn.elements.Activity;
+import org.openbpmn.bpmn.elements.BPMNProcess;
 import org.openbpmn.bpmn.elements.Event;
 import org.openbpmn.bpmn.elements.SequenceFlow;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
@@ -50,6 +51,15 @@ public class OpenBPMNModelManager implements ModelManager {
     }
 
     /**
+     * Returns the internal ModelStore holding all BPMNModels by version.
+     * 
+     * @return
+     */
+    public Map<String, BPMNModel> getModelStore() {
+        return modelStore;
+    }
+
+    /**
      * Adds a new model into the local model store
      */
     @Override
@@ -76,6 +86,24 @@ public class OpenBPMNModelManager implements ModelManager {
         clearCache();
     }
 
+    /**
+     * returns a sorted String list of all stored model versions
+     * 
+     * @return
+     */
+    public Set<String> getVersions() {
+        return modelStore.keySet();
+    }
+
+    /**
+     * Returns a Model matching the $modelversion of a given workitem. The
+     * $modelversion can optional be provided as a regular expression.
+     * <p>
+     * In case no matching model version exits, the method tries to find the highest
+     * Model Version matching the corresponding workflow group.
+     * <p>
+     * The method throws a ModelException in case the model version did not exits.
+     **/
     @Override
     public BPMNModel findModelByWorkitem(ItemCollection workitem) throws ModelException {
         BPMNModel result = null;
@@ -97,9 +125,57 @@ public class OpenBPMNModelManager implements ModelManager {
                     return result;
                 }
             }
+
+            // Still no match, try to find model version by group
+            if (!workitem.getWorkflowGroup().isEmpty()) {
+                List<String> versions = findVersionsByGroup(workitem.getWorkflowGroup());
+                if (!versions.isEmpty()) {
+                    String newVersion = versions.get(0);
+                    if (!newVersion.isEmpty()) {
+                        logger.log(Level.WARNING, "Deprecated model version: ''{0}'' -> migrating to ''{1}'',"
+                                + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
+                                new Object[] { version, newVersion, workitem.getWorkflowGroup(),
+                                        workitem.getUniqueID() });
+                    }
+                    // update $modelVersion
+                    workitem.model(newVersion);
+                    result = modelStore.get(newVersion);
+                    return result;
+                }
+            }
+
             // no match!
             throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION, "$modelversion " + version + " not found");
         }
+    }
+
+    /**
+     * This method returns a sorted list of model versions containing the requested
+     * workflow group. The result is sorted in reverse order, so the highest version
+     * number is the first in the result list.
+     * 
+     * @param group
+     * @return
+     */
+    public List<String> findVersionsByGroup(String group) {
+        boolean debug = logger.isLoggable(Level.FINE);
+        List<String> result = new ArrayList<String>();
+        if (debug) {
+            logger.log(Level.FINEST, "......searching model versions for workflowgroup ''{0}''...", group);
+        }
+        // try to find matching model version by group
+        Collection<BPMNModel> models = modelStore.values();
+        for (BPMNModel _model : models) {
+            Set<BPMNProcess> processList = _model.getProcesses();
+            for (BPMNProcess _process : processList) {
+                if (group.equals(_process.getName())) {
+                    result.add(OpenBPMNUtil.getVersion(_model));
+                }
+            }
+        }
+        // sort result
+        Collections.sort(result, Collections.reverseOrder());
+        return result;
     }
 
     /**

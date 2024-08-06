@@ -29,29 +29,31 @@
 package org.imixs.workflow.engine;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
+
+import javax.xml.transform.TransformerException;
 
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Model;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.bpmn.BPMNModel;
-import org.imixs.workflow.bpmn.BPMNParser;
+import org.imixs.workflow.bpmn.OpenBPMNModelManager;
+import org.imixs.workflow.bpmn.OpenBPMNUtil;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
+import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.elements.BPMNProcess;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
+import org.openbpmn.bpmn.util.BPMNModelFactory;
 
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.DeclareRoles;
@@ -93,11 +95,9 @@ import jakarta.inject.Inject;
 // (ConcurrencyManagementType.BEAN)
 public class ModelService implements ModelManager {
 
-    private ConcurrentHashMap<String, Model> modelStore = null;
-
     private static final Logger logger = Logger.getLogger(ModelService.class.getName());
 
-    private Map<String, ItemCollection> modelEntityStore;
+    private OpenBPMNModelManager openBPMNModelManager = null;
 
     @Inject
     private DocumentService documentService;
@@ -107,6 +107,8 @@ public class ModelService implements ModelManager {
 
     public ModelService() {
         super();
+
+        openBPMNModelManager = new OpenBPMNModelManager();
     }
 
     /**
@@ -119,7 +121,7 @@ public class ModelService implements ModelManager {
      */
     void init() throws AccessDeniedException {
         boolean debug = logger.isLoggable(Level.FINE);
-        modelEntityStore = new HashMap();
+
         // load existing models into the ModelManager....
         if (debug) {
             logger.finest("......Initializing ModelService...");
@@ -135,23 +137,9 @@ public class ModelService implements ModelManager {
                 byte[] rawData = file.getContent();
                 InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
                 try {
-                    Model model = BPMNParser.parseModel(bpmnInputStream, "UTF-8");
-                    ItemCollection definition = model.getDefinition();
-                    if (definition != null) {
-                        String modelVersion = definition.getModelVersion();
-                        try {
-                            if (getModel(modelVersion) != null) {
-                                // no op
-                                logger.log(Level.WARNING,
-                                        "Model ''{0}'' is duplicated! Please update the model version!", modelVersion);
-                            }
-                        } catch (ModelException e) {
-                            // exception is expected
-                            addModel(model);
-                            modelEntityStore.put(modelVersion, modelEntity);
-                        }
-                    }
-                } catch (Exception e) {
+                    BPMNModel model = BPMNModelFactory.read(bpmnInputStream);
+                    addModel(model);
+                } catch (BPMNModelException | ModelException e) {
                     logger.log(Level.WARNING, "Failed to load model ''{0}'' : {1}",
                             new Object[] { file.getName(), e.getMessage() });
                 }
@@ -164,56 +152,9 @@ public class ModelService implements ModelManager {
      * saved in the database! Use saveModel to store the model permanently.
      */
     @Override
-    public void addModel(Model model) throws ModelException {
-        ItemCollection definition = model.getDefinition();
-        if (definition == null) {
-            throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Definition not provided! ");
-        }
-        String modelVersion = definition.getModelVersion();
-        if (modelVersion.isEmpty()) {
-            throw new ModelException(ModelException.INVALID_MODEL, "Invalid Model: Model Version not provided! ");
-        }
-        logger.log(Level.INFO, "\u27f3 updated model version: ''{0}''", model.getVersion());
-        getModelStore().put(modelVersion, model);
-    }
+    public void addModel(BPMNModel model) throws ModelException {
+        openBPMNModelManager.addModel(model);
 
-    /**
-     * This method removes a specific ModelVersion form the internal model store. If
-     * modelVersion is null the method will remove all models. The model will not be
-     * removed from the database. Use deleteModel to delete the model from the
-     * database.
-     * 
-     * @throws AccessDeniedException
-     */
-    public void removeModel(String modelversion) {
-        boolean debug = logger.isLoggable(Level.FINE);
-        getModelStore().remove(modelversion);
-        if (debug) {
-            logger.log(Level.FINEST, "......removed BPMNModel ''{0}''...", modelversion);
-        }
-    }
-
-    /**
-     * Returns a Model by version. In case no matching model version exits, the
-     * method throws a ModelException.
-     **/
-    @Override
-    public Model getModel(String version) throws ModelException {
-        Model model = getModelStore().get(version);
-        if (model == null) {
-            // try to find model by regex....
-            List<String> modelList = findVersionsByRegEx(version);
-            if (modelList != null && modelList.size() > 0) {
-                version = modelList.get(0);
-                model = getModelStore().get(version);
-            }
-            // still not found!
-            if (model == null) {
-                throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
-                        "Modelversion '" + version + "' not found!");
-            }
-        }
-        return model;
     }
 
     /**
@@ -224,62 +165,44 @@ public class ModelService implements ModelManager {
      * The method throws a ModelException in case the model version did not exits.
      **/
     @Override
-    public Model getModelByWorkitem(ItemCollection workitem) throws ModelException {
-        boolean debug = logger.isLoggable(Level.FINE);
-        String modelVersion = workitem.getModelVersion();
+    public BPMNModel findModelByWorkitem(ItemCollection workitem) throws ModelException {
+        return openBPMNModelManager.findModelByWorkitem(workitem);
+    }
 
-        String workflowGroup = workitem.getItemValueString(WorkflowKernel.WORKFLOWGROUP);
-        // if $workflowgroup is empty try deprecated field txtworkflowgroup
-        if (workflowGroup.isEmpty()) {
-            workflowGroup = workitem.getItemValueString("txtworkflowgroup");
-        }
+    @Override
+    public ItemCollection loadEvent(ItemCollection workitem) throws ModelException {
+        return openBPMNModelManager.loadEvent(workitem);
+    }
 
-        Model model = null;
-        try {
-            model = getModel(modelVersion);
-        } catch (ModelException me) {
-            model = null;
-            List<String> versions = null;
-            if (debug) {
-                logger.finest(me.getMessage());
-            }
-            // try to find latest version by regex....
-            if (modelVersion != null && !modelVersion.isEmpty()) {
-                versions = findVersionsByRegEx(modelVersion);
-                if (!versions.isEmpty()) {
-                    // we found a match by regex!
-                    String newVersion = versions.get(0);
-                    logger.log(Level.INFO, "...... match version ''{0}'' -> by regex ''{1}''",
-                            new Object[] { newVersion, modelVersion });
-                    workitem.replaceItemValue(WorkflowKernel.MODELVERSION, newVersion);
-                    model = getModel(newVersion);
-                }
-            }
+    @Override
+    public ItemCollection loadTask(ItemCollection workitem) throws ModelException {
+        return openBPMNModelManager.loadTask(workitem);
+    }
 
-            // try to find model version by group
-            if (model == null && !workflowGroup.isEmpty()) {
-                versions = findVersionsByGroup(workflowGroup);
-                if (!versions.isEmpty()) {
-                    String newVersion = versions.get(0);
-                    if (!modelVersion.isEmpty()) {
-                        logger.log(Level.WARNING, "Deprecated model version: ''{0}'' -> migrating to ''{1}'',"
-                                + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
-                                new Object[] { modelVersion, newVersion, workflowGroup, workitem.getUniqueID() });
-                    }
-                    workitem.replaceItemValue(WorkflowKernel.MODELVERSION, newVersion);
-                    model = getModel(newVersion);
-                }
-            }
-        }
+    @Override
+    public ItemCollection nextModelElement(ItemCollection workitem) throws ModelException {
+        return openBPMNModelManager.nextModelElement(workitem);
+    }
 
-        // check if model was found....
-        if (model == null) {
-            throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
-                    "No matching $modelversion found for '" + modelVersion + "', $workflowgroup: '" + workflowGroup
-                            + "', $uniqueid: " + workitem.getUniqueID());
-        }
+    /**
+     * This method removes a specific ModelVersion form the internal model store.
+     * The model will not be
+     * removed from the database. Use deleteModel to delete the model from the
+     * database.
+     * 
+     * @throws AccessDeniedException
+     */
+    public void removeModel(String modelversion) {
+        openBPMNModelManager.removeModel(modelversion);
+    }
 
-        return model;
+    /**
+     * Returns a Model by version. In case no matching model version exits, the
+     * method throws a ModelException.
+     **/
+    @Override
+    public BPMNModel getModel(String version) throws ModelException {
+        return openBPMNModelManager.getModel(version);
     }
 
     /**
@@ -287,107 +210,33 @@ public class ModelService implements ModelManager {
      * 
      * @return
      */
+    @SuppressWarnings("unchecked")
     public List<String> getVersions() {
-        // convert Set to List
-        Set<String> set = getModelStore().keySet();
-        List<String> result = new ArrayList<String>(set);
-        // sort the list
-        result.sort(String::compareTo);
-        return result;
+        return (List<String>) openBPMNModelManager.getVersions();
     }
 
     /**
-     * Returns a sorted String list of the latest version for each workflowGroup
-     * 
-     * @return
-     */
-    public List<String> getLatestVersions() {
-        List<String> result = new ArrayList<String>();
-        List<String> groups = getGroups();
-        for (String group : groups) {
-            List<String> versions = findVersionsByGroup(group);
-            if (versions != null && versions.size() > 0) {
-                // add the latest version
-                String version = versions.get(0);
-                if (!result.contains(version)) {
-                    result.add(version);
-                }
-            }
-        }
-        // sort result
-        Collections.sort(result);
-        return result;
-    }
-
-    /**
-     * The method returns a sorted list of all available workflow groups
-     * 
-     * @return
-     */
-    public List<String> getGroups() {
-        List<String> result = new ArrayList<String>();
-        Collection<Model> models = getModelStore().values();
-        for (Model amodel : models) {
-            for (String group : amodel.getGroups()) {
-                if (!result.contains(group)) {
-                    result.add(group);
-                }
-            }
-        }
-        // sort result
-        Collections.sort(result);
-        return result;
-    }
-
-    /**
-     * This method returns a sorted list of model versions containing the requested
-     * workflow group. The result is sorted in reverse order, so the highest version
-     * number is the first in the result list.
+     * This method returns a sorted list of all model groups stored in the
+     * BPMNModels.
+     * <p>
+     * Note: A workflow group may exist in different models by the same name!
      * 
      * @param group
      * @return
      */
-    public List<String> findVersionsByGroup(String group) {
+    public List<String> getWorkflowGroups() {
         boolean debug = logger.isLoggable(Level.FINE);
         List<String> result = new ArrayList<String>();
-        if (debug) {
-            logger.log(Level.FINEST, "......searching model versions for workflowgroup ''{0}''...", group);
-        }
         // try to find matching model version by group
-        Collection<Model> models = getModelStore().values();
-        for (Model amodel : models) {
-            if (amodel.getGroups().contains(group)) {
-                result.add(amodel.getVersion());
+        Collection<BPMNModel> models = openBPMNModelManager.getModelStore().values();
+        for (BPMNModel _model : models) {
+            Set<BPMNProcess> processList = _model.getProcesses();
+            for (BPMNProcess _process : processList) {
+                result.add(_process.getName());
             }
         }
         // sort result
-        Collections.sort(result, Collections.reverseOrder());
-        return result;
-    }
-
-    /**
-     * This method returns a sorted list of model versions matching a given regex
-     * for a model version. The result is sorted in reverse order, so the highest
-     * version number is the first in the result list.
-     * 
-     * @param group
-     * @return
-     */
-    public List<String> findVersionsByRegEx(String modelRegex) {
-        boolean debug = logger.isLoggable(Level.FINE);
-        List<String> result = new ArrayList<String>();
-        if (debug) {
-            logger.log(Level.FINEST, "......searching model versions for regex ''{0}''...", modelRegex);
-        }
-        // try to find matching model version by regex
-        Collection<Model> models = getModelStore().values();
-        for (Model amodel : models) {
-            if (Pattern.compile(modelRegex).matcher(amodel.getVersion()).find()) {
-                result.add(amodel.getVersion());
-            }
-        }
-        // sort result
-        Collections.sort(result, Collections.reverseOrder());
+        Collections.sort(result);
         return result;
     }
 
@@ -422,36 +271,44 @@ public class ModelService implements ModelManager {
     public void saveModel(BPMNModel model, String _filename) throws ModelException {
         if (model != null) {
             boolean debug = logger.isLoggable(Level.FINE);
+            String version = OpenBPMNUtil.getVersion(model);
             // first delete existing model entities
-            deleteModel(model.getVersion());
+            removeModel(version);
             // store model into internal cache
             if (debug) {
-                logger.log(Level.FINEST, "......save BPMNModel ''{0}''...", model.getVersion());
+                logger.log(Level.FINEST, "......save BPMNModel ''{0}''...", version);
             }
-            BPMNModel bpmnModel = (BPMNModel) model;
+
             addModel(model);
             ItemCollection modelItemCol = new ItemCollection();
             modelItemCol.replaceItemValue("type", "model");
             modelItemCol.replaceItemValue("$snapshot.history", 1);
             modelItemCol.replaceItemValue(WorkflowKernel.CREATOR, ctx.getCallerPrincipal().getName());
-            modelItemCol.replaceItemValue("name", bpmnModel.getVersion());
+            modelItemCol.replaceItemValue("name", version);
 
             // deprecated item names
             modelItemCol.replaceItemValue("namcreator", ctx.getCallerPrincipal().getName());
-            modelItemCol.replaceItemValue("txtname", bpmnModel.getVersion());
+            modelItemCol.replaceItemValue("txtname", version);
 
             String filename = _filename;
             if (filename == null || filename.isEmpty()) {
                 // default filename
-                filename = bpmnModel.getVersion() + ".bpmn";
+                filename = version + ".bpmn";
             }
 
-            FileData fileData = new FileData(filename, bpmnModel.getRawData(), "application/xml", null);
-            modelItemCol.addFileData(fileData);
-            // store model in database
-            modelItemCol.replaceItemValue(DocumentService.NOINDEX, true);
-            documentService.save(modelItemCol);
-            modelEntityStore.put(bpmnModel.getVersion(), modelItemCol);
+            // Write the model XML object into a byte array and store it into the
+            // modelItemCol as a FileData object
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                model.writeToOutputStream(model.getDoc(), baos);
+                FileData fileData = new FileData(filename, baos.toByteArray(), "application/xml", null);
+                modelItemCol.addFileData(fileData);
+                // store model in database
+                modelItemCol.replaceItemValue(DocumentService.NOINDEX, true);
+                documentService.save(modelItemCol);
+            } catch (TransformerException e) {
+                throw new ModelException(ModelException.INVALID_MODEL, "Failed to write model: " + e.getMessage());
+            }
         }
     }
 
@@ -474,68 +331,17 @@ public class ModelService implements ModelManager {
             Collection<ItemCollection> col = documentService.getDocumentsByType("model");
             for (ItemCollection modelEntity : col) {
                 // test version...
-                String oldVersion = modelEntity.getItemValueString("txtname");
+                String oldVersion = modelEntity.getItemValueString("name");
                 if (version.equals(oldVersion)) {
                     documentService.remove(modelEntity);
                 }
             }
-
             removeModel(version);
-            modelEntityStore.remove(version);
         } else {
             logger.severe("deleteModel - invalid model version!");
             throw new InvalidAccessException(InvalidAccessException.INVALID_ID, "deleteModel - invalid model version!");
         }
     }
-
-    /**
-     * This method fetches an existing Model Entity from the model store
-     * 
-     * @param model
-     */
-    public ItemCollection findModelEntity(String version) {
-        ItemCollection result = modelEntityStore.get(version);
-        if (result == null) {
-            logger.severe("invalid model version!");
-            throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
-                    "findModelEntity - invalid model version: " + version);
-        }
-        return result;
-
-    }
-
-    /**
-     * This method loads an existing Model Entities from the database. A model
-     * entity is identified by its name (model version).
-     * 
-     * @param model
-     * 
-     * @see issue #863
-     */
-    // public ItemCollection loadModelEntity(String version) {
-
-    // if (version != null && !version.isEmpty()) {
-    // boolean debug = logger.isLoggable(Level.FINE);
-    // if (debug) {
-    // logger.log(Level.FINEST, "......load BPMNModel Entity ''{0}''...", version);
-    // }
-
-    // Collection<ItemCollection> col = documentService.getDocumentsByType("model");
-    // for (ItemCollection modelEntity : col) {
-    // // test version...
-    // String currentVersion = modelEntity.getItemValueString("txtname");
-    // if (version.equals(currentVersion)) {
-    // return modelEntity;
-    // }
-    // }
-    // } else {
-    // logger.severe("deleteModel - invalid model version!");
-    // throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
-    // "loadModelEntity - invalid model version!");
-    // }
-    // return null;
-
-    // }
 
     /**
      * Returns a BPMN DataObject, part of a Task or Event element, by its name
@@ -562,20 +368,6 @@ public class ModelService implements ModelManager {
         // not found!
         return null;
 
-    }
-
-    /**
-     * This method returns the modelStore or initialize it if not yet created.
-     * 
-     * @return
-     */
-    private Map<String, Model> getModelStore() {
-        if (modelStore == null) {
-            // create store (sorted map)
-            modelStore = new ConcurrentHashMap<String, Model>();
-            init();
-        }
-        return modelStore;
     }
 
 }
