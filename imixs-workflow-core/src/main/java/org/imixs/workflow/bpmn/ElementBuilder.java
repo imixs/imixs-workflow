@@ -19,17 +19,24 @@ import org.w3c.dom.NodeList;
 
 /**
  * This ElementBuilder provides methods to convert a OpenBPMN Element into a
- * ItemCollection
- * 
- * 
+ * ItemCollection. The corresponding ItemCollection contains all
+ * Imixs Extension Elements as also the items 'id' and 'type'.
+ * <p>
+ * Through the item 'id' it is possible to access the BPMN element directly from
+ * an ItemCollection by the BPMN element id which should be unique. In addition,
+ * the item "type" is set to 'TASK' or 'EVENT', which reflects the
+ * type of an element.
+ * <p>
  * Example:
  * 
  * <pre>{@code  
- * <bpmn2:task id="Task_2" imixs:processid="1900" name="Approve">
-      <bpmn2:extensionElements>
-        <imixs:item name="user.name" type="xs:string">John</imixs:item>
-        ....
-      </bpmn2:extensionElements>
+<bpmn2:task id="Task_2" imixs:processid="1900" name="Approve">
+    <bpmn2:extensionElements>
+    <imixs:item name="user.name" type="xs:string">John</imixs:item>
+    ....
+    </bpmn2:extensionElements>
+    ...
+</bpmn2:task>
         }</pre>
  * 
  */
@@ -118,7 +125,7 @@ public class ElementBuilder {
      */
     public static ItemCollection buildItemCollectionFromBPMNElement(BPMNElementNode bpmnElement) {
         ItemCollection result = new ItemCollection();
-
+        result.setItemValue("id", bpmnElement.getId());
         if (bpmnElement.hasAttribute("name")) {
             result.setItemValue("name", bpmnElement.getAttribute("name"));
         }

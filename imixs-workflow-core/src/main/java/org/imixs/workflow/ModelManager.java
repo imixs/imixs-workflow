@@ -118,11 +118,11 @@ public interface ModelManager {
     public ItemCollection loadEvent(ItemCollection workitem) throws ModelException;
 
     /**
-     * Finds the next BPMN Element associated with a given workitem, based on its
-     * attributes "$modelVersion", "$taskID" and "$eventID". The returned BPMN
-     * Element must either be an Activity (Task) element, an Intermediate Catch
-     * Event or a End Event. The method must not return any other BPMN elements
-     * (e.g. Gateways, Intermediate Throw Events).
+     * Finds the next BPMN Element associated with a given event element. The
+     * returned BPMN Element must either be an Activity (Task) element, an
+     * Intermediate Catch Event (follow-up-event) or a End Event. The method must
+     * not return any other BPMN elements (e.g. Gateways, Intermediate Throw
+     * Events).
      * <p>
      * The method throws a {@link ModelException} if no Element can be resolved
      * based on the given model information.
@@ -130,10 +130,11 @@ public interface ModelManager {
      * The method is called by the {@link WorkflowKernel} during the processing live
      * cycle. The ModelManager is responsible to resolve conditional sequence flows.
      * 
+     * @param event    - current event
      * @param workitem - current Workitem
      * @return a BPMN Element entity - {@link ItemCollection}
      * @throws ModelException - if no valid element was found
      */
-    public ItemCollection nextModelElement(ItemCollection workitem) throws ModelException;
+    public ItemCollection nextModelElement(ItemCollection event, ItemCollection workitem) throws ModelException;
 
 }

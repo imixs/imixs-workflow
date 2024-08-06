@@ -230,41 +230,35 @@ public class OpenBPMNModelManager implements ModelManager {
     }
 
     /**
-     * Finds the next BPMN Element associated with a given workitem, based on its
-     * attributes "$modelVersion", "$taskID" and "$eventID". The returned BPMN
-     * Element must either be an Activity (Task) element, an Intermediate Catch
-     * Event or a End Event. The method must not return any other BPMN elements
-     * (e.g. Gateways, Intermediate Throw Events).
+     * Finds the next BPMN Element associated with a given event element. The
+     * returned BPMN Element must either be an Activity (Task) element, an
+     * Intermediate Catch Event (follow-up-event) or a End Event. The method must
+     * not return any other BPMN elements (e.g. Gateways, Intermediate Throw
+     * Events).
      * <p>
      * The method throws a {@link ModelException} if no Element can be resolved
-     * based
-     * on the given model information.
-     * <p>
-     * The method uses the internal bpmnElementCache to fetch the current event
-     * element.
+     * based on the given model information.
      * 
+     * @param event    - current event
      * @param workitem - current Workitem
      * @return a BPMN Element entity - {@link ItemCollection}
      * @throws ModelException - if no valid element was found
      */
     @Override
-    public ItemCollection nextModelElement(ItemCollection workitem) throws ModelException {
+    public ItemCollection nextModelElement(ItemCollection event, ItemCollection workitem) throws ModelException {
         long l = System.currentTimeMillis();
-        // lookup the current BPMN event element
         BPMNModel model = findModelByWorkitem(workitem);
+        // lookup the current BPMN event element by its ID
+        String id = event.getItemValueString("id");
+        Event eventElement = (Event) model.findElementNodeById(id);
         String version = OpenBPMNUtil.getVersion(model);
         String key = version + "~" + workitem.getTaskID() + "." + workitem.getEventID();
-
-        Event currentEventElement = (Event) bpmnElementCache.computeIfAbsent(key,
-                k -> lookupEventElementByID(model, workitem.getTaskID(),
-                        workitem.getEventID()));
 
         // find next task or event.....
         BPMNFlowNavigator<BPMNElementNode> elementNavigator;
         try {
             elementNavigator = new BPMNFlowNavigator<BPMNElementNode>(
-                    currentEventElement,
-                    n -> ((n instanceof Event) || (n instanceof Activity)));
+                    eventElement, n -> ((n instanceof Event) || (n instanceof Activity)));
         } catch (BPMNValidationException e) {
             throw new ModelException(ModelException.INVALID_MODEL, "Unable to resolve next ModelElement in ' "
                     + version + "' : " + e.getMessage());
@@ -275,7 +269,6 @@ public class OpenBPMNModelManager implements ModelManager {
             // check if Element is a Imixs Task or Event
             if (OpenBPMNUtil.isImixsTaskElement(nextElement)
                     || OpenBPMNUtil.isImixsEventElement(nextElement)) {
-
                 logger.info("nextModelElement " + key + " took " + (System.currentTimeMillis() - l) + "ms");
                 return ElementBuilder.buildItemCollectionFromBPMNElement(nextElement);
             }

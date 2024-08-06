@@ -387,7 +387,7 @@ public class WorkflowKernel {
                 workitem.event(event.getItemValueInteger("numactivityid"));
             } else {
                 // evaluate next BPMN Element.....
-                ItemCollection nextElement = this.ctx.getModelManager().nextModelElement(workitem);
+                ItemCollection nextElement = this.ctx.getModelManager().nextModelElement(event, workitem);
                 if (nextElement != null && !nextElement.hasItem("type")) {
                     throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
                             "BPMN Element Entity must provide the item 'type'!");

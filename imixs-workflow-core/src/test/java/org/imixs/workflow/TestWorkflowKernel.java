@@ -141,7 +141,7 @@ public class TestWorkflowKernel {
             Assert.fail();
         } catch (ModelException e) {
             // Expected Exception
-            e.printStackTrace();
+            logger.info(e.getMessage());
         } catch (WorkflowException e) {
             Assert.fail();
             e.printStackTrace();
