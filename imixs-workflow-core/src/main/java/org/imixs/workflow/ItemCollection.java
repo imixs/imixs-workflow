@@ -230,7 +230,7 @@ public class ItemCollection implements Cloneable {
             List<Object> copy = (List<Object>) ois.readObject();
             hash.put(itemName, copy);
         } catch (IOException | ClassNotFoundException e) {
-            logger.log(Level.WARNING, "Unable to clone values of Item ''{0}'' - {1}", new Object[]{itemName, e});
+            logger.log(Level.WARNING, "Unable to clone values of Item ''{0}'' - {1}", new Object[] { itemName, e });
         }
     }
 
@@ -1431,33 +1431,22 @@ public class ItemCollection implements Cloneable {
     }
 
     /**
-     * set $eventID
+     * Set the $eventID for a workitem.
      * 
      * @param eventID
      */
     public void setEventID(int eventID) {
         replaceItemValue(WorkflowKernel.EVENTID, eventID);
-
-        // if deprectaed ActivityID exists we must still support it
-        if (hasItem("$activityid")) {
-            replaceItemValue("$activityid", eventID);
-        }
     }
 
     /**
-     * Set the event id for a workitem. If a event id is already set, the method
-     * appends the event to the ACTIVITYIDLIST
+     * Set the $eventID for a workitem.
      * 
      * @param eventID
      * @return
      */
     public ItemCollection event(int eventID) {
-        if (this.getEventID() == 0) {
-            setEventID(eventID);
-        } else {
-            // set
-            appendItemValue(WorkflowKernel.ACTIVITYIDLIST, eventID);
-        }
+        setEventID(eventID);
         return this;
     }
 

@@ -51,13 +51,17 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.util.XMLParser;
 
 /**
- * The Workflowkernel is the core component of this Framework to control the
- * processing of a workitem. A <code>Workflowmanager</code> loads an instance of
- * a Workflowkernel and hand over a <code>Model</code> and register
- * <code>Plugins</code> for processing one or many workitems.
+ * The WorkflowKernel is the core component to process a workitem based
+ * on a BPMN event. The WorkflowKernel expects a {@link WorkflowContext} to
+ * access the {@link ModelManager} and the runtime environment.
+ * 
+ * An implementation of the {@link WorkflowManager} typical creates an instance
+ * of a Workflowkernel and register {@link Plugin} and {@link Adapter} classes
+ * to be executed during the processing life cycle of one or many workitems.
  * 
  * @author Ralph Soika
- * @version 1.1
+ * @version 2.0
+ * @see org.imixs.workflow.WorkflowContext
  * @see org.imixs.workflow.WorkflowManager
  */
 
@@ -94,7 +98,6 @@ public class WorkflowKernel {
     public static final String TASKID = "$taskid";
     public static final String EVENTID = "$eventid";
 
-    public static final String ACTIVITYIDLIST = "$activityidlist";
     public static final String WORKFLOWGROUP = "$workflowgroup";
     public static final String WORKFLOWSTATUS = "$workflowstatus";
     public static final String ISVERSION = "$isversion";
@@ -306,7 +309,7 @@ public class WorkflowKernel {
      * @return updated workitem
      * @throws PluginException,ModelException
      */
-    public ItemCollection process(final ItemCollection workitem) throws PluginException, ModelException {
+    public ItemCollection process(ItemCollection workitem) throws PluginException, ModelException {
 
         // check document context
         if (workitem == null)
@@ -323,39 +326,36 @@ public class WorkflowKernel {
             throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_ACTIVITYID,
                     "processing error: $eventID undefined (" + workitem.getEventID() + ")");
 
-        // ItemCollection documentResult = new ItemCollection(workitem);
-        // we do no longer clone the woritem - Issue #507
-        ItemCollection documentResult = workitem;
         vectorEdgeHistory = new Vector<String>();
 
         // Check if $UniqueID is available
         if ("".equals(workitem.getItemValueString(UNIQUEID))) {
             // generating a new one
-            documentResult.replaceItemValue(UNIQUEID, generateUniqueID());
+            workitem.replaceItemValue(UNIQUEID, generateUniqueID());
         }
 
         // Generate a $TransactionID
-        documentResult.replaceItemValue(TRANSACTIONID, generateTransactionID());
+        workitem.replaceItemValue(TRANSACTIONID, generateTransactionID());
 
         // store last $lastTask
-        documentResult.replaceItemValue("$lastTask", workitem.getTaskID());
+        workitem.replaceItemValue("$lastTask", workitem.getTaskID());
 
         // Check if $WorkItemID is available
         if ("".equals(workitem.getItemValueString(WorkflowKernel.WORKITEMID))) {
-            documentResult.replaceItemValue(WorkflowKernel.WORKITEMID, generateUniqueID());
+            workitem.replaceItemValue(WorkflowKernel.WORKITEMID, generateUniqueID());
         }
 
         // clear all existing adapter errors..
-        documentResult.removeItem(ADAPTER_ERROR_CONTEXT);
-        documentResult.removeItem(ADAPTER_ERROR_CODE);
-        documentResult.removeItem(ADAPTER_ERROR_PARAMS);
-        documentResult.removeItem(ADAPTER_ERROR_MESSAGE);
+        workitem.removeItem(ADAPTER_ERROR_CONTEXT);
+        workitem.removeItem(ADAPTER_ERROR_CODE);
+        workitem.removeItem(ADAPTER_ERROR_PARAMS);
+        workitem.removeItem(ADAPTER_ERROR_MESSAGE);
 
         // Iterate through all events
         ItemCollection event = this.ctx.getModelManager().loadEvent(workitem);
         while (event != null) {
             // set $lastEventDate
-            documentResult.replaceItemValue(LASTEVENTDATE, new Date());
+            workitem.replaceItemValue(LASTEVENTDATE, new Date());
             event = this.ctx.getModelManager().loadEvent(workitem);
 
             // invalidate deprecated models!
@@ -373,16 +373,17 @@ public class WorkflowKernel {
                         "[loadEvent] loop detected " + taskID + "." + eventID + "," + vectorEdgeHistory.toString());
             }
 
-            documentResult = processEvent(documentResult, event);
+            workitem = processEvent(workitem, event);
 
             // put current edge in history
             vectorEdgeHistory.addElement(
                     event.getItemValueInteger("numprocessid") + "." + event.getItemValueInteger("numactivityid"));
 
             // test if a new model version was assigned by the last event
-            if (updateModelVersionByEvent(documentResult, event)) {
-                // reload new Event and start new processing live cycle...
+            if (updateModelVersionByEvent(workitem, event)) {
+                // load new Event and start new processing live cycle...
                 event = this.ctx.getModelManager().loadEvent(workitem);
+                workitem.event(event.getItemValueInteger("numactivityid"));
             } else {
                 // evaluate next BPMN Element.....
                 ItemCollection nextElement = this.ctx.getModelManager().nextModelElement(workitem);
@@ -396,14 +397,15 @@ public class WorkflowKernel {
                     event = nextElement;
                 } else {
                     // Update status - Issue #722
-                    updateWorkflowStatus(documentResult, nextElement);
+                    updateWorkflowStatus(workitem, nextElement);
                     // terminate processing live cycle
+                    workitem.event(0);
                     event = null;
                 }
             }
         }
 
-        return documentResult;
+        return workitem;
     }
 
     /**
@@ -477,57 +479,59 @@ public class WorkflowKernel {
      * 
      * @throws ModelException
      **/
-    @Deprecated
-    private ItemCollection updateEventList(final ItemCollection documentContext, final ItemCollection event)
-            throws ModelException {
-        ItemCollection documentResult = documentContext;
-        boolean debug = logger.isLoggable(Level.FINE);
-        // first clear the eventID
-        documentResult.setEventID(Integer.valueOf(0));
+    // @Deprecated
+    // private ItemCollection updateEventList(final ItemCollection documentContext,
+    // final ItemCollection event)
+    // throws ModelException {
+    // ItemCollection documentResult = documentContext;
+    // boolean debug = logger.isLoggable(Level.FINE);
+    // // first clear the eventID
+    // documentResult.setEventID(Integer.valueOf(0));
 
-        // test if a FollowUp event is defined for the given event (Deprecated)...
-        String sFollowUp = event.getItemValueString("keyFollowUp");
-        int iNextActivityID = event.getItemValueInteger("numNextActivityID");
-        if ("1".equals(sFollowUp) && iNextActivityID > 0) {
-            // append the next event id.....
-            documentResult = appendActivityID(documentResult, iNextActivityID);
-        }
+    // // test if a FollowUp event is defined for the given event (Deprecated)...
+    // String sFollowUp = event.getItemValueString("keyFollowUp");
+    // int iNextActivityID = event.getItemValueInteger("numNextActivityID");
+    // if ("1".equals(sFollowUp) && iNextActivityID > 0) {
+    // // append the next event id.....
+    // documentResult = appendActivityID(documentResult, iNextActivityID);
+    // }
 
-        // evaluate is $eventid already provided?
-        if ((documentContext.getEventID() <= 0)) {
-            // no $eventID provided, so we test for property $ActivityIDList
-            List<?> vActivityList = documentContext.getItemValue(ACTIVITYIDLIST);
+    // // evaluate is $eventid already provided?
+    // if ((documentContext.getEventID() <= 0)) {
+    // // no $eventID provided, so we test for property $ActivityIDList
+    // List<?> vActivityList = documentContext.getItemValue(ACTIVITYIDLIST);
 
-            // remove 0 values if contained!
-            while (vActivityList.indexOf(Integer.valueOf(0)) > -1) {
-                vActivityList.remove(vActivityList.indexOf(Integer.valueOf(0)));
-            }
+    // // remove 0 values if contained!
+    // while (vActivityList.indexOf(Integer.valueOf(0)) > -1) {
+    // vActivityList.remove(vActivityList.indexOf(Integer.valueOf(0)));
+    // }
 
-            // test if an id is found....
-            if (vActivityList.size() > 0) {
-                // yes - load next ID from activityID List
-                int iNextID = 0;
-                Object oA = vActivityList.get(0);
-                if (oA instanceof Integer)
-                    iNextID = ((Integer) oA).intValue();
-                if (oA instanceof Double)
-                    iNextID = ((Double) oA).intValue();
+    // // test if an id is found....
+    // if (vActivityList.size() > 0) {
+    // // yes - load next ID from activityID List
+    // int iNextID = 0;
+    // Object oA = vActivityList.get(0);
+    // if (oA instanceof Integer)
+    // iNextID = ((Integer) oA).intValue();
+    // if (oA instanceof Double)
+    // iNextID = ((Double) oA).intValue();
 
-                if (iNextID > 0) {
-                    // load activity
-                    if (debug) {
-                        logger.log(Level.FINEST, "......processing={0} -> loading next activityID = {1}",
-                                new Object[] { documentContext.getItemValueString(UNIQUEID), iNextID });
-                    }
-                    vActivityList.remove(0);
-                    // update document context
-                    documentResult.setEventID(Integer.valueOf(iNextID));
-                    documentResult.replaceItemValue(ACTIVITYIDLIST, vActivityList);
-                }
-            }
-        }
-        return documentResult;
-    }
+    // if (iNextID > 0) {
+    // // load activity
+    // if (debug) {
+    // logger.log(Level.FINEST, "......processing={0} -> loading next activityID =
+    // {1}",
+    // new Object[] { documentContext.getItemValueString(UNIQUEID), iNextID });
+    // }
+    // vActivityList.remove(0);
+    // // update document context
+    // documentResult.setEventID(Integer.valueOf(iNextID));
+    // documentResult.replaceItemValue(ACTIVITYIDLIST, vActivityList);
+    // }
+    // }
+    // }
+    // return documentResult;
+    // }
 
     /**
      * If the current workflow result of an Event defines a new model tag, this
@@ -582,8 +586,7 @@ public class WorkflowKernel {
             throw new ModelException(ModelException.INVALID_MODEL, sErrorMessage);
         }
         // apply new model version and event id
-        workitem.setModelVersion(version);
-        workitem.setEventID(Integer.valueOf(iNextEvent));
+        workitem.model(version).event(iNextEvent);
         if (iTask > 0) {
             // optional
             workitem.task(iTask);
@@ -665,29 +668,29 @@ public class WorkflowKernel {
      * Helper method to update the items $taskid, $worklfowstatus, $workflowgroup
      * and type
      */
-    private void updateWorkflowStatus(ItemCollection documentResult, ItemCollection itemColNextTask) {
+    private void updateWorkflowStatus(ItemCollection workitem, ItemCollection itemColNextTask) {
         boolean debug = logger.isLoggable(Level.FINE);
         // Update the attributes $taskID and $WorkflowStatus
-        documentResult.setTaskID(Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
+        workitem.task(itemColNextTask.getItemValueInteger("numprocessid"));
         if (debug) {
-            logger.log(Level.FINEST, "......new $taskID={0}", documentResult.getTaskID());
+            logger.log(Level.FINEST, "......new $taskID={0}", workitem.getTaskID());
         }
-        documentResult.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString("txtname"));
-        documentResult.replaceItemValue(WORKFLOWGROUP, itemColNextTask.getItemValueString("txtworkflowgroup"));
+        workitem.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString("txtname"));
+        workitem.replaceItemValue(WORKFLOWGROUP, itemColNextTask.getItemValueString("txtworkflowgroup"));
         if (debug) {
             logger.log(Level.FINEST, "......new $workflowStatus={0}",
-                    documentResult.getItemValueString(WORKFLOWSTATUS));
+                    workitem.getItemValueString(WORKFLOWSTATUS));
         }
         // update deprecated attributes txtworkflowStatus and txtworkflowGroup
-        documentResult.replaceItemValue("txtworkflowStatus", documentResult.getItemValueString(WORKFLOWSTATUS));
-        documentResult.replaceItemValue("txtworkflowGroup", documentResult.getItemValueString(WORKFLOWGROUP));
+        workitem.replaceItemValue("txtworkflowStatus", workitem.getItemValueString(WORKFLOWSTATUS));
+        workitem.replaceItemValue("txtworkflowGroup", workitem.getItemValueString(WORKFLOWGROUP));
 
         // update the type attribute if defined.
         // the type attribute can only be overwritten by a plug-in if the type is not
         // defined by the task!
         String sType = itemColNextTask.getItemValueString("txttype");
         if (!"".equals(sType)) {
-            documentResult.replaceItemValue(TYPE, sType);
+            workitem.replaceItemValue(TYPE, sType);
         }
     }
 
@@ -1128,30 +1131,33 @@ public class WorkflowKernel {
      * ($ActivityIDList) The activity list may not contain 0 values.
      * 
      */
-    @SuppressWarnings("unchecked")
-    private ItemCollection appendActivityID(final ItemCollection documentContext, final int aID) {
-        boolean debug = logger.isLoggable(Level.FINE);
-        ItemCollection documentResult = documentContext;
-        // check if activityidlist is available
-        List<Integer> vActivityList = (List<Integer>) documentContext.getItemValue(ACTIVITYIDLIST);
-        // clear list?
-        if ((vActivityList.size() == 1) && ("".equals(vActivityList.get(0).toString())))
-            vActivityList = new Vector<Integer>();
+    // @SuppressWarnings("unchecked")
+    // private ItemCollection appendActivityID(final ItemCollection documentContext,
+    // final int aID) {
+    // boolean debug = logger.isLoggable(Level.FINE);
+    // ItemCollection documentResult = documentContext;
+    // // check if activityidlist is available
+    // List<Integer> vActivityList = (List<Integer>)
+    // documentContext.getItemValue(ACTIVITYIDLIST);
+    // // clear list?
+    // if ((vActivityList.size() == 1) &&
+    // ("".equals(vActivityList.get(0).toString())))
+    // vActivityList = new Vector<Integer>();
 
-        vActivityList.add(Integer.valueOf(aID));
+    // vActivityList.add(Integer.valueOf(aID));
 
-        // remove 0 values if contained!
-        while (vActivityList.indexOf(Integer.valueOf(0)) > -1) {
-            vActivityList.remove(vActivityList.indexOf(Integer.valueOf(0)));
-        }
+    // // remove 0 values if contained!
+    // while (vActivityList.indexOf(Integer.valueOf(0)) > -1) {
+    // vActivityList.remove(vActivityList.indexOf(Integer.valueOf(0)));
+    // }
 
-        documentResult.replaceItemValue(ACTIVITYIDLIST, vActivityList);
-        if (debug) {
-            logger.log(Level.FINEST, "......append new Activity ID={0}", aID);
-        }
+    // documentResult.replaceItemValue(ACTIVITYIDLIST, vActivityList);
+    // if (debug) {
+    // logger.log(Level.FINEST, "......append new Activity ID={0}", aID);
+    // }
 
-        return documentResult;
-    }
+    // return documentResult;
+    // }
 
     /**
      * This method is responsible for the internal workflow log. The attribute
@@ -1214,7 +1220,6 @@ public class WorkflowKernel {
         }
 
         documentResult.replaceItemValue("$eventlog", logEntries);
-
         documentResult.replaceItemValue("$lastEvent", Integer.valueOf(event.getItemValueInteger("numactivityid")));
         // deprecated
         documentResult.replaceItemValue("numlastactivityid",

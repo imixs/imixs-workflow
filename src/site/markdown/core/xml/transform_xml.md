@@ -135,12 +135,12 @@ See details about the xml format in the section [XML](../index.html). To transfo
 				</item>
 				
 				<item>
-					<name>$processid</name>
+					<name>$taskid</name>
 					<value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 						xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:int">4000</value>
 				</item>
 				<item>
-					<name>$activityid</name>
+					<name>$eventid</name>
 					<value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 						xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:int">20</value>
 				</item>

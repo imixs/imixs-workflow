@@ -66,9 +66,12 @@ public class TestWorkflowKernel {
 
     }
 
+    /**
+     * This test tests the basic behavior of the WorkflowKernel process method.
+     */
     @Test
     @Category(org.imixs.workflow.WorkflowKernel.class)
-    public void testProcess() {
+    public void testSimpleProcessingCycle() {
 
         BPMNModel model = null;
         // Load Model
@@ -80,18 +83,17 @@ public class TestWorkflowKernel {
             Assert.fail();
         }
 
-        ItemCollection itemCollectionProcessed = null;
-        ItemCollection itemCollection = new ItemCollection();
-        itemCollection.model(OpenBPMNUtil.getVersion(model))
+        ItemCollection workitemProcessed = null;
+        ItemCollection workItem = new ItemCollection();
+        workItem.model(OpenBPMNUtil.getVersion(model))
                 .task(1000)
                 .event(10);
-        itemCollection.replaceItemValue("txtTitel", "Hello");
+        workItem.replaceItemValue("txtTitel", "Hello");
 
-        Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+        Assert.assertEquals(workItem.getItemValueString("txttitel"), "Hello");
 
         try {
-            itemCollectionProcessed = kernel.process(itemCollection);
-
+            workitemProcessed = kernel.process(workItem);
         } catch (ModelException e) {
             Assert.fail(e.getMessage());
             e.printStackTrace();
@@ -103,12 +105,29 @@ public class TestWorkflowKernel {
             e.printStackTrace();
         }
 
-        Assert.assertEquals(1, itemCollectionProcessed.getItemValueInteger("runs"));
-        Assert.assertEquals(1000, itemCollectionProcessed.getTaskID());
+        Assert.assertEquals(1, workitemProcessed.getItemValueInteger("runs"));
+        Assert.assertEquals(1000, workitemProcessed.getTaskID());
 
         // initial and processed workitems should be the same and should be equals!
-        Assert.assertSame(itemCollection, itemCollectionProcessed);
-        Assert.assertTrue(itemCollection.equals(itemCollectionProcessed));
+        Assert.assertSame(workItem, workitemProcessed);
+        Assert.assertTrue(workItem.equals(workitemProcessed));
+
+        // the workitem should not have a $eventid
+        Assert.assertEquals(0, workItem.getItemValueInteger(WorkflowKernel.EVENTID));
+        // a new call of process should throw a ProcessingErrorException
+        try {
+            workitemProcessed = kernel.process(workItem);
+            Assert.fail(); // we expect an Exception here!
+        } catch (ModelException e) {
+            Assert.fail(e.getMessage());
+            e.printStackTrace();
+        } catch (WorkflowException e) {
+            Assert.fail();
+            e.printStackTrace();
+        } catch (ProcessingErrorException e) {
+            // expected Exception!
+        }
+
     }
 
     /**

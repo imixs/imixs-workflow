@@ -29,10 +29,11 @@
 package org.imixs.workflow;
 
 /**
- * This Interface defines the Context which is used to supply a basic enviroment
- * for the exchange between a WorkflowManager an the registered Plugin Moduls.
- * Normaly the WorkflowManager Implementation itself implents this Interface to
- * provide the Context for the Workflow components.
+ * This WorkflowContext provides the {@link WorkflowKernel} with a runtime
+ * environment for the processing live cycle of a workitem.
+ * A Workflow Engine implements this Interface to provide a {@link ModelManger}
+ * and the session context to execute {@link Plugin} and {@link Adapter}
+ * classes.
  * 
  * @author imixs.com
  * @version 1.0
@@ -42,16 +43,16 @@ package org.imixs.workflow;
 public interface WorkflowContext {
 
     /**
-     * This Methode returns the Runtime enviroment for a workflow Implementation. is
-     * usesd to initialize the plugin.
+     * This methode returns the Runtime environment for a workflow Implementation
+     * used to execute {@link Plugin} and {@link Adapter} classes.
      * 
      * @return a Session Object
      */
     public Object getSessionContext();
 
     /**
-     * This method returns an instance of a IModelManager to access model
-     * information
+     * This method returns an instance of the {@link ModelManager} to access model
+     * information form a BPMN model.
      * 
      * @return ModelManager
      */
