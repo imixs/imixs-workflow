@@ -21,7 +21,10 @@ import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.Event;
 import org.openbpmn.bpmn.elements.SequenceFlow;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
+import org.openbpmn.bpmn.elements.core.BPMNElementNode;
+import org.openbpmn.bpmn.exceptions.BPMNValidationException;
 import org.openbpmn.bpmn.navigation.BPMNFlowIterator;
+import org.openbpmn.bpmn.navigation.BPMNFlowNavigator;
 import org.w3c.dom.Element;
 
 /**
@@ -88,6 +91,9 @@ public class OpenBPMNModelManager implements ModelManager {
                 result = modelStore.get(matchingVersion);
                 if (result != null) {
                     // match
+                    // update $modelVersion
+                    logger.info("Update $modelversion by regex " + version + " ▷ " + matchingVersion);
+                    workitem.model(matchingVersion);
                     return result;
                 }
             }
@@ -148,16 +154,37 @@ public class OpenBPMNModelManager implements ModelManager {
 
     @Override
     public ItemCollection nextModelElement(ItemCollection workitem) throws ModelException {
-        logger.warning("Unimplemented method 'nextModelElement'");
-
-        // return current task....
+        long l = System.currentTimeMillis();
+        // load current event
+        loadEvent(workitem);
+        // fetch BPMN element
         BPMNModel model = findModelByWorkitem(workitem);
-        ItemCollection task = findTaskByID(model, workitem.getTaskID());
-        if (task == null) {
-            throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
-                    "Task " + workitem.getTaskID() + " not defined in model '" + workitem.getModelVersion() + "'");
+        String version = OpenBPMNUtil.getVersion(model);
+        String key = version + "~" + workitem.getTaskID() + "." + workitem.getEventID();
+        Event currentEventElement = (Event) bpmnElementCache.get(key);
+
+        // find next task or event.....
+        BPMNFlowNavigator<BPMNElementNode> elementNavigator;
+        try {
+            elementNavigator = new BPMNFlowNavigator<BPMNElementNode>(
+                    currentEventElement,
+                    n -> ((n instanceof Event) || (n instanceof Activity)));
+        } catch (BPMNValidationException e) {
+            throw new ModelException(ModelException.INVALID_MODEL, "Unable to resolve next ModelElement in ' "
+                    + version + "' : " + e.getMessage());
         }
-        return task;
+
+        while (elementNavigator.hasNext()) {
+            BPMNElementNode nextElement = elementNavigator.next();
+            // check if Element is a Imixs Task or Event
+            if (OpenBPMNUtil.isImixsTaskElement(nextElement)
+                    || OpenBPMNUtil.isImixsEventElement(nextElement)) {
+
+                logger.info("nextModelElement " + key + " took " + (System.currentTimeMillis() - l) + "ms");
+                return ElementBuilder.buildItemCollectionFromBPMNElement(nextElement);
+            }
+        }
+        return null;
     }
 
     /**
@@ -267,6 +294,8 @@ public class OpenBPMNModelManager implements ModelManager {
         // convert model version new item name
         result.setItemValue(WorkflowKernel.MODELVERSION, result.getItemValueString("txtworkflowmodelversion"));
 
+        logger.info("lookupDefinition " + result.getItemValueString("txtworkflowmodelversion") + " took "
+                + (System.currentTimeMillis() - l) + "ms");
         return result;
     }
 
@@ -286,7 +315,7 @@ public class OpenBPMNModelManager implements ModelManager {
             String id = activity.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "processid");
             try {
                 if (taskID == Long.parseLong(id)) {
-                    logger.info("fineEventByID took " + (System.currentTimeMillis() - l) + "ms");
+                    logger.info("lookupTaskElementByID " + taskID + " took " + (System.currentTimeMillis() - l) + "ms");
                     return activity;
                 }
             } catch (NumberFormatException e) {
@@ -324,14 +353,15 @@ public class OpenBPMNModelManager implements ModelManager {
      * @return
      */
     private static ItemCollection lookupEventByID(final BPMNModel model, int taskID, int eventID) {
-        String key = OpenBPMNUtil.getVersion(model) + "~" + taskID;
-        Activity task = (Activity) bpmnElementCache.computeIfAbsent(key, k -> lookupTaskElementByID(model, taskID));
+        long l = System.currentTimeMillis();
+        String keyTask = OpenBPMNUtil.getVersion(model) + "~" + taskID;
+        String keyEvent = OpenBPMNUtil.getVersion(model) + "~" + taskID + "." + eventID;
+        Activity task = (Activity) bpmnElementCache.computeIfAbsent(keyTask, k -> lookupTaskElementByID(model, taskID));
         // Activity task = lookupTaskByID(model, taskID);
         if (task == null) {
             logger.warning("TaskID: " + taskID + " does not exist!");
             return null;
         }
-        long l = System.currentTimeMillis();
         // find all associated Events...
         BPMNFlowIterator<Event> eventNavigator = new BPMNFlowIterator<Event>(task,
                 n -> n instanceof Event);
@@ -345,7 +375,9 @@ public class OpenBPMNModelManager implements ModelManager {
                 }
                 try {
                     if (eventID == Long.parseLong(id)) {
-                        logger.info("fineEventByID took " + (System.currentTimeMillis() - l) + "ms");
+                        // cache Event...
+                        bpmnElementCache.put(keyEvent, event);
+                        logger.info("lookupEventByID " + keyEvent + " took " + (System.currentTimeMillis() - l) + "ms");
                         return ElementBuilder.buildItemCollectionFromBPMNElement(event);
                     }
                 } catch (NumberFormatException e) {
@@ -369,7 +401,10 @@ public class OpenBPMNModelManager implements ModelManager {
                     }
                     try {
                         if (eventID == Long.parseLong(id)) {
-                            logger.info("fineEventByID took " + (System.currentTimeMillis() - l) + "ms");
+                            // cache Event...
+                            bpmnElementCache.put(keyEvent, event);
+                            logger.info(
+                                    "lookupEventByID " + keyEvent + " took " + (System.currentTimeMillis() - l) + "ms");
                             return ElementBuilder.buildItemCollectionFromBPMNElement(event);
                         }
                     } catch (NumberFormatException e) {

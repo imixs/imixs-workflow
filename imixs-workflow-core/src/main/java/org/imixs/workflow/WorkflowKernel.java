@@ -381,6 +381,8 @@ public class WorkflowKernel {
 
             // test if a new model version was assigned by the last event
             if (updateModelVersionByEvent(workitem, event)) {
+                // write event log
+                logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
                 // load new Event and start new processing live cycle...
                 event = this.ctx.getModelManager().loadEvent(workitem);
                 workitem.event(event.getItemValueInteger("numactivityid"));
@@ -394,8 +396,13 @@ public class WorkflowKernel {
                 // continue processing live-cycle?
                 if (ModelManager.EVENT_ELEMENT.equals(nextElement.getItemValueString("type"))) {
                     // load next event
+                    logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
                     event = nextElement;
+                    workitem.event(event.getItemValueInteger("numactivityid"));
                 } else {
+                    // load next event
+                    logEvent(workitem.getTaskID(), workitem.getEventID(),
+                            nextElement.getItemValueInteger("numprocessid"), workitem);
                     // Update status - Issue #722
                     updateWorkflowStatus(workitem, nextElement);
                     // terminate processing live cycle
@@ -621,7 +628,7 @@ public class WorkflowKernel {
         ItemCollection documentResult = workitem;
         // log the general processing message
         String msg = "⚙ processing: " + workitem.getItemValueString(UNIQUEID) + " ("
-                + workitem.getItemValueString(MODELVERSION) + " ▷ " + workitem.getTaskID() + "→"
+                + workitem.getItemValueString(MODELVERSION) + " ▷ " + workitem.getTaskID() + "."
                 + workitem.getEventID() + ")";
 
         if (ctx == null) {
@@ -646,9 +653,6 @@ public class WorkflowKernel {
 
         // execute GenericAdapters
         executeGenericAdapters(documentResult, event);
-
-        // write event log
-        documentResult = logEvent(documentResult, event);
 
         // put current edge in history
         vectorEdgeHistory.addElement(workitem.getTaskID() + "." + workitem.getEventID());
@@ -1179,35 +1183,35 @@ public class WorkflowKernel {
      * 
      */
     @SuppressWarnings("unchecked")
-    private ItemCollection logEvent(final ItemCollection documentContext, final ItemCollection event) {
+    private ItemCollection logEvent(int taskID, int eventID, int targetTaskID, final ItemCollection workitem) {
         boolean debug = logger.isLoggable(Level.FINE);
-        ItemCollection documentResult = documentContext;
+        ItemCollection documentResult = workitem;
         StringBuffer sLogEntry = new StringBuffer();
         // 22.9.2004 13:50:41|modelversion|1000.90|1000|
 
         sLogEntry.append(new SimpleDateFormat(ISO8601_FORMAT).format(new Date()));
 
         sLogEntry.append("|");
-        sLogEntry.append(documentContext.getItemValueString(MODELVERSION));
+        sLogEntry.append(workitem.getItemValueString(MODELVERSION));
 
         sLogEntry.append("|");
-        sLogEntry.append(event.getItemValueInteger("numprocessid") + "." + event.getItemValueInteger("numactivityid"));
+        sLogEntry.append(taskID + "." + eventID);
 
         sLogEntry.append("|");
-        sLogEntry.append(event.getItemValueInteger("numnextprocessid"));
+        sLogEntry.append(targetTaskID);
         sLogEntry.append("|");
 
         // check for optional log comment
-        String sLogComment = documentContext.getItemValueString("txtworkflowactivitylogComment");
+        String sLogComment = workitem.getItemValueString("txtworkflowactivitylogComment");
         if (!sLogComment.isEmpty())
             sLogEntry.append(sLogComment);
 
         // support deprecated field txtworkflowactivitylog
         List<String> logEntries = null;
-        if (!documentContext.hasItem("$eventlog"))
-            logEntries = (List<String>) documentContext.getItemValue("txtworkflowactivitylog"); // deprecated
+        if (!workitem.hasItem("$eventlog"))
+            logEntries = (List<String>) workitem.getItemValue("txtworkflowactivitylog"); // deprecated
         else
-            logEntries = (List<String>) documentContext.getItemValue("$eventlog");
+            logEntries = (List<String>) workitem.getItemValue("$eventlog");
         logEntries.add(sLogEntry.toString());
 
         // test if the log has exceeded the maximum count of entries
@@ -1220,10 +1224,9 @@ public class WorkflowKernel {
         }
 
         documentResult.replaceItemValue("$eventlog", logEntries);
-        documentResult.replaceItemValue("$lastEvent", Integer.valueOf(event.getItemValueInteger("numactivityid")));
+        documentResult.replaceItemValue("$lastEvent", eventID);
         // deprecated
-        documentResult.replaceItemValue("numlastactivityid",
-                Integer.valueOf(event.getItemValueInteger("numactivityid")));
+        documentResult.replaceItemValue("numlastactivityid", eventID);
 
         return documentResult;
     }

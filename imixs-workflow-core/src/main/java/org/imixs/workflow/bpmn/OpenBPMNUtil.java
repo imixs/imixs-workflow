@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
+import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -248,6 +249,29 @@ public class OpenBPMNUtil {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns true if the given BPMNElement is a Imixs Task element
+     * 
+     * <bpmn2:task id="Task_2" imixs:processid="1000" name="Task 1">
+     * 
+     * @return
+     */
+    public static boolean isImixsTaskElement(BPMNElement element) {
+        return (element.hasAttribute(getNamespace() + ":processid"));
+
+    }
+
+    /**
+     * Returns true if the given BPMNElement is a Imixs Event element
+     * 
+     * <bpmn2:intermediateCatchEvent id="CatchEvent_2" imixs:activityid="20" >
+     * 
+     * @return
+     */
+    public static boolean isImixsEventElement(BPMNElement element) {
+        return (element.hasAttribute(getNamespace() + ":activityid"));
     }
 
     /**

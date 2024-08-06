@@ -14,7 +14,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.bpmn.OpenBPMNModelManager;
-import org.imixs.workflow.bpmn.OpenBPMNUtil;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -61,6 +60,16 @@ public class TestWorkflowKernel {
         // MokWorkflowContext ctx = new MokWorkflowContext();
         kernel = new WorkflowKernel(workflowContext);
 
+        BPMNModel model = null;
+        // Load Models
+        try {
+            model = BPMNModelFactory.read("/bpmn/simple.bpmn");
+            workflowContext.getModelManager().addModel(model);
+        } catch (BPMNModelException | ModelException e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+
         MokPlugin mokPlugin = new MokPlugin();
         kernel.registerPlugin(mokPlugin);
 
@@ -73,19 +82,9 @@ public class TestWorkflowKernel {
     @Category(org.imixs.workflow.WorkflowKernel.class)
     public void testSimpleProcessingCycle() {
 
-        BPMNModel model = null;
-        // Load Model
-        try {
-            model = BPMNModelFactory.read("/bpmn/simple.bpmn");
-            workflowContext.getModelManager().addModel(model);
-        } catch (BPMNModelException | ModelException e) {
-            e.printStackTrace();
-            Assert.fail();
-        }
-
         ItemCollection workitemProcessed = null;
         ItemCollection workItem = new ItemCollection();
-        workItem.model(OpenBPMNUtil.getVersion(model))
+        workItem.model("1.0.0")
                 .task(1000)
                 .event(10);
         workItem.replaceItemValue("txtTitel", "Hello");
@@ -94,19 +93,14 @@ public class TestWorkflowKernel {
 
         try {
             workitemProcessed = kernel.process(workItem);
-        } catch (ModelException e) {
-            Assert.fail(e.getMessage());
+        } catch (ModelException | ProcessingErrorException | PluginException e) {
             e.printStackTrace();
-        } catch (WorkflowException e) {
             Assert.fail();
-            e.printStackTrace();
-        } catch (ProcessingErrorException e) {
-            Assert.fail();
-            e.printStackTrace();
         }
-
         Assert.assertEquals(1, workitemProcessed.getItemValueInteger("runs"));
         Assert.assertEquals(1000, workitemProcessed.getTaskID());
+
+        Assert.assertEquals("1.0.0", workitemProcessed.getModelVersion());
 
         // initial and processed workitems should be the same and should be equals!
         Assert.assertSame(workItem, workitemProcessed);
@@ -131,6 +125,58 @@ public class TestWorkflowKernel {
     }
 
     /**
+     * This test tests an invalid $modelversion. In this case a ModelException is
+     * expected.
+     **/
+    @Test
+    @Category(org.imixs.workflow.WorkflowKernel.class)
+    public void testInvalidModelVersion() {
+        ItemCollection workItem = new ItemCollection();
+        workItem.model("A.B.C")
+                .task(1000)
+                .event(10);
+
+        try {
+            workItem = kernel.process(workItem);
+            Assert.fail();
+        } catch (ModelException e) {
+            // Expected Exception
+            e.printStackTrace();
+        } catch (WorkflowException e) {
+            Assert.fail();
+            e.printStackTrace();
+        } catch (ProcessingErrorException e) {
+            Assert.fail();
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * This test tests a $modelversion with a regular expression. The ModelManager
+     * should resolve the version 1.0.0.
+     **/
+    @Test
+    @Category(org.imixs.workflow.WorkflowKernel.class)
+    public void testModelVersionByRegex() {
+        ItemCollection workItem = new ItemCollection();
+        workItem.model("(^1.0)|(^2.0)")
+                .task(1000)
+                .event(10);
+
+        try {
+            workItem = kernel.process(workItem);
+            Assert.assertNotNull(workItem);
+            // $modelversion should be 1.0.0
+            Assert.assertEquals("1.0.0", workItem.getModelVersion());
+        } catch (ModelException | ProcessingErrorException | PluginException e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+
+    }
+
+    /**
      * This test verifies if the deprecated fileds "$taskid" and $activityID are
      * still working.
      * 
@@ -140,16 +186,16 @@ public class TestWorkflowKernel {
     @Category(org.imixs.workflow.WorkflowKernel.class)
     public void testProcessWithDeprecatedField() {
         ItemCollection itemCollectionProcessed = null;
-        ItemCollection itemCollection = new ItemCollection();
-        itemCollection.replaceItemValue("txtTitel", "Hello");
-        itemCollection.setTaskID(100);
-        itemCollection.setEventID(10);
-        itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
+        ItemCollection workItem = new ItemCollection();
+        workItem.replaceItemValue("txtTitel", "Hello");
+        workItem.model("1.0.0")
+                .task(1000)
+                .event(20);
 
-        Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+        Assert.assertEquals(workItem.getItemValueString("txttitel"), "Hello");
 
         try {
-            itemCollectionProcessed = kernel.process(itemCollection);
+            itemCollectionProcessed = kernel.process(workItem);
         } catch (WorkflowException e) {
             Assert.fail();
             e.printStackTrace();
@@ -158,11 +204,11 @@ public class TestWorkflowKernel {
             e.printStackTrace();
         }
         Assert.assertEquals(1, itemCollectionProcessed.getItemValueInteger("runs"));
-        Assert.assertEquals(100, itemCollectionProcessed.getTaskID());
+        Assert.assertEquals(1100, itemCollectionProcessed.getTaskID());
 
         // initial and processed workitems are the same and equals!
-        Assert.assertSame(itemCollection, itemCollectionProcessed);
-        Assert.assertTrue(itemCollection.equals(itemCollectionProcessed));
+        Assert.assertSame(workItem, itemCollectionProcessed);
+        Assert.assertTrue(workItem.equals(itemCollectionProcessed));
     }
 
     /**
@@ -171,13 +217,11 @@ public class TestWorkflowKernel {
     @Test
     @Category(org.imixs.workflow.WorkflowKernel.class)
     public void testProcessNullPlugin() {
-        ItemCollection itemCollection = new ItemCollection();
-        itemCollection.replaceItemValue("txtTitel", "Hello");
-        itemCollection.setTaskID(100);
-        itemCollection.setEventID(10);
-        itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
-
-        Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+        ItemCollection workItem = new ItemCollection();
+        workItem.replaceItemValue("txtTitel", "Hello");
+        workItem.model("1.0.0")
+                .task(1000)
+                .event(10);
 
         try {
             // MokWorkflowContext ctx = new MokWorkflowContext();
@@ -185,9 +229,9 @@ public class TestWorkflowKernel {
 
             MokPluginNull mokPlugin = new MokPluginNull();
             kernel.registerPlugin(mokPlugin);
-            itemCollection.replaceItemValue("txtname", "test");
+            workItem.replaceItemValue("txtname", "test");
 
-            kernel.process(itemCollection);
+            kernel.process(workItem);
             // kernel should throw exception...
             Assert.fail();
         } catch (PluginException e) {
@@ -200,23 +244,26 @@ public class TestWorkflowKernel {
             e.printStackTrace();
         }
 
-        Assert.assertEquals("should not be null", itemCollection.getItemValueString("txtname"));
-        Assert.assertEquals(100, itemCollection.getTaskID());
+        Assert.assertEquals("should not be null", workItem.getItemValueString("txtname"));
+        Assert.assertEquals(1000, workItem.getTaskID());
     }
 
+    /**
+     * Test a simple process live cycle with a new target task.
+     */
     @Test
     @Category(org.imixs.workflow.WorkflowKernel.class)
-    public void testForward() {
-        ItemCollection itemCollection = new ItemCollection();
-        itemCollection.replaceItemValue("txtTitel", "Hello");
-        itemCollection.replaceItemValue("$processid", 100);
-        itemCollection.setEventID(20);
-        itemCollection.replaceItemValue("$modelversion", MokModel.DEFAULT_MODEL_VERSION);
+    public void testNextTaskElement() {
+        ItemCollection workItem = new ItemCollection();
+        workItem.model("1.0.0")
+                .task(1000)
+                .event(20);
 
-        Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+        workItem.replaceItemValue("title", "Hello");
 
         try {
-            itemCollection = kernel.process(itemCollection);
+            workItem = kernel.process(workItem);
+            Assert.assertEquals(workItem.getItemValueString("title"), "Hello");
         } catch (WorkflowException e) {
             Assert.fail();
             e.printStackTrace();
@@ -225,9 +272,9 @@ public class TestWorkflowKernel {
             e.printStackTrace();
         }
 
-        Assert.assertEquals(1, itemCollection.getItemValueInteger("runs"));
+        Assert.assertEquals(1, workItem.getItemValueInteger("runs"));
         // test next state
-        Assert.assertEquals(200, itemCollection.getTaskID());
+        Assert.assertEquals(1100, workItem.getTaskID());
     }
 
     @Test
@@ -295,24 +342,19 @@ public class TestWorkflowKernel {
     @Test
     @Category(org.imixs.workflow.WorkflowKernel.class)
     public void testActivityLog() {
-        ItemCollection itemCollection = new ItemCollection();
-        itemCollection.replaceItemValue("$modelversion", "1.0.0");
-        itemCollection.replaceItemValue("txtTitel", "Hello");
-        itemCollection.setTaskID(100);
-
-        Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
-
+        ItemCollection workitem = new ItemCollection();
+        workitem.model("1.0.0")
+                .task(1000);
+        workitem.replaceItemValue("txtTitel", "Hello");
         try {
             // simulate two steps
-            itemCollection.setEventID(10);
-            itemCollection = kernel.process(itemCollection);
-
-            itemCollection.setEventID(20);
-            // sumulate a Log Comment...
-            itemCollection.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
-
-            itemCollection = kernel.process(itemCollection);
-
+            workitem.event(10);
+            workitem = kernel.process(workitem);
+            Assert.assertEquals(workitem.getItemValueString("txttitel"), "Hello");
+            workitem.event(20);
+            // simulate a Log Comment...
+            workitem.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
+            workitem = kernel.process(workitem);
         } catch (PluginException e) {
             Assert.fail();
             e.printStackTrace();
@@ -324,12 +366,12 @@ public class TestWorkflowKernel {
             e.printStackTrace();
         }
 
-        Assert.assertEquals(2, itemCollection.getItemValueInteger("runs"));
+        Assert.assertEquals(2, workitem.getItemValueInteger("runs"));
         // test next state
-        Assert.assertEquals(200, itemCollection.getItemValueInteger("$processid"));
+        Assert.assertEquals(1100, workitem.getTaskID());
 
         // test log
-        List log = itemCollection.getItemValue("$eventlog");
+        List log = workitem.getItemValue("$eventlog");
 
         Assert.assertNotNull(log);
         Assert.assertEquals(2, log.size());
@@ -342,8 +384,8 @@ public class TestWorkflowKernel {
         StringTokenizer st = new StringTokenizer(logEntry, "|");
         st.nextToken();
         Assert.assertEquals("1.0.0", st.nextToken());
-        Assert.assertEquals("100.10", st.nextToken());
-        Assert.assertEquals("100", st.nextToken());
+        Assert.assertEquals("1000.10", st.nextToken());
+        Assert.assertEquals("1000", st.nextToken());
         Assert.assertFalse(st.hasMoreTokens());
 
         logEntry = (String) log.get(1);
@@ -370,9 +412,9 @@ public class TestWorkflowKernel {
         }
 
         Assert.assertEquals("1.0.0", st.nextToken());
-        Assert.assertEquals("100.20", st.nextToken());
-        Assert.assertEquals("200", st.nextToken());
-        // test commment
+        Assert.assertEquals("1000.20", st.nextToken());
+        Assert.assertEquals("1100", st.nextToken());
+        // test comment
         Assert.assertTrue(st.hasMoreTokens());
         Assert.assertEquals("userid", st.nextToken());
         Assert.assertEquals("comment", st.nextToken());
@@ -391,10 +433,11 @@ public class TestWorkflowKernel {
     @Test
     @Category(org.imixs.workflow.WorkflowKernel.class)
     public void testActivityLogMaxLength() {
-        ItemCollection itemCollection = new ItemCollection();
-        itemCollection.replaceItemValue("$modelversion", "1.0.0");
-        itemCollection.replaceItemValue("txtTitel", "Hello");
-        itemCollection.replaceItemValue("$processid", 100);
+        ItemCollection workitem = new ItemCollection();
+        workitem.model("1.0.0")
+                .task(1000)
+                .event(10);
+        workitem.replaceItemValue("txtTitel", "Hello");
 
         // we create 40 dummy entries
         String dummyEntry = "" + new Date() + "|1.0.0|100.10|100";
@@ -402,18 +445,16 @@ public class TestWorkflowKernel {
         for (int i = 1; i <= 40; i++) {
             v.add(dummyEntry);
         }
-        itemCollection.replaceItemValue("$eventlog", v);
+        workitem.replaceItemValue("$eventlog", v);
 
         try {
             // simulate two steps
-            itemCollection.setEventID(10);
-            itemCollection = kernel.process(itemCollection);
-
-            itemCollection.setEventID(20);
-            // sumulate a Log Comment...
-            itemCollection.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
-
-            itemCollection = kernel.process(itemCollection);
+            workitem.setEventID(10);
+            workitem = kernel.process(workitem);
+            workitem.setEventID(20);
+            // simulate a log Comment...
+            workitem.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
+            workitem = kernel.process(workitem);
 
         } catch (PluginException e) {
             Assert.fail();
@@ -426,12 +467,12 @@ public class TestWorkflowKernel {
             e.printStackTrace();
         }
 
-        Assert.assertEquals(2, itemCollection.getItemValueInteger("runs"));
+        Assert.assertEquals(2, workitem.getItemValueInteger("runs"));
         // test next state
-        Assert.assertEquals(200, itemCollection.getTaskID());
+        Assert.assertEquals(1100, workitem.getTaskID());
 
         // test log
-        List log = itemCollection.getItemValue("$eventlog");
+        List log = workitem.getItemValue("$eventlog");
 
         Assert.assertNotNull(log);
         Assert.assertEquals(30, log.size());
@@ -444,8 +485,8 @@ public class TestWorkflowKernel {
         StringTokenizer st = new StringTokenizer(logEntry, "|");
         st.nextToken();
         Assert.assertEquals("1.0.0", st.nextToken());
-        Assert.assertEquals("100.10", st.nextToken());
-        Assert.assertEquals("100", st.nextToken());
+        Assert.assertEquals("1000.10", st.nextToken());
+        Assert.assertEquals("1000", st.nextToken());
         Assert.assertFalse(st.hasMoreTokens());
 
         // test last entry
@@ -473,14 +514,13 @@ public class TestWorkflowKernel {
         }
 
         Assert.assertEquals("1.0.0", st.nextToken());
-        Assert.assertEquals("100.20", st.nextToken());
-        Assert.assertEquals("200", st.nextToken());
-        // test commment
+        Assert.assertEquals("1000.20", st.nextToken());
+        Assert.assertEquals("1100", st.nextToken());
+        // test comment
         Assert.assertTrue(st.hasMoreTokens());
         Assert.assertEquals("userid", st.nextToken());
         Assert.assertEquals("comment", st.nextToken());
         Assert.assertFalse(st.hasMoreTokens());
-
     }
 
     /**
