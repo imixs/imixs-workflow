@@ -356,7 +356,6 @@ public class WorkflowKernel {
         while (event != null) {
             // set $lastEventDate
             workitem.replaceItemValue(LASTEVENTDATE, new Date());
-            event = this.ctx.getModelManager().loadEvent(workitem);
 
             // invalidate deprecated models!
             if (event.hasItem("keyFollowUp")) {

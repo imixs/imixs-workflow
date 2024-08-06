@@ -220,6 +220,7 @@ public class OpenBPMNModelManager implements ModelManager {
     public ItemCollection loadEvent(ItemCollection workitem) throws ModelException {
 
         BPMNModel model = findModelByWorkitem(workitem);
+        logger.info("...loadEvent " + workitem.getTaskID() + "." + workitem.getEventID());
         ItemCollection event = findEventByID(model, workitem.getTaskID(), workitem.getEventID());
         if (event == null) {
             throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY, "Event " + workitem.getTaskID() + "."
@@ -228,16 +229,35 @@ public class OpenBPMNModelManager implements ModelManager {
         return event;
     }
 
+    /**
+     * Finds the next BPMN Element associated with a given workitem, based on its
+     * attributes "$modelVersion", "$taskID" and "$eventID". The returned BPMN
+     * Element must either be an Activity (Task) element, an Intermediate Catch
+     * Event or a End Event. The method must not return any other BPMN elements
+     * (e.g. Gateways, Intermediate Throw Events).
+     * <p>
+     * The method throws a {@link ModelException} if no Element can be resolved
+     * based
+     * on the given model information.
+     * <p>
+     * The method uses the internal bpmnElementCache to fetch the current event
+     * element.
+     * 
+     * @param workitem - current Workitem
+     * @return a BPMN Element entity - {@link ItemCollection}
+     * @throws ModelException - if no valid element was found
+     */
     @Override
     public ItemCollection nextModelElement(ItemCollection workitem) throws ModelException {
         long l = System.currentTimeMillis();
-        // load current event
-        loadEvent(workitem);
-        // fetch BPMN element
+        // lookup the current BPMN event element
         BPMNModel model = findModelByWorkitem(workitem);
         String version = OpenBPMNUtil.getVersion(model);
         String key = version + "~" + workitem.getTaskID() + "." + workitem.getEventID();
-        Event currentEventElement = (Event) bpmnElementCache.get(key);
+
+        Event currentEventElement = (Event) bpmnElementCache.computeIfAbsent(key,
+                k -> lookupEventElementByID(model, workitem.getTaskID(),
+                        workitem.getEventID()));
 
         // find next task or event.....
         BPMNFlowNavigator<BPMNElementNode> elementNavigator;
@@ -429,16 +449,38 @@ public class OpenBPMNModelManager implements ModelManager {
      * @return
      */
     private static ItemCollection lookupEventByID(final BPMNModel model, int taskID, int eventID) {
-        long l = System.currentTimeMillis();
-        String keyTask = OpenBPMNUtil.getVersion(model) + "~" + taskID;
-        String keyEvent = OpenBPMNUtil.getVersion(model) + "~" + taskID + "." + eventID;
-        Activity task = (Activity) bpmnElementCache.computeIfAbsent(keyTask, k -> lookupTaskElementByID(model, taskID));
-        // Activity task = lookupTaskByID(model, taskID);
-        if (task == null) {
-            logger.warning("TaskID: " + taskID + " does not exist!");
+        String key = OpenBPMNUtil.getVersion(model) + "~" + taskID + "." + eventID;
+        Event event = (Event) bpmnElementCache.computeIfAbsent(key,
+                k -> lookupEventElementByID(model, taskID, eventID));
+        if (event != null) {
+            return ElementBuilder.buildItemCollectionFromBPMNElement(event);
+        } else {
             return null;
         }
-        // find all associated Events...
+    }
+
+    /**
+     * This method finds a Imixs event element by its ID (imixs:activityid)
+     * associated with a given Task
+     * 
+     * This includes all follow up events.
+     * 
+     * @param model
+     * @param taskID
+     * @param eventID
+     * @return
+     */
+    private static Event lookupEventElementByID(final BPMNModel model, int taskID, int eventID) {
+        long l = System.currentTimeMillis();
+        String version = OpenBPMNUtil.getVersion(model);
+        String keyTask = version + "~" + taskID;
+        String keyEvent = version + "~" + taskID + "." + eventID;
+        Activity task = (Activity) bpmnElementCache.computeIfAbsent(keyTask, k -> lookupTaskElementByID(model, taskID));
+        if (task == null) {
+            logger.warning("TaskID: " + taskID + " does not exist in model '" + version + "'!");
+            return null;
+        }
+        // find all directly associated Events to the current Task...
         BPMNFlowIterator<Event> eventNavigator = new BPMNFlowIterator<Event>(task,
                 n -> n instanceof Event);
 
@@ -446,20 +488,23 @@ public class OpenBPMNModelManager implements ModelManager {
             while (eventNavigator.hasNext()) {
                 Event event = (Event) eventNavigator.next();
                 String id = event.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "activityid");
-                if (id == null || id.isEmpty()) {
-                    continue;
-                }
-                try {
-                    if (eventID == Long.parseLong(id)) {
-                        // cache Event...
-                        bpmnElementCache.put(keyEvent, event);
-                        logger.info("lookupEventByID " + keyEvent + " took " + (System.currentTimeMillis() - l) + "ms");
-                        return ElementBuilder.buildItemCollectionFromBPMNElement(event);
+                if (id != null && !id.isEmpty()) {
+                    try {
+                        if (eventID == Long.parseLong(id)) {
+                            logger.info(
+                                    "lookupEventByID " + keyEvent + " took " + (System.currentTimeMillis() - l) + "ms");
+                            return event;
+                        }
+                    } catch (NumberFormatException e) {
+                        logger.warning(
+                                event.getId() + " invalid attribute 'imixs:activityid' = " + id + "  Number expected");
                     }
-                } catch (NumberFormatException e) {
-                    logger.warning(
-                            event.getId() + " invalid attribute 'imixs:activityid' = " + id + "  Number expected");
                 }
+
+                // test if this event has followUp events....
+                // BPMNFlowIterator<Event> eventNavigator2 = new BPMNFlowIterator<Event>(event,
+                // n -> n instanceof Event);
+
             }
         }
 
@@ -478,10 +523,11 @@ public class OpenBPMNModelManager implements ModelManager {
                     try {
                         if (eventID == Long.parseLong(id)) {
                             // cache Event...
-                            bpmnElementCache.put(keyEvent, event);
+                            // bpmnElementCache.put(keyEvent, event);
                             logger.info(
                                     "lookupEventByID " + keyEvent + " took " + (System.currentTimeMillis() - l) + "ms");
-                            return ElementBuilder.buildItemCollectionFromBPMNElement(event);
+                            return event;
+                            // return ElementBuilder.buildItemCollectionFromBPMNElement(event);
                         }
                     } catch (NumberFormatException e) {
                         logger.warning(

@@ -124,13 +124,13 @@ public interface ModelManager {
      * Event or a End Event. The method must not return any other BPMN elements
      * (e.g. Gateways, Intermediate Throw Events).
      * <p>
-     * The method throws a {@link ModelException} if no Event can be resolved based
-     * on the given model information.
+     * The method throws a {@link ModelException} if no Element can be resolved
+     * based on the given model information.
      * <p>
      * The method is called by the {@link WorkflowKernel} during the processing live
      * cycle. The ModelManager is responsible to resolve conditional sequence flows.
      * 
-     * @param workitem
+     * @param workitem - current Workitem
      * @return a BPMN Element entity - {@link ItemCollection}
      * @throws ModelException - if no valid element was found
      */

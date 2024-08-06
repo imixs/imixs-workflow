@@ -278,7 +278,8 @@ public class TestWorkflowKernel {
     }
 
     /**
-     * Test processing a follow up event
+     * Test processing a follow up event. Trigger 1000.10 should immediately trigger
+     * the follow up event 20
      * 
      * The test loads the model 'followup.bpmn'
      */
