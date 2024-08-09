@@ -13,8 +13,10 @@ import java.util.regex.Pattern;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
+import org.imixs.workflow.RuleEngine;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
 import org.openbpmn.bpmn.elements.Activity;
@@ -25,7 +27,6 @@ import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 import org.openbpmn.bpmn.exceptions.BPMNValidationException;
 import org.openbpmn.bpmn.navigation.BPMNFlowIterator;
-import org.openbpmn.bpmn.navigation.BPMNFlowNavigator;
 import org.w3c.dom.Element;
 
 /**
@@ -44,10 +45,13 @@ public class OpenBPMNModelManager implements ModelManager {
     private static final Map<String, ItemCollection> bpmnEntityCache = new ConcurrentHashMap<>();
     private static final Map<String, BPMNElement> bpmnElementCache = new ConcurrentHashMap<>();
 
+    private RuleEngine ruleEngine = null;
+
     /**
      * Private constructor to prevent instantiation
      */
     public OpenBPMNModelManager() {
+        ruleEngine = new RuleEngine();
     }
 
     /**
@@ -242,10 +246,12 @@ public class OpenBPMNModelManager implements ModelManager {
      * @param event    - current event
      * @param workitem - current Workitem
      * @return a BPMN Element entity - {@link ItemCollection}
-     * @throws ModelException - if no valid element was found
+     * @throws ModelException          - if no valid element was found
+     * @throws BPMNValidationException
      */
     @Override
-    public ItemCollection nextModelElement(ItemCollection event, ItemCollection workitem) throws ModelException {
+    public ItemCollection nextModelElement(ItemCollection event, ItemCollection workitem)
+            throws ModelException {
         long l = System.currentTimeMillis();
         BPMNModel model = findModelByWorkitem(workitem);
         // lookup the current BPMN event element by its ID
@@ -255,25 +261,35 @@ public class OpenBPMNModelManager implements ModelManager {
         String key = version + "~" + workitem.getTaskID() + "." + workitem.getEventID();
 
         // find next task or event.....
-        BPMNFlowNavigator<BPMNElementNode> elementNavigator;
+        BPMNFlowIterator<BPMNElementNode> elementNavigator;
         try {
-            elementNavigator = new BPMNFlowNavigator<BPMNElementNode>(
-                    eventElement, n -> ((n instanceof Event) || (n instanceof Activity)));
-        } catch (BPMNValidationException e) {
-            throw new ModelException(ModelException.INVALID_MODEL, "Unable to resolve next ModelElement in ' "
-                    + version + "' : " + e.getMessage());
-        }
+            elementNavigator = new BPMNFlowIterator<BPMNElementNode>(
+                    eventElement,
+                    node -> ((OpenBPMNUtil.isImixsTaskElement(node)) || (OpenBPMNUtil.isImixsEventElement(node))),
+                    condition -> evaluateCondition(condition, workitem));
 
-        while (elementNavigator.hasNext()) {
-            BPMNElementNode nextElement = elementNavigator.next();
-            // check if Element is a Imixs Task or Event
-            if (OpenBPMNUtil.isImixsTaskElement(nextElement)
-                    || OpenBPMNUtil.isImixsEventElement(nextElement)) {
+            while (elementNavigator.hasNext()) {
+                BPMNElementNode nextElement = elementNavigator.next();
                 logger.info("nextModelElement " + key + " took " + (System.currentTimeMillis() - l) + "ms");
                 return ElementBuilder.buildItemCollectionFromBPMNElement(nextElement);
+
             }
+        } catch (BPMNValidationException e) {
+            throw new ModelException(ModelException.INVALID_MODEL,
+                    "$modelversion " + version + " invalid condition: " + e.getMessage());
         }
         return null;
+    }
+
+    public boolean evaluateCondition(String expression, ItemCollection workitem) {
+
+        try {
+            return ruleEngine.evaluateBooleanExpression(expression, workitem);
+        } catch (PluginException e) {
+            e.printStackTrace();
+            logger.severe("Failed to evaluate Condition: " + e.getMessage());
+        }
+        return false;
     }
 
     /**

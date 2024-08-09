@@ -8,6 +8,8 @@ import java.util.logging.Logger;
 
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
+import org.openbpmn.bpmn.elements.Activity;
+import org.openbpmn.bpmn.elements.Event;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Element;
@@ -259,7 +261,7 @@ public class OpenBPMNUtil {
      * @return
      */
     public static boolean isImixsTaskElement(BPMNElement element) {
-        return (element.hasAttribute(getNamespace() + ":processid"));
+        return (element instanceof Activity && element.hasAttribute(getNamespace() + ":processid"));
 
     }
 
@@ -271,7 +273,7 @@ public class OpenBPMNUtil {
      * @return
      */
     public static boolean isImixsEventElement(BPMNElement element) {
-        return (element.hasAttribute(getNamespace() + ":activityid"));
+        return (element instanceof Event && element.hasAttribute(getNamespace() + ":activityid"));
     }
 
     /**

@@ -388,7 +388,7 @@ public class WorkflowKernel {
             } else {
                 // evaluate next BPMN Element.....
                 ItemCollection nextElement = this.ctx.getModelManager().nextModelElement(event, workitem);
-                if (nextElement != null && !nextElement.hasItem("type")) {
+                if (nextElement == null || !nextElement.hasItem("type")) {
                     throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
                             "BPMN Element Entity must provide the item 'type'!");
                 }
@@ -399,7 +399,7 @@ public class WorkflowKernel {
                     event = nextElement;
                     workitem.event(event.getItemValueInteger("numactivityid"));
                 } else {
-                    // load next event
+                    // update status and terminate processing live cycle
                     logEvent(workitem.getTaskID(), workitem.getEventID(),
                             nextElement.getItemValueInteger("numprocessid"), workitem);
                     // Update status - Issue #722
@@ -415,7 +415,8 @@ public class WorkflowKernel {
     }
 
     /**
-     * Evaluates the next taskID for a process instance (workitem) based on the
+     * Evaluates the next task BPMN element for a process instance (workitem) based
+     * on the
      * current model definition. A Workitem must at least provide the properties
      * $TASKID and $EVENTID.
      * <p>
@@ -430,44 +431,69 @@ public class WorkflowKernel {
      * @return result TaskID
      * @throws PluginException,ModelException
      */
-    // public int xxeval(final ItemCollection workitem) throws PluginException,
-    // ModelException {
+    public ItemCollection eval(final ItemCollection _workitem) throws PluginException,
+            ModelException {
 
-    // // check document context
-    // if (workitem == null)
-    // throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(),
-    // UNDEFINED_WORKITEM,
-    // "processing error: workitem is null");
+        // clone the workitem to avoid pollution of the origin workitem
+        ItemCollection workitem = (ItemCollection) _workitem.clone();
 
-    // // check $TaskID
-    // if (workitem.getTaskID() <= 0)
-    // throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(),
-    // UNDEFINED_PROCESSID,
-    // "processing error: $taskID undefined (" + workitem.getTaskID() + ")");
+        // check document context
+        if (workitem == null)
+            throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(),
+                    UNDEFINED_WORKITEM,
+                    "processing error: workitem is null");
 
-    // // check $eventId
-    // if (workitem.getEventID() <= 0)
-    // throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(),
-    // UNDEFINED_ACTIVITYID,
-    // "processing error: $eventID undefined (" + workitem.getEventID() + ")");
+        // check $TaskID
+        if (workitem.getTaskID() <= 0)
+            throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(),
+                    UNDEFINED_PROCESSID,
+                    "processing error: $taskID undefined (" + workitem.getTaskID() + ")");
 
-    // // clone the woritem to avoid pollution of the origin workitem
-    // ItemCollection workitemClone = (ItemCollection) workitem.clone();
+        // check $eventId
+        if (workitem.getEventID() <= 0)
+            throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(),
+                    UNDEFINED_ACTIVITYID,
+                    "processing error: $eventID undefined (" + workitem.getEventID() + ")");
 
-    // // now evaluate all events defined by the model
-    // while (workitemClone.getEventID() > 0) {
-    // // load event...
-    // ItemCollection event = loadEvent(workitemClone);
-    // // ItemCollection task = findNextTask(workitemClone, event);
-    // ItemCollection task = null;
-    // // Update the attributes $taskID
-    // workitemClone.setTaskID(Integer.valueOf(task.getItemValueInteger("numprocessid")));
-    // workitemClone = updateEventList(workitemClone, event);
-    // }
+        // now evaluate all events defined by the model
+        ItemCollection event = this.ctx.getModelManager().loadEvent(workitem);
+        while (event != null) {
+            int taskID = workitem.getTaskID();
+            int eventID = workitem.getEventID();
+            // Check for loop in edge history
+            if (vectorEdgeHistory != null && vectorEdgeHistory.indexOf((taskID + "." + eventID)) != -1) {
+                throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MODEL_ERROR,
+                        "[loadEvent] loop detected " + taskID + "." + eventID + "," + vectorEdgeHistory.toString());
+            }
 
-    // // return the evaluated task id
-    // return workitemClone.getTaskID();
-    // }
+            // test if a new model version was assigned by the last event
+            if (updateModelVersionByEvent(workitem, event)) {
+                // load new Event and start new processing live cycle...
+                event = this.ctx.getModelManager().loadEvent(workitem);
+                workitem.event(event.getItemValueInteger("numactivityid"));
+            } else {
+                // evaluate next BPMN Element.....
+                ItemCollection nextElement = this.ctx.getModelManager().nextModelElement(event, workitem);
+                if (nextElement != null && !nextElement.hasItem("type")) {
+                    throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
+                            "BPMN Element Entity must provide the item 'type'!");
+                }
+                // continue processing live-cycle?
+                if (ModelManager.EVENT_ELEMENT.equals(nextElement.getItemValueString("type"))) {
+                    // load next event
+                    event = nextElement;
+                    workitem.event(event.getItemValueInteger("numactivityid"));
+                } else {
+                    // terminate processing live cycle
+                    workitem.event(0);
+                    return nextElement;
+                }
+            }
+        }
+
+        // evaluation failed!
+        return null;
+    }
 
     /**
      * This method returns new SplitWorkitems evaluated during the last processing
@@ -478,66 +504,6 @@ public class WorkflowKernel {
     public List<ItemCollection> getSplitWorkitems() {
         return splitWorkitems;
     }
-
-    /**
-     * This method controls the Event-Chain. If the attribute $activityidlist has
-     * more valid ActivityIDs the next activiytID will be loaded into $activity.
-     * 
-     * @throws ModelException
-     **/
-    // @Deprecated
-    // private ItemCollection updateEventList(final ItemCollection documentContext,
-    // final ItemCollection event)
-    // throws ModelException {
-    // ItemCollection documentResult = documentContext;
-    // boolean debug = logger.isLoggable(Level.FINE);
-    // // first clear the eventID
-    // documentResult.setEventID(Integer.valueOf(0));
-
-    // // test if a FollowUp event is defined for the given event (Deprecated)...
-    // String sFollowUp = event.getItemValueString("keyFollowUp");
-    // int iNextActivityID = event.getItemValueInteger("numNextActivityID");
-    // if ("1".equals(sFollowUp) && iNextActivityID > 0) {
-    // // append the next event id.....
-    // documentResult = appendActivityID(documentResult, iNextActivityID);
-    // }
-
-    // // evaluate is $eventid already provided?
-    // if ((documentContext.getEventID() <= 0)) {
-    // // no $eventID provided, so we test for property $ActivityIDList
-    // List<?> vActivityList = documentContext.getItemValue(ACTIVITYIDLIST);
-
-    // // remove 0 values if contained!
-    // while (vActivityList.indexOf(Integer.valueOf(0)) > -1) {
-    // vActivityList.remove(vActivityList.indexOf(Integer.valueOf(0)));
-    // }
-
-    // // test if an id is found....
-    // if (vActivityList.size() > 0) {
-    // // yes - load next ID from activityID List
-    // int iNextID = 0;
-    // Object oA = vActivityList.get(0);
-    // if (oA instanceof Integer)
-    // iNextID = ((Integer) oA).intValue();
-    // if (oA instanceof Double)
-    // iNextID = ((Double) oA).intValue();
-
-    // if (iNextID > 0) {
-    // // load activity
-    // if (debug) {
-    // logger.log(Level.FINEST, "......processing={0} -> loading next activityID =
-    // {1}",
-    // new Object[] { documentContext.getItemValueString(UNIQUEID), iNextID });
-    // }
-    // vActivityList.remove(0);
-    // // update document context
-    // documentResult.setEventID(Integer.valueOf(iNextID));
-    // documentResult.replaceItemValue(ACTIVITYIDLIST, vActivityList);
-    // }
-    // }
-    // }
-    // return documentResult;
-    // }
 
     /**
      * If the current workflow result of an Event defines a new model tag, this
@@ -813,190 +779,6 @@ public class WorkflowKernel {
     }
 
     /**
-     * This method returns the first conditional Task or Event of a given Event
-     * object. The method evaluates conditional expressions to 'true'. If no
-     * conditional expression exists or no expression evaluates to true the the
-     * method returns null
-     * 
-     * @param conditions
-     * @param documentContext
-     * @return conditional Task or Event object or null if no condition exits.
-     * @throws PluginException
-     * @throws ModelException
-     */
-    // @SuppressWarnings("unchecked")
-    // private ItemCollection findConditionalExclusiveTask(ItemCollection event,
-    // ItemCollection documentContext)
-    // throws PluginException, ModelException {
-    // boolean debug = logger.isLoggable(Level.FINE);
-    // Map<String, String> conditions = null;
-    // // test if we have an exclusive condition
-    // if (event.hasItem("keyExclusiveConditions")) {
-    // // get first element
-    // conditions = (Map<String, String>)
-    // event.getItemValue("keyExclusiveConditions").get(0);
-
-    // if (conditions != null && conditions.size() > 0) {
-    // // we support also an optional default flow (Issue #723)
-    // // a default flow is evaluated always as the last option!
-    // List<Map.Entry<String, String>> orderedConditionList = new
-    // ArrayList<Map.Entry<String, String>>();
-    // for (Map.Entry<String, String> entry : conditions.entrySet()) {
-    // if ("true".equals(entry.getValue())) {
-    // // we move a default condition (true) to the end of the list
-    // orderedConditionList.add(entry);
-    // } else {
-    // // put it to the beginning of the list
-    // orderedConditionList.add(0, entry);
-    // }
-    // }
-    // // now the list is ordered and the default condition is the last one
-    // for (Map.Entry<String, String> entry : orderedConditionList) {
-    // String key = entry.getKey();
-    // String expression = entry.getValue();
-    // if (key.startsWith("task=")) {
-    // int taskID = Integer.parseInt(key.substring(5));
-    // boolean bmatch = ruleEngine.evaluateBooleanExpression(expression,
-    // documentContext);
-    // if (bmatch) {
-    // if (debug) {
-    // logger.log(Level.FINEST, "......matching conditional event: {0}",
-    // expression);
-    // }
-    // ItemCollection conditionslTask = this.ctx.getModelManager()
-    // .getModel(documentContext.getModelVersion()).getTask(taskID);
-    // if (conditionslTask != null) {
-    // return conditionslTask;
-    // }
-    // }
-    // }
-
-    // if (key.startsWith("event=")) {
-    // int eventID = Integer.parseInt(key.substring(6));
-    // boolean bmatch = ruleEngine.evaluateBooleanExpression(expression,
-    // documentContext);
-    // if (bmatch) {
-    // if (debug) {
-    // logger.log(Level.FINEST, "......matching conditional event: {0}",
-    // expression);
-    // }
-    // // we update the documentContext....
-    // ItemCollection itemColEvent = this.ctx.getModelManager()
-    // .getModel(documentContext.getModelVersion())
-    // .getEvent(documentContext.getTaskID(), eventID);
-    // if (itemColEvent != null) {
-    // // create follow up event....
-    // event.replaceItemValue("keyFollowUp", "1");
-    // event.replaceItemValue("numNextActivityID", eventID);
-
-    // // get current task...
-    // ItemCollection itemColNextTask = this.ctx.getModelManager()
-    // .getModel(documentContext.getItemValueString(MODELVERSION))
-    // .getTask(documentContext.getTaskID());
-
-    // return itemColNextTask;
-    // }
-    // }
-    // }
-    // }
-
-    // if (debug) {
-    // logger.finest("......conditional event: no matching condition found.");
-    // }
-    // }
-    // }
-    // return null;
-    // }
-
-    /**
-     * This method returns the first conditional Split Task or Event of a given
-     * Event object. The method evaluates conditional expressions to 'true'. If no
-     * conditional expression exists or no expression evaluates to true the the
-     * method returns null
-     * 
-     * @param conditions
-     * @param documentContext
-     * @return conditional Task or Event object or null if no condition exits.
-     * @throws PluginException
-     * @throws ModelException
-     */
-    // @SuppressWarnings("unchecked")
-    // private ItemCollection findConditionalSplitTask(ItemCollection event,
-    // ItemCollection documentContext)
-    // throws PluginException, ModelException {
-    // boolean debug = logger.isLoggable(Level.FINE);
-    // // test if we have an split event
-    // Map<String, String> conditions = null;
-    // // test if we have an split event
-    // if (event.hasItem("keySplitConditions")) {
-    // // get first element
-    // conditions = (Map<String, String>)
-    // event.getItemValue("keySplitConditions").get(0);
-
-    // if (conditions != null) {
-
-    // // evaluate all conditions and return the fist match evaluating to true (this
-    // is
-    // // the flow for the master version)...
-    // for (Map.Entry<String, String> entry : conditions.entrySet()) {
-    // String key = entry.getKey();
-    // String expression = entry.getValue();
-    // if (key.startsWith("task=")) {
-    // int taskID = Integer.parseInt(key.substring(5));
-    // boolean bmatch = ruleEngine.evaluateBooleanExpression(expression,
-    // documentContext);
-    // if (bmatch) {
-    // if (debug) {
-    // logger.log(Level.FINEST, "......matching split Task found: {0}", expression);
-    // }
-    // ItemCollection itemColNextTask = this.ctx.getModelManager()
-    // .getModel(documentContext.getModelVersion()).getTask(taskID);
-    // if (itemColNextTask != null) {
-    // // Conditional Target Task evaluated to 'true' was found!
-    // return itemColNextTask;
-    // }
-    // }
-    // }
-
-    // if (key.startsWith("event=")) {
-    // int eventID = Integer.parseInt(key.substring(6));
-    // boolean bmatch = ruleEngine.evaluateBooleanExpression(expression,
-    // documentContext);
-    // if (bmatch) {
-    // if (debug) {
-    // logger.log(Level.FINEST, "......matching split Event found: {0}",
-    // expression);
-    // }
-    // // we update the documentContext....
-    // ItemCollection itemColEvent = this.ctx.getModelManager()
-    // .getModel(documentContext.getModelVersion())
-    // .getEvent(documentContext.getTaskID(), eventID);
-    // if (itemColEvent != null) {
-    // // create follow up event....
-    // event.replaceItemValue("keyFollowUp", "1");
-    // event.replaceItemValue("numNextActivityID", eventID);
-    // // get current task...
-    // ItemCollection itemColNextTask = this.ctx.getModelManager()
-    // .getModel(documentContext.getItemValueString(MODELVERSION))
-    // .getTask(documentContext.getTaskID());
-    // return itemColNextTask;
-    // }
-    // }
-    // }
-    // }
-    // // we found not condition evaluated to 'true', so the workitem will not leave
-    // // the current task.
-    // if (debug) {
-    // logger.finest("......split event: no matching condition, current Task will
-    // not change.");
-    // }
-    // }
-    // }
-
-    // return null;
-    // }
-
-    /**
      * This method evaluates conditional split expressions to 'false'. For each
      * condition a new process instance will be created and processed by the
      * expected follow-up event. The expression evaluated to 'false' MUST be
@@ -1130,39 +912,6 @@ public class WorkflowKernel {
     }
 
     /**
-     * This method adds a new ActivityID into the current activityList
-     * ($ActivityIDList) The activity list may not contain 0 values.
-     * 
-     */
-    // @SuppressWarnings("unchecked")
-    // private ItemCollection appendActivityID(final ItemCollection documentContext,
-    // final int aID) {
-    // boolean debug = logger.isLoggable(Level.FINE);
-    // ItemCollection documentResult = documentContext;
-    // // check if activityidlist is available
-    // List<Integer> vActivityList = (List<Integer>)
-    // documentContext.getItemValue(ACTIVITYIDLIST);
-    // // clear list?
-    // if ((vActivityList.size() == 1) &&
-    // ("".equals(vActivityList.get(0).toString())))
-    // vActivityList = new Vector<Integer>();
-
-    // vActivityList.add(Integer.valueOf(aID));
-
-    // // remove 0 values if contained!
-    // while (vActivityList.indexOf(Integer.valueOf(0)) > -1) {
-    // vActivityList.remove(vActivityList.indexOf(Integer.valueOf(0)));
-    // }
-
-    // documentResult.replaceItemValue(ACTIVITYIDLIST, vActivityList);
-    // if (debug) {
-    // logger.log(Level.FINEST, "......append new Activity ID={0}", aID);
-    // }
-
-    // return documentResult;
-    // }
-
-    /**
      * This method is responsible for the internal workflow log. The attribute
      * $eventlog logs the transition from one process to another.
      * 
@@ -1229,54 +978,6 @@ public class WorkflowKernel {
 
         return documentResult;
     }
-
-    /**
-     * This Method loads the current event from the provided Model
-     * 
-     * The method also verifies the activity to be valid
-     * 
-     * @return workflow event object.
-     */
-    // private ItemCollection xxloadEvent(final ItemCollection documentContext) {
-    // boolean debug = logger.isLoggable(Level.FINE);
-    // ItemCollection event = null;
-    // int taskID = documentContext.getTaskID();
-    // int eventID = documentContext.getEventID();
-
-    // // determine model version
-    // String version = documentContext.getItemValueString(MODELVERSION);
-
-    // try {
-    // BPMNModel model = ctx.getModelManager().getModelByWorkitem(documentContext);
-
-    // event = model.getEvent(taskID, eventID);
-    // } catch (ModelException e) {
-    // throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(),
-    // MODEL_ERROR, e.getMessage());
-    // }
-
-    // if (event == null)
-    // throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(),
-    // ACTIVITY_NOT_FOUND,
-    // "[loadEvent] model entry " + taskID + "." + eventID + " not found for model
-    // version '" + version
-    // + "'");
-    // if (debug) {
-    // logger.log(Level.FINEST, ".......event: {0}.{1} loaded", new Object[] {
-    // taskID, eventID });
-    // }
-    // // Check for loop in edge history
-    // if (vectorEdgeHistory != null && vectorEdgeHistory.indexOf((taskID + "." +
-    // eventID)) != -1) {
-    // throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(),
-    // MODEL_ERROR,
-    // "[loadEvent] loop detected " + taskID + "." + eventID + "," +
-    // vectorEdgeHistory.toString());
-    // }
-
-    // return event;
-
-    // }
 
     /**
      * This method runs all registered plugins until the run method of a plugin

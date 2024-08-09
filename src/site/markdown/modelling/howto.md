@@ -71,7 +71,7 @@ A conditional event is used to evaluate the output of an event during the proces
 In this example two conditions are added to the ExclusiveGateway output evaluating the attribute "_budget" to continue with either 'Task 2' or 'Task 3'. 
 A boolean expression can look like the following example, which is evaluating the attribute '_budget':
 
-    (workitem._budget && workitem._budget[0]>100)
+    (workitem.getItemValueDouble('_budget')>100)
 
 **Note:** To add conditional sequence flows the full BPMN profile must be activated in the Imixs-BPMN Modeler. 
 
@@ -81,7 +81,7 @@ A conditional event can define conditions for either a Task element or an Event 
  
 The second condition defines a Follow-Up Event in case the '_budget' is <= 100:     
 
-    (workitem._budget && workitem._budget[0]<=100) 
+    (workitem.getItemValueDouble('_budget')<=100) 
 
 The script language for the boolean expression is 'JavaScript'. See the [RulePlugin](../engine/plugins/ruleplugin.html) for further details about business rules in Imixs-Workflow. 
 
