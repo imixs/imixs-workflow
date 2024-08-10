@@ -8,7 +8,7 @@ import org.imixs.workflow.exceptions.PluginException;
  * @author rsoika
  * 
  */
-public class MokPluginNull implements Plugin {
+public class MockPluginNull implements Plugin {
 
 	@Override
 	public void init(WorkflowContext actx) throws PluginException {

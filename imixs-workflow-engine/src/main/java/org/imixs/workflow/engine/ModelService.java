@@ -180,8 +180,8 @@ public class ModelService implements ModelManager {
     }
 
     @Override
-    public ItemCollection nextModelElement(ItemCollection workitem) throws ModelException {
-        return openBPMNModelManager.nextModelElement(workitem);
+    public ItemCollection nextModelElement(ItemCollection event, ItemCollection workitem) throws ModelException {
+        return openBPMNModelManager.nextModelElement(event, workitem);
     }
 
     /**

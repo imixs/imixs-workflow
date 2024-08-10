@@ -3,6 +3,7 @@ package org.imixs.workflow.bpmn;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,25 +26,27 @@ import org.openbpmn.bpmn.elements.Event;
 import org.openbpmn.bpmn.elements.SequenceFlow;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.exceptions.BPMNValidationException;
 import org.openbpmn.bpmn.navigation.BPMNFlowIterator;
+import org.openbpmn.bpmn.navigation.BPMNStartElementIterator;
 import org.w3c.dom.Element;
 
 /**
- * This OpenBPMNModelManager is a static ModelManger to handle Open BPMN Models.
- * The implementation is based on the OpenBPMN Meta model.
+ * This OpenBPMNModelManager implements the Interface ModelManger to handle Open
+ * BPMN Models. The implementation is based on the OpenBPMN Meta model.
  * 
  */
 public class OpenBPMNModelManager implements ModelManager {
 
-    private static Logger logger = Logger.getLogger(OpenBPMNModelManager.class.getName());
+    private Logger logger = Logger.getLogger(OpenBPMNModelManager.class.getName());
 
     // Model store
-    private static final Map<String, BPMNModel> modelStore = new ConcurrentHashMap<>();
+    private final Map<String, BPMNModel> modelStore = new ConcurrentHashMap<>();
 
     // cache
-    private static final Map<String, ItemCollection> bpmnEntityCache = new ConcurrentHashMap<>();
-    private static final Map<String, BPMNElement> bpmnElementCache = new ConcurrentHashMap<>();
+    private final Map<String, ItemCollection> bpmnEntityCache = new ConcurrentHashMap<>();
+    private final Map<String, BPMNElement> bpmnElementCache = new ConcurrentHashMap<>();
 
     private RuleEngine ruleEngine = null;
 
@@ -183,6 +186,24 @@ public class OpenBPMNModelManager implements ModelManager {
     }
 
     /**
+     * This method returns a sorted list of all workflow groups contained in a BPMN
+     * model
+     * 
+     * @param group
+     * @return
+     */
+    public Set<String> findAllGroups(BPMNModel _model) {
+        Set<String> result = new LinkedHashSet<>();
+        Set<BPMNProcess> processList = _model.getProcesses();
+        for (BPMNProcess _process : processList) {
+            result.add(_process.getName());
+        }
+
+        return result;
+
+    }
+
+    /**
      * This method returns a sorted list of model versions matching a given regex
      * for a model version. The result is sorted in reverse order, so the highest
      * version number is the first in the result list.
@@ -295,7 +316,7 @@ public class OpenBPMNModelManager implements ModelManager {
     /**
      * Reset the internal BPMN Element cache
      */
-    private static void clearCache() {
+    private void clearCache() {
         bpmnEntityCache.clear();
         bpmnElementCache.clear();
     }
@@ -312,7 +333,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * @param taskID
      * @return
      */
-    public static ItemCollection findTaskByID(final BPMNModel model, int taskID) {
+    public ItemCollection findTaskByID(final BPMNModel model, int taskID) {
         String key = OpenBPMNUtil.getVersion(model) + "~" + taskID;
         ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key,
                 k -> lookupTaskByID(model, taskID));
@@ -333,7 +354,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * 
      * 
      */
-    public static ItemCollection findEventByID(final BPMNModel model, int taskID, int eventID) {
+    public ItemCollection findEventByID(final BPMNModel model, int taskID, int eventID) {
         String key = OpenBPMNUtil.getVersion(model) + "~" + taskID + "." + eventID;
         ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key,
                 k -> lookupEventByID(model, taskID, eventID));
@@ -354,7 +375,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * @param model
      * @return
      */
-    public static ItemCollection findDefinition(final BPMNModel model) {
+    public ItemCollection findDefinition(final BPMNModel model) {
         String key = OpenBPMNUtil.getVersion(model);
         ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key, k -> lookupDefinition(model));
         // clone instance to protect for manipulation
@@ -362,6 +383,45 @@ public class OpenBPMNModelManager implements ModelManager {
             return (ItemCollection) result.clone();
         }
         return null;
+    }
+
+    /**
+     * Returns a list of start Tasks of a given Process Group
+     * 
+     * @param processGroup
+     * @return
+     * @throws BPMNModelException
+     */
+    public List<ItemCollection> findStartTasks(final BPMNModel model, String processGroup) throws BPMNModelException {
+        List<ItemCollection> result = new ArrayList<>();
+        BPMNProcess process = model.findProcessByName(processGroup);
+        // test start task....
+        BPMNStartElementIterator<Activity> startElements = new BPMNStartElementIterator<>(process,
+                node -> (node instanceof Activity));
+        while (startElements.hasNext()) {
+            result.add(ElementBuilder.buildItemCollectionFromBPMNElement(startElements.next()));
+        }
+        return result;
+
+    }
+
+    /**
+     * Returns a list of all Events assigned to a Task
+     * 
+     * @param processGroup
+     * @return
+     * @throws BPMNModelException
+     */
+    public List<ItemCollection> findEventsByTask(final BPMNModel model, int taskID) throws BPMNModelException {
+        Activity taskElement = lookupTaskElementByID(model, taskID);
+        BPMNFlowIterator<BPMNElementNode> elementNavigator = new BPMNFlowIterator<BPMNElementNode>(
+                taskElement,
+                node -> ((OpenBPMNUtil.isImixsEventElement(node))));
+        List<ItemCollection> result = new ArrayList<>();
+        while (elementNavigator.hasNext()) {
+            result.add(ElementBuilder.buildItemCollectionFromBPMNElement(elementNavigator.next()));
+        }
+        return result;
     }
 
     /**
@@ -374,7 +434,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * @param taskID
      * @return
      */
-    private static ItemCollection lookupDefinition(final BPMNModel model) {
+    private ItemCollection lookupDefinition(final BPMNModel model) {
         long l = System.currentTimeMillis();
         ItemCollection result = new ItemCollection();
         Element definition = model.getDefinitions();
@@ -411,7 +471,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * @param taskID
      * @return
      */
-    private static Activity lookupTaskElementByID(final BPMNModel model, int taskID) {
+    private Activity lookupTaskElementByID(final BPMNModel model, int taskID) {
         long l = System.currentTimeMillis();
         Set<Activity> activities = model.findAllActivities();
         // filter the imixs activity with the corresponding id
@@ -438,7 +498,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * @param taskID
      * @return
      */
-    private static ItemCollection lookupTaskByID(final BPMNModel model, int taskID) {
+    private ItemCollection lookupTaskByID(final BPMNModel model, int taskID) {
         String key = OpenBPMNUtil.getVersion(model) + "~" + taskID;
         Activity activity = (Activity) bpmnElementCache.computeIfAbsent(key, k -> lookupTaskElementByID(model, taskID));
         if (activity != null) {
@@ -457,7 +517,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * @param eventID
      * @return
      */
-    private static ItemCollection lookupEventByID(final BPMNModel model, int taskID, int eventID) {
+    private ItemCollection lookupEventByID(final BPMNModel model, int taskID, int eventID) {
         String key = OpenBPMNUtil.getVersion(model) + "~" + taskID + "." + eventID;
         Event event = (Event) bpmnElementCache.computeIfAbsent(key,
                 k -> lookupEventElementByID(model, taskID, eventID));
@@ -479,7 +539,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * @param eventID
      * @return
      */
-    private static Event lookupEventElementByID(final BPMNModel model, int taskID, int eventID) {
+    private Event lookupEventElementByID(final BPMNModel model, int taskID, int eventID) {
         long l = System.currentTimeMillis();
         String version = OpenBPMNUtil.getVersion(model);
         String keyTask = version + "~" + taskID;
@@ -491,7 +551,7 @@ public class OpenBPMNModelManager implements ModelManager {
         }
         // find all directly associated Events to the current Task...
         BPMNFlowIterator<Event> eventNavigator = new BPMNFlowIterator<Event>(task,
-                n -> n instanceof Event);
+                node -> (OpenBPMNUtil.isImixsEventElement(node)));
 
         if (eventNavigator != null) {
             while (eventNavigator.hasNext()) {
@@ -509,11 +569,6 @@ public class OpenBPMNModelManager implements ModelManager {
                                 event.getId() + " invalid attribute 'imixs:activityid' = " + id + "  Number expected");
                     }
                 }
-
-                // test if this event has followUp events....
-                // BPMNFlowIterator<Event> eventNavigator2 = new BPMNFlowIterator<Event>(event,
-                // n -> n instanceof Event);
-
             }
         }
 

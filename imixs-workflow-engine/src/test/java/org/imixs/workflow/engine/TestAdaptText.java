@@ -8,10 +8,9 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.junit.Assert;
 
 /**
  * Test the WorkflowService method 'adaptText'
@@ -32,10 +31,9 @@ public class TestAdaptText {
 		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setup();
 
-		//workflowMockEnvironment.loadModel("/bpmn/TestWorkflowService.bpmn");
+		// workflowMockEnvironment.loadModel("/bpmn/TestWorkflowService.bpmn");
 
 	}
-	
 
 	/**
 	 * Test replacement of dynamic item values
@@ -51,7 +49,6 @@ public class TestAdaptText {
 		String testString = "Hello <itemvalue>txtname</itemvalue>!";
 		String expectedString = "Hello Anna!";
 
-	
 		// prepare data
 		logger.info("[TestAdaptText] setup test data...");
 		documentContext = new ItemCollection();
@@ -75,7 +72,6 @@ public class TestAdaptText {
 		String testString = "Hello <itemvalue>txtname!";
 		String expectedString = "Hello Anna!";
 
-	
 		// prepare data
 		logger.info("[TestAdaptText] setup test data...");
 		documentContext = new ItemCollection();
@@ -112,7 +108,7 @@ public class TestAdaptText {
 		String testString = "The Date is: <itemvalue format=\"EEEE, d. MMMM yyyy\" locale=\"de_DE\">datdate</itemvalue>.";
 		String expectedString = "The Date is: Sonntag, 27. April 2014.";
 
-			// prepare data
+		// prepare data
 		documentContext = new ItemCollection();
 		logger.info("[TestAdaptText] setup test data...");
 
@@ -146,7 +142,7 @@ public class TestAdaptText {
 
 		documentContext.replaceItemValue("datDate", cal.getTime());
 
-		String resultString =workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
 
@@ -170,7 +166,6 @@ public class TestAdaptText {
 		String testString = "The Valuelist is: <itemvalue separator=\"/\">_numbers</itemvalue>.";
 		String expectedString = "The Valuelist is: 1/20/300.";
 
-	
 		// prepare data
 		documentContext = new ItemCollection();
 		logger.info("[TestAdaptText] setup test data...");
@@ -186,9 +181,6 @@ public class TestAdaptText {
 		Assert.assertEquals(expectedString, resultString);
 
 	}
-	
-	
-	
 
 	/**
 	 * Test format number string:
@@ -208,7 +200,6 @@ public class TestAdaptText {
 		String testString = "The price is: <itemvalue format=\"#,###,##0.00\" locale=\"de_DE\">price</itemvalue> €.";
 		String expectedString = "The price is: 1.199,99 €.";
 
-	
 		// prepare data
 		documentContext = new ItemCollection();
 
@@ -219,11 +210,6 @@ public class TestAdaptText {
 		Assert.assertEquals(expectedString, resultString);
 
 	}
-
-	
-	
-	
-	
 
 	/**
 	 * Test format string of multi value with out separator:
@@ -243,7 +229,6 @@ public class TestAdaptText {
 		String testString = "The Valuelist is: <itemvalue>_numbers</itemvalue>.";
 		String expectedString = "The Valuelist is: 1.";
 
-		
 		// prepare data
 		documentContext = new ItemCollection();
 		logger.info("[TestAdaptText] setup test data...");
@@ -280,7 +265,6 @@ public class TestAdaptText {
 		String testString = "The Valuelist is: <itemvalue position=\"LAST\">_numbers</itemvalue>.";
 		String expectedStringLast = "The Valuelist is: 300.";
 
-		
 		// prepare data
 		documentContext = new ItemCollection();
 		logger.info("[TestAdaptText] setup test data...");

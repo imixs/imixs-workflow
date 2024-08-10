@@ -1142,8 +1142,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
      */
     public ItemCollection evalNextTask(ItemCollection documentContext) throws PluginException, ModelException {
         WorkflowKernel workflowkernel = new WorkflowKernel(this);
-        int taskID = workflowkernel.eval(documentContext);
-        ItemCollection task = this.getModelManager().getModel(documentContext.getModelVersion()).getTask(taskID);
+        ItemCollection task = workflowkernel.eval(documentContext);
         return task;
     }
 

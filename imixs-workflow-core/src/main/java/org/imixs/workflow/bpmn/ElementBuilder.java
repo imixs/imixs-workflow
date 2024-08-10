@@ -41,60 +41,6 @@ import org.w3c.dom.NodeList;
  * 
  */
 public class ElementBuilder {
-    public final static String TASK_ITEM_NAME = "name";
-    public final static String TASK_ITEM_DOCUMENTATION = "documentation";
-    public final static String TASK_ITEM_WORKFLOW_SUMMARY = "workflow.summary";
-    public final static String TASK_ITEM_WORKFLOW_ABSTRACT = "workflow.abstract";
-    public final static String TASK_ITEM_APPLICATION_EDITOR = "application.editor";
-    public final static String TASK_ITEM_APPLICATION_ICON = "application.icon";
-    public final static String TASK_ITEM_APPLICATION_TYPE = "application.type";
-    public final static String TASK_ITEM_ACL_OWNER_LIST = "acl.owner_list";
-    public final static String TASK_ITEM_ACL_OWNER_LIST_MAPPING = "acl.owner_list_mapping";
-    public final static String TASK_ITEM_ACL_READACCESS_LIST = "acl.readaccess_list";
-    public final static String TASK_ITEM_ACL_READACCESS_LIST_MAPPING = "acl.readaccess_list_mapping";
-    public final static String TASK_ITEM_ACL_WRITEACCESS_LIST = "acl.writeaccess_list";
-    public final static String TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING = "acl.writeaccess_list_mapping";
-    public final static String TASK_ITEM_ACL_UPDATE = "acl.update";
-
-    public final static String EVENT_ITEM_NAME = "name";
-    public final static String EVENT_ITEM_DOCUMENTATION = "documentation";
-    public final static String EVENT_ITEM_ACL_OWNER_LIST = "acl.owner_list";
-    public final static String EVENT_ITEM_ACL_OWNER_LIST_MAPPING = "acl.owner_list_mapping";
-    public final static String EVENT_ITEM_ACL_READACCESS_LIST = "acl.readaccess_list";
-    public final static String EVENT_ITEM_ACL_READACCESS_LIST_MAPPING = "acl.readaccess_list_mapping";
-    public final static String EVENT_ITEM_ACL_WRITEACCESS_LIST = "acl.writeaccess_list";
-    public final static String EVENT_ITEM_ACL_WRITEACCESS_LIST_MAPPING = "acl.writeaccess_list_mapping";
-    public final static String EVENT_ITEM_ACL_UPDATE = "acl.update";
-
-    public final static String EVENT_ITEM_WORKFLOW_RESULT = "workflow.result";
-    public final static String EVENT_ITEM_WORKFLOW_PUBLIC = "workflow.public";
-    public final static String EVENT_ITEM_WORKFLOW_PUBLIC_ACTORS = "workflow.public_actors";
-    public final static String EVENT_ITEM_READACCESS = "$readaccess";
-    public final static String EVENT_ITEM_HISTORY_MESSAGE = "history.message";
-    public final static String EVENT_ITEM_MAIL_SUBJECT = "mail.subject";
-    public final static String EVENT_ITEM_MAIL_BODY = "mail.body";
-    public final static String EVENT_ITEM_MAIL_TO_LIST = "mail.to_list";
-    public final static String EVENT_ITEM_MAIL_TO_LIST_MAPPING = "mail.to_list_mapping";
-    public final static String EVENT_ITEM_MAIL_CC_LIST = "mail.cc_list";
-    public final static String EVENT_ITEM_MAIL_CC_LIST_MAPPING = "mail.cc_list_mapping";
-    public final static String EVENT_ITEM_MAIL_BCC_LIST = "mail.bcc_list";
-    public final static String EVENT_ITEM_MAIL_BCC_LIST_MAPPING = "mail.bcc_list_mapping";
-    public final static String EVENT_ITEM_RULE_ENGINE = "rule.engine";
-    public final static String EVENT_ITEM_RULE_DEFINITION = "rule.definition";
-
-    public final static String EVENT_ITEM_REPORT_NAME = "report.name";
-    public final static String EVENT_ITEM_REPORT_PATH = "report.path";
-    public final static String EVENT_ITEM_REPORT_OPTIONS = "report.options";
-    public final static String EVENT_ITEM_REPORT_TARGET = "report.target";
-    public final static String EVENT_ITEM_VERSION_MODE = "version.mode";
-    public final static String EVENT_ITEM_VERSION_EVENT = "version.event";
-
-    public final static String EVENT_ITEM_TIMER_ACTIVE = "timer.active";
-    public final static String EVENT_ITEM_TIMER_SELECTION = "timer.selection";
-    public final static String EVENT_ITEM_TIMER_DELAY = "timer.delay";
-    public final static String EVENT_ITEM_TIMER_DELAY_UNIT = "timer.delay_unit";
-    public final static String EVENT_ITEM_TIMER_DELAY_BASE = "timer.delay_base";
-    public final static String EVENT_ITEM_TIMER_DELAY_BASE_PROPERTY = "timer.delay_base_property";
 
     private static Logger logger = Logger.getLogger(ElementBuilder.class.getName());
 
@@ -129,7 +75,7 @@ public class ElementBuilder {
         if (bpmnElement.hasAttribute("name")) {
             result.setItemValue("name", bpmnElement.getAttribute("name"));
         }
-        result.setItemValue(TASK_ITEM_DOCUMENTATION, bpmnElement.getDocumentation());
+        result.setItemValue(OpenBPMNUtil.TASK_ITEM_DOCUMENTATION, bpmnElement.getDocumentation());
 
         if (bpmnElement instanceof Activity) {
             result.setItemValue("taskID",
@@ -264,23 +210,23 @@ public class ElementBuilder {
      */
     private static void adaptDeprecatedTaskProperties(ItemCollection taskEntity) {
 
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_NAME, "txtname");
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_DOCUMENTATION, "rtfdescription");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_NAME, "txtname");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_DOCUMENTATION, "rtfdescription");
 
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_WORKFLOW_SUMMARY, "txtworkflowsummary");
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_WORKFLOW_ABSTRACT, "txtworkflowabstract");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_WORKFLOW_SUMMARY, "txtworkflowsummary");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_WORKFLOW_ABSTRACT, "txtworkflowabstract");
 
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_APPLICATION_EDITOR, "txteditorid");
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_APPLICATION_ICON, "txtimageurl");
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_APPLICATION_TYPE, "txttype");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_APPLICATION_EDITOR, "txteditorid");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_APPLICATION_ICON, "txtimageurl");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_APPLICATION_TYPE, "txttype");
 
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_ACL_OWNER_LIST, "namownershipnames");
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_ACL_OWNER_LIST_MAPPING, "keyownershipfields");
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_ACL_READACCESS_LIST, "namaddreadaccess");
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_ACL_READACCESS_LIST_MAPPING, "keyaddreadfields");
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_ACL_WRITEACCESS_LIST, "namaddwriteaccess");
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING, "keyaddwritefields");
-        adaptDeprecatedItem(taskEntity, TASK_ITEM_ACL_UPDATE, "keyupdateacl");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_OWNER_LIST, "namownershipnames");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_OWNER_LIST_MAPPING, "keyownershipfields");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_READACCESS_LIST, "namaddreadaccess");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_READACCESS_LIST_MAPPING, "keyaddreadfields");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_WRITEACCESS_LIST, "namaddwriteaccess");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING, "keyaddwritefields");
+        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_UPDATE, "keyupdateacl");
 
     }
 
@@ -293,83 +239,83 @@ public class ElementBuilder {
      */
     private static void adaptDeprecatedEventProperties(ItemCollection eventEntity) {
 
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_NAME, "txtname");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_DOCUMENTATION, "rtfdescription");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_NAME, "txtname");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_DOCUMENTATION, "rtfdescription");
 
         // migrate keypublicresult
         if (!eventEntity.hasItem("keypublicresult")) {
-            if (!eventEntity.hasItem(EVENT_ITEM_WORKFLOW_PUBLIC)) {
-                eventEntity.setItemValue(EVENT_ITEM_WORKFLOW_PUBLIC, true);
+            if (!eventEntity.hasItem(OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC)) {
+                eventEntity.setItemValue(OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC, true);
             } else {
-                if (!eventEntity.hasItem(EVENT_ITEM_WORKFLOW_PUBLIC)) {
-                    eventEntity.setItemValue(EVENT_ITEM_WORKFLOW_PUBLIC,
+                if (!eventEntity.hasItem(OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC)) {
+                    eventEntity.setItemValue(OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC,
                             !"0".equals(eventEntity.getItemValueString("keypublicresult")));
                 }
             }
         } else {
-            if (!eventEntity.hasItem(EVENT_ITEM_WORKFLOW_PUBLIC)) {
-                eventEntity.setItemValue(EVENT_ITEM_WORKFLOW_PUBLIC,
+            if (!eventEntity.hasItem(OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC)) {
+                eventEntity.setItemValue(OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC,
                         !"0".equals(eventEntity.getItemValueString("keypublicresult")));
             }
         }
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_WORKFLOW_PUBLIC_ACTORS, "keyrestrictedvisibility");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC_ACTORS, "keyrestrictedvisibility");
 
         // acl
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_ACL_OWNER_LIST, "namownershipnames");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_ACL_OWNER_LIST_MAPPING, "keyownershipfields");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_ACL_READACCESS_LIST, "namaddreadaccess");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_ACL_READACCESS_LIST_MAPPING, "keyaddreadfields");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_ACL_WRITEACCESS_LIST, "namaddwriteaccess");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_ACL_WRITEACCESS_LIST_MAPPING, "keyaddwritefields");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_ACL_UPDATE, "keyupdateacl");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_OWNER_LIST, "namownershipnames");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_OWNER_LIST_MAPPING, "keyownershipfields");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_READACCESS_LIST, "namaddreadaccess");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_READACCESS_LIST_MAPPING, "keyaddreadfields");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_WRITEACCESS_LIST, "namaddwriteaccess");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_WRITEACCESS_LIST_MAPPING, "keyaddwritefields");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_UPDATE, "keyupdateacl");
 
         // workflow
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_WORKFLOW_RESULT, "txtactivityresult");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_WORKFLOW_RESULT, "txtactivityresult");
 
         // history
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_HISTORY_MESSAGE, "rtfresultlog");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_HISTORY_MESSAGE, "rtfresultlog");
 
         // mail
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_MAIL_SUBJECT, "txtmailsubject");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_MAIL_BODY, "rtfmailbody");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_MAIL_TO_LIST, "nammailreceiver");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_MAIL_TO_LIST_MAPPING, "keymailreceiverfields");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_MAIL_CC_LIST, "nammailreceivercc");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_MAIL_CC_LIST_MAPPING, "keymailreceiverfieldscc");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_MAIL_BCC_LIST, "nammailreceiverbcc");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_MAIL_BCC_LIST_MAPPING, "keymailreceiverfieldsbcc");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_SUBJECT, "txtmailsubject");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_BODY, "rtfmailbody");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_TO_LIST, "nammailreceiver");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_TO_LIST_MAPPING, "keymailreceiverfields");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_CC_LIST, "nammailreceivercc");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_CC_LIST_MAPPING, "keymailreceiverfieldscc");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_BCC_LIST, "nammailreceiverbcc");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_BCC_LIST_MAPPING, "keymailreceiverfieldsbcc");
 
         // rule
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_RULE_ENGINE, "txtbusinessruleengine");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_RULE_DEFINITION, "txtbusinessrule");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_RULE_ENGINE, "txtbusinessruleengine");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_RULE_DEFINITION, "txtbusinessrule");
 
         // report
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_REPORT_NAME, "txtreportname");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_REPORT_PATH, "txtreportfilepath");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_REPORT_OPTIONS, "txtreportparams");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_REPORT_TARGET, "txtreporttarget");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_REPORT_NAME, "txtreportname");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_REPORT_PATH, "txtreportfilepath");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_REPORT_OPTIONS, "txtreportparams");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_REPORT_TARGET, "txtreporttarget");
 
         // version
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_VERSION_MODE, "keyversion");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_VERSION_EVENT, "numversionactivityid");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_VERSION_MODE, "keyversion");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_VERSION_EVENT, "numversionactivityid");
 
         // timer
-        if (!eventEntity.hasItem(EVENT_ITEM_TIMER_ACTIVE)) {
-            eventEntity.setItemValue(EVENT_ITEM_TIMER_ACTIVE,
+        if (!eventEntity.hasItem(OpenBPMNUtil.EVENT_ITEM_TIMER_ACTIVE)) {
+            eventEntity.setItemValue(OpenBPMNUtil.EVENT_ITEM_TIMER_ACTIVE,
                     Boolean.valueOf("1".equals(eventEntity.getItemValueString("keyscheduledactivity"))));
         }
         if (!eventEntity.hasItem("keyscheduledactivity")) {
-            if (eventEntity.getItemValueBoolean(EVENT_ITEM_TIMER_ACTIVE)) {
+            if (eventEntity.getItemValueBoolean(OpenBPMNUtil.EVENT_ITEM_TIMER_ACTIVE)) {
                 eventEntity.setItemValue("keyscheduledactivity", "1");
             } else {
                 eventEntity.setItemValue("keyscheduledactivity", "0");
             }
         }
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_TIMER_SELECTION, "txtscheduledview");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_TIMER_DELAY, "numactivitydelay");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_TIMER_DELAY_UNIT, "keyactivitydelayunit");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_TIMER_DELAY_BASE, "keyscheduledbaseobject");
-        adaptDeprecatedItem(eventEntity, EVENT_ITEM_TIMER_DELAY_BASE_PROPERTY, "keytimecomparefield");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_TIMER_SELECTION, "txtscheduledview");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_TIMER_DELAY, "numactivitydelay");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_TIMER_DELAY_UNIT, "keyactivitydelayunit");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_TIMER_DELAY_BASE, "keyscheduledbaseobject");
+        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_TIMER_DELAY_BASE_PROPERTY, "keytimecomparefield");
 
     }
 

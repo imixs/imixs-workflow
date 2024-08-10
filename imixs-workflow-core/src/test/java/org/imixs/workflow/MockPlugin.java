@@ -10,13 +10,13 @@ import org.imixs.workflow.exceptions.PluginException;
  * @author rsoika
  * 
  */
-public class MokPlugin implements Plugin {
+public class MockPlugin implements Plugin {
 
 	@Override
 	public void init(WorkflowContext actx) throws PluginException {
 	}
- 
-	@Override 
+
+	@Override
 	public ItemCollection run(ItemCollection documentContext,
 			ItemCollection documentActivity) throws PluginException {
 

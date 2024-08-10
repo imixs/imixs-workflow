@@ -25,15 +25,19 @@ import org.xml.sax.SAXException;
  */
 public class TestBPMNModelProperties {
 	BPMNModel model = null;
+	OpenBPMNModelManager openBPMNModelManager = null;
 
 	@Before
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
+		openBPMNModelManager = new OpenBPMNModelManager();
 		try {
-			model = BPMNModelFactory.read("/bpmn/properties.bpmn");
-		} catch (BPMNModelException e) {
+			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/properties.bpmn"));
+			model = openBPMNModelManager.getModel("1.0.0");
+		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
+
 	}
 
 	@After
@@ -54,7 +58,7 @@ public class TestBPMNModelProperties {
 		Assert.assertNotNull(model);
 
 		// test task 1000
-		ItemCollection task = OpenBPMNUtil.findTaskByID(model, 1100);
+		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1100);
 		Assert.assertNotNull(task);
 		// Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
 		// Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
@@ -74,8 +78,10 @@ public class TestBPMNModelProperties {
 		// acl
 		Assert.assertTrue(task.getItemValueBoolean(OpenBPMNUtil.TASK_ITEM_ACL_UPDATE));
 		Assert.assertEquals("test_actor", task.getItemValueString(OpenBPMNUtil.TASK_ITEM_ACL_OWNER_LIST_MAPPING));
-		Assert.assertEquals("test_actor", task.getItemValueString(OpenBPMNUtil.TASK_ITEM_ACL_READACCESS_LIST_MAPPING));
-		Assert.assertEquals("test_actor", task.getItemValueString(OpenBPMNUtil.TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING));
+		Assert.assertEquals("test_actor",
+				task.getItemValueString(OpenBPMNUtil.TASK_ITEM_ACL_READACCESS_LIST_MAPPING));
+		Assert.assertEquals("test_actor",
+				task.getItemValueString(OpenBPMNUtil.TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING));
 
 		Assert.assertEquals("testowner", task.getItemValueString(OpenBPMNUtil.TASK_ITEM_ACL_OWNER_LIST));
 		Assert.assertEquals("testreadaccess", task.getItemValueString(OpenBPMNUtil.TASK_ITEM_ACL_READACCESS_LIST));
@@ -96,9 +102,8 @@ public class TestBPMNModelProperties {
 		Assert.assertNotNull(model);
 
 		// test event 1000,20
-		ItemCollection event = OpenBPMNUtil.findEventByID(model, 1000, 20);
+		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
 		Assert.assertNotNull(event);
-		Assert.assertEquals("1.0.0", event.getItemValueString("$ModelVersion"));
 
 		Assert.assertEquals("submit", event.getItemValueString(OpenBPMNUtil.EVENT_ITEM_NAME));
 		Assert.assertEquals("test documentation", event.getItemValueString(OpenBPMNUtil.EVENT_ITEM_DOCUMENTATION));
