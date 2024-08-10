@@ -92,12 +92,9 @@ public class TestWorkflowKernelModels {
 			itemCollection.setEventID(20);
 
 			itemCollection.replaceItemValue("$modelversion", "1.0.0");
-
 			itemCollection = workflowContext.getWorkflowKernel().process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
-
 			Assert.assertEquals(1200, itemCollection.getTaskID());
-
 			Assert.assertEquals("in Progress", itemCollection.getItemValueString("$workflowstatus"));
 			Assert.assertEquals("Ticket", itemCollection.getItemValueString("$workflowgroup"));
 

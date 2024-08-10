@@ -384,6 +384,7 @@ public class WorkflowKernel {
                 logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
                 // load new Event and start new processing live cycle...
                 event = this.ctx.getModelManager().loadEvent(workitem);
+
                 workitem.event(event.getItemValueInteger("numactivityid"));
             } else {
                 // evaluate next BPMN Element.....
@@ -565,6 +566,7 @@ public class WorkflowKernel {
             // test if we can load the target task...
             ItemCollection itemColNextTask = this.ctx.getModelManager().loadTask(workitem);
             if (itemColNextTask != null) {
+
                 updateWorkflowStatus(workitem, itemColNextTask);
             }
         }
@@ -622,30 +624,26 @@ public class WorkflowKernel {
         // put current edge in history
         vectorEdgeHistory.addElement(workitem.getTaskID() + "." + workitem.getEventID());
 
-        // update the next task (can be updated by plugins or conditional events....
-        // issue #470
-        // ItemCollection itemColNextTask = findNextTask(documentResult, event);
-
-        // evaluate a split-event and create new versions of the current process
-        // instance.
-        // evaluateSplitEvent(event, documentResult);
-
         return documentResult;
     }
 
     /**
      * Helper method to update the items $taskid, $worklfowstatus, $workflowgroup
      * and type
+     * 
+     * @throws ModelException
      */
-    private void updateWorkflowStatus(ItemCollection workitem, ItemCollection itemColNextTask) {
+    private void updateWorkflowStatus(ItemCollection workitem, ItemCollection itemColNextTask) throws ModelException {
         boolean debug = logger.isLoggable(Level.FINE);
+
+        ItemCollection process = ctx.getModelManager().loadProcess(workitem);
         // Update the attributes $taskID and $WorkflowStatus
         workitem.task(itemColNextTask.getItemValueInteger("numprocessid"));
         if (debug) {
             logger.log(Level.FINEST, "......new $taskID={0}", workitem.getTaskID());
         }
         workitem.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString("txtname"));
-        workitem.replaceItemValue(WORKFLOWGROUP, itemColNextTask.getItemValueString("txtworkflowgroup"));
+        workitem.replaceItemValue(WORKFLOWGROUP, process.getItemValueString("name"));
         if (debug) {
             logger.log(Level.FINEST, "......new $workflowStatus={0}",
                     workitem.getItemValueString(WORKFLOWSTATUS));

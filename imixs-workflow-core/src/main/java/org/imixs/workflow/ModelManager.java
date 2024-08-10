@@ -29,17 +29,12 @@
 package org.imixs.workflow;
 
 import org.imixs.workflow.exceptions.ModelException;
-import org.openbpmn.bpmn.BPMNModel;
 
 /**
- * The interface ModelManager manages instances of a Model. A Model instance is
- * uniquely identified by the ModelVersion. The ModelManager is used by the
- * {@link WorkflowKernel} to manage the processing live cycle of a workitem.
- * <p>
- * By analyzing the workitem model version the WorkflowKernel determines the
- * corresponding model and get the Tasks and Events from the ModelManager to
- * process the workitem and assign the workitem to the next Task defined by the
- * BPMN Model.
+ * The interface ModelManager provides methods to get model entities from a
+ * model instance. The ModelManager is used by the {@link WorkflowKernel} to
+ * manage the processing live cycle of a workitem.
+ * 
  * 
  * @author rsoika
  */
@@ -49,41 +44,38 @@ public interface ModelManager {
     public final static String EVENT_ELEMENT = "EVENT";
 
     /**
-     * Adds a new Model to the ModelManager.
-     * 
-     * @param model
-     * @throws ModelException
-     */
-    public void addModel(BPMNModel model) throws ModelException;;
-
-    /**
-     * Returns a Model by version. The method throws a ModelException in case the
-     * model version did not exits.
-     * 
-     * @param version
-     * @throws ModelException
-     * @return Model
-     */
-    public BPMNModel getModel(String version) throws ModelException;;
-
-    /**
-     * Removes a BPMNModel from the ModelManager
-     * 
-     * @param version
-     */
-    public void removeModel(String version);
-
-    /**
-     * Returns a BPMNModel instance matching the $modelVersion of a given workitem.
-     * The method throws a ModelException in case the model version did not exits.
+     * Returns the BPMN Definition entity associated with a given workitem, based on
+     * its attribute "$modelVersion". The definition holds the bpmn meta data.
      * <p>
-     * A ModelManager may resolve a model also by regular expressions.
+     * The method throws a {@link ModelException} if no Process can be resolved
+     * based on the given model information.
+     * <p>
+     * The method is called by the {@link WorkflowKernel} during the processing
+     * live cycle to update the process group information.
      * 
-     * @param version
-     * @throws ModelException
-     * @return BPMNModel
+     * @param workitem
+     * @return BPMN Event entity - {@link ItemCollection}
+     * @throws ModelException if no event was found
      */
-    public BPMNModel findModelByWorkitem(ItemCollection workitem) throws ModelException;
+    public ItemCollection loadDefinition(ItemCollection workitem) throws ModelException;
+
+    /**
+     * Returns the BPMN Process entity associated with a given workitem, based on
+     * its attributes "$modelVersion", "$taskID". The process holds the name
+     * for the attribute $worklfowGroup
+     * <p>
+     * The taskID has to be unique in a process. The method throws a
+     * {@link ModelException} if no Process can be resolved based on the given model
+     * information.
+     * <p>
+     * The method is called by the {@link WorkflowKernel} during the processing
+     * live cycle to update the process group information.
+     * 
+     * @param workitem
+     * @return BPMN Event entity - {@link ItemCollection}
+     * @throws ModelException if no event was found
+     */
+    public ItemCollection loadProcess(ItemCollection workitem) throws ModelException;
 
     /**
      * Returns the BPMN Task entity associated with a given workitem, based on its

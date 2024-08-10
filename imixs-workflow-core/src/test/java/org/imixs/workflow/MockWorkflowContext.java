@@ -24,15 +24,16 @@ public class MockWorkflowContext {
     private final SessionContext ctx;
     private final WorkflowContext workflowContext;
     private final WorkflowKernel kernel;
+    private OpenBPMNModelManager openBPMNModelManager;
 
     public MockWorkflowContext() throws PluginException {
+        openBPMNModelManager = new OpenBPMNModelManager();
         ctx = Mockito.mock(SessionContext.class);
         workflowContext = Mockito.mock(WorkflowContext.class);
 
         setupSessionContext();
         setupWorkflowContext();
         kernel = new WorkflowKernel(workflowContext);
-        loadBPMNModel("/bpmn/simple.bpmn");
 
         MockPlugin mokPlugin = new MockPlugin();
         kernel.registerPlugin(mokPlugin);
@@ -45,7 +46,7 @@ public class MockWorkflowContext {
     }
 
     private void setupWorkflowContext() {
-        when(workflowContext.getModelManager()).thenReturn(new OpenBPMNModelManager());
+        when(workflowContext.getModelManager()).thenReturn(openBPMNModelManager);
     }
 
     /**
@@ -56,7 +57,7 @@ public class MockWorkflowContext {
     public void loadBPMNModel(String modelPath) {
         try {
             BPMNModel model = BPMNModelFactory.read(modelPath);
-            workflowContext.getModelManager().addModel(model);
+            openBPMNModelManager.addModel(model);
         } catch (BPMNModelException | ModelException e) {
             e.printStackTrace();
             Assert.fail();

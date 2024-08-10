@@ -35,6 +35,8 @@ public class TestWorkflowKernel {
     @Before
     public void setup() throws PluginException {
         workflowContext = new MockWorkflowContext();
+        // load default model
+        workflowContext.loadBPMNModel("/bpmn/simple.bpmn");
     }
 
     /**

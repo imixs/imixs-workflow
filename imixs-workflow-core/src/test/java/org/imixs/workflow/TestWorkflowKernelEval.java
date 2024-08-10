@@ -1,26 +1,17 @@
 package org.imixs.workflow;
 
-import static org.mockito.Mockito.when;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.imixs.workflow.bpmn.OpenBPMNModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
-
-import jakarta.ejb.SessionContext;
 
 /**
  * Test class for testing the eval method of the workflow kernel
- * The method loads a test model and moks a workflow service
+ * The method loads a test model and the MockWorkflowContext
  * 
  * @author rsoika
  */
@@ -31,28 +22,13 @@ public class TestWorkflowKernelEval {
 	final static String MODEL_PATH = "/bpmn/workflowkernel_eval.bpmn";
 	final static String MODEL_VERSION = "1.0.0";
 
-	protected WorkflowKernel kernel = null;
-	protected SessionContext ctx;
-	protected WorkflowContext workflowContext;
+	private MockWorkflowContext workflowContext;
 
 	@Before
 	public void setup() throws PluginException {
-
-		ctx = Mockito.mock(SessionContext.class);
-		workflowContext = Mockito.mock(WorkflowContext.class);
-		// provide a mock modelManger class
-		when(workflowContext.getModelManager()).thenReturn(new OpenBPMNModelManager());
-		kernel = new WorkflowKernel(workflowContext);
-		BPMNModel model = null;
-		// Load Models
-		try {
-			model = BPMNModelFactory.read("/bpmn/workflowkernel_eval.bpmn");
-			workflowContext.getModelManager().addModel(model);
-		} catch (BPMNModelException | ModelException e) {
-			e.printStackTrace();
-			Assert.fail();
-		}
-
+		workflowContext = new MockWorkflowContext();
+		// load default model
+		workflowContext.loadBPMNModel(MODEL_PATH);
 	}
 
 	@Test
@@ -63,7 +39,7 @@ public class TestWorkflowKernelEval {
 		workitem.setItemValue("a", 1);
 		workitem.setItemValue("b", "DE");
 		try {
-			ItemCollection targetTask = kernel.eval(workitem);
+			ItemCollection targetTask = workflowContext.getWorkflowKernel().eval(workitem);
 			Assert.assertNotNull(targetTask);
 			Assert.assertEquals("Match", targetTask.getItemValueString("name"));
 			logger.log(Level.INFO, "evaluate BPMN Target Task in {0}ms", System.currentTimeMillis() - l);
@@ -84,7 +60,7 @@ public class TestWorkflowKernelEval {
 		workitem.setItemValue("b", "I");
 
 		try {
-			ItemCollection targetTask = kernel.eval(workitem);
+			ItemCollection targetTask = workflowContext.getWorkflowKernel().eval(workitem);
 			Assert.assertNotNull(targetTask);
 			Assert.assertEquals("No Match", targetTask.getItemValueString("name"));
 			logger.log(Level.INFO, "evaluate BPMN-Rule in {0}ms", System.currentTimeMillis() - l);

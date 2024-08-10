@@ -35,6 +35,11 @@ import org.w3c.dom.Element;
 /**
  * This OpenBPMNModelManager implements the Interface ModelManger to handle Open
  * BPMN Models. The implementation is based on the OpenBPMN Meta model.
+ * <p>
+ * By analyzing the workitem model version the WorkflowKernel determines the
+ * corresponding model and get the Tasks and Events from the ModelManager to
+ * process the workitem and assign the workitem to the next Task defined by the
+ * BPMN Model.
  * 
  */
 public class OpenBPMNModelManager implements ModelManager {
@@ -69,7 +74,6 @@ public class OpenBPMNModelManager implements ModelManager {
     /**
      * Adds a new model into the local model store
      */
-    @Override
     public void addModel(BPMNModel model) throws ModelException {
         String version = OpenBPMNUtil.getVersion(model);
         modelStore.put(version, model);
@@ -79,7 +83,6 @@ public class OpenBPMNModelManager implements ModelManager {
     /**
      * Returns a BPMNModel by its version from the local model store
      */
-    @Override
     public BPMNModel getModel(String version) throws ModelException {
         return modelStore.get(version);
     }
@@ -87,7 +90,6 @@ public class OpenBPMNModelManager implements ModelManager {
     /**
      * Removes a BPMNModel form the local model store
      */
-    @Override
     public void removeModel(String version) {
         modelStore.remove(version);
         clearCache();
@@ -111,7 +113,6 @@ public class OpenBPMNModelManager implements ModelManager {
      * <p>
      * The method throws a ModelException in case the model version did not exits.
      **/
-    @Override
     public BPMNModel findModelByWorkitem(ItemCollection workitem) throws ModelException {
         BPMNModel result = null;
         String version = workitem.getModelVersion();
@@ -230,6 +231,78 @@ public class OpenBPMNModelManager implements ModelManager {
         return result;
     }
 
+    /**
+     * Returns the BPMN Definition entity associated with a given workitem, based on
+     * its attribute "$modelVersion". The definition holds the bpmn meta data.
+     * <p>
+     * The method throws a {@link ModelException} if no Process can be resolved
+     * based on the given model information.
+     * <p>
+     * The method is called by the {@link WorkflowKernel} during the processing
+     * live cycle to update the process group information.
+     * 
+     * @param workitem
+     * @return BPMN Event entity - {@link ItemCollection}
+     * @throws ModelException if no event was found
+     */
+    @Override
+    public ItemCollection loadDefinition(ItemCollection workitem) throws ModelException {
+        BPMNModel model = findModelByWorkitem(workitem);
+        String key = OpenBPMNUtil.getVersion(model);
+        ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key, k -> lookupDefinition(model));
+        // clone instance to protect for manipulation
+        if (result != null) {
+            return (ItemCollection) result.clone();
+        }
+        return null;
+    }
+
+    /**
+     * Returns the BPMN Process entity associated with a given workitem, based on
+     * its attributes "$modelVersion", "$taskID". The process holds the name
+     * for the attribute $worklfowGroup
+     * <p>
+     * The taskID has to be unique in a process. The method throws a
+     * {@link ModelException} if no Process can be resolved based on the given model
+     * information.
+     * <p>
+     * The method is called by the {@link WorkflowKernel} during the processing
+     * live cycle to update the process group information.
+     * 
+     * @param workitem
+     * @return BPMN Event entity - {@link ItemCollection}
+     * @throws ModelException if no event was found
+     */
+    @Override
+    public ItemCollection loadProcess(ItemCollection workitem) throws ModelException {
+        BPMNModel model = findModelByWorkitem(workitem);
+        String key = OpenBPMNUtil.getVersion(model) + "~" + workitem.getTaskID();
+        Activity task = (Activity) bpmnElementCache.computeIfAbsent(key,
+                k -> lookupTaskElementByID(model, workitem.getTaskID()));
+        BPMNProcess process = task.getBpmnProcess();
+        ItemCollection result = new ItemCollection();
+        result.setItemValue("id", process.getId());
+        if (process.hasAttribute("name")) {
+            result.setItemValue("name", process.getAttribute("name"));
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns the BPMN Task entity associated with a given workitem, based on its
+     * attributes "$modelVersion" and "$taskID".
+     * <p>
+     * The method throws a {@link ModelException} if no Task can be resolved based
+     * on the given model information.
+     * <p>
+     * The method is called by the {@link WorkflowKernel} during the the processing
+     * live cycle.
+     * 
+     * @param workitem
+     * @return BPMN Event entity - {@link ItemCollection}
+     * @throws ModelException if no event was found
+     */
     @Override
     public ItemCollection loadTask(ItemCollection workitem) throws ModelException {
         BPMNModel model = findModelByWorkitem(workitem);
@@ -241,6 +314,20 @@ public class OpenBPMNModelManager implements ModelManager {
         return task;
     }
 
+    /**
+     * Returns the BPMN Event entity associated with a given workitem, based on its
+     * attributes "$modelVersion", "$taskID" and "$eventID".
+     * <p>
+     * The method throws a {@link ModelException} if no Event can be resolved based
+     * on the given model information.
+     * <p>
+     * The method is called by the {@link WorkflowKernel} to start the processing
+     * live cycle.
+     * 
+     * @param workitem
+     * @return BPMN Event entity - {@link ItemCollection}
+     * @throws ModelException if no event was found
+     */
     @Override
     public ItemCollection loadEvent(ItemCollection workitem) throws ModelException {
 
@@ -358,26 +445,6 @@ public class OpenBPMNModelManager implements ModelManager {
         String key = OpenBPMNUtil.getVersion(model) + "~" + taskID + "." + eventID;
         ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key,
                 k -> lookupEventByID(model, taskID, eventID));
-        // clone instance to protect for manipulation
-        if (result != null) {
-            return (ItemCollection) result.clone();
-        }
-        return null;
-    }
-
-    /**
-     * This method returns an ItemCollection holding the BPMNModel Definition
-     * Attributes including the Imixs Extension attributes.
-     * <p>
-     * The method returns a cloned Instance of the model entity to avoid
-     * manipulation by the client.
-     * 
-     * @param model
-     * @return
-     */
-    public ItemCollection findDefinition(final BPMNModel model) {
-        String key = OpenBPMNUtil.getVersion(model);
-        ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key, k -> lookupDefinition(model));
         // clone instance to protect for manipulation
         if (result != null) {
             return (ItemCollection) result.clone();
