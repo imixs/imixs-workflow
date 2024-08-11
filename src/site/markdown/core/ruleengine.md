@@ -62,9 +62,9 @@ All kind of boolean business rules are mainly used to evaluate [conditional even
 
 
 	
-## Evaluate the Processing Live Cycle
+## Evaluate the Processing Life Cycle
 
-The Imixs `WorkflowKernel` is using the `RuleEngine` to navigate through the BPMN model during the processing live cycle. In case an Event is followed by a Gateway with [conditional events](../modelling/howto.html#Conditional_Events), the `RuleEngine` evaluates these rules to compute the target element based on the business data provided by the process instance. 
+The Imixs `WorkflowKernel` is using the `RuleEngine` to navigate through the BPMN model during the processing life cycle. In case an Event is followed by a Gateway with [conditional events](../modelling/howto.html#Conditional_Events), the `RuleEngine` evaluates these rules to compute the target element based on the business data provided by the process instance. 
 
 
 
@@ -74,7 +74,7 @@ A condition in a BPMN business rule is evaluated to a boolean indicating if the 
 	
 See the section [conditional events](../modelling/howto.html#Conditional_Events) to learn how you can model business rules. 	
 
-### Simulating the Processing Live Cycle Programmatically 
+### Simulating the Processing Life Cycle Programmatically 
 
 The `WorkflowKernel` also provides the method `eval()` to simulate the outcome of a specific model situation. You can call this method to evaluate the target Task Element of a process instance: 
 

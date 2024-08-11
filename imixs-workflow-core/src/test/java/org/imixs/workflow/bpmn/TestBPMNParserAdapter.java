@@ -36,7 +36,7 @@ public class TestBPMNParserAdapter {
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 		try {
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/adapter.bpmn"));
-			model = openBPMNModelManager.getBPMNModel("1.0.0");
+			model = openBPMNModelManager.getModel("1.0.0");
 		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -58,7 +58,7 @@ public class TestBPMNParserAdapter {
 
 		try {
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/adapter_multi.bpmn"));
-			model = openBPMNModelManager.getBPMNModel("1.0.0");
+			model = openBPMNModelManager.getModel("1.0.0");
 		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
 			Assert.fail();

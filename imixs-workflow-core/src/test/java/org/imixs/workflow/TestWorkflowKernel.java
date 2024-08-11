@@ -213,7 +213,7 @@ public class TestWorkflowKernel {
     }
 
     /**
-     * Test a simple process live cycle with a new target task.
+     * Test a simple process life cycle with a new target task.
      */
     @Test
     @Category(org.imixs.workflow.WorkflowKernel.class)

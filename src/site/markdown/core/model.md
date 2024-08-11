@@ -1,10 +1,30 @@
-#The Imixs-Workflow Model 
+# The Imixs ModelManager 
 
-The Imixs-Workflow Model separates the process definition from the Workflow implementation. For this purpose, the interface '_org.imixs.workflow.Model_' provides methods to navigate through a  Workflow Model with its different elements. A workflow model has a unique version ID which allows to manage different workflow models inside one Workflow Management System. 
+The Imixs `ModelManager` separates the BPMN process definition from the Workflow implementation. The interface  provides methods to manager BPMN Model instances and navigate through a  Workflow Model with its different elements. A workflow model has a unique version ID which allows to uniquely identify a BPMN model inside one Workflow Management System.  The Model Version is provided by a workflow instance in the item `$modelVersion`. 
 
-A Workflow Model can be defined using the [Imixs-BPMN modeling tool](../modelling/index.html).
+An Imixs BPMN Model can be defined using the [Imixs-BPMN modeling tool](../modelling/index.html).
 
 <img src="../images/modelling/bpmn_screen_00.png"/>
+
+
+
+## The ModelManager Interface 
+The interface `org.imixs.workflow.ModelManager` manage instances of a `BPMNModel` and is used by the [WorkflowKernel](workflowkernel.html) to access model information during the processing life cycle .
+
+The Interface defines the following methods:
+
+|Method              		 | Description 				 |
+|----------------------------|---------------------------|
+|getModel(version)           | Returns a Model by version. The method throws a ModelException in case  the model version did not exits.|
+|addModel(BPMNModel)         | Adds a new Model to the ModelManager.|
+|removeModel(version)        | Removes a Model from the ModelManager.|
+|loadDefinition(workitem)    | Returns the BPMN Definition entity associated with a given workitem.|
+|loadProcess(workitem)       | Returns the BPMN Process entity associated with a given workitem. |
+|loadTask(workitem)          | Returns the BPMN Task entity associated with a given workitem.|
+|loadEvent(workitem)         | Returns the BPMN Event entity associated with a given workitem.|
+|nextModelElement(event, workitem) | Returns the next BPMN Flow Entity followed by a given Event Entity.|
+
+
 
 ## The Task Element
 
@@ -12,58 +32,67 @@ A 'Task Element' describes the unambiguously status of a running process instanc
 
 <img src="../images/modelling/bpmn_screen_04.png"/>
 
-A 'Task' can be identified by a unique ID in each model. A model cannot contain several Task elements having the same ID. The following attributes must be at least provided by an instance of a 'Task Element': 
+A 'Task' can be identified by a unique ID in each model. A model cannot contain several Task elements having the same ID. The Imixs Task entity returned by the `ModelManager` is represendted as an [ItemCollection](itemcollection.md) and provides at least the following attributes: 
   
-   * numProcessID  - an integer unique identifier for the 'Task' inside the model   
-   * txtName  - The name for the Entity   
-   * txtWorkflowGroup - The name of the WorkflowGroup the Task belongs to.
+|Item                | Description 			 	                                                      |
+|--------------------|-----------------------------------------------------------------------------|
+|id                  | ID attribute of the corresponding BPMN element in the BPMN model. |
+|type                | Type of the corresponding BPMN element: 'task'
+|name                | Name of the Task Element 
+|taskID              | Unique integer ID to identify the Task Entity in a BPMNModel
+|documentation       | Optional Task description |
+|workflow.summary    | Removes a Model from the ModelManager.|
+|workflow.abstract   | Returns the BPMN Definition entity associated with a given workitem.|
+|application.type    | Type attribute for a workflow instance assigned to the Task |
+|application.editor  | Optional editor information for a workflow instance assigned to the Task.|
+|application.icon    | Optional Icon to display the workflow status.|
+|acl.owner.list      | Owner information for ACL settings.|
+|acl.readaccess.list | Read-Access information for ACL settings.|
+|acl.writeaccess.list| Write-Access information for ACL settings.|
+
+
 
 ## The Event Element
-On the contrary, the 'Task Element', the 'Event Element' defines all information required to process a Workitem.  The 'Event Element' defines the process flow of a Workitem from one 'Task' to another. 
+
+The 'Event Element' defines all information required to process a Workitem.  The 'Event Element' defines the process flow of a Workitem from one 'Task' to another. 
 
 <img src="../images/modelling/bpmn_screen_05.png"/>
 
-An 'Event Element' is assigned to a 'Task'. The ID of each 'Event' must be unique inside a collection of events assigned to the same 'Task'. The following attributes must be at least provided by an instance of a 'Event Element': 
+An 'Event Element' is assigned to a 'Task'. The ID of each 'Event' must be unique inside a collection of events assigned to the same 'Task'. 
+The Event entity returned by the `ModelManager` is represendted as an [ItemCollection](itemcollection.md) and provides at least the following attributes:
+
+
+ |Item                | Description 			 	                                                      |
+|--------------------|-----------------------------------------------------------------------------|
+|id                  | ID attribute of the corresponding BPMN element in the BPMN model. |
+|type                | Type of the corresponding BPMN element: 'intermediateCatchEvent'
+|name                | Name of the Event Element 
+|eventID             | Integer ID to identify the Event assigned to a Task Entity in a BPMNModel
+|documentation       | Optional Event description |
+|workflow.public     | Optional indicates if the Event is shown in a Applicaton UI  a Model from the ModelManager.|
+|workflow.public.actors   | Optional list of actors with access to this event |
+|acl.owner.list      | Owner information for ACL settings.|
+|acl.readaccess.list | Read-Access information for ACL settings.|
+|acl.writeaccess.list| Write-Access information for ACL settings.|
  
-   * numProcessID - an integer ID which associates the 'Event' to a 'Task Element' 
-   * numActivityID - an integer unique identifier for the 'Event'
-   * numNextID - an Integer ID which defines the next 'Task' a workitem is assigned to after processing.
-   * txtName  - The name for the Entity
- 
- 
-### The Process Flow
-When a Workitem is processed by the Imixs-Workflow engine, the properties '$modelVersion', '$TaskID' and '$EventID' are verified against the current workflow model. Depending on the information of the assigned 'Event' the _WorkflowKernel_ updates the status of the Workitem ('$taskID') after a Workitem was processed successful.
-
-##The Model Interface
-The Interface '_org.imixs.workflow.Model_' defines the following methods:
-
-|Method              		 | Description 				 |
-|----------------------------|---------------------------|
-|getVersion()| returns the workflow model version |
-|getDefinition()| returns a ItemCollection holding general model information (e.g. the plugin list) |
-|getTask(taskId)| returns a task by its id |
-|getEvent(taskId,eventId)| returns an event by its id |
-|getGroups()| returns a list of all workflow groups defined in the model |
-|findAllTasks()| returns a list of all task elements defined in the model |
-|findAllEventsByTask(taskId)| returns a list of all event elements assigned to a task|
-|findAllTasksByGroup(workflowgroup)| returns a list of all task elements assigned to a workflow group|
 
 
-## The ModelManager 
-The interface ModelManager stores instances of a Model. A Model instance is uniquely identified by the ModelVersion. The IModelManager is used by the [WorkflowKernel](workflowkernel.html) to manage the process-model of a workitem.
+## The BPMNModel
 
-The Interface '_org.imixs.workflow.ModelManager_' defines the following methods:
+The  Imixs `ModelManager` operates directly on BPMNModel instances from the [Open-BPMN Meta model](https://github.com/imixs/open-bpmn/tree/master/open-bpmn.metamodel).
+The `BPMNModel` instance allows full access to a BPMN 2.0 model and provides a lot of convenient methods to navigate through a BPMN model. 
 
-|Method              		 | Description 				 |
-|----------------------------|---------------------------|
-|getModel(version)           | Returns a Model by version. The method throws a ModelException in case  the model version did not exits.|
-|addModel(model  )           | Adds a new Model to the ModelManager.|
-|removeModel(version)        | Removes a Model from the ModelManager.|
-|getModelByWorkitem(workitem)| Returns a Model matching a given workitem. The method throws a ModelException in case the model version did not exits..|
+Find further information at the [Open-BPMN Meta Project on Github](https://github.com/imixs/open-bpmn/tree/master/open-bpmn.metamodel).
+
+## The OpenBPMNModelManager
+
+The `OpenBPMNModelManager` implements the interface `org.imixs.workflow.ModelManager` and can be used in any custom Java implementation of Imixs-Workflow. The `OpenBPMNModelManager` provides additional methods to manage BPMNModel instances and helper methods to navigate throug a BPMN model as also methods to  evaluate specific model situations based on the [Imixs RuleEngine](ruleengine.md).  
+
 
 
 ### The Imixs ModelService
-The Imixs-Workflow engine provides the [ModelService](../engine/modelservice.html) which provides additional methods to managed different models in one application.    
+
+The Imixs-Workflow engine provides the EJB [ModelService](../engine/modelservice.html) implementing the `ModelManager` and used by the Imixs WorkflowService.
  
 
      

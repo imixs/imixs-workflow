@@ -386,7 +386,7 @@ public class WorkflowKernel {
             if (updateModelVersionByEvent(workitem, event)) {
                 // write event log
                 logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
-                // load new Event and start new processing live cycle...
+                // load new Event and start new processing life cycle...
                 event = this.ctx.getModelManager().loadEvent(workitem);
 
                 workitem.event(event.getItemValueInteger("numactivityid"));
@@ -398,18 +398,18 @@ public class WorkflowKernel {
                             "BPMN Element Entity must provide the item 'type'!");
                 }
                 // continue processing live-cycle?
-                if (ModelManager.EVENT_ELEMENT.equals(nextElement.getItemValueString("type"))) {
+                if (ModelManager.EVENT_ELEMENT.equals(nextElement.getType())) {
                     // load next event
                     logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
                     event = nextElement;
                     workitem.event(event.getItemValueInteger("numactivityid"));
                 } else {
-                    // update status and terminate processing live cycle
+                    // update status and terminate processing life cycle
                     logEvent(workitem.getTaskID(), workitem.getEventID(),
                             nextElement.getItemValueInteger("numprocessid"), workitem);
                     // Update status - Issue #722
                     updateWorkflowStatus(workitem, nextElement);
-                    // terminate processing live cycle
+                    // terminate processing life cycle
                     workitem.event(0);
                     event = null;
                 }
@@ -473,7 +473,7 @@ public class WorkflowKernel {
 
             // test if a new model version was assigned by the last event
             if (updateModelVersionByEvent(workitem, event)) {
-                // load new Event and start new processing live cycle...
+                // load new Event and start new processing life cycle...
                 event = this.ctx.getModelManager().loadEvent(workitem);
                 workitem.event(event.getItemValueInteger("numactivityid"));
             } else {
@@ -484,12 +484,12 @@ public class WorkflowKernel {
                             "BPMN Element Entity must provide the item 'type'!");
                 }
                 // continue processing live-cycle?
-                if (ModelManager.EVENT_ELEMENT.equals(nextElement.getItemValueString("type"))) {
+                if (ModelManager.EVENT_ELEMENT.equals(nextElement.getType())) {
                     // load next event
                     event = nextElement;
                     workitem.event(event.getItemValueInteger("numactivityid"));
                 } else {
-                    // terminate processing live cycle
+                    // terminate processing life cycle
                     workitem.event(0);
                     return nextElement;
                 }

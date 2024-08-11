@@ -63,49 +63,42 @@ public class OpenBPMNModelManager implements ModelManager {
     }
 
     /**
+     * Returns the internal ModelStore holding all BPMNModels by version.
+     * 
+     * @return
+     */
+    public Map<String, BPMNModel> getModelStore() {
+        return modelStore;
+    }
+
+    /**
+     * Adds a new model into the local model store
+     */
+    @Override
+    public void addModel(BPMNModel model) throws ModelException {
+        String version = OpenBPMNUtil.getVersion(model);
+        modelStore.put(version, model);
+        clearCache();
+    }
+
+    /**
+     * Removes a BPMNModel form the local model store
+     */
+    @Override
+    public void removeModel(String version) {
+        modelStore.remove(version);
+        clearCache();
+    }
+
+    /**
      * Returns a BPMNModel by its version from the local model store
      * 
      * @param version - a bpmn model version ($modelVersion)
      * @return a BPMNModel instance.
      */
     @Override
-    public BPMNModel getBPMNModel(String version) throws ModelException {
+    public BPMNModel getModel(String version) throws ModelException {
         return modelStore.get(version);
-    }
-
-    /**
-     * Returns a BPMNProcess instance by its name
-     * 
-     * @param version - $modelVersion
-     * @param name    - process name ($workflowgroup)
-     * @return a BPMNProcess instance
-     * @throws ModelException
-     */
-    @Override
-    public BPMNProcess getBPMNProcess(String version, String name) throws ModelException {
-        BPMNModel model = getBPMNModel(version);
-        try {
-            return model.findProcessByName(name);
-        } catch (BPMNModelException e) {
-            throw new ModelException(ModelException.INVALID_MODEL,
-                    "process '" + name + "' not found: " + e.getMessage());
-        }
-
-    }
-
-    /**
-     * Returns a BPMNElementNode by its ID form a BPMNModel. The method allows to
-     * access each kind of BPMN element node.
-     * 
-     * @param version - $modelVersion
-     * @param id      - BPMN Element node id
-     * @return BPMNElementNode or null if not found
-     * @throws ModelException
-     */
-    public BPMNElementNode getBPMNElementNode(String version, String id) throws ModelException {
-        BPMNModel model = getBPMNModel(version);
-        // find element by id
-        return model.findElementNodeById(id);
     }
 
     /**
@@ -116,7 +109,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * based on the given model information.
      * <p>
      * The method is called by the {@link WorkflowKernel} during the processing
-     * live cycle to update the process group information.
+     * life cycle to update the process group information.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}
@@ -144,7 +137,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * information.
      * <p>
      * The method is called by the {@link WorkflowKernel} during the processing
-     * live cycle to update the process group information.
+     * life cycle to update the process group information.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}
@@ -174,7 +167,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * on the given model information.
      * <p>
      * The method is called by the {@link WorkflowKernel} during the the processing
-     * live cycle.
+     * life cycle.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}
@@ -199,7 +192,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * on the given model information.
      * <p>
      * The method is called by the {@link WorkflowKernel} to start the processing
-     * live cycle.
+     * life cycle.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}
@@ -256,7 +249,7 @@ public class OpenBPMNModelManager implements ModelManager {
             while (elementNavigator.hasNext()) {
                 BPMNElementNode nextElement = elementNavigator.next();
                 logger.info("nextModelElement " + key + " took " + (System.currentTimeMillis() - l) + "ms");
-                return ElementBuilder.buildItemCollectionFromBPMNElement(nextElement);
+                return OpenBPMNEntityBuilder.build(nextElement);
 
             }
         } catch (BPMNValidationException e) {
@@ -264,32 +257,6 @@ public class OpenBPMNModelManager implements ModelManager {
                     "$modelversion " + version + " invalid condition: " + e.getMessage());
         }
         return null;
-    }
-
-    /**
-     * Returns the internal ModelStore holding all BPMNModels by version.
-     * 
-     * @return
-     */
-    public Map<String, BPMNModel> getModelStore() {
-        return modelStore;
-    }
-
-    /**
-     * Adds a new model into the local model store
-     */
-    public void addModel(BPMNModel model) throws ModelException {
-        String version = OpenBPMNUtil.getVersion(model);
-        modelStore.put(version, model);
-        clearCache();
-    }
-
-    /**
-     * Removes a BPMNModel form the local model store
-     */
-    public void removeModel(String version) {
-        modelStore.remove(version);
-        clearCache();
     }
 
     /**
@@ -487,7 +454,7 @@ public class OpenBPMNModelManager implements ModelManager {
         BPMNStartElementIterator<Activity> startElements = new BPMNStartElementIterator<>(process,
                 node -> (node instanceof Activity));
         while (startElements.hasNext()) {
-            result.add(ElementBuilder.buildItemCollectionFromBPMNElement(startElements.next()));
+            result.add(OpenBPMNEntityBuilder.build(startElements.next()));
         }
         return result;
 
@@ -507,7 +474,7 @@ public class OpenBPMNModelManager implements ModelManager {
                 node -> ((OpenBPMNUtil.isImixsEventElement(node))));
         List<ItemCollection> result = new ArrayList<>();
         while (elementNavigator.hasNext()) {
-            result.add(ElementBuilder.buildItemCollectionFromBPMNElement(elementNavigator.next()));
+            result.add(OpenBPMNEntityBuilder.build(elementNavigator.next()));
         }
         return result;
     }
@@ -550,6 +517,7 @@ public class OpenBPMNModelManager implements ModelManager {
         result.setItemValue("exporterVersion", definition.getAttribute("exporterVersion"));
         result.setItemValue("targetNamespace", definition.getAttribute("targetNamespace"));
 
+        result.setItemValue("name", "environment.profile");
         result.setItemValue("txtname", "environment.profile");
         result.setItemValue("type", "WorkflowEnvironmentEntity");
 
@@ -611,7 +579,7 @@ public class OpenBPMNModelManager implements ModelManager {
         String key = OpenBPMNUtil.getVersion(model) + "~" + taskID;
         Activity activity = (Activity) bpmnElementCache.computeIfAbsent(key, k -> lookupTaskElementByID(model, taskID));
         if (activity != null) {
-            return ElementBuilder.buildItemCollectionFromBPMNElement(activity);
+            return OpenBPMNEntityBuilder.build(activity);
         } else {
             return null;
         }
@@ -631,7 +599,7 @@ public class OpenBPMNModelManager implements ModelManager {
         Event event = (Event) bpmnElementCache.computeIfAbsent(key,
                 k -> lookupEventElementByID(model, taskID, eventID));
         if (event != null) {
-            return ElementBuilder.buildItemCollectionFromBPMNElement(event);
+            return OpenBPMNEntityBuilder.build(event);
         } else {
             return null;
         }

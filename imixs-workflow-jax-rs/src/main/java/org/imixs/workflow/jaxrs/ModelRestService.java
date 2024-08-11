@@ -191,7 +191,7 @@ public class ModelRestService {
             @QueryParam("format") String format) {
         List<ItemCollection> result = null;
         try {
-            result = modelService.getBPMNModel(version).findAllTasks();
+            result = modelService.getModel(version).findAllTasks();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -221,7 +221,7 @@ public class ModelRestService {
             @QueryParam("format") String format) {
         ItemCollection definition = null;
         try {
-            definition = modelService.getBPMNModel(version).getDefinition();
+            definition = modelService.getModel(version).getDefinition();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -234,7 +234,7 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         ItemCollection task = null;
         try {
-            task = modelService.getBPMNModel(version).getTask(processid);
+            task = modelService.getModel(version).getTask(processid);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -247,7 +247,7 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         List<ItemCollection> result = null;
         try {
-            result = modelService.getBPMNModel(version).findAllEventsByTask(processid);
+            result = modelService.getModel(version).findAllEventsByTask(processid);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -265,7 +265,7 @@ public class ModelRestService {
     public List<String> getGroups(@PathParam("version") String version, @QueryParam("items") String items) {
         List<String> col = null;
         try {
-            col = modelService.getBPMNModel(version).getGroups();
+            col = modelService.getModel(version).getGroups();
             return col;
         } catch (Exception e) {
             e.printStackTrace();
@@ -285,7 +285,7 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         List<ItemCollection> result = null;
         try {
-            result = modelService.getBPMNModel(version).findTasksByGroup(group);
+            result = modelService.getModel(version).findTasksByGroup(group);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -475,7 +475,7 @@ public class ModelRestService {
 
     private void appendTagsToBuffer(String modelVersion, String rootContext, StringBuffer buffer)
             throws ModelException {
-        Model model = modelService.getBPMNModel(modelVersion);
+        Model model = modelService.getModel(modelVersion);
         ItemCollection modelEntity = modelService.findModelEntity(modelVersion);
 
         // now check groups...

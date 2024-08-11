@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.ModelManager;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
 import org.openbpmn.bpmn.elements.Activity;
@@ -21,9 +20,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * This ElementBuilder provides methods to convert a OpenBPMN Element into a
- * ItemCollection. The corresponding ItemCollection contains all
- * Imixs Extension Elements as also the items 'id' and 'type'.
+ * This OpenBPMNEntityBuilder provides methods to convert a OpenBPMN
+ * BPMNElementNode into a ItemCollection. The corresponding ItemCollection
+ * contains all Imixs Extension Elements as also the items 'id' and 'type'.
  * <p>
  * Through the item 'id' it is possible to access the BPMN element directly from
  * an ItemCollection by the BPMN element id which should be unique. In addition,
@@ -43,14 +42,14 @@ import org.w3c.dom.NodeList;
         }</pre>
  * 
  */
-public class ElementBuilder {
+public class OpenBPMNEntityBuilder {
 
-    private static Logger logger = Logger.getLogger(ElementBuilder.class.getName());
+    private static Logger logger = Logger.getLogger(OpenBPMNEntityBuilder.class.getName());
 
     /**
      * Private constructor to prevent instantiation
      */
-    private ElementBuilder() {
+    private OpenBPMNEntityBuilder() {
     }
 
     /**
@@ -72,7 +71,7 @@ public class ElementBuilder {
      * @param bpmnElement
      * @return
      */
-    public static ItemCollection buildItemCollectionFromBPMNElement(BPMNElementNode bpmnElement) {
+    public static ItemCollection build(BPMNElementNode bpmnElement) {
         ItemCollection result = new ItemCollection();
         result.setItemValue("id", bpmnElement.getId());
         if (bpmnElement.hasAttribute("name")) {
@@ -83,13 +82,13 @@ public class ElementBuilder {
         if (bpmnElement instanceof Activity) {
             result.setItemValue("taskID",
                     Long.parseLong(bpmnElement.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "processid")));
-            result.setType(ModelManager.TASK_ELEMENT);
+            result.setType(bpmnElement.getType());
 
         }
         if (bpmnElement instanceof Event) {
             result.setItemValue("eventID",
                     Long.parseLong(bpmnElement.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "activityid")));
-            result.setType(ModelManager.EVENT_ELEMENT);
+            result.setType(bpmnElement.getType());
             // resolve SignalDefinitions and set the adapter.id itemList
             resolveSignalDefinitions((Event) bpmnElement, result);
         }

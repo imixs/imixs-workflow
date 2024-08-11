@@ -32,7 +32,7 @@ public class TestBPMNParserCollaboration {
 		openBPMNModelManager = new OpenBPMNModelManager();
 		try {
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/collaboration.bpmn"));
-			model = openBPMNModelManager.getBPMNModel("1.0.0");
+			model = openBPMNModelManager.getModel("1.0.0");
 			Assert.assertNotNull(model);
 		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();

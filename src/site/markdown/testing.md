@@ -1,10 +1,10 @@
 # Imixs-Workflow - Simulation and Testing
 
-The Imixs-Workflow project provides a set of test environments allowing to simulate and to test the processing live cycle of a spcific model or workitem. 
+The Imixs-Workflow project provides a set of test environments allowing to simulate and to test the processing life cycle of a specific model or workitem. 
 
 ## The Simulation Service
 
-The SimulationService EJB can be used to simulate the processing live cycle of a workitem without storing any data into the database. The EJB can be used during runtime. See the following example: 
+The SimulationService EJB can be used to simulate the processing life cycle of a workitem without storing any data into the database. The EJB can be used during runtime. See the following example: 
 
 	public class MyBusinessService {	
 		// inject simulationService

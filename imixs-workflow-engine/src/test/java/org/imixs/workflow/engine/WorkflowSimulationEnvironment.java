@@ -82,7 +82,7 @@ public class WorkflowSimulationEnvironment {
 		// Mock modelManager
 		ModelManager modelManager = Mockito.mock(ModelManager.class);
 		try {
-			when(modelManager.getBPMNModel(Mockito.anyString())).thenReturn(this.getModel());
+			when(modelManager.getModel(Mockito.anyString())).thenReturn(this.getModel());
 			when(modelManager.getModelByWorkitem(Mockito.any(ItemCollection.class))).thenReturn(this.getModel());
 		} catch (ModelException e) {
 			e.printStackTrace();

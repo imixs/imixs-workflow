@@ -31,7 +31,7 @@ public class TestBPMNModelProperties {
 		openBPMNModelManager = new OpenBPMNModelManager();
 		try {
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/properties.bpmn"));
-			model = openBPMNModelManager.getBPMNModel("1.0.0");
+			model = openBPMNModelManager.getModel("1.0.0");
 		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
 			Assert.fail();

@@ -30,49 +30,40 @@ package org.imixs.workflow;
 
 import org.imixs.workflow.exceptions.ModelException;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.elements.BPMNProcess;
-import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 
 /**
  * The interface ModelManager provides methods to get model entities from a
  * model instance. The ModelManager is used by the {@link WorkflowKernel} to
- * manage the processing live cycle of a workitem.
+ * manage the processing life cycle of a workitem.
  * 
  * @author rsoika
  */
 public interface ModelManager {
 
-    public final static String TASK_ELEMENT = "TASK";
-    public final static String EVENT_ELEMENT = "EVENT";
+    public final static String TASK_ELEMENT = "task";
+    public final static String EVENT_ELEMENT = "intermediateCatchEvent";
+
+    /**
+     * Adds a new model into the local model store
+     */
+    public void addModel(BPMNModel model) throws ModelException;
+
+    /**
+     * Removes a BPMNModel form the local model store
+     */
+    public void removeModel(String version);
 
     /**
      * Returns a BPMNModel by its version ($modelVersion) from the local model store
+     * <p>
+     * The BPMNModel instance can be used to access all BPMN model elements.
      * 
      * @param version - $modelVersion
      * @return a BPMN model instance or null if not found by $modelVersion
-     */
-    public BPMNModel getBPMNModel(String version) throws ModelException;
-
-    /**
-     * Returns a BPMNProcess instance by its name.
      * 
-     * @param version - $modelVersion
-     * @param name    - process name ($workflowGroup)
-     * @return a BPMN process instance or null if not found by name
-     * @throws ModelException - if the process could not be resolved.
+     * @see https://github.com/imixs/open-bpmn/tree/master/open-bpmn.metamodel
      */
-    public BPMNProcess getBPMNProcess(String version, String name) throws ModelException;
-
-    /**
-     * Returns a BPMNElementNode by its ID form a BPMNModel. The method allows to
-     * access each kind of BPMN element node.
-     * 
-     * @param version - $modelVersion
-     * @param id      - BPMN Element node id
-     * @return BPMNElementNode or null if not found
-     * @throws ModelException
-     */
-    public BPMNElementNode getBPMNElementNode(String version, String id) throws ModelException;
+    public BPMNModel getModel(String version) throws ModelException;
 
     /**
      * Returns the BPMN Definition entity associated with a given workitem, based on
@@ -82,7 +73,7 @@ public interface ModelManager {
      * based on the given model information.
      * <p>
      * The method is called by the {@link WorkflowKernel} during the processing
-     * live cycle to update the process group information.
+     * life cycle to update the process group information.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}
@@ -100,7 +91,7 @@ public interface ModelManager {
      * information.
      * <p>
      * The method is called by the {@link WorkflowKernel} during the processing
-     * live cycle to update the process group information.
+     * life cycle to update the process group information.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}
@@ -116,7 +107,7 @@ public interface ModelManager {
      * on the given model information.
      * <p>
      * The method is called by the {@link WorkflowKernel} during the the processing
-     * live cycle.
+     * life cycle.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}
@@ -132,7 +123,7 @@ public interface ModelManager {
      * on the given model information.
      * <p>
      * The method is called by the {@link WorkflowKernel} to start the processing
-     * live cycle.
+     * life cycle.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}

@@ -206,8 +206,8 @@ public class ModelService implements ModelManager {
      * method throws a ModelException.
      **/
     @Override
-    public BPMNModel getBPMNModel(String version) throws ModelException {
-        return openBPMNModelManager.getBPMNModel(version);
+    public BPMNModel getModel(String version) throws ModelException {
+        return openBPMNModelManager.getModel(version);
     }
 
     /**

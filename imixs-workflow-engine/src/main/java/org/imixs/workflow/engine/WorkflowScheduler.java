@@ -411,12 +411,12 @@ public class WorkflowScheduler implements Scheduler {
         Collection<ItemCollection> colProcessList = null;
 
         // get a complete list of process entities...
-        colProcessList = modelService.getBPMNModel(aModelVersion).findAllTasks();
+        colProcessList = modelService.getModel(aModelVersion).findAllTasks();
         for (ItemCollection aprocessentity : colProcessList) {
             // select all activities for this process entity...
             int processid = aprocessentity.getItemValueInteger("numprocessid");
             logger.log(Level.FINEST, "......analyse processentity ''{0}''", processid);
-            Collection<ItemCollection> aActivityList = modelService.getBPMNModel(aModelVersion)
+            Collection<ItemCollection> aActivityList = modelService.getModel(aModelVersion)
                     .findAllEventsByTask(processid);
 
             for (ItemCollection aactivityEntity : aActivityList) {
@@ -453,7 +453,7 @@ public class WorkflowScheduler implements Scheduler {
         int eventID = event.getItemValueInteger("numActivityID");
         String modelVersionEvent = event.getItemValueString("$modelversion");
         // find task
-        ItemCollection taskElement = modelService.getBPMNModel(modelVersionEvent).getTask(taskID);
+        ItemCollection taskElement = modelService.getModel(modelVersionEvent).getTask(taskID);
         String workflowGroup = taskElement.getItemValueString("txtworkflowgroup");
 
         String searchTerm = null;
@@ -575,7 +575,7 @@ public class WorkflowScheduler implements Scheduler {
             if (!modelVersionEvent.equals(workitem.getModelVersion())) {
                 // test if the old model version still exists.
                 try {
-                    modelService.getBPMNModel(workitem.getModelVersion());
+                    modelService.getModel(workitem.getModelVersion());
                     logger.finest("......skip because model version is older than current version...");
                     // will be processed in the following loops..
                     continue;

@@ -30,7 +30,7 @@ package org.imixs.workflow;
 
 /**
  * This WorkflowContext provides the {@link WorkflowKernel} with a runtime
- * environment for the processing live cycle of a workitem.
+ * environment for the processing life cycle of a workitem.
  * A Workflow Engine implements this Interface to provide a {@link ModelManger}
  * and the session context to execute {@link Plugin} and {@link Adapter}
  * classes.

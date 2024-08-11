@@ -35,7 +35,7 @@ public class TestBPMNParserDataObject {
 		try {
 			openBPMNModelManager = new OpenBPMNModelManager();
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/dataobject_example1.bpmn"));
-			model = openBPMNModelManager.getBPMNModel("1.0.0");
+			model = openBPMNModelManager.getModel("1.0.0");
 			Assert.assertNotNull(model);
 		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
@@ -100,8 +100,7 @@ public class TestBPMNParserDataObject {
 		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
 		Assert.assertNotNull(event);
 
-		BPMNElementNode bpmnElementNode = openBPMNModelManager.getBPMNElementNode("1.0.0",
-				event.getItemValueString("id"));
+		BPMNElementNode bpmnElementNode = model.findElementNodeById(event.getItemValueString("id"));
 
 		Assert.assertNotNull(bpmnElementNode);
 		Set<DataObject> dataObjects = bpmnElementNode.getDataObjects();
