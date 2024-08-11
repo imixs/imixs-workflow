@@ -26,9 +26,9 @@ import org.junit.experimental.categories.Category;
  * 
  * @author rsoika
  */
-public class TestWorkflowKernel {
+public class TestWorkflowKernelBasic {
 
-    private static final Logger logger = Logger.getLogger(TestWorkflowKernel.class.getName());
+    private static final Logger logger = Logger.getLogger(TestWorkflowKernelBasic.class.getName());
 
     private MockWorkflowEnvironment workflowEnvironment;
 

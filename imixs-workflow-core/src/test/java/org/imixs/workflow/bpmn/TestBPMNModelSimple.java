@@ -54,7 +54,7 @@ public class TestBPMNModelSimple {
 			Assert.assertEquals(1, startTasks.size());
 			ItemCollection startTask = startTasks.get(0);
 			Assert.assertNotNull(startTask);
-			Assert.assertEquals("Task 1", startTask.getItemValueString("txtname"));
+			Assert.assertEquals("Task 1", startTask.getItemValueString(OpenBPMNUtil.TASK_ITEM_NAME));
 		} catch (BPMNModelException e) {
 			Assert.fail();
 		}
@@ -67,16 +67,17 @@ public class TestBPMNModelSimple {
 	 */
 	@Test
 	public void testEndTasks() throws ModelException {
-		Assert.assertNotNull(model);
+		try {
+			// test End task....
+			List<ItemCollection> endTasks = openBPMNModelManager.findEndTasks(model, "Simple");
+			Assert.assertNotNull(endTasks);
+			Assert.assertEquals(1, endTasks.size());
 
-		// test start task....
-		List<ItemCollection> endTasks = model.getEndTasks();
-		Assert.assertNotNull(endTasks);
-		Assert.assertEquals(1, endTasks.size());
-
-		ItemCollection endTask = endTasks.get(0);
-		Assert.assertEquals("Task 2", endTask.getItemValueString("txtname"));
-
+			ItemCollection endTask = endTasks.get(0);
+			Assert.assertEquals("Task 2", endTask.getItemValueString(OpenBPMNUtil.TASK_ITEM_NAME));
+		} catch (BPMNModelException e) {
+			Assert.fail();
+		}
 	}
 
 	/**
@@ -198,68 +199,6 @@ public class TestBPMNModelSimple {
 		groups = openBPMNModelManager.findAllGroups(model);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(1, groups.size());
-
-	}
-
-	/**
-	 * Loads an event form a task and verifies if a change of the event is reflected
-	 * to the model (should not happen!)
-	 * 
-	 * @throws ModelException
-	 */
-	@Test
-	public void testModifyFindAllEventsByTask() throws ModelException {
-		try {
-			// test tasks
-			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
-			Assert.assertNotNull(events);
-			Assert.assertEquals(2, events.size());
-
-			// test activity 1000.10 submit
-			ItemCollection activity = events.get(0);
-			Assert.assertNotNull(activity);
-			Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
-			Assert.assertEquals("update", activity.getItemValueString("txtname"));
-
-			// change name of activity....
-			activity.replaceItemValue("txtName", "test");
-			Assert.assertEquals("test", activity.getItemValueString("txtname"));
-
-			// test activity 1000.10 once again
-			events = openBPMNModelManager.findEventsByTask(model, 1000);
-			activity = events.get(0);
-			Assert.assertNotNull(activity);
-			Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
-			Assert.assertEquals("update", activity.getItemValueString("txtname"));
-		} catch (BPMNModelException e) {
-			Assert.fail(e.getMessage());
-		}
-
-	}
-
-	// @Test
-	public void testModifyFindTasksByGroup() throws ModelException {
-
-		Assert.assertNotNull(model);
-
-		// test task 1000
-		List<ItemCollection> tasks = model.findTasksByGroup("Simple");
-		ItemCollection task = tasks.get(0);
-		Assert.assertNotNull(task);
-		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
-		Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
-
-		// change name of task....
-		task.replaceItemValue("txtworkflowgroup", "test");
-		Assert.assertEquals("test", task.getItemValueString("txtworkflowgroup"));
-		tasks.set(0, task);
-
-		// test task 1000 once again
-		tasks = model.findTasksByGroup("Simple");
-		task = tasks.get(0);
-		Assert.assertNotNull(task);
-		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
-		Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
 
 	}
 

@@ -8,9 +8,10 @@ import java.util.logging.Logger;
 
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
+import org.openbpmn.bpmn.BPMNTypes;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.Event;
-import org.openbpmn.bpmn.elements.core.BPMNElement;
+import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -315,7 +316,7 @@ public class OpenBPMNUtil {
      * 
      * @return
      */
-    public static boolean isImixsTaskElement(BPMNElement element) {
+    public static boolean isImixsTaskElement(BPMNElementNode element) {
         return (element instanceof Activity && element.hasAttribute(getNamespace() + ":processid"));
 
     }
@@ -327,8 +328,31 @@ public class OpenBPMNUtil {
      * 
      * @return
      */
-    public static boolean isImixsEventElement(BPMNElement element) {
+    public static boolean isImixsEventElement(BPMNElementNode element) {
         return (element instanceof Event && element.hasAttribute(getNamespace() + ":activityid"));
+    }
+
+    /**
+     * Returns true if the given BPMNElement is a BPMN TROW_EVENT with a Link
+     * definition
+     * 
+     * <pre>{@code<bpmn2:intermediateThrowEvent id="event_ounTaA" name="HOLD">
+     *   <bpmn2:linkEventDefinition id="linkEventDefinition_343OGA"/>
+     *   ....
+     * </bpmn2:intermediateCatchEvent>}</pre>
+     * 
+     * @return
+     */
+    public static boolean isLinkCatchEventElement(BPMNElementNode element) {
+        if (element instanceof Event && BPMNTypes.THROW_EVENT.equals(element.getType())) {
+            // test if we find a Link definition
+            Set<Element> linkDefinitions = ((Event) element).getEventDefinitionsByType(BPMNTypes.EVENT_DEFINITION_LINK);
+            if (linkDefinitions != null && linkDefinitions.size() > 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

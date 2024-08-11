@@ -44,6 +44,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.imixs.workflow.bpmn.OpenBPMNUtil;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -395,7 +396,7 @@ public class WorkflowKernel {
                 ItemCollection nextElement = this.ctx.getModelManager().nextModelElement(event, workitem);
                 if (nextElement == null || !nextElement.hasItem("type")) {
                     throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
-                            "BPMN Element Entity must provide the item 'type'!");
+                            "BPMN Event Element must be followed by a Task or another Event!");
                 }
                 // continue processing live-cycle?
                 if (ModelManager.EVENT_ELEMENT.equals(nextElement.getType())) {
@@ -659,7 +660,7 @@ public class WorkflowKernel {
         // update the type attribute if defined.
         // the type attribute can only be overwritten by a plug-in if the type is not
         // defined by the task!
-        String sType = itemColNextTask.getItemValueString("txttype");
+        String sType = itemColNextTask.getItemValueString(OpenBPMNUtil.TASK_ITEM_APPLICATION_TYPE);
         if (!"".equals(sType)) {
             workitem.replaceItemValue(TYPE, sType);
         }

@@ -28,7 +28,9 @@ import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.exceptions.BPMNValidationException;
+import org.openbpmn.bpmn.navigation.BPMNEndElementIterator;
 import org.openbpmn.bpmn.navigation.BPMNFlowIterator;
+import org.openbpmn.bpmn.navigation.BPMNLinkNavigator;
 import org.openbpmn.bpmn.navigation.BPMNStartElementIterator;
 import org.w3c.dom.Element;
 
@@ -243,11 +245,26 @@ public class OpenBPMNModelManager implements ModelManager {
         try {
             elementNavigator = new BPMNFlowIterator<BPMNElementNode>(
                     eventElement,
-                    node -> ((OpenBPMNUtil.isImixsTaskElement(node)) || (OpenBPMNUtil.isImixsEventElement(node))),
+                    node -> ((OpenBPMNUtil.isImixsTaskElement(node))
+                            || (OpenBPMNUtil.isImixsEventElement(node))
+                            || (OpenBPMNUtil.isLinkCatchEventElement(node))),
                     condition -> evaluateCondition(condition, workitem));
 
             while (elementNavigator.hasNext()) {
                 BPMNElementNode nextElement = elementNavigator.next();
+
+                // Test if we have a Link Event?
+                if (OpenBPMNUtil.isLinkCatchEventElement(nextElement)) {
+                    // find the target of the link
+                    BPMNLinkNavigator linkNavigator = new BPMNLinkNavigator();
+                    BPMNElementNode linkTargetElement = linkNavigator.findNext(nextElement);
+                    Set<SequenceFlow> outFlows = linkTargetElement.getOutgoingSequenceFlows();
+                    if (outFlows != null && outFlows.size() > 0) {
+                        // switch to link Target Element....
+                        nextElement = outFlows.iterator().next().getTargetElement();
+                    }
+                }
+
                 logger.info("nextModelElement " + key + " took " + (System.currentTimeMillis() - l) + "ms");
                 return OpenBPMNEntityBuilder.build(nextElement);
 
@@ -455,6 +472,26 @@ public class OpenBPMNModelManager implements ModelManager {
                 node -> (node instanceof Activity));
         while (startElements.hasNext()) {
             result.add(OpenBPMNEntityBuilder.build(startElements.next()));
+        }
+        return result;
+
+    }
+
+    /**
+     * Returns a list of End Tasks of a given Process Group
+     * 
+     * @param processGroup
+     * @return
+     * @throws BPMNModelException
+     */
+    public List<ItemCollection> findEndTasks(final BPMNModel model, String processGroup) throws BPMNModelException {
+        List<ItemCollection> result = new ArrayList<>();
+        BPMNProcess process = model.findProcessByName(processGroup);
+        // test End task....
+        BPMNEndElementIterator<Activity> endElements = new BPMNEndElementIterator<>(process,
+                node -> (node instanceof Activity));
+        while (endElements.hasNext()) {
+            result.add(OpenBPMNEntityBuilder.build(endElements.next()));
         }
         return result;
 
