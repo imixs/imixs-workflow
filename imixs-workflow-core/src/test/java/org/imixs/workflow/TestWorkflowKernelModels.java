@@ -25,11 +25,11 @@ import org.xml.sax.SAXException;
 public class TestWorkflowKernelModels {
 
 	private static final Logger logger = Logger.getLogger(TestWorkflowKernelModels.class.getName());
-	private MockWorkflowContext workflowContext;
+	private MockWorkflowEnvironment workflowContext;
 
 	@Before
 	public void setup() throws PluginException {
-		workflowContext = new MockWorkflowContext();
+		workflowContext = new MockWorkflowEnvironment();
 	}
 
 	/**

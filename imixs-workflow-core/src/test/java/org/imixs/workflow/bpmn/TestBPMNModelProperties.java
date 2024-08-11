@@ -7,7 +7,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,16 +31,11 @@ public class TestBPMNModelProperties {
 		openBPMNModelManager = new OpenBPMNModelManager();
 		try {
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/properties.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = openBPMNModelManager.getBPMNModel("1.0.0");
 		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
-
-	}
-
-	@After
-	public void teardown() {
 
 	}
 

@@ -22,11 +22,11 @@ public class TestWorkflowKernelEval {
 	final static String MODEL_PATH = "/bpmn/workflowkernel_eval.bpmn";
 	final static String MODEL_VERSION = "1.0.0";
 
-	private MockWorkflowContext workflowContext;
+	private MockWorkflowEnvironment workflowContext;
 
 	@Before
 	public void setup() throws PluginException {
-		workflowContext = new MockWorkflowContext();
+		workflowContext = new MockWorkflowEnvironment();
 		// load default model
 		workflowContext.loadBPMNModel(MODEL_PATH);
 	}

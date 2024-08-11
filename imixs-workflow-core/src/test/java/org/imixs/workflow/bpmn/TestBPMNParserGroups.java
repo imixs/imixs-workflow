@@ -50,7 +50,7 @@ public class TestBPMNParserGroups {
 		} catch (ModelException | BPMNModelException e) {
 			Assert.fail();
 		}
-		model = openBPMNModelManager.getModel("1.0.0");
+		model = openBPMNModelManager.getBPMNModel("1.0.0");
 
 		Assert.assertNotNull(model);
 
@@ -79,7 +79,7 @@ public class TestBPMNParserGroups {
 		} catch (ModelException | BPMNModelException e) {
 			Assert.fail();
 		}
-		model = openBPMNModelManager.getModel("protokoll-de-1.0.0");
+		model = openBPMNModelManager.getBPMNModel("protokoll-de-1.0.0");
 		Assert.assertNotNull(model);
 
 		// Test Groups

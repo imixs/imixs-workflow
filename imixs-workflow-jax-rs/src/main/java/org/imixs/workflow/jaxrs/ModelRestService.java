@@ -38,16 +38,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Model;
-import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.ModelService;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
+import org.openbpmn.bpmn.BPMNModel;
 
 import jakarta.ejb.Stateless;
+import jakarta.enterprise.inject.Model;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
@@ -191,7 +191,7 @@ public class ModelRestService {
             @QueryParam("format") String format) {
         List<ItemCollection> result = null;
         try {
-            result = modelService.getModel(version).findAllTasks();
+            result = modelService.getBPMNModel(version).findAllTasks();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -221,7 +221,7 @@ public class ModelRestService {
             @QueryParam("format") String format) {
         ItemCollection definition = null;
         try {
-            definition = modelService.getModel(version).getDefinition();
+            definition = modelService.getBPMNModel(version).getDefinition();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -234,7 +234,7 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         ItemCollection task = null;
         try {
-            task = modelService.getModel(version).getTask(processid);
+            task = modelService.getBPMNModel(version).getTask(processid);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -247,7 +247,7 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         List<ItemCollection> result = null;
         try {
-            result = modelService.getModel(version).findAllEventsByTask(processid);
+            result = modelService.getBPMNModel(version).findAllEventsByTask(processid);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -265,7 +265,7 @@ public class ModelRestService {
     public List<String> getGroups(@PathParam("version") String version, @QueryParam("items") String items) {
         List<String> col = null;
         try {
-            col = modelService.getModel(version).getGroups();
+            col = modelService.getBPMNModel(version).getGroups();
             return col;
         } catch (Exception e) {
             e.printStackTrace();
@@ -285,7 +285,7 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         List<ItemCollection> result = null;
         try {
-            result = modelService.getModel(version).findTasksByGroup(group);
+            result = modelService.getBPMNModel(version).findTasksByGroup(group);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -475,7 +475,7 @@ public class ModelRestService {
 
     private void appendTagsToBuffer(String modelVersion, String rootContext, StringBuffer buffer)
             throws ModelException {
-        Model model = modelService.getModel(modelVersion);
+        Model model = modelService.getBPMNModel(modelVersion);
         ItemCollection modelEntity = modelService.findModelEntity(modelVersion);
 
         // now check groups...

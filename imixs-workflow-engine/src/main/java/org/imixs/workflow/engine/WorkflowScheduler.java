@@ -39,12 +39,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Resource;
-import jakarta.ejb.SessionContext;
-import jakarta.enterprise.inject.Any;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.QuerySelector;
 import org.imixs.workflow.engine.scheduler.Scheduler;
@@ -53,6 +47,12 @@ import org.imixs.workflow.engine.scheduler.SchedulerService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.QueryException;
+
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 /**
  * This EJB implements a Imixs Scheduler Interface and scans workitems for
@@ -128,15 +128,15 @@ public class WorkflowScheduler implements Scheduler {
                 if (iOffsetUnit < 1 || iOffsetUnit > 4) {
                     logger.log(Level.WARNING, "error parsing delay in ActivityEntity {0}.{1} :"
                             + " unsuported keyActivityDelayUnit={2}",
-                            new Object[]{docActivity.getItemValueInteger("numProcessID"),
-                                docActivity.getItemValueInteger("numActivityID"), sDelayUnit});
+                            new Object[] { docActivity.getItemValueInteger("numProcessID"),
+                                    docActivity.getItemValueInteger("numActivityID"), sDelayUnit });
                     return false;
                 }
 
             } catch (NumberFormatException nfe) {
                 logger.log(Level.WARNING, "error parsing delay in ActivityEntity {0}.{1} :{2}",
-                        new Object[]{docActivity.getItemValueInteger("numProcessID"),
-                            docActivity.getItemValueInteger("numActivityID"), nfe.getMessage()});
+                        new Object[] { docActivity.getItemValueInteger("numProcessID"),
+                                docActivity.getItemValueInteger("numActivityID"), nfe.getMessage() });
                 return false;
             }
             // get activityDelay from Event
@@ -151,7 +151,7 @@ public class WorkflowScheduler implements Scheduler {
             if ("4".equals(sDelayUnit))
                 sDelayUnit = "workdays";
 
-            logger.log(Level.FINEST, "......{0} offset ={1} {2}", new Object[]{suniqueid, iOffset, sDelayUnit});
+            logger.log(Level.FINEST, "......{0} offset ={1} {2}", new Object[] { suniqueid, iOffset, sDelayUnit });
 
             iCompareType = docActivity.getItemValueInteger("keyScheduledBaseObject");
 
@@ -159,95 +159,101 @@ public class WorkflowScheduler implements Scheduler {
             Date dateTimeNow = Calendar.getInstance().getTime();
 
             switch (iCompareType) {
-            // last process -
-            case 1: {
-                logger.log(Level.FINEST, "......{0}: CompareType = last event", suniqueid);
+                // last process -
+                case 1: {
+                    logger.log(Level.FINEST, "......{0}: CompareType = last event", suniqueid);
 
-                // support deprecated fields $lastProcessingDate and timWorkflowLastAccess
-                if (!doc.hasItem("$lastEventDate")) {
-                    logger.info("migrating $lasteventdate...");
-                    if (doc.hasItem("$lastProcessingDate")) {
-                        doc.replaceItemValue("$lastEventDate", doc.getItemValue("$lastProcessingDate"));
-                    } else {
-                        doc.replaceItemValue("$lastEventDate", doc.getItemValue("timWorkflowLastAccess"));
+                    // support deprecated fields $lastProcessingDate and timWorkflowLastAccess
+                    if (!doc.hasItem("$lastEventDate")) {
+                        logger.info("migrating $lasteventdate...");
+                        if (doc.hasItem("$lastProcessingDate")) {
+                            doc.replaceItemValue("$lastEventDate", doc.getItemValue("$lastProcessingDate"));
+                        } else {
+                            doc.replaceItemValue("$lastEventDate", doc.getItemValue("timWorkflowLastAccess"));
+                        }
                     }
-                }
-                dateTimeCompare = doc.getItemValueDate("$lastEventDate");
-                if (dateTimeCompare == null) {
-                    logger.log(Level.WARNING, "{0}: item ''$lastEventDate'' is missing!", suniqueid);
-                    return false;
-                }
-
-                // compute scheduled time
-                logger.log(Level.FINEST, "......{0}: $lastEventDate={1}", new Object[]{suniqueid, dateTimeCompare});
-                dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
-                if (dateTimeCompare != null)
-                    return dateTimeCompare.before(dateTimeNow);
-                else
-                    return false;
-            }
-
-            // last modification
-            case 2: {
-                logger.log(Level.FINEST, "......{0}: CompareType = last modify", suniqueid);
-
-                dateTimeCompare = doc.getItemValueDate("$modified");
-
-                logger.log(Level.FINEST, "......{0}: modified={1}", new Object[]{suniqueid, dateTimeCompare});
-
-                dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
-
-                if (dateTimeCompare != null)
-                    return dateTimeCompare.before(dateTimeNow);
-                else
-                    return false;
-            }
-
-            // creation
-            case 3: {
-                logger.log(Level.FINEST, "......{0}: CompareType = creation", suniqueid);
-
-                dateTimeCompare = doc.getItemValueDate("$created");
-                logger.log(Level.FINEST, "......{0}: doc.getCreated() ={1}", new Object[]{suniqueid, dateTimeCompare});
-
-                // Nein -> Creation date ist masstab
-                dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
-
-                if (dateTimeCompare != null)
-                    return dateTimeCompare.before(dateTimeNow);
-                else
-                    return false;
-            }
-
-            // field
-            case 4: {
-                String sNameOfField = docActivity.getItemValueString("keyTimeCompareField");
-                logger.log(Level.FINEST, "......{0}: CompareType = field: ''{1}''", new Object[]{suniqueid, sNameOfField});
-
-                if (!doc.hasItem(sNameOfField)) {
-                    logger.log(Level.FINEST, "......{0}: CompareType ={1} no value found!", new Object[]{suniqueid, sNameOfField});
-                    return false;
-                }
-
-                dateTimeCompare = doc.getItemValueDate(sNameOfField);
-
-                logger.log(Level.FINEST, "......{0}: {1}={2}", new Object[]{suniqueid, sNameOfField, dateTimeCompare});
-
-                dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
-                if (dateTimeCompare != null) {
-                    logger.log(Level.FINEST, "......{0}: Compare {1} <-> {2}", new Object[]{suniqueid, dateTimeCompare, dateTimeNow});
-
-                    if (dateTimeCompare.before(dateTimeNow)) {
-                        logger.log(Level.FINEST, "......{0} isInDue!", suniqueid);
+                    dateTimeCompare = doc.getItemValueDate("$lastEventDate");
+                    if (dateTimeCompare == null) {
+                        logger.log(Level.WARNING, "{0}: item ''$lastEventDate'' is missing!", suniqueid);
+                        return false;
                     }
-                    return dateTimeCompare.before(dateTimeNow);
-                } else
+
+                    // compute scheduled time
+                    logger.log(Level.FINEST, "......{0}: $lastEventDate={1}",
+                            new Object[] { suniqueid, dateTimeCompare });
+                    dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
+                    if (dateTimeCompare != null)
+                        return dateTimeCompare.before(dateTimeNow);
+                    else
+                        return false;
+                }
+
+                // last modification
+                case 2: {
+                    logger.log(Level.FINEST, "......{0}: CompareType = last modify", suniqueid);
+
+                    dateTimeCompare = doc.getItemValueDate("$modified");
+
+                    logger.log(Level.FINEST, "......{0}: modified={1}", new Object[] { suniqueid, dateTimeCompare });
+
+                    dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
+
+                    if (dateTimeCompare != null)
+                        return dateTimeCompare.before(dateTimeNow);
+                    else
+                        return false;
+                }
+
+                // creation
+                case 3: {
+                    logger.log(Level.FINEST, "......{0}: CompareType = creation", suniqueid);
+
+                    dateTimeCompare = doc.getItemValueDate("$created");
+                    logger.log(Level.FINEST, "......{0}: doc.getCreated() ={1}",
+                            new Object[] { suniqueid, dateTimeCompare });
+
+                    // Nein -> Creation date ist masstab
+                    dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
+
+                    if (dateTimeCompare != null)
+                        return dateTimeCompare.before(dateTimeNow);
+                    else
+                        return false;
+                }
+
+                // field
+                case 4: {
+                    String sNameOfField = docActivity.getItemValueString("keyTimeCompareField");
+                    logger.log(Level.FINEST, "......{0}: CompareType = field: ''{1}''",
+                            new Object[] { suniqueid, sNameOfField });
+
+                    if (!doc.hasItem(sNameOfField)) {
+                        logger.log(Level.FINEST, "......{0}: CompareType ={1} no value found!",
+                                new Object[] { suniqueid, sNameOfField });
+                        return false;
+                    }
+
+                    dateTimeCompare = doc.getItemValueDate(sNameOfField);
+
+                    logger.log(Level.FINEST, "......{0}: {1}={2}",
+                            new Object[] { suniqueid, sNameOfField, dateTimeCompare });
+
+                    dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
+                    if (dateTimeCompare != null) {
+                        logger.log(Level.FINEST, "......{0}: Compare {1} <-> {2}",
+                                new Object[] { suniqueid, dateTimeCompare, dateTimeNow });
+
+                        if (dateTimeCompare.before(dateTimeNow)) {
+                            logger.log(Level.FINEST, "......{0} isInDue!", suniqueid);
+                        }
+                        return dateTimeCompare.before(dateTimeNow);
+                    } else
+                        return false;
+                }
+                default: {
+                    logger.warning("Time Base is not defined, verify model!");
                     return false;
-            }
-            default: {
-                logger.warning("Time Base is not defined, verify model!");
-                return false;
-            }
+                }
             }
 
         } catch (Exception e) {
@@ -324,7 +330,7 @@ public class WorkflowScheduler implements Scheduler {
         }
         if (resultDate != null) {
             logger.log(Level.FINEST, "......addWorkDays ({0}) + {1} = ({2})",
-                    new Object[]{baseDate.getTime(), days, resultDate.getTime()});
+                    new Object[] { baseDate.getTime(), days, resultDate.getTime() });
         }
         return resultDate;
     }
@@ -357,7 +363,8 @@ public class WorkflowScheduler implements Scheduler {
             for (String version : modelVersions) {
                 // find scheduled Activities
                 Collection<ItemCollection> scheduledEvents = findScheduledEvents(version);
-                schedulerService.logMessage("...Model="+version + " (" + scheduledEvents.size() + " scheduled events)",
+                schedulerService.logMessage(
+                        "...Model=" + version + " (" + scheduledEvents.size() + " scheduled events)",
                         configItemCollection, null);
                 // process all workitems for coresponding activities
                 for (ItemCollection aactivityEntity : scheduledEvents) {
@@ -373,7 +380,7 @@ public class WorkflowScheduler implements Scheduler {
         }
 
         schedulerService.logMessage("================================", configItemCollection, null);
-        schedulerService.logMessage( iProcessWorkItems + " workitems processed in total", configItemCollection, null);
+        schedulerService.logMessage(iProcessWorkItems + " workitems processed in total", configItemCollection, null);
 
         if (unprocessedIDs.size() > 0) {
             schedulerService.logWarning(unprocessedIDs.size() + " workitems could not be processed:",
@@ -404,16 +411,17 @@ public class WorkflowScheduler implements Scheduler {
         Collection<ItemCollection> colProcessList = null;
 
         // get a complete list of process entities...
-        colProcessList = modelService.getModel(aModelVersion).findAllTasks();
+        colProcessList = modelService.getBPMNModel(aModelVersion).findAllTasks();
         for (ItemCollection aprocessentity : colProcessList) {
             // select all activities for this process entity...
             int processid = aprocessentity.getItemValueInteger("numprocessid");
             logger.log(Level.FINEST, "......analyse processentity ''{0}''", processid);
-            Collection<ItemCollection> aActivityList = modelService.getModel(aModelVersion)
+            Collection<ItemCollection> aActivityList = modelService.getBPMNModel(aModelVersion)
                     .findAllEventsByTask(processid);
 
             for (ItemCollection aactivityEntity : aActivityList) {
-                logger.log(Level.FINEST, "......analyse acitity ''{0}''", aactivityEntity.getItemValueString("txtname"));
+                logger.log(Level.FINEST, "......analyse acitity ''{0}''",
+                        aactivityEntity.getItemValueString("txtname"));
 
                 // check if activity is scheduled
                 if ("1".equals(aactivityEntity.getItemValueString("keyScheduledActivity")))
@@ -445,7 +453,7 @@ public class WorkflowScheduler implements Scheduler {
         int eventID = event.getItemValueInteger("numActivityID");
         String modelVersionEvent = event.getItemValueString("$modelversion");
         // find task
-        ItemCollection taskElement = modelService.getModel(modelVersionEvent).getTask(taskID);
+        ItemCollection taskElement = modelService.getBPMNModel(modelVersionEvent).getTask(taskID);
         String workflowGroup = taskElement.getItemValueString("txtworkflowgroup");
 
         String searchTerm = null;
@@ -519,7 +527,7 @@ public class WorkflowScheduler implements Scheduler {
                     iProcessWorkItems++;
                 } catch (Exception e) {
                     logger.log(Level.WARNING, "error processing workitem: {0} Error={1}",
-                            new Object[]{workitem.getUniqueID(), e.getMessage()});
+                            new Object[] { workitem.getUniqueID(), e.getMessage() });
                     if (logger.isLoggable(Level.FINEST)) {
                         e.printStackTrace();
                     }
@@ -567,7 +575,7 @@ public class WorkflowScheduler implements Scheduler {
             if (!modelVersionEvent.equals(workitem.getModelVersion())) {
                 // test if the old model version still exists.
                 try {
-                    modelService.getModel(workitem.getModelVersion());
+                    modelService.getBPMNModel(workitem.getModelVersion());
                     logger.finest("......skip because model version is older than current version...");
                     // will be processed in the following loops..
                     continue;
@@ -575,7 +583,7 @@ public class WorkflowScheduler implements Scheduler {
                     // ModelException - we migrate the model ...
                     logger.log(Level.FINE, "...deprecated model version ''{0}'' no longer exists ->"
                             + " migrating to new model version ''{1}''",
-                            new Object[]{workitem.getModelVersion(), modelVersionEvent});
+                            new Object[] { workitem.getModelVersion(), modelVersionEvent });
                     workitem.model(modelVersionEvent);
                 }
             }

@@ -53,25 +53,32 @@ This adapter example extracts the Data stored in a BPMN Data Object with the nam
 
 ### Get Data from a Task:
 
-Data Object can be either associated with a Event or a Task element. To get the Data associcated with an Imixs Task Element you need to load the Task first:
+Data Object can be either associated with a Event or a Task element. To get the Data associated with an Imixs Task Element you need to load the Task first:
 
 		ItemCollection task = model.getTask(1000);
 		// extract the data from a DataObject
 		String data = modelService.getDataObject(task, "MyObject");
 
-As an alternative you can extract dataObject direct from the BPMN Event or Task Element by inspecting the item 'dataObject'. DataObjects are stored in Lists of key/value pairs:
+### Get the DataObject form the Model
 
+As an alternative you can access the DataObject directly from the Open-BPMN model instance. See the following example:
 
-		ItemCollection task = model.getTask(1000);
-		List<?> dataObjects = task.getItemValue("dataObjects");
-		Assert.assertNotNull(dataObjects);
-		// get first data object...
-		String[] data=(String[]) dataObjects.get(0);
-		// get name
-		Assert.assertEquals("Invoice Template",data[0]);
-		// get documentation
-		Assert.assertEquals("Some data ...",data[1]);
-		
+	public class DemoAdapter implements org.imixs.workflow.SignalAdapter {
+	    // inject services...
+	    @Inject
+	    ModelService modelService;
+	    ...
+		public ItemCollection execute(ItemCollection workitem, ItemCollection event) throws AdapterException {
+			...
+			// fetch DataObjects from BPMN model
+			BPMNElementNode bpmnElementNode = modelService.getBPMNElementNode(workitem.getModelVersion(),
+				event.getItemValueString("id"));
 
+			Assert.assertNotNull(bpmnElementNode);
+			Set<DataObject> dataObjects = bpmnElementNode.getDataObjects();
+			// extract the data from a DataObject
+			....
+		}
+	}
 
  

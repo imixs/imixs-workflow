@@ -20,13 +20,17 @@ import jakarta.ejb.SessionContext;
  * used in a jUnit test class.
  * 
  */
-public class MockWorkflowContext {
+public class MockWorkflowEnvironment {
     private final SessionContext ctx;
     private final WorkflowContext workflowContext;
     private final WorkflowKernel kernel;
     private OpenBPMNModelManager openBPMNModelManager;
 
-    public MockWorkflowContext() throws PluginException {
+    public OpenBPMNModelManager getOpenBPMNModelManager() {
+        return openBPMNModelManager;
+    }
+
+    public MockWorkflowEnvironment() throws PluginException {
         openBPMNModelManager = new OpenBPMNModelManager();
         ctx = Mockito.mock(SessionContext.class);
         workflowContext = Mockito.mock(WorkflowContext.class);

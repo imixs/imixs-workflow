@@ -30,13 +30,13 @@ public class TestWorkflowKernel {
 
     private static final Logger logger = Logger.getLogger(TestWorkflowKernel.class.getName());
 
-    private MockWorkflowContext workflowContext;
+    private MockWorkflowEnvironment workflowEnvironment;
 
     @Before
     public void setup() throws PluginException {
-        workflowContext = new MockWorkflowContext();
+        workflowEnvironment = new MockWorkflowEnvironment();
         // load default model
-        workflowContext.loadBPMNModel("/bpmn/simple.bpmn");
+        workflowEnvironment.loadBPMNModel("/bpmn/simple.bpmn");
     }
 
     /**
@@ -56,7 +56,7 @@ public class TestWorkflowKernel {
         Assert.assertEquals(workItem.getItemValueString("txttitel"), "Hello");
 
         try {
-            workitemProcessed = workflowContext.getWorkflowKernel().process(workItem);
+            workitemProcessed = workflowEnvironment.getWorkflowKernel().process(workItem);
         } catch (ModelException | ProcessingErrorException | PluginException e) {
             e.printStackTrace();
             Assert.fail();
@@ -74,7 +74,7 @@ public class TestWorkflowKernel {
         Assert.assertEquals(0, workItem.getItemValueInteger(WorkflowKernel.EVENTID));
         // a new call of process should throw a ProcessingErrorException
         try {
-            workitemProcessed = workflowContext.getWorkflowKernel().process(workItem);
+            workitemProcessed = workflowEnvironment.getWorkflowKernel().process(workItem);
             Assert.fail(); // we expect an Exception here!
         } catch (ModelException e) {
             Assert.fail(e.getMessage());
@@ -101,7 +101,7 @@ public class TestWorkflowKernel {
                 .event(10);
 
         try {
-            workItem = workflowContext.getWorkflowKernel().process(workItem);
+            workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
             Assert.fail();
         } catch (ModelException e) {
             // Expected Exception
@@ -129,7 +129,7 @@ public class TestWorkflowKernel {
                 .event(10);
 
         try {
-            workItem = workflowContext.getWorkflowKernel().process(workItem);
+            workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
             Assert.assertNotNull(workItem);
             // $modelversion should be 1.0.0
             Assert.assertEquals("1.0.0", workItem.getModelVersion());
@@ -159,7 +159,7 @@ public class TestWorkflowKernel {
         Assert.assertEquals(workItem.getItemValueString("txttitel"), "Hello");
 
         try {
-            itemCollectionProcessed = workflowContext.getWorkflowKernel().process(workItem);
+            itemCollectionProcessed = workflowEnvironment.getWorkflowKernel().process(workItem);
         } catch (WorkflowException e) {
             Assert.fail();
             e.printStackTrace();
@@ -192,10 +192,10 @@ public class TestWorkflowKernel {
             // kernel = new WorkflowKernel(workflowContext);
 
             MockPluginNull mokPlugin = new MockPluginNull();
-            workflowContext.getWorkflowKernel().registerPlugin(mokPlugin);
+            workflowEnvironment.getWorkflowKernel().registerPlugin(mokPlugin);
             workItem.replaceItemValue("txtname", "test");
 
-            workflowContext.getWorkflowKernel().process(workItem);
+            workflowEnvironment.getWorkflowKernel().process(workItem);
             // kernel should throw exception...
             Assert.fail();
         } catch (PluginException e) {
@@ -226,7 +226,7 @@ public class TestWorkflowKernel {
         workItem.replaceItemValue("title", "Hello");
 
         try {
-            workItem = workflowContext.getWorkflowKernel().process(workItem);
+            workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
             Assert.assertEquals(workItem.getItemValueString("title"), "Hello");
         } catch (WorkflowException e) {
             Assert.fail();
@@ -252,7 +252,7 @@ public class TestWorkflowKernel {
     public void testFollowup() {
 
         // load followup model
-        workflowContext.loadBPMNModel("/bpmn/followup.bpmn");
+        workflowEnvironment.loadBPMNModel("/bpmn/followup.bpmn");
         ItemCollection workItem = new ItemCollection();
         workItem.replaceItemValue("txtTitel", "Hello");
         workItem.model("1.0.0")
@@ -262,7 +262,7 @@ public class TestWorkflowKernel {
         Assert.assertEquals(workItem.getItemValueString("txttitel"), "Hello");
 
         try {
-            workItem = workflowContext.getWorkflowKernel().process(workItem);
+            workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
         } catch (WorkflowException e) {
             Assert.fail();
             e.printStackTrace();
@@ -282,7 +282,7 @@ public class TestWorkflowKernel {
     public void testRegisterPlugin() {
 
         try {
-            workflowContext.getWorkflowKernel().unregisterPlugin(MockPlugin.class.getName());
+            workflowEnvironment.getWorkflowKernel().unregisterPlugin(MockPlugin.class.getName());
         } catch (PluginException e1) {
             Assert.fail();
             e1.printStackTrace();
@@ -291,7 +291,7 @@ public class TestWorkflowKernel {
         // unregister once again - exception expected
 
         try {
-            workflowContext.getWorkflowKernel().unregisterPlugin(MockPlugin.class.getName());
+            workflowEnvironment.getWorkflowKernel().unregisterPlugin(MockPlugin.class.getName());
             // exception expected!
             Assert.fail();
         } catch (PluginException e1) {
@@ -300,7 +300,7 @@ public class TestWorkflowKernel {
 
         try {
             MockPlugin mokPlugin = new MockPlugin();
-            workflowContext.getWorkflowKernel().registerPlugin(mokPlugin);
+            workflowEnvironment.getWorkflowKernel().registerPlugin(mokPlugin);
         } catch (PluginException e) {
             Assert.fail();
             e.printStackTrace();
@@ -322,12 +322,12 @@ public class TestWorkflowKernel {
         try {
             // simulate two steps
             workitem.event(10);
-            workitem = workflowContext.getWorkflowKernel().process(workitem);
+            workitem = workflowEnvironment.getWorkflowKernel().process(workitem);
             Assert.assertEquals(workitem.getItemValueString("txttitel"), "Hello");
             workitem.event(20);
             // simulate a Log Comment...
             workitem.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
-            workitem = workflowContext.getWorkflowKernel().process(workitem);
+            workitem = workflowEnvironment.getWorkflowKernel().process(workitem);
         } catch (PluginException e) {
             Assert.fail();
             e.printStackTrace();
@@ -423,11 +423,11 @@ public class TestWorkflowKernel {
         try {
             // simulate two steps
             workitem.setEventID(10);
-            workitem = workflowContext.getWorkflowKernel().process(workitem);
+            workitem = workflowEnvironment.getWorkflowKernel().process(workitem);
             workitem.setEventID(20);
             // simulate a log Comment...
             workitem.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
-            workitem = workflowContext.getWorkflowKernel().process(workitem);
+            workitem = workflowEnvironment.getWorkflowKernel().process(workitem);
 
         } catch (PluginException e) {
             Assert.fail();

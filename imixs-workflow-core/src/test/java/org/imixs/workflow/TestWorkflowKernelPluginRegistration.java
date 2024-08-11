@@ -17,11 +17,11 @@ import org.junit.experimental.categories.Category;
  */
 public class TestWorkflowKernelPluginRegistration {
 
-	private MockWorkflowContext workflowContext;
+	private MockWorkflowEnvironment workflowContext;
 
 	@Before
 	public void setup() throws PluginException {
-		workflowContext = new MockWorkflowContext();
+		workflowContext = new MockWorkflowEnvironment();
 	}
 
 	/**

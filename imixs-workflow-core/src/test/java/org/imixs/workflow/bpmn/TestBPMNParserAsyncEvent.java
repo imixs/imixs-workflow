@@ -1,19 +1,19 @@
 package org.imixs.workflow.bpmn;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
+import org.openbpmn.bpmn.util.BPMNModelFactory;
 import org.xml.sax.SAXException;
-
-import org.junit.Assert;
 
 /**
  * Test class test the Imixs BPMNParser concerning AsyncEvents.
@@ -28,19 +28,17 @@ import org.junit.Assert;
  * @author rsoika
  */
 public class TestBPMNParserAsyncEvent {
-
-    protected BPMNModel model = null;
+    BPMNModel model = null;
+    OpenBPMNModelManager openBPMNModelManager = null;
 
     @Before
-    public void setUp() throws ParseException, ParserConfigurationException, SAXException, IOException {
-        InputStream inputStream = getClass().getResourceAsStream("/bpmn/asyncEventSimple.bpmn");
-
+    public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
+        openBPMNModelManager = new OpenBPMNModelManager();
         try {
-            model = BPMNParser.parseModel(inputStream, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            Assert.fail();
-        } catch (ModelException e) {
+            openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/asyncEventSimple.bpmn"));
+            model = openBPMNModelManager.getBPMNModel("1.0.0");
+            Assert.assertNotNull(model);
+        } catch (ModelException | BPMNModelException e) {
             e.printStackTrace();
             Assert.fail();
         }
@@ -60,21 +58,15 @@ public class TestBPMNParserAsyncEvent {
     public void testSimple()
             throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
-        Assert.assertNotNull(model);
-        // test count of elements
-        Assert.assertEquals(3, model.findAllTasks().size());
-
         // test task 100
-        ItemCollection task = model.getTask(100);
+        ItemCollection task = openBPMNModelManager.findTaskByID(model, 100);
         Assert.assertNotNull(task);
-        Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
         Assert.assertEquals(100, task.getItemValueInteger("boundaryEvent.targetEvent"));
         Assert.assertEquals(1000, task.getItemValueInteger("boundaryEvent.timerEventDefinition.timeDuration"));
 
         // test task 200
-        task = model.getTask(200);
+        task = openBPMNModelManager.findTaskByID(model, 200);
         Assert.assertNotNull(task);
-        Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
         Assert.assertEquals(200, task.getItemValueInteger("boundaryEvent.targetEvent"));
         Assert.assertEquals(0, task.getItemValueInteger("boundaryEvent.timerEventDefinition.timeDuration"));
 

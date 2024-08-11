@@ -7,9 +7,12 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
+import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
 import org.openbpmn.bpmn.elements.Activity;
+import org.openbpmn.bpmn.elements.DataObject;
 import org.openbpmn.bpmn.elements.Event;
+import org.openbpmn.bpmn.elements.Signal;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 import org.w3c.dom.CDATASection;
@@ -87,12 +90,13 @@ public class ElementBuilder {
             result.setItemValue("eventID",
                     Long.parseLong(bpmnElement.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "activityid")));
             result.setType(ModelManager.EVENT_ELEMENT);
+            // resolve SignalDefinitions and set the adapter.id itemList
+            resolveSignalDefinitions((Event) bpmnElement, result);
         }
 
         // parse imixs extension attributes
         Element extensionElement = bpmnElement.getModel().findChildNodeByName(bpmnElement.getElementNode(),
                 BPMNNS.BPMN2, "extensionElements");
-
         Set<Element> imixsExtensionElements = OpenBPMNUtil.findAllImixsElements(extensionElement, "item");
         // iterate through set and verify the name attribute
         for (Element extensionItem : imixsExtensionElements) {
@@ -104,10 +108,57 @@ public class ElementBuilder {
             }
         }
 
+        // resolve DataObjects
+        if (bpmnElement instanceof Event || bpmnElement instanceof Activity) {
+            resolveDataObjects(bpmnElement, result);
+        }
+
         // support deprecated item values
         convertDeprecatedItemValues(bpmnElement, result);
         return result;
 
+    }
+
+    /**
+     * This method resolves the optional SignalDefinitions and appends the signal
+     * names to the item "adapter.id"
+     * 
+     * @param event
+     * @return
+     */
+    private static void resolveSignalDefinitions(Event event, ItemCollection entity) {
+        BPMNModel model = event.getModel();
+        Set<Element> eventDefinitions = event.getEventDefinitionsByType("signalEventDefinition");
+        for (Element definition : eventDefinitions) {
+            String signalRefID = definition.getAttribute("signalRef");
+            Signal signal = model.findSignal(signalRefID);
+            if (signal != null) {
+                entity.appendItemValueUnique("adapter.id", signal.getName());
+            }
+        }
+    }
+
+    /**
+     * This method resolves the DataObjects connected with the given Flow Element.
+     * The method adds the attribute "dataObjects" to the given entity
+     * 
+     * @param event
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    private static void resolveDataObjects(BPMNElementNode elementNode, ItemCollection entity) {
+
+        Set<DataObject> dataObjects = elementNode.getDataObjects();
+        // find Data object by name...
+        for (DataObject dataObject : dataObjects) {
+            List<String> data = new ArrayList<>();
+            // get name an documentation
+            data.add(dataObject.getName());
+            data.add(dataObject.getDocumentation());
+            List<List<?>> values = entity.getItemValue("dataObjects");
+            values.add(data);
+            entity.setItemValue("dataObjects", values);
+        }
     }
 
     /**

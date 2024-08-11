@@ -32,7 +32,7 @@ public class TestBPMNModelSimple {
 		openBPMNModelManager = new OpenBPMNModelManager();
 		try {
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/simple.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = openBPMNModelManager.getBPMNModel("1.0.0");
 			Assert.assertNotNull(model);
 		} catch (ModelException | BPMNModelException e) {
 			Assert.fail();
@@ -155,10 +155,11 @@ public class TestBPMNModelSimple {
 	@Test
 	public void testModifyDefinition() throws ModelException {
 
-		Assert.assertNotNull(model);
+		ItemCollection workitem = new ItemCollection();
+		workitem.model("1.0.0");
 
 		// test definition
-		ItemCollection definition = openBPMNModelManager.findDefinition(model);
+		ItemCollection definition = openBPMNModelManager.loadDefinition(workitem);
 
 		Assert.assertNotNull(definition);
 		Assert.assertEquals("1.0.0", definition.getItemValueString("$ModelVersion"));
@@ -168,7 +169,7 @@ public class TestBPMNModelSimple {
 		Assert.assertEquals("test", definition.getItemValueString("$ModelVersion"));
 
 		// test definition once again
-		definition = openBPMNModelManager.findDefinition(model);
+		definition = openBPMNModelManager.loadDefinition(workitem);
 		Assert.assertNotNull(definition);
 		Assert.assertEquals("1.0.0", definition.getItemValueString("$ModelVersion"));
 

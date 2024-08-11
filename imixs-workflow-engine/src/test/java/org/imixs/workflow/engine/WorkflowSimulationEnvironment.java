@@ -13,10 +13,8 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Model;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowContext;
-import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -26,9 +24,11 @@ import org.junit.Before;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.openbpmn.bpmn.BPMNModel;
 import org.xml.sax.SAXException;
 
 import jakarta.ejb.SessionContext;
+import jakarta.enterprise.inject.Model;
 
 /**
  * The WorkflowSimulationEnvironment provides a test environment for jUnit
@@ -82,7 +82,7 @@ public class WorkflowSimulationEnvironment {
 		// Mock modelManager
 		ModelManager modelManager = Mockito.mock(ModelManager.class);
 		try {
-			when(modelManager.getModel(Mockito.anyString())).thenReturn(this.getModel());
+			when(modelManager.getBPMNModel(Mockito.anyString())).thenReturn(this.getModel());
 			when(modelManager.getModelByWorkitem(Mockito.any(ItemCollection.class))).thenReturn(this.getModel());
 		} catch (ModelException e) {
 			e.printStackTrace();

@@ -52,12 +52,16 @@ import org.imixs.workflow.util.XMLParser;
 
 /**
  * The WorkflowKernel is the core component to process a workitem based
- * on a BPMN event. The WorkflowKernel expects a {@link WorkflowContext} to
+ * on its associated BPMN Task ($taskId) and Event ($eventId) elements.
+ * <p>
+ * The WorkflowKernel operates on a Open BPMN model instance to navigate through
+ * a BPMN 2.0 model. The model instance is identified by the attribute
+ * $modelversion. The WorkflowKernel expects a {@link WorkflowContext} to
  * access the {@link ModelManager} and the runtime environment.
- * 
+ * <p>
  * An implementation of the {@link WorkflowManager} typical creates an instance
- * of a Workflowkernel and register {@link Plugin} and {@link Adapter} classes
- * to be executed during the processing life cycle of one or many workitems.
+ * of a WorkflowKernel and register {@link Plugin} and {@link Adapter} classes
+ * to be executed during the processing life cycle of one or many workItems.
  * 
  * @author Ralph Soika
  * @version 2.0

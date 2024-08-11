@@ -170,6 +170,11 @@ public class ModelService implements ModelManager {
     }
 
     @Override
+    public ItemCollection loadDefinition(ItemCollection workitem) throws ModelException {
+        return openBPMNModelManager.loadDefinition(workitem);
+    }
+
+    @Override
     public ItemCollection loadEvent(ItemCollection workitem) throws ModelException {
         return openBPMNModelManager.loadEvent(workitem);
     }
@@ -201,8 +206,8 @@ public class ModelService implements ModelManager {
      * method throws a ModelException.
      **/
     @Override
-    public BPMNModel getModel(String version) throws ModelException {
-        return openBPMNModelManager.getModel(version);
+    public BPMNModel getBPMNModel(String version) throws ModelException {
+        return openBPMNModelManager.getBPMNModel(version);
     }
 
     /**
