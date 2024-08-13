@@ -22,7 +22,7 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNModelProperties {
+public class TestBPMNProperties {
 	BPMNModel model = null;
 	OpenBPMNModelManager openBPMNModelManager = null;
 

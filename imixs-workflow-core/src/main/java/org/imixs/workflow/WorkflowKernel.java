@@ -542,7 +542,6 @@ public class WorkflowKernel {
 
         // test if a <model> tag is defined
         String eventResult = event.getItemValueString("txtActivityResult");
-
         List<String> modelTags = XMLParser.findNoEmptyTags(eventResult, "model");
 
         if (modelTags == null || modelTags.size() == 0) {
@@ -565,13 +564,13 @@ public class WorkflowKernel {
         }
         // apply new model version and event id
         workitem.model(version).event(iNextEvent);
+
         if (iTask > 0) {
             // optional
             workitem.task(iTask);
             // test if we can load the target task...
             ItemCollection itemColNextTask = this.ctx.getModelManager().loadTask(workitem);
             if (itemColNextTask != null) {
-
                 updateWorkflowStatus(workitem, itemColNextTask);
             }
         }
