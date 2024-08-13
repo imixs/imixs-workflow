@@ -571,7 +571,13 @@ public class WorkflowKernel {
                 throw new ModelException(ModelException.INVALID_MODEL, sErrorMessage);
             }
             // apply new model version and event id
-            documentResult.setModelVersion(version);
+            // hack START - Issue #869
+            // version can be a regex - resolve real model version
+            Model _model = this.ctx.getModelManager().getModel(version);
+            // documentResult.setModelVersion(version);
+            documentResult.setModelVersion(_model.getVersion());
+            // hack END
+
             documentResult.setEventID(Integer.valueOf(iNextEvent));
             if (iTask > 0) {
                 // optional
