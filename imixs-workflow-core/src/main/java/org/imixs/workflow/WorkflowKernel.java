@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -184,6 +185,13 @@ public class WorkflowKernel {
      * @throws PluginException
      */
     public void registerPlugin(final Plugin plugin) throws PluginException {
+
+        // Test if plugin was already registered.
+        if (pluginRegistryContains(plugin)) {
+            throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_ERROR,
+                    "plugin: " + plugin.getClass().getName() + " is already registered!");
+        }
+
         // validate dependencies
         if (plugin instanceof PluginDependency) {
             List<String> dependencies = ((PluginDependency) plugin).dependsOn();
@@ -203,6 +211,23 @@ public class WorkflowKernel {
         }
         plugin.init(ctx);
         pluginRegistry.add(plugin);
+    }
+
+    /**
+     * Returns true if the plugin with the classname is already registered.
+     * 
+     * @param nameToCheck
+     * @return
+     */
+    private boolean pluginRegistryContains(final Plugin pluginToCheck) {
+        if (pluginRegistry != null) {
+            for (Plugin plugin : pluginRegistry) {
+                if (plugin.getClass().getName().equals(pluginToCheck.getClass().getName())) {
+                    return true; // Plugin with the specified name found
+                }
+            }
+        }
+        return false; // Plugin with the specified name not found
     }
 
     /**
@@ -252,16 +277,24 @@ public class WorkflowKernel {
         if (debug) {
             logger.log(Level.FINEST, "......unregisterPlugin {0}", pluginClass);
         }
-        for (Plugin plugin : pluginRegistry) {
-            if (plugin.getClass().getName().equals(pluginClass)) {
-                pluginRegistry.remove(plugin);
-                return;
+        boolean found = false;
+        // unregister all plugins matching the name
+        if (pluginRegistry != null) {
+            Iterator<Plugin> iterator = pluginRegistry.iterator();
+            while (iterator.hasNext()) {
+                Plugin plugin = iterator.next();
+                if (plugin.getClass().getName().equals(pluginClass)) {
+                    iterator.remove(); // Safely remove the plugin
+                    found = true;
+                }
             }
         }
 
-        // throw PluginExeption
-        throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_NOT_REGISTERED,
-                "unable to unregister plugin: " + pluginClass + " - reason: ");
+        if (!found) {
+            // throw PluginExeption
+            throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_NOT_REGISTERED,
+                    "unable to unregister plugin: " + pluginClass + " - reason: ");
+        }
     }
 
     /**
