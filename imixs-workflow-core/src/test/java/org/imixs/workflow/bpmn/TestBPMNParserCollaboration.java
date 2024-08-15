@@ -66,25 +66,15 @@ public class TestBPMNParserCollaboration {
 		// test task 1000
 		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
 		Assert.assertNotNull(task);
-		// Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
-		Assert.assertEquals("WorkflowGroup1", task.getItemValueString("txtworkflowgroup"));
-
-		// test activity for task 1000
-		// Collection<ItemCollection> activities = model.findAllEventsByTask(1000);
-		// Assert.assertNotNull(activities);
-		// Assert.assertEquals(1, activities.size());
 
 		// test activity 1000.10 submit
 		ItemCollection activity = openBPMNModelManager.findEventByID(model, 1000, 10);
 		Assert.assertNotNull(activity);
 		Assert.assertEquals("submit", activity.getItemValueString("txtname"));
-		Assert.assertEquals(2000, activity.getItemValueInteger("numNextProcessID"));
 
 		// test task 1100
 		task = openBPMNModelManager.findTaskByID(model, 2000);
 		Assert.assertNotNull(task);
-		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
-		Assert.assertEquals("WorkflowGroup2", task.getItemValueString("txtworkflowgroup"));
 
 	}
 

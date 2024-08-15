@@ -17,19 +17,23 @@ import org.openbpmn.bpmn.util.BPMNModelFactory;
 public class TestBPMNUtil {
 
 	protected BPMNModel model = null;
+	OpenBPMNModelManager openBPMNModelManager = null;
 
 	/**
 	 * Loads the default model
 	 */
 	@Before
 	public void setUp() {
-
+		// load default model
+		openBPMNModelManager = new OpenBPMNModelManager();
 		try {
 			model = BPMNModelFactory.read("/bpmn/simple.bpmn");
-		} catch (BPMNModelException e) {
+			openBPMNModelManager.addModel(model);
+		} catch (BPMNModelException | ModelException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
+
 	}
 
 	/**
@@ -41,14 +45,14 @@ public class TestBPMNUtil {
 	public void testFindTasks() {
 		Assert.assertNotNull(model);
 
-		ItemCollection task = OpenBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
 		Assert.assertNotNull(task);
 
-		task = OpenBPMNModelManager.findTaskByID(model, 1100);
+		task = openBPMNModelManager.findTaskByID(model, 1100);
 		Assert.assertNotNull(task);
 
 		// test non existing task
-		task = OpenBPMNModelManager.findTaskByID(model, 2000);
+		task = openBPMNModelManager.findTaskByID(model, 2000);
 		Assert.assertNull(task);
 	}
 
@@ -61,17 +65,17 @@ public class TestBPMNUtil {
 	public void testFindEvents() {
 		Assert.assertNotNull(model);
 
-		ItemCollection event = OpenBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
 		Assert.assertNotNull(event);
 
-		event = OpenBPMNModelManager.findEventByID(model, 1000, 20);
+		event = openBPMNModelManager.findEventByID(model, 1000, 20);
 		Assert.assertNotNull(event);
 
 		// test non existing event
-		event = OpenBPMNModelManager.findEventByID(model, 1100, 10);
+		event = openBPMNModelManager.findEventByID(model, 1100, 10);
 		Assert.assertNull(event);
 
-		event = OpenBPMNModelManager.findEventByID(model, 2000, 10);
+		event = openBPMNModelManager.findEventByID(model, 2000, 10);
 		Assert.assertNull(event);
 	}
 

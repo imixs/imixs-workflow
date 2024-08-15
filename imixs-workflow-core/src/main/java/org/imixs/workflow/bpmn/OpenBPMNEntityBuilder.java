@@ -14,6 +14,7 @@ import org.openbpmn.bpmn.elements.Event;
 import org.openbpmn.bpmn.elements.Signal;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
+import org.openbpmn.bpmn.navigation.BPMNFlowIterator;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -83,7 +84,8 @@ public class OpenBPMNEntityBuilder {
             result.setItemValue("taskID",
                     Long.parseLong(bpmnElement.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "processid")));
             result.setType(bpmnElement.getType());
-
+            // resolve BoundaryEvents
+            resolveBoundaryEvents((Activity) bpmnElement, result);
         }
         if (bpmnElement instanceof Event) {
             result.setItemValue("eventID",
@@ -116,6 +118,65 @@ public class OpenBPMNEntityBuilder {
         convertDeprecatedItemValues(bpmnElement, result);
         return result;
 
+    }
+
+    /**
+     * Resolve Boundary events attached to a Task
+     * 
+     * 
+     * 
+     * <pre>{@code 
+     * <bpmn2:boundaryEvent id="BoundaryEvent_1" name="" attachedToRef="Task_1">
+     *       <bpmn2:outgoing>SequenceFlow_8</bpmn2:outgoing>
+     *       <bpmn2:timerEventDefinition id="TimerEventDefinition_2">
+     *           <bpmn2:timeDuration xsi:type="bpmn2:tFormalExpression" id=
+       "FormalExpression_4">1000</bpmn2:timeDuration>
+     *       </bpmn2:timerEventDefinition>
+     * </bpmn2:boundaryEvent>
+     *     }</pre>
+     * 
+     * @param activity
+     * @param result
+     */
+    private static void resolveBoundaryEvents(Activity activity, ItemCollection result) {
+
+        List<Event> boundaryEvents = activity.getAllBoundaryEvents();
+        if (boundaryEvents != null && boundaryEvents.size() > 0) {
+            BPMNModel model = activity.getModel();
+            Event boundaryEvent = boundaryEvents.get(0);
+
+            // find next imixs event
+            BPMNFlowIterator<BPMNElementNode> elementNavigator;
+            elementNavigator = new BPMNFlowIterator<BPMNElementNode>(
+                    boundaryEvent,
+                    node -> ((OpenBPMNUtil.isImixsEventElement(node))));
+
+            if (elementNavigator.hasNext()) {
+                BPMNElementNode targetEvent = elementNavigator.next();
+
+                // "boundaryEvent.targetEvent"
+                result.setItemValue("boundaryEvent.targetEvent",
+                        Long.parseLong(targetEvent.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "activityid")));
+                // boundaryEvent.timerEventDefinition.timeDuration
+                try {
+                    Element timerEventDefinition = boundaryEvent.getChildNode(BPMNNS.BPMN2, "timerEventDefinition");
+                    if (timerEventDefinition != null) {
+                        Set<Element> elementList = model.findChildNodesByName(timerEventDefinition, BPMNNS.BPMN2,
+                                "timeDuration");
+                        if (elementList != null && elementList.size() > 0) {
+                            Element timerDuration = elementList.iterator().next();
+                            if (timerDuration != null) {
+                                String duration = timerDuration.getTextContent();
+                                result.setItemValue("boundaryEvent.timerEventDefinition.timeDuration",
+                                        Integer.parseInt(duration));
+                            }
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    logger.warning("Invalid Boundary Event - missing timeDuration: " + e.getMessage());
+                }
+            }
+        }
     }
 
     /**
