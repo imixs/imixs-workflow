@@ -157,7 +157,7 @@
       <bpmn2:documentation id="documentation_uEspLA"/>
     </bpmn2:sequenceFlow>
     <bpmn2:textAnnotation id="textAnnotation_kug0ow" textFormat="">
-      <bpmn2:text id="text_DV7NXg"><![CDATA[Invalid!!
+      <bpmn2:text id="text_DV7NXg"><![CDATA[Note!
 both have id 100!]]></bpmn2:text>
       <bpmn2:documentation id="documentation_q21I5Q"/>
     </bpmn2:textAnnotation>

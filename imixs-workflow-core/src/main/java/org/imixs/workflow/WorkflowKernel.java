@@ -45,12 +45,16 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.imixs.workflow.bpmn.OpenBPMNEntityBuilder;
 import org.imixs.workflow.bpmn.OpenBPMNUtil;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.util.XMLParser;
+import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.elements.core.BPMNElementNode;
+import org.openbpmn.bpmn.navigation.BPMNFlowIterator;
 
 /**
  * The WorkflowKernel is the core component to process a workitem based
@@ -125,27 +129,24 @@ public class WorkflowKernel {
     private Map<String, Adapter> adapterRegistry = null;
 
     private WorkflowContext ctx = null;
-    private Vector<String> vectorEdgeHistory = new Vector<String>();
+
     private List<ItemCollection> splitWorkitems = null;
-    private RuleEngine ruleEngine = null;
 
     private static final Logger logger = Logger.getLogger(WorkflowKernel.class.getName());
 
     /**
      * Constructor initialize the contextObject and plugin vectors
      */
-    public WorkflowKernel(final WorkflowContext actx) {
+    public WorkflowKernel(final WorkflowContext ctx) {
         // check workflow context
-        if (actx == null) {
+        if (ctx == null) {
             throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MISSING_WORKFLOWCONTEXT,
                     "WorkflowKernel can not be initialized: workitemContext is null!");
         }
-
-        ctx = actx;
+        this.ctx = ctx;
         pluginRegistry = new ArrayList<Plugin>();
         adapterRegistry = new HashMap<String, Adapter>();
         splitWorkitems = new ArrayList<ItemCollection>();
-        ruleEngine = new RuleEngine();
     }
 
     /**
@@ -329,14 +330,15 @@ public class WorkflowKernel {
     }
 
     /**
-     * Processes a process instance (workitem) based on the current model
-     * definition. A workitem must at least provide the properties $TASKID and
-     * $EVENTID.
+     * This method processes a workitem (process instance) based on the current
+     * model definition. A workitem must at least provide the properties
+     * <code>$ModelVersion</code>, <code>$TaskID</code> and <code>$EventID</code>.
      * <p>
      * During the processing life-cycle more than one event can be processed. This
      * depends on the model definition which is controlled by the
-     * {@code ModelManager}. For example a conditional event can have different
-     * outcomes depending on the data of a workitem.
+     * {@code ModelManager}. For example an event can be followed by another event
+     * in the process flow. Also conditional events can have different outcomes
+     * depending on the data of a workitem.
      * <p>
      * The method executes all plugin and adapter classes and returns an updated
      * instance of the workitem. The method did not persist the process instance.
@@ -348,7 +350,6 @@ public class WorkflowKernel {
      * @throws PluginException,ModelException
      */
     public ItemCollection process(ItemCollection workitem) throws PluginException, ModelException {
-
         // check document context
         if (workitem == null)
             throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_WORKITEM,
@@ -363,8 +364,6 @@ public class WorkflowKernel {
         if (workitem.getEventID() <= 0)
             throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), UNDEFINED_ACTIVITYID,
                     "processing error: $eventID undefined (" + workitem.getEventID() + ")");
-
-        vectorEdgeHistory = new Vector<String>();
 
         // Check if $UniqueID is available
         if ("".equals(workitem.getItemValueString(UNIQUEID))) {
@@ -389,85 +388,149 @@ public class WorkflowKernel {
         workitem.removeItem(ADAPTER_ERROR_PARAMS);
         workitem.removeItem(ADAPTER_ERROR_MESSAGE);
 
-        // Iterate through all events
+        // Iterate through all events in the process flow
+        List<String> loopDetector = new ArrayList<String>();
         ItemCollection event = this.ctx.getModelManager().loadEvent(workitem);
         while (event != null) {
-            // set $lastEventDate
-            workitem.replaceItemValue(LASTEVENTDATE, new Date());
-
-            // invalidate deprecated models!
-            if (event.hasItem("keyFollowUp")) {
-                throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
-                        "Invalid Event Item: keyFollowUp no longer supported!");
-            }
-
-            int taskID = workitem.getTaskID();
-            int eventID = workitem.getEventID();
-
-            // Check for loop in edge history
-            if (vectorEdgeHistory != null && vectorEdgeHistory.indexOf((taskID + "." + eventID)) != -1) {
+            String id = event.getItemValueString("id");
+            if (loopDetector.contains(id)) {
                 throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MODEL_ERROR,
-                        "[loadEvent] loop detected " + taskID + "." + eventID + "," + vectorEdgeHistory.toString());
+                        "Event loop detected " + workitem.getTaskID() + "." + workitem.getEventID() + " event " + id
+                                + " was called twice in one processing life cycle. Check your model!");
             }
-
-            workitem = processEvent(workitem, event);
-
-            // put current edge in history
-            vectorEdgeHistory.addElement(
-                    event.getItemValueInteger("numprocessid") + "." + event.getItemValueInteger("numactivityid"));
-
-            // test if a new model version was assigned by the last event
-            if (updateModelVersionByEvent(workitem, event)) {
-                // write event log
-                logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
-                // load new Event and start new processing life cycle...
-                event = this.ctx.getModelManager().loadEvent(workitem);
-
-                workitem.event(event.getItemValueInteger("numactivityid"));
-            } else {
-                // evaluate next BPMN Element.....
-                ItemCollection nextElement = this.ctx.getModelManager().nextModelElement(event, workitem);
-                if (nextElement == null || !nextElement.hasItem("type")) {
-                    throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
-                            "BPMN Event Element must be followed by a Task or another Event!");
-                }
-                // continue processing live-cycle?
-                if (ModelManager.EVENT_ELEMENT.equals(nextElement.getType())) {
-                    // load next event
-                    logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
-                    event = nextElement;
-                    workitem.event(event.getItemValueInteger("numactivityid"));
-                } else {
-                    // update status and terminate processing life cycle
-                    logEvent(workitem.getTaskID(), workitem.getEventID(),
-                            nextElement.getItemValueInteger("numprocessid"), workitem);
-                    // Update status - Issue #722
-                    updateWorkflowStatus(workitem, nextElement);
-                    // terminate processing life cycle
-                    workitem.event(0);
-                    event = null;
-                }
-            }
+            event = processEvent(workitem, event);
+            loopDetector.add(id);
         }
 
         return workitem;
     }
 
     /**
+     * This method processes a single event on a given process instance and executes
+     * all assigned MicroKernels.
+     * After the execution was completed, the method loads the next BPMN element in
+     * the process flow. If the next BPMN element is again an event, the method
+     * returns the next event.
+     * In all other cases the method returns null to signal that the processing life
+     * cycle can be terminated.
+     * 
+     * @param workitem
+     * @param event
+     * @return the next event in the process flow or null if the next element is a
+     *         Task
+     * @throws ModelException
+     * @throws PluginException
+     */
+    private ItemCollection processEvent(ItemCollection workitem, ItemCollection event)
+            throws ModelException, PluginException {
+        BPMNModel model = this.ctx.getModelManager().getModel(workitem.getModelVersion());
+        // set $lastEventDate
+        workitem.replaceItemValue(LASTEVENTDATE, new Date());
+
+        // invalidate deprecated models!
+        if (event.hasItem("keyFollowUp")) {
+            throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
+                    "Invalid Event Item: keyFollowUp no longer supported!");
+        }
+
+        workitem = executeMicroKernels(workitem, event);
+
+        // test if a new model version was assigned by the last event
+        if (updateModelVersionByEvent(workitem, event)) {
+            // write event log
+            logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
+            // load new Event and start new processing life cycle...
+            event = this.ctx.getModelManager().loadEvent(workitem);
+
+            workitem.event(event.getItemValueInteger("numactivityid"));
+        } else {
+            // evaluate next BPMN Element.....
+            ItemCollection nextElement = this.ctx.getModelManager().nextModelElement(event, workitem);
+            if (nextElement == null || !nextElement.hasItem("type")) {
+                throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
+                        "BPMN Event Element must be followed by a Task or another Event!");
+            }
+            // continue processing live-cycle?
+            // We support Task (terminate), Event (FollowUp) or ParallelGateway (Split)
+            if (ModelManager.PARALLELGATEWAY_ELEMENT.equals(nextElement.getType())) {
+                // We need the follow Up Task and Event Nodes now to create the split Events
+                BPMNElementNode gatewayNode = model.findElementNodeById(nextElement.getItemValueString("id"));
+                BPMNFlowIterator<BPMNElementNode> splitElementNavigator = new BPMNFlowIterator<BPMNElementNode>(
+                        gatewayNode,
+                        node -> ((OpenBPMNUtil.isImixsTaskElement(node))
+                                || (OpenBPMNUtil.isImixsEventElement(node))));
+                // now iterate all targets....
+                while (splitElementNavigator.hasNext()) {
+                    BPMNElementNode nextSplitNode = splitElementNavigator.next();
+                    ItemCollection splitItemCol = OpenBPMNEntityBuilder.build(nextSplitNode);
+
+                    if (ModelManager.EVENT_ELEMENT.equals(splitItemCol.getType())) {
+                        // clone current instance to a new version...
+                        ItemCollection cloned = createVersion(workitem);
+                        // set new event
+                        cloned.setEventID(splitItemCol.getItemValueInteger("numactivityid"));
+                        // add temporary attribute $isversion...
+                        cloned.replaceItemValue(ISVERSION, true);
+
+                        ItemCollection splitEvent = splitItemCol;
+                        while (splitEvent != null) {
+                            splitEvent = this.processEvent(cloned, splitEvent);
+                        }
+
+                        // remove temporary attribute $isversion...
+                        cloned.removeItem(ISVERSION);
+                        // add to cache...
+                        splitWorkitems.add(cloned);
+                        continue;
+                    }
+                    if (ModelManager.TASK_ELEMENT.equals(splitItemCol.getType())) {
+                        nextElement = splitItemCol;
+                    }
+
+                }
+                // continue with normal flow
+            }
+
+            if (ModelManager.EVENT_ELEMENT.equals(nextElement.getType())) {
+                // load next event
+                logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
+                event = nextElement;
+                workitem.event(event.getItemValueInteger(OpenBPMNUtil.EVENT_ITEM_EVENTID));
+                // return the next event element to be processed....
+                return event;
+            }
+
+            if (ModelManager.TASK_ELEMENT.equals(nextElement.getType())) {
+                // update status and terminate processing life cycle
+                logEvent(workitem.getTaskID(), workitem.getEventID(),
+                        nextElement.getItemValueInteger(OpenBPMNUtil.TASK_ITEM_TASKID), workitem);
+                // Update status - Issue #722
+                updateWorkflowStatus(workitem, nextElement);
+                // terminate processing life cycle
+                workitem.event(0);
+                event = null;
+                return null;
+            }
+        }
+
+        return null;
+
+    }
+
+    /**
      * Evaluates the next task BPMN element for a process instance (workitem) based
-     * on the
-     * current model definition. A Workitem must at least provide the properties
-     * $TASKID and $EVENTID.
+     * on the current model definition. A Workitem must at least provide the
+     * properties <code>$TaskID</code> and <code>$EventID.
      * <p>
      * During the evaluation life-cycle more than one event can be evaluated. This
      * depends on the model definition which can define follow-up-events,
      * split-events and conditional events.
      * <p>
-     * The method did not persist the process instance or execute any plugin or
-     * adapter class.
+     * The method did not persist the process instance or execute any plugins or
+     * adapter classes.
      * 
      * @param workitem the process instance to be evaluated.
-     * @return result TaskID
+     * @return the BPMN task element followed by the given execution flow
      * @throws PluginException,ModelException
      */
     public ItemCollection eval(final ItemCollection _workitem) throws PluginException,
@@ -495,15 +558,16 @@ public class WorkflowKernel {
                     "processing error: $eventID undefined (" + workitem.getEventID() + ")");
 
         // now evaluate all events defined by the model
+        List<String> loopDetector = new ArrayList<String>();
         ItemCollection event = this.ctx.getModelManager().loadEvent(workitem);
         while (event != null) {
-            int taskID = workitem.getTaskID();
-            int eventID = workitem.getEventID();
-            // Check for loop in edge history
-            if (vectorEdgeHistory != null && vectorEdgeHistory.indexOf((taskID + "." + eventID)) != -1) {
+            String id = event.getItemValueString("id");
+            if (loopDetector.contains(id)) {
                 throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MODEL_ERROR,
-                        "[loadEvent] loop detected " + taskID + "." + eventID + "," + vectorEdgeHistory.toString());
+                        "Event loop detected " + workitem.getTaskID() + "." + workitem.getEventID() + " event " + id
+                                + " was called twice in one processing life cycle. Check your model!");
             }
+            loopDetector.add(id);
 
             // test if a new model version was assigned by the last event
             if (updateModelVersionByEvent(workitem, event)) {
@@ -590,8 +654,8 @@ public class WorkflowKernel {
         int iNextEvent = modelData.getItemValueInteger("event");
         int iTask = modelData.getItemValueInteger("task");
         if (version.trim().isEmpty() || iNextEvent <= 0) {
-            String sErrorMessage = "Invalid model tag in event " + event.getItemValueInteger("numProcessid") + "."
-                    + event.getItemValueInteger("numActivityid") + " (" + event.getModelVersion();
+            String sErrorMessage = "Invalid model tag in event " +
+                    +event.getItemValueInteger(OpenBPMNUtil.EVENT_ITEM_EVENTID) + " (" + event.getModelVersion();
             logger.warning(sErrorMessage);
             throw new ModelException(ModelException.INVALID_MODEL, sErrorMessage);
         }
@@ -616,18 +680,15 @@ public class WorkflowKernel {
     }
 
     /**
-     * This method processes a single event on a workflow instance. All registered
-     * adapter and plug-in classes will be executed. After all adapter and plug-in
-     * classes have been executed, the attributes type, $taskID, $workflowstatus and
-     * $workflowgroup are updated based on the definition of the target task
-     * element.
+     * This method executes all registered adapter and plug-in classes defined by a
+     * single event on a workflow instance.
      * <p>
      * In case of an AdapterException, the exception data will be wrapped into items
      * with the prefix 'adapter.'
      * 
      * @throws PluginException,ModelException
      */
-    private ItemCollection processEvent(final ItemCollection workitem, final ItemCollection event)
+    private ItemCollection executeMicroKernels(final ItemCollection workitem, final ItemCollection event)
             throws PluginException, ModelException {
         ItemCollection documentResult = workitem;
         // log the general processing message
@@ -639,10 +700,8 @@ public class WorkflowKernel {
             logger.warning("no WorkflowContext defined!");
         }
         logger.info(msg);
-
         // execute SignalAdapters
         executeSignalAdapters(documentResult, event);
-
         // execute plugins - PluginExceptions will bubble up....
         try {
             documentResult = runPlugins(documentResult, event);
@@ -654,32 +713,34 @@ public class WorkflowKernel {
         }
         // Successful close plugins
         closePlugins(false);
-
         // execute GenericAdapters
         executeGenericAdapters(documentResult, event);
-
-        // put current edge in history
-        vectorEdgeHistory.addElement(workitem.getTaskID() + "." + workitem.getEventID());
 
         return documentResult;
     }
 
     /**
      * Helper method to update the items $taskid, $worklfowstatus, $workflowgroup
-     * and type
+     * and type.
+     * The given Element must bei a Task. Otherwise the method throws a
+     * ModelException.
      * 
      * @throws ModelException
      */
     private void updateWorkflowStatus(ItemCollection workitem, ItemCollection itemColNextTask) throws ModelException {
         boolean debug = logger.isLoggable(Level.FINE);
+        if (!ModelManager.TASK_ELEMENT.equals(itemColNextTask.getType())) {
+            throw new ModelException(ModelException.INVALID_MODEL,
+                    "Invalid Model Element - BPMN Task Element was expected to update the current workflow status.");
+        }
 
         ItemCollection process = ctx.getModelManager().loadProcess(workitem);
         // Update the attributes $taskID and $WorkflowStatus
-        workitem.task(itemColNextTask.getItemValueInteger("numprocessid"));
+        workitem.task(itemColNextTask.getItemValueInteger(OpenBPMNUtil.TASK_ITEM_TASKID));
         if (debug) {
             logger.log(Level.FINEST, "......new $taskID={0}", workitem.getTaskID());
         }
-        workitem.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString("txtname"));
+        workitem.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString(OpenBPMNUtil.TASK_ITEM_NAME));
         workitem.replaceItemValue(WORKFLOWGROUP, process.getItemValueString("name"));
         if (debug) {
             logger.log(Level.FINEST, "......new $workflowStatus={0}",
@@ -814,107 +875,14 @@ public class WorkflowKernel {
     }
 
     /**
-     * This method evaluates conditional split expressions to 'false'. For each
-     * condition a new process instance will be created and processed by the
-     * expected follow-up event. The expression evaluated to 'false' MUST be
-     * followed by an Event. If not, a ModelExcption is thrown to indicate that the
-     * new version can not be processed correctly!
-     * 
-     * @param conditions
-     * @param documentContext
-     * @return conditional Task or Event object or null if no condition exits.
-     * @throws PluginException
-     * @throws ModelException
-     * @throws AdapterException
-     */
-    @SuppressWarnings("unchecked")
-    private void xxxevaluateSplitEvent(ItemCollection event, ItemCollection documentContext)
-            throws PluginException, ModelException {
-
-        boolean debug = logger.isLoggable(Level.FINE);
-        // test if we have an split event
-        Map<String, String> conditions = null;
-        // test if we have an split event
-        if (event.hasItem("keySplitConditions")) {
-            // get first element
-            conditions = (Map<String, String>) event.getItemValue("keySplitConditions").get(0);
-
-            if (conditions != null) {
-
-                // evaluate all conditions and return the fist match evaluating to true (this is
-                // the flow for the master version)...
-                for (Map.Entry<String, String> entry : conditions.entrySet()) {
-                    String key = entry.getKey();
-                    String expression = entry.getValue();
-                    if (key.startsWith("task=")) {
-                        // if a task evaluated to false, the model is invalid.
-                        boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
-                        if (!bmatch) {
-                            String sErrorMessage = "Outcome of Split-Event " + event.getItemValueInteger("numProcessid")
-                                    + "." + +event.getItemValueInteger("numActivityid") + " (" + event.getModelVersion()
-                                    + ") evaluate to false must not be connected to a task. ";
-
-                            logger.log(Level.WARNING, "{0} Condition = {1}",
-                                    new Object[] { sErrorMessage, expression });
-                            throw new ModelException(ModelException.INVALID_MODEL, sErrorMessage);
-                        }
-                    }
-
-                    if (key.startsWith("event=")) {
-                        int eventID = Integer.parseInt(key.substring(6));
-                        boolean bmatch = ruleEngine.evaluateBooleanExpression(expression, documentContext);
-                        if (!bmatch) {
-                            if (debug) {
-                                logger.log(Level.FINEST, "......matching conditional event: {0}", expression);
-                            }
-                            // we update the documentContext....
-                            // ItemCollection itemColEvent = this.ctx.getModelManager()
-                            // .getModel(documentContext.getModelVersion())
-                            // .getEvent(documentContext.getTaskID(), eventID);
-                            // if (itemColEvent != null) {
-                            // // get current task...
-                            // ItemCollection itemColNextTask = this.ctx.getModelManager()
-                            // .getModel(documentContext.getItemValueString(MODELVERSION))
-                            // .getTask(documentContext.getTaskID());
-
-                            // // clone current instance to a new version...
-                            // ItemCollection cloned = createVersion(documentContext);
-                            // if (debug) {
-                            // logger.log(Level.FINEST, "......created new version={0}",
-                            // cloned.getUniqueID());
-                            // }
-                            // // set new $taskID
-                            // cloned.setTaskID(Integer.valueOf(itemColNextTask.getItemValueInteger("numprocessid")));
-                            // cloned.setEventID(eventID);
-                            // // add temporary attribute $isversion...
-                            // cloned.replaceItemValue(ISVERSION, true);
-                            // cloned = this.process(cloned);
-                            // // remove temporary attribute $isversion...
-                            // cloned.removeItem(ISVERSION);
-                            // // add to cache...
-                            // splitWorkitems.add(cloned);
-
-                            // }
-                        }
-                    }
-                }
-                if (debug) {
-                    logger.finest("......split event: no matching condition");
-                }
-            }
-        }
-
-    }
-
-    /**
      * This method creates a new instance of a sourceWorkitem. The method did not
      * save the workitem!.
      * <p>
      * The new property $UniqueIDSource will be added to the new version, which
      * points to the $uniqueID of the sourceWorkitem.
-     * In addtion the item $created.version marks the point of time.
+     * In addition the item $created.version marks the point of time.
      * <p>
-     * The new property $UniqueIDVersions will be added to the sourceWorktiem which
+     * The new property $UniqueIDVersions will be added to the sourceWorkItem which
      * points to the id of the new version.
      * 
      * @param sourceItemCollection the ItemCollection which should be versioned

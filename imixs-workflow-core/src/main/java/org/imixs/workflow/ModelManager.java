@@ -42,6 +42,7 @@ public interface ModelManager {
 
     public final static String TASK_ELEMENT = "task";
     public final static String EVENT_ELEMENT = "intermediateCatchEvent";
+    public final static String PARALLELGATEWAY_ELEMENT = "parallelGateway";
 
     /**
      * Adds a new model into the local model store

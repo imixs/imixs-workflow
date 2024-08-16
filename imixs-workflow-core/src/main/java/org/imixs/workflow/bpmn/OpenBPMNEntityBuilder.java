@@ -75,6 +75,7 @@ public class OpenBPMNEntityBuilder {
     public static ItemCollection build(BPMNElementNode bpmnElement) {
         ItemCollection result = new ItemCollection();
         result.setItemValue("id", bpmnElement.getId());
+        result.setType(bpmnElement.getType());
         if (bpmnElement.hasAttribute("name")) {
             result.setItemValue("name", bpmnElement.getAttribute("name"));
         }
@@ -83,14 +84,12 @@ public class OpenBPMNEntityBuilder {
         if (bpmnElement instanceof Activity) {
             result.setItemValue("taskID",
                     Long.parseLong(bpmnElement.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "processid")));
-            result.setType(bpmnElement.getType());
             // resolve BoundaryEvents
             resolveBoundaryEvents((Activity) bpmnElement, result);
         }
         if (bpmnElement instanceof Event) {
             result.setItemValue("eventID",
                     Long.parseLong(bpmnElement.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "activityid")));
-            result.setType(bpmnElement.getType());
             // resolve SignalDefinitions and set the adapter.id itemList
             resolveSignalDefinitions((Event) bpmnElement, result);
         }
@@ -122,7 +121,6 @@ public class OpenBPMNEntityBuilder {
 
     /**
      * Resolve Boundary events attached to a Task
-     * 
      * 
      * 
      * <pre>{@code 

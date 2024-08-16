@@ -240,7 +240,7 @@ public class TestWorkflowKernelModels {
 			Assert.assertEquals(10, itemCollection.getItemValueInteger("$lastEvent"));
 
 			// test new version...
-			List<ItemCollection> versions = kernel.getSplitWorkitems();
+			List<ItemCollection> versions = workflowContext.getWorkflowKernel().getSplitWorkitems();
 			Assert.assertNotNull(versions);
 			Assert.assertTrue(versions.size() == 1);
 			ItemCollection version = versions.get(0);
@@ -262,7 +262,7 @@ public class TestWorkflowKernelModels {
 					itemCollection.getItemValueString(WorkflowKernel.UNIQUEIDVERSIONS));
 
 		} catch (Exception e) {
-			Assert.fail();
+			Assert.fail(e.getMessage());
 			e.printStackTrace();
 
 		}

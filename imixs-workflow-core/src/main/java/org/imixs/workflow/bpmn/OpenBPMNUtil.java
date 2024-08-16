@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
 import org.openbpmn.bpmn.BPMNTypes;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.Event;
+import org.openbpmn.bpmn.elements.Gateway;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Element;
@@ -35,9 +35,8 @@ import org.w3c.dom.NodeList;
  */
 public class OpenBPMNUtil {
 
-    private static Logger logger = Logger.getLogger(OpenBPMNUtil.class.getName());
-
     public final static String TASK_ITEM_NAME = "name";
+    public final static String TASK_ITEM_TASKID = "taskid";
     public final static String TASK_ITEM_DOCUMENTATION = "documentation";
     public final static String TASK_ITEM_WORKFLOW_SUMMARY = "workflow.summary";
     public final static String TASK_ITEM_WORKFLOW_ABSTRACT = "workflow.abstract";
@@ -53,6 +52,7 @@ public class OpenBPMNUtil {
     public final static String TASK_ITEM_ACL_UPDATE = "acl.update";
 
     public final static String EVENT_ITEM_NAME = "name";
+    public final static String EVENT_ITEM_EVENTID = "eventid";
     public final static String EVENT_ITEM_DOCUMENTATION = "documentation";
     public final static String EVENT_ITEM_ACL_OWNER_LIST = "acl.owner_list";
     public final static String EVENT_ITEM_ACL_OWNER_LIST_MAPPING = "acl.owner_list_mapping";
@@ -352,6 +352,18 @@ public class OpenBPMNUtil {
             }
         }
 
+        return false;
+    }
+
+    /**
+     * Returns true if the given BPMNElement is a BPMN ParallelGateway
+     * 
+     * @return
+     */
+    public static boolean isParallelGatewayElement(BPMNElementNode element) {
+        if (element instanceof Gateway && BPMNTypes.PARALLEL_GATEWAY.equals(element.getType())) {
+            return true;
+        }
         return false;
     }
 

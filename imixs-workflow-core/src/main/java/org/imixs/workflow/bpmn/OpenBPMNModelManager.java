@@ -247,6 +247,7 @@ public class OpenBPMNModelManager implements ModelManager {
                     eventElement,
                     node -> ((OpenBPMNUtil.isImixsTaskElement(node))
                             || (OpenBPMNUtil.isImixsEventElement(node))
+                            || (OpenBPMNUtil.isParallelGatewayElement(node))
                             || (OpenBPMNUtil.isLinkCatchEventElement(node))),
                     condition -> evaluateCondition(condition, workitem));
 

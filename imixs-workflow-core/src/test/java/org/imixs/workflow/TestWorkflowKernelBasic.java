@@ -71,7 +71,7 @@ public class TestWorkflowKernelBasic {
         Assert.assertTrue(workItem.equals(workitemProcessed));
 
         // the workitem should not have a $eventid
-        Assert.assertEquals(0, workItem.getItemValueInteger(WorkflowKernel.EVENTID));
+        Assert.assertEquals(0, workItem.getEventID());
         // a new call of process should throw a ProcessingErrorException
         try {
             workitemProcessed = workflowEnvironment.getWorkflowKernel().process(workItem);

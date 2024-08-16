@@ -9,10 +9,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
 import org.junit.Assert;
+import org.junit.Test;
+import org.openbpmn.bpmn.BPMNModel;
+import org.xml.sax.SAXException;
 
 /**
  * Test class test the Imixs BPMNParser.
@@ -25,15 +25,17 @@ import org.junit.Assert;
 public class TestBPMNParserSharedLinkEvent {
 
 	/**
-	 * This test test intermediate link events and also loop throw events
+	 * This test class tests intermediate link events
+	 * 
 	 * @throws ParseException
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
-	 * @throws ModelException 
+	 * @throws ModelException
 	 */
 	@Test
-	public void testLinkEventSimple() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testLinkEventSimple()
+			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		InputStream inputStream = getClass().getResourceAsStream("/bpmn/shared-link-event.bpmn");
 
@@ -56,28 +58,23 @@ public class TestBPMNParserSharedLinkEvent {
 		Assert.assertEquals(3, model.findAllTasks().size());
 
 		// test task 1000
-		ItemCollection task = model.getTask(1000 );
+		ItemCollection task = model.getTask(1000);
 		Assert.assertNotNull(task);
 		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
 		Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
 
-		
 		Assert.assertEquals("Task Shared Link Event1", task.getItemValueString("txtName"));
-		
+
 		// test shared events
-		Assert.assertEquals(3,model.findAllEventsByTask(1000).size());
-		
-		ItemCollection event=model.getEvent(1000, 99);
+		Assert.assertEquals(3, model.findAllEventsByTask(1000).size());
+
+		ItemCollection event = model.getEvent(1000, 99);
 		Assert.assertEquals("cancel", event.getItemValueString("txtName"));
-		
+
 		// test shared events
-		Assert.assertEquals(2,model.findAllEventsByTask(1100).size());
-		Assert.assertEquals(0,model.findAllEventsByTask(1200).size());
+		Assert.assertEquals(2, model.findAllEventsByTask(1100).size());
+		Assert.assertEquals(0, model.findAllEventsByTask(1200).size());
 
 	}
-	
-	
-	
-	
 
 }
