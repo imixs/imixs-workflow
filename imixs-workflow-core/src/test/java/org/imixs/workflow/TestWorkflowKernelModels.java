@@ -1,11 +1,10 @@
 package org.imixs.workflow;
 
-import java.io.IOException;
-import java.text.ParseException;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 import java.util.logging.Logger;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -13,7 +12,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.xml.sax.SAXException;
 
 /**
  * Test class for Imixs WorkflowKernel using the test models. The test class
@@ -35,11 +33,6 @@ public class TestWorkflowKernelModels {
 	/**
 	 * Simple test
 	 * 
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws ParseException
-	 * @throws ModelException
 	 */
 	@Test
 	@Category(org.imixs.workflow.WorkflowKernel.class)
@@ -74,11 +67,6 @@ public class TestWorkflowKernelModels {
 	/**
 	 * ticket.bpmn test
 	 * 
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws ParseException
-	 * @throws ModelException
 	 */
 	@Test
 	@Category(org.imixs.workflow.WorkflowKernel.class)
@@ -113,12 +101,6 @@ public class TestWorkflowKernelModels {
 	 * Test model conditional_event1.bpmn.
 	 * 
 	 * Here we have two conditions: both to a task.
-	 * 
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws ParseException
-	 * @throws ModelException
 	 */
 	@Test
 	@Category(org.imixs.workflow.WorkflowKernel.class)
@@ -166,11 +148,6 @@ public class TestWorkflowKernelModels {
 	 * 
 	 * Here we have two conditions: one to a task, the other to a event.
 	 * 
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws ParseException
-	 * @throws ModelException
 	 */
 	@Test
 	@Category(org.imixs.workflow.WorkflowKernel.class)
@@ -214,12 +191,6 @@ public class TestWorkflowKernelModels {
 	 * Test model split_event1.bpmn.
 	 * 
 	 * Here we have two conditions: both to a task.
-	 * 
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws ParseException
-	 * @throws ModelException
 	 */
 	@Test
 	@Category(org.imixs.workflow.WorkflowKernel.class)
@@ -272,38 +243,58 @@ public class TestWorkflowKernelModels {
 	/**
 	 * Test model split_event1_invalid.bpmn.
 	 * 
-	 * This model is invalid as a outcome of the split-event is evaluated to 'false'
-	 * and no follow-up event is defined!
+	 * This model is invalid as a outcome of the split-event is not followed by at
+	 * least one Event
 	 * 
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws ParseException
-	 * @throws ModelException
 	 */
 	@Test
-	@Category(org.imixs.workflow.WorkflowKernel.class)
-	public void testSplitEventInvalidModel() {
+	public void testSplitEventInvalidModelMissingEvent() {
 
-		workflowContext.loadBPMNModel("/bpmn/split_event1_invalid.bpmn");
+		workflowContext.loadBPMNModel("/bpmn/split_event_invalid_1.bpmn");
 
 		// test Condition 1
-		ItemCollection itemCollection = new ItemCollection();
-		itemCollection.replaceItemValue("_subject", "Hello");
-		itemCollection.replaceItemValue("$processid", 1000);
-		itemCollection.setEventID(10);
-		itemCollection.replaceItemValue("$modelversion", "1.0.0");
-
-		// model exception expected!
+		ItemCollection workItem = new ItemCollection();
+		workItem.replaceItemValue("_subject", "Hello");
+		workItem.model("1.0.0").task(1000).event(10);
+		assertNotNull(workItem);
+		// model exception expected because the parallel gateway does not provide
+		// events!
 		try {
-			itemCollection = workflowContext.getWorkflowKernel().process(itemCollection);
+			workItem = workflowContext.getWorkflowKernel().process(workItem);
 			Assert.fail();
-		} catch (ModelException e) {
-			// expected behavior
-		} catch (PluginException e) {
+
+		} catch (PluginException | ModelException e) {
 			// not expected
-			e.printStackTrace();
+			assertTrue(e.getMessage().contains("only one outcome can be directly linked to a task element!"));
+		}
+
+	}
+
+	/**
+	 * Test model split_event_invalid_2.bpmn.
+	 * 
+	 * This model is invalid as no outcome is followed by a Task
+	 * 
+	 */
+	@Test
+	public void testSplitEventInvalidModelMissingTask() {
+
+		workflowContext.loadBPMNModel("/bpmn/split_event_invalid_2.bpmn");
+
+		// test Condition 1
+		ItemCollection workItem = new ItemCollection();
+		workItem.replaceItemValue("_subject", "Hello");
+		workItem.model("1.0.0").task(1000).event(10);
+		assertNotNull(workItem);
+		// model exception expected because the parallel gateway does not provide
+		// events!
+		try {
+			workItem = workflowContext.getWorkflowKernel().process(workItem);
 			Assert.fail();
+
+		} catch (PluginException | ModelException e) {
+			// not expected
+			assertTrue(e.getMessage().contains("At least one outcome must be connected directly to a Task Element!"));
 		}
 
 	}
