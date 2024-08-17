@@ -442,8 +442,8 @@ public class WorkflowKernel {
             logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
             // load new Event and start new processing life cycle...
             event = this.ctx.getModelManager().loadEvent(workitem);
-
-            workitem.event(event.getItemValueInteger("numactivityid"));
+            workitem.event(event.getItemValueInteger(OpenBPMNUtil.EVENT_ITEM_EVENTID));
+            return event;
         } else {
             // evaluate next BPMN Element.....
             ItemCollection nextElement = this.ctx.getModelManager().nextModelElement(event, workitem);

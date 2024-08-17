@@ -1,308 +1,201 @@
 package org.imixs.workflow.bpmn;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowEnvironment;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.xml.sax.SAXException;
 
-import org.junit.Assert;
-
 /**
- * Test class test the Imixs BPMNParser.
- * 
- * Special case: Conditional-Events
+ * This test class is testing various less and more complex conditional event
+ * situations. The test also covers conditional events with parallel gateways
+ * (split events).
  * 
  * @see issue #299
  * @author rsoika
  */
 public class TestBPMNParserConditionalEvents {
 
-	@SuppressWarnings("unchecked")
+	private MockWorkflowEnvironment workflowEnvironment;
+
+	@Before
+	public void setup() throws PluginException {
+		workflowEnvironment = new MockWorkflowEnvironment();
+	}
+
 	@Test
-	public void testSimple()
-			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testSimple() throws ModelException, BPMNModelException {
 
-		InputStream inputStream = getClass().getResourceAsStream("/bpmn/conditional_event1.bpmn");
-
-		BPMNModel model = null;
-		try {
-			model = BPMNParser.parseModel(inputStream, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			Assert.fail();
-		} catch (ModelException e) {
-			e.printStackTrace();
-			Assert.fail();
-		}
+		// load test model
+		workflowEnvironment.loadBPMNModel("/bpmn/conditional_event1.bpmn");
+		BPMNModel model = workflowEnvironment.getOpenBPMNModelManager().getModel("1.0.0");
 		Assert.assertNotNull(model);
-
-		// Test Environment
-		ItemCollection profile = model.getDefinition();
-		Assert.assertNotNull(profile);
-
 		// test count of elements
-		Assert.assertEquals(3, model.findAllTasks().size());
-
-		// test task 1000
-		ItemCollection task = model.getTask(1000);
-		Assert.assertNotNull(task);
-
+		Assert.assertEquals(3, model.findAllActivities().size());
 		// test events for task 1000
-		List<ItemCollection> events = model.findAllEventsByTask(1000);
+		List<ItemCollection> events = workflowEnvironment.getOpenBPMNModelManager().findEventsByTask(model, 1000);
 		Assert.assertNotNull(events);
 		Assert.assertEquals(1, events.size());
 
-		// test activity 1000.10 submit
-		ItemCollection activity = model.getEvent(1000, 10);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals("conditional event", activity.getItemValueString("txtname"));
+		ItemCollection workItem = new ItemCollection();
+		workItem.model("1.0.0").task(1000).event(10);
+		try {
+			workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
+			assertEquals(1200, workItem.getTaskID());
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
 
-		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
+		// next test with budget >100
+		workItem = new ItemCollection();
+		workItem.model("1.0.0").task(1000).event(10);
+		workItem.setItemValue("_budget", 1500.00);
+		try {
+			workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
+			assertEquals(1100, workItem.getTaskID());
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
 
-		// Now we need to evaluate if the Event is marked as an conditional Event with
-		// the condition list copied from the gateway.
-		Assert.assertTrue(activity.hasItem("keyExclusiveConditions"));
-		Map<String, String> conditions = (Map<String, String>) activity.getItemValue("keyExclusiveConditions").get(0);
-		Assert.assertNotNull(conditions);
-		Assert.assertEquals("(workitem._budget && workitem._budget[0]>100)", conditions.get("task=1100"));
-		Assert.assertEquals("(workitem._budget && workitem._budget[0]<=100)", conditions.get("task=1200"));
 	}
 
-	
 	/**
-     * Like testSimple() but with a default conditional sequence flow....
-     * @throws ParseException
-     * @throws ParserConfigurationException
-     * @throws SAXException
-     * @throws IOException
-     * @throws ModelException
-     */
-	@SuppressWarnings("unchecked")
-    @Test
-    public void testSimpleDefault()
-            throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	 * Like testSimple() but with a default conditional sequence flow....
+	 * 
+	 * @throws ModelException
+	 */
+	@Test
+	public void testSimpleDefault()
+			throws ModelException {
+		// load test model
+		workflowEnvironment.loadBPMNModel("/bpmn/conditional_event_default.bpmn");
+		BPMNModel model = workflowEnvironment.getOpenBPMNModelManager().getModel("1.0.0");
+		Assert.assertNotNull(model);
+		// test activity 1000.10 submit
+		ItemCollection workItem = new ItemCollection();
+		workItem.model("1.0.0").task(1000).event(10);
+		try {
+			workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
+			assertEquals(1200, workItem.getTaskID());
+		} catch (PluginException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+	}
 
-        InputStream inputStream = getClass().getResourceAsStream("/bpmn/conditional_event_default.bpmn");
-
-        BPMNModel model = null;
-        try {
-            model = BPMNParser.parseModel(inputStream, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            Assert.fail();
-        } catch (ModelException e) {
-            e.printStackTrace();
-            Assert.fail();
-        }
-        Assert.assertNotNull(model);
-      
-        // test activity 1000.10 submit
-        ItemCollection activity = model.getEvent(1000, 10);
-        Assert.assertNotNull(activity);
-        Assert.assertEquals("conditional event", activity.getItemValueString("txtname"));
-
-        Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
-
-        // Now we need to evaluate if the Event is marked as an conditional Event with
-        // the condition list copied from the gateway.
-        Assert.assertTrue(activity.hasItem("keyExclusiveConditions"));
-        Map<String, String> conditions = (Map<String, String>) activity.getItemValue("keyExclusiveConditions").get(0);
-        Assert.assertNotNull(conditions);
-        Assert.assertEquals("(workitem._budget && workitem._budget[0]>100)", conditions.get("task=1100"));
-        Assert.assertEquals("true", conditions.get("task=1200"));
-    }
-	
 	/**
-	 * Like testSimple() but with a simple task element between the sequence flow....
-	 * @throws ParseException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
+	 * Like testSimple() but with a non-imixs Task element between the sequence
+	 * flow. The Expectation is that this element will be skipped.
+	 * 
 	 * @throws ModelException
 	 */
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testSimpleWithSimpleTask()
-			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
-
-		InputStream inputStream = getClass().getResourceAsStream("/bpmn/conditional_event3.bpmn");
-
-		BPMNModel model = null;
+			throws ModelException {
+		// load test model
+		workflowEnvironment.loadBPMNModel("/bpmn/conditional_event3.bpmn");
+		BPMNModel model = workflowEnvironment.getOpenBPMNModelManager().getModel("1.0.0");
+		Assert.assertNotNull(model);
+		// test activity 1000.10 submit
+		ItemCollection workItem = new ItemCollection();
+		workItem.setItemValue("_budget", 1500.00);
+		workItem.model("1.0.0").task(1000).event(10);
 		try {
-			model = BPMNParser.parseModel(inputStream, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			Assert.fail();
-		} catch (ModelException e) {
+			workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
+			assertEquals(1100, workItem.getTaskID());
+		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		Assert.assertNotNull(model);
-
-		// Test Environment
-		ItemCollection profile = model.getDefinition();
-		Assert.assertNotNull(profile);
-
-
-		// test activity 1000.10 submit
-		ItemCollection activity = model.getEvent(1000, 10);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals("conditional event", activity.getItemValueString("txtname"));
-
-		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
-
-		// Now we need to evaluate if the Event is marked as an conditional Event with
-		// the condition list copied from the gateway.
-		Assert.assertTrue(activity.hasItem("keyExclusiveConditions"));
-		Map<String, String> conditions = (Map<String, String>) activity.getItemValue("keyExclusiveConditions").get(0);
-		Assert.assertNotNull(conditions);
-		Assert.assertEquals("(workitem._budget && workitem._budget[0]>100)", conditions.get("task=1100"));
-		Assert.assertEquals("(workitem._budget && workitem._budget[0]<=100)", conditions.get("task=1200"));
 	}
 
-	
-	
-	@SuppressWarnings({ "unchecked" })
 	@Test
 	// @Ignore
 	public void testFollowUp()
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+		// load test model
+		workflowEnvironment.loadBPMNModel("/bpmn/conditional_event2.bpmn");
+		BPMNModel model = workflowEnvironment.getOpenBPMNModelManager().getModel("1.0.0");
+		Assert.assertNotNull(model);
 
-		InputStream inputStream = getClass().getResourceAsStream("/bpmn/conditional_event2.bpmn");
+		// test count of elements
+		Assert.assertEquals(3, model.findAllActivities().size());
 
-		BPMNModel model = null;
+		// test activity 1000.10 submit
+		ItemCollection workItem = new ItemCollection();
+		workItem.setItemValue("_budget", 50.00);
+		workItem.model("1.0.0").task(1000).event(10);
 		try {
-			model = BPMNParser.parseModel(inputStream, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			Assert.fail();
-		} catch (ModelException e) {
+			workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
+			assertEquals(1200, workItem.getTaskID());
+			assertEquals(2, workItem.getItemValueInteger("runs"));
+			// last event = 20
+			assertEquals(20, workItem.getItemValueInteger("$lastEvent"));
+		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		Assert.assertNotNull(model);
-
-		// Test Environment
-		ItemCollection profile = model.getDefinition();
-		Assert.assertNotNull(profile);
-
-		// test count of elements
-		Assert.assertEquals(3, model.findAllTasks().size());
-
-		// test task 1000
-		ItemCollection task = model.getTask(1000);
-		Assert.assertNotNull(task);
-
-		// test events for task 1000
-		List<ItemCollection> events = model.findAllEventsByTask(1000);
-		Assert.assertNotNull(events);
-		Assert.assertEquals(2, events.size());
-
-		// test activity 1000.10 submit
-		ItemCollection activity = model.getEvent(1000, 10);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals("conditional event", activity.getItemValueString("txtname"));
-
-		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
-
-		// Now we need to evaluate if the Event is marked as an conditional Event with
-		// the condition list copied from the gateway.
-		Assert.assertTrue(activity.hasItem("keyExclusiveConditions"));
-		Map<String, String> conditions = (Map<String, String>) activity.getItemValue("keyExclusiveConditions").get(0);
-		Assert.assertNotNull(conditions);
-		Assert.assertEquals("(workitem._budget && workitem._budget[0]>100)", conditions.get("task=1100"));
-		Assert.assertEquals("(workitem._budget && workitem._budget[0]<=100)", conditions.get("event=20"));
-
-		
-		// test Start Events - only the conditional event is in this case a start event
-		List<ItemCollection> startEvents = model.getStartEvents(1000);
-		Assert.assertNotNull(startEvents);
-		Assert.assertEquals(1, startEvents.size());
-		
 	}
 
 	/**
 	 * This test combines a conditional event with a split event.
 	 * 
-	 * @throws ParseException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
+	 * 
 	 * @throws ModelException
 	 */
-	@SuppressWarnings("unchecked")
 	@Test
-	public void testConditionalSplitEvent()
-			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testConditionalSplitEvent() throws ModelException {
 
-		InputStream inputStream = getClass().getResourceAsStream("/bpmn/conditional_split_event.bpmn");
+		// load test model
+		workflowEnvironment.loadBPMNModel("/bpmn/conditional_split_event.bpmn");
+		BPMNModel model = workflowEnvironment.getOpenBPMNModelManager().getModel("1.0.0");
+		Assert.assertNotNull(model);
 
-		BPMNModel model = null;
+		// test count of elements
+		Assert.assertEquals(4, model.findAllActivities().size());
+		// test activity 1000.10 submit
+		ItemCollection workItem = new ItemCollection();
+		workItem.setItemValue("_budget", 1520.00);
+		workItem.model("1.0.0").task(1000).event(10);
 		try {
-			model = BPMNParser.parseModel(inputStream, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			Assert.fail();
-		} catch (ModelException e) {
+			workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
+			assertEquals(1100, workItem.getTaskID());
+			assertEquals(2, workItem.getItemValueInteger("runs"));
+			// last event = 20
+			assertEquals(20, workItem.getItemValueInteger("$lastEvent"));
+
+			// We also expect a Split Workitem with the $lastEvent = 30
+			List<ItemCollection> splitWorkitems = workflowEnvironment.getWorkflowKernel().getSplitWorkitems();
+			assertNotNull(splitWorkitems);
+			assertEquals(1, splitWorkitems.size());
+			ItemCollection splitWorkitem = splitWorkitems.get(0);
+
+			assertEquals(1200, splitWorkitem.getTaskID());
+			assertEquals(30, splitWorkitem.getItemValueInteger("$lastEvent"));
+			assertEquals(3, splitWorkitem.getItemValueInteger("runs"));
+
+		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		Assert.assertNotNull(model);
 
-		// Test Environment
-		ItemCollection profile = model.getDefinition();
-		Assert.assertNotNull(profile);
-
-		// test count of elements
-		Assert.assertEquals(4, model.findAllTasks().size());
-
-		// test task 1000
-		ItemCollection task = model.getTask(1000);
-		Assert.assertNotNull(task);
-
-		// test events for task 1000
-		List<ItemCollection> events = model.findAllEventsByTask(1000);
-		Assert.assertNotNull(events);
-		Assert.assertEquals(3, events.size());
-
-		// test activity 1000.10 submit
-		ItemCollection activity = model.getEvent(1000, 10);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals("conditional event", activity.getItemValueString("txtname"));
-
-		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
-
-		// Now we need to evaluate if the Event is marked as an conditional Event with
-		// the condition list copied from the gateway.
-		Assert.assertTrue(activity.hasItem("keyExclusiveConditions"));
-		Map<String, String> conditions = (Map<String, String>) activity.getItemValue("keyExclusiveConditions").get(0);
-		Assert.assertNotNull(conditions);
-		Assert.assertEquals("(workitem._budget && workitem._budget[0]<=100)", conditions.get("task=1300"));
-		Assert.assertEquals("(workitem._budget && workitem._budget[0]>100)", conditions.get("event=20"));
-
-		// test split...
-		activity = model.getEvent(1000, 20);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals("split event", activity.getItemValueString("txtname"));
-
-		Assert.assertEquals(1000, activity.getItemValueInteger("numNextProcessID"));
-
-		// Now we need to evaluate if the Event is marked as an conditional Event with
-		// the condition list copied from the gateway.
-		Assert.assertTrue(activity.hasItem("keySplitConditions"));
-		conditions = (Map<String, String>) activity.getItemValue("keySplitConditions").get(0);
-		Assert.assertNotNull(conditions);
-		Assert.assertEquals("true", conditions.get("task=1100"));
-		Assert.assertEquals("false", conditions.get("event=30"));
 	}
 
 }
