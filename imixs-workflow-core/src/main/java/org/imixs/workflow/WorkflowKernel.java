@@ -389,6 +389,7 @@ public class WorkflowKernel {
         workitem.removeItem(ADAPTER_ERROR_MESSAGE);
 
         // Iterate through all events in the process flow
+        splitWorkitems = new ArrayList<ItemCollection>();
         List<String> loopDetector = new ArrayList<String>();
         ItemCollection event = this.ctx.getModelManager().loadEvent(workitem);
         while (event != null) {
@@ -450,60 +451,13 @@ public class WorkflowKernel {
                 throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
                         "BPMN Event Element must be followed by a Task or another Event!");
             }
-            // continue processing live-cycle?
-            // We support Task (terminate), Event (FollowUp) or ParallelGateway (Split)
+
+            // ==> bpmn2:parallelGateway
             if (ModelManager.PARALLELGATEWAY_ELEMENT.equals(nextElement.getType())) {
-                // We need the follow Up Task and Event Nodes now to create the split Events
-                BPMNElementNode gatewayNode = model.findElementNodeById(nextElement.getItemValueString("id"));
-                BPMNFlowIterator<BPMNElementNode> splitElementNavigator = new BPMNFlowIterator<BPMNElementNode>(
-                        gatewayNode,
-                        node -> ((OpenBPMNUtil.isImixsTaskElement(node))
-                                || (OpenBPMNUtil.isImixsEventElement(node))));
-                // now iterate all targets....
-                boolean foundMainTask = false;
-                while (splitElementNavigator.hasNext()) {
-                    BPMNElementNode nextSplitNode = splitElementNavigator.next();
-                    ItemCollection splitItemCol = OpenBPMNEntityBuilder.build(nextSplitNode);
-
-                    if (ModelManager.EVENT_ELEMENT.equals(splitItemCol.getType())) {
-                        // clone current instance to a new version...
-                        ItemCollection cloned = createVersion(workitem);
-                        // set new event
-                        cloned.setEventID(splitItemCol.getItemValueInteger(OpenBPMNUtil.EVENT_ITEM_EVENTID));
-                        // add temporary attribute $isversion...
-                        cloned.replaceItemValue(ISVERSION, true);
-
-                        ItemCollection splitEvent = splitItemCol;
-                        while (splitEvent != null) {
-                            splitEvent = this.processEvent(cloned, splitEvent);
-                        }
-
-                        // remove temporary attribute $isversion...
-                        cloned.removeItem(ISVERSION);
-                        // add to cache...
-                        splitWorkitems.add(cloned);
-                        continue;
-                    }
-                    if (ModelManager.TASK_ELEMENT.equals(splitItemCol.getType())) {
-                        if (foundMainTask == true) {
-                            throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
-                                    "BPMN Model Error: Parallel Gateway: " + gatewayNode.getId()
-                                            + " - only one outcome can be directly linked to a task element! Missing Event element.");
-                        }
-                        foundMainTask = true;
-                        nextElement = splitItemCol;
-                    }
-
-                }
-                // if we did not have found a SplitEvent we throw a Model Exception!
-                if (foundMainTask == false) {
-                    throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
-                            "BPMN Model Error: Parallel Gateway: " + gatewayNode.getId()
-                                    + " - At least one outcome must be connected directly to a Task Element!");
-                }
-                // continue with normal flow
+                nextElement = handleParallelGateWay(model, workitem, nextElement);
             }
 
+            // ==> bpmn2:intermediateCatchEvent
             if (ModelManager.EVENT_ELEMENT.equals(nextElement.getType())) {
                 // load next event
                 logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
@@ -513,6 +467,7 @@ public class WorkflowKernel {
                 return event;
             }
 
+            // == bpm2:task
             if (ModelManager.TASK_ELEMENT.equals(nextElement.getType())) {
                 // update status and terminate processing life cycle
                 logEvent(workitem.getTaskID(), workitem.getEventID(),
@@ -528,6 +483,84 @@ public class WorkflowKernel {
 
         return null;
 
+    }
+
+    /**
+     * This helper method resolves a ParallelGateway Situation.
+     * 
+     * The method verifies all outgoing flows and creates a new Split-WorkItem for
+     * each following Event.
+     * At lease on Task element is expected. This is the final status of the main
+     * workItem.
+     * 
+     * 
+     * @param model
+     * @param workitem
+     * @param parallelGateway
+     * @return
+     * @throws ModelException
+     * @throws PluginException
+     */
+    private ItemCollection handleParallelGateWay(BPMNModel model, ItemCollection workitem,
+            ItemCollection parallelGateway) throws ModelException, PluginException {
+        ItemCollection result = null;
+
+        // verify if we have a parallelgateway
+        if (!ModelManager.PARALLELGATEWAY_ELEMENT.equals(parallelGateway.getType())) {
+            throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
+                    "BPMN Model Parallel Gateway expected!");
+        }
+
+        // We need the follow Up Task and Event Nodes now to create the split Events
+        BPMNElementNode gatewayNode = model.findElementNodeById(parallelGateway.getItemValueString("id"));
+        BPMNFlowIterator<BPMNElementNode> splitElementNavigator = new BPMNFlowIterator<BPMNElementNode>(
+                gatewayNode,
+                node -> ((OpenBPMNUtil.isImixsTaskElement(node))
+                        || (OpenBPMNUtil.isImixsEventElement(node))));
+        // now iterate all targets....
+        boolean foundMainTask = false;
+        while (splitElementNavigator.hasNext()) {
+            BPMNElementNode nextSplitNode = splitElementNavigator.next();
+            ItemCollection splitItemCol = OpenBPMNEntityBuilder.build(nextSplitNode);
+
+            if (ModelManager.EVENT_ELEMENT.equals(splitItemCol.getType())) {
+                // clone current instance to a new version...
+                ItemCollection cloned = createVersion(workitem);
+                // set new event
+                cloned.setEventID(splitItemCol.getItemValueInteger(OpenBPMNUtil.EVENT_ITEM_EVENTID));
+                // add temporary attribute $isversion...
+                cloned.replaceItemValue(ISVERSION, true);
+
+                ItemCollection splitEvent = splitItemCol;
+                while (splitEvent != null) {
+                    splitEvent = this.processEvent(cloned, splitEvent);
+                }
+
+                // remove temporary attribute $isversion...
+                cloned.removeItem(ISVERSION);
+                // add to cache...
+                splitWorkitems.add(cloned);
+                continue;
+            }
+            if (ModelManager.TASK_ELEMENT.equals(splitItemCol.getType())) {
+                if (foundMainTask == true) {
+                    throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
+                            "BPMN Model Error: Parallel Gateway: " + gatewayNode.getId()
+                                    + " - only one outcome can be directly linked to a task element! Missing Event element.");
+                }
+                foundMainTask = true;
+                result = splitItemCol;
+            }
+
+        }
+        // if we did not have found a SplitEvent we throw a Model Exception!
+        if (foundMainTask == false) {
+            throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
+                    "BPMN Model Error: Parallel Gateway: " + gatewayNode.getId()
+                            + " - At least one outcome must be connected directly to a Task Element!");
+        }
+        // continue with normal flow
+        return result;
     }
 
     /**
