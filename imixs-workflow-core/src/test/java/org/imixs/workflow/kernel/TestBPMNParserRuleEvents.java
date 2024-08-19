@@ -1,4 +1,4 @@
-package org.imixs.workflow.bpmn;
+package org.imixs.workflow.kernel;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -8,7 +8,8 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.MockWorkflowEnvironment;
+import org.imixs.workflow.MockWorkflowEngine;
+import org.imixs.workflow.bpmn.OpenBPMNModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
@@ -31,12 +32,14 @@ import org.xml.sax.SAXException;
  */
 public class TestBPMNParserRuleEvents {
 
-	private MockWorkflowEnvironment mockEnvironment;
 	private BPMNModel model;
+
+	private MockWorkflowEngine workflowEngine;
 
 	@Before
 	public void setup() throws PluginException {
-		mockEnvironment = new MockWorkflowEnvironment();
+		workflowEngine = new MockWorkflowEngine();
+
 	}
 
 	/**
@@ -70,7 +73,7 @@ public class TestBPMNParserRuleEvents {
 			// test task 1000
 			ItemCollection task;
 
-			task = mockEnvironment.getWorkflowContext().getModelManager().loadTask(workitem);
+			task = workflowEngine.getModelManager().loadTask(workitem);
 
 			Assert.assertNotNull(task);
 
@@ -102,20 +105,20 @@ public class TestBPMNParserRuleEvents {
 	@Test
 	public void testFollowUp() {
 
-		mockEnvironment.loadBPMNModel("/bpmn/event_rules.bpmn");
+		workflowEngine.loadBPMNModel("/bpmn/event_rules.bpmn");
 		try {
-			model = mockEnvironment.getWorkflowContext().getModelManager().getModel("1.0.0");
+			model = workflowEngine.getModelManager().getModel("1.0.0");
 
 			Assert.assertNotNull(model);
 
 			// Test Environment
 			ItemCollection workItem = new ItemCollection();
 			workItem.model("1.0.0").task(2000).event(10);
-			ItemCollection profile = mockEnvironment.getWorkflowContext().getModelManager().loadDefinition(workItem);
+			ItemCollection profile = workflowEngine.getModelManager().loadDefinition(workItem);
 			Assert.assertNotNull(profile);
 
 			/* Test 2000.10 - FollowUp Event */
-			workItem = mockEnvironment.getWorkflowKernel().process(workItem);
+			workItem = workflowEngine.getWorkflowKernel().process(workItem);
 			Assert.assertEquals(2, workItem.getItemValueInteger("runs"));
 			// Test model switch to mode 1.0.0
 			Assert.assertEquals("1.0.0", workItem.getModelVersion());
@@ -127,36 +130,26 @@ public class TestBPMNParserRuleEvents {
 	}
 
 	/**
-	 * What should happen here?
+	 * Invalid situation - we do not expect that we have more than one target task
 	 * 
-	 * @throws ParseException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws ModelException
 	 */
 	@Test
-	public void testSimpleNoGateway() {
+	public void testSimpleAmbiguousSequenceFlow() {
 
-		mockEnvironment.loadBPMNModel("/bpmn/event_rules.bpmn");
+		workflowEngine.loadBPMNModel("/bpmn/event_rules.bpmn");
 		try {
-			model = mockEnvironment.getWorkflowContext().getModelManager().getModel("1.0.0");
+			model = workflowEngine.getModelManager().getModel("1.0.0");
 			ItemCollection workItem = new ItemCollection();
 			workItem.model("1.0.0").task(3000).event(10);
 			Assert.assertNotNull(model);
-			workItem = mockEnvironment.getWorkflowKernel().process(workItem);
-
+			workItem = workflowEngine.getWorkflowKernel().process(workItem);
 			// Should not be possible
-			Assert.fail();
-
-			Assert.assertEquals(1, workItem.getItemValueInteger("runs"));
-			// Test model switch to mode 1.0.0
-			Assert.assertEquals("1.0.0", workItem.getModelVersion());
-			Assert.assertEquals(3100, workItem.getTaskID());
-		} catch (ModelException | PluginException e) {
+			Assert.fail("ambiguous sequence flow expected!");
+		} catch (ModelException e) {
+			// ambiguous sequence flow Exception expected
+			Assert.assertTrue(e.getMessage().contains("ambiguous sequence flow"));
+		} catch (PluginException e) {
 			Assert.fail(e.getMessage());
-			e.printStackTrace();
 		}
-
 	}
 }

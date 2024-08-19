@@ -1,7 +1,12 @@
-package org.imixs.workflow;
+package org.imixs.workflow.kernel;
 
 import java.util.List;
 
+import org.imixs.workflow.MockPlugin;
+import org.imixs.workflow.MockPluginNull;
+import org.imixs.workflow.MockWorkflowContext;
+import org.imixs.workflow.Plugin;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,11 +21,11 @@ import org.junit.experimental.categories.Category;
  */
 public class TestWorkflowKernelPluginRegistration {
 
-	private MockWorkflowEnvironment workflowContext;
+	private MockWorkflowContext workflowContext;
 
 	@Before
 	public void setup() throws PluginException {
-		workflowContext = new MockWorkflowEnvironment();
+		workflowContext = new MockWorkflowContext();
 	}
 
 	/**
@@ -30,7 +35,7 @@ public class TestWorkflowKernelPluginRegistration {
 	@Test
 	public void testKernel() {
 
-		WorkflowKernel kernel = new WorkflowKernel(workflowContext.getWorkflowContext());
+		WorkflowKernel kernel = new WorkflowKernel(workflowContext);
 		// We expect that no plugin is registered
 		List<Plugin> pluginRegistry = kernel.getPluginRegistry();
 		Assert.assertNotNull(pluginRegistry);
@@ -60,22 +65,29 @@ public class TestWorkflowKernelPluginRegistration {
 	 */
 	@Test
 	public void testInit() {
-
+		WorkflowKernel kernel = new WorkflowKernel(workflowContext);
+		// Now we register a Pluign
+		MockPlugin mockPlugin = new MockPlugin();
+		try {
+			kernel.registerPlugin(mockPlugin);
+		} catch (PluginException e) {
+			Assert.fail(e.getMessage());
+		}
 		// We expect that the mock environment has already one Mock Plugin registered
-		List<Plugin> pluginRegistry = workflowContext.getWorkflowKernel().getPluginRegistry();
+		List<Plugin> pluginRegistry = kernel.getPluginRegistry();
 		Assert.assertNotNull(pluginRegistry);
 		Assert.assertEquals(1, pluginRegistry.size());
 
 		// Now we register a 2nd plugin
-		MockPluginNull mokPlugin = new MockPluginNull();
+		MockPluginNull mockPluginNull = new MockPluginNull();
 		try {
-			workflowContext.getWorkflowKernel().registerPlugin(mokPlugin);
+			kernel.registerPlugin(mockPluginNull);
 		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 		// We expect 2 Plugins
-		pluginRegistry = workflowContext.getWorkflowKernel().getPluginRegistry();
+		pluginRegistry = kernel.getPluginRegistry();
 		Assert.assertNotNull(pluginRegistry);
 		Assert.assertEquals(2, pluginRegistry.size());
 	}
@@ -86,24 +98,33 @@ public class TestWorkflowKernelPluginRegistration {
 	@Test
 	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testPluginRegistration() {
+		WorkflowKernel kernel = new WorkflowKernel(workflowContext);
+		// Now we register a Pluign
+		MockPlugin mockPlugin = new MockPlugin();
+		try {
+			kernel.registerPlugin(mockPlugin);
+		} catch (PluginException e) {
+			Assert.fail(e.getMessage());
+		}
 
-		MockPlugin mokPlugin = new MockPlugin();
+		// try to register the same plugin twice
+		MockPlugin mokPlugin2 = new MockPlugin();
 		try {
 			// We expect a Plugin Exception
-			workflowContext.getWorkflowKernel().registerPlugin(mokPlugin);
+			kernel.registerPlugin(mokPlugin2);
 			Assert.fail();
 		} catch (PluginException e) {
 			Assert.assertTrue(e.getMessage().contains("is already registered"));
 		}
 
-		List<Plugin> plugins = workflowContext.getWorkflowKernel().getPluginRegistry();
+		List<Plugin> plugins = kernel.getPluginRegistry();
 		Assert.assertNotNull(plugins);
 		Assert.assertEquals(1, plugins.size());
 
 		// unregister plugin
 		try {
-			workflowContext.getWorkflowKernel().unregisterPlugin(MockPlugin.class.getName());
-			plugins = workflowContext.getWorkflowKernel().getPluginRegistry();
+			kernel.unregisterPlugin(MockPlugin.class.getName());
+			plugins = kernel.getPluginRegistry();
 			Assert.assertNotNull(plugins);
 			Assert.assertEquals(0, plugins.size());
 		} catch (PluginException e) {
@@ -111,9 +132,9 @@ public class TestWorkflowKernelPluginRegistration {
 			Assert.fail();
 		}
 
-		// register 2 plugins
+		// register the MockPlugin again
 		try {
-			workflowContext.getWorkflowKernel().registerPlugin(mokPlugin);
+			kernel.registerPlugin(mockPlugin);
 		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -121,10 +142,10 @@ public class TestWorkflowKernelPluginRegistration {
 		// Now we register the same plugin the 2nd time
 		// We expect a Plugin Exception
 		try {
-			workflowContext.getWorkflowKernel().registerPlugin(mokPlugin);
+			kernel.registerPlugin(mockPlugin);
 			Assert.fail();
 		} catch (PluginException e) {
-			plugins = workflowContext.getWorkflowKernel().getPluginRegistry();
+			plugins = kernel.getPluginRegistry();
 			Assert.assertNotNull(plugins);
 			Assert.assertEquals(1, plugins.size());
 		}

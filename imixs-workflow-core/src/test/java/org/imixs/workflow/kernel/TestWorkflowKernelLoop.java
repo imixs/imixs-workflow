@@ -1,8 +1,10 @@
-package org.imixs.workflow;
+package org.imixs.workflow.kernel;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -21,13 +23,13 @@ import org.junit.Test;
  */
 public class TestWorkflowKernelLoop {
 
-	private MockWorkflowEnvironment workflowEnvironment;
+	private MockWorkflowEngine workflowEngine;
 
 	@Before
 	public void setup() throws PluginException {
-		workflowEnvironment = new MockWorkflowEnvironment();
+		workflowEngine = new MockWorkflowEngine();
 		// load default model
-		workflowEnvironment.loadBPMNModel("/bpmn/loop-event.bpmn");
+		workflowEngine.loadBPMNModel("/bpmn/loop-event.bpmn");
 	}
 
 	/**
@@ -45,7 +47,7 @@ public class TestWorkflowKernelLoop {
 				.event(10);
 
 		try {
-			workflowEnvironment.getWorkflowKernel().process(workItem);
+			workflowEngine.getWorkflowKernel().process(workItem);
 			// We expect 1200 because budget is <= 1.00
 			assertEquals(1200, workItem.getTaskID());
 			assertEquals(2, workItem.getItemValueInteger("runs"));
@@ -71,7 +73,7 @@ public class TestWorkflowKernelLoop {
 				.event(10);
 
 		try {
-			ItemCollection task = workflowEnvironment.getWorkflowKernel().eval(workItem);
+			ItemCollection task = workflowEngine.getWorkflowKernel().eval(workItem);
 			// We expect 1200 because budget is <= 1.00
 			assertEquals(1200, task.getItemValueInteger("taskID"));
 			assertEquals(0, workItem.getItemValueInteger("runs"));
@@ -95,7 +97,7 @@ public class TestWorkflowKernelLoop {
 				.task(1000)
 				.event(10);
 		try {
-			workflowEnvironment.getWorkflowKernel().process(workItem);
+			workflowEngine.getWorkflowKernel().process(workItem);
 			// We expect a ProcessingErrorException! budget is <= 1.00
 			Assert.fail();
 		} catch (ModelException | PluginException e) {
@@ -123,7 +125,7 @@ public class TestWorkflowKernelLoop {
 				.task(1000)
 				.event(10);
 		try {
-			workflowEnvironment.getWorkflowKernel().eval(workItem);
+			workflowEngine.getWorkflowKernel().eval(workItem);
 			// We expect a ProcessingErrorException! budget is <= 1.00
 			Assert.fail();
 		} catch (ModelException | PluginException e) {

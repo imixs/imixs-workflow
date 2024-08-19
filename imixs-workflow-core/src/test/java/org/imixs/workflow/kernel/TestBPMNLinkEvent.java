@@ -1,9 +1,9 @@
-package org.imixs.workflow.bpmn;
+package org.imixs.workflow.kernel;
 
 import java.util.Set;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.MockWorkflowEnvironment;
+import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
@@ -21,12 +21,11 @@ import org.openbpmn.bpmn.exceptions.BPMNModelException;
  */
 public class TestBPMNLinkEvent {
 
-	private MockWorkflowEnvironment workflowEnvironment;
+	private MockWorkflowEngine workflowEngine;
 
 	@Before
 	public void setup() throws PluginException {
-		workflowEnvironment = new MockWorkflowEnvironment();
-
+		workflowEngine = new MockWorkflowEngine();
 	}
 
 	/**
@@ -39,15 +38,15 @@ public class TestBPMNLinkEvent {
 			throws ModelException {
 
 		// load test models
-		workflowEnvironment.loadBPMNModel("/bpmn/link-event-basic.bpmn");
-		BPMNModel model = workflowEnvironment.getOpenBPMNModelManager().getModel("1.0.0");
+		workflowEngine.loadBPMNModel("/bpmn/link-event-basic.bpmn");
+		BPMNModel model = workflowEngine.getModelManager().getModel("1.0.0");
 		Assert.assertNotNull(model);
 
 		// Test Environment
 		ItemCollection workItem = new ItemCollection();
 		workItem.model("1.0.0").task(1000).event(20);
 		try {
-			workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
+			workItem = workflowEngine.getWorkflowKernel().process(workItem);
 		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -68,15 +67,15 @@ public class TestBPMNLinkEvent {
 			throws ModelException {
 
 		// load test models
-		workflowEnvironment.loadBPMNModel("/bpmn/link-event-followup.bpmn");
-		BPMNModel model = workflowEnvironment.getOpenBPMNModelManager().getModel("1.0.0");
+		workflowEngine.loadBPMNModel("/bpmn/link-event-followup.bpmn");
+		BPMNModel model = workflowEngine.getModelManager().getModel("1.0.0");
 		Assert.assertNotNull(model);
 
 		// Test Environment
 		ItemCollection workItem = new ItemCollection();
 		workItem.model("1.0.0").task(1000).event(20);
 		try {
-			workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
+			workItem = workflowEngine.getWorkflowKernel().process(workItem);
 		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -98,8 +97,8 @@ public class TestBPMNLinkEvent {
 	public void testLinkEventComplex() throws ModelException {
 
 		// load test models
-		workflowEnvironment.loadBPMNModel("/bpmn/link-event-complex.bpmn");
-		BPMNModel model = workflowEnvironment.getOpenBPMNModelManager().getModel("1.0.0");
+		workflowEngine.loadBPMNModel("/bpmn/link-event-complex.bpmn");
+		BPMNModel model = workflowEngine.getModelManager().getModel("1.0.0");
 		Assert.assertNotNull(model);
 		try {
 			Set<? extends BPMNElementNode> endEvents = model.findProcessByName("Simple")
@@ -115,7 +114,7 @@ public class TestBPMNLinkEvent {
 		ItemCollection workItem = new ItemCollection();
 		workItem.model("1.0.0").task(1000).event(20);
 		try {
-			workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
+			workItem = workflowEngine.getWorkflowKernel().process(workItem);
 		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -129,11 +128,11 @@ public class TestBPMNLinkEvent {
 		workItem = new ItemCollection();
 		workItem.model("1.0.0").task(1000).event(40);
 		try {
-			workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
+			workItem = workflowEngine.getWorkflowKernel().process(workItem);
 			Assert.assertEquals(1, workItem.getItemValueInteger("runs"));
 			Assert.assertEquals(1200, workItem.getTaskID());
 			workItem.event(20);
-			workItem = workflowEnvironment.getWorkflowKernel().process(workItem);
+			workItem = workflowEngine.getWorkflowKernel().process(workItem);
 			Assert.assertEquals(2, workItem.getItemValueInteger("runs"));
 			Assert.assertEquals(1100, workItem.getTaskID());
 

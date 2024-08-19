@@ -1,8 +1,10 @@
-package org.imixs.workflow;
+package org.imixs.workflow.kernel;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
@@ -19,27 +21,24 @@ public class TestWorkflowKernelEval {
 
 	private final static Logger logger = Logger.getLogger(TestWorkflowKernelEval.class.getName());
 
-	final static String MODEL_PATH = "/bpmn/workflowkernel_eval.bpmn";
-	final static String MODEL_VERSION = "1.0.0";
-
-	private MockWorkflowEnvironment workflowContext;
+	private MockWorkflowEngine workflowEngine;
 
 	@Before
 	public void setup() throws PluginException {
-		workflowContext = new MockWorkflowEnvironment();
+		workflowEngine = new MockWorkflowEngine();
 		// load default model
-		workflowContext.loadBPMNModel(MODEL_PATH);
+		workflowEngine.loadBPMNModel("/bpmn/workflowkernel_eval.bpmn");
 	}
 
 	@Test
 	public void testRuleMatch() {
 		long l = System.currentTimeMillis();
 		ItemCollection workitem = new ItemCollection();
-		workitem.model(MODEL_VERSION).task(100).event(10);
+		workitem.model("1.0.0").task(100).event(10);
 		workitem.setItemValue("a", 1);
 		workitem.setItemValue("b", "DE");
 		try {
-			ItemCollection targetTask = workflowContext.getWorkflowKernel().eval(workitem);
+			ItemCollection targetTask = workflowEngine.getWorkflowKernel().eval(workitem);
 			Assert.assertNotNull(targetTask);
 			Assert.assertEquals("Match", targetTask.getItemValueString("name"));
 			logger.log(Level.INFO, "evaluate BPMN Target Task in {0}ms", System.currentTimeMillis() - l);
@@ -55,12 +54,12 @@ public class TestWorkflowKernelEval {
 	public void testRuleNoMatch() {
 		long l = System.currentTimeMillis();
 		ItemCollection workitem = new ItemCollection();
-		workitem.model(MODEL_VERSION).task(100).event(10);
+		workitem.model("1.0.0").task(100).event(10);
 		workitem.setItemValue("a", 1);
 		workitem.setItemValue("b", "I");
 
 		try {
-			ItemCollection targetTask = workflowContext.getWorkflowKernel().eval(workitem);
+			ItemCollection targetTask = workflowEngine.getWorkflowKernel().eval(workitem);
 			Assert.assertNotNull(targetTask);
 			Assert.assertEquals("No Match", targetTask.getItemValueString("name"));
 			logger.log(Level.INFO, "evaluate BPMN-Rule in {0}ms", System.currentTimeMillis() - l);

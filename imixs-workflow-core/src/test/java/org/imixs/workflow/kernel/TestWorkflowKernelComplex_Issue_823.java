@@ -1,10 +1,12 @@
-package org.imixs.workflow;
+package org.imixs.workflow.kernel;
 
 import java.io.IOException;
 import java.text.ParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
@@ -31,13 +33,13 @@ import org.xml.sax.SAXException;
  */
 public class TestWorkflowKernelComplex_Issue_823 {
 
-	private MockWorkflowEnvironment workflowEnvironment;
+	private MockWorkflowEngine workflowEngine;
 
 	@Before
 	public void setup() throws PluginException {
-		workflowEnvironment = new MockWorkflowEnvironment();
+		workflowEngine = new MockWorkflowEngine();
 		// load default model
-		workflowEnvironment.loadBPMNModel("/bpmn/conditional_complex_event0.bpmn");
+		workflowEngine.loadBPMNModel("/bpmn/conditional_complex_event0.bpmn");
 	}
 
 	/**
@@ -62,7 +64,7 @@ public class TestWorkflowKernelComplex_Issue_823 {
 		workItem.replaceItemValue("_capacity", 90); // <100.00
 
 		try {
-			workitemProcessed = workflowEnvironment.getWorkflowKernel().process(workItem);
+			workitemProcessed = workflowEngine.getWorkflowKernel().process(workItem);
 			// We expect 2100
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
@@ -71,39 +73,6 @@ public class TestWorkflowKernelComplex_Issue_823 {
 		// we expect 2 rund because of the conditional event
 		Assert.assertEquals(2, workitemProcessed.getItemValueInteger("runs"));
 		Assert.assertEquals(2100, workitemProcessed.getTaskID());
-
-		// try {
-		// model = BPMNParser.parseModel(inputStream, "UTF-8");
-
-		// ItemCollection task2000 = model.getTask(2000);
-		// ItemCollection task2200 = model.getTask(2200);
-
-		// List<ItemCollection> events2000 = model.findAllEventsByTask(2000);
-		// Assert.assertEquals(3, events2000.size());
-
-		// List<ItemCollection> events2200 = model.findAllEventsByTask(2200);
-		// Assert.assertEquals(5, events2200.size());
-
-		// // NOTE:
-		// // The following check is not resolvelable because in the demo model
-		// // task 2200 contains a duplicate eventID which is not detected by the
-		// Parser!!
-
-		// // Check event 2200.100 pointing to 2100
-		// ItemCollection event = model.getEvent(2200, 100);
-		// Assert.assertEquals(2100, event.getItemValueInteger("numnextprocessid"));
-
-		// event = model.getEvent(2200, 100);
-		// Assert.assertEquals(2100, event.getItemValueInteger("numnextprocessid"));
-
-		// } catch (UnsupportedEncodingException e) {
-		// e.printStackTrace();
-		// Assert.fail();
-		// } catch (ModelException e) {
-		// e.printStackTrace();
-		// Assert.fail();
-		// }
-		// Assert.assertNotNull(model);
 
 	}
 
@@ -129,7 +98,7 @@ public class TestWorkflowKernelComplex_Issue_823 {
 		workItem.replaceItemValue("_capacity", 500); // >100.00
 
 		try {
-			workitemProcessed = workflowEnvironment.getWorkflowKernel().process(workItem);
+			workitemProcessed = workflowEngine.getWorkflowKernel().process(workItem);
 			// We expect 2100
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
@@ -164,7 +133,7 @@ public class TestWorkflowKernelComplex_Issue_823 {
 		workItem.replaceItemValue("_capacity", 90); // <100.00
 
 		try {
-			workitemProcessed = workflowEnvironment.getWorkflowKernel().process(workItem);
+			workitemProcessed = workflowEngine.getWorkflowKernel().process(workItem);
 			// We expect 2100 and 2 runs because of the conditional event
 			Assert.assertEquals(2, workitemProcessed.getItemValueInteger("runs"));
 			Assert.assertEquals(2100, workitemProcessed.getTaskID());
@@ -176,7 +145,7 @@ public class TestWorkflowKernelComplex_Issue_823 {
 		// next test event 20
 		try {
 			workItem.event(20);
-			workitemProcessed = workflowEnvironment.getWorkflowKernel().process(workItem);
+			workitemProcessed = workflowEngine.getWorkflowKernel().process(workItem);
 			// We expect 2200 and 3 runs
 			Assert.assertEquals(3, workitemProcessed.getItemValueInteger("runs"));
 			Assert.assertEquals(2200, workitemProcessed.getTaskID());
@@ -188,7 +157,7 @@ public class TestWorkflowKernelComplex_Issue_823 {
 		// Test Escalate we trigger 2200.100 - no status change expected
 		try {
 			workItem.event(100);
-			workitemProcessed = workflowEnvironment.getWorkflowKernel().process(workItem);
+			workitemProcessed = workflowEngine.getWorkflowKernel().process(workItem);
 			// We expect 2200 and 4 runs
 			Assert.assertEquals(4, workitemProcessed.getItemValueInteger("runs"));
 			Assert.assertEquals(2200, workitemProcessed.getTaskID());
@@ -200,7 +169,7 @@ public class TestWorkflowKernelComplex_Issue_823 {
 		// Finally we trigger 2200.20 that should lead again to 2100 next test event 20
 		try {
 			workItem.event(20);
-			workitemProcessed = workflowEnvironment.getWorkflowKernel().process(workItem);
+			workitemProcessed = workflowEngine.getWorkflowKernel().process(workItem);
 			// We expect 2100 and 6 runs because of the condition
 			Assert.assertEquals(6, workitemProcessed.getItemValueInteger("runs"));
 			Assert.assertEquals(2100, workitemProcessed.getTaskID());

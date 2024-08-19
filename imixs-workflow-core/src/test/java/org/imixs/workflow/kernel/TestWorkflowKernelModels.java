@@ -1,4 +1,4 @@
-package org.imixs.workflow;
+package org.imixs.workflow.kernel;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -6,6 +6,9 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowEngine;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
@@ -23,11 +26,12 @@ import org.junit.experimental.categories.Category;
 public class TestWorkflowKernelModels {
 
 	private static final Logger logger = Logger.getLogger(TestWorkflowKernelModels.class.getName());
-	private MockWorkflowEnvironment workflowContext;
+
+	private MockWorkflowEngine workflowEngine;
 
 	@Before
 	public void setup() throws PluginException {
-		workflowContext = new MockWorkflowEnvironment();
+		workflowEngine = new MockWorkflowEngine();
 	}
 
 	/**
@@ -38,7 +42,7 @@ public class TestWorkflowKernelModels {
 	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testSimpleModel() {
 		try {
-			workflowContext.loadBPMNModel("/bpmn/simple.bpmn");
+			workflowEngine.loadBPMNModel("/bpmn/simple.bpmn");
 
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
@@ -47,13 +51,13 @@ public class TestWorkflowKernelModels {
 
 			itemCollection.replaceItemValue("$modelversion", "1.0.0");
 
-			itemCollection = workflowContext.getWorkflowKernel().process(itemCollection);
+			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 			Assert.assertEquals("workitem", itemCollection.getItemValueString("type"));
 			Assert.assertEquals(1000, itemCollection.getTaskID());
 
 			itemCollection.event(20);
-			itemCollection = workflowContext.getWorkflowKernel().process(itemCollection);
+			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
 			Assert.assertEquals("workitemarchive", itemCollection.getItemValueString("type"));
 			Assert.assertEquals(1100, itemCollection.getTaskID());
 
@@ -72,7 +76,7 @@ public class TestWorkflowKernelModels {
 	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testTicketModel() {
 		try {
-			workflowContext.loadBPMNModel("/bpmn/ticket.bpmn");
+			workflowEngine.loadBPMNModel("/bpmn/ticket.bpmn");
 
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
@@ -80,7 +84,7 @@ public class TestWorkflowKernelModels {
 			itemCollection.setEventID(20);
 
 			itemCollection.replaceItemValue("$modelversion", "1.0.0");
-			itemCollection = workflowContext.getWorkflowKernel().process(itemCollection);
+			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 			Assert.assertEquals(1200, itemCollection.getTaskID());
 			Assert.assertEquals("in Progress", itemCollection.getItemValueString("$workflowstatus"));
@@ -106,7 +110,7 @@ public class TestWorkflowKernelModels {
 	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testConditionalEventModel1() {
 		try {
-			workflowContext.loadBPMNModel("/bpmn/conditional_event1.bpmn");
+			workflowEngine.loadBPMNModel("/bpmn/conditional_event1.bpmn");
 
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
@@ -117,7 +121,7 @@ public class TestWorkflowKernelModels {
 
 			itemCollection.replaceItemValue("_budget", 99);
 
-			itemCollection = workflowContext.getWorkflowKernel().process(itemCollection);
+			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 			Assert.assertEquals(1200, itemCollection.getTaskID());
 
@@ -130,7 +134,7 @@ public class TestWorkflowKernelModels {
 
 			itemCollection.replaceItemValue("_budget", 9999);
 
-			itemCollection = workflowContext.getWorkflowKernel().process(itemCollection);
+			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 
 			Assert.assertEquals(1100, itemCollection.getTaskID());
@@ -153,7 +157,7 @@ public class TestWorkflowKernelModels {
 	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testConditionalEventModel2() {
 		try {
-			workflowContext.loadBPMNModel("/bpmn/conditional_event2.bpmn");
+			workflowEngine.loadBPMNModel("/bpmn/conditional_event2.bpmn");
 
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
@@ -164,7 +168,7 @@ public class TestWorkflowKernelModels {
 
 			itemCollection.replaceItemValue("_budget", 9999);
 
-			itemCollection = workflowContext.getWorkflowKernel().process(itemCollection);
+			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 			Assert.assertEquals(1100, itemCollection.getTaskID());
 
@@ -174,7 +178,7 @@ public class TestWorkflowKernelModels {
 
 			itemCollection.replaceItemValue("_budget", 99);
 
-			itemCollection = workflowContext.getWorkflowKernel().process(itemCollection);
+			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 
 			Assert.assertEquals(1200, itemCollection.getTaskID());
@@ -196,7 +200,7 @@ public class TestWorkflowKernelModels {
 	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testSplitEventModel1() {
 		try {
-			workflowContext.loadBPMNModel("/bpmn/split_event1.bpmn");
+			workflowEngine.loadBPMNModel("/bpmn/split_event1.bpmn");
 
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
@@ -205,13 +209,13 @@ public class TestWorkflowKernelModels {
 			itemCollection.setEventID(10);
 			itemCollection.replaceItemValue("$modelversion", "1.0.0");
 
-			itemCollection = workflowContext.getWorkflowKernel().process(itemCollection);
+			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
 			Assert.assertEquals("Hello", itemCollection.getItemValueString("_subject"));
 			Assert.assertEquals(1100, itemCollection.getTaskID());
 			Assert.assertEquals(10, itemCollection.getItemValueInteger("$lastEvent"));
 
 			// test new version...
-			List<ItemCollection> versions = workflowContext.getWorkflowKernel().getSplitWorkitems();
+			List<ItemCollection> versions = workflowEngine.getWorkflowKernel().getSplitWorkitems();
 			Assert.assertNotNull(versions);
 			Assert.assertTrue(versions.size() == 1);
 			ItemCollection version = versions.get(0);
@@ -250,7 +254,7 @@ public class TestWorkflowKernelModels {
 	@Test
 	public void testSplitEventInvalidModelMissingEvent() {
 
-		workflowContext.loadBPMNModel("/bpmn/split_event_invalid_1.bpmn");
+		workflowEngine.loadBPMNModel("/bpmn/split_event_invalid_1.bpmn");
 
 		// test Condition 1
 		ItemCollection workItem = new ItemCollection();
@@ -260,7 +264,7 @@ public class TestWorkflowKernelModels {
 		// model exception expected because the parallel gateway does not provide
 		// events!
 		try {
-			workItem = workflowContext.getWorkflowKernel().process(workItem);
+			workItem = workflowEngine.getWorkflowKernel().process(workItem);
 			Assert.fail();
 
 		} catch (PluginException | ModelException e) {
@@ -279,7 +283,7 @@ public class TestWorkflowKernelModels {
 	@Test
 	public void testSplitEventInvalidModelMissingTask() {
 
-		workflowContext.loadBPMNModel("/bpmn/split_event_invalid_2.bpmn");
+		workflowEngine.loadBPMNModel("/bpmn/split_event_invalid_2.bpmn");
 
 		// test Condition 1
 		ItemCollection workItem = new ItemCollection();
@@ -289,7 +293,7 @@ public class TestWorkflowKernelModels {
 		// model exception expected because the parallel gateway does not provide
 		// events!
 		try {
-			workItem = workflowContext.getWorkflowKernel().process(workItem);
+			workItem = workflowEngine.getWorkflowKernel().process(workItem);
 			Assert.fail();
 
 		} catch (PluginException | ModelException e) {

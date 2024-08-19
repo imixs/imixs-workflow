@@ -1,14 +1,19 @@
 package org.imixs.workflow.bpmn;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.Set;
 
-import org.imixs.workflow.MockWorkflowEnvironment;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.imixs.workflow.exceptions.ModelException;
-import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
+import org.openbpmn.bpmn.util.BPMNModelFactory;
+import org.xml.sax.SAXException;
 
 /**
  * Test class
@@ -22,23 +27,27 @@ import org.openbpmn.bpmn.BPMNModel;
  */
 public class TestBPMNParserCollaborationMinutes {
 
-	private MockWorkflowEnvironment workflowEnvironment;
+	BPMNModel model = null;
+	OpenBPMNModelManager openBPMNModelManager = null;
 
 	@Before
-	public void setup() throws PluginException {
-		workflowEnvironment = new MockWorkflowEnvironment();
-		// load test models
-		workflowEnvironment.loadBPMNModel("/bpmn/minutes.bpmn");
-
+	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
+		openBPMNModelManager = new OpenBPMNModelManager();
+		try {
+			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/minutes.bpmn"));
+		} catch (ModelException | BPMNModelException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
 	}
 
 	@Test
 	public void testSimple() throws ModelException {
 
-		BPMNModel model = workflowEnvironment.getOpenBPMNModelManager().getModel("1.0.0");
+		BPMNModel model = openBPMNModelManager.getModel("1.0.0");
 		Assert.assertNotNull(model);
 
-		Set<String> groups = workflowEnvironment.getOpenBPMNModelManager().findAllGroups(model);
+		Set<String> groups = openBPMNModelManager.findAllGroups(model);
 		// Test Groups
 		Assert.assertFalse(groups.contains("Collaboration"));
 		Assert.assertTrue(groups.contains("Protokoll"));

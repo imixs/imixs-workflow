@@ -10,18 +10,17 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
+import org.junit.Assert;
 import org.junit.Test;
+import org.openbpmn.bpmn.BPMNModel;
 import org.xml.sax.SAXException;
 
-import org.junit.Assert;
-
 /**
- * Test class test the Imixs BPMNParser
+ * Test class testing message elements
  * 
  * @author rsoika
  */
 public class TestBPMNParserMessageText {
-
 
 	@Test
 	public void testSimple() throws ParseException,
@@ -67,8 +66,7 @@ public class TestBPMNParserMessageText {
 				task.getItemValueString("txtworkflowgroup"));
 
 		// test activity for task 1000
-		List<ItemCollection> activities = model.findAllEventsByTask(1000
-				);
+		List<ItemCollection> activities = model.findAllEventsByTask(1000);
 		Assert.assertNotNull(activities);
 		Assert.assertEquals(1, activities.size());
 

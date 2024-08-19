@@ -266,6 +266,12 @@ public class OpenBPMNModelManager implements ModelManager {
                     }
                 }
 
+                // if the navigator has still more elements it is an ambiguous sequence flow
+                if (elementNavigator.hasNext()) {
+                    throw new ModelException(ModelException.INVALID_MODEL,
+                            "$modelversion " + version + " ambiguous sequence flow: " + workitem.getTaskID() + "."
+                                    + workitem.getEventID());
+                }
                 logger.info("nextModelElement " + key + " took " + (System.currentTimeMillis() - l) + "ms");
                 return OpenBPMNEntityBuilder.build(nextElement);
 

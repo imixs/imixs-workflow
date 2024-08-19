@@ -7,7 +7,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  * Test class for RuleEngine
  * 
@@ -19,7 +18,6 @@ public class TestRuleEngine {
 	@Before
 	public void setup() throws PluginException {
 		ruleEngine = new RuleEngine();
-
 	}
 
 	/**
@@ -31,14 +29,14 @@ public class TestRuleEngine {
 	@Test
 	public void testBasicScript() throws ScriptException, PluginException {
 
-	    ItemCollection workitem = new ItemCollection();
-	    workitem.setItemValue("name", "Anna");
-	    // define a script
-	    String js = "var result={}; if ('Anna' == workitem.getItemValueString('name')) result.colleague='Melman';";
-	    // evaluate the business rule
-	    workitem = ruleEngine.evaluateBusinessRule(js, workitem, null);
-	    Assert.assertNotNull(workitem);
-	    Assert.assertEquals("Melman", workitem.getItemValueString("colleague"));
+		ItemCollection workitem = new ItemCollection();
+		workitem.setItemValue("name", "Anna");
+		// define a script
+		String js = "var result={}; if ('Anna' == workitem.getItemValueString('name')) result.colleague='Melman';";
+		// evaluate the business rule
+		workitem = ruleEngine.evaluateBusinessRule(js, workitem, null);
+		Assert.assertNotNull(workitem);
+		Assert.assertEquals("Melman", workitem.getItemValueString("colleague"));
 	}
 
 	/**
@@ -68,6 +66,5 @@ public class TestRuleEngine {
 		Assert.assertFalse(result);
 
 	}
-	
 
 }
