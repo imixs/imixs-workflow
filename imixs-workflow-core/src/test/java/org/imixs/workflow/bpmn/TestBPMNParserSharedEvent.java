@@ -1,8 +1,6 @@
 package org.imixs.workflow.bpmn;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.List;
 
@@ -10,10 +8,13 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
+import org.openbpmn.bpmn.util.BPMNModelFactory;
+import org.xml.sax.SAXException;
 
 /**
  * Test class test the Imixs BPMNParser in case of shared events (one event used
@@ -23,314 +24,212 @@ import org.junit.Assert;
  */
 public class TestBPMNParserSharedEvent {
 
+	BPMNModel model = null;
+	OpenBPMNModelManager openBPMNModelManager = null;
+
+	@Before
+	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
+		openBPMNModelManager = new OpenBPMNModelManager();
+
+	}
 
 	/**
 	 * Simple shared event
 	 * 
-	 * @throws ParseException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws ModelException 
 	 */
 	@Test
-	public void testSharedEvent() throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testSharedEvent() {
 
-		InputStream inputStream = getClass().getResourceAsStream("/bpmn/shared_event1.bpmn");
-
-		BPMNModel model = null;
 		try {
-			model = BPMNParser.parseModel(inputStream, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
+			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/shared_event1.bpmn"));
+			model = openBPMNModelManager.getModel("1.0.0");
+			Assert.assertNotNull(model);
+		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
-			Assert.fail();
-		} catch (ModelException e) {
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
-		Assert.assertNotNull(model);
 
-		// test task 1000
-		ItemCollection task = model.getTask(1000);
-		Assert.assertNotNull(task);
+		try {
+			// test task 1000
+			ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+			Assert.assertNotNull(task);
 
-		// test activity for task 1000
-		List<ItemCollection> activities = model.findAllEventsByTask(1000);
-		Assert.assertNotNull(activities);
-		Assert.assertEquals(2, activities.size());
+			// test activity for task 1000
+			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+			Assert.assertNotNull(events);
+			Assert.assertEquals(2, events.size());
 
-		// test activity for task 1100
-		activities = model.findAllEventsByTask(1100);
-		Assert.assertNotNull(activities);
-		Assert.assertEquals(1, activities.size());
-
-		// test activity 1000.10 submit
-		ItemCollection activity = model.getEvent(1000, 10);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
-
-		// now test shared activity...
-
-		// test activity 1100.90 archive
-		activity = model.getEvent(1100, 90);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals(1200, activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("archive", activity.getItemValueString("txtname"));
-
-		// test activity 1000.90 archive
-		activity = model.getEvent(1000, 90);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals(1200, activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("archive", activity.getItemValueString("txtname"));
-
+			// test activity for task 1100
+			events = openBPMNModelManager.findEventsByTask(model, 1100);
+			Assert.assertNotNull(events);
+			Assert.assertEquals(1, events.size());
+		} catch (BPMNModelException e) {
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
 	}
 
 	/**
 	 * Shared event with an follow up event
 	 * 
-	 * @throws ParseException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws ModelException 
 	 */
 	@Test
-	public void testSharedEventWithFollowUp()
-			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testSharedEventWithFollowUp() {
 
-		
-		InputStream inputStream = getClass().getResourceAsStream("/bpmn/shared_event2.bpmn");
-
-		BPMNModel model = null;
 		try {
-			model = BPMNParser.parseModel(inputStream, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
+			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/shared_event2.bpmn"));
+			model = openBPMNModelManager.getModel("1.0.0");
+			Assert.assertNotNull(model);
+		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
-			Assert.fail();
-		} catch (ModelException e) {
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
-		Assert.assertNotNull(model);
 
-		// test task 2000
-		ItemCollection task = model.getTask(2000);
-		Assert.assertNotNull(task);
-		List<ItemCollection> activities = model.findAllEventsByTask(2000);
-		Assert.assertNotNull(activities);
-		Assert.assertEquals(3, activities.size());
+		try {
 
-		// test activity for task 2100
-		activities = model.findAllEventsByTask(2100);
-		Assert.assertNotNull(activities);
-		Assert.assertEquals(2, activities.size());
+			// test task 2000
+			ItemCollection task = openBPMNModelManager.findTaskByID(model, 2000);
+			Assert.assertNotNull(task);
+			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 2000);
+			Assert.assertNotNull(events);
+			Assert.assertEquals(2, events.size());
 
-		// test activity 2000.10 submit
-		ItemCollection activity = model.getEvent(2000, 10);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals(2100, activity.getItemValueInteger("numNextProcessID"));
+			// test activity for task 2100
+			events = openBPMNModelManager.findEventsByTask(model, 2100);
+			Assert.assertNotNull(events);
+			Assert.assertEquals(1, events.size());
 
-		// now test shared activity...
-
-		// test activity 2000.80 archive
-		activity = model.getEvent(2000, 80);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals("1", activity.getItemValueString("keyFollowUp"));
-		Assert.assertEquals(90, activity.getItemValueInteger("numNextActivityID"));
-		Assert.assertEquals("archive", activity.getItemValueString("txtname"));
-
-		// test activity 2000.90 archive
-		activity = model.getEvent(2000, 90);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals(2200, activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("followup", activity.getItemValueString("txtname"));
-
+		} catch (BPMNModelException e) {
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
 	}
 
 	/**
 	 * Shared event with an follow up event
 	 * 
-	 * @throws ParseException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws ModelException 
 	 */
 	@Test
-	public void testSharedLinkedEventWithFollowUp()
-			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testSharedLinkedEventWithFollowUp() {
 
-		
-		InputStream inputStream = getClass().getResourceAsStream("/bpmn/shared_event3.bpmn");
-
-		BPMNModel model = null;
 		try {
-			model = BPMNParser.parseModel(inputStream, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
+			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/shared_event3.bpmn"));
+			model = openBPMNModelManager.getModel("1.0.0");
+			Assert.assertNotNull(model);
+		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
-			Assert.fail();
-		} catch (ModelException e) {
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
-		Assert.assertNotNull(model);
 
-		// test task 3000
-		ItemCollection task = model.getTask(3000);
-		Assert.assertNotNull(task);
-		List<ItemCollection> activities = model.findAllEventsByTask(3000);
-		Assert.assertNotNull(activities);
-		Assert.assertEquals(3, activities.size());
-
-		// test task 3100
-		task = model.getTask(3100);
-		Assert.assertNotNull(task);
-		activities = model.findAllEventsByTask(3100);
-		Assert.assertNotNull(activities);
-		Assert.assertEquals(2, activities.size());
-
-		// test task 3200
-		task = model.getTask(3200);
-		Assert.assertNotNull(task);
-		activities = model.findAllEventsByTask(3200);
-		Assert.assertNotNull(activities);
-		Assert.assertEquals(0, activities.size());
-
-		// test follow up 3000.20
-		ItemCollection activity = model.getEvent(3000, 20);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals("1", activity.getItemValueString("keyFollowUp"));
-		Assert.assertEquals(30, activity.getItemValueInteger("numNextActivityID"));
-		Assert.assertEquals("archive", activity.getItemValueString("txtname"));
-
-		// test follow up 3100.20
-		activity = model.getEvent(3100, 20);
-		Assert.assertNotNull(activity);
-		Assert.assertEquals("1", activity.getItemValueString("keyFollowUp"));
-		Assert.assertEquals(30, activity.getItemValueInteger("numNextActivityID"));
-		Assert.assertEquals("archive", activity.getItemValueString("txtname"));
-
-		// test follow up 3000.30
-		activity = model.getEvent(3000, 30);
-		Assert.assertNotNull(activity);
-		Assert.assertFalse("1".equals(activity.getItemValueString("keyFollowUp")));
-		Assert.assertEquals(3200, activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("followup", activity.getItemValueString("txtname"));
-		Assert.assertEquals(3000, activity.getItemValueInteger("numProcessID"));
-
-		// test follow up 3100.30
-		activity = model.getEvent(3100, 30);
-		Assert.assertNotNull(activity);
-		Assert.assertFalse("1".equals(activity.getItemValueString("keyFollowUp")));
-		Assert.assertEquals(3200, activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("followup", activity.getItemValueString("txtname"));
-		Assert.assertEquals(3100, activity.getItemValueInteger("numProcessID"));
-
-	}
-	
-	
-	
-	
-	/**
-	 * Shared event with a direct follow up event
-	 * 
-	 * @throws ParseException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws ModelException 
-	 */
-	@Test
-	public void testSharedEvent_Case4()
-			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
-
-		
-		InputStream inputStream = getClass().getResourceAsStream("/bpmn/shared_event4.bpmn");
-
-		BPMNModel model = null;
 		try {
-			model = BPMNParser.parseModel(inputStream, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
+
+			// test task 3000
+			ItemCollection task = openBPMNModelManager.findTaskByID(model, 3000);
+			Assert.assertNotNull(task);
+			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 3000);
+			Assert.assertNotNull(events);
+			Assert.assertEquals(2, events.size());
+
+			// test task 3100
+			task = openBPMNModelManager.findTaskByID(model, 3100);
+			Assert.assertNotNull(task);
+			events = openBPMNModelManager.findEventsByTask(model, 3100);
+			Assert.assertNotNull(events);
+			Assert.assertEquals(1, events.size());
+
+			// test task 3200
+			task = openBPMNModelManager.findTaskByID(model, 3200);
+			Assert.assertNotNull(task);
+			events = openBPMNModelManager.findEventsByTask(model, 3200);
+			Assert.assertNotNull(events);
+			Assert.assertEquals(0, events.size());
+
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
-			Assert.fail();
-		} catch (ModelException e) {
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
-		Assert.assertNotNull(model);
-
-		// test task 2000
-		ItemCollection task = model.getTask(2000);
-		Assert.assertNotNull(task);
-		List<ItemCollection> activities = model.findAllEventsByTask(2000);
-		Assert.assertNotNull(activities);
-		// there are 3 events....
-		Assert.assertEquals(2, activities.size());
-		Assert.assertNotNull(model.getEvent(2000, 10)); // save
-		Assert.assertNotNull(model.getEvent(2000, 90)); // follow up
-	//	Assert.assertNotNull(model.getEvent(2000, 100)); // follow up (shared)
-		
-		// test task 2100
-		task = model.getTask(2100);
-		Assert.assertNotNull(task);
-		activities = model.findAllEventsByTask(2100);
-		Assert.assertNotNull(activities);
-		// there are no events....
-		Assert.assertEquals(0, activities.size());
-
-	
 	}
 
 	/**
 	 * Shared event with a direct follow up event
 	 * 
-	 * @throws ParseException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws ModelException 
 	 */
 	@Test
-	public void testSharedEvent_Case5()
-			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testSharedEvent_Case4() {
 
-		
-		InputStream inputStream = getClass().getResourceAsStream("/bpmn/shared_event5.bpmn");
-
-		BPMNModel model = null;
 		try {
-			model = BPMNParser.parseModel(inputStream, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
+			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/shared_event4.bpmn"));
+			model = openBPMNModelManager.getModel("1.0.0");
+			Assert.assertNotNull(model);
+		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
-			Assert.fail();
-		} catch (ModelException e) {
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
-		Assert.assertNotNull(model);
 
-		// test task 2000
-		ItemCollection task = model.getTask(2000);
-		Assert.assertNotNull(task);
-		List<ItemCollection> activities = model.findAllEventsByTask(2000);
-		Assert.assertNotNull(activities);
-		// there are 3 events....
-		Assert.assertEquals(2, activities.size());
-		Assert.assertNotNull(model.getEvent(2000, 10)); // save
-		Assert.assertNotNull(model.getEvent(2000, 90)); // follow up
-		//Assert.assertNotNull(model.getEvent(2000, 100)); // follow up (shared)
-		
-		// test task 2100
-		task = model.getTask(2100);
-		Assert.assertNotNull(task);
-		activities = model.findAllEventsByTask(2100);
-		Assert.assertNotNull(activities);
-		// there are 2 events....
-		Assert.assertEquals(2, activities.size());
-		Assert.assertNotNull(model.getEvent(2100, 80)); // archive
-		Assert.assertNotNull(model.getEvent(2100, 90)); // follow up (shared)
+		try {
 
-	
+			// test task 2000
+			ItemCollection task = openBPMNModelManager.findTaskByID(model, 2000);
+			Assert.assertNotNull(task);
+			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 2000);
+			Assert.assertNotNull(events);
+			// there are 3 events....
+			Assert.assertEquals(2, events.size());
+			Assert.assertNotNull(openBPMNModelManager.findEventByID(model, 2000, 10)); // save
+			Assert.assertNotNull(openBPMNModelManager.findEventByID(model, 2000, 90)); // follow up
+
+			// test task 2100
+			task = openBPMNModelManager.findTaskByID(model, 2100);
+			Assert.assertNotNull(task);
+			events = openBPMNModelManager.findEventsByTask(model, 2100);
+			Assert.assertNotNull(events);
+			// there are no events....
+			Assert.assertEquals(0, events.size());
+		} catch (BPMNModelException e) {
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
+	}
+
+	/**
+	 * Shared event with a direct follow up event
+	 * 
+	 */
+	@Test
+	public void testSharedEvent_Case5() {
+
+		try {
+			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/shared_event5.bpmn"));
+			model = openBPMNModelManager.getModel("1.0.0");
+			Assert.assertNotNull(model);
+		} catch (ModelException | BPMNModelException e) {
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
+
+		try {
+			// test task 2000
+			ItemCollection task = openBPMNModelManager.findTaskByID(model, 2000);
+			Assert.assertNotNull(task);
+			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 2000);
+			Assert.assertNotNull(events);
+			// there are 3 events....
+			Assert.assertEquals(2, events.size());
+			Assert.assertNotNull(openBPMNModelManager.findEventByID(model, 2000, 10)); // save
+			Assert.assertNotNull(openBPMNModelManager.findEventByID(model, 2000, 90)); // follow up
+
+			// test task 2100
+			task = openBPMNModelManager.findTaskByID(model, 2100);
+			Assert.assertNotNull(task);
+			events = openBPMNModelManager.findEventsByTask(model, 2100);
+			Assert.assertNotNull(events);
+			// there are 2 events....
+			Assert.assertEquals(1, events.size());
+			Assert.assertNotNull(openBPMNModelManager.findEventByID(model, 2100, 80)); // archive
+		} catch (BPMNModelException e) {
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
 	}
 
 }

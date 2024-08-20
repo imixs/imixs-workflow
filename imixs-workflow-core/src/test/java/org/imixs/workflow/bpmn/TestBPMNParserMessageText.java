@@ -1,18 +1,20 @@
 package org.imixs.workflow.bpmn;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
+import org.openbpmn.bpmn.util.BPMNModelFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -21,68 +23,62 @@ import org.xml.sax.SAXException;
  * @author rsoika
  */
 public class TestBPMNParserMessageText {
+	BPMNModel model = null;
+	OpenBPMNModelManager openBPMNModelManager = null;
+
+	@Before
+	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
+		openBPMNModelManager = new OpenBPMNModelManager();
+
+	}
 
 	@Test
 	public void testSimple() throws ParseException,
 			ParserConfigurationException, SAXException, IOException, ModelException {
 
-		String VERSION = "1.0.0";
-
-		InputStream inputStream = getClass().getResourceAsStream(
-				"/bpmn/message_example.bpmn");
-
-		BPMNModel model = null;
 		try {
-			model = BPMNParser.parseModel(inputStream, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			Assert.fail();
-		} catch (ModelException e) {
+			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/message_example.bpmn"));
+			model = openBPMNModelManager.getModel("1.0.0");
+			Assert.assertNotNull(model);
+		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		Assert.assertNotNull(model);
 
-		// Test Environment
-		ItemCollection profile = model.getDefinition();
-		Assert.assertNotNull(profile);
-		Assert.assertEquals("environment.profile",
-				profile.getItemValueString("txtname"));
-		Assert.assertEquals("WorkflowEnvironmentEntity",
-				profile.getItemValueString("type"));
-		Assert.assertEquals(VERSION,
-				profile.getItemValueString("$ModelVersion"));
+		try {
+			Set<String> groups = openBPMNModelManager.findAllGroups(model);
+			Assert.assertTrue(groups.contains("Message Example"));
 
-		Assert.assertTrue(model.getGroups().contains("Message Example"));
+			// test count of elements
+			Assert.assertEquals(2, model.findAllActivities().size());
 
-		// test count of elements
-		Assert.assertEquals(2, model.findAllTasks().size());
+			// test task 1000
+			ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+			Assert.assertNotNull(task);
 
-		// test task 1000
-		ItemCollection task = model.getTask(1000);
-		Assert.assertNotNull(task);
-		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
-		Assert.assertEquals("Message Example",
-				task.getItemValueString("txtworkflowgroup"));
+			// test activity for task 1000
+			List<ItemCollection> events;
 
-		// test activity for task 1000
-		List<ItemCollection> activities = model.findAllEventsByTask(1000);
-		Assert.assertNotNull(activities);
-		Assert.assertEquals(1, activities.size());
+			events = openBPMNModelManager.findEventsByTask(model, 1000);
 
-		// test activity 1000.10 submit
-		ItemCollection activity = model.getEvent(1000, 10);
-		Assert.assertNotNull(activity);
+			Assert.assertNotNull(events);
+			Assert.assertEquals(1, events.size());
 
-		Assert.assertEquals("Some MessageMessage-Text",
-				activity.getItemValueString("txtmailsubject"));
+			// test event 1000.10 submit
+			ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
+			Assert.assertNotNull(event);
 
-		String message = activity.getItemValueString("rtfMailBody");
+			Assert.assertEquals("Some MessageMessage-Text",
+					event.getItemValueString(OpenBPMNUtil.EVENT_ITEM_MAIL_SUBJECT));
 
-		Assert.assertEquals(
-				"<h1>Some Message Text</h1>\nThis is some message\nMessage-Text",
-				message);
+			String message = event.getItemValueString(OpenBPMNUtil.EVENT_ITEM_MAIL_BODY);
 
+			Assert.assertEquals(
+					"<h1>Some Message Text</h1>\nThis is some message\nMessage-Text",
+					message);
+		} catch (BPMNModelException e) {
+			Assert.fail(e.getMessage());
+		}
 	}
 
 }

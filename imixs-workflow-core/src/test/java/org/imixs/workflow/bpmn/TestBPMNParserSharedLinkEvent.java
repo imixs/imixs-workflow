@@ -1,8 +1,6 @@
 package org.imixs.workflow.bpmn;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -10,8 +8,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
+import org.openbpmn.bpmn.util.BPMNModelFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -24,57 +25,52 @@ import org.xml.sax.SAXException;
  */
 public class TestBPMNParserSharedLinkEvent {
 
+	BPMNModel model = null;
+	OpenBPMNModelManager openBPMNModelManager = null;
+
+	@Before
+	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
+		openBPMNModelManager = new OpenBPMNModelManager();
+	}
+
 	/**
 	 * This test class tests intermediate link events
-	 * 
-	 * @throws ParseException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws ModelException
 	 */
 	@Test
-	public void testLinkEventSimple()
-			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testLinkEventSimple() {
 
-		InputStream inputStream = getClass().getResourceAsStream("/bpmn/shared-link-event.bpmn");
-
-		BPMNModel model = null;
 		try {
-			model = BPMNParser.parseModel(inputStream, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
+			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/shared-link-event.bpmn"));
+			model = openBPMNModelManager.getModel("1.0.0");
+			Assert.assertNotNull(model);
+		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
-			Assert.fail();
-		} catch (ModelException e) {
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
-		Assert.assertNotNull(model);
+		try {
+			// Test Environment
+			Assert.assertTrue(openBPMNModelManager.findAllGroups(model).contains("Simple"));
 
-		// Test Environment
-		Assert.assertTrue(model.getGroups().contains("Simple"));
+			// test count of elements
+			Assert.assertEquals(3, model.findAllActivities().size());
 
-		// test count of elements
-		Assert.assertEquals(3, model.findAllTasks().size());
+			// test task 1000
+			ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+			Assert.assertEquals("Task Shared Link Event1", task.getItemValueString("txtName"));
 
-		// test task 1000
-		ItemCollection task = model.getTask(1000);
-		Assert.assertNotNull(task);
-		Assert.assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
-		Assert.assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
+			// test shared events
+			Assert.assertEquals(3, openBPMNModelManager.findEventsByTask(model, 1000).size());
 
-		Assert.assertEquals("Task Shared Link Event1", task.getItemValueString("txtName"));
+			ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 99);
+			Assert.assertEquals("cancel", event.getItemValueString("txtName"));
 
-		// test shared events
-		Assert.assertEquals(3, model.findAllEventsByTask(1000).size());
-
-		ItemCollection event = model.getEvent(1000, 99);
-		Assert.assertEquals("cancel", event.getItemValueString("txtName"));
-
-		// test shared events
-		Assert.assertEquals(2, model.findAllEventsByTask(1100).size());
-		Assert.assertEquals(0, model.findAllEventsByTask(1200).size());
-
+			// test shared events
+			Assert.assertEquals(2, openBPMNModelManager.findEventsByTask(model, 1100).size());
+			Assert.assertEquals(0, openBPMNModelManager.findEventsByTask(model, 1200).size());
+		} catch (BPMNModelException e) {
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		}
 	}
 
 }

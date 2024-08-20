@@ -11,6 +11,7 @@ import org.openbpmn.bpmn.BPMNNS;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.DataObject;
 import org.openbpmn.bpmn.elements.Event;
+import org.openbpmn.bpmn.elements.Message;
 import org.openbpmn.bpmn.elements.Signal;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
@@ -111,6 +112,7 @@ public class OpenBPMNEntityBuilder {
         // resolve DataObjects
         if (bpmnElement instanceof Event || bpmnElement instanceof Activity) {
             resolveDataObjects(bpmnElement, result);
+            resolveMessageTags(bpmnElement, result);
         }
 
         // support deprecated item values
@@ -217,6 +219,73 @@ public class OpenBPMNEntityBuilder {
             values.add(data);
             entity.setItemValue("dataObjects", values);
         }
+    }
+
+    /**
+     * This method resolves message tags for an event element. The method pares for
+     * the text fragment
+     * <bpmn2:message>...</bpmn2:message> and replaces the tag with the
+     * corresponding message if available
+     * 
+     * @param elementNode - the bpmn event element
+     * @param entity      - the ItemCollection of the event
+     */
+    protected static void resolveMessageTags(BPMNElementNode elementNode, ItemCollection entity) {
+
+        String[] fieldList = { OpenBPMNUtil.EVENT_ITEM_MAIL_SUBJECT, OpenBPMNUtil.EVENT_ITEM_MAIL_BODY,
+                "txtmailsubject", "rtfmailbody" };
+        for (String field : fieldList) {
+
+            // Parse for the tag <bpmn2:message>
+            String value = entity.getItemValueString(field);
+            int parsingPos = 0;
+            boolean bNewValue = false;
+            while (value.indexOf("<bpmn2:message>", parsingPos) > -1) {
+
+                int istart = value.indexOf("<bpmn2:message>", parsingPos);
+                int iend = value.indexOf("</bpmn2:message>", parsingPos);
+                if (istart > -1 && iend > -1 && iend > istart) {
+                    String messageName = value.substring(istart + 15, iend);
+
+                    // find the corresponding bpmn2:message object by name....
+                    BPMNModel model = elementNode.getModel();
+                    String message = findMessageByName(model, messageName);
+                    if (message != null) {
+                        value = value.substring(0, istart) + message + value.substring(iend + 16);
+                        bNewValue = true;
+                    }
+                }
+
+                parsingPos = parsingPos + 15;
+            }
+
+            // Update item?
+            if (bNewValue) {
+                entity.replaceItemValue(field, value);
+            }
+
+        }
+
+    }
+
+    /**
+     * Helper method find a Message object by its name and return the text form the
+     * bpmn2:documentation tag.
+     * 
+     * @param model
+     * @param messageName
+     * @return
+     */
+    private static String findMessageByName(BPMNModel model, String messageName) {
+        if (messageName != null && !messageName.isEmpty()) {
+            for (Message message : model.getMessages()) {
+                if (messageName.equals(message.getName())) {
+                    return message.getDocumentation();
+                }
+            }
+        }
+        // no match
+        return "";
     }
 
     /**
@@ -431,21 +500,21 @@ public class OpenBPMNEntityBuilder {
     /**
      * Helper method to adopt a old name into a new one
      * 
-     * @param taskEntity
+     * @param entity
      * @param newItemName
      * @param oldItemName
      */
-    private static void adaptDeprecatedItem(ItemCollection taskEntity, String newItemName, String oldItemName) {
+    private static void adaptDeprecatedItem(ItemCollection entity, String newItemName, String oldItemName) {
 
         // test if old name is provided with a value...
-        if (taskEntity.getItemValueString(newItemName).isEmpty()
-                && !taskEntity.getItemValueString(oldItemName).isEmpty()) {
-            taskEntity.replaceItemValue(newItemName, taskEntity.getItemValue(oldItemName));
+        if (entity.getItemValueString(newItemName).isEmpty()
+                && !entity.getItemValueString(oldItemName).isEmpty()) {
+            entity.replaceItemValue(newItemName, entity.getItemValue(oldItemName));
         }
 
         // now we support backward compatibility and add the old name if missing
-        if (taskEntity.getItemValueString(oldItemName).isEmpty()) {
-            taskEntity.replaceItemValue(oldItemName, taskEntity.getItemValue(newItemName));
+        if (entity.getItemValueString(oldItemName).isEmpty()) {
+            entity.replaceItemValue(oldItemName, entity.getItemValue(newItemName));
         }
 
     }
