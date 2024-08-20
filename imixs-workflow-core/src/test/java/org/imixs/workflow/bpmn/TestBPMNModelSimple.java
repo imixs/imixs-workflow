@@ -81,6 +81,24 @@ public class TestBPMNModelSimple {
 	}
 
 	/**
+	 * Test find events by task
+	 * 
+	 * @throws ModelException
+	 */
+	@Test
+	public void testFindEvetnsByTasks() throws ModelException {
+		try {
+			// test End task....
+			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+			Assert.assertNotNull(events);
+			Assert.assertEquals(2, events.size());
+
+		} catch (BPMNModelException e) {
+			Assert.fail();
+		}
+	}
+
+	/**
 	 * Test the behavior of manipulating event objects.
 	 * 
 	 * A method can change an attribute of a Event object, but if we reload the

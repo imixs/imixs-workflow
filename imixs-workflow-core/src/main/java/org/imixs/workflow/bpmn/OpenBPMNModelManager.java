@@ -505,7 +505,10 @@ public class OpenBPMNModelManager implements ModelManager {
     }
 
     /**
-     * Returns a list of all Events assigned to a Task
+     * Returns a list of all Events assigned to a Task. The event can either
+     * connected by an outgoing sequence flow or come from a incoming sequence flow
+     * with now other incoming flows from the event.
+     * 
      * 
      * @param processGroup
      * @return
@@ -519,6 +522,18 @@ public class OpenBPMNModelManager implements ModelManager {
         List<ItemCollection> result = new ArrayList<>();
         while (elementNavigator.hasNext()) {
             result.add(OpenBPMNEntityBuilder.build(elementNavigator.next()));
+        }
+
+        // next we also add all incoming events with not incoming sequenceFlow.
+        Set<SequenceFlow> inFlows = taskElement.getIngoingSequenceFlows();
+        for (SequenceFlow flow : inFlows) {
+            BPMNElementNode element = flow.getSourceElement();
+            if (element != null && OpenBPMNUtil.isImixsEventElement(element)) {
+                // no incoming flows
+                if (element.getIngoingSequenceFlows().size() == 0) {
+                    result.add(OpenBPMNEntityBuilder.build(element));
+                }
+            }
         }
         return result;
     }
