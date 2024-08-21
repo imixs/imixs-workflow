@@ -15,19 +15,20 @@ import org.openbpmn.bpmn.elements.Message;
 import org.openbpmn.bpmn.elements.Signal;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
-import org.openbpmn.bpmn.navigation.BPMNFlowIterator;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * This OpenBPMNEntityBuilder provides methods to convert a OpenBPMN
- * BPMNElementNode into a ItemCollection. The corresponding ItemCollection
- * contains all Imixs Extension Elements as also the items 'id' and 'type'.
+ * This {@code BPMNEntityBuilder} provides methods to convert a
+ * {@link BPMNElementNode} into a {@link ItemCollection}. The corresponding
+ * {@code ItemCollection} contains all Imixs Extension Elements as also the
+ * items 'id' and 'type'.
  * <p>
  * Through the item 'id' it is possible to access the BPMN element directly from
- * an ItemCollection by the BPMN element id which should be unique. In addition,
+ * an {@code ItemCollection} by the BPMN element id which should be unique. In
+ * addition,
  * the item "type" is set to 'TASK' or 'EVENT', which reflects the
  * type of an element.
  * <p>
@@ -44,14 +45,14 @@ import org.w3c.dom.NodeList;
         }</pre>
  * 
  */
-public class OpenBPMNEntityBuilder {
+public class BPMNEntityBuilder {
 
-    private static Logger logger = Logger.getLogger(OpenBPMNEntityBuilder.class.getName());
+    private static Logger logger = Logger.getLogger(BPMNEntityBuilder.class.getName());
 
     /**
      * Private constructor to prevent instantiation
      */
-    private OpenBPMNEntityBuilder() {
+    private BPMNEntityBuilder() {
     }
 
     /**
@@ -80,17 +81,17 @@ public class OpenBPMNEntityBuilder {
         if (bpmnElement.hasAttribute("name")) {
             result.setItemValue("name", bpmnElement.getAttribute("name"));
         }
-        result.setItemValue(OpenBPMNUtil.TASK_ITEM_DOCUMENTATION, bpmnElement.getDocumentation());
+        result.setItemValue(BPMNUtil.TASK_ITEM_DOCUMENTATION, bpmnElement.getDocumentation());
 
         if (bpmnElement instanceof Activity) {
             result.setItemValue("taskID",
-                    Long.parseLong(bpmnElement.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "processid")));
+                    Long.parseLong(bpmnElement.getExtensionAttribute(BPMNUtil.getNamespace(), "processid")));
             // resolve BoundaryEvents
             resolveBoundaryEvents((Activity) bpmnElement, result);
         }
         if (bpmnElement instanceof Event) {
             result.setItemValue("eventID",
-                    Long.parseLong(bpmnElement.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "activityid")));
+                    Long.parseLong(bpmnElement.getExtensionAttribute(BPMNUtil.getNamespace(), "activityid")));
             // resolve SignalDefinitions and set the adapter.id itemList
             resolveSignalDefinitions((Event) bpmnElement, result);
         }
@@ -98,7 +99,7 @@ public class OpenBPMNEntityBuilder {
         // parse imixs extension attributes
         Element extensionElement = bpmnElement.getModel().findChildNodeByName(bpmnElement.getElementNode(),
                 BPMNNS.BPMN2, "extensionElements");
-        Set<Element> imixsExtensionElements = OpenBPMNUtil.findAllImixsElements(extensionElement, "item");
+        Set<Element> imixsExtensionElements = BPMNUtil.findAllImixsElements(extensionElement, "item");
         // iterate through set and verify the name attribute
         for (Element extensionItem : imixsExtensionElements) {
             String itemName = extensionItem.getAttribute("name");
@@ -146,17 +147,17 @@ public class OpenBPMNEntityBuilder {
             Event boundaryEvent = boundaryEvents.get(0);
 
             // find next imixs event
-            BPMNFlowIterator<BPMNElementNode> elementNavigator;
-            elementNavigator = new BPMNFlowIterator<BPMNElementNode>(
+            BPMNLinkedFlowIterator<BPMNElementNode> elementNavigator;
+            elementNavigator = new BPMNLinkedFlowIterator<BPMNElementNode>(
                     boundaryEvent,
-                    node -> ((OpenBPMNUtil.isImixsEventElement(node))));
+                    node -> ((BPMNUtil.isImixsEventElement(node))));
 
             if (elementNavigator.hasNext()) {
                 BPMNElementNode targetEvent = elementNavigator.next();
 
                 // "boundaryEvent.targetEvent"
                 result.setItemValue("boundaryEvent.targetEvent",
-                        Long.parseLong(targetEvent.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "activityid")));
+                        Long.parseLong(targetEvent.getExtensionAttribute(BPMNUtil.getNamespace(), "activityid")));
                 // boundaryEvent.timerEventDefinition.timeDuration
                 try {
                     Element timerEventDefinition = boundaryEvent.getChildNode(BPMNNS.BPMN2, "timerEventDefinition");
@@ -232,7 +233,7 @@ public class OpenBPMNEntityBuilder {
      */
     protected static void resolveMessageTags(BPMNElementNode elementNode, ItemCollection entity) {
 
-        String[] fieldList = { OpenBPMNUtil.EVENT_ITEM_MAIL_SUBJECT, OpenBPMNUtil.EVENT_ITEM_MAIL_BODY,
+        String[] fieldList = { BPMNUtil.EVENT_ITEM_MAIL_SUBJECT, BPMNUtil.EVENT_ITEM_MAIL_BODY,
                 "txtmailsubject", "rtfmailbody" };
         for (String field : fieldList) {
 
@@ -306,7 +307,7 @@ public class OpenBPMNEntityBuilder {
         if (imixsItemElement != null) {
             // now iterate over all item:values and add each value into the list
             // <imixs:value><![CDATA[form_basic]]></imixs:value>
-            Set<Element> imixsValueElements = OpenBPMNUtil.findAllImixsElements(imixsItemElement, "value");
+            Set<Element> imixsValueElements = BPMNUtil.findAllImixsElements(imixsItemElement, "value");
             if (imixsValueElements != null) {
                 for (Element imixsItemValue : imixsValueElements) {
                     String value = null;
@@ -388,23 +389,23 @@ public class OpenBPMNEntityBuilder {
      */
     private static void adaptDeprecatedTaskProperties(ItemCollection taskEntity) {
 
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_NAME, "txtname");
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_DOCUMENTATION, "rtfdescription");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_NAME, "txtname");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_DOCUMENTATION, "rtfdescription");
 
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_WORKFLOW_SUMMARY, "txtworkflowsummary");
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_WORKFLOW_ABSTRACT, "txtworkflowabstract");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_WORKFLOW_SUMMARY, "txtworkflowsummary");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_WORKFLOW_ABSTRACT, "txtworkflowabstract");
 
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_APPLICATION_EDITOR, "txteditorid");
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_APPLICATION_ICON, "txtimageurl");
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_APPLICATION_TYPE, "txttype");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_APPLICATION_EDITOR, "txteditorid");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_APPLICATION_ICON, "txtimageurl");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_APPLICATION_TYPE, "txttype");
 
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_OWNER_LIST, "namownershipnames");
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_OWNER_LIST_MAPPING, "keyownershipfields");
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_READACCESS_LIST, "namaddreadaccess");
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_READACCESS_LIST_MAPPING, "keyaddreadfields");
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_WRITEACCESS_LIST, "namaddwriteaccess");
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING, "keyaddwritefields");
-        adaptDeprecatedItem(taskEntity, OpenBPMNUtil.TASK_ITEM_ACL_UPDATE, "keyupdateacl");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_ACL_OWNER_LIST, "namownershipnames");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_ACL_OWNER_LIST_MAPPING, "keyownershipfields");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_ACL_READACCESS_LIST, "namaddreadaccess");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_ACL_READACCESS_LIST_MAPPING, "keyaddreadfields");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_ACL_WRITEACCESS_LIST, "namaddwriteaccess");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_ACL_WRITEACCESS_LIST_MAPPING, "keyaddwritefields");
+        adaptDeprecatedItem(taskEntity, BPMNUtil.TASK_ITEM_ACL_UPDATE, "keyupdateacl");
 
     }
 
@@ -417,83 +418,83 @@ public class OpenBPMNEntityBuilder {
      */
     private static void adaptDeprecatedEventProperties(ItemCollection eventEntity) {
 
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_NAME, "txtname");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_DOCUMENTATION, "rtfdescription");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_NAME, "txtname");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_DOCUMENTATION, "rtfdescription");
 
         // migrate keypublicresult
         if (!eventEntity.hasItem("keypublicresult")) {
-            if (!eventEntity.hasItem(OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC)) {
-                eventEntity.setItemValue(OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC, true);
+            if (!eventEntity.hasItem(BPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC)) {
+                eventEntity.setItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC, true);
             } else {
-                if (!eventEntity.hasItem(OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC)) {
-                    eventEntity.setItemValue(OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC,
+                if (!eventEntity.hasItem(BPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC)) {
+                    eventEntity.setItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC,
                             !"0".equals(eventEntity.getItemValueString("keypublicresult")));
                 }
             }
         } else {
-            if (!eventEntity.hasItem(OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC)) {
-                eventEntity.setItemValue(OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC,
+            if (!eventEntity.hasItem(BPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC)) {
+                eventEntity.setItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC,
                         !"0".equals(eventEntity.getItemValueString("keypublicresult")));
             }
         }
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC_ACTORS, "keyrestrictedvisibility");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_WORKFLOW_PUBLIC_ACTORS, "keyrestrictedvisibility");
 
         // acl
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_OWNER_LIST, "namownershipnames");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_OWNER_LIST_MAPPING, "keyownershipfields");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_READACCESS_LIST, "namaddreadaccess");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_READACCESS_LIST_MAPPING, "keyaddreadfields");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_WRITEACCESS_LIST, "namaddwriteaccess");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_WRITEACCESS_LIST_MAPPING, "keyaddwritefields");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_ACL_UPDATE, "keyupdateacl");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_ACL_OWNER_LIST, "namownershipnames");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_ACL_OWNER_LIST_MAPPING, "keyownershipfields");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_ACL_READACCESS_LIST, "namaddreadaccess");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_ACL_READACCESS_LIST_MAPPING, "keyaddreadfields");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_ACL_WRITEACCESS_LIST, "namaddwriteaccess");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_ACL_WRITEACCESS_LIST_MAPPING, "keyaddwritefields");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_ACL_UPDATE, "keyupdateacl");
 
         // workflow
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_WORKFLOW_RESULT, "txtactivityresult");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT, "txtactivityresult");
 
         // history
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_HISTORY_MESSAGE, "rtfresultlog");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_HISTORY_MESSAGE, "rtfresultlog");
 
         // mail
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_SUBJECT, "txtmailsubject");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_BODY, "rtfmailbody");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_TO_LIST, "nammailreceiver");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_TO_LIST_MAPPING, "keymailreceiverfields");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_CC_LIST, "nammailreceivercc");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_CC_LIST_MAPPING, "keymailreceiverfieldscc");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_BCC_LIST, "nammailreceiverbcc");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_MAIL_BCC_LIST_MAPPING, "keymailreceiverfieldsbcc");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_MAIL_SUBJECT, "txtmailsubject");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_MAIL_BODY, "rtfmailbody");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_MAIL_TO_LIST, "nammailreceiver");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_MAIL_TO_LIST_MAPPING, "keymailreceiverfields");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_MAIL_CC_LIST, "nammailreceivercc");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_MAIL_CC_LIST_MAPPING, "keymailreceiverfieldscc");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_MAIL_BCC_LIST, "nammailreceiverbcc");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_MAIL_BCC_LIST_MAPPING, "keymailreceiverfieldsbcc");
 
         // rule
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_RULE_ENGINE, "txtbusinessruleengine");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_RULE_DEFINITION, "txtbusinessrule");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_RULE_ENGINE, "txtbusinessruleengine");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_RULE_DEFINITION, "txtbusinessrule");
 
         // report
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_REPORT_NAME, "txtreportname");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_REPORT_PATH, "txtreportfilepath");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_REPORT_OPTIONS, "txtreportparams");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_REPORT_TARGET, "txtreporttarget");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_REPORT_NAME, "txtreportname");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_REPORT_PATH, "txtreportfilepath");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_REPORT_OPTIONS, "txtreportparams");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_REPORT_TARGET, "txtreporttarget");
 
         // version
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_VERSION_MODE, "keyversion");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_VERSION_EVENT, "numversionactivityid");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_VERSION_MODE, "keyversion");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_VERSION_EVENT, "numversionactivityid");
 
         // timer
-        if (!eventEntity.hasItem(OpenBPMNUtil.EVENT_ITEM_TIMER_ACTIVE)) {
-            eventEntity.setItemValue(OpenBPMNUtil.EVENT_ITEM_TIMER_ACTIVE,
+        if (!eventEntity.hasItem(BPMNUtil.EVENT_ITEM_TIMER_ACTIVE)) {
+            eventEntity.setItemValue(BPMNUtil.EVENT_ITEM_TIMER_ACTIVE,
                     Boolean.valueOf("1".equals(eventEntity.getItemValueString("keyscheduledactivity"))));
         }
         if (!eventEntity.hasItem("keyscheduledactivity")) {
-            if (eventEntity.getItemValueBoolean(OpenBPMNUtil.EVENT_ITEM_TIMER_ACTIVE)) {
+            if (eventEntity.getItemValueBoolean(BPMNUtil.EVENT_ITEM_TIMER_ACTIVE)) {
                 eventEntity.setItemValue("keyscheduledactivity", "1");
             } else {
                 eventEntity.setItemValue("keyscheduledactivity", "0");
             }
         }
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_TIMER_SELECTION, "txtscheduledview");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_TIMER_DELAY, "numactivitydelay");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_TIMER_DELAY_UNIT, "keyactivitydelayunit");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_TIMER_DELAY_BASE, "keyscheduledbaseobject");
-        adaptDeprecatedItem(eventEntity, OpenBPMNUtil.EVENT_ITEM_TIMER_DELAY_BASE_PROPERTY, "keytimecomparefield");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_TIMER_SELECTION, "txtscheduledview");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_TIMER_DELAY, "numactivitydelay");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_TIMER_DELAY_UNIT, "keyactivitydelayunit");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_TIMER_DELAY_BASE, "keyscheduledbaseobject");
+        adaptDeprecatedItem(eventEntity, BPMNUtil.EVENT_ITEM_TIMER_DELAY_BASE_PROPERTY, "keytimecomparefield");
 
     }
 

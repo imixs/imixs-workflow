@@ -81,26 +81,26 @@ public class TestBPMNParserTicket {
 		Assert.assertNotNull(task);
 
 		Assert.assertEquals("<b>Create</b> a new ticket",
-				task.getItemValueString(OpenBPMNUtil.TASK_ITEM_DOCUMENTATION));
+				task.getItemValueString(BPMNUtil.TASK_ITEM_DOCUMENTATION));
 
 		// test activity 1000.10 submit
 		ItemCollection activity = openBPMNModelManager.findEventByID(model, 1000, 10);
 		Assert.assertNotNull(activity);
 
 		Assert.assertEquals("<b>Submitt</b> new ticket",
-				activity.getItemValueString(OpenBPMNUtil.EVENT_ITEM_DOCUMENTATION));
+				activity.getItemValueString(BPMNUtil.EVENT_ITEM_DOCUMENTATION));
 
 		// test activity 1100.20 accept
 		activity = openBPMNModelManager.findEventByID(model, 1100, 20);
 		Assert.assertNotNull(activity);
 
-		Assert.assertEquals("accept", activity.getItemValueString(OpenBPMNUtil.TASK_ITEM_NAME));
+		Assert.assertEquals("accept", activity.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
 
 		// test activity 1200.20 - follow-up activity solve =>40
 		activity = openBPMNModelManager.findEventByID(model, 1200, 20);
 		Assert.assertNotNull(activity);
 
-		Assert.assertEquals("reopen", activity.getItemValueString(OpenBPMNUtil.TASK_ITEM_NAME));
+		Assert.assertEquals("reopen", activity.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
 
 		// test activity 1200.40 - follow-up activity should not be returned
 		activity = openBPMNModelManager.findEventByID(model, 1200, 40);
@@ -110,11 +110,11 @@ public class TestBPMNParserTicket {
 		activity = openBPMNModelManager.findEventByID(model, 1000, 10);
 		Assert.assertNotNull(activity);
 
-		Assert.assertEquals("submit", activity.getItemValueString(OpenBPMNUtil.TASK_ITEM_NAME));
+		Assert.assertEquals("submit", activity.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
 		// Test Owner
-		Assert.assertTrue(activity.getItemValueBoolean(OpenBPMNUtil.EVENT_ITEM_ACL_UPDATE));
+		Assert.assertTrue(activity.getItemValueBoolean(BPMNUtil.EVENT_ITEM_ACL_UPDATE));
 
-		List owners = activity.getItemValue(OpenBPMNUtil.TASK_ITEM_ACL_OWNER_LIST_MAPPING);
+		List owners = activity.getItemValue(BPMNUtil.TASK_ITEM_ACL_OWNER_LIST_MAPPING);
 		Assert.assertNotNull(owners);
 		Assert.assertEquals(2, owners.size());
 		Assert.assertTrue(owners.contains("namTeam"));

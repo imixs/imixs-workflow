@@ -45,40 +45,37 @@ public class TestBPMNParserMessageText {
 			Assert.fail();
 		}
 
-		try {
-			Set<String> groups = openBPMNModelManager.findAllGroups(model);
-			Assert.assertTrue(groups.contains("Message Example"));
+		Set<String> groups = openBPMNModelManager.findAllGroups(model);
+		Assert.assertTrue(groups.contains("Message Example"));
 
-			// test count of elements
-			Assert.assertEquals(2, model.findAllActivities().size());
+		// test count of elements
+		Assert.assertEquals(2, model.findAllActivities().size());
 
-			// test task 1000
-			ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
-			Assert.assertNotNull(task);
+		// test task 1000
+		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		Assert.assertNotNull(task);
 
-			// test activity for task 1000
-			List<ItemCollection> events;
+		// test activity for task 1000
+		List<ItemCollection> events;
 
-			events = openBPMNModelManager.findEventsByTask(model, 1000);
+		events = openBPMNModelManager.findEventsByTask(model, 1000);
 
-			Assert.assertNotNull(events);
-			Assert.assertEquals(1, events.size());
+		Assert.assertNotNull(events);
+		Assert.assertEquals(1, events.size());
 
-			// test event 1000.10 submit
-			ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
-			Assert.assertNotNull(event);
+		// test event 1000.10 submit
+		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
+		Assert.assertNotNull(event);
 
-			Assert.assertEquals("Some MessageMessage-Text",
-					event.getItemValueString(OpenBPMNUtil.EVENT_ITEM_MAIL_SUBJECT));
+		Assert.assertEquals("Some MessageMessage-Text",
+				event.getItemValueString(BPMNUtil.EVENT_ITEM_MAIL_SUBJECT));
 
-			String message = event.getItemValueString(OpenBPMNUtil.EVENT_ITEM_MAIL_BODY);
+		String message = event.getItemValueString(BPMNUtil.EVENT_ITEM_MAIL_BODY);
 
-			Assert.assertEquals(
-					"<h1>Some Message Text</h1>\nThis is some message\nMessage-Text",
-					message);
-		} catch (BPMNModelException e) {
-			Assert.fail(e.getMessage());
-		}
+		Assert.assertEquals(
+				"<h1>Some Message Text</h1>\nThis is some message\nMessage-Text",
+				message);
+
 	}
 
 }

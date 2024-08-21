@@ -23,20 +23,18 @@ import org.openbpmn.bpmn.BPMNNS;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.BPMNProcess;
 import org.openbpmn.bpmn.elements.Event;
-import org.openbpmn.bpmn.elements.SequenceFlow;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.exceptions.BPMNValidationException;
 import org.openbpmn.bpmn.navigation.BPMNEndElementIterator;
-import org.openbpmn.bpmn.navigation.BPMNFlowIterator;
-import org.openbpmn.bpmn.navigation.BPMNLinkNavigator;
 import org.openbpmn.bpmn.navigation.BPMNStartElementIterator;
 import org.w3c.dom.Element;
 
 /**
- * This OpenBPMNModelManager implements the Interface ModelManger to handle Open
- * BPMN Models. The implementation is based on the OpenBPMN Meta model.
+ * This {@code OpenBPMNModelManager} implements the Interface
+ * {@link ModelManager} to handle OpenBPMN Models. The implementation is based
+ * on the OpenBPMN Meta model.
  * <p>
  * By analyzing the workitem model version the WorkflowKernel determines the
  * corresponding model and get the Tasks and Events from the ModelManager to
@@ -78,7 +76,7 @@ public class OpenBPMNModelManager implements ModelManager {
      */
     @Override
     public void addModel(BPMNModel model) throws ModelException {
-        String version = OpenBPMNUtil.getVersion(model);
+        String version = BPMNUtil.getVersion(model);
         modelStore.put(version, model);
         clearCache();
     }
@@ -120,7 +118,7 @@ public class OpenBPMNModelManager implements ModelManager {
     @Override
     public ItemCollection loadDefinition(ItemCollection workitem) throws ModelException {
         BPMNModel model = findModelByWorkitem(workitem);
-        String key = OpenBPMNUtil.getVersion(model);
+        String key = BPMNUtil.getVersion(model);
         ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key, k -> lookupDefinition(model));
         // clone instance to protect for manipulation
         if (result != null) {
@@ -148,7 +146,7 @@ public class OpenBPMNModelManager implements ModelManager {
     @Override
     public ItemCollection loadProcess(ItemCollection workitem) throws ModelException {
         BPMNModel model = findModelByWorkitem(workitem);
-        String key = OpenBPMNUtil.getVersion(model) + "~" + workitem.getTaskID();
+        String key = BPMNUtil.getVersion(model) + "~" + workitem.getTaskID();
         Activity task = (Activity) bpmnElementCache.computeIfAbsent(key,
                 k -> lookupTaskElementByID(model, workitem.getTaskID()));
         BPMNProcess process = task.getBpmnProcess();
@@ -195,6 +193,10 @@ public class OpenBPMNModelManager implements ModelManager {
      * <p>
      * The method is called by the {@link WorkflowKernel} to start the processing
      * life cycle.
+     * <p>
+     * A Event is typically connected with a Task by outgoing SequenceFlows.
+     * A special case is a Start event followed by one or more Events connected with
+     * a Task (Start-Task) element.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}
@@ -206,9 +208,33 @@ public class OpenBPMNModelManager implements ModelManager {
         BPMNModel model = findModelByWorkitem(workitem);
         logger.info("...loadEvent " + workitem.getTaskID() + "." + workitem.getEventID());
         ItemCollection event = findEventByID(model, workitem.getTaskID(), workitem.getEventID());
+
+        // verify if the event is a valid processing event?
+        // try {
+        if (event != null) {
+            List<ItemCollection> allowedEvents = findEventsByTask(model, workitem.getTaskID());
+            boolean found = false;
+            for (ItemCollection allowedEvent : allowedEvents) {
+                if (allowedEvent.getItemValueString("id").equals(event.getItemValueString("id"))) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                event = null;
+            }
+        }
+        // } catch (BPMNModelException e) {
+        // throw new ModelException(ModelException.INVALID_MODEL,
+        // "$modelversion " + workitem.getModelVersion() + " invalid events found "
+        // + workitem.getTaskID() + "." + workitem.getEventID() + " : " +
+        // e.getMessage());
+        // }
+
+        // If we still did not find the event we throw a ModelException....
         if (event == null) {
             throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY, "Event " + workitem.getTaskID() + "."
-                    + workitem.getEventID() + " not defined in model '" + workitem.getModelVersion() + "'");
+                    + workitem.getEventID() + " is not a callable in model '" + workitem.getModelVersion() + "'");
         }
         return event;
     }
@@ -237,34 +263,21 @@ public class OpenBPMNModelManager implements ModelManager {
         // lookup the current BPMN event element by its ID
         String id = event.getItemValueString("id");
         Event eventElement = (Event) model.findElementNodeById(id);
-        String version = OpenBPMNUtil.getVersion(model);
+        String version = BPMNUtil.getVersion(model);
         String key = version + "~" + workitem.getTaskID() + "." + workitem.getEventID();
 
         // find next task or event.....
-        BPMNFlowIterator<BPMNElementNode> elementNavigator;
+        BPMNLinkedFlowIterator<BPMNElementNode> elementNavigator;
         try {
-            elementNavigator = new BPMNFlowIterator<BPMNElementNode>(
+            elementNavigator = new BPMNLinkedFlowIterator<BPMNElementNode>(
                     eventElement,
-                    node -> ((OpenBPMNUtil.isImixsTaskElement(node))
-                            || (OpenBPMNUtil.isImixsEventElement(node))
-                            || (OpenBPMNUtil.isParallelGatewayElement(node))
-                            || (OpenBPMNUtil.isLinkCatchEventElement(node))),
+                    node -> ((BPMNUtil.isImixsTaskElement(node))
+                            || (BPMNUtil.isImixsEventElement(node))
+                            || (BPMNUtil.isParallelGatewayElement(node))),
                     condition -> evaluateCondition(condition, workitem));
 
             while (elementNavigator.hasNext()) {
                 BPMNElementNode nextElement = elementNavigator.next();
-
-                // Test if we have a Link Event?
-                if (OpenBPMNUtil.isLinkCatchEventElement(nextElement)) {
-                    // find the target of the link
-                    BPMNLinkNavigator linkNavigator = new BPMNLinkNavigator();
-                    BPMNElementNode linkTargetElement = linkNavigator.findNext(nextElement);
-                    Set<SequenceFlow> outFlows = linkTargetElement.getOutgoingSequenceFlows();
-                    if (outFlows != null && outFlows.size() > 0) {
-                        // switch to link Target Element....
-                        nextElement = outFlows.iterator().next().getTargetElement();
-                    }
-                }
 
                 // if the navigator has still more elements it is an ambiguous sequence flow
                 if (elementNavigator.hasNext()) {
@@ -273,7 +286,7 @@ public class OpenBPMNModelManager implements ModelManager {
                                     + workitem.getEventID());
                 }
                 logger.info("nextModelElement " + key + " took " + (System.currentTimeMillis() - l) + "ms");
-                return OpenBPMNEntityBuilder.build(nextElement);
+                return BPMNEntityBuilder.build(nextElement);
 
             }
         } catch (BPMNValidationException e) {
@@ -366,7 +379,7 @@ public class OpenBPMNModelManager implements ModelManager {
             Set<BPMNProcess> processList = _model.getProcesses();
             for (BPMNProcess _process : processList) {
                 if (group.equals(_process.getName())) {
-                    result.add(OpenBPMNUtil.getVersion(_model));
+                    result.add(BPMNUtil.getVersion(_model));
                 }
             }
         }
@@ -392,7 +405,7 @@ public class OpenBPMNModelManager implements ModelManager {
         // try to find matching model version by regex
         Collection<BPMNModel> models = modelStore.values();
         for (BPMNModel amodel : models) {
-            String _version = OpenBPMNUtil.getVersion(amodel);
+            String _version = BPMNUtil.getVersion(amodel);
             if (Pattern.compile(modelRegex).matcher(_version).find()) {
                 result.add(_version);
             }
@@ -415,9 +428,7 @@ public class OpenBPMNModelManager implements ModelManager {
         for (BPMNProcess _process : processList) {
             result.add(_process.getName());
         }
-
         return result;
-
     }
 
     /**
@@ -433,7 +444,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * @return
      */
     public ItemCollection findTaskByID(final BPMNModel model, int taskID) {
-        String key = OpenBPMNUtil.getVersion(model) + "~" + taskID;
+        String key = BPMNUtil.getVersion(model) + "~" + taskID;
         ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key,
                 k -> lookupTaskByID(model, taskID));
         // clone instance to protect for manipulation
@@ -454,7 +465,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * 
      */
     public ItemCollection findEventByID(final BPMNModel model, int taskID, int eventID) {
-        String key = OpenBPMNUtil.getVersion(model) + "~" + taskID + "." + eventID;
+        String key = BPMNUtil.getVersion(model) + "~" + taskID + "." + eventID;
         ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key,
                 k -> lookupEventByID(model, taskID, eventID));
         // clone instance to protect for manipulation
@@ -478,10 +489,9 @@ public class OpenBPMNModelManager implements ModelManager {
         BPMNStartElementIterator<Activity> startElements = new BPMNStartElementIterator<>(process,
                 node -> (node instanceof Activity));
         while (startElements.hasNext()) {
-            result.add(OpenBPMNEntityBuilder.build(startElements.next()));
+            result.add(BPMNEntityBuilder.build(startElements.next()));
         }
         return result;
-
     }
 
     /**
@@ -498,10 +508,9 @@ public class OpenBPMNModelManager implements ModelManager {
         BPMNEndElementIterator<Activity> endElements = new BPMNEndElementIterator<>(process,
                 node -> (node instanceof Activity));
         while (endElements.hasNext()) {
-            result.add(OpenBPMNEntityBuilder.build(endElements.next()));
+            result.add(BPMNEntityBuilder.build(endElements.next()));
         }
         return result;
-
     }
 
     /**
@@ -509,35 +518,32 @@ public class OpenBPMNModelManager implements ModelManager {
      * connected by an outgoing sequence flow or come from a incoming sequence flow
      * with now other incoming flows from the event.
      * 
+     * @param model
+     * @param taskID
+     * @return list of all events assigned to the task as an processing event.
      * 
-     * @param processGroup
-     * @return
-     * @throws BPMNModelException
      */
-    public List<ItemCollection> findEventsByTask(final BPMNModel model, int taskID) throws BPMNModelException {
+    public List<ItemCollection> findEventsByTask(final BPMNModel model, int taskID) {
         Activity taskElement = lookupTaskElementByID(model, taskID);
-        BPMNFlowIterator<BPMNElementNode> elementNavigator = new BPMNFlowIterator<BPMNElementNode>(
+        BPMNLinkedFlowIterator<BPMNElementNode> elementNavigator = new BPMNLinkedFlowIterator<BPMNElementNode>(
                 taskElement,
-                node -> ((OpenBPMNUtil.isImixsEventElement(node))));
+                node -> ((BPMNUtil.isImixsEventElement(node))));
         List<ItemCollection> result = new ArrayList<>();
         while (elementNavigator.hasNext()) {
-            result.add(OpenBPMNEntityBuilder.build(elementNavigator.next()));
+            result.add(BPMNEntityBuilder.build(elementNavigator.next()));
         }
-
-        // next we also add all incoming events with not incoming sequenceFlow.
-        Set<SequenceFlow> inFlows = taskElement.getIngoingSequenceFlows();
-        for (SequenceFlow flow : inFlows) {
-            BPMNElementNode element = flow.getSourceElement();
-            if (element != null && OpenBPMNUtil.isImixsEventElement(element)) {
-                // no incoming flows
-                if (element.getIngoingSequenceFlows().size() == 0) {
-                    result.add(OpenBPMNEntityBuilder.build(element));
-                }
-            }
-        }
+        // next we also add all initEvent nodes
+        BPMNUtil.findInitEventNodes(taskElement, result);
         return result;
     }
 
+    /**
+     * Evaluates a condition
+     * 
+     * @param expression
+     * @param workitem
+     * @return
+     */
     public boolean evaluateCondition(String expression, ItemCollection workitem) {
         try {
             return ruleEngine.evaluateBooleanExpression(expression, workitem);
@@ -582,13 +588,13 @@ public class OpenBPMNModelManager implements ModelManager {
 
         Element extensionElement = model.findChildNodeByName(definition,
                 BPMNNS.BPMN2, "extensionElements");
-        Set<Element> imixsExtensionElements = OpenBPMNUtil.findAllImixsElements(extensionElement, "item");
+        Set<Element> imixsExtensionElements = BPMNUtil.findAllImixsElements(extensionElement, "item");
         // iterate through set and verify the name attribute
         for (Element extensionItem : imixsExtensionElements) {
             String itemName = extensionItem.getAttribute("name");
             if (itemName != null && !itemName.isEmpty()) {
                 // found
-                List<?> itemValueList = OpenBPMNUtil.getItemValueList(extensionItem);
+                List<?> itemValueList = BPMNUtil.getItemValueList(extensionItem);
                 result.setItemValue(itemName, itemValueList);
             }
         }
@@ -613,7 +619,7 @@ public class OpenBPMNModelManager implements ModelManager {
         // filter the imixs activity with the corresponding id
         for (Activity activity : activities) {
             // imixs:processid="10"
-            String id = activity.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "processid");
+            String id = activity.getExtensionAttribute(BPMNUtil.getNamespace(), "processid");
             try {
                 if (taskID == Long.parseLong(id)) {
                     logger.info("lookupTaskElementByID " + taskID + " took " + (System.currentTimeMillis() - l) + "ms");
@@ -635,10 +641,10 @@ public class OpenBPMNModelManager implements ModelManager {
      * @return
      */
     private ItemCollection lookupTaskByID(final BPMNModel model, int taskID) {
-        String key = OpenBPMNUtil.getVersion(model) + "~" + taskID;
+        String key = BPMNUtil.getVersion(model) + "~" + taskID;
         Activity activity = (Activity) bpmnElementCache.computeIfAbsent(key, k -> lookupTaskElementByID(model, taskID));
         if (activity != null) {
-            return OpenBPMNEntityBuilder.build(activity);
+            return BPMNEntityBuilder.build(activity);
         } else {
             return null;
         }
@@ -654,11 +660,11 @@ public class OpenBPMNModelManager implements ModelManager {
      * @return
      */
     private ItemCollection lookupEventByID(final BPMNModel model, int taskID, int eventID) {
-        String key = OpenBPMNUtil.getVersion(model) + "~" + taskID + "." + eventID;
+        String key = BPMNUtil.getVersion(model) + "~" + taskID + "." + eventID;
         Event event = (Event) bpmnElementCache.computeIfAbsent(key,
                 k -> lookupEventElementByID(model, taskID, eventID));
         if (event != null) {
-            return OpenBPMNEntityBuilder.build(event);
+            return BPMNEntityBuilder.build(event);
         } else {
             return null;
         }
@@ -677,7 +683,7 @@ public class OpenBPMNModelManager implements ModelManager {
      */
     private Event lookupEventElementByID(final BPMNModel model, int taskID, int eventID) {
         long l = System.currentTimeMillis();
-        String version = OpenBPMNUtil.getVersion(model);
+        String version = BPMNUtil.getVersion(model);
         String keyTask = version + "~" + taskID;
         String keyEvent = version + "~" + taskID + "." + eventID;
         Activity task = (Activity) bpmnElementCache.computeIfAbsent(keyTask, k -> lookupTaskElementByID(model, taskID));
@@ -686,13 +692,13 @@ public class OpenBPMNModelManager implements ModelManager {
             return null;
         }
         // find all directly associated Events to the current Task...
-        BPMNFlowIterator<Event> eventNavigator = new BPMNFlowIterator<Event>(task,
-                node -> (OpenBPMNUtil.isImixsEventElement(node)));
+        BPMNLinkedFlowIterator<Event> eventNavigator = new BPMNLinkedFlowIterator<Event>(task,
+                node -> (BPMNUtil.isImixsEventElement(node)));
 
         if (eventNavigator != null) {
             while (eventNavigator.hasNext()) {
                 Event event = (Event) eventNavigator.next();
-                String id = event.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "activityid");
+                String id = event.getExtensionAttribute(BPMNUtil.getNamespace(), "activityid");
                 if (id != null && !id.isEmpty()) {
                     try {
                         if (eventID == Long.parseLong(id)) {
@@ -708,35 +714,27 @@ public class OpenBPMNModelManager implements ModelManager {
             }
         }
 
-        // now test incoming single catch events (without a source node)
-        Set<SequenceFlow> inFlows = task.getIngoingSequenceFlows();
-        for (SequenceFlow flow : inFlows) {
-            BPMNElement element = flow.getSourceElement();
-            if (element != null && element instanceof Event) {
-                Event event = (Event) element;
-                // no incoming flows
-                if (event.getIngoingSequenceFlows().size() == 0) {
-                    String id = event.getExtensionAttribute(OpenBPMNUtil.getNamespace(), "activityid");
-                    if (id == null || id.isEmpty()) {
-                        continue;
-                    }
-                    try {
-                        if (eventID == Long.parseLong(id)) {
-                            // cache Event...
-                            // bpmnElementCache.put(keyEvent, event);
-                            logger.info(
-                                    "lookupEventByID " + keyEvent + " took " + (System.currentTimeMillis() - l) + "ms");
-                            return event;
-                            // return ElementBuilder.buildItemCollectionFromBPMNElement(event);
-                        }
-                    } catch (NumberFormatException e) {
-                        logger.warning(
-                                event.getId() + " invalid attribute 'imixs:activityid' = " + id + "  Number expected");
-                    }
+        // not yet found, collect all incoming events...
+        List<Event> allIncomingEvents = new ArrayList<>();
+        BPMNUtil.findAllIncomingEventNodes(task, allIncomingEvents);
+        for (Event inEvent : allIncomingEvents) {
+            String id = inEvent.getExtensionAttribute(BPMNUtil.getNamespace(), "activityid");
+            if (id == null || id.isEmpty()) {
+                continue; // no match...
+            }
+            try {
+                if (eventID == Long.parseLong(id)) {
+                    // match!
+                    logger.info(
+                            "lookupEventByID " + keyEvent + " took " + (System.currentTimeMillis() - l) + "ms");
+                    return inEvent;
                 }
+            } catch (NumberFormatException e) {
+                logger.warning(
+                        inEvent.getId() + " invalid attribute 'imixs:activityid' = " + id + "  Number expected");
             }
         }
-
+        // not found!
         return null;
     }
 

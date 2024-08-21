@@ -47,30 +47,27 @@ public class TestBPMNParserSharedLinkEvent {
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
 		}
-		try {
-			// Test Environment
-			Assert.assertTrue(openBPMNModelManager.findAllGroups(model).contains("Simple"));
 
-			// test count of elements
-			Assert.assertEquals(3, model.findAllActivities().size());
+		// Test Environment
+		Assert.assertTrue(openBPMNModelManager.findAllGroups(model).contains("Simple"));
 
-			// test task 1000
-			ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
-			Assert.assertEquals("Task Shared Link Event1", task.getItemValueString("txtName"));
+		// test count of elements
+		Assert.assertEquals(3, model.findAllActivities().size());
 
-			// test shared events
-			Assert.assertEquals(3, openBPMNModelManager.findEventsByTask(model, 1000).size());
+		// test task 1000
+		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		Assert.assertEquals("Task Shared Link Event1", task.getItemValueString("txtName"));
 
-			ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 99);
-			Assert.assertEquals("cancel", event.getItemValueString("txtName"));
+		// test shared events
+		Assert.assertEquals(3, openBPMNModelManager.findEventsByTask(model, 1000).size());
 
-			// test shared events
-			Assert.assertEquals(2, openBPMNModelManager.findEventsByTask(model, 1100).size());
-			Assert.assertEquals(0, openBPMNModelManager.findEventsByTask(model, 1200).size());
-		} catch (BPMNModelException e) {
-			e.printStackTrace();
-			Assert.fail(e.getMessage());
-		}
+		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 99);
+		Assert.assertEquals("cancel", event.getItemValueString("txtName"));
+
+		// test shared events
+		Assert.assertEquals(2, openBPMNModelManager.findEventsByTask(model, 1100).size());
+		Assert.assertEquals(0, openBPMNModelManager.findEventsByTask(model, 1200).size());
+
 	}
 
 }

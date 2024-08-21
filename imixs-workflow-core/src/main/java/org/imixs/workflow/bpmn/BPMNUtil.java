@@ -5,12 +5,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.imixs.workflow.ItemCollection;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
 import org.openbpmn.bpmn.BPMNTypes;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.Event;
 import org.openbpmn.bpmn.elements.Gateway;
+import org.openbpmn.bpmn.elements.SequenceFlow;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Element;
@@ -18,11 +20,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * This helper class provides methods to access extension tags within a
- * Open-BPMN Model
+ * The {@code BPMNUtil} provides convenient methods to access elements and
+ * bpmn2:extension tags within a Open-BPMN Model
  * 
  * 
- * Example:
+ * Example for a :
  * 
  * <pre>{@code  
  * <bpmn2:task id="Task_2" imixs:processid="1900" name="Approve">
@@ -33,7 +35,7 @@ import org.w3c.dom.NodeList;
         }</pre>
  * 
  */
-public class OpenBPMNUtil {
+public class BPMNUtil {
 
     public final static String TASK_ITEM_NAME = "name";
     public final static String TASK_ITEM_TASKID = "taskid";
@@ -103,7 +105,7 @@ public class OpenBPMNUtil {
     /**
      * Private constructor to prevent instantiation
      */
-    private OpenBPMNUtil() {
+    private BPMNUtil() {
     }
 
     /**
@@ -384,6 +386,73 @@ public class OpenBPMNUtil {
             }
         }
         return null;
+    }
+
+    /**
+     * Iterates tough all ingoing sequence flows and tests if the source element is
+     * a Event.
+     * <p>
+     * If a source element is an Event and has a predecessor event the method calls
+     * itself recursive.
+     * 
+     * @param currentNode
+     */
+    public static void findInitEventNodes(BPMNElementNode currentNode, List<ItemCollection> collector) {
+        Set<SequenceFlow> flowSet = currentNode.getIngoingSequenceFlows();
+        for (SequenceFlow flow : flowSet) {
+            BPMNElementNode element = flow.getSourceElement();
+            if (isInitEventNode(element)) {
+                collector.add(BPMNEntityBuilder.build(element));
+                // collector.add((Event) element);
+            } else if (element != null && BPMNUtil.isImixsEventElement(element)) {
+                // is the source an Imixs event node?
+                // recursive call....
+                findInitEventNodes(element, collector);
+            }
+        }
+    }
+
+    /**
+     * This helper method collects all incoming events. The method iterates tough
+     * all ingoing sequence flows and tests if the source element is an Event.
+     * <p>
+     * If a source element is an Event and has a predecessor event the method calls
+     * itself recursive.
+     * 
+     * @param currentNode
+     */
+    public static void findAllIncomingEventNodes(BPMNElementNode currentNode, List<Event> collector) {
+        Set<SequenceFlow> flowSet = currentNode.getIngoingSequenceFlows();
+        for (SequenceFlow flow : flowSet) {
+            BPMNElementNode element = flow.getSourceElement();
+            if (element != null && BPMNUtil.isImixsEventElement((element))) {
+                collector.add((Event) element);
+                // recursive call....
+                findAllIncomingEventNodes(element, collector);
+            }
+        }
+    }
+
+    /**
+     * Returns true if the given node is a an ImixsEvent node with not incoming
+     * nodes or with one incoming node that comes from a Start event.
+     * 
+     */
+    private static boolean isInitEventNode(BPMNElementNode eventNode) {
+        if (BPMNUtil.isImixsEventElement(eventNode)) {
+            Set<SequenceFlow> flowSet = eventNode.getIngoingSequenceFlows();
+            if (flowSet.isEmpty()) {
+                // no incoming flows - match!
+                return true;
+            } else if (flowSet.size() == 1) {
+                // is the incoming flow coming from a bpmn2:startEvent?
+                BPMNElementNode sourceElement = flowSet.iterator().next().getSourceElement();
+                return BPMNTypes.START_EVENT.equals(sourceElement.getType());
+            } else {
+                // undefined - more than one incoming flow
+            }
+        }
+        return false;
     }
 
 }

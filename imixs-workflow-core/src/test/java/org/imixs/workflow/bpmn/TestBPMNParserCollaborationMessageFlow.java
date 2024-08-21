@@ -64,18 +64,14 @@ public class TestBPMNParserCollaborationMessageFlow {
 		ItemCollection task1 = openBPMNModelManager.findTaskByID(model, 1000);
 
 		Assert.assertNotNull(task1);
-		try {
-			Collection<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
-			Assert.assertNotNull(events);
-			Assert.assertEquals(1, events.size());
-		} catch (BPMNModelException e) {
-			Assert.fail(e.getMessage());
-		}
+		Collection<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+		Assert.assertNotNull(events);
+		Assert.assertEquals(1, events.size());
 
 		// load event 1000.10 and test the message flow
 		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
 		Assert.assertNotNull(event);
-		Assert.assertEquals("submit", event.getItemValueString(OpenBPMNUtil.EVENT_ITEM_NAME));
+		Assert.assertEquals("submit", event.getItemValueString(BPMNUtil.EVENT_ITEM_NAME));
 		BPMNElementNode eventElement = (BPMNElementNode) model.findElementById(event.getItemValueString("id"));
 		Assert.assertNotNull(eventElement);
 		// we expect one outgoing message flow
@@ -113,18 +109,14 @@ public class TestBPMNParserCollaborationMessageFlow {
 		// test task 1000
 		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
 		Assert.assertNotNull(task);
-		try {
-			Collection<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
-			Assert.assertNotNull(events);
-			Assert.assertEquals(2, events.size());
-		} catch (BPMNModelException e) {
-			Assert.fail(e.getMessage());
-		}
+		Collection<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+		Assert.assertNotNull(events);
+		Assert.assertEquals(2, events.size());
 
 		// load activity 1000.20
 		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
 		Assert.assertNotNull(event);
-		Assert.assertEquals("submit", event.getItemValueString(OpenBPMNUtil.EVENT_ITEM_NAME));
+		Assert.assertEquals("submit", event.getItemValueString(BPMNUtil.EVENT_ITEM_NAME));
 
 		// Test the message flow
 		// we expect one outgoing message flow

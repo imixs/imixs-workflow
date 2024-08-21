@@ -87,7 +87,7 @@ public class TestBPMNParserRuleEvents {
 			ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
 			Assert.assertNotNull(event);
 			Assert.assertEquals("submit", event.getItemValueString("txtname"));
-		} catch (ModelException | BPMNModelException e) {
+		} catch (ModelException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

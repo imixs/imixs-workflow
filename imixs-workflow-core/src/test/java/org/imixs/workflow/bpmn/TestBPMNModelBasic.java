@@ -22,7 +22,7 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNModelSimple {
+public class TestBPMNModelBasic {
 
 	BPMNModel model = null;
 	OpenBPMNModelManager openBPMNModelManager = null;
@@ -54,7 +54,30 @@ public class TestBPMNModelSimple {
 			Assert.assertEquals(1, startTasks.size());
 			ItemCollection startTask = startTasks.get(0);
 			Assert.assertNotNull(startTask);
-			Assert.assertEquals("Task 1", startTask.getItemValueString(OpenBPMNUtil.TASK_ITEM_NAME));
+			Assert.assertEquals("Task 1", startTask.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
+		} catch (BPMNModelException e) {
+			Assert.fail();
+		}
+	}
+
+	@Test
+	public void testStartTasksComplex() throws ModelException {
+		try {
+
+			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/simple-startevent.bpmn"));
+			model = openBPMNModelManager.getModel("1.0.0");
+			Assert.assertNotNull(model);
+
+			// find start tasks
+			List<ItemCollection> startTasks = openBPMNModelManager.findStartTasks(model, "Simple");
+			Assert.assertNotNull(startTasks);
+			Assert.assertEquals(1, startTasks.size());
+			ItemCollection startTask = startTasks.get(0);
+			Assert.assertNotNull(startTask);
+			Assert.assertEquals("Task 1", startTask.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
+
+			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+			Assert.assertEquals(3, events.size());
 		} catch (BPMNModelException e) {
 			Assert.fail();
 		}
@@ -74,7 +97,7 @@ public class TestBPMNModelSimple {
 			Assert.assertEquals(1, endTasks.size());
 
 			ItemCollection endTask = endTasks.get(0);
-			Assert.assertEquals("Task 2", endTask.getItemValueString(OpenBPMNUtil.TASK_ITEM_NAME));
+			Assert.assertEquals("Task 2", endTask.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
 		} catch (BPMNModelException e) {
 			Assert.fail();
 		}
@@ -87,15 +110,12 @@ public class TestBPMNModelSimple {
 	 */
 	@Test
 	public void testFindEvetnsByTasks() throws ModelException {
-		try {
-			// test End task....
-			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
-			Assert.assertNotNull(events);
-			Assert.assertEquals(2, events.size());
 
-		} catch (BPMNModelException e) {
-			Assert.fail();
-		}
+		// test End task....
+		List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+		Assert.assertNotNull(events);
+		Assert.assertEquals(2, events.size());
+
 	}
 
 	/**

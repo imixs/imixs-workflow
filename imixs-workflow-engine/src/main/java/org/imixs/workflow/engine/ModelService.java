@@ -45,8 +45,8 @@ import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.bpmn.OpenBPMNModelManager;
-import org.imixs.workflow.bpmn.OpenBPMNUtil;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -276,7 +276,7 @@ public class ModelService implements ModelManager {
     public void saveModel(BPMNModel model, String _filename) throws ModelException {
         if (model != null) {
             boolean debug = logger.isLoggable(Level.FINE);
-            String version = OpenBPMNUtil.getVersion(model);
+            String version = BPMNUtil.getVersion(model);
             // first delete existing model entities
             removeModel(version);
             // store model into internal cache

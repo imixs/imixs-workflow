@@ -45,8 +45,9 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.imixs.workflow.bpmn.OpenBPMNEntityBuilder;
-import org.imixs.workflow.bpmn.OpenBPMNUtil;
+import org.imixs.workflow.bpmn.BPMNEntityBuilder;
+import org.imixs.workflow.bpmn.BPMNLinkedFlowIterator;
+import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -54,7 +55,6 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.util.XMLParser;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
-import org.openbpmn.bpmn.navigation.BPMNFlowIterator;
 
 /**
  * The WorkflowKernel is the core component to process a workitem based
@@ -442,7 +442,7 @@ public class WorkflowKernel {
             logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
             // load new Event and start new processing life cycle...
             event = this.ctx.getModelManager().loadEvent(workitem);
-            workitem.event(event.getItemValueInteger(OpenBPMNUtil.EVENT_ITEM_EVENTID));
+            workitem.event(event.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID));
             return event;
         } else {
             // evaluate next BPMN Element.....
@@ -462,7 +462,7 @@ public class WorkflowKernel {
                 // load next event
                 logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
                 event = nextElement;
-                workitem.event(event.getItemValueInteger(OpenBPMNUtil.EVENT_ITEM_EVENTID));
+                workitem.event(event.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID));
                 // return the next event element to be processed....
                 return event;
             }
@@ -471,7 +471,7 @@ public class WorkflowKernel {
             if (ModelManager.TASK_ELEMENT.equals(nextElement.getType())) {
                 // update status and terminate processing life cycle
                 logEvent(workitem.getTaskID(), workitem.getEventID(),
-                        nextElement.getItemValueInteger(OpenBPMNUtil.TASK_ITEM_TASKID), workitem);
+                        nextElement.getItemValueInteger(BPMNUtil.TASK_ITEM_TASKID), workitem);
                 // Update status - Issue #722
                 updateWorkflowStatus(workitem, nextElement);
                 // terminate processing life cycle
@@ -513,21 +513,20 @@ public class WorkflowKernel {
 
         // We need the follow Up Task and Event Nodes now to create the split Events
         BPMNElementNode gatewayNode = model.findElementNodeById(parallelGateway.getItemValueString("id"));
-        BPMNFlowIterator<BPMNElementNode> splitElementNavigator = new BPMNFlowIterator<BPMNElementNode>(
+        BPMNLinkedFlowIterator<BPMNElementNode> splitElementNavigator = new BPMNLinkedFlowIterator<BPMNElementNode>(
                 gatewayNode,
-                node -> ((OpenBPMNUtil.isImixsTaskElement(node))
-                        || (OpenBPMNUtil.isImixsEventElement(node))));
+                node -> ((BPMNUtil.isImixsTaskElement(node)) || (BPMNUtil.isImixsEventElement(node))));
         // now iterate all targets....
         boolean foundMainTask = false;
         while (splitElementNavigator.hasNext()) {
             BPMNElementNode nextSplitNode = splitElementNavigator.next();
-            ItemCollection splitItemCol = OpenBPMNEntityBuilder.build(nextSplitNode);
+            ItemCollection splitItemCol = BPMNEntityBuilder.build(nextSplitNode);
 
             if (ModelManager.EVENT_ELEMENT.equals(splitItemCol.getType())) {
                 // clone current instance to a new version...
                 ItemCollection cloned = createVersion(workitem);
                 // set new event
-                cloned.setEventID(splitItemCol.getItemValueInteger(OpenBPMNUtil.EVENT_ITEM_EVENTID));
+                cloned.setEventID(splitItemCol.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID));
                 // add temporary attribute $isversion...
                 cloned.replaceItemValue(ISVERSION, true);
 
@@ -701,7 +700,7 @@ public class WorkflowKernel {
         int iTask = modelData.getItemValueInteger("task");
         if (version.trim().isEmpty() || iNextEvent <= 0) {
             String sErrorMessage = "Invalid model tag in event " +
-                    +event.getItemValueInteger(OpenBPMNUtil.EVENT_ITEM_EVENTID) + " (" + event.getModelVersion();
+                    +event.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID) + " (" + event.getModelVersion();
             logger.warning(sErrorMessage);
             throw new ModelException(ModelException.INVALID_MODEL, sErrorMessage);
         }
@@ -782,11 +781,11 @@ public class WorkflowKernel {
 
         ItemCollection process = ctx.getModelManager().loadProcess(workitem);
         // Update the attributes $taskID and $WorkflowStatus
-        workitem.task(itemColNextTask.getItemValueInteger(OpenBPMNUtil.TASK_ITEM_TASKID));
+        workitem.task(itemColNextTask.getItemValueInteger(BPMNUtil.TASK_ITEM_TASKID));
         if (debug) {
             logger.log(Level.FINEST, "......new $taskID={0}", workitem.getTaskID());
         }
-        workitem.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString(OpenBPMNUtil.TASK_ITEM_NAME));
+        workitem.replaceItemValue(WORKFLOWSTATUS, itemColNextTask.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
         workitem.replaceItemValue(WORKFLOWGROUP, process.getItemValueString("name"));
         if (debug) {
             logger.log(Level.FINEST, "......new $workflowStatus={0}",
@@ -799,7 +798,7 @@ public class WorkflowKernel {
         // update the type attribute if defined.
         // the type attribute can only be overwritten by a plug-in if the type is not
         // defined by the task!
-        String sType = itemColNextTask.getItemValueString(OpenBPMNUtil.TASK_ITEM_APPLICATION_TYPE);
+        String sType = itemColNextTask.getItemValueString(BPMNUtil.TASK_ITEM_APPLICATION_TYPE);
         if (!"".equals(sType)) {
             workitem.replaceItemValue(TYPE, sType);
         }
