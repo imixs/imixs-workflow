@@ -146,6 +146,54 @@ public class TestWorkflowKernelBasic {
     }
 
     /**
+     * This test tests a worktiem without $modelversion but with a $workflowgroup.
+     **/
+    @Test
+    @Category(org.imixs.workflow.WorkflowKernel.class)
+    public void testByWorkflowGroup() {
+        ItemCollection workItem = new ItemCollection();
+        workItem.setItemValue(WorkflowKernel.WORKFLOWGROUP, "Simple");
+        workItem.task(1000)
+                .event(10);
+
+        try {
+            workItem = workflowEngine.getWorkflowKernel().process(workItem);
+            Assert.assertNotNull(workItem);
+            // $modelversion should be 1.0.0
+            Assert.assertEquals("1.0.0", workItem.getModelVersion());
+        } catch (ModelException | ProcessingErrorException | PluginException e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+
+    }
+
+    /**
+     * This test tests a worktIem without $modelversion and without $workflowgroup.
+     * An Exception is expected!
+     **/
+    @Test
+    @Category(org.imixs.workflow.WorkflowKernel.class)
+    public void testWithoutModelVersionANDWorkflowGroup() {
+        ItemCollection workItem = new ItemCollection();
+        // not group no version
+        workItem.task(1000)
+                .event(10);
+
+        try {
+            workItem = workflowEngine.getWorkflowKernel().process(workItem);
+            Assert.fail();
+        } catch (PluginException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        } catch (ModelException e) {
+            // expected exception as no model version was defined and also no workflowGroup
+            e.getErrorCode().equals(ModelException.UNDEFINED_MODEL_VERSION);
+        }
+
+    }
+
+    /**
      * This test verifies if the deprecated fileds "$taskid" and $activityID are
      * still working.
      * 

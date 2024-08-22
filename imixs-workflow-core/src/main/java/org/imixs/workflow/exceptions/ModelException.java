@@ -41,6 +41,7 @@ public class ModelException extends WorkflowException {
     public static final String INVALID_MODEL_ENTRY = "INVALID_MODEL_ENTRY";
     public static final String UNDEFINED_MODEL_ENTRY = "UNDEFINED_MODEL_ENTRY";
     public static final String UNDEFINED_MODEL_VERSION = "UNDEFINED_MODEL_VERSION";
+    public static final String AMBIGUOUS_MODEL_ENTRY = "AMBIGUOUS_MODEL_ENTRY";
 
     private static final long serialVersionUID = 1L;
 

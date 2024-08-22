@@ -209,7 +209,6 @@ public class OpenBPMNModelManager implements ModelManager {
         ItemCollection event = findEventByID(model, workitem.getTaskID(), workitem.getEventID());
 
         // verify if the event is a valid processing event?
-        // try {
         if (event != null) {
             List<ItemCollection> allowedEvents = findEventsByTask(model, workitem.getTaskID());
             boolean found = false;
@@ -223,13 +222,6 @@ public class OpenBPMNModelManager implements ModelManager {
                 event = null;
             }
         }
-        // } catch (BPMNModelException e) {
-        // throw new ModelException(ModelException.INVALID_MODEL,
-        // "$modelversion " + workitem.getModelVersion() + " invalid events found "
-        // + workitem.getTaskID() + "." + workitem.getEventID() + " : " +
-        // e.getMessage());
-        // }
-
         // If we still did not find the event we throw a ModelException....
         if (event == null) {
             throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY, "Event " + workitem.getTaskID() + "."
@@ -317,20 +309,24 @@ public class OpenBPMNModelManager implements ModelManager {
         BPMNModel result = null;
         String version = workitem.getModelVersion();
         // first try a direct fetch....
-        result = modelStore.get(version);
+        if (version != null && !version.isEmpty()) {
+            result = modelStore.get(version);
+        }
         if (result != null) {
             return result;
         } else {
-            // try to find model by regex...
-            List<String> matchingVersions = findVersionsByRegEx(version);
-            for (String matchingVersion : matchingVersions) {
-                result = modelStore.get(matchingVersion);
-                if (result != null) {
-                    // match
-                    // update $modelVersion
-                    logger.info("Update $modelversion by regex " + version + " ▷ " + matchingVersion);
-                    workitem.model(matchingVersion);
-                    return result;
+            // try to find model by regex if version is not empty...
+            if (version != null && !version.isEmpty()) {
+                List<String> matchingVersions = findVersionsByRegEx(version);
+                for (String matchingVersion : matchingVersions) {
+                    result = modelStore.get(matchingVersion);
+                    if (result != null) {
+                        // match
+                        // update $modelVersion
+                        logger.info("Update $modelversion by regex " + version + " ▷ " + matchingVersion);
+                        workitem.model(matchingVersion);
+                        return result;
+                    }
                 }
             }
 
@@ -353,7 +349,8 @@ public class OpenBPMNModelManager implements ModelManager {
             }
 
             // no match!
-            throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION, "$modelversion " + version + " not found");
+            throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
+                    "$modelversion '" + version + "' not found");
         }
     }
 
