@@ -30,23 +30,27 @@ package org.imixs.workflow.engine;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Vector;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.QuerySelector;
+import org.imixs.workflow.bpmn.BPMNEntityBuilder;
+import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.engine.scheduler.Scheduler;
 import org.imixs.workflow.engine.scheduler.SchedulerException;
 import org.imixs.workflow.engine.scheduler.SchedulerService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.QueryException;
+import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.elements.Activity;
+import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 
 import jakarta.annotation.Resource;
 import jakarta.ejb.SessionContext;
@@ -361,14 +365,33 @@ public class WorkflowScheduler implements Scheduler {
             Collections.sort(modelVersions, Collections.reverseOrder());
 
             for (String version : modelVersions) {
-                // find scheduled Activities
-                Collection<ItemCollection> scheduledEvents = findScheduledEvents(version);
-                schedulerService.logMessage(
-                        "...Model=" + version + " (" + scheduledEvents.size() + " scheduled events)",
-                        configItemCollection, null);
-                // process all workitems for coresponding activities
-                for (ItemCollection aactivityEntity : scheduledEvents) {
-                    processWorkListByEvent(aactivityEntity, configItemCollection);
+                // find scheduled Events
+
+                // Erst müss ma aller tasks finden und dann die gültigen Trigger Events.
+                // Damti kann man dann eien Such estarten und das zeug processen....
+
+                // processWorkListByEvent(version, taskID, EventID, Group)
+
+                BPMNModel model = modelService.getModel(version);
+
+                // find all tasks
+                Set<Activity> activities = model.findAllActivities();
+                for (Activity task : activities) {
+                    if (BPMNUtil.isImixsTaskElement(task)) {
+
+                        ItemCollection taskEntity = BPMNEntityBuilder.build(task);
+                        int taskID = taskEntity.getItemValueInteger(BPMNUtil.TASK_ITEM_TASKID);
+                        // iterate through all scheduled events
+                        List<ItemCollection> events = modelService.getOpenBPMNModelManager().findEventsByTask(model,
+                                taskID);
+                        for (ItemCollection eventEntity : events) {
+                            // test if this is a scheduled event...
+                            if (eventEntity.getItemValueBoolean(BPMNUtil.EVENT_ITEM_TIMER_ACTIVE)) {
+                                // eventID = eventEntity.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID);
+                                processWorkListByEvent(model, taskEntity, eventEntity, configItemCollection);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -398,40 +421,6 @@ public class WorkflowScheduler implements Scheduler {
     }
 
     /**
-     * This method collects all scheduled workflow events. A scheduled workflow
-     * event is identified by the attribute keyScheduledActivity="1"
-     * 
-     * The method goes through the latest or a specific Model Version
-     * 
-     * @throws ModelException
-     * 
-     */
-    protected Collection<ItemCollection> findScheduledEvents(String aModelVersion) throws ModelException {
-        Vector<ItemCollection> vectorActivities = new Vector<ItemCollection>();
-        Collection<ItemCollection> colProcessList = null;
-
-        // get a complete list of process entities...
-        colProcessList = modelService.getModel(aModelVersion).findAllTasks();
-        for (ItemCollection aprocessentity : colProcessList) {
-            // select all activities for this process entity...
-            int processid = aprocessentity.getItemValueInteger("numprocessid");
-            logger.log(Level.FINEST, "......analyse processentity ''{0}''", processid);
-            Collection<ItemCollection> aActivityList = modelService.getModel(aModelVersion)
-                    .findAllEventsByTask(processid);
-
-            for (ItemCollection aactivityEntity : aActivityList) {
-                logger.log(Level.FINEST, "......analyse acitity ''{0}''",
-                        aactivityEntity.getItemValueString("txtname"));
-
-                // check if activity is scheduled
-                if ("1".equals(aactivityEntity.getItemValueString("keyScheduledActivity")))
-                    vectorActivities.add(aactivityEntity);
-            }
-        }
-        return vectorActivities;
-    }
-
-    /**
      * This method processes all workitems for a specific scheduled event element of
      * a workflow model. A scheduled event element can define a selector
      * (txtscheduledview). If no selector is defined, the default selector is used:
@@ -445,30 +434,28 @@ public class WorkflowScheduler implements Scheduler {
      * @throws QueryException
      * @throws Exception
      */
-    protected void processWorkListByEvent(ItemCollection event, ItemCollection configItemCollection)
+    protected void processWorkListByEvent(BPMNModel model, ItemCollection taskEntity, ItemCollection eventEntity,
+            ItemCollection configItemCollection)
             throws ModelException, QueryException {
 
-        // get task and event id form the event model entity....
-        int taskID = event.getItemValueInteger("numprocessid");
-        int eventID = event.getItemValueInteger("numActivityID");
-        String modelVersionEvent = event.getItemValueString("$modelversion");
-        // find task
-        ItemCollection taskElement = modelService.getModel(modelVersionEvent).getTask(taskID);
-        String workflowGroup = taskElement.getItemValueString("txtworkflowgroup");
+        // get taskID and workflowGroup
+        String modelVersion = BPMNUtil.getVersion(model);
+        BPMNElementNode task = model.findElementNodeById(taskEntity.getItemValueString("id"));
+        int taskID = taskEntity.getItemValueInteger(BPMNUtil.TASK_ITEM_TASKID);
+        int eventID = eventEntity.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID);
+        String workflowGroup = task.getBpmnProcess().getName();
 
+        // create selector....
         String searchTerm = null;
-        // test if we have a custom selector
-        searchTerm = event.getItemValueString("txtscheduledview");
-
+        searchTerm = eventEntity.getItemValueString(BPMNUtil.EVENT_ITEM_TIMER_SELECTION);
         if (searchTerm.isEmpty()) {
             // build the default selector....
             searchTerm = "($taskid:\"" + taskID + "\" AND $workflowgroup:\"" + workflowGroup + "\")";
         }
 
         // In the following code we use a pagination to iterate over all workitems
-        // defined by the selector
-        // this is necessary because in some cases the workitems in selection are more
-        // than defined by MAX_WORKITEM_COUNT
+        // defined by the selector. This is necessary because in some cases the
+        // workitems in selection can be more then the MAX_WORKITEM_COUNT
         int currentPageIndex = 0;
         List<ItemCollection> worklistCollector = new ArrayList<ItemCollection>();
         while (true) {
@@ -492,7 +479,7 @@ public class WorkflowScheduler implements Scheduler {
             } else {
                 logger.log(Level.FINEST, "......{0} workitems found in total, collect due date...", worklist.size());
                 // update collector.....
-                collectWorkitemsInDue(event, modelVersionEvent, worklist, worklistCollector);
+                collectWorkitemsInDue(eventEntity, modelVersion, worklist, worklistCollector);
                 if (worklist.size() < MAX_WORKITEM_COUNT) {
                     break;
                 } else {
@@ -539,25 +526,24 @@ public class WorkflowScheduler implements Scheduler {
 
     /**
      * This helper method iterates over a collection of workitems and tests for each
-     * workitem if its duedate matches a given BPMN event. If so the workitem is
+     * workitem if its dueDate matches a given BPMN event. If so the workitem is
      * added to the given workitemCollector.
      * <p>
      * The method is called form processWorklistByEvent which iterates over a all
-     * worktems selected by specific selector.
+     * workItems selected by specific selector.
      * <p>
-     * In case an old modelversion was deleted, the method tries to migrate to the
-     * lates model version. (issue #482)
+     * In case an old $modelVersion was detected, the method tries to migrate to the
+     * latest model version. (issue #482)
      * 
      * @param event
      * @param eventID
-     * @param modelVersionEvent
+     * @param modelVersion
      * @param worklist
      */
-    private void collectWorkitemsInDue(ItemCollection event, String modelVersionEvent, List<ItemCollection> worklist,
+    private void collectWorkitemsInDue(ItemCollection event, String modelVersion, List<ItemCollection> worklist,
             List<ItemCollection> collector) {
 
         for (ItemCollection workitem : worklist) {
-
             String type = workitem.getType();
             // skip deleted....
             if (type.endsWith("deleted")) {
@@ -572,7 +558,7 @@ public class WorkflowScheduler implements Scheduler {
             // issue #482
             // If the modelversion did not match the eventModelVersion, than migrate the
             // model version...
-            if (!modelVersionEvent.equals(workitem.getModelVersion())) {
+            if (!modelVersion.equals(workitem.getModelVersion())) {
                 // test if the old model version still exists.
                 try {
                     modelService.getModel(workitem.getModelVersion());
@@ -583,8 +569,8 @@ public class WorkflowScheduler implements Scheduler {
                     // ModelException - we migrate the model ...
                     logger.log(Level.FINE, "...deprecated model version ''{0}'' no longer exists ->"
                             + " migrating to new model version ''{1}''",
-                            new Object[] { workitem.getModelVersion(), modelVersionEvent });
-                    workitem.model(modelVersionEvent);
+                            new Object[] { workitem.getModelVersion(), modelVersion });
+                    workitem.model(modelVersion);
                 }
             }
 
@@ -593,7 +579,6 @@ public class WorkflowScheduler implements Scheduler {
                 logger.log(Level.FINEST, "......document {0}is in due", workitem.getUniqueID());
                 collector.add(workitem);
             }
-
         }
     }
 

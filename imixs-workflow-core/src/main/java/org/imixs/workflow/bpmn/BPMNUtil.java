@@ -390,7 +390,8 @@ public class BPMNUtil {
 
     /**
      * Iterates tough all ingoing sequence flows and tests if the source element is
-     * a Event.
+     * a so called Init-Event. An Init-Event is an Imixs Event with no incoming
+     * nodes or with one incoming node that comes direct from a Start event.
      * <p>
      * If a source element is an Event and has a predecessor event the method calls
      * itself recursive.
@@ -434,7 +435,7 @@ public class BPMNUtil {
     }
 
     /**
-     * Returns true if the given node is a an ImixsEvent node with not incoming
+     * Returns true if the given node is a an ImixsEvent node with no incoming
      * nodes or with one incoming node that comes from a Start event.
      * 
      */

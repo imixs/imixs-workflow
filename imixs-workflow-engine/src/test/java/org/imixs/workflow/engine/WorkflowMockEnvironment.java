@@ -3,30 +3,22 @@ package org.imixs.workflow.engine;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.Principal;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.engine.adapters.AccessAdapter;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -34,10 +26,8 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.openbpmn.bpmn.BPMNModel;
-import org.xml.sax.SAXException;
-
-import jakarta.ejb.SessionContext;
-import jakarta.enterprise.inject.Model;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
+import org.openbpmn.bpmn.util.BPMNModelFactory;
 
 /**
  * The WorkflowMockEnvironment provides a mocked database environment for jUnit
@@ -67,23 +57,33 @@ public class WorkflowMockEnvironment {
 
     protected Map<String, ItemCollection> database = null;
 
+    private final WorkflowContext workflowContext;
+    // private WorkflowContext workflowContext = null;
+    // private final WorkflowKernel workflowKernel;
+
     @Spy
     protected DocumentService documentService;
 
-    // @Spy
+    @Spy
     protected WorkflowService workflowService;
 
     @Spy
     protected ModelService modelService;
 
-    // @Spy
-    // protected ParticipantAdapter participantAdapter;
+    // protected SessionContext ctx;
 
-    protected SessionContext ctx;
-    protected WorkflowContext workflowContext;
-    private BPMNModel model = null;
+    // private BPMNModel model = null;
 
     private String modelPath = null;// "/bpmn/plugin-test.bpmn";
+
+    /**
+     * Constructor creates a MockWorkflowContext and a WorkflowKernel and registers
+     * a MockPlugin
+     * 
+     */
+    public WorkflowMockEnvironment() {
+        workflowContext = new MockWorkflowEngineContext();
+    }
 
     public String getModelPath() {
         return modelPath;
@@ -111,17 +111,18 @@ public class WorkflowMockEnvironment {
 
     @Before
     public void setup() throws PluginException, ModelException {
+
         // MockitoAnnotations.initMocks(this);
         MockitoAnnotations.openMocks(this);
         // setup db
         createTestDatabase();
 
         // mock session context
-        ctx = Mockito.mock(SessionContext.class);
+        // ctx = Mockito.mock(SessionContext.class);
         // simulate SessionContext ctx.getCallerPrincipal().getName()
-        Principal principal = Mockito.mock(Principal.class);
-        when(principal.getName()).thenReturn("manfred");
-        when(ctx.getCallerPrincipal()).thenReturn(principal);
+        // Principal principal = Mockito.mock(Principal.class);
+        // when(principal.getName()).thenReturn("manfred");
+        // when(ctx.getCallerPrincipal()).thenReturn(principal);
 
         // mock Entity service
         documentService = Mockito.mock(DocumentService.class);
@@ -159,28 +160,29 @@ public class WorkflowMockEnvironment {
         Mockito.doNothing().when(modelService).init();
 
         // load model
-        loadModel();
+        // loadModel();
 
         // Mock modelManager
-        ModelManager modelManager = Mockito.mock(ModelManager.class);
-        try {
-            when(modelManager.getModel(Mockito.anyString())).thenReturn(this.getModel());
-            when(modelManager.getModelByWorkitem(Mockito.any(ItemCollection.class))).thenReturn(this.getModel());
-        } catch (ModelException e) {
-            e.printStackTrace();
-        }
+        // ModelManager modelManager = Mockito.mock(ModelManager.class);
+        // try {
+        // when(modelManager.getModel(Mockito.anyString())).thenReturn(this.getModel());
+        // when(modelManager.getModelByWorkitem(Mockito.any(ItemCollection.class))).thenReturn(this.getModel());
+        // } catch (ModelException e) {
+        // e.printStackTrace();
+        // }
 
         // Mock context
-        workflowContext = Mockito.mock(WorkflowContext.class);
-        when(workflowContext.getModelManager()).thenReturn(modelManager);
+        // workflowContext = Mockito.mock(WorkflowContext.class);
+        // when(workflowContext.getModelManager()).thenReturn(modelManager);
 
         // Mock WorkflowService
         workflowService = Mockito.mock(WorkflowService.class);
 
-        workflowService.documentService = documentService;
-        workflowService.ctx = ctx;
+        // workflowService.get.documentService = documentService;
+        when(workflowService.getDocumentService()).thenReturn(documentService);
+        // workflowService.ctx = workflowContext.getSessionContext();// ctx;
 
-        workflowService.modelService = modelService;
+        // workflowService.getm.modelService = modelService;
         when(workflowService.getModelManager()).thenReturn(modelService);
         when(workflowService.getWorkListByRef(Mockito.anyString())).thenAnswer(new Answer<List<ItemCollection>>() {
             @Override
@@ -255,7 +257,7 @@ public class WorkflowMockEnvironment {
         when(workflowService.getWorkItem(Mockito.anyString())).thenCallRealMethod();
         // mock registerPlugins, registerAdapter, updateWorkitem...
         Mockito.doCallRealMethod().when(workflowService).registerPlugins(Mockito.any(WorkflowKernel.class),
-                Mockito.any(Model.class));
+                Mockito.any(BPMNModel.class));
 
         Mockito.doCallRealMethod().when(workflowService).updateMetadata(Mockito.any(ItemCollection.class));
 
@@ -313,9 +315,9 @@ public class WorkflowMockEnvironment {
 
     }
 
-    public Model getModel() {
-        return model;
-    }
+    // public Model getModel() {
+    // return model;
+    // }
 
     /**
      * loads a model from the given path
@@ -323,30 +325,49 @@ public class WorkflowMockEnvironment {
      * @param modelPath
      */
     public void loadModel(String modelPath) {
-        setModelPath(modelPath);
-        loadModel();
+        try {
+            BPMNModel model = BPMNModelFactory.read(modelPath);
+            workflowContext.getModelManager().addModel(model);
+        } catch (BPMNModelException | ModelException e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+
+        // setModelPath(modelPath);
+        // loadModel();
     }
 
     /**
      * loads the current model
      */
-    public void loadModel() {
-        if (this.modelPath != null) {
-            long lLoadTime = System.currentTimeMillis();
-            InputStream inputStream = WorkflowMockEnvironment.class.getResourceAsStream(this.modelPath);
-            try {
-                logger.log(Level.INFO, "loading model: {0}....", this.modelPath);
-                model = BPMNParser.parseModel(inputStream, "UTF-8");
+    // public void loadModel() {
+    // try {
+    // BPMNModel model = BPMNModelFactory.read(modelPath);
+    // workflowContext.getModelManager().addModel(model);
+    // } catch (BPMNModelException | ModelException e) {
+    // e.printStackTrace();
+    // Assert.fail();
+    // }
 
-                this.modelService.addModel(model);
-                logger.log(Level.FINE, "...loadModel processing time={0}ms", System.currentTimeMillis() - lLoadTime);
-            } catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e) {
-                e.printStackTrace();
-            }
+    // // if (this.modelPath != null) {
+    // // long lLoadTime = System.currentTimeMillis();
+    // // InputStream inputStream =
+    // // WorkflowMockEnvironment.class.getResourceAsStream(this.modelPath);
+    // // try {
+    // // logger.log(Level.INFO, "loading model: {0}....", this.modelPath);
+    // // model = BPMNParser.parseModel(inputStream, "UTF-8");
 
-        }
+    // // this.modelService.addModel(model);
+    // // logger.log(Level.FINE, "...loadModel processing time={0}ms",
+    // // System.currentTimeMillis() - lLoadTime);
+    // // } catch (ModelException | ParseException | ParserConfigurationException |
+    // // SAXException | IOException e) {
+    // // e.printStackTrace();
+    // // }
 
-    }
+    // }
+
+    // }
 
     public Map<String, ItemCollection> getDatabase() {
         return database;

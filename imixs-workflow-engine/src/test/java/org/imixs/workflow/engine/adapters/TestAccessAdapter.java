@@ -10,12 +10,11 @@ import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-
-import org.junit.Assert;
 
 /**
  * Test the ACL plugin.
@@ -35,8 +34,6 @@ public class TestAccessAdapter {
 	@Spy
 	protected AccessAdapter participantAdapter;
 
-	
-	
 	@Before
 	public void setUp() throws PluginException, ModelException {
 		MockitoAnnotations.initMocks(this);
@@ -46,10 +43,10 @@ public class TestAccessAdapter {
 		workflowMockEnvironment.setup();
 
 		participantAdapter.workflowService = workflowMockEnvironment.getWorkflowService();
-		
+
 		// prepare data
 		documentContext = new ItemCollection().model("1.0.0").task(100);
-		
+
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -179,7 +176,7 @@ public class TestAccessAdapter {
 	public void testCondition() throws ModelException {
 
 		// case I.
- 
+
 		documentContext.setTaskID(200);
 		documentContext.setEventID(20);
 		documentContext.replaceItemValue("_budget", 50);

@@ -107,8 +107,16 @@ public class ModelService implements ModelManager {
 
     public ModelService() {
         super();
-
         openBPMNModelManager = new OpenBPMNModelManager();
+    }
+
+    /**
+     * Returns an instance of a OpenBPMNModelManager
+     * 
+     * @return
+     */
+    public OpenBPMNModelManager getOpenBPMNModelManager() {
+        return openBPMNModelManager;
     }
 
     /**
@@ -158,20 +166,42 @@ public class ModelService implements ModelManager {
     }
 
     /**
+     * Returns the BPMN Process entity associated with a given workitem, based on
+     * its attributes "$modelVersion", "$taskID". The process holds the name
+     * for the attribute $worklfowGroup
+     * <p>
+     * The taskID has to be unique in a process. The method throws a
+     * {@link ModelException} if no Process can be resolved based on the given model
+     * information.
+     * <p>
+     * The method is called by the {@link WorkflowKernel} during the processing
+     * life cycle to update the process group information.
+     * 
+     * @param workitem
+     * @return BPMN Event entity - {@link ItemCollection}
+     * @throws ModelException if no event was found
+     */
+    @Override
+    public ItemCollection loadProcess(ItemCollection workitem) throws ModelException {
+        return openBPMNModelManager.loadProcess(workitem);
+    }
+
+    /**
      * Returns a Model matching a given workitem. In case not matching model version
      * exits, the method returns the highest Model Version matching the
      * corresponding workflow group.
      * 
      * The method throws a ModelException in case the model version did not exits.
      **/
-    @Override
-    public BPMNModel findModelByWorkitem(ItemCollection workitem) throws ModelException {
-        return openBPMNModelManager.findModelByWorkitem(workitem);
-    }
+    // @Override
+    // public BPMNModel findModelByWorkitem(ItemCollection workitem) throws
+    // ModelException {
+    // return openBPMNModelManager.findModelByWorkitem(workitem);
+    // }
 
     @Override
-    public ItemCollection loadDefinition(ItemCollection workitem) throws ModelException {
-        return openBPMNModelManager.loadDefinition(workitem);
+    public ItemCollection loadDefinition(BPMNModel model) throws ModelException {
+        return openBPMNModelManager.loadDefinition(model);
     }
 
     @Override

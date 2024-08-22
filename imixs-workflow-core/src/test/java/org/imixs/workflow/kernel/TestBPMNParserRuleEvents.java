@@ -63,7 +63,7 @@ public class TestBPMNParserRuleEvents {
 			// Test Environment
 			ItemCollection workitem = new ItemCollection();
 			workitem.model("1.0.0").task(1000);
-			ItemCollection profile = openBPMNModelManager.loadDefinition(workitem);
+			ItemCollection profile = openBPMNModelManager.loadDefinition(model);
 			Assert.assertNotNull(profile);
 
 			// test count of task elements
@@ -114,7 +114,7 @@ public class TestBPMNParserRuleEvents {
 			// Test Environment
 			ItemCollection workItem = new ItemCollection();
 			workItem.model("1.0.0").task(2000).event(10);
-			ItemCollection profile = workflowEngine.getModelManager().loadDefinition(workItem);
+			ItemCollection profile = workflowEngine.getModelManager().loadDefinition(model);
 			Assert.assertNotNull(profile);
 
 			/* Test 2000.10 - FollowUp Event */

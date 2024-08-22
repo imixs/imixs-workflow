@@ -3,9 +3,9 @@ package org.imixs.workflow.engine;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Assert;
 
 /**
  * Test the WorkflowService method 'adaptText'
@@ -43,10 +43,8 @@ public class TestAdaptForEach {
 
   public void testSimpleValueList() throws PluginException {
 
-    String testString =
-        "<for-each item=\"_partid\">Order-No: <itemvalue>_orderid</itemvalue> - Part ID: <itemvalue>_partid</itemvalue><br /></for-each>";
-    String expectedStringLast =
-        "Order-No: 111222 - Part ID: A123<br />Order-No: 111222 - Part ID: B456<br />";
+    String testString = "<for-each item=\"_partid\">Order-No: <itemvalue>_orderid</itemvalue> - Part ID: <itemvalue>_partid</itemvalue><br /></for-each>";
+    String expectedStringLast = "Order-No: 111222 - Part ID: A123<br />Order-No: 111222 - Part ID: B456<br />";
 
     // prepare data
     documentContext = new ItemCollection();
@@ -54,8 +52,7 @@ public class TestAdaptForEach {
     documentContext.appendItemValue("_partid", "A123");
     documentContext.appendItemValue("_partid", "B456");
 
-    String resultString =
-        workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+    String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
 
     Assert.assertEquals(expectedStringLast, resultString);
 
@@ -78,8 +75,7 @@ public class TestAdaptForEach {
   @Test
   public void testEmbeddedChildItemValue() throws PluginException {
 
-    String testString =
-        "<for-each item=\"_childs\">Order ID: <itemvalue>_orderid</itemvalue>: <itemvalue>_amount</itemvalue><br /></for-each>";
+    String testString = "<for-each item=\"_childs\">Order ID: <itemvalue>_orderid</itemvalue>: <itemvalue>_amount</itemvalue><br /></for-each>";
     String expectedStringLast = "Order ID: A123: 50.55<br />Order ID: B456: 1500000.0<br />";
 
     // prepare data
@@ -97,8 +93,7 @@ public class TestAdaptForEach {
     // create a fake value which should be ignored
     documentContext.replaceItemValue("_orderid", "not used");
 
-    String resultString =
-        workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+    String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
 
     Assert.assertEquals(expectedStringLast, resultString);
 

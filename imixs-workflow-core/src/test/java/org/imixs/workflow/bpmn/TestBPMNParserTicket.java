@@ -52,12 +52,8 @@ public class TestBPMNParserTicket {
 	public void testSimple() throws ModelException {
 
 		String VERSION = "1.0.0";
-
-		Assert.assertNotNull(model);
-
-		ItemCollection workitem = new ItemCollection().model(VERSION);
 		// Test Environment
-		ItemCollection profile = openBPMNModelManager.loadDefinition(workitem);
+		ItemCollection profile = openBPMNModelManager.loadDefinition(model);
 		Assert.assertNotNull(profile);
 		Assert.assertEquals("environment.profile",
 				profile.getItemValueString("name"));
@@ -135,12 +131,8 @@ public class TestBPMNParserTicket {
 	public void testSimpleDeprecatedItemNames() throws ModelException {
 
 		String VERSION = "1.0.0";
-
-		Assert.assertNotNull(model);
-
-		ItemCollection workitem = new ItemCollection().model(VERSION);
 		// Test Environment
-		ItemCollection profile = openBPMNModelManager.loadDefinition(workitem);
+		ItemCollection profile = openBPMNModelManager.loadDefinition(model);
 		Assert.assertNotNull(profile);
 		Assert.assertEquals("environment.profile",
 				profile.getItemValueString("txtname"));

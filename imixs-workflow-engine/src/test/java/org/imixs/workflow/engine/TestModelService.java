@@ -1,13 +1,13 @@
 package org.imixs.workflow.engine;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Model;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.junit.Assert;
+import jakarta.enterprise.inject.Model;
 
 /**
  * Test class for WorkflowService
@@ -18,14 +18,14 @@ import org.junit.Assert;
  * 
  * @author rsoika
  */
-public class TestModelService extends WorkflowMockEnvironment {
+public class TestModelService {
 	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 
-	// @Spy
-	// protected ModelService modelService;
+	private WorkflowMockEnvironment workflowEngine;
 
 	@Before
-	public void setUp() throws PluginException, ModelException {
+	public void setup() throws PluginException {
+		workflowEngine = new WorkflowMockEnvironment();
 
 	}
 
@@ -41,8 +41,8 @@ public class TestModelService extends WorkflowMockEnvironment {
 	 */
 	@Test
 	public void testGetDataObject() throws ModelException {
-		this.setModelPath("/bpmn/TestWorkflowService.bpmn");
-		this.loadModel();
+
+		workflowEngine.loadModel("/bpmn/TestWorkflowService.bpmn");
 
 		ItemCollection event = this.getModel().getEvent(100, 20);
 
@@ -86,8 +86,6 @@ public class TestModelService extends WorkflowMockEnvironment {
 
 	}
 
-	
-	
 	/**
 	 * This deprecated model version
 	 * 
@@ -103,22 +101,20 @@ public class TestModelService extends WorkflowMockEnvironment {
 		workitem.setModelVersion("(^1.)");
 		workitem.setTaskID(100);
 		workitem.setEventID(10);
-		
 
 		Model amodel = null;
 		try {
 			amodel = modelService.getModelByWorkitem(workitem);
-			
+
 		} catch (ModelException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 		Assert.assertNotNull(amodel);
 		Assert.assertEquals("1.0.0", amodel.getVersion());
-		
+
 	}
-	
-	
+
 	/**
 	 * This deprecated model version
 	 * 
@@ -135,7 +131,6 @@ public class TestModelService extends WorkflowMockEnvironment {
 		workitem.setTaskID(100);
 		workitem.setEventID(10);
 		workitem.replaceItemValue("$WorkflowGroup", "Invoice");
-		
 
 		Model amodel = null;
 		try {

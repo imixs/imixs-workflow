@@ -6,13 +6,13 @@ import java.util.List;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.junit.Assert;
 
 /**
  * Test class for the WorkflowService to test conditional and parallel gateways.
@@ -45,7 +45,7 @@ public class TestWorkflowServiceGateways {
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
 	 * @throws ModelException
-	 * @throws AdapterException 
+	 * @throws AdapterException
 	 * 
 	 */
 	@Test
@@ -81,53 +81,48 @@ public class TestWorkflowServiceGateways {
 
 	}
 
-	
 	/**
-     * This test tests the conditional event gateways with a default condition....
-     * 
-     * @throws ProcessingErrorException
-     * @throws AccessDeniedException
-     * @throws ModelException
-     * @throws AdapterException 
-     * 
-     */
-    @Test
-    public void testConditionalDefaultEvent()
-            throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+	 * This test tests the conditional event gateways with a default condition....
+	 * 
+	 * @throws ProcessingErrorException
+	 * @throws AccessDeniedException
+	 * @throws ModelException
+	 * @throws AdapterException
+	 * 
+	 */
+	@Test
+	public void testConditionalDefaultEvent()
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
-        workflowMockEnvironment.loadModel("/bpmn/conditional_default_event.bpmn");
+		workflowMockEnvironment.loadModel("/bpmn/conditional_default_event.bpmn");
 
-        // load test workitem
-        ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
-        workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
+		// load test workitem
+		ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 
-    
-        // test _budget<100
-        workitem.setTaskID(1000);
-        workitem.replaceItemValue("_budget", 99);
-        workitem.setEventID(10);
-        workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
-        Assert.assertEquals(1200, workitem.getTaskID());
+		// test _budget<100
+		workitem.setTaskID(1000);
+		workitem.replaceItemValue("_budget", 99);
+		workitem.setEventID(10);
+		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
+		Assert.assertEquals(1200, workitem.getTaskID());
 
-        // test _budget>100
-        workitem.setTaskID(1000);
-        workitem.replaceItemValue("_budget", 9999);
-        workitem.setEventID(10);
-        workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
-        Assert.assertEquals(1300, workitem.getTaskID());
-        
-        
-        // test without any budget
-        workitem.setTaskID(1000);
-        workitem.removeItem("_budget");
-        workitem.setEventID(10);
-        workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
-        Assert.assertEquals(1100, workitem.getTaskID());
+		// test _budget>100
+		workitem.setTaskID(1000);
+		workitem.replaceItemValue("_budget", 9999);
+		workitem.setEventID(10);
+		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
+		Assert.assertEquals(1300, workitem.getTaskID());
 
-    }
+		// test without any budget
+		workitem.setTaskID(1000);
+		workitem.removeItem("_budget");
+		workitem.setEventID(10);
+		workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
+		Assert.assertEquals(1100, workitem.getTaskID());
 
-    
-    
+	}
+
 	/**
 	 * This test tests the conditional event gateways....
 	 * 

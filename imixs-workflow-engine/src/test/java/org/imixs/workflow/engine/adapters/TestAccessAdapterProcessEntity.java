@@ -11,10 +11,9 @@ import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.junit.Assert;
 
 /**
  * Test the ACL plug-in concerning the ACL settings in a process entity.
@@ -45,13 +44,12 @@ public class TestAccessAdapterProcessEntity {
 
 	private final static Logger logger = Logger.getLogger(TestAccessAdapterProcessEntity.class.getName());
 
-	
 	protected ItemCollection documentContext;
 	protected ItemCollection documentActivity;
 	protected ItemCollection documentProcess;
 	protected WorkflowMockEnvironment workflowMockEnvironment;
 	protected AccessAdapter adapter;
-	
+
 	@Before
 	public void setUp() throws PluginException, ModelException {
 
@@ -60,7 +58,7 @@ public class TestAccessAdapterProcessEntity {
 		workflowMockEnvironment.setup();
 
 		adapter = new AccessAdapter();
-		adapter.workflowService=workflowMockEnvironment.getWorkflowService();
+		adapter.workflowService = workflowMockEnvironment.getWorkflowService();
 
 		// prepare data
 		documentContext = new ItemCollection().model(WorkflowMockEnvironment.DEFAULT_MODEL_VERSION).task(100);
@@ -70,7 +68,7 @@ public class TestAccessAdapterProcessEntity {
 		list.add("anna");
 		documentContext.replaceItemValue("namTeam", list);
 		documentContext.replaceItemValue("namCreator", "ronny");
-		
+
 	}
 
 	/**
@@ -116,7 +114,7 @@ public class TestAccessAdapterProcessEntity {
 		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 10);
 		documentContext.setTaskID(300);
 		documentContext.setEventID(10);
-		
+
 		try {
 			adapter.execute(documentContext, documentActivity);
 		} catch (AdapterException e) {
@@ -144,7 +142,7 @@ public class TestAccessAdapterProcessEntity {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
 		documentContext.setEventID(20);
-		
+
 		try {
 			adapter.execute(documentContext, documentActivity);
 		} catch (AdapterException e) {
@@ -181,7 +179,7 @@ public class TestAccessAdapterProcessEntity {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 20);
 		documentContext.setEventID(20);
-		
+
 		try {
 			adapter.execute(documentContext, documentActivity);
 		} catch (AdapterException e) {

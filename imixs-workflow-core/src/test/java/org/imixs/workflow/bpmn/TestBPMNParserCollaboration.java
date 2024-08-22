@@ -44,10 +44,8 @@ public class TestBPMNParserCollaboration {
 	public void testSimple()
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
-		ItemCollection workitem = new ItemCollection().model("1.0.0");
-
 		// Test Environment
-		ItemCollection profile = openBPMNModelManager.loadDefinition(workitem);
+		ItemCollection profile = openBPMNModelManager.loadDefinition(model);
 		Assert.assertNotNull(profile);
 		Assert.assertEquals("environment.profile", profile.getItemValueString("txtname"));
 		Assert.assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));

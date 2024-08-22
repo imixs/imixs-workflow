@@ -57,6 +57,7 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.util.XMLParser;
+import org.openbpmn.bpmn.BPMNModel;
 
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.DeclareRoles;
@@ -69,7 +70,6 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
-import jakarta.enterprise.inject.Model;
 import jakarta.inject.Inject;
 
 /**
@@ -437,9 +437,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         List<ItemCollection> result = new ArrayList<ItemCollection>();
         int processID = workitem.getTaskID();
         // verify if version is valid
-        Model model = modelService.getModelByWorkitem(workitem);
-
-        List<ItemCollection> eventList = model.findAllEventsByTask(processID);
+        // Model model = modelService.getModelByWorkitem(workitem);
+        // List<ItemCollection> eventList = model.findAllEventsByTask(processID);
+        BPMNModel model = modelService.getModel(workitem.getModelVersion());
+        List<ItemCollection> eventList = modelService.getOpenBPMNModelManager().findEventsByTask(model, processID);
 
         String username = getUserName();
         boolean bManagerAccess = ctx.isCallerInRole(DocumentService.ACCESSLEVEL_MANAGERACCESS);
@@ -568,9 +569,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
          * Lookup current processEntity. If not available update model to latest
          * matching model version
          */
-        Model model = null;
+        BPMNModel model = null;
         try {
-            model = this.getModelManager().getModelByWorkitem(workitem);
+            model = this.getModelManager().getModel(workitem.getModelVersion());// .getModelByWorkitem(workitem);
         } catch (ModelException e) {
             throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
                     ProcessingErrorException.INVALID_PROCESSID, e.getMessage(), e);
@@ -1150,12 +1151,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
      * This method register all plugin classes listed in the model profile
      * 
      * @throws PluginException
+     * @throws ModelException
      */
     @SuppressWarnings("unchecked")
-    protected void registerPlugins(WorkflowKernel workflowkernel, Model model) throws PluginException {
+    protected void registerPlugins(WorkflowKernel workflowkernel, BPMNModel model)
+            throws PluginException, ModelException {
         boolean debug = logger.isLoggable(Level.FINE);
         // Fetch the current Profile Entity for this version.
-        ItemCollection profile = model.getDefinition();
+
+        ItemCollection profile = modelService.loadDefinition(model);// model.getDefinition();
 
         // register plugins defined in the environment.profile ....
         List<String> vPlugins = (List<String>) profile.getItemValue("txtPlugins");

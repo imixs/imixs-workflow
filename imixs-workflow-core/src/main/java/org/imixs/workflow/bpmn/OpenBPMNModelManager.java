@@ -116,8 +116,7 @@ public class OpenBPMNModelManager implements ModelManager {
      * @throws ModelException if no event was found
      */
     @Override
-    public ItemCollection loadDefinition(ItemCollection workitem) throws ModelException {
-        BPMNModel model = findModelByWorkitem(workitem);
+    public ItemCollection loadDefinition(BPMNModel model) throws ModelException {
         String key = BPMNUtil.getVersion(model);
         ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key, k -> lookupDefinition(model));
         // clone instance to protect for manipulation
@@ -514,9 +513,9 @@ public class OpenBPMNModelManager implements ModelManager {
     }
 
     /**
-     * Returns a list of all Events assigned to a Task. The event can either
-     * connected by an outgoing sequence flow or come from a incoming sequence flow
-     * with now other incoming flows from the event.
+     * Returns a list of all Events assigned to a Task. The event can be either
+     * connected by an outgoing sequence flow or by an ingoing sequence flow
+     * (init-event-node).
      * 
      * @param model
      * @param taskID

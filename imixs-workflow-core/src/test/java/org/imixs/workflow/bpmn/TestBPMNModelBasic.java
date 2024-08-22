@@ -198,7 +198,7 @@ public class TestBPMNModelBasic {
 		workitem.model("1.0.0");
 
 		// test definition
-		ItemCollection definition = openBPMNModelManager.loadDefinition(workitem);
+		ItemCollection definition = openBPMNModelManager.loadDefinition(model);
 
 		Assert.assertNotNull(definition);
 		Assert.assertEquals("1.0.0", definition.getItemValueString("$ModelVersion"));
@@ -208,7 +208,7 @@ public class TestBPMNModelBasic {
 		Assert.assertEquals("test", definition.getItemValueString("$ModelVersion"));
 
 		// test definition once again
-		definition = openBPMNModelManager.loadDefinition(workitem);
+		definition = openBPMNModelManager.loadDefinition(model);
 		Assert.assertNotNull(definition);
 		Assert.assertEquals("1.0.0", definition.getItemValueString("$ModelVersion"));
 
