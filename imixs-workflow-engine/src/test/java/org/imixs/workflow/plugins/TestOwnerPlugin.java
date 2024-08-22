@@ -9,10 +9,9 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.junit.Assert;
 
 /**
  * Test the ACL plugin.
@@ -22,7 +21,7 @@ import org.junit.Assert;
  * @author rsoika
  * 
  */
-public class TestOwnerPlugin  {
+public class TestOwnerPlugin {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPlugin.class.getName());
 
@@ -35,10 +34,10 @@ public class TestOwnerPlugin  {
 	@Before
 	public void setup() throws PluginException, ModelException {
 
-		workflowMockEnvironment=new WorkflowMockEnvironment();
+		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestOwnerPlugin.bpmn");
 		workflowMockEnvironment.setup();
-		
+
 		ownerPlugin = new OwnerPlugin();
 		try {
 			ownerPlugin.init(workflowMockEnvironment.getWorkflowService());
@@ -48,7 +47,7 @@ public class TestOwnerPlugin  {
 		}
 
 		// prepare data
-		documentContext = new ItemCollection().model( WorkflowMockEnvironment.DEFAULT_MODEL_VERSION).task(100).event(10);
+		documentContext = new ItemCollection().model(WorkflowMockEnvironment.DEFAULT_MODEL_VERSION).task(100).event(10);
 		logger.info("[TestOwnerPlugin] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
@@ -64,8 +63,6 @@ public class TestOwnerPlugin  {
 		documentActivity = new ItemCollection();
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 		documentActivity.replaceItemValue("numNextProcessID", 100);
-		
-		
 
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
@@ -97,7 +94,7 @@ public class TestOwnerPlugin  {
 		documentActivity = new ItemCollection();
 		documentActivity.replaceItemValue("keyupdateAcl", true);
 		documentActivity.replaceItemValue("numNextProcessID", 100);
-		
+
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
 		list.add("joe");
@@ -125,7 +122,8 @@ public class TestOwnerPlugin  {
 	/**
 	 * This test verifies if a list of users provided by the fieldMapping is
 	 * mapped correctly into the workItem
-	 * @throws ModelException 
+	 * 
+	 * @throws ModelException
 	 */
 	@SuppressWarnings({ "rawtypes" })
 	@Test
@@ -136,7 +134,7 @@ public class TestOwnerPlugin  {
 		documentActivity.replaceItemValue("keyOwnershipFields", "[sam, tom,  anna ,]"); // 3
 																						// values
 																						// expected!
-		//this.setActivityEntity(documentActivity);
+		// this.setActivityEntity(documentActivity);
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {
@@ -158,7 +156,7 @@ public class TestOwnerPlugin  {
 	public void testNoUpdate() throws ModelException {
 
 		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
-		
+
 		try {
 			ownerPlugin.run(documentContext, documentActivity);
 		} catch (PluginException e) {

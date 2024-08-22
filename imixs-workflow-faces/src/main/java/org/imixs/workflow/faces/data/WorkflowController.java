@@ -34,13 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.enterprise.context.ConversationScoped;
-import jakarta.enterprise.event.Event;
-import jakarta.enterprise.event.ObserverException;
-import jakarta.faces.context.ExternalContext;
-import jakarta.faces.context.FacesContext;
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.ModelService;
@@ -52,6 +46,14 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.faces.util.ErrorHandler;
 import org.imixs.workflow.faces.util.LoginController;
 import org.imixs.workflow.faces.util.ValidationException;
+
+import jakarta.enterprise.context.ConversationScoped;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.event.ObserverException;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  * 
@@ -178,17 +180,12 @@ public class WorkflowController extends AbstractDataController implements Serial
         ItemCollection startProcessEntity = null;
         // if no process id was set fetch the first start workitem
         if (data.getTaskID() <= 0) {
-            // get ProcessEntities by version
-            List<ItemCollection> col;
-            col = modelService.getModelByWorkitem(getWorkitem()).findAllTasks();
-            if (!col.isEmpty()) {
-                startProcessEntity = col.iterator().next();
-                getWorkitem().setTaskID(startProcessEntity.getItemValueInteger("numProcessID"));
-            }
+            throw new InvalidAccessException(ModelException.INVALID_MODEL_ENTRY,
+                    "missing $taskID ");
         }
 
         // find the ProcessEntity
-        startProcessEntity = modelService.getModelByWorkitem(data).getTask(data.getTaskID());
+        startProcessEntity = modelService.loadTask(data);
 
         // ProcessEntity found?
         if (startProcessEntity == null) {
@@ -309,7 +306,8 @@ public class WorkflowController extends AbstractDataController implements Serial
         try {
             long l1 = System.currentTimeMillis();
             events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_BEFORE_PROCESS));
-            logger.log(Level.FINEST, "......fire WORKITEM_BEFORE_PROCESS event: '' in {0}ms", System.currentTimeMillis() - l1);
+            logger.log(Level.FINEST, "......fire WORKITEM_BEFORE_PROCESS event: '' in {0}ms",
+                    System.currentTimeMillis() - l1);
 
             // process workItem now...
             data = workflowService.processWorkItem(data);
@@ -339,12 +337,13 @@ public class WorkflowController extends AbstractDataController implements Serial
             // fire event
             long l2 = System.currentTimeMillis();
             events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_AFTER_PROCESS));
-            logger.log(Level.FINEST, "......[process] fire WORKITEM_AFTER_PROCESS event: '' in {0}ms", System.currentTimeMillis() - l2);
+            logger.log(Level.FINEST, "......[process] fire WORKITEM_AFTER_PROCESS event: '' in {0}ms",
+                    System.currentTimeMillis() - l2);
 
             if (logger.isLoggable(Level.FINEST)) {
                 logger.log(Level.FINEST, "......[process] ''{0}'' completed in {1}ms",
-                        new Object[]{getWorkitem().getItemValueString(WorkflowKernel.UNIQUEID),
-                            System.currentTimeMillis() - lTotal});
+                        new Object[] { getWorkitem().getItemValueString(WorkflowKernel.UNIQUEID),
+                                System.currentTimeMillis() - lTotal });
             }
             // Finally we close the conversation. In case of an exception, the conversation
             // will stay open
@@ -385,7 +384,8 @@ public class WorkflowController extends AbstractDataController implements Serial
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
                 externalContext.redirect(externalURL);
             } catch (IOException e) {
-                logger.log(Level.WARNING, "Failed to redirect action result: {0} - Error: {1}", new Object[]{externalURL, e.getMessage()});
+                logger.log(Level.WARNING, "Failed to redirect action result: {0} - Error: {1}",
+                        new Object[] { externalURL, e.getMessage() });
                 e.printStackTrace();
             }
         }

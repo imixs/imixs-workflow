@@ -8,10 +8,9 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.junit.Assert;
 
 /**
  * Test class for WorkflowService
@@ -24,7 +23,7 @@ import org.junit.Assert;
 public class TestRulePluginConditions {
 	protected ResultPlugin resultPlugin = null;
 	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
-	
+
 	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
@@ -44,13 +43,13 @@ public class TestRulePluginConditions {
 		}
 		try {
 			workflowMockEnvironment.getModelService().addModel(new ModelPluginMock(workflowMockEnvironment.getModel(),
-					"org.imixs.workflow.engine.plugins.ApplicationPlugin","org.imixs.workflow.engine.plugins.RulePlugin"));
+					"org.imixs.workflow.engine.plugins.ApplicationPlugin",
+					"org.imixs.workflow.engine.plugins.RulePlugin"));
 		} catch (ModelException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 	/**
 	 * This test simulates a workflowService process call.
 	 * 

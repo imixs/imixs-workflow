@@ -67,20 +67,17 @@ public interface ModelManager {
     public BPMNModel getModel(String version) throws ModelException;
 
     /**
-     * Returns the BPMN Definition entity associated with a given workitem, based on
-     * its attribute "$modelVersion". The definition holds the bpmn meta data.
+     * Returns the BPMN Definition entity associated with a given BPMNModel. The
+     * definition holds the bpmn meta data.
      * <p>
-     * The method throws a {@link ModelException} if no Process can be resolved
+     * The method throws a {@link ModelException} if no Definition can be resolved
      * based on the given model information.
-     * <p>
-     * The method is called by the {@link WorkflowKernel} during the processing
-     * life cycle to update the process group information.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}
      * @throws ModelException if no event was found
      */
-    public ItemCollection loadDefinition(ItemCollection workitem) throws ModelException;
+    public ItemCollection loadDefinition(BPMNModel model) throws ModelException;
 
     /**
      * Returns the BPMN Process entity associated with a given workitem, based on

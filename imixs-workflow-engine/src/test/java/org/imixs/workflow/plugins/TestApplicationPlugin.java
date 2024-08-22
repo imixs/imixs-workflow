@@ -8,20 +8,19 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.ApplicationPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.junit.Assert;
 
 /**
  * Test the Application plug-in.
  * 
  * The plug-in evaluates the next process entity
  * 
- * @author rsoika 
+ * @author rsoika
  * 
  */
-public class TestApplicationPlugin  {
+public class TestApplicationPlugin {
 
 	private final static Logger logger = Logger
 			.getLogger(TestApplicationPlugin.class.getName());
@@ -34,13 +33,11 @@ public class TestApplicationPlugin  {
 	@Before
 	public void setUp() throws PluginException, ModelException {
 
-		workflowMockEnvironment=new WorkflowMockEnvironment();
+		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/plugin-test.bpmn");
-		
+
 		workflowMockEnvironment.setup();
 
-		
-	
 		applicationPlugin = new ApplicationPlugin();
 		try {
 			applicationPlugin.init(workflowMockEnvironment.getWorkflowService());
@@ -63,7 +60,8 @@ public class TestApplicationPlugin  {
 	/**
 	 * Test if the txtEditorID form the next processEntity is associated to the
 	 * current workitem by the ApplicationPlugin
-	 * @throws ModelException 
+	 * 
+	 * @throws ModelException
 	 */
 	@Test
 	public void simpleTest() throws ModelException {
@@ -80,7 +78,7 @@ public class TestApplicationPlugin  {
 
 		try {
 			applicationPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) { 
+		} catch (PluginException e) {
 
 			e.printStackTrace();
 			Assert.fail();

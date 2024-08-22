@@ -16,11 +16,10 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.SplitAndJoinPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import org.junit.Assert;
 
 /**
  * Test the SlitAndJoin plug-in
@@ -168,73 +167,67 @@ public class TestSplitAndJoinPlugin {
 		Assert.assertTrue(team.contains("anna"));
 
 	}
-	
-	
-	   /**
-     * Test creation of subprocess
-     * 
-     * @throws ModelException
-     ***/
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testCreateSubProcessWithFile() throws ModelException {
 
-        
-        // add a dummy file
-        byte[] empty = { 0 };
-        FileData fileData=new FileData("test1.txt", empty, "application/xml", null);
-        
-        List<Object> textlist = new ArrayList<Object>();
-        textlist.add("\n\n\n\n hello world");
-        fileData.setAttribute("text", textlist);
-        documentContext.addFileData(fileData);
-        
-        
-        
-        try {
-            documentActivity = workflowMockEnvironment.getModel().getEvent(100, 61);
-            splitAndJoinPlugin.run(documentContext, documentActivity);
-        } catch (PluginException e) {
+	/**
+	 * Test creation of subprocess
+	 * 
+	 * @throws ModelException
+	 ***/
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testCreateSubProcessWithFile() throws ModelException {
 
-            e.printStackTrace();
-            Assert.fail();
-        }
+		// add a dummy file
+		byte[] empty = { 0 };
+		FileData fileData = new FileData("test1.txt", empty, "application/xml", null);
 
-        Assert.assertNotNull(documentContext);
+		List<Object> textlist = new ArrayList<Object>();
+		textlist.add("\n\n\n\n hello world");
+		fileData.setAttribute("text", textlist);
+		documentContext.addFileData(fileData);
 
-        List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+		try {
+			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 61);
+			splitAndJoinPlugin.run(documentContext, documentActivity);
+		} catch (PluginException e) {
 
-        Assert.assertEquals(1, workitemRefList.size());
+			e.printStackTrace();
+			Assert.fail();
+		}
 
-        String subprocessUniqueid = workitemRefList.get(0);
+		Assert.assertNotNull(documentContext);
 
-        // get the subprocess...
-        ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
+		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 
-        // test data in subprocess
-        Assert.assertNotNull(subprocess);
+		Assert.assertEquals(1, workitemRefList.size());
 
-        Assert.assertEquals(100, subprocess.getTaskID());
+		String subprocessUniqueid = workitemRefList.get(0);
 
-        logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
+		// get the subprocess...
+		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
 
-        // test if the field namTeam is available
-        List<String> team = subprocess.getItemValue("_sub_Team");
-        Assert.assertEquals(2, team.size());
-        Assert.assertTrue(team.contains("manfred"));
-        Assert.assertTrue(team.contains("anna"));
-        
-        
-        
-        // verify file content....
-        Assert.assertNotNull(subprocess);
-        List<FileData> targetFileList = subprocess.getFileData();
-        Assert.assertEquals(1,targetFileList.size());
-        
-        List<Object> result=(List<Object>) targetFileList.get(0).getAttribute("text");
-        
-        Assert.assertNotNull(result);
-    }
+		// test data in subprocess
+		Assert.assertNotNull(subprocess);
+
+		Assert.assertEquals(100, subprocess.getTaskID());
+
+		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
+
+		// test if the field namTeam is available
+		List<String> team = subprocess.getItemValue("_sub_Team");
+		Assert.assertEquals(2, team.size());
+		Assert.assertTrue(team.contains("manfred"));
+		Assert.assertTrue(team.contains("anna"));
+
+		// verify file content....
+		Assert.assertNotNull(subprocess);
+		List<FileData> targetFileList = subprocess.getFileData();
+		Assert.assertEquals(1, targetFileList.size());
+
+		List<Object> result = (List<Object>) targetFileList.get(0).getAttribute("text");
+
+		Assert.assertNotNull(result);
+	}
 
 	/**
 	 * Test multi creation of subprocesses
@@ -449,9 +442,9 @@ public class TestSplitAndJoinPlugin {
 		Assert.assertEquals("", subprocess.getItemValueString("$snapshotid"));
 
 		// test the deprecated LIst
-	    List<String> workitemRefListDeprecated = documentContext.getItemValue("txtworkitemref");
-	    Assert.assertEquals(workitemRefList,workitemRefListDeprecated);
-	
+		List<String> workitemRefListDeprecated = documentContext.getItemValue("txtworkitemref");
+		Assert.assertEquals(workitemRefList, workitemRefListDeprecated);
+
 	}
 
 	/**
@@ -498,12 +491,9 @@ public class TestSplitAndJoinPlugin {
 		Assert.assertTrue(Pattern.compile("(^[a-z]|^num)").matcher("txtTitle").find());
 		Assert.assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("TXTTitle").find());
 		Assert.assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("_title").find());
-		
-		
+
 		Assert.assertTrue(Pattern.compile("(^requester[a-zA-Z])").matcher("requesterName").find());
 		Assert.assertFalse(Pattern.compile("(^requester[a-zA-Z])").matcher("creatorName").find());
-		
-		
 
 	}
 

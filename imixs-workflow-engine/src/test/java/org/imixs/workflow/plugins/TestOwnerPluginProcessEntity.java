@@ -9,10 +9,9 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.junit.Assert;
 
 /**
  * Test the Owner plug-in concerning the settings in a process entity.
@@ -43,18 +42,15 @@ public class TestOwnerPluginProcessEntity {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPluginProcessEntity.class.getName());
 
-	
 	OwnerPlugin ownerPlugin = null;
 	protected ItemCollection documentContext;
 	protected ItemCollection documentActivity, documentProcess;
 	protected WorkflowMockEnvironment workflowMockEnvironment;
-	
-	
 
 	@Before
 	public void setUp() throws PluginException, ModelException {
 
-		workflowMockEnvironment=new WorkflowMockEnvironment();
+		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/acl-test.bpmn");
 		workflowMockEnvironment.setup();
 
@@ -74,7 +70,7 @@ public class TestOwnerPluginProcessEntity {
 		list.add("anna");
 		documentContext.replaceItemValue("namTeam", list);
 		documentContext.replaceItemValue("namCreator", "ronny");
-		
+
 	}
 
 	/**
@@ -98,7 +94,6 @@ public class TestOwnerPluginProcessEntity {
 			e.printStackTrace();
 			Assert.fail();
 		}
-
 
 		@SuppressWarnings("unchecked")
 		List<String> ownerList = documentContext.getItemValue(OwnerPlugin.OWNER);
@@ -125,7 +120,6 @@ public class TestOwnerPluginProcessEntity {
 			e.printStackTrace();
 			Assert.fail();
 		}
-
 
 		@SuppressWarnings("unchecked")
 		List<String> onwerList = documentContext.getItemValue(OwnerPlugin.OWNER);
@@ -155,7 +149,6 @@ public class TestOwnerPluginProcessEntity {
 			e.printStackTrace();
 			Assert.fail();
 		}
-
 
 		@SuppressWarnings("unchecked")
 		List<String> ownerList = documentContext.getItemValue(OwnerPlugin.OWNER);
@@ -192,7 +185,6 @@ public class TestOwnerPluginProcessEntity {
 			e.printStackTrace();
 			Assert.fail();
 		}
-
 
 		// $writeAccess= anna , manfred, joe, sam
 		List<String> onwerList = documentContext.getItemValue(OwnerPlugin.OWNER);

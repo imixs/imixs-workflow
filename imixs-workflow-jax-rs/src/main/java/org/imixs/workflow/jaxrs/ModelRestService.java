@@ -34,10 +34,13 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.bpmn.BPMNEntityBuilder;
+import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.ModelService;
 import org.imixs.workflow.exceptions.ModelException;
@@ -45,6 +48,7 @@ import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.elements.Activity;
 
 import jakarta.ejb.Stateless;
 import jakarta.enterprise.inject.Model;
@@ -190,19 +194,31 @@ public class ModelRestService {
     public Response findAllTasks(@PathParam("version") String version, @QueryParam("items") String items,
             @QueryParam("format") String format) {
         List<ItemCollection> result = null;
+
         try {
-            result = modelService.getModel(version).findAllTasks();
-        } catch (Exception e) {
-            e.printStackTrace();
+            BPMNModel model;
+            model = modelService.getModel(version);
+
+            // find all tasks
+            Set<Activity> activities = model.findAllActivities();
+            for (Activity task : activities) {
+                if (BPMNUtil.isImixsTaskElement(task)) {
+                    ItemCollection taskEntity = BPMNEntityBuilder.build(task);
+                    result.add(taskEntity);
+                }
+            }
+        } catch (ModelException e) {
+            logger.severe("Unable to find tasks by model: " + e.getMessage());
         }
+
         return documentRestService.convertResultList(result, items, format);
     }
 
     @GET
     @Path("/{version}/bpmn")
     public Response getModelFile(@PathParam("version") String version, @Context UriInfo uriInfo) {
-        ItemCollection modelEntity = modelService.findModelEntity(version);
-        if (modelEntity != null) {
+        BPMNModel model = modelService.getModel(version);
+        if (model != null) {
             return workflowRestService.getWorkItemFile(modelEntity.getUniqueID(), modelEntity.getFileNames().get(0),
                     uriInfo);
         } else {

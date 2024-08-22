@@ -16,10 +16,9 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.junit.Assert;
 
 /**
  * Test class for WorkflowService
@@ -433,7 +432,7 @@ public class TestResultPlugin {
         workitem = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(event, "item", workitem);
         Assert.assertNotNull(workitem);
         Assert.assertTrue(workitem.hasItem("count"));
-        Assert.assertEquals(55.332, workitem.getItemValueDouble("count"),0);
+        Assert.assertEquals(55.332, workitem.getItemValueDouble("count"), 0);
 
     }
 }

@@ -13,10 +13,9 @@ import org.imixs.workflow.engine.plugins.ApproverPlugin;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.junit.Assert;
 
 /**
  * Test class for ApproverPlugin
@@ -107,7 +106,7 @@ public class TestApproverPlugin {
 		nameList.add(null);
 		nameList.add("");
 		nameList.add(null);
-		
+
 		// add duplicate
 		nameList.add("anna");
 
@@ -121,18 +120,18 @@ public class TestApproverPlugin {
 		// we expect that the null and empty values are removed and the name anna is
 		// distinct.
 
-		List<String> approvers = documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVERS);
+		List<String> approvers = documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS);
 		Assert.assertEquals(4, approvers.size());
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		Assert.assertTrue(approvers.contains("anna"));
 		Assert.assertTrue(approvers.contains("manfred"));
 		Assert.assertTrue(approvers.contains("eddy"));
 		Assert.assertTrue(approvers.contains("ronny"));
-		
+
 		// test sortorder
-		Assert.assertTrue(approvers.indexOf("anna")==0);
-		Assert.assertTrue(approvers.indexOf("ronny")==3);
+		Assert.assertTrue(approvers.indexOf("anna") == 0);
+		Assert.assertTrue(approvers.indexOf("ronny") == 3);
 
 	}
 
@@ -162,8 +161,8 @@ public class TestApproverPlugin {
 		documentContext = approverPlugin.run(documentContext, documentActivity);
 		Assert.assertNotNull(documentContext);
 
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 
@@ -192,8 +191,8 @@ public class TestApproverPlugin {
 		documentContext = approverPlugin.run(documentContext, documentActivity);
 		Assert.assertNotNull(documentContext);
 
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// second run - change soruce list
 
@@ -210,8 +209,8 @@ public class TestApproverPlugin {
 		Assert.assertNotNull(documentContext);
 
 		Assert.assertEquals(4, documentContext.getItemValue("ProcessManager").size());
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(1, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(1, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 
@@ -240,8 +239,8 @@ public class TestApproverPlugin {
 		documentContext = approverPlugin.run(documentContext, documentActivity);
 		Assert.assertNotNull(documentContext);
 
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// second run - change soruce list
 
@@ -257,8 +256,8 @@ public class TestApproverPlugin {
 		Assert.assertNotNull(documentContext);
 
 		// list should not be changed!
-		Assert.assertEquals(2, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(1, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(2, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(1, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 
@@ -285,38 +284,38 @@ public class TestApproverPlugin {
 		documentContext = approverPlugin.run(documentContext, documentActivity);
 		Assert.assertNotNull(documentContext);
 
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// second run - Anna
 		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("anna");
 		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertEquals(2, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(1, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(2, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(1, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 3rd run - eddy
 		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("eddy");
 		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertEquals(1, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(2, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(1, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(2, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 4th run - manfred
 		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 5th run - Anna (no effect)
 		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("anna");
 		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 6th run - ronny (no effect)
 		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("ronny");
 		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager"+ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 

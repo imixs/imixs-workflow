@@ -195,63 +195,55 @@ public class TestIntervalPlugin {
         // m h d m w
         try {
             LocalDateTime now = LocalDateTime.now();
-            LocalDateTime date=null;
+            LocalDateTime date = null;
 
-            // 1.12.2022 
-            now = now.with(ChronoField.DAY_OF_MONTH,1);
-            now = now.with(ChronoField.MONTH_OF_YEAR,12);
-            now = now.with(ChronoField.YEAR_OF_ERA,2022);
-            
+            // 1.12.2022
+            now = now.with(ChronoField.DAY_OF_MONTH, 1);
+            now = now.with(ChronoField.MONTH_OF_YEAR, 12);
+            now = now.with(ChronoField.YEAR_OF_ERA, 2022);
+
             // 8:00
-            now = now.with(ChronoField.MINUTE_OF_HOUR,0);
-            now = now.with(ChronoField.HOUR_OF_DAY,8);
+            now = now.with(ChronoField.MINUTE_OF_HOUR, 0);
+            now = now.with(ChronoField.HOUR_OF_DAY, 8);
             String cron = "0 9,18 * * *";
-            date = intervalPlugin.evalCron(cron,now);
-            logger.log(Level.INFO, " => now={0}  result={1}", new Object[]{now, date});
+            date = intervalPlugin.evalCron(cron, now);
+            logger.log(Level.INFO, " => now={0}  result={1}", new Object[] { now, date });
             // expected 9:00
-            Assert.assertTrue(date.getHour()==9);
-        
-    
+            Assert.assertTrue(date.getHour() == 9);
+
             // 10:00
-            now = now.with(ChronoField.MINUTE_OF_HOUR,0);
-            now = now.with(ChronoField.HOUR_OF_DAY,10);
-            date = intervalPlugin.evalCron(cron,now);
-            logger.log(Level.INFO, " => now={0}  result={1}", new Object[]{now, date});
+            now = now.with(ChronoField.MINUTE_OF_HOUR, 0);
+            now = now.with(ChronoField.HOUR_OF_DAY, 10);
+            date = intervalPlugin.evalCron(cron, now);
+            logger.log(Level.INFO, " => now={0}  result={1}", new Object[] { now, date });
             // expected 18:00
-            Assert.assertTrue(date.getHour()==18);
-            
-            
+            Assert.assertTrue(date.getHour() == 18);
+
             // 22:00
-            now = now.with(ChronoField.MINUTE_OF_HOUR,0);
-            now = now.with(ChronoField.HOUR_OF_DAY,22);
-            date = intervalPlugin.evalCron(cron,now);
-            logger.log(Level.INFO, " => now={0}  result={1}", new Object[]{now, date});
+            now = now.with(ChronoField.MINUTE_OF_HOUR, 0);
+            now = now.with(ChronoField.HOUR_OF_DAY, 22);
+            date = intervalPlugin.evalCron(cron, now);
+            logger.log(Level.INFO, " => now={0}  result={1}", new Object[] { now, date });
             // expected 9:00 next day
-            Assert.assertTrue(date.getHour()==9);
-            Assert.assertTrue(date.getDayOfYear()==now.getDayOfYear()+1);
-    
-            
-            
-            
+            Assert.assertTrue(date.getHour() == 9);
+            Assert.assertTrue(date.getDayOfYear() == now.getDayOfYear() + 1);
+
             cron = "15,30 * * * *";
-            now = now.with(ChronoField.HOUR_OF_DAY,10);
-            date = intervalPlugin.evalCron(cron,now);
-            logger.log(Level.INFO, " => now={0}  result={1}", new Object[]{now, date});
+            now = now.with(ChronoField.HOUR_OF_DAY, 10);
+            date = intervalPlugin.evalCron(cron, now);
+            logger.log(Level.INFO, " => now={0}  result={1}", new Object[] { now, date });
             // expected 10:15
-            Assert.assertTrue(date.getHour()==10);
-            Assert.assertTrue(date.getMinute()==15);
-            
-            
-            now = now.with(ChronoField.HOUR_OF_DAY,10);
-            now = now.with(ChronoField.MINUTE_OF_HOUR,25);
-            date = intervalPlugin.evalCron(cron,now);
-            logger.log(Level.INFO, " => now={0}  result={1}", new Object[]{now, date});
-            // expected 10:30 
-            Assert.assertTrue(date.getHour()==10);
-            Assert.assertTrue(date.getMinute()==30);
-            
-            
-            
+            Assert.assertTrue(date.getHour() == 10);
+            Assert.assertTrue(date.getMinute() == 15);
+
+            now = now.with(ChronoField.HOUR_OF_DAY, 10);
+            now = now.with(ChronoField.MINUTE_OF_HOUR, 25);
+            date = intervalPlugin.evalCron(cron, now);
+            logger.log(Level.INFO, " => now={0}  result={1}", new Object[] { now, date });
+            // expected 10:30
+            Assert.assertTrue(date.getHour() == 10);
+            Assert.assertTrue(date.getMinute() == 30);
+
         } catch (PluginException e) {
             e.printStackTrace();
             Assert.fail();

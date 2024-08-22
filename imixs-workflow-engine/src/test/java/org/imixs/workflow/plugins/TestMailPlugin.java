@@ -2,13 +2,12 @@ package org.imixs.workflow.plugins;
 
 import java.util.logging.Logger;
 
-import org.junit.Assert;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.MailPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,16 +22,14 @@ public class TestMailPlugin {
 	protected MailPlugin mailPlugin = null;
 	private final static Logger logger = Logger.getLogger(TestMailPlugin.class.getName());
 
-	
-	
 	WorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setUp() throws PluginException, ModelException {
-		
-		workflowMockEnvironment=new WorkflowMockEnvironment();
+
+		workflowMockEnvironment = new WorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestAccessPlugin.bpmn");
-		
+
 		workflowMockEnvironment.setup();
 
 		mailPlugin = new MailPlugin();
@@ -43,9 +40,7 @@ public class TestMailPlugin {
 			e.printStackTrace();
 		}
 
-		
 	}
-	
 
 	/**
 	 * Test getBody, getSubject replace dynamic values
@@ -98,16 +93,15 @@ public class TestMailPlugin {
 				+ " <xsl:output method=\"html\" media-type=\"text/html\" indent=\"no\" encoding=\"ISO-8859-1\"" + " />";
 		xsl += "<xsl:template match=\"/\">";
 
-		xsl +="<html>  <body> ";
-		xsl +=" <h1>Welcome</h1>";
-		
-		xsl +=" <h2><xsl:value-of select=\"document/item[@name='txtname']/value\" /></h2>";
-		
-		xsl +="</body></html>";
-		
-		xsl +="</xsl:template></xsl:stylesheet>";
+		xsl += "<html>  <body> ";
+		xsl += " <h1>Welcome</h1>";
 
-		
+		xsl += " <h2><xsl:value-of select=\"document/item[@name='txtname']/value\" /></h2>";
+
+		xsl += "</body></html>";
+
+		xsl += "</xsl:template></xsl:stylesheet>";
+
 		documentActivity.replaceItemValue("rtfMailBody", xsl);
 
 		String sBody = null;
@@ -119,7 +113,7 @@ public class TestMailPlugin {
 		}
 
 		logger.info(sBody);
-		Assert.assertTrue( sBody.contains("<h2>Anna</h2>"));
+		Assert.assertTrue(sBody.contains("<h2>Anna</h2>"));
 	}
 
 }
