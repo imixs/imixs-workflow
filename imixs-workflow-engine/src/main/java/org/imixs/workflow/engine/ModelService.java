@@ -200,18 +200,18 @@ public class ModelService implements ModelManager {
     @Override
     public Model getModel(String version) throws ModelException {
         Model model = getModelStore().get(version);
-        if (model == null) {
+        if (model == null && version != null && !version.isEmpty()) {
             // try to find model by regex....
             List<String> modelList = findVersionsByRegEx(version);
             if (modelList != null && modelList.size() > 0) {
                 version = modelList.get(0);
                 model = getModelStore().get(version);
             }
-            // still not found!
-            if (model == null) {
-                throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
-                        "Modelversion '" + version + "' not found!");
-            }
+        }
+        // still not found!
+        if (model == null) {
+            throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
+                    "Modelversion '" + version + "' not found!");
         }
         return model;
     }
