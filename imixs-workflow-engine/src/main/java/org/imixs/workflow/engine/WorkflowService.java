@@ -1185,7 +1185,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         boolean debug = logger.isLoggable(Level.FINE);
         if (debug && (adapters == null || !adapters.iterator().hasNext())) {
             logger.finest("......no CDI Adapters injected");
-        } else {
+        } else if (this.adapters != null) {
             // iterate over all injected adapters....
             for (Adapter adapter : this.adapters) {
                 if (debug) {
