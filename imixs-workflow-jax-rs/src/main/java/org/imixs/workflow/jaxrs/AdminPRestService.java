@@ -196,6 +196,20 @@ public class AdminPRestService {
         }
     }
 
+
+    /**
+     * Restarts a Job by ID
+     * 
+     * @param id
+     * @return
+     */
+    @GET
+    @Path("/jobs/restart/{id}")
+    public Response restartJob(@PathParam("id") String id) {
+        adminPService.restartJobByID(id);
+        return Response.status(Response.Status.OK).build();
+    }
+
     /**
      * This method deletes an entity
      * 

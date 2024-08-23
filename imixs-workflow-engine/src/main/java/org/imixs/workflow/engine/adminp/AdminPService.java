@@ -194,6 +194,30 @@ public class AdminPService {
     }
 
     /**
+     * Method to restart an existing job.
+     * 
+     * The method first tries to cancel a running timer and than creates a new one
+     * @param id
+     */
+    public void restartJobByID(String id) {
+        logger.info("...Restart AdminP Job: "+id);
+        // try to cancel...
+        ItemCollection job = cancelTimer(id);
+        if (job!=null) {
+            String jobtype = job.getItemValueString("job");
+            int interval = job.getItemValueInteger("numInterval");
+            Calendar cal = Calendar.getInstance();
+            Date terminationDate = cal.getTime();
+            // restart timer...
+            Timer timer = timerService.createTimer(terminationDate, (interval * 1000),
+            job.getUniqueID());
+            logger.info("Job " + jobtype + " (" + timer.getInfo().toString() + ") restarted... ");
+        } else {
+            logger.info("Restart failed - unable to load job with id: "+id);
+        }
+    }
+
+    /**
      * This method processes the timeout event. The method loads the corresponding
      * job description (adminp entity) and delegates the processing to the
      * corresponding JobHandler.
