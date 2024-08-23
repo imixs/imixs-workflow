@@ -139,6 +139,20 @@ public class AdminPRestService {
         return new XMLDataCollection();
     }
 
+
+    /**
+     * Restarts a Job by ID
+     * 
+     * @param id
+     * @return
+     */
+    @GET
+    @Path("/jobs/restart/{id}")
+    public Response restartJob(@PathParam("id") String id) {
+        adminPService.restartJobByID(id);
+        return Response.status(Response.Status.OK).build();
+    }
+
     /**
      * This method saves a entity provided in xml format
      * 
