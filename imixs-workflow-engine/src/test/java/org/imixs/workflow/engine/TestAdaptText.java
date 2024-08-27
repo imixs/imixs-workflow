@@ -1,37 +1,80 @@
 package org.imixs.workflow.engine;
 
+import static org.mockito.Mockito.when;
+
 import java.util.Calendar;
+import java.util.List;
 import java.util.Vector;
-import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.plugins.AbstractPlugin;
-import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
 /**
  * Test the WorkflowService method 'adaptText'
  * 
+ * The class test the TextAdapter as also the ForEachAdapter classes
+ * 
  * @author rsoika
  * 
  */
-public class TestAdaptText {
-	public ItemCollection documentContext;
-	public ItemCollection documentActivity;
-	private final static Logger logger = Logger.getLogger(TestAdaptText.class.getName());
+@ExtendWith(MockitoExtension.class)
+public class TestAdaptText extends AbstractWorkflowServiceTest {
 
-	protected WorkflowMockEnvironment workflowMockEnvironment;
+	@Mock
+	private WorkflowService workflowService;
 
-	@Before
-	public void setUp() throws PluginException, ModelException {
+	@Override
+	public void setUp() throws PluginException {
+		super.setUp();
+		// AdaptText
+		when(workflowService.adaptText(Mockito.anyString(), Mockito.any(ItemCollection.class)))
+				.thenAnswer(new Answer<String>() {
+					@Override
+					public String answer(InvocationOnMock invocation) throws Throwable {
 
-		workflowMockEnvironment = new WorkflowMockEnvironment();
-		workflowMockEnvironment.setup();
+						Object[] args = invocation.getArguments();
+						String text = (String) args[0];
+						ItemCollection document = (ItemCollection) args[1];
 
-		// workflowMockEnvironment.loadModel("/bpmn/TestWorkflowService.bpmn");
+						TextEvent textEvent = new TextEvent(text, document);
+
+						// for-each adapter
+						TextForEachAdapter tfea = new TextForEachAdapter();
+						tfea.onEvent(textEvent);
+
+						// ItemValue adapter
+						TextItemValueAdapter tiva = new TextItemValueAdapter();
+						tiva.onEvent(textEvent);
+
+						return textEvent.getText();
+					}
+				});
+
+		when(workflowService.adaptTextList(Mockito.anyString(), Mockito.any(ItemCollection.class)))
+				.thenAnswer(new Answer<List<String>>() {
+					@Override
+					public List<String> answer(InvocationOnMock invocation) throws Throwable, PluginException {
+
+						Object[] args = invocation.getArguments();
+						String text = (String) args[0];
+						ItemCollection document = (ItemCollection) args[1];
+
+						TextEvent textEvent = new TextEvent(text, document);
+
+						TextItemValueAdapter tiva = new TextItemValueAdapter();
+						tiva.onEvent(textEvent);
+
+						return textEvent.getTextList();
+					}
+				});
 
 	}
 
@@ -44,20 +87,25 @@ public class TestAdaptText {
 	 * 
 	 */
 	@Test
-	public void testReplaceDynamicValues() throws PluginException {
+	public void testReplaceDynamicValues() {
 
 		String testString = "Hello <itemvalue>txtname</itemvalue>!";
 		String expectedString = "Hello Anna!";
 
 		// prepare data
 		logger.info("[TestAdaptText] setup test data...");
-		documentContext = new ItemCollection();
+		ItemCollection documentContext = new ItemCollection();
 		documentContext.replaceItemValue("txtName", "Anna");
 
-		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+		String resultString;
+		try {
+			resultString = this.workflowService.adaptText(testString, documentContext);
 
-		Assert.assertEquals(expectedString, resultString);
-
+			Assert.assertEquals(expectedString, resultString);
+		} catch (PluginException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -74,19 +122,17 @@ public class TestAdaptText {
 
 		// prepare data
 		logger.info("[TestAdaptText] setup test data...");
-		documentContext = new ItemCollection();
+		ItemCollection documentContext = new ItemCollection();
 		documentContext.replaceItemValue("txtName", "Anna");
 
 		String resultString = null;
 		try {
-			resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+			resultString = this.workflowService.adaptText(testString, documentContext);
 			Assert.assertNotNull(resultString);
 			Assert.assertEquals(testString, resultString);
 		} catch (PluginException e) {
 			Assert.fail();
 		}
-
-		// test wrong embeded tags...
 
 	}
 
@@ -109,7 +155,7 @@ public class TestAdaptText {
 		String expectedString = "The Date is: Sonntag, 27. April 2014.";
 
 		// prepare data
-		documentContext = new ItemCollection();
+		ItemCollection documentContext = new ItemCollection();
 		logger.info("[TestAdaptText] setup test data...");
 
 		Calendar cal = Calendar.getInstance();
@@ -119,7 +165,7 @@ public class TestAdaptText {
 
 		documentContext.replaceItemValue("datDate", cal.getTime());
 
-		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+		String resultString = this.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
 
@@ -132,7 +178,7 @@ public class TestAdaptText {
 		String expectedString = "The Date is: Sunday, 27. April 2014.";
 
 		// prepare data
-		documentContext = new ItemCollection();
+		ItemCollection documentContext = new ItemCollection();
 		logger.info("[TestAdaptText] setup test data...");
 
 		Calendar cal = Calendar.getInstance();
@@ -142,7 +188,7 @@ public class TestAdaptText {
 
 		documentContext.replaceItemValue("datDate", cal.getTime());
 
-		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+		String resultString = this.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
 
@@ -163,11 +209,11 @@ public class TestAdaptText {
 	@Test
 	public void testMultiValueFormat() throws PluginException {
 
-		String testString = "The Valuelist is: <itemvalue separator=\"/\">_numbers</itemvalue>.";
-		String expectedString = "The Valuelist is: 1/20/300.";
+		String testString = "The value list is: <itemvalue separator=\"/\">_numbers</itemvalue>.";
+		String expectedString = "The value list is: 1/20/300.";
 
 		// prepare data
-		documentContext = new ItemCollection();
+		ItemCollection documentContext = new ItemCollection();
 		logger.info("[TestAdaptText] setup test data...");
 
 		Vector<Integer> value = new Vector<Integer>();
@@ -176,7 +222,7 @@ public class TestAdaptText {
 		value.add(300);
 		documentContext.replaceItemValue("_numbers", value);
 
-		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+		String resultString = this.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
 
@@ -201,11 +247,11 @@ public class TestAdaptText {
 		String expectedString = "The price is: 1.199,99 €.";
 
 		// prepare data
-		documentContext = new ItemCollection();
+		ItemCollection documentContext = new ItemCollection();
 
-		documentContext.replaceItemValue("price", new Float(1199.99));
+		documentContext.replaceItemValue("price", Float.valueOf((float) 1199.99));
 
-		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+		String resultString = this.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
 
@@ -226,11 +272,11 @@ public class TestAdaptText {
 	@Test
 	public void testMultiValueWithNoSeparator() throws PluginException {
 
-		String testString = "The Valuelist is: <itemvalue>_numbers</itemvalue>.";
-		String expectedString = "The Valuelist is: 1.";
+		String testString = "The value list is: <itemvalue>_numbers</itemvalue>.";
+		String expectedString = "The value list is: 1.";
 
 		// prepare data
-		documentContext = new ItemCollection();
+		ItemCollection documentContext = new ItemCollection();
 		logger.info("[TestAdaptText] setup test data...");
 
 		Vector<Integer> value = new Vector<Integer>();
@@ -239,7 +285,7 @@ public class TestAdaptText {
 		value.add(300);
 		documentContext.replaceItemValue("_numbers", value);
 
-		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+		String resultString = this.workflowService.adaptText(testString, documentContext);
 
 		// we expect that only the first value is given, because no separator was
 		// defined.
@@ -262,11 +308,11 @@ public class TestAdaptText {
 	@Test
 	public void testMultiValuePosition() throws PluginException {
 
-		String testString = "The Valuelist is: <itemvalue position=\"LAST\">_numbers</itemvalue>.";
-		String expectedStringLast = "The Valuelist is: 300.";
+		String testString = "The value list is: <itemvalue position=\"LAST\">_numbers</itemvalue>.";
+		String expectedStringLast = "The value list is: 300.";
 
 		// prepare data
-		documentContext = new ItemCollection();
+		ItemCollection documentContext = new ItemCollection();
 		logger.info("[TestAdaptText] setup test data...");
 
 		Vector<Integer> values = new Vector<Integer>();
@@ -275,13 +321,13 @@ public class TestAdaptText {
 		values.add(300);
 		documentContext.replaceItemValue("_numbers", values);
 
-		String resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+		String resultString = this.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedStringLast, resultString);
 
 		// test first....
-		testString = "The Valuelist is: <itemvalue position=\"FIRST\">_numbers</itemvalue>.";
-		String expectedStringFirst = "The Valuelist is: 1.";
+		testString = "The value list is: <itemvalue position=\"FIRST\">_numbers</itemvalue>.";
+		String expectedStringFirst = "The value list is: 1.";
 
 		// prepare data
 		documentContext = new ItemCollection();
@@ -289,31 +335,83 @@ public class TestAdaptText {
 
 		documentContext.replaceItemValue("_numbers", values);
 
-		resultString = workflowMockEnvironment.getWorkflowService().adaptText(testString, documentContext);
+		resultString = this.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedStringFirst, resultString);
 
 	}
 
 	/**
-	 * This is a test plugin extending the AbstractPlugion to be used for several
-	 * tests in this jUnit test only
+	 * Test simple value list :
 	 * 
-	 * @author rsoika
-	 *
+	 * <pre>
+	 * {@code
+	    <for-each item="_partid">
+	        Order-No: <itemvalue>_orderid</itemvalue> - Part ID: <itemvalue>_partid</itemvalue><br />
+	    </for-each>  
+	   }
+	 * </pre>
+	 * 
+	 * @throws PluginException
+	 * 
 	 */
-	class TestPlugin extends AbstractPlugin {
+	@Test
+	public void testForEachSimpleValueList() throws PluginException {
 
-		@Override
-		public ItemCollection run(ItemCollection documentContext, ItemCollection documentActivity)
-				throws PluginException {
-			return documentContext;
-		}
+		String testString = "<for-each item=\"_partid\">Order-No: <itemvalue>_orderid</itemvalue> - Part ID: <itemvalue>_partid</itemvalue><br /></for-each>";
+		String expectedStringLast = "Order-No: 111222 - Part ID: A123<br />Order-No: 111222 - Part ID: B456<br />";
 
-		@Override
-		public void close(boolean rollbackTransaction) throws PluginException {
-			// no op
-		}
+		// prepare data
+		ItemCollection documentContext = new ItemCollection();
+		documentContext.setItemValue("_orderid", "111222");
+		documentContext.appendItemValue("_partid", "A123");
+		documentContext.appendItemValue("_partid", "B456");
+
+		String resultString = workflowService.adaptText(testString, documentContext);
+
+		Assert.assertEquals(expectedStringLast, resultString);
 
 	}
+
+	/**
+	 * Test the child item value tag:
+	 * 
+	 * <pre>
+	 * {@code
+	<for-each childitem="_childs">
+	   <itemvalue>_orderid</itemvalue>: <itemvalue>_amount</itemvalue>
+	</for-each>  
+	   }
+	 * </pre>
+	 * 
+	 * @throws PluginException
+	 * 
+	 */
+	@Test
+	public void testForEachEmbeddedChildItemValue() throws PluginException {
+
+		String testString = "<for-each item=\"_childs\">Order ID: <itemvalue>_orderid</itemvalue>: <itemvalue>_amount</itemvalue><br /></for-each>";
+		String expectedStringLast = "Order ID: A123: 50.55<br />Order ID: B456: 1500000.0<br />";
+
+		// prepare data
+		ItemCollection documentContext = new ItemCollection();
+		// create 1st child
+		ItemCollection child = new ItemCollection();
+		child.setItemValue("_orderid", "A123");
+		child.setItemValue("_amount", 50.55);
+		documentContext.appendItemValue("_childs", child.getAllItems());
+		// create 2nd child
+		child = new ItemCollection();
+		child.setItemValue("_orderid", "B456");
+		child.setItemValue("_amount", 1500000.00);
+		documentContext.appendItemValue("_childs", child.getAllItems());
+		// create a fake value which should be ignored
+		documentContext.replaceItemValue("_orderid", "not used");
+
+		String resultString = workflowService.adaptText(testString, documentContext);
+
+		Assert.assertEquals(expectedStringLast, resultString);
+
+	}
+
 }

@@ -12,13 +12,11 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
@@ -41,7 +39,7 @@ import org.openbpmn.bpmn.util.BPMNModelFactory;
  * 
  * @author rsoika
  */
-@ExtendWith(MockitoExtension.class)
+// @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.WARN)
 public abstract class AbstractWorkflowServiceTest {
 	protected final static Logger logger = Logger.getLogger(AbstractWorkflowServiceTest.class.getName());
@@ -49,13 +47,13 @@ public abstract class AbstractWorkflowServiceTest {
 	protected Map<String, ItemCollection> database = null;
 
 	@Mock
-	protected DocumentService documentService;
+	protected DocumentService documentService; // Mock instance
 
 	@InjectMocks
-	protected ModelService modelService;
+	protected ModelService modelService; // Injects mocks into ModelService
 
 	@InjectMocks
-	protected WorkflowService workflowServiceMock;
+	protected WorkflowService workflowServiceMock; // Injects mocks into WorkflowService
 
 	protected MockWorkflowEngineContext workflowContext = null;
 
@@ -71,15 +69,16 @@ public abstract class AbstractWorkflowServiceTest {
 	 */
 	@BeforeEach
 	public void setUp() throws PluginException {
-		// Ensure all mocks are initialized properly
+		// Ensures that @Mock and @InjectMocks annotations are processed
 		MockitoAnnotations.openMocks(this);
 
 		// Set up test environment
 		createTestDatabase();
 		loadBPMNModel("/bpmn/plugin-test.bpmn");
 
-		// Link model service to the mock workflow service
+		// Link modelService to workflowServiceMock
 		workflowServiceMock.modelService = modelService;
+
 		workflowContext = new MockWorkflowEngineContext();
 		workflowServiceMock.ctx = workflowContext.getSessionContext();
 
