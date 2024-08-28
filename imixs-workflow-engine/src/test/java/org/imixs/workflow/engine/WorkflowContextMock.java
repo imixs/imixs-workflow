@@ -19,7 +19,7 @@ import jakarta.ejb.SessionContext;
  * 
  * A junit test can access the WorkflowKernel.
  */
-public class MockWorkflowEngineContext implements WorkflowContext {
+public class WorkflowContextMock implements WorkflowContext {
     private final SessionContext ctx;
     private OpenBPMNModelManager openBPMNModelManager;
 
@@ -28,7 +28,7 @@ public class MockWorkflowEngineContext implements WorkflowContext {
      * 
      * @throws PluginException
      */
-    public MockWorkflowEngineContext() {
+    public WorkflowContextMock() {
         openBPMNModelManager = new OpenBPMNModelManager();
         ctx = Mockito.mock(SessionContext.class);
         setupSessionContext();

@@ -9,7 +9,7 @@ import javax.script.ScriptException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -34,12 +34,12 @@ public class TestResultPlugin {
     public static final String DEFAULT_MODEL_VERSION = "1.0.0";
     private static final Logger logger = Logger.getLogger(TestResultPlugin.class.getName());
 
-    protected WorkflowMockEnvironment workflowMockEnvironment;
+    protected OldWorkflowMockEnvironment workflowMockEnvironment;
 
     @Before
     public void setUp() throws PluginException, ModelException {
 
-        workflowMockEnvironment = new WorkflowMockEnvironment();
+        workflowMockEnvironment = new OldWorkflowMockEnvironment();
         workflowMockEnvironment.setModelPath("/bpmn/TestResultPlugin.bpmn");
 
         workflowMockEnvironment.setup();

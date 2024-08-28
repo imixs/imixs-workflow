@@ -8,8 +8,8 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for WorkflowService
@@ -21,13 +21,14 @@ import org.junit.Test;
 public class TestEvaluateWorkflowResult {
 
     private final static Logger logger = Logger.getLogger(TestEvaluateWorkflowResult.class.getName());
+    protected WorkflowEngineMock workflowEngine;
 
-    protected WorkflowMockEnvironment workflowMockEnvironment;
-
-    @Before
+    @BeforeEach
     public void setUp() throws PluginException, ModelException {
-        workflowMockEnvironment = new WorkflowMockEnvironment();
-        workflowMockEnvironment.setup();
+
+        workflowEngine = new WorkflowEngineMock();
+        workflowEngine.setUp();
+        workflowEngine.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
 
     }
 
@@ -43,7 +44,7 @@ public class TestEvaluateWorkflowResult {
         try {
             activityEntity.replaceItemValue("txtActivityResult",
                     "<item ignore=\"true\" name=\"comment\" >some data</item>");
-            ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+            ItemCollection result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("comment"));
@@ -57,7 +58,7 @@ public class TestEvaluateWorkflowResult {
         // test an empty item tag
         try {
             activityEntity.replaceItemValue("txtActivityResult", "<item ignore=\"true\" name=\"comment\" />");
-            ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+            ItemCollection result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("comment"));
@@ -81,7 +82,7 @@ public class TestEvaluateWorkflowResult {
         // test integer
         try {
             activityEntity.replaceItemValue("txtActivityResult", "<item name=\"count\" type=\"integer\">55</item>");
-            ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+            ItemCollection result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("count"));
@@ -94,7 +95,7 @@ public class TestEvaluateWorkflowResult {
         // test double
         try {
             activityEntity.replaceItemValue("txtActivityResult", "<item name=\"count\" type=\"double\">55.11</item>");
-            ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+            ItemCollection result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("count"));
@@ -107,7 +108,7 @@ public class TestEvaluateWorkflowResult {
         // test empty string for Double
         try {
             activityEntity.replaceItemValue("txtActivityResult", "<item name=\"count\" type=\"double\"></item>");
-            ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+            ItemCollection result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("count"));
@@ -120,7 +121,7 @@ public class TestEvaluateWorkflowResult {
         // test empty string for Integer
         try {
             activityEntity.replaceItemValue("txtActivityResult", "<item name=\"count\" type=\"integer\"></item>");
-            ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+            ItemCollection result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("count"));
@@ -149,7 +150,7 @@ public class TestEvaluateWorkflowResult {
         try {
             activityEntity.replaceItemValue("txtActivityResult",
                     "<item name=\"count\" type=\"double\"><itemvalue>amount</itemvalue></item>");
-            ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+            ItemCollection result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity,
                     "item", source);
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("count"));
@@ -179,7 +180,7 @@ public class TestEvaluateWorkflowResult {
 
         // expected txtname= Manfred,Anna,Sam
         ItemCollection evalItemCollection = new ItemCollection();
-        evalItemCollection = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
+        evalItemCollection = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                 new ItemCollection());
 
         Assert.assertTrue(evalItemCollection.hasItem("txtName"));
@@ -210,10 +211,10 @@ public class TestEvaluateWorkflowResult {
         ItemCollection activityEntity = new ItemCollection();
         activityEntity.replaceItemValue("txtActivityResult", sResult);
 
-        workflowMockEnvironment.getWorkflowService();
+        // workflowEngine.getWorkflowService();
         long l = System.currentTimeMillis();
         ItemCollection evalItemCollection = new ItemCollection();
-        evalItemCollection = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
+        evalItemCollection = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                 new ItemCollection());
 
         logger.log(Level.INFO, "...evaluated result in {0}ms...", System.currentTimeMillis() - l);
@@ -235,7 +236,7 @@ public class TestEvaluateWorkflowResult {
         activityEntity.replaceItemValue("txtActivityResult", sResult);
         l = System.currentTimeMillis();
         evalItemCollection = new ItemCollection();
-        evalItemCollection = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
+        evalItemCollection = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                 new ItemCollection());
         logger.log(Level.INFO, "...evaluated result in {0}ms...", System.currentTimeMillis() - l);
 
@@ -275,7 +276,7 @@ public class TestEvaluateWorkflowResult {
                     + "	</item>";
 
             activityEntity.replaceItemValue("txtActivityResult", activityResult);
-            ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+            ItemCollection result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("subprocess_create"));
@@ -289,7 +290,7 @@ public class TestEvaluateWorkflowResult {
                     + "	    <items>_subject,_sender,_receipients,$file</items>\n" + "	</item>";
 
             activityEntity.replaceItemValue("txtActivityResult", activityResult);
-            result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
+            result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                     new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("subprocess_create"));
@@ -304,7 +305,7 @@ public class TestEvaluateWorkflowResult {
                     + "	    <items>_subject,_sender,_receipients,$file</items>\r\n" + "	</item>";
 
             activityEntity.replaceItemValue("txtActivityResult", activityResult);
-            result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
+            result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                     new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("subprocess_create"));
@@ -329,7 +330,7 @@ public class TestEvaluateWorkflowResult {
             // test no name attribute
             activityEntity.replaceItemValue("txtActivityResult",
                     "<item ignore=\"true\" noname=\"comment\" >some data</item>");
-            workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
+            workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                     new ItemCollection());
             Assert.fail();
         } catch (PluginException e) {
@@ -340,7 +341,7 @@ public class TestEvaluateWorkflowResult {
             // test wrong closing tag
             activityEntity.replaceItemValue("txtActivityResult",
                     "<item ignore=\"true\" name=\"comment\" >some data</xitem>");
-            workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
+            workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                     new ItemCollection());
             Assert.fail();
         } catch (PluginException e) {
@@ -359,7 +360,7 @@ public class TestEvaluateWorkflowResult {
         try {
             // test no name attribute
             activityEntity.replaceItemValue("txtActivityResult", "<sometag>some data</sometag>");
-            ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+            ItemCollection result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             // we expect a null object as no item tags are included
             Assert.assertNull(result);
@@ -379,19 +380,19 @@ public class TestEvaluateWorkflowResult {
         try {
             // test no content
             activityEntity.replaceItemValue("txtActivityResult", "");
-            result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
+            result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                     new ItemCollection());
             Assert.assertNull(result);
 
             // test whitespace
             activityEntity.replaceItemValue("txtActivityResult", " ");
-            result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
+            result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                     new ItemCollection());
             Assert.assertNull(result);
 
             // test empty lines
             activityEntity.replaceItemValue("txtActivityResult", " \n ");
-            result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
+            result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                     new ItemCollection());
             Assert.assertNull(result);
 
@@ -401,7 +402,7 @@ public class TestEvaluateWorkflowResult {
             s += "\n ";
 
             activityEntity.replaceItemValue("txtActivityResult", s);
-            result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
+            result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                     new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("comment"));
@@ -415,7 +416,7 @@ public class TestEvaluateWorkflowResult {
             s += "\n ";
 
             activityEntity.replaceItemValue("txtActivityResult", s);
-            result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity, "item",
+            result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity, "item",
                     new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("comment"));
@@ -441,7 +442,7 @@ public class TestEvaluateWorkflowResult {
         try {
             activityEntity.replaceItemValue("txtActivityResult",
                     ".....<item ignore=\"true\" name=\"comment\" >some data</item>...");
-            ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+            ItemCollection result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("comment"));
@@ -456,7 +457,7 @@ public class TestEvaluateWorkflowResult {
         try {
             activityEntity.replaceItemValue("txtActivityResult",
                     "<garbage1><item ignore=\"true\" name=\"comment\" /></wrongGarbageCloseingTag>");
-            ItemCollection result = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(activityEntity,
+            ItemCollection result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             Assert.assertNotNull(result);
             Assert.assertTrue(result.hasItem("comment"));
@@ -484,7 +485,7 @@ public class TestEvaluateWorkflowResult {
                             + "            <items>abc</items>\n"
                             + "            <mode>123</mode>\n"
                             + "        </imixs-config>");
-            List<ItemCollection> result = workflowMockEnvironment.getWorkflowService().evalWorkflowResultXML(
+            List<ItemCollection> result = workflowEngine.getWorkflowService().evalWorkflowResultXML(
                     activityEntity,
                     "imixs-config", "CONFIG", new ItemCollection(), false);
             Assert.assertNotNull(result);

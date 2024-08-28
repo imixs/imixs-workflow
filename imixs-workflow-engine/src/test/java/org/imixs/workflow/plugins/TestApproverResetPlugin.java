@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.ApproverPlugin;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -22,7 +22,7 @@ import org.mockito.MockitoAnnotations;
  * @author rsoika
  */
 public class TestApproverResetPlugin {
-	WorkflowMockEnvironment workflowMockEnvironment;
+	OldWorkflowMockEnvironment workflowMockEnvironment;
 
 	final static String MODEL_PATH = "/bpmn/TestApproverPluginReset.bpmn";
 	final static String MODEL_VERSION = "1.0.0";
@@ -35,7 +35,7 @@ public class TestApproverResetPlugin {
 		// initialize @Mock annotations....
 		MockitoAnnotations.initMocks(this);
 
-		workflowMockEnvironment = new WorkflowMockEnvironment();
+		workflowMockEnvironment = new OldWorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath(MODEL_PATH);
 		workflowMockEnvironment.setup();
 

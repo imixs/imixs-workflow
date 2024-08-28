@@ -5,7 +5,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -29,12 +29,12 @@ public class TestOwnerPlugin {
 	ItemCollection documentContext;
 	ItemCollection documentActivity;
 
-	WorkflowMockEnvironment workflowMockEnvironment;
+	OldWorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setup() throws PluginException, ModelException {
 
-		workflowMockEnvironment = new WorkflowMockEnvironment();
+		workflowMockEnvironment = new OldWorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestOwnerPlugin.bpmn");
 		workflowMockEnvironment.setup();
 
@@ -47,7 +47,8 @@ public class TestOwnerPlugin {
 		}
 
 		// prepare data
-		documentContext = new ItemCollection().model(WorkflowMockEnvironment.DEFAULT_MODEL_VERSION).task(100).event(10);
+		documentContext = new ItemCollection().model(OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION).task(100)
+				.event(10);
 		logger.info("[TestOwnerPlugin] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");

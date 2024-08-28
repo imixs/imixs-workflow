@@ -1,20 +1,25 @@
 package org.imixs.workflow.engine;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.engine.plugins.ApplicationPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.imixs.workflow.plugins.TestApplicationPlugin;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -28,14 +33,42 @@ import org.mockito.stubbing.Answer;
  * @author rsoika
  */
 public class TestWorkflowService {
-	protected WorkflowMockEnvironment workflowMockEnvironment;
 
-	@Before
+	private final static Logger logger = Logger
+			.getLogger(TestApplicationPlugin.class.getName());
+
+	protected ApplicationPlugin applicationPlugin = null;
+	protected ItemCollection documentContext;
+	protected ItemCollection documentActivity, documentProcess;
+	protected WorkflowEngineMock workflowEnvironment;
+
+	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowMockEnvironment = new WorkflowMockEnvironment();
-		workflowMockEnvironment.setModelPath("/bpmn/TestWorkflowService.bpmn");
-		workflowMockEnvironment.setup();
+		workflowEnvironment = new WorkflowEngineMock();
+		workflowEnvironment.setUp();
+		workflowEnvironment.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
+
+	}
+
+	/**
+	 * This test simulates a workflowService process call by mocking the entity and
+	 * model service.
+	 * 
+	 * This is just a simple simulation...
+	 * 
+	 */
+	@Test
+	public void testDatabase()
+			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+
+		ItemCollection workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
+		assertNotNull(workitem);
+		// load test workitem
+		workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
+		assertNotNull(workitem);
+		assertEquals("W0000-00001", workitem.getUniqueID());
+
 	}
 
 	/**
@@ -52,14 +85,16 @@ public class TestWorkflowService {
 	public void testProcessSimple()
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 		// load test workitem
-		ItemCollection workitem = workflowMockEnvironment.getDocumentService().load("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
+		ItemCollection workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 		workitem.setTaskID(100);
 
-		workitem = workflowMockEnvironment.processWorkItem(workitem);
+		workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
 
 		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
-
+		assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
+		assertEquals(10, workitem.getItemValueInteger("$lastEvent"));
+		assertEquals(0, workitem.getEventID());
 	}
 
 	/**
@@ -69,12 +104,12 @@ public class TestWorkflowService {
 	public void testGetEventsSimple() {
 
 		// get workitem
-		ItemCollection workitem = workflowService.database.get("W0000-00001");
+		ItemCollection workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
 		workitem.setTaskID(200);
 
 		List<ItemCollection> eventList = null;
 		try {
-			eventList = workflowService.workflowService.getEvents(workitem);
+			eventList = workflowEnvironment.workflowService.getEvents(workitem);
 		} catch (ModelException e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -91,7 +126,7 @@ public class TestWorkflowService {
 	public void testGetEventsComplex() {
 
 		// get workitem
-		ItemCollection workitem = workflowService.database.get("W0000-00001");
+		ItemCollection workitem = workflowEnvironment.documentService.load("W0000-00001");
 		workitem.setTaskID(100);
 
 		Vector<String> members = new Vector<String>();
@@ -105,7 +140,7 @@ public class TestWorkflowService {
 
 		List<ItemCollection> eventList = null;
 		try {
-			eventList = workflowService.workflowService.getEvents(workitem);
+			eventList = workflowEnvironment.workflowService.getEvents(workitem);
 		} catch (ModelException e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -121,7 +156,7 @@ public class TestWorkflowService {
 	public void testGetEventsComplexRestricted() {
 
 		// get workitem
-		ItemCollection workitem = workflowService.database.get("W0000-00001");
+		ItemCollection workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
 		workitem.setTaskID(100);
 
 		Vector<String> members = new Vector<String>();
@@ -133,7 +168,7 @@ public class TestWorkflowService {
 
 		List<ItemCollection> eventList = null;
 		try {
-			eventList = workflowService.workflowService.getEvents(workitem);
+			eventList = workflowEnvironment.workflowService.getEvents(workitem);
 		} catch (ModelException e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -151,7 +186,7 @@ public class TestWorkflowService {
 	@Test
 	public void testGetEventsReadRestrictedForManagerAccess() {
 
-		when(workflowService.workflowService.getUserNameList()).thenAnswer(new Answer<List<String>>() {
+		when(workflowEnvironment.workflowService.getUserNameList()).thenAnswer(new Answer<List<String>>() {
 			@Override
 			public List<String> answer(InvocationOnMock invocation) throws Throwable {
 				List<String> result = new ArrayList<>();
@@ -162,7 +197,7 @@ public class TestWorkflowService {
 		});
 
 		// get workitem
-		ItemCollection workitem = workflowService.database.get("W0000-00001");
+		ItemCollection workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
 		workitem.setTaskID(300);
 
 		Vector<String> members = new Vector<String>();
@@ -174,7 +209,7 @@ public class TestWorkflowService {
 
 		List<ItemCollection> eventList = null;
 		try {
-			eventList = workflowService.workflowService.getEvents(workitem);
+			eventList = workflowEnvironment.workflowService.getEvents(workitem);
 		} catch (ModelException e) {
 			e.printStackTrace();
 			Assert.fail();

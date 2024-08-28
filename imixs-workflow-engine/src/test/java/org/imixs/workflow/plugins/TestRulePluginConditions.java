@@ -2,7 +2,7 @@ package org.imixs.workflow.plugins;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.ModelPluginMock;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -24,12 +24,12 @@ public class TestRulePluginConditions {
 	protected ResultPlugin resultPlugin = null;
 	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 
-	WorkflowMockEnvironment workflowMockEnvironment;
+	OldWorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setUp() throws PluginException, ModelException {
 
-		workflowMockEnvironment = new WorkflowMockEnvironment();
+		workflowMockEnvironment = new OldWorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestRulePluginConditions.bpmn");
 
 		workflowMockEnvironment.setup();

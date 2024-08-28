@@ -21,11 +21,11 @@ import jakarta.enterprise.inject.Model;
 public class TestModelService {
 	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 
-	private WorkflowMockEnvironment workflowEngine;
+	private OldWorkflowMockEnvironment workflowEngine;
 
 	@Before
 	public void setup() throws PluginException {
-		workflowEngine = new WorkflowMockEnvironment();
+		workflowEngine = new OldWorkflowMockEnvironment();
 
 	}
 

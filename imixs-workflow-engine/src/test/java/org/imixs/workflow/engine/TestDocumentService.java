@@ -16,7 +16,7 @@ import org.junit.Test;
  * 
  * @author rsoika
  */
-public class TestDocumentService extends WorkflowMockEnvironment {
+public class TestDocumentService extends OldWorkflowMockEnvironment {
 
     private DocumentService documentService = null;
     private final static Logger logger = Logger.getLogger(TestDocumentService.class.getName());

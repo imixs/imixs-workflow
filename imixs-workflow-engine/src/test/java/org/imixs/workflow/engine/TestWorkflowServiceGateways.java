@@ -26,11 +26,11 @@ import org.junit.Test;
  */
 public class TestWorkflowServiceGateways {
 
-	protected WorkflowMockEnvironment workflowMockEnvironment;
+	protected OldWorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setup() throws PluginException, ModelException {
-		workflowMockEnvironment = new WorkflowMockEnvironment();
+		workflowMockEnvironment = new OldWorkflowMockEnvironment();
 		workflowMockEnvironment.setup();
 
 		workflowMockEnvironment.loadModel("/bpmn/TestWorkflowService.bpmn");
@@ -56,7 +56,7 @@ public class TestWorkflowServiceGateways {
 
 		// load test workitem
 		ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 
 		// test none condition ...
 		workitem.setTaskID(1000);
@@ -98,7 +98,7 @@ public class TestWorkflowServiceGateways {
 
 		// load test workitem
 		ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 
 		// test _budget<100
 		workitem.setTaskID(1000);
@@ -140,7 +140,7 @@ public class TestWorkflowServiceGateways {
 
 		// load test workitem
 		ItemCollection workitem = workflowMockEnvironment.database.get("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 
 		// test none condition ...
 		workitem.replaceItemValue("_subject", "Hello");

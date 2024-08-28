@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.SplitAndJoinPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -40,12 +40,12 @@ public class TestSplitAndJoinPlugin {
 	 * 
 	 * @throws ModelException
 	 */
-	WorkflowMockEnvironment workflowMockEnvironment;
+	OldWorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setUp() throws PluginException, ModelException {
 
-		workflowMockEnvironment = new WorkflowMockEnvironment();
+		workflowMockEnvironment = new OldWorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestSplitAndJoinPlugin.bpmn");
 
 		workflowMockEnvironment.setup();
@@ -69,7 +69,7 @@ public class TestSplitAndJoinPlugin {
 		documentContext.replaceItemValue("namTeam", list);
 		documentContext.replaceItemValue("namCreator", "ronny");
 		documentContext.replaceItemValue("$snapshotid", "11112222");
-		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
+		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
 		documentContext.setTaskID(100);
 		documentContext.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
 		workflowMockEnvironment.getDocumentService().save(documentContext);

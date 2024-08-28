@@ -5,7 +5,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AdapterException;
@@ -47,13 +47,13 @@ public class TestAccessAdapterProcessEntity {
 	protected ItemCollection documentContext;
 	protected ItemCollection documentActivity;
 	protected ItemCollection documentProcess;
-	protected WorkflowMockEnvironment workflowMockEnvironment;
+	protected OldWorkflowMockEnvironment workflowMockEnvironment;
 	protected AccessAdapter adapter;
 
 	@Before
 	public void setUp() throws PluginException, ModelException {
 
-		workflowMockEnvironment = new WorkflowMockEnvironment();
+		workflowMockEnvironment = new OldWorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/acl-test.bpmn");
 		workflowMockEnvironment.setup();
 
@@ -61,7 +61,7 @@ public class TestAccessAdapterProcessEntity {
 		adapter.workflowService = workflowMockEnvironment.getWorkflowService();
 
 		// prepare data
-		documentContext = new ItemCollection().model(WorkflowMockEnvironment.DEFAULT_MODEL_VERSION).task(100);
+		documentContext = new ItemCollection().model(OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION).task(100);
 		logger.info("[TestAccessAdapterProcessEntity] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");

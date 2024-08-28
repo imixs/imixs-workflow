@@ -5,7 +5,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -30,14 +30,14 @@ public class TestAccessAdapter {
 
 	protected ItemCollection documentContext;
 	protected ItemCollection documentActivity;
-	protected WorkflowMockEnvironment workflowMockEnvironment;
+	protected OldWorkflowMockEnvironment workflowMockEnvironment;
 	@Spy
 	protected AccessAdapter participantAdapter;
 
 	@Before
 	public void setUp() throws PluginException, ModelException {
 		MockitoAnnotations.initMocks(this);
-		workflowMockEnvironment = new WorkflowMockEnvironment();
+		workflowMockEnvironment = new OldWorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestAccessPlugin.bpmn");
 
 		workflowMockEnvironment.setup();

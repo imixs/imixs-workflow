@@ -41,8 +41,8 @@ import org.openbpmn.bpmn.util.BPMNModelFactory;
  */
 // @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.WARN)
-public abstract class AbstractWorkflowServiceTest {
-	protected final static Logger logger = Logger.getLogger(AbstractWorkflowServiceTest.class.getName());
+public class WorkflowEngineMock {
+	protected final static Logger logger = Logger.getLogger(WorkflowEngineMock.class.getName());
 
 	protected Map<String, ItemCollection> database = null;
 
@@ -53,9 +53,25 @@ public abstract class AbstractWorkflowServiceTest {
 	protected ModelService modelService; // Injects mocks into ModelService
 
 	@InjectMocks
-	protected WorkflowService workflowServiceMock; // Injects mocks into WorkflowService
+	protected WorkflowService workflowService; // Injects mocks into WorkflowService
 
 	protected WorkflowContextMock workflowContext = null;
+
+	public ModelService getModelService() {
+		return modelService;
+	}
+
+	public WorkflowContextMock getWorkflowContext() {
+		return workflowContext;
+	}
+
+	public DocumentService getDocumentService() {
+		return documentService;
+	}
+
+	public WorkflowService getWorkflowService() {
+		return workflowService;
+	}
 
 	/**
 	 * The Setup method initializes a mock environment to test the imixs workflow
@@ -77,10 +93,10 @@ public abstract class AbstractWorkflowServiceTest {
 		loadBPMNModel("/bpmn/plugin-test.bpmn");
 
 		// Link modelService to workflowServiceMock
-		workflowServiceMock.modelService = modelService;
+		workflowService.modelService = modelService;
 
 		workflowContext = new WorkflowContextMock();
-		workflowServiceMock.ctx = workflowContext.getSessionContext();
+		workflowService.ctx = workflowContext.getSessionContext();
 
 		// Mock Database Service...
 		when(documentService.load(Mockito.anyString())).thenAnswer(new Answer<ItemCollection>() {

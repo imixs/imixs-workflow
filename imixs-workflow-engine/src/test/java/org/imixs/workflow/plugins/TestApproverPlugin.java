@@ -3,19 +3,16 @@ package org.imixs.workflow.plugins;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.WorkflowEngineMock;
 import org.imixs.workflow.engine.plugins.ApproverPlugin;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for ApproverPlugin
@@ -24,29 +21,27 @@ import org.junit.Test;
  */
 public class TestApproverPlugin {
 	ApproverPlugin approverPlugin = null;
-	ItemCollection documentActivity;
-	ItemCollection documentContext;
-	Map<String, ItemCollection> database = new HashMap<String, ItemCollection>();
+	ItemCollection event;
+	ItemCollection workitem;
+	protected WorkflowEngineMock workflowEngine;
 
-	WorkflowMockEnvironment workflowMockEnvironment;
+	@BeforeEach
+	public void setUp() throws PluginException, ModelException {
 
-	@Before
-	public void setup() throws PluginException, ModelException, AdapterException {
-
-		workflowMockEnvironment = new WorkflowMockEnvironment();
-		workflowMockEnvironment.setModelPath("/bpmn/TestApproverPlugin.bpmn");
-
-		workflowMockEnvironment.setup();
+		workflowEngine = new WorkflowEngineMock();
+		workflowEngine.setUp();
+		workflowEngine.loadBPMNModel("/bpmn/TestApproverPlugin.bpmn");
 
 		approverPlugin = new ApproverPlugin();
 		try {
-			approverPlugin.init(workflowMockEnvironment.getWorkflowService());
+			approverPlugin.init(workflowEngine.getWorkflowService());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
 		}
+		workitem = workflowEngine.getDocumentService().load("W0000-00001");
+		workitem.model("1.0.0").task(100);
 
-		documentContext = new ItemCollection();
 	}
 
 	/**
@@ -60,23 +55,24 @@ public class TestApproverPlugin {
 	@Test
 	public void testNewApproverList() throws PluginException, ModelException {
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
+		workitem.setEventID(10);
+		event = workflowEngine.getModelService().loadEvent(workitem); // .getModel().getEvent(100, 10);
 		// change result
-		documentActivity.replaceItemValue("txtActivityResult", "<item name='approvedby'>ProcessManager</item>");
+		event.replaceItemValue("txtActivityResult", "<item name='approvedby'>ProcessManager</item>");
 
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
 		nameList.add("manfred");
 		nameList.add("eddy");
-		documentContext.replaceItemValue("ProcessManager", nameList);
+		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with ronny
-		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("ronny");
-		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertNotNull(documentContext);
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("ronny");
+		workitem = approverPlugin.run(workitem, event);
+		Assert.assertNotNull(workitem);
 
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 
@@ -92,9 +88,11 @@ public class TestApproverPlugin {
 	@Test
 	public void testDistinctApproverList() throws PluginException, ModelException {
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
+		workitem.setEventID(10);
+		event = workflowEngine.getModelService().loadEvent(workitem); // .getModel().getEvent(100, 10);
+
 		// change result
-		documentActivity.replaceItemValue("txtActivityResult", "<item name='approvedby'>ProcessManager</item>");
+		event.replaceItemValue("txtActivityResult", "<item name='approvedby'>ProcessManager</item>");
 
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
@@ -110,19 +108,19 @@ public class TestApproverPlugin {
 		// add duplicate
 		nameList.add("anna");
 
-		documentContext.replaceItemValue("ProcessManager", nameList);
+		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with ronny
-		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("ronny");
-		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertNotNull(documentContext);
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("ronny");
+		workitem = approverPlugin.run(workitem, event);
+		Assert.assertNotNull(workitem);
 
 		// we expect that the null and empty values are removed and the name anna is
 		// distinct.
 
-		List<String> approvers = documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS);
+		List<String> approvers = workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS);
 		Assert.assertEquals(4, approvers.size());
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		Assert.assertTrue(approvers.contains("anna"));
 		Assert.assertTrue(approvers.contains("manfred"));
@@ -148,21 +146,22 @@ public class TestApproverPlugin {
 	@Test
 	public void testNewApproverListImmediateApproval() throws PluginException, ModelException {
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
+		workitem.setEventID(10);
+		event = workflowEngine.getModelService().loadEvent(workitem);
 
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
 		nameList.add("manfred");
 		nameList.add("eddy");
-		documentContext.replaceItemValue("ProcessManager", nameList);
+		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with manfred
-		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
-		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertNotNull(documentContext);
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		workitem = approverPlugin.run(workitem, event);
+		Assert.assertNotNull(workitem);
 
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 
@@ -178,21 +177,22 @@ public class TestApproverPlugin {
 	@Test
 	public void testUpdateApproverListNewApprover() throws PluginException, ModelException {
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
+		workitem.setEventID(10);
+		event = workflowEngine.getModelService().loadEvent(workitem);
 
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
 		nameList.add("manfred");
 		nameList.add("eddy");
-		documentContext.replaceItemValue("ProcessManager", nameList);
+		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with manfred
-		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
-		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertNotNull(documentContext);
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		workitem = approverPlugin.run(workitem, event);
+		Assert.assertNotNull(workitem);
 
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// second run - change soruce list
 
@@ -201,16 +201,16 @@ public class TestApproverPlugin {
 		nameList.add("manfred");
 		nameList.add("eddy");
 		nameList.add("ronny");
-		documentContext.replaceItemValue("ProcessManager", nameList);
+		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with manfred
-		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
-		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertNotNull(documentContext);
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		workitem = approverPlugin.run(workitem, event);
+		Assert.assertNotNull(workitem);
 
-		Assert.assertEquals(4, documentContext.getItemValue("ProcessManager").size());
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(1, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(4, workitem.getItemValue("ProcessManager").size());
+		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 
@@ -226,21 +226,22 @@ public class TestApproverPlugin {
 	@Test
 	public void testUpdateApproverListExistingApprover() throws PluginException, ModelException {
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
+		workitem.setEventID(10);
+		event = workflowEngine.getModelService().loadEvent(workitem);
 
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
 		nameList.add("manfred");
 		nameList.add("eddy");
-		documentContext.replaceItemValue("ProcessManager", nameList);
+		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with manfred
-		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
-		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertNotNull(documentContext);
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		workitem = approverPlugin.run(workitem, event);
+		Assert.assertNotNull(workitem);
 
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// second run - change soruce list
 
@@ -248,16 +249,16 @@ public class TestApproverPlugin {
 		nameList.add("anna");
 		nameList.add("manfred");
 		nameList.add("eddy");
-		documentContext.replaceItemValue("ProcessManager", nameList);
+		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with manfred
-		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
-		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertNotNull(documentContext);
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		workitem = approverPlugin.run(workitem, event);
+		Assert.assertNotNull(workitem);
 
 		// list should not be changed!
-		Assert.assertEquals(2, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(1, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 
@@ -271,51 +272,52 @@ public class TestApproverPlugin {
 	@Test
 	public void testCompleteApproval() throws PluginException, ModelException {
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
+		workitem.setEventID(10);
+		event = workflowEngine.getModelService().loadEvent(workitem);
 
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
 		nameList.add("manfred");
 		nameList.add("eddy");
-		documentContext.replaceItemValue("ProcessManager", nameList);
+		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with manfred
-		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
-		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertNotNull(documentContext);
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		workitem = approverPlugin.run(workitem, event);
+		Assert.assertNotNull(workitem);
 
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// second run - Anna
-		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("anna");
-		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertEquals(2, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(1, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("anna");
+		workitem = approverPlugin.run(workitem, event);
+		Assert.assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 3rd run - eddy
-		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("eddy");
-		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertEquals(1, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(2, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("eddy");
+		workitem = approverPlugin.run(workitem, event);
+		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 4th run - manfred
-		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
-		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		workitem = approverPlugin.run(workitem, event);
+		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 5th run - Anna (no effect)
-		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("anna");
-		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("anna");
+		workitem = approverPlugin.run(workitem, event);
+		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 6th run - ronny (no effect)
-		when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("ronny");
-		documentContext = approverPlugin.run(documentContext, documentActivity);
-		Assert.assertEquals(0, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(3, documentContext.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("ronny");
+		workitem = approverPlugin.run(workitem, event);
+		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 

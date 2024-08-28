@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.IntervalPlugin;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -26,14 +26,14 @@ public class TestIntervalPlugin {
     protected IntervalPlugin intervalPlugin = null;
 
     private static final Logger logger = Logger.getLogger(TestIntervalPlugin.class.getName());
-    WorkflowMockEnvironment workflowMockEnvironment;
+    OldWorkflowMockEnvironment workflowMockEnvironment;
     ItemCollection documentContext;
     ItemCollection documentActivity;
 
     @Before
     public void setup() throws PluginException, ModelException, AdapterException {
 
-        workflowMockEnvironment = new WorkflowMockEnvironment();
+        workflowMockEnvironment = new OldWorkflowMockEnvironment();
         workflowMockEnvironment.setModelPath("/bpmn/TestIntervalPlugin.bpmn");
 
         workflowMockEnvironment.setup();

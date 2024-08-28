@@ -3,7 +3,7 @@ package org.imixs.workflow.plugins;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.MailPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -22,12 +22,12 @@ public class TestMailPlugin {
 	protected MailPlugin mailPlugin = null;
 	private final static Logger logger = Logger.getLogger(TestMailPlugin.class.getName());
 
-	WorkflowMockEnvironment workflowMockEnvironment;
+	OldWorkflowMockEnvironment workflowMockEnvironment;
 
 	@Before
 	public void setUp() throws PluginException, ModelException {
 
-		workflowMockEnvironment = new WorkflowMockEnvironment();
+		workflowMockEnvironment = new OldWorkflowMockEnvironment();
 		workflowMockEnvironment.setModelPath("/bpmn/TestAccessPlugin.bpmn");
 
 		workflowMockEnvironment.setup();

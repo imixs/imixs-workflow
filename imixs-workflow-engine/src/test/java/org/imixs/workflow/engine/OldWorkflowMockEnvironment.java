@@ -51,8 +51,8 @@ import org.openbpmn.bpmn.util.BPMNModelFactory;
  * @see AbstractPluginTest, TestWorkflowService, ModelPluginMock
  * @author rsoika
  */
-public class WorkflowMockEnvironment {
-    private final static Logger logger = Logger.getLogger(WorkflowMockEnvironment.class.getName());
+public class OldWorkflowMockEnvironment {
+    private final static Logger logger = Logger.getLogger(OldWorkflowMockEnvironment.class.getName());
     public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 
     protected Map<String, ItemCollection> database = null;
@@ -81,8 +81,8 @@ public class WorkflowMockEnvironment {
      * a MockPlugin
      * 
      */
-    public WorkflowMockEnvironment() {
-        workflowContext = new MockWorkflowEngineContext();
+    public OldWorkflowMockEnvironment() {
+        workflowContext = new WorkflowContextMock();
     }
 
     public String getModelPath() {
