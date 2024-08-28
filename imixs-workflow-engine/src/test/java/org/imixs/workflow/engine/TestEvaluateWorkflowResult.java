@@ -5,11 +5,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 /**
  * Test class for WorkflowService
@@ -18,9 +23,12 @@ import org.junit.jupiter.api.Test;
  * 
  * @author rsoika
  */
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.WARN)
 public class TestEvaluateWorkflowResult {
 
     private final static Logger logger = Logger.getLogger(TestEvaluateWorkflowResult.class.getName());
+
     protected WorkflowEngineMock workflowEngine;
 
     @BeforeEach
@@ -30,6 +38,50 @@ public class TestEvaluateWorkflowResult {
         workflowEngine.setUp();
         workflowEngine.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
 
+        // AdaptText
+        // when(workflowEngine.workflowService.adaptText(Mockito.anyString(),
+        // Mockito.any(ItemCollection.class)))
+        // .thenAnswer(new Answer<String>() {
+        // @Override
+        // public String answer(InvocationOnMock invocation) throws Throwable {
+
+        // Object[] args = invocation.getArguments();
+        // String text = (String) args[0];
+        // ItemCollection document = (ItemCollection) args[1];
+
+        // TextEvent textEvent = new TextEvent(text, document);
+
+        // // for-each adapter
+        // TextForEachAdapter tfea = new TextForEachAdapter();
+        // tfea.onEvent(textEvent);
+
+        // // ItemValue adapter
+        // TextItemValueAdapter tiva = new TextItemValueAdapter();
+        // tiva.onEvent(textEvent);
+
+        // return textEvent.getText();
+        // }
+        // });
+
+        // when(workflowEngine.workflowService.adaptTextList(Mockito.anyString(),
+        // Mockito.any(ItemCollection.class)))
+        // .thenAnswer(new Answer<List<String>>() {
+        // @Override
+        // public List<String> answer(InvocationOnMock invocation) throws Throwable,
+        // PluginException {
+
+        // Object[] args = invocation.getArguments();
+        // String text = (String) args[0];
+        // ItemCollection document = (ItemCollection) args[1];
+
+        // TextEvent textEvent = new TextEvent(text, document);
+
+        // TextItemValueAdapter tiva = new TextItemValueAdapter();
+        // tiva.onEvent(textEvent);
+
+        // return textEvent.getTextList();
+        // }
+        // });
     }
 
     /**
@@ -150,6 +202,10 @@ public class TestEvaluateWorkflowResult {
         try {
             activityEntity.replaceItemValue("txtActivityResult",
                     "<item name=\"count\" type=\"double\"><itemvalue>amount</itemvalue></item>");
+
+            activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT,
+                    "<item name=\"count\" type=\"double\"><itemvalue>amount</itemvalue></item>");
+
             ItemCollection result = workflowEngine.getWorkflowService().evalWorkflowResult(activityEntity,
                     "item", source);
             Assert.assertNotNull(result);

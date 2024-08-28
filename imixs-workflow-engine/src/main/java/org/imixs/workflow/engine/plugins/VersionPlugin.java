@@ -31,6 +31,7 @@ package org.imixs.workflow.engine.plugins;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -200,7 +201,7 @@ public class VersionPlugin extends AbstractPlugin {
     /**
      * returns true in case a new version is created based on the currentWorkitem
      * 
-     * @param documentContext
+     * @param workitem
      * @param documentActivity
      * @return
      */

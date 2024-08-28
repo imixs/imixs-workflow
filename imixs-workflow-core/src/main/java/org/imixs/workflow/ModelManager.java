@@ -67,6 +67,20 @@ public interface ModelManager {
     public BPMNModel getModel(String version) throws ModelException;
 
     /**
+     * Returns a BPMNModel by a workItem. The workitem must at least provide the
+     * item '$modelversion' or '$workflowgroup' to resolve the model.
+     * The $modelversion can be a regular expression.
+     * <p>
+     * The BPMNModel instance can be used to access all BPMN model elements.
+     * 
+     * @param version - $modelVersion
+     * @return a BPMN model instance or null if not found by $modelVersion
+     * 
+     * @see https://github.com/imixs/open-bpmn/tree/master/open-bpmn.metamodel
+     */
+    public BPMNModel getModelByWorkitem(ItemCollection workitem) throws ModelException;
+
+    /**
      * Returns the BPMN Definition entity associated with a given BPMNModel. The
      * definition holds the bpmn meta data.
      * <p>

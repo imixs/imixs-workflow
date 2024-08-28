@@ -49,6 +49,7 @@ import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.WorkflowManager;
+import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
@@ -844,7 +845,11 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
             boolean resolveItemValues) throws PluginException {
         boolean debug = logger.isLoggable(Level.FINE);
         ItemCollection result = new ItemCollection();
-        String workflowResult = event.getItemValueString("txtActivityResult");
+        String workflowResult = event.getItemValueString(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT);
+        // support deprecated itemname
+        if (workflowResult.isEmpty()) {
+            workflowResult = event.getItemValueString("txtActivityResult");
+        }
         if (workflowResult.trim().isEmpty()) {
             return null;
         }

@@ -5,13 +5,14 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
+import org.imixs.workflow.engine.WorkflowEngineMock;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * Test the ACL plugin.
@@ -26,59 +27,62 @@ public class TestOwnerPlugin {
 	private final static Logger logger = Logger.getLogger(TestOwnerPlugin.class.getName());
 
 	OwnerPlugin ownerPlugin = null;
-	ItemCollection documentContext;
-	ItemCollection documentActivity;
+	ItemCollection workitem;
+	ItemCollection event;
 
-	OldWorkflowMockEnvironment workflowMockEnvironment;
+	protected WorkflowEngineMock workflowEngine;
 
-	@Before
-	public void setup() throws PluginException, ModelException {
+	@BeforeEach
+	public void setUp() throws PluginException, ModelException {
 
-		workflowMockEnvironment = new OldWorkflowMockEnvironment();
-		workflowMockEnvironment.setModelPath("/bpmn/TestOwnerPlugin.bpmn");
-		workflowMockEnvironment.setup();
+		workflowEngine = new WorkflowEngineMock();
+		workflowEngine.setUp();
+		workflowEngine.loadBPMNModel("/bpmn/TestApproverPlugin.bpmn");
 
 		ownerPlugin = new OwnerPlugin();
 		try {
-			ownerPlugin.init(workflowMockEnvironment.getWorkflowService());
+			ownerPlugin.init(workflowEngine.getWorkflowService());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
 		}
+		workitem = workflowEngine.getDocumentService().load("W0000-00001");
+		workitem.model("1.0.0").task(100);
 
 		// prepare data
-		documentContext = new ItemCollection().model(OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION).task(100)
+		workitem = new ItemCollection().model("1.0.0").task(100)
 				.event(10);
 		logger.info("[TestOwnerPlugin] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
 		list.add("anna");
-		documentContext.replaceItemValue("namTeam", list);
-		documentContext.replaceItemValue("namCreator", "ronny");
+		workitem.replaceItemValue("namTeam", list);
+		workitem.replaceItemValue("namCreator", "ronny");
+
 	}
 
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void simpleTest() {
 
-		documentActivity = new ItemCollection();
-		documentActivity.replaceItemValue("keyupdateAcl", true);
-		documentActivity.replaceItemValue("numNextProcessID", 100);
+		event = new ItemCollection();
+		event.replaceItemValue("keyupdateAcl", true);
+		event.replaceItemValue("numNextProcessID", 100);
 
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
 		list.add("joe");
-		documentActivity.replaceItemValue("namOwnershipNames", list);
+		event.replaceItemValue("namOwnershipNames", list);
 
 		try {
-			ownerPlugin.run(documentContext, documentActivity);
+			ownerPlugin.run(workitem, event);
 		} catch (PluginException e) {
 
 			e.printStackTrace();
 			Assert.fail();
 		}
 
-		List writeAccess = documentContext.getItemValue(OwnerPlugin.OWNER);
+		List writeAccess = workitem.getItemValue(OwnerPlugin.OWNER);
 
 		Assert.assertEquals(2, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
@@ -92,27 +96,27 @@ public class TestOwnerPlugin {
 	@Test
 	public void testUpdateOfnamOwner() {
 
-		documentActivity = new ItemCollection();
-		documentActivity.replaceItemValue("keyupdateAcl", true);
-		documentActivity.replaceItemValue("numNextProcessID", 100);
+		event = new ItemCollection();
+		event.replaceItemValue("keyupdateAcl", true);
+		event.replaceItemValue("numNextProcessID", 100);
 
 		Vector<String> list = new Vector<String>();
 		list.add("sam");
 		list.add("joe");
-		documentActivity.replaceItemValue("namOwnershipNames", list);
+		event.replaceItemValue("namOwnershipNames", list);
 
 		// set a current owner
-		documentContext.replaceItemValue(OwnerPlugin.OWNER, "ralph");
-		documentActivity.replaceItemValue("keyOwnershipFields", OwnerPlugin.OWNER);
+		workitem.replaceItemValue(OwnerPlugin.OWNER, "ralph");
+		event.replaceItemValue("keyOwnershipFields", OwnerPlugin.OWNER);
 
 		try {
-			ownerPlugin.run(documentContext, documentActivity);
+			ownerPlugin.run(workitem, event);
 		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
-		List ownerList = documentContext.getItemValue(OwnerPlugin.OWNER);
+		List ownerList = workitem.getItemValue(OwnerPlugin.OWNER);
 
 		Assert.assertEquals(3, ownerList.size());
 		Assert.assertTrue(ownerList.contains("joe"));
@@ -130,22 +134,19 @@ public class TestOwnerPlugin {
 	@Test
 	public void staticUserGroupMappingTest() throws ModelException {
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
-		documentActivity.replaceItemValue("keyupdateAcl", true);
-		documentActivity.replaceItemValue("keyOwnershipFields", "[sam, tom,  anna ,]"); // 3
-																						// values
-																						// expected!
-		// this.setActivityEntity(documentActivity);
-		try {
-			ownerPlugin.run(documentContext, documentActivity);
-		} catch (PluginException e) {
+		BPMNModel model = workflowEngine.getModelService().getModel("1.0.0");
+		event = workflowEngine.getModelService().getOpenBPMNModelManager().findEventByID(model, 100, 10);
+		event.replaceItemValue("keyupdateAcl", true);
+		event.replaceItemValue("keyOwnershipFields", "[sam, tom,  anna ,]");
 
-			e.printStackTrace();
-			Assert.fail();
+		try {
+			ownerPlugin.run(workitem, event);
+		} catch (PluginException e) {
+			Assert.fail(e.getMessage());
 		}
 
-		List writeAccess = documentContext.getItemValue(OwnerPlugin.OWNER);
-
+		List writeAccess = workitem.getItemValue(OwnerPlugin.OWNER);
+		// 3 values expected!
 		Assert.assertEquals(3, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("tom"));
 		Assert.assertTrue(writeAccess.contains("sam"));
@@ -156,18 +157,17 @@ public class TestOwnerPlugin {
 	@Test
 	public void testNoUpdate() throws ModelException {
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
+		BPMNModel model = workflowEngine.getModelService().getModel("1.0.0");
+		event = workflowEngine.getModelService().getOpenBPMNModelManager().findEventByID(model, 100, 20);
 
 		try {
-			ownerPlugin.run(documentContext, documentActivity);
+			ownerPlugin.run(workitem, event);
 		} catch (PluginException e) {
-
 			e.printStackTrace();
 			Assert.fail();
 		}
 
-		List writeAccess = documentContext.getItemValue(OwnerPlugin.OWNER);
-
+		List writeAccess = workitem.getItemValue(OwnerPlugin.OWNER);
 		Assert.assertEquals(0, writeAccess.size());
 	}
 

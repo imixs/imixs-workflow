@@ -101,6 +101,11 @@ public class OpenBPMNModelManager implements ModelManager {
         return modelStore.get(version);
     }
 
+    @Override
+    public BPMNModel getModelByWorkitem(ItemCollection workitem) throws ModelException {
+        return this.findModelByWorkitem(workitem);
+    }
+
     /**
      * Returns the BPMN Definition entity associated with a given workitem, based on
      * its attribute "$modelVersion". The definition holds the bpmn meta data.

@@ -186,19 +186,6 @@ public class ModelService implements ModelManager {
         return openBPMNModelManager.loadProcess(workitem);
     }
 
-    /**
-     * Returns a Model matching a given workitem. In case not matching model version
-     * exits, the method returns the highest Model Version matching the
-     * corresponding workflow group.
-     * 
-     * The method throws a ModelException in case the model version did not exits.
-     **/
-    // @Override
-    // public BPMNModel findModelByWorkitem(ItemCollection workitem) throws
-    // ModelException {
-    // return openBPMNModelManager.findModelByWorkitem(workitem);
-    // }
-
     @Override
     public ItemCollection loadDefinition(BPMNModel model) throws ModelException {
         return openBPMNModelManager.loadDefinition(model);
@@ -238,6 +225,23 @@ public class ModelService implements ModelManager {
     @Override
     public BPMNModel getModel(String version) throws ModelException {
         return openBPMNModelManager.getModel(version);
+    }
+
+    /**
+     * Returns a BPMNModel by a workItem. The workitem must at least provide the
+     * item '$modelversion' or '$workflowgroup' to resolve the model.
+     * The $modelversion can be a regular expression.
+     * <p>
+     * The BPMNModel instance can be used to access all BPMN model elements.
+     * 
+     * @param version - $modelVersion
+     * @return a BPMN model instance or null if not found by $modelVersion
+     * 
+     * @see https://github.com/imixs/open-bpmn/tree/master/open-bpmn.metamodel
+     */
+    @Override
+    public BPMNModel getModelByWorkitem(ItemCollection workitem) throws ModelException {
+        return openBPMNModelManager.getModelByWorkitem(workitem);
     }
 
     /**

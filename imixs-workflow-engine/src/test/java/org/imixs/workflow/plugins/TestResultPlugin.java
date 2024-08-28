@@ -9,7 +9,7 @@ import javax.script.ScriptException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
+import org.imixs.workflow.engine.WorkflowEngineMock;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -17,8 +17,8 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for WorkflowService
@@ -34,23 +34,46 @@ public class TestResultPlugin {
     public static final String DEFAULT_MODEL_VERSION = "1.0.0";
     private static final Logger logger = Logger.getLogger(TestResultPlugin.class.getName());
 
-    protected OldWorkflowMockEnvironment workflowMockEnvironment;
+    // protected OldWorkflowMockEnvironment workflowMockEnvironment;
 
-    @Before
+    // @Before
+    // public void setUp() throws PluginException, ModelException {
+
+    // workflowMockEnvironment = new OldWorkflowMockEnvironment();
+    // workflowMockEnvironment.setModelPath("/bpmn/TestResultPlugin.bpmn");
+
+    // workflowMockEnvironment.setup();
+
+    // resultPlugin = new ResultPlugin();
+    // try {
+    // resultPlugin.init(workflowMockEnvironment.getWorkflowService());
+    // } catch (PluginException e) {
+
+    // e.printStackTrace();
+    // }
+
+    // }
+
+    ItemCollection event;
+    ItemCollection workitem;
+    protected WorkflowEngineMock workflowEngine;
+
+    @BeforeEach
     public void setUp() throws PluginException, ModelException {
 
-        workflowMockEnvironment = new OldWorkflowMockEnvironment();
-        workflowMockEnvironment.setModelPath("/bpmn/TestResultPlugin.bpmn");
-
-        workflowMockEnvironment.setup();
+        workflowEngine = new WorkflowEngineMock();
+        workflowEngine.setUp();
+        workflowEngine.loadBPMNModel("/bpmn/TestResultPlugin.bpmn");
 
         resultPlugin = new ResultPlugin();
         try {
-            resultPlugin.init(workflowMockEnvironment.getWorkflowService());
+            resultPlugin.init(workflowEngine.getWorkflowService());
         } catch (PluginException e) {
 
             e.printStackTrace();
         }
+        workitem = workflowEngine.getDocumentService().load("W0000-00001");
+        workitem.model("1.0.0").task(100);
 
     }
 
@@ -295,26 +318,26 @@ public class TestResultPlugin {
     @Test
     public void testProcessTypeAttriubteComplex()
             throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
-        ItemCollection workitem = workflowMockEnvironment.getDatabase().get("W0000-00001");
+        ItemCollection workitem = workflowEngine.getDocumentService().load("W0000-00001");
         workitem.removeItem("type");
         workitem.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);
         workitem.setTaskID(100);
 
         // case 1 - no type attribute
         workitem.setEventID(10);
-        workitem = workflowMockEnvironment.processWorkItem(workitem);
+        workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
         Assert.assertEquals(100, workitem.getTaskID());
         Assert.assertEquals(WorkflowService.DEFAULT_TYPE, workitem.getType());
 
         // case 2 - workitem
         workitem.setEventID(20);
-        workitem = workflowMockEnvironment.processWorkItem(workitem);
+        workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
         Assert.assertEquals(200, workitem.getTaskID());
         Assert.assertEquals("workitemdeleted", workitem.getType());
 
         // case 3 - workitemdeleted
         workitem.setEventID(30);
-        workitem = workflowMockEnvironment.processWorkItem(workitem);
+        workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
         Assert.assertEquals(200, workitem.getTaskID());
         Assert.assertEquals("workitemdeleted", workitem.getType());
         Assert.assertEquals("deleted", workitem.getItemValueString("subtype"));

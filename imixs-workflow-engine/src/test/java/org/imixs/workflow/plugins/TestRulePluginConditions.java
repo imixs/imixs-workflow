@@ -1,16 +1,14 @@
 package org.imixs.workflow.plugins;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.ModelPluginMock;
-import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
-import org.imixs.workflow.engine.plugins.ResultPlugin;
+import org.imixs.workflow.engine.WorkflowEngineMock;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for WorkflowService
@@ -21,33 +19,19 @@ import org.junit.Test;
  * @author rsoika
  */
 public class TestRulePluginConditions {
-	protected ResultPlugin resultPlugin = null;
 	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 
-	OldWorkflowMockEnvironment workflowMockEnvironment;
+	ItemCollection event;
+	ItemCollection workitem;
+	protected WorkflowEngineMock workflowEngine;
 
-	@Before
+	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
-
-		workflowMockEnvironment = new OldWorkflowMockEnvironment();
-		workflowMockEnvironment.setModelPath("/bpmn/TestRulePluginConditions.bpmn");
-
-		workflowMockEnvironment.setup();
-
-		resultPlugin = new ResultPlugin();
-		try {
-			resultPlugin.init(workflowMockEnvironment.getWorkflowService());
-		} catch (PluginException e) {
-
-			e.printStackTrace();
-		}
-		try {
-			workflowMockEnvironment.getModelService().addModel(new ModelPluginMock(workflowMockEnvironment.getModel(),
-					"org.imixs.workflow.engine.plugins.ApplicationPlugin",
-					"org.imixs.workflow.engine.plugins.RulePlugin"));
-		} catch (ModelException e) {
-			e.printStackTrace();
-		}
+		workflowEngine = new WorkflowEngineMock();
+		workflowEngine.setUp();
+		workflowEngine.loadBPMNModel("/bpmn/TestRulePluginConditions.bpmn");
+		workitem = workflowEngine.getDocumentService().load("W0000-00001");
+		workitem.model("1.0.0").task(100);
 	}
 
 	/**
@@ -65,8 +49,7 @@ public class TestRulePluginConditions {
 		ItemCollection workitem = new ItemCollection();
 		workitem.model(DEFAULT_MODEL_VERSION).task(1000).event(10);
 		workitem.replaceItemValue("_budget", 0);
-
-		workitem = workflowMockEnvironment.processWorkItem(workitem);
+		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
 
 		Assert.assertNotNull(workitem);
 		// test budget
@@ -92,8 +75,7 @@ public class TestRulePluginConditions {
 		ItemCollection workitem = new ItemCollection();
 		workitem.model(DEFAULT_MODEL_VERSION).task(1000).event(20);
 		workitem.replaceItemValue("_budget", 0);
-
-		workitem = workflowMockEnvironment.processWorkItem(workitem);
+		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
 
 		Assert.assertNotNull(workitem);
 		// test budget

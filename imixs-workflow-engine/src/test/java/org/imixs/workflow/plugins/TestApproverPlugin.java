@@ -13,12 +13,18 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 /**
  * Test class for ApproverPlugin
  * 
  * @author rsoika
  */
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.WARN)
 public class TestApproverPlugin {
 	ApproverPlugin approverPlugin = null;
 	ItemCollection event;
