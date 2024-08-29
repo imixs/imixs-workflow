@@ -2,6 +2,7 @@ package org.imixs.workflow.engine;
 
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -11,7 +12,6 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -23,6 +23,8 @@ import org.mockito.stubbing.Answer;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
+
+import jakarta.enterprise.event.Event;
 
 /**
  * The {@code AbstractWorkflowServiceTest} can be used as a base class for junit
@@ -39,7 +41,6 @@ import org.openbpmn.bpmn.util.BPMNModelFactory;
  * 
  * @author rsoika
  */
-// @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.WARN)
 public class WorkflowEngineMock {
 	protected final static Logger logger = Logger.getLogger(WorkflowEngineMock.class.getName());
@@ -83,7 +84,6 @@ public class WorkflowEngineMock {
 	 * 
 	 * @throws PluginException
 	 */
-	@BeforeEach
 	public void setUp() throws PluginException {
 		// Ensures that @Mock and @InjectMocks annotations are processed
 		MockitoAnnotations.openMocks(this);
@@ -94,11 +94,12 @@ public class WorkflowEngineMock {
 
 		// Link modelService to workflowServiceMock
 		workflowService.modelService = modelService;
+		Assert.assertNotNull(modelService.getOpenBPMNModelManager());
 
 		workflowContext = new WorkflowContextMock();
 		workflowService.ctx = workflowContext.getSessionContext();
 
-		// Mock Database Service...
+		// Mock Database Service with a in-memory database...
 		when(documentService.load(Mockito.anyString())).thenAnswer(new Answer<ItemCollection>() {
 			@Override
 			public ItemCollection answer(InvocationOnMock invocation) throws Throwable {
@@ -124,6 +125,41 @@ public class WorkflowEngineMock {
 			}
 		});
 
+		// Mock Event<TextEvent>
+		Event<TextEvent> mockTextEvents = Mockito.mock(Event.class);
+
+		// Set up behavior for the mock to simulate firing adapters
+		Mockito.doAnswer(invocation -> {
+			TextEvent event = invocation.getArgument(0);
+
+			// Create and use the adapters
+			TextItemValueAdapter tiva = new TextItemValueAdapter();
+			TextForEachAdapter tfea = new TextForEachAdapter();
+
+			// Invoke adapters
+			tfea.onEvent(event);
+			tiva.onEvent(event);
+
+			return null;
+		}).when(mockTextEvents).fire(Mockito.any(TextEvent.class));
+
+		// Inject the mocked Event<TextEvent> into the workflowService
+		injectMockIntoField(workflowService, "textEvents", mockTextEvents);
+	}
+
+	/**
+	 * Helper method that loads a new model into the ModelService
+	 * 
+	 * @param modelPath
+	 */
+	public void loadBPMNModel(String modelPath) {
+		try {
+			BPMNModel model = BPMNModelFactory.read(modelPath);
+			modelService.getOpenBPMNModelManager().addModel(model);
+		} catch (BPMNModelException | ModelException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
 	}
 
 	/**
@@ -149,17 +185,20 @@ public class WorkflowEngineMock {
 	}
 
 	/**
-	 * Helper method that loads a new model into the ModelService
-	 * 
-	 * @param modelPath
+	 * Helper method to inject a mock into a private/protected field using
+	 * reflection.
+	 *
+	 * @param targetObject The object into which the field is to be injected.
+	 * @param fieldName    The name of the field to inject.
+	 * @param value        The mock or object to inject into the field.
 	 */
-	public void loadBPMNModel(String modelPath) {
+	private void injectMockIntoField(Object targetObject, String fieldName, Object value) {
 		try {
-			BPMNModel model = BPMNModelFactory.read(modelPath);
-			modelService.getOpenBPMNModelManager().addModel(model);
-		} catch (BPMNModelException | ModelException e) {
-			e.printStackTrace();
-			Assert.fail();
+			Field field = targetObject.getClass().getDeclaredField(fieldName);
+			field.setAccessible(true);
+			field.set(targetObject, value);
+		} catch (NoSuchFieldException | IllegalAccessException e) {
+			throw new RuntimeException("Failed to inject mock into field: " + fieldName, e);
 		}
 	}
 }
