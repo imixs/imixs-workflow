@@ -1,7 +1,7 @@
 package org.imixs.workflow.plugins;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowEngineMock;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -23,11 +23,11 @@ public class TestRulePluginConditions {
 
 	ItemCollection event;
 	ItemCollection workitem;
-	protected WorkflowEngineMock workflowEngine;
+	protected WorkflowMockEnvironment workflowEngine;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
-		workflowEngine = new WorkflowEngineMock();
+		workflowEngine = new WorkflowMockEnvironment();
 		workflowEngine.setUp();
 		workflowEngine.loadBPMNModel("/bpmn/TestRulePluginConditions.bpmn");
 		workitem = workflowEngine.getDocumentService().load("W0000-00001");

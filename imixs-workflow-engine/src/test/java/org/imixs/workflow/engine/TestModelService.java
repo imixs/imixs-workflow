@@ -27,13 +27,13 @@ import org.openbpmn.bpmn.BPMNModel;
 @MockitoSettings(strictness = Strictness.WARN)
 public class TestModelService {
 
-	protected WorkflowEngineMock workflowEngine;
+	protected WorkflowMockEnvironment workflowEngine;
 	ItemCollection workitem;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowEngine = new WorkflowEngineMock();
+		workflowEngine = new WorkflowMockEnvironment();
 		workflowEngine.setUp();
 		workflowEngine.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
 

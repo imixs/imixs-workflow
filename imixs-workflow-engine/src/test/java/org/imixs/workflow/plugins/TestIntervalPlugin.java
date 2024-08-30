@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowEngineMock;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.IntervalPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -25,23 +25,23 @@ public class TestIntervalPlugin {
     protected IntervalPlugin intervalPlugin = null;
 
     private static final Logger logger = Logger.getLogger(TestIntervalPlugin.class.getName());
-    protected WorkflowEngineMock workflowEngine;
+    protected WorkflowMockEnvironment workflowEnvironment;
     ItemCollection workitem = null;
     ItemCollection documentContext;
     ItemCollection documentActivity;
 
     @BeforeEach
     public void setUp() throws PluginException, ModelException {
-        workflowEngine = new WorkflowEngineMock();
-        workflowEngine.setUp();
-        workflowEngine.loadBPMNModel("/bpmn/TestIntervalPlugin.bpmn");
-        workitem = workflowEngine.getDocumentService().load("W0000-00001");
+        workflowEnvironment = new WorkflowMockEnvironment();
+        workflowEnvironment.setUp();
+        workflowEnvironment.loadBPMNModel("/bpmn/TestIntervalPlugin.bpmn");
+        workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
         workitem.model("1.0.0").task(100);
 
         // prepare plugin
         intervalPlugin = new IntervalPlugin();
         try {
-            intervalPlugin.init(workflowEngine.getWorkflowService());
+            intervalPlugin.init(workflowEnvironment.getWorkflowService());
         } catch (PluginException e) {
             Assert.fail(e.getMessage());
         }
@@ -50,7 +50,7 @@ public class TestIntervalPlugin {
         documentContext = new ItemCollection();
         logger.info("[TestIntervalPlugin] setup test data...");
         documentContext.replaceItemValue("reminder", new Date());
-        workflowEngine.getDocumentService().save(documentContext);
+        workflowEnvironment.getDocumentService().save(documentContext);
     }
 
     /**
@@ -63,8 +63,8 @@ public class TestIntervalPlugin {
         logger.log(Level.INFO, "------------------ Ref Date   ={0}", documentContext.getItemValueDate("reminder"));
         try {
             workitem.event(99);
-            documentActivity = workflowEngine.getModelService().loadEvent(workitem); // workflowMockEnvironment.getModel().getEvent(100,
-                                                                                     // // 99);
+            documentActivity = workflowEnvironment.getModelService().loadEvent(workitem); // workflowMockEnvironment.getModel().getEvent(100,
+            // // 99);
             intervalPlugin.run(documentContext, documentActivity);
         } catch (PluginException | ModelException e) {
             e.printStackTrace();

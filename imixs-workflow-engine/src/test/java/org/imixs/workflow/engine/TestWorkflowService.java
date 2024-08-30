@@ -40,12 +40,12 @@ public class TestWorkflowService {
 	protected ApplicationPlugin applicationPlugin = null;
 	protected ItemCollection documentContext;
 	protected ItemCollection documentActivity, documentProcess;
-	protected WorkflowEngineMock workflowEnvironment;
+	protected WorkflowMockEnvironment workflowEnvironment;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowEnvironment = new WorkflowEngineMock();
+		workflowEnvironment = new WorkflowMockEnvironment();
 		workflowEnvironment.setUp();
 		workflowEnvironment.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
 

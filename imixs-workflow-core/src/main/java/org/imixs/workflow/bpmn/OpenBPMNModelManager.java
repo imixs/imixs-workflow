@@ -446,10 +446,13 @@ public class OpenBPMNModelManager implements ModelManager {
      */
     public ItemCollection findTaskByID(final BPMNModel model, int taskID) {
         String key = BPMNUtil.getVersion(model) + "~" + taskID;
-        ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key,
-                k -> lookupTaskByID(model, taskID));
-        // clone instance to protect for manipulation
+        // Avoid recursive call chains and do not use computeIfAbsent here!
+        if (bpmnEntityCache.containsKey(key)) {
+            return (ItemCollection) bpmnEntityCache.get(key).clone();
+        }
+        ItemCollection result = lookupTaskByID(model, taskID);
         if (result != null) {
+            bpmnEntityCache.put(key, result);
             return (ItemCollection) result.clone();
         }
         return null;
@@ -463,14 +466,16 @@ public class OpenBPMNModelManager implements ModelManager {
      * The method implements an effectively generic, thread-safe way of a
      * compute-once, cache-for-later pattern.
      * 
-     * 
      */
     public ItemCollection findEventByID(final BPMNModel model, int taskID, int eventID) {
         String key = BPMNUtil.getVersion(model) + "~" + taskID + "." + eventID;
-        ItemCollection result = (ItemCollection) bpmnEntityCache.computeIfAbsent(key,
-                k -> lookupEventByID(model, taskID, eventID));
-        // clone instance to protect for manipulation
+        // Avoid recursive call chains and do not use computeIfAbsent here!
+        if (bpmnEntityCache.containsKey(key)) {
+            return (ItemCollection) bpmnEntityCache.get(key).clone();
+        }
+        ItemCollection result = lookupEventByID(model, taskID, eventID);
         if (result != null) {
+            bpmnEntityCache.put(key, result);
             return (ItemCollection) result.clone();
         }
         return null;
@@ -582,7 +587,6 @@ public class OpenBPMNModelManager implements ModelManager {
         result.setItemValue("exporter", definition.getAttribute("exporter"));
         result.setItemValue("exporterVersion", definition.getAttribute("exporterVersion"));
         result.setItemValue("targetNamespace", definition.getAttribute("targetNamespace"));
-
         result.setItemValue("name", "environment.profile");
         result.setItemValue("txtname", "environment.profile");
         result.setItemValue("type", "WorkflowEnvironmentEntity");
@@ -661,14 +665,19 @@ public class OpenBPMNModelManager implements ModelManager {
      * @return
      */
     private ItemCollection lookupEventByID(final BPMNModel model, int taskID, int eventID) {
+        Event event = null;
         String key = BPMNUtil.getVersion(model) + "~" + taskID + "." + eventID;
-        Event event = (Event) bpmnElementCache.computeIfAbsent(key,
-                k -> lookupEventElementByID(model, taskID, eventID));
-        if (event != null) {
+        // Avoid recursive call chains and do not use computeIfAbsent here!
+        if (bpmnElementCache.containsKey(key)) {
+            event = (Event) bpmnElementCache.get(key);
             return BPMNEntityBuilder.build(event);
-        } else {
-            return null;
         }
+        event = lookupEventElementByID(model, taskID, eventID);
+        if (event != null) {
+            bpmnElementCache.put(key, event);
+            return BPMNEntityBuilder.build(event);
+        }
+        return null;
     }
 
     /**

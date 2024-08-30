@@ -9,7 +9,7 @@ import javax.script.ScriptException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.engine.WorkflowEngineMock;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -34,45 +34,25 @@ public class TestResultPlugin {
     public static final String DEFAULT_MODEL_VERSION = "1.0.0";
     private static final Logger logger = Logger.getLogger(TestResultPlugin.class.getName());
 
-    // protected OldWorkflowMockEnvironment workflowMockEnvironment;
-
-    // @Before
-    // public void setUp() throws PluginException, ModelException {
-
-    // workflowMockEnvironment = new OldWorkflowMockEnvironment();
-    // workflowMockEnvironment.setModelPath("/bpmn/TestResultPlugin.bpmn");
-
-    // workflowMockEnvironment.setup();
-
-    // resultPlugin = new ResultPlugin();
-    // try {
-    // resultPlugin.init(workflowMockEnvironment.getWorkflowService());
-    // } catch (PluginException e) {
-
-    // e.printStackTrace();
-    // }
-
-    // }
-
     ItemCollection event;
     ItemCollection workitem;
-    protected WorkflowEngineMock workflowEngine;
+    protected WorkflowMockEnvironment workflowEnvironment;
 
     @BeforeEach
     public void setUp() throws PluginException, ModelException {
 
-        workflowEngine = new WorkflowEngineMock();
-        workflowEngine.setUp();
-        workflowEngine.loadBPMNModel("/bpmn/TestResultPlugin.bpmn");
+        workflowEnvironment = new WorkflowMockEnvironment();
+        workflowEnvironment.setUp();
+        workflowEnvironment.loadBPMNModel("/bpmn/TestResultPlugin.bpmn");
 
         resultPlugin = new ResultPlugin();
         try {
-            resultPlugin.init(workflowEngine.getWorkflowService());
+            resultPlugin.init(workflowEnvironment.getWorkflowService());
         } catch (PluginException e) {
 
             e.printStackTrace();
         }
-        workitem = workflowEngine.getDocumentService().load("W0000-00001");
+        workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
         workitem.model("1.0.0").task(100);
 
     }
@@ -86,85 +66,85 @@ public class TestResultPlugin {
     @Test
     public void testBasic() throws PluginException {
 
-        ItemCollection adocumentContext = new ItemCollection();
-        adocumentContext.replaceItemValue("txtName", "Anna");
-        ItemCollection adocumentActivity = new ItemCollection();
+        workitem = new ItemCollection();
+        workitem.replaceItemValue("txtName", "Anna");
+        ItemCollection event = new ItemCollection();
 
         String sResult = "<item name=\"txtName\">Manfred</item>";
         logger.log(Level.INFO, "txtActivityResult={0}", sResult);
-        adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+        event.replaceItemValue("txtActivityResult", sResult);
         // run plugin
-        adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-        Assert.assertNotNull(adocumentContext);
+        workitem = resultPlugin.run(workitem, event);
+        Assert.assertNotNull(workitem);
 
-        Assert.assertEquals("Manfred", adocumentContext.getItemValueString("txtName"));
+        Assert.assertEquals("Manfred", workitem.getItemValueString("txtName"));
 
         // test with ' instead of "
         sResult = "<item name='txtName'>Manfred</item>";
         logger.log(Level.INFO, "txtActivityResult={0}", sResult);
-        adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+        event.replaceItemValue("txtActivityResult", sResult);
         // run plugin
-        adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-        Assert.assertNotNull(adocumentContext);
+        workitem = resultPlugin.run(workitem, event);
+        Assert.assertNotNull(workitem);
 
-        Assert.assertEquals("Manfred", adocumentContext.getItemValueString("txtName"));
+        Assert.assertEquals("Manfred", workitem.getItemValueString("txtName"));
     }
 
     @Test
     public void testBasicWithTypeBoolean() throws PluginException {
 
-        ItemCollection adocumentContext = new ItemCollection();
-        adocumentContext.replaceItemValue("txtName", "Anna");
-        ItemCollection adocumentActivity = new ItemCollection();
+        ItemCollection workitem = new ItemCollection();
+        workitem.replaceItemValue("txtName", "Anna");
+        ItemCollection event = new ItemCollection();
 
         String sResult = "<item name='txtName' type='boolean'>true</item>";
 
         logger.log(Level.INFO, "txtActivityResult={0}", sResult);
-        adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+        event.replaceItemValue("txtActivityResult", sResult);
 
         // run plugin
-        adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-        Assert.assertNotNull(adocumentContext);
+        workitem = resultPlugin.run(workitem, event);
+        Assert.assertNotNull(workitem);
 
-        Assert.assertTrue(adocumentContext.getItemValueBoolean("txtName"));
+        Assert.assertTrue(workitem.getItemValueBoolean("txtName"));
 
     }
 
     @Test
     public void testBasicWithTypeInteger() throws PluginException {
 
-        ItemCollection adocumentContext = new ItemCollection();
-        ItemCollection adocumentActivity = new ItemCollection();
+        workitem = new ItemCollection();
+        event = new ItemCollection();
 
         String sResult = "<item name='numValue' type='integer'>47</item>";
 
         logger.log(Level.INFO, "txtActivityResult={0}", sResult);
-        adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+        event.replaceItemValue("txtActivityResult", sResult);
 
         // run plugin
-        adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-        Assert.assertNotNull(adocumentContext);
+        workitem = resultPlugin.run(workitem, event);
+        Assert.assertNotNull(workitem);
 
-        Assert.assertEquals(47, adocumentContext.getItemValueInteger("numValue"));
+        Assert.assertEquals(47, workitem.getItemValueInteger("numValue"));
 
     }
 
     @Test
     public void testBasicWithTypeDate() throws PluginException {
 
-        ItemCollection adocumentContext = new ItemCollection();
-        ItemCollection adocumentActivity = new ItemCollection();
+        workitem = new ItemCollection();
+        event = new ItemCollection();
 
         String sResult = "<item name='datValue' type='date' format='yyyy-MM-dd'>2017-12-31</item>";
 
         logger.log(Level.INFO, "txtActivityResult={0}", sResult);
-        adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+        event.replaceItemValue("txtActivityResult", sResult);
 
         // run plugin
-        adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-        Assert.assertNotNull(adocumentContext);
+        workitem = resultPlugin.run(workitem, event);
+        Assert.assertNotNull(workitem);
 
-        Date dateTest = adocumentContext.getItemValueDate("datvalue");
+        Date dateTest = workitem.getItemValueDate("datvalue");
         Assert.assertNotNull(dateTest);
 
         Calendar cal = Calendar.getInstance();
@@ -180,19 +160,19 @@ public class TestResultPlugin {
     @Test
     public void testBasicWithTypeDateWithEmptyValue() throws PluginException {
 
-        ItemCollection adocumentContext = new ItemCollection();
-        ItemCollection adocumentActivity = new ItemCollection();
+        workitem = new ItemCollection();
+        event = new ItemCollection();
 
         String sResult = "<item name='datValue' type='date' format='yyyy-MM-dd'></item>";
 
         logger.log(Level.INFO, "txtActivityResult={0}", sResult);
-        adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+        event.replaceItemValue("txtActivityResult", sResult);
 
         // run plugin
-        adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-        Assert.assertNotNull(adocumentContext);
+        workitem = resultPlugin.run(workitem, event);
+        Assert.assertNotNull(workitem);
 
-        Date dateTest = adocumentContext.getItemValueDate("datvalue");
+        Date dateTest = workitem.getItemValueDate("datvalue");
         Assert.assertNull(dateTest);
 
     }
@@ -200,21 +180,21 @@ public class TestResultPlugin {
     @Test
     public void testBasicWithTypeDateWithExistingDateValue() throws PluginException {
 
-        ItemCollection adocumentContext = new ItemCollection();
-        ItemCollection adocumentActivity = new ItemCollection();
+        workitem = new ItemCollection();
+        event = new ItemCollection();
 
         Date datTest = new Date();
-        adocumentContext.replaceItemValue("$lastEventDate", datTest);
+        workitem.replaceItemValue("$lastEventDate", datTest);
 
         String sResult = "<item name='datValue' type='date'><itemvalue>$lastEventDate</itemvalue></item>";
 
         logger.log(Level.INFO, "txtActivityResult={0}", sResult);
-        adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+        event.replaceItemValue("txtActivityResult", sResult);
         // run plugin
-        adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-        Assert.assertNotNull(adocumentContext);
+        workitem = resultPlugin.run(workitem, event);
+        Assert.assertNotNull(workitem);
 
-        Date datResult = adocumentContext.getItemValueDate("datvalue");
+        Date datResult = workitem.getItemValueDate("datvalue");
         Assert.assertNotNull(datResult);
 
         Calendar calResult = Calendar.getInstance();
@@ -237,23 +217,23 @@ public class TestResultPlugin {
     @Test
     public void testTypeProperty() throws PluginException {
 
-        ItemCollection adocumentContext = new ItemCollection();
-        adocumentContext.setType("workitem");
-        ItemCollection adocumentActivity = new ItemCollection();
+        workitem = new ItemCollection();
+        workitem.setType("workitem");
+        event = new ItemCollection();
 
         String sResult = "<item name='type' >workitemdeleted</item>";
 
         logger.log(Level.INFO, "txtActivityResult={0}", sResult);
-        adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+        event.replaceItemValue("txtActivityResult", sResult);
 
         // run plugin
         try {
-            adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-            Assert.assertEquals("workitemdeleted", adocumentContext.getType());
+            workitem = resultPlugin.run(workitem, event);
+            Assert.assertEquals("workitemdeleted", workitem.getType());
         } catch (PluginException e) {
             Assert.fail();
         }
-        Assert.assertNotNull(adocumentContext);
+        Assert.assertNotNull(workitem);
 
     }
 
@@ -266,19 +246,19 @@ public class TestResultPlugin {
     @Test
     public void testInvalidFormatException() {
 
-        ItemCollection adocumentContext = new ItemCollection();
-        ItemCollection adocumentActivity = new ItemCollection();
+        workitem = new ItemCollection();
+        event = new ItemCollection();
 
         // wrong format
         String sResult = "<item name='txtName' >Anna<item>";
 
         logger.log(Level.INFO, "txtActivityResult={0}", sResult);
-        adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+        event.replaceItemValue("txtActivityResult", sResult);
 
         int result;
         try {
             // run plugin
-            adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+            workitem = resultPlugin.run(workitem, event);
 
             Assert.fail();
 
@@ -290,11 +270,11 @@ public class TestResultPlugin {
         sResult = "<item name=\"txtName >Anna</itemxxxxx>";
 
         logger.log(Level.INFO, "txtActivityResult={0}", sResult);
-        adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+        event.replaceItemValue("txtActivityResult", sResult);
 
         try {
             // run plugin
-            adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
+            workitem = resultPlugin.run(workitem, event);
             Assert.fail();
 
         } catch (PluginException e) {
@@ -318,26 +298,26 @@ public class TestResultPlugin {
     @Test
     public void testProcessTypeAttriubteComplex()
             throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
-        ItemCollection workitem = workflowEngine.getDocumentService().load("W0000-00001");
+        workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
         workitem.removeItem("type");
         workitem.replaceItemValue(WorkflowKernel.MODELVERSION, DEFAULT_MODEL_VERSION);
         workitem.setTaskID(100);
 
         // case 1 - no type attribute
         workitem.setEventID(10);
-        workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
+        workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
         Assert.assertEquals(100, workitem.getTaskID());
         Assert.assertEquals(WorkflowService.DEFAULT_TYPE, workitem.getType());
 
         // case 2 - workitem
         workitem.setEventID(20);
-        workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
+        workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
         Assert.assertEquals(200, workitem.getTaskID());
         Assert.assertEquals("workitemdeleted", workitem.getType());
 
         // case 3 - workitemdeleted
         workitem.setEventID(30);
-        workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
+        workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
         Assert.assertEquals(200, workitem.getTaskID());
         Assert.assertEquals("workitemdeleted", workitem.getType());
         Assert.assertEquals("deleted", workitem.getItemValueString("subtype"));
@@ -353,20 +333,20 @@ public class TestResultPlugin {
     @Test
     public void testWhiteSpace() throws PluginException {
 
-        ItemCollection adocumentContext = new ItemCollection();
-        ItemCollection adocumentActivity = new ItemCollection();
+        workitem = new ItemCollection();
+        event = new ItemCollection();
 
         // test new line...
         String sResult = "  \r\n  some data \r\n <item name='subtype' >workitemdeleted</item> \r\n ";
 
         logger.log(Level.INFO, "txtActivityResult={0}", sResult);
-        adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+        event.replaceItemValue("txtActivityResult", sResult);
 
         // run plugin
-        adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-        Assert.assertNotNull(adocumentContext);
+        workitem = resultPlugin.run(workitem, event);
+        Assert.assertNotNull(workitem);
 
-        Assert.assertEquals("workitemdeleted", adocumentContext.getItemValueString("subType"));
+        Assert.assertEquals("workitemdeleted", workitem.getItemValueString("subType"));
 
     }
 
@@ -382,21 +362,21 @@ public class TestResultPlugin {
     @Test
     public void testEmptyTag() throws PluginException {
 
-        ItemCollection adocumentContext = new ItemCollection();
-        adocumentContext.replaceItemValue("txtName", "Anna");
-        ItemCollection adocumentActivity = new ItemCollection();
+        workitem = new ItemCollection();
+        workitem.replaceItemValue("txtName", "Anna");
+        event = new ItemCollection();
 
         // clear value...
         String sResult = "<item name=\"txtName\"></item>";
         logger.log(Level.INFO, "txtActivityResult={0}", sResult);
 
-        adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+        event.replaceItemValue("txtActivityResult", sResult);
         // run plugin
-        adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-        Assert.assertNotNull(adocumentContext);
+        workitem = resultPlugin.run(workitem, event);
+        Assert.assertNotNull(workitem);
 
         // item should be empty
-        Assert.assertEquals("", adocumentContext.getItemValueString("txtName"));
+        Assert.assertEquals("", workitem.getItemValueString("txtName"));
 
     }
 
@@ -412,9 +392,9 @@ public class TestResultPlugin {
     @Test
     public void testImediateTag() throws PluginException {
 
-        ItemCollection adocumentContext = new ItemCollection();
-        adocumentContext.replaceItemValue("txtName", "Anna");
-        ItemCollection adocumentActivity = new ItemCollection();
+        workitem = new ItemCollection();
+        workitem.replaceItemValue("txtName", "Anna");
+        event = new ItemCollection();
 
         // clear value...
         String sResult = "<item name=\"txtName\">some data</item>";
@@ -422,13 +402,13 @@ public class TestResultPlugin {
         sResult = sResult + "<item name=\"txtName2\">some other data</item>";
         logger.log(Level.INFO, "txtActivityResult={0}", sResult);
 
-        adocumentActivity.replaceItemValue("txtActivityResult", sResult);
+        event.replaceItemValue("txtActivityResult", sResult);
         // run plugin
-        adocumentContext = resultPlugin.run(adocumentContext, adocumentActivity);
-        Assert.assertNotNull(adocumentContext);
+        workitem = resultPlugin.run(workitem, event);
+        Assert.assertNotNull(workitem);
 
         // item should be empty
-        Assert.assertEquals("some data", adocumentContext.getItemValueString("txtName"));
+        Assert.assertEquals("some data", workitem.getItemValueString("txtName"));
 
     }
 
@@ -442,17 +422,17 @@ public class TestResultPlugin {
     @Test
     public void testCopyItemFromSource() throws PluginException {
 
-        ItemCollection workitem = new ItemCollection();
+        workitem = new ItemCollection();
         workitem.replaceItemValue("name", "Anna");
         workitem.replaceItemValue("amount", 55.332);
-        ItemCollection event = new ItemCollection();
+        event = new ItemCollection();
 
         event.replaceItemValue("txtActivityResult",
                 "<item name=\"count\" type=\"double\"><itemvalue>amount</itemvalue></item>");
         // run plugin
         workitem = resultPlugin.run(workitem, event);
 
-        workitem = workflowMockEnvironment.getWorkflowService().evalWorkflowResult(event, "item", workitem);
+        workitem = workflowEnvironment.getWorkflowService().evalWorkflowResult(event, "item", workitem);
         Assert.assertNotNull(workitem);
         Assert.assertTrue(workitem.hasItem("count"));
         Assert.assertEquals(55.332, workitem.getItemValueDouble("count"), 0);

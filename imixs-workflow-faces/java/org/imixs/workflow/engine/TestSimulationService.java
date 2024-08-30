@@ -18,7 +18,7 @@ import org.junit.Assert;
  * 
  * @author rsoika
  */
-public class TestSimulationService { 
+public class TestSimulationService {
 
 	/**
 	 * This test tests the conditional event gateways....
@@ -27,7 +27,7 @@ public class TestSimulationService {
 	 * 
 	 * @throws ProcessingErrorException
 	 * @throws AccessDeniedException
-	 * @throws ModelException 
+	 * @throws ModelException
 	 */
 	@Test
 	public void testConditionalEvent1()
@@ -40,14 +40,6 @@ public class TestSimulationService {
 		// load test workitem
 		ItemCollection workitem = new ItemCollection();
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, WorkflowSimulationEnvironment.DEFAULT_MODEL_VERSION);
-
-		// test none condition ...
-//		workitem.setTaskID(1000);
-//		workitem.setEventID(10);
-//		workitem.setItemValue("_budget", itemValue)
-//		workitem = wse.processWorkItem(workitem);
-//		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
-//		Assert.assertEquals(1000, workitem.getTaskID());
 
 		// test _budget<100
 		workitem.setTaskID(1000);

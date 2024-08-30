@@ -170,7 +170,7 @@ This event can be consumed by another Session Bean or managed bean implementing 
  
 ## Evaluate the Next Task Element
 
-The _WorkflowService_ provides the method 'evalNextTask' to evaluate the next BPMN task element based on a Event element. This method can be called by Plugins to get the outcome of the current processing step. If the event did not point to a new task, the current task will be returned.
+The `WorkflowService` provides the method `evalNextTask` to evaluate the next BPMN task element based on a Event element. This method can be called by Plugins to get the outcome of the current processing step. If the event did not point to a new task, the current task will be returned.
 The method supports 'conditional-events' as well as 'split-events'.  A conditional-event contains the attribute 'keyExclusiveConditions' defining conditional targets (tasks) or adds conditional follow up events
  A split-event contains the attribute 'keySplitConditions' defining the target for the current master version (condition evaluates to 'true'). See also the section [How to Model...](../modelling/howto.html)
  

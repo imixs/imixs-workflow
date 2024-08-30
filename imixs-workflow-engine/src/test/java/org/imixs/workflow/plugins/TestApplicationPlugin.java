@@ -4,7 +4,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowEngineMock;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.ApplicationPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -34,12 +34,12 @@ public class TestApplicationPlugin {
 	protected ApplicationPlugin applicationPlugin = null;
 	protected ItemCollection workitem;
 	protected ItemCollection event;
-	protected WorkflowEngineMock workflowEngine;
+	protected WorkflowMockEnvironment workflowEngine;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowEngine = new WorkflowEngineMock();
+		workflowEngine = new WorkflowMockEnvironment();
 		workflowEngine.setUp();
 		workflowEngine.loadBPMNModel("/bpmn/plugin-test.bpmn");
 

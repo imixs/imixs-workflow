@@ -29,12 +29,12 @@ public class TestEvaluateWorkflowResult {
 
     private final static Logger logger = Logger.getLogger(TestEvaluateWorkflowResult.class.getName());
 
-    protected WorkflowEngineMock workflowEngine;
+    protected WorkflowMockEnvironment workflowEngine;
 
     @BeforeEach
     public void setUp() throws PluginException, ModelException {
 
-        workflowEngine = new WorkflowEngineMock();
+        workflowEngine = new WorkflowMockEnvironment();
         workflowEngine.setUp();
         workflowEngine.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
 

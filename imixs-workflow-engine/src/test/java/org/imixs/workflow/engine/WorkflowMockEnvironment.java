@@ -42,8 +42,8 @@ import jakarta.enterprise.event.Event;
  * @author rsoika
  */
 @MockitoSettings(strictness = Strictness.WARN)
-public class WorkflowEngineMock {
-	protected final static Logger logger = Logger.getLogger(WorkflowEngineMock.class.getName());
+public class WorkflowMockEnvironment {
+	protected final static Logger logger = Logger.getLogger(WorkflowMockEnvironment.class.getName());
 
 	protected Map<String, ItemCollection> database = null;
 

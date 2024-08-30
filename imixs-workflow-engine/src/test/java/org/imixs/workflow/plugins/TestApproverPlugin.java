@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowEngineMock;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.ApproverPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -29,23 +29,23 @@ public class TestApproverPlugin {
 	ApproverPlugin approverPlugin = null;
 	ItemCollection event;
 	ItemCollection workitem;
-	protected WorkflowEngineMock workflowEngine;
+	protected WorkflowMockEnvironment workflowEnvironment;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowEngine = new WorkflowEngineMock();
-		workflowEngine.setUp();
-		workflowEngine.loadBPMNModel("/bpmn/TestApproverPlugin.bpmn");
+		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment.setUp();
+		workflowEnvironment.loadBPMNModel("/bpmn/TestApproverPlugin.bpmn");
 
 		approverPlugin = new ApproverPlugin();
 		try {
-			approverPlugin.init(workflowEngine.getWorkflowService());
+			approverPlugin.init(workflowEnvironment.getWorkflowService());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
 		}
-		workitem = workflowEngine.getDocumentService().load("W0000-00001");
+		workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
 		workitem.model("1.0.0").task(100);
 
 	}
@@ -62,7 +62,7 @@ public class TestApproverPlugin {
 	public void testNewApproverList() throws PluginException, ModelException {
 
 		workitem.setEventID(10);
-		event = workflowEngine.getModelService().loadEvent(workitem); // .getModel().getEvent(100, 10);
+		event = workflowEnvironment.getModelService().loadEvent(workitem); // .getModel().getEvent(100, 10);
 		// change result
 		event.replaceItemValue("txtActivityResult", "<item name='approvedby'>ProcessManager</item>");
 
@@ -73,7 +73,7 @@ public class TestApproverPlugin {
 		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with ronny
-		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("ronny");
+		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("ronny");
 		workitem = approverPlugin.run(workitem, event);
 		Assert.assertNotNull(workitem);
 
@@ -95,7 +95,7 @@ public class TestApproverPlugin {
 	public void testDistinctApproverList() throws PluginException, ModelException {
 
 		workitem.setEventID(10);
-		event = workflowEngine.getModelService().loadEvent(workitem); // .getModel().getEvent(100, 10);
+		event = workflowEnvironment.getModelService().loadEvent(workitem); // .getModel().getEvent(100, 10);
 
 		// change result
 		event.replaceItemValue("txtActivityResult", "<item name='approvedby'>ProcessManager</item>");
@@ -117,7 +117,7 @@ public class TestApproverPlugin {
 		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with ronny
-		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("ronny");
+		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("ronny");
 		workitem = approverPlugin.run(workitem, event);
 		Assert.assertNotNull(workitem);
 
@@ -153,7 +153,7 @@ public class TestApproverPlugin {
 	public void testNewApproverListImmediateApproval() throws PluginException, ModelException {
 
 		workitem.setEventID(10);
-		event = workflowEngine.getModelService().loadEvent(workitem);
+		event = workflowEnvironment.getModelService().loadEvent(workitem);
 
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
@@ -162,7 +162,7 @@ public class TestApproverPlugin {
 		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with manfred
-		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
 		Assert.assertNotNull(workitem);
 
@@ -184,7 +184,7 @@ public class TestApproverPlugin {
 	public void testUpdateApproverListNewApprover() throws PluginException, ModelException {
 
 		workitem.setEventID(10);
-		event = workflowEngine.getModelService().loadEvent(workitem);
+		event = workflowEnvironment.getModelService().loadEvent(workitem);
 
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
@@ -193,7 +193,7 @@ public class TestApproverPlugin {
 		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with manfred
-		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
 		Assert.assertNotNull(workitem);
 
@@ -210,7 +210,7 @@ public class TestApproverPlugin {
 		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with manfred
-		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
 		Assert.assertNotNull(workitem);
 
@@ -233,7 +233,7 @@ public class TestApproverPlugin {
 	public void testUpdateApproverListExistingApprover() throws PluginException, ModelException {
 
 		workitem.setEventID(10);
-		event = workflowEngine.getModelService().loadEvent(workitem);
+		event = workflowEnvironment.getModelService().loadEvent(workitem);
 
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
@@ -242,7 +242,7 @@ public class TestApproverPlugin {
 		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with manfred
-		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
 		Assert.assertNotNull(workitem);
 
@@ -258,7 +258,7 @@ public class TestApproverPlugin {
 		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with manfred
-		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
 		Assert.assertNotNull(workitem);
 
@@ -279,7 +279,7 @@ public class TestApproverPlugin {
 	public void testCompleteApproval() throws PluginException, ModelException {
 
 		workitem.setEventID(10);
-		event = workflowEngine.getModelService().loadEvent(workitem);
+		event = workflowEnvironment.getModelService().loadEvent(workitem);
 
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
@@ -288,7 +288,7 @@ public class TestApproverPlugin {
 		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with manfred
-		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
 		Assert.assertNotNull(workitem);
 
@@ -296,31 +296,31 @@ public class TestApproverPlugin {
 		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// second run - Anna
-		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("anna");
+		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("anna");
 		workitem = approverPlugin.run(workitem, event);
 		Assert.assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
 		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 3rd run - eddy
-		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("eddy");
+		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("eddy");
 		workitem = approverPlugin.run(workitem, event);
 		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
 		Assert.assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 4th run - manfred
-		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
+		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
 		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
 		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 5th run - Anna (no effect)
-		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("anna");
+		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("anna");
 		workitem = approverPlugin.run(workitem, event);
 		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
 		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 6th run - ronny (no effect)
-		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("ronny");
+		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("ronny");
 		workitem = approverPlugin.run(workitem, event);
 		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
 		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());

@@ -240,4 +240,29 @@ public class TestBPMNModelBasic {
 
 	}
 
+	/**
+	 * Test case testing a kind of corrupted model file
+	 * 
+	 * Model Manager is unable to load event 20
+	 * 
+	 * @throws ModelException
+	 */
+	@Test
+	public void testRecursiveBug() throws ModelException {
+		try {
+
+			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/recursive_issue1.bpmn"));
+			model = openBPMNModelManager.getModel("1.0.0");
+			Assert.assertNotNull(model);
+
+			ItemCollection workitem = new ItemCollection().model("1.0.0").task(100).event(10);
+			Assert.assertEquals(3, model.findAllEvents().size());
+			ItemCollection event = openBPMNModelManager.loadEvent(workitem);
+			Assert.assertNotNull(event);
+
+		} catch (BPMNModelException e) {
+			Assert.fail();
+		}
+	}
+
 }
