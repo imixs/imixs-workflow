@@ -302,7 +302,7 @@ public class BPMNEntityBuilder {
      * @return the itemValue list.
      */
     private static List<String> getItemValueList(Element imixsItemElement) {
-        List<String> uniqueValueList = new ArrayList<>();
+        List<String> result = new ArrayList<>();
 
         if (imixsItemElement != null) {
             // now iterate over all item:values and add each value into the list
@@ -322,26 +322,11 @@ public class BPMNEntityBuilder {
                         // normal text node
                         value = imixsItemValue.getTextContent();
                     }
-
-                    // avoid duplicates
-                    if (value.contains("|")) {
-                        String valuePart = value.substring(value.indexOf("|") + 1).trim();
-                        if (uniqueValueList.contains(valuePart)) {
-                            continue;
-                        }
-                        uniqueValueList.add(valuePart);
-                    } else {
-                        if (uniqueValueList.contains(value)) {
-                            continue;
-                        }
-                        uniqueValueList.add(value);
-                    }
-
+                    result.add(value);
                 }
-
             }
         }
-        return uniqueValueList;
+        return result;
     }
 
     /**

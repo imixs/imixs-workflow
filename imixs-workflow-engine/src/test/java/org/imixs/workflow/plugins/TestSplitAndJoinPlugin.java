@@ -9,6 +9,8 @@ import java.util.regex.Pattern;
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.bpmn.BPMNEntityBuilder;
+import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.SplitAndJoinPlugin;
@@ -17,6 +19,8 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 
 /**
  * Test the SlitAndJoin plug-in
@@ -153,6 +157,29 @@ public class TestSplitAndJoinPlugin {
 		Assert.assertTrue(team.contains("manfred"));
 		Assert.assertTrue(team.contains("anna"));
 
+	}
+
+	/**
+	 * Test read of txtactivityresult form event 60
+	 * 
+	 * 
+	 * @throws ModelException
+	 ***/
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testOpenBPMNBuilder() throws ModelException {
+
+		BPMNModel model = workflowEnvironment.getModelService().getModel("1.0.0");
+		BPMNElementNode eventElement = model.findElementNodeById("IntermediateCatchEvent_4");
+
+		ItemCollection test = BPMNEntityBuilder.build(eventElement);
+
+		String txtValue = test.getItemValueString("txtactivityresult");
+
+		String workValue = test.getItemValueString(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT);
+
+		Assert.assertTrue(txtValue.startsWith("<split"));
+		Assert.assertTrue(workValue.startsWith("<split"));
 	}
 
 	/**
@@ -329,7 +356,7 @@ public class TestSplitAndJoinPlugin {
 	@Test
 	public void testUpdateOriginProcess() throws ModelException {
 
-		String orignUniqueID = workitem.getUniqueID();
+		String originUniqueID = workitem.getUniqueID();
 
 		/*
 		 * 1.) create test result for new subprcoess.....
@@ -368,11 +395,11 @@ public class TestSplitAndJoinPlugin {
 		}
 
 		// test the new action result based on the origin process uniqueid....
-		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + orignUniqueID,
+		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + originUniqueID,
 				subprocess.getItemValueString("action"));
 
 		// load origin document
-		workitem = workflowEnvironment.getDocumentService().load(orignUniqueID);
+		workitem = workflowEnvironment.getDocumentService().load(originUniqueID);
 		Assert.assertNotNull(workitem);
 
 		// test data.... (new $processId=200 and _sub_data from subprocess

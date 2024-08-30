@@ -449,7 +449,7 @@ public class WorkflowKernel {
             ItemCollection nextElement = this.ctx.getModelManager().nextModelElement(event, workitem);
             if (nextElement == null || !nextElement.hasItem("type")) {
                 throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
-                        "BPMN Event Element must be followed by a Task or another Event!");
+                        "No valid Target Element found - BPMN Event Element must be followed by a Task or another Event! Verify Sequence Flows and Conditions!");
             }
 
             // ==> bpmn2:parallelGateway
