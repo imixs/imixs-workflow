@@ -120,4 +120,32 @@ The main goal of the  `WorkflowMockEnvironment` is to test business logic of a s
 
  
   
-  
+### Mock Imixs Adapter Classes
+
+The  `WorkflowMockEnvironment` also allows you to test custom Imixs Workflow `GenericAdapter` or `SignalAdapter` classes. You just need to call the method `registerAdapter(...)` method before you call `setup()`.  See the following example:
+
+```java
+
+public class MyAdapterTest {
+
+	@InjectMocks
+	protected MyImixsAdapter myAdapter;
+
+	protected WorkflowMockEnvironment workflowEnvironment;
+
+	@BeforeEach
+	public void setUp() throws PluginException, ModelException {
+		// Ensures that @Mock and @InjectMocks annotations are processed
+		MockitoAnnotations.openMocks(this);
+		workflowEnvironment = new WorkflowMockEnvironment();
+
+		// register AccessAdapter Mock
+		workflowEnvironment.registerAdapter(accessAdapter);
+
+		// Setup Environment
+		workflowEnvironment.setUp();
+	}
+	.....
+}
+
+```

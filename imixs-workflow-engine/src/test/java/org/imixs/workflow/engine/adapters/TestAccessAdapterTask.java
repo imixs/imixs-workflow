@@ -5,15 +5,18 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * Test the ACL plug-in concerning the ACL settings in a process entity.
@@ -40,35 +43,41 @@ import org.junit.Test;
  * @author rsoika
  * 
  */
-public class TestAccessAdapterProcessEntity {
+public class TestAccessAdapterTask {
 
-	private final static Logger logger = Logger.getLogger(TestAccessAdapterProcessEntity.class.getName());
+	private final static Logger logger = Logger.getLogger(TestAccessAdapterTask.class.getName());
 
-	protected ItemCollection documentContext;
-	protected ItemCollection documentActivity;
-	protected ItemCollection documentProcess;
-	protected OldWorkflowMockEnvironment workflowMockEnvironment;
-	protected AccessAdapter adapter;
+	protected ItemCollection workitem;
+	protected ItemCollection event;
+	protected WorkflowMockEnvironment workflowEnvironment;
+	BPMNModel model = null;
 
-	@Before
+	@InjectMocks
+	protected AccessAdapter accessAdapter;
+
+	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
+		// Ensures that @Mock and @InjectMocks annotations are processed
+		MockitoAnnotations.openMocks(this);
+		workflowEnvironment = new WorkflowMockEnvironment();
 
-		workflowMockEnvironment = new OldWorkflowMockEnvironment();
-		workflowMockEnvironment.setModelPath("/bpmn/acl-test.bpmn");
-		workflowMockEnvironment.setup();
+		// register AccessAdapter Mock
+		workflowEnvironment.registerAdapter(accessAdapter);
 
-		adapter = new AccessAdapter();
-		adapter.workflowService = workflowMockEnvironment.getWorkflowService();
+		// Setup Environment
+		workflowEnvironment.setUp();
+		workflowEnvironment.loadBPMNModel("/bpmn/TestAccessAdapterTask.bpmn");
+		model = workflowEnvironment.getModelService().getModel("1.0.0");
+		accessAdapter.workflowService = workflowEnvironment.getWorkflowService();
 
-		// prepare data
-		documentContext = new ItemCollection().model(OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION).task(100);
+		// // prepare data
+		workitem = new ItemCollection().model("1.0.0").task(100);
 		logger.info("[TestAccessAdapterProcessEntity] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
 		list.add("anna");
-		documentContext.replaceItemValue("namTeam", list);
-		documentContext.replaceItemValue("namCreator", "ronny");
-
+		workitem.replaceItemValue("namTeam", list);
+		workitem.replaceItemValue("namCreator", "ronny");
 	}
 
 	/**
@@ -82,24 +91,23 @@ public class TestAccessAdapterProcessEntity {
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
-		documentContext.replaceItemValue(WorkflowService.WRITEACCESS, list);
+		workitem.replaceItemValue(WorkflowService.WRITEACCESS, list);
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
-		documentContext.setEventID(10);
+		event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+				10);
+		workitem.setEventID(10);
 		try {
-			adapter.execute(documentContext, documentActivity);
+			accessAdapter.execute(workitem, event);
 		} catch (AdapterException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
 		@SuppressWarnings("unchecked")
-		List<String> writeAccess = documentContext.getItemValue(WorkflowService.WRITEACCESS);
-
+		List<String> writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
 		Assert.assertEquals(2, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("Kevin"));
 		Assert.assertTrue(writeAccess.contains("Julian"));
-
 	}
 
 	/**
@@ -111,20 +119,21 @@ public class TestAccessAdapterProcessEntity {
 	@Test
 	public void testACLfromProcessEntity() throws ModelException {
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 10);
-		documentContext.setTaskID(300);
-		documentContext.setEventID(10);
+		event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 300,
+				10);
+		workitem.setEventID(10);
+		workitem.setTaskID(300);
+		workitem.setEventID(10);
 
 		try {
-			adapter.execute(documentContext, documentActivity);
+			accessAdapter.execute(workitem, event);
 		} catch (AdapterException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
 		@SuppressWarnings("unchecked")
-		List<String> writeAccess = documentContext.getItemValue(WorkflowService.WRITEACCESS);
-
+		List<String> writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
 		Assert.assertEquals(2, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
 		Assert.assertTrue(writeAccess.contains("sam"));
@@ -140,24 +149,22 @@ public class TestAccessAdapterProcessEntity {
 	@Test
 	public void testACLfromActivityEntity() throws ModelException {
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
-		documentContext.setEventID(20);
-
+		event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+				20);
+		workitem.setEventID(20);
 		try {
-			adapter.execute(documentContext, documentActivity);
+			accessAdapter.execute(workitem, event);
 		} catch (AdapterException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
 		@SuppressWarnings("unchecked")
-		List<String> writeAccess = documentContext.getItemValue(WorkflowService.WRITEACCESS);
-
+		List<String> writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
 		Assert.assertEquals(3, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
 		Assert.assertTrue(writeAccess.contains("samy"));
 		Assert.assertTrue(writeAccess.contains("anna"));
-
 	}
 
 	/**
@@ -174,21 +181,20 @@ public class TestAccessAdapterProcessEntity {
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
-		documentContext.replaceItemValue(OwnerPlugin.OWNER, list);
-		documentContext.setTaskID(300);
-
-		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 20);
-		documentContext.setEventID(20);
-
+		workitem.replaceItemValue(OwnerPlugin.OWNER, list);
+		workitem.setTaskID(300);
+		event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 300,
+				20);
+		workitem.setEventID(20);
 		try {
-			adapter.execute(documentContext, documentActivity);
+			accessAdapter.execute(workitem, event);
 		} catch (AdapterException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
 
 		// $writeAccess= anna , manfred, joe, sam
-		List<String> writeAccess = documentContext.getItemValue(WorkflowService.WRITEACCESS);
+		List<String> writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
 		Assert.assertEquals(3, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("joe"));
 		// Assert.assertTrue(writeAccess.contains("sam"));
@@ -196,7 +202,7 @@ public class TestAccessAdapterProcessEntity {
 		Assert.assertTrue(writeAccess.contains("anna"));
 
 		// $readAccess= anna , manfred, joe, sam
-		writeAccess = documentContext.getItemValue(WorkflowService.READACCESS);
+		writeAccess = workitem.getItemValue(WorkflowService.READACCESS);
 		Assert.assertEquals(2, writeAccess.size());
 		Assert.assertTrue(writeAccess.contains("tom"));
 		Assert.assertTrue(writeAccess.contains("manfred"));

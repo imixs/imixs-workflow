@@ -3,10 +3,13 @@ package org.imixs.workflow.engine;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
@@ -25,6 +28,7 @@ import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
 
 import jakarta.enterprise.event.Event;
+import jakarta.enterprise.inject.Instance;
 
 /**
  * The {@code AbstractWorkflowServiceTest} can be used as a base class for junit
@@ -57,6 +61,7 @@ public class WorkflowMockEnvironment {
 	protected WorkflowService workflowService; // Injects mocks into WorkflowService
 
 	protected WorkflowContextMock workflowContext = null;
+	protected List<Adapter> adapterList = new ArrayList<>();
 
 	public ModelService getModelService() {
 		return modelService;
@@ -72,6 +77,15 @@ public class WorkflowMockEnvironment {
 
 	public WorkflowService getWorkflowService() {
 		return workflowService;
+	}
+
+	/**
+	 * Can be used to register an Adapter before Setup
+	 * 
+	 * @param adapter
+	 */
+	public void registerAdapter(Adapter adapter) {
+		adapterList.add(adapter);
 	}
 
 	/**
@@ -125,9 +139,10 @@ public class WorkflowMockEnvironment {
 			}
 		});
 
-		// Mock Event<TextEvent>
+		/*
+		 * Mock Event<TextEvent>
+		 */
 		Event<TextEvent> mockTextEvents = Mockito.mock(Event.class);
-
 		// Set up behavior for the mock to simulate firing adapters
 		Mockito.doAnswer(invocation -> {
 			TextEvent event = invocation.getArgument(0);
@@ -142,9 +157,20 @@ public class WorkflowMockEnvironment {
 
 			return null;
 		}).when(mockTextEvents).fire(Mockito.any(TextEvent.class));
-
 		// Inject the mocked Event<TextEvent> into the workflowService
 		injectMockIntoField(workflowService, "textEvents", mockTextEvents);
+
+		/*
+		 * Mock Instance<Adapter> for adapters field
+		 */
+		@SuppressWarnings("unchecked")
+		Instance<Adapter> mockAdapters = Mockito.mock(Instance.class);
+		// Set up behavior to return adapters from the adapterList
+		when(mockAdapters.iterator()).thenAnswer(invocation -> adapterList.iterator());
+		when(mockAdapters.get()).thenAnswer(invocation -> adapterList.isEmpty() ? null : adapterList.get(0));
+		// Inject the mocked Instance<Adapter> into the workflowService
+		injectMockIntoField(workflowService, "adapters", mockAdapters);
+
 	}
 
 	/**
@@ -192,7 +218,7 @@ public class WorkflowMockEnvironment {
 	 * @param fieldName    The name of the field to inject.
 	 * @param value        The mock or object to inject into the field.
 	 */
-	private void injectMockIntoField(Object targetObject, String fieldName, Object value) {
+	public void injectMockIntoField(Object targetObject, String fieldName, Object value) {
 		try {
 			Field field = targetObject.getClass().getDeclaredField(fieldName);
 			field.setAccessible(true);
@@ -201,4 +227,24 @@ public class WorkflowMockEnvironment {
 			throw new RuntimeException("Failed to inject mock into field: " + fieldName, e);
 		}
 	}
+
+	// /**
+	// * Helper method to inject a mock into a private/protected field using
+	// * reflection.
+	// *
+	// * @param targetObject The object into which the field is to be injected.
+	// * @param fieldName The name of the field to inject.
+	// * @param value The mock or object to inject into the field.
+	// */
+	// private void injectMockIntoField(Object targetObject, String fieldName,
+	// Object value) {
+	// try {
+	// Field field = targetObject.getClass().getDeclaredField(fieldName);
+	// field.setAccessible(true);
+	// field.set(targetObject, value);
+	// } catch (NoSuchFieldException | IllegalAccessException e) {
+	// throw new RuntimeException("Failed to inject mock into field: " + fieldName,
+	// e);
+	// }
+	// }
 }
