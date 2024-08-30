@@ -37,7 +37,7 @@ public class TestOwnerPlugin {
 
 		workflowEngine = new WorkflowMockEnvironment();
 		workflowEngine.setUp();
-		workflowEngine.loadBPMNModel("/bpmn/TestApproverPlugin.bpmn");
+		workflowEngine.loadBPMNModel("/bpmn/TestOwnerPlugin.bpmn");
 
 		ownerPlugin = new OwnerPlugin();
 		try {

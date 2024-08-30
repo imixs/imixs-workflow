@@ -5,13 +5,13 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test the Owner plug-in concerning the settings in a process entity.
@@ -42,36 +42,27 @@ public class TestOwnerPluginProcessEntity {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPluginProcessEntity.class.getName());
 
-	OwnerPlugin ownerPlugin = null;
-	protected ItemCollection documentContext;
-	protected ItemCollection documentActivity, documentProcess;
-	protected OldWorkflowMockEnvironment workflowMockEnvironment;
+	protected ItemCollection workitem;
+	protected ItemCollection event;
 
-	@Before
+	protected WorkflowMockEnvironment workflowEnvironment;
+
+	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowMockEnvironment = new OldWorkflowMockEnvironment();
-		workflowMockEnvironment.setModelPath("/bpmn/acl-test.bpmn");
-		workflowMockEnvironment.setup();
-
-		ownerPlugin = new OwnerPlugin();
-		try {
-			ownerPlugin.init(workflowMockEnvironment.getWorkflowService());
-		} catch (PluginException e) {
-
-			e.printStackTrace();
-		}
+		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment.setUp();
+		workflowEnvironment.loadBPMNModel("/bpmn/TestOwnerAndACL.bpmn");
 
 		// prepare data
-		documentContext = new ItemCollection().model(OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION).task(100)
+		workitem = new ItemCollection().model("1.0.0").task(100)
 				.event(10);
 		logger.info("[TestOwnerPluginProcessEntity] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
 		list.add("anna");
-		documentContext.replaceItemValue("namTeam", list);
-		documentContext.replaceItemValue("namCreator", "ronny");
-
+		workitem.replaceItemValue("namTeam", list);
+		workitem.replaceItemValue("namCreator", "ronny");
 	}
 
 	/**
@@ -85,20 +76,16 @@ public class TestOwnerPluginProcessEntity {
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
-		documentContext.replaceItemValue(OwnerPlugin.OWNER, list);
-		documentContext.setTaskID(100);
-
-		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 10);
+		workitem.replaceItemValue(OwnerPlugin.OWNER, list);
+		workitem.setTaskID(100);
+		workitem.event(10);
 		try {
-			ownerPlugin.run(documentContext, documentActivity);
+			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
-
 		@SuppressWarnings("unchecked")
-		List<String> ownerList = documentContext.getItemValue(OwnerPlugin.OWNER);
-
+		List<String> ownerList = workitem.getItemValue(OwnerPlugin.OWNER);
 		Assert.assertEquals(2, ownerList.size());
 		Assert.assertTrue(ownerList.contains("Kevin"));
 		Assert.assertTrue(ownerList.contains("Julian"));
@@ -114,17 +101,15 @@ public class TestOwnerPluginProcessEntity {
 	@Test
 	public void testOwnerfromActivityEntity() throws ModelException {
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
+		workitem.event(20);
 		try {
-			ownerPlugin.run(documentContext, documentActivity);
+			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
 
 		@SuppressWarnings("unchecked")
-		List<String> onwerList = documentContext.getItemValue(OwnerPlugin.OWNER);
-
+		List<String> onwerList = workitem.getItemValue(OwnerPlugin.OWNER);
 		Assert.assertEquals(3, onwerList.size());
 		Assert.assertTrue(onwerList.contains("joe"));
 		Assert.assertTrue(onwerList.contains("manfred"));
@@ -141,23 +126,17 @@ public class TestOwnerPluginProcessEntity {
 	@Test
 	public void testOwnerfromProcessEntity() throws ModelException {
 
-		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 10);
-		documentContext.setTaskID(300);
-
+		workitem.task(300).event(10);
 		try {
-			ownerPlugin.run(documentContext, documentActivity);
+			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
-
 		@SuppressWarnings("unchecked")
-		List<String> ownerList = documentContext.getItemValue(OwnerPlugin.OWNER);
-
+		List<String> ownerList = workitem.getItemValue(OwnerPlugin.OWNER);
 		Assert.assertEquals(2, ownerList.size());
 		Assert.assertTrue(ownerList.contains("joe"));
 		Assert.assertTrue(ownerList.contains("sam"));
-
 	}
 
 	/**
@@ -175,26 +154,21 @@ public class TestOwnerPluginProcessEntity {
 		Vector<String> list = new Vector<String>();
 		list.add("Kevin");
 		list.add("Julian");
-		documentContext.replaceItemValue(OwnerPlugin.OWNER, list);
-		documentContext.setTaskID(300);
-
-		documentActivity = workflowMockEnvironment.getModel().getEvent(300, 20);
-
+		logger.info("..id=" + workitem.getUniqueID());
+		workitem.replaceItemValue(OwnerPlugin.OWNER, list);
+		workitem.task(300).event(20);
 		try {
-			ownerPlugin.run(documentContext, documentActivity);
+			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
-
 		// $writeAccess= anna , manfred, joe, sam
-		List<String> onwerList = documentContext.getItemValue(OwnerPlugin.OWNER);
+		List<String> onwerList = workitem.getItemValue(OwnerPlugin.OWNER);
 		Assert.assertEquals(3, onwerList.size());
 		Assert.assertTrue(onwerList.contains("joe"));
 		// Assert.assertTrue(onwerList.contains("sam"));
 		Assert.assertTrue(onwerList.contains("manfred"));
 		Assert.assertTrue(onwerList.contains("anna"));
-
 	}
 
 }
