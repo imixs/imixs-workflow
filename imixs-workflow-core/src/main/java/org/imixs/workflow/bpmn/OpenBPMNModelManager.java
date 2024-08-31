@@ -297,8 +297,13 @@ public class OpenBPMNModelManager implements ModelManager {
      * 
      * @return
      */
-    public Set<String> getVersions() {
-        return modelStore.keySet();
+    public List<String> getVersions() {
+        Set<String> versions = modelStore.keySet();
+        // convert to List
+        List<String> result = new ArrayList<>();
+        result.addAll(versions);
+        Collections.sort(result);
+        return result;
     }
 
     /**

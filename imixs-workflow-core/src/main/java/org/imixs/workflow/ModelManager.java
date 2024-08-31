@@ -28,6 +28,8 @@
 
 package org.imixs.workflow;
 
+import java.util.List;
+
 import org.imixs.workflow.exceptions.ModelException;
 import org.openbpmn.bpmn.BPMNModel;
 
@@ -65,6 +67,13 @@ public interface ModelManager {
      * @see https://github.com/imixs/open-bpmn/tree/master/open-bpmn.metamodel
      */
     public BPMNModel getModel(String version) throws ModelException;
+
+    /**
+     * Returns a sorted String list of all stored model versions
+     * 
+     * @return sorted string list of versions
+     */
+    public List<String> getVersions();
 
     /**
      * Returns a BPMNModel by a workItem. The workitem must at least provide the

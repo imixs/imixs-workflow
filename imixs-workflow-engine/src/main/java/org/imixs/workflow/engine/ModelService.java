@@ -250,9 +250,9 @@ public class ModelService implements ModelManager {
      * 
      * @return
      */
-    @SuppressWarnings("unchecked")
+    @Override
     public List<String> getVersions() {
-        return (List<String>) openBPMNModelManager.getVersions();
+        return openBPMNModelManager.getVersions();
     }
 
     /**
