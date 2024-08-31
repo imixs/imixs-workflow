@@ -7,19 +7,20 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
+import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.SplitAndJoinPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * Test the SlitAndJoin plug-in using the deprecated item tag
@@ -32,47 +33,40 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 	private final static Logger logger = Logger.getLogger(TestSplitAndJoinPluginDeprecatedItemTag.class.getName());
 
 	protected SplitAndJoinPlugin splitAndJoinPlugin = null;
-	protected ItemCollection documentContext;
-	protected ItemCollection documentActivity, documentProcess;
+	ItemCollection event;
+	ItemCollection workitem;
+	protected WorkflowMockEnvironment workflowEnvironment;
+	BPMNModel model;
 
-	/**
-	 * We use the provided test workflow model form the AbstractWorkflowServiceTest
-	 * 
-	 * @throws ModelException
-	 */
-	OldWorkflowMockEnvironment workflowMockEnvironment;
-
-	@Before
+	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowMockEnvironment = new OldWorkflowMockEnvironment();
-		workflowMockEnvironment.setModelPath("/bpmn/TestSplitAndJoinPluginDeprecatedItemTag.bpmn");
-
-		workflowMockEnvironment.setup();
-
+		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment.setUp();
+		workflowEnvironment.loadBPMNModel("/bpmn/TestSplitAndJoinPlugin.bpmn");
+		model = workflowEnvironment.getModelService().getModel("1.0.0");
 		// mock abstract plugin class for the plitAndJoinPlugin
 		splitAndJoinPlugin = Mockito.mock(SplitAndJoinPlugin.class, Mockito.CALLS_REAL_METHODS);
-		when(splitAndJoinPlugin.getWorkflowService()).thenReturn(workflowMockEnvironment.getWorkflowService());
+		when(splitAndJoinPlugin.getWorkflowService()).thenReturn(workflowEnvironment.getWorkflowService());
 		try {
-			splitAndJoinPlugin.init(workflowMockEnvironment.getWorkflowContext());
+			splitAndJoinPlugin.init(workflowEnvironment.getWorkflowContext());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
 		}
-
 		// prepare test workitem
-		documentContext = new ItemCollection();
+		workitem = new ItemCollection();
 		logger.info("[TestSplitAndJoinPluginDeprecatedItemTag] setup test data...");
 		Vector<String> list = new Vector<String>();
 		list.add("manfred");
 		list.add("anna");
-		documentContext.replaceItemValue("namTeam", list);
-		documentContext.replaceItemValue("namCreator", "ronny");
-		documentContext.replaceItemValue("$snapshotid", "11112222");
-		documentContext.replaceItemValue(WorkflowKernel.MODELVERSION, OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
-		documentContext.setTaskID(100);
-		documentContext.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
-		workflowMockEnvironment.getDocumentService().save(documentContext);
+		workitem.replaceItemValue("namTeam", list);
+		workitem.replaceItemValue("namCreator", "ronny");
+		workitem.replaceItemValue("$snapshotid", "11112222");
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
+		workitem.setTaskID(100);
+		workitem.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
+		workflowEnvironment.getDocumentService().save(workitem);
 
 	}
 
@@ -84,36 +78,28 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testCreateSubProcess() throws ModelException {
-
 		try {
-			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
-			splitAndJoinPlugin.run(documentContext, documentActivity);
+			event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+					20);
+			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
 
-		Assert.assertNotNull(documentContext);
-
-		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-
+		Assert.assertNotNull(workitem);
+		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		Assert.assertEquals(1, workitemRefList.size());
-
 		String subprocessUniqueid = workitemRefList.get(0);
 
 		// get the subprocess...
-		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
+		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
-
 		// test the new action result based on the new subprocess uniqueid....
 		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + subprocessUniqueid,
-				documentContext.getItemValueString("action"));
-
+				workitem.getItemValueString("action"));
 		Assert.assertEquals(100, subprocess.getTaskID());
-
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test if the field namTeam is available
@@ -132,34 +118,24 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testCreateSubProcessTargetFieldName() throws ModelException {
-
 		try {
-			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 60);
-			splitAndJoinPlugin.run(documentContext, documentActivity);
+			event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+					60);
+			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
 
-		Assert.assertNotNull(documentContext);
-
-		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-
+		Assert.assertNotNull(workitem);
+		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		Assert.assertEquals(1, workitemRefList.size());
-
 		String subprocessUniqueid = workitemRefList.get(0);
-
 		// get the subprocess...
-		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
-
+		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
-
 		Assert.assertEquals(100, subprocess.getTaskID());
-
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
-
 		// test if the field namTeam is available
 		List<String> team = subprocess.getItemValue("_sub_Team");
 		Assert.assertEquals(2, team.size());
@@ -184,33 +160,24 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 		List<Object> textlist = new ArrayList<Object>();
 		textlist.add("\n\n\n\n hello world");
 		fileData.setAttribute("text", textlist);
-		documentContext.addFileData(fileData);
-
+		workitem.addFileData(fileData);
 		try {
-			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 61);
-			splitAndJoinPlugin.run(documentContext, documentActivity);
+			event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+					61);
+			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
 
-		Assert.assertNotNull(documentContext);
-
-		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-
+		Assert.assertNotNull(workitem);
+		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		Assert.assertEquals(1, workitemRefList.size());
-
 		String subprocessUniqueid = workitemRefList.get(0);
-
 		// get the subprocess...
-		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
-
+		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
-
 		Assert.assertEquals(100, subprocess.getTaskID());
-
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test if the field namTeam is available
@@ -223,9 +190,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 		Assert.assertNotNull(subprocess);
 		List<FileData> targetFileList = subprocess.getFileData();
 		Assert.assertEquals(1, targetFileList.size());
-
 		List<Object> result = (List<Object>) targetFileList.get(0).getAttribute("text");
-
 		Assert.assertNotNull(result);
 	}
 
@@ -238,33 +203,28 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testCreateMultiSubProcess() throws ModelException {
-
 		try {
-			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 30);
-			splitAndJoinPlugin.run(documentContext, documentActivity);
+			event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+					30);
+			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
 
-		Assert.assertNotNull(documentContext);
-
-		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-
+		Assert.assertNotNull(workitem);
+		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		// two subprocesses should be created...
 		Assert.assertEquals(2, workitemRefList.size());
-
 		// test first subprocess instance...
 		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
+		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test second subprocess instance... 100.20 -> $processId=200
 		subprocessUniqueid = workitemRefList.get(1);
-		subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
+		subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
@@ -280,18 +240,16 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 	@Test
 	public void testCreateSubProcessParsingError() throws ModelException {
 		try {
-			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 40);
-			splitAndJoinPlugin.run(documentContext, documentActivity);
-
+			event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+					40);
+			splitAndJoinPlugin.run(workitem, event);
 			Assert.fail();
 		} catch (PluginException e) {
 			// Plugin exception is expected
-			logger.log(Level.INFO, "Exprected exception message: {0}", e.getMessage());
+			logger.log(Level.INFO, "Expected exception message: {0}", e.getMessage());
 			Assert.assertTrue(e.getMessage().startsWith("Parsing item content failed:"));
 		}
-
-		Assert.assertNotNull(documentContext);
-
+		Assert.assertNotNull(workitem);
 	}
 
 	/**
@@ -306,25 +264,23 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testUpdateOriginProcess() throws ModelException {
-
-		String orignUniqueID = documentContext.getUniqueID();
-
+		String orignUniqueID = workitem.getUniqueID();
 		/*
 		 * 1.) create test result for new subprcoess.....
 		 */
 		try {
-			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
-			splitAndJoinPlugin.run(documentContext, documentActivity);
+			event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+					20);
+			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		Assert.assertNotNull(documentContext);
-
+		Assert.assertNotNull(workitem);
 		// now load the subprocess
-		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
+		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 
 		// test data in subprocess
 		Assert.assertNotNull(subprocess);
@@ -338,8 +294,9 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 		subprocess.replaceItemValue("_sub_data", "some test data");
 		// now we process the subprocess
 		try {
-			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 50);
-			splitAndJoinPlugin.run(subprocess, documentActivity);
+			event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+					50);
+			splitAndJoinPlugin.run(subprocess, event);
 		} catch (PluginException e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -348,14 +305,12 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 		// test the new action result based on the origin process uniqueid....
 		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + orignUniqueID,
 				subprocess.getItemValueString("action"));
-
 		// load origin document
-		documentContext = workflowMockEnvironment.getDocumentService().load(orignUniqueID);
-		Assert.assertNotNull(documentContext);
-
+		workitem = workflowEnvironment.getDocumentService().load(orignUniqueID);
+		Assert.assertNotNull(workitem);
 		// test data.... (new $processId=200 and _sub_data from subprocess
-		Assert.assertEquals(100, documentContext.getTaskID());
-		Assert.assertEquals("some test data", documentContext.getItemValueString("_sub_data"));
+		Assert.assertEquals(100, workitem.getTaskID());
+		Assert.assertEquals("some test data", workitem.getItemValueString("_sub_data"));
 
 	}
 
@@ -370,42 +325,37 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 
 		// 1.) create test subprocess.....
 		try {
-			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 20);
-			splitAndJoinPlugin.run(documentContext, documentActivity);
+			event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+					20);
+			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
-
-		Assert.assertNotNull(documentContext);
+		Assert.assertNotNull(workitem);
 
 		// load the new subprocess....
-		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		Assert.assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
+		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getTaskID());
 
 		// 2.) now update the subprocess
 		try {
-			documentActivity = workflowMockEnvironment.getModel().getEvent(200, 20);
+			event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 200,
+					20);
 			// set new team member
-			documentContext.replaceItemValue("namTeam", "Walter");
-			splitAndJoinPlugin.run(documentContext, documentActivity);
+			workitem.replaceItemValue("namTeam", "Walter");
+			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
 
 		// now we load the subprocess and test if it was updated (new processiD
 		// expected is 300)
-
-		Assert.assertNotNull(documentContext);
-
-		subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
+		Assert.assertNotNull(workitem);
+		subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertNotNull(subprocess);
 		Assert.assertEquals(100, subprocess.getTaskID());
 		Assert.assertEquals("Walter", subprocess.getItemValueString("namTEAM"));
@@ -422,79 +372,26 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 	@Test
 	public void testCreateSubProcessCopyItemByRegex() throws ModelException {
 		try {
-			documentActivity = workflowMockEnvironment.getModel().getEvent(100, 70);
-			splitAndJoinPlugin.run(documentContext, documentActivity);
+			event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+					70);
+			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
-		Assert.assertNotNull(documentContext);
+		Assert.assertNotNull(workitem);
 
 		// load the new subprocess....
-		List<String> workitemRefList = documentContext.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		Assert.assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = workflowMockEnvironment.getDocumentService().load(subprocessUniqueid);
-
+		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		Assert.assertEquals("manfred", subprocess.getItemValue("namTeam", String.class));
 		Assert.assertEquals("ronny", subprocess.getItemValue("namcreator", String.class));
 		Assert.assertEquals("", subprocess.getItemValueString("$snapshotid"));
 
 		// test the deprecated LIst
-		List<String> workitemRefListDeprecated = documentContext.getItemValue("txtworkitemref");
+		List<String> workitemRefListDeprecated = workitem.getItemValue("txtworkitemref");
 		Assert.assertEquals(workitemRefList, workitemRefListDeprecated);
-
-	}
-
-	/**
-	 * Test the regex evuating the execution conditions
-	 ***/
-	@Test
-	public void testRegex() {
-
-		Assert.assertTrue(Pattern.compile("(^1000$|^1020$|^1050$)").matcher("1050").find());
-
-		Assert.assertTrue(Pattern.compile("").matcher("1050").find());
-
-		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)")
-				.matcher("abc-rechnungsausgang-1.0.0").find());
-
-		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)")
-				.matcher("abc-rechnungseingang-1.0.0").find());
-
-		// model
-		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)")
-				.matcher("abc-rechnungseingang-1.0.0").find());
-		// processid
-		Assert.assertTrue(Pattern.compile("(^1000$|^1010$)").matcher("1000").find());
-
-		Assert.assertTrue(Pattern.compile("(1\\d{3})").matcher("1456").find());
-		Assert.assertFalse(Pattern.compile("(1\\d{3})").matcher("2456").find());
-
-		Assert.assertTrue(Pattern.compile("(1\\d{3})").matcher("14566").find());
-
-		Assert.assertFalse(Pattern.compile("(^1\\d{3}$)").matcher("21123").find());
-
-		Assert.assertTrue(Pattern.compile("(^1\\d{3}$)").matcher("1123").find());
-		Assert.assertFalse(Pattern.compile("(^1\\d{3}$)").matcher("11123").find());
-
-		Assert.assertTrue(Pattern.compile("1000").matcher("11000").find());
-
-		// test start with
-		Assert.assertTrue(Pattern.compile("(^txt|^num)").matcher("txtTitle").find());
-		Assert.assertTrue(Pattern.compile("(^txt|^num)").matcher("numTitle").find());
-		Assert.assertTrue(Pattern.compile("(^txt|^num|^_)").matcher("_subject").find());
-
-		Assert.assertFalse(Pattern.compile("(^txt|^num|^_)").matcher("$taskid").find());
-
-		Assert.assertTrue(Pattern.compile("(^[a-z]|^num)").matcher("txtTitle").find());
-		Assert.assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("TXTTitle").find());
-		Assert.assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("_title").find());
-
-		Assert.assertTrue(Pattern.compile("(^requester[a-zA-Z])").matcher("requesterName").find());
-		Assert.assertFalse(Pattern.compile("(^requester[a-zA-Z])").matcher("creatorName").find());
-
 	}
 
 }
