@@ -31,12 +31,15 @@ package org.imixs.workflow.jaxrs;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.xml.transform.TransformerException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.bpmn.BPMNEntityBuilder;
@@ -49,9 +52,9 @@ import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.Activity;
+import org.openbpmn.bpmn.elements.BPMNProcess;
 
 import jakarta.ejb.Stateless;
-import jakarta.enterprise.inject.Model;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
@@ -214,14 +217,35 @@ public class ModelRestService {
         return documentRestService.convertResultList(result, items, format);
     }
 
+    /**
+     * Returns the XML representation of a BPMN model
+     * 
+     * @param version
+     * @param uriInfo
+     * @return
+     */
     @GET
     @Path("/{version}/bpmn")
     public Response getModelFile(@PathParam("version") String version, @Context UriInfo uriInfo) {
-        BPMNModel model = modelService.getModel(version);
-        if (model != null) {
-            return workflowRestService.getWorkItemFile(modelEntity.getUniqueID(), modelEntity.getFileNames().get(0),
-                    uriInfo);
-        } else {
+        try {
+            // lookup model
+            BPMNModel model = modelService.getModel(version);
+            if (model != null) {
+                StreamingOutput stream = output -> {
+                    try {
+                        model.writeToOutputStream(model.getDoc(), output);
+                    } catch (TransformerException e) {
+                        // Handle exception: Log it or rethrow as a WebApplicationException
+                        throw new WebApplicationException("Error while transforming BPMN Model to XML", e);
+                    }
+                };
+                return Response.ok(stream)
+                        .type(MediaType.APPLICATION_XML)
+                        .build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+        } catch (ModelException e) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
     }
@@ -237,41 +261,44 @@ public class ModelRestService {
             @QueryParam("format") String format) {
         ItemCollection definition = null;
         try {
-            definition = modelService.getModel(version).getDefinition();
+            BPMNModel model = modelService.getModel(version);
+            definition = modelService.loadDefinition(model);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new WebApplicationException("BPMN Model Error: ", e);
         }
         return documentRestService.convertResult(definition, items, format);
     }
 
     @GET
     @Path("/{version}/tasks/{taskid}")
-    public Response getTask(@PathParam("version") String version, @PathParam("taskid") int processid,
+    public Response getTask(@PathParam("version") String version, @PathParam("taskid") int taskID,
             @QueryParam("items") String items, @QueryParam("format") String format) {
         ItemCollection task = null;
         try {
-            task = modelService.getModel(version).getTask(processid);
+            BPMNModel model = modelService.getModel(version);
+            task = modelService.getOpenBPMNModelManager().findTaskByID(model, taskID);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new WebApplicationException("BPMN Model Error: ", e);
         }
         return documentRestService.convertResult(task, items, format);
     }
 
     @GET
     @Path("/{version}/tasks/{taskid}/events")
-    public Response findAllEventsByTask(@PathParam("version") String version, @PathParam("taskid") int processid,
+    public Response findAllEventsByTask(@PathParam("version") String version, @PathParam("taskid") int taskID,
             @QueryParam("items") String items, @QueryParam("format") String format) {
         List<ItemCollection> result = null;
         try {
-            result = modelService.getModel(version).findAllEventsByTask(processid);
-        } catch (Exception e) {
-            e.printStackTrace();
+            BPMNModel model = modelService.getModel(version);
+            result = modelService.getOpenBPMNModelManager().findEventsByTask(model, taskID);
+        } catch (ModelException e) {
+            throw new WebApplicationException("BPMN Model Error: ", e);
         }
         return documentRestService.convertResultList(result, items, format);
     }
 
     /**
-     * Retuns a list of all Start Entities from each workflowgroup
+     * Returns a list of all Workflow Groups of the given model
      * 
      * @param version
      * @return
@@ -279,14 +306,14 @@ public class ModelRestService {
     @GET
     @Path("/{version}/groups")
     public List<String> getGroups(@PathParam("version") String version, @QueryParam("items") String items) {
-        List<String> col = null;
+        List<String> col = new ArrayList<>();
         try {
-            col = modelService.getModel(version).getGroups();
+            BPMNModel model = modelService.getModel(version);
+            col = modelService.getWorkflowGroups(model);
             return col;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (ModelException e) {
+            throw new WebApplicationException("BPMN Model Error: ", e);
         }
-        return null;
     }
 
     /**
@@ -299,9 +326,17 @@ public class ModelRestService {
     @Path("/{version}/groups/{group}")
     public Response findTasksByGroup(@PathParam("version") String version, @PathParam("group") String group,
             @QueryParam("items") String items, @QueryParam("format") String format) {
-        List<ItemCollection> result = null;
+        List<ItemCollection> result = new ArrayList<>();
         try {
-            result = modelService.getModel(version).findTasksByGroup(group);
+            BPMNModel model = modelService.getModel(version);
+            BPMNProcess process = model.findProcessByName(group);
+            process.init();
+            Set<Activity> tasks = process.getActivities();
+            for (Activity activity : tasks) {
+                if (BPMNUtil.isImixsTaskElement(activity)) {
+                    result.add(BPMNEntityBuilder.build(activity));
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -314,7 +349,7 @@ public class ModelRestService {
         try {
             modelService.deleteModel(version);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new WebApplicationException("BPMN Model Error: ", e);
         }
 
     }
@@ -489,21 +524,27 @@ public class ModelRestService {
         return buffer.toString();
     }
 
+    /**
+     * Helper method to build a HTML table row entry with model information for a
+     * given model version.
+     * 
+     * @param modelVersion
+     * @param rootContext
+     * @param buffer
+     * @throws ModelException
+     */
     private void appendTagsToBuffer(String modelVersion, String rootContext, StringBuffer buffer)
             throws ModelException {
-        Model model = modelService.getModel(modelVersion);
-        ItemCollection modelEntity = modelService.findModelEntity(modelVersion);
+        BPMNModel model = modelService.getModel(modelVersion);
+        ItemCollection modelEntity = modelService.loadModel(modelVersion);
 
         // now check groups...
-        List<String> groupList = model.getGroups();
-
+        List<String> groupList = modelService.getWorkflowGroups(model);// model.getGroups();
         buffer.append("<tr>");
 
         if (modelEntity != null) {
-
             buffer.append("<td><a href=\"" + rootContext + "/model/" + modelVersion + "/bpmn\">" + modelVersion
                     + "</a></td>");
-
             // print upload date...
             if (modelEntity != null) {
                 Date dat = modelEntity.getItemValueDate("$Modified");

@@ -50,6 +50,7 @@ import org.imixs.workflow.bpmn.OpenBPMNModelManager;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.QueryException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.BPMNProcess;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
@@ -255,24 +256,19 @@ public class ModelService implements ModelManager {
     }
 
     /**
-     * This method returns a sorted list of all model groups stored in the
-     * BPMNModels.
+     * This method returns a sorted list of all model groups stored in a given
+     * BPMNModel.
      * <p>
      * Note: A workflow group may exist in different models by the same name!
      * 
      * @param group
      * @return
      */
-    public List<String> getWorkflowGroups() {
-        boolean debug = logger.isLoggable(Level.FINE);
+    public List<String> getWorkflowGroups(BPMNModel model) {
         List<String> result = new ArrayList<String>();
-        // try to find matching model version by group
-        Collection<BPMNModel> models = openBPMNModelManager.getModelStore().values();
-        for (BPMNModel _model : models) {
-            Set<BPMNProcess> processList = _model.getProcesses();
-            for (BPMNProcess _process : processList) {
-                result.add(_process.getName());
-            }
+        Set<BPMNProcess> processList = model.getProcesses();
+        for (BPMNProcess _process : processList) {
+            result.add(_process.getName());
         }
         // sort result
         Collections.sort(result);
@@ -294,14 +290,15 @@ public class ModelService implements ModelManager {
     }
 
     /**
-     * This method saves a BPMNModel into the database and adds the model into the
-     * internal model store. The model is attached as an embedded file with the
-     * given filename.
+     * This method saves a BPMNModel with its meta data into the database and adds
+     * the model into the internal model store. In the database entry the BPMNmodel
+     * is attached as an embedded XML file with the given filename.
      * <p>
      * If a model with the same model version exists in the database the old version
      * will be deleted form the database first.
      * <p>
-     * The param 'filename' is used to store the bpmn file in the correspondig model
+     * The param 'filename' is used to store the bpmn file in the corresponding
+     * model
      * document.
      * 
      * @param model
@@ -349,6 +346,30 @@ public class ModelService implements ModelManager {
                 throw new ModelException(ModelException.INVALID_MODEL, "Failed to write model: " + e.getMessage());
             }
         }
+    }
+
+    /**
+     * This method loads a Model with its meta data form the database and retuns the
+     * data in ItemCollection.
+     * <p>
+     * To access a BPMNModel object directly use the method
+     * {@code getModel(version)}
+     * 
+     * @return the ItemCollection with the model meta data
+     */
+    public ItemCollection loadModel(String version) {
+        try {
+            String sQuery = "(type:\"model\" AND name:\"" + version + "\")";
+            Collection<ItemCollection> col;
+            col = documentService.find(sQuery, 0, 1);
+            if (col.size() > 0) {
+                return col.iterator().next();
+            }
+        } catch (QueryException e) {
+            logger.severe("Failed to load model: " + version);
+        }
+        // not found
+        return null;
     }
 
     /**

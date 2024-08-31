@@ -194,15 +194,6 @@ public class SetupService {
     }
 
     /**
-     * Returns the count of available unique model groups
-     * 
-     * @return
-     */
-    public int getModelGroupCount() {
-        return modelService.getWorkflowGroups().size();
-    }
-
-    /**
      * Check database access
      * <p>
      * 
