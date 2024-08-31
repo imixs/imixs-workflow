@@ -270,11 +270,13 @@ public class TestSplitAndJoinPlugin {
 
 		/*
 		 * 1.) create test result for new subprcoess.....
+		 * The Origin Workitem will be assigned to $taskID=200
 		 */
 		try {
 			workitem.event(20);
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 			Assert.assertNotNull(workitem);
+			Assert.assertEquals(200, workitem.getTaskID());
 		} catch (PluginException e) {
 			Assert.fail(e.getMessage());
 		}
@@ -296,7 +298,7 @@ public class TestSplitAndJoinPlugin {
 		try {
 			subprocess.event(50);
 			workflowEnvironment.getWorkflowService().processWorkItem(subprocess);
-			Assert.assertEquals("some test data", workitem.getItemValueString("_sub_data"));
+			Assert.assertEquals("some test data", subprocess.getItemValueString("_sub_data"));
 		} catch (PluginException e) {
 			Assert.fail(e.getMessage());
 		}
@@ -305,11 +307,11 @@ public class TestSplitAndJoinPlugin {
 		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + originUniqueID,
 				subprocess.getItemValueString("action"));
 		// load origin document
-		workitem = workflowEnvironment.getDocumentService().load(originUniqueID);
-		Assert.assertNotNull(workitem);
-		// test data.... (new $processId=200 and _sub_data from subprocess
-		Assert.assertEquals(100, workitem.getTaskID());
-		Assert.assertEquals("some test data", workitem.getItemValueString("_sub_data"));
+		ItemCollection originWorkitem = workflowEnvironment.getDocumentService().load(originUniqueID);
+		Assert.assertNotNull(originWorkitem);
+		// test origin data
+		Assert.assertEquals(200, originWorkitem.getTaskID());
+		Assert.assertEquals("some test data", originWorkitem.getItemValueString("_sub_data"));
 	}
 
 	/**
