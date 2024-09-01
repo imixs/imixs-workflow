@@ -76,10 +76,10 @@
 
 			<item name="Core API" href="core/index.html" collapse="true">
 				<item name="ItemCollection" href="core/itemcollection.html" />
-				<item name="Model" href="core/model.html" />
+				<item name="BPMN Model Manager" href="core/model.html" />
+				<item name="WorkflowKernel" href="core/workflowkernel.html" />
 				<item name="Plugins" href="core/plugin-api.html" />
 				<item name="Adapter" href="core/adapter-api.html" />
-				<item name="WorkflowKernel" href="core/workflowkernel.html" />
 				<item name="WorkflowManager" href="core/workflowmanager.html" />
 				<item name="XML" href="core/xml/index.html" collapse="true">
 					<item name="XML Adapter" href="core/xml/adapter.html" />

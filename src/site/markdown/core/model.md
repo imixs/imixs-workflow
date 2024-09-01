@@ -1,28 +1,20 @@
-# The Imixs ModelManager 
+# The BPMN ModelManager 
 
-The Imixs `ModelManager` separates the BPMN process definition from the Workflow implementation. The interface  provides methods to manager BPMN Model instances and navigate through a  Workflow Model with its different elements. A workflow model has a unique version ID which allows to uniquely identify a BPMN model inside one Workflow Management System.  The Model Version is provided by a workflow instance in the item `$modelVersion`. 
+The class `org.imixs.workflow.ModelManager` provides methods to access and manage instances of a *BPMN 2.0 Model* and navigate through a Model with its different elements. A *BPMN 2.0 Model*  instance is uniquely identified by its version ID. A workitem provides the version ID of a model in the mandatory item  `$modelVersion`. 
+
+
+The BPMN ModelManager operates directly on the class `org.openbpmn.bpmn.BPMNModel` from the [Open-BPMN Meta model](https://github.com/imixs/open-bpmn/tree/master/open-bpmn.metamodel). 
+A BPMNModel instance allows full access to a BPMN 2.0 model and provides methods to navigate through a BPMN model.  The BPMN `ModelManager`  can be used in any custom Java implementation of Imixs-Workflow. Find further information at the [Open-BPMN Meta Project on Github](https://github.com/imixs/open-bpmn/tree/master/open-bpmn.metamodel).
+
+
+
+
+
+## The BPMNModel
 
 An Imixs BPMN Model can be defined using the [Imixs-BPMN modeling tool](../modelling/index.html).
 
 <img src="../images/modelling/bpmn_screen_00.png"/>
-
-
-
-## The ModelManager Interface 
-The interface `org.imixs.workflow.ModelManager` manage instances of a `BPMNModel` and is used by the [WorkflowKernel](workflowkernel.html) to access model information during the processing life cycle .
-
-The Interface defines the following methods:
-
-|Method              		 | Description 				 |
-|----------------------------|---------------------------|
-|getModel(version)           | Returns a Model by version. The method throws a ModelException in case  the model version did not exits.|
-|addModel(BPMNModel)         | Adds a new Model to the ModelManager.|
-|removeModel(version)        | Removes a Model from the ModelManager.|
-|loadDefinition(workitem)    | Returns the BPMN Definition entity associated with a given workitem.|
-|loadProcess(workitem)       | Returns the BPMN Process entity associated with a given workitem. |
-|loadTask(workitem)          | Returns the BPMN Task entity associated with a given workitem.|
-|loadEvent(workitem)         | Returns the BPMN Event entity associated with a given workitem.|
-|nextModelElement(event, workitem) | Returns the next BPMN Flow Entity followed by a given Event Entity.|
 
 
 
@@ -77,18 +69,25 @@ The Event entity returned by the `ModelManager` is represendted as an [ItemColle
  
 
 
-## The BPMNModel
 
-The  Imixs `ModelManager` operates directly on BPMNModel instances from the [Open-BPMN Meta model](https://github.com/imixs/open-bpmn/tree/master/open-bpmn.metamodel).
-The `BPMNModel` instance allows full access to a BPMN 2.0 model and provides a lot of convenient methods to navigate through a BPMN model. 
+## The ModelManager Interface 
+The `org.imixs.workflow.ModelManager` is used by the [WorkflowKernel](workflowkernel.html) to access model information during the processing life cycle. The ModelManager defines the following core methods:
 
-Find further information at the [Open-BPMN Meta Project on Github](https://github.com/imixs/open-bpmn/tree/master/open-bpmn.metamodel).
+|Method              		 | Description 				 |
+|----------------------------|---------------------------|
+|getModel(version)           | Returns a BPMN Model by version. The method throws a ModelException in case  the model version did not exits.|
+|addModel(BPMNModel)         | Adds a new Model to the ModelManager.|
+|removeModel(version)        | Removes a Model from the ModelManager.|
+|loadDefinition(workitem)    | Returns the BPMN Definition entity associated with a given workitem.|
+|loadProcess(workitem)       | Returns the BPMN Process entity associated with a given workitem. |
+|loadTask(workitem)          | Returns the BPMN Task entity associated with a given workitem.|
+|loadEvent(workitem)         | Returns the BPMN Event entity associated with a given workitem.|
+|nextModelElement(event, workitem) | Returns the next BPMN Flow Entity followed by a given Event Entity.|
 
-## The OpenBPMNModelManager
 
-The `OpenBPMNModelManager` implements the interface `org.imixs.workflow.ModelManager` and can be used in any custom Java implementation of Imixs-Workflow. The `OpenBPMNModelManager` provides additional methods to manage BPMNModel instances and helper methods to navigate throug a BPMN model as also methods to  evaluate specific model situations based on the [Imixs RuleEngine](ruleengine.md).  
+### BPMN Sequence Flows
 
-
+The `ModelManager` provides methods to evaluate elements in a BPMN sequence flow based on the model definition. This includes also complex flows including any kind of gateway. The ModelManager evaluates conditional events on a Exclusive Gateway based on the [Imixs RuleEngine](ruleengine.md). This allows the creation of very complex BPMN 2.0 process models.  
 
 ### The Imixs ModelService
 

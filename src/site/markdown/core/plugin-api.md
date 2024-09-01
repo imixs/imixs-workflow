@@ -30,7 +30,7 @@ This concept makes it easy for a Plug-In Developer to implement additional busin
 A Plug-In can validate a process instance and may also manipulate the business data. A Plug-In can also interrupt the processing phase by throwing a [PluginException](../engine/plugins/exception_handling.html) - for example in case of a validation error.
  
  
-###The Two-Phase Commit
+### The Two-Phase Commit
 The Imixs Plugin-API defines three call-back methods, called by the WorkflowKernel for each Plug-In in one single transaction during the processing life-cycle. This is the concept of a two-phase commit (2PC).
  
  

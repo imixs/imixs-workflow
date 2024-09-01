@@ -50,14 +50,14 @@ public interface WorkflowManager {
     /**
      * This method processes a workItem. The workItem needs at least provide the
      * valid attributes $taskID and $EventID (integer values) to identify the
-     * current processEntity the workItem belongs to and the concrete activtyEntity
-     * which should be processed by the wokflowManager implementation. If the
+     * current processEntity the workItem belongs to and the concrete BPMN event
+     * which should be processed by the WorkflowManager implementation. If the
      * workItem is new the method creates a new instance for the corresponding
      * process.
      * <p>
      * The method is responsible to persist the workItem after successfully
      * processing. The method returns the workItem with additional workflow
-     * informations defined by the workfowManager Implementation.
+     * information defined by the WorkflowManager Implementation.
      * <p>
      * The Method throws an InvalidWorkitemException if the provided workItem is
      * invalid or the provided attributes $taskID and $EventID (integer) did not
@@ -80,22 +80,22 @@ public interface WorkflowManager {
             throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException;
 
     /**
-     * returns a workItem by its uniuqeID ($uniqueID)
+     * returns a workItem by its uniqueID ($uniqueID)
      * 
-     * @param uniqueid
+     * @param uniqueID
      * @return WorkItem
      * 
      */
-    public ItemCollection getWorkItem(String uniqueid);
+    public ItemCollection getWorkItem(String uniqueID);
 
     /**
-     * The method removes the provide Workitem form the persistence unit managed by
+     * The method removes a Workitem form the persistence unit managed by
      * the WorkflowManager implementation.
      * 
-     * The Method throws an InvalidWorkitemException if the provided Workitem is
-     * invalid.
+     * The method throws an AccessDeniedException if the work item cannot be removed
+     * due to its state or user permissions.
      * 
-     * @param uniqueid of the WorkItem to be removed
+     * @param uniqueId of the WorkItem to be removed
      * @throws AccessDeniedException
      */
     public void removeWorkItem(ItemCollection workitem) throws AccessDeniedException;

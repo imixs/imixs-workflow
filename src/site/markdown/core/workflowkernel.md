@@ -1,6 +1,6 @@
-#The Workflow Kernel
+# The Workflow Kernel
 
-The class _org.imxis.workflow.WorkflowKernel_ is the core component of the Imixs-Workflow API. The _WorkflowKernel_ controls the processing life cycle of a process instance (Workitem) according to an Imixs-BPMN process model. 
+The class `org.imxis.workflow.WorkflowKernel` is the core component of the Imixs-Workflow API. The _WorkflowKernel_ controls the processing life cycle of a process instance (Workitem) according to an Imixs-BPMN process model. 
 The processing life cycle is defined by a BPMN _Event_ describing the transition between two BPMN _Task_ elements.
 
 <img src="../images/modelling/example_01.png"/>
@@ -112,7 +112,7 @@ The WorkflowContext provides the following methods:
 The session context is platform specific, for example a surrounding EJB Context, a Web Module or a Spring Context. As the _WorkflowKernel_ is part of the Imixs-Workflow core API it is a platform independent building block. Therefor the WorkflowContext builds a bridge between the Workflow System and the processing engine. For details about the concrete implementation see the [WorkflowService implementation](../engine/workflowservice.html). 
  
  
-##The Workflow Log
+## The Workflow Log
 
 The Imixs _WorkflowKernel_ generates a log entry during each processing phase with information about the current model version, the process entity and the processed workflow event. The log is stored in the property '$EventLog'. 
 The log entry has the following format:

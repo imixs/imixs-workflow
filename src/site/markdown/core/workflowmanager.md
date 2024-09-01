@@ -1,6 +1,17 @@
-#The WorkflowManager
-The WorkflowManager is the central interface for each implementation of an Imixs-Workflow Engine. This interface provides the general functionality to create, process and search Workitems. 
-The WorkflowManager instantiates the [WorkflowKernel](./workflowkernel.html) to process a WorkItem and provides the implementation of a Model. The WorkflowManager can be used by an application to process and search Workitems and provide the environment for the business logic implemented by the plugins.
+# The WorkflowManager
+
+The class `org.imixs.workflow.WorkflowManager` is the central interface for each implementation of an Imixs-Workflow Engine. This interface provides the general functionality to create, process and search Workitems. 
+The *WorkflowManager* instantiates the [WorkflowKernel](./workflowkernel.html) to process a WorkItem and provides the implementation of a Model. The WorkflowManager can be used by an application to process and search Workitems and provide the environment for the business logic implemented by the plugins.
+
+
+
+|Method						| Return Type  		|
+|---------------------------|-------------------|
+|processWorkItem(ItemCollection workitem)| Processes and persists a workItem. The WorkItem must provide at least the mandatory items *$modelVersion*, *$taskID*, and *$EventID* to identify the current state in a BPMN model. |
+|getWorkItem(String id)	| Returns a workItem by its uniqueID ($uniqueID) from the persistence layer			|
+|removeWorkItem(String id) | The method throws an AccessDeniedException if the work item cannot be removed due to its state or user permissions. |
+
+
 The [WorkflowManager Service](../engine/workflowservice.html) implements the WorkflowManager based on the JEE architecture.
  
 ## The Plugin-API
@@ -18,7 +29,7 @@ The general workflow functions and also application specific business logic is p
 
  
  
-##Processing a Workitem
+## Processing a Workitem
 The method 'processWorkItem()' is used to create or update a Workitem. The WorkflowManager implementation is responsible to load the Model, call the WorkflowKernel and persist the Workitem so it can be retrieved later by the application. 
  
     public void processWorkItem(ItemCollection aWorkItem)throws Exception {
@@ -48,7 +59,7 @@ The method returns a list of all workItems assigned to the current user.  A work
   
     wfm.removeWorkItem(workitem);
  
-##The Imixs WorkflowService
+## The Imixs WorkflowService
  
 The Imixs-Workflow engine provides the WorkflowService component which implements the WorkflowManager  on the JEE component stack.   Find more information about the Imixs-WorkflowService in the section [WorkflowService](../engine/workflowservice.html).    
 
