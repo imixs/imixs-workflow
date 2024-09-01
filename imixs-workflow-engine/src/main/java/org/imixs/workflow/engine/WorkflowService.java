@@ -438,10 +438,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         List<ItemCollection> result = new ArrayList<ItemCollection>();
         int processID = workitem.getTaskID();
         // verify if version is valid
-        // Model model = modelService.getModelByWorkitem(workitem);
-        // List<ItemCollection> eventList = model.findAllEventsByTask(processID);
-        BPMNModel model = modelService.getModel(workitem.getModelVersion());
-        List<ItemCollection> eventList = modelService.getOpenBPMNModelManager().findEventsByTask(model, processID);
+        BPMNModel model = modelService.getModelManager().getModel(workitem.getModelVersion());
+        List<ItemCollection> eventList = modelService.getModelManager().findEventsByTask(model, processID);
 
         String username = getUserName();
         boolean bManagerAccess = ctx.isCallerInRole(DocumentService.ACCESSLEVEL_MANAGERACCESS);
@@ -572,7 +570,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
          */
         BPMNModel model = null;
         try {
-            model = this.getModelManager().getModel(workitem.getModelVersion());// .getModelByWorkitem(workitem);
+            model = this.getModelManager().getModel(workitem.getModelVersion());
         } catch (ModelException e) {
             throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
                     ProcessingErrorException.INVALID_PROCESSID, e.getMessage(), e);
@@ -696,7 +694,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
      * 
      */
     public ModelManager getModelManager() {
-        return modelService;
+        return modelService.getModelManager();
     }
 
     /**

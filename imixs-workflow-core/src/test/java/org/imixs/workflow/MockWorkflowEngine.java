@@ -1,6 +1,5 @@
 package org.imixs.workflow;
 
-import org.imixs.workflow.bpmn.OpenBPMNModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
@@ -62,7 +61,7 @@ public class MockWorkflowEngine {
         return workflowKernel;
     }
 
-    public OpenBPMNModelManager getOpenBPMNModelManager() {
-        return (OpenBPMNModelManager) workflowContext.getModelManager();
+    public ModelManager getOpenBPMNModelManager() {
+        return (ModelManager) workflowContext.getModelManager();
     }
 }

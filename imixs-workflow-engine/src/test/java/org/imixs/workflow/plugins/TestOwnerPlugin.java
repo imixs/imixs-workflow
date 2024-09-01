@@ -30,23 +30,23 @@ public class TestOwnerPlugin {
 	ItemCollection workitem;
 	ItemCollection event;
 
-	protected WorkflowMockEnvironment workflowEngine;
+	protected WorkflowMockEnvironment workflowEnvironment;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowEngine = new WorkflowMockEnvironment();
-		workflowEngine.setUp();
-		workflowEngine.loadBPMNModel("/bpmn/TestOwnerPlugin.bpmn");
+		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment.setUp();
+		workflowEnvironment.loadBPMNModel("/bpmn/TestOwnerPlugin.bpmn");
 
 		ownerPlugin = new OwnerPlugin();
 		try {
-			ownerPlugin.init(workflowEngine.getWorkflowService());
+			ownerPlugin.init(workflowEnvironment.getWorkflowService());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
 		}
-		workitem = workflowEngine.getDocumentService().load("W0000-00001");
+		workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
 		workitem.model("1.0.0").task(100);
 
 		// prepare data
@@ -134,8 +134,8 @@ public class TestOwnerPlugin {
 	@Test
 	public void staticUserGroupMappingTest() throws ModelException {
 
-		BPMNModel model = workflowEngine.getModelService().getModel("1.0.0");
-		event = workflowEngine.getModelService().getOpenBPMNModelManager().findEventByID(model, 100, 10);
+		BPMNModel model = workflowEnvironment.getModelService().getModelManager().getModel("1.0.0");
+		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100, 10);
 		event.replaceItemValue("keyupdateAcl", true);
 		event.replaceItemValue("keyOwnershipFields", "[sam, tom,  anna ,]");
 
@@ -157,8 +157,8 @@ public class TestOwnerPlugin {
 	@Test
 	public void testNoUpdate() throws ModelException {
 
-		BPMNModel model = workflowEngine.getModelService().getModel("1.0.0");
-		event = workflowEngine.getModelService().getOpenBPMNModelManager().findEventByID(model, 100, 20);
+		BPMNModel model = workflowEnvironment.getModelService().getModelManager().getModel("1.0.0");
+		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100, 20);
 
 		try {
 			ownerPlugin.run(workitem, event);

@@ -93,7 +93,7 @@ public class TestAccessAdapterTask {
 		list.add("Julian");
 		workitem.replaceItemValue(WorkflowService.WRITEACCESS, list);
 
-		event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
 				10);
 		workitem.setEventID(10);
 		try {
@@ -119,7 +119,7 @@ public class TestAccessAdapterTask {
 	@Test
 	public void testACLfromProcessEntity() throws ModelException {
 
-		event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 300,
+		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 300,
 				10);
 		workitem.setEventID(10);
 		workitem.setTaskID(300);
@@ -149,7 +149,7 @@ public class TestAccessAdapterTask {
 	@Test
 	public void testACLfromActivityEntity() throws ModelException {
 
-		event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
 				20);
 		workitem.setEventID(20);
 		try {
@@ -183,7 +183,7 @@ public class TestAccessAdapterTask {
 		list.add("Julian");
 		workitem.replaceItemValue(OwnerPlugin.OWNER, list);
 		workitem.setTaskID(300);
-		event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 300,
+		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 300,
 				20);
 		workitem.setEventID(20);
 		try {

@@ -26,23 +26,12 @@ import org.junit.jupiter.api.Test;
  */
 public class TestWorkflowServiceGateways {
 
-	// protected OldWorkflowMockEnvironment workflowMockEnvironment;
-
 	protected WorkflowMockEnvironment workflowEnvironment;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
-
 		workflowEnvironment = new WorkflowMockEnvironment();
 		workflowEnvironment.setUp();
-
-		// @Before
-		// public void setup() throws PluginException, ModelException {
-		// workflowMockEnvironment = new OldWorkflowMockEnvironment();
-		// workflowMockEnvironment.setup();
-
-		// workflowMockEnvironment.loadModel("/bpmn/TestWorkflowService.bpmn");
-
 	}
 
 	/**
@@ -64,7 +53,7 @@ public class TestWorkflowServiceGateways {
 		ItemCollection workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
 		try {
 
-			workitem.replaceItemValue(WorkflowKernel.MODELVERSION, OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
+			workitem.replaceItemValue(WorkflowKernel.MODELVERSION, "1.0.0");
 
 			// test _budget<100
 			workitem.setTaskID(1000);
@@ -119,7 +108,7 @@ public class TestWorkflowServiceGateways {
 
 		// load test workitem
 		ItemCollection workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, "1.0.0");
 
 		// test _budget<100
 		workitem.setTaskID(1000);
@@ -161,7 +150,7 @@ public class TestWorkflowServiceGateways {
 
 		// load test workitem
 		ItemCollection workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, "1.0.0");
 
 		// test none condition ...
 		workitem.replaceItemValue("_subject", "Hello");

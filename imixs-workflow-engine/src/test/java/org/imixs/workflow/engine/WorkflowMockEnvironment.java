@@ -108,7 +108,7 @@ public class WorkflowMockEnvironment {
 
 		// Link modelService to workflowServiceMock
 		workflowService.modelService = modelService;
-		Assert.assertNotNull(modelService.getOpenBPMNModelManager());
+		Assert.assertNotNull(modelService.getModelManager());
 
 		workflowContext = new WorkflowContextMock();
 		workflowService.ctx = workflowContext.getSessionContext();
@@ -181,7 +181,7 @@ public class WorkflowMockEnvironment {
 	public void loadBPMNModel(String modelPath) {
 		try {
 			BPMNModel model = BPMNModelFactory.read(modelPath);
-			modelService.getOpenBPMNModelManager().addModel(model);
+			modelService.getModelManager().addModel(model);
 		} catch (BPMNModelException | ModelException e) {
 			e.printStackTrace();
 			Assert.fail();

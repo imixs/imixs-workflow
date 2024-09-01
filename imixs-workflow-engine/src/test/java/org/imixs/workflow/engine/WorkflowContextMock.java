@@ -6,7 +6,6 @@ import java.security.Principal;
 
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowContext;
-import org.imixs.workflow.bpmn.OpenBPMNModelManager;
 import org.imixs.workflow.exceptions.PluginException;
 import org.mockito.Mockito;
 
@@ -21,7 +20,7 @@ import jakarta.ejb.SessionContext;
  */
 public class WorkflowContextMock implements WorkflowContext {
     private final SessionContext ctx;
-    private OpenBPMNModelManager openBPMNModelManager;
+    private ModelManager modelManager;
 
     /**
      * Constructor creates a Mock Environment
@@ -29,14 +28,14 @@ public class WorkflowContextMock implements WorkflowContext {
      * @throws PluginException
      */
     public WorkflowContextMock() {
-        openBPMNModelManager = new OpenBPMNModelManager();
+        modelManager = new ModelManager();
         ctx = Mockito.mock(SessionContext.class);
         setupSessionContext();
     }
 
     @Override
     public ModelManager getModelManager() {
-        return openBPMNModelManager;
+        return modelManager;
     }
 
     @Override

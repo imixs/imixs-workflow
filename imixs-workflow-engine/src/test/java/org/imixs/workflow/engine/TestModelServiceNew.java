@@ -1,6 +1,6 @@
 package org.imixs.workflow.engine;
 
-import org.imixs.workflow.bpmn.OpenBPMNModelManager;
+import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ public class TestModelServiceNew {
 	@Test
 	public void testGetDataObject() throws ModelException {
 
-		OpenBPMNModelManager openBPMNModelManager = modelServiceMock.getOpenBPMNModelManager();
+		ModelManager openBPMNModelManager = modelServiceMock.getModelManager();
 
 		Assert.assertNotNull(openBPMNModelManager);
 

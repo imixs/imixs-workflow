@@ -359,7 +359,7 @@ public class WorkflowScheduler implements Scheduler {
         unprocessedIDs = new ArrayList<String>();
         try {
             // get all model versions...
-            List<String> modelVersions = modelService.getVersions();
+            List<String> modelVersions = modelService.getModelManager().getVersions();
 
             // sort versions in descending order (issue #482)
             Collections.sort(modelVersions, Collections.reverseOrder());
@@ -372,7 +372,7 @@ public class WorkflowScheduler implements Scheduler {
 
                 // processWorkListByEvent(version, taskID, EventID, Group)
 
-                BPMNModel model = modelService.getModel(version);
+                BPMNModel model = modelService.getModelManager().getModel(version);
 
                 // find all tasks
                 Set<Activity> activities = model.findAllActivities();
@@ -382,7 +382,7 @@ public class WorkflowScheduler implements Scheduler {
                         ItemCollection taskEntity = BPMNEntityBuilder.build(task);
                         int taskID = taskEntity.getItemValueInteger(BPMNUtil.TASK_ITEM_TASKID);
                         // iterate through all scheduled events
-                        List<ItemCollection> events = modelService.getOpenBPMNModelManager().findEventsByTask(model,
+                        List<ItemCollection> events = modelService.getModelManager().findEventsByTask(model,
                                 taskID);
                         for (ItemCollection eventEntity : events) {
                             // test if this is a scheduled event...

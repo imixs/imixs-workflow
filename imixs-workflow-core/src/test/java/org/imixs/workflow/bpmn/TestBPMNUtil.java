@@ -1,6 +1,7 @@
 package org.imixs.workflow.bpmn;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,7 +18,7 @@ import org.openbpmn.bpmn.util.BPMNModelFactory;
 public class TestBPMNUtil {
 
 	protected BPMNModel model = null;
-	OpenBPMNModelManager openBPMNModelManager = null;
+	ModelManager openBPMNModelManager = null;
 
 	/**
 	 * Loads the default model
@@ -25,7 +26,7 @@ public class TestBPMNUtil {
 	@Before
 	public void setUp() {
 		// load default model
-		openBPMNModelManager = new OpenBPMNModelManager();
+		openBPMNModelManager = new ModelManager();
 		try {
 			model = BPMNModelFactory.read("/bpmn/simple.bpmn");
 			openBPMNModelManager.addModel(model);

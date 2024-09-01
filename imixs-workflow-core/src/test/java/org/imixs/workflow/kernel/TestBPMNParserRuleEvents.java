@@ -9,7 +9,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockWorkflowEngine;
-import org.imixs.workflow.bpmn.OpenBPMNModelManager;
+import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
@@ -49,7 +49,7 @@ public class TestBPMNParserRuleEvents {
 	public void testModelElements() {
 
 		// load default model
-		OpenBPMNModelManager openBPMNModelManager = new OpenBPMNModelManager();
+		ModelManager openBPMNModelManager = new ModelManager();
 		try {
 			model = BPMNModelFactory.read("/bpmn/event_rules.bpmn");
 			openBPMNModelManager.addModel(model);

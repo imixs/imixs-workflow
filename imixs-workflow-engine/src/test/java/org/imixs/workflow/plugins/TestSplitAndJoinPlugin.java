@@ -11,7 +11,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNEntityBuilder;
 import org.imixs.workflow.bpmn.BPMNUtil;
-import org.imixs.workflow.engine.OldWorkflowMockEnvironment;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.SplitAndJoinPlugin;
 import org.imixs.workflow.exceptions.ModelException;
@@ -52,7 +51,7 @@ public class TestSplitAndJoinPlugin {
 		workitem.replaceItemValue("namTeam", list);
 		workitem.replaceItemValue("namCreator", "ronny");
 		workitem.replaceItemValue("$snapshotid", "11112222");
-		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, "1.0.0");
 		workitem.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
 		workflowEnvironment.getDocumentService().save(workitem);
 

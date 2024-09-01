@@ -261,8 +261,8 @@ public class ModelRestService {
             @QueryParam("format") String format) {
         ItemCollection definition = null;
         try {
-            BPMNModel model = modelService.getModel(version);
-            definition = modelService.loadDefinition(model);
+            BPMNModel model = modelService.getModelManager().getModel(version);
+            definition = modelService.getModelManager().loadDefinition(model);
         } catch (Exception e) {
             throw new WebApplicationException("BPMN Model Error: ", e);
         }
@@ -275,8 +275,8 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         ItemCollection task = null;
         try {
-            BPMNModel model = modelService.getModel(version);
-            task = modelService.getOpenBPMNModelManager().findTaskByID(model, taskID);
+            BPMNModel model = modelService.getModelManager().getModel(version);
+            task = modelService.getModelManager().findTaskByID(model, taskID);
         } catch (Exception e) {
             throw new WebApplicationException("BPMN Model Error: ", e);
         }
@@ -289,8 +289,8 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         List<ItemCollection> result = null;
         try {
-            BPMNModel model = modelService.getModel(version);
-            result = modelService.getOpenBPMNModelManager().findEventsByTask(model, taskID);
+            BPMNModel model = modelService.getModelManager().getModel(version);
+            result = modelService.getModelManager().findEventsByTask(model, taskID);
         } catch (ModelException e) {
             throw new WebApplicationException("BPMN Model Error: ", e);
         }
@@ -305,11 +305,11 @@ public class ModelRestService {
      */
     @GET
     @Path("/{version}/groups")
-    public List<String> getGroups(@PathParam("version") String version, @QueryParam("items") String items) {
-        List<String> col = new ArrayList<>();
+    public Set<String> getGroups(@PathParam("version") String version, @QueryParam("items") String items) {
+        Set<String> col = null;
         try {
-            BPMNModel model = modelService.getModel(version);
-            col = modelService.getWorkflowGroups(model);
+            BPMNModel model = modelService.getModelManager().getModel(version);
+            col = modelService.getModelManager().findAllGroups(model);
             return col;
         } catch (ModelException e) {
             throw new WebApplicationException("BPMN Model Error: ", e);
@@ -535,11 +535,12 @@ public class ModelRestService {
      */
     private void appendTagsToBuffer(String modelVersion, String rootContext, StringBuffer buffer)
             throws ModelException {
-        BPMNModel model = modelService.getModel(modelVersion);
+        BPMNModel model = modelService.getModelManager().getModel(modelVersion);
         ItemCollection modelEntity = modelService.loadModel(modelVersion);
 
         // now check groups...
-        List<String> groupList = modelService.getWorkflowGroups(model);// model.getGroups();
+        Set<String> groupList = modelService.getModelManager().findAllGroups(model);// .getWorkflowGroups(model);//
+                                                                                    // model.getGroups();
         buffer.append("<tr>");
 
         if (modelEntity != null) {

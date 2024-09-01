@@ -16,10 +16,10 @@ import org.junit.Test;
  * 
  * @author rsoika
  */
-public class TestDocumentService extends OldWorkflowMockEnvironment {
+public class TestDocumentServiceRegex {
 
     private DocumentService documentService = null;
-    private final static Logger logger = Logger.getLogger(TestDocumentService.class.getName());
+    private final static Logger logger = Logger.getLogger(TestDocumentServiceRegex.class.getName());
 
     @Before
     public void setUp() throws PluginException, ModelException {

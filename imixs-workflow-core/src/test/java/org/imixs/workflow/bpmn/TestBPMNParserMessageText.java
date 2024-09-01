@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,11 +25,11 @@ import org.xml.sax.SAXException;
  */
 public class TestBPMNParserMessageText {
 	BPMNModel model = null;
-	OpenBPMNModelManager openBPMNModelManager = null;
+	ModelManager openBPMNModelManager = null;
 
 	@Before
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new OpenBPMNModelManager();
+		openBPMNModelManager = new ModelManager();
 
 	}
 

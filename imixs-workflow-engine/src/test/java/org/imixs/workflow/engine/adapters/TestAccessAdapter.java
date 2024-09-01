@@ -59,7 +59,7 @@ public class TestAccessAdapter {
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void simpleTest() throws ModelException {
-		event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
 				10);
 		workitem.setEventID(10);
 		try {
@@ -78,7 +78,7 @@ public class TestAccessAdapter {
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void testNoUpdate() throws ModelException {
-		event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
 				20);
 		workitem.setEventID(20);
 		try {
@@ -97,7 +97,7 @@ public class TestAccessAdapter {
 	@Test
 	public void fieldMappingTest() throws ModelException {
 
-		event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
 				10);
 
 		// event = workflowMockEnvironment.getModel().getEvent(100, 10);
@@ -134,7 +134,7 @@ public class TestAccessAdapter {
 	@Test
 	public void staticUserGroupMappingTest() throws ModelException {
 
-		event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
 				30);
 		workitem.setEventID(30);
 		try {
@@ -154,7 +154,7 @@ public class TestAccessAdapter {
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void fallbackTest() throws ModelException {
-		event = workflowEnvironment.getModelService().getOpenBPMNModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
 				10);
 
 		event.replaceItemValue("keyaccessmode", "0");

@@ -46,7 +46,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNUtil;
-import org.imixs.workflow.bpmn.OpenBPMNModelManager;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -94,11 +93,11 @@ import jakarta.inject.Inject;
 @LocalBean
 @ConcurrencyManagement
 // (ConcurrencyManagementType.BEAN)
-public class ModelService implements ModelManager {
+public class ModelService {
 
     private static final Logger logger = Logger.getLogger(ModelService.class.getName());
 
-    private OpenBPMNModelManager openBPMNModelManager = null;
+    private ModelManager modelManager = null;
 
     @Inject
     private DocumentService documentService;
@@ -108,16 +107,16 @@ public class ModelService implements ModelManager {
 
     public ModelService() {
         super();
-        openBPMNModelManager = new OpenBPMNModelManager();
+        modelManager = new ModelManager();
     }
 
     /**
-     * Returns an instance of a OpenBPMNModelManager
+     * Returns an instance of a modelManager
      * 
      * @return
      */
-    public OpenBPMNModelManager getOpenBPMNModelManager() {
-        return openBPMNModelManager;
+    public ModelManager getModelManager() {
+        return modelManager;
     }
 
     /**
@@ -147,7 +146,7 @@ public class ModelService implements ModelManager {
                 InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
                 try {
                     BPMNModel model = BPMNModelFactory.read(bpmnInputStream);
-                    addModel(model);
+                    modelManager.addModel(model);
                 } catch (BPMNModelException | ModelException e) {
                     logger.log(Level.WARNING, "Failed to load model ''{0}'' : {1}",
                             new Object[] { file.getName(), e.getMessage() });
@@ -157,75 +156,68 @@ public class ModelService implements ModelManager {
     }
 
     /**
-     * This Method adds a model into the internal model store. The model will not be
-     * saved in the database! Use saveModel to store the model permanently.
-     */
-    @Override
-    public void addModel(BPMNModel model) throws ModelException {
-        openBPMNModelManager.addModel(model);
-
-    }
-
-    /**
-     * Returns the BPMN Process entity associated with a given workitem, based on
-     * its attributes "$modelVersion", "$taskID". The process holds the name
-     * for the attribute $worklfowGroup
-     * <p>
-     * The taskID has to be unique in a process. The method throws a
-     * {@link ModelException} if no Process can be resolved based on the given model
-     * information.
-     * <p>
-     * The method is called by the {@link WorkflowKernel} during the processing
-     * life cycle to update the process group information.
-     * 
-     * @param workitem
-     * @return BPMN Event entity - {@link ItemCollection}
-     * @throws ModelException if no event was found
-     */
-    @Override
-    public ItemCollection loadProcess(ItemCollection workitem) throws ModelException {
-        return openBPMNModelManager.loadProcess(workitem);
-    }
-
-    @Override
-    public ItemCollection loadDefinition(BPMNModel model) throws ModelException {
-        return openBPMNModelManager.loadDefinition(model);
-    }
-
-    @Override
-    public ItemCollection loadEvent(ItemCollection workitem) throws ModelException {
-        return openBPMNModelManager.loadEvent(workitem);
-    }
-
-    @Override
-    public ItemCollection loadTask(ItemCollection workitem) throws ModelException {
-        return openBPMNModelManager.loadTask(workitem);
-    }
-
-    @Override
-    public ItemCollection nextModelElement(ItemCollection event, ItemCollection workitem) throws ModelException {
-        return openBPMNModelManager.nextModelElement(event, workitem);
-    }
-
-    /**
-     * This method removes a specific ModelVersion form the internal model store.
-     * The model will not be
-     * removed from the database. Use deleteModel to delete the model from the
-     * database.
-     * 
-     * @throws AccessDeniedException
-     */
-    public void removeModel(String modelversion) {
-        openBPMNModelManager.removeModel(modelversion);
-    }
-
-    /**
-     * Returns a Model by version. In case no matching model version exits, the
-     * method throws a ModelException.
+     * Deprecated method, use instead getModelManager()..
      **/
-    @Override
+    @Deprecated
+    public void addModel(BPMNModel model) throws ModelException {
+        modelManager.addModel(model);
+
+    }
+
+    /**
+     * Deprecated method, use instead getModelManager()..
+     **/
+    @Deprecated
+    public ItemCollection loadProcess(ItemCollection workitem) throws ModelException {
+        return modelManager.loadProcess(workitem);
+    }
+
+    /**
+     * Deprecated method, use instead getModelManager()..
+     **/
+    @Deprecated
+    public ItemCollection loadDefinition(BPMNModel model) throws ModelException {
+        return modelManager.loadDefinition(model);
+    }
+
+    /**
+     * Deprecated method, use instead getModelManager()..
+     **/
+    @Deprecated
+    public ItemCollection loadEvent(ItemCollection workitem) throws ModelException {
+        return modelManager.loadEvent(workitem);
+    }
+
+    /**
+     * Deprecated method, use instead getModelManager()..
+     **/
+    @Deprecated
+    public ItemCollection loadTask(ItemCollection workitem) throws ModelException {
+        return modelManager.loadTask(workitem);
+    }
+
+    /**
+     * Deprecated method, use instead getModelManager()..
+     **/
+    @Deprecated
+    public ItemCollection nextModelElement(ItemCollection event, ItemCollection workitem) throws ModelException {
+        return modelManager.nextModelElement(event, workitem);
+    }
+
+    /**
+     * Deprecated method, use instead getModelManager()..
+     **/
+    @Deprecated
+    public void removeModel(String modelversion) {
+        modelManager.removeModel(modelversion);
+    }
+
+    /**
+     * Deprecated method, use instead getModelManager()..
+     **/
+    @Deprecated
     public BPMNModel getModel(String version) throws ModelException {
-        return openBPMNModelManager.getModel(version);
+        return modelManager.getModel(version);
     }
 
     /**
@@ -240,19 +232,17 @@ public class ModelService implements ModelManager {
      * 
      * @see https://github.com/imixs/open-bpmn/tree/master/open-bpmn.metamodel
      */
-    @Override
+    @Deprecated
     public BPMNModel getModelByWorkitem(ItemCollection workitem) throws ModelException {
-        return openBPMNModelManager.getModelByWorkitem(workitem);
+        return modelManager.getModelByWorkitem(workitem);
     }
 
     /**
-     * returns a sorted String list of all stored model versions
-     * 
-     * @return
-     */
-    @Override
+     * Deprecated method, use instead getModelManager()..
+     **/
+    @Deprecated
     public List<String> getVersions() {
-        return openBPMNModelManager.getVersions();
+        return modelManager.getVersions();
     }
 
     /**
@@ -264,6 +254,7 @@ public class ModelService implements ModelManager {
      * @param group
      * @return
      */
+    @Deprecated
     public List<String> getWorkflowGroups(BPMNModel model) {
         List<String> result = new ArrayList<String>();
         Set<BPMNProcess> processList = model.getProcesses();
@@ -309,13 +300,13 @@ public class ModelService implements ModelManager {
             boolean debug = logger.isLoggable(Level.FINE);
             String version = BPMNUtil.getVersion(model);
             // first delete existing model entities
-            removeModel(version);
+            modelManager.removeModel(version);
             // store model into internal cache
             if (debug) {
                 logger.log(Level.FINEST, "......save BPMNModel ''{0}''...", version);
             }
 
-            addModel(model);
+            modelManager.addModel(model);
             ItemCollection modelItemCol = new ItemCollection();
             modelItemCol.replaceItemValue("type", "model");
             modelItemCol.replaceItemValue("$snapshot.history", 1);
@@ -396,7 +387,7 @@ public class ModelService implements ModelManager {
                     documentService.remove(modelEntity);
                 }
             }
-            removeModel(version);
+            modelManager.removeModel(version);
         } else {
             logger.severe("deleteModel - invalid model version!");
             throw new InvalidAccessException(InvalidAccessException.INVALID_ID, "deleteModel - invalid model version!");

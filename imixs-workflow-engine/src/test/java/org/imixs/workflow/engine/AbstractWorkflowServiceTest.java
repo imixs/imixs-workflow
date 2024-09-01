@@ -140,7 +140,7 @@ public abstract class AbstractWorkflowServiceTest {
 	public void loadBPMNModel(String modelPath) {
 		try {
 			BPMNModel model = BPMNModelFactory.read(modelPath);
-			modelService.getOpenBPMNModelManager().addModel(model);
+			modelService.getModelManager().addModel(model);
 		} catch (BPMNModelException | ModelException e) {
 			e.printStackTrace();
 			Assert.fail();

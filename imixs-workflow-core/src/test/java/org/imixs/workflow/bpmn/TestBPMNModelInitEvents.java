@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,11 +21,11 @@ import org.openbpmn.bpmn.util.BPMNModelFactory;
 public class TestBPMNModelInitEvents {
 
 	BPMNModel model = null;
-	OpenBPMNModelManager openBPMNModelManager = null;
+	ModelManager openBPMNModelManager = null;
 
 	@Before
 	public void setup() {
-		openBPMNModelManager = new OpenBPMNModelManager();
+		openBPMNModelManager = new ModelManager();
 		try {
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/startevent_followup.bpmn"));
 			model = openBPMNModelManager.getModel("1.0.0");

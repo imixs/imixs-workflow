@@ -86,7 +86,7 @@ public class TestWorkflowService {
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 		// load test workitem
 		ItemCollection workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
-		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, OldWorkflowMockEnvironment.DEFAULT_MODEL_VERSION);
+		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, "1.0.0");
 		workitem.setTaskID(100);
 
 		workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
