@@ -37,25 +37,24 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.annotation.Resource;
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RunAs;
-import jakarta.enterprise.inject.Any;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.QueryException;
 
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
 import jakarta.ejb.ScheduleExpression;
 import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.Timeout;
 import jakarta.ejb.Timer;
 import jakarta.ejb.TimerConfig;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 /**
  * The SchedulerService EJB can be used to start, monitor and stop custom
@@ -244,7 +243,7 @@ public class SchedulerService {
                     + ctx.getCallerPrincipal().getName();
             configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_STATUS, msg);
             logger.log(Level.INFO, "...Scheduler Service {0} ({1}) successfull started.",
-                    new Object[]{id, configuration.getItemValueString("Name")});
+                    new Object[] { id, configuration.getItemValueString("Name") });
         }
         configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, true);
         // clear logs...
@@ -289,7 +288,7 @@ public class SchedulerService {
             configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_STATUS, message);
 
             logger.log(Level.INFO, "... scheduler {0} stopped: {1}",
-                    new Object[]{configuration.getItemValueString("Name"), configuration.getUniqueID()});
+                    new Object[] { configuration.getItemValueString("Name"), configuration.getUniqueID() });
         } else {
             String msg = "stopped";
             configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_STATUS, msg);
@@ -309,39 +308,34 @@ public class SchedulerService {
      * 
      */
     public void startAllSchedulers() {
-        logger.info("...starting Imixs Schedulers....");
-        //try {
-            //String sQuery = "(type:\"" + SchedulerService.DOCUMENT_TYPE + "\" )";
-            //Collection<ItemCollection> col = documentService.find(sQuery, 101, 0);
-            // issue #748
-            Collection<ItemCollection> col = documentService.getDocumentsByType(SchedulerService.DOCUMENT_TYPE);
-            if (col.size() > 100) {
-                // Issue #568 - we do not support more than 100 jobs in parallel!
-                logger.severe(
-                        "More than 100 waiting scheduler jobs found but a maximum of 100 jobs will be started in parallel. Please report this issue to the imixs-workflow project!");
-            }
-            // check if we found a scheduler configuration
-            for (ItemCollection schedulerConfig : col) {
-                // is timmer running?
-                if (schedulerConfig != null && schedulerConfig.getItemValueBoolean(Scheduler.ITEM_SCHEDULER_ENABLED)) {
-                    try {
-
-                        if (findTimer(schedulerConfig.getUniqueID()) == null) {
-                            start(schedulerConfig);
-                        } else {
-                            logger.log(Level.INFO, "...Scheduler Service {0} already running. ", schedulerConfig.getUniqueID());
-                        }
-                    } catch (Exception e) {
-                        logger.log(Level.SEVERE, "...start of Scheduler Service {0} failed! - {1}", new Object[]{schedulerConfig.getUniqueID(), e.getMessage()});
-                        e.printStackTrace();
+        logger.info("├── starting Imixs Schedulers....");
+        // issue #748
+        Collection<ItemCollection> col = documentService.getDocumentsByType(SchedulerService.DOCUMENT_TYPE);
+        if (col.size() > 100) {
+            // Issue #568 - we do not support more than 100 jobs in parallel!
+            logger.severe(
+                    "More than 100 waiting scheduler jobs found but a maximum of 100 jobs will be started in parallel. Please report this issue to the imixs-workflow project!");
+        }
+        // check if we found a scheduler configuration
+        for (ItemCollection schedulerConfig : col) {
+            // is timmer running?
+            if (schedulerConfig != null && schedulerConfig.getItemValueBoolean(Scheduler.ITEM_SCHEDULER_ENABLED)) {
+                try {
+                    if (findTimer(schedulerConfig.getUniqueID()) == null) {
+                        start(schedulerConfig);
+                    } else {
+                        logger.log(Level.INFO, "│   ├── Scheduler Service {0} already running. ",
+                                schedulerConfig.getUniqueID());
                     }
-                } else {
-                    logger.log(Level.INFO, "...Scheduler Service {0} is not enabled. ", schedulerConfig.getUniqueID());
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE, "│   ├── start of Scheduler Service {0} failed! - {1}",
+                            new Object[] { schedulerConfig.getUniqueID(), e.getMessage() });
+                    e.printStackTrace();
                 }
+            } else {
+                logger.log(Level.INFO, "│   ├── Scheduler Service {0} is not enabled. ", schedulerConfig.getUniqueID());
             }
-        //} catch (QueryException e1) {
-        //    e1.printStackTrace();
-        //}
+        }
     }
 
     /**
@@ -454,7 +448,8 @@ public class SchedulerService {
         for (Scheduler scheduler : this.schedulerHandlers) {
             if (scheduler.getClass().getName().equals(schedulerClassName)) {
                 if (debug) {
-                    logger.log(Level.FINEST, "......CDI Scheduler class ''{0}'' successful injected", schedulerClassName);
+                    logger.log(Level.FINEST, "......CDI Scheduler class ''{0}'' successful injected",
+                            schedulerClassName);
                 }
                 return scheduler;
             }
@@ -492,12 +487,14 @@ public class SchedulerService {
 
             Scheduler scheduler = findSchedulerByName(schedulerClassName);
             if (scheduler != null) {
-                logger.log(Level.INFO, "...run scheduler ''{0}'' scheduler class=''{1}''....", new Object[]{id, schedulerClassName});
+                logger.log(Level.INFO, "...run scheduler ''{0}'' scheduler class=''{1}''....",
+                        new Object[] { id, schedulerClassName });
                 Calendar cal = Calendar.getInstance();
                 configuration.replaceItemValue(Scheduler.ITEM_LOGMESSAGE, "Started: " + cal.getTime());
 
                 configuration = scheduler.run(configuration);
-                logger.log(Level.INFO, "...run scheduler  ''{0}'' finished in: {1} ms", new Object[]{id, (System.currentTimeMillis()) - lProfiler});
+                logger.log(Level.INFO, "...run scheduler  ''{0}'' finished in: {1} ms",
+                        new Object[] { id, (System.currentTimeMillis()) - lProfiler });
                 cal = Calendar.getInstance();
                 configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Finished: " + cal.getTime());
                 if (configuration.getItemValueBoolean(Scheduler.ITEM_SCHEDULER_ENABLED) == false) {
@@ -506,8 +503,9 @@ public class SchedulerService {
                 }
             } else {
                 errorMes = "Scheduler class='" + schedulerClassName + "' not found!";
-                logger.log(Level.WARNING, "...scheduler ''{0}'' scheduler class=''{1}'' not found, timer will be stopped...",
-                        new Object[]{id, schedulerClassName});
+                logger.log(Level.WARNING,
+                        "...scheduler ''{0}'' scheduler class=''{1}'' not found, timer will be stopped...",
+                        new Object[] { id, schedulerClassName });
                 configuration.setItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, false);
 
                 stop(configuration);
@@ -518,17 +516,17 @@ public class SchedulerService {
                 e.printStackTrace();
             }
             errorMes = e.getMessage();
-            logger.log(Level.SEVERE, "Scheduler ''{0}'' failed: {1}", new Object[]{id, errorMes});
+            logger.log(Level.SEVERE, "Scheduler ''{0}'' failed: {1}", new Object[] { id, errorMes });
             configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Error: " + errorMes);
             configuration = stop(configuration, timer);
-            
+
         } catch (RuntimeException e) {
             // in case of an RuntimeException we did not cancel the Timer service
             e.printStackTrace();
             errorMes = e.getMessage();
-            logger.log(Level.SEVERE, "Scheduler ''{0}'' failed: {1}", new Object[]{id, errorMes});
+            logger.log(Level.SEVERE, "Scheduler ''{0}'' failed: {1}", new Object[] { id, errorMes });
             configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Error: " + errorMes);
-            //configuration = stop(configuration, timer);
+            // configuration = stop(configuration, timer);
         } finally {
             // Save statistic in configuration
             if (configuration != null) {

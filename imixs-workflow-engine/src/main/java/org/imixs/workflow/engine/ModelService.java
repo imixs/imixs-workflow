@@ -28,9 +28,7 @@
 
 package org.imixs.workflow.engine;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,20 +44,17 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNUtil;
-import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.QueryException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.BPMNProcess;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.DeclareRoles;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.ConcurrencyManagement;
-import jakarta.ejb.LocalBean;
 import jakarta.ejb.SessionContext;
 import jakarta.ejb.Singleton;
 import jakarta.inject.Inject;
@@ -90,9 +85,7 @@ import jakarta.inject.Inject;
         "org.imixs.ACCESSLEVEL.AUTHORACCESS", "org.imixs.ACCESSLEVEL.EDITORACCESS",
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Singleton
-@LocalBean
 @ConcurrencyManagement
-// (ConcurrencyManagementType.BEAN)
 public class ModelService {
 
     private static final Logger logger = Logger.getLogger(ModelService.class.getName());
@@ -107,6 +100,13 @@ public class ModelService {
 
     public ModelService() {
         super();
+    }
+
+    /**
+     * Lazy loading of ModelManager
+     */
+    @PostConstruct
+    public void init() {
         modelManager = new ModelManager();
     }
 
@@ -117,42 +117,6 @@ public class ModelService {
      */
     public ModelManager getModelManager() {
         return modelManager;
-    }
-
-    /**
-     * This method initializes the modelManager and loads existing Models from the
-     * database. The method can not be annotated with @PostConstruct because in case
-     * a servlet with @RunAs annotation will not propagate the principal in a
-     * PostConstruct. For that reason the method is called indirectly.
-     * 
-     * @throws AccessDeniedException
-     */
-    void init() throws AccessDeniedException {
-        boolean debug = logger.isLoggable(Level.FINE);
-
-        // load existing models into the ModelManager....
-        if (debug) {
-            logger.finest("......Initializing ModelService...");
-        }
-        // first remove existing model entities
-        Collection<ItemCollection> col = documentService.getDocumentsByType("model");
-        for (ItemCollection modelEntity : col) {
-            List<FileData> files = modelEntity.getFileData();
-            for (FileData file : files) {
-                if (debug) {
-                    logger.log(Level.FINEST, "......loading file:{0}", file.getName());
-                }
-                byte[] rawData = file.getContent();
-                InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
-                try {
-                    BPMNModel model = BPMNModelFactory.read(bpmnInputStream);
-                    modelManager.addModel(model);
-                } catch (BPMNModelException | ModelException e) {
-                    logger.log(Level.WARNING, "Failed to load model ''{0}'' : {1}",
-                            new Object[] { file.getName(), e.getMessage() });
-                }
-            }
-        }
     }
 
     /**
@@ -297,14 +261,10 @@ public class ModelService {
      */
     public void saveModel(BPMNModel model, String _filename) throws ModelException {
         if (model != null) {
-            boolean debug = logger.isLoggable(Level.FINE);
             String version = BPMNUtil.getVersion(model);
             // first delete existing model entities
             modelManager.removeModel(version);
             // store model into internal cache
-            if (debug) {
-                logger.log(Level.FINEST, "......save BPMNModel ''{0}''...", version);
-            }
 
             modelManager.addModel(model);
             ItemCollection modelItemCol = new ItemCollection();
@@ -322,7 +282,8 @@ public class ModelService {
                 // default filename
                 filename = version + ".bpmn";
             }
-
+            logger.log(Level.INFO, "Import bpmn-model: {0} ▶ {1}", new Object[] { _filename,
+                    BPMNUtil.getVersion(model) });
             // Write the model XML object into a byte array and store it into the
             // modelItemCol as a FileData object
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

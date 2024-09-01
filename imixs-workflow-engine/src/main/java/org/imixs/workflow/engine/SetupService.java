@@ -43,8 +43,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.engine.scheduler.Scheduler;
@@ -154,16 +156,14 @@ public class SetupService {
         logger.info("/___/_/_/_/_//_\\_\\/___/   V6.1");
         logger.info("");
 
-        logger.info("...initializing models...");
+        logger.info("├── initializing models...");
 
-        // first we scan for default models
+        // Load existing models
+        initModels();
+        // if no models are loaded scan for default models
         List<String> models = modelService.getModelManager().getVersions();
         if (models.isEmpty() || modelDefaultDataOverwrite == true) {
             scanDefaultModels();
-        } else {
-            for (String model : models) {
-                logger.log(Level.INFO, "...model: {0} ...OK", model);
-            }
         }
 
         // Finally fire the SetupEvent. This allows CDI Observers to react on the setup
@@ -179,9 +179,62 @@ public class SetupService {
         migrateWorkflowScheduler();
 
         // Finally start optional schedulers
-        logger.info("...initializing schedulers...");
+        logger.info("├── initializing schedulers...");
         schedulerService.startAllSchedulers();
 
+    }
+
+    /**
+     * This method initializes all existing Models from the
+     * database.
+     * 
+     * @throws AccessDeniedException
+     */
+    private void initModels() throws AccessDeniedException {
+        boolean debug = logger.isLoggable(Level.FINE);
+
+        // first remove existing model entities
+        Collection<ItemCollection> col = documentService.getDocumentsByType("model");
+        logger.finest("...found " + col.size() + " model entities");
+        List<ItemCollection> deprecatedModelEntities = new ArrayList<>();
+        for (ItemCollection modelEntity : col) {
+            logger.finest(".. " + modelEntity.getItemValueString("name") + " created -> "
+                    + modelEntity.getItemValueDate("$created"));
+            List<FileData> files = modelEntity.getFileData();
+            for (FileData file : files) {
+                if (debug) {
+                    logger.log(Level.FINEST, "......loading file:{0}", file.getName());
+                }
+                byte[] rawData = file.getContent();
+                InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
+                try {
+                    BPMNModel model = BPMNModelFactory.read(bpmnInputStream);
+                    String version = BPMNUtil.getVersion(model);
+                    // test if model is a deprecated duplicate entry!
+                    if (modelService.getModelManager().getModelStore().containsKey(version)) {
+                        logger.warning("Duplicated Model Entity found (" + modelEntity.getUniqueID()
+                                + ") for model version '" + version
+                                + "' - entity will be removed automatically!");
+                        deprecatedModelEntities.add(modelEntity);
+                    } else {
+                        logger.log(Level.INFO, "│   ├── loaded model: {0} ▶ {1}", new Object[] { file.getName(),
+                                BPMNUtil.getVersion(model) });
+                        modelService.getModelManager().addModel(model);
+                    }
+                } catch (BPMNModelException | ModelException e) {
+                    logger.log(Level.WARNING, "Failed to load model ''{0}'' : {1}",
+                            new Object[] { file.getName(), e.getMessage() });
+                }
+            }
+
+        }
+
+        // remove duplicated entries (this should not happen!)
+        if (deprecatedModelEntities.size() > 0) {
+            for (ItemCollection deprecatedEntry : deprecatedModelEntities) {
+                documentService.remove(deprecatedEntry);
+            }
+        }
     }
 
     /**
