@@ -157,7 +157,7 @@ public class SetupService {
         logger.info("...initializing models...");
 
         // first we scan for default models
-        List<String> models = modelService.getVersions();
+        List<String> models = modelService.getModelManager().getVersions();
         if (models.isEmpty() || modelDefaultDataOverwrite == true) {
             scanDefaultModels();
         } else {
@@ -179,7 +179,7 @@ public class SetupService {
         migrateWorkflowScheduler();
 
         // Finally start optional schedulers
-        logger.info("...initalizing schedulers...");
+        logger.info("...initializing schedulers...");
         schedulerService.startAllSchedulers();
 
     }
@@ -190,7 +190,7 @@ public class SetupService {
      * @return
      */
     public int getModelVersionCount() {
-        return modelService.getVersions().size();
+        return modelService.getModelManager().getVersions().size();
     }
 
     /**

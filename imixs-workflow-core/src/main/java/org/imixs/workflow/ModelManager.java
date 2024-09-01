@@ -19,9 +19,11 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
+import org.openbpmn.bpmn.BPMNTypes;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.BPMNProcess;
 import org.openbpmn.bpmn.elements.Event;
+import org.openbpmn.bpmn.elements.Participant;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
@@ -348,7 +350,7 @@ public class ModelManager {
 
             // Still no match, try to find model version by group
             if (!workitem.getWorkflowGroup().isEmpty()) {
-                List<String> versions = findVersionsByGroup(workitem.getWorkflowGroup());
+                List<String> versions = findAllVersionsByGroup(workitem.getWorkflowGroup());
                 if (!versions.isEmpty()) {
                     String newVersion = versions.get(0);
                     if (!newVersion.isEmpty()) {
@@ -371,14 +373,54 @@ public class ModelManager {
     }
 
     /**
-     * This method returns a sorted list of model versions containing the requested
-     * workflow group. The result is sorted in reverse order, so the highest version
-     * number is the first in the result list.
+     * This method returns a sorted list of all workflow groups contained in a BPMN
+     * model.
+     * <p>
+     * In case the model is a collaboration diagram, the method returns only group
+     * names from private process instances (Pools)!
      * 
      * @param group
      * @return
      */
-    public List<String> findVersionsByGroup(String group) {
+    public Set<String> findAllGroups(BPMNModel _model) {
+        Set<String> result = new LinkedHashSet<>();
+
+        Set<BPMNProcess> processList = _model.getProcesses();
+        for (BPMNProcess _process : processList) {
+            String groupName = _process.getName();
+            if (_model.isCollaborationDiagram()) {
+                // collaboration diagram - only add private processes (Pools)
+                if (BPMNTypes.PROCESS_TYPE_PRIVATE.equals(_process.getProcessType())) {
+                    // add only private process types
+                    result.add(groupName);
+                }
+            } else {
+                // if it is not a collaboration diagram we return the name of the first Public
+                // Process
+                if (BPMNTypes.PROCESS_TYPE_PUBLIC.equals(_process.getProcessType())) {
+                    result.add(groupName);
+                    break;
+                }
+            }
+        }
+
+        if (result.size() == 0) {
+            logger.warning("Model " + BPMNUtil.getVersion(_model)
+                    + " does not contain valid process elements! Please check your model file!");
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a sorted list of all model versions containing the requested
+     * workflow group. The result is sorted in reverse order, so the highest version
+     * number is the first in the result list.
+     * 
+     * @param group - name of the workflow group
+     * @return list of matching model versions
+     */
+    public List<String> findAllVersionsByGroup(String group) {
         boolean debug = logger.isLoggable(Level.FINE);
         List<String> result = new ArrayList<String>();
         if (debug) {
@@ -387,16 +429,34 @@ public class ModelManager {
         // try to find matching model version by group
         Collection<BPMNModel> models = modelStore.values();
         for (BPMNModel _model : models) {
-
-            Set<BPMNProcess> processList = _model.getProcesses();
-            for (BPMNProcess _process : processList) {
-                if (group.equals(_process.getName())) {
-                    result.add(BPMNUtil.getVersion(_model));
-                }
+            Set<String> allGroups = findAllGroups(_model);
+            if (allGroups.contains(group)) {
+                result.add(BPMNUtil.getVersion(_model));
             }
         }
         // sort result
         Collections.sort(result, Collections.reverseOrder());
+        return result;
+    }
+
+    /**
+     * Returns the first matching model version by a given workflow group.
+     * <p>
+     * If multiple models are containing the same group the latest version will be
+     * returned.
+     * <p>
+     * In case the model is a collaboration diagram, the method compares the given
+     * group name only with private process instances (Pools)!
+     * 
+     * @param group
+     * @return
+     */
+    public String findVersionByGroup(String group) {
+        String result = null;
+        List<String> versions = findAllVersionsByGroup(group);
+        if (versions.size() > 0) {
+            result = versions.get(0);
+        }
         return result;
     }
 
@@ -424,22 +484,6 @@ public class ModelManager {
         }
         // sort result
         Collections.sort(result, Collections.reverseOrder());
-        return result;
-    }
-
-    /**
-     * This method returns a sorted list of all workflow groups contained in a BPMN
-     * model
-     * 
-     * @param group
-     * @return
-     */
-    public Set<String> findAllGroups(BPMNModel _model) {
-        Set<String> result = new LinkedHashSet<>();
-        Set<BPMNProcess> processList = _model.getProcesses();
-        for (BPMNProcess _process : processList) {
-            result.add(_process.getName());
-        }
         return result;
     }
 
@@ -494,14 +538,41 @@ public class ModelManager {
 
     /**
      * Returns a list of start Tasks of a given Process Group
+     * <p>
+     * In case of a collaboration diagram only Pool names are compared. The default
+     * process (Public Process) will be ignored.
      * 
-     * @param processGroup
-     * @return
+     * @param model        - the BPMN model
+     * @param processGroup - the name of the process group to match
+     * @return list of all Start Task entities or null if not process with the given
+     *         name was found.
      * @throws BPMNModelException
      */
     public List<ItemCollection> findStartTasks(final BPMNModel model, String processGroup) throws BPMNModelException {
         List<ItemCollection> result = new ArrayList<>();
-        BPMNProcess process = model.findProcessByName(processGroup);
+        BPMNProcess process = null;
+
+        if (processGroup == null || processGroup.isEmpty()) {
+            logger.warning("findEndTasks processGroup is empty!");
+            return result;
+        }
+        // find Process containing matching the process group
+        if (model.isCollaborationDiagram()) {
+            Set<Participant> poolList = model.getParticipants();
+            for (Participant pool : poolList) {
+                process = pool.openProcess();
+                if (processGroup.equals(process.getName())) {
+                    break;
+                }
+            }
+        } else {
+            process = model.openDefaultProces();
+            if (!processGroup.equals(process.getName())) {
+                // no match!
+                process = null;
+            }
+        }
+
         // test start task....
         BPMNStartElementIterator<Activity> startElements = new BPMNStartElementIterator<>(process,
                 node -> (node instanceof Activity));
@@ -513,20 +584,52 @@ public class ModelManager {
 
     /**
      * Returns a list of End Tasks of a given Process Group
+     * <p>
+     * In case of a collaboration diagram only Pool names are compared. The default
+     * process (Public Process) will be ignored.
      * 
-     * @param processGroup
-     * @return
+     * @param model        - the BPMN model
+     * @param processGroup - the name of the process group to match
+     * @return list of all End Task entities or null if not process with the given
+     *         name was found.
      * @throws BPMNModelException
      */
     public List<ItemCollection> findEndTasks(final BPMNModel model, String processGroup) throws BPMNModelException {
         List<ItemCollection> result = new ArrayList<>();
-        BPMNProcess process = model.findProcessByName(processGroup);
-        // test End task....
-        BPMNEndElementIterator<Activity> endElements = new BPMNEndElementIterator<>(process,
-                node -> (node instanceof Activity));
-        while (endElements.hasNext()) {
-            result.add(BPMNEntityBuilder.build(endElements.next()));
+        BPMNProcess process = null;
+
+        if (processGroup == null || processGroup.isEmpty()) {
+            logger.warning("findEndTasks processGroup is empty!");
+            return result;
         }
+
+        // find Process containing matching the process group
+        if (model.isCollaborationDiagram()) {
+            Set<Participant> poolList = model.getParticipants();
+            for (Participant pool : poolList) {
+                process = pool.openProcess();
+                if (processGroup.equals(process.getName())) {
+                    break;
+                }
+            }
+        } else {
+            process = model.openDefaultProces();
+            if (!processGroup.equals(process.getName())) {
+                // no match!
+                process = null;
+            }
+        }
+
+        // now get the End task ...
+        if (process != null) {
+            // test End task....
+            BPMNEndElementIterator<Activity> endElements = new BPMNEndElementIterator<>(process,
+                    node -> (node instanceof Activity));
+            while (endElements.hasNext()) {
+                result.add(BPMNEntityBuilder.build(endElements.next()));
+            }
+        }
+
         return result;
     }
 

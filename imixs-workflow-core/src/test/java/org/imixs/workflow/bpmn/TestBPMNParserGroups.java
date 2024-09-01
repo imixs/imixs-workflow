@@ -64,6 +64,9 @@ public class TestBPMNParserGroups {
 	/**
 	 * This test tests the resolution of multiple groups in a collaboration diagram
 	 * 
+	 * The method findAllGroups should return only the group names from the Pools
+	 * but not the default process name.
+	 * 
 	 * @throws ParseException
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
@@ -85,10 +88,10 @@ public class TestBPMNParserGroups {
 
 		// Test Groups
 		Set<String> groups = openBPMNModelManager.findAllGroups(model);
-		Assert.assertEquals(3, groups.size());
+		Assert.assertEquals(2, groups.size());
 		Assert.assertTrue(groups.contains("Protokoll"));
 		Assert.assertTrue(groups.contains("Protokollpunkt"));
-		Assert.assertTrue(groups.contains("Default Process"));
+		Assert.assertFalse(groups.contains("Default Process"));
 
 		// Test tasks per group
 		BPMNProcess process = null;
@@ -107,6 +110,11 @@ public class TestBPMNParserGroups {
 		}
 		activities = process.getActivities();
 		Assert.assertEquals(4, activities.size());
+
+		// test the Default Group (Public Process)
+		BPMNProcess defaultProcess = model.openDefaultProces();
+		Assert.assertEquals("Default Process", defaultProcess.getName());
+
 	}
 
 }
