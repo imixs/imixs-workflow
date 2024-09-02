@@ -427,7 +427,11 @@ public class WorkflowKernel {
      */
     private ItemCollection processEvent(ItemCollection workitem, ItemCollection event)
             throws ModelException, PluginException {
+
         BPMNModel model = this.ctx.getModelManager().getModel(workitem.getModelVersion());
+
+        // Update the intermediate processing status
+        updateIntermediateEvent(workitem, event);
         // set $lastEventDate
         workitem.replaceItemValue(LASTEVENTDATE, new Date());
         // Execute Plugins and Adapters....
@@ -460,7 +464,7 @@ public class WorkflowKernel {
                 logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
                 event = nextElement;
                 workitem.event(event.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID));
-                updateIntermediateEvent(workitem, event);
+
                 // return the next event element to be processed....
                 return event;
             }
@@ -614,12 +618,8 @@ public class WorkflowKernel {
         int intermediateEvent = workitem.getItemValueInteger(WorkflowKernel.INTERMEDIATE_EVENTID);
         if (intermediateEvent > 0) {
             BPMNModel model = this.ctx.getModelManager().findModelByWorkitem(workitem);
-            BPMNElementNode inteEventElement = model.findElementNodeById(intermediateEventElementID);
-            // ItemCollection intermediateEventItemCol =
-            // BPMNEntityBuilder.build(inteEventElement);
-            // event = this.ctx.getModelManager().nextModelElement(intermediateEventItemCol,
-            // workitem);
-            event = BPMNEntityBuilder.build(inteEventElement);
+            BPMNElementNode intermediateEventElement = model.findElementNodeById(intermediateEventElementID);
+            event = BPMNEntityBuilder.build(intermediateEventElement);
         } else {
             event = this.ctx.getModelManager().loadEvent(workitem);
         }
@@ -828,23 +828,25 @@ public class WorkflowKernel {
     }
 
     /**
-     * Helper method to update the item $intermediateEventID.
+     * Helper method to update the item <code>$intermediateEvent</code> and
+     * <code>$intermediateEvent.elementId</code>.
      * The given Element must be a Event. Otherwise the method throws a
      * ModelException.
+     * <p>
+     * This method is called by the method processEvent() and indicates that we are
+     * currently in an active processing life cycle. This status is evaluated by the
+     * eval() method to avoid invalid calls of loadEvent().
      * 
      * @throws ModelException
      */
     private void updateIntermediateEvent(ItemCollection workitem, ItemCollection itemColNextEvent)
             throws ModelException {
-        boolean debug = logger.isLoggable(Level.FINE);
         if (!ModelManager.EVENT_ELEMENT.equals(itemColNextEvent.getType())) {
             throw new ModelException(ModelException.INVALID_MODEL,
                     "Invalid Model Element - BPMN Event Element was expected to update the intermediate event status.");
         }
-
         workitem.setItemValue(INTERMEDIATE_EVENTID, itemColNextEvent.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID));
         workitem.setItemValue(INTERMEDIATE_EVENT_ELEMENTID, itemColNextEvent.getItemValueString("id"));
-
     }
 
     /**

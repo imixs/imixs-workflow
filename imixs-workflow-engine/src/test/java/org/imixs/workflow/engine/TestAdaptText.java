@@ -1,21 +1,19 @@
 package org.imixs.workflow.engine;
 
-import static org.mockito.Mockito.when;
-
 import java.util.Calendar;
-import java.util.List;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 /**
  * Test the WorkflowService method 'adaptText'
@@ -26,56 +24,20 @@ import org.mockito.stubbing.Answer;
  * 
  */
 @ExtendWith(MockitoExtension.class)
-public class TestAdaptText extends AbstractWorkflowServiceTest {
+@MockitoSettings(strictness = Strictness.WARN)
+public class TestAdaptText {
+	private final static Logger logger = Logger.getLogger(TestAdaptText.class.getName());
 
-	@Mock
-	private WorkflowService workflowService;
+	protected WorkflowMockEnvironment workflowEngine;
+	ItemCollection workitem;
 
-	@Override
-	public void setUp() throws PluginException {
-		super.setUp();
-		// AdaptText
-		when(workflowService.adaptText(Mockito.anyString(), Mockito.any(ItemCollection.class)))
-				.thenAnswer(new Answer<String>() {
-					@Override
-					public String answer(InvocationOnMock invocation) throws Throwable {
-
-						Object[] args = invocation.getArguments();
-						String text = (String) args[0];
-						ItemCollection document = (ItemCollection) args[1];
-
-						TextEvent textEvent = new TextEvent(text, document);
-
-						// for-each adapter
-						TextForEachAdapter tfea = new TextForEachAdapter();
-						tfea.onEvent(textEvent);
-
-						// ItemValue adapter
-						TextItemValueAdapter tiva = new TextItemValueAdapter();
-						tiva.onEvent(textEvent);
-
-						return textEvent.getText();
-					}
-				});
-
-		when(workflowService.adaptTextList(Mockito.anyString(), Mockito.any(ItemCollection.class)))
-				.thenAnswer(new Answer<List<String>>() {
-					@Override
-					public List<String> answer(InvocationOnMock invocation) throws Throwable, PluginException {
-
-						Object[] args = invocation.getArguments();
-						String text = (String) args[0];
-						ItemCollection document = (ItemCollection) args[1];
-
-						TextEvent textEvent = new TextEvent(text, document);
-
-						TextItemValueAdapter tiva = new TextItemValueAdapter();
-						tiva.onEvent(textEvent);
-
-						return textEvent.getTextList();
-					}
-				});
-
+	@BeforeEach
+	public void setUp() throws PluginException, ModelException {
+		workflowEngine = new WorkflowMockEnvironment();
+		workflowEngine.setUp();
+		workflowEngine.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
+		workitem = workflowEngine.getDocumentService().load("W0000-00001");
+		workitem.model("1.0.0").task(100);
 	}
 
 	/**
@@ -99,12 +61,11 @@ public class TestAdaptText extends AbstractWorkflowServiceTest {
 
 		String resultString;
 		try {
-			resultString = this.workflowService.adaptText(testString, documentContext);
+			resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 			Assert.assertEquals(expectedString, resultString);
 		} catch (PluginException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Assert.fail(e.getMessage());
 		}
 	}
 
@@ -127,7 +88,7 @@ public class TestAdaptText extends AbstractWorkflowServiceTest {
 
 		String resultString = null;
 		try {
-			resultString = this.workflowService.adaptText(testString, documentContext);
+			resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 			Assert.assertNotNull(resultString);
 			Assert.assertEquals(testString, resultString);
 		} catch (PluginException e) {
@@ -165,7 +126,7 @@ public class TestAdaptText extends AbstractWorkflowServiceTest {
 
 		documentContext.replaceItemValue("datDate", cal.getTime());
 
-		String resultString = this.workflowService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
 
@@ -188,7 +149,7 @@ public class TestAdaptText extends AbstractWorkflowServiceTest {
 
 		documentContext.replaceItemValue("datDate", cal.getTime());
 
-		String resultString = this.workflowService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
 
@@ -222,7 +183,7 @@ public class TestAdaptText extends AbstractWorkflowServiceTest {
 		value.add(300);
 		documentContext.replaceItemValue("_numbers", value);
 
-		String resultString = this.workflowService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
 
@@ -251,7 +212,7 @@ public class TestAdaptText extends AbstractWorkflowServiceTest {
 
 		documentContext.replaceItemValue("price", Float.valueOf((float) 1199.99));
 
-		String resultString = this.workflowService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedString, resultString);
 
@@ -285,7 +246,7 @@ public class TestAdaptText extends AbstractWorkflowServiceTest {
 		value.add(300);
 		documentContext.replaceItemValue("_numbers", value);
 
-		String resultString = this.workflowService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		// we expect that only the first value is given, because no separator was
 		// defined.
@@ -321,7 +282,7 @@ public class TestAdaptText extends AbstractWorkflowServiceTest {
 		values.add(300);
 		documentContext.replaceItemValue("_numbers", values);
 
-		String resultString = this.workflowService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedStringLast, resultString);
 
@@ -335,7 +296,7 @@ public class TestAdaptText extends AbstractWorkflowServiceTest {
 
 		documentContext.replaceItemValue("_numbers", values);
 
-		resultString = this.workflowService.adaptText(testString, documentContext);
+		resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedStringFirst, resultString);
 
@@ -367,7 +328,7 @@ public class TestAdaptText extends AbstractWorkflowServiceTest {
 		documentContext.appendItemValue("_partid", "A123");
 		documentContext.appendItemValue("_partid", "B456");
 
-		String resultString = workflowService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedStringLast, resultString);
 
@@ -408,7 +369,7 @@ public class TestAdaptText extends AbstractWorkflowServiceTest {
 		// create a fake value which should be ignored
 		documentContext.replaceItemValue("_orderid", "not used");
 
-		String resultString = workflowService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		Assert.assertEquals(expectedStringLast, resultString);
 

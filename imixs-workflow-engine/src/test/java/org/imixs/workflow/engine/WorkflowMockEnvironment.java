@@ -32,11 +32,11 @@ import jakarta.enterprise.event.Event;
 import jakarta.enterprise.inject.Instance;
 
 /**
- * The {@code AbstractWorkflowServiceTest} can be used as a base class for junit
+ * The {@code WorkflowMockEnvironment} can be used as a base class for junit
  * tests to mock the Imixs WorkflowService. The class mocks the WorkflowService
  * and a workflow environment including the ModelService.
  * 
- * Junit tests can extend the AbstractWorkflowServiceTest to verify specific
+ * Junit tests can instantiate this class to verify specific
  * method implementations of the workflowService, Plugin classes or Adapters in
  * a easy way.
  * <p>
