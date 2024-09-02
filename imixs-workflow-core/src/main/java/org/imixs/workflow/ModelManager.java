@@ -24,6 +24,7 @@ import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.BPMNProcess;
 import org.openbpmn.bpmn.elements.Event;
 import org.openbpmn.bpmn.elements.Participant;
+import org.openbpmn.bpmn.elements.SequenceFlow;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
@@ -697,6 +698,48 @@ public class ModelManager {
         } catch (PluginException e) {
             e.printStackTrace();
             logger.severe("Failed to evaluate Condition: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * This method evaluates the outgoing sequenceFlows of a ParallelGateway.
+     * <p>
+     * The method returns true if the given targetNode is connected with a
+     * TASK_ELEMENT or with a EVENT_ELEMENT by a conditional flow that evaluates to
+     * true.
+     * These are the only two cases that indicate the Main Version flow!
+     * 
+     * @param gatewayNode - ParallelGateway Node
+     * @param targetNode  - Target Node (either a Task or a Event)
+     * @param workitem    - current workitem
+     * @return true if targetNode defines the main flow
+     */
+    public boolean isMainParallelGatewayFlow(BPMNElementNode gatewayNode, BPMNElementNode targetNode,
+            ItemCollection workitem) {
+
+        if (ModelManager.TASK_ELEMENT.equals(targetNode.getType())) {
+            return true;
+        }
+        // find SequenceFlow
+        Set<SequenceFlow> outFlows = gatewayNode.getOutgoingSequenceFlows();
+        for (SequenceFlow outFlow : outFlows) {
+            if (outFlow.getTargetElement().getId().equals(targetNode.getId())) {
+                String condition = outFlow.getConditionExpression();
+                if (condition != null && !condition.isEmpty()) {
+                    try {
+                        // RuleEngine ruleEngine = new RuleEngine();
+                        boolean conditionResult = ruleEngine.evaluateBooleanExpression(condition, workitem);
+                        if (conditionResult == true) {
+                            return true;
+                        }
+                    } catch (PluginException e) {
+                        logger.severe("Failed to evaluate Condition of SplitEvent '" + gatewayNode.getId() + "': "
+                                + e.getMessage());
+                    }
+                    return false;
+                }
+            }
         }
         return false;
     }

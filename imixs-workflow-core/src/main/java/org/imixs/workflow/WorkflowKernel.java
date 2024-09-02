@@ -523,8 +523,18 @@ public class WorkflowKernel {
         while (splitElementNavigator.hasNext()) {
             BPMNElementNode nextSplitNode = splitElementNavigator.next();
             ItemCollection splitItemCol = BPMNEntityBuilder.build(nextSplitNode);
-
-            if (ModelManager.EVENT_ELEMENT.equals(splitItemCol.getType())) {
+            // Test if the flow is a the Main SequenceFlow of the ParallelGateway.
+            boolean bMainFlow = this.ctx.getModelManager().isMainParallelGatewayFlow(gatewayNode, nextSplitNode,
+                    workitem);
+            if (bMainFlow) {
+                if (foundMainTask == true) {
+                    throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
+                            "BPMN Model Error: Parallel Gateway: " + gatewayNode.getId()
+                                    + " - only one outcome can be directly linked to a task element! Missing Event element.");
+                }
+                foundMainTask = true;
+                result = splitItemCol;
+            } else {
                 // clone current instance to a new version...
                 ItemCollection cloned = createVersion(workitem);
                 // set new event
@@ -543,22 +553,12 @@ public class WorkflowKernel {
                 splitWorkitems.add(cloned);
                 continue;
             }
-            if (ModelManager.TASK_ELEMENT.equals(splitItemCol.getType())) {
-                if (foundMainTask == true) {
-                    throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
-                            "BPMN Model Error: Parallel Gateway: " + gatewayNode.getId()
-                                    + " - only one outcome can be directly linked to a task element! Missing Event element.");
-                }
-                foundMainTask = true;
-                result = splitItemCol;
-            }
-
         }
         // if we did not have found a SplitEvent we throw a Model Exception!
         if (foundMainTask == false) {
             throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
                     "BPMN Model Error: Parallel Gateway: " + gatewayNode.getId()
-                            + " - At least one outcome must be connected directly to a Task Element!");
+                            + " - At least one outcome must be connected directly to a Task Element or evaluate to 'true'!");
         }
         // continue with normal flow
         return result;

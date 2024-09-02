@@ -298,6 +298,59 @@ public class TestWorkflowKernelModels {
 
 		} catch (PluginException | ModelException e) {
 			// not expected
+			assertTrue(e.getMessage().contains("At least one outcome must be connected directly to a Task Element or"));
+		}
+
+	}
+
+	/**
+	 * Test model split_event_invalid_3.bpmn.
+	 * 
+	 * This model shows a situation whe each outcome is connected to a event. In
+	 * this case one SequenceFlow has to have a condition to evaluate to true.
+	 * 
+	 */
+	@Test
+	public void testSplitEventConditionalFlowsWithEvents() {
+
+		workflowEngine.loadBPMNModel("/bpmn/split_event_invalid_3.bpmn");
+
+		// test Condition 1
+		ItemCollection workItem = new ItemCollection();
+		workItem.replaceItemValue("_subject", "Hello");
+		workItem.model("1.0.0").task(1000).event(10);
+		assertNotNull(workItem);
+		// model exception expected because the parallel gateway does not provide
+		// events!
+		try {
+			workItem = workflowEngine.getWorkflowKernel().process(workItem);
+			Assert.assertEquals("Hello", workItem.getItemValueString("_subject"));
+			Assert.assertEquals(1100, workItem.getTaskID());
+			Assert.assertEquals(20, workItem.getItemValueInteger("$lastEvent"));
+
+			// test new version...
+			List<ItemCollection> versions = workflowEngine.getWorkflowKernel().getSplitWorkitems();
+			Assert.assertNotNull(versions);
+			Assert.assertTrue(versions.size() == 1);
+			ItemCollection version = versions.get(0);
+
+			Assert.assertEquals("Hello", version.getItemValueString("_subject"));
+			Assert.assertEquals(1200, version.getTaskID());
+			// $lastEvent should be 30
+			Assert.assertEquals(30, version.getItemValueInteger("$lastEvent"));
+
+			// Master $uniqueid must not match the version $uniqueid
+			Assert.assertFalse(workItem.getUniqueID().equals(version.getUniqueID()));
+
+			// $uniqueidSource must match $uniqueid of master
+			Assert.assertEquals(workItem.getUniqueID(),
+					version.getItemValueString(WorkflowKernel.UNIQUEIDSOURCE));
+
+			// $uniqueidVirsions must mach $uniqueid of version
+			Assert.assertEquals(version.getUniqueID(),
+					workItem.getItemValueString(WorkflowKernel.UNIQUEIDVERSIONS));
+		} catch (PluginException | ModelException e) {
+			// not expected
 			assertTrue(e.getMessage().contains("At least one outcome must be connected directly to a Task Element!"));
 		}
 
