@@ -427,13 +427,7 @@ public class WorkflowKernel {
         BPMNModel model = this.ctx.getModelManager().getModel(workitem.getModelVersion());
         // set $lastEventDate
         workitem.replaceItemValue(LASTEVENTDATE, new Date());
-
-        // invalidate deprecated models!
-        if (event.hasItem("keyFollowUp")) {
-            throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
-                    "Invalid Event Item: keyFollowUp no longer supported!");
-        }
-
+        // Execute Plugins and Adapters....
         workitem = executeMicroKernels(workitem, event);
 
         // test if a new model version was assigned by the last event

@@ -3,10 +3,10 @@ package org.imixs.workflow;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,6 +58,7 @@ public class ModelManager {
     // cache
     private final Map<String, ItemCollection> bpmnEntityCache = new ConcurrentHashMap<>();
     private final Map<String, BPMNElement> bpmnElementCache = new ConcurrentHashMap<>();
+    private final Map<String, Set<String>> groupCache = new ConcurrentHashMap<>();
 
     private RuleEngine ruleEngine = null;
 
@@ -310,7 +311,7 @@ public class ModelManager {
         // convert to List
         List<String> result = new ArrayList<>();
         result.addAll(versions);
-        Collections.sort(result);
+        Collections.sort(result, Collections.reverseOrder());
         return result;
     }
 
@@ -335,7 +336,7 @@ public class ModelManager {
         } else {
             // try to find model by regex if version is not empty...
             if (version != null && !version.isEmpty()) {
-                List<String> matchingVersions = findVersionsByRegEx(version);
+                Set<String> matchingVersions = findVersionsByRegEx(version);
                 for (String matchingVersion : matchingVersions) {
                     result = modelStore.get(matchingVersion);
                     if (result != null) {
@@ -350,9 +351,9 @@ public class ModelManager {
 
             // Still no match, try to find model version by group
             if (!workitem.getWorkflowGroup().isEmpty()) {
-                List<String> versions = findAllVersionsByGroup(workitem.getWorkflowGroup());
+                Set<String> versions = findAllVersionsByGroup(workitem.getWorkflowGroup());
                 if (!versions.isEmpty()) {
-                    String newVersion = versions.get(0);
+                    String newVersion = versions.iterator().next();
                     if (!newVersion.isEmpty()) {
                         logger.log(Level.WARNING, "Deprecated model version: ''{0}'' -> migrating to ''{1}'',"
                                 + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
@@ -382,33 +383,59 @@ public class ModelManager {
      * @param group
      * @return
      */
-    public Set<String> findAllGroups(BPMNModel _model) {
-        Set<String> result = new LinkedHashSet<>();
+    public Set<String> findAllGroupsByModel(BPMNModel _model) {
+        Set<String> result = null;
+        // test cache
+        String version = BPMNUtil.getVersion(_model);
+        result = groupCache.get(version);
+        if (result == null) {
+            result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
-        Set<BPMNProcess> processList = _model.getProcesses();
-        for (BPMNProcess _process : processList) {
-            String groupName = _process.getName();
-            if (_model.isCollaborationDiagram()) {
-                // collaboration diagram - only add private processes (Pools)
-                if (BPMNTypes.PROCESS_TYPE_PRIVATE.equals(_process.getProcessType())) {
-                    // add only private process types
-                    result.add(groupName);
-                }
-            } else {
-                // if it is not a collaboration diagram we return the name of the first Public
-                // Process
-                if (BPMNTypes.PROCESS_TYPE_PUBLIC.equals(_process.getProcessType())) {
-                    result.add(groupName);
-                    break;
+            Set<BPMNProcess> processList = _model.getProcesses();
+            for (BPMNProcess _process : processList) {
+                String groupName = _process.getName();
+                if (_model.isCollaborationDiagram()) {
+                    // collaboration diagram - only add private processes (Pools)
+                    if (BPMNTypes.PROCESS_TYPE_PRIVATE.equals(_process.getProcessType())) {
+                        // add only private process types
+                        result.add(groupName);
+                    }
+                } else {
+                    // if it is not a collaboration diagram we return the name of the first Public
+                    // Process
+                    if (BPMNTypes.PROCESS_TYPE_PUBLIC.equals(_process.getProcessType())) {
+                        result.add(groupName);
+                        break;
+                    }
                 }
             }
+            if (result.size() == 0) {
+                logger.warning("Model " + BPMNUtil.getVersion(_model)
+                        + " does not contain valid process elements! Please check your model file!");
+            }
+            // finally cache the new group set
+            groupCache.put(version, result);
         }
 
-        if (result.size() == 0) {
-            logger.warning("Model " + BPMNUtil.getVersion(_model)
-                    + " does not contain valid process elements! Please check your model file!");
-        }
+        // Create an immutable set from the sorted set
+        return Set.copyOf(result);
+    }
 
+    /**
+     * This method returns a sorted list of all unique workflow groups contained in
+     * the model store.
+     * <p>
+     * In case the model is a collaboration diagram, the method returns only group
+     * names from private process instances (Pools)!
+     * 
+     * @param group
+     * @return
+     */
+    public Set<String> findAllGroups() {
+        Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (BPMNModel model : modelStore.values()) {
+            result.addAll(findAllGroupsByModel(model));
+        }
         return result;
     }
 
@@ -420,22 +447,22 @@ public class ModelManager {
      * @param group - name of the workflow group
      * @return list of matching model versions
      */
-    public List<String> findAllVersionsByGroup(String group) {
+    public Set<String> findAllVersionsByGroup(String group) {
         boolean debug = logger.isLoggable(Level.FINE);
-        List<String> result = new ArrayList<String>();
+        // Sorted in reverse order
+        Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         if (debug) {
             logger.log(Level.FINEST, "......searching model versions for workflowgroup ''{0}''...", group);
         }
         // try to find matching model version by group
         Collection<BPMNModel> models = modelStore.values();
         for (BPMNModel _model : models) {
-            Set<String> allGroups = findAllGroups(_model);
+            Set<String> allGroups = findAllGroupsByModel(_model);
             if (allGroups.contains(group)) {
                 result.add(BPMNUtil.getVersion(_model));
             }
         }
-        // sort result
-        Collections.sort(result, Collections.reverseOrder());
+
         return result;
     }
 
@@ -453,9 +480,9 @@ public class ModelManager {
      */
     public String findVersionByGroup(String group) {
         String result = null;
-        List<String> versions = findAllVersionsByGroup(group);
+        Set<String> versions = findAllVersionsByGroup(group);
         if (versions.size() > 0) {
-            result = versions.get(0);
+            result = versions.iterator().next();
         }
         return result;
     }
@@ -468,9 +495,11 @@ public class ModelManager {
      * @param group
      * @return
      */
-    public List<String> findVersionsByRegEx(String modelRegex) {
+    public Set<String> findVersionsByRegEx(String modelRegex) {
         boolean debug = logger.isLoggable(Level.FINE);
-        List<String> result = new ArrayList<String>();
+        // List<String> result = new ArrayList<String>();
+        // Sorted in reverse order
+        Set<String> result = new TreeSet<>(Collections.reverseOrder());
         if (debug) {
             logger.log(Level.FINEST, "......searching model versions for regex ''{0}''...", modelRegex);
         }
@@ -482,8 +511,6 @@ public class ModelManager {
                 result.add(_version);
             }
         }
-        // sort result
-        Collections.sort(result, Collections.reverseOrder());
         return result;
     }
 
@@ -680,6 +707,7 @@ public class ModelManager {
     private void clearCache() {
         bpmnEntityCache.clear();
         bpmnElementCache.clear();
+        groupCache.clear();
     }
 
     /**
@@ -741,7 +769,6 @@ public class ModelManager {
             String id = activity.getExtensionAttribute(BPMNUtil.getNamespace(), "processid");
             try {
                 if (taskID == Long.parseLong(id)) {
-                    logger.info("lookupTaskElementByID " + taskID + " took " + (System.currentTimeMillis() - l) + "ms");
                     return activity;
                 }
             } catch (NumberFormatException e) {

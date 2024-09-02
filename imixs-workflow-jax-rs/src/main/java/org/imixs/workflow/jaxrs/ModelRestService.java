@@ -309,7 +309,7 @@ public class ModelRestService {
         Set<String> col = null;
         try {
             BPMNModel model = modelService.getModelManager().getModel(version);
-            col = modelService.getModelManager().findAllGroups(model);
+            col = modelService.getModelManager().findAllGroupsByModel(model);
             return col;
         } catch (ModelException e) {
             throw new WebApplicationException("BPMN Model Error: ", e);
@@ -539,8 +539,8 @@ public class ModelRestService {
         ItemCollection modelEntity = modelService.loadModel(modelVersion);
 
         // now check groups...
-        Set<String> groupList = modelService.getModelManager().findAllGroups(model);// .getWorkflowGroups(model);//
-                                                                                    // model.getGroups();
+        Set<String> groupList = modelService.getModelManager().findAllGroupsByModel(model);// .getWorkflowGroups(model);//
+        // model.getGroups();
         buffer.append("<tr>");
 
         if (modelEntity != null) {

@@ -165,15 +165,12 @@ public class TestBPMNModelBasic {
 
 		// test task 1000
 		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
-
 		Assert.assertNotNull(task);
 		Assert.assertEquals("Task 1", task.getItemValueString("name"));
 		Assert.assertEquals("Some documentation...", task.getItemValueString("documentation"));
-
 		// change some attributes of task....
 		task.replaceItemValue("txtworkflowgroup", "test");
 		Assert.assertEquals("test", task.getItemValueString("txtworkflowgroup"));
-
 		// test task 1000 once again
 		task = openBPMNModelManager.findTaskByID(model, 1000);
 		Assert.assertNotNull(task);
@@ -194,25 +191,20 @@ public class TestBPMNModelBasic {
 	 */
 	@Test
 	public void testModifyDefinition() throws ModelException {
-
 		ItemCollection workitem = new ItemCollection();
 		workitem.model("1.0.0");
 
 		// test definition
 		ItemCollection definition = openBPMNModelManager.loadDefinition(model);
-
 		Assert.assertNotNull(definition);
 		Assert.assertEquals("1.0.0", definition.getItemValueString("$ModelVersion"));
-
 		// change name of definition....
 		definition.replaceItemValue("$ModelVersion", "test");
 		Assert.assertEquals("test", definition.getItemValueString("$ModelVersion"));
-
 		// test definition once again
 		definition = openBPMNModelManager.loadDefinition(model);
 		Assert.assertNotNull(definition);
 		Assert.assertEquals("1.0.0", definition.getItemValueString("$ModelVersion"));
-
 	}
 
 	/**
@@ -227,18 +219,20 @@ public class TestBPMNModelBasic {
 	 */
 	@Test
 	public void testModifyGroups() throws ModelException {
-
-		Set<String> groups = openBPMNModelManager.findAllGroups(model);
+		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(1, groups.size());
 		// add a new group....
-		groups.add("test-group1");
-		Assert.assertEquals(2, groups.size());
-		// test groups once again
-		groups = openBPMNModelManager.findAllGroups(model);
-		Assert.assertNotNull(groups);
-		Assert.assertEquals(1, groups.size());
-
+		try {
+			groups.add("test-group1");
+			Assert.fail();
+		} catch (UnsupportedOperationException e) {
+			// we expect a UnsupportedOperationException
+			// test groups once again
+			groups = openBPMNModelManager.findAllGroupsByModel(model);
+			Assert.assertNotNull(groups);
+			Assert.assertEquals(1, groups.size());
+		}
 	}
 
 	/**

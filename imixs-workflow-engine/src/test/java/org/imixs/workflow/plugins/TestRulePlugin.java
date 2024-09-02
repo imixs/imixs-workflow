@@ -1,6 +1,5 @@
 package org.imixs.workflow.plugins;
 
-import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -221,38 +220,6 @@ public class TestRulePlugin {
 	}
 
 	/**
-	 * This test verifies the follUp behavior. If set then keyFollowUp and
-	 * numNextActivity should be overwritten by the RulePlugin
-	 * 
-	 * @throws ScriptException
-	 * @throws PluginException
-	 */
-	@Test
-	public void testFollowUpActivity() throws PluginException {
-
-		ItemCollection adocumentContext = new ItemCollection();
-		ItemCollection adocumentActivity = new ItemCollection();
-
-		// set a business rule
-		String script = "var result={}; var a=1.0;var b=2;result.followUp =a+b;";
-
-		logger.log(Level.INFO, "Script={0}", script);
-		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-
-		// run plugin
-		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
-
-		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
-		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
-
-		Assert.assertEquals("1", sFllowUp);
-
-		Assert.assertEquals(followUp, 3);
-
-	}
-
-	/**
 	 * only to evaluate some behavior
 	 * 
 	 * @throws ScriptException
@@ -263,7 +230,7 @@ public class TestRulePlugin {
 
 		// set a business rule
 		// workitem.get(refField1)[0])
-		String script = " var result={}; result.followUp=null;" + " if (workitem._amount_brutto[0]>5000)"
+		String script = " var result={};" + " if (workitem._amount_brutto[0]>5000)"
 				+ "    result.followUp=90;";
 		logger.log(Level.INFO, "Script={0}", script);
 
@@ -276,12 +243,6 @@ public class TestRulePlugin {
 		// run plugin
 		workitem = rulePlugin.run(workitem, event);
 		Assert.assertNotNull(workitem);
-		String sFllowUp = event.getItemValueString("keyFollowUp");
-		int followUp = event.getItemValueInteger("numNextActivityID");
-
-		Assert.assertEquals("1", sFllowUp);
-
-		Assert.assertEquals(90, followUp);
 
 		/*
 		 * Case 2
@@ -296,45 +257,6 @@ public class TestRulePlugin {
 		// run plugin
 		workitem = rulePlugin.run(workitem, event);
 		Assert.assertNotNull(workitem);
-
-		sFllowUp = event.getItemValueString("keyFollowUp");
-		followUp = event.getItemValueInteger("numNextActivityID");
-
-		Assert.assertEquals("", sFllowUp);
-
-		Assert.assertEquals(0, followUp);
-
-	}
-
-	/**
-	 * This test verifies the BigDecimal support of the RulePlugin
-	 * 
-	 * @throws ScriptException
-	 * @throws PluginException
-	 */
-	@Test
-	public void bigDecimalTest() throws PluginException {
-
-		// set a business rule
-		String script = " var result={};" + " if (workitem._amount_brutto[0]>5000.50)" + "    result.followUp=90;";
-		logger.log(Level.INFO, "Script={0}", script);
-
-		ItemCollection adocumentContext = new ItemCollection();
-		adocumentContext.replaceItemValue("_amount_brutto", BigDecimal.valueOf(5000.51d));
-		ItemCollection adocumentActivity = new ItemCollection();
-
-		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-
-		// run plugin
-		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
-
-		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
-		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
-
-		Assert.assertEquals("1", sFllowUp);
-
-		Assert.assertEquals(90, followUp);
 
 	}
 
@@ -738,38 +660,6 @@ public class TestRulePlugin {
 		Assert.assertEquals("Hello World", adocumentContext.getItemValueString("someitem"));
 
 		Assert.assertEquals(1, adocumentContext.getItemValueInteger("somenumber"));
-
-	}
-
-	/**
-	 * This test verifies the follUp behavior. If set then keyFollowUp and
-	 * numNextActivity should be overwritten by the RulePlugin
-	 * 
-	 * @throws ScriptException
-	 * @throws PluginException
-	 */
-	@Test
-	public void testResultObjectFollowUpActivity() throws PluginException {
-
-		ItemCollection adocumentContext = new ItemCollection();
-		ItemCollection adocumentActivity = new ItemCollection();
-
-		// set a business rule
-		String script = "var a=1.0;var b=2;var result={}; result.followUp =a+b;";
-
-		logger.log(Level.INFO, "Script={0}", script);
-		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-
-		// run plugin
-		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
-
-		String sFllowUp = adocumentActivity.getItemValueString("keyFollowUp");
-		int followUp = adocumentActivity.getItemValueInteger("numNextActivityID");
-
-		Assert.assertEquals("1", sFllowUp);
-
-		Assert.assertEquals(followUp, 3);
 
 	}
 

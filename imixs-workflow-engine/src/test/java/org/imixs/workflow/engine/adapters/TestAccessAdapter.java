@@ -49,7 +49,7 @@ public class TestAccessAdapter {
 		// Setup Environment
 		workflowEnvironment.setUp();
 		workflowEnvironment.loadBPMNModel("/bpmn/TestAccessPlugin.bpmn");
-		model = workflowEnvironment.getModelService().getModel("1.0.0");
+		model = workflowEnvironment.getModelService().getModelManager().getModel("1.0.0");
 		accessAdapter.workflowService = workflowEnvironment.getWorkflowService();
 
 		// prepare data

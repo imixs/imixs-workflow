@@ -48,7 +48,7 @@ public class TestBPMNParserCollaborationMinutes {
 		BPMNModel model = openBPMNModelManager.getModel("1.0.0");
 		Assert.assertNotNull(model);
 
-		Set<String> groups = openBPMNModelManager.findAllGroups(model);
+		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
 		// Test Groups
 		Assert.assertFalse(groups.contains("Collaboration"));
 		Assert.assertTrue(groups.contains("Protokoll"));

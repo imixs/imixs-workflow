@@ -70,7 +70,7 @@ public class TestBPMNParserTicket {
 		Assert.assertEquals("org.imixs.workflow.plugins.HistoryPlugin", plugins.get(2));
 		Assert.assertEquals("org.imixs.workflow.plugins.ResultPlugin", plugins.get(3));
 
-		Set<String> groups = openBPMNModelManager.findAllGroups(model);
+		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
 		Assert.assertTrue(groups.contains("Ticket"));
 
 		// test task 1000
@@ -149,7 +149,7 @@ public class TestBPMNParserTicket {
 		Assert.assertEquals("org.imixs.workflow.plugins.HistoryPlugin", plugins.get(2));
 		Assert.assertEquals("org.imixs.workflow.plugins.ResultPlugin", plugins.get(3));
 
-		Set<String> groups = openBPMNModelManager.findAllGroups(model);
+		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
 		Assert.assertTrue(groups.contains("Ticket"));
 
 		// test task 1000

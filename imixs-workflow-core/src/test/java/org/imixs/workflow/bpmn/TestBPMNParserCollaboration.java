@@ -52,7 +52,7 @@ public class TestBPMNParserCollaboration {
 		Assert.assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));
 		Assert.assertEquals("1.0.0", profile.getItemValueString("$ModelVersion"));
 
-		Set<String> groups = openBPMNModelManager.findAllGroups(model);
+		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
 		// List<String> groups = model.getGroups();
 		// Test Groups
 		Assert.assertFalse(groups.contains("Collaboration"));

@@ -55,7 +55,7 @@ public class TestBPMNParserGroups {
 			Assert.fail(e.getMessage());
 		}
 		// Test Groups
-		Set<String> groups = openBPMNModelManager.findAllGroups(model);
+		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
 
 		Assert.assertTrue(groups.contains("Simple"));
 
@@ -87,7 +87,7 @@ public class TestBPMNParserGroups {
 		}
 
 		// Test Groups
-		Set<String> groups = openBPMNModelManager.findAllGroups(model);
+		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
 		Assert.assertEquals(2, groups.size());
 		Assert.assertTrue(groups.contains("Protokoll"));
 		Assert.assertTrue(groups.contains("Protokollpunkt"));

@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -104,10 +105,10 @@ public class WorkflowMockEnvironment {
 
 		// Set up test environment
 		createTestDatabase();
-		loadBPMNModel("/bpmn/plugin-test.bpmn");
 
 		// Link modelService to workflowServiceMock
 		workflowService.modelService = modelService;
+		modelService.modelManager = new ModelManager();
 		Assert.assertNotNull(modelService.getModelManager());
 
 		workflowContext = new WorkflowContextMock();

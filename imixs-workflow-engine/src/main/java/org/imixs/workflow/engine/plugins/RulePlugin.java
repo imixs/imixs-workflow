@@ -169,23 +169,11 @@ public class RulePlugin extends AbstractPlugin {
                         "BusinessRule: validation failed - ErrorCode=" + sErrorCode, params);
             }
 
-            // now test the variable 'followUp'
-            Object followUp = null;
+            // now test the deprecated variable 'followUp'
             // first test result object
             if (result.hasItem("followUp")) {
-                followUp = result.getItemValueString("followUp");
+                logger.warning("Rule contains deprecated item 'followUp'. This item is no longer supported.");
                 result.removeItem("followUp");
-            }
-
-            // If followUp is defined we update now the activityEntity....
-            if (followUp != null) {
-                // try to get double value...
-                Double d = Double.valueOf(followUp.toString());
-                Long followUpActivity = d.longValue();
-                if (followUpActivity != null && followUpActivity > 0) {
-                    event.replaceItemValue("keyFollowUp", "1");
-                    event.replaceItemValue("numNextActivityID", followUpActivity);
-                }
             }
 
             // if result has item values then we update now the current

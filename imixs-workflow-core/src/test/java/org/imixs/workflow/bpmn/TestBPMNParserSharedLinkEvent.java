@@ -50,7 +50,7 @@ public class TestBPMNParserSharedLinkEvent {
 		}
 
 		// Test Environment
-		Assert.assertTrue(openBPMNModelManager.findAllGroups(model).contains("Simple"));
+		Assert.assertTrue(openBPMNModelManager.findAllGroupsByModel(model).contains("Simple"));
 
 		// test count of elements
 		Assert.assertEquals(3, model.findAllActivities().size());

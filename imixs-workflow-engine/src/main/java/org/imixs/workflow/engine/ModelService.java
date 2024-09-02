@@ -90,13 +90,13 @@ public class ModelService {
 
     private static final Logger logger = Logger.getLogger(ModelService.class.getName());
 
-    private ModelManager modelManager = null;
+    protected ModelManager modelManager = null;
 
     @Inject
-    private DocumentService documentService;
+    protected DocumentService documentService;
 
     @Resource
-    private SessionContext ctx;
+    protected SessionContext ctx;
 
     public ModelService() {
         super();

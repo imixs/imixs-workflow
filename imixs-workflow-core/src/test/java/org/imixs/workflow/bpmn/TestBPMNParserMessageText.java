@@ -46,7 +46,7 @@ public class TestBPMNParserMessageText {
 			Assert.fail();
 		}
 
-		Set<String> groups = openBPMNModelManager.findAllGroups(model);
+		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
 		Assert.assertTrue(groups.contains("Message Example"));
 
 		// test count of elements
