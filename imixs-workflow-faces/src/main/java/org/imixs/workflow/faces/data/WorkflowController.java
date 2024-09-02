@@ -130,6 +130,8 @@ public class WorkflowController extends AbstractDataController implements Serial
     @Inject
     LoginController loginController;
 
+    List<ItemCollection> activities = null;
+
     public static final String DEFAULT_TYPE = "workitem";
 
     public WorkflowController() {
@@ -158,6 +160,7 @@ public class WorkflowController extends AbstractDataController implements Serial
      */
     public void setWorkitem(ItemCollection workitem) {
         this.data = workitem;
+        activities = null;
     }
 
     /**
@@ -185,7 +188,7 @@ public class WorkflowController extends AbstractDataController implements Serial
         }
 
         // find the ProcessEntity
-        startProcessEntity = modelService.loadTask(data);
+        startProcessEntity = modelService.getModelManager().loadTask(data);
 
         // ProcessEntity found?
         if (startProcessEntity == null) {
@@ -227,6 +230,7 @@ public class WorkflowController extends AbstractDataController implements Serial
         data.replaceItemValue("txtworkflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
         data.replaceItemValue("txtworkflowStatus", startProcessEntity.getItemValueString("txtname"));
 
+        activities = null;
         startConversation();
         // fire event
         events.fire(new WorkflowEvent(getWorkitem(), WorkflowEvent.WORKITEM_CREATED));
@@ -390,6 +394,7 @@ public class WorkflowController extends AbstractDataController implements Serial
             }
         }
 
+        activities = null;
         // return the action result (Post-Redirect-Get).
         // can be null in case of an exception
         return actionResult;
@@ -418,36 +423,44 @@ public class WorkflowController extends AbstractDataController implements Serial
     /**
      * This method returns a List of workflow events assigned to the corresponding
      * '$taskid' and '$modelversion' of the current WorkItem.
+     * <p>
+     * The method uses a caching mechanism to load the event list only once
      * 
      * @return
      */
     public List<ItemCollection> getEvents() {
-        List<ItemCollection> activityList = new ArrayList<ItemCollection>();
 
-        if (getWorkitem() == null || (getWorkitem().getModelVersion().isEmpty()
-                && getWorkitem().getItemValueString(WorkflowKernel.WORKFLOWGROUP).isEmpty())) {
-            return activityList;
+        // use cache?
+        if (activities == null) {
+            // no - lookup activities....
+            activities = new ArrayList<ItemCollection>();
+
+            if (getWorkitem() == null || (getWorkitem().getModelVersion().isEmpty()
+                    && getWorkitem().getItemValueString(WorkflowKernel.WORKFLOWGROUP).isEmpty())) {
+                return activities;
+            }
+
+            // get Events form workflowService
+            try {
+                activities = workflowService.getEvents(getWorkitem());
+            } catch (ModelException e) {
+                logger.log(Level.WARNING, "Unable to get workflow event list: {0}", e.getMessage());
+            }
         }
 
-        // get Events form workflowService
-        try {
-            activityList = workflowService.getEvents(getWorkitem());
-        } catch (ModelException e) {
-            logger.log(Level.WARNING, "Unable to get workflow event list: {0}", e.getMessage());
-        }
-
-        return activityList;
+        return activities;
     }
 
     /**
-     * Loads a workitem by a given $uniqueid and starts a new conversaton. The
-     * conversaion will be ended after the workitem was processed or after the
+     * Loads a workitem by a given $uniqueID and starts a new conversation. The
+     * conversation will be ended after the workitem was processed or after the
      * MaxInactiveInterval from the session.
      * 
-     * @param uniqueid
+     * @param uniqueID
      */
     public void load(String uniqueid) {
         super.load(uniqueid);
+        activities = null;
         if (data != null) {
             // fire event
             events.fire(new WorkflowEvent(data, WorkflowEvent.WORKITEM_CHANGED));

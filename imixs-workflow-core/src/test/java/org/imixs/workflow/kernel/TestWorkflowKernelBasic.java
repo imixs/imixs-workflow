@@ -298,14 +298,50 @@ public class TestWorkflowKernelBasic {
      * Test processing a follow up event. Trigger 1000.10 should immediately trigger
      * the follow up event 20
      * 
-     * The test loads the model 'followup.bpmn'
+     * The test loads the model 'followup_001.bpmn'
      */
     @Test
     @Category(org.imixs.workflow.WorkflowKernel.class)
     public void testFollowup() {
 
         // load followup model
-        workflowEngine.loadBPMNModel("/bpmn/followup.bpmn");
+        workflowEngine.loadBPMNModel("/bpmn/followup_001.bpmn");
+        ItemCollection workItem = new ItemCollection();
+        workItem.replaceItemValue("txtTitel", "Hello");
+        workItem.model("1.0.0")
+                .task(1000)
+                .event(10);
+
+        Assert.assertEquals(workItem.getItemValueString("txttitel"), "Hello");
+
+        try {
+            workItem = workflowEngine.getWorkflowKernel().process(workItem);
+        } catch (WorkflowException e) {
+            Assert.fail();
+            e.printStackTrace();
+        } catch (ProcessingErrorException e) {
+            Assert.fail();
+            e.printStackTrace();
+        }
+
+        // runs should be 2
+        Assert.assertEquals(2, workItem.getItemValueInteger("runs"));
+        // test next state
+        Assert.assertEquals(1100, workItem.getTaskID());
+    }
+
+    /**
+     * Test processing a follow up event. Trigger 1000.10 should immediately trigger
+     * the follow up event 20
+     * 
+     * The test loads the model 'followup_002.bpmn'
+     */
+    @Test
+    @Category(org.imixs.workflow.WorkflowKernel.class)
+    public void testFollowupMultipleGateways() {
+
+        // load followup model
+        workflowEngine.loadBPMNModel("/bpmn/followup_002.bpmn");
         ItemCollection workItem = new ItemCollection();
         workItem.replaceItemValue("txtTitel", "Hello");
         workItem.model("1.0.0")

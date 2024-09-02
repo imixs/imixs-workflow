@@ -171,4 +171,24 @@ public class TestOwnerPlugin {
 		Assert.assertEquals(0, writeAccess.size());
 	}
 
+	/**
+	 * This test simulates a complex gateway situation where the OwnerPlugin and the
+	 * Kernel call the eval() method multiple times.
+	 * 
+	 * @throws ModelException
+	 */
+	@Test
+	public void testMultipleEvents() throws ModelException {
+
+		workflowEnvironment.loadBPMNModel("/bpmn/TestOwnerPluginWithEval.bpmn");
+		workitem.task(1000).event(10);
+		try {
+			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
+		} catch (PluginException e) {
+			Assert.fail(e.getMessage());
+		}
+
+		Assert.assertEquals(1100, workitem.getTaskID());
+	}
+
 }

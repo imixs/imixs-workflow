@@ -447,8 +447,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         // now filter events which are not public (keypublicresult==false) or
         // restricted for current user (keyRestrictedVisibility).
         for (ItemCollection event : eventList) {
-            // test keypublicresult==false
-
             // ad only activities with userControlled != No
             if ("0".equals(event.getItemValueString("keypublicresult"))) {
                 continue;
@@ -1144,9 +1142,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
      * @throws PluginException
      * @throws ModelException
      */
-    public ItemCollection evalNextTask(ItemCollection documentContext) throws PluginException, ModelException {
+    public ItemCollection evalNextTask(ItemCollection workitem) throws PluginException, ModelException {
         WorkflowKernel workflowkernel = new WorkflowKernel(this);
-        ItemCollection task = workflowkernel.eval(documentContext);
+        ItemCollection task = workflowkernel.eval(workitem);
         return task;
     }
 

@@ -491,18 +491,13 @@ public class BPMNEntityBuilder {
      * @param oldItemName
      */
     private static void adaptDeprecatedItem(ItemCollection entity, String newItemName, String oldItemName) {
-
         // test if old name is provided with a value...
         if (entity.getItemValueString(newItemName).isEmpty()
                 && !entity.getItemValueString(oldItemName).isEmpty()) {
             entity.replaceItemValue(newItemName, entity.getItemValue(oldItemName));
         }
-
-        // now we support backward compatibility and add the old name if missing
-        if (entity.getItemValueString(oldItemName).isEmpty()) {
-            entity.replaceItemValue(oldItemName, entity.getItemValue(newItemName));
-        }
-
+        // now we support backward compatibility and add the old name
+        entity.replaceItemValue(oldItemName, entity.getItemValue(newItemName));
     }
 
 }

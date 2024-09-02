@@ -108,6 +108,9 @@ public class WorkflowKernel {
     public static final String TASKID = "$taskid";
     public static final String EVENTID = "$eventid";
 
+    public static final String INTERMEDIATE_EVENTID = "$intermediateEvent";
+    public static final String INTERMEDIATE_EVENT_ELEMENTID = "$intermediateEvent.elementId";
+
     public static final String WORKFLOWGROUP = "$workflowgroup";
     public static final String WORKFLOWSTATUS = "$workflowstatus";
     public static final String ISVERSION = "$isversion";
@@ -457,6 +460,7 @@ public class WorkflowKernel {
                 logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
                 event = nextElement;
                 workitem.event(event.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID));
+                updateIntermediateEvent(workitem, event);
                 // return the next event element to be processed....
                 return event;
             }
@@ -559,7 +563,8 @@ public class WorkflowKernel {
     /**
      * Evaluates the next task BPMN element for a process instance (workitem) based
      * on the current model definition. A Workitem must at least provide the
-     * properties <code>$TaskID</code> and <code>$EventID.
+     * properties <code>$TaskID</code> and a <code>$EventID</code> or
+     * <code>$intermediateEventID</code>.
      * <p>
      * During the evaluation life-cycle more than one event can be evaluated. This
      * depends on the model definition which can define follow-up-events,
@@ -597,8 +602,28 @@ public class WorkflowKernel {
                     "processing error: $eventID undefined (" + workitem.getEventID() + ")");
 
         // now evaluate all events defined by the model
+
         List<String> loopDetector = new ArrayList<String>();
-        ItemCollection event = this.ctx.getModelManager().loadEvent(workitem);
+
+        // In case we have an Intermediate Event we load the next event in the
+        // sequenceFlow.
+        // This logic is only valid for the eval method. In case of a normal processing
+        // life cycle an intermediate event is not allowed!
+        ItemCollection event = null;
+        String intermediateEventElementID = workitem.getItemValueString(WorkflowKernel.INTERMEDIATE_EVENT_ELEMENTID);
+        int intermediateEvent = workitem.getItemValueInteger(WorkflowKernel.INTERMEDIATE_EVENTID);
+        if (intermediateEvent > 0) {
+            BPMNModel model = this.ctx.getModelManager().findModelByWorkitem(workitem);
+            BPMNElementNode inteEventElement = model.findElementNodeById(intermediateEventElementID);
+            // ItemCollection intermediateEventItemCol =
+            // BPMNEntityBuilder.build(inteEventElement);
+            // event = this.ctx.getModelManager().nextModelElement(intermediateEventItemCol,
+            // workitem);
+            event = BPMNEntityBuilder.build(inteEventElement);
+        } else {
+            event = this.ctx.getModelManager().loadEvent(workitem);
+        }
+
         while (event != null) {
             String id = event.getItemValueString("id");
             if (loopDetector.contains(id)) {
@@ -761,7 +786,7 @@ public class WorkflowKernel {
     /**
      * Helper method to update the items $taskid, $worklfowstatus, $workflowgroup
      * and type.
-     * The given Element must bei a Task. Otherwise the method throws a
+     * The given Element must be a Task. Otherwise the method throws a
      * ModelException.
      * 
      * @throws ModelException
@@ -772,6 +797,10 @@ public class WorkflowKernel {
             throw new ModelException(ModelException.INVALID_MODEL,
                     "Invalid Model Element - BPMN Task Element was expected to update the current workflow status.");
         }
+
+        // remove optional intermediate event status
+        workitem.removeItem("$intermediateEvent");
+        workitem.removeItem("$intermediateEventElementID");
 
         ItemCollection process = ctx.getModelManager().loadProcess(workitem);
         // Update the attributes $taskID and $WorkflowStatus
@@ -796,6 +825,26 @@ public class WorkflowKernel {
         if (!"".equals(sType)) {
             workitem.replaceItemValue(TYPE, sType);
         }
+    }
+
+    /**
+     * Helper method to update the item $intermediateEventID.
+     * The given Element must be a Event. Otherwise the method throws a
+     * ModelException.
+     * 
+     * @throws ModelException
+     */
+    private void updateIntermediateEvent(ItemCollection workitem, ItemCollection itemColNextEvent)
+            throws ModelException {
+        boolean debug = logger.isLoggable(Level.FINE);
+        if (!ModelManager.EVENT_ELEMENT.equals(itemColNextEvent.getType())) {
+            throw new ModelException(ModelException.INVALID_MODEL,
+                    "Invalid Model Element - BPMN Event Element was expected to update the intermediate event status.");
+        }
+
+        workitem.setItemValue(INTERMEDIATE_EVENTID, itemColNextEvent.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID));
+        workitem.setItemValue(INTERMEDIATE_EVENT_ELEMENTID, itemColNextEvent.getItemValueString("id"));
+
     }
 
     /**
