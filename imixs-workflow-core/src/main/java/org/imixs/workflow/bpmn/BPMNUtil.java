@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
-import org.imixs.workflow.ItemCollection;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
 import org.openbpmn.bpmn.BPMNTypes;
@@ -36,6 +36,7 @@ import org.w3c.dom.NodeList;
  * 
  */
 public class BPMNUtil {
+    private static Logger logger = Logger.getLogger(BPMNUtil.class.getName());
 
     public final static String TASK_ITEM_NAME = "name";
     public final static String TASK_ITEM_TASKID = "taskid";
@@ -389,57 +390,11 @@ public class BPMNUtil {
     }
 
     /**
-     * Iterates tough all ingoing sequence flows and tests if the source element is
-     * a so called Init-Event. An Init-Event is an Imixs Event with no incoming
-     * nodes or with one incoming node that comes direct from a Start event.
-     * <p>
-     * If a source element is an Event and has a predecessor event the method calls
-     * itself recursive.
-     * 
-     * @param currentNode
-     */
-    public static void findInitEventNodes(BPMNElementNode currentNode, List<ItemCollection> collector) {
-        Set<SequenceFlow> flowSet = currentNode.getIngoingSequenceFlows();
-        for (SequenceFlow flow : flowSet) {
-            BPMNElementNode element = flow.getSourceElement();
-            if (isInitEventNode(element)) {
-                collector.add(BPMNEntityBuilder.build(element));
-                // collector.add((Event) element);
-            } else if (element != null && BPMNUtil.isImixsEventElement(element)) {
-                // is the source an Imixs event node?
-                // recursive call....
-                findInitEventNodes(element, collector);
-            }
-        }
-    }
-
-    /**
-     * This helper method collects all incoming events. The method iterates tough
-     * all ingoing sequence flows and tests if the source element is an Event.
-     * <p>
-     * If a source element is an Event and has a predecessor event the method calls
-     * itself recursive.
-     * 
-     * @param currentNode
-     */
-    public static void findAllIncomingEventNodes(BPMNElementNode currentNode, List<Event> collector) {
-        Set<SequenceFlow> flowSet = currentNode.getIngoingSequenceFlows();
-        for (SequenceFlow flow : flowSet) {
-            BPMNElementNode element = flow.getSourceElement();
-            if (element != null && BPMNUtil.isImixsEventElement((element))) {
-                collector.add((Event) element);
-                // recursive call....
-                findAllIncomingEventNodes(element, collector);
-            }
-        }
-    }
-
-    /**
      * Returns true if the given node is a an ImixsEvent node with no incoming
      * nodes or with one incoming node that comes from a Start event.
      * 
      */
-    private static boolean isInitEventNode(BPMNElementNode eventNode) {
+    public static boolean isInitEventNode(BPMNElementNode eventNode) {
         if (BPMNUtil.isImixsEventElement(eventNode)) {
             Set<SequenceFlow> flowSet = eventNode.getIngoingSequenceFlows();
             if (flowSet.isEmpty()) {

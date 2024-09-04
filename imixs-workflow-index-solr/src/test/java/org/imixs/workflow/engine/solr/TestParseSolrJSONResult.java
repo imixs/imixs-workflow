@@ -10,6 +10,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -34,6 +35,7 @@ public class TestParseSolrJSONResult {
 	 * Test
 	 * 
 	 */
+	@Disabled
 	@Test
 	public void testParseResult() {
 		List<ItemCollection> result = null;

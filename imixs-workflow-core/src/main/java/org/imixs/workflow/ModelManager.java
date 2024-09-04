@@ -223,12 +223,12 @@ public class ModelManager {
         BPMNModel model = findModelByWorkitem(workitem);
         logger.info("...loadEvent " + workitem.getTaskID() + "." + workitem.getEventID());
         ItemCollection event = findEventByID(model, workitem.getTaskID(), workitem.getEventID());
-
         // verify if the event is a valid processing event?
         if (event != null) {
             List<ItemCollection> allowedEvents = findEventsByTask(model, workitem.getTaskID());
             boolean found = false;
             for (ItemCollection allowedEvent : allowedEvents) {
+                logger.info("verify event : " + allowedEvent.getItemValueString("id"));
                 if (allowedEvent.getItemValueString("id").equals(event.getItemValueString("id"))) {
                     found = true;
                     break;
@@ -699,7 +699,22 @@ public class ModelManager {
             result.add(BPMNEntityBuilder.build(elementNavigator.next()));
         }
         // next we also add all initEvent nodes
-        BPMNUtil.findInitEventNodes(taskElement, result);
+        List<BPMNElementNode> initEventNodes = findInitEventNodes(taskElement);
+
+        logger.info("Final Result of findInitEventNodes:");
+        for (BPMNElementNode e : initEventNodes) {
+            logger.info("     " + e.getId());
+        }
+
+        for (BPMNElementNode element : initEventNodes) {
+            result.add(BPMNEntityBuilder.build(element));
+        }
+        // result.addAll(initEventNodes);
+
+        logger.info("Final Result of findEventsByTask:");
+        for (ItemCollection e : result) {
+            logger.info("     " + e.getItemValueString("id"));
+        }
         return result;
     }
 
@@ -955,9 +970,15 @@ public class ModelManager {
         }
 
         // not yet found, collect all incoming events...
-        List<Event> allIncomingEvents = new ArrayList<>();
-        BPMNUtil.findAllIncomingEventNodes(task, allIncomingEvents);
-        for (Event inEvent : allIncomingEvents) {
+        // List<Event> allIncomingEvents = new ArrayList<>();
+        // BPMNUtil.findAllIncomingEventNodes(task, allIncomingEvents);
+
+        List<BPMNElementNode> allIncomingEvents = findInitEventNodes(task);
+
+        // for (Event inEvent : allIncomingEvents) {
+        for (BPMNElementNode inEvent : allIncomingEvents) {
+            // Event inEvent = (Event)
+            // model.findElementNodeById(initEventItemcol.getItemValueString("id"));
             String id = inEvent.getExtensionAttribute(BPMNUtil.getNamespace(), "activityid");
             if (id == null || id.isEmpty()) {
                 continue; // no match...
@@ -967,7 +988,7 @@ public class ModelManager {
                     // match!
                     logger.info(
                             "lookupEventByID " + keyEvent + " took " + (System.currentTimeMillis() - l) + "ms");
-                    return inEvent;
+                    return (Event) inEvent;
                 }
             } catch (NumberFormatException e) {
                 logger.warning(
@@ -978,4 +999,39 @@ public class ModelManager {
         return null;
     }
 
+    /**
+     * Iterates tough all ingoing sequence flows and tests if the source element is
+     * a so called Init-Event. An Init-Event is an Imixs Event with no incoming
+     * nodes or with one incoming node that comes direct from a Start event.
+     * <p>
+     * If a source element is an Event and has a predecessor event the method calls
+     * itself recursive.
+     * 
+     * @param currentNode
+     */
+    private List<BPMNElementNode> findInitEventNodes(BPMNElementNode currentNode) {
+        List<BPMNElementNode> collector = new ArrayList<>();
+        logger.info("findInitEventNodes for  element " + currentNode.getId() + " type=" + currentNode.getType());
+        Set<SequenceFlow> flowSet = currentNode.getIngoingSequenceFlows();
+        for (SequenceFlow flow : flowSet) {
+            BPMNElementNode element = flow.getSourceElement();
+            logger.info("verify element " + element.getId() + " type=" + element.getType());
+            if (BPMNUtil.isInitEventNode(element)) {
+                // collector.add(BPMNEntityBuilder.build(element));
+                collector.add(element);
+                // collector.add((Event) element);
+            } else if (element != null && BPMNUtil.isImixsEventElement(element)) {
+                // is the source an Imixs event node?
+                // recursive call....
+                List<BPMNElementNode> subResult = findInitEventNodes(element);
+                collector.addAll(subResult);
+            }
+        }
+
+        logger.info("Result of findInitEventNodes:");
+        for (BPMNElementNode e : collector) {
+            logger.info("     " + e.getId());
+        }
+        return collector;
+    }
 }
