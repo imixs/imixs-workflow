@@ -1,5 +1,11 @@
 package org.imixs.workflow.bpmn;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -10,9 +16,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
@@ -28,16 +33,15 @@ public class TestBPMNParserTicket {
 	BPMNModel model = null;
 	ModelManager openBPMNModelManager = null;
 
-	@Before
+	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		try {
 			openBPMNModelManager = new ModelManager();
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/ticket.bpmn"));
 			model = openBPMNModelManager.getModel("1.0.0");
-			Assert.assertNotNull(model);
+			assertNotNull(model);
 		} catch (ModelException | BPMNModelException e) {
-			e.printStackTrace();
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 	}
@@ -55,67 +59,67 @@ public class TestBPMNParserTicket {
 		String VERSION = "1.0.0";
 		// Test Environment
 		ItemCollection profile = openBPMNModelManager.loadDefinition(model);
-		Assert.assertNotNull(profile);
-		Assert.assertEquals("environment.profile",
+		assertNotNull(profile);
+		assertEquals("environment.profile",
 				profile.getItemValueString("name"));
-		Assert.assertEquals("WorkflowEnvironmentEntity",
+		assertEquals("WorkflowEnvironmentEntity",
 				profile.getItemValueString("type"));
-		Assert.assertEquals(VERSION,
+		assertEquals(VERSION,
 				profile.getItemValueString("$ModelVersion"));
 		List plugins = profile.getItemValue("txtplugins");
-		Assert.assertNotNull(plugins);
-		Assert.assertEquals(4, plugins.size());
-		Assert.assertEquals("org.imixs.workflow.plugins.AccessPlugin", plugins.get(0));
-		Assert.assertEquals("org.imixs.workflow.plugins.OwnerPlugin", plugins.get(1));
-		Assert.assertEquals("org.imixs.workflow.plugins.HistoryPlugin", plugins.get(2));
-		Assert.assertEquals("org.imixs.workflow.plugins.ResultPlugin", plugins.get(3));
+		assertNotNull(plugins);
+		assertEquals(4, plugins.size());
+		assertEquals("org.imixs.workflow.plugins.AccessPlugin", plugins.get(0));
+		assertEquals("org.imixs.workflow.plugins.OwnerPlugin", plugins.get(1));
+		assertEquals("org.imixs.workflow.plugins.HistoryPlugin", plugins.get(2));
+		assertEquals("org.imixs.workflow.plugins.ResultPlugin", plugins.get(3));
 
 		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
-		Assert.assertTrue(groups.contains("Ticket"));
+		assertTrue(groups.contains("Ticket"));
 
 		// test task 1000
 		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
-		Assert.assertNotNull(task);
+		assertNotNull(task);
 
-		Assert.assertEquals("<b>Create</b> a new ticket",
+		assertEquals("<b>Create</b> a new ticket",
 				task.getItemValueString(BPMNUtil.TASK_ITEM_DOCUMENTATION));
 
 		// test activity 1000.10 submit
 		ItemCollection activity = openBPMNModelManager.findEventByID(model, 1000, 10);
-		Assert.assertNotNull(activity);
+		assertNotNull(activity);
 
-		Assert.assertEquals("<b>Submitt</b> new ticket",
+		assertEquals("<b>Submitt</b> new ticket",
 				activity.getItemValueString(BPMNUtil.EVENT_ITEM_DOCUMENTATION));
 
 		// test activity 1100.20 accept
 		activity = openBPMNModelManager.findEventByID(model, 1100, 20);
-		Assert.assertNotNull(activity);
+		assertNotNull(activity);
 
-		Assert.assertEquals("accept", activity.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
+		assertEquals("accept", activity.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
 
 		// test activity 1200.20 - follow-up activity solve =>40
 		activity = openBPMNModelManager.findEventByID(model, 1200, 20);
-		Assert.assertNotNull(activity);
+		assertNotNull(activity);
 
-		Assert.assertEquals("reopen", activity.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
+		assertEquals("reopen", activity.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
 
 		// test activity 1200.40 - follow-up activity should not be returned
 		activity = openBPMNModelManager.findEventByID(model, 1200, 40);
-		Assert.assertNull(activity);
+		assertNull(activity);
 
 		// test activity 100.10
 		activity = openBPMNModelManager.findEventByID(model, 1000, 10);
-		Assert.assertNotNull(activity);
+		assertNotNull(activity);
 
-		Assert.assertEquals("submit", activity.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
+		assertEquals("submit", activity.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
 		// Test Owner
-		Assert.assertTrue(activity.getItemValueBoolean(BPMNUtil.EVENT_ITEM_ACL_UPDATE));
+		assertTrue(activity.getItemValueBoolean(BPMNUtil.EVENT_ITEM_ACL_UPDATE));
 
 		List owners = activity.getItemValue(BPMNUtil.TASK_ITEM_ACL_OWNER_LIST_MAPPING);
-		Assert.assertNotNull(owners);
-		Assert.assertEquals(2, owners.size());
-		Assert.assertTrue(owners.contains("namTeam"));
-		Assert.assertTrue(owners.contains("namManager"));
+		assertNotNull(owners);
+		assertEquals(2, owners.size());
+		assertTrue(owners.contains("namTeam"));
+		assertTrue(owners.contains("namManager"));
 	}
 
 	/**
@@ -134,67 +138,67 @@ public class TestBPMNParserTicket {
 		String VERSION = "1.0.0";
 		// Test Environment
 		ItemCollection profile = openBPMNModelManager.loadDefinition(model);
-		Assert.assertNotNull(profile);
-		Assert.assertEquals("environment.profile",
+		assertNotNull(profile);
+		assertEquals("environment.profile",
 				profile.getItemValueString("txtname"));
-		Assert.assertEquals("WorkflowEnvironmentEntity",
+		assertEquals("WorkflowEnvironmentEntity",
 				profile.getItemValueString("type"));
-		Assert.assertEquals(VERSION,
+		assertEquals(VERSION,
 				profile.getItemValueString("$ModelVersion"));
 		List plugins = profile.getItemValue("txtplugins");
-		Assert.assertNotNull(plugins);
-		Assert.assertEquals(4, plugins.size());
-		Assert.assertEquals("org.imixs.workflow.plugins.AccessPlugin", plugins.get(0));
-		Assert.assertEquals("org.imixs.workflow.plugins.OwnerPlugin", plugins.get(1));
-		Assert.assertEquals("org.imixs.workflow.plugins.HistoryPlugin", plugins.get(2));
-		Assert.assertEquals("org.imixs.workflow.plugins.ResultPlugin", plugins.get(3));
+		assertNotNull(plugins);
+		assertEquals(4, plugins.size());
+		assertEquals("org.imixs.workflow.plugins.AccessPlugin", plugins.get(0));
+		assertEquals("org.imixs.workflow.plugins.OwnerPlugin", plugins.get(1));
+		assertEquals("org.imixs.workflow.plugins.HistoryPlugin", plugins.get(2));
+		assertEquals("org.imixs.workflow.plugins.ResultPlugin", plugins.get(3));
 
 		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
-		Assert.assertTrue(groups.contains("Ticket"));
+		assertTrue(groups.contains("Ticket"));
 
 		// test task 1000
 		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
-		Assert.assertNotNull(task);
+		assertNotNull(task);
 
-		Assert.assertEquals("<b>Create</b> a new ticket",
+		assertEquals("<b>Create</b> a new ticket",
 				task.getItemValueString("rtfdescription"));
 
 		// test activity 1000.10 submit
 		ItemCollection activity = openBPMNModelManager.findEventByID(model, 1000, 10);
-		Assert.assertNotNull(activity);
+		assertNotNull(activity);
 
-		Assert.assertEquals("<b>Submitt</b> new ticket",
+		assertEquals("<b>Submitt</b> new ticket",
 				activity.getItemValueString("rtfdescription"));
 
 		// test activity 1100.20 accept
 		activity = openBPMNModelManager.findEventByID(model, 1100, 20);
-		Assert.assertNotNull(activity);
+		assertNotNull(activity);
 
-		Assert.assertEquals("accept", activity.getItemValueString("txtName"));
+		assertEquals("accept", activity.getItemValueString("txtName"));
 
 		// test activity 1200.20 - follow-up activity solve =>40
 		activity = openBPMNModelManager.findEventByID(model, 1200, 20);
-		Assert.assertNotNull(activity);
+		assertNotNull(activity);
 
-		Assert.assertEquals("reopen", activity.getItemValueString("txtName"));
+		assertEquals("reopen", activity.getItemValueString("txtName"));
 
 		// test activity 1200.40 - follow-up activity should not be returned
 		activity = openBPMNModelManager.findEventByID(model, 1200, 40);
-		Assert.assertNull(activity);
+		assertNull(activity);
 
 		// test activity 100.10
 		activity = openBPMNModelManager.findEventByID(model, 1000, 10);
-		Assert.assertNotNull(activity);
+		assertNotNull(activity);
 
-		Assert.assertEquals("submit", activity.getItemValueString("txtName"));
+		assertEquals("submit", activity.getItemValueString("txtName"));
 		// Test Owner
-		Assert.assertTrue(activity.getItemValueBoolean("keyupdateacl"));
+		assertTrue(activity.getItemValueBoolean("keyupdateacl"));
 
 		List owners = activity.getItemValue("keyownershipfields");
-		Assert.assertNotNull(owners);
-		Assert.assertEquals(2, owners.size());
-		Assert.assertTrue(owners.contains("namTeam"));
-		Assert.assertTrue(owners.contains("namManager"));
+		assertNotNull(owners);
+		assertEquals(2, owners.size());
+		assertTrue(owners.contains("namTeam"));
+		assertTrue(owners.contains("namManager"));
 	}
 
 	@Test
@@ -204,12 +208,12 @@ public class TestBPMNParserTicket {
 		BPMNModel model = null;
 		try {
 			model = BPMNModelFactory.read("/bpmn/corrupted.bpmn");
-			Assert.fail(); // exception expected
+			fail(); // exception expected
 		} catch (BPMNModelException e) {
 			e.printStackTrace();
 		}
 
-		Assert.assertNull(model);
+		assertNull(model);
 	}
 
 }

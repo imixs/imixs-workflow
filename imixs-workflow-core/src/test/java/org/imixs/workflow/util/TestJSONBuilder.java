@@ -1,5 +1,10 @@
 package org.imixs.workflow.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -8,9 +13,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.junit.Test;
-
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class test the Imixs JSONBuilder class to build a JSON String form an
@@ -59,38 +62,38 @@ public class TestJSONBuilder {
 		String jsonResult = null;
 		try {
 			jsonResult = ImixsJSONBuilder.build(workitem);
-			Assert.assertNotNull(jsonResult);
+			assertNotNull(jsonResult);
 		} catch (UnsupportedEncodingException e) {
 
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		// now convert the json string back using the Imixs JSONParser
 		InputStream jsonStream = new ByteArrayInputStream(jsonResult.getBytes());
-		try { 
+		try {
 			List<ItemCollection> testItemColList = ImixsJSONParser.parse(jsonStream);
-			Assert.assertNotNull(testItemColList);
+			assertNotNull(testItemColList);
 			ItemCollection testItemCol = testItemColList.get(0);
 			// convert data....
-			Assert.assertEquals(workitem.getItemValueBoolean("$isauthor"),
+			assertEquals(workitem.getItemValueBoolean("$isauthor"),
 					testItemCol.getItemValueBoolean("$isauthor"));
-			Assert.assertEquals(workitem.getItemValueString("$readaccess"),
+			assertEquals(workitem.getItemValueString("$readaccess"),
 					testItemCol.getItemValueString("$readaccess"));
 
 			List valueList = testItemCol.getItemValue("count");
-			Assert.assertTrue(valueList.get(0) instanceof Integer);
-			Assert.assertEquals(workitem.getItemValueInteger("count"), testItemCol.getItemValueInteger("count"),0);
-			Assert.assertEquals(workitem.getItemValueDouble("amount"), testItemCol.getItemValueDouble("amount"),0);
+			assertTrue(valueList.get(0) instanceof Integer);
+			assertEquals(workitem.getItemValueInteger("count"), testItemCol.getItemValueInteger("count"), 0);
+			assertEquals(workitem.getItemValueDouble("amount"), testItemCol.getItemValueDouble("amount"), 0);
 
 			// test value list
 			valueList = testItemCol.getItemValue("txtlog");
-			Assert.assertEquals(3, valueList.size());
-			Assert.assertEquals("C", valueList.get(2));
+			assertEquals(3, valueList.size());
+			assertEquals("C", valueList.get(2));
 
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		logger.info(jsonResult);

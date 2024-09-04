@@ -1,8 +1,9 @@
 package org.imixs.workflow;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
@@ -48,7 +49,7 @@ public class MockWorkflowEngine {
             getModelManager().addModel(model);
         } catch (BPMNModelException | ModelException e) {
             e.printStackTrace();
-            Assert.fail();
+            fail();
         }
     }
 

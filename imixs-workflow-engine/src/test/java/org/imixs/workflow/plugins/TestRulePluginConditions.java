@@ -1,12 +1,14 @@
 package org.imixs.workflow.plugins;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -51,11 +53,11 @@ public class TestRulePluginConditions {
 		workitem.replaceItemValue("_budget", 0);
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
 
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 		// test budget
-		Assert.assertEquals(0, workitem.getItemValueInteger("_budget"));
+		assertEquals(0, workitem.getItemValueInteger("_budget"));
 		// test conditional event
-		Assert.assertEquals(1200, workitem.getTaskID());
+		assertEquals(1200, workitem.getTaskID());
 	}
 
 	/**
@@ -77,11 +79,11 @@ public class TestRulePluginConditions {
 		workitem.replaceItemValue("_budget", 0);
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
 
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 		// test budget
-		Assert.assertEquals(500, workitem.getItemValueInteger("_budget"));
+		assertEquals(500, workitem.getItemValueInteger("_budget"));
 		// test conditional event
-		Assert.assertEquals(1300, workitem.getTaskID());
+		assertEquals(1300, workitem.getTaskID());
 	}
 
 }

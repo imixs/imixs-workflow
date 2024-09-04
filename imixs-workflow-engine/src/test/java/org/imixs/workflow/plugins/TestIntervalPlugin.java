@@ -1,5 +1,9 @@
 package org.imixs.workflow.plugins;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
@@ -12,7 +16,6 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.IntervalPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -43,7 +46,7 @@ public class TestIntervalPlugin {
         try {
             intervalPlugin.init(workflowEnvironment.getWorkflowService());
         } catch (PluginException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
 
         // prepare test workitem
@@ -68,7 +71,7 @@ public class TestIntervalPlugin {
             intervalPlugin.run(documentContext, documentActivity);
         } catch (PluginException | ModelException e) {
             e.printStackTrace();
-            Assert.fail();
+            fail();
         }
         Date result = documentContext.getItemValueDate("reminder");
         logger.log(Level.INFO, "------------------  Result Date={0}", result);
@@ -91,7 +94,7 @@ public class TestIntervalPlugin {
             // year switch
             exptectedMonth = 1;
         }
-        Assert.assertEquals(date.getMonthValue(), exptectedMonth);
+        assertEquals(date.getMonthValue(), exptectedMonth);
     }
 
     /**
@@ -106,8 +109,8 @@ public class TestIntervalPlugin {
         LocalDateTime date = intervalPlugin.evalCron(cron);
         logger.log(Level.INFO, "Result monthly={0}", date);
         LocalDateTime now = LocalDateTime.now();
-        Assert.assertEquals(date.getYear(), now.getYear() + 1);
-        Assert.assertEquals(1, date.getMonthValue());
+        assertEquals(date.getYear(), now.getYear() + 1);
+        assertEquals(1, date.getMonthValue());
     }
 
     /**
@@ -122,7 +125,7 @@ public class TestIntervalPlugin {
         LocalDateTime date = intervalPlugin.evalCron(cron);
         logger.log(Level.INFO, "Result monthyl={0}", date);
         // move to past one day...
-        Assert.assertEquals(DayOfWeek.MONDAY, date.getDayOfWeek());
+        assertEquals(DayOfWeek.MONDAY, date.getDayOfWeek());
     }
 
     /**
@@ -144,7 +147,7 @@ public class TestIntervalPlugin {
             // year switch
             exptectedMonth = 1;
         }
-        Assert.assertEquals(exptectedMonth, date.getMonthValue());
+        assertEquals(exptectedMonth, date.getMonthValue());
     }
 
     /**
@@ -161,9 +164,9 @@ public class TestIntervalPlugin {
         LocalDateTime date = intervalPlugin.evalMacro("@yearly", ldt);
         logger.log(Level.INFO, "Now           ={0}", now);
         logger.log(Level.INFO, "Result @yearly={0}", date);
-        Assert.assertEquals(now.getDayOfMonth(), date.getDayOfMonth());
-        Assert.assertEquals(now.getMonthValue(), date.getMonthValue());
-        Assert.assertEquals(now.getYear() + 1, date.getYear());
+        assertEquals(now.getDayOfMonth(), date.getDayOfMonth());
+        assertEquals(now.getMonthValue(), date.getMonthValue());
+        assertEquals(now.getYear() + 1, date.getYear());
     }
 
     /**
@@ -180,8 +183,8 @@ public class TestIntervalPlugin {
         LocalDateTime date = intervalPlugin.evalMacro("@weekly", ldt);
         logger.log(Level.INFO, "Now           ={0}", now);
         logger.log(Level.INFO, "Result @weekly={0}", date);
-        Assert.assertTrue(now.getDayOfMonth() != date.getDayOfMonth());
-        Assert.assertEquals(now.getDayOfWeek(), date.getDayOfWeek());
+        assertTrue(now.getDayOfMonth() != date.getDayOfMonth());
+        assertEquals(now.getDayOfWeek(), date.getDayOfWeek());
     }
 
     /**
@@ -208,7 +211,7 @@ public class TestIntervalPlugin {
             date = intervalPlugin.evalCron(cron, now);
             logger.log(Level.INFO, " => now={0}  result={1}", new Object[] { now, date });
             // expected 9:00
-            Assert.assertTrue(date.getHour() == 9);
+            assertTrue(date.getHour() == 9);
 
             // 10:00
             now = now.with(ChronoField.MINUTE_OF_HOUR, 0);
@@ -216,7 +219,7 @@ public class TestIntervalPlugin {
             date = intervalPlugin.evalCron(cron, now);
             logger.log(Level.INFO, " => now={0}  result={1}", new Object[] { now, date });
             // expected 18:00
-            Assert.assertTrue(date.getHour() == 18);
+            assertTrue(date.getHour() == 18);
 
             // 22:00
             now = now.with(ChronoField.MINUTE_OF_HOUR, 0);
@@ -224,28 +227,28 @@ public class TestIntervalPlugin {
             date = intervalPlugin.evalCron(cron, now);
             logger.log(Level.INFO, " => now={0}  result={1}", new Object[] { now, date });
             // expected 9:00 next day
-            Assert.assertTrue(date.getHour() == 9);
-            Assert.assertTrue(date.getDayOfYear() == now.getDayOfYear() + 1);
+            assertTrue(date.getHour() == 9);
+            assertTrue(date.getDayOfYear() == now.getDayOfYear() + 1);
 
             cron = "15,30 * * * *";
             now = now.with(ChronoField.HOUR_OF_DAY, 10);
             date = intervalPlugin.evalCron(cron, now);
             logger.log(Level.INFO, " => now={0}  result={1}", new Object[] { now, date });
             // expected 10:15
-            Assert.assertTrue(date.getHour() == 10);
-            Assert.assertTrue(date.getMinute() == 15);
+            assertTrue(date.getHour() == 10);
+            assertTrue(date.getMinute() == 15);
 
             now = now.with(ChronoField.HOUR_OF_DAY, 10);
             now = now.with(ChronoField.MINUTE_OF_HOUR, 25);
             date = intervalPlugin.evalCron(cron, now);
             logger.log(Level.INFO, " => now={0}  result={1}", new Object[] { now, date });
             // expected 10:30
-            Assert.assertTrue(date.getHour() == 10);
-            Assert.assertTrue(date.getMinute() == 30);
+            assertTrue(date.getHour() == 10);
+            assertTrue(date.getMinute() == 30);
 
         } catch (PluginException e) {
             e.printStackTrace();
-            Assert.fail();
+            fail();
         }
     }
 

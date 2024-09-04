@@ -1,5 +1,9 @@
 package org.imixs.workflow.plugins;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -9,7 +13,6 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,23 +23,17 @@ import org.junit.jupiter.api.Test;
  * should be set per default and the activity entity can provide additional
  * setting.
  * 
- * 
  * e.g.
  * 
  * ProcessEntity 'namaddwriteaccess' = 'jo'
- * 
  * ActivityEntity 'namaddwriteaccess' = 'anna'
  * 
- * 
  * then '$owner' should be 'jo','anna'
- * 
- * 
  * 
  * These tests extend the JUnit test in TestAccessPlugin
  * 
  * 
  * @author rsoika
- * 
  */
 public class TestOwnerPluginProcessEntity {
 
@@ -82,13 +79,13 @@ public class TestOwnerPluginProcessEntity {
 		try {
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 		@SuppressWarnings("unchecked")
 		List<String> ownerList = workitem.getItemValue(OwnerPlugin.OWNER);
-		Assert.assertEquals(2, ownerList.size());
-		Assert.assertTrue(ownerList.contains("Kevin"));
-		Assert.assertTrue(ownerList.contains("Julian"));
+		assertEquals(2, ownerList.size());
+		assertTrue(ownerList.contains("Kevin"));
+		assertTrue(ownerList.contains("Julian"));
 
 	}
 
@@ -105,15 +102,15 @@ public class TestOwnerPluginProcessEntity {
 		try {
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 		@SuppressWarnings("unchecked")
 		List<String> onwerList = workitem.getItemValue(OwnerPlugin.OWNER);
-		Assert.assertEquals(3, onwerList.size());
-		Assert.assertTrue(onwerList.contains("joe"));
-		Assert.assertTrue(onwerList.contains("manfred"));
-		Assert.assertTrue(onwerList.contains("anna"));
+		assertEquals(3, onwerList.size());
+		assertTrue(onwerList.contains("joe"));
+		assertTrue(onwerList.contains("manfred"));
+		assertTrue(onwerList.contains("anna"));
 
 	}
 
@@ -130,13 +127,13 @@ public class TestOwnerPluginProcessEntity {
 		try {
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 		@SuppressWarnings("unchecked")
 		List<String> ownerList = workitem.getItemValue(OwnerPlugin.OWNER);
-		Assert.assertEquals(2, ownerList.size());
-		Assert.assertTrue(ownerList.contains("joe"));
-		Assert.assertTrue(ownerList.contains("sam"));
+		assertEquals(2, ownerList.size());
+		assertTrue(ownerList.contains("joe"));
+		assertTrue(ownerList.contains("sam"));
 	}
 
 	/**
@@ -160,15 +157,15 @@ public class TestOwnerPluginProcessEntity {
 		try {
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 		// $writeAccess= anna , manfred, joe, sam
 		List<String> onwerList = workitem.getItemValue(OwnerPlugin.OWNER);
-		Assert.assertEquals(3, onwerList.size());
-		Assert.assertTrue(onwerList.contains("joe"));
-		// Assert.assertTrue(onwerList.contains("sam"));
-		Assert.assertTrue(onwerList.contains("manfred"));
-		Assert.assertTrue(onwerList.contains("anna"));
+		assertEquals(3, onwerList.size());
+		assertTrue(onwerList.contains("joe"));
+		// assertTrue(onwerList.contains("sam"));
+		assertTrue(onwerList.contains("manfred"));
+		assertTrue(onwerList.contains("anna"));
 	}
 
 }

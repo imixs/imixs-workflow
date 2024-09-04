@@ -1,7 +1,10 @@
 package org.imixs.workflow.kernel;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -11,10 +14,8 @@ import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for Imixs WorkflowKernel using the test models. The test class
@@ -29,7 +30,7 @@ public class TestWorkflowKernelModels {
 
 	private MockWorkflowEngine workflowEngine;
 
-	@Before
+	@BeforeEach
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
 	}
@@ -39,7 +40,6 @@ public class TestWorkflowKernelModels {
 	 * 
 	 */
 	@Test
-	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testSimpleModel() {
 		try {
 			workflowEngine.loadBPMNModel("/bpmn/simple.bpmn");
@@ -52,17 +52,17 @@ public class TestWorkflowKernelModels {
 			itemCollection.replaceItemValue("$modelversion", "1.0.0");
 
 			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
-			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
-			Assert.assertEquals("workitem", itemCollection.getItemValueString("type"));
-			Assert.assertEquals(1000, itemCollection.getTaskID());
+			assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+			assertEquals("workitem", itemCollection.getItemValueString("type"));
+			assertEquals(1000, itemCollection.getTaskID());
 
 			itemCollection.event(20);
 			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
-			Assert.assertEquals("workitemarchive", itemCollection.getItemValueString("type"));
-			Assert.assertEquals(1100, itemCollection.getTaskID());
+			assertEquals("workitemarchive", itemCollection.getItemValueString("type"));
+			assertEquals(1100, itemCollection.getTaskID());
 
 		} catch (Exception e) {
-			Assert.fail();
+			fail();
 			e.printStackTrace();
 		}
 
@@ -73,7 +73,6 @@ public class TestWorkflowKernelModels {
 	 * 
 	 */
 	@Test
-	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testTicketModel() {
 		try {
 			workflowEngine.loadBPMNModel("/bpmn/ticket.bpmn");
@@ -85,17 +84,17 @@ public class TestWorkflowKernelModels {
 
 			itemCollection.replaceItemValue("$modelversion", "1.0.0");
 			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
-			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
-			Assert.assertEquals(1200, itemCollection.getTaskID());
-			Assert.assertEquals("in Progress", itemCollection.getItemValueString("$workflowstatus"));
-			Assert.assertEquals("Ticket", itemCollection.getItemValueString("$workflowgroup"));
+			assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+			assertEquals(1200, itemCollection.getTaskID());
+			assertEquals("in Progress", itemCollection.getItemValueString("$workflowstatus"));
+			assertEquals("Ticket", itemCollection.getItemValueString("$workflowgroup"));
 
 			// test support for deprecated items
-			Assert.assertEquals("in Progress", itemCollection.getItemValueString("txtworkflowstatus"));
-			Assert.assertEquals("Ticket", itemCollection.getItemValueString("txtworkflowgroup"));
+			assertEquals("in Progress", itemCollection.getItemValueString("txtworkflowstatus"));
+			assertEquals("Ticket", itemCollection.getItemValueString("txtworkflowgroup"));
 
 		} catch (Exception e) {
-			Assert.fail();
+			fail();
 			e.printStackTrace();
 		}
 
@@ -107,7 +106,6 @@ public class TestWorkflowKernelModels {
 	 * Here we have two conditions: both to a task.
 	 */
 	@Test
-	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testConditionalEventModel1() {
 		try {
 			workflowEngine.loadBPMNModel("/bpmn/conditional_event1.bpmn");
@@ -122,8 +120,8 @@ public class TestWorkflowKernelModels {
 			itemCollection.replaceItemValue("_budget", 99);
 
 			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
-			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
-			Assert.assertEquals(1200, itemCollection.getTaskID());
+			assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+			assertEquals(1200, itemCollection.getTaskID());
 
 			// test Condition 2
 			itemCollection = new ItemCollection();
@@ -135,12 +133,12 @@ public class TestWorkflowKernelModels {
 			itemCollection.replaceItemValue("_budget", 9999);
 
 			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
-			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+			assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 
-			Assert.assertEquals(1100, itemCollection.getTaskID());
+			assertEquals(1100, itemCollection.getTaskID());
 
 		} catch (Exception e) {
-			Assert.fail();
+			fail();
 			e.printStackTrace();
 
 		}
@@ -154,7 +152,6 @@ public class TestWorkflowKernelModels {
 	 * 
 	 */
 	@Test
-	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testConditionalEventModel2() {
 		try {
 			workflowEngine.loadBPMNModel("/bpmn/conditional_event2.bpmn");
@@ -169,8 +166,8 @@ public class TestWorkflowKernelModels {
 			itemCollection.replaceItemValue("_budget", 9999);
 
 			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
-			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
-			Assert.assertEquals(1100, itemCollection.getTaskID());
+			assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+			assertEquals(1100, itemCollection.getTaskID());
 
 			// test Condition 2
 			itemCollection = new ItemCollection().model("1.0.0").task(1000).event(10);
@@ -179,12 +176,12 @@ public class TestWorkflowKernelModels {
 			itemCollection.replaceItemValue("_budget", 99);
 
 			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
-			Assert.assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+			assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 
-			Assert.assertEquals(1200, itemCollection.getTaskID());
+			assertEquals(1200, itemCollection.getTaskID());
 
 		} catch (Exception e) {
-			Assert.fail();
+			fail();
 			e.printStackTrace();
 
 		}
@@ -197,7 +194,6 @@ public class TestWorkflowKernelModels {
 	 * Here we have two conditions: both to a task.
 	 */
 	@Test
-	@Category(org.imixs.workflow.WorkflowKernel.class)
 	public void testSplitEventModel1() {
 		try {
 			workflowEngine.loadBPMNModel("/bpmn/split_event1.bpmn");
@@ -210,34 +206,34 @@ public class TestWorkflowKernelModels {
 			itemCollection.replaceItemValue("$modelversion", "1.0.0");
 
 			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
-			Assert.assertEquals("Hello", itemCollection.getItemValueString("_subject"));
-			Assert.assertEquals(1100, itemCollection.getTaskID());
-			Assert.assertEquals(10, itemCollection.getItemValueInteger("$lastEvent"));
+			assertEquals("Hello", itemCollection.getItemValueString("_subject"));
+			assertEquals(1100, itemCollection.getTaskID());
+			assertEquals(10, itemCollection.getItemValueInteger("$lastEvent"));
 
 			// test new version...
 			List<ItemCollection> versions = workflowEngine.getWorkflowKernel().getSplitWorkitems();
-			Assert.assertNotNull(versions);
-			Assert.assertTrue(versions.size() == 1);
+			assertNotNull(versions);
+			assertTrue(versions.size() == 1);
 			ItemCollection version = versions.get(0);
 
-			Assert.assertEquals("Hello", version.getItemValueString("_subject"));
-			Assert.assertEquals(1200, version.getTaskID());
+			assertEquals("Hello", version.getItemValueString("_subject"));
+			assertEquals(1200, version.getTaskID());
 			// $lastEvent should be 20
-			Assert.assertEquals(20, version.getItemValueInteger("$lastEvent"));
+			assertEquals(20, version.getItemValueInteger("$lastEvent"));
 
 			// Master $uniqueid must not match the version $uniqueid
-			Assert.assertFalse(itemCollection.getUniqueID().equals(version.getUniqueID()));
+			assertFalse(itemCollection.getUniqueID().equals(version.getUniqueID()));
 
 			// $uniqueidSource must match $uni1ueid of master
-			Assert.assertEquals(itemCollection.getUniqueID(),
+			assertEquals(itemCollection.getUniqueID(),
 					version.getItemValueString(WorkflowKernel.UNIQUEIDSOURCE));
 
 			// $uniqueidVirsions must mach $uniqueid of version
-			Assert.assertEquals(version.getUniqueID(),
+			assertEquals(version.getUniqueID(),
 					itemCollection.getItemValueString(WorkflowKernel.UNIQUEIDVERSIONS));
 
 		} catch (Exception e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 			e.printStackTrace();
 
 		}
@@ -265,7 +261,7 @@ public class TestWorkflowKernelModels {
 		// events!
 		try {
 			workItem = workflowEngine.getWorkflowKernel().process(workItem);
-			Assert.fail();
+			fail();
 
 		} catch (PluginException | ModelException e) {
 			// not expected
@@ -294,7 +290,7 @@ public class TestWorkflowKernelModels {
 		// events!
 		try {
 			workItem = workflowEngine.getWorkflowKernel().process(workItem);
-			Assert.fail();
+			fail();
 
 		} catch (PluginException | ModelException e) {
 			// not expected
@@ -324,30 +320,30 @@ public class TestWorkflowKernelModels {
 		// events!
 		try {
 			workItem = workflowEngine.getWorkflowKernel().process(workItem);
-			Assert.assertEquals("Hello", workItem.getItemValueString("_subject"));
-			Assert.assertEquals(1100, workItem.getTaskID());
-			Assert.assertEquals(20, workItem.getItemValueInteger("$lastEvent"));
+			assertEquals("Hello", workItem.getItemValueString("_subject"));
+			assertEquals(1100, workItem.getTaskID());
+			assertEquals(20, workItem.getItemValueInteger("$lastEvent"));
 
 			// test new version...
 			List<ItemCollection> versions = workflowEngine.getWorkflowKernel().getSplitWorkitems();
-			Assert.assertNotNull(versions);
-			Assert.assertTrue(versions.size() == 1);
+			assertNotNull(versions);
+			assertTrue(versions.size() == 1);
 			ItemCollection version = versions.get(0);
 
-			Assert.assertEquals("Hello", version.getItemValueString("_subject"));
-			Assert.assertEquals(1200, version.getTaskID());
+			assertEquals("Hello", version.getItemValueString("_subject"));
+			assertEquals(1200, version.getTaskID());
 			// $lastEvent should be 30
-			Assert.assertEquals(30, version.getItemValueInteger("$lastEvent"));
+			assertEquals(30, version.getItemValueInteger("$lastEvent"));
 
 			// Master $uniqueid must not match the version $uniqueid
-			Assert.assertFalse(workItem.getUniqueID().equals(version.getUniqueID()));
+			assertFalse(workItem.getUniqueID().equals(version.getUniqueID()));
 
 			// $uniqueidSource must match $uniqueid of master
-			Assert.assertEquals(workItem.getUniqueID(),
+			assertEquals(workItem.getUniqueID(),
 					version.getItemValueString(WorkflowKernel.UNIQUEIDSOURCE));
 
 			// $uniqueidVirsions must mach $uniqueid of version
-			Assert.assertEquals(version.getUniqueID(),
+			assertEquals(version.getUniqueID(),
 					workItem.getItemValueString(WorkflowKernel.UNIQUEIDVERSIONS));
 		} catch (PluginException | ModelException e) {
 			// not expected

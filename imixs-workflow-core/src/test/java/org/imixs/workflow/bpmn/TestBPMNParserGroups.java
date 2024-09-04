@@ -1,5 +1,11 @@
 package org.imixs.workflow.bpmn;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Set;
@@ -8,9 +14,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.BPMNProcess;
@@ -27,7 +32,7 @@ public class TestBPMNParserGroups {
 	BPMNModel model = null;
 	ModelManager openBPMNModelManager = null;
 
-	@Before
+	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		openBPMNModelManager = new ModelManager();
 	}
@@ -46,19 +51,15 @@ public class TestBPMNParserGroups {
 
 		try {
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/link-event-basic.bpmn"));
-
 			model = openBPMNModelManager.getModel("1.0.0");
-
-			Assert.assertNotNull(model);
+			assertNotNull(model);
+			// Test Groups
+			Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
+			assertTrue(groups.contains("Simple"));
 		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
-		// Test Groups
-		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
-
-		Assert.assertTrue(groups.contains("Simple"));
-
 	}
 
 	/**
@@ -80,40 +81,40 @@ public class TestBPMNParserGroups {
 		try {
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/multi-groups.bpmn"));
 			model = openBPMNModelManager.getModel("protokoll-de-1.0.0");
-			Assert.assertNotNull(model);
+			assertNotNull(model);
 
 		} catch (ModelException | BPMNModelException e) {
-			Assert.fail();
+			fail();
 		}
 
 		// Test Groups
 		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
-		Assert.assertEquals(2, groups.size());
-		Assert.assertTrue(groups.contains("Protokoll"));
-		Assert.assertTrue(groups.contains("Protokollpunkt"));
-		Assert.assertFalse(groups.contains("Default Process"));
+		assertEquals(2, groups.size());
+		assertTrue(groups.contains("Protokoll"));
+		assertTrue(groups.contains("Protokollpunkt"));
+		assertFalse(groups.contains("Default Process"));
 
 		// Test tasks per group
 		BPMNProcess process = null;
 		try {
 			process = model.findProcessByName("Protokoll");
 		} catch (BPMNModelException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 		Set<Activity> activities = process.getActivities();
-		Assert.assertEquals(4, activities.size());
+		assertEquals(4, activities.size());
 
 		try {
 			process = model.findProcessByName("Protokollpunkt");
 		} catch (BPMNModelException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 		activities = process.getActivities();
-		Assert.assertEquals(4, activities.size());
+		assertEquals(4, activities.size());
 
 		// test the Default Group (Public Process)
 		BPMNProcess defaultProcess = model.openDefaultProces();
-		Assert.assertEquals("Default Process", defaultProcess.getName());
+		assertEquals("Default Process", defaultProcess.getName());
 
 	}
 

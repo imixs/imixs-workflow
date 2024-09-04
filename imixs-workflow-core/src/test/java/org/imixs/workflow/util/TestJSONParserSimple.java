@@ -1,13 +1,16 @@
 package org.imixs.workflow.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 
 import org.imixs.workflow.ItemCollection;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class test the parsing of different json structures.
@@ -27,7 +30,7 @@ public class TestJSONParserSimple {
 
 		String json = "{\"key\":\"b38b84614af36f874ba4f08dd4ea40c4e66e0a607\"}";
 		String key = JSONParser.getKey("key", json);
-		Assert.assertEquals("b38b84614af36f874ba4f08dd4ea40c4e66e0a607", key);
+		assertEquals("b38b84614af36f874ba4f08dd4ea40c4e66e0a607", key);
 	}
 
 	@Test
@@ -40,11 +43,11 @@ public class TestJSONParserSimple {
 		try {
 			resultWorkitem = ImixsJSONParser.parse(responseDataStream).get(0);
 
-			Assert.assertEquals(Float.valueOf(199.99f), resultWorkitem.getItemValueFloat("price"), 0);
+			assertEquals(Float.valueOf(199.99f), resultWorkitem.getItemValueFloat("price"), 0);
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 	}
 
@@ -55,7 +58,7 @@ public class TestJSONParserSimple {
 	public void testKeyNotPresent() {
 		String json = "{\"key1\":\"value1\",\"key2\": 2}";
 		String key = "randomKey";
-		Assert.assertNull(JSONParser.getKey(key, json));
+		assertNull(JSONParser.getKey(key, json));
 	}
 
 	/**
@@ -64,7 +67,7 @@ public class TestJSONParserSimple {
 	@Test
 	public void testNullValue() {
 		String json = "{\"key1\":null}";
-		Assert.assertNull(JSONParser.getKey("key1", json));
+		assertNull(JSONParser.getKey("key1", json));
 	}
 
 }

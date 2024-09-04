@@ -1,5 +1,11 @@
 package org.imixs.workflow.xml;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,8 +13,7 @@ import java.util.Map;
 
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import jakarta.xml.bind.JAXBException;
 
@@ -21,14 +26,11 @@ import jakarta.xml.bind.JAXBException;
  */
 public class TestReadWriteByteArray {
 
-
-
 	/**
 	 * Write a ItemCollection into a byte array and reads it back
 	 * 
 	 */
 	@Test
-
 	public void testWriteRead() {
 		byte[] empty = { 0 };
 		// PHASE I.
@@ -65,7 +67,7 @@ public class TestReadWriteByteArray {
 		itemColSource.replaceItemValue("_mapdata", mapList);
 
 		// add a file
-		FileData fileData=new FileData("test.txt",empty,null,null);
+		FileData fileData = new FileData("test.txt", empty, null, null);
 		itemColSource.addFileData(fileData);
 
 		// PHASE II.
@@ -74,39 +76,37 @@ public class TestReadWriteByteArray {
 		try {
 			data = XMLDocumentAdapter.writeItemCollection(itemColSource);
 			// test if we found some data
-			Assert.assertTrue(data.length > 100);
+			assertTrue(data.length > 100);
 		} catch (JAXBException | IOException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		// PHASE III.
 		// read from byte[]
 		try {
 			ItemCollection resultItemCollection = XMLDocumentAdapter.readItemCollection(data);
-			Assert.assertNotNull(resultItemCollection);
-			Assert.assertNotSame(itemColSource, resultItemCollection);
+			assertNotNull(resultItemCollection);
+			assertNotSame(itemColSource, resultItemCollection);
 			// verify content
-			Assert.assertEquals(itemColSource.getItemValue("_name"), resultItemCollection.getItemValue("_name"));
-			Assert.assertEquals(itemColSource.getItemValue("_listdata"),
+			assertEquals(itemColSource.getItemValue("_name"), resultItemCollection.getItemValue("_name"));
+			assertEquals(itemColSource.getItemValue("_listdata"),
 					resultItemCollection.getItemValue("_listdata"));
-			Assert.assertEquals(itemColSource.getItemValue("_mapdata"), resultItemCollection.getItemValue("_mapdata"));
+			assertEquals(itemColSource.getItemValue("_mapdata"), resultItemCollection.getItemValue("_mapdata"));
 
 			List<String> fileNames = itemColSource.getFileNames();
-			Assert.assertNotNull(fileNames);
-			Assert.assertEquals(1, fileNames.size());
-			
+			assertNotNull(fileNames);
+			assertEquals(1, fileNames.size());
+
 			FileData afileData = itemColSource.getFileData("test.txt");
-			Assert.assertNotNull(afileData);
-			
-			
-		
-			Assert.assertEquals("application/unknown",afileData.getContentType());
-			Assert.assertEquals(empty, afileData.getContent());
+			assertNotNull(afileData);
+
+			assertEquals("application/unknown", afileData.getContentType());
+			assertEquals(empty, afileData.getContent());
 
 		} catch (JAXBException | IOException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 	}

@@ -44,6 +44,7 @@ import java.util.regex.Pattern;
 
 import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ItemCollectionComparator;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
@@ -472,6 +473,9 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
             }
             result.add(event);
         }
+
+        // sort by event id
+        Collections.sort(result, new ItemCollectionComparator("eventID", true));
 
         return result;
 

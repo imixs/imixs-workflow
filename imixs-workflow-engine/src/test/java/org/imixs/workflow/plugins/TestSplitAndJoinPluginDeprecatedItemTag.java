@@ -1,5 +1,9 @@
 package org.imixs.workflow.plugins;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -15,7 +19,6 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.SplitAndJoinPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -82,30 +85,30 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 					20);
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		Assert.assertEquals(1, workitemRefList.size());
+		assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
 
 		// get the subprocess...
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 
 		// test data in subprocess
-		Assert.assertNotNull(subprocess);
+		assertNotNull(subprocess);
 		// test the new action result based on the new subprocess uniqueid....
-		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + subprocessUniqueid,
+		assertEquals("/pages/workitems/workitem.jsf?id=" + subprocessUniqueid,
 				workitem.getItemValueString("action"));
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test if the field namTeam is available
 		List<String> team = subprocess.getItemValue("namTeam");
-		Assert.assertEquals(2, team.size());
-		Assert.assertTrue(team.contains("manfred"));
-		Assert.assertTrue(team.contains("anna"));
+		assertEquals(2, team.size());
+		assertTrue(team.contains("manfred"));
+		assertTrue(team.contains("anna"));
 
 	}
 
@@ -122,24 +125,24 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 					60);
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		Assert.assertEquals(1, workitemRefList.size());
+		assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
 		// get the subprocess...
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		// test data in subprocess
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertNotNull(subprocess);
+		assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 		// test if the field namTeam is available
 		List<String> team = subprocess.getItemValue("_sub_Team");
-		Assert.assertEquals(2, team.size());
-		Assert.assertTrue(team.contains("manfred"));
-		Assert.assertTrue(team.contains("anna"));
+		assertEquals(2, team.size());
+		assertTrue(team.contains("manfred"));
+		assertTrue(team.contains("anna"));
 
 	}
 
@@ -165,32 +168,32 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 					61);
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		Assert.assertEquals(1, workitemRefList.size());
+		assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
 		// get the subprocess...
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		// test data in subprocess
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertNotNull(subprocess);
+		assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test if the field namTeam is available
 		List<String> team = subprocess.getItemValue("_sub_Team");
-		Assert.assertEquals(2, team.size());
-		Assert.assertTrue(team.contains("manfred"));
-		Assert.assertTrue(team.contains("anna"));
+		assertEquals(2, team.size());
+		assertTrue(team.contains("manfred"));
+		assertTrue(team.contains("anna"));
 
 		// verify file content....
-		Assert.assertNotNull(subprocess);
+		assertNotNull(subprocess);
 		List<FileData> targetFileList = subprocess.getFileData();
-		Assert.assertEquals(1, targetFileList.size());
+		assertEquals(1, targetFileList.size());
 		List<Object> result = (List<Object>) targetFileList.get(0).getAttribute("text");
-		Assert.assertNotNull(result);
+		assertNotNull(result);
 	}
 
 	/**
@@ -207,25 +210,25 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 					30);
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		// two subprocesses should be created...
-		Assert.assertEquals(2, workitemRefList.size());
+		assertEquals(2, workitemRefList.size());
 		// test first subprocess instance...
 		String subprocessUniqueid = workitemRefList.get(0);
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertNotNull(subprocess);
+		assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test second subprocess instance... 100.20 -> $processId=200
 		subprocessUniqueid = workitemRefList.get(1);
 		subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertNotNull(subprocess);
+		assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 	}
@@ -242,13 +245,13 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 			event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
 					40);
 			splitAndJoinPlugin.run(workitem, event);
-			Assert.fail();
+			fail();
 		} catch (PluginException e) {
 			// Plugin exception is expected
 			logger.log(Level.INFO, "Expected exception message: {0}", e.getMessage());
-			Assert.assertTrue(e.getMessage().startsWith("Parsing item content failed:"));
+			assertTrue(e.getMessage().startsWith("Parsing item content failed:"));
 		}
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 	}
 
 	/**
@@ -273,17 +276,17 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 		// now load the subprocess
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		String subprocessUniqueid = workitemRefList.get(0);
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 
 		// test data in subprocess
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertNotNull(subprocess);
+		assertEquals(100, subprocess.getTaskID());
 
 		/*
 		 * 2.) process the subprocess to test if the origin process will be updated
@@ -298,18 +301,18 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 			splitAndJoinPlugin.run(subprocess, event);
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		// test the new action result based on the origin process uniqueid....
-		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + orignUniqueID,
+		assertEquals("/pages/workitems/workitem.jsf?id=" + orignUniqueID,
 				subprocess.getItemValueString("action"));
 		// load origin document
 		workitem = workflowEnvironment.getDocumentService().load(orignUniqueID);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 		// test data.... (new $processId=200 and _sub_data from subprocess
-		Assert.assertEquals(100, workitem.getTaskID());
-		Assert.assertEquals("some test data", workitem.getItemValueString("_sub_data"));
+		assertEquals(100, workitem.getTaskID());
+		assertEquals("some test data", workitem.getItemValueString("_sub_data"));
 
 	}
 
@@ -328,17 +331,17 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 					20);
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
 		// load the new subprocess....
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		Assert.assertEquals(1, workitemRefList.size());
+		assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertNotNull(subprocess);
+		assertEquals(100, subprocess.getTaskID());
 
 		// 2.) now update the subprocess
 		try {
@@ -348,16 +351,16 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 			workitem.replaceItemValue("namTeam", "Walter");
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 		// now we load the subprocess and test if it was updated (new processiD
 		// expected is 300)
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 		subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getTaskID());
-		Assert.assertEquals("Walter", subprocess.getItemValueString("namTEAM"));
+		assertNotNull(subprocess);
+		assertEquals(100, subprocess.getTaskID());
+		assertEquals("Walter", subprocess.getItemValueString("namTEAM"));
 
 	}
 
@@ -375,22 +378,22 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 					70);
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
 		// load the new subprocess....
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		Assert.assertEquals(1, workitemRefList.size());
+		assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
-		Assert.assertEquals("manfred", subprocess.getItemValue("namTeam", String.class));
-		Assert.assertEquals("ronny", subprocess.getItemValue("namcreator", String.class));
-		Assert.assertEquals("", subprocess.getItemValueString("$snapshotid"));
+		assertEquals("manfred", subprocess.getItemValue("namTeam", String.class));
+		assertEquals("ronny", subprocess.getItemValue("namcreator", String.class));
+		assertEquals("", subprocess.getItemValueString("$snapshotid"));
 
 		// test the deprecated LIst
 		List<String> workitemRefListDeprecated = workitem.getItemValue("txtworkitemref");
-		Assert.assertEquals(workitemRefList, workitemRefListDeprecated);
+		assertEquals(workitemRefList, workitemRefListDeprecated);
 	}
 
 }

@@ -1,5 +1,10 @@
 package org.imixs.workflow;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -8,9 +13,8 @@ import javax.script.ScriptException;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for the GraalJS RuleEngine
@@ -21,7 +25,7 @@ public class TestRuleEngineGraalJS {
 	protected RuleEngine ruleEngine = null;
 	private static final Logger logger = Logger.getLogger(TestRuleEngineGraalJS.class.getName());
 
-	@Before
+	@BeforeEach
 	public void setup() throws PluginException {
 		ruleEngine = new RuleEngine();
 
@@ -74,8 +78,7 @@ public class TestRuleEngineGraalJS {
 		logger.log(Level.INFO, "result={0}", context.getBindings("js").getMember("x").asInt());
 
 	}
-	
-	
+
 	/**
 	 * This test verifies a boolean expression
 	 * 
@@ -85,51 +88,49 @@ public class TestRuleEngineGraalJS {
 	@Test
 	public void testBooleanExpression() throws ScriptException, PluginException {
 
-		boolean result = ruleEngine.evaluateBooleanExpression("true",null);
-		Assert.assertTrue(result);
-		
-		
+		boolean result = ruleEngine.evaluateBooleanExpression("true", null);
+		assertTrue(result);
+
 		ItemCollection workitem = new ItemCollection();
 		workitem.replaceItemValue("_budget", 1000);
-		
+
 		// evaluate true
 		String script = "(workitem.getItemValueInteger('_budget')>100)";
 
 		// test
-		 result = ruleEngine.evaluateBooleanExpression(script, workitem);
-		Assert.assertTrue(result);
+		result = ruleEngine.evaluateBooleanExpression(script, workitem);
+		assertTrue(result);
 
 		// evaluate false
 		script = "(workitem.getItemValueInteger('_budget')<=100)";
 
 		// test
 		result = ruleEngine.evaluateBooleanExpression(script, workitem);
-		Assert.assertFalse(result);
+		assertFalse(result);
 
 	}
 
-	
-	 /**
-     * This test verifies if a script can update the value of a workitem
-     * 
-     * @throws ScriptException
-     * @throws PluginException
-     */
-    @Test
-    public void testEvalUpdteWorkitem() throws ScriptException, PluginException {
+	/**
+	 * This test verifies if a script can update the value of a workitem
+	 * 
+	 * @throws ScriptException
+	 * @throws PluginException
+	 */
+	@Test
+	public void testEvalUpdteWorkitem() throws ScriptException, PluginException {
 
-        ItemCollection workitem = new ItemCollection();
-        workitem.replaceItemValue("name", "Anna");
-        ItemCollection event = new ItemCollection();
+		ItemCollection workitem = new ItemCollection();
+		workitem.replaceItemValue("name", "Anna");
+		ItemCollection event = new ItemCollection();
 
-        // access single value
-        String script = "var result={};\n \n  workitem.replaceItemValue('name','John');";
+		// access single value
+		String script = "var result={};\n \n  workitem.replaceItemValue('name','John');";
 
-        // run plugin
-        ItemCollection result = ruleEngine.evaluateBusinessRule(script, workitem, event);
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(workitem);
-        // txtname should be changed to 'John'
-        Assert.assertEquals("John", workitem.getItemValueString("name"));
-    }
+		// run plugin
+		ItemCollection result = ruleEngine.evaluateBusinessRule(script, workitem, event);
+		assertNotNull(result);
+		assertNotNull(workitem);
+		// txtname should be changed to 'John'
+		assertEquals("John", workitem.getItemValueString("name"));
+	}
 }

@@ -1,17 +1,19 @@
 package org.imixs.workflow.xml;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.imixs.workflow.ItemCollection;
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
-
-import org.imixs.workflow.ItemCollection;
-import org.junit.Test;
-
-import org.junit.Assert;
 
 /**
  * Test class reads the "/document-example.xml" file via the
@@ -24,7 +26,6 @@ import org.junit.Assert;
  */
 public class TestReadWriteXMLData {
 
-
 	/**
 	 * Read /document-example.xml
 	 */
@@ -36,22 +37,23 @@ public class TestReadWriteXMLData {
 			col = XMLDataCollectionAdapter
 					.readCollectionFromInputStream(getClass().getResourceAsStream("/document-example.xml"));
 		} catch (JAXBException e) {
-			Assert.fail();
+			fail();
 		} catch (IOException e) {
-			Assert.fail();
+			fail();
 		}
 
-		Assert.assertEquals(2, col.size());
-		
+		assertEquals(2, col.size());
+
 		// test values
-		ItemCollection workitem=col.get(0);
-		Assert.assertEquals("1.0.1", workitem.getItemValueString("$modelversion"));
-		Assert.assertEquals(55.123, workitem.getItemValueDouble("amount"),0);
+		ItemCollection workitem = col.get(0);
+		assertEquals("1.0.1", workitem.getItemValueString("$modelversion"));
+		assertEquals(55.123, workitem.getItemValueDouble("amount"), 0);
 
 	}
 
 	/**
-	 * reads /document-example.xml input file and writes the jaxb object back into a new xml file
+	 * reads /document-example.xml input file and writes the jaxb object back into a
+	 * new xml file
 	 */
 	@Test
 	// @Ignore
@@ -62,9 +64,9 @@ public class TestReadWriteXMLData {
 			col = XMLDataCollectionAdapter
 					.readCollectionFromInputStream(getClass().getResourceAsStream("/document-example.xml"));
 		} catch (JAXBException e) {
-			Assert.fail();
+			fail();
 		} catch (IOException e) {
-			Assert.fail();
+			fail();
 		}
 
 		// create JAXB object
@@ -74,7 +76,7 @@ public class TestReadWriteXMLData {
 		} catch (Exception e1) {
 
 			e1.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		// now write back to file
@@ -93,9 +95,9 @@ public class TestReadWriteXMLData {
 
 		} catch (JAXBException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
-		Assert.assertNotNull(file);
+		assertNotNull(file);
 	}
 
 }

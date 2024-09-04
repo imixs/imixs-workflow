@@ -1,16 +1,16 @@
 package org.imixs.workflow.kernel;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class to test Loop Situations.
@@ -25,7 +25,7 @@ public class TestWorkflowKernelLoop {
 
 	private MockWorkflowEngine workflowEngine;
 
-	@Before
+	@BeforeEach
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
 		// load default model
@@ -53,7 +53,7 @@ public class TestWorkflowKernelLoop {
 			assertEquals(2, workItem.getItemValueInteger("runs"));
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 	}
@@ -79,7 +79,7 @@ public class TestWorkflowKernelLoop {
 			assertEquals(0, workItem.getItemValueInteger("runs"));
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 	}
@@ -99,10 +99,10 @@ public class TestWorkflowKernelLoop {
 		try {
 			workflowEngine.getWorkflowKernel().process(workItem);
 			// We expect a ProcessingErrorException! budget is <= 1.00
-			Assert.fail();
+			fail();
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 
 		} catch (ProcessingErrorException e) {
 			// Expected situation
@@ -127,10 +127,10 @@ public class TestWorkflowKernelLoop {
 		try {
 			workflowEngine.getWorkflowKernel().eval(workItem);
 			// We expect a ProcessingErrorException! budget is <= 1.00
-			Assert.fail();
+			fail();
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 
 		} catch (ProcessingErrorException e) {
 			// Expected situation

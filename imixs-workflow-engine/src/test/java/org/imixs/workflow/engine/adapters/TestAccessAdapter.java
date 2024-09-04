@@ -1,5 +1,9 @@
 package org.imixs.workflow.engine.adapters;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -10,7 +14,6 @@ import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -65,14 +68,13 @@ public class TestAccessAdapter {
 		try {
 			accessAdapter.execute(workitem, event);
 		} catch (AdapterException e) {
-			e.printStackTrace();
-			Assert.fail();
+			fail(e.getMessage());
 		}
 
 		List writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
-		Assert.assertEquals(2, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("joe"));
-		Assert.assertTrue(writeAccess.contains("sam"));
+		assertEquals(2, writeAccess.size());
+		assertTrue(writeAccess.contains("joe"));
+		assertTrue(writeAccess.contains("sam"));
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -85,12 +87,12 @@ public class TestAccessAdapter {
 			accessAdapter.execute(workitem, event);
 		} catch (AdapterException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		List writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
 
-		Assert.assertEquals(0, writeAccess.size());
+		assertEquals(0, writeAccess.size());
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -113,15 +115,15 @@ public class TestAccessAdapter {
 			accessAdapter.execute(workitem, event);
 		} catch (AdapterException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		List writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
-		Assert.assertEquals(4, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("joe"));
-		Assert.assertTrue(writeAccess.contains("sam"));
-		Assert.assertTrue(writeAccess.contains("manfred"));
-		Assert.assertTrue(writeAccess.contains("anna"));
+		assertEquals(4, writeAccess.size());
+		assertTrue(writeAccess.contains("joe"));
+		assertTrue(writeAccess.contains("sam"));
+		assertTrue(writeAccess.contains("manfred"));
+		assertTrue(writeAccess.contains("anna"));
 	}
 
 	/**
@@ -141,14 +143,14 @@ public class TestAccessAdapter {
 			accessAdapter.execute(workitem, event);
 		} catch (AdapterException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 		List writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
-		Assert.assertEquals(4, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("tom"));
-		Assert.assertTrue(writeAccess.contains("sam"));
-		Assert.assertTrue(writeAccess.contains("anna"));
-		Assert.assertTrue(writeAccess.contains("joe"));
+		assertEquals(4, writeAccess.size());
+		assertTrue(writeAccess.contains("tom"));
+		assertTrue(writeAccess.contains("sam"));
+		assertTrue(writeAccess.contains("anna"));
+		assertTrue(writeAccess.contains("joe"));
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -163,13 +165,13 @@ public class TestAccessAdapter {
 			accessAdapter.execute(workitem, event);
 		} catch (AdapterException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		List writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
-		Assert.assertEquals(2, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("joe"));
-		Assert.assertTrue(writeAccess.contains("sam"));
+		assertEquals(2, writeAccess.size());
+		assertTrue(writeAccess.contains("joe"));
+		assertTrue(writeAccess.contains("sam"));
 	}
 
 	/**
@@ -189,14 +191,14 @@ public class TestAccessAdapter {
 			workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		List writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
-		Assert.assertEquals(300, workitem.getTaskID());
-		Assert.assertEquals(2, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("joe"));
-		Assert.assertTrue(writeAccess.contains("sam"));
+		assertEquals(300, workitem.getTaskID());
+		assertEquals(2, writeAccess.size());
+		assertTrue(writeAccess.contains("joe"));
+		assertTrue(writeAccess.contains("sam"));
 
 		// case II.
 		workitem.setTaskID(200);
@@ -206,11 +208,11 @@ public class TestAccessAdapter {
 			workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 		writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
-		Assert.assertEquals(400, workitem.getTaskID());
-		Assert.assertEquals(1, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("tom"));
+		assertEquals(400, workitem.getTaskID());
+		assertEquals(1, writeAccess.size());
+		assertTrue(writeAccess.contains("tom"));
 	}
 }

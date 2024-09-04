@@ -1,7 +1,8 @@
 package org.imixs.workflow.kernel;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -11,9 +12,8 @@ import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.WorkflowException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 
 /**
@@ -32,7 +32,7 @@ public class TestBPMNSplitEvents {
 
 	private MockWorkflowEngine workflowEngine;
 
-	@Before
+	@BeforeEach
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
 		workflowEngine.loadBPMNModel("/bpmn/split_event_with_condition.bpmn");
@@ -58,35 +58,35 @@ public class TestBPMNSplitEvents {
 		try {
 			workItem = workflowEngine.getWorkflowKernel().process(workItem);
 		} catch (WorkflowException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 			e.printStackTrace();
 		} catch (ProcessingErrorException e) {
-			Assert.fail();
+			fail();
 			e.printStackTrace();
 		}
-		Assert.assertEquals(1, workItem.getItemValueInteger("runs"));
-		Assert.assertEquals(1100, workItem.getTaskID());
+		assertEquals(1, workItem.getItemValueInteger("runs"));
+		assertEquals(1100, workItem.getTaskID());
 
 		// Validate split Workitem....
 		List<ItemCollection> splitWorkitems = workflowEngine.getWorkflowKernel().getSplitWorkitems();
 		assertEquals(1, splitWorkitems.size());
 		ItemCollection splitWorkitem = splitWorkitems.get(0);
 		assertNotNull(splitWorkitem);
-		Assert.assertEquals(2, splitWorkitem.getItemValueInteger("runs"));
-		Assert.assertEquals(1200, splitWorkitem.getTaskID());
+		assertEquals(2, splitWorkitem.getItemValueInteger("runs"));
+		assertEquals(1200, splitWorkitem.getTaskID());
 
 		// continue processing of main workitem
 		try {
 			workItem.event(80);
 			workItem = workflowEngine.getWorkflowKernel().process(workItem);
-			Assert.assertEquals(3, workItem.getItemValueInteger("runs"));
-			Assert.assertEquals(1300, workItem.getTaskID());
+			assertEquals(3, workItem.getItemValueInteger("runs"));
+			assertEquals(1300, workItem.getTaskID());
 
 		} catch (WorkflowException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 			e.printStackTrace();
 		} catch (ProcessingErrorException e) {
-			Assert.fail();
+			fail();
 			e.printStackTrace();
 		}
 
@@ -94,9 +94,9 @@ public class TestBPMNSplitEvents {
 		// defined!
 		try {
 			workItem = workflowEngine.getWorkflowKernel().process(workItem);
-			Assert.fail();
+			fail();
 		} catch (WorkflowException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 			e.printStackTrace();
 		} catch (ProcessingErrorException e) {
 			logger.info(e.getMessage());

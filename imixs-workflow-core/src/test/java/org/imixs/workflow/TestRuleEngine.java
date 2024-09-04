@@ -1,11 +1,15 @@
 package org.imixs.workflow;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import javax.script.ScriptException;
 
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for RuleEngine
@@ -15,7 +19,7 @@ import org.junit.Test;
 public class TestRuleEngine {
 	protected RuleEngine ruleEngine = null;
 
-	@Before
+	@BeforeEach
 	public void setup() throws PluginException {
 		ruleEngine = new RuleEngine();
 	}
@@ -35,8 +39,8 @@ public class TestRuleEngine {
 		String js = "var result={}; if ('Anna' == workitem.getItemValueString('name')) result.colleague='Melman';";
 		// evaluate the business rule
 		workitem = ruleEngine.evaluateBusinessRule(js, workitem, null);
-		Assert.assertNotNull(workitem);
-		Assert.assertEquals("Melman", workitem.getItemValueString("colleague"));
+		assertNotNull(workitem);
+		assertEquals("Melman", workitem.getItemValueString("colleague"));
 	}
 
 	/**
@@ -56,14 +60,14 @@ public class TestRuleEngine {
 
 		// test
 		boolean result = ruleEngine.evaluateBooleanExpression(script, workitem);
-		Assert.assertTrue(result);
+		assertTrue(result);
 
 		// evaluate false
 		script = "(workitem._budget && workitem._budget[0]<=100)";
 
 		// test
 		result = ruleEngine.evaluateBooleanExpression(script, workitem);
-		Assert.assertFalse(result);
+		assertFalse(result);
 
 	}
 

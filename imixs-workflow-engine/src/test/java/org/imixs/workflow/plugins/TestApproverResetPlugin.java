@@ -1,5 +1,7 @@
 package org.imixs.workflow.plugins;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -10,7 +12,6 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.ApproverPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -58,29 +59,29 @@ public class TestApproverResetPlugin {
 		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("eddy");
 		// 100.10
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
-		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 200.20 eddy
 		workitem.event(20);
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
-		Assert.assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// switch to anna
 		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("anna");
 		workitem.event(20);
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
-		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// switch to manfred
 		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem.event(20);
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
-		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
-		Assert.assertEquals(300, workitem.getTaskID());
+		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(300, workitem.getTaskID());
 
 	}
 
@@ -107,36 +108,36 @@ public class TestApproverResetPlugin {
 		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("eddy");
 		// 100.10
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
-		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 200.20
 		workitem.event(20);
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
-		Assert.assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// repeat with same user
 		workitem.event(20);
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
-		Assert.assertNotNull(workitem);
-		Assert.assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertNotNull(workitem);
+		assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// switch to anna
 		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("anna");
 		workitem.event(20);
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
-		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// test manfred reject...
 		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem.event(30);
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
-		Assert.assertNotNull(workitem);
-		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertNotNull(workitem);
+		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 

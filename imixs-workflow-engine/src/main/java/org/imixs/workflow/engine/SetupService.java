@@ -185,8 +185,11 @@ public class SetupService {
     }
 
     /**
-     * This method initializes all existing Models from the
-     * database.
+     * This method loads all existing Model Entities from the database and adds the
+     * BPMNModel objects into the ModelManager.
+     * <p>
+     * The method also checks the stored models for duplicates and removes
+     * deprecated duplicated model entities from the database.
      * 
      * @throws AccessDeniedException
      */
@@ -212,21 +215,23 @@ public class SetupService {
                     String version = BPMNUtil.getVersion(model);
                     // test if model is a deprecated duplicate entry!
                     if (modelService.getModelManager().getModelStore().containsKey(version)) {
-                        logger.warning("Duplicated Model Entity found (" + modelEntity.getUniqueID()
+                        logger.warning("│   ├── duplicated Model Entity found (" + modelEntity.getUniqueID()
                                 + ") for model version '" + version
-                                + "' - entity will be removed automatically!");
+                                + "' - entity will be removed!");
                         deprecatedModelEntities.add(modelEntity);
                     } else {
                         logger.log(Level.INFO, "│   ├── loaded model: {0} ▶ {1}", new Object[] { file.getName(),
                                 BPMNUtil.getVersion(model) });
+                        // Add the model into the ModelManger and put the model into the ModelService
+                        // model store
                         modelService.getModelManager().addModel(model);
+                        modelService.getModelEntityStore().put(version, modelEntity);
                     }
                 } catch (BPMNModelException | ModelException e) {
                     logger.log(Level.WARNING, "Failed to load model ''{0}'' : {1}",
                             new Object[] { file.getName(), e.getMessage() });
                 }
             }
-
         }
 
         // remove duplicated entries (this should not happen!)

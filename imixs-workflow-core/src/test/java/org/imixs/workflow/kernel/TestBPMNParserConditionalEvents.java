@@ -1,7 +1,8 @@
 package org.imixs.workflow.kernel;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -13,9 +14,8 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.xml.sax.SAXException;
@@ -32,7 +32,7 @@ public class TestBPMNParserConditionalEvents {
 
 	private MockWorkflowEngine workflowEngine;
 
-	@Before
+	@BeforeEach
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
 
@@ -44,13 +44,13 @@ public class TestBPMNParserConditionalEvents {
 		// load test model
 		workflowEngine.loadBPMNModel("/bpmn/conditional_event1.bpmn");
 		BPMNModel model = workflowEngine.getModelManager().getModel("1.0.0");
-		Assert.assertNotNull(model);
+		assertNotNull(model);
 		// test count of elements
-		Assert.assertEquals(3, model.findAllActivities().size());
+		assertEquals(3, model.findAllActivities().size());
 		// test events for task 1000
 		List<ItemCollection> events = workflowEngine.getOpenBPMNModelManager().findEventsByTask(model, 1000);
-		Assert.assertNotNull(events);
-		Assert.assertEquals(1, events.size());
+		assertNotNull(events);
+		assertEquals(1, events.size());
 
 		ItemCollection workItem = new ItemCollection();
 		workItem.model("1.0.0").task(1000).event(10);
@@ -59,7 +59,7 @@ public class TestBPMNParserConditionalEvents {
 			assertEquals(1200, workItem.getTaskID());
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		// next test with budget >100
@@ -71,7 +71,7 @@ public class TestBPMNParserConditionalEvents {
 			assertEquals(1100, workItem.getTaskID());
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 	}
@@ -87,7 +87,7 @@ public class TestBPMNParserConditionalEvents {
 		// load test model
 		workflowEngine.loadBPMNModel("/bpmn/conditional_event_default.bpmn");
 		BPMNModel model = workflowEngine.getModelManager().getModel("1.0.0");
-		Assert.assertNotNull(model);
+		assertNotNull(model);
 		// test activity 1000.10 submit
 		ItemCollection workItem = new ItemCollection();
 		workItem.model("1.0.0").task(1000).event(10);
@@ -96,7 +96,7 @@ public class TestBPMNParserConditionalEvents {
 			assertEquals(1200, workItem.getTaskID());
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 	}
 
@@ -112,7 +112,7 @@ public class TestBPMNParserConditionalEvents {
 		// load test model
 		workflowEngine.loadBPMNModel("/bpmn/conditional_event3.bpmn");
 		BPMNModel model = workflowEngine.getModelManager().getModel("1.0.0");
-		Assert.assertNotNull(model);
+		assertNotNull(model);
 		// test activity 1000.10 submit
 		ItemCollection workItem = new ItemCollection();
 		workItem.setItemValue("_budget", 1500.00);
@@ -122,7 +122,7 @@ public class TestBPMNParserConditionalEvents {
 			assertEquals(1100, workItem.getTaskID());
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 	}
 
@@ -133,10 +133,10 @@ public class TestBPMNParserConditionalEvents {
 		// load test model
 		workflowEngine.loadBPMNModel("/bpmn/conditional_event2.bpmn");
 		BPMNModel model = workflowEngine.getModelManager().getModel("1.0.0");
-		Assert.assertNotNull(model);
+		assertNotNull(model);
 
 		// test count of elements
-		Assert.assertEquals(3, model.findAllActivities().size());
+		assertEquals(3, model.findAllActivities().size());
 
 		// test activity 1000.10 submit
 		ItemCollection workItem = new ItemCollection();
@@ -150,7 +150,7 @@ public class TestBPMNParserConditionalEvents {
 			assertEquals(20, workItem.getItemValueInteger("$lastEvent"));
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 	}
 
@@ -166,10 +166,10 @@ public class TestBPMNParserConditionalEvents {
 		// load test model
 		workflowEngine.loadBPMNModel("/bpmn/conditional_split_event.bpmn");
 		BPMNModel model = workflowEngine.getModelManager().getModel("1.0.0");
-		Assert.assertNotNull(model);
+		assertNotNull(model);
 
 		// test count of elements
-		Assert.assertEquals(4, model.findAllActivities().size());
+		assertEquals(4, model.findAllActivities().size());
 		// test activity 1000.10 submit
 		ItemCollection workItem = new ItemCollection();
 		workItem.setItemValue("_budget", 1520.00);
@@ -193,7 +193,7 @@ public class TestBPMNParserConditionalEvents {
 
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 	}

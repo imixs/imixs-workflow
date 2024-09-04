@@ -1,5 +1,10 @@
 package org.imixs.workflow.plugins;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -11,9 +16,8 @@ import javax.script.ScriptException;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.plugins.RulePlugin;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for RulePlugin
@@ -24,7 +28,7 @@ public class TestRulePlugin {
 	protected RulePlugin rulePlugin = null;
 	private final static Logger logger = Logger.getLogger(TestRulePlugin.class.getName());
 
-	@Before
+	@BeforeEach
 	public void setUp() throws PluginException {
 		rulePlugin = new RulePlugin();
 		rulePlugin.init(null);
@@ -51,9 +55,9 @@ public class TestRulePlugin {
 
 		// run plugin
 		workitem = rulePlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertEquals("Anna", workitem.getItemValueString("txtName"));
+		assertEquals("Anna", workitem.getItemValueString("txtName"));
 
 	}
 
@@ -77,9 +81,9 @@ public class TestRulePlugin {
 
 		// run plugin
 		workitem = rulePlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertEquals("Anna", workitem.getItemValueString("txtName"));
+		assertEquals("Anna", workitem.getItemValueString("txtName"));
 
 	}
 
@@ -102,10 +106,10 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
-		Assert.assertEquals("Anna", adocumentContext.getItemValueString("txtName"));
-		Assert.assertEquals(50, adocumentContext.getItemValueInteger("numage"));
+		assertEquals("Anna", adocumentContext.getItemValueString("txtName"));
+		assertEquals(50, adocumentContext.getItemValueInteger("numage"));
 
 	}
 
@@ -115,8 +119,8 @@ public class TestRulePlugin {
 	 * @throws ScriptException
 	 * @throws PluginException
 	 */
-	@Test(expected = PluginException.class)
-	public void testSimplePluginException() throws PluginException {
+	@Test
+	public void testSimplePluginException() {
 
 		ItemCollection adocumentContext = new ItemCollection();
 		ItemCollection adocumentActivity = new ItemCollection();
@@ -124,8 +128,13 @@ public class TestRulePlugin {
 		String script = "var a=1;var b=2;var result={ isValid : (a>b)};";
 		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
-		rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.fail();
+		try {
+			rulePlugin.run(adocumentContext, adocumentActivity);
+			fail();
+		} catch (PluginException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
@@ -147,11 +156,11 @@ public class TestRulePlugin {
 		event.replaceItemValue("txtBusinessRUle", script);
 		// should be accepted!
 		rulePlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 	}
 
-	@Test(expected = PluginException.class)
-	public void testResultObjectPluginException() throws PluginException {
+	@Test
+	public void testResultObjectPluginException() {
 
 		ItemCollection workitem = new ItemCollection();
 		ItemCollection event = new ItemCollection();
@@ -161,8 +170,13 @@ public class TestRulePlugin {
 
 		logger.log(Level.INFO, "Script={0}", script);
 		event.replaceItemValue("txtBusinessRUle", script);
-		rulePlugin.run(workitem, event);
-		Assert.fail();
+
+		try {
+			rulePlugin.run(workitem, event);
+			fail();
+		} catch (PluginException e) {
+			// Expected exeption
+		}
 
 	}
 
@@ -188,14 +202,14 @@ public class TestRulePlugin {
 		event.replaceItemValue("txtBusinessRUle", script);
 		try {
 			rulePlugin.run(workitem, event);
-			Assert.fail();
+			fail();
 		} catch (PluginException e) {
 			logger.severe(e.getMessage());
 			// test excption
-			Assert.assertEquals("MY_ERROR", e.getErrorCode());
+			assertEquals("MY_ERROR", e.getErrorCode());
 			Object[] params = e.getErrorParameters();
-			Assert.assertEquals(1, params.length);
-			Assert.assertEquals("Somehing go wrong!", params[0].toString());
+			assertEquals(1, params.length);
+			assertEquals("Somehing go wrong!", params[0].toString());
 		}
 
 		// 2) invalid returning 2 messages in an array
@@ -206,15 +220,15 @@ public class TestRulePlugin {
 		event.replaceItemValue("txtBusinessRUle", script);
 		try {
 			rulePlugin.run(workitem, event);
-			Assert.fail();
+			fail();
 		} catch (PluginException e) {
 			// e.printStackTrace();
 			// test exception
-			Assert.assertEquals(RulePlugin.VALIDATION_ERROR, e.getErrorCode());
+			assertEquals(RulePlugin.VALIDATION_ERROR, e.getErrorCode());
 			Object[] params = e.getErrorParameters();
-			Assert.assertEquals(2, params.length);
-			Assert.assertEquals("Somehing go wrong!", params[0].toString());
-			Assert.assertEquals("Somehingelse go wrong!", params[1].toString());
+			assertEquals(2, params.length);
+			assertEquals("Somehing go wrong!", params[0].toString());
+			assertEquals("Somehingelse go wrong!", params[1].toString());
 		}
 
 	}
@@ -242,7 +256,7 @@ public class TestRulePlugin {
 
 		// run plugin
 		workitem = rulePlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
 		/*
 		 * Case 2
@@ -256,7 +270,7 @@ public class TestRulePlugin {
 
 		// run plugin
 		workitem = rulePlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
 	}
 
@@ -285,7 +299,7 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
 	}
 
@@ -313,9 +327,9 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, event);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
-		Assert.assertEquals("test@me.com", event.getItemValueString("nammailReplytoUser"));
+		assertEquals("test@me.com", event.getItemValueString("nammailReplytoUser"));
 
 	}
 
@@ -346,9 +360,9 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
-		Assert.assertEquals("0", adocumentActivity.getItemValueString("keyMailEnabled"));
+		assertEquals("0", adocumentActivity.getItemValueString("keyMailEnabled"));
 
 	}
 
@@ -377,7 +391,7 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
 	}
 
@@ -403,7 +417,7 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
 	}
 
@@ -430,9 +444,9 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
-		// Assert.assertTrue(rulePlugin.isValid(adocumentContext,
+		// assertTrue(rulePlugin.isValid(adocumentContext,
 		// adocumentActivity));
 
 		// 2) test false case
@@ -448,12 +462,12 @@ public class TestRulePlugin {
 			// run plugin
 			adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
 
-			Assert.fail();
+			fail();
 		} catch (PluginException pe) {
 			// ok!
 		}
 
-		// Assert.assertFalse(rulePlugin.isValid(adocumentContext,
+		// assertFalse(rulePlugin.isValid(adocumentContext,
 		// adocumentActivity));
 
 		// calendar test
@@ -472,7 +486,7 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
 	}
 
@@ -506,7 +520,7 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
 		adocumentContext = new ItemCollection();
 		adocumentContext.replaceItemValue("txtbetrag", "");
@@ -518,7 +532,7 @@ public class TestRulePlugin {
 			// run plugin
 			adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
 
-			Assert.fail();
+			fail();
 		} catch (PluginException e) {
 			// ok
 		}
@@ -533,7 +547,7 @@ public class TestRulePlugin {
 			// run plugin
 			adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
 
-			Assert.fail();
+			fail();
 		} catch (PluginException e) {
 			// ok
 		}
@@ -548,7 +562,7 @@ public class TestRulePlugin {
 			// run plugin
 			adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
 
-			Assert.fail();
+			fail();
 		} catch (PluginException e) {
 			// ok
 		}
@@ -561,7 +575,7 @@ public class TestRulePlugin {
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
 	}
 
@@ -590,16 +604,16 @@ public class TestRulePlugin {
 		try {
 			rulePlugin.run(adocumentContext, adocumentActivity);
 
-			Assert.fail();
+			fail();
 		} catch (PluginException pe) {
 			// PluginException expected
 			logger.info(pe.getMessage());
-			Assert.assertEquals(pe.getErrorCode(), RulePlugin.VALIDATION_ERROR);
+			assertEquals(pe.getErrorCode(), RulePlugin.VALIDATION_ERROR);
 
 			Object[] errorParams = pe.getErrorParameters();
 
-			Assert.assertEquals(1, errorParams.length);
-			Assert.assertEquals("Please enter subject", errorParams[0]);
+			assertEquals(1, errorParams.length);
+			assertEquals("Please enter subject", errorParams[0]);
 
 		}
 
@@ -617,13 +631,13 @@ public class TestRulePlugin {
 		try {
 			rulePlugin.run(adocumentContext, adocumentActivity);
 
-			Assert.fail();
+			fail();
 		} catch (PluginException pe) {
 			// PluginException expected
 			logger.info(pe.getMessage());
-			Assert.assertEquals(pe.getErrorCode(), "SOME_ERROR");
+			assertEquals(pe.getErrorCode(), "SOME_ERROR");
 			Object[] errorParams = pe.getErrorParameters();
-			Assert.assertTrue(errorParams == null);
+			assertTrue(errorParams == null);
 
 		}
 
@@ -655,11 +669,11 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
-		Assert.assertEquals("Hello World", adocumentContext.getItemValueString("someitem"));
+		assertEquals("Hello World", adocumentContext.getItemValueString("someitem"));
 
-		Assert.assertEquals(1, adocumentContext.getItemValueInteger("somenumber"));
+		assertEquals(1, adocumentContext.getItemValueInteger("somenumber"));
 
 	}
 
@@ -683,11 +697,11 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
 		String newdata = adocumentContext.getItemValueString("someitem");
 
-		Assert.assertEquals("Hello World", newdata);
+		assertEquals("Hello World", newdata);
 
 	}
 
@@ -712,13 +726,13 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
 		List<String> newdata = adocumentContext.getItemValue("some_item");
 
-		Assert.assertEquals(2, newdata.size());
-		Assert.assertEquals("Hello World", newdata.get(0));
-		Assert.assertEquals("Hello Imixs", newdata.get(1));
+		assertEquals(2, newdata.size());
+		assertEquals("Hello World", newdata.get(0));
+		assertEquals("Hello Imixs", newdata.get(1));
 
 	}
 
@@ -744,17 +758,17 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, adocumentActivity);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
 		// test single value
 		String singelItem = adocumentContext.getItemValueString("single_item");
-		Assert.assertEquals("Hello World", singelItem);
+		assertEquals("Hello World", singelItem);
 
 		// test multivalue
 		List<String> multiItem = adocumentContext.getItemValue("multi_item");
-		Assert.assertEquals(2, multiItem.size());
-		Assert.assertEquals("Hello World", multiItem.get(0));
-		Assert.assertEquals("Hello Imixs", multiItem.get(1));
+		assertEquals(2, multiItem.size());
+		assertEquals("Hello World", multiItem.get(0));
+		assertEquals("Hello Imixs", multiItem.get(1));
 
 	}
 
@@ -787,14 +801,14 @@ public class TestRulePlugin {
 
 		// run plugin
 		adocumentContext = rulePlugin.run(adocumentContext, event);
-		Assert.assertNotNull(adocumentContext);
+		assertNotNull(adocumentContext);
 
-		Assert.assertEquals(1000, adocumentContext.getTaskID());
+		assertEquals(1000, adocumentContext.getTaskID());
 
 		// test manipulation of activity
-		Assert.assertEquals("0", event.getItemValueString("keyMailEnabled"));
+		assertEquals("0", event.getItemValueString("keyMailEnabled"));
 		// test for integer value
-		Assert.assertEquals(0, event.getItemValueInteger("keyMailEnabled"));
+		assertEquals(0, event.getItemValueInteger("keyMailEnabled"));
 
 	}
 }

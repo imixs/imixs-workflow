@@ -1,5 +1,9 @@
 package org.imixs.workflow.plugins;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
@@ -7,7 +11,6 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.MailPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +41,7 @@ public class TestMailPlugin {
 		try {
 			mailPlugin.init(workflowEnvironment.getWorkflowService());
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 	}
 
@@ -61,9 +64,9 @@ public class TestMailPlugin {
 			sBody = mailPlugin.getBody(documentContext, documentActivity);
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
-		Assert.assertEquals("Hello Anna!", sBody);
+		assertEquals("Hello Anna!", sBody);
 	}
 
 	/**
@@ -101,9 +104,9 @@ public class TestMailPlugin {
 			sBody = mailPlugin.getBody(documentContext, documentActivity);
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 		logger.info(sBody);
-		Assert.assertTrue(sBody.contains("<h2>Anna</h2>"));
+		assertTrue(sBody.contains("<h2>Anna</h2>"));
 	}
 }

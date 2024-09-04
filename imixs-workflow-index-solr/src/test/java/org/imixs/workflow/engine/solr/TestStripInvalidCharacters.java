@@ -1,11 +1,11 @@
 package org.imixs.workflow.engine.solr;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Before;
-import org.junit.Test;
-
-import junit.framework.Assert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test striping invalid characters
@@ -15,30 +15,25 @@ import junit.framework.Assert;
  */
 public class TestStripInvalidCharacters {
 	SolrIndexService solrIndexService;
-	@Before
+
+	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
-		solrIndexService=new SolrIndexService();
+		solrIndexService = new SolrIndexService();
 	}
-	
 
 	/**
-	 * Test 
+	 * Test
 	 * 
 	 */
 	@Test
 	public void testCDATA() {
-		
+
 		String testString = "Hello <![CDATA[<XX>....</XX>]]> Data!";
-		
-		
-		
-		String result=solrIndexService.stripCDATA(testString);
-		
-		
-		Assert.assertEquals("Hello <XX>....</XX> Data!",result);
-		
-		
-		
+
+		String result = solrIndexService.stripCDATA(testString);
+
+		assertEquals("Hello <XX>....</XX> Data!", result);
+
 	}
 
 }

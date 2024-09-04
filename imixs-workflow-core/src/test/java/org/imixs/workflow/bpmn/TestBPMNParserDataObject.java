@@ -1,5 +1,9 @@
 package org.imixs.workflow.bpmn;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -10,9 +14,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.DataObject;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
@@ -31,16 +34,16 @@ public class TestBPMNParserDataObject {
 	BPMNModel model = null;
 	ModelManager openBPMNModelManager = null;
 
-	@Before
+	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		try {
 			openBPMNModelManager = new ModelManager();
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/dataobject_example1.bpmn"));
 			model = openBPMNModelManager.getModel("1.0.0");
-			Assert.assertNotNull(model);
+			assertNotNull(model);
 		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 	}
@@ -52,15 +55,15 @@ public class TestBPMNParserDataObject {
 
 		// test task 1000
 		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
-		Assert.assertNotNull(task);
+		assertNotNull(task);
 		List<?> dataObjects = task.getItemValue("dataObjects");
-		Assert.assertNotNull(dataObjects);
-		Assert.assertEquals(1, dataObjects.size());
+		assertNotNull(dataObjects);
+		assertEquals(1, dataObjects.size());
 		List<String> data = (List<String>) dataObjects.get(0);
-		Assert.assertNotNull(data);
-		Assert.assertEquals(2, data.size());
-		Assert.assertEquals("Invoice Template", data.get(0));
-		Assert.assertEquals("Some data ...", data.get(1));
+		assertNotNull(data);
+		assertEquals(2, data.size());
+		assertEquals("Invoice Template", data.get(0));
+		assertEquals("Some data ...", data.get(1));
 
 	}
 
@@ -71,16 +74,16 @@ public class TestBPMNParserDataObject {
 
 		// test event 1000.10
 		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
-		Assert.assertNotNull(event);
+		assertNotNull(event);
 
 		List<?> dataObjects = event.getItemValue("dataObjects");
-		Assert.assertNotNull(dataObjects);
-		Assert.assertEquals(1, dataObjects.size());
+		assertNotNull(dataObjects);
+		assertEquals(1, dataObjects.size());
 		List<String> data = (List<String>) dataObjects.get(0);
-		Assert.assertNotNull(data);
-		Assert.assertEquals(2, data.size());
-		Assert.assertEquals("EventData", data.get(0));
-		Assert.assertEquals("Some config-data ...", data.get(1));
+		assertNotNull(data);
+		assertEquals(2, data.size());
+		assertEquals("EventData", data.get(0));
+		assertEquals("Some config-data ...", data.get(1));
 
 	}
 
@@ -99,17 +102,17 @@ public class TestBPMNParserDataObject {
 
 		// test event 1000.10
 		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
-		Assert.assertNotNull(event);
+		assertNotNull(event);
 
 		BPMNElementNode bpmnElementNode = model.findElementNodeById(event.getItemValueString("id"));
 
-		Assert.assertNotNull(bpmnElementNode);
+		assertNotNull(bpmnElementNode);
 		Set<DataObject> dataObjects = bpmnElementNode.getDataObjects();
-		Assert.assertEquals(1, dataObjects.size());
+		assertEquals(1, dataObjects.size());
 		DataObject dataObject = dataObjects.iterator().next();
-		Assert.assertNotNull(dataObject);
-		Assert.assertEquals("EventData", dataObject.getName());
-		Assert.assertEquals("Some config-data ...", dataObject.getDocumentation());
+		assertNotNull(dataObject);
+		assertEquals("EventData", dataObject.getName());
+		assertEquals("Some config-data ...", dataObject.getDocumentation());
 
 	}
 

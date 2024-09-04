@@ -1,5 +1,9 @@
 package org.imixs.workflow.xml;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -7,15 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.imixs.workflow.FileData;
+import org.imixs.workflow.ItemCollection;
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
-
-import org.imixs.workflow.FileData;
-import org.imixs.workflow.ItemCollection;
-import org.junit.Test;
-
-import org.junit.Assert;
 
 /**
  * Test class writes a simple ItemCollection into a xml file.
@@ -85,7 +87,7 @@ public class TestWriteXMLData {
 
 		// add a file
 
-		itemColSource.addFileData(new FileData("test.txt", empty,  null,null));
+		itemColSource.addFileData(new FileData("test.txt", empty, null, null));
 
 		// PHASE II.
 		// write the write-example.xml....
@@ -97,7 +99,7 @@ public class TestWriteXMLData {
 		} catch (Exception e1) {
 
 			e1.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		// now write back to file
@@ -116,10 +118,10 @@ public class TestWriteXMLData {
 
 		} catch (JAXBException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
-		Assert.assertNotNull(file);
+		assertNotNull(file);
 
 		// PHASE III.
 		// Read the write-example.xml....
@@ -130,23 +132,23 @@ public class TestWriteXMLData {
 			fis = new FileInputStream(file);
 			ItemCollection resultItemCollection = XMLDocumentAdapter.readItemCollectionFromInputStream(fis);
 
-			Assert.assertNotNull(resultItemCollection);
+			assertNotNull(resultItemCollection);
 
-			Assert.assertEquals(itemColSource.getItemValue("_name"), resultItemCollection.getItemValue("_name"));
-			Assert.assertEquals(itemColSource.getItemValue("_listdata"),
+			assertEquals(itemColSource.getItemValue("_name"), resultItemCollection.getItemValue("_name"));
+			assertEquals(itemColSource.getItemValue("_listdata"),
 					resultItemCollection.getItemValue("_listdata"));
-			Assert.assertEquals(itemColSource.getItemValue("_mapdata"), resultItemCollection.getItemValue("_mapdata"));
+			assertEquals(itemColSource.getItemValue("_mapdata"), resultItemCollection.getItemValue("_mapdata"));
 
 			FileData afileData = itemColSource.getFileData("test.txt");
-			Assert.assertNotNull(afileData);
-			Assert.assertEquals("application/unknown",afileData.getContentType());
-			Assert.assertEquals(empty,afileData.getContent());
+			assertNotNull(afileData);
+			assertEquals("application/unknown", afileData.getContentType());
+			assertEquals(empty, afileData.getContent());
 
 		} catch (JAXBException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		} catch (IOException e) {
-			Assert.fail();
+			fail();
 		}
 
 	}

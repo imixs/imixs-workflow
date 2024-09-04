@@ -1,5 +1,9 @@
 package org.imixs.workflow.bpmn;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.text.ParseException;
 
@@ -8,9 +12,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
@@ -27,7 +30,7 @@ public class TestBPMNParserAdapter {
 	BPMNModel model = null;
 	ModelManager openBPMNModelManager = null;
 
-	@Before
+	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		openBPMNModelManager = new ModelManager();
 	}
@@ -40,16 +43,16 @@ public class TestBPMNParserAdapter {
 			model = openBPMNModelManager.getModel("1.0.0");
 		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
-		Assert.assertNotNull(model);
+		assertNotNull(model);
 		// test activity 1000.20 submit
 		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
-		Assert.assertNotNull(event);
-		Assert.assertEquals("submit", event.getItemValueString("name"));
+		assertNotNull(event);
+		assertEquals("submit", event.getItemValueString("name"));
 
 		// test adapter class.....
-		Assert.assertEquals("org.imixs.workflow.adapter.Example", event.getItemValueString("adapter.id"));
+		assertEquals("org.imixs.workflow.adapter.Example", event.getItemValueString("adapter.id"));
 
 	}
 
@@ -62,31 +65,31 @@ public class TestBPMNParserAdapter {
 			model = openBPMNModelManager.getModel("1.0.0");
 		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
-		Assert.assertNotNull(model);
+		assertNotNull(model);
 
 		// test activity 1000.20 submit
 		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
-		Assert.assertNotNull(event);
-		Assert.assertEquals("adapter A", event.getItemValueString("txtname"));
+		assertNotNull(event);
+		assertEquals("adapter A", event.getItemValueString("txtname"));
 		// test adapter class.....
-		Assert.assertEquals("org.imixs.workflow.adapter.Example", event.getItemValueString("adapter.id"));
+		assertEquals("org.imixs.workflow.adapter.Example", event.getItemValueString("adapter.id"));
 
 		// test activity 1100.10 submit
 		event = openBPMNModelManager.findEventByID(model, 1100, 10);
-		Assert.assertNotNull(event);
-		Assert.assertEquals("adapter A", event.getItemValueString("txtname"));
+		assertNotNull(event);
+		assertEquals("adapter A", event.getItemValueString("txtname"));
 		// test adapter class.....
-		Assert.assertEquals("org.imixs.workflow.adapter.Example", event.getItemValueString("adapter.id"));
+		assertEquals("org.imixs.workflow.adapter.Example", event.getItemValueString("adapter.id"));
 
 		// test activity 1000.20 submit
 		event = openBPMNModelManager.findEventByID(model, 1100, 20);
-		Assert.assertNotNull(event);
-		Assert.assertEquals("adapter B", event.getItemValueString("txtname"));
+		assertNotNull(event);
+		assertEquals("adapter B", event.getItemValueString("txtname"));
 		// test adapter class.....
-		Assert.assertEquals("com.imixs.test.AdapterB", event.getItemValueString("adapter.id"));
+		assertEquals("com.imixs.test.AdapterB", event.getItemValueString("adapter.id"));
 
 	}
 

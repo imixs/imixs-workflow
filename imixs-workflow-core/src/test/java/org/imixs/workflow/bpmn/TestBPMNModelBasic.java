@@ -1,5 +1,9 @@
 package org.imixs.workflow.bpmn;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -10,9 +14,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
@@ -28,15 +31,15 @@ public class TestBPMNModelBasic {
 	BPMNModel model = null;
 	ModelManager openBPMNModelManager = null;
 
-	@Before
+	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		openBPMNModelManager = new ModelManager();
 		try {
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/simple.bpmn"));
 			model = openBPMNModelManager.getModel("1.0.0");
-			Assert.assertNotNull(model);
+			assertNotNull(model);
 		} catch (ModelException | BPMNModelException e) {
-			Assert.fail();
+			fail(e.getMessage());
 		}
 	}
 
@@ -51,13 +54,13 @@ public class TestBPMNModelBasic {
 
 			// find start tasks
 			List<ItemCollection> startTasks = openBPMNModelManager.findStartTasks(model, "Simple");
-			Assert.assertNotNull(startTasks);
-			Assert.assertEquals(1, startTasks.size());
+			assertNotNull(startTasks);
+			assertEquals(1, startTasks.size());
 			ItemCollection startTask = startTasks.get(0);
-			Assert.assertNotNull(startTask);
-			Assert.assertEquals("Task 1", startTask.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
-		} catch (BPMNModelException e) {
-			Assert.fail();
+			assertNotNull(startTask);
+			assertEquals("Task 1", startTask.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
+		} catch (ModelException e) {
+			fail();
 		}
 	}
 
@@ -67,20 +70,20 @@ public class TestBPMNModelBasic {
 
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/simple-startevent.bpmn"));
 			model = openBPMNModelManager.getModel("1.0.0");
-			Assert.assertNotNull(model);
+			assertNotNull(model);
 
 			// find start tasks
 			List<ItemCollection> startTasks = openBPMNModelManager.findStartTasks(model, "Simple");
-			Assert.assertNotNull(startTasks);
-			Assert.assertEquals(1, startTasks.size());
+			assertNotNull(startTasks);
+			assertEquals(1, startTasks.size());
 			ItemCollection startTask = startTasks.get(0);
-			Assert.assertNotNull(startTask);
-			Assert.assertEquals("Task 1", startTask.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
+			assertNotNull(startTask);
+			assertEquals("Task 1", startTask.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
 
 			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
-			Assert.assertEquals(3, events.size());
+			assertEquals(3, events.size());
 		} catch (BPMNModelException e) {
-			Assert.fail();
+			fail();
 		}
 	}
 
@@ -94,13 +97,13 @@ public class TestBPMNModelBasic {
 		try {
 			// test End task....
 			List<ItemCollection> endTasks = openBPMNModelManager.findEndTasks(model, "Simple");
-			Assert.assertNotNull(endTasks);
-			Assert.assertEquals(1, endTasks.size());
+			assertNotNull(endTasks);
+			assertEquals(1, endTasks.size());
 
 			ItemCollection endTask = endTasks.get(0);
-			Assert.assertEquals("Task 2", endTask.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
-		} catch (BPMNModelException e) {
-			Assert.fail();
+			assertEquals("Task 2", endTask.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
+		} catch (ModelException e) {
+			fail();
 		}
 	}
 
@@ -114,8 +117,8 @@ public class TestBPMNModelBasic {
 
 		// test End task....
 		List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
-		Assert.assertNotNull(events);
-		Assert.assertEquals(2, events.size());
+		assertNotNull(events);
+		assertEquals(2, events.size());
 
 	}
 
@@ -135,18 +138,18 @@ public class TestBPMNModelBasic {
 		// test event 1000.20
 		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
 
-		Assert.assertNotNull(event);
-		// Assert.assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
-		Assert.assertEquals("submit", event.getItemValueString("name"));
+		assertNotNull(event);
+		// assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
+		assertEquals("submit", event.getItemValueString("name"));
 
 		// change name of activity....
 		event.replaceItemValue("Name", "test");
-		Assert.assertEquals("test", event.getItemValueString("name"));
+		assertEquals("test", event.getItemValueString("name"));
 
 		// test activity 1000.10 once again - changes should not have any effect!
 		event = openBPMNModelManager.findEventByID(model, 1000, 20);
-		Assert.assertNotNull(event);
-		Assert.assertEquals("submit", event.getItemValueString("name"));
+		assertNotNull(event);
+		assertEquals("submit", event.getItemValueString("name"));
 
 	}
 
@@ -165,17 +168,17 @@ public class TestBPMNModelBasic {
 
 		// test task 1000
 		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
-		Assert.assertNotNull(task);
-		Assert.assertEquals("Task 1", task.getItemValueString("name"));
-		Assert.assertEquals("Some documentation...", task.getItemValueString("documentation"));
+		assertNotNull(task);
+		assertEquals("Task 1", task.getItemValueString("name"));
+		assertEquals("Some documentation...", task.getItemValueString("documentation"));
 		// change some attributes of task....
 		task.replaceItemValue("txtworkflowgroup", "test");
-		Assert.assertEquals("test", task.getItemValueString("txtworkflowgroup"));
+		assertEquals("test", task.getItemValueString("txtworkflowgroup"));
 		// test task 1000 once again
 		task = openBPMNModelManager.findTaskByID(model, 1000);
-		Assert.assertNotNull(task);
+		assertNotNull(task);
 		// changes should not have taken effect.
-		Assert.assertEquals("", task.getItemValueString("txtworkflowgroup"));
+		assertEquals("", task.getItemValueString("txtworkflowgroup"));
 
 	}
 
@@ -196,15 +199,15 @@ public class TestBPMNModelBasic {
 
 		// test definition
 		ItemCollection definition = openBPMNModelManager.loadDefinition(model);
-		Assert.assertNotNull(definition);
-		Assert.assertEquals("1.0.0", definition.getItemValueString("$ModelVersion"));
+		assertNotNull(definition);
+		assertEquals("1.0.0", definition.getItemValueString("$ModelVersion"));
 		// change name of definition....
 		definition.replaceItemValue("$ModelVersion", "test");
-		Assert.assertEquals("test", definition.getItemValueString("$ModelVersion"));
+		assertEquals("test", definition.getItemValueString("$ModelVersion"));
 		// test definition once again
 		definition = openBPMNModelManager.loadDefinition(model);
-		Assert.assertNotNull(definition);
-		Assert.assertEquals("1.0.0", definition.getItemValueString("$ModelVersion"));
+		assertNotNull(definition);
+		assertEquals("1.0.0", definition.getItemValueString("$ModelVersion"));
 	}
 
 	/**
@@ -220,18 +223,18 @@ public class TestBPMNModelBasic {
 	@Test
 	public void testModifyGroups() throws ModelException {
 		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
-		Assert.assertNotNull(groups);
-		Assert.assertEquals(1, groups.size());
+		assertNotNull(groups);
+		assertEquals(1, groups.size());
 		// add a new group....
 		try {
 			groups.add("test-group1");
-			Assert.fail();
+			fail();
 		} catch (UnsupportedOperationException e) {
 			// we expect a UnsupportedOperationException
 			// test groups once again
 			groups = openBPMNModelManager.findAllGroupsByModel(model);
-			Assert.assertNotNull(groups);
-			Assert.assertEquals(1, groups.size());
+			assertNotNull(groups);
+			assertEquals(1, groups.size());
 		}
 	}
 
@@ -248,15 +251,15 @@ public class TestBPMNModelBasic {
 
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/recursive_issue1.bpmn"));
 			model = openBPMNModelManager.getModel("1.0.0");
-			Assert.assertNotNull(model);
+			assertNotNull(model);
 
 			ItemCollection workitem = new ItemCollection().model("1.0.0").task(100).event(10);
-			Assert.assertEquals(3, model.findAllEvents().size());
+			assertEquals(3, model.findAllEvents().size());
 			ItemCollection event = openBPMNModelManager.loadEvent(workitem);
-			Assert.assertNotNull(event);
+			assertNotNull(event);
 
 		} catch (BPMNModelException e) {
-			Assert.fail();
+			fail();
 		}
 	}
 

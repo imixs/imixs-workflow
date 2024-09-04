@@ -1,5 +1,9 @@
 package org.imixs.workflow.plugins;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -9,7 +13,6 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
@@ -79,14 +82,14 @@ public class TestOwnerPlugin {
 		} catch (PluginException e) {
 
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		List writeAccess = workitem.getItemValue(OwnerPlugin.OWNER);
 
-		Assert.assertEquals(2, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("joe"));
-		Assert.assertTrue(writeAccess.contains("sam"));
+		assertEquals(2, writeAccess.size());
+		assertTrue(writeAccess.contains("joe"));
+		assertTrue(writeAccess.contains("sam"));
 	}
 
 	/**
@@ -113,15 +116,15 @@ public class TestOwnerPlugin {
 			ownerPlugin.run(workitem, event);
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		List ownerList = workitem.getItemValue(OwnerPlugin.OWNER);
 
-		Assert.assertEquals(3, ownerList.size());
-		Assert.assertTrue(ownerList.contains("joe"));
-		Assert.assertTrue(ownerList.contains("sam"));
-		Assert.assertTrue(ownerList.contains("ralph"));
+		assertEquals(3, ownerList.size());
+		assertTrue(ownerList.contains("joe"));
+		assertTrue(ownerList.contains("sam"));
+		assertTrue(ownerList.contains("ralph"));
 	}
 
 	/**
@@ -142,15 +145,15 @@ public class TestOwnerPlugin {
 		try {
 			ownerPlugin.run(workitem, event);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 		List writeAccess = workitem.getItemValue(OwnerPlugin.OWNER);
 		// 3 values expected!
-		Assert.assertEquals(3, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("tom"));
-		Assert.assertTrue(writeAccess.contains("sam"));
-		Assert.assertTrue(writeAccess.contains("anna"));
+		assertEquals(3, writeAccess.size());
+		assertTrue(writeAccess.contains("tom"));
+		assertTrue(writeAccess.contains("sam"));
+		assertTrue(writeAccess.contains("anna"));
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -164,11 +167,11 @@ public class TestOwnerPlugin {
 			ownerPlugin.run(workitem, event);
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		List writeAccess = workitem.getItemValue(OwnerPlugin.OWNER);
-		Assert.assertEquals(0, writeAccess.size());
+		assertEquals(0, writeAccess.size());
 	}
 
 	/**
@@ -185,10 +188,10 @@ public class TestOwnerPlugin {
 		try {
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
-		Assert.assertEquals(1100, workitem.getTaskID());
+		assertEquals(1100, workitem.getTaskID());
 	}
 
 }

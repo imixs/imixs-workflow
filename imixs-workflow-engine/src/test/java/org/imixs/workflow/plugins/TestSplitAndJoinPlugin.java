@@ -1,5 +1,11 @@
 package org.imixs.workflow.plugins;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -15,7 +21,6 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.SplitAndJoinPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
@@ -70,28 +75,28 @@ public class TestSplitAndJoinPlugin {
 			workitem.event(20);
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		Assert.assertEquals(1, workitemRefList.size());
+		assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
 		// get the subprocess...
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		// test data in subprocess
-		Assert.assertNotNull(subprocess);
+		assertNotNull(subprocess);
 
 		// test the new action result based on the new subprocess uniqueid....
-		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + subprocessUniqueid,
+		assertEquals("/pages/workitems/workitem.jsf?id=" + subprocessUniqueid,
 				workitem.getItemValueString("action"));
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test if the field namTeam is available
 		List<String> team = subprocess.getItemValue("namTeam");
-		Assert.assertEquals(2, team.size());
-		Assert.assertTrue(team.contains("manfred"));
-		Assert.assertTrue(team.contains("anna"));
+		assertEquals(2, team.size());
+		assertTrue(team.contains("manfred"));
+		assertTrue(team.contains("anna"));
 
 	}
 
@@ -108,8 +113,8 @@ public class TestSplitAndJoinPlugin {
 		ItemCollection test = BPMNEntityBuilder.build(eventElement);
 		String txtValue = test.getItemValueString("txtactivityresult");
 		String workValue = test.getItemValueString(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT);
-		Assert.assertTrue(txtValue.startsWith("<split"));
-		Assert.assertTrue(workValue.startsWith("<split"));
+		assertTrue(txtValue.startsWith("<split"));
+		assertTrue(workValue.startsWith("<split"));
 	}
 
 	/**
@@ -124,26 +129,26 @@ public class TestSplitAndJoinPlugin {
 			workitem.event(60);
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		Assert.assertEquals(1, workitemRefList.size());
+		assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
 
 		// get the subprocess...
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 
 		// test data in subprocess
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertNotNull(subprocess);
+		assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test if the field namTeam is available
 		List<String> team = subprocess.getItemValue("_sub_Team");
-		Assert.assertEquals(2, team.size());
-		Assert.assertTrue(team.contains("manfred"));
-		Assert.assertTrue(team.contains("anna"));
+		assertEquals(2, team.size());
+		assertTrue(team.contains("manfred"));
+		assertTrue(team.contains("anna"));
 	}
 
 	/**
@@ -166,33 +171,33 @@ public class TestSplitAndJoinPlugin {
 			workitem.event(61);
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		Assert.assertEquals(1, workitemRefList.size());
+		assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
 
 		// get the subprocess...
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		// test data in subprocess
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertNotNull(subprocess);
+		assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test if the field namTeam is available
 		List<String> team = subprocess.getItemValue("_sub_Team");
-		Assert.assertEquals(2, team.size());
-		Assert.assertTrue(team.contains("manfred"));
-		Assert.assertTrue(team.contains("anna"));
+		assertEquals(2, team.size());
+		assertTrue(team.contains("manfred"));
+		assertTrue(team.contains("anna"));
 
 		// verify file content....
-		Assert.assertNotNull(subprocess);
+		assertNotNull(subprocess);
 		List<FileData> targetFileList = subprocess.getFileData();
-		Assert.assertEquals(1, targetFileList.size());
+		assertEquals(1, targetFileList.size());
 		List<Object> result = (List<Object>) targetFileList.get(0).getAttribute("text");
-		Assert.assertNotNull(result);
+		assertNotNull(result);
 	}
 
 	/**
@@ -208,28 +213,28 @@ public class TestSplitAndJoinPlugin {
 			workitem.event(30);
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 
 		// two subprocesses should be created...
-		Assert.assertEquals(2, workitemRefList.size());
+		assertEquals(2, workitemRefList.size());
 
 		// test first subprocess instance...
 		String subprocessUniqueid = workitemRefList.get(0);
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertNotNull(subprocess);
+		assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
 		// test second subprocess instance... 100.20 -> $processId=200
 		subprocessUniqueid = workitemRefList.get(1);
 		subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertNotNull(subprocess);
+		assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 	}
 
@@ -244,13 +249,13 @@ public class TestSplitAndJoinPlugin {
 		try {
 			workitem.event(40);
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
-			Assert.fail();
+			fail();
 		} catch (PluginException e) {
 			// Plugin exception is expected
 			logger.log(Level.INFO, "Expected exception message: {0}", e.getMessage());
-			Assert.assertTrue(e.getMessage().startsWith("Parsing item content failed:"));
+			assertTrue(e.getMessage().startsWith("Parsing item content failed:"));
 		}
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 	}
 
 	/**
@@ -274,18 +279,18 @@ public class TestSplitAndJoinPlugin {
 		try {
 			workitem.event(20);
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
-			Assert.assertNotNull(workitem);
-			Assert.assertEquals(200, workitem.getTaskID());
+			assertNotNull(workitem);
+			assertEquals(200, workitem.getTaskID());
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 		// now load the subprocess
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 		String subprocessUniqueid = workitemRefList.get(0);
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertNotNull(subprocess);
+		assertEquals(100, subprocess.getTaskID());
 
 		/*
 		 * 2.) process the subprocess to test if the origin process is updated
@@ -297,20 +302,20 @@ public class TestSplitAndJoinPlugin {
 		try {
 			subprocess.event(50);
 			workflowEnvironment.getWorkflowService().processWorkItem(subprocess);
-			Assert.assertEquals("some test data", subprocess.getItemValueString("_sub_data"));
+			assertEquals("some test data", subprocess.getItemValueString("_sub_data"));
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 		// test the new action result based on the origin process uniqueid....
-		Assert.assertEquals("/pages/workitems/workitem.jsf?id=" + originUniqueID,
+		assertEquals("/pages/workitems/workitem.jsf?id=" + originUniqueID,
 				subprocess.getItemValueString("action"));
 		// load origin document
 		ItemCollection originWorkitem = workflowEnvironment.getDocumentService().load(originUniqueID);
-		Assert.assertNotNull(originWorkitem);
+		assertNotNull(originWorkitem);
 		// test origin data
-		Assert.assertEquals(200, originWorkitem.getTaskID());
-		Assert.assertEquals("some test data", originWorkitem.getItemValueString("_sub_data"));
+		assertEquals(200, originWorkitem.getTaskID());
+		assertEquals("some test data", originWorkitem.getItemValueString("_sub_data"));
 	}
 
 	/**
@@ -326,18 +331,18 @@ public class TestSplitAndJoinPlugin {
 		try {
 			workitem.event(20);
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
-			Assert.assertNotNull(workitem);
+			assertNotNull(workitem);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 		// load the new subprocess....
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		Assert.assertEquals(1, workitemRefList.size());
+		assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(100, subprocess.getTaskID());
+		assertNotNull(subprocess);
+		assertEquals(100, subprocess.getTaskID());
 
 		// 2.) now update the subprocess
 		try {
@@ -346,16 +351,16 @@ public class TestSplitAndJoinPlugin {
 			subprocess.replaceItemValue("namTeam", "Walter");
 			workflowEnvironment.getWorkflowService().processWorkItem(subprocess);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 		// now we load the subprocess and test if it was updated (new taskid
 		// expected is 300)
-		Assert.assertNotNull(subprocess);
+		assertNotNull(subprocess);
 		subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
-		Assert.assertNotNull(subprocess);
-		Assert.assertEquals(200, subprocess.getTaskID());
-		Assert.assertEquals("Walter", subprocess.getItemValueString("namTEAM"));
+		assertNotNull(subprocess);
+		assertEquals(200, subprocess.getTaskID());
+		assertEquals("Walter", subprocess.getItemValueString("namTEAM"));
 	}
 
 	/**
@@ -371,23 +376,23 @@ public class TestSplitAndJoinPlugin {
 			workitem.event(70);
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
 		// load the new subprocess....
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		Assert.assertEquals(1, workitemRefList.size());
+		assertEquals(1, workitemRefList.size());
 		String subprocessUniqueid = workitemRefList.get(0);
 		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 
-		Assert.assertEquals("manfred", subprocess.getItemValue("namTeam", String.class));
-		Assert.assertEquals("ronny", subprocess.getItemValue("namcreator", String.class));
-		Assert.assertEquals("", subprocess.getItemValueString("$snapshotid"));
+		assertEquals("manfred", subprocess.getItemValue("namTeam", String.class));
+		assertEquals("ronny", subprocess.getItemValue("namcreator", String.class));
+		assertEquals("", subprocess.getItemValueString("$snapshotid"));
 
 		// test the deprecated LIst
 		List<String> workitemRefListDeprecated = workitem.getItemValue("txtworkitemref");
-		Assert.assertEquals(workitemRefList, workitemRefListDeprecated);
+		assertEquals(workitemRefList, workitemRefListDeprecated);
 	}
 
 	/**
@@ -396,36 +401,36 @@ public class TestSplitAndJoinPlugin {
 	@Test
 	public void testRegex() {
 
-		Assert.assertTrue(Pattern.compile("(^1000$|^1020$|^1050$)").matcher("1050").find());
-		Assert.assertTrue(Pattern.compile("").matcher("1050").find());
-		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)")
+		assertTrue(Pattern.compile("(^1000$|^1020$|^1050$)").matcher("1050").find());
+		assertTrue(Pattern.compile("").matcher("1050").find());
+		assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)")
 				.matcher("abc-rechnungsausgang-1.0.0").find());
 
-		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)")
+		assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)")
 				.matcher("abc-rechnungseingang-1.0.0").find());
 
 		// model
-		Assert.assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)")
+		assertTrue(Pattern.compile("(^abc-rechnungsausgang|^abc-rechnungseingang)")
 				.matcher("abc-rechnungseingang-1.0.0").find());
 		// processid
-		Assert.assertTrue(Pattern.compile("(^1000$|^1010$)").matcher("1000").find());
-		Assert.assertTrue(Pattern.compile("(1\\d{3})").matcher("1456").find());
-		Assert.assertFalse(Pattern.compile("(1\\d{3})").matcher("2456").find());
-		Assert.assertTrue(Pattern.compile("(1\\d{3})").matcher("14566").find());
-		Assert.assertFalse(Pattern.compile("(^1\\d{3}$)").matcher("21123").find());
-		Assert.assertTrue(Pattern.compile("(^1\\d{3}$)").matcher("1123").find());
-		Assert.assertFalse(Pattern.compile("(^1\\d{3}$)").matcher("11123").find());
-		Assert.assertTrue(Pattern.compile("1000").matcher("11000").find());
+		assertTrue(Pattern.compile("(^1000$|^1010$)").matcher("1000").find());
+		assertTrue(Pattern.compile("(1\\d{3})").matcher("1456").find());
+		assertFalse(Pattern.compile("(1\\d{3})").matcher("2456").find());
+		assertTrue(Pattern.compile("(1\\d{3})").matcher("14566").find());
+		assertFalse(Pattern.compile("(^1\\d{3}$)").matcher("21123").find());
+		assertTrue(Pattern.compile("(^1\\d{3}$)").matcher("1123").find());
+		assertFalse(Pattern.compile("(^1\\d{3}$)").matcher("11123").find());
+		assertTrue(Pattern.compile("1000").matcher("11000").find());
 
 		// test start with
-		Assert.assertTrue(Pattern.compile("(^txt|^num)").matcher("txtTitle").find());
-		Assert.assertTrue(Pattern.compile("(^txt|^num)").matcher("numTitle").find());
-		Assert.assertTrue(Pattern.compile("(^txt|^num|^_)").matcher("_subject").find());
-		Assert.assertFalse(Pattern.compile("(^txt|^num|^_)").matcher("$taskid").find());
-		Assert.assertTrue(Pattern.compile("(^[a-z]|^num)").matcher("txtTitle").find());
-		Assert.assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("TXTTitle").find());
-		Assert.assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("_title").find());
-		Assert.assertTrue(Pattern.compile("(^requester[a-zA-Z])").matcher("requesterName").find());
-		Assert.assertFalse(Pattern.compile("(^requester[a-zA-Z])").matcher("creatorName").find());
+		assertTrue(Pattern.compile("(^txt|^num)").matcher("txtTitle").find());
+		assertTrue(Pattern.compile("(^txt|^num)").matcher("numTitle").find());
+		assertTrue(Pattern.compile("(^txt|^num|^_)").matcher("_subject").find());
+		assertFalse(Pattern.compile("(^txt|^num|^_)").matcher("$taskid").find());
+		assertTrue(Pattern.compile("(^[a-z]|^num)").matcher("txtTitle").find());
+		assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("TXTTitle").find());
+		assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("_title").find());
+		assertTrue(Pattern.compile("(^requester[a-zA-Z])").matcher("requesterName").find());
+		assertFalse(Pattern.compile("(^requester[a-zA-Z])").matcher("creatorName").find());
 	}
 }

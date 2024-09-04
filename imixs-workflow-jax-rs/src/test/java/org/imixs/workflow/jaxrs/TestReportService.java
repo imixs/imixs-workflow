@@ -1,5 +1,8 @@
 package org.imixs.workflow.jaxrs;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -7,9 +10,8 @@ import java.util.Date;
 
 import org.imixs.workflow.engine.ReportService;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for ResportService
@@ -21,7 +23,7 @@ public class TestReportService {
 
 	protected ReportService reportService = null;
 
-	@Before
+	@BeforeEach
 	public void setUp() throws PluginException {
 		reportService = new ReportService();
 	}
@@ -48,9 +50,9 @@ public class TestReportService {
 		System.out.println("Result=" + result.getTime());
 
 		// compare result with test data
-		Assert.assertEquals(cal.get(Calendar.MONTH), result.get(Calendar.MONTH));
-		Assert.assertEquals(cal.get(Calendar.DAY_OF_MONTH), result.get(Calendar.DAY_OF_MONTH));
-		Assert.assertEquals(cal.get(Calendar.YEAR), result.get(Calendar.YEAR));
+		assertEquals(cal.get(Calendar.MONTH), result.get(Calendar.MONTH));
+		assertEquals(cal.get(Calendar.DAY_OF_MONTH), result.get(Calendar.DAY_OF_MONTH));
+		assertEquals(cal.get(Calendar.YEAR), result.get(Calendar.YEAR));
 
 	}
 
@@ -72,9 +74,9 @@ public class TestReportService {
 		System.out.println("Result=" + result.getTime());
 
 		// compare result with test data
-		Assert.assertEquals(cal.get(Calendar.MONTH), result.get(Calendar.MONTH));
-		Assert.assertEquals(cal.get(Calendar.DAY_OF_MONTH), result.get(Calendar.DAY_OF_MONTH));
-		Assert.assertEquals(cal.get(Calendar.YEAR), result.get(Calendar.YEAR));
+		assertEquals(cal.get(Calendar.MONTH), result.get(Calendar.MONTH));
+		assertEquals(cal.get(Calendar.DAY_OF_MONTH), result.get(Calendar.DAY_OF_MONTH));
+		assertEquals(cal.get(Calendar.YEAR), result.get(Calendar.YEAR));
 
 	}
 
@@ -97,9 +99,9 @@ public class TestReportService {
 		System.out.println("Result=" + result.getTime());
 
 		// compare result with test data
-		Assert.assertEquals(cal.get(Calendar.MONTH), result.get(Calendar.MONTH));
-		Assert.assertEquals(cal.get(Calendar.DAY_OF_MONTH), result.get(Calendar.DAY_OF_MONTH));
-		Assert.assertEquals(cal.get(Calendar.YEAR), result.get(Calendar.YEAR));
+		assertEquals(cal.get(Calendar.MONTH), result.get(Calendar.MONTH));
+		assertEquals(cal.get(Calendar.DAY_OF_MONTH), result.get(Calendar.DAY_OF_MONTH));
+		assertEquals(cal.get(Calendar.YEAR), result.get(Calendar.YEAR));
 
 		// test last month of year...
 
@@ -119,9 +121,9 @@ public class TestReportService {
 		System.out.println("Result=" + result.getTime());
 
 		// compare result with test data
-		Assert.assertEquals(cal.get(Calendar.MONTH), result.get(Calendar.MONTH));
-		Assert.assertEquals(cal.get(Calendar.DAY_OF_MONTH), result.get(Calendar.DAY_OF_MONTH));
-		Assert.assertEquals(cal.get(Calendar.YEAR), result.get(Calendar.YEAR));
+		assertEquals(cal.get(Calendar.MONTH), result.get(Calendar.MONTH));
+		assertEquals(cal.get(Calendar.DAY_OF_MONTH), result.get(Calendar.DAY_OF_MONTH));
+		assertEquals(cal.get(Calendar.YEAR), result.get(Calendar.YEAR));
 
 	}
 
@@ -144,11 +146,11 @@ public class TestReportService {
 		System.out.println("Result=" + result.getTime());
 
 		// compare result with test data
-		Assert.assertEquals(cal.get(Calendar.MONTH), result.get(Calendar.MONTH));
-		Assert.assertEquals(cal.get(Calendar.DAY_OF_MONTH), result.get(Calendar.DAY_OF_MONTH));
-		Assert.assertEquals(cal.get(Calendar.YEAR), result.get(Calendar.YEAR));
+		assertEquals(cal.get(Calendar.MONTH), result.get(Calendar.MONTH));
+		assertEquals(cal.get(Calendar.DAY_OF_MONTH), result.get(Calendar.DAY_OF_MONTH));
+		assertEquals(cal.get(Calendar.YEAR), result.get(Calendar.YEAR));
 
-		Assert.assertEquals(Calendar.THURSDAY, cal.get(Calendar.DAY_OF_WEEK));
+		assertEquals(Calendar.THURSDAY, cal.get(Calendar.DAY_OF_WEEK));
 
 	}
 
@@ -178,7 +180,7 @@ public class TestReportService {
 		System.out.println("result=" + result);
 
 		// compare result with test data
-		Assert.assertTrue(result.contains("$created:[" + exprectedDateResult + " TO "));
+		assertTrue(result.contains("$created:[" + exprectedDateResult + " TO "));
 
 	}
 

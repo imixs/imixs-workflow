@@ -1,11 +1,14 @@
 package org.imixs.workflow.bpmn;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
@@ -23,7 +26,7 @@ public class TestBPMNUtil {
 	/**
 	 * Loads the default model
 	 */
-	@Before
+	@BeforeEach
 	public void setUp() {
 		// load default model
 		openBPMNModelManager = new ModelManager();
@@ -32,7 +35,7 @@ public class TestBPMNUtil {
 			openBPMNModelManager.addModel(model);
 		} catch (BPMNModelException | ModelException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 	}
@@ -44,17 +47,17 @@ public class TestBPMNUtil {
 	 */
 	@Test
 	public void testFindTasks() {
-		Assert.assertNotNull(model);
+		assertNotNull(model);
 
 		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
-		Assert.assertNotNull(task);
+		assertNotNull(task);
 
 		task = openBPMNModelManager.findTaskByID(model, 1100);
-		Assert.assertNotNull(task);
+		assertNotNull(task);
 
 		// test non existing task
 		task = openBPMNModelManager.findTaskByID(model, 2000);
-		Assert.assertNull(task);
+		assertNull(task);
 	}
 
 	/**
@@ -64,20 +67,20 @@ public class TestBPMNUtil {
 	 */
 	@Test
 	public void testFindEvents() {
-		Assert.assertNotNull(model);
+		assertNotNull(model);
 
 		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
-		Assert.assertNotNull(event);
+		assertNotNull(event);
 
 		event = openBPMNModelManager.findEventByID(model, 1000, 20);
-		Assert.assertNotNull(event);
+		assertNotNull(event);
 
 		// test non existing event
 		event = openBPMNModelManager.findEventByID(model, 1100, 10);
-		Assert.assertNull(event);
+		assertNull(event);
 
 		event = openBPMNModelManager.findEventByID(model, 2000, 10);
-		Assert.assertNull(event);
+		assertNull(event);
 	}
 
 }

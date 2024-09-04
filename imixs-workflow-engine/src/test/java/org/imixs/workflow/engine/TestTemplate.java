@@ -1,13 +1,13 @@
 package org.imixs.workflow.engine;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -56,7 +56,7 @@ public class TestTemplate {
 			// expected new task is 200
 			assertEquals(200, workitem.getTaskID());
 		} catch (AccessDeniedException | ProcessingErrorException | PluginException | ModelException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 	}
 
@@ -73,13 +73,13 @@ public class TestTemplate {
 		workitem.model("1.0.0").task(1000).event(10);
 		// test _budget<100 => 1200
 		workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
-		Assert.assertEquals(1200, workitem.getTaskID());
+		assertEquals(1200, workitem.getTaskID());
 
 		// test _budget>100 => 1100
 		workitem.replaceItemValue("_budget", 9999);
 		workitem.model("1.0.0").task(1000).event(10);
 		workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
-		Assert.assertEquals(1100, workitem.getTaskID());
+		assertEquals(1100, workitem.getTaskID());
 
 	}
 

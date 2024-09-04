@@ -1,5 +1,9 @@
 package org.imixs.workflow.engine.adapters;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -11,7 +15,6 @@ import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -67,7 +70,7 @@ public class TestAccessAdapterTask {
 		// Setup Environment
 		workflowEnvironment.setUp();
 		workflowEnvironment.loadBPMNModel("/bpmn/TestAccessAdapterTask.bpmn");
-		model = workflowEnvironment.getModelService().getModel("1.0.0");
+		model = workflowEnvironment.getModelService().getModelManager().getModel("1.0.0");
 		accessAdapter.workflowService = workflowEnvironment.getWorkflowService();
 
 		// // prepare data
@@ -100,14 +103,14 @@ public class TestAccessAdapterTask {
 			accessAdapter.execute(workitem, event);
 		} catch (AdapterException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		@SuppressWarnings("unchecked")
 		List<String> writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
-		Assert.assertEquals(2, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("Kevin"));
-		Assert.assertTrue(writeAccess.contains("Julian"));
+		assertEquals(2, writeAccess.size());
+		assertTrue(writeAccess.contains("Kevin"));
+		assertTrue(writeAccess.contains("Julian"));
 	}
 
 	/**
@@ -129,14 +132,14 @@ public class TestAccessAdapterTask {
 			accessAdapter.execute(workitem, event);
 		} catch (AdapterException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		@SuppressWarnings("unchecked")
 		List<String> writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
-		Assert.assertEquals(2, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("joe"));
-		Assert.assertTrue(writeAccess.contains("sam"));
+		assertEquals(2, writeAccess.size());
+		assertTrue(writeAccess.contains("joe"));
+		assertTrue(writeAccess.contains("sam"));
 
 	}
 
@@ -156,15 +159,15 @@ public class TestAccessAdapterTask {
 			accessAdapter.execute(workitem, event);
 		} catch (AdapterException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		@SuppressWarnings("unchecked")
 		List<String> writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
-		Assert.assertEquals(3, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("joe"));
-		Assert.assertTrue(writeAccess.contains("samy"));
-		Assert.assertTrue(writeAccess.contains("anna"));
+		assertEquals(3, writeAccess.size());
+		assertTrue(writeAccess.contains("joe"));
+		assertTrue(writeAccess.contains("samy"));
+		assertTrue(writeAccess.contains("anna"));
 	}
 
 	/**
@@ -190,22 +193,22 @@ public class TestAccessAdapterTask {
 			accessAdapter.execute(workitem, event);
 		} catch (AdapterException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		// $writeAccess= anna , manfred, joe, sam
 		List<String> writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
-		Assert.assertEquals(3, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("joe"));
-		// Assert.assertTrue(writeAccess.contains("sam"));
-		Assert.assertTrue(writeAccess.contains("manfred"));
-		Assert.assertTrue(writeAccess.contains("anna"));
+		assertEquals(3, writeAccess.size());
+		assertTrue(writeAccess.contains("joe"));
+		// assertTrue(writeAccess.contains("sam"));
+		assertTrue(writeAccess.contains("manfred"));
+		assertTrue(writeAccess.contains("anna"));
 
 		// $readAccess= anna , manfred, joe, sam
 		writeAccess = workitem.getItemValue(WorkflowService.READACCESS);
-		Assert.assertEquals(2, writeAccess.size());
-		Assert.assertTrue(writeAccess.contains("tom"));
-		Assert.assertTrue(writeAccess.contains("manfred"));
+		assertEquals(2, writeAccess.size());
+		assertTrue(writeAccess.contains("tom"));
+		assertTrue(writeAccess.contains("manfred"));
 
 	}
 

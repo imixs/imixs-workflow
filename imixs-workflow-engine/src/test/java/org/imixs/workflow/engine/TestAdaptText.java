@@ -1,5 +1,9 @@
 package org.imixs.workflow.engine;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Calendar;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -7,7 +11,6 @@ import java.util.logging.Logger;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,9 +66,9 @@ public class TestAdaptText {
 		try {
 			resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
-			Assert.assertEquals(expectedString, resultString);
+			assertEquals(expectedString, resultString);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 	}
 
@@ -89,10 +92,10 @@ public class TestAdaptText {
 		String resultString = null;
 		try {
 			resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
-			Assert.assertNotNull(resultString);
-			Assert.assertEquals(testString, resultString);
+			assertNotNull(resultString);
+			assertEquals(testString, resultString);
 		} catch (PluginException e) {
-			Assert.fail();
+			fail();
 		}
 
 	}
@@ -128,7 +131,7 @@ public class TestAdaptText {
 
 		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
-		Assert.assertEquals(expectedString, resultString);
+		assertEquals(expectedString, resultString);
 
 	}
 
@@ -151,7 +154,7 @@ public class TestAdaptText {
 
 		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
-		Assert.assertEquals(expectedString, resultString);
+		assertEquals(expectedString, resultString);
 
 	}
 
@@ -185,7 +188,7 @@ public class TestAdaptText {
 
 		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
-		Assert.assertEquals(expectedString, resultString);
+		assertEquals(expectedString, resultString);
 
 	}
 
@@ -214,7 +217,7 @@ public class TestAdaptText {
 
 		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
-		Assert.assertEquals(expectedString, resultString);
+		assertEquals(expectedString, resultString);
 
 	}
 
@@ -250,7 +253,7 @@ public class TestAdaptText {
 
 		// we expect that only the first value is given, because no separator was
 		// defined.
-		Assert.assertEquals(expectedString, resultString);
+		assertEquals(expectedString, resultString);
 
 	}
 
@@ -284,7 +287,7 @@ public class TestAdaptText {
 
 		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
-		Assert.assertEquals(expectedStringLast, resultString);
+		assertEquals(expectedStringLast, resultString);
 
 		// test first....
 		testString = "The value list is: <itemvalue position=\"FIRST\">_numbers</itemvalue>.";
@@ -298,7 +301,7 @@ public class TestAdaptText {
 
 		resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
-		Assert.assertEquals(expectedStringFirst, resultString);
+		assertEquals(expectedStringFirst, resultString);
 
 	}
 
@@ -330,7 +333,7 @@ public class TestAdaptText {
 
 		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
-		Assert.assertEquals(expectedStringLast, resultString);
+		assertEquals(expectedStringLast, resultString);
 
 	}
 
@@ -371,7 +374,7 @@ public class TestAdaptText {
 
 		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
-		Assert.assertEquals(expectedStringLast, resultString);
+		assertEquals(expectedStringLast, resultString);
 
 	}
 

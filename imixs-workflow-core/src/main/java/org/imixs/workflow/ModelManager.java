@@ -381,11 +381,17 @@ public class ModelManager {
      * In case the model is a collaboration diagram, the method returns only group
      * names from private process instances (Pools)!
      * 
-     * @param group
-     * @return
+     * @param _model - BPMN model instance
+     * @return list of workflow groups
+     * @throws ModelException if model is undefined
      */
-    public Set<String> findAllGroupsByModel(BPMNModel _model) {
+    public Set<String> findAllGroupsByModel(BPMNModel _model) throws ModelException {
         Set<String> result = null;
+
+        if (_model == null) {
+            throw new ModelException(ModelException.INVALID_MODEL,
+                    "model is null!");
+        }
         // test cache
         String version = BPMNUtil.getVersion(_model);
         result = groupCache.get(version);
@@ -431,8 +437,9 @@ public class ModelManager {
      * 
      * @param group
      * @return
+     * @throws ModelException
      */
-    public Set<String> findAllGroups() {
+    public Set<String> findAllGroups() throws ModelException {
         Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         for (BPMNModel model : modelStore.values()) {
             result.addAll(findAllGroupsByModel(model));
@@ -447,8 +454,9 @@ public class ModelManager {
      * 
      * @param group - name of the workflow group
      * @return list of matching model versions
+     * @throws ModelException
      */
-    public Set<String> findAllVersionsByGroup(String group) {
+    public Set<String> findAllVersionsByGroup(String group) throws ModelException {
         boolean debug = logger.isLoggable(Level.FINE);
         // Sorted in reverse order
         Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
@@ -478,8 +486,9 @@ public class ModelManager {
      * 
      * @param group
      * @return
+     * @throws ModelException
      */
-    public String findVersionByGroup(String group) {
+    public String findVersionByGroup(String group) throws ModelException {
         String result = null;
         Set<String> versions = findAllVersionsByGroup(group);
         if (versions.size() > 0) {
@@ -576,14 +585,19 @@ public class ModelManager {
      *         name was found.
      * @throws BPMNModelException
      */
-    public List<ItemCollection> findStartTasks(final BPMNModel model, String processGroup) throws BPMNModelException {
+    public List<ItemCollection> findStartTasks(final BPMNModel model, String processGroup) throws ModelException {
         List<ItemCollection> result = new ArrayList<>();
         BPMNProcess process = null;
 
+        if (model == null) {
+            throw new ModelException(ModelException.INVALID_MODEL,
+                    "model is null!");
+        }
         if (processGroup == null || processGroup.isEmpty()) {
             logger.warning("findEndTasks processGroup is empty!");
             return result;
         }
+
         // find Process containing matching the process group
         if (model.isCollaborationDiagram()) {
             Set<Participant> poolList = model.getParticipants();
@@ -622,10 +636,14 @@ public class ModelManager {
      *         name was found.
      * @throws BPMNModelException
      */
-    public List<ItemCollection> findEndTasks(final BPMNModel model, String processGroup) throws BPMNModelException {
+    public List<ItemCollection> findEndTasks(final BPMNModel model, String processGroup) throws ModelException {
         List<ItemCollection> result = new ArrayList<>();
         BPMNProcess process = null;
 
+        if (model == null) {
+            throw new ModelException(ModelException.INVALID_MODEL,
+                    "model is null!");
+        }
         if (processGroup == null || processGroup.isEmpty()) {
             logger.warning("findEndTasks processGroup is empty!");
             return result;
@@ -683,6 +701,34 @@ public class ModelManager {
         // next we also add all initEvent nodes
         BPMNUtil.findInitEventNodes(taskElement, result);
         return result;
+    }
+
+    /**
+     * Returns the content of a BPMN DataObject, part of a Task or Event element.
+     * <p>
+     * DataObjects can be associated in a BPMN Diagram with a Task or an Event
+     * element.
+     * 
+     * @param bpmnElement - bpmn element, either a Task or a Event
+     * @param name        - name of the dataobject
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public String findDataObject(ItemCollection bpmnElement, String name) {
+
+        List<List<String>> dataObjects = bpmnElement.getItemValue("dataObjects");
+
+        if (dataObjects != null && dataObjects.size() > 0) {
+            for (List<String> dataObject : dataObjects) {
+                String key = dataObject.get(0);
+                if (name.equals(key)) {
+                    return dataObject.get(1);
+                }
+            }
+        }
+        // not found!
+        return null;
+
     }
 
     /**

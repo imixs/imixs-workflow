@@ -1,5 +1,11 @@
 package org.imixs.workflow.bpmn;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Set;
@@ -8,9 +14,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
@@ -31,14 +36,13 @@ public class TestBPMNParserCollaborationMinutes {
 	BPMNModel model = null;
 	ModelManager openBPMNModelManager = null;
 
-	@Before
+	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		openBPMNModelManager = new ModelManager();
 		try {
 			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/minutes.bpmn"));
 		} catch (ModelException | BPMNModelException e) {
-			e.printStackTrace();
-			Assert.fail();
+			fail(e.getMessage());
 		}
 	}
 
@@ -46,16 +50,16 @@ public class TestBPMNParserCollaborationMinutes {
 	public void testSimple() throws ModelException {
 
 		BPMNModel model = openBPMNModelManager.getModel("1.0.0");
-		Assert.assertNotNull(model);
+		assertNotNull(model);
 
 		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
 		// Test Groups
-		Assert.assertFalse(groups.contains("Collaboration"));
-		Assert.assertTrue(groups.contains("Protokoll"));
-		Assert.assertTrue(groups.contains("Protokollpunkt"));
+		assertFalse(groups.contains("Collaboration"));
+		assertTrue(groups.contains("Protokoll"));
+		assertTrue(groups.contains("Protokollpunkt"));
 
 		// test count of elements
-		Assert.assertEquals(8, model.findAllActivities().size());
+		assertEquals(8, model.findAllActivities().size());
 
 	}
 

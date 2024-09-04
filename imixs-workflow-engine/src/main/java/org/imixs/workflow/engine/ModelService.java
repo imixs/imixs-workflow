@@ -33,7 +33,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,7 +49,6 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
-import org.imixs.workflow.exceptions.QueryException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.BPMNProcess;
 
@@ -91,6 +93,9 @@ public class ModelService {
     private static final Logger logger = Logger.getLogger(ModelService.class.getName());
 
     protected ModelManager modelManager = null;
+    // private final Map<String, ItemCollection> modelEntityStore = new
+    // ConcurrentHashMap<>();
+    private final SortedMap<String, ItemCollection> modelEntityStore = new TreeMap<>();
 
     @Inject
     protected DocumentService documentService;
@@ -125,7 +130,6 @@ public class ModelService {
     @Deprecated
     public void addModel(BPMNModel model) throws ModelException {
         modelManager.addModel(model);
-
     }
 
     /**
@@ -294,6 +298,7 @@ public class ModelService {
                 // store model in database
                 modelItemCol.replaceItemValue(DocumentService.NOINDEX, true);
                 documentService.save(modelItemCol);
+                modelEntityStore.put(version, modelItemCol);
             } catch (TransformerException e) {
                 throw new ModelException(ModelException.INVALID_MODEL, "Failed to write model: " + e.getMessage());
             }
@@ -301,8 +306,17 @@ public class ModelService {
     }
 
     /**
-     * This method loads a Model with its meta data form the database and retuns the
-     * data in ItemCollection.
+     * This method puts a model entity into the internal store.
+     * 
+     * @param modelEntity
+     */
+    public Map<String, ItemCollection> getModelEntityStore() {
+        return modelEntityStore;
+    }
+
+    /**
+     * This method loads a Model entity with its meta data form the internal model
+     * store.
      * <p>
      * To access a BPMNModel object directly use the method
      * {@code getModel(version)}
@@ -310,18 +324,13 @@ public class ModelService {
      * @return the ItemCollection with the model meta data
      */
     public ItemCollection loadModel(String version) {
-        try {
-            String sQuery = "(type:\"model\" AND name:\"" + version + "\")";
-            Collection<ItemCollection> col;
-            col = documentService.find(sQuery, 0, 1);
-            if (col.size() > 0) {
-                return col.iterator().next();
-            }
-        } catch (QueryException e) {
-            logger.severe("Failed to load model: " + version);
+        ItemCollection result = modelEntityStore.get(version);
+        if (result == null) {
+            logger.severe("invalid model version!");
+            throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
+                    "findModelEntity - invalid model version: " + version);
         }
-        // not found
-        return null;
+        return result;
     }
 
     /**
@@ -349,6 +358,7 @@ public class ModelService {
                 }
             }
             modelManager.removeModel(version);
+            modelEntityStore.remove(version);
         } else {
             logger.severe("deleteModel - invalid model version!");
             throw new InvalidAccessException(InvalidAccessException.INVALID_ID, "deleteModel - invalid model version!");
@@ -356,29 +366,18 @@ public class ModelService {
     }
 
     /**
-     * Returns a BPMN DataObject, part of a Task or Event element, by its name
-     * <p>
-     * DataObjects can be associated in a BPMN Diagram with a Task or an Event
-     * element
+     * This method fetches an existing Model Entity from the model store
      * 
-     * @param bpmnElement
-     * @return
+     * @param model
      */
-    @SuppressWarnings("unchecked")
-    public String getDataObject(ItemCollection bpmnElement, String name) {
-
-        List<List<String>> dataObjects = bpmnElement.getItemValue("dataObjects");
-
-        if (dataObjects != null && dataObjects.size() > 0) {
-            for (List<String> dataObject : dataObjects) {
-                String key = dataObject.get(0);
-                if (name.equals(key)) {
-                    return dataObject.get(1);
-                }
-            }
+    public ItemCollection findModelEntity(String version) {
+        ItemCollection result = modelEntityStore.get(version);
+        if (result == null) {
+            logger.severe("invalid model version!");
+            throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
+                    "findModelEntity - invalid model version: " + version);
         }
-        // not found!
-        return null;
+        return result;
 
     }
 

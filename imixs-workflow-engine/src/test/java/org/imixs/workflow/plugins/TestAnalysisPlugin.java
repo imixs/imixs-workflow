@@ -1,5 +1,9 @@
 package org.imixs.workflow.plugins;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -8,7 +12,6 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.AnalysisPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +45,7 @@ public class TestAnalysisPlugin {
 		try {
 			analysisPlugin.init(workflowEngine.getWorkflowService());
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 		workitem = workflowEngine.getDocumentService().load("W0000-00001");
@@ -69,14 +72,14 @@ public class TestAnalysisPlugin {
 			event.replaceItemValue("txtActivityResult", sResult);
 
 			workitem = analysisPlugin.run(workitem, event);
-			Assert.assertNotNull(workitem);
+			assertNotNull(workitem);
 
-			Assert.assertTrue(workitem.hasItem("datMeasurePointStart_M1"));
+			assertTrue(workitem.hasItem("datMeasurePointStart_M1"));
 
 			logger.log(Level.INFO, "datMeasurePointStart_M1= {0}",
 					workitem.getItemValueDate("datMeasurePointStart_M1"));
 		} catch (ModelException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 	}
 
@@ -99,9 +102,9 @@ public class TestAnalysisPlugin {
 		event.replaceItemValue("txtActivityResult", sResult);
 
 		workitem = analysisPlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertTrue(workitem.hasItem("datMeasurePointStart_M1"));
+		assertTrue(workitem.hasItem("datMeasurePointStart_M1"));
 
 		logger.log(Level.INFO, "datMeasurePointStart_M1= {0}",
 				workitem.getItemValueDate("datMeasurePointStart_M1"));
@@ -111,9 +114,9 @@ public class TestAnalysisPlugin {
 		event.replaceItemValue("txtActivityResult", sResult);
 
 		workitem = analysisPlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertTrue(workitem.hasItem("datMeasurePointStart_M1"));
+		assertTrue(workitem.hasItem("datMeasurePointStart_M1"));
 	}
 
 	/**
@@ -135,9 +138,9 @@ public class TestAnalysisPlugin {
 		event.replaceItemValue("txtActivityResult", sResult);
 
 		workitem = analysisPlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertTrue(workitem.hasItem("datMeasurePointStart_M1"));
+		assertTrue(workitem.hasItem("datMeasurePointStart_M1"));
 
 		logger.log(Level.INFO, "datMeasurePointStart_M1= {0}",
 				workitem.getItemValueDate("datMeasurePointStart_M1"));
@@ -153,14 +156,14 @@ public class TestAnalysisPlugin {
 		event.replaceItemValue("txtActivityResult", sResult);
 
 		workitem = analysisPlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertTrue(workitem.hasItem("datMeasurePointStart_M1"));
+		assertTrue(workitem.hasItem("datMeasurePointStart_M1"));
 
 		int time = workitem.getItemValueInteger("numMeasurePoint_M1");
 
 		System.out.println("Time=" + time);
-		Assert.assertTrue(time > 0);
+		assertTrue(time > 0);
 	}
 
 }

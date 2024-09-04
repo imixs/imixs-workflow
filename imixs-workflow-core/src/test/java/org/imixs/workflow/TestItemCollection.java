@@ -1,5 +1,15 @@
 package org.imixs.workflow;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.awt.Color;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -17,9 +27,7 @@ import java.util.Vector;
 
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for itemCollection object
@@ -30,23 +38,21 @@ import org.junit.experimental.categories.Category;
 public class TestItemCollection {
 
     @Test
-    @Category(ItemCollection.class)
     public void testItemCollection() {
         ItemCollection itemCollection = new ItemCollection();
         itemCollection.replaceItemValue("txtTitel", "Hello");
-        Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+        assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
     }
 
     @Test
-    @Category(ItemCollection.class)
     public void testRemoveItem() {
         ItemCollection itemCollection = new ItemCollection();
         itemCollection.replaceItemValue("txtTitel", "Hello");
-        Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
-        Assert.assertTrue(itemCollection.hasItem("txtTitel"));
+        assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+        assertTrue(itemCollection.hasItem("txtTitel"));
         itemCollection.removeItem("TXTtitel");
-        Assert.assertFalse(itemCollection.hasItem("txtTitel"));
-        Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "");
+        assertFalse(itemCollection.hasItem("txtTitel"));
+        assertEquals(itemCollection.getItemValueString("txttitel"), "");
     }
 
     /**
@@ -64,34 +70,34 @@ public class TestItemCollection {
         // test double with digits....
         d = 1.234;
         itemCollection.replaceItemValue("double", d);
-        Assert.assertTrue(itemCollection.isItemValueDouble("double"));
-        Assert.assertEquals(1.234, itemCollection.getItemValueDouble("double"), 0);
+        assertTrue(itemCollection.isItemValueDouble("double"));
+        assertEquals(1.234, itemCollection.getItemValueDouble("double"), 0);
 
         // test double with no digits
         d = (double) 7;
         itemCollection.replaceItemValue("double", d);
-        Assert.assertEquals(7, itemCollection.getItemValueDouble("double"), 0);
+        assertEquals(7, itemCollection.getItemValueDouble("double"), 0);
 
         // test with long value
         l = (long) 4;
         itemCollection.replaceItemValue("long", l);
-        Assert.assertEquals(4, itemCollection.getItemValueDouble("long"), 0);
+        assertEquals(4, itemCollection.getItemValueDouble("long"), 0);
 
         // test with float value - can not be cast exactly back to double!
         f = (float) 4.777;
         itemCollection.replaceItemValue("float", f);
-        Assert.assertFalse(itemCollection.isItemValueDouble("float"));
+        assertFalse(itemCollection.isItemValueDouble("float"));
 
         // test String....
         d = 9.712;
         itemCollection.replaceItemValue("double", d);
-        Assert.assertEquals("9.712", itemCollection.getItemValueString("double"));
+        assertEquals("9.712", itemCollection.getItemValueString("double"));
 
         // test cast back from string....
         s = "9.723";
         itemCollection.replaceItemValue("string", s);
-        Assert.assertFalse(itemCollection.isItemValueDouble("string"));
-        Assert.assertEquals(9.723, itemCollection.getItemValueDouble("string"), 0);
+        assertFalse(itemCollection.isItemValueDouble("string"));
+        assertEquals(9.723, itemCollection.getItemValueDouble("string"), 0);
 
     }
 
@@ -108,26 +114,26 @@ public class TestItemCollection {
         // test with float value
         f = (float) 4.777;
         itemCollection.replaceItemValue("float", f);
-        Assert.assertTrue(itemCollection.isItemValueFloat("float"));
+        assertTrue(itemCollection.isItemValueFloat("float"));
         Float fTest = (float) 4.777;
-        Assert.assertTrue(fTest.equals(itemCollection.getItemValueFloat("float")));
+        assertTrue(fTest.equals(itemCollection.getItemValueFloat("float")));
 
         // test cast back from string....
         s = "9.723";
         itemCollection.replaceItemValue("string", s);
-        Assert.assertFalse(itemCollection.isItemValueDouble("string"));
+        assertFalse(itemCollection.isItemValueDouble("string"));
         // not possible to cast back exactly!
-        // Assert.assertEquals(9.723,
+        // assertEquals(9.723,
         // itemCollection.getItemValueFloat("string"),
         // 0);
 
         // test Double to Float...
         double d = 50.777;
         itemCollection.replaceItemValue("double", d);
-        Assert.assertEquals(d, itemCollection.getItemValueDouble("double"), 0);
+        assertEquals(d, itemCollection.getItemValueDouble("double"), 0);
         // test float ...
         float f1 = itemCollection.getItemValueFloat("double");
-        Assert.assertEquals("50.777", "" + f1);
+        assertEquals("50.777", "" + f1);
 
     }
 
@@ -148,15 +154,15 @@ public class TestItemCollection {
         // test integer
         i = 7;
         itemCollection.replaceItemValue("integer", i);
-        Assert.assertTrue(itemCollection.isItemValueInteger("integer"));
-        Assert.assertEquals(7, itemCollection.getItemValueInteger("integer"), 0);
+        assertTrue(itemCollection.isItemValueInteger("integer"));
+        assertEquals(7, itemCollection.getItemValueInteger("integer"), 0);
 
         // test long
         l = (long) 8;
         itemCollection.replaceItemValue("long", l);
-        Assert.assertFalse(itemCollection.isItemValueInteger("long"));
-        Assert.assertTrue(itemCollection.isItemValueLong("long"));
-        Assert.assertEquals(8, itemCollection.getItemValueInteger("long"), 0);
+        assertFalse(itemCollection.isItemValueInteger("long"));
+        assertTrue(itemCollection.isItemValueLong("long"));
+        assertEquals(8, itemCollection.getItemValueInteger("long"), 0);
 
         // test long in vector
         v = new Vector();
@@ -164,23 +170,23 @@ public class TestItemCollection {
         v.add(l);
         itemCollection.replaceItemValue("long", v);
         // should return false...
-        Assert.assertFalse(itemCollection.isItemValueInteger("long"));
-        Assert.assertTrue(itemCollection.isItemValueLong("long"));
-        Assert.assertEquals(8, itemCollection.getItemValueInteger("long"), 0);
+        assertFalse(itemCollection.isItemValueInteger("long"));
+        assertTrue(itemCollection.isItemValueLong("long"));
+        assertEquals(8, itemCollection.getItemValueInteger("long"), 0);
 
         // test double
         d = 8.765;
         itemCollection.replaceItemValue("double", d);
-        Assert.assertFalse(itemCollection.isItemValueInteger("double"));
-        Assert.assertTrue(itemCollection.isItemValueDouble("double"));
-        Assert.assertEquals(8, itemCollection.getItemValueInteger("double"), 0);
+        assertFalse(itemCollection.isItemValueInteger("double"));
+        assertTrue(itemCollection.isItemValueDouble("double"));
+        assertEquals(8, itemCollection.getItemValueInteger("double"), 0);
 
         // test float
         f = (float) 8.765;
         itemCollection.replaceItemValue("float", f);
-        Assert.assertFalse(itemCollection.isItemValueInteger("float"));
-        Assert.assertTrue(itemCollection.isItemValueFloat("float"));
-        Assert.assertEquals(8, itemCollection.getItemValueInteger("float"), 0);
+        assertFalse(itemCollection.isItemValueInteger("float"));
+        assertTrue(itemCollection.isItemValueFloat("float"));
+        assertEquals(8, itemCollection.getItemValueInteger("float"), 0);
 
     }
 
@@ -198,18 +204,18 @@ public class TestItemCollection {
         itemCollection1.replaceItemValue("numID", Integer.valueOf(20));
         itemCollection2.replaceItemValue("numID", Integer.valueOf(20));
 
-        Assert.assertEquals(itemCollection1, itemCollection2);
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertEquals(itemCollection1, itemCollection2);
+        assertNotSame(itemCollection1, itemCollection2);
 
         // compare not equals
         itemCollection1.replaceItemValue("txtName", "Manfred");
         itemCollection2.replaceItemValue("txtname", "Manfred1");
 
-        Assert.assertFalse(itemCollection1.equals(itemCollection2));
+        assertFalse(itemCollection1.equals(itemCollection2));
         itemCollection2.replaceItemValue("txtname", "Manfred");
         itemCollection2.replaceItemValue("numID", Integer.valueOf(21));
-        Assert.assertFalse(itemCollection1.equals(itemCollection2));
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertFalse(itemCollection1.equals(itemCollection2));
+        assertNotSame(itemCollection1, itemCollection2);
 
     }
 
@@ -229,16 +235,16 @@ public class TestItemCollection {
 
         // copy values
         itemCollection2.replaceAllItems(itemCollection1.getAllItems());
-        Assert.assertEquals(itemCollection1, itemCollection2);
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertEquals(itemCollection1, itemCollection2);
+        assertNotSame(itemCollection1, itemCollection2);
 
         // change value of itemcol2
         itemCollection2.replaceItemValue("txtName", "Anna");
-        Assert.assertEquals("Manfred", itemCollection1.getItemValueString("txtName"));
-        Assert.assertEquals("Anna", itemCollection2.getItemValueString("txtName"));
+        assertEquals("Manfred", itemCollection1.getItemValueString("txtName"));
+        assertEquals("Anna", itemCollection2.getItemValueString("txtName"));
 
-        Assert.assertFalse(itemCollection1.equals(itemCollection2));
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertFalse(itemCollection1.equals(itemCollection2));
+        assertNotSame(itemCollection1, itemCollection2);
 
     }
 
@@ -256,16 +262,16 @@ public class TestItemCollection {
 
         // copy values
         itemCollection2.copy(itemCollection1);
-        Assert.assertEquals(itemCollection1, itemCollection2);
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertEquals(itemCollection1, itemCollection2);
+        assertNotSame(itemCollection1, itemCollection2);
 
         // change value of itemcol2
         itemCollection2.replaceItemValue("txtName", "Anna");
-        Assert.assertEquals("Manfred", itemCollection1.getItemValueString("txtName"));
-        Assert.assertEquals("Anna", itemCollection2.getItemValueString("txtName"));
+        assertEquals("Manfred", itemCollection1.getItemValueString("txtName"));
+        assertEquals("Anna", itemCollection2.getItemValueString("txtName"));
 
-        Assert.assertFalse(itemCollection1.equals(itemCollection2));
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertFalse(itemCollection1.equals(itemCollection2));
+        assertNotSame(itemCollection1, itemCollection2);
 
     }
 
@@ -283,13 +289,13 @@ public class TestItemCollection {
 
         ItemCollection itemCollection2 = new ItemCollection(itemCollection1);
 
-        Assert.assertEquals(itemCollection1, itemCollection2);
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertEquals(itemCollection1, itemCollection2);
+        assertNotSame(itemCollection1, itemCollection2);
 
         // change valud of itemcol2
         itemCollection2.replaceItemValue("txtName", "Anna");
-        Assert.assertEquals("Manfred", itemCollection1.getItemValueString("txtName"));
-        Assert.assertEquals("Anna", itemCollection2.getItemValueString("txtName"));
+        assertEquals("Manfred", itemCollection1.getItemValueString("txtName"));
+        assertEquals("Anna", itemCollection2.getItemValueString("txtName"));
 
     }
 
@@ -315,27 +321,27 @@ public class TestItemCollection {
             itemCollection1.replaceItemValue("child", XMLDocumentAdapter.getDocument(child1));
         } catch (Exception e) {
 
-            Assert.fail();
+            fail();
         }
 
         // copy values
         itemCollection2.replaceAllItems(itemCollection1.getAllItems());
-        Assert.assertEquals(itemCollection1, itemCollection2);
+        assertEquals(itemCollection1, itemCollection2);
 
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertNotSame(itemCollection1, itemCollection2);
 
         XMLDocument xmlChild = (XMLDocument) itemCollection1.getItemValue("child").get(0);
 
         ItemCollection testChild = XMLDocumentAdapter.putDocument(xmlChild);
-        Assert.assertEquals(2, testChild.getItemValueInteger("numID"));
+        assertEquals(2, testChild.getItemValueInteger("numID"));
 
         // manipulate child1 and repeat the test!
         child1.replaceItemValue("numID", Integer.valueOf(3));
-        Assert.assertEquals(itemCollection1, itemCollection2);
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertEquals(itemCollection1, itemCollection2);
+        assertNotSame(itemCollection1, itemCollection2);
 
         // Now its the same object !
-        Assert.assertNotSame(child1, testChild);
+        assertNotSame(child1, testChild);
 
         // test child1 form itemcol1
         xmlChild = (XMLDocument) itemCollection1.getItemValue("child").get(0);
@@ -343,15 +349,15 @@ public class TestItemCollection {
         testChild = XMLDocumentAdapter.putDocument(xmlChild);
 
         // expected id is not 3!
-        Assert.assertEquals(2, testChild.getItemValueInteger("numID"));
+        assertEquals(2, testChild.getItemValueInteger("numID"));
 
         // change value of itemcol2
         itemCollection2.replaceItemValue("txtName", "Anna");
-        Assert.assertEquals("Manfred", itemCollection1.getItemValueString("txtName"));
-        Assert.assertEquals("Anna", itemCollection2.getItemValueString("txtName"));
+        assertEquals("Manfred", itemCollection1.getItemValueString("txtName"));
+        assertEquals("Anna", itemCollection2.getItemValueString("txtName"));
 
-        Assert.assertFalse(itemCollection1.equals(itemCollection2));
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertFalse(itemCollection1.equals(itemCollection2));
+        assertNotSame(itemCollection1, itemCollection2);
 
     }
 
@@ -382,38 +388,38 @@ public class TestItemCollection {
             childs.add(XMLDocumentAdapter.getDocument(child2));
         } catch (Exception e) {
             e.printStackTrace();
-            Assert.fail();
+            fail();
         }
         itemCollection1.replaceItemValue("childs", childs);
 
         // copy values
         itemCollection2.replaceAllItems(itemCollection1.getAllItems());
-        Assert.assertEquals(itemCollection1, itemCollection2);
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertEquals(itemCollection1, itemCollection2);
+        assertNotSame(itemCollection1, itemCollection2);
 
         // now manipulate child1
         child1.replaceItemValue("numID", 101);
 
         // repeat test!
-        Assert.assertEquals(itemCollection1, itemCollection2);
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertEquals(itemCollection1, itemCollection2);
+        assertNotSame(itemCollection1, itemCollection2);
 
         // get child 1 from itemcol2
         List v = itemCollection2.getItemValue("childs");
         XMLDocument xmlct1 = (XMLDocument) v.get(0);
         ItemCollection ct1 = XMLDocumentAdapter.putDocument(xmlct1);
-        Assert.assertEquals("Thor", ct1.getItemValueString("txtName"));
-        Assert.assertEquals(2, ct1.getItemValueInteger("numID"));
+        assertEquals("Thor", ct1.getItemValueString("txtName"));
+        assertEquals(2, ct1.getItemValueInteger("numID"));
 
-        Assert.assertEquals(101, child1.getItemValueInteger("numID"));
+        assertEquals(101, child1.getItemValueInteger("numID"));
 
         XMLDocument xmlct2 = (XMLDocument) v.get(1);
         ItemCollection ct2 = XMLDocumentAdapter.putDocument(xmlct2);
-        Assert.assertEquals("Ilias", ct2.getItemValueString("txtName"));
-        Assert.assertEquals(3, ct2.getItemValueInteger("numID"));
+        assertEquals("Ilias", ct2.getItemValueString("txtName"));
+        assertEquals(3, ct2.getItemValueInteger("numID"));
 
         // test size
-        Assert.assertTrue(v.size() == 2);
+        assertTrue(v.size() == 2);
 
     }
 
@@ -442,18 +448,18 @@ public class TestItemCollection {
 
         // copy values
         itemCollection2.replaceAllItems(itemCollection1.getAllItems());
-        Assert.assertEquals(itemCollection1, itemCollection2);
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertEquals(itemCollection1, itemCollection2);
+        assertNotSame(itemCollection1, itemCollection2);
         Map testChild = (Map) itemCollection1.getItemValue("child").get(0);
-        Assert.assertEquals(2, testChild.get("numID"));
+        assertEquals(2, testChild.get("numID"));
 
         // manipulate child1 and repeat the test!
         child1.put("numID", Integer.valueOf(3));
-        Assert.assertFalse(itemCollection1.equals(itemCollection2));
-        Assert.assertNotSame(itemCollection1, itemCollection2);
+        assertFalse(itemCollection1.equals(itemCollection2));
+        assertNotSame(itemCollection1, itemCollection2);
 
         // its the same object !
-        Assert.assertSame(child1, testChild);
+        assertSame(child1, testChild);
 
     }
 
@@ -472,11 +478,11 @@ public class TestItemCollection {
         itemCollection1.replaceItemValue(WorkflowKernel.TYPE, "workitem_test");
         itemCollection1.replaceItemValue(WorkflowKernel.UNIQUEID, "ABC-123");
 
-        Assert.assertEquals("1.0.0", itemCollection1.getModelVersion());
-        Assert.assertEquals(10, itemCollection1.getEventID());
-        Assert.assertEquals(100, itemCollection1.getTaskID());
-        Assert.assertEquals("workitem_test", itemCollection1.getType());
-        Assert.assertEquals("ABC-123", itemCollection1.getUniqueID());
+        assertEquals("1.0.0", itemCollection1.getModelVersion());
+        assertEquals(10, itemCollection1.getEventID());
+        assertEquals(100, itemCollection1.getTaskID());
+        assertEquals("workitem_test", itemCollection1.getType());
+        assertEquals("ABC-123", itemCollection1.getUniqueID());
 
     }
 
@@ -504,16 +510,15 @@ public class TestItemCollection {
         List l2 = itemCol.getItemValue("b");
 
         // test if the null values are removed...
-        Assert.assertEquals(2, l1.size());
-        Assert.assertEquals("", l1.get(0));
-        Assert.assertEquals("anna", l1.get(1));
+        assertEquals(2, l1.size());
+        assertEquals("", l1.get(0));
+        assertEquals("anna", l1.get(1));
 
-        Assert.assertEquals(0, l2.size());
+        assertEquals(0, l2.size());
 
     }
 
     @Test
-    @Category(ItemCollection.class)
     public void testItemCollectionItemNameList() {
         ItemCollection itemCollection = new ItemCollection();
         itemCollection.replaceItemValue("_subject", "Hello");
@@ -521,11 +526,11 @@ public class TestItemCollection {
         itemCollection.replaceItemValue("_title", "Hello");
 
         List<String> itemNames = itemCollection.getItemNames();
-        Assert.assertEquals(3, itemNames.size());
+        assertEquals(3, itemNames.size());
 
         itemCollection.removeItem("_dummy");
         itemNames = itemCollection.getItemNames();
-        Assert.assertEquals(2, itemNames.size());
+        assertEquals(2, itemNames.size());
 
     }
 
@@ -549,14 +554,14 @@ public class TestItemCollection {
         attributes.add("d | animals");
         ItemCollection itemCol2 = itemCol1.clone(attributes);
 
-        Assert.assertNotNull(itemCol2);
+        assertNotNull(itemCol2);
 
         // test values of clone
-        Assert.assertEquals(1, itemCol2.getItemValueInteger("a"));
-        Assert.assertEquals("hello", itemCol2.getItemValueString("b"));
-        Assert.assertEquals("", itemCol2.getItemValueString("c"));
-        Assert.assertEquals("cats & dogs", itemCol2.getItemValueString("animals"));
-        Assert.assertFalse(itemCol2.hasItem("d"));
+        assertEquals(1, itemCol2.getItemValueInteger("a"));
+        assertEquals("hello", itemCol2.getItemValueString("b"));
+        assertEquals("", itemCol2.getItemValueString("c"));
+        assertEquals("cats & dogs", itemCol2.getItemValueString("animals"));
+        assertFalse(itemCol2.hasItem("d"));
 
         // test full clone
         ItemCollection itemCol3 = null;
@@ -564,25 +569,25 @@ public class TestItemCollection {
         if (itemCol1 instanceof Cloneable) {
             itemCol3 = (ItemCollection) itemCol1.clone();
         }
-        Assert.assertNotNull(itemCol3);
-        Assert.assertEquals(1, itemCol3.getItemValueInteger("a"));
-        Assert.assertEquals("hello", itemCol3.getItemValueString("b"));
-        Assert.assertEquals("world", itemCol3.getItemValueString("c"));
+        assertNotNull(itemCol3);
+        assertEquals(1, itemCol3.getItemValueInteger("a"));
+        assertEquals("hello", itemCol3.getItemValueString("b"));
+        assertEquals("world", itemCol3.getItemValueString("c"));
 
         // itemCol2 should be equals to itemCol1
-        Assert.assertNotSame(itemCol2, itemCol1);
+        assertNotSame(itemCol2, itemCol1);
         // itemCol3 should be equals to itemCol1
-        Assert.assertNotSame(itemCol3, itemCol1);
+        assertNotSame(itemCol3, itemCol1);
         // itemCol3 should be equals to itemCol1
-        Assert.assertEquals(itemCol1, itemCol3);
+        assertEquals(itemCol1, itemCol3);
         // itemCol2 should be equals to itemCol1
-        Assert.assertFalse(itemCol1.equals(itemCol2));
+        assertFalse(itemCol1.equals(itemCol2));
 
         // now we change some values of itemCol1 to see if this affects itemCol2
         // and itemCol3....
         itemCol1.replaceItemValue("c", "Imixs");
-        Assert.assertEquals("", itemCol2.getItemValueString("c"));
-        Assert.assertEquals("world", itemCol3.getItemValueString("c"));
+        assertEquals("", itemCol2.getItemValueString("c"));
+        assertEquals("world", itemCol3.getItemValueString("c"));
 
     }
 
@@ -604,17 +609,17 @@ public class TestItemCollection {
 
         ItemCollection itemCol2 = (ItemCollection) itemCol1.clone();
 
-        Assert.assertNotNull(itemCol2);
+        assertNotNull(itemCol2);
 
         // test values of clone
-        Assert.assertEquals(1, itemCol2.getItemValueInteger("a"));
-        Assert.assertEquals("hello", itemCol2.getItemValueString("b"));
+        assertEquals(1, itemCol2.getItemValueInteger("a"));
+        assertEquals("hello", itemCol2.getItemValueString("b"));
         // test the byte content of itemcol2
         Map<String, List<Object>> conedFilesTest = itemCol2.getFiles();
         List<Object> fileContentTest = conedFilesTest.get("test1.txt");
         byte[] file1DataTest = (byte[]) fileContentTest.get(1);
 
-        Assert.assertArrayEquals(empty, file1DataTest);
+        assertArrayEquals(empty, file1DataTest);
 
         // -------------------
         // Now we change file content in itemcol1
@@ -627,14 +632,14 @@ public class TestItemCollection {
         List<Object> fileContent1 = conedFiles1.get("test1.txt");
         byte[] file1Data1 = (byte[]) fileContent1.get(1);
         // we expect the new dummy array { 1, 2, 3 }
-        Assert.assertArrayEquals(dummy, file1Data1);
+        assertArrayEquals(dummy, file1Data1);
 
         // test the clone
         Map<String, List<Object>> conedFiles2 = itemCol2.getFiles();
         List<Object> fileContent2 = conedFiles2.get("test1.txt");
         byte[] file1Data2 = (byte[]) fileContent2.get(1);
         // we expect still the empty array
-        Assert.assertArrayEquals(empty, file1Data2);
+        assertArrayEquals(empty, file1Data2);
 
     }
 
@@ -655,17 +660,17 @@ public class TestItemCollection {
 
         ItemCollection itemCol2 = (ItemCollection) itemCol1.clone();
 
-        Assert.assertNotNull(itemCol2);
+        assertNotNull(itemCol2);
 
         // test values of clone
-        Assert.assertEquals(1, itemCol2.getItemValueInteger("a"));
-        Assert.assertEquals("hello", itemCol2.getItemValueString("b"));
+        assertEquals(1, itemCol2.getItemValueInteger("a"));
+        assertEquals("hello", itemCol2.getItemValueString("b"));
         // test the byte content of itemcol2
         // Map<String, List<Object>> conedFilesTest = itemCol2.getFiles();
 
         byte[] file1DataTest = itemCol2.getFileData("test1.txt").getContent();
 
-        Assert.assertArrayEquals(empty, file1DataTest);
+        assertArrayEquals(empty, file1DataTest);
 
         // -------------------
         // Now we change file content in itemcol1
@@ -676,12 +681,12 @@ public class TestItemCollection {
         // test the byte content of itemCol1
         byte[] file1Data1 = itemCol1.getFileData("test1.txt").getContent();
         // we expect the new dummy array { 1, 2, 3 }
-        Assert.assertArrayEquals(dummy, file1Data1);
+        assertArrayEquals(dummy, file1Data1);
 
         // test the clone
         byte[] file1Data2 = itemCol2.getFileData("test1.txt").getContent();
         // we expect still the empty array
-        Assert.assertArrayEquals(empty, file1Data2);
+        assertArrayEquals(empty, file1Data2);
 
     }
 
@@ -702,14 +707,14 @@ public class TestItemCollection {
         long l = System.currentTimeMillis();
         ItemCollection itemCol2 = (ItemCollection) itemCol1.clone();
         System.out.println("Performancetest ItemCollecton clone: " + (System.currentTimeMillis() - l) + "ms");
-        Assert.assertNotNull(itemCol2);
+        assertNotNull(itemCol2);
 
         // copy
         l = System.currentTimeMillis();
         ItemCollection itemCol3 = new ItemCollection();
         itemCol3.setAllItems(itemCol1.getAllItems());
         System.out.println("Performancetest ItemCollecton clone: " + (System.currentTimeMillis() - l) + "ms");
-        Assert.assertNotNull(itemCol3);
+        assertNotNull(itemCol3);
 
     }
 
@@ -726,16 +731,16 @@ public class TestItemCollection {
         itemCol1.replaceItemValue("c", "of");
         itemCol1.replaceItemValue("d", "Imixs-Workflow");
 
-        Assert.assertEquals("hello", itemCol1.getItemValueString("a"));
-        Assert.assertEquals("hello", itemCol1.getItemValueString(" a"));
-        Assert.assertEquals("world", itemCol1.getItemValueString(" b"));
-        Assert.assertEquals("of", itemCol1.getItemValueString(" c "));
+        assertEquals("hello", itemCol1.getItemValueString("a"));
+        assertEquals("hello", itemCol1.getItemValueString(" a"));
+        assertEquals("world", itemCol1.getItemValueString(" b"));
+        assertEquals("of", itemCol1.getItemValueString(" c "));
 
-        Assert.assertTrue(itemCol1.hasItem(" a  "));
-        Assert.assertTrue(itemCol1.hasItem(" a"));
-        Assert.assertTrue(itemCol1.hasItem("a"));
+        assertTrue(itemCol1.hasItem(" a  "));
+        assertTrue(itemCol1.hasItem(" a"));
+        assertTrue(itemCol1.hasItem("a"));
 
-        Assert.assertFalse(itemCol1.hasItem(null));
+        assertFalse(itemCol1.hasItem(null));
     }
 
     /**
@@ -743,21 +748,20 @@ public class TestItemCollection {
      */
     @SuppressWarnings("rawtypes")
     @Test
-    @Category(ItemCollection.class)
     public void testItemCollectionAppend() {
         ItemCollection itemCollection = new ItemCollection();
         itemCollection.replaceItemValue("txtTitel", "Hello");
-        Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+        assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
 
         itemCollection.appendItemValue("txttitel", "World");
-        Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+        assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
         List values = itemCollection.getItemValue("txtTitel");
-        Assert.assertEquals(2, values.size());
+        assertEquals(2, values.size());
 
         itemCollection.appendItemValue("txttitel", "World");
-        Assert.assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+        assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
         values = itemCollection.getItemValue("txtTitel");
-        Assert.assertEquals(3, values.size());
+        assertEquals(3, values.size());
 
     }
 
@@ -765,18 +769,17 @@ public class TestItemCollection {
      * Test no basic type
      */
     @Test
-    @Category(ItemCollection.class)
     public void testItemCollectionNoBasictype() {
         ItemCollection itemCollection = new ItemCollection();
         itemCollection.replaceItemValue("txtTitel", "Hello");
         try {
             itemCollection.replaceItemValue("color", new Color(1, 1, 1));
-            Assert.fail();
+            fail();
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 // expected result
             } else {
-                Assert.fail();
+                fail();
             }
         }
 
@@ -786,7 +789,6 @@ public class TestItemCollection {
      * Test raw type int, double, boolean
      */
     @Test
-    @Category(ItemCollection.class)
     public void testItemCollectionRawtype() {
         ItemCollection itemCollection = new ItemCollection();
         itemCollection.replaceItemValue("txtTitel", "Hello");
@@ -796,7 +798,7 @@ public class TestItemCollection {
         byte[] bytes = "Some Data".getBytes();
         itemCollection.replaceItemValue("data", bytes);
 
-        Assert.assertNotNull(itemCollection);
+        assertNotNull(itemCollection);
 
     }
 
@@ -804,7 +806,6 @@ public class TestItemCollection {
      * Test the fileData methods
      */
     @Test
-    @Category(ItemCollection.class)
     @Deprecated
     public void testFileDataDeprecated() {
         ItemCollection itemColSource = new ItemCollection();
@@ -818,28 +819,27 @@ public class TestItemCollection {
         itemColTarget.addFileData(itemColSource.getFileData("test1.txt"));
 
         FileData filedata = itemColTarget.getFileData("test1.txt");
-        Assert.assertNotNull(filedata);
-        Assert.assertEquals("test1.txt", filedata.getName());
-        Assert.assertEquals("application/xml", filedata.getContentType());
+        assertNotNull(filedata);
+        assertEquals("test1.txt", filedata.getName());
+        assertEquals("application/xml", filedata.getContentType());
 
         // test the byte content of itemColSource
         Map<String, List<Object>> conedFiles1 = itemColSource.getFiles();
         List<Object> fileContent1 = conedFiles1.get("test1.txt");
         byte[] file1Data1 = (byte[]) fileContent1.get(1);
         // we expect the new dummy array { 1, 2, 3 }
-        Assert.assertArrayEquals(empty, file1Data1);
+        assertArrayEquals(empty, file1Data1);
 
         // test the byte content of itemColTarget
         conedFiles1 = itemColTarget.getFiles();
         fileContent1 = conedFiles1.get("test1.txt");
         file1Data1 = (byte[]) fileContent1.get(1);
         // we expect the new dummy array { 1, 2, 3 }
-        Assert.assertArrayEquals(empty, file1Data1);
+        assertArrayEquals(empty, file1Data1);
 
     }
 
     @Test
-    @Category(ItemCollection.class)
     public void testFileData() {
         ItemCollection itemColSource = new ItemCollection();
 
@@ -852,31 +852,31 @@ public class TestItemCollection {
         itemColTarget.addFileData(itemColSource.getFileData("test1.txt"));
 
         FileData filedata = itemColTarget.getFileData("test1.txt");
-        Assert.assertNotNull(filedata);
-        Assert.assertEquals("test1.txt", filedata.getName());
-        Assert.assertEquals("application/xml", filedata.getContentType());
+        assertNotNull(filedata);
+        assertEquals("test1.txt", filedata.getName());
+        assertEquals("application/xml", filedata.getContentType());
 
         // test the byte content of itemColSource
         byte[] file1Data1 = itemColSource.getFileData("test1.txt").getContent();
         // we expect the new dummy array { 1, 2, 3 }
-        Assert.assertArrayEquals(empty, file1Data1);
+        assertArrayEquals(empty, file1Data1);
 
         // test the byte content of itemColTarget
         file1Data1 = itemColTarget.getFileData("test1.txt").getContent();
         // we expect the new dummy array { 1, 2, 3 }
-        Assert.assertArrayEquals(empty, file1Data1);
+        assertArrayEquals(empty, file1Data1);
 
         // test getFileNames
-        Assert.assertEquals(1, itemColSource.getItemValueInteger("$file.count"));
+        assertEquals(1, itemColSource.getItemValueInteger("$file.count"));
         List<String> fileNames = itemColSource.getFileNames();
-        Assert.assertEquals(1, fileNames.size());
-        Assert.assertEquals("test1.txt", fileNames.get(0));
+        assertEquals(1, fileNames.size());
+        assertEquals("test1.txt", fileNames.get(0));
 
         // remove file....
         itemColSource.removeFile("test1.txt");
-        Assert.assertEquals(0, itemColSource.getItemValueInteger("$file.count"));
+        assertEquals(0, itemColSource.getItemValueInteger("$file.count"));
         fileNames = itemColSource.getFileNames();
-        Assert.assertEquals(0, fileNames.size());
+        assertEquals(0, fileNames.size());
 
     }
 
@@ -884,73 +884,52 @@ public class TestItemCollection {
      * Test the fluent code interface.
      */
     @Test
-    @Category(ItemCollection.class)
     public void testFluentInterface() {
         ItemCollection itemCollection = new ItemCollection().model("1.0.0").task(1).event(10);
 
-        Assert.assertEquals("1.0.0", itemCollection.getModelVersion());
-        Assert.assertEquals(1, itemCollection.getTaskID());
-        Assert.assertEquals(10, itemCollection.getEventID());
+        assertEquals("1.0.0", itemCollection.getModelVersion());
+        assertEquals(1, itemCollection.getTaskID());
+        assertEquals(10, itemCollection.getEventID());
 
         // set group
         itemCollection = new ItemCollection().workflowGroup("Ticket").task(1).event(10);
-        Assert.assertEquals("Ticket", itemCollection.getWorkflowGroup());
-        Assert.assertEquals(1, itemCollection.getTaskID());
-        Assert.assertEquals(10, itemCollection.getEventID());
+        assertEquals("Ticket", itemCollection.getWorkflowGroup());
+        assertEquals(1, itemCollection.getTaskID());
+        assertEquals(10, itemCollection.getEventID());
 
     }
-
-    /*
-     * Test fluent event interface with a event list
-     * With OpenBPMN this method is no longer supported
-     */
-    // @Test
-    // @Category(ItemCollection.class)
-    // public void testFluentInterfaceFollowUpEvents() {
-    // ItemCollection itemCollection = new
-    // ItemCollection().model("1.0.0").task(1).event(10).event(11);
-    // Assert.assertEquals("1.0.0", itemCollection.getModelVersion());
-    // Assert.assertEquals(1, itemCollection.getTaskID());
-    // Assert.assertEquals(10, itemCollection.getEventID());
-    // @SuppressWarnings("unchecked")
-    // List<Integer> followups =
-    // itemCollection.getItemValue(WorkflowKernel.ACTIVITYIDLIST);
-    // Assert.assertEquals(1, followups.size());
-    // Assert.assertEquals(11, followups.get(0).intValue());
-    // }
 
     /**
      * Test issue #383, #384
      */
     @SuppressWarnings("deprecation")
     @Test
-    @Category(ItemCollection.class)
     public void testDeprecatedFieldProcessID() {
 
-        Assert.assertEquals("$processid", WorkflowKernel.PROCESSID);
-        Assert.assertEquals("$taskid", WorkflowKernel.TASKID);
+        assertEquals("$processid", WorkflowKernel.PROCESSID);
+        assertEquals("$taskid", WorkflowKernel.TASKID);
 
         ItemCollection itemColSource = new ItemCollection();
 
         itemColSource.replaceItemValue("$processid", 42);
-        Assert.assertEquals(42, itemColSource.getTaskID());
-        Assert.assertEquals(42, itemColSource.getProcessID());
-        Assert.assertEquals(42, itemColSource.getItemValueInteger("$processid"));
+        assertEquals(42, itemColSource.getTaskID());
+        assertEquals(42, itemColSource.getProcessID());
+        assertEquals(42, itemColSource.getItemValueInteger("$processid"));
 
         // test setter
         itemColSource = new ItemCollection();
         itemColSource.setTaskID(43);
-        Assert.assertEquals(43, itemColSource.getTaskID());
-        Assert.assertEquals(43, itemColSource.getProcessID());
-        Assert.assertEquals(43, itemColSource.getItemValueInteger("$processid"));
+        assertEquals(43, itemColSource.getTaskID());
+        assertEquals(43, itemColSource.getProcessID());
+        assertEquals(43, itemColSource.getItemValueInteger("$processid"));
 
         // test direct setting
         itemColSource = new ItemCollection();
         itemColSource.replaceItemValue("$taskid", 44);
-        Assert.assertEquals(44, itemColSource.getTaskID());
-        Assert.assertEquals(44, itemColSource.getProcessID());
+        assertEquals(44, itemColSource.getTaskID());
+        assertEquals(44, itemColSource.getProcessID());
         // !!!
-        Assert.assertEquals(0, itemColSource.getItemValueInteger("$processid"));
+        assertEquals(0, itemColSource.getItemValueInteger("$processid"));
     }
 
     /**
@@ -965,10 +944,10 @@ public class TestItemCollection {
 
         // test String values
         String s = itemCol.getItemValue("txtname", String.class);
-        Assert.assertEquals("hello", s);
+        assertEquals("hello", s);
 
         // test non existing value
-        Assert.assertNull(itemCol.getItemValue("txtname2", String.class));
+        assertNull(itemCol.getItemValue("txtname2", String.class));
 
     }
 
@@ -984,16 +963,16 @@ public class TestItemCollection {
 
         // test int values....
         int i1 = itemCol.getItemValue("numage", Integer.class);
-        Assert.assertEquals(7, i1);
+        assertEquals(7, i1);
 
         int i2 = itemCol.getItemValue("numage", int.class);
-        Assert.assertEquals(7, i2);
+        assertEquals(7, i2);
 
         Integer i3 = itemCol.getItemValue("numage", Integer.class);
-        Assert.assertEquals(7, i3.intValue());
+        assertEquals(7, i3.intValue());
 
         // test non existing value
-        Assert.assertNull(itemCol.getItemValue("txtname2", String.class));
+        assertNull(itemCol.getItemValue("txtname2", String.class));
 
     }
 
@@ -1009,16 +988,16 @@ public class TestItemCollection {
 
         // test int values....
         long l1 = itemCol.getItemValue("numage", Long.class);
-        Assert.assertEquals(7, l1);
+        assertEquals(7, l1);
 
         long l2 = itemCol.getItemValue("numage", long.class);
-        Assert.assertEquals(7, l2);
+        assertEquals(7, l2);
 
         Long l3 = itemCol.getItemValue("numage", long.class);
-        Assert.assertEquals(7, l3.longValue());
+        assertEquals(7, l3.longValue());
 
         // test non existing value
-        Assert.assertNull(itemCol.getItemValue("txtname2", String.class));
+        assertNull(itemCol.getItemValue("txtname2", String.class));
 
     }
 
@@ -1032,14 +1011,14 @@ public class TestItemCollection {
         itemCol.setItemValue("team", "Anna").appendItemValue("team", "Mark").appendItemValue("team", "Jo");
 
         String s = itemCol.getItemValue("team", String.class);
-        Assert.assertEquals("Anna", s);
+        assertEquals("Anna", s);
 
         @SuppressWarnings("unchecked")
         List<String> vaules = itemCol.getItemValue("team");
 
-        Assert.assertEquals(3, vaules.size());
-        Assert.assertEquals("Mark", vaules.get(1));
-        Assert.assertEquals("Jo", vaules.get(2));
+        assertEquals(3, vaules.size());
+        assertEquals("Mark", vaules.get(1));
+        assertEquals("Jo", vaules.get(2));
 
     }
 
@@ -1058,7 +1037,7 @@ public class TestItemCollection {
         List<String> values = new ArrayList<>(Arrays.asList("Amir", null, "Beth", "Lucy"));
 
         itemCol.setItemValue("team", values);
-        Assert.assertTrue(itemCol.hasItem("team"));
+        assertTrue(itemCol.hasItem("team"));
 
         // create a unmutable list with null value
         values = Arrays.asList("Amir", null, "Beth", "Lucy");
@@ -1068,11 +1047,11 @@ public class TestItemCollection {
         // It seems to make no sense to care about this case
         try {
             itemCol.setItemValue("team", values);
-            Assert.fail(); // exception expected
+            fail(); // exception expected
         } catch (UnsupportedOperationException e) {
             // exception expected
         }
-        Assert.assertTrue(itemCol.hasItem("team"));
+        assertTrue(itemCol.hasItem("team"));
 
     }
 
@@ -1089,19 +1068,19 @@ public class TestItemCollection {
 
         // test string
         String s = itemCol.getItemValue("_a", String.class);
-        Assert.assertEquals("5", s);
+        assertEquals("5", s);
 
         // test int
         int i = itemCol.getItemValue("_a", int.class);
-        Assert.assertEquals(5, i);
+        assertEquals(5, i);
 
         // test long
         long l = itemCol.getItemValue("_a", long.class);
-        Assert.assertEquals(5, l);
+        assertEquals(5, l);
 
         // test string of _b
         s = itemCol.getItemValue("_b", String.class);
-        Assert.assertEquals("7", s);
+        assertEquals("7", s);
     }
 
     /**
@@ -1117,24 +1096,24 @@ public class TestItemCollection {
 
         // test String list...
         List<String> slist = itemCol.getItemValueList("txtname", String.class);
-        Assert.assertEquals(3, slist.size());
-        Assert.assertEquals("hello", slist.get(0));
-        Assert.assertEquals("world", slist.get(1));
-        Assert.assertEquals("47", slist.get(2));
+        assertEquals(3, slist.size());
+        assertEquals("hello", slist.get(0));
+        assertEquals("world", slist.get(1));
+        assertEquals("47", slist.get(2));
 
         // test int list
         List<Integer> integerlist = itemCol.getItemValueList("txtname", Integer.class);
-        Assert.assertEquals(3, integerlist.size());
-        Assert.assertEquals(Integer.valueOf(0), integerlist.get(0));
-        Assert.assertEquals(Integer.valueOf(0), integerlist.get(1));
-        Assert.assertEquals(Integer.valueOf(47), integerlist.get(2));
+        assertEquals(3, integerlist.size());
+        assertEquals(Integer.valueOf(0), integerlist.get(0));
+        assertEquals(Integer.valueOf(0), integerlist.get(1));
+        assertEquals(Integer.valueOf(47), integerlist.get(2));
 
         // test int list
         List<Integer> intlist = itemCol.getItemValueList("txtname", int.class);
-        Assert.assertEquals(3, intlist.size());
-        Assert.assertEquals(Integer.valueOf(0), intlist.get(0));
-        Assert.assertEquals(Integer.valueOf(0), intlist.get(1));
-        Assert.assertEquals(Integer.valueOf(47), intlist.get(2));
+        assertEquals(3, intlist.size());
+        assertEquals(Integer.valueOf(0), intlist.get(0));
+        assertEquals(Integer.valueOf(0), intlist.get(1));
+        assertEquals(Integer.valueOf(47), intlist.get(2));
 
     }
 
@@ -1147,8 +1126,8 @@ public class TestItemCollection {
 
         List<String> slist = itemCol.getItemValueList("txtname", String.class);
         // we expect an empty list
-        Assert.assertNotNull(slist);
-        Assert.assertEquals(0, slist.size());
+        assertNotNull(slist);
+        assertEquals(0, slist.size());
     }
 
     /**
@@ -1165,24 +1144,24 @@ public class TestItemCollection {
 
         // test String list...
         List<String> slist = itemCol.getItemValueList("txtname", String.class);
-        Assert.assertEquals(3, slist.size());
-        Assert.assertEquals("hello", slist.get(0));
-        Assert.assertEquals("47", slist.get(1));
-        Assert.assertEquals("{_subject=some data}", slist.get(2)); // map toString
+        assertEquals(3, slist.size());
+        assertEquals("hello", slist.get(0));
+        assertEquals("47", slist.get(1));
+        assertEquals("{_subject=some data}", slist.get(2)); // map toString
 
         // test int list
         List<Integer> integerlist = itemCol.getItemValueList("txtname", Integer.class);
-        Assert.assertEquals(3, integerlist.size());
-        Assert.assertEquals(Integer.valueOf(0), integerlist.get(0));
-        Assert.assertEquals(Integer.valueOf(47), integerlist.get(1));
-        Assert.assertEquals(Integer.valueOf(0), integerlist.get(2));
+        assertEquals(3, integerlist.size());
+        assertEquals(Integer.valueOf(0), integerlist.get(0));
+        assertEquals(Integer.valueOf(47), integerlist.get(1));
+        assertEquals(Integer.valueOf(0), integerlist.get(2));
 
         // test int list
         List<Integer> intlist = itemCol.getItemValueList("txtname", int.class);
-        Assert.assertEquals(3, intlist.size());
-        Assert.assertEquals(Integer.valueOf(0), intlist.get(0));
-        Assert.assertEquals(Integer.valueOf(47), intlist.get(1));
-        Assert.assertEquals(Integer.valueOf(0), intlist.get(2));
+        assertEquals(3, intlist.size());
+        assertEquals(Integer.valueOf(0), intlist.get(0));
+        assertEquals(Integer.valueOf(47), intlist.get(1));
+        assertEquals(Integer.valueOf(0), intlist.get(2));
 
     }
 
@@ -1195,43 +1174,43 @@ public class TestItemCollection {
 
         // integer
         Integer i = itemCol.getItemValue("unkonw", Integer.class);
-        Assert.assertNotNull(i);
-        Assert.assertEquals(0, i.intValue());
+        assertNotNull(i);
+        assertEquals(0, i.intValue());
 
         // int
         int ii = itemCol.getItemValue("unkonw", int.class);
-        Assert.assertNotNull(ii);
-        Assert.assertEquals(0, ii);
+        assertNotNull(ii);
+        assertEquals(0, ii);
 
         // Float
         Float f = itemCol.getItemValue("unkonw", Float.class);
-        Assert.assertNotNull(f);
-        Assert.assertEquals(0, f.intValue());
+        assertNotNull(f);
+        assertEquals(0, f.intValue());
 
         // float
         float ff = itemCol.getItemValue("unkonw", float.class);
-        Assert.assertNotNull(ff);
-        Assert.assertEquals(0, ff, 0);
+        assertNotNull(ff);
+        assertEquals(0, ff, 0);
 
         // Long
         Long l = itemCol.getItemValue("unkonw", Long.class);
-        Assert.assertNotNull(l);
-        Assert.assertEquals(0, l.intValue());
+        assertNotNull(l);
+        assertEquals(0, l.intValue());
 
         // long
         long ll = itemCol.getItemValue("unkonw", long.class);
-        Assert.assertNotNull(ll);
-        Assert.assertEquals(0, ll);
+        assertNotNull(ll);
+        assertEquals(0, ll);
 
         // Double
         Double d = itemCol.getItemValue("unkonw", Double.class);
-        Assert.assertNotNull(d);
-        Assert.assertEquals(0, d.intValue());
+        assertNotNull(d);
+        assertEquals(0, d.intValue());
 
         // double
         double dd = itemCol.getItemValue("unkonw", double.class);
-        Assert.assertNotNull(dd);
-        Assert.assertEquals(0, dd, 0);
+        assertNotNull(dd);
+        assertEquals(0, dd, 0);
 
     }
 
@@ -1251,8 +1230,8 @@ public class TestItemCollection {
         itemCol.setItemValue("calendar", nowCalendar);
 
         Date testDateCal = itemCol.getItemValueDate("calendar");
-        Assert.assertNotNull(testDateCal);
-        Assert.assertEquals(nowDate, testDateCal);
+        assertNotNull(testDateCal);
+        assertEquals(nowDate, testDateCal);
 
     }
 
@@ -1268,27 +1247,27 @@ public class TestItemCollection {
         Date nowDate = new Date();
         itemCol.setItemValue("date", nowDate);
         Date testDate = itemCol.getItemValueDate("date");
-        Assert.assertEquals(nowDate, testDate);
+        assertEquals(nowDate, testDate);
 
         // test with LocalDateTime
         LocalDateTime localDateTime = itemCol.getItemValueLocalDateTime("date");
 
         // test if equal....
         Date out = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-        Assert.assertEquals(nowDate, out);
+        assertEquals(nowDate, out);
 
         // now set a LocalDateTime Value...
         LocalDateTime ldt = LocalDateTime.ofInstant(nowDate.toInstant(), ZoneId.systemDefault());
         itemCol.setItemValue("localdate", ldt);
 
         LocalDateTime localDateTimeTest = itemCol.getItemValueLocalDateTime("localdate");
-        Assert.assertNotNull(localDateTimeTest);
-        Assert.assertEquals(ldt, localDateTimeTest);
+        assertNotNull(localDateTimeTest);
+        assertEquals(ldt, localDateTimeTest);
 
         // test date convertion....
         Date dateTest2 = itemCol.getItemValueDate("localDAte");
 
-        Assert.assertEquals(nowDate, dateTest2);
+        assertEquals(nowDate, dateTest2);
 
     }
 
@@ -1304,7 +1283,7 @@ public class TestItemCollection {
         Date nowDate = new Date();
         itemCol.setItemValue("date", nowDate);
         Date testDate = itemCol.getItemValueDate("date");
-        Assert.assertEquals(nowDate, testDate);
+        assertEquals(nowDate, testDate);
 
         // test with LocalDateTime
         LocalDate localDate = itemCol.getItemValueLocalDate("date");
@@ -1312,7 +1291,7 @@ public class TestItemCollection {
         // test if equal....
         Date out = Date.from(localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Assert.assertEquals(dateFormat.format(nowDate), dateFormat.format(out));
+        assertEquals(dateFormat.format(nowDate), dateFormat.format(out));
 
         // now set a LocalDateTime Value...
         LocalDate ldt = nowDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -1320,13 +1299,13 @@ public class TestItemCollection {
         itemCol.setItemValue("localdate", ldt);
 
         LocalDate localDateTest = itemCol.getItemValueLocalDate("localdate");
-        Assert.assertNotNull(localDateTest);
-        Assert.assertEquals(ldt, localDateTest);
+        assertNotNull(localDateTest);
+        assertEquals(ldt, localDateTest);
 
         // test date convertion....
         Date dateTest2 = itemCol.getItemValueDate("localDAte");
 
-        Assert.assertEquals(dateFormat.format(nowDate), dateFormat.format(dateTest2));
+        assertEquals(dateFormat.format(nowDate), dateFormat.format(dateTest2));
 
     }
 
@@ -1346,11 +1325,11 @@ public class TestItemCollection {
         list.add("test");
         workitem.setItemValue("c", list);
 
-        Assert.assertTrue(workitem.isItemEmpty("a"));
-        Assert.assertTrue(workitem.isItemEmpty("b"));
-        Assert.assertFalse(workitem.isItemEmpty("c"));
+        assertTrue(workitem.isItemEmpty("a"));
+        assertTrue(workitem.isItemEmpty("b"));
+        assertFalse(workitem.isItemEmpty("c"));
         // we expect 2 values because the null value should be removed
-        Assert.assertEquals(2, workitem.getItemValue("c").size());
+        assertEquals(2, workitem.getItemValue("c").size());
 
     }
 }

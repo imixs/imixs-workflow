@@ -1,5 +1,10 @@
 package org.imixs.workflow.kernel;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -12,9 +17,8 @@ import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
@@ -36,7 +40,7 @@ public class TestBPMNParserRuleEvents {
 
 	private MockWorkflowEngine workflowEngine;
 
-	@Before
+	@BeforeEach
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
 
@@ -55,38 +59,38 @@ public class TestBPMNParserRuleEvents {
 			openBPMNModelManager.addModel(model);
 		} catch (BPMNModelException | ModelException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
-		Assert.assertNotNull(model);
+		assertNotNull(model);
 		try {
 			// Test Environment
 			ItemCollection workitem = new ItemCollection();
 			workitem.model("1.0.0").task(1000);
 			ItemCollection profile = openBPMNModelManager.loadDefinition(model);
-			Assert.assertNotNull(profile);
+			assertNotNull(profile);
 
 			// test count of task elements
 			Set<Activity> tasks = model.openDefaultProces().getActivities();
-			Assert.assertEquals(9, tasks.size());
+			assertEquals(9, tasks.size());
 
 			// test task 1000
 			ItemCollection task;
 
 			task = workflowEngine.getModelManager().loadTask(workitem);
 
-			Assert.assertNotNull(task);
+			assertNotNull(task);
 
 			// test activity for task 1000
 			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
 
-			Assert.assertNotNull(events);
-			Assert.assertEquals(1, events.size());
+			assertNotNull(events);
+			assertEquals(1, events.size());
 
 			// test activity 1000.10 submit
 			ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
-			Assert.assertNotNull(event);
-			Assert.assertEquals("submit", event.getItemValueString("txtname"));
+			assertNotNull(event);
+			assertEquals("submit", event.getItemValueString("txtname"));
 		} catch (ModelException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -109,22 +113,22 @@ public class TestBPMNParserRuleEvents {
 		try {
 			model = workflowEngine.getModelManager().getModel("1.0.0");
 
-			Assert.assertNotNull(model);
+			assertNotNull(model);
 
 			// Test Environment
 			ItemCollection workItem = new ItemCollection();
 			workItem.model("1.0.0").task(2000).event(10);
 			ItemCollection profile = workflowEngine.getModelManager().loadDefinition(model);
-			Assert.assertNotNull(profile);
+			assertNotNull(profile);
 
 			/* Test 2000.10 - FollowUp Event */
 			workItem = workflowEngine.getWorkflowKernel().process(workItem);
-			Assert.assertEquals(2, workItem.getItemValueInteger("runs"));
+			assertEquals(2, workItem.getItemValueInteger("runs"));
 			// Test model switch to mode 1.0.0
-			Assert.assertEquals("1.0.0", workItem.getModelVersion());
-			Assert.assertEquals(2100, workItem.getTaskID());
+			assertEquals("1.0.0", workItem.getModelVersion());
+			assertEquals(2100, workItem.getTaskID());
 		} catch (ModelException | PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -141,15 +145,15 @@ public class TestBPMNParserRuleEvents {
 			model = workflowEngine.getModelManager().getModel("1.0.0");
 			ItemCollection workItem = new ItemCollection();
 			workItem.model("1.0.0").task(3000).event(10);
-			Assert.assertNotNull(model);
+			assertNotNull(model);
 			workItem = workflowEngine.getWorkflowKernel().process(workItem);
 			// Should not be possible
-			Assert.fail("ambiguous sequence flow expected!");
+			fail("ambiguous sequence flow expected!");
 		} catch (ModelException e) {
 			// ambiguous sequence flow Exception expected
-			Assert.assertTrue(e.getMessage().contains("ambiguous sequence flow"));
+			assertTrue(e.getMessage().contains("ambiguous sequence flow"));
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 	}
 }

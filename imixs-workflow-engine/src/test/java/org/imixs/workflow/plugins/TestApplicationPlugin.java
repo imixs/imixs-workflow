@@ -1,5 +1,8 @@
 package org.imixs.workflow.plugins;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -8,7 +11,6 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.ApplicationPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +49,7 @@ public class TestApplicationPlugin {
 		try {
 			applicationPlugin.init(workflowEngine.getWorkflowService());
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 		// prepare data
@@ -75,13 +77,13 @@ public class TestApplicationPlugin {
 		try {
 			applicationPlugin.run(workitem, event);
 		} catch (PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 		String newEditor = workitem
 				.getItemValueString("txtWorkflowEditorID");
 
-		Assert.assertEquals("test-data", newEditor);
+		assertEquals("test-data", newEditor);
 
 	}
 

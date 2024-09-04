@@ -172,8 +172,8 @@
     </bpmn2:sequenceFlow>
     <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_6" imixs:activityid="20" name="update">
       <bpmn2:extensionElements>
-        <imixs:item name="keyupdateacl" type="xs:boolean">
-          <imixs:value>true</imixs:value>
+        <imixs:item name="keyupdateacl" type="xs:string">
+          <imixs:value><![CDATA[true]]></imixs:value>
         </imixs:item>
         <imixs:item name="keyownershipfields" type="xs:string">
           <imixs:value><![CDATA[namTeam]]></imixs:value>

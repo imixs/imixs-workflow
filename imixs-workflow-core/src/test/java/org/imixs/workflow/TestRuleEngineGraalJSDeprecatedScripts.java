@@ -1,15 +1,17 @@
 package org.imixs.workflow;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.script.ScriptException;
 
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for the GraalJS RuleEngine
@@ -21,7 +23,7 @@ public class TestRuleEngineGraalJSDeprecatedScripts {
 	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(TestRuleEngineGraalJSDeprecatedScripts.class.getName());
 
-	@Before
+	@BeforeEach
 	public void setup() throws PluginException {
 		ruleEngine = new RuleEngine();
 
@@ -46,9 +48,9 @@ public class TestRuleEngineGraalJSDeprecatedScripts {
 
 		// run plugin
 		workitem = ruleEngine.evaluateBusinessRule(script, workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertEquals(50, workitem.getItemValueInteger("numage"));
+		assertEquals(50, workitem.getItemValueInteger("numage"));
 	}
 
 	/**
@@ -70,9 +72,9 @@ public class TestRuleEngineGraalJSDeprecatedScripts {
 
 		// run plugin
 		ItemCollection result = ruleEngine.evaluateBusinessRule(script, workitem, event);
-		Assert.assertNotNull(result);
+		assertNotNull(result);
 
-		Assert.assertEquals(50, result.getItemValueInteger("numage"));
+		assertEquals(50, result.getItemValueInteger("numage"));
 	}
 
 	/**
@@ -91,9 +93,9 @@ public class TestRuleEngineGraalJSDeprecatedScripts {
 
 		// run plugin
 		workitem = ruleEngine.evaluateBusinessRule(script, workitem, null);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertEquals(50, workitem.getItemValueInteger("numage"));
+		assertEquals(50, workitem.getItemValueInteger("numage"));
 	}
 
 	/**
@@ -106,11 +108,10 @@ public class TestRuleEngineGraalJSDeprecatedScripts {
 	public void testEvalComplexConditionalEvent() throws ScriptException, PluginException {
 
 		ItemCollection workitem = new ItemCollection();
-		workitem.replaceItemValue("_budget_amount",8400000.00);
+		workitem.replaceItemValue("_budget_amount", 8400000.00);
 		workitem.replaceItemValue("_budget_amount_additional", 1.00);
 		workitem.replaceItemValue("_amount_brutto", 900000.00);
-		
-		
+
 		// complex rule
 		String script = "";
 		script = script + "var contract_sum=workitem._budget_amount[0];";
@@ -122,13 +123,10 @@ public class TestRuleEngineGraalJSDeprecatedScripts {
 		script = script
 				+ "    ( contract_sum > 8500000 && workitem._amount_brutto[0] <= ( 0.12 *  workitem._budget_amount[0] ) ) )";
 		// evaluate
-		 boolean bmatch = ruleEngine.evaluateBooleanExpression(script, workitem);
-		Assert.assertTrue(bmatch);
-		
-		
+		boolean bmatch = ruleEngine.evaluateBooleanExpression(script, workitem);
+		assertTrue(bmatch);
+
 	}
-
-
 
 	/**
 	 * This test verifies the evaluation of a simple scripts
@@ -151,27 +149,27 @@ public class TestRuleEngineGraalJSDeprecatedScripts {
 		// access single value
 		String script = "workitem['space.team'] && workitem['space.team'][0]!=\"\"";
 
-		Assert.assertTrue( ruleEngine.evaluateBooleanExpression(script, workitem));
+		assertTrue(ruleEngine.evaluateBooleanExpression(script, workitem));
 
 		// test empty sting szenario...
 		workitem.replaceItemValue("space.team", "");
-		Assert.assertFalse( ruleEngine.evaluateBooleanExpression(script, workitem));
+		assertFalse(ruleEngine.evaluateBooleanExpression(script, workitem));
 
 		// test missing item szenario...
 		workitem.removeItem("space.team");
-		Assert.assertFalse( ruleEngine.evaluateBooleanExpression(script, workitem));
+		assertFalse(ruleEngine.evaluateBooleanExpression(script, workitem));
 
 		// test inverted script
 		script = "!workitem['space.team'] || workitem['space.team'][0]===\"\"";
-		Assert.assertTrue( ruleEngine.evaluateBooleanExpression(script, workitem));
+		assertTrue(ruleEngine.evaluateBooleanExpression(script, workitem));
 
 		// test empty sting szenario...
 		workitem.replaceItemValue("space.team", "");
-		Assert.assertTrue( ruleEngine.evaluateBooleanExpression(script, workitem));
+		assertTrue(ruleEngine.evaluateBooleanExpression(script, workitem));
 
 		// test empty sting value...
 		workitem.replaceItemValue("space.team", "some value");
-		Assert.assertFalse( ruleEngine.evaluateBooleanExpression(script, workitem));
+		assertFalse(ruleEngine.evaluateBooleanExpression(script, workitem));
 	}
 
 }

@@ -1,12 +1,15 @@
 package org.imixs.workflow.kernel;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 
 /**
@@ -23,7 +26,7 @@ public class TestBPMNModelSwitchEvent {
 
 	private MockWorkflowEngine workflowEngine;
 
-	@Before
+	@BeforeEach
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
 		workflowEngine.loadBPMNModel("/bpmn/model-switch-source.bpmn");
@@ -39,7 +42,7 @@ public class TestBPMNModelSwitchEvent {
 	public void testSimpleSwitch() throws ModelException {
 
 		BPMNModel model = workflowEngine.getModelManager().getModel("source-1.0.0");
-		Assert.assertNotNull(model);
+		assertNotNull(model);
 
 		// Test Environment
 		ItemCollection workItem = new ItemCollection();
@@ -48,13 +51,13 @@ public class TestBPMNModelSwitchEvent {
 			workItem = workflowEngine.getWorkflowKernel().process(workItem);
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
-		Assert.assertEquals(2, workItem.getItemValueInteger("runs"));
+		assertEquals(2, workItem.getItemValueInteger("runs"));
 
 		// Test model switch to mode target-1.0.0
-		Assert.assertEquals("target-1.0.0", workItem.getModelVersion());
-		Assert.assertEquals(1100, workItem.getTaskID());
+		assertEquals("target-1.0.0", workItem.getModelVersion());
+		assertEquals(1100, workItem.getTaskID());
 
 	}
 
@@ -69,7 +72,7 @@ public class TestBPMNModelSwitchEvent {
 
 		BPMNModel model = workflowEngine.getModelManager().getModel("source-1.0.0");
 
-		Assert.assertNotNull(model);
+		assertNotNull(model);
 
 		// Test Environment
 		ItemCollection workItem = new ItemCollection();
@@ -78,13 +81,13 @@ public class TestBPMNModelSwitchEvent {
 			workItem = workflowEngine.getWorkflowKernel().process(workItem);
 		} catch (PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
-		Assert.assertEquals(2, workItem.getItemValueInteger("runs"));
+		assertEquals(2, workItem.getItemValueInteger("runs"));
 
 		// Test model switch to mode target-1.0.0
-		Assert.assertEquals("target-1.0.0", workItem.getModelVersion());
-		Assert.assertEquals(1100, workItem.getTaskID());
+		assertEquals("target-1.0.0", workItem.getModelVersion());
+		assertEquals(1100, workItem.getTaskID());
 
 	}
 

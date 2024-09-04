@@ -1,5 +1,10 @@
 package org.imixs.workflow.engine;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +15,6 @@ import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -60,17 +64,17 @@ public class TestWorkflowServiceGateways {
 			workitem.replaceItemValue("_budget", 99);
 			workitem.setEventID(10);
 			workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
-			Assert.assertEquals(1200, workitem.getTaskID());
+			assertEquals(1200, workitem.getTaskID());
 
 			// Next test _budget>100
 			workitem.setTaskID(1000);
 			workitem.replaceItemValue("_budget", 9999);
 			workitem.setEventID(10);
 			workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
-			Assert.assertEquals(1100, workitem.getTaskID());
+			assertEquals(1100, workitem.getTaskID());
 
 		} catch (AccessDeniedException | ProcessingErrorException | PluginException | ModelException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 		// Test without _budget item. This results into a processing error:
@@ -79,14 +83,14 @@ public class TestWorkflowServiceGateways {
 			workitem.setTaskID(1000);
 			workitem.setEventID(10);
 			workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
-			Assert.fail(); // Exception expected!
-			Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
-			Assert.assertEquals(1000, workitem.getTaskID());
+			fail(); // Exception expected!
+			assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
+			assertEquals(1000, workitem.getTaskID());
 		} catch (AccessDeniedException | ProcessingErrorException | PluginException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		} catch (ModelException e) {
 			// Expected
-			Assert.assertEquals(ModelException.INVALID_MODEL_ENTRY, e.getErrorCode());
+			assertEquals(ModelException.INVALID_MODEL_ENTRY, e.getErrorCode());
 		}
 
 	}
@@ -115,21 +119,21 @@ public class TestWorkflowServiceGateways {
 		workitem.replaceItemValue("_budget", 99);
 		workitem.setEventID(10);
 		workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
-		Assert.assertEquals(1200, workitem.getTaskID());
+		assertEquals(1200, workitem.getTaskID());
 
 		// test _budget>100
 		workitem.setTaskID(1000);
 		workitem.replaceItemValue("_budget", 9999);
 		workitem.setEventID(10);
 		workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
-		Assert.assertEquals(1300, workitem.getTaskID());
+		assertEquals(1300, workitem.getTaskID());
 
 		// test without any budget
 		workitem.setTaskID(1000);
 		workitem.removeItem("_budget");
 		workitem.setEventID(10);
 		workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
-		Assert.assertEquals(1100, workitem.getTaskID());
+		assertEquals(1100, workitem.getTaskID());
 
 	}
 
@@ -157,8 +161,8 @@ public class TestWorkflowServiceGateways {
 		workitem.setTaskID(1000);
 		workitem.setEventID(10);
 		workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
-		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
-		Assert.assertEquals(1100, workitem.getTaskID());
+		assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
+		assertEquals(1100, workitem.getTaskID());
 
 		// lookup the version.....
 		List<ItemCollection> versions = new ArrayList<ItemCollection>();
@@ -168,14 +172,14 @@ public class TestWorkflowServiceGateways {
 			}
 		}
 		// test new version...
-		Assert.assertNotNull(versions);
-		Assert.assertTrue(versions.size() == 1);
+		assertNotNull(versions);
+		assertTrue(versions.size() == 1);
 		ItemCollection version = versions.get(0);
-		Assert.assertNotNull(version);
+		assertNotNull(version);
 
-		Assert.assertEquals("Hello", version.getItemValueString("_subject"));
-		Assert.assertEquals(1200, version.getTaskID());
-		Assert.assertEquals(20, version.getItemValueInteger("$lastevent"));
+		assertEquals("Hello", version.getItemValueString("_subject"));
+		assertEquals(1200, version.getTaskID());
+		assertEquals(20, version.getItemValueInteger("$lastevent"));
 
 	}
 

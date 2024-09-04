@@ -1,5 +1,8 @@
 package org.imixs.workflow.kernel;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.text.ParseException;
 
@@ -9,9 +12,8 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 /**
@@ -35,7 +37,7 @@ public class TestWorkflowKernelComplex_Issue_823 {
 
 	private MockWorkflowEngine workflowEngine;
 
-	@Before
+	@BeforeEach
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
 		// load default model
@@ -68,11 +70,11 @@ public class TestWorkflowKernelComplex_Issue_823 {
 			// We expect 2100
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 		// we expect 2 rund because of the conditional event
-		Assert.assertEquals(2, workitemProcessed.getItemValueInteger("runs"));
-		Assert.assertEquals(2100, workitemProcessed.getTaskID());
+		assertEquals(2, workitemProcessed.getItemValueInteger("runs"));
+		assertEquals(2100, workitemProcessed.getTaskID());
 
 	}
 
@@ -102,11 +104,11 @@ public class TestWorkflowKernelComplex_Issue_823 {
 			// We expect 2100
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 		// we expect 2 rund because of the conditional event
-		Assert.assertEquals(2, workitemProcessed.getItemValueInteger("runs"));
-		Assert.assertEquals(2001, workitemProcessed.getTaskID());
+		assertEquals(2, workitemProcessed.getItemValueInteger("runs"));
+		assertEquals(2001, workitemProcessed.getTaskID());
 
 	}
 
@@ -135,11 +137,11 @@ public class TestWorkflowKernelComplex_Issue_823 {
 		try {
 			workitemProcessed = workflowEngine.getWorkflowKernel().process(workItem);
 			// We expect 2100 and 2 runs because of the conditional event
-			Assert.assertEquals(2, workitemProcessed.getItemValueInteger("runs"));
-			Assert.assertEquals(2100, workitemProcessed.getTaskID());
+			assertEquals(2, workitemProcessed.getItemValueInteger("runs"));
+			assertEquals(2100, workitemProcessed.getTaskID());
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		// next test event 20
@@ -147,11 +149,11 @@ public class TestWorkflowKernelComplex_Issue_823 {
 			workItem.event(20);
 			workitemProcessed = workflowEngine.getWorkflowKernel().process(workItem);
 			// We expect 2200 and 3 runs
-			Assert.assertEquals(3, workitemProcessed.getItemValueInteger("runs"));
-			Assert.assertEquals(2200, workitemProcessed.getTaskID());
+			assertEquals(3, workitemProcessed.getItemValueInteger("runs"));
+			assertEquals(2200, workitemProcessed.getTaskID());
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		// Test Escalate we trigger 2200.100 - no status change expected
@@ -159,11 +161,11 @@ public class TestWorkflowKernelComplex_Issue_823 {
 			workItem.event(100);
 			workitemProcessed = workflowEngine.getWorkflowKernel().process(workItem);
 			// We expect 2200 and 4 runs
-			Assert.assertEquals(4, workitemProcessed.getItemValueInteger("runs"));
-			Assert.assertEquals(2200, workitemProcessed.getTaskID());
+			assertEquals(4, workitemProcessed.getItemValueInteger("runs"));
+			assertEquals(2200, workitemProcessed.getTaskID());
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 		// Finally we trigger 2200.20 that should lead again to 2100 next test event 20
@@ -171,11 +173,11 @@ public class TestWorkflowKernelComplex_Issue_823 {
 			workItem.event(20);
 			workitemProcessed = workflowEngine.getWorkflowKernel().process(workItem);
 			// We expect 2100 and 6 runs because of the condition
-			Assert.assertEquals(6, workitemProcessed.getItemValueInteger("runs"));
-			Assert.assertEquals(2100, workitemProcessed.getTaskID());
+			assertEquals(6, workitemProcessed.getItemValueInteger("runs"));
+			assertEquals(2100, workitemProcessed.getTaskID());
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 	}

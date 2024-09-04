@@ -1,5 +1,11 @@
 package org.imixs.workflow.plugins;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Level;
@@ -16,7 +22,6 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -75,9 +80,9 @@ public class TestResultPlugin {
         event.replaceItemValue("txtActivityResult", sResult);
         // run plugin
         workitem = resultPlugin.run(workitem, event);
-        Assert.assertNotNull(workitem);
+        assertNotNull(workitem);
 
-        Assert.assertEquals("Manfred", workitem.getItemValueString("txtName"));
+        assertEquals("Manfred", workitem.getItemValueString("txtName"));
 
         // test with ' instead of "
         sResult = "<item name='txtName'>Manfred</item>";
@@ -85,9 +90,9 @@ public class TestResultPlugin {
         event.replaceItemValue("txtActivityResult", sResult);
         // run plugin
         workitem = resultPlugin.run(workitem, event);
-        Assert.assertNotNull(workitem);
+        assertNotNull(workitem);
 
-        Assert.assertEquals("Manfred", workitem.getItemValueString("txtName"));
+        assertEquals("Manfred", workitem.getItemValueString("txtName"));
     }
 
     @Test
@@ -104,9 +109,9 @@ public class TestResultPlugin {
 
         // run plugin
         workitem = resultPlugin.run(workitem, event);
-        Assert.assertNotNull(workitem);
+        assertNotNull(workitem);
 
-        Assert.assertTrue(workitem.getItemValueBoolean("txtName"));
+        assertTrue(workitem.getItemValueBoolean("txtName"));
 
     }
 
@@ -123,9 +128,9 @@ public class TestResultPlugin {
 
         // run plugin
         workitem = resultPlugin.run(workitem, event);
-        Assert.assertNotNull(workitem);
+        assertNotNull(workitem);
 
-        Assert.assertEquals(47, workitem.getItemValueInteger("numValue"));
+        assertEquals(47, workitem.getItemValueInteger("numValue"));
 
     }
 
@@ -142,17 +147,17 @@ public class TestResultPlugin {
 
         // run plugin
         workitem = resultPlugin.run(workitem, event);
-        Assert.assertNotNull(workitem);
+        assertNotNull(workitem);
 
         Date dateTest = workitem.getItemValueDate("datvalue");
-        Assert.assertNotNull(dateTest);
+        assertNotNull(dateTest);
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(dateTest);
 
-        Assert.assertEquals(2017, cal.get(Calendar.YEAR));
-        Assert.assertEquals(11, cal.get(Calendar.MONTH));
-        Assert.assertEquals(31, cal.get(Calendar.DAY_OF_MONTH));
+        assertEquals(2017, cal.get(Calendar.YEAR));
+        assertEquals(11, cal.get(Calendar.MONTH));
+        assertEquals(31, cal.get(Calendar.DAY_OF_MONTH));
 
         System.out.println(dateTest + "");
     }
@@ -170,10 +175,10 @@ public class TestResultPlugin {
 
         // run plugin
         workitem = resultPlugin.run(workitem, event);
-        Assert.assertNotNull(workitem);
+        assertNotNull(workitem);
 
         Date dateTest = workitem.getItemValueDate("datvalue");
-        Assert.assertNull(dateTest);
+        assertNull(dateTest);
 
     }
 
@@ -192,10 +197,10 @@ public class TestResultPlugin {
         event.replaceItemValue("txtActivityResult", sResult);
         // run plugin
         workitem = resultPlugin.run(workitem, event);
-        Assert.assertNotNull(workitem);
+        assertNotNull(workitem);
 
         Date datResult = workitem.getItemValueDate("datvalue");
-        Assert.assertNotNull(datResult);
+        assertNotNull(datResult);
 
         Calendar calResult = Calendar.getInstance();
         calResult.setTime(datResult);
@@ -203,9 +208,9 @@ public class TestResultPlugin {
         Calendar calTest = Calendar.getInstance();
         calResult.setTime(datTest);
 
-        Assert.assertEquals(calTest.get(Calendar.YEAR), calResult.get(Calendar.YEAR));
-        Assert.assertEquals(calTest.get(Calendar.MONTH), calResult.get(Calendar.MONTH));
-        Assert.assertEquals(calTest.get(Calendar.DAY_OF_MONTH), calResult.get(Calendar.DAY_OF_MONTH));
+        assertEquals(calTest.get(Calendar.YEAR), calResult.get(Calendar.YEAR));
+        assertEquals(calTest.get(Calendar.MONTH), calResult.get(Calendar.MONTH));
+        assertEquals(calTest.get(Calendar.DAY_OF_MONTH), calResult.get(Calendar.DAY_OF_MONTH));
 
     }
 
@@ -229,11 +234,11 @@ public class TestResultPlugin {
         // run plugin
         try {
             workitem = resultPlugin.run(workitem, event);
-            Assert.assertEquals("workitemdeleted", workitem.getType());
+            assertEquals("workitemdeleted", workitem.getType());
         } catch (PluginException e) {
-            Assert.fail();
+            fail();
         }
-        Assert.assertNotNull(workitem);
+        assertNotNull(workitem);
 
     }
 
@@ -260,7 +265,7 @@ public class TestResultPlugin {
             // run plugin
             workitem = resultPlugin.run(workitem, event);
 
-            Assert.fail();
+            fail();
 
         } catch (PluginException e) {
             logger.info(e.getMessage());
@@ -275,7 +280,7 @@ public class TestResultPlugin {
         try {
             // run plugin
             workitem = resultPlugin.run(workitem, event);
-            Assert.fail();
+            fail();
 
         } catch (PluginException e) {
             logger.info(e.getMessage());
@@ -306,21 +311,21 @@ public class TestResultPlugin {
         // case 1 - no type attribute
         workitem.setEventID(10);
         workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
-        Assert.assertEquals(100, workitem.getTaskID());
-        Assert.assertEquals(WorkflowService.DEFAULT_TYPE, workitem.getType());
+        assertEquals(100, workitem.getTaskID());
+        assertEquals(WorkflowService.DEFAULT_TYPE, workitem.getType());
 
         // case 2 - workitem
         workitem.setEventID(20);
         workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
-        Assert.assertEquals(200, workitem.getTaskID());
-        Assert.assertEquals("workitemdeleted", workitem.getType());
+        assertEquals(200, workitem.getTaskID());
+        assertEquals("workitemdeleted", workitem.getType());
 
         // case 3 - workitemdeleted
         workitem.setEventID(30);
         workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
-        Assert.assertEquals(200, workitem.getTaskID());
-        Assert.assertEquals("workitemdeleted", workitem.getType());
-        Assert.assertEquals("deleted", workitem.getItemValueString("subtype"));
+        assertEquals(200, workitem.getTaskID());
+        assertEquals("workitemdeleted", workitem.getType());
+        assertEquals("deleted", workitem.getItemValueString("subtype"));
 
     }
 
@@ -344,9 +349,9 @@ public class TestResultPlugin {
 
         // run plugin
         workitem = resultPlugin.run(workitem, event);
-        Assert.assertNotNull(workitem);
+        assertNotNull(workitem);
 
-        Assert.assertEquals("workitemdeleted", workitem.getItemValueString("subType"));
+        assertEquals("workitemdeleted", workitem.getItemValueString("subType"));
 
     }
 
@@ -373,10 +378,10 @@ public class TestResultPlugin {
         event.replaceItemValue("txtActivityResult", sResult);
         // run plugin
         workitem = resultPlugin.run(workitem, event);
-        Assert.assertNotNull(workitem);
+        assertNotNull(workitem);
 
         // item should be empty
-        Assert.assertEquals("", workitem.getItemValueString("txtName"));
+        assertEquals("", workitem.getItemValueString("txtName"));
 
     }
 
@@ -405,10 +410,10 @@ public class TestResultPlugin {
         event.replaceItemValue("txtActivityResult", sResult);
         // run plugin
         workitem = resultPlugin.run(workitem, event);
-        Assert.assertNotNull(workitem);
+        assertNotNull(workitem);
 
         // item should be empty
-        Assert.assertEquals("some data", workitem.getItemValueString("txtName"));
+        assertEquals("some data", workitem.getItemValueString("txtName"));
 
     }
 
@@ -433,9 +438,9 @@ public class TestResultPlugin {
         workitem = resultPlugin.run(workitem, event);
 
         workitem = workflowEnvironment.getWorkflowService().evalWorkflowResult(event, "item", workitem);
-        Assert.assertNotNull(workitem);
-        Assert.assertTrue(workitem.hasItem("count"));
-        Assert.assertEquals(55.332, workitem.getItemValueDouble("count"), 0);
+        assertNotNull(workitem);
+        assertTrue(workitem.hasItem("count"));
+        assertEquals(55.332, workitem.getItemValueDouble("count"), 0);
 
     }
 }

@@ -1,5 +1,8 @@
 package org.imixs.workflow.plugins;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -10,7 +13,6 @@ import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.engine.plugins.ApproverPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -75,10 +77,10 @@ public class TestApproverPlugin {
 		// test with ronny
 		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("ronny");
 		workitem = approverPlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 
@@ -119,23 +121,23 @@ public class TestApproverPlugin {
 		// test with ronny
 		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("ronny");
 		workitem = approverPlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
 		// we expect that the null and empty values are removed and the name anna is
 		// distinct.
 
 		List<String> approvers = workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS);
-		Assert.assertEquals(4, approvers.size());
-		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(4, approvers.size());
+		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
-		Assert.assertTrue(approvers.contains("anna"));
-		Assert.assertTrue(approvers.contains("manfred"));
-		Assert.assertTrue(approvers.contains("eddy"));
-		Assert.assertTrue(approvers.contains("ronny"));
+		assertTrue(approvers.contains("anna"));
+		assertTrue(approvers.contains("manfred"));
+		assertTrue(approvers.contains("eddy"));
+		assertTrue(approvers.contains("ronny"));
 
 		// test sortorder
-		Assert.assertTrue(approvers.indexOf("anna") == 0);
-		Assert.assertTrue(approvers.indexOf("ronny") == 3);
+		assertTrue(approvers.indexOf("anna") == 0);
+		assertTrue(approvers.indexOf("ronny") == 3);
 
 	}
 
@@ -164,10 +166,10 @@ public class TestApproverPlugin {
 		// test with manfred
 		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 
@@ -195,10 +197,10 @@ public class TestApproverPlugin {
 		// test with manfred
 		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// second run - change soruce list
 
@@ -212,11 +214,11 @@ public class TestApproverPlugin {
 		// test with manfred
 		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertEquals(4, workitem.getItemValue("ProcessManager").size());
-		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(4, workitem.getItemValue("ProcessManager").size());
+		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 
@@ -244,10 +246,10 @@ public class TestApproverPlugin {
 		// test with manfred
 		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// second run - change soruce list
 
@@ -260,11 +262,11 @@ public class TestApproverPlugin {
 		// test with manfred
 		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
 		// list should not be changed!
-		Assert.assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 
@@ -290,40 +292,40 @@ public class TestApproverPlugin {
 		// test with manfred
 		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
-		Assert.assertNotNull(workitem);
+		assertNotNull(workitem);
 
-		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// second run - Anna
 		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("anna");
 		workitem = approverPlugin.run(workitem, event);
-		Assert.assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 3rd run - eddy
 		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("eddy");
 		workitem = approverPlugin.run(workitem, event);
-		Assert.assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 4th run - manfred
 		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem = approverPlugin.run(workitem, event);
-		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 5th run - Anna (no effect)
 		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("anna");
 		workitem = approverPlugin.run(workitem, event);
-		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// 6th run - ronny (no effect)
 		when(workflowEnvironment.getWorkflowService().getUserName()).thenReturn("ronny");
 		workitem = approverPlugin.run(workitem, event);
-		Assert.assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
-		Assert.assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
+		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
+		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 	}
 

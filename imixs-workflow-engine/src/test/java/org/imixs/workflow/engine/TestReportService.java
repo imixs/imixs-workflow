@@ -1,5 +1,9 @@
 package org.imixs.workflow.engine;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Logger;
@@ -8,9 +12,7 @@ import javax.xml.transform.TransformerException;
 
 import org.imixs.workflow.plugins.TestMailPlugin;
 import org.imixs.workflow.xml.XSLHandler;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for ReportService
@@ -29,12 +31,12 @@ public class TestReportService {
 	@Test
 	public void testFormatNumber() {
 		ReportService reportService = new ReportService();
-		Assert.assertEquals("123,456.789", reportService.customNumberFormat("###,###.###", "en_UK", 123456.789));
-		Assert.assertEquals("123,456.789", reportService.customNumberFormat("###,###.###", "en_US", 123456.789));
-		Assert.assertEquals("123,456.79", reportService.customNumberFormat("###,##0.00", "en_US", 123456.789));
-		Assert.assertEquals("1.456,78", reportService.customNumberFormat("#,###,##0.00", "de_DE", 1456.781));
-		Assert.assertEquals("1.456,78 €", reportService.customNumberFormat("#,###,##0.00 €", "de_DE", 1456.781));
-		Assert.assertEquals("EUR 1.456,78", reportService.customNumberFormat("EUR #,###,##0.00", "de_DE", 1456.781));
+		assertEquals("123,456.789", reportService.customNumberFormat("###,###.###", "en_UK", 123456.789));
+		assertEquals("123,456.789", reportService.customNumberFormat("###,###.###", "en_US", 123456.789));
+		assertEquals("123,456.79", reportService.customNumberFormat("###,##0.00", "en_US", 123456.789));
+		assertEquals("1.456,78", reportService.customNumberFormat("#,###,##0.00", "de_DE", 1456.781));
+		assertEquals("1.456,78 €", reportService.customNumberFormat("#,###,##0.00 €", "de_DE", 1456.781));
+		assertEquals("EUR 1.456,78", reportService.customNumberFormat("EUR #,###,##0.00", "de_DE", 1456.781));
 	}
 
 	/**
@@ -47,7 +49,7 @@ public class TestReportService {
 	 * 
 	 */
 	@Test
-	@Ignore
+	// @Ignore
 	public void testSecureProcessing() {
 		logger.info("[TestMailPlugin] getBody...");
 
@@ -89,11 +91,11 @@ public class TestReportService {
 			XSLHandler.transform(xmlDoc, xsl, "UTF-8", outputStream);
 			String outputContent = outputStream.toString("UTF-8");
 			logger.info("result=" + outputContent);
-			Assert.assertTrue(outputContent.contains("<h2>Anna</h2>"));
+			assertTrue(outputContent.contains("<h2>Anna</h2>"));
 
 		} catch (UnsupportedEncodingException | TransformerException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 
 	}

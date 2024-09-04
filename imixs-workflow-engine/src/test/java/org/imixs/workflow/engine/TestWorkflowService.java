@@ -2,6 +2,7 @@ package org.imixs.workflow.engine;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.plugins.TestApplicationPlugin;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -38,8 +38,8 @@ public class TestWorkflowService {
 			.getLogger(TestApplicationPlugin.class.getName());
 
 	protected ApplicationPlugin applicationPlugin = null;
-	protected ItemCollection documentContext;
-	protected ItemCollection documentActivity, documentProcess;
+	protected ItemCollection workitem;
+	protected ItemCollection event, documentProcess;
 	protected WorkflowMockEnvironment workflowEnvironment;
 
 	@BeforeEach
@@ -91,7 +91,7 @@ public class TestWorkflowService {
 
 		workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
 
-		Assert.assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
+		assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
 		assertEquals("1.0.0", workitem.getItemValueString("$ModelVersion"));
 		assertEquals(10, workitem.getItemValueInteger("$lastEvent"));
 		assertEquals(0, workitem.getEventID());
@@ -112,10 +112,10 @@ public class TestWorkflowService {
 			eventList = workflowEnvironment.workflowService.getEvents(workitem);
 		} catch (ModelException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 		// only one event is public!
-		Assert.assertEquals(1, eventList.size());
+		assertEquals(1, eventList.size());
 	}
 
 	/**
@@ -143,9 +143,9 @@ public class TestWorkflowService {
 			eventList = workflowEnvironment.workflowService.getEvents(workitem);
 		} catch (ModelException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
-		Assert.assertEquals(3, eventList.size());
+		assertEquals(3, eventList.size());
 	}
 
 	/**
@@ -171,9 +171,9 @@ public class TestWorkflowService {
 			eventList = workflowEnvironment.workflowService.getEvents(workitem);
 		} catch (ModelException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
-		Assert.assertEquals(2, eventList.size());
+		assertEquals(2, eventList.size());
 	}
 
 	/**
@@ -212,8 +212,8 @@ public class TestWorkflowService {
 			eventList = workflowEnvironment.workflowService.getEvents(workitem);
 		} catch (ModelException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
-		Assert.assertEquals(2, eventList.size());
+		assertEquals(2, eventList.size());
 	}
 }

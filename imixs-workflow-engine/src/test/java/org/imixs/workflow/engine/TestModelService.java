@@ -1,11 +1,15 @@
 package org.imixs.workflow.engine;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,14 +59,14 @@ public class TestModelService {
 	@Test
 	public void testGetDataObject() throws ModelException {
 		workitem.event(20);
-		ItemCollection event = this.workflowEngine.getModelService().loadEvent(workitem);
+		ItemCollection event = this.workflowEngine.getModelService().getModelManager().loadEvent(workitem);
 
-		Assert.assertNotNull(event);
+		assertNotNull(event);
 
-		String data = workflowEngine.getModelService().getDataObject(event, "MyObject");
+		String data = workflowEngine.getModelService().getModelManager().findDataObject(event, "MyObject");
 
-		Assert.assertNotNull(data);
-		Assert.assertEquals("My data", data);
+		assertNotNull(data);
+		assertEquals("My data", data);
 
 	}
 
@@ -83,11 +87,11 @@ public class TestModelService {
 		try {
 			amodel = workflowEngine.getModelService().getModelByWorkitem(workitem);
 		} catch (ModelException e) {
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
-		Assert.assertNotNull(amodel);
-		Assert.assertEquals("1.0.0", BPMNUtil.getVersion(amodel));
+		assertNotNull(amodel);
+		assertEquals("1.0.0", BPMNUtil.getVersion(amodel));
 	}
 
 	/**
@@ -110,10 +114,10 @@ public class TestModelService {
 
 		} catch (ModelException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
-		Assert.assertNotNull(amodel);
-		Assert.assertEquals("1.0.0", BPMNUtil.getVersion(amodel));
+		assertNotNull(amodel);
+		assertEquals("1.0.0", BPMNUtil.getVersion(amodel));
 
 	}
 
@@ -131,11 +135,11 @@ public class TestModelService {
 		BPMNModel amodel = null;
 		try {
 			amodel = workflowEngine.getModelService().getModelByWorkitem(workitem);
-			Assert.fail();
+			fail();
 		} catch (ModelException e) {
 			// expected
 		}
-		Assert.assertNull(amodel);
+		assertNull(amodel);
 	}
 
 }

@@ -1,5 +1,9 @@
 package org.imixs.workflow.kernel;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -7,9 +11,8 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for testing the eval method of the workflow kernel
@@ -23,7 +26,7 @@ public class TestWorkflowKernelEval {
 
 	private MockWorkflowEngine workflowEngine;
 
-	@Before
+	@BeforeEach
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
 		// load default model
@@ -39,14 +42,14 @@ public class TestWorkflowKernelEval {
 		workitem.setItemValue("b", "DE");
 		try {
 			ItemCollection targetTask = workflowEngine.getWorkflowKernel().eval(workitem);
-			Assert.assertNotNull(targetTask);
-			Assert.assertEquals("Match", targetTask.getItemValueString("name"));
+			assertNotNull(targetTask);
+			assertEquals("Match", targetTask.getItemValueString("name"));
 			logger.log(Level.INFO, "evaluate BPMN Target Task in {0}ms", System.currentTimeMillis() - l);
 			// We also expect that the workitem taskID has not changed!
-			Assert.assertEquals(100, workitem.getTaskID());
+			assertEquals(100, workitem.getTaskID());
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 	}
 
@@ -60,14 +63,14 @@ public class TestWorkflowKernelEval {
 
 		try {
 			ItemCollection targetTask = workflowEngine.getWorkflowKernel().eval(workitem);
-			Assert.assertNotNull(targetTask);
-			Assert.assertEquals("No Match", targetTask.getItemValueString("name"));
+			assertNotNull(targetTask);
+			assertEquals("No Match", targetTask.getItemValueString("name"));
 			logger.log(Level.INFO, "evaluate BPMN-Rule in {0}ms", System.currentTimeMillis() - l);
 			// We also expect that the workitem taskID has not changed!
-			Assert.assertEquals(100, workitem.getTaskID());
+			assertEquals(100, workitem.getTaskID());
 		} catch (ModelException | PluginException e) {
 			e.printStackTrace();
-			Assert.fail();
+			fail();
 		}
 	}
 
