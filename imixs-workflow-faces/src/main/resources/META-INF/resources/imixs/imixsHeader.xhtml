@@ -1,85 +1,53 @@
-<ui:composition xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-        xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-	xmlns:cc="http://xmlns.jcp.org/jsf/composite">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:cc="http://xmlns.jcp.org/jsf/composite">
 
-<!-- INTERFACE -->
-<cc:interface>
+	<!-- INTERFACE -->
+	<cc:interface>
+		<cc:attribute name="disablecss" default="false" type="java.lang.Boolean"></cc:attribute>
+		<cc:attribute name="disablejquery" default="false" type="java.lang.Boolean"></cc:attribute>
+		<cc:attribute name="disablefileupload" default="false" type="java.lang.Boolean"></cc:attribute>
+		<cc:attribute name="dateformat" default="yyyy-MM-dd" type="java.lang.String"></cc:attribute>
+		<cc:attribute name="build" default="" type="java.lang.String"></cc:attribute>
+		<cc:attribute name="theme" default="/imixs/jquery/themes/imixs/jquery-ui.min.css" />
+	</cc:interface>
 
-	<cc:attribute name="disablecss" default="false"
-		type="java.lang.Boolean"></cc:attribute>
+	<!-- IMPLEMENTATION -->
+	<cc:implementation>
+		<c:if test="#{!cc.attrs.disablejquery}">
+			<script type="text/javascript" src="/imixs/jquery/jquery-3.5.1.min.js"></script>
+		</c:if>
 
-	<cc:attribute name="disablejquery" default="false"
-		type="java.lang.Boolean"></cc:attribute>
+		<!-- Theme: #{cc.attrs.theme} disabled:#{cc.attrs.disablecss} -->
+		<c:if test="#{!cc.attrs.disablecss}">
+			<link type="text/css" href="#{cc.attrs.theme}" rel="stylesheet" />
+			<script type="text/javascript" src="/imixs/jquery/themes/imixs/jquery-ui.min.js"></script>
+		</c:if>
 
-	<cc:attribute name="disablefileupload" default="false"
-		type="java.lang.Boolean"></cc:attribute>
+		<!-- Disable jquery fileupload plugin -->
+		<c:if test="#{!cc.attrs.disablefileupload}">
+			<script type="text/javascript" src="/imixs/jquery/jquery.iframe-transport.js"></script>
+			<script type="text/javascript" src="/imixs/jquery/jquery.fileupload.js"></script>
+		</c:if>
 
-	<cc:attribute name="dateformat" default="yyyy-MM-dd"
-		type="java.lang.String"></cc:attribute>
-		
-	<cc:attribute name="build" default=""
-		type="java.lang.String"></cc:attribute>
+		<script type="text/javascript" src="/imixs/imixs-faces.js?build=#{cc.attrs.build}"></script>
 
-	<cc:attribute name="theme"
-		default="#{facesContext.externalContext.requestContextPath}/imixs/jquery/themes/imixs/jquery-ui.min.css" />
+		<!--  Init script -->
+		<script type="text/javascript">
+			/*<![CDATA[*/
 
-</cc:interface>
-
-<!-- IMPLEMENTATION -->
-<cc:implementation>
-	<c:if test="#{!cc.attrs.disablejquery}">
-		<script type="text/javascript"
-			src="#{facesContext.externalContext.requestContextPath}/imixs/jquery/jquery-3.5.1.min.js"></script>
-	</c:if>
-
-	<!-- Theme: #{cc.attrs.theme} disabled:#{cc.attrs.disablecss} -->
-	<c:if test="#{!cc.attrs.disablecss}">
-		<link type="text/css" href="#{cc.attrs.theme}" rel="stylesheet" />
-		<script type="text/javascript"
-			src="#{facesContext.externalContext.requestContextPath}/imixs/jquery/themes/imixs/jquery-ui.min.js"></script>
-	</c:if>
-
-	<!-- Disable jquery fileupload plugin -->
-	<c:if test="#{!cc.attrs.disablefileupload}">
-		<script type="text/javascript"
-			src="#{facesContext.externalContext.requestContextPath}/imixs/jquery/jquery.iframe-transport.js"></script>
-		<script type="text/javascript"
-			src="#{facesContext.externalContext.requestContextPath}/imixs/jquery/jquery.fileupload.js"></script>
-	</c:if>
-
-
-	<script type="text/javascript"
-		src="#{facesContext.externalContext.requestContextPath}/imixs/imixs-faces.js?build=#{cc.attrs.build}"></script>
-
-	<!--  Init script -->
-	<script type="text/javascript">
-		/*<![CDATA[*/
-		           
-		var disablecss=#{cc.attrs.disablecss};
-
-		$(document)
+			var disablecss =#{ cc.attrs.disablecss };
+			$(document)
 				.ready(
-						function() {
-							
-							if (!disablecss) {
-								setDateFormat('#{cc.attrs.dateformat}');
-								$(this).imixsInitFileUpload();
-								$(this).imixsLayout();
-	
-								$("span.imixs-tooltip").layoutImixsTooltip();
-	
-							}
-						});
+					function () {
+						if (!disablecss) {
+							setDateFormat('#{cc.attrs.dateformat}');
+							$(this).imixsInitFileUpload();
+							$(this).imixsLayout();
+							$("span.imixs-tooltip").layoutImixsTooltip();
+						}
+					});
 
-		/*]]>*/
-	</script>
-
-
-</cc:implementation>
-
-
-
+			/*]]>*/
+		</script>
+	</cc:implementation>
 </ui:composition>
-
-
