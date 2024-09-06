@@ -94,7 +94,7 @@ public class ResultPlugin extends AbstractPlugin {
      * @return
      */
     public boolean isValidItemName(String itemName) {
-        // only if name starts with $ we need to check the SPPORTED_KERNEL_ITEMS
+        // only if name starts with $ we need to check the SUPPORTED_KERNEL_ITEMS
         if (itemName.startsWith("$")) {
             if (!SPPORTED_KERNEL_ITEMS.contains(itemName.toLowerCase())) {
                 return false;

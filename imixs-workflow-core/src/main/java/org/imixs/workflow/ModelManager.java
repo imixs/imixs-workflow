@@ -575,6 +575,60 @@ public class ModelManager {
     }
 
     /**
+     * Returns a list of all Tasks of a given Process Group
+     * <p>
+     * In case of a collaboration diagram only Pool names are compared. The default
+     * process (Public Process) will be ignored.
+     * 
+     * @param model        - the BPMN model
+     * @param processGroup - the name of the process group to match
+     * @return list of all Task entities or null if not process with the given
+     *         name was found.
+     * @throws BPMNModelException
+     */
+    public List<ItemCollection> findTasks(final BPMNModel model, String processGroup) throws ModelException {
+        List<ItemCollection> result = new ArrayList<>();
+        BPMNProcess process = null;
+
+        if (model == null) {
+            throw new ModelException(ModelException.INVALID_MODEL,
+                    "model is null!");
+        }
+        if (processGroup == null || processGroup.isEmpty()) {
+            logger.warning("findEndTasks processGroup is empty!");
+            return result;
+        }
+
+        // find Process containing matching the process group
+        if (model.isCollaborationDiagram()) {
+            Set<Participant> poolList = model.getParticipants();
+            for (Participant pool : poolList) {
+                process = pool.openProcess();
+                if (processGroup.equals(process.getName())) {
+                    break;
+                }
+            }
+        } else {
+            process = model.openDefaultProces();
+            if (!processGroup.equals(process.getName())) {
+                // no match!
+                process = null;
+            }
+        }
+
+        // test Imixs tasks....
+        Set<Activity> activities = process.getActivities();
+        for (Activity activity : activities) {
+            if (BPMNUtil.isImixsTaskElement(activity)) {
+                result.add(BPMNEntityBuilder.build(activity));
+            }
+        }
+        // sort result by taskID
+        Collections.sort(result, new ItemCollectionComparator(BPMNUtil.TASK_ITEM_TASKID, true));
+        return result;
+    }
+
+    /**
      * Returns a list of start Tasks of a given Process Group
      * <p>
      * In case of a collaboration diagram only Pool names are compared. The default
