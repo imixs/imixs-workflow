@@ -29,23 +29,18 @@
 package org.imixs.workflow.faces.data;
 
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jakarta.enterprise.context.Conversation;
-import jakarta.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentService;
 
-import jakarta.faces.application.FacesMessage;
+import jakarta.enterprise.context.Conversation;
 import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.logging.Level;
 
 /**
  * This is the abstract base class for the CDI beans DocumentController and
@@ -136,32 +131,6 @@ public abstract class AbstractDataController implements Serializable {
         Date created = data.getItemValueDate("$created");
         Date modified = data.getItemValueDate("$modified");
         return (modified == null || created == null);
-    }
-
-    /**
-     * This method can be used to add a Error Messege to the Application Context
-     * during an actionListener Call. Typical this method is used in the
-     * doProcessWrktiem method to display a processing exception to the user. The
-     * method expects the Ressoruce bundle name and the message key inside the
-     * bundle.
-     * 
-     * @param ressourceBundleName
-     * @param messageKey
-     * @param param
-     */
-    public void addMessage(String ressourceBundleName, String messageKey, Object param) {
-        FacesContext context = FacesContext.getCurrentInstance();
-        Locale locale = context.getViewRoot().getLocale();
-
-        ResourceBundle rb = ResourceBundle.getBundle(ressourceBundleName, locale);
-        String msgPattern = rb.getString(messageKey);
-        String msg = msgPattern;
-        if (param != null) {
-            Object[] params = { param };
-            msg = MessageFormat.format(msgPattern, params);
-        }
-        FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);
-        context.addMessage(null, facesMsg);
     }
 
     /**

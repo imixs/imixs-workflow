@@ -422,12 +422,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
      * method evaluates the events for the current $modelversion and $taskid. The
      * result list is filtered by the properties 'keypublicresult' and
      * 'keyRestrictedVisibility'.
-     * 
+     * <p>
      * If the property keyRestrictedVisibility exits the method test if the current
      * username is listed in one of the namefields.
-     * 
+     * <p>
      * If the current user is in the role 'org.imixs.ACCESSLEVEL.MANAGERACCESS' the
      * property keyRestrictedVisibility will be ignored.
+     * <p>
+     * If the model version does not exist the model is resolved by regular
+     * expressions using the method findModelByWorkitem
      * 
      * @see imixs-bpmn
      * @param workitem
@@ -437,9 +440,17 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
     @SuppressWarnings("unchecked")
     public List<ItemCollection> getEvents(ItemCollection workitem) throws ModelException {
         List<ItemCollection> result = new ArrayList<ItemCollection>();
+        if (workitem == null) {
+            return result;
+        }
+        // resolve model.....
+        BPMNModel model = modelService.getModelManager().findModelByWorkitem(workitem);
+        if (model == null) {
+            throw new ModelException(
+                    ModelException.INVALID_MODEL, "Model '" + workitem.getModelVersion() + "' not found!");
+        }
+
         int processID = workitem.getTaskID();
-        // verify if version is valid
-        BPMNModel model = modelService.getModelManager().getModel(workitem.getModelVersion());
         List<ItemCollection> eventList = modelService.getModelManager().findEventsByTask(model, processID);
 
         String username = getUserName();

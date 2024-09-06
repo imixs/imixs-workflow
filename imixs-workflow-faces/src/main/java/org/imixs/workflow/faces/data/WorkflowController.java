@@ -422,32 +422,33 @@ public class WorkflowController extends AbstractDataController implements Serial
 
     /**
      * This method returns a List of workflow events assigned to the corresponding
-     * '$taskid' and '$modelversion' of the current WorkItem.
+     * '$taskId' and '$modelVersion' of the current WorkItem.
      * <p>
      * The method uses a caching mechanism to load the event list only once
      * 
      * @return
+     * @throws ModelException
      */
-    public List<ItemCollection> getEvents() {
+    public List<ItemCollection> getEvents() throws ModelException {
 
         // use cache?
         if (activities == null) {
             // no - lookup activities....
             activities = new ArrayList<ItemCollection>();
-
             if (getWorkitem() == null || (getWorkitem().getModelVersion().isEmpty()
                     && getWorkitem().getItemValueString(WorkflowKernel.WORKFLOWGROUP).isEmpty())) {
                 return activities;
             }
-
             // get Events form workflowService
             try {
                 activities = workflowService.getEvents(getWorkitem());
             } catch (ModelException e) {
-                logger.log(Level.WARNING, "Unable to get workflow event list: {0}", e.getMessage());
+                logger.log(Level.WARNING, "Unable to resolve workflow event list: {0}",
+                        e.getMessage());
+                throw new InvalidAccessException(ModelException.INVALID_MODEL,
+                        e.getMessage());
             }
         }
-
         return activities;
     }
 

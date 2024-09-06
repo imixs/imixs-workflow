@@ -1103,10 +1103,12 @@ public class ItemCollection implements Cloneable {
     /**
      * This method adds a single file to the ItemCollection. files will be stored
      * into the property $file.
+     * <p>
+     * Method is deprecated. Use addFileData instead!
      * 
      * @param data        - byte array with file data
      * @param fileName    - name of the file attachment
-     * @param contentType - the contenttype (e.g. 'Text/HTML')
+     * @param contentType - the content type (e.g. 'Text/HTML')
      * 
      */
     @SuppressWarnings("unchecked")
