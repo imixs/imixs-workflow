@@ -48,7 +48,7 @@ function getDateTimeInput(ainput) {
 	timeString = $(dateInput).val();
 	if (hourInput.length && minuteInput.length) {
 		timeString = timeString + " " + $(hourInput).val() + ":"
-				+ $(minuteInput).val();
+			+ $(minuteInput).val();
 	} else {
 		timeString = timeString + " 00:00";
 
@@ -96,7 +96,7 @@ function addDatetimePickerMinuteOptions(input) {
 			else
 				sminute = minute;
 			$(input).append(
-					'<option value=' + sminute + '>' + sminute + '</option>');
+				'<option value=' + sminute + '>' + sminute + '</option>');
 			minute = minute + interval;
 		}
 
@@ -104,11 +104,11 @@ function addDatetimePickerMinuteOptions(input) {
 }
 
 /* This method styles input elements an imixs page elements */
-$.fn.imixsLayout = function(options) {
-	return this.each(function() {
+$.fn.imixsLayout = function (options) {
+	return this.each(function () {
 
 		$('input:submit,input:reset,input:button,button,.button', this).button();
-		
+
 		// disable default layout for input
 		// $('input,select,textarea', this).addClass('ui-state-default');
 
@@ -120,32 +120,32 @@ $.fn.imixsLayout = function(options) {
 
 		// regional : 'de'
 		$(".imixs-date", this).datepicker({
-			showOtherMonths : true,
-			selectOtherMonths : true,
-			dateFormat : dateDisplayFormat
+			showOtherMonths: true,
+			selectOtherMonths: true,
+			dateFormat: dateDisplayFormat
 		});
 
 		// initialize datetime picker widget
 		$(".imixs-datetime-picker").each(
-				function(index) {
-					// add minute options
-					addDatetimePickerMinuteOptions($(this).children(
-							'.imixs-time-minute'));
-					// set current date value
-					setDateTimeInput($(this));
-					// on change events
-					$(this).children('.imixs-date').change(function() {
-						getDateTimeInput($(this));
-					});
-					$(this).children('.imixs-time-hour').change(function() {
-						getDateTimeInput($(this));
-					});
-					$(this).children('.imixs-time-minute').change(function() {
-						getDateTimeInput($(this));
-					});
-
+			function (index) {
+				// add minute options
+				addDatetimePickerMinuteOptions($(this).children(
+					'.imixs-time-minute'));
+				// set current date value
+				setDateTimeInput($(this));
+				// on change events
+				$(this).children('.imixs-date').change(function () {
+					getDateTimeInput($(this));
 				});
-		
+				$(this).children('.imixs-time-hour').change(function () {
+					getDateTimeInput($(this));
+				});
+				$(this).children('.imixs-time-minute').change(function () {
+					getDateTimeInput($(this));
+				});
+
+			});
+
 		$('.imixsFileUpload').imixsLayoutFileUpload();
 
 
@@ -153,18 +153,18 @@ $.fn.imixsLayout = function(options) {
 };
 
 
-$.fn.layoutImixsTable = function(options) {
+$.fn.layoutImixsTable = function (options) {
 	var defaults = {
-		css : 'styleTable'
+		css: 'styleTable'
 	};
 	options = $.extend(defaults, options);
 
-	return this.each(function() {
+	return this.each(function () {
 
 		input = $(this);
 		input.addClass(options.css);
 
-		input.find('tr').on('mouseover mouseout', function(event) {
+		input.find('tr').on('mouseover mouseout', function (event) {
 			if (event.type == 'mouseover') {
 				$(this).children('td').addClass('ui-state-hover');
 
@@ -178,16 +178,16 @@ $.fn.layoutImixsTable = function(options) {
 
 		input.find('td').css('font-weight', 'normal');
 
-		input.find('tr').each(function() {
+		input.find('tr').each(function () {
 			$(this).children('td:not(:first)').addClass('first');
 			$(this).children('th:not(:first)').addClass('first');
 		});
 	});
 };
 
-$.fn.layoutImixsToggelPanel = function(options) {
+$.fn.layoutImixsToggelPanel = function (options) {
 
-	return this.each(function() {
+	return this.each(function () {
 		var togglepanels = $('h1', this);
 		togglepanels.css('cursor', 'pointer');
 
@@ -195,45 +195,45 @@ $.fn.layoutImixsToggelPanel = function(options) {
 		togglepanels.wrapInner(anker);
 
 		togglepanels.removeClass().addClass(
-				'ui-state-default ui-widget-header ui-corner-all');
+			'ui-state-default ui-widget-header ui-corner-all');
 		var toggleIcon = $('<span></span>').addClass(
-				'ui-icon ui-icon-triangle-1-e').css('float', 'left');
+			'ui-icon ui-icon-triangle-1-e').css('float', 'left');
 		toggleIcon.insertBefore('.imixs-toggle-panel-link', this);
 
 		togglepanels.click(
-				function() {
-					$(this).next().toggle();
+			function () {
+				$(this).next().toggle();
 
-					var t1 = $('.ui-icon-triangle-1-s', this);
-					var t2 = $('.ui-icon-triangle-1-e', this);
-					t1.removeClass('ui-icon-triangle-1-s').addClass(
-							'ui-icon-triangle-1-e');
-					t2.removeClass('ui-icon-triangle-1-e').addClass(
-							'ui-icon-triangle-1-s');
+				var t1 = $('.ui-icon-triangle-1-s', this);
+				var t2 = $('.ui-icon-triangle-1-e', this);
+				t1.removeClass('ui-icon-triangle-1-s').addClass(
+					'ui-icon-triangle-1-e');
+				t2.removeClass('ui-icon-triangle-1-e').addClass(
+					'ui-icon-triangle-1-s');
 
-					return false;
-				}).next().hide();
+				return false;
+			}).next().hide();
 
 	});
 };
 
-$.fn.layoutImixsTooltip = function(options) {
+$.fn.layoutImixsTooltip = function (options) {
 
-	return this.each(function() {
+	return this.each(function () {
 		/* Imixs Tooltip support */
 		// tested: flipfit none flipfit is not usefull for long content. better
 		// use flip
 		$(this).prev().tooltip({
-			position : {
-				my : "left top",
-				at : "left+10 bottom",
-				collision : "flip"
+			position: {
+				my: "left top",
+				at: "left+10 bottom",
+				collision: "flip"
 			},
-			show : {
-				duration : 800
+			show: {
+				duration: 800
 			},
-			tooltipClass : "imixs-tooltip-content",
-			content : function() {
+			tooltipClass: "imixs-tooltip-content",
+			content: function () {
 				var tooltip = $(this).next();
 				tooltip.hide();
 				return tooltip.html();
@@ -246,27 +246,27 @@ $.fn.layoutImixsTooltip = function(options) {
 };
 
 
-$.fn.layoutImixsEditor = function(rootContext,_with,_height) {
+$.fn.layoutImixsEditor = function (rootContext, _with, _height) {
 
-	return this.each(function() {
+	return this.each(function () {
 		$(this).tinymce(
-		{
-			// Location of TinyMCE script
-			script_url : rootContext+'/imixs/tinymce/jscripts/tiny_mce/tiny_mce.js',
-			width : _with,
-			height : _height,
-			// General options
-			theme : "advanced",
-			plugins : "inlinepopups,fullscreen",
-			// Theme options
-			theme_advanced_buttons1 : "cut,copy,paste,removeformat,cleanup,|,undo,redo,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,hr,bullist,numlist,",
-			theme_advanced_buttons2 : "formatselect,fontsizeselect,outdent,indent,blockquote,|,link,unlink,image,|,forecolor,backcolor,|,fullscreen,code",
-			theme_advanced_toolbar_location : "top",
-			theme_advanced_toolbar_align : "left",
-			theme_advanced_statusbar_location : "bottom",
-			theme_advanced_resizing : true,
-			content_css : rootContext+"/imixs/tinymce/content.css"
-		})
+			{
+				// Location of TinyMCE script
+				script_url: rootContext + '/imixs/tinymce/jscripts/tiny_mce/tiny_mce.js',
+				width: _with,
+				height: _height,
+				// General options
+				theme: "advanced",
+				plugins: "inlinepopups,fullscreen",
+				// Theme options
+				theme_advanced_buttons1: "cut,copy,paste,removeformat,cleanup,|,undo,redo,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,hr,bullist,numlist,",
+				theme_advanced_buttons2: "formatselect,fontsizeselect,outdent,indent,blockquote,|,link,unlink,image,|,forecolor,backcolor,|,fullscreen,code",
+				theme_advanced_toolbar_location: "top",
+				theme_advanced_toolbar_align: "left",
+				theme_advanced_statusbar_location: "bottom",
+				theme_advanced_resizing: true,
+				content_css: rootContext + "/imixs/tinymce/content.css"
+			})
 	});
 };
 
@@ -276,71 +276,73 @@ $.fn.layoutImixsEditor = function(rootContext,_with,_height) {
 /** jquery fileupload methods **/
 
 /* This method initializes the imixs fileupload component */
-$.fn.imixsInitFileUpload = function(options) {
-	return this.each(function() {
-		$('body').on('click', '.imixsFileUpload_button', function() { 
-		    $('.imixsFileUpload_input').trigger('click');   
-		    return false;
-		});			
-		
+$.fn.imixsInitFileUpload = function (options) {
+	return this.each(function () {
+		$('body').on('click', '.imixsFileUpload_button', function () {
+			$('.imixsFileUpload_input').trigger('click');
+			return false;
+		});
+
 		// draganddrop fileupload
-		 $('.imixsFileUpload_input').fileupload({
-		        dataType: 'json',
-		        done: function (e, data) {
-		        	refreshFileList(data.result.files);
-		        	$('.imixsFileUpload_button').blur();
-		        },		
-		        fail: function (e, data) {
-		            alert("The file cannot be added because the maximum file size was exceeded.");
-		        },
-		        progressall: function (e, data) {
-		            var progress = parseInt(data.loaded / data.total * 100, 10);
-		            if (progress==100)
-		            	progress=0;
-		            $('.imixsFileUpload_progress_bar').css(
-		                'width',
-		                progress + '%'
-		            );
-		        }
-		    });
-	}); 
+		if ($('.imixsFileUpload_input').fileupload) {
+			$('.imixsFileUpload_input').fileupload({
+				dataType: 'json',
+				done: function (e, data) {
+					refreshFileList(data.result.files);
+					$('.imixsFileUpload_button').blur();
+				},
+				fail: function (e, data) {
+					alert("The file cannot be added because the maximum file size was exceeded.");
+				},
+				progressall: function (e, data) {
+					var progress = parseInt(data.loaded / data.total * 100, 10);
+					if (progress == 100)
+						progress = 0;
+					$('.imixsFileUpload_progress_bar').css(
+						'width',
+						progress + '%'
+					);
+				}
+			});
+		}
+	});
 };
 
 
 /* This method layouts the imixs fileupload component */
-$.fn.imixsLayoutFileUpload = function(options) {
-	return this.each(function() {
+$.fn.imixsLayoutFileUpload = function (options) {
+	return this.each(function () {
 		// hide fileupload and replace with imixsFile-Button
-		$('.imixsFileUpload_input').hide();			
+		$('.imixsFileUpload_input').hide();
 		$('.imixsFileUpload_button').button({
-		      icons: {primary: "ui-icon-folder-open"}
+			icons: { primary: "ui-icon-folder-open" }
 		});
-		$('.imixsFileUpload_delete','.imixsFileUpload_uploadlist').button({
-		      icons: {primary: "ui-icon-close"}
+		$('.imixsFileUpload_delete', '.imixsFileUpload_uploadlist').button({
+			icons: { primary: "ui-icon-close" }
 		});
-	}); 
+	});
 };
 
 
 
-function refreshFileList(files) {		
+function refreshFileList(files) {
 	// remove uploded file info form table
 	$('.imixsFileUpload_uploaded_file').remove();
 	$.each(files, function (index, file) {
-		var fileLink='<a href="'+file.url+'" target="_blank" >'+file.name+'</a>';
-        var cancelButton='<button class="imixsFileUpload_delete" onclick="cancelFileUpload(\''+file.name + '\');return false;">Delete</button>';
-        var row='<tr class="imixsFileUpload_uploaded_file"><td class="imixsFileUpload_uploadlist_name">'+fileLink+'</td><td class="imixsFileUpload_uploadlist_size">'+fileSizeToString(file.size)+'</td><td class="imixsFileUpload_uploadlist_cancel">'+cancelButton+'</td></tr>';
-        $('.imixsFileUpload_uploadlist').append(row);
-    });
-	$('button','.imixsFileUpload_uploadlist').button({
-	      icons: {primary: "ui-icon-close"}
+		var fileLink = '<a href="' + file.url + '" target="_blank" >' + file.name + '</a>';
+		var cancelButton = '<button class="imixsFileUpload_delete" onclick="cancelFileUpload(\'' + file.name + '\');return false;">Delete</button>';
+		var row = '<tr class="imixsFileUpload_uploaded_file"><td class="imixsFileUpload_uploadlist_name">' + fileLink + '</td><td class="imixsFileUpload_uploadlist_size">' + fileSizeToString(file.size) + '</td><td class="imixsFileUpload_uploadlist_cancel">' + cancelButton + '</td></tr>';
+		$('.imixsFileUpload_uploadlist').append(row);
 	});
-	
+	$('button', '.imixsFileUpload_uploadlist').button({
+		icons: { primary: "ui-icon-close" }
+	});
+
 	// callback method
 	if (typeof onFileUploadChange !== 'undefined') {
-	 if (onFileUploadChange instanceof Function) {
-		onFileUploadChange();
-	 }
+		if (onFileUploadChange instanceof Function) {
+			onFileUploadChange();
+		}
 	}
 }
 
@@ -348,38 +350,39 @@ function refreshFileList(files) {
 /**
  * reloads the uploaded files and refresh the filelist
  */
-function updateFileUpload() {	
+function updateFileUpload() {
 	// upload url
-	var base_url=$('.imixsFileUpload_input').attr( 'data-url' );	
-	$.ajax({url:base_url,
+	var base_url = $('.imixsFileUpload_input').attr('data-url');
+	$.ajax({
+		url: base_url,
 		type: 'GET',
 		dataType: "json",
-		success:function(data){
+		success: function (data) {
 			refreshFileList(data.files);
-		}			
-	});			
+		}
+	});
 }
 
-function cancelFileUpload(file) {	
+function cancelFileUpload(file) {
 	// compute the delete url
-	var base_url=$('.imixsFileUpload_input').attr( 'data-url' );	
-	var cidPos=base_url.indexOf("?cid=");
+	var base_url = $('.imixsFileUpload_input').attr('data-url');
+	var cidPos = base_url.indexOf("?cid=");
 	// encode file name.. encodeURIComponent
-	var target_url=base_url.substring(0,cidPos) + encodeURIComponent(file) + base_url.substring(cidPos);
+	var target_url = base_url.substring(0, cidPos) + encodeURIComponent(file) + base_url.substring(cidPos);
 	$.ajax({
-		url:target_url,
+		url: target_url,
 		type: 'DELETE',
 		dataType: "json",
-		success:function(data){
+		success: function (data) {
 			refreshFileList(data.files);
-		}			
-	});			
+		}
+	});
 }
 
 function fileSizeToString(bytes) {
-	if (bytes>=1000000000) {bytes=(bytes/1000000000).toFixed(2)+' GB';}
-        else if (bytes>=1000000)    {bytes=(bytes/1000000).toFixed(2)+' MB';}
-        else if (bytes>=1000)      {bytes=(bytes/1000).toFixed(2)+' KB';}
-        else {bytes=bytes+' bytes';}
-    return bytes;
+	if (bytes >= 1000000000) { bytes = (bytes / 1000000000).toFixed(2) + ' GB'; }
+	else if (bytes >= 1000000) { bytes = (bytes / 1000000).toFixed(2) + ' MB'; }
+	else if (bytes >= 1000) { bytes = (bytes / 1000).toFixed(2) + ' KB'; }
+	else { bytes = bytes + ' bytes'; }
+	return bytes;
 }

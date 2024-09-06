@@ -25,7 +25,8 @@
 				<button class="imixsFileUpload_button">#{cc.attrs.labelButton}</button>
 				<!-- we need to append the converstaion id to the AjaxFileUploadServlet url here -->
 				<input class="imixsFileUpload_input" type="file" name="files[]"
-					data-url="/fileupload/?cid=#{fileUploadController.getCID()}" multiple="multiple" />
+					data-url="#{request.contextPath}/fileupload/?cid=#{fileUploadController.getCID()}"
+					multiple="multiple" />
 				<div class="imixsFileUpload_help">#{cc.attrs.labelHelp}</div>
 			</div>
 			<div class="imixsFileUpload_progress_bar" />
