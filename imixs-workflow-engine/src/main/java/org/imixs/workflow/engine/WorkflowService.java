@@ -431,11 +431,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
      * <p>
      * If the model version does not exist the model is resolved by regular
      * expressions using the method findModelByWorkitem
+     * <p>
+     * If not model can be found or the $taskID is not defined by the model a
+     * ModelException is thrown.
      * 
      * @see imixs-bpmn
      * @param workitem
      * @return
-     * @throws ModelException
+     * @throws ModelException if model is not found or task is not defined by the
+     *                        given model
      */
     @SuppressWarnings("unchecked")
     public List<ItemCollection> getEvents(ItemCollection workitem) throws ModelException {
@@ -447,10 +451,16 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         BPMNModel model = modelService.getModelManager().findModelByWorkitem(workitem);
         if (model == null) {
             throw new ModelException(
-                    ModelException.INVALID_MODEL, "Model '" + workitem.getModelVersion() + "' not found!");
+                    ModelException.INVALID_MODEL, "Model '" + workitem.getModelVersion() + "' not found.");
         }
 
         int processID = workitem.getTaskID();
+        ItemCollection task = modelService.getModelManager().findTaskByID(model, processID);
+        if (task == null) {
+            throw new ModelException(
+                    ModelException.UNDEFINED_MODEL_ENTRY,
+                    "Task " + processID + " not defined in model '" + workitem.getModelVersion() + "'.");
+        }
         List<ItemCollection> eventList = modelService.getModelManager().findEventsByTask(model, processID);
 
         String username = getUserName();

@@ -443,9 +443,8 @@ public class WorkflowController extends AbstractDataController implements Serial
             try {
                 activities = workflowService.getEvents(getWorkitem());
             } catch (ModelException e) {
-                logger.log(Level.WARNING, "Unable to resolve workflow event list: {0}",
-                        e.getMessage());
-                throw new InvalidAccessException(ModelException.INVALID_MODEL,
+                // Just print out a warning!
+                logger.log(Level.WARNING, "Unable to resolve event list: {0}",
                         e.getMessage());
             }
         }

@@ -745,18 +745,21 @@ public class ModelManager {
      * 
      */
     public List<ItemCollection> findEventsByTask(final BPMNModel model, int taskID) {
-        Activity taskElement = lookupTaskElementByID(model, taskID);
-        BPMNLinkedFlowIterator<BPMNElementNode> elementNavigator = new BPMNLinkedFlowIterator<BPMNElementNode>(
-                taskElement,
-                node -> ((BPMNUtil.isImixsEventElement(node))));
         List<ItemCollection> result = new ArrayList<>();
-        while (elementNavigator.hasNext()) {
-            result.add(BPMNEntityBuilder.build(elementNavigator.next()));
-        }
-        // next we also add all initEvent nodes
-        List<BPMNElementNode> initEventNodes = findInitEventNodes(taskElement);
-        for (BPMNElementNode element : initEventNodes) {
-            result.add(BPMNEntityBuilder.build(element));
+        Activity taskElement = lookupTaskElementByID(model, taskID);
+        if (taskElement != null) {
+            BPMNLinkedFlowIterator<BPMNElementNode> elementNavigator = new BPMNLinkedFlowIterator<BPMNElementNode>(
+                    taskElement,
+                    node -> ((BPMNUtil.isImixsEventElement(node))));
+
+            while (elementNavigator.hasNext()) {
+                result.add(BPMNEntityBuilder.build(elementNavigator.next()));
+            }
+            // next we also add all initEvent nodes
+            List<BPMNElementNode> initEventNodes = findInitEventNodes(taskElement);
+            for (BPMNElementNode element : initEventNodes) {
+                result.add(BPMNEntityBuilder.build(element));
+            }
         }
         return result;
     }
