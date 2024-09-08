@@ -221,8 +221,9 @@ public class WorkflowController extends AbstractDataController implements Serial
         data.replaceItemValue("$writeaccess", data.getItemValue(WorkflowKernel.CREATOR));
 
         // assign WorkflowGroup and editor
-        data.replaceItemValue("$workflowgroup", startProcessEntity.getItemValueString("txtworkflowgroup"));
-        data.replaceItemValue("$workflowStatus", startProcessEntity.getItemValueString("txtname"));
+        ItemCollection processDef = modelService.getModelManager().loadProcess(data);
+        data.replaceItemValue(WorkflowKernel.WORKFLOWGROUP, processDef.getItemValueString("name"));
+        data.replaceItemValue(WorkflowKernel.WORKFLOWSTATUS, startProcessEntity.getItemValueString("name"));
         data.replaceItemValue("txtWorkflowImageURL", startProcessEntity.getItemValueString("txtimageurl"));
         data.replaceItemValue("txtWorkflowEditorid", startProcessEntity.getItemValueString("txteditorid"));
 
