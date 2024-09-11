@@ -455,7 +455,7 @@ public class WorkflowKernel {
 
             // ==> bpmn2:parallelGateway
             if (ModelManager.PARALLELGATEWAY_ELEMENT.equals(nextElement.getType())) {
-                nextElement = handleParallelGateWay(model, workitem, nextElement);
+                nextElement = handleParallelGateWay(model, workitem, nextElement, true);
             }
 
             // ==> bpmn2:intermediateCatchEvent
@@ -492,19 +492,21 @@ public class WorkflowKernel {
      * 
      * The method verifies all outgoing flows and creates a new Split-WorkItem for
      * each following Event.
-     * At lease on Task element is expected. This is the final status of the main
+     * At least on Task element is expected. This is the final status of the main
      * workItem.
      * 
      * 
      * @param model
      * @param workitem
      * @param parallelGateway
+     * @param processEvents   - if true the process events of a split workitem will
+     *                        be processed.
      * @return
      * @throws ModelException
      * @throws PluginException
      */
     private ItemCollection handleParallelGateWay(BPMNModel model, ItemCollection workitem,
-            ItemCollection parallelGateway) throws ModelException, PluginException {
+            ItemCollection parallelGateway, boolean processEvents) throws ModelException, PluginException {
         ItemCollection result = null;
 
         // verify if we have a parallelgateway
@@ -543,8 +545,11 @@ public class WorkflowKernel {
                 cloned.replaceItemValue(ISVERSION, true);
 
                 ItemCollection splitEvent = splitItemCol;
-                while (splitEvent != null) {
-                    splitEvent = this.processEvent(cloned, splitEvent);
+                // only process events in the normal process cycle
+                if (processEvents) {
+                    while (splitEvent != null) {
+                        splitEvent = this.processEvent(cloned, splitEvent);
+                    }
                 }
 
                 // remove temporary attribute $isversion...
@@ -583,15 +588,15 @@ public class WorkflowKernel {
      */
     public ItemCollection eval(final ItemCollection _workitem) throws PluginException,
             ModelException {
+        // check document context
+        if (_workitem == null)
+            throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(),
+                    UNDEFINED_WORKITEM,
+                    "eval error: workitem is null");
 
         // clone the workitem to avoid pollution of the origin workitem
         ItemCollection workitem = (ItemCollection) _workitem.clone();
-
-        // check document context
-        if (workitem == null)
-            throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(),
-                    UNDEFINED_WORKITEM,
-                    "processing error: workitem is null");
+        BPMNModel model = this.ctx.getModelManager().getModel(workitem.getModelVersion());
 
         // check $TaskID
         if (workitem.getTaskID() <= 0)
@@ -617,7 +622,6 @@ public class WorkflowKernel {
         String intermediateEventElementID = workitem.getItemValueString(WorkflowKernel.INTERMEDIATE_EVENT_ELEMENTID);
         int intermediateEvent = workitem.getItemValueInteger(WorkflowKernel.INTERMEDIATE_EVENTID);
         if (intermediateEvent > 0) {
-            BPMNModel model = this.ctx.getModelManager().findModelByWorkitem(workitem);
             BPMNElementNode intermediateEventElement = model.findElementNodeById(intermediateEventElementID);
             event = BPMNEntityBuilder.build(intermediateEventElement);
         } else {
@@ -645,9 +649,15 @@ public class WorkflowKernel {
                     throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
                             "BPMN Element Entity must provide the item 'type'!");
                 }
-                // continue processing live-cycle?
+
+                // ==> bpmn2:parallelGateway
+                if (ModelManager.PARALLELGATEWAY_ELEMENT.equals(nextElement.getType())) {
+                    nextElement = handleParallelGateWay(model, workitem, nextElement, false);
+                }
+
+                // ==> bpmn2:intermediateCatchEvent
                 if (ModelManager.EVENT_ELEMENT.equals(nextElement.getType())) {
-                    // load next event
+                    // load next event and continue processing live-cycle
                     event = nextElement;
                     workitem.event(event.getItemValueInteger("numactivityid"));
                 } else {
