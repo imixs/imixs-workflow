@@ -460,7 +460,7 @@ public class ModelManager {
     public Set<String> findAllVersionsByGroup(String group) throws ModelException {
         boolean debug = logger.isLoggable(Level.FINE);
         // Sorted in reverse order
-        Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER.reversed());
         if (debug) {
             logger.log(Level.FINEST, "......searching model versions for workflowgroup ''{0}''...", group);
         }
