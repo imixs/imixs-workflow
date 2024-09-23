@@ -1,6 +1,6 @@
 # Interval Plugin 
 
-The Imixs *IntervalPlugin* provides an easy way for computing periodical intervals.  
+The Imixs Plugin `org.imixs.workflow.engine.plugins.IntervalPlugin` provides an easy way for computing periodical intervals.  
 The Plugin implements an mechanism to adjust the value of a date item based on a macro or a cron definition.
  The interval can be defined in the workflow result by setting a reference item by name and a cron definition. See the following example:
 
