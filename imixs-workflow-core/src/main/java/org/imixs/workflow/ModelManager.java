@@ -242,7 +242,7 @@ public class ModelManager {
         // If we still did not find the event we throw a ModelException....
         if (event == null) {
             throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY, "Event " + workitem.getTaskID() + "."
-                    + workitem.getEventID() + " is not a callable in model '" + workitem.getModelVersion() + "'");
+                    + workitem.getEventID() + " is not callable in model '" + workitem.getModelVersion() + "'");
         }
         return event;
     }
