@@ -381,6 +381,70 @@ public class TestXMLParser {
 
     /**
      * Simple test showing how to find tags...
+     * 
+     * <pre>
+     * {@code
+     * <model>     
+     *   <version>sub-model-1.0.0</version>
+     *   <task>1000</task>
+     *   <event>10</event>
+     *  </model>
+     * }
+     * </pre>
+     * 
+     * and a variant we an embedded model tag...
+     *
+     * <pre>
+     * {@code
+     *   <imixs-micro name="CREATE">
+     *   <endpoint>ws://workstation-1:8080/workflow</endpoint>
+     *   <model>workstation-1-1.0.0</model>
+     *   <task>1000</task>
+     *   <event>10</event>
+     *   <items>order.number;order.date</items>
+     *   <debug>true</debug>
+     *   </imixs-micro>
+     *
+     * }
+     * </pre>
+     * 
+     */
+    @Test
+    public void testEmbeddedParseTagList() {
+        // test typical model tag used by WorkflowKernel
+        String xmlString = "<model>\n"
+                + "    <version>sub-model-1.0.0</version>\n"
+                + "   <task>1000</task>\n"
+                + "   <event>10</event>\n"
+                + " </model>";
+
+        List<String> result = XMLParser.findNoEmptyXMLTags(xmlString, "model");
+        // assert
+        assertEquals(1, result.size());
+        assertTrue(result.get(0).startsWith("<model"));
+
+        // now test a xml with embedded model tag
+        xmlString = " <imixs-micro name=\"CREATE\">\n"
+                + "    <endpoint>ws://workstation-1:8080/workflow</endpoint>\n"
+                + "    <model>workstation-1-1.0.0</model>\n"
+                + "    <task>1000</task>\n"
+                + "    <event>10</event>\n"
+                + "    <items>order.number;order.date</items>\n"
+                + "    <debug>true</debug>\n"
+                + "  </imixs-micro>";
+        result = XMLParser.findNoEmptyXMLTags(xmlString, "model");
+        // not match expected
+        assertEquals(0, result.size());
+
+        // test full tag
+        result = XMLParser.findNoEmptyXMLTags(xmlString, "imixs-micro");
+        // assert
+        assertEquals(1, result.size());
+        assertTrue(result.get(0).startsWith("<imixs-micro"));
+    }
+
+    /**
+     * Test variants with embedded tags
      */
     @Test
     public void testParseTagList() {
@@ -398,7 +462,7 @@ public class TestXMLParser {
                 "</library>";
         try {
             // act
-            var result = XMLParser.parseTagList(xmlString, "book");
+            List<ItemCollection> result = XMLParser.parseTagList(xmlString, "book");
             // assert
             assertEquals(2, result.size());
             assertEquals("Harry Potter and the Philosopher's Stone", result.get(0).getItemValue("title").get(0));

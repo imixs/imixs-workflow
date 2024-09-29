@@ -713,7 +713,7 @@ public class WorkflowKernel {
 
         // test if a <model> tag is defined
         String eventResult = event.getItemValueString("txtActivityResult");
-        List<String> modelTags = XMLParser.findNoEmptyTags(eventResult, "model");
+        List<String> modelTags = XMLParser.findNoEmptyXMLTags(eventResult, "model");
 
         if (modelTags == null || modelTags.size() == 0) {
             // no model tag found

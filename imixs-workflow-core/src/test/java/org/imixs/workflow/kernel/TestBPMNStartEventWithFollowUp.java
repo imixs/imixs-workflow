@@ -100,7 +100,7 @@ public class TestBPMNStartEventWithFollowUp {
 		} catch (ModelException e) {
 			e.printStackTrace();
 			// expected!
-			assertTrue(e.getMessage().contains("1000.30 is not a callable in model"));
+			assertTrue(e.getMessage().contains("1000.30 is not callable in model"));
 		}
 	}
 

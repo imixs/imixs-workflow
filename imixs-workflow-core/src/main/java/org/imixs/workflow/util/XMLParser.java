@@ -159,8 +159,8 @@ public class XMLParser {
     }
 
     /**
-     * This method find not-empty tags inside a string and returns a list with all
-     * tags including the tag itself.
+     * This method finds no-empty tags by name inside a string and returns a list
+     * with all tags including the tag itself.
      * <p>
      * e.g.: {@code<date field="abc">def</date>}
      * <p>
@@ -180,6 +180,49 @@ public class XMLParser {
             result.add(matcher.group());
         }
         return result;
+    }
+
+    /**
+     * This method finds no-empty tags by name inside a string and returns the
+     * embedded XML content. The method returns a list of xml tags including the tag
+     * itself.
+     * <p>
+     * e.g.: {@code<date field="abc">def</date>}
+     * <p>
+     * <strong>Note:</strong> To find also empty tags use 'findTags'
+     * 
+     * @param content - XML data
+     * @param tag     - XML tag
+     * @return
+     */
+    public static List<String> findNoEmptyXMLTags(String content, String tag) {
+        List<String> result = new ArrayList<>();
+        // Regex to match the specified tag, capturing its content
+        String regex = "<" + tag + "(?:[^>]*)>(.*?)</" + tag + ">";
+        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(content);
+        while (matcher.find()) {
+            String tagContent = matcher.group(1).trim();
+            if (!tagContent.isEmpty()) {
+                if (isXMLContent(tagContent)) {
+                    // only return the value if it is XML content
+                    result.add(matcher.group(0));
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Test if a given String is XML Content
+     * 
+     * @param content
+     * @return
+     */
+    public static boolean isXMLContent(String content) {
+        // Remove all whitespace, including newlines
+        String cleaned = content.replaceAll("\\s", "");
+        return cleaned.startsWith("<") && cleaned.endsWith(">");
     }
 
     /**
@@ -379,11 +422,12 @@ public class XMLParser {
     }
 
     /**
-     * This helper method parses all child elements and creates / or appends the tag value as an Item value into the
-     result ItemCollection.
+     * This helper method parses all child elements and creates / or appends the tag
+     * value as an Item value into the
+     * result ItemCollection.
      * The method is called from parseTag.
      **/
-    private static void parseAndAppendChildNodes(NodeList children, ItemCollection result, boolean debug){
+    private static void parseAndAppendChildNodes(NodeList children, ItemCollection result, boolean debug) {
         // collect all child nodes...
         int itemCount = children.getLength();
         for (int i = 0; i < itemCount; i++) {
