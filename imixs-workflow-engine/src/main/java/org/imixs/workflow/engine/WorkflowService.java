@@ -988,10 +988,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                             }
                         } else if ("date".equalsIgnoreCase(sType)) {
                             if (content == null || content.isEmpty()) {
-                                // no value available - no op!
-                                if (debug) {
-                                    logger.finer("......can not convert empty string into date object");
-                                }
+                                // no value defined - remove item
+                                result.removeItem(tagName);
                             } else {
                                 // convert content value to date object
                                 try {
