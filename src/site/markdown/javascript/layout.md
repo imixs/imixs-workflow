@@ -1,4 +1,4 @@
-#Layout & UI
+# Layout & UI
 
 The imixs-ui.js provides some layout methods to apply the jQuery UI widgets to a page section. See the following example to layout a jQuery UI tab navigation
 

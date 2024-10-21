@@ -1,4 +1,5 @@
-#Concurrency and Optimistic Locking
+# Concurrency and Optimistic Locking
+
 The Imixs-Workflow engine supports an optimistic locking mechanism. Optimistic locking is based on the assumption that most transactions dont't conflict with other transactions, allowing concurrency to be as permissive as possible when  allowing transactions to execute. Therefore the Imixs-Workflow engine holds an attribute '$version' providing the version number of the corresponding entity. So in case two users open the same document, change data and call the save() method, optimistic locking will be activated. This means that  an OptimisticLockException is thrown when the second user tries to save the document.
  
 ## How to Disable Optimistic Locking  

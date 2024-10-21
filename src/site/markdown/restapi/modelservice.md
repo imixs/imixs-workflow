@@ -1,4 +1,4 @@
-#The Model Service
+# The Model Service
 
 The resource _/model_ provides methods to read and update workflow models through the Imixs-Rest API.
  

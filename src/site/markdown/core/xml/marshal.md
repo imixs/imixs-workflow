@@ -1,4 +1,5 @@
-#Marshalling an Imixs Data object
+# Marshalling an Imixs Data object
+
 The JAXB runtime framework provides marshall and unmarshall operations. Marshalling is the process of converting instances of JAXB-annotated classes to XML representations. Likewise, unmarshalling is the process of converting an XML representation to a tree of objects. The following example shows how to marshal an Imixs XMLItemCollection into a XML Stream.
   
 	   .....

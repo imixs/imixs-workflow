@@ -1,5 +1,6 @@
-#Create a new BPMN2 file
- Before starting modeling with the Imixs-BPMN Plugin make sure that your current eclipse project is  assigned to the Imixs-BPMN runtime.
+# Create a new BPMN2 file
+
+Before starting modeling with the Imixs-BPMN Plugin make sure that your current eclipse project is  assigned to the Imixs-BPMN runtime.
  
 <img src="../images/modelling/bpmn_screen_29.png"/> 
  

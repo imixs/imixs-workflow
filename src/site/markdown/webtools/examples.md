@@ -1,4 +1,5 @@
-#How to Use the Imixs Web Tools
+# How to Use the Imixs Web Tools
+
 The following section provide some examples how the Imixs Web Tools can be used in a web application. The examples assume that you are familiar with JSF and Web development. Before your can use the Imixs Web Tools you need to deploy the Imixs Workflow engine into  your web module (WAR) or enterprise archive (EAR). 
  
 ##Create a Workitem
@@ -31,7 +32,7 @@ The actionlistener method doCreateWorkitem will not save any data into your data
 method just creates an empty instance of a new workitem which can be processed by any JSF page e.g. a input form.
    	       
    	       
-##Processing a Workitem
+## Processing a Workitem
 When you have created an instance of a workitem the values can be edited by a JSF Form and later processed  by the WorkflowController. To bind the workitem values to input fields the WorkflowController provides a dynamic hash-map. To process (save) the input data the controller provides the actionListener  'doProcess'.
  
 ### The Workitem properties
@@ -70,7 +71,7 @@ The method doProcessWorkitem expects the param 'id' with a valid Activity ID def
 	 </ui:repeat>
 
 
-##The WorkflowController
+## The WorkflowController
 The Imixs Web-Tools Project provides a backing bean to be used as a workflow controller.  The controller Bean provides several action methods to create, update and delete workitems through the Imixs Workflow Manager. It also provides a simple way to  add any kind of user input in dynamic properties controlled by the Imixs Workflow Manager. The following example shows how to process an instance of an workitem with the workflow activity 100:
 
 	 <h:commandButton
@@ -86,7 +87,7 @@ The workflowController can also be used to bind input values to an JSF Input Fie
 	 </h:inputText>	
 		
 		
-##The BLOBWorkitemController
+## The BLOBWorkitemController
 This BLOBWorkitemController is used to store large objects into a single  ItemCollection mapped to a EntityBean. The BlobWorkitem is always bounded to a parent  workitem by its referrer id ($uniqueidRef). So an application can implement a  lazy loading for BLOBWorkitems. The read- and write access settings of  BLOBWorkitems are always synchronized to the settings of the parent workitem.  Before the BlobWorkitem can be accessed the workitem needs to be loaded by
   the load() method. The Data can be accessed by the embedded ItemCollection  through the method getWorkitem(). The BlobWorkitem can be saved by calling  the save() method. Both - the load() and the save() method expect the Parent  ItemCollection where the BlobWorkitem should be bound.  This will be shown now in an example:
   

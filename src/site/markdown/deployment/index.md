@@ -1,4 +1,5 @@
 # Deployment
+
 The Imixs-Workflow engine can be deployed in various ways depending on the kind of your server environment. As Imixs-Workflow is based on Jakarta EE, the engine runs in a n EJB and Web Container. This concept gives you the flexibility to setup the Imixs-Workflow engine individually for custom applications and server infrastructure. 
 
 Before you deploy the Imixs-Workflow engine into an application server, consider the following:

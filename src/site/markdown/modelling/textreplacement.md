@@ -1,4 +1,4 @@
-#Modeling with Text Replacement
+# Modeling with Text Replacement
 
 Imixs-Workflow provides a convenient way to define text blocks in the model, to be replaced  dynamically with business or application data during processing a WorkItem. This feature is useful if a string constant need to be updated with values from the  Process Instance or a property value during runtime. For example with the Text Replacement feature it is possible to insert business data into a mail message. 
  

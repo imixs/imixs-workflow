@@ -1,4 +1,4 @@
-#The Workflow Service
+# The Workflow Service
 
 The resource _/workflow_ provides methods to create, process and read workitems through the Imixs-Rest API.
  

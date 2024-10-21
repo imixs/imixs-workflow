@@ -1,7 +1,9 @@
-#The Report Service
+# The Report Service
+
 The main resource /report provides a flexible rest service interface to create dynamic reports defined by through the imixs Report Service. The report rest service can be used to create and update report definitions and to process the result of a report providing a set of different parameters.
 
-##The /report resources GET
+## The /report resources GET
+
 The /report GET resources are used to get business objects provided by the Imixs Report Manager:
 
 

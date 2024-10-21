@@ -1,4 +1,5 @@
-#The EntityService Interface
+# The EntityService Interface
+
 The Imixs EntityService is used to save and load instances of the Imixs Data Object _org.imixs.workflow.ItemCollection_ into a Database. The Service Bean is based on the Java Persistence API (JPA) which provides a simple and powerful API to store and load Entity Beans. 
  
 The class [ItemCollection](../core/itemcollection.html) is the general Data Object used by the Imixs Workflow Core API. Each Workitem processed by the Imixs Workflow Manager is represented as an ItemCollection. The Imixs EntityService provides methods to query Entities using JPQL statements. This makes the service EJB very flexible to access datasets of ItemCollections.  Additional the EntityService can be used to restrict the read- and write access for ItemCollection objects by providing accessvalues.

@@ -1,4 +1,5 @@
 # The WorkflowService 
+
 The WorkflowService is the Java EE implementation of the [WorkflowManager interface](../core/workflowmanager.html) from the core API. This service component allows to process, update and lookup workItems in the Imixs-Workflow engine. 
 
 ## How to Process a Workitem

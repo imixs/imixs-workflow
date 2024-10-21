@@ -1,4 +1,5 @@
 # Security Configuration
+
 Each method call to the Imixs-Workflow engine have to possess an applicable authentication process to grant the demands of the Imixs-Workflow security layer. The security layer of Imixs-Workflow defines the following access roles:
 
   * org.imixs.ACCESSLEVEL.NOACCESS  

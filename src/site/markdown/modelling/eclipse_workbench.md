@@ -1,5 +1,5 @@
 
-#The Eclipse Workbench
+# The Eclipse Workbench
 
 The following section gives an overview of the Eclipse Workbench provided by the BPMN2 Modeler.
 The concepts provided by Imixs-BPMN are the same as provided by the 
@@ -10,7 +10,7 @@ tree and thumbnail views.
 
 <img src="../images/modelling/bpmn_screen_03.png"/>
 
-##Drawing Canvas
+## Drawing Canvas
 The Drawing Canvas occupies the majority of the editing window and behaves as you would expect:
 BPMN process elements can be placed on the canvas by selecting them from the Tool Palette and
 clicking anywhere on the canvas; elements can be moved by clicking and dragging; elements can be
@@ -18,15 +18,18 @@ connected (with, e.g. Sequence Flows, Associations, Data Flows, etc.) by selecti
 The canvas also has its own context menu.
 
 
-##Tool Palette
+## Tool Palette
+
 The Tool Palette is, by default, located along the right edge of the Drawing Canvas. It consists of several “tool drawers” which contain the “tools” that are dragged onto the Drawing Canvas to create BPMN2 elements. The Tool Palette also provides a section called "Imixs-Workflow" containing the Imixs-Workflow BPMN  elements.
 
-##Outline View
+## Outline View
+
 The Outline View is separate from the editor and is intended to show a hierarchical, tree oriented view of the file. This view is synchronized with the Drawing Canvas; when an element is selected on the canvas, it is highlighted in the Outline View. Conversely when an item in the Outline is selected, it is also highlighted on the Drawing Canvas.
 
 
 
-##Profiles
+## Profiles
+
 The Tool Palette supports the concept of "Profiles" which customizes the tools available based 
 on the task to be accomplished. Imixs-BPMN provides three differnt profiles:
  
@@ -39,7 +42,8 @@ The Imixs-BPMN elements are shown in the section 'Imixs-Workflow' category:
 <img src="../images/modelling/bpmn_screen_12.png"/> 
  
  
-##Property View
+## Property View
+
 The Property View is used to edit all parameters for the currently selected BPMN2 element. 
 This view is synchronized with the selected BPMN element in the Drawing Canvas. The BPMN2 Modeler uses tabbed property sheets to group different kinds of properties. Although the number of tabs and their contents depends on which BPMN2 element is selected, Imixs-BPMN defines custom properties for the Process Definition, the Workflow Task element and the Workflow Event element. 
  

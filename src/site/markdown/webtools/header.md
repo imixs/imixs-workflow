@@ -1,4 +1,5 @@
-#Imixs Header
+# Imixs Header
+
 The Imixs-Faces custom tag 'imixsHeader' provides a jQuery UI integration. This tag will automatically add jQuery and jQuery UI functionality to a JSF page.
  
 	<?xml version="1.0" encoding="UTF-8"?>

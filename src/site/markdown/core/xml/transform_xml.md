@@ -1,4 +1,5 @@
-#XSL Transformation 
+# XSL Transformation 
+
 Based on a XSL template external XML data sources can be transformed into the Imixs XML schema.
 The result of thus a transformation can be posted to the Imixs-Workflow REST service API. 
 This is how a interface between an external system and the Imixs Workflow engine can be realized.
@@ -47,7 +48,8 @@ This is a sample of a xml data structure provided by an external system. The str
 	</Batch>
   
 
-##Transforming the XML Data with XSLT 
+## Transforming the XML Data with XSLT 
+
 With a XSL template it is possible to transform the given XML data into the Imixs XML schema. This XML format of an Imixs EntityCollection has the following structure:
 
 	<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
