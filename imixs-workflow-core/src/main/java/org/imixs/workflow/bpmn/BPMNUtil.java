@@ -320,10 +320,13 @@ public class BPMNUtil {
         String tagName = getNamespace() + ":" + type;
         if (parent != null) {
             NodeList childs = parent.getChildNodes();
-            for (int i = 0; i < childs.getLength(); i++) {
-                Node childNode = childs.item(i);
-                if (childNode.getNodeType() == Node.ELEMENT_NODE && tagName.equals(childNode.getNodeName())) {
-                    result.add((Element) childNode);
+            if (childs != null) {
+                for (int i = 0; i < childs.getLength(); i++) {
+                    Node childNode = childs.item(i);
+                    if (childNode != null && childNode.getNodeType() == Node.ELEMENT_NODE
+                            && tagName.equals(childNode.getNodeName())) {
+                        result.add((Element) childNode);
+                    }
                 }
             }
         }
