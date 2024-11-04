@@ -147,22 +147,10 @@ public class BPMNUtil {
         if (imixsItemElement != null) {
             // now iterate over all item:values and add each value into the list
             // <imixs:value><![CDATA[form_basic]]></imixs:value>
-            Set<Element> imixsValueElements = findAllImixsElements(imixsItemElement, "value");
-            if (imixsValueElements != null) {
-                for (Element imixsItemValue : imixsValueElements) {
-                    String value = null;
-                    // we expect a CDATA, bu we can not be sure
-                    Node cdata = findCDATA(imixsItemValue);
-                    if (cdata != null) {
-                        String cdValue = cdata.getNodeValue();
-                        if (cdValue != null) {
-                            value = cdValue;
-                        }
-                    } else {
-                        // normal text node
-                        value = imixsItemValue.getTextContent();
-                    }
-
+            Set<Element> imixsValueElementList = findAllImixsElements(imixsItemElement, "value");
+            if (imixsValueElementList != null) {
+                for (Element imixsValueElement : imixsValueElementList) {
+                    String value = resolveImixsValueElement(imixsValueElement);
                     // avoid duplicates
                     if (value.contains("|")) {
                         String valuePart = value.substring(value.indexOf("|") + 1).trim();
@@ -176,12 +164,53 @@ public class BPMNUtil {
                         }
                         uniqueValueList.add(value);
                     }
-
                 }
 
             }
         }
         return uniqueValueList;
+    }
+
+    /**
+     * This helper method returns the content of a given Imixs Value Node.
+     * The node can contain multiple CDATA sections!
+     *
+     * @return String - can be empty
+     */
+    private static String resolveImixsValueElement(Element imixsItemValue) {
+        List<Node> cdataNodes = findAllCDATA(imixsItemValue);
+        // do we have CDATA nodes?
+        if (!cdataNodes.isEmpty()) {
+            // Concatenate all CDATA sections
+            StringBuilder content = new StringBuilder();
+            for (Node cdata : cdataNodes) {
+                content.append(cdata.getNodeValue());
+            }
+            return content.toString();
+        } else {
+            // normal text node, just return the content
+            return imixsItemValue.getTextContent();
+        }
+    }
+
+    /**
+     * Helper method that finds all CDATA nodes within the current element.
+     * In complex situations there can be nested CDATA sections inside one tag.
+     * 
+     * @param element
+     * @return
+     */
+    private static List<Node> findAllCDATA(Element element) {
+        List<Node> cdataNodes = new ArrayList<>();
+        NodeList childNodes = element.getChildNodes();
+
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node node = childNodes.item(i);
+            if (node instanceof CDATASection) {
+                cdataNodes.add(node);
+            }
+        }
+        return cdataNodes;
     }
 
     /**
@@ -213,21 +242,10 @@ public class BPMNUtil {
             if (imixsItemElement != null) {
                 // now iterate over all item:values and add each value into the list
                 // <imixs:value><![CDATA[form_basic]]></imixs:value>
-                Set<Element> imixsValueElements = findAllImixsElements(imixsItemElement, "value");
-                if (imixsValueElements != null) {
-                    for (Element imixsItemValue : imixsValueElements) {
-                        String value = null;
-                        // we expect a CDATA, bu we can not be sure
-                        Node cdata = findCDATA(imixsItemValue);
-                        if (cdata != null) {
-                            String cdValue = cdata.getNodeValue();
-                            if (cdValue != null) {
-                                value = cdValue;
-                            }
-                        } else {
-                            // normal text node
-                            value = imixsItemValue.getTextContent();
-                        }
+                Set<Element> imixsValueElementList = findAllImixsElements(imixsItemElement, "value");
+                if (imixsValueElementList != null) {
+                    for (Element imixsValueElement : imixsValueElementList) {
+                        String value = resolveImixsValueElement(imixsValueElement);
 
                         // avoid duplicates
                         if (value.contains("|")) {
@@ -368,25 +386,6 @@ public class BPMNUtil {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Helper method that finds an optional CDATA node within the current element
-     * content.
-     * 
-     * @param element
-     * @return
-     */
-    private static Node findCDATA(Element element) {
-        // search CDATA node
-        NodeList childNodes = element.getChildNodes();
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            Node node = childNodes.item(i);
-            if (node instanceof CDATASection) {
-                return (CDATASection) node;
-            }
-        }
-        return null;
     }
 
     /**
