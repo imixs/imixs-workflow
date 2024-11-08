@@ -31,15 +31,17 @@ package org.imixs.workflow.faces.data;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.exceptions.QueryException;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.util.logging.Level;
-import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.DocumentService;
-import org.imixs.workflow.exceptions.QueryException;
 
 /**
  * The ViewController can be used in JSF Applications to manage lists of
@@ -70,6 +72,7 @@ public class ViewController implements Serializable {
     private int pageIndex = 0;
     private boolean endOfList = false;
     private boolean loadStubs = true;
+    private long totalCount = 0;
 
     private static final Logger logger = Logger.getLogger(ViewController.class.getName());
 
@@ -182,6 +185,13 @@ public class ViewController implements Serializable {
     }
 
     /**
+     * Returns the total count of entries for the current search query.
+     */
+    public long getTotalCount() {
+        return totalCount;
+    }
+
+    /**
      * Returns the current view result. The returned result set is defined by the
      * current query definition.
      * <p>
@@ -201,7 +211,7 @@ public class ViewController implements Serializable {
         }
 
         // load data
-        logger.log(Level.FINEST, "...... load data - query={0} pageIndex={1}", new Object[]{_query, getPageIndex()});
+        logger.log(Level.FINEST, "...... load data - query={0} pageIndex={1}", new Object[] { _query, getPageIndex() });
 
         List<ItemCollection> result = null;
         if (this.isLoadStubs()) {
@@ -214,12 +224,13 @@ public class ViewController implements Serializable {
 
         // The end of a list is reached when the size is below or equal the
         // pageSize. See issue #287
+        totalCount = documentService.count(_query);
         if (result.size() < getPageSize()) {
             setEndOfList(true);
         } else {
             // look ahead if we have more entries...
             int iAhead = (getPageSize() * (getPageIndex() + 1)) + 1;
-            if (documentService.count(_query, iAhead) < iAhead) {
+            if (totalCount < iAhead) {
                 // there is no more data
                 setEndOfList(true);
             } else {
