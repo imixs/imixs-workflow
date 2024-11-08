@@ -73,6 +73,7 @@ public class ViewController implements Serializable {
     private boolean endOfList = false;
     private boolean loadStubs = true;
     private long totalCount = 0;
+    private long totalPages = 0;
 
     private static final Logger logger = Logger.getLogger(ViewController.class.getName());
 
@@ -191,6 +192,10 @@ public class ViewController implements Serializable {
         return totalCount;
     }
 
+    public long getTotalPages() {
+        return totalPages;
+    }
+
     /**
      * Returns the current view result. The returned result set is defined by the
      * current query definition.
@@ -201,7 +206,6 @@ public class ViewController implements Serializable {
      * @throws QueryException
      */
     public List<ItemCollection> loadData() throws QueryException {
-
         String _query = getQuery();
 
         if (_query == null || _query.isEmpty()) {
@@ -225,6 +229,7 @@ public class ViewController implements Serializable {
         // The end of a list is reached when the size is below or equal the
         // pageSize. See issue #287
         totalCount = documentService.count(_query);
+        totalPages = totalCount / getPageSize();
         if (result.size() < getPageSize()) {
             setEndOfList(true);
         } else {
