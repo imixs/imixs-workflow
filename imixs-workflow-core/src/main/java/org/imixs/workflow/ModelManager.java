@@ -292,7 +292,8 @@ public class ModelManager {
                             "$modelversion " + version + " ambiguous sequence flow: " + workitem.getTaskID() + "."
                                     + workitem.getEventID());
                 }
-                logger.info("nextModelElement " + key + " took " + (System.currentTimeMillis() - l) + "ms");
+                // logger.info("nextModelElement " + key + " took " +
+                // (System.currentTimeMillis() - l) + "ms");
                 return BPMNEntityBuilder.build(nextElement);
 
             }
@@ -898,8 +899,9 @@ public class ModelManager {
         // convert model version new item name
         result.setItemValue(WorkflowKernel.MODELVERSION, result.getItemValueString("txtworkflowmodelversion"));
 
-        logger.info("lookupDefinition " + result.getItemValueString("txtworkflowmodelversion") + " took "
-                + (System.currentTimeMillis() - l) + "ms");
+        // logger.info("lookupDefinition " +
+        // result.getItemValueString("txtworkflowmodelversion") + " took "
+        // + (System.currentTimeMillis() - l) + "ms");
         return result;
     }
 
@@ -1005,8 +1007,9 @@ public class ModelManager {
                 if (id != null && !id.isEmpty()) {
                     try {
                         if (eventID == Long.parseLong(id)) {
-                            logger.info(
-                                    "lookupEventByID " + keyEvent + " took " + (System.currentTimeMillis() - l) + "ms");
+                            // logger.info(
+                            // "lookupEventByID " + keyEvent + " took " + (System.currentTimeMillis() - l) +
+                            // "ms");
                             return event;
                         }
                     } catch (NumberFormatException e) {
@@ -1034,8 +1037,9 @@ public class ModelManager {
             try {
                 if (eventID == Long.parseLong(id)) {
                     // match!
-                    logger.info(
-                            "lookupEventByID " + keyEvent + " took " + (System.currentTimeMillis() - l) + "ms");
+                    // logger.info(
+                    // "lookupEventByID " + keyEvent + " took " + (System.currentTimeMillis() - l) +
+                    // "ms");
                     return (Event) inEvent;
                 }
             } catch (NumberFormatException e) {
