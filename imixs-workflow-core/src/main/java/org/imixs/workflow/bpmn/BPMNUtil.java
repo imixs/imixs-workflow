@@ -121,10 +121,12 @@ public class BPMNUtil {
      * @return
      */
     public static String getVersion(BPMNModel model) {
-        List<String> valueList = getItemValueList(model, model.getDefinitions(), "txtworkflowmodelversion",
-                null);
-        if (valueList != null && valueList.size() > 0) {
-            return valueList.get(0);
+        if (model != null) {
+            List<String> valueList = getItemValueList(model, model.getDefinitions(), "txtworkflowmodelversion",
+                    null);
+            if (valueList != null && valueList.size() > 0) {
+                return valueList.get(0);
+            }
         }
         return null;
     }

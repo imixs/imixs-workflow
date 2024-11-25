@@ -373,22 +373,22 @@ public class WorkflowScheduler implements Scheduler {
                 // processWorkListByEvent(version, taskID, EventID, Group)
 
                 BPMNModel model = modelService.getModelManager().getModel(version);
-
-                // find all tasks
-                Set<Activity> activities = model.findAllActivities();
-                for (Activity task : activities) {
-                    if (BPMNUtil.isImixsTaskElement(task)) {
-
-                        ItemCollection taskEntity = BPMNEntityBuilder.build(task);
-                        int taskID = taskEntity.getItemValueInteger(BPMNUtil.TASK_ITEM_TASKID);
-                        // iterate through all scheduled events
-                        List<ItemCollection> events = modelService.getModelManager().findEventsByTask(model,
-                                taskID);
-                        for (ItemCollection eventEntity : events) {
-                            // test if this is a scheduled event...
-                            if (eventEntity.getItemValueBoolean(BPMNUtil.EVENT_ITEM_TIMER_ACTIVE)) {
-                                // eventID = eventEntity.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID);
-                                processWorkListByEvent(model, taskEntity, eventEntity, configItemCollection);
+                if (model != null) {
+                    // find all tasks
+                    Set<Activity> activities = model.findAllActivities();
+                    for (Activity task : activities) {
+                        if (BPMNUtil.isImixsTaskElement(task)) {
+                            ItemCollection taskEntity = BPMNEntityBuilder.build(task);
+                            int taskID = taskEntity.getItemValueInteger(BPMNUtil.TASK_ITEM_TASKID);
+                            // iterate through all scheduled events
+                            List<ItemCollection> events = modelService.getModelManager().findEventsByTask(model,
+                                    taskID);
+                            for (ItemCollection eventEntity : events) {
+                                // test if this is a scheduled event...
+                                if (eventEntity.getItemValueBoolean(BPMNUtil.EVENT_ITEM_TIMER_ACTIVE)) {
+                                    // eventID = eventEntity.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID);
+                                    processWorkListByEvent(model, taskEntity, eventEntity, configItemCollection);
+                                }
                             }
                         }
                     }

@@ -911,6 +911,9 @@ public class ModelManager {
      * @return
      */
     private Activity lookupTaskElementByID(final BPMNModel model, int taskID) {
+        if (model == null) {
+            return null;
+        }
         Set<Activity> activities = model.findAllActivities();
         // filter the imixs activity with the corresponding id
         for (Activity activity : activities) {

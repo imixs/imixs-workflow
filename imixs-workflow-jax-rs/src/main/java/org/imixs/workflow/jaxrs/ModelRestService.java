@@ -180,7 +180,7 @@ public class ModelRestService {
         StringBuffer sb = new StringBuffer();
         sb.append("<model>");
         try {
-            col = modelService.getVersions();
+            col = modelService.getModelManager().getVersions();
 
             for (String aversion : col) {
                 sb.append("<version>" + aversion + "</version>");
@@ -200,7 +200,7 @@ public class ModelRestService {
 
         try {
             BPMNModel model;
-            model = modelService.getModel(version);
+            model = modelService.getModelManager().getModel(version);
 
             // find all tasks
             Set<Activity> activities = model.findAllActivities();
@@ -229,7 +229,7 @@ public class ModelRestService {
     public Response getModelFile(@PathParam("version") String version, @Context UriInfo uriInfo) {
         try {
             // lookup model
-            BPMNModel model = modelService.getModel(version);
+            BPMNModel model = modelService.getModelManager().getModel(version);
             if (model != null) {
                 StreamingOutput stream = output -> {
                     try {
@@ -328,7 +328,7 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         List<ItemCollection> result = new ArrayList<>();
         try {
-            BPMNModel model = modelService.getModel(version);
+            BPMNModel model = modelService.getModelManager().getModel(version);
             BPMNProcess process = model.findProcessByName(group);
             process.init();
             Set<Activity> tasks = process.getActivities();
@@ -442,7 +442,7 @@ public class ModelRestService {
 
                 // delete old model if a modelversion is available
                 if (!"".equals(sModelVersion))
-                    modelService.removeModel(sModelVersion);
+                    modelService.getModelManager().removeModel(sModelVersion);
 
                 // save new entities into database and update modelversion.....
                 for (int i = 0; i < ecol.getDocument().length; i++) {
@@ -515,7 +515,7 @@ public class ModelRestService {
      * @throws ModelException
      */
     private String modelVersionTableToString(String rootContext) throws ModelException {
-        List<String> modelVersionList = modelService.getVersions();
+        List<String> modelVersionList = modelService.getModelManager().getVersions();
         StringBuffer buffer = new StringBuffer();
 
         for (String modelVersion : modelVersionList) {
