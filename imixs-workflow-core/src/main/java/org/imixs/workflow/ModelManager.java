@@ -358,7 +358,7 @@ public class ModelManager {
                 if (!versions.isEmpty()) {
                     String newVersion = versions.iterator().next();
                     if (!newVersion.isEmpty()) {
-                        logger.log(Level.WARNING, "Deprecated model version: ''{0}'' -> migrating to ''{1}'',"
+                        logger.log(Level.WARNING, "Missing model version: ''{0}'' -> migrating to ''{1}'',"
                                 + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
                                 new Object[] { version, newVersion, workitem.getWorkflowGroup(),
                                         workitem.getUniqueID() });

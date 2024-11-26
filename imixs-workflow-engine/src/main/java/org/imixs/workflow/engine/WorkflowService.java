@@ -587,18 +587,8 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
             workitem.replaceItemValue("type", DEFAULT_TYPE);
         }
 
-        /*
-         * Lookup current processEntity. If not available update model to latest
-         * matching model version
-         */
-        BPMNModel model = null;
-        try {
-            model = this.getModelManager().getModel(workitem.getModelVersion());
-        } catch (ModelException e) {
-            throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
-                    ProcessingErrorException.INVALID_PROCESSID, e.getMessage(), e);
-        }
-
+        // Lookup current model. If not found update model by regex
+        BPMNModel model = modelService.getModelManager().findModelByWorkitem(workitem);
         WorkflowKernel workflowkernel = new WorkflowKernel(this);
         // register plugins...
         registerPlugins(workflowkernel, model);

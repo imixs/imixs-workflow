@@ -561,7 +561,7 @@ public class WorkflowScheduler implements Scheduler {
             if (!modelVersion.equals(workitem.getModelVersion())) {
                 // test if the old model version still exists.
                 try {
-                    modelService.getModel(workitem.getModelVersion());
+                    modelService.getModelManager().getModel(workitem.getModelVersion());
                     logger.finest("......skip because model version is older than current version...");
                     // will be processed in the following loops..
                     continue;
