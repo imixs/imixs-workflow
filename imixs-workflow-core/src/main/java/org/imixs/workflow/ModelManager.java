@@ -345,7 +345,7 @@ public class ModelManager {
                     if (result != null) {
                         // match
                         // update $modelVersion
-                        logger.info("Update $modelversion by regex " + version + " ▷ " + matchingVersion);
+                        logger.fine("Update $modelversion by regex " + version + " ▷ " + matchingVersion);
                         workitem.model(matchingVersion);
                         return result;
                     }

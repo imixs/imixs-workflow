@@ -2,19 +2,23 @@
 
 To analyze different phases of a workflow process the ImixsAnalysis PlugIn can be added into a process model:
 
+```java
+org.imixs.workflow.plugins.AnalysisPlugin
+```    
 
-    org.imixs.workflow.plugins.AnalysisPlugin
-    
 The plugin is used to measure the processing time of the different phases during the life cycle of a process instance. Several individual measuring points can be configured in the workflow result of a BPMN event:
 
 
-###Example:
+### Example:
 
+```xml
     <item name='measurepoint' type='start'>p1</item> 
-
+```
 defines a start point named 'p1'
 
+```xml
     <item name='measurepoint' type='stop'>p1</item> 
+```
 
 defines an end point named 'p1'. 
 

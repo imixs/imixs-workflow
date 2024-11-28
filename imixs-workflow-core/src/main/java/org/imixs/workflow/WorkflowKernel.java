@@ -439,6 +439,9 @@ public class WorkflowKernel {
 
         // test if a new model version was assigned by the last event
         if (updateModelVersionByEvent(workitem, event)) {
+            logger.log(Level.INFO, "\u2699 set new model : {0} ({1})",
+                    new Object[] { workitem.getItemValueString(UNIQUEID),
+                            workitem.getItemValueString(MODELVERSION) });
             // write event log
             logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
             // load new Event and start new processing life cycle...
@@ -703,6 +706,8 @@ public class WorkflowKernel {
      * 
      * @param workitem
      * @param event
+     * @param log      - indicates if the procedure should be logged into the server
+     *                 log
      * @return true if the model version was updated by this method
      * @throws ModelException
      * @throws PluginException
@@ -745,10 +750,6 @@ public class WorkflowKernel {
                 updateWorkflowStatus(workitem, itemColNextTask);
             }
         }
-
-        logger.log(Level.INFO, "\u2699 set new model : {0} ({1})",
-                new Object[] { workitem.getItemValueString(UNIQUEID),
-                        workitem.getItemValueString(MODELVERSION) });
         return true;
 
     }

@@ -2,27 +2,30 @@
 
 The Imixs Taxonomy plugin can be used to collect taxonomy data at specific stages of a business process.
 
+```java
+org.imixs.workflow.plugins.TaxonomyPlugin
+```
 
-    org.imixs.workflow.plugins.TaxonomyPlugin
-    
 The plugin can be used to collect data about the processing time of a certain phase within the life cycle of a process instance. Several individual taxonomy definitions can be configured in the workflow result of a BPMN event:
 
 
-###Example:
+### Example:
 
+```xml
     <taxonomy name="approval">
     	<type>start</type>
     	<anonymised>true</anonymised>
     </taxonomy>
-    
+```   
 
 defines a start point named 'approval'
 
+```xml
     <taxonomy name="approval">
     	<type>stop</type>
     	<anonymised>true</anonymised>
     </taxonomy>
-    
+```    
 
 defines the end point named 'approval'. 
 
@@ -53,14 +56,14 @@ The first taxonomy definition 'P1' will measure the total processing time for a 
 
 Per default the taxonomy plugin generates anomymised data entries. This means there is no reference to the user who started or stopped specific stages of a business process.
 
-You can disable this GDPR feature by setting the tag 'anonymised' to 'false:
+You can disable this GDPR feature by setting the tag `anonymised` to `false`:
 
-
+```xml
     <taxonomy name="approval">
     	<type>stop</type>
     	<anonymised>false</anonymised>
     </taxonomy>
-
+```   
     
     
    
