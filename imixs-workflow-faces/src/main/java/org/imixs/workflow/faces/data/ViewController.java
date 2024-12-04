@@ -229,7 +229,7 @@ public class ViewController implements Serializable {
         // The end of a list is reached when the size is below or equal the
         // pageSize. See issue #287
         totalCount = documentService.count(_query);
-        totalPages = totalCount / getPageSize();
+        totalPages = (long) Math.ceil((double) totalCount / getPageSize());
         if (result.size() < getPageSize()) {
             setEndOfList(true);
         } else {
