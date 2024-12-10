@@ -7,23 +7,23 @@ The **Imixs Plugin-API** is the extension concept of the Imixs-Workflow Engine. 
 Most plugins provided by the Imixs-Workflow engine are extending the AbstractPlugin class. This class provides a set of convenient methods to access the Imixs-Workflow environment and processing logic. For custom implementation this is a good starting point to subclass from the class:
 
 ```java
-	public class MyPlugin extends AbstractPlugin {
-	
-	  @Override
-	  public void init(WorkflowContext actx) throws PluginException {
-	    // setup ...
-	  }
-	  
-	  @Override
-	  public ItemCollection run(ItemCollection workitem, ItemCollection event) throws PluginException {
-	    // your code goes here...
-	  }
-	  
-	  @Override
-	  public void close(boolean rollbackTransaction) throws PluginException {
-	    // tear down...
-	  }
+public class MyPlugin extends AbstractPlugin {
+
+	@Override
+	public void init(WorkflowContext actx) throws PluginException {
+	// setup ...
 	}
+	
+	@Override
+	public ItemCollection run(ItemCollection workitem, ItemCollection event) throws PluginException {
+	// your code goes here...
+	}
+	
+	@Override
+	public void close(boolean rollbackTransaction) throws PluginException {
+	// tear down...
+	}
+}
 ```
 
 Read more about the Imixs Plugin-API in the section [core concepts](../../core/plugin-api.html).
@@ -43,27 +43,27 @@ This abstract plugin class provides a set of helper methods:
 Imixs-Workflow supports CDI for the plugin API. So an EJB or Resource can be injected into a plugin class by the corresponding annotation. See the following example:
 
 ```java
-	public class DemoPlugin extends AbstractPlugin {
-		// inject services...
-		@Inject
-		ModelService modelService;
-		...
-	}
+public class DemoPlugin extends AbstractPlugin {
+	// inject services...
+	@Inject
+	ModelService modelService;
+	...
+}
 ```
 
 ## How to lookup a JDBC Resource from a plugin
 A plugin class can also lookup an existing JDBC Resource via a jndi lookup, for example to query a database using SQL statements. The same principle explained in this section is applicable to all resources (such as JMS destinations, JavaMail sessions, Remote EJBs and so on). The resource-ref element in the ejb-jar.xml deployment descriptor file maps the JNDI name of a resource reference to the resource-ref element in the ejb-jar.xml deployment descriptor file. This is similar to a EJB lookup explained before. The resource lookup in the plugin code looks like this:
 
 ```java
-		public void init(WorkflowContext actx) throws Exception {
-			super.init(actx);
-			InitialContext ic = new InitialContext();
-			String dsName = "java:comp/env/jdbc/HelloDbDs";
-			DataSource ds = (javax.sql.DataSource)ic.lookup(dsName);
-			Connection connection = ds.getConnection();
-			....
-			.....
-		}
+public void init(WorkflowContext actx) throws Exception {
+	super.init(actx);
+	InitialContext ic = new InitialContext();
+	String dsName = "java:comp/env/jdbc/HelloDbDs";
+	DataSource ds = (javax.sql.DataSource)ic.lookup(dsName);
+	Connection connection = ds.getConnection();
+	....
+	.....
+}
 ```
 
 The resource being queried is listed in the res-ref-name element of the ejb-jar.xml file as follows:

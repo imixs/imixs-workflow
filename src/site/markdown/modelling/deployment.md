@@ -38,22 +38,22 @@ To delete a specific model version the Imxis-Rest API provides a DELETE command
 You can also use the Imixs ModelService to deploy a BPMN model programmatically. In this case you call the Model Service EJB form your application to deploy a model. The following example demonstrates  the API call:
  
 ```java
-	import org.imixs.workflow.bpmn.BPMNModel;
-	import org.imixs.workflow.bpmn.BPMNParser;
-	import org.imixs.workflow.jee.ejb.ModelService;
-	....
-	
-	@Inject
-	protected ModelService modelService;
-	
-	.....
-	// open a inputStream of the model file
-	InputStream inputStream = getClass().getResourceAsStream(
-				"/bpmn/ticket.bpmn");
-	// parse and import the model....
-	BPMNModel model = BPMNParser.parseModel(file.getData(), "UTF-8");
-	modelService.importBPMNModel(model);
-	... 
+import org.imixs.workflow.bpmn.BPMNModel;
+import org.imixs.workflow.bpmn.BPMNParser;
+import org.imixs.workflow.jee.ejb.ModelService;
+....
+
+@Inject
+protected ModelService modelService;
+
+.....
+// open a inputStream of the model file
+InputStream inputStream = getClass().getResourceAsStream(
+			"/bpmn/ticket.bpmn");
+// parse and import the model....
+BPMNModel model = BPMNParser.parseModel(file.getData(), "UTF-8");
+modelService.importBPMNModel(model);
+... 
 ```
  
 You can find more information about the Imixs-Workflow services in the [section Imixs-Workflow Engine](../engine/index.html).

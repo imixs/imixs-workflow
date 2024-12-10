@@ -1,9 +1,9 @@
 # The WorkflowService 
 
-The WorkflowService is the Java EE implementation of the [WorkflowManager interface](../core/workflowmanager.html) from the core API. This service component allows to process, update and lookup workItems in the Imixs-Workflow engine. 
+The `WorkflowService` is the Jakarta EE implementation of the [WorkflowManager interface](../core/workflowmanager.html) from the core API. This is the central service component that allows you to process, update and lookup workItems. 
 
 ## How to Process a Workitem
-Before a workitem can be processed by the WorkflowService, a process model need to be defined and deployed together with the workflow engine. See the section [Imixs-BPMN Modeler](../modelling/index.html) for details about  how to create a model and upload it into the workflow server. The following example shows how a workitem can be processed using the WorkflowService component. A workitem must provide at least the following properties:
+Before a workitem can be processed by the `WorkflowService`, a process model need to be defined and deployed together with the workflow engine. See the section [Imixs-BPMN Modeler](../modelling/index.html) for details about  how to create a model and upload it into the workflow server. A workitem must provide at least the following properties:
 
    * $ModelVersion
    * $TaskID 
@@ -11,40 +11,44 @@ Before a workitem can be processed by the WorkflowService, a process model need 
    
 These properties are defining the workflow activity which should be processed by the workflowManager.
 
+The following example shows how a new workitem can be creaetd and processed by injecting the `WorkflowService` component:
+
 ```java
-	  @Inject
-	  WorkflowService workflowService;
-	  //...
-	  // create an empty workitem assigend to a model
-	  ItemCollection workitem=new ItemCollection().model("1.0.0").task(100).event(10);
-	  // assign business data
-	  workitem.setItemValue("_name", "M. Alex");
-	  workitem.setItemValue("_Titel", "My first workflow example");
-			
-	  // process the workitem
-	  workitem=workflowService.processWorkItem(workitem);
+@Inject
+WorkflowService workflowService;
+//...
+// create an empty workitem assigend to a model
+ItemCollection workitem=new ItemCollection().model("1.0.0").task(100).event(10);
+// assign business data
+workitem.setItemValue("_name", "M. Alex");
+workitem.setItemValue("_Titel", "My first workflow example");
+	
+// process the workitem
+workitem=workflowService.processWorkItem(workitem);
+```
+
+The `WorkflowService` will automatically persist the workitem into the database and controls the status for future access.
+
+The model version of a new WorkItem can either be specified by it's model version or as a regular expression:
+
+```java
+// take best match for model version 1.x
+ItemCollection workitem=new ItemCollection().model("(^1.)").task(100).event(10);
 ```
 
 
-The model version can also be specified as a regex. 
+Another alternative to assign a new workitem with a model version is by specifying the `$workflowgroup`: 
 
 ```java
-	  // take best match for model version 1.x
-	  ItemCollection workitem=new ItemCollection().model("(^1.)").task(100).event(10);
+// create an empty workitem assigend to a workflow group
+ItemCollection workitem=new ItemCollection().task(100).event(10);
+// assign group
+workitem.setItemValue(WorkflowKernel.WORKFLOWGROUP, "Invoice");
+// assign the workitem to the latest version matching the workfow group 'invoice'
+workitem=workflowService.processWorkItem(workitem);
 ```
 
-Another alternative to assign a new workitem with a model version is by specifying the $workflowgroup. 
-
-```java
-	  // create an empty workitem assigend to a workflow group
-	  ItemCollection workitem=new ItemCollection().task(100).event(10);
-	  // assign group
-	  workitem.setItemValue(WorkflowKernel.WORKFLOWGROUP, "Invoice");
-	  // assign the workitem to the latest version matching the workfow group 'invoice'
-	  workitem=workflowService.processWorkItem(workitem);
-```
-
-After a new workitem is process the first time, it is under the control of the _WorkflowService_.
+The `WorkflowService` will automatically assign the first matching model version holding the given workflow group.
 
 
 ## Worklist Methods
@@ -57,19 +61,19 @@ To get the current list of all workitems, the _WorkflowService_ provides a set o
 The method getWorkListByCreator can be called to read the list of all workitems created by a specific user:
   
 ```java
-	  @Inject
-	  org.imixs.workflow.jee.ejb.WorkflowService workflowService;
-	  // get the first 10 workitem for the current user
-	  Collection<ItemCollection> worklist=workflowService.getWorkListByCreator(null,10,0);
-	  // get list for  a named user
-	  Collection<ItemCollection> worklist=workflowService.getWorkListByCreator('manfred',10,0);
+@Inject
+org.imixs.workflow.jee.ejb.WorkflowService workflowService;
+// get the first 10 workitem for the current user
+Collection<ItemCollection> worklist=workflowService.getWorkListByCreator(null,10,0);
+// get list for  a named user
+Collection<ItemCollection> worklist=workflowService.getWorkListByCreator('manfred',10,0);
 ```
 
 The WorkflowManager provides a paging mechanism to browse through long result-sets. The following example
 shows how to get 5 workitems from the tenth page
   
 ```java
-    Collection<ItemCollection> worklist=workflowService.getWorkListByCreator(null,5,10);
+Collection<ItemCollection> worklist=workflowService.getWorkListByCreator(null,5,10);
 ```
 
 
@@ -77,18 +81,18 @@ shows how to get 5 workitems from the tenth page
 The method returns a collection of workitems for the current user. A Workitem belongs to a user or role if the  user has at least read write access to this workitem. 
 
 ```java
-    Collection<ItemCollection> list=workflowService.getWorkList();
-    //...
+Collection<ItemCollection> list=workflowService.getWorkList();
+//...
 ```
 
 You can specify the type, the start position, the count and sort order of workitems returned 
 by this method. The type of a workitem is defined by the workitem property 'type' which can be set before a workitem is processed.
 
 ```java
-	  String type="workitem";
-	  Collection<ItemCollection> list=workflowService.getWorkList(0,-1,
-	     type,WorkflowService.SORT_ORDER_CREATED_DESC);
-	  //...
+String type="workitem";
+Collection<ItemCollection> list=workflowService.getWorkList(0,-1,
+	type,WorkflowService.SORT_ORDER_CREATED_DESC);
+//...
 ```
 
 ### getWorkListByAuthor
@@ -98,11 +102,11 @@ The method returns a collection of workitems belonging to a specified user. This
  processed by the user.  
 
 ```java
-	  String type="workitem";
-	  String user="manfred"
-	  Collection<ItemCollection> list=workflowService.getWorkList(user,0,-1,
-	     type,WorkflowService.SORT_ORDER_CREATED_DESC);
-	  //...
+String type="workitem";
+String user="manfred"
+Collection<ItemCollection> list=workflowService.getWorkList(user,0,-1,
+	type,WorkflowService.SORT_ORDER_CREATED_DESC);
+//...
 ```
 
 ### getWorkListByGroup
@@ -111,11 +115,11 @@ The method returns a collection of workitems belonging to a specified workflow g
  a business process 
 
 ```java
-	  String type="workitem";
-	  String group="Ticketservice";
-	  Collection<ItemCollection> list=workflowService.getWorkListByGroup(group,0,-1,
-	     type,WorkflowService.SORT_ORDER_CREATED_DESC);
-	  //...
+String type="workitem";
+String group="Ticketservice";
+Collection<ItemCollection> list=workflowService.getWorkListByGroup(group,0,-1,
+	type,WorkflowService.SORT_ORDER_CREATED_DESC);
+//...
 ```
 
 ### getWorkListByProcessID
@@ -123,10 +127,10 @@ The method returns a collection of workitems belonging to a specified workflow g
 The method returns a collection of workitems belonging to a specified $processID defined by the workflow model.
 
 ```java
-	  String type="workitem";
-	  Collection<ItemCollection> list=workflowService.getWorkListByProcessID(2100,0,-1,
-	     type,WorkflowService.SORT_ORDER_CREATED_DESC);
-	  //...
+String type="workitem";
+Collection<ItemCollection> list=workflowService.getWorkListByProcessID(2100,0,-1,
+	type,WorkflowService.SORT_ORDER_CREATED_DESC);
+//...
 ```
 
 ### getWorkListByOwner
@@ -134,11 +138,11 @@ The method returns a collection of workitems belonging to a specified $processID
 The method returns a collection of workitems containing a '$owner' item belonging to a specified username.  The '$owner' item is typical controlled by the OwnerPlugin using the Imixs Workflow Modeler
 
 ```java
-	  String type="workitem";
-	  String user="Manfred"
-	  Collection<ItemCollection> list=workflowService.getWorkListByOwner(user,0,-1,
-	     type,WorkflowService.SORT_ORDER_CREATED_DESC);
-	  //...
+String type="workitem";
+String user="Manfred"
+Collection<ItemCollection> list=workflowService.getWorkListByOwner(user,0,-1,
+	type,WorkflowService.SORT_ORDER_CREATED_DESC);
+//...
 ```
 
 ### getWorkListByWriteAccess
@@ -146,10 +150,10 @@ The method returns a collection of workitems containing a '$owner' item belongin
 The method returns a collection of workitems where the current user has at least writeAccess. This means the either the  username or one of the user roles is contained in the $writeaccess property of each workitem returned by the method.
  
 ```java
-	  String type="workitem";
-	  Collection<ItemCollection> list=workflowService.getWorkListByWriteAccess(0,-1,
-	     type,WorkflowService.SORT_ORDER_CREATED_DESC);
-	  //...
+String type="workitem";
+Collection<ItemCollection> list=workflowService.getWorkListByWriteAccess(0,-1,
+	type,WorkflowService.SORT_ORDER_CREATED_DESC);
+//...
 ```
 
 ### getWorkListByRef
@@ -157,10 +161,10 @@ The method returns a collection of workitems where the current user has at least
 The method returns a collection of workitems belonging to a specified workitem identified by the attribute $UniqueIDRef. 
 
 ```java
-	  String type="workitem";
-	  Collection<ItemCollection> list=workflowService.getWorkListByRef(refID,0,-1,
-	     type,WorkflowService.SORT_ORDER_CREATED_DESC);
-	  //...
+String type="workitem";
+Collection<ItemCollection> list=workflowService.getWorkListByRef(refID,0,-1,
+	type,WorkflowService.SORT_ORDER_CREATED_DESC);
+//...
 ```
 
 ## Model Version Management 
@@ -186,13 +190,13 @@ The class `ProcessingEvent` defines the following event types:
 This event can be consumed by another Session Bean or managed bean implementing the @Observes annotation: 
 
 ```java
-	@Stateless
-	public class WorkflowServiceListener {
-	    public void onEvent(@Observes ProcessingEvent processingEvent){
-	        ItemCollection workitem=processingEvent.getDocument();
-	        System.out.println("Received ProcessingEvent Type = " + processingEvent.getType());
-    	}
+@Stateless
+public class WorkflowServiceListener {
+	public void onEvent(@Observes ProcessingEvent processingEvent){
+		ItemCollection workitem=processingEvent.getDocument();
+		System.out.println("Received ProcessingEvent Type = " + processingEvent.getType());
 	}
+}
 ```
 
 ## Evaluate the Next Task Element
@@ -203,7 +207,7 @@ The method supports 'conditional-events' as well as 'split-events'.  A condition
  
  
  ```java
-	// get next process entity
-	nextTask = workflowService.evalNextTask(adocumentContext, adocumentActivity);
+// get next process entity
+nextTask = workflowService.evalNextTask(adocumentContext, adocumentActivity);
 ```
 

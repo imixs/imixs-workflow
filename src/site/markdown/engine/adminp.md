@@ -92,29 +92,29 @@ The following fields part of the Job description are defined by the AdminP servi
 A JobHandler may throw a AdminPException if something went wrong. See the following example of a JobHandler implementation:
 
 ```java
-	public class JobHandlerDemo implements JobHandler {
-		@Inject
-		DocumentService documentService;
-		
-		@Override
-		public ItemCollection run(ItemCollection adminp) throws AdminPException {
-			// find documents...
-			List<ItemCollection> result=documentService.fine("type:'workitem'",0,100);
-			// do something...
-			try {
-			    ....
-		   } catch (Exception e) {
-		    	// throw exception if something went wrong
-			    throw new AdminPException("ERROR", "Error...", e);
-		   }
+public class JobHandlerDemo implements JobHandler {
+	@Inject
+	DocumentService documentService;
+	
+	@Override
+	public ItemCollection run(ItemCollection adminp) throws AdminPException {
+		// find documents...
+		List<ItemCollection> result=documentService.fine("type:'workitem'",0,100);
+		// do something...
+		try {
 			....
-			// more work to do?
-			if (... more work ...) {
-			   adminp.replaceItemValue(JobHandler.ISCOMPLETED, true);
-			}
-			return adminp;
+		} catch (Exception e) {
+			// throw exception if something went wrong
+			throw new AdminPException("ERROR", "Error...", e);
 		}
+		....
+		// more work to do?
+		if (... more work ...) {
+			adminp.replaceItemValue(JobHandler.ISCOMPLETED, true);
+		}
+		return adminp;
 	}
+}
 ```
 
 To start the JobHandler via the AdminP Service interface the attribute 'job' must be set to the class name of the CDI Bean. 

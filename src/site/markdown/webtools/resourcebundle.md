@@ -17,11 +17,12 @@ The class searches for the resource bundles with the base names '*bundle.message
 
 In a CDI bean you can also use the resourceBundleHandler to lookup keys
 
-	@Inject
-	protected ResourceBundleHandler resourceBundleHandler = null;
-	...
-	resourceBundleHandler.findMessage("space.manager"));
-
+```java
+@Inject
+protected ResourceBundleHandler resourceBundleHandler = null;
+...
+resourceBundleHandler.findMessage("space.manager"));
+```
 
  
 ## Priority

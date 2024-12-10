@@ -22,18 +22,21 @@ If the same property is defined in multiple ConfigSources, based on the ordinal 
 
 Each individual property can be injected directly. The injected value is static and the value is fixed on application starting.
 
-	@Inject @ConfigProperty(name="lucence.indexDir") 
-	String lucenePath;
+```java
+@Inject @ConfigProperty(name="lucence.indexDir") 
+String lucenePath;
+```
 
 ### Config Object Injection
 
 The config object can also be injected. With this object you can use the getValue() method to retrieve an individual property at runtime.
 
-	@Inject Config config;
-	...
-	String lucenePath =  config.getValue("lucence.indexDir", String.class);
-	....
-
+```java
+@Inject Config config;
+...
+String lucenePath =  config.getValue("lucence.indexDir", String.class);
+....
+```
 
 ## Deployment:
 

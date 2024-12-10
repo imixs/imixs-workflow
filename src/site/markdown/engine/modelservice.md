@@ -38,17 +38,17 @@ If no modelversion is provided by a workitem but the $workflowgroup matches a mo
 The ModelService provides a method to add a BPMNModel object. This object can be created from a file. See the following example:
 
 ```java
-	@Inject
-	ModelService modelService;
-	InputStream inputStream = new FileInputStream(new File("ticket.bpmn"));
-	ticketModel = BPMNParser.parseModel(inputStream, "UTF-8");
-	modelService.addModel(model);
+@Inject
+ModelService modelService;
+InputStream inputStream = new FileInputStream(new File("ticket.bpmn"));
+ticketModel = BPMNParser.parseModel(inputStream, "UTF-8");
+modelService.addModel(model);
 ```
 
 You can also persist the model into the data storage
 
 ```java
-	modelService.save(ticketModel,"ticket.bpmn");
+modelService.save(ticketModel,"ticket.bpmn");
 ```
 
 A persisted model will be automatically loaded when the workflow service starts. 	

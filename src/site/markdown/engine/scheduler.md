@@ -16,21 +16,21 @@ The SchedulerService will automatically call the concrete scheduler implementati
 
 
 ```java
-	public class MyScheduler implements Scheduler {
-		...
-		@Inject
-		WorkflowService workflowService;
-	
-		public ItemCollection run(ItemCollection configuration) throws SchedulerException {
-	
-			try {
-				// do the job...
-				.....
-			} catch (Exception e) {
-				// set item _schduler_enabled to false to cancel the timer.
-				configuration.setItemValue("scheduler_enabled",false); 
-			}
-			return configuration;
+public class MyScheduler implements Scheduler {
+	...
+	@Inject
+	WorkflowService workflowService;
+
+	public ItemCollection run(ItemCollection configuration) throws SchedulerException {
+
+		try {
+			// do the job...
+			.....
+		} catch (Exception e) {
+			// set item _schduler_enabled to false to cancel the timer.
+			configuration.setItemValue("scheduler_enabled",false); 
 		}
-	}  
+		return configuration;
+	}
+}  
 ```

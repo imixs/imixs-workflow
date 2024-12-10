@@ -16,16 +16,16 @@ Plugins or Adapter classes can access the data object by the ModelService:
 ### Plug-In Example:
 
 ```java
-	public class MyPlugin implements Plugin {
-	   	@Inject
-	    ModelService modelService;
+public class MyPlugin implements Plugin {
+	@Inject
+	ModelService modelService;
 
-		public ItemCollection run(ItemCollection workitem, ItemCollection event) throws Exception {
-			// extract the data from a DataObject
-			String data = modelService.getDataObject(event, "MyObject");
-			....
-		}
+	public ItemCollection run(ItemCollection workitem, ItemCollection event) throws Exception {
+		// extract the data from a DataObject
+		String data = modelService.getDataObject(event, "MyObject");
+		....
 	}
+}
 ```
 
 This example plug-in code extracts the Data stored in a BPMN Data Object with the name 'MyObject' associated to an Event Element. The method 'getDataObject' returns null if no DataObject with the given name is associated with the event element.
@@ -34,19 +34,19 @@ This example plug-in code extracts the Data stored in a BPMN Data Object with th
 ### Adapter Example:
 
 ```java
-	public class DemoAdapter implements org.imixs.workflow.SignalAdapter {
-	    // inject services...
-	    @Inject
-	    ModelService modelService;
-	    ...
-	    @Override
-		public ItemCollection execute(ItemCollection document, ItemCollection event) throws AdapterException {
-			...
-			// extract the data from a DataObject
-			String data = modelService.getDataObject(event, "MyObject");
-			....
-		}
+public class DemoAdapter implements org.imixs.workflow.SignalAdapter {
+	// inject services...
+	@Inject
+	ModelService modelService;
+	...
+	@Override
+	public ItemCollection execute(ItemCollection document, ItemCollection event) throws AdapterException {
+		...
+		// extract the data from a DataObject
+		String data = modelService.getDataObject(event, "MyObject");
+		....
 	}
+}
 ```	
 
 This adapter example extracts the Data stored in a BPMN Data Object with the name 'MyObject' associated to an Event Element. The method 'getDataObject' returns null if no DataObject with the given name is associated with the event element.
@@ -67,22 +67,22 @@ Data Object can be either associated with a Event or a Task element. To get the 
 As an alternative you can access the DataObject directly from the Open-BPMN model instance. See the following example:
 
 ```java
-	public class DemoAdapter implements org.imixs.workflow.SignalAdapter {
-	    // inject services...
-	    @Inject
-	    ModelService modelService;
-	    ...
-		public ItemCollection execute(ItemCollection workitem, ItemCollection event) throws AdapterException {
-			...
-			// fetch DataObjects from BPMN model
-			BPMNElementNode bpmnElementNode = modelService.getBPMNElementNode(workitem.getModelVersion(),
-				event.getItemValueString("id"));
+public class DemoAdapter implements org.imixs.workflow.SignalAdapter {
+	// inject services...
+	@Inject
+	ModelService modelService;
+	...
+	public ItemCollection execute(ItemCollection workitem, ItemCollection event) throws AdapterException {
+		...
+		// fetch DataObjects from BPMN model
+		BPMNElementNode bpmnElementNode = modelService.getBPMNElementNode(workitem.getModelVersion(),
+			event.getItemValueString("id"));
 
-			Assert.assertNotNull(bpmnElementNode);
-			Set<DataObject> dataObjects = bpmnElementNode.getDataObjects();
-			// extract the data from a DataObject
-			....
-		}
+		Assert.assertNotNull(bpmnElementNode);
+		Set<DataObject> dataObjects = bpmnElementNode.getDataObjects();
+		// extract the data from a DataObject
+		....
 	}
+}
 ```
  

@@ -10,17 +10,17 @@ A Document in the Imixs-Workflow systems is represented by the [ItemCollection c
 The following example shows how an instance of an ItemCollection can be saved using the _DocumentService_:
  
 ```java
-	  @Inject
-	  DocumentService documentService;
-	  //...
-	
-	  ItemCollection myDocument=new ItemCollection;
-	  myDocument.setItemValue("type","product");
-	  myDocument.setItemValue("name","coffee");
-	  myDocument.setItemValue("weight",new Integer(500));
-	  	
-	  // save ItemCollection
-	  myDocument=documentService.save(myDocument);
+@Inject
+DocumentService documentService;
+//...
+
+ItemCollection myDocument=new ItemCollection;
+myDocument.setItemValue("type","product");
+myDocument.setItemValue("name","coffee");
+myDocument.setItemValue("weight",new Integer(500));
+
+// save ItemCollection
+myDocument=documentService.save(myDocument);
 ```
 
 In this example a new ItemCollection is created and the properties 'type, 'name' and 'weight' are stored into a ItemCollection. The save() method stores the document into the database. If the document is stored the first time, the method generates an ID which can be used to identify the document for later access. This ID is provided in the property '$uniqueid' which will be added automatically by the _DocumentService_. If the document was saved before, the method updates only the items of the document in the database.
@@ -28,15 +28,15 @@ In this example a new ItemCollection is created and the properties 'type, 'name'
 The next example shows how to use the $uniqueid of a stored ItemCollection to load the document from the database. For this the ID is passed to the load() method:
  
 ```java
-	  @Inject
-	  DocumentService documentService;
-	  //...
-	  // save document
-	  myDocument=documentService.save(myDocument);
-	  // get ID from ItemCollection 
-	  String id=myDocument.getUniqueID();
-	  // load the document from database
-	  myDocument=documentService.load(id);
+@Inject
+DocumentService documentService;
+//...
+// save document
+myDocument=documentService.save(myDocument);
+// get ID from ItemCollection 
+String id=myDocument.getUniqueID();
+// load the document from database
+myDocument=documentService.load(id);
 ```
 
 __Note:__ The method load() checks if the CallerPrincipal has read access to a document. If not, the method returns null. The method doesn't throw an AccessDeniedException if the user is not allowed to read the document. This is to prevent an aggressor with informations about the existence of that specific document.
@@ -45,16 +45,16 @@ __Note:__ The method load() checks if the CallerPrincipal has read access to a d
 
 A document is categorized by the item 'type'. The type attribute can be used to group document or select documents by its type.
 
+```java
+ItemCollection myDocument=new ItemCollection;
+myDocument.settemValue("type","product");
+....
+// save ItemCollection
+myDocument=documentService.save(myDocument);
 
-	  ItemCollection myDocument=new ItemCollection;
-	  myDocument.settemValue("type","product");
-	  ....
-	  // save ItemCollection
-	  myDocument=documentService.save(myDocument);
-	  
-	  // select documents by type...
-	  List<ItemCollection> products=documentService.getDocumentsByType("product");
-
+// select documents by type...
+List<ItemCollection> products=documentService.getDocumentsByType("product");
+```
 
 
 ### Creation and Modified Date 
@@ -62,11 +62,10 @@ A document is categorized by the item 'type'. The type attribute can be used to 
 The _DocumentService_ also creates TimeStamps to mark the creation and last modified date of a document. These properties are also part of the document returned by the save method. The items are named "$created" and "$modified".
  
 ```java 
-	  //...
-	  // save ItemCollection
-	  myDocument=documentService.save(myDocument);
-	  Date created=myDocument.getItemValueDate("$Created");
-	  Date modified=myDocument.getItemValueDate("$Modified");
+// save ItemCollection
+myDocument=documentService.save(myDocument);
+Date created=myDocument.getItemValueDate("$Created");
+Date modified=myDocument.getItemValueDate("$Modified");
 ```
 
 ### Immutable Documents
@@ -85,15 +84,15 @@ The find() method of the _DocumentService_ can be used to query documents by a L
 The following example returns all documents starting with the search term 'Imixs':
 
 ```java
-    String serachTerm="(imixs*)";
-    result=documentService.find(serachTerm);
+String serachTerm="(imixs*)";
+result=documentService.find(serachTerm);
 ```
 
 To query for a specific subset of documents, it is also possible to add individual attributes to the search term. The follwoing example will return all documents with the serach term 'imixs' and the Type 'workitem':
 
 ```java
-    String serachTerm="(type:'workitem')(imixs*)";
-    result=documentService.find(serachTerm);
+String serachTerm="(type:'workitem')(imixs*)";
+result=documentService.find(serachTerm);
 ```        
 
 See the section [Query Syntax](queries.html) for details about how to search for documents.
@@ -103,9 +102,9 @@ See the section [Query Syntax](queries.html) for details about how to search for
 The _DocumentService_ finder method can also be called by providing a pagesize and a pageindex. With these parameters navigate by pages through a search result. See the following example: 
 
 ```java
-    String serachTerm="(imixs*)";
-    // return only the first 10 documents 
-    result=documentService.find(serachTerm,10,0);
+String serachTerm="(imixs*)";
+// return only the first 10 documents 
+result=documentService.find(serachTerm,10,0);
 ```
 
 Note that the pageindex starts with 0. 
@@ -115,10 +114,10 @@ Note that the pageindex starts with 0.
 Per default the search result is sorted by the lucene internal score of each document returned by the index. To sort the documents by a specific attribute a sortItem and a sort direction can be given:
 
 ```java
-     String serachTerm="(imixs*)";
-    // return only the first 10 documents 
-    // sort by $created descending
-    result=documentService.findStubs(serachTerm,10,0,'$created',true);
+String serachTerm="(imixs*)";
+// return only the first 10 documents 
+// sort by $created descending
+result=documentService.findStubs(serachTerm,10,0,'$created',true);
 ```
 
 ### Document Stubs 
@@ -126,7 +125,7 @@ Per default the search result is sorted by the lucene internal score of each doc
 The Imixs Search Index provides a feature to store parts of a document directly into the index. This feature allows you to search for the so called 'Document Stubs'. A Document stub contains only a subset of Items from the full Document. This search method is much faster and can be used to display a preview of a document in the result-set like you know it from the Internet search.  
 
 ```java
-	result = documentService.findStubs(query, 100, 0, '$created' , true);
+result = documentService.findStubs(query, 100, 0, '$created' , true);
 ```
 
 You can later load the full document by the $uniqueid which is part of the document stub.   
@@ -164,22 +163,22 @@ All documents are managed by the Java Persistece API (JPA). The Java Persistence
 Additional the _DocumentService_ allows to restrict the read- and write access for a document by providing a [ACL](.acl.html). The items '$readaccess' and '$writeaccess' can be added into a document to restrict the access. The items can provide a list of UserIds or Roles. 
 
 ```java
-	  @Inject
-	  DocumentService documentService;
-	  //...
-	
-	  ItemCollection myDocument=new ItemCollection;
-	  myDocument.setItemValue("type","product");
-	  myDocument.setItemValue("name","coffee");
-	  myDocument.setItemValue("weight",new Integer(500));
-	  
-	  // restrict read access to 'bob'
-	  myDocument.setItemValue("$readaccess","bob");
-	  // restrict write access to 'anna'
-	  myDocument.setItemValue("$readaccess","anna");
-	  	
-	  // save ItemCollection
-	  myDocument=documentService.save(myDocument);
+@Inject
+DocumentService documentService;
+//...
+
+ItemCollection myDocument=new ItemCollection;
+myDocument.setItemValue("type","product");
+myDocument.setItemValue("name","coffee");
+myDocument.setItemValue("weight",new Integer(500));
+
+// restrict read access to 'bob'
+myDocument.setItemValue("$readaccess","bob");
+// restrict write access to 'anna'
+myDocument.setItemValue("$readaccess","anna");
+
+// save ItemCollection
+myDocument=documentService.save(myDocument);
 ```
 
 For further details read the [section ACL](./acl.html).
@@ -200,11 +199,11 @@ Based on CDI Events your can inject custom user groups from your own application
 The typically implementation of this mechanism is done by an CDI observer pattern:
  
 ```java 
-	public void onUserGroupEvent(@Observes UserGroupEvent userGroupEvent) {
-		List<String> customGroups = new ArrayList<String>();
-		customGroups.add("my-group");
-		userGroupEvent.setGroups(customGroups);
-	}
+public void onUserGroupEvent(@Observes UserGroupEvent userGroupEvent) {
+	List<String> customGroups = new ArrayList<String>();
+	customGroups.add("my-group");
+	userGroupEvent.setGroups(customGroups);
+}
 ```	
   
 ## The CDI DocumentEvent
@@ -226,13 +225,13 @@ The class _DocumentEvent_ defines the following event types:
 This _DocumentEvent_ can be consumed by another Session Bean or managed bean implementing the @Observes annotation: 
 
 ```java
-	@Stateless
-	public class DocumentServiceListener {
-	    public void onEvent(@Observes DocumentEvent documentEvent){
-	        ItemCollection document=documentEvent.getDocument();
-	        System.out.println("Received DocumentEvent Type = " + documentEvent.getType());
-    	}
+@Stateless
+public class DocumentServiceListener {
+	public void onEvent(@Observes DocumentEvent documentEvent){
+		ItemCollection document=documentEvent.getDocument();
+		System.out.println("Received DocumentEvent Type = " + documentEvent.getType());
 	}
+}
 ```
 
 In both event types, an observer client can change the data of the document.  

@@ -51,17 +51,19 @@ A timer configuration can be created with the following item definitions:
 
 The Scheduler configuration object can also be created by the *WorkflowSchedulerController* bean:
 
-	@Inject 
-	WorkflowSchedulerController workflowSchedulerController;
-    
-    public void setup() {
-        ItemCollection config=workflowSchedulerController.getConfiguration();
-        config.setItemValue("_scheduler_definition", "hour=*");
-        config.appendItemValue("_scheduler_definition", "minute=/5");
-        workflowSchedulerController.setConfiguration(config);
-        workflowSchedulerController.saveConfiguration();
-        workflowSchedulerController.startScheduler();
-    }
+```java
+@Inject 
+WorkflowSchedulerController workflowSchedulerController;
+
+public void setup() {
+	ItemCollection config=workflowSchedulerController.getConfiguration();
+	config.setItemValue("_scheduler_definition", "hour=*");
+	config.appendItemValue("_scheduler_definition", "minute=/5");
+	workflowSchedulerController.setConfiguration(config);
+	workflowSchedulerController.saveConfiguration();
+	workflowSchedulerController.startScheduler();
+}
+```
 
 With the method call startScheduler() the workflow scheduler will be started. 
 

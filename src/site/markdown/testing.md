@@ -8,12 +8,12 @@ The `WorkflowService` provides a method called `evalNextTask`. This method evalu
 
 
 ```java
-	try {
-		// simulate the processing life cycle of a given workitem
-		ItemCollection nextTaskEnity = workflowService.evalNextTask(workitem);
-	} catch (ModelException e) {
-		throw new PluginException(DocumentComposerPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
-	}
+try {
+	// simulate the processing life cycle of a given workitem
+	ItemCollection nextTaskEnity = workflowService.evalNextTask(workitem);
+} catch (ModelException e) {
+	throw new PluginException(DocumentComposerPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
+}
 ```
 
 **Note:** During the evaluation life-cycle more than one events can be evaluated. This depends on the model definition which can define follow-up-events, split-events and conditional events. The `evalNextTask` method did not persist the process instance or execute any plugin or adapter classes.
@@ -93,12 +93,12 @@ public class TestTemplate {
 To setup a test case the Imixs `WorkflowMockEnvironment`   provides a setup method to initialize the environment and a loadBPMNModel method to load a test model. To setup the environment it is recommended to call the setup() method in a `org.junit.jupiter.api.BeforeEach` annotated init method:
 
 ```java
-	@BeforeEach
-	public void setUp() throws PluginException, ModelException {
-		workflowEnvironment = new WorkflowMockEnvironment();
-		workflowEnvironment.setUp();
-		workflowEnvironment.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
-	}
+@BeforeEach
+public void setUp() throws PluginException, ModelException {
+	workflowEnvironment = new WorkflowMockEnvironment();
+	workflowEnvironment.setUp();
+	workflowEnvironment.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
+}
 ```
   
  
@@ -106,16 +106,16 @@ To setup a test case the Imixs `WorkflowMockEnvironment`   provides a setup meth
 The main goal of the  `WorkflowMockEnvironment` is to test business logic of a specific workflow model. A workflow instance can be created form a empty ItemCollection and tested with any kind of data.
 
 ```java
-	// Load a test model
-	workflowEnvironment.loadBPMNModel("/bpmn/myModel.bpmn");
-	// Create a workflow instance with some business data
-	ItemCollection workitem = new ItemCollection();
-	workitem.replaceItemValue("_budget", 99);
-	// process the workflow instance....
-	workitem.model("1.0.0").task(1000).event(10);
-	workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
-	// evaluate the results....
-	Assert.assertEquals(1200, workitem.getTaskID());
+// Load a test model
+workflowEnvironment.loadBPMNModel("/bpmn/myModel.bpmn");
+// Create a workflow instance with some business data
+ItemCollection workitem = new ItemCollection();
+workitem.replaceItemValue("_budget", 99);
+// process the workflow instance....
+workitem.model("1.0.0").task(1000).event(10);
+workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
+// evaluate the results....
+Assert.assertEquals(1200, workitem.getTaskID());
 ```
 
  

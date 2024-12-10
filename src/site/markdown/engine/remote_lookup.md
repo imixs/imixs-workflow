@@ -4,12 +4,12 @@ Imixs-Workflow supports CDI for all service components which makes it easy to ti
 For example an bean or a Resource can be easily injected into a plugin class by the corresponding annotation. See the following example injecting the `ModelService`:
 
 ```java
-	public class DemoPlugin extends AbstractPlugin {
-		// inject services...
-		@Inject
-		ModelService modelService;
-		...
-	}
+public class DemoPlugin extends AbstractPlugin {
+	// inject services...
+	@Inject
+	ModelService modelService;
+	...
+}
 ```
 
 # EJB JNDI Lookup
@@ -18,15 +18,15 @@ In some situations where CDI does not work, it can be necessary to fetch a Servi
 The following Example shows a JNDI Lookup for an external Service EJB from the WorkflowService:
  
 ```java
-	MyServiceBean myService;
-	try {
-		String ejbName="ejb/MyServiceBean";
-		InitialContext ic = new InitialContext();
-		myService = (MyServiceBean) ic.lookup(ejbName);
-	} catch (Exception e) {
-		e.printStackTrace();
-		workflowService = null;
-	}
+MyServiceBean myService;
+try {
+	String ejbName="ejb/MyServiceBean";
+	InitialContext ic = new InitialContext();
+	myService = (MyServiceBean) ic.lookup(ejbName);
+} catch (Exception e) {
+	e.printStackTrace();
+	workflowService = null;
+}
 ```
 
 The JNDI Name is defined by the application server. To lookup a EJB or resource by JNDI name, the name need to be configured in ejb-jar.xml. The following example shows the configuration for wildfly:
