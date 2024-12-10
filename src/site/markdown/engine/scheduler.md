@@ -15,9 +15,10 @@ A new scheduler can be easily implemented by just implementing the interface _or
 The SchedulerService will automatically call the concrete scheduler implementation defined in the scheduler configuration document (_scheduler_class). The scheduler class will be injected via CDI so all type of beans and resources supported by CDI can be used. 
 
 
+```java
 	public class MyScheduler implements Scheduler {
 		...
-		@EJB
+		@Inject
 		WorkflowService workflowService;
 	
 		public ItemCollection run(ItemCollection configuration) throws SchedulerException {
@@ -32,3 +33,4 @@ The SchedulerService will automatically call the concrete scheduler implementati
 			return configuration;
 		}
 	}  
+```

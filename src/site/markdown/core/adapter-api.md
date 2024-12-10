@@ -47,9 +47,9 @@ The Imixs Adapter-API defines the call-back method '_execute_'. This method is c
 The Imixs-Workflow Adapter API also supports CDI. In this way an EJB or Resource can be injected into an adapter class by the corresponding CDI annotation. See the following example:
 
 ```java
-public class DemoAdapter implements org.imixs.workflow.SignalAdapter {
+public class DemoAdapter implements SignalAdapter {
 	// inject services...
-	@EJB
+	@Inject
 	ModelService modelService;
 	...
 	@Override

@@ -9,8 +9,9 @@ A Document in the Imixs-Workflow systems is represented by the [ItemCollection c
  
 The following example shows how an instance of an ItemCollection can be saved using the _DocumentService_:
  
-	  @EJB
-	  org.imixs.workflow.jee.ejb.DocumentService documentService;
+```java
+	  @Inject
+	  DocumentService documentService;
 	  //...
 	
 	  ItemCollection myDocument=new ItemCollection;
@@ -20,13 +21,15 @@ The following example shows how an instance of an ItemCollection can be saved us
 	  	
 	  // save ItemCollection
 	  myDocument=documentService.save(myDocument);
+```
 
 In this example a new ItemCollection is created and the properties 'type, 'name' and 'weight' are stored into a ItemCollection. The save() method stores the document into the database. If the document is stored the first time, the method generates an ID which can be used to identify the document for later access. This ID is provided in the property '$uniqueid' which will be added automatically by the _DocumentService_. If the document was saved before, the method updates only the items of the document in the database.
   
 The next example shows how to use the $uniqueid of a stored ItemCollection to load the document from the database. For this the ID is passed to the load() method:
  
-	  @EJB
-	  org.imixs.workflow.jee.ejb.DocumentService documentService;
+```java
+	  @Inject
+	  DocumentService documentService;
 	  //...
 	  // save document
 	  myDocument=documentService.save(myDocument);
@@ -34,10 +37,12 @@ The next example shows how to use the $uniqueid of a stored ItemCollection to lo
 	  String id=myDocument.getUniqueID();
 	  // load the document from database
 	  myDocument=documentService.load(id);
- 
+```
+
 __Note:__ The method load() checks if the CallerPrincipal has read access to a document. If not, the method returns null. The method doesn't throw an AccessDeniedException if the user is not allowed to read the document. This is to prevent an aggressor with informations about the existence of that specific document.
 
 ### The Document Type
+
 A document is categorized by the item 'type'. The type attribute can be used to group document or select documents by its type.
 
 
@@ -53,13 +58,16 @@ A document is categorized by the item 'type'. The type attribute can be used to 
 
 
 ### Creation and Modified Date 
+
 The _DocumentService_ also creates TimeStamps to mark the creation and last modified date of a document. These properties are also part of the document returned by the save method. The items are named "$created" and "$modified".
  
+```java 
 	  //...
 	  // save ItemCollection
 	  myDocument=documentService.save(myDocument);
 	  Date created=myDocument.getItemValueDate("$Created");
 	  Date modified=myDocument.getItemValueDate("$Modified");
+```
 
 ### Immutable Documents
 
@@ -76,26 +84,29 @@ The find() method of the _DocumentService_ can be used to query documents by a L
 
 The following example returns all documents starting with the search term 'Imixs':
 
+```java
     String serachTerm="(imixs*)";
     result=documentService.find(serachTerm);
+```
 
 To query for a specific subset of documents, it is also possible to add individual attributes to the search term. The follwoing example will return all documents with the serach term 'imixs' and the Type 'workitem':
 
-
+```java
     String serachTerm="(type:'workitem')(imixs*)";
     result=documentService.find(serachTerm);
-        
+```        
 
 See the section [Query Syntax](queries.html) for details about how to search for documents.
-
  
 
 ### Pagination
 The _DocumentService_ finder method can also be called by providing a pagesize and a pageindex. With these parameters navigate by pages through a search result. See the following example: 
 
+```java
     String serachTerm="(imixs*)";
     // return only the first 10 documents 
     result=documentService.find(serachTerm,10,0);
+```
 
 Note that the pageindex starts with 0. 
 
@@ -103,33 +114,37 @@ Note that the pageindex starts with 0.
 
 Per default the search result is sorted by the lucene internal score of each document returned by the index. To sort the documents by a specific attribute a sortItem and a sort direction can be given:
 
+```java
      String serachTerm="(imixs*)";
     // return only the first 10 documents 
     // sort by $created descending
     result=documentService.findStubs(serachTerm,10,0,'$created',true);
- 
+```
+
 ### Document Stubs 
 
 The Imixs Search Index provides a feature to store parts of a document directly into the index. This feature allows you to search for the so called 'Document Stubs'. A Document stub contains only a subset of Items from the full Document. This search method is much faster and can be used to display a preview of a document in the result-set like you know it from the Internet search.  
 
+```java
 	result = documentService.findStubs(query, 100, 0, '$created' , true);
+```
 
 You can later load the full document by the $uniqueid which is part of the document stub.   
  
-### Count Total Hits 
+### Count Total Hits
+
 The method *count(String)* can be used to compute the total hits of a  specific serach term.  The method expects the same search term as for the find() method but returns only the count of documents. The method counts only ItemCollections which are accessible by the CallerPrincipal.
 
 ### Count Total Pages
+
 The method *countPages(String,int)* can be used to compute the total pages of a  specific search term by a given page size.  The method expects the same search term as for the find() method but returns only the count of documents. The method counts only ItemCollections which are accessible by the CallerPrincipal.
 
 
 ### Ignore Index
+
 The DocumentService adds a document automatically into the Lucene search index. This default behavior can be deactivated on document level. To skip a document from indexing the item '$noindex' can be set to 'true'. In this case the document will not be added/updated in the lucene index. If the document is already indexed it will be removed from the index. 
  
- 
- 
- 
- 
+
  
 ## Query Documents 
  
@@ -148,8 +163,9 @@ All documents are managed by the Java Persistece API (JPA). The Java Persistence
 ## The Access Control List of a Document
 Additional the _DocumentService_ allows to restrict the read- and write access for a document by providing a [ACL](.acl.html). The items '$readaccess' and '$writeaccess' can be added into a document to restrict the access. The items can provide a list of UserIds or Roles. 
 
-	  @EJB
-	  org.imixs.workflow.jee.ejb.DocumentService documentService;
+```java
+	  @Inject
+	  DocumentService documentService;
 	  //...
 	
 	  ItemCollection myDocument=new ItemCollection;
@@ -164,6 +180,7 @@ Additional the _DocumentService_ allows to restrict the read- and write access f
 	  	
 	  // save ItemCollection
 	  myDocument=documentService.save(myDocument);
+```
 
 For further details read the [section ACL](./acl.html).
 
@@ -182,19 +199,22 @@ Based on CDI Events your can inject custom user groups from your own application
  
 The typically implementation of this mechanism is done by an CDI observer pattern:
  
+```java 
 	public void onUserGroupEvent(@Observes UserGroupEvent userGroupEvent) {
 		List<String> customGroups = new ArrayList<String>();
 		customGroups.add("my-group");
 		userGroupEvent.setGroups(customGroups);
 	}
-	
+```	
   
 ## The CDI DocumentEvent
 
 The DocumentService EJB provides an Observer Pattern based on CDI Events. The events are fired when a document is loaded or saved.
 The Event is defined by the class:
 
+```java
     org.imixs.workflow.engine.DocumentEvent
+```
 
 The class _DocumentEvent_ defines the following event types:
 
@@ -205,6 +225,7 @@ The class _DocumentEvent_ defines the following event types:
 
 This _DocumentEvent_ can be consumed by another Session Bean or managed bean implementing the @Observes annotation: 
 
+```java
 	@Stateless
 	public class DocumentServiceListener {
 	    public void onEvent(@Observes DocumentEvent documentEvent){
@@ -212,5 +233,6 @@ This _DocumentEvent_ can be consumed by another Session Bean or managed bean imp
 	        System.out.println("Received DocumentEvent Type = " + documentEvent.getType());
     	}
 	}
+```
 
 In both event types, an observer client can change the data of the document.  

@@ -15,6 +15,7 @@ Plugins or Adapter classes can access the data object by the ModelService:
 
 ### Plug-In Example:
 
+```java
 	public class MyPlugin implements Plugin {
 	   	@Inject
 	    ModelService modelService;
@@ -25,15 +26,17 @@ Plugins or Adapter classes can access the data object by the ModelService:
 			....
 		}
 	}
+```
 
 This example plug-in code extracts the Data stored in a BPMN Data Object with the name 'MyObject' associated to an Event Element. The method 'getDataObject' returns null if no DataObject with the given name is associated with the event element.
 
 
 ### Adapter Example:
 
+```java
 	public class DemoAdapter implements org.imixs.workflow.SignalAdapter {
 	    // inject services...
-	    @EJB
+	    @Inject
 	    ModelService modelService;
 	    ...
 	    @Override
@@ -44,7 +47,7 @@ This example plug-in code extracts the Data stored in a BPMN Data Object with th
 			....
 		}
 	}
-	
+```	
 
 This adapter example extracts the Data stored in a BPMN Data Object with the name 'MyObject' associated to an Event Element. The method 'getDataObject' returns null if no DataObject with the given name is associated with the event element.
 
@@ -63,6 +66,7 @@ Data Object can be either associated with a Event or a Task element. To get the 
 
 As an alternative you can access the DataObject directly from the Open-BPMN model instance. See the following example:
 
+```java
 	public class DemoAdapter implements org.imixs.workflow.SignalAdapter {
 	    // inject services...
 	    @Inject
@@ -80,5 +84,5 @@ As an alternative you can access the DataObject directly from the Open-BPMN mode
 			....
 		}
 	}
-
+```
  

@@ -91,9 +91,9 @@ The following fields part of the Job description are defined by the AdminP servi
  
 A JobHandler may throw a AdminPException if something went wrong. See the following example of a JobHandler implementation:
 
-
+```java
 	public class JobHandlerDemo implements JobHandler {
-		@EJB
+		@Inject
 		DocumentService documentService;
 		
 		@Override
@@ -115,8 +115,9 @@ A JobHandler may throw a AdminPException if something went wrong. See the follow
 			return adminp;
 		}
 	}
+```
 
-To start the JobHandler via the AdminP Service interface the attriubte 'job' must be set to the class name of the CDI Bean. 
+To start the JobHandler via the AdminP Service interface the attribute 'job' must be set to the class name of the CDI Bean. 
 
 
 ## Initialize an JobHandler via a Rest API call

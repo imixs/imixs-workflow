@@ -57,8 +57,9 @@ From you code you can access the Imixs-Workflow engine by injection.
 
 Let's see what this looks like in your Java code:
 
-	@EJB
-	private org.imixs.workflow.engine.WorkflowService workflowService;
+```java
+	@Inject
+	private WorkflowService workflowService;
 
 	ItemCollection workitem=new ItemCollection().model("1.0.0").task(1000).event(10);
 	// assign some business data...
@@ -66,9 +67,9 @@ Let's see what this looks like in your Java code:
 	workitem.setItemValue("_ordernumber",20051234);
 	// process the workitem
 	workitem = workflowService.processWorkItem(workitem);
+```
 
-
-1. You inject the Workflow Engine with the annotation @EJB. 
+1. You inject the Workflow Engine with the annotation @Inject. 
 2. Next you create a new business object and assign it to your model. 
 3. You also can add your own business data. 
 4. Finally you 'process' your object. 
@@ -76,16 +77,20 @@ Let's see what this looks like in your Java code:
 From now on the newly created **Process Instance** is under the control of your business model. 
 After you have created a new process instance you can use the _UniqueID_ to access the instance later: 
    
+```java
     String uniqueID=workitem.getUnqiueID();
     ....
     // load the instance
     ItemCollection workitem=workflowService.getWorkItem(unqiueID);
     ....
+```
 
 Depending on the design of your workflow model a process instance can be assigned to a team or a single process participant. E.g. the method _getWorkListByOwner_ can be used to select all process instances belonging to
 a specified participant:
 
+```java
 	List<ItemCollection> result=workflowService.getWorkListByOwner("melman", "workitem", 30, 0,null,false);  
+```
 
 See the documentation of the [WorkflowService](engine/workflowservice.html) for more details. 
 

@@ -15,7 +15,7 @@ where '/workflow/' is the context root of your workflow application and '/api/' 
 To deploy a BPMN model you can use the [command-line tool curl](https://en.wikipedia.org/wiki/CURL) to upload a Imixs BPMN 2.0 model into a Imixs-Workflow instance. 
 See the following example:
  
-	curl --user admin:adminpassword --request POST -Tticket.bpmn http://localhost:8080/api/model/bpmn
+	curl --user admin:adminpassword --request POST -Ticket.bpmn http://localhost:8080/api/model/bpmn
  
 This example deploys the bpmn file 'ticket.bpmn' into the Imixs-Workflow Instance 'http://localhost:8080/workflow/'. The result of the deployment can be verified in the server log:
 
@@ -35,14 +35,15 @@ To delete a specific model version the Imxis-Rest API provides a DELETE command
   
  
 ## How to Deploy a Model from a Java Application
-You can also use the Imixs ModelService to deploy a BPMN model programtically. In this case you call the Model Service EJB form your application to deploy a model. The following example demonstrates  the API call:
+You can also use the Imixs ModelService to deploy a BPMN model programmatically. In this case you call the Model Service EJB form your application to deploy a model. The following example demonstrates  the API call:
  
+```java
 	import org.imixs.workflow.bpmn.BPMNModel;
 	import org.imixs.workflow.bpmn.BPMNParser;
 	import org.imixs.workflow.jee.ejb.ModelService;
 	....
 	
-	@EJB
+	@Inject
 	protected ModelService modelService;
 	
 	.....
@@ -53,6 +54,7 @@ You can also use the Imixs ModelService to deploy a BPMN model programtically. I
 	BPMNModel model = BPMNParser.parseModel(file.getData(), "UTF-8");
 	modelService.importBPMNModel(model);
 	... 
+```
  
 You can find more information about the Imixs-Workflow services in the [section Imixs-Workflow Engine](../engine/index.html).
  
