@@ -15,7 +15,7 @@ In Imixs-Workflow you can design and execute your business process with the help
 
 <img src="./images/bpmn-example01.png"  />
 
-You will learn to design your own business process in the section "[How to Model with Imixs-BPMN](.//modelling/howto.html)". To install Imixs-BPMN see the [installation guide](./modelling/install.html).
+You will learn to design your own business process in the section "[How to Model with Imixs-BPMN](./modelling/howto.html)". To install Imixs-BPMN see the [installation guide](./modelling/install.html).
 
 ## How to Integrate 
 
