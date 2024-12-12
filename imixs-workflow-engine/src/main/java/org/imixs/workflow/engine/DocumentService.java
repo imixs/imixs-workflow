@@ -277,15 +277,17 @@ public class DocumentService {
 	 * @param nameList
 	 * @return
 	 */
-	public boolean isUserContained(List<String> nameList) {
+	public boolean isUserContained(List<?> nameList) {
 		if (nameList == null) {
 			return false;
 		}
 		List<String> userNameList = getUserNameList();
 		// check each element of the given nameList
-		for (String aName : nameList) {
-			if (aName != null && !aName.isEmpty()) {
-				if (userNameList.stream().anyMatch(aName::equals)) {
+		for (Object item : nameList) {
+			if (item != null) {
+				String aName = item.toString();
+				if (!aName.isEmpty() &&
+						userNameList.stream().anyMatch(aName::equals)) {
 					return true;
 				}
 			}
@@ -1199,7 +1201,7 @@ public class DocumentService {
 	 */
 	public boolean isAuthor(ItemCollection itemcol) {
 		@SuppressWarnings("unchecked")
-		List<String> writeAccessList = itemcol.getItemValue(WRITEACCESS);
+		List<?> writeAccessList = itemcol.getItemValue(WRITEACCESS);
 
 		/**
 		 * 1.) org.imixs.ACCESSLEVEL.NOACCESS allways false - now write access!
