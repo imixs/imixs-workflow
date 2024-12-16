@@ -182,6 +182,40 @@
 			</plugin>
 
 
+			<!-- Maven Site Sitemap.xml Generator -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>xml-maven-plugin</artifactId>
+				<version>1.0.2</version>
+				<executions>
+					<execution>
+						<!-- Run only in parent and only i phase 'site'  -->
+						<phase>site</phase>
+						<goals>
+							<goal>transform</goal>
+						</goals>
+						<inherited>false</inherited>
+					</execution>
+				</executions>
+				<configuration>
+					<transformationSets>
+						<transformationSet>
+							<dir>${project.basedir}/src/site</dir>
+							<includes>
+								<include>site.xml</include>
+							</includes>
+							<stylesheet>${project.basedir}/src/site/site-to-sitemap.xsl</stylesheet>
+							<outputDir>${project.build.directory}/site</outputDir>
+							<fileMappers>
+								<fileMapper
+									implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+									<targetExtension>.xml</targetExtension>
+								</fileMapper>
+							</fileMappers>
+						</transformationSet>
+					</transformationSets>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
