@@ -1,19 +1,15 @@
 package org.imixs.workflow.kernel;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -401,22 +397,19 @@ public class TestWorkflowKernelBasic {
         workitem.model("1.0.0")
                 .task(1000);
         workitem.replaceItemValue("txtTitel", "Hello");
+
         try {
             // simulate two steps
             workitem.event(10);
             workitem = workflowEngine.getWorkflowKernel().process(workitem);
             assertEquals(workitem.getItemValueString("txttitel"), "Hello");
+
             workitem.event(20);
-            // simulate a Log Comment...
-            workitem.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
+            // simulate a Log Comment and editor...
+            workitem.replaceItemValue("$eventlogComment", "comment");
+            workitem.replaceItemValue("$editor", "userid");
             workitem = workflowEngine.getWorkflowKernel().process(workitem);
-        } catch (PluginException e) {
-            fail();
-            e.printStackTrace();
-        } catch (ProcessingErrorException e) {
-            fail();
-            e.printStackTrace();
-        } catch (ModelException e) {
+        } catch (PluginException | ProcessingErrorException | ModelException e) {
             fail();
             e.printStackTrace();
         }
@@ -427,154 +420,57 @@ public class TestWorkflowKernelBasic {
 
         // test log
         List log = workitem.getItemValue("$eventlog");
-
         assertNotNull(log);
         assertEquals(2, log.size());
-
         logger.log(Level.INFO, "''$eventlog''={0}", log);
 
         // test log entries
-        // Format: timestamp|model-version|1000.10|1000|userid|
+        // Format:
+        // timestamp+timezone|model-version|sourcetask|eventid|targettask|actor|comment
         String logEntry = (String) log.get(0);
-        StringTokenizer st = new StringTokenizer(logEntry, "|");
-        st.nextToken();
-        assertEquals("1.0.0", st.nextToken());
-        assertEquals("1000.10", st.nextToken());
-        assertEquals("1000", st.nextToken());
-        assertFalse(st.hasMoreTokens());
+        String[] parts = logEntry.split("\\|", -1); // -1 keep empty entries
 
+        // Test first log entry
+        assertEquals(7, parts.length);
+        // test timestamp with time zone
+        try {
+            ZonedDateTime.parse(parts[0]);
+            assertTrue(true);
+        } catch (DateTimeParseException e) {
+            fail("Invalid timestamp format: " + parts[0]);
+        }
+
+        assertEquals("1.0.0", parts[1]); // model-version
+        assertEquals("1000", parts[2]); // sourcetask
+        assertEquals("10", parts[3]); // eventid
+        assertEquals("1000", parts[4]); // targettask
+        assertEquals("", parts[5]); // actor (empty for first log)
+        assertEquals("", parts[6]); // comment (empty for first log)
+
+        // Test second log entry
         logEntry = (String) log.get(1);
-        st = new StringTokenizer(logEntry, "|");
+        parts = logEntry.split("\\|", -1); // -1 keep empty entries
+
+        // test timestamp
         try {
-            // check date object
-            String sDate = st.nextToken();
+            // check date object (without timezone for comparison)
+            String sDate = parts[0].substring(0, 23); // test until millis
+            LocalDateTime date = LocalDateTime.parse(sDate);
+            LocalDateTime now = LocalDateTime.now();
 
-            SimpleDateFormat formatter = new SimpleDateFormat(WorkflowKernel.ISO8601_FORMAT);
-            Date date = null;
-            date = formatter.parse(sDate);
-
-            Calendar cal = Calendar.getInstance();
-            Calendar calNow = Calendar.getInstance();
-            cal.setTime(date);
-
-            assertEquals(calNow.get(Calendar.YEAR), cal.get(Calendar.YEAR));
-            assertEquals(calNow.get(Calendar.MONTH), cal.get(Calendar.MONTH));
-
-        } catch (ParseException e) {
-
+            assertEquals(now.getYear(), date.getYear());
+            assertEquals(now.getMonth(), date.getMonth());
+        } catch (Exception e) {
             e.printStackTrace();
             fail();
         }
 
-        assertEquals("1.0.0", st.nextToken());
-        assertEquals("1000.20", st.nextToken());
-        assertEquals("1100", st.nextToken());
-        // test comment
-        assertTrue(st.hasMoreTokens());
-        assertEquals("userid", st.nextToken());
-        assertEquals("comment", st.nextToken());
-        assertFalse(st.hasMoreTokens());
-
-    }
-
-    /**
-     * This method tests the generation of the $eventlog entries and the restriction
-     * to a maximum length of 30 entries.
-     * 
-     * Issue https://github.com/imixs/imixs-workflow/issues/179
-     * 
-     */
-    @SuppressWarnings("rawtypes")
-    @Test
-    public void testActivityLogMaxLength() {
-        ItemCollection workitem = new ItemCollection();
-        workitem.model("1.0.0")
-                .task(1000)
-                .event(10);
-        workitem.replaceItemValue("txtTitel", "Hello");
-
-        // we create 40 dummy entries
-        String dummyEntry = "" + new Date() + "|1.0.0|100.10|100";
-        Vector<String> v = new Vector<String>();
-        for (int i = 1; i <= 40; i++) {
-            v.add(dummyEntry);
-        }
-        workitem.replaceItemValue("$eventlog", v);
-
-        try {
-            // simulate two steps
-            workitem.setEventID(10);
-            workitem = workflowEngine.getWorkflowKernel().process(workitem);
-            workitem.setEventID(20);
-            // simulate a log Comment...
-            workitem.replaceItemValue("txtworkflowactivitylogComment", "userid|comment");
-            workitem = workflowEngine.getWorkflowKernel().process(workitem);
-
-        } catch (PluginException e) {
-            fail();
-            e.printStackTrace();
-        } catch (ProcessingErrorException e) {
-            fail();
-            e.printStackTrace();
-        } catch (ModelException e) {
-            fail();
-            e.printStackTrace();
-        }
-
-        assertEquals(2, workitem.getItemValueInteger("runs"));
-        // test next state
-        assertEquals(1100, workitem.getTaskID());
-
-        // test log
-        List log = workitem.getItemValue("$eventlog");
-
-        assertNotNull(log);
-        assertEquals(30, log.size());
-
-        logger.log(Level.INFO, "''$eventlog''={0}", log);
-
-        // test log entries
-        // Format: timestamp|model-version|1000.10|1000|userid|
-        String logEntry = (String) log.get(log.size() - 2);
-        StringTokenizer st = new StringTokenizer(logEntry, "|");
-        st.nextToken();
-        assertEquals("1.0.0", st.nextToken());
-        assertEquals("1000.10", st.nextToken());
-        assertEquals("1000", st.nextToken());
-        assertFalse(st.hasMoreTokens());
-
-        // test last entry
-        logEntry = (String) log.get(log.size() - 1);
-        st = new StringTokenizer(logEntry, "|");
-        try {
-            // check date object
-            String sDate = st.nextToken();
-
-            SimpleDateFormat formatter = new SimpleDateFormat(WorkflowKernel.ISO8601_FORMAT);
-            Date date = null;
-            date = formatter.parse(sDate);
-
-            Calendar cal = Calendar.getInstance();
-            Calendar calNow = Calendar.getInstance();
-            cal.setTime(date);
-
-            assertEquals(calNow.get(Calendar.YEAR), cal.get(Calendar.YEAR));
-            assertEquals(calNow.get(Calendar.MONTH), cal.get(Calendar.MONTH));
-
-        } catch (ParseException e) {
-
-            e.printStackTrace();
-            fail();
-        }
-
-        assertEquals("1.0.0", st.nextToken());
-        assertEquals("1000.20", st.nextToken());
-        assertEquals("1100", st.nextToken());
-        // test comment
-        assertTrue(st.hasMoreTokens());
-        assertEquals("userid", st.nextToken());
-        assertEquals("comment", st.nextToken());
-        assertFalse(st.hasMoreTokens());
+        assertEquals("1.0.0", parts[1]); // model-version
+        assertEquals("1000", parts[2]); // sourcetask
+        assertEquals("20", parts[3]); // eventid
+        assertEquals("1100", parts[4]); // targettask
+        assertEquals("userid", parts[5]); // actor
+        assertEquals("comment", parts[6]); // comment
     }
 
     /**

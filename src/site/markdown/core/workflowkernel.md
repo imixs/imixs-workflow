@@ -125,5 +125,5 @@ Example:
 	 2014-08-10T16:45:32.125|1.0.0|100.10|100|
 	 2014-08-10T16:47:12.332|1.0.0|100.20|200|userid|comment
 
-The comment is an optional value which can be provided by a [plugin](./plugin-api.html). A comment is stored in the property 'txtworkflowactivitylogComment' of the current process instance. If no _txtworkflowactivitylogComment_ attribute is provided the comment section will be empty.
+The comment is an optional value which can be provided by a [plugin](./plugin-api.html). A comment is stored in the property `$eventLogComment` of the current process instance. If no `$eventLogComment` attribute is provided the comment section will be empty.
 
