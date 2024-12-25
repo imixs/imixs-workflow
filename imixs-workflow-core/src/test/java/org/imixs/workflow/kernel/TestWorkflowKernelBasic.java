@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -471,6 +472,75 @@ public class TestWorkflowKernelBasic {
         assertEquals("1100", parts[4]); // targettask
         assertEquals("userid", parts[5]); // actor
         assertEquals("comment", parts[6]); // comment
+    }
+
+    /**
+     * This test verifies the migration of old eventlog entries into the new format
+     * 
+     * @See Issue 890
+     */
+    @Test
+    public void testEventLogMigration() {
+        ItemCollection workitem = new ItemCollection();
+        workitem.model("1.0.0")
+                .task(1000);
+        workitem.replaceItemValue("txtTitel", "Hello");
+
+        // Create old format log entries
+        List<String> oldLogEntries = new ArrayList<>();
+        oldLogEntries.add("2024-08-27T12:04:20.469|1.0.0|1000.10|1000|");
+        oldLogEntries.add("2024-08-27T12:05:30.127|1.0.0|1000.20|1100|comment");
+        workitem.replaceItemValue("$eventlog", oldLogEntries);
+
+        // Add a new log entry which should trigger the migration
+        try {
+            workitem.replaceItemValue("$editor", "john");
+            workitem.event(10);
+            workitem = workflowEngine.getWorkflowKernel().process(workitem);
+        } catch (Exception e) {
+            fail();
+            e.printStackTrace();
+        }
+
+        // Test if old entries were backed up
+        assertTrue(workitem.hasItem("$eventlogdeprecated"));
+        List oldBackupLog = workitem.getItemValue("$eventlogdeprecated");
+        assertEquals(2, oldBackupLog.size());
+        assertEquals(oldLogEntries.get(0), oldBackupLog.get(0));
+        assertEquals(oldLogEntries.get(1), oldBackupLog.get(1));
+
+        // Verify the new eventlog format
+        List newLog = workitem.getItemValue("$eventlog");
+        // We expect all entries to be in new format
+        assertNotNull(newLog);
+
+        // Test new log entry format
+        String logEntry = (String) newLog.get(0);
+        String[] parts = logEntry.split("\\|", -1);
+        assertEquals(7, parts.length);
+
+        try {
+            ZonedDateTime.parse(parts[0]);
+            assertTrue(true);
+        } catch (DateTimeParseException e) {
+            fail("Invalid timestamp format: " + parts[0]);
+        }
+
+        // Test if a second migration attempt has no effect
+        int currentSize = newLog.size();
+        try {
+            workitem.event(10);
+            workitem = workflowEngine.getWorkflowKernel().process(workitem);
+        } catch (Exception e) {
+            fail();
+            e.printStackTrace();
+        }
+        List finalLog = workitem.getItemValue("$eventlog");
+        assertEquals(currentSize + 1, finalLog.size());
+
+        // Test if backup remained unchanged
+        List finalBackupLog = workitem.getItemValue("$eventlogdeprecated");
+        assertEquals(oldBackupLog, finalBackupLog);
     }
 
     /**

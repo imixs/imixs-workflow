@@ -1045,10 +1045,10 @@ public class WorkflowKernel {
     private ItemCollection logEvent(int taskID, int eventID, int targetTaskID, final ItemCollection workitem) {
         ItemCollection documentResult = workitem;
 
-        List<String> existingLogEntries = (List<String>) workitem.getItemValue(EVENTLOG);
-
         // Migration check for deprecated log entries.
-        migrateOldEventLogFormat(workitem);
+        migrateDeprecatedEventLogFormat(workitem);
+
+        List<String> existingLogEntries = (List<String>) workitem.getItemValue(EVENTLOG);
 
         // Create new log entry...
         StringBuilder logEntry = new StringBuilder();
@@ -1092,7 +1092,7 @@ public class WorkflowKernel {
      * @param workitem - the workitem to be migrated
      */
     @SuppressWarnings("unchecked")
-    private void migrateOldEventLogFormat(ItemCollection workitem) {
+    private void migrateDeprecatedEventLogFormat(ItemCollection workitem) {
         if (workitem.hasItem("$eventlogdeprecated")) {
             // already migrated
             return;
@@ -1113,7 +1113,57 @@ public class WorkflowKernel {
                 && parts[2].contains(".")) {
             // backup old format
             workitem.setItemValue("$eventlogdeprecated", logEntries);
+
+            // Create new list with migrated entries
+            List<String> migratedEntries = new ArrayList<>();
+            for (String oldEntry : logEntries) {
+                String migratedEntry = migrateDeprecatedLogEntry(oldEntry);
+                migratedEntries.add(migratedEntry);
+            }
+            // Update eventlog with migrated entries
+            workitem.replaceItemValue(EVENTLOG, migratedEntries);
         }
+    }
+
+    /**
+     * Converts a single log entry from old to new format
+     * Old: timestamp|model-version|1000.10|1000|comment
+     * New:
+     * timestamp+timezone|model-version|sourcetask|eventid|targettask|actor|comment
+     */
+    private String migrateDeprecatedLogEntry(String oldEntry) {
+        String[] parts = oldEntry.split("\\|");
+        StringBuilder newEntry = new StringBuilder();
+
+        // Convert timestamp to timezone format
+        try {
+            LocalDateTime oldDateTime = LocalDateTime.parse(parts[0]);
+            ZonedDateTime zonedDateTime = oldDateTime.atZone(ZoneId.systemDefault());
+            newEntry.append(zonedDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        } catch (Exception e) {
+            // If parsing fails, keep original timestamp
+            newEntry.append(parts[0]);
+        }
+
+        newEntry.append("|")
+                .append(parts[1]) // model-version
+                .append("|");
+
+        // Split task.event into separate fields
+        String[] taskEvent = parts[2].split("\\.");
+        newEntry.append(taskEvent[0]) // sourcetask
+                .append("|")
+                .append(taskEvent[1]) // eventid
+                .append("|")
+                .append(parts[3]) // targettask
+                .append("||"); // empty actor field
+
+        // Append comment if exists
+        if (parts.length > 4 && !parts[4].isEmpty()) {
+            newEntry.append(parts[4]);
+        }
+
+        return newEntry.toString();
     }
 
     /**
