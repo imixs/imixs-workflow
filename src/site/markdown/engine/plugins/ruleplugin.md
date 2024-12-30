@@ -93,12 +93,12 @@ If no errorCode is defined the default errorCode `VALIDATION_ERROR` will be set.
 ```javaScript 
 if (workitem.getItemValueDouble('budget')>10000) {
   var result={
-	'isValid':false,
-	'errorMessage':[
-					'Something go wrong!',
-					'Something else go wrong!'
-					]
-	}; 
+    'isValid':false,
+    'errorMessage':[
+      'Something go wrong!',
+      'Something else go wrong!'
+    ]
+  }; 
 }
 ```
 
@@ -114,8 +114,8 @@ See the following example which creates a new single item name 'some_item' with 
 
 ```javaScript
 var result={
-	isValid=true,
-	some_item: 'Hello World'
+  isValid=true,
+  some_item: 'Hello World'
 }; 
 ```
 
@@ -124,8 +124,8 @@ A property of the result object may also contain multi-values which have to be s
 
 ```javaScript
 var result={ 
-	isValid: true,
-	multi_item: [ 'Hello World', 'Hello Imixs']
+  isValid: true,
+  multi_item: [ 'Hello World', 'Hello Imixs']
 };
 ```
 
