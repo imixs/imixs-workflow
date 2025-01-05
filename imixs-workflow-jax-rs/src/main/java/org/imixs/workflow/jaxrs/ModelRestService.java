@@ -269,6 +269,15 @@ public class ModelRestService {
         return documentRestService.convertResult(definition, items, format);
     }
 
+    /**
+     * Returns the Task BPMN element by its ID and VersionID.
+     * 
+     * @param version
+     * @param taskID
+     * @param items
+     * @param format
+     * @return
+     */
     @GET
     @Path("/{version}/tasks/{taskid}")
     public Response getTask(@PathParam("version") String version, @PathParam("taskid") int taskID,
@@ -281,6 +290,31 @@ public class ModelRestService {
             throw new WebApplicationException("BPMN Model Error: ", e);
         }
         return documentRestService.convertResult(task, items, format);
+    }
+
+    /**
+     * Returns the Task BPMN element by its ID and VersionID.
+     * 
+     * @param version
+     * @param taskID
+     * @param items
+     * @param format
+     * @return
+     */
+    @GET
+    @Path("/{version}/tasks/{taskid}/events/{eventid}")
+    public Response getEvent(@PathParam("version") String version,
+            @PathParam("taskid") int taskID,
+            @PathParam("eventid") int eventID,
+            @QueryParam("items") String items, @QueryParam("format") String format) {
+        ItemCollection event = null;
+        try {
+            BPMNModel model = modelService.getModelManager().getModel(version);
+            event = modelService.getModelManager().findEventByID(model, taskID, eventID);
+        } catch (Exception e) {
+            throw new WebApplicationException("BPMN Model Error: ", e);
+        }
+        return documentRestService.convertResult(event, items, format);
     }
 
     @GET
