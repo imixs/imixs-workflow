@@ -286,7 +286,7 @@ public class ModelService {
                 // default filename
                 filename = version + ".bpmn";
             }
-            logger.log(Level.INFO, "Import bpmn-model: {0} ▶ {1}", new Object[] { _filename,
+            logger.log(Level.INFO, "Import bpmn-model: {0} ▶ {1}", new Object[] { filename,
                     BPMNUtil.getVersion(model) });
             // Write the model XML object into a byte array and store it into the
             // modelItemCol as a FileData object

@@ -29,6 +29,7 @@
 package org.imixs.workflow.jaxrs;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -47,12 +48,11 @@ import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.ModelService;
 import org.imixs.workflow.exceptions.ModelException;
-import org.imixs.workflow.xml.XMLDataCollection;
-import org.imixs.workflow.xml.XMLDocument;
-import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.BPMNProcess;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
+import org.openbpmn.bpmn.util.BPMNModelFactory;
 
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -396,149 +396,95 @@ public class ModelRestService {
      * @return
      */
     @PUT
-    @Path("/bpmn")
-    @Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN })
-    public Response putBPMNModel(BPMNModel bpmnmodel) {
-        try {
-            logger.fine("BPMN Model posted... ");
-            modelService.saveModel(bpmnmodel);
-        } catch (ModelException e) {
-            logger.log(Level.WARNING, "Unable to update model: {0}", e.getMessage());
-            return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-        }
-        logger.fine("putBPMNModel finished! ");
-        return Response.status(Response.Status.OK).build();
-    }
-
-    /**
-     * This method consumes a Imixs BPMN model file and updates the corresponding
-     * model information.
-     * <p>
-     * The filename param is used to store the file in the corresponding bpmn
-     * document.
-     * 
-     * @param model
-     * @return
-     */
-    @PUT
     @Path("/bpmn/{filename}")
-    @Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN })
-    public Response putBPMNModel(@PathParam("filename") String filename, BPMNModel bpmnmodel) {
+    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    public Response putBPMNModel(@PathParam("filename") String filename, InputStream inputStream) {
         try {
-            logger.fine("BPMN Model posted... ");
-            modelService.saveModel(bpmnmodel, filename);
-        } catch (ModelException e) {
-            logger.log(Level.WARNING, "Unable to update model: {0}", e.getMessage());
-            return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-        }
-        logger.fine("putBPMNModel finished! ");
-        return Response.status(Response.Status.OK).build();
-    }
+            logger.fine("BPMN Model file upload started for file: " + filename);
 
-    @POST
-    @Path("/bpmn")
-    @Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN })
-    public Response postBPMNModel(BPMNModel bpmnmodel) {
-        return putBPMNModel(bpmnmodel);
+            // Validate filename
+            if (!filename.toLowerCase().endsWith(".bpmn")) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("File must have .bpmn extension")
+                        .build();
+            }
+
+            // Parse input stream to BPMN model
+            BPMNModel model = BPMNModelFactory.read(inputStream);
+
+            // Save model using the model service with filename
+            modelService.saveModel(model, filename);
+
+            logger.fine("BPMN Model file upload completed successfully");
+            return Response.status(Response.Status.OK).build();
+
+        } catch (BPMNModelException e) {
+            logger.log(Level.WARNING, "Failed to parse BPMN model file: {0}", e.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid BPMN file format: " + e.getMessage())
+                    .build();
+        } catch (ModelException e) {
+            logger.log(Level.WARNING, "Failed to save model: {0}", e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to save model: " + e.getMessage())
+                    .build();
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Failed to close input stream", e);
+            }
+        }
     }
 
     @POST
     @Path("/bpmn/{filename}")
-    @Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN })
-    public Response postBPMNModel(@PathParam("filename") String filename, BPMNModel bpmnmodel) {
-        return putBPMNModel(filename, bpmnmodel);
+    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    public Response postBPMNModel(@PathParam("filename") String filename, InputStream inputStream) {
+        return putBPMNModel(filename, inputStream);
     }
 
-    /**
-     * This method updates a Model provided in a EntityCollection object for a
-     * provided model version. The Method expects a subresource with a ModelVersion.
-     * Next the method updates each Entity object with the property $ModelVersion.
-     * An old version will be automatically removed before update.
-     * 
-     * @param version - $modelversion
-     * @param ecol    - model data
-     */
     @PUT
-    @Path("/{version}")
-    @Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-    public void putModelByVersion(@PathParam("version") final String _modelVersion, XMLDataCollection ecol) {
-
-        String sModelVersion = _modelVersion;
-        XMLDocument entity;
-        ItemCollection itemCollection;
+    @Path("/bpmn")
+    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    public Response putBPMNModel(InputStream inputStream) {
         try {
-            if (ecol.getDocument().length > 0) {
-                /*
-                 * first we need to delete the old model if available.
-                 */
-                if (sModelVersion == null)
-                    sModelVersion = "";
+            logger.fine("BPMN Model file upload started... ");
 
-                // delete old model if a modelversion is available
-                if (!"".equals(sModelVersion))
-                    modelService.getModelManager().removeModel(sModelVersion);
+            // Parse input stream to BPMN model
+            BPMNModel model = BPMNModelFactory.read(inputStream);
 
-                // save new entities into database and update modelversion.....
-                for (int i = 0; i < ecol.getDocument().length; i++) {
-                    entity = ecol.getDocument()[i];
-                    itemCollection = XMLDocumentAdapter.putDocument(entity);
-                    // update model version
-                    itemCollection.replaceItemValue("$modelVersion", sModelVersion);
-                    // save entity
-                    documentService.save(itemCollection);
-                }
+            // Save model using the model service
+            modelService.saveModel(model);
+
+            logger.fine("BPMN Model file upload completed successfully");
+            return Response.status(Response.Status.OK).build();
+
+        } catch (BPMNModelException e) {
+            logger.log(Level.WARNING, "Failed to parse BPMN model file: {0}",
+                    e.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid BPMN file format: " + e.getMessage())
+                    .build();
+        } catch (ModelException e) {
+            logger.log(Level.WARNING, "Failed to save model: {0}", e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to save model: " + e.getMessage())
+                    .build();
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Failed to close input stream", e);
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-
     }
 
     @POST
-    @Path("/{version}")
-    @Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-    public void postModelByVersion(@PathParam("version") String sModelVersion, XMLDataCollection ecol) {
-        putModelByVersion(sModelVersion, ecol);
-    }
-
-    /**
-     * This method updates a Model provided in a EntityCollection object.
-     * 
-     * The method takes the first entity to get the provided $modelVersion. An old
-     * version will be automatically removed before update.
-     * 
-     * @param ecol
-     */
-    @PUT
-    @Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-    public void putModel(XMLDataCollection ecol) {
-        String sModelVersion = null;
-        XMLDocument entity;
-        ItemCollection itemCollection;
-        try {
-            if (ecol.getDocument().length > 0) {
-                /*
-                 * first we need get model version from first entity
-                 */
-                entity = ecol.getDocument()[0];
-                itemCollection = XMLDocumentAdapter.putDocument(entity);
-                sModelVersion = itemCollection.getItemValueString("$ModelVersion");
-
-                putModelByVersion(sModelVersion, ecol);
-
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    @POST
-    @Consumes({ MediaType.APPLICATION_XML, MediaType.TEXT_XML })
-    public void postModel(XMLDataCollection ecol) {
-        putModel(ecol);
+    @Path("/bpmn")
+    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    public Response postBPMNModel(InputStream inputStream) {
+        return putBPMNModel(inputStream);
     }
 
     /**
