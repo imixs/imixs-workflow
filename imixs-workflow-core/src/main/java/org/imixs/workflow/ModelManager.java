@@ -673,7 +673,7 @@ public class ModelManager {
 
         // test start task....
         BPMNStartElementIterator<Activity> startElements = new BPMNStartElementIterator<>(process,
-                node -> (node instanceof Activity));
+                node -> (BPMNUtil.isImixsTaskElement(node)));
         while (startElements.hasNext()) {
             result.add(BPMNEntityBuilder.build(startElements.next()));
         }
@@ -726,7 +726,7 @@ public class ModelManager {
         if (process != null) {
             // test End task....
             BPMNEndElementIterator<Activity> endElements = new BPMNEndElementIterator<>(process,
-                    node -> (node instanceof Activity));
+                    node -> (BPMNUtil.isImixsTaskElement(node)));
             while (endElements.hasNext()) {
                 result.add(BPMNEntityBuilder.build(endElements.next()));
             }
