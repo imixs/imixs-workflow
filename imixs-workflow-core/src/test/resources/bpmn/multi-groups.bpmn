@@ -46,7 +46,7 @@
     </bpmn2:participant>
     <bpmn2:participant id="participant_0iSYaw" name="Default Process" processRef="process_3"/>
   </bpmn2:collaboration>
-  <bpmn2:process definitionalCollaborationRef="Collaboration_1" id="Process_1" isExecutable="false" name="Protokoll">
+  <bpmn2:process definitionalCollaborationRef="Collaboration_1" id="Process_1" isExecutable="false" name="Protokoll" processType="Private">
     <bpmn2:startEvent id="StartEvent_1" name="Start">
       <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
       <bpmn2:documentation id="documentation_wMEroA"/>
@@ -308,7 +308,7 @@
       <bpmn2:documentation id="documentation_KSUqaQ"/>
     </bpmn2:sequenceFlow>
   </bpmn2:process>
-  <bpmn2:process definitionalCollaborationRef="Collaboration_1" id="Process_2" isExecutable="false" name="Protokollpunkt">
+  <bpmn2:process definitionalCollaborationRef="Collaboration_1" id="Process_2" isExecutable="false" name="Protokollpunkt" processType="Private">
     <bpmn2:endEvent id="EndEvent_2" name="Ende">
       <bpmn2:incoming>SequenceFlow_22</bpmn2:incoming>
       <bpmn2:incoming>SequenceFlow_24</bpmn2:incoming>
@@ -611,7 +611,7 @@
       <bpmndi:BPMNShape bpmnElement="EventBasedGateway_1" id="BPMNShape_EventBasedGateway_1" isMarkerVisible="true">
         <dc:Bounds height="50.0" width="50.0" x="870.0" y="145.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_18">
-          <dc:Bounds height="20.0" width="100.0" x="838.0" y="184.0"/>
+          <dc:Bounds height="20.0" width="100.0" x="845.0" y="198.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="IntermediateCatchEvent_4" id="BPMNShape_IntermediateCatchEvent_4">
@@ -656,7 +656,7 @@
       <bpmndi:BPMNShape bpmnElement="EventBasedGateway_2" id="BPMNShape_EventBasedGateway_2" isMarkerVisible="true">
         <dc:Bounds height="50.0" width="50.0" x="370.0" y="560.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_34">
-          <dc:Bounds height="20.0" width="100.0" x="338.0" y="599.0"/>
+          <dc:Bounds height="20.0" width="100.0" x="345.0" y="613.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="IntermediateCatchEvent_8" id="BPMNShape_IntermediateCatchEvent_8">
@@ -750,8 +750,8 @@
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_10" id="BPMNEdge_SequenceFlow_10" sourceElement="BPMNShape_EventBasedGateway_1" targetElement="BPMNShape_IntermediateCatchEvent_6">
         <bpmndi:BPMNLabel id="BPMNLabel_25"/>
         <di:waypoint x="895.0" y="195.0"/>
-        <di:waypoint x="895.0" y="209.5"/>
-        <di:waypoint x="896.0" y="209.5"/>
+        <di:waypoint x="895.0" y="210.0"/>
+        <di:waypoint x="896.0" y="210.0"/>
         <di:waypoint x="896.0" y="224.0"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_11" id="BPMNEdge_SequenceFlow_11" sourceElement="BPMNShape_EventBasedGateway_1" targetElement="BPMNShape_IntermediateCatchEvent_5">

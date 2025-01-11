@@ -19,11 +19,9 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
-import org.openbpmn.bpmn.BPMNTypes;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.BPMNProcess;
 import org.openbpmn.bpmn.elements.Event;
-import org.openbpmn.bpmn.elements.Participant;
 import org.openbpmn.bpmn.elements.SequenceFlow;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
@@ -377,8 +375,8 @@ public class ModelManager {
     }
 
     /**
-     * This method returns a sorted list of all workflow groups contained in a BPMN
-     * model.
+     * This method returns a sorted list of all workflow groups contained in an
+     * Imixs BPMN model.
      * <p>
      * In case the model is a collaboration diagram, the method returns only group
      * names from private process instances (Pools)!
@@ -400,24 +398,14 @@ public class ModelManager {
         if (result == null) {
             result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
-            Set<BPMNProcess> processList = _model.getProcesses();
-            for (BPMNProcess _process : processList) {
-                String groupName = _process.getName();
-                if (_model.isCollaborationDiagram()) {
-                    // collaboration diagram - only add private processes (Pools)
-                    if (BPMNTypes.PROCESS_TYPE_PRIVATE.equals(_process.getProcessType())) {
-                        // add only private process types
-                        result.add(groupName);
-                    }
-                } else {
-                    // if it is not a collaboration diagram we return the name of the first Public
-                    // Process
-                    if (BPMNTypes.PROCESS_TYPE_PUBLIC.equals(_process.getProcessType())) {
-                        result.add(groupName);
-                        break;
-                    }
+            // find Process containing matching the process group
+            for (BPMNProcess _process : _model.getProcesses()) {
+                if (isImixsProcess(_process)) {
+                    String groupName = _process.getName();
+                    result.add(groupName);
                 }
             }
+
             if (result.size() == 0) {
                 logger.warning("Model " + BPMNUtil.getVersion(_model)
                         + " does not contain valid process elements! Please check your model file!");
@@ -579,7 +567,8 @@ public class ModelManager {
      * Returns a list of all Tasks of a given Process Group
      * <p>
      * In case of a collaboration diagram only Pool names are compared. The default
-     * process (Public Process) will be ignored.
+     * process (Public Process) will be ignored if it does not contain at least one
+     * start task.
      * 
      * @param model        - the BPMN model
      * @param processGroup - the name of the process group to match
@@ -601,32 +590,71 @@ public class ModelManager {
         }
 
         // find Process containing matching the process group
-        if (model.isCollaborationDiagram()) {
-            Set<Participant> poolList = model.getParticipants();
-            for (Participant pool : poolList) {
-                process = pool.openProcess();
-                if (processGroup.equals(process.getName())) {
-                    break;
-                }
-            }
-        } else {
-            process = model.openDefaultProces();
-            if (!processGroup.equals(process.getName())) {
-                // no match!
-                process = null;
+        Set<BPMNProcess> processList = model.getProcesses();
+        for (BPMNProcess _process : processList) {
+            if (isImixsProcess(_process)) {
+                process = _process;
+                break;
             }
         }
 
         // test Imixs tasks....
-        Set<Activity> activities = process.getActivities();
-        for (Activity activity : activities) {
-            if (BPMNUtil.isImixsTaskElement(activity)) {
-                result.add(BPMNEntityBuilder.build(activity));
+        if (process != null) {
+            Set<Activity> activities = process.getActivities();
+            for (Activity activity : activities) {
+                if (BPMNUtil.isImixsTaskElement(activity)) {
+                    result.add(BPMNEntityBuilder.build(activity));
+                }
+            }
+            // sort result by taskID
+            Collections.sort(result, new ItemCollectionComparator(BPMNUtil.TASK_ITEM_TASKID, true));
+        }
+        return result;
+    }
+
+    /**
+     * Returns a list of all executable Imixs Processes in a BPMN Model.
+     * 
+     * @param _model
+     * @return List of BPMNProcess that contain at least one Imixs Task Element
+     */
+    public List<BPMNProcess> findAllImixsProcesses(BPMNModel _model) {
+        List<BPMNProcess> result = new ArrayList<>();
+        // find Process containing matching the process group
+        for (BPMNProcess _process : _model.getProcesses()) {
+            try {
+                if (isImixsProcess(_process)) {
+                    result.add(_process);
+                }
+            } catch (ModelException e) {
+                // invalid process
             }
         }
-        // sort result by taskID
-        Collections.sort(result, new ItemCollectionComparator(BPMNUtil.TASK_ITEM_TASKID, true));
         return result;
+    }
+
+    /**
+     * This method returns true if the geiven process contains at least one Imixs
+     * Task Element. Only in this case the process is executable at all.
+     * 
+     * @param _process
+     * @return
+     * @throws ModelException
+     * 
+     */
+    public boolean isImixsProcess(BPMNProcess _process) throws ModelException {
+        if (_process != null) {
+            try {
+                _process.init();
+                BPMNStartElementIterator<Activity> startElements = new BPMNStartElementIterator<>(_process,
+                        node -> (BPMNUtil.isImixsTaskElement(node)));
+                return startElements.hasNext();
+            } catch (BPMNModelException e) {
+                throw new ModelException(ModelException.INVALID_MODEL,
+                        "Invalid process model: " + e.getMessage(), e);
+            }
+        }
+        return false;
     }
 
     /**
@@ -655,28 +683,23 @@ public class ModelManager {
         }
 
         // find Process containing matching the process group
-        if (model.isCollaborationDiagram()) {
-            Set<Participant> poolList = model.getParticipants();
-            for (Participant pool : poolList) {
-                process = pool.openProcess();
-                if (processGroup.equals(process.getName())) {
-                    break;
-                }
-            }
-        } else {
-            process = model.openDefaultProces();
-            if (!processGroup.equals(process.getName())) {
-                // no match!
-                process = null;
+        Set<BPMNProcess> processList = model.getProcesses();
+        for (BPMNProcess _process : processList) {
+            if (isImixsProcess(_process)) {
+                process = _process;
+                break;
             }
         }
 
         // test start task....
-        BPMNStartElementIterator<Activity> startElements = new BPMNStartElementIterator<>(process,
-                node -> (BPMNUtil.isImixsTaskElement(node)));
-        while (startElements.hasNext()) {
-            result.add(BPMNEntityBuilder.build(startElements.next()));
+        if (process != null) {
+            BPMNStartElementIterator<Activity> startElements = new BPMNStartElementIterator<>(process,
+                    node -> (BPMNUtil.isImixsTaskElement(node)));
+            while (startElements.hasNext()) {
+                result.add(BPMNEntityBuilder.build(startElements.next()));
+            }
         }
+
         return result;
     }
 
@@ -706,19 +729,11 @@ public class ModelManager {
         }
 
         // find Process containing matching the process group
-        if (model.isCollaborationDiagram()) {
-            Set<Participant> poolList = model.getParticipants();
-            for (Participant pool : poolList) {
-                process = pool.openProcess();
-                if (processGroup.equals(process.getName())) {
-                    break;
-                }
-            }
-        } else {
-            process = model.openDefaultProces();
-            if (!processGroup.equals(process.getName())) {
-                // no match!
-                process = null;
+        Set<BPMNProcess> processList = model.getProcesses();
+        for (BPMNProcess _process : processList) {
+            if (isImixsProcess(_process)) {
+                process = _process;
+                break;
             }
         }
 

@@ -66,7 +66,8 @@ public class TestBPMNParserGroups {
 	 * This test tests the resolution of multiple groups in a collaboration diagram
 	 * 
 	 * The method findAllGroups should return only the group names from the Pools
-	 * but not the default process name.
+	 * but not the default process name. This is because the default process does
+	 * not contain a start event!
 	 * 
 	 * @throws ParseException
 	 * @throws ParserConfigurationException
