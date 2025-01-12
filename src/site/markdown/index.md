@@ -1,6 +1,6 @@
 # How Imixs-Workflow Works
 
-Imixs-Workflow is an open source BPMN workflow engine built on the Jakarta EE architecture. The engine is optimized for human-centric business process management, providing essential features for professional process management:
+Imixs-Workflow is an open source BPMN workflow engine built on the [Jakarta EE architecture](https://jakarta.ee/). The engine is optimized for human-centric business process management, providing essential features for professional process management:
 
 - Model and control business processes with BPMN 2.0
 - Enforce compliance rules and guidelines
@@ -60,7 +60,7 @@ See also the [Deployment Guide](./deployment/deployment_guide.html) for informat
 
 <h3>Microservice Architecture <img src="./images/docker_small_h-trans.png" height="40" style="vertical-align: middle; position: relative; top: -4px" /></h3>
 
-Alternatively, you can run Imixs-Workflow as a standalone microservice in your architecture. This approach allows you to interact with the workflow engine through its [REST API](restapi/index.html), making it completely language-independent. The workflow engine acts as a "black box", managing your business processes while being accessible from any programming language or platform.
+Alternatively, you can run Imixs-Workflow as a standalone microservice in your architecture. This approach allows you to interact with the workflow engine through its [REST API](restapi/index.html), making it completely language-independent. The workflow engine is managing your business processes while being accessible from any programming language or platform.
 
 Start with the [Imixs-Microservice Project](https://github.com/imixs/imixs-microservice) on GitHub, which provides full Docker support for quick deployment and scaling.
 
