@@ -69,6 +69,6 @@ The event-based approach of Imixs-Workflow makes it easy to adapt your process t
 
 ## Next Steps
 
-- Visit our [GitHub repository](https://github.com/imixs/imixs-workflow) for examples
-- Join our [community forum](https://github.com/imixs/imixs-workflow/discussions) for support
-- Check out our [complete documentation](./docs/) for detailed information
+- Visit our [GitHub Repository](https://github.com/imixs/imixs-workflow) for examples
+- Join our [Community Forum](https://github.com/imixs/imixs-workflow/discussions) for support
+- Check out our [Java Docs](./apidocs/index.html) for detailed information
