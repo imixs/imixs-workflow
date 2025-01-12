@@ -63,6 +63,6 @@ Each task in your BPMN model can have its own form definition. Here's how it wor
 ## Next Steps
 
 - learn more about [Imixs-Forms Layout](../webforms/forms.html)
-- learn more about [Imixs-Forms XML](../webfomrs/xml.html)
+- learn more about [Imixs-Forms XML](../webforms/xml.html)
 - read how the [Imixs Rest API works](../../sub_microservice.html)
 - find out more about Imixs-Forms on [Github](https://github.com/imixs/Imixs-forms)
