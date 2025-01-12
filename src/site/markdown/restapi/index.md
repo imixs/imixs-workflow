@@ -35,7 +35,7 @@ The following example shows a business object in XML representation used for req
 ```xml
 <document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <item name="$modelversion">
-    <value xsi:type="xs:string">1.0.1</value>
+    <value xsi:type="xs:string">ticket-en-1.0</value>
   </item>
   <item name="$taskid">
     <value xsi:type="xs:int">1000</value>
@@ -75,7 +75,7 @@ The disadvantage of the _JSON Mapped Notation_ is that you can't define the valu
 
 ```json
 {"item":[
-  {"name":"$modelversion","value":{"@type":"xs:string","$":"1.0.1"}},
+  {"name":"$modelversion","value":{"@type":"xs:string","$":"ticket-en-1.0"}},
   {"name":"$taskid","value":{"@type":"xs:int","$":"1000"}},
   {"name":"$eventid","value":{"@type":"xs:int","$":"10"}},
   {"name":"_orderid","value":{"@type":"xs:long","$":"42000000001"}}

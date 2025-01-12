@@ -9,18 +9,6 @@
 
 
 	<body>
-		<!-- 
-		<links>
-			<item name="Home" href="http://www.imixs.org/" />
-			<item name="Quick Start" href="index.html" />
-			<item name="Workflow Engine" href="http://www.imixs.org/jee/" />
-			<item name="XML &amp; WebServices" href="http://www.imixs.org/xml/" />
-			<item name="Web Tools" href="http://www.imixs.org/jsf/" />
-			<item name="Modelling" href="modelling/index.html" />
-			<item name="Script!" href="http://www.imixs.org/script/" />
-		</links>
-		 -->
-
 
 		<menu name="Documentation">
 			<item name="Overview" href="index.html" collapse="true">
@@ -69,7 +57,6 @@
 				<item name="Health Check" href="./engine/healthcheck.html" />
 				<item name="Metrics" href="./engine/metrics.html" />
 				<item name="Event Log" href="./engine/eventlogservice.html" />
-
 			</item>
 
 
@@ -123,9 +110,12 @@
 				<item name="AdminP Service" href="./restapi/adminp.html" />
 			</item>
 
+			<item name="Web Forms" href="./webforms/index.html" collapse="true">
+				<item name="Layout" href="./webforms/forms.html" />
+				<item name="XML" href="./webforms/xml.html" />
+			</item>
 
-			<item name="JSF Components" href="./webtools/index.html" collapse="true">
-
+			<item name="Jakarta Faces" href="./webtools/index.html" collapse="true">
 				<item name="jQuery" href="./webtools/header.html" />
 				<item name="ImixsWorkflowActions" href="./webtools/workflowactions.html" />
 				<item name="DatePicker" href="./webtools/datepicker.html" />
@@ -133,12 +123,6 @@
 				<item name="FileUpload" href="./webtools/fileupload.html" />
 				<item name="Tooltip" href="./webtools/tooltip.html" />
 				<item name="Examples" href="./webtools/examples.html" />
-			</item>
-
-			<item name="JavaScript" href="./javascript/index.html" collapse="true">
-				<item name="Documents" href="./javascript/documents.html" />
-				<item name="XML" href="./javascript/xml.html" />
-				<item name="Layout / UI" href="./javascript/layout.html" />
 			</item>
 
 			<item name="Deployment" href="./deployment/index.html" collapse="true">
