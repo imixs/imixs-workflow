@@ -28,6 +28,8 @@
 
 package org.imixs.workflow.jaxrs;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -401,7 +403,6 @@ public class ModelRestService {
     public Response putBPMNModel(@PathParam("filename") String filename, InputStream inputStream) {
         try {
             logger.fine("BPMN Model file upload started for file: " + filename);
-
             // Validate filename
             if (!filename.toLowerCase().endsWith(".bpmn")) {
                 return Response.status(Response.Status.BAD_REQUEST)
@@ -409,13 +410,21 @@ public class ModelRestService {
                         .build();
             }
 
-            // Parse input stream to BPMN model
-            BPMNModel model = BPMNModelFactory.read(inputStream);
+            // first create a new InputStream from content (see issue #896)
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int len;
+            while ((len = inputStream.read(buffer)) > -1) {
+                baos.write(buffer, 0, len);
+            }
+            byte[] content = baos.toByteArray();
+            logger.fine("Reading BPMN Model from input stream (size: " + content.length + " bytes)");
+            InputStream contentStream = new ByteArrayInputStream(content);
+            // now we are ready to parse the inputStream to BPMN model
+            BPMNModel model = BPMNModelFactory.read(contentStream);
 
-            // Save model using the model service with filename
-            modelService.saveModel(model, filename);
-
-            logger.fine("BPMN Model file upload completed successfully");
+            // Save model using the model service
+            modelService.saveModel(model);
             return Response.status(Response.Status.OK).build();
 
         } catch (BPMNModelException e) {
@@ -426,6 +435,11 @@ public class ModelRestService {
         } catch (ModelException e) {
             logger.log(Level.WARNING, "Failed to save model: {0}", e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to save model: " + e.getMessage())
+                    .build();
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Failed to save model: {0}", e.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Failed to save model: " + e.getMessage())
                     .build();
         } finally {
