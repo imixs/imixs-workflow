@@ -90,8 +90,11 @@ public class ModelManager {
      * Removes a BPMNModel form the local model store
      */
     public void removeModel(String version) {
-        modelStore.remove(version);
-        clearCache();
+        // Test if version exists
+        if (modelStore.containsKey(version)) {
+            modelStore.remove(version);
+            clearCache();
+        }
     }
 
     /**
