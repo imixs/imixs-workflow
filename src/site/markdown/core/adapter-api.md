@@ -1,19 +1,18 @@
 # Imixs-Workflow Adapter API
 
-The **Imixs-Workflow Adapter API** is part of the microkernel architecture pattern providing an extension mechanism to adapt the processing life cycle of a BPMN Event. An Adapter class can execute business logic and adapt the data of a process instance. For example, an adapter can call an external Microservice to send or receive data. 
+The **Imixs-Workflow Adapter API** is part of the microkernel architecture pattern providing an extension mechanism to adapt the processing life cycle of a BPMN Event. An Adapter class can execute business logic and adapt the data of a process instance. For example, an adapter can call an external Microservice to send or receive data.
 
-Adapters can be implemented either as a _SignalAdapter_ or _GenericAdapter_ class. Depending on its type, the Adapter class is executed before or after the plug-in processing life-cycle, controlled by the *WorkflowKernel*:
+Adapters can be implemented either as a _SignalAdapter_ or _GenericAdapter_ class. Depending on its type, the Adapter class is executed before or after the plug-in processing life-cycle, controlled by the _WorkflowKernel_:
 
-<img src="../images/adapter_api.png"/>  
+<img src="../images/adapter_api.png"/>
 
-   
 ## SignalAdapter
 
 The SignalAdapter is defined by the Interface:
 
-	org.imixs.workflow.SignalAdapter
+    org.imixs.workflow.SignalAdapter
 
-In different to the [Plugin API](./plugin-api.html) the *SignalAdapter* is bound to a single Event within a BPMN 2.0 model. This allows a fine grained configuration. 
+In different to the [Plugin API](./plugin-api.html) the _SignalAdapter_ is bound to a single Event within a BPMN 2.0 model. This allows a fine grained configuration.
 
 The BPMN signal definition contains the adapter class name:
 
@@ -21,26 +20,21 @@ The BPMN signal definition contains the adapter class name:
 
 **Note:** The _SignalAdapter_ is executed before the Plug-In processing life-cycle.
 
-
-## GenericAdapter 
+## GenericAdapter
 
 The GenericAdapter is defined by the Interface:
 
-	org.imixs.workflow.GenericAdapter
+    org.imixs.workflow.GenericAdapter
 
 This Adapter can be used to execute general business logic independent from the BPMN model. A GenericAdapter should not be associated with a BPMN Signal Event.
 
-The GenericAdapter is executed after the Plug-In processing life-cycle. 
-
-
+The GenericAdapter is executed after the Plug-In processing life-cycle.
 
 ## How to Implement an Adapter
 
 The Imixs Adapter-API defines the call-back method '_execute_'. This method is called by the WorkflowKernel:
-     
+
     public ItemCollection execute(ItemCollection document,ItemCollection event) throws AdapterException;
-   
-   
 
 ### CDI Support
 
@@ -60,11 +54,11 @@ public class DemoAdapter implements SignalAdapter {
 }
 ```
 
-In this example the adapter injects the Imixs ModelService to ask for available model versions. 
- 
+In this example the adapter injects the Imixs ModelService to ask for available model versions.
+
 ### Exception Handling
-    
-An adapter can also extend the processing phase by throwing an *AdapterException*. For example in case of a communication error an Adapter could send and error code back to the processing life cycle.
+
+An adapter can also extend the processing phase by throwing an _AdapterException_. For example in case of a communication error an Adapter could send and error code back to the processing life cycle.
 
 See the following example handling a jax-rs client communication:
 
@@ -80,20 +74,27 @@ public ItemCollection execute(ItemCollection workitem, ItemCollection event) thr
 				MyAdapter.class.getSimpleName(),ERROR_API_COMMUNICATION,"Failed to call rest api!");
 	}
 	.....
-} 
+}
 ```
 
-In this example an Adapter throws an *AdapterException_* when the Rest API call failed. The Exception contains the  Adapter name, an Error Code, and a Error Message. The processing life-cycle will not be interrupted by an AdapterException. But the Exception information will be added into the current process instance in the following items:
+In this example an Adapter throws an _AdapterException_ when the Rest API call failed. The Exception contains the Adapter name, an Error Code, and a Error Message. The processing life-cycle will not be interrupted by an AdapterException. But the Exception information will be added into the current process instance in the following items:
 
+- adapter.error_code - the exception code
+- adapter.error_message - the exception message
+- adapter.error_cause - the exception cause
+- adapter.error_params - optional exception params provided by the AdapterException
 
-* adapter.error_code - the exception code
-* adapter.error_message - the exception message
-* adapter.error_cause - the exception cause
-* adapter.error_params - optional exception params provided by the AdapterException
+These data can be used to control the processing flow. For example a conditional event can evaluate the adapter.error_code to control the outcome of the event.
 
-These data can be used to control the processing flow. For example a conditional event can evaluate the adapter.error_code to control the outcome of the event. 
+<img src="../images/adapter_error_handling.png"/>
 
-Of course, a Plugin can investigate the Adapter Exception data and interrupt the processing life-cycle by throwing a PluginException. In this case a running transaction will be automatically rolled back. 
+Just add an conditional sequence flow to query your exception
+
+```javascript
+"" != workitem.getItemValueString("adapter.error_code");
+```
+
+Of course, a Plugin can investigate the Adapter Exception data and interrupt the processing life-cycle by throwing a PluginException. In this case a running transaction will be automatically rolled back.
 
 ```java
 public ItemCollection run(ItemCollection documentContext, ItemCollection adocumentActivity)
@@ -110,7 +111,7 @@ public ItemCollection run(ItemCollection documentContext, ItemCollection adocume
 
 If you want to interrupt the processing immediately, your Adapter Implementation can throw either a PluginException or a ProcessingErrorException
 
-A PluginException is handled the same way as defined in the Plugin API and can be handled by the workflow application.  An *ProcessingErrorException* interrupts the processing life cycle immediately. 
+A PluginException is handled the same way as defined in the Plugin API and can be handled by the workflow application. An _ProcessingErrorException_ interrupts the processing life cycle immediately.
 
 ```java
 public ItemCollection execute(ItemCollection workitem, ItemCollection event) throws AdapterException {
@@ -119,12 +120,12 @@ public ItemCollection execute(ItemCollection workitem, ItemCollection event) thr
 	try {
 		Response response = client.target(uri).request(MediaType.APPLICATION_XML)
 			.post(Entity.entity(data, MediaType.APPLICATION_XML));
-			
-		if (response==null) 
+
+		if (response==null)
 			// interrupt the processing life cycle
 			throw new PluginException(
-				MyAdapter.class.getSimpleName(),ERROR_API_COMMUNICATION,"An error occurred...");	
-			
+				MyAdapter.class.getSimpleName(),ERROR_API_COMMUNICATION,"An error occurred...");
+
 	} catch (ResponseProcessingException e) {
 		// interrupt current transaction
 		throw new ProcessingErrorException(
@@ -134,6 +135,4 @@ public ItemCollection execute(ItemCollection workitem, ItemCollection event) thr
 }
 ```
 
-In both cases the running transaction will be automatically rolled back. 
-
-
+In both cases the running transaction will be automatically rolled back.
