@@ -12,6 +12,7 @@ For example the LuceneUpdateService should update the index of a document only i
 
 The service is bound to the current PersistenceContext and stores a EventLog entities directly into the database. An EventLog entry can be queried by clients through this service.
 
+```java
     @EJB
     EventLogService eventLogService;
     ....
@@ -29,6 +30,7 @@ The service is bound to the current PersistenceContext and stores a EventLog ent
       ....
     }
     // END Transaction B
+```
 
 Typically a new EventLog entity is created within the same transaction of the main processing or update life cycle. With this mechanism a client can be
 sure that eventLogEntries returned by the EventLogService are created during a committed Transaction. If the transaction was rolled back for some reason, the EventLog entry will never be written to the database.
