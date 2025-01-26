@@ -6,46 +6,12 @@ Modern business applications often require automated, time-based execution of ta
 
 ## Architecture
 
-The scheduling system follows a service-oriented design pattern where scheduling tasks are implemented through a standardized interface and managed by a central service. This approach ensures:
-
-- **Reliability**: All scheduling operations are transaction-safe
-- **Flexibility**: Custom schedulers can be implemented for specific business needs
-- **Maintainability**: Unified configuration and monitoring
-- **Scalability**: Independent scheduling processes
-
-The architecture consists of three main components:
-
-1. **Scheduler Interface** - A core interface that defines how schedulers interact with the system:
-
-   - Defines standard configuration attributes
-   - Provides the `run()` method contract
-   - Enables consistent scheduler implementations
-
-2. **SchedulerService** - The central service managing scheduler lifecycle:
-
-   - Handles timer creation and management
-   - Controls scheduler start/stop operations
-   - Manages scheduler configurations
-   - Provides transaction management and logging
-
-3. **Scheduler Implementations**:
-   - **WorkflowScheduler** - Processes scheduled BPMN events
-   - Custom implementations for specific business needs
-
-## WorkflowScheduler
-
-The WorkflowScheduler is a core implementation that handles BPMN-based scheduling:
-
-- Timer-based processing of workitems
-- Auto-reminding and escalation tasks
-- Custom workitem selection via queries
-- Transaction-safe execution
-
-[Learn more about the WorkflowScheduler](workflowscheduler.html)
+The Imixs scheduling system follows a service-oriented design pattern where scheduling tasks are implemented through a standardized interface and managed by a central Jakarta EE service. This approach ensures reliability through transaction-safe scheduling operations.
+The architecture consists of the `Scheduler` interface and the `SchedulerService`. The Scheduler interface, defines how schedulers interact with the system by providing standard configuration attributes, the run() method contract, and enabling consistent scheduler implementations. The `SchedulerService` acts as the central service, controlling the scheduler lifecycle by creating and managing timers, scheduler configurations, and logging.
 
 ## SchedulerService
 
-The SchedulerService is built on top of the Jakarta EE Timer Service (EJB Timer Service), providing enterprise-grade scheduling capabilities:
+The `SchedulerService` is built on the Jakarta EE Timer Service (EJB Timer Service), providing enterprise-grade scheduling capabilities.
 
 - **Transaction Safety**: Timer events are managed within EJB transactions, ensuring data consistency even in failure scenarios
 - **Persistence**: Timer configurations survive server restarts
@@ -53,12 +19,12 @@ The SchedulerService is built on top of the Jakarta EE Timer Service (EJB Timer 
 - **Calendar-Based Scheduling**: Sophisticated scheduling patterns using cron-style expressions
 - **Resource Efficiency**: Optimized resource usage compared to managed thread approaches
 
-The service provides a comprehensive infrastructure:
-
-- Configuration management through document-based storage
-- Lifecycle control (start, stop, monitoring)
-- CDI-based implementation handling
-- Detailed logging and error handling
-- Runtime status monitoring
+The service provides a comprehensive infrastructure encompassing configuration management through document-based storage, lifecycle control (start, stop, monitoring), CDI-based implementation handling, detailed logging and error handling, and runtime status monitoring.
 
 [Learn more about the Scheduler Service](scheduler.html)
+
+## WorkflowScheduler
+
+The WorkflowScheduler is the main implementation for handling BPMN-based scheduling. It enables timer-based processing of workitems, automatic reminder and escalation tasks, custom workitem selection via queries, and transaction-safe execution.
+
+[Learn more about the WorkflowScheduler](workflowscheduler.html)

@@ -11,8 +11,8 @@ The Configuration has to provide at least the following fields:
 
 ## The Scheduler Interface
 
-A new scheduler can be easily implemented by just implementing the interface _org.imixs.workflow.engine.scheduler.Scheduler_.
-The SchedulerService will automatically call the concrete scheduler implementation defined in the scheduler configuration document (\_scheduler_class). The scheduler class will be injected via CDI so all type of beans and resources supported by CDI can be used.
+A new scheduler can be easily implemented by just implementing the interface `org.imixs.workflow.engine.scheduler.Scheduler`.
+The SchedulerService will automatically call the concrete scheduler implementation defined in the scheduler configuration document (_scheduler_class_). The scheduler class will be injected via CDI so all type of beans and resources supported by CDI can be used.
 
 ```java
 public class MyScheduler implements Scheduler {
@@ -35,32 +35,8 @@ public class MyScheduler implements Scheduler {
 
 ## The Scheduler Service
 
-The SchedulerService manages scheduler configurations and timer events through a document-based approach. When a scheduler is started, the following process occurs:
-
-1. **Configuration Storage**
-
-   - A scheduler configuration is stored as a document with type='scheduler'
-   - Each configuration contains a unique identifier and scheduler class name
-   - The configuration includes timer settings in cron-style format
-
-2. **Timer Creation**
-
-   - The SchedulerService creates a Jakarta Timer instance based on the configuration
-   - The timer is persisted in the Jakarta Timer Service
-   - Timer settings can be adjusted without restarting the application
-
-3. **Execution Process**
-
-   - On each timer event, the SchedulerService:
-     - Loads the current configuration
-     - Instantiates the scheduler implementation via CDI
-     - Invokes the run() method within a new transaction
-     - Persists updated configuration and status information
-
-4. **Error Handling**
-   - Transaction rollback on errors to maintain data consistency
-   - Automatic logging of execution status
-   - Timer cancellation on critical failures
+The SchedulerService manages scheduler configurations and timer events through a document-based approach. Each scheduler configuration is stored as a document with type='scheduler', it contains a unique identifier and scheduler class name along with timer settings in cron-style format. Upon starting a scheduler, the SchedulerService creates a Jakarta Timer instance based on the configuration, which is then persisted in the Jakarta Timer Service. Timer settings can be adjusted without requiring application restart.
+During the execution process, the SchedulerService handles each timer event by loading the current configuration, instantiating the scheduler implementation via CDI, and invoking the run() method within a new transaction. After execution, it persists updated configuration and status information. For error handling, the service implements transaction rollback to maintain data consistency, automatically logs execution status, and cancels timers in case of critical failures.
 
 ## Implementing a Custom Scheduler
 
