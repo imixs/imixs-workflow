@@ -359,10 +359,18 @@ public class ModelManager {
                 if (!versions.isEmpty()) {
                     String newVersion = versions.iterator().next();
                     if (!newVersion.isEmpty()) {
-                        logger.log(Level.WARNING, "Missing model version: ''{0}'' -> migrating to ''{1}'',"
-                                + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
-                                new Object[] { version, newVersion, workitem.getWorkflowGroup(),
-                                        workitem.getUniqueID() });
+                        // loggin...
+                        if (version.isEmpty()) {
+                            logger.log(Level.INFO, "Set model version ''{1}'',"
+                                    + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
+                                    new Object[] { version, newVersion, workitem.getWorkflowGroup(),
+                                            workitem.getUniqueID() });
+                        } else {
+                            logger.log(Level.INFO, "Update model version: ''{0}'' ▶ ''{1}'',"
+                                    + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
+                                    new Object[] { version, newVersion, workitem.getWorkflowGroup(),
+                                            workitem.getUniqueID() });
+                        }
                     }
                     // update $modelVersion
                     workitem.model(newVersion);
