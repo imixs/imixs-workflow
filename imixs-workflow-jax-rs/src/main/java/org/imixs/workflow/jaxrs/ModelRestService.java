@@ -198,7 +198,7 @@ public class ModelRestService {
     @Path("/{version}/tasks/")
     public Response findAllTasks(@PathParam("version") String version, @QueryParam("items") String items,
             @QueryParam("format") String format) {
-        List<ItemCollection> result = null;
+        List<ItemCollection> result = new ArrayList<>();
 
         try {
             BPMNModel model;
@@ -341,12 +341,13 @@ public class ModelRestService {
      */
     @GET
     @Path("/{version}/groups")
-    public Set<String> getGroups(@PathParam("version") String version, @QueryParam("items") String items) {
+    @Produces(MediaType.APPLICATION_JSON) // or MediaType.APPLICATION_JSON
+    public List<String> getGroups(@PathParam("version") String version) {
         Set<String> col = null;
         try {
             BPMNModel model = modelService.getModelManager().getModel(version);
             col = modelService.getModelManager().findAllGroupsByModel(model);
-            return col;
+            return new ArrayList<>(col);
         } catch (ModelException e) {
             throw new WebApplicationException("BPMN Model Error: ", e);
         }
