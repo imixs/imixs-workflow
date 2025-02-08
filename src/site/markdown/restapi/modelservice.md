@@ -6,20 +6,22 @@ The resource _/model_ provides methods to read and update workflow models throug
 
 The GET method is used to read model objects provided by the Model Manager:
 
-| URI                                                                | Method | Description                                                                                          |
-| ------------------------------------------------------------------ | ------ | ---------------------------------------------------------------------------------------------------- |
-| /model                                                             | GET    | a list of model versions provided by the workflow instance                                           |
-| /model/{version}/tasks                                             | GET    | all tasks of a specific model version                                                                |
-| /model/{version}/tasks/{taskid}                                    | GET    | a task identified by its taskID                                                                      |
-| /model/{version}/tasks/{taskid}/events                             | GET    | all events assigned to a specific task.                                                              |
-| /model/{version}/tasks/{taskid}/events/{eventid}                   | GET    | a event assigned to a specific task identified by its eventID.                                       |
-| /model/{version}/groups                                            | GET    | a collection of all workflow groups                                                                  |
-| /model/{version}/groups/{group}                                    | GET    | all tasks of a specific workflow group                                                               |
-| /model/{version}/definition                                        | GET    | the model definition containing general model information (e.g.$ModelVersion, Actors, Plugins, ...). |
-| /model/{version}/bpmn                                              | GET    | BPMN source file                                                                                     |
-| /model/{version}/tasks/{taskid}/dataobjects/{name}                 | GET    | the content of a dataObject by name assigned to a BPMN task                                          |
-| /model/{version}/tasks/{taskid}/events/{eventid}/dataobject/{name} | GET    | the content of a dataObject by name assigned to a BPMN event                                         |
-| /model/{version}/tasks/{taskid}/formdefinition                     | GET    | the form definition assigned to a BPMN task                                                          |
+| URI                                                                | Method | Description                                                                                                                                          |
+| ------------------------------------------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| /model                                                             | GET    | a list of model versions provided by the workflow instance                                                                                           |
+| /model/{version}/tasks                                             | GET    | all tasks of a specific model version                                                                                                                |
+| /model/{version}/tasks/{taskid}                                    | GET    | a task identified by its taskID                                                                                                                      |
+| /model/{version}/tasks/{taskid}/events                             | GET    | all events assigned to a specific task.                                                                                                              |
+| /model/{version}/tasks/{taskid}/events/{eventid}                   | GET    | a event assigned to a specific task identified by its eventID.                                                                                       |
+| /model/{version}/groups                                            | GET    | a sorted list of all unique process groups. In case the model is a collaboration diagram only group names from private process are returned (Pools)! |
+| /model/{version}/groups/{group}                                    | GET    | all tasks of a specific workflow group                                                                                                               |
+| /model/{version}/groups/{group}/start                              | GET    | all start tasks of a specific workflow group                                                                                                         |
+| /model/{version}/groups/{group}/end                                | GET    | all end tasks of a specific workflow group                                                                                                           |
+| /model/{version}/definition                                        | GET    | the model definition containing general model information (e.g.$ModelVersion, Actors, Plugins, ...).                                                 |
+| /model/{version}/bpmn                                              | GET    | BPMN source file                                                                                                                                     |
+| /model/{version}/tasks/{taskid}/dataobjects/{name}                 | GET    | the content of a dataObject by name assigned to a BPMN task                                                                                          |
+| /model/{version}/tasks/{taskid}/events/{eventid}/dataobject/{name} | GET    | the content of a dataObject by name assigned to a BPMN event                                                                                         |
+| /model/{version}/tasks/{taskid}/formdefinition                     | GET    | the form definition assigned to a BPMN task                                                                                                          |
 
 **DataObjects**
 

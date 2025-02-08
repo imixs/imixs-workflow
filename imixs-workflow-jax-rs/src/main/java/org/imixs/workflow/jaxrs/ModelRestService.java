@@ -52,7 +52,6 @@ import org.imixs.workflow.engine.ModelService;
 import org.imixs.workflow.exceptions.ModelException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.Activity;
-import org.openbpmn.bpmn.elements.BPMNProcess;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
 
@@ -341,16 +340,23 @@ public class ModelRestService {
      */
     @GET
     @Path("/{version}/groups")
-    @Produces(MediaType.APPLICATION_JSON) // or MediaType.APPLICATION_JSON
-    public List<String> getGroups(@PathParam("version") String version) {
-        Set<String> col = null;
+    public Response getGroups(@PathParam("version") String version, @QueryParam("items") String items,
+            @QueryParam("format") String format) {
+        List<ItemCollection> result = new ArrayList<>();
         try {
             BPMNModel model = modelService.getModelManager().getModel(version);
-            col = modelService.getModelManager().findAllGroupsByModel(model);
-            return new ArrayList<>(col);
+            Set<String> groups = modelService.getModelManager().findAllGroupsByModel(model);
+
+            for (String group : groups) {
+                ItemCollection itemColGroup = new ItemCollection();
+                itemColGroup.setModelVersion(version);
+                itemColGroup.setWorkflowGroup(group);
+                result.add(itemColGroup);
+            }
         } catch (ModelException e) {
             throw new WebApplicationException("BPMN Model Error: ", e);
         }
+        return documentRestService.convertResultList(result, items, format);
     }
 
     /**
@@ -366,18 +372,60 @@ public class ModelRestService {
         List<ItemCollection> result = new ArrayList<>();
         try {
             BPMNModel model = modelService.getModelManager().getModel(version);
-            BPMNProcess process = model.findProcessByName(group);
-            process.init();
-            Set<Activity> tasks = process.getActivities();
-            for (Activity activity : tasks) {
-                if (BPMNUtil.isImixsTaskElement(activity)) {
-                    result.add(BPMNEntityBuilder.build(activity));
-                }
-            }
+            result = modelService.getModelManager().findTasks(model, group);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return documentRestService.convertResultList(result, items, format);
+    }
+
+    /**
+     * Returns a list of start Tasks of a given Process Group
+     * <p>
+     * In case of a collaboration diagram only Pool names are compared. The default
+     * process (Public Process) will be ignored.
+     * 
+     * @param version
+     * @return
+     */
+    @GET
+    @Path("/{version}/groups/{group}/start")
+    @Produces(MediaType.APPLICATION_JSON) // or MediaType.APPLICATION_JSON
+    public Response findStartTasksByGroup(@PathParam("version") String version, @PathParam("group") String group,
+            @QueryParam("items") String items, @QueryParam("format") String format) {
+        List<ItemCollection> result = null;
+        try {
+            BPMNModel model = modelService.getModelManager().getModel(version);
+            result = modelService.getModelManager().findStartTasks(model, group);
+            return documentRestService.convertResultList(result, items, format);
+        } catch (ModelException e) {
+            throw new WebApplicationException("BPMN Model Error: ", e);
+        }
+    }
+
+    /**
+     * Returns a list of end Tasks of a given Process Group
+     * <p>
+     * In case of a collaboration diagram only Pool names are compared. The default
+     * process (Public Process) will be ignored.
+     * 
+     * @param version
+     * @return
+     */
+    @GET
+    @Path("/{version}/groups/{group}/end")
+    @Produces(MediaType.APPLICATION_JSON) // or MediaType.APPLICATION_JSON
+    public Response findEndTasksByGroup(@PathParam("version") String version, @PathParam("group") String group,
+            @QueryParam("items") String items, @QueryParam("format") String format) {
+        List<ItemCollection> result = null;
+        try {
+            BPMNModel model = modelService.getModelManager().getModel(version);
+            result = modelService.getModelManager().findEndTasks(model, group);
+            return documentRestService.convertResultList(result, items, format);
+        } catch (ModelException e) {
+            throw new WebApplicationException("BPMN Model Error: ", e);
+        }
+
     }
 
     @DELETE
