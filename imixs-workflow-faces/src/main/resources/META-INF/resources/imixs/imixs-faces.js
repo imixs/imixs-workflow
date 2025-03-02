@@ -280,6 +280,10 @@ imixsFileUploadInit = function (options) {
 	const dropArea = document.querySelector('.imixsfileupload .drop-area');
 	const fileInput = document.querySelector('.imixsfileupload .imixsfileuploadinput');
 	
+	if (!dropArea || !fileInput) {
+		// no op
+		return;
+	}
 	// Prevent default drag behaviors
 	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
 		dropArea.addEventListener(eventName, preventDefaults, false);
