@@ -1,6 +1,6 @@
 // default jQuery date format
 var dateDisplayFormat = "yy-mm-dd";
-var onFileChange = null;
+let currentFileUploads = [];				// // Array to store selected files
 /*
  * This method converts a Java Date String into the jQuery format. See:
  * http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
@@ -103,7 +103,7 @@ function addDatetimePickerMinuteOptions(input) {
 	}
 }
 
-/* This method styles input elements an imixs page elements */
+/* This method styles input elements and imixs page elements */
 $.fn.imixsLayout = function (options) {
 	return this.each(function () {
 
@@ -146,7 +146,7 @@ $.fn.imixsLayout = function (options) {
 
 			});
 
-		$('.imixsFileUpload').imixsLayoutFileUpload();
+		//$('.imixsFileUpload').imixsLayoutFileUpload();
 
 
 	});
@@ -273,111 +273,130 @@ $.fn.layoutImixsEditor = function (rootContext, _with, _height) {
 
 
 
-/** jquery fileupload methods **/
+/** Imixs file upload methods **/
 
 /* This method initializes the imixs fileupload component */
-$.fn.imixsInitFileUpload = function (options) {
-	return this.each(function () {
-		$('body').on('click', '.imixsFileUpload_button', function () {
-			$('.imixsFileUpload_input').trigger('click');
-			return false;
-		});
-
-		// draganddrop fileupload
-		if ($('.imixsFileUpload_input').fileupload) {
-			$('.imixsFileUpload_input').fileupload({
-				dataType: 'json',
-				done: function (e, data) {
-					refreshFileList(data.result.files);
-					$('.imixsFileUpload_button').blur();
-				},
-				fail: function (e, data) {
-					alert("The file cannot be added because the maximum file size was exceeded.");
-				},
-				progressall: function (e, data) {
-					var progress = parseInt(data.loaded / data.total * 100, 10);
-					if (progress == 100)
-						progress = 0;
-					$('.imixsFileUpload_progress_bar').css(
-						'width',
-						progress + '%'
-					);
-				}
-			});
-		}
+imixsFileUploadInit = function (options) {
+	const dropArea = document.querySelector('.imixsfileupload .drop-area');
+	const fileInput = document.querySelector('.imixsfileupload .imixsfileuploadinput');
+	
+	// Prevent default drag behaviors
+	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+		dropArea.addEventListener(eventName, preventDefaults, false);
+		document.body.addEventListener(eventName, preventDefaults, false);
 	});
-};
-
-
-/* This method layouts the imixs fileupload component */
-$.fn.imixsLayoutFileUpload = function (options) {
-	return this.each(function () {
-		// hide fileupload and replace with imixsFile-Button
-		$('.imixsFileUpload_input').hide();
-		$('.imixsFileUpload_button').button({
-			icons: { primary: "ui-icon-folder-open" }
-		});
-		$('.imixsFileUpload_delete', '.imixsFileUpload_uploadlist').button({
-			icons: { primary: "ui-icon-close" }
-		});
+	
+	// Highlight drop area when item is dragged over it
+	['dragenter', 'dragover'].forEach(eventName => {
+		dropArea.addEventListener(eventName, highlight, false);
 	});
-};
-
-
-
-function refreshFileList(files) {
-	// remove uploded file info form table
-	$('.imixsFileUpload_uploaded_file').remove();
-	$.each(files, function (index, file) {
-		var fileLink = '<a href="' + file.url + '" target="_blank" >' + file.name + '</a>';
-		var cancelButton = '<button class="imixsFileUpload_delete" onclick="cancelFileUpload(\'' + file.name + '\');return false;">Delete</button>';
-		var row = '<tr class="imixsFileUpload_uploaded_file"><td class="imixsFileUpload_uploadlist_name">' + fileLink + '</td><td class="imixsFileUpload_uploadlist_size">' + fileSizeToString(file.size) + '</td><td class="imixsFileUpload_uploadlist_cancel">' + cancelButton + '</td></tr>';
-		$('.imixsFileUpload_uploadlist').append(row);
+	
+	// Remove highlight when item leaves drop area
+	['dragleave', 'drop'].forEach(eventName => {
+		dropArea.addEventListener(eventName, unhighlight, false);
 	});
-	$('button', '.imixsFileUpload_uploadlist').button({
-		icons: { primary: "ui-icon-close" }
-	});
-
-	// callback method
-	if (typeof onFileUploadChange !== 'undefined') {
-		if (onFileUploadChange instanceof Function) {
-			onFileUploadChange();
-		}
+	
+	// Handle dropped files
+	dropArea.addEventListener('drop', handleDrop, false);
+	
+	function preventDefaults(e) {
+		e.preventDefault();
+		e.stopPropagation();
 	}
-}
+	
+	function highlight() {
+		dropArea.classList.add('highlight');
+	}
+	
+	function unhighlight() {
+		dropArea.classList.remove('highlight');
+	}
+	
+	function handleDrop(e) {
+		const dt = e.dataTransfer;
+		const files = dt.files;
+		fileInput.files = files;
+		
+		// Hier kannst du einen Event auslösen, falls nötig
+		const event = new Event('change');
+		fileInput.dispatchEvent(event);
+		
+	}
+};
+
+imixsFileUploadRefresh = function () {
+	const fileInput = document.querySelector('.imixsfileupload .imixsfileuploadinput');
+	const fileTableContainer = document.querySelector('.imixsfileupload-table');
+	
+	// Clear previous table content
+	fileTableContainer.innerHTML = '';
+	if (fileInput.files.length > 0) {
+		currentFileUploads=Array.from(fileInput.files);
+		var table = document.createElement('table');
+		// Create table header
+		var thead = document.createElement('thead');
+		var headerRow = document.createElement('tr');
+		var headers = ['Name', 'Size', 'Type', ' '];
+		headers.forEach(function(headerText) {
+			var th = document.createElement('th');
+			th.textContent = headerText;
+			headerRow.appendChild(th);
+		});		
+		thead.appendChild(headerRow);
+		table.appendChild(thead);
+		// Create table body
+		var tbody = document.createElement('tbody');
+		currentFileUploads.forEach(function(file, index) {
+			var row = document.createElement('tr');
+			
+			// Add file name
+			var nameCell = document.createElement('td');
+			nameCell.textContent = file.name;
+			row.appendChild(nameCell);
+			
+			// Add file size
+			var sizeCell = document.createElement('td');
+			sizeCell.textContent = fileSizeToString(file.size) + ' bytes';
+			row.appendChild(sizeCell);
+			
+			// Add file type
+			var typeCell = document.createElement('td');
+			typeCell.textContent = file.type;
+			row.appendChild(typeCell);
+			
+			// Add remove button
+			// Add remove link
+			var actionCell = document.createElement('td');
+			var removeLink = document.createElement('a');
+			removeLink.textContent = '🗙';
+			removeLink.className = 'remove-link';
+			removeLink.onclick = function() {
+				imixsFileUploadRemoveFile(index);
+			};
+			actionCell.appendChild(removeLink);
+			row.appendChild(actionCell);
+
+			tbody.appendChild(row);
+		});
+		
+		table.appendChild(tbody);
+		fileTableContainer.appendChild(table);
+	}
+};
+
+imixsFileUploadRemoveFile = function (index) {
+	currentFileUploads.splice(index, 1);
+	const fileInput = document.querySelector('.imixsfileupload .imixsfileuploadinput');
+	var dataTransfer = new DataTransfer();
+	currentFileUploads.forEach(file => dataTransfer.items.add(file));
+	fileInput.files = dataTransfer.files;
+	
+	// Update the table
+	imixsFileUploadRefresh();
+};
 
 
-/**
- * reloads the uploaded files and refresh the filelist
- */
-function updateFileUpload() {
-	// upload url
-	var base_url = $('.imixsFileUpload_input').attr('data-url');
-	$.ajax({
-		url: base_url,
-		type: 'GET',
-		dataType: "json",
-		success: function (data) {
-			refreshFileList(data.files);
-		}
-	});
-}
 
-function cancelFileUpload(file) {
-	// compute the delete url
-	var base_url = $('.imixsFileUpload_input').attr('data-url');
-	var cidPos = base_url.indexOf("?cid=");
-	// encode file name.. encodeURIComponent
-	var target_url = base_url.substring(0, cidPos) + encodeURIComponent(file) + base_url.substring(cidPos);
-	$.ajax({
-		url: target_url,
-		type: 'DELETE',
-		dataType: "json",
-		success: function (data) {
-			refreshFileList(data.files);
-		}
-	});
-}
 
 function fileSizeToString(bytes) {
 	if (bytes >= 1000000000) { bytes = (bytes / 1000000000).toFixed(2) + ' GB'; }

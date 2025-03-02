@@ -1,35 +1,68 @@
 /* Fileupload control */
-#imixsfileuploadform {
-	
+.imixsfileupload {}
+.imixsfileupload table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 10px;
 }
-
-#imixsfileuploadcontrol {
-	width: 340px;
+.imixsfileupload table, 
+.imixsfileupload td {
+	border-bottom: 1px solid #ccc;
+	text-align: left;
+	padding: 5px;
+}
+.imixsfileupload th{
+	background-color: #efefef;
+	border-bottom: 2px solid #206B87;
+}
+.imixsfileupload input[type="file"] {
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
 	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+	font-weight: 700;
+  }
+.imixsfileupload input[type="file"] + label {
+	font-size: 14px;
+	font-weight: 600;
+	color: white;
+	background-color: #206B87;;
+	display: inline-block;
+	padding: 0.35em 0.75em;
+	border-radius: 4px;
+	cursor: pointer;
+	border-radius: 0;
 }
+  
+.imixsfileupload input[type="file"] + label:hover {
+	background-color: #206B87;;
+  }
 
-#imixsfileuploadcontent {
-	overflow: auto;
+.imixsfileupload .drop-area {
+	border: 2px dashed #ccc;
+	border-radius: 2px;
+	padding: 20px;
+	text-align: center;
+	padding: 5px 40px;
+	margin-left: 15px;
+	transition: border-color 0.3s ease;
+  }
+  
+.imixsfileupload .drop-area.highlight {
+	border-color: #4285f4;
+	background-color: rgba(66, 133, 244, 0.1);
 }
+  
+.imixsfileupload .drop-area span {
+	color: #666;
+	margin: 0;
+  }
 
-#imixsfileuploadattachments {
-	
+.imixsfileupload .remove-link {
+	cursor: pointer;
 }
-
-#imixsfileuploaduploads {
-	
-}
-
-.imixsfileuploadtable tbody tr td {
-	border: 0px;
-	border-bottom: 1px solid #CCC;
-}
-
-.imixsfileuploadtable tbody tr {
-	border: 0px;
-	border-bottom: 1px solid red;
-}
-
-.imixsfileuploadtable a {
+.imixsfileupload .remove-link:hover {
 	text-decoration: none;
 }

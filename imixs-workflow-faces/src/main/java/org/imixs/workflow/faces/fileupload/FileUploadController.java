@@ -28,266 +28,108 @@
 
 package org.imixs.workflow.faces.fileupload;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.enterprise.context.Conversation;
+import org.imixs.workflow.FileData;
+import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.faces.data.WorkflowController;
+import org.imixs.workflow.faces.data.WorkflowEvent;
+
 import jakarta.enterprise.context.ConversationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-
-import org.imixs.workflow.FileData;
-import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.faces.data.WorkflowEvent;
-
-import jakarta.faces.context.FacesContext;
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.logging.Level;
+import jakarta.servlet.http.Part;
 
 /**
- * The FileUploadController is a conversation scoped bean and used to hold the
- * upladed files and transfere the to the accoicated workitem. The
- * AjaxFileUploadServlet injects this bean to provide new file data.
+ * The FileUploadController is a conversation scoped bean and used to transfer
+ * the parts to the associated workitem.
+ * <code>jakarta.servlet.http.Part</code> is a JSF 4.0 component
  * 
- * @see AjaxFileUploadServlet.doPost
  * @author rsoika
- * 
  */
 @Named
 @ConversationScoped
 public class FileUploadController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static Logger logger = Logger.getLogger(FileUploadController.class.getName());
 
-    private ItemCollection workitem = null;
+    public static final String FILEUPLOAD_ERROR = "FILEUPLOAD_ERROR";
 
-    private List<FileData> _tmpFiles = null; // temporarly file list.
-    private List<FileData> _persistedFiles = null; // persisted file list.
-
-    private static final Logger logger = Logger.getLogger(FileUploadController.class.getName());
+    private List<Part> files;
 
     @Inject
-    private Conversation conversation;
+    WorkflowController workflowController;
 
-    /**
-     * Setter method to get an instance of the current workitem the FileData should
-     * be stored.
-     * 
-     * @return
-     */
-    public ItemCollection getWorkitem() {
-        return workitem;
+    public List<Part> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<Part> files) {
+        this.files = files;
     }
 
     /**
-     * This method set the current workitem and starts a new conversation. With this
-     * mechanism the fileUploadController bean can be used in multiple browser tabs
-     * or browser sessions.
-     * 
-     * @param workitem
-     */
-    public void setWorkitem(ItemCollection workitem) {
-        this.workitem = workitem;
-
-        if (workitem != null) {
-            // start new conversation...
-            if (conversation.isTransient()) {
-                conversation.setTimeout(
-                        ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest())
-                                .getSession().getMaxInactiveInterval() * 1000);
-                conversation.begin();
-                logger.log(Level.FINEST, "......starting new conversation, id={0}", conversation.getId());
-            }
-            reset();
-            for (FileData fileData : workitem.getFileData()) {
-                _persistedFiles.add(fileData);
-            }
-        }
-    }
-
-    /**
-     * Returns the current conversation id. This id is passed to the
-     * AjaxFileUploadServelt URIs so make sure that the correct FileUploadController
-     * is injected.
-     * 
-     * @return
-     */
-    public String getCID() {
-        if (conversation != null) {
-            return conversation.getId();
-        } else {
-            // no conversation injected!
-            return "";
-        }
-    }
-
-    /**
-     * WorkflowEvent listener
-     * <p>
-     * If a new WorkItem was created the file upload will be reset.
-     * 
+     * WorkflowEvent listener to add uploaded file parts into the current workitem
+     * of the <code>WorkflowController</code>.
      * 
      * @param workflowEvent
+     * @throws AccessDeniedException
      */
-    public void onWorkflowEvent(@Observes WorkflowEvent workflowEvent) {
-        if (workflowEvent == null)
+    public void onWorkflowEvent(@Observes WorkflowEvent workflowEvent) throws PluginException {
+
+        int eventType = workflowEvent.getEventType();
+        ItemCollection workitem = workflowEvent.getWorkitem();
+        if (workitem == null || workflowController == null) {
             return;
-
-        if (WorkflowEvent.WORKITEM_CREATED == workflowEvent.getEventType()) {
-            // reset file data...
-            reset();
         }
 
-    }
+        // before the workitem is saved we update the field txtOrderItems
+        if (WorkflowEvent.WORKITEM_BEFORE_PROCESS == eventType) {
+            logger.log(Level.FINE, "uploaded file size:{0}", files.size());
+            for (Part part : files) {
+                String submittedFilename = part.getSubmittedFileName();
+                String name = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+                long size = part.getSize();
+                String contentType = part.getContentType();
+                logger.log(Level.FINE, "uploaded file: submitted filename: {0}, name:{1}, size:{2}, content type: {3}",
+                        new Object[] {
+                                submittedFilename, name, size, contentType
+                        });
 
-    /**
-     * This method is called by the AjaxFileUpload Servlet. The method adds the file
-     * to the workitem but also updates the list of temporary files, which are not
-     * yet persisted.
-     * 
-     * @param document
-     * @param aFilename
-     */
-    public void addAttachedFile(FileData filedata) {
-        if (workitem != null) {
-            _tmpFiles.add(filedata);
-            workitem.addFileData(filedata);
-        }
-    }
+                part.getHeaderNames()
+                        .forEach(headerName -> logger.log(Level.FINE, "header name: {0}, value: {1}", new Object[] {
+                                headerName, part.getHeader(headerName)
+                        }));
 
-    /**
-     * Removes a attached file object from the tmp list of uploaded files.
-     * 
-     * @param sFilename - filename to be removed
-     * @return - null
-     */
-    public void removeAttachedFile(String aFilename) {
-        if (workitem != null) {
-            workitem.removeFile(aFilename);
-            // remove from tmp list
-            for (Iterator<FileData> iterator = _tmpFiles.iterator(); iterator.hasNext();) {
-                FileData tmp = iterator.next();
-                if (tmp.getName().equals(aFilename)) {
-                    iterator.remove();
-                }
-            }
-        }
-
-    }
-
-    /**
-     * Removes a file object from a given workitem. Here we operate on a given
-     * workitem as the imixsFileUpload.xhtml has no idea of he current conversation
-     * scoped controller.
-     * 
-     * @param sFilename - filename to be removed
-     * @return - null
-     */
-    public void removePersistedFile(String aFilename) {
-        if (workitem != null) {
-            workitem.removeFile(aFilename);
-        }
-        // remove from persisted list
-        for (Iterator<FileData> iterator = _persistedFiles.iterator(); iterator.hasNext();) {
-            FileData tmp = iterator.next();
-            if (tmp.getName().equals(aFilename)) {
-                iterator.remove();
-            }
-        }
-    }
-
-    /**
-     * returns the list of currently new attached files. This list is not equal the
-     * $file item!
-     * 
-     * @return
-     */
-    public List<FileData> getAttachedFiles() {
-        if (_tmpFiles == null) {
-            _tmpFiles = new ArrayList<FileData>();
-        }
-        return _tmpFiles;
-    }
-
-    /**
-     * returns the list of already persisted files. This list is not equal the $file
-     * item!
-     * 
-     * @return
-     */
-    public List<FileData> getPersistedFiles() {
-        if (_persistedFiles == null) {
-            _persistedFiles = new ArrayList<FileData>();
-        }
-        return _persistedFiles;
-    }
-
-    /**
-     * reset the temp and persisted file variables.
-     */
-    public void reset() {
-        _tmpFiles = new ArrayList<FileData>();
-        _persistedFiles = new ArrayList<FileData>();
-    }
-
-    /**
-     * get the file size for a given filename in human readable format
-     * <p>
-     * In case the Imixs-Archive API is connected, the file size is stored in the
-     * attriubte 'size'
-     * 
-     * @param sFilename - filename to be removed
-     * @return - filsize in human readable string
-     */
-    @SuppressWarnings("unchecked")
-    public String getFileSize(String aFilename) {
-        if (workitem != null) {
-            FileData fileData = workitem.getFileData(aFilename);
-            double bytes = fileData.getContent().length;
-            if (bytes == 0) {
-                // test if we have the attribute size
-                List<Object> sizeAttribute = (List<Object>) fileData.getAttribute("size");
-                if (sizeAttribute != null && sizeAttribute.size() > 0) {
-                    try {
-                        bytes = Double.parseDouble(sizeAttribute.get(0).toString());
-                    } catch (NumberFormatException n) {
-                        logger.log(Level.WARNING, "unable to parse size attribute in FileData for file ''{0}''", aFilename);
+                try {
+                    InputStream inputStream = part.getInputStream();
+                    final byte[] bytes;
+                    try (inputStream) {
+                        bytes = inputStream.readAllBytes();
                     }
+
+                    FileData filedata = new FileData(name, bytes, contentType, null);
+                    workflowController.getWorkitem().addFileData(filedata);
+
+                } catch (IOException e) {
+                    throw new PluginException(FileUploadController.class.getSimpleName(),
+                            "FILEUPLOAD_ERROR",
+                            "failed to uplaod file parts: " + e.getMessage(), e);
                 }
-            }
-            if (bytes >= 1000000000) {
-                bytes = (bytes / 1000000000);
-                return round(bytes) + " GB";
-            } else if (bytes >= 1000000) {
-                bytes = (bytes / 1000000);
-                return round(bytes) + " MB";
-            } else if (bytes >= 1000) {
-                bytes = (bytes / 1000);
-                return round(bytes) + " KB";
-            } else {
-                return round(bytes) + " bytes";
+
             }
         }
-        return "";
-    }
 
-    /**
-     * helper method to round for 2 digits.
-     * 
-     * @param value
-     * @param places
-     * @return
-     */
-    public static double round(double value) {
-        BigDecimal bd = new BigDecimal(value);
-        bd = bd.setScale(2, RoundingMode.HALF_UP);
-        return bd.doubleValue();
     }
 
 }
