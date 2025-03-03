@@ -1,5 +1,10 @@
 /* Fileupload control */
-.imixsfileupload {}
+.imixsfileupload {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 15px;
+}
 .imixsfileupload table {
 	width: 100%;
 	border-collapse: collapse;
@@ -34,6 +39,8 @@
 	border-radius: 4px;
 	cursor: pointer;
 	border-radius: 0;
+	text-align: center;
+	flex-grow: 1;
 }
   
 .imixsfileupload input[type="file"] + label:hover {
@@ -46,8 +53,9 @@
 	padding: 20px;
 	text-align: center;
 	padding: 5px 40px;
-	margin-left: 15px;
 	transition: border-color 0.3s ease;
+	flex-grow: 1;
+	min-width: 200px;
   }
   
 .imixsfileupload .drop-area.highlight {
@@ -59,6 +67,11 @@
 	color: #666;
 	margin: 0;
   }
+
+.imixsfileupload-table {
+	flex-grow: 1;
+	flex-basis: 100%; 
+}
 
 .imixsfileupload .remove-link {
 	cursor: pointer;
