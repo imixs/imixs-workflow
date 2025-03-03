@@ -43,6 +43,7 @@
 				<item name="Search Index" href="./engine/queries.html"
 					collapse="true">
 					<item name="Index Schema" href="./engine/luceneservice.html" />
+					<item name="Repair Index" href="./engine/lucenerepair.html" />
 				</item>
 				<item name="Security Model" href="./engine/acl.html" />
 				<item name="AccessAdapter" href="./engine/adapters/accessadapter.html" />
