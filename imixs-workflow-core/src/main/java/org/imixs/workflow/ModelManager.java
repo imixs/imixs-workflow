@@ -693,12 +693,15 @@ public class ModelManager {
             return result;
         }
 
-        // find Process containing matching the process group
+        // find Process containing matching the process group name
         Set<BPMNProcess> processList = model.getProcesses();
         for (BPMNProcess _process : processList) {
             if (isImixsProcess(_process)) {
-                process = _process;
-                break;
+                logger.fine("process name=" + _process.getName());
+                if (processGroup.equals(_process.getName())) {
+                    process = _process;
+                    break;
+                }
             }
         }
 
