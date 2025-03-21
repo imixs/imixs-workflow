@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<artifactId>imixs-workflow</artifactId>
 		<groupId>org.imixs.workflow</groupId>
@@ -16,16 +18,18 @@ Imixs-Workflow Core provides various components in a Java framework that allow t
 	</build>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.graalvm.js</groupId>
-			<artifactId>js</artifactId>
-			<version>${graalvm.version}</version>
-		</dependency>
+		<!-- GraalVM -->
 		<dependency>
 			<groupId>org.graalvm.js</groupId>
 			<artifactId>js-scriptengine</artifactId>
 			<version>${graalvm.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.graalvm.js</groupId>
+			<artifactId>js-language</artifactId>
+			<version>${graalvm.version}</version>
+		</dependency>
+		<!-- OpenBMN -->
 		<dependency>
 			<groupId>org.imixs.bpmn</groupId>
 			<artifactId>open-bpmn.metamodel</artifactId>
