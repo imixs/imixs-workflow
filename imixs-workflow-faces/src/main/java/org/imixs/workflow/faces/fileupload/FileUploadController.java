@@ -43,6 +43,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.DocumentEvent;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.faces.data.WorkflowController;
 import org.imixs.workflow.faces.data.WorkflowEvent;
 
 import jakarta.annotation.Priority;
@@ -77,6 +78,9 @@ public class FileUploadController implements Serializable {
     @Inject
     private Conversation conversation;
 
+    @Inject
+    private WorkflowController workflowController;
+
     public List<Part> getFiles() {
         return files;
     }
@@ -87,6 +91,9 @@ public class FileUploadController implements Serializable {
     }
 
     public ItemCollection getWorkitem() {
+        if (workitem == null || workflowController.getWorkitem() != null) {
+            workitem = workflowController.getWorkitem();
+        }
         return workitem;
     }
 
@@ -192,6 +199,33 @@ public class FileUploadController implements Serializable {
     }
 
     /**
+     * The method adds the file
+     * to the workitem but also updates the list of temporary files, which are not
+     * yet persisted.
+     * 
+     * @param document
+     * @param aFilename
+     */
+    public void addAttachedFile(FileData filedata) {
+        if (getWorkitem() != null) {
+            getWorkitem().addFileData(filedata);
+        }
+    }
+
+    /**
+     * Removes a attached file object from the tmp list of uploaded files.
+     * 
+     * @param sFilename - filename to be removed
+     * @return - null
+     */
+    public void removeAttachedFile(String aFilename) {
+        if (getWorkitem() != null) {
+            getWorkitem().removeFile(aFilename);
+        }
+
+    }
+
+    /**
      * get the file size for a given filename in human readable format
      * <p>
      * In case the Imixs-Archive API is connected, the file size is stored in the
@@ -202,8 +236,8 @@ public class FileUploadController implements Serializable {
      */
     @SuppressWarnings("unchecked")
     public String getFileSize(String aFilename) {
-        if (workitem != null) {
-            FileData fileData = workitem.getFileData(aFilename);
+        if (getWorkitem() != null) {
+            FileData fileData = getWorkitem().getFileData(aFilename);
             double bytes = fileData.getContent().length;
             if (bytes == 0) {
                 // test if we have the attribute size
@@ -269,8 +303,8 @@ public class FileUploadController implements Serializable {
      * @return - null
      */
     public void removePersistedFile(String aFilename) {
-        if (workitem != null) {
-            workitem.removeFile(aFilename);
+        if (getWorkitem() != null) {
+            getWorkitem().removeFile(aFilename);
         }
     }
 }
