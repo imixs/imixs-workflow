@@ -42,13 +42,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.annotation.Resource;
-import jakarta.inject.Inject;
 import javax.xml.transform.TransformerException;
-
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Marshaller;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
@@ -57,6 +51,8 @@ import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.imixs.workflow.xml.XSLHandler;
 
+import jakarta.annotation.Resource;
+import jakarta.inject.Inject;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
@@ -67,6 +63,9 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 
 /**
  * This plug-in supports a Mail interface to send a email to a list of
@@ -103,6 +102,14 @@ public class MailPlugin extends AbstractPlugin {
     @Inject
     @ConfigProperty(name = "mail.defaultSender")
     Optional<String> mailDefaultSender;
+
+    @Inject
+    @ConfigProperty(name = "mail.replyTo")
+    Optional<String> mailReplyTo;
+
+    @Inject
+    @ConfigProperty(name = "mail.authenticatedSender")
+    Optional<String> mailAuthenticatedSender;
 
     @Inject
     @ConfigProperty(name = "mail.charSet", defaultValue = "ISO-8859-1")
@@ -154,38 +161,57 @@ public class MailPlugin extends AbstractPlugin {
                 return documentContext;
             }
 
-            // set FROM
+            /*
+             * Now Set Sender, From and ReplyTo addresses...
+             */
+            logger.info("├── New mail message:");
+            // compute From address - can be overwritten by env mail.defaultSender
             InternetAddress adr = getInternetAddress(getFrom(documentContext, documentActivity));
-            if (adr==null) {
-                // in case of null we set an emtpy address here. This can happen in case
-                // of a RunAs Service EJB where the user context can not be resoved to a valid smtp address
+            if (adr == null) {
+                // in case of null we set an empty address here. This can happen in case
+                // of a RunAs Service EJB where the user context can not be resolved to a valid
+                // smtp address
                 if (debug) {
-                    logger.warning("...from address was resolved to null");
+                    logger.warning("│   ├── from address was resolved to null");
                 }
-                // will force a MessagingException...
-                adr=new InternetAddress("");
-            }
-            mailMessage.setFrom(adr);
+                // we will force a MessagingException...
+                adr = new InternetAddress("");
+            } else {
+                // Test if a mailAuthenticatedSender.isPresent())
+                if (mailAuthenticatedSender.isPresent()) {
+                    logger.info("│   ├── authenticatedSender:" + mailAuthenticatedSender.get());
+                    mailMessage.setFrom(new InternetAddress(mailAuthenticatedSender.get()));
+                } else {
+                    // default - current sender
+                    mailMessage.setFrom(adr);
+                    logger.info("│   ├── authenticatedFrom:" + adr.getAddress());
+                }
 
-            // set Recipient
-            mailMessage.setRecipients(Message.RecipientType.TO, getInternetAddressArray(vectorRecipients));
+                logger.info("│   ├── sender: " + adr.getAddress());
+                mailMessage.setHeader("Sender", adr.getAddress());
 
-            // build CC
-            mailMessage.setRecipients(Message.RecipientType.CC,
-                    getInternetAddressArray(getRecipientsCC(documentContext, documentActivity)));
-
-            // build BCC
-            mailMessage.setRecipients(Message.RecipientType.BCC,
-                    getInternetAddressArray(getRecipientsBCC(documentContext, documentActivity)));
-
-            // replay to?
-            String sReplyTo = getReplyTo(documentContext, documentActivity);
-            if ((sReplyTo != null) && (!sReplyTo.isEmpty())) {
+                // Dow we have a replay to?
+                String sReplyTo = getReplyTo(documentContext, documentActivity);
+                if ((sReplyTo == null) || (sReplyTo.isEmpty())) {
+                    sReplyTo = adr.getAddress();
+                }
+                logger.info("│   ├── replyTo:" + sReplyTo);
                 InternetAddress[] resplysAdrs = new InternetAddress[1];
                 resplysAdrs[0] = getInternetAddress(sReplyTo);
                 mailMessage.setReplyTo(resplysAdrs);
-            }
 
+            }
+            /*
+             * Set Recipients
+             */
+            // set Recipient
+            mailMessage.setRecipients(Message.RecipientType.TO, getInternetAddressArray(vectorRecipients));
+            // build CC
+            mailMessage.setRecipients(Message.RecipientType.CC,
+                    getInternetAddressArray(getRecipientsCC(documentContext, documentActivity)));
+            // build BCC
+            mailMessage.setRecipients(Message.RecipientType.BCC,
+                    getInternetAddressArray(getRecipientsBCC(documentContext, documentActivity)));
             // set Subject
             mailMessage.setSubject(getSubject(documentContext, documentActivity), this.getCharSet());
 
@@ -232,9 +258,9 @@ public class MailPlugin extends AbstractPlugin {
                         vRecipients.add(st.nextToken().trim());
                     }
 
-                    logger.info("Running in TestMode, forwarding mails to:");
+                    logger.info("│   ├── running in TestMode, forwarding to:");
                     for (String adr : vRecipients) {
-                        logger.log(Level.INFO, "     {0}", adr);
+                        logger.log(Level.INFO, "│   │   ├── {0}", adr);
                     }
                     try {
                         getMailMessage().setRecipients(Message.RecipientType.CC, null);
@@ -279,7 +305,7 @@ public class MailPlugin extends AbstractPlugin {
                         logger.log(Level.FINEST, "...mail transfer in {0}ms", System.currentTimeMillis() - l);
                     }
                 }
-                logger.log(Level.INFO, "...send mail: MessageID={0}", mailMessage.getMessageID());
+                logger.log(Level.INFO, "├── Send mail -> MessageID={0}", mailMessage.getMessageID());
 
             } catch (Exception esend) {
                 logger.log(Level.WARNING, "close failed with exception: {0}", esend.toString());
@@ -325,18 +351,10 @@ public class MailPlugin extends AbstractPlugin {
      * @return String - replyTo address
      */
     public String getReplyTo(ItemCollection documentContext, ItemCollection documentActivity) {
-        String sReplyTo = null;
-        boolean debug = logger.isLoggable(Level.FINE);
-
-        // check for ReplyTo...
-        if ("1".equals(documentActivity.getItemValueString("keyMailReplyToCurrentUser")))
-            sReplyTo = this.getWorkflowService().getUserName();
-        else
-            sReplyTo = documentActivity.getItemValueString("namMailReplyToUser");
-        if (debug) {
-            logger.log(Level.FINEST, "......ReplyTo={0}", sReplyTo);
+        if (mailReplyTo.isPresent()) {
+            return mailReplyTo.get();
         }
-        return sReplyTo;
+        return null;
     }
 
     /**
@@ -587,7 +605,7 @@ public class MailPlugin extends AbstractPlugin {
         if (aAddr == null) {
             return null;
         }
-        aAddr=aAddr.trim();
+        aAddr = aAddr.trim();
         try {
             // surround with "" if space
             if (aAddr.indexOf(" ") > -1)
