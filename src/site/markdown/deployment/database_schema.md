@@ -8,8 +8,8 @@ The database schema used by the Imixs-Workflow engine is quite simple and consis
 
 If you like to to create the table manually you can do it like this:
 
-```sql
-CREATE TABLE document2 (
+```bash
+CREATE TABLE document (
     id character varying(255) NOT NULL,
     created timestamp without time zone,
     data bytea,
@@ -21,7 +21,7 @@ CREATE TABLE document2 (
 ALTER TABLE document ADD CONSTRAINT document_pkey PRIMARY KEY (id);
 ```
 
-```sql
+```bash
 CREATE TABLE eventlog (
     id character varying(255) NOT NULL,
     created timestamp without time zone,
@@ -55,4 +55,3 @@ The following statement adds the necessary indexes for a MySQL Database:
 The following statement adds the necessary indexes for a PostgreSQL Database:
 
     CREATE INDEX index_document1 ON document USING btree(created, modified, type , version);
-
