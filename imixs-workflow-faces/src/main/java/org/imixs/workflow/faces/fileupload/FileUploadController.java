@@ -91,7 +91,7 @@ public class FileUploadController implements Serializable {
     }
 
     public ItemCollection getWorkitem() {
-        if (workitem == null || workflowController.getWorkitem() != null) {
+        if (workitem == null && workflowController.getWorkitem() != null) {
             workitem = workflowController.getWorkitem();
         }
         return workitem;
@@ -223,6 +223,29 @@ public class FileUploadController implements Serializable {
             getWorkitem().removeFile(aFilename);
         }
 
+    }
+
+    /**
+     * Returns the user info (creator / modified) by filename
+     * 
+     * @return
+     */
+    public String getUserInfo(String aFilename) {
+        String result = "";
+        if (getWorkitem() != null) {
+            FileData fileData = getWorkitem().getFileData(aFilename);
+            if (fileData != null) {
+                List<Object> creatorList = (List<Object>) fileData.getAttribute("$creator");
+                if (creatorList != null && creatorList.size() > 0) {
+                    result = result + creatorList.get(0);
+                }
+                List<Object> createdList = (List<Object>) fileData.getAttribute("$created");
+                if (createdList != null && createdList.size() > 0) {
+                    result = result + " - " + createdList.get(0);
+                }
+            }
+        }
+        return result;
     }
 
     /**

@@ -340,7 +340,7 @@ imixsFileUploadRefresh = function () {
 		// Create table header
 		var thead = document.createElement('thead');
 		var headerRow = document.createElement('tr');
-		var headers = ['Name', 'Size', 'Type', ' '];
+		var headers = ['New File Name', 'Size', 'Type', ' '];
 		headers.forEach(function(headerText) {
 			var th = document.createElement('th');
 			th.textContent = headerText;
