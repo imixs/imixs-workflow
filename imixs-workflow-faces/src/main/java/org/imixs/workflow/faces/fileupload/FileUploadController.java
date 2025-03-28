@@ -238,30 +238,32 @@ public class FileUploadController implements Serializable {
     public String getFileSize(String aFilename) {
         if (getWorkitem() != null) {
             FileData fileData = getWorkitem().getFileData(aFilename);
-            double bytes = fileData.getContent().length;
-            if (bytes == 0) {
-                // test if we have the attribute size
-                List<Object> sizeAttribute = (List<Object>) fileData.getAttribute("size");
-                if (sizeAttribute != null && sizeAttribute.size() > 0) {
-                    try {
-                        bytes = Double.parseDouble(sizeAttribute.get(0).toString());
-                    } catch (NumberFormatException n) {
-                        logger.log(Level.WARNING, "unable to parse size attribute in FileData for file ''{0}''",
-                                aFilename);
+            if (fileData != null) {
+                double bytes = fileData.getContent().length;
+                if (bytes == 0) {
+                    // test if we have the attribute size
+                    List<Object> sizeAttribute = (List<Object>) fileData.getAttribute("size");
+                    if (sizeAttribute != null && sizeAttribute.size() > 0) {
+                        try {
+                            bytes = Double.parseDouble(sizeAttribute.get(0).toString());
+                        } catch (NumberFormatException n) {
+                            logger.log(Level.WARNING, "unable to parse size attribute in FileData for file ''{0}''",
+                                    aFilename);
+                        }
                     }
                 }
-            }
-            if (bytes >= 1000000000) {
-                bytes = (bytes / 1000000000);
-                return round(bytes) + " GB";
-            } else if (bytes >= 1000000) {
-                bytes = (bytes / 1000000);
-                return round(bytes) + " MB";
-            } else if (bytes >= 1000) {
-                bytes = (bytes / 1000);
-                return round(bytes) + " KB";
-            } else {
-                return round(bytes) + " bytes";
+                if (bytes >= 1000000000) {
+                    bytes = (bytes / 1000000000);
+                    return round(bytes) + " GB";
+                } else if (bytes >= 1000000) {
+                    bytes = (bytes / 1000000);
+                    return round(bytes) + " MB";
+                } else if (bytes >= 1000) {
+                    bytes = (bytes / 1000);
+                    return round(bytes) + " KB";
+                } else {
+                    return round(bytes) + " bytes";
+                }
             }
         }
         return "";
