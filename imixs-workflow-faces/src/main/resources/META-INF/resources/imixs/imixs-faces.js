@@ -277,126 +277,162 @@ $.fn.layoutImixsEditor = function (rootContext, _with, _height) {
 
 /* This method initializes the imixs fileupload component */
 imixsFileUploadInit = function (options) {
-	const dropArea = document.querySelector('.imixsfileupload .drop-area');
-	const fileInput = document.querySelector('.imixsfileupload .imixsfileuploadinput');
-	
-	if (!dropArea || !fileInput) {
-		// no op
-		return;
-	}
-	// Prevent default drag behaviors
-	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-		dropArea.addEventListener(eventName, preventDefaults, false);
-		document.body.addEventListener(eventName, preventDefaults, false);
+	const uploadContainers = document.querySelectorAll('.imixsfileupload')
+	uploadContainers.forEach((container, containerIndex) => {
+		const fileInput = container.querySelector('.imixsfileuploadinput');
+		const dropArea = container.querySelector('.drop-area');
+		if (!dropArea || !fileInput) {
+			// no op
+			return;
+		}
+		// Prevent default drag behaviors
+		['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+			dropArea.addEventListener(eventName, preventDefaults, false);
+			document.body.addEventListener(eventName, preventDefaults, false);
+		});
+
+		// Highlight drop area when item is dragged over it
+		['dragenter', 'dragover'].forEach(eventName => {
+			dropArea.addEventListener(eventName, function () {
+				highlight(dropArea);
+			}, false);
+		});
+
+		// Remove highlight when item leaves drop area
+		['dragleave', 'drop'].forEach(eventName => {
+			dropArea.addEventListener(eventName, function () {
+				unhighlight(dropArea);
+			}, false);
+		});
+
+		// Handle dropped files 
+		dropArea.addEventListener('drop', function (e) {
+			handleDrop(e, fileInput, container);
+		}, false);
+
+		// Change-Event 
+		fileInput.addEventListener('change', function () {
+			imixsFileUploadRefresh(container);
+		}, false);
 	});
-	
-	// Highlight drop area when item is dragged over it
-	['dragenter', 'dragover'].forEach(eventName => {
-		dropArea.addEventListener(eventName, highlight, false);
-	});
-	
-	// Remove highlight when item leaves drop area
-	['dragleave', 'drop'].forEach(eventName => {
-		dropArea.addEventListener(eventName, unhighlight, false);
-	});
-	
-	// Handle dropped files
-	dropArea.addEventListener('drop', handleDrop, false);
-	
+
 	function preventDefaults(e) {
 		e.preventDefault();
 		e.stopPropagation();
 	}
-	
-	function highlight() {
+
+	function highlight(dropArea) {
 		dropArea.classList.add('highlight');
 	}
-	
-	function unhighlight() {
+
+	function unhighlight(dropArea) {
 		dropArea.classList.remove('highlight');
 	}
-	
-	function handleDrop(e) {
+
+	function handleDrop(e, fileInput, container) {
 		const dt = e.dataTransfer;
 		const files = dt.files;
 		fileInput.files = files;
-		
-		// Hier kannst du einen Event auslösen, falls nötig
-		const event = new Event('change');
-		fileInput.dispatchEvent(event);
-		
+
+		// Refresh für diesen speziellen Container aufrufen
+		imixsFileUploadRefresh(container);
 	}
 };
+
+// Container-spezifische Datenspeicherung mit WeakMap
+const currentFileUploadsMap = new WeakMap();
 
 imixsFileUploadRefresh = function () {
-	const fileInput = document.querySelector('.imixsfileupload .imixsfileuploadinput');
-	const fileTableContainer = document.querySelector('.imixsfileupload-table');
-	
-	// Clear previous table content
-	fileTableContainer.innerHTML = '';
-	if (fileInput.files.length > 0) {
-		currentFileUploads=Array.from(fileInput.files);
-		var table = document.createElement('table');
-		// Create table header
-		var thead = document.createElement('thead');
-		var headerRow = document.createElement('tr');
-		var headers = ['Name', 'Size', 'Type', ' '];
-		headers.forEach(function(headerText) {
-			var th = document.createElement('th');
-			th.textContent = headerText;
-			headerRow.appendChild(th);
-		});		
-		thead.appendChild(headerRow);
-		table.appendChild(thead);
-		// Create table body
-		var tbody = document.createElement('tbody');
-		currentFileUploads.forEach(function(file, index) {
-			var row = document.createElement('tr');
-			
-			// Add file name
-			var nameCell = document.createElement('td');
-			nameCell.textContent = file.name;
-			row.appendChild(nameCell);
-			
-			// Add file size
-			var sizeCell = document.createElement('td');
-			sizeCell.textContent = fileSizeToString(file.size) + ' bytes';
-			row.appendChild(sizeCell);
-			
-			// Add file type
-			var typeCell = document.createElement('td');
-			typeCell.textContent = file.type;
-			row.appendChild(typeCell);
-			
-			// Add remove button
-			// Add remove link
-			var actionCell = document.createElement('td');
-			var removeLink = document.createElement('a');
-			removeLink.textContent = '🗙';
-			removeLink.className = 'remove-link';
-			removeLink.onclick = function() {
-				imixsFileUploadRemoveFile(index);
-			};
-			actionCell.appendChild(removeLink);
-			row.appendChild(actionCell);
+	const uploadContainers = document.querySelectorAll('.imixsfileupload')
+	uploadContainers.forEach((container, containerIndex) => {
+		const fileInput = container.querySelector('.imixsfileupload .imixsfileuploadinput');
+		const fileTableContainer = container.querySelector('.imixsfileupload-table');
 
-			tbody.appendChild(row);
-		});
-		
-		table.appendChild(tbody);
-		fileTableContainer.appendChild(table);
-	}
+		// Clear previous table content
+		fileTableContainer.innerHTML = '';
+		if (fileInput.files.length > 0) {
+			currentFileUploads = Array.from(fileInput.files);
+			currentFileUploadsMap.set(container, currentFileUploads);
+
+			var table = document.createElement('table');
+			// Create table header
+			var thead = document.createElement('thead');
+			var headerRow = document.createElement('tr');
+			var headers = ['Name', 'Size', 'Type', ' '];
+			headers.forEach(function (headerText) {
+				var th = document.createElement('th');
+				th.textContent = headerText;
+				headerRow.appendChild(th);
+			});
+			thead.appendChild(headerRow);
+			table.appendChild(thead);
+			// Create table body
+			var tbody = document.createElement('tbody');
+			currentFileUploads.forEach(function (file, index) {
+				var row = document.createElement('tr');
+
+				// Add file name
+				var nameCell = document.createElement('td');
+				nameCell.textContent = file.name;
+				row.appendChild(nameCell);
+
+				// Add file size
+				var sizeCell = document.createElement('td');
+				sizeCell.textContent = fileSizeToString(file.size) + ' bytes';
+				row.appendChild(sizeCell);
+
+				// Add file type
+				var typeCell = document.createElement('td');
+				typeCell.textContent = file.type;
+				row.appendChild(typeCell);
+
+				// Add remove link
+				var actionCell = document.createElement('td');
+				var removeLink = document.createElement('a');
+				removeLink.textContent = '🗙';
+				removeLink.className = 'remove-link';
+				removeLink.onclick = function () {
+					imixsFileUploadRemoveFile(index, container);
+				};
+				actionCell.appendChild(removeLink);
+				row.appendChild(actionCell);
+
+				tbody.appendChild(row);
+			});
+
+			table.appendChild(tbody);
+			fileTableContainer.appendChild(table);
+		}
+	});
 };
 
-imixsFileUploadRemoveFile = function (index) {
+imixsFileUploadRemoveFile = function (index, container) {
+	if (!container) {
+		console.error('Container for imixsFileUploadRemoveFile not found');
+		return;
+	}
+
+	const currentFileUploads = currentFileUploadsMap.get(container);
+	if (!currentFileUploads) {
+		return;
+	}
+
 	currentFileUploads.splice(index, 1);
-	const fileInput = document.querySelector('.imixsfileupload .imixsfileuploadinput');
+
+	const fileInput = container.querySelector('.imixsfileuploadinput');
+	if (!fileInput) {
+		return;
+	}
+
 	var dataTransfer = new DataTransfer();
 	currentFileUploads.forEach(file => dataTransfer.items.add(file));
 	fileInput.files = dataTransfer.files;
-	
+
+	// Die aktualisierte Liste im Map speichern
+	currentFileUploadsMap.set(container, currentFileUploads);
+
 	// Update the table
-	imixsFileUploadRefresh();
+	imixsFileUploadRefresh(container);
 };
 
 
