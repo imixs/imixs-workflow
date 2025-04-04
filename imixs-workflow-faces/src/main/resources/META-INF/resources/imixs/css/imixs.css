@@ -8,7 +8,6 @@
 .imixsfileupload table {
 	width: 100%;
 	border-collapse: collapse;
-	margin-top: 10px;
 }
 .imixsfileupload table, 
 .imixsfileupload td {
@@ -20,6 +19,12 @@
 	background-color: #efefef;
 	border-bottom: 2px solid #206B87;
 }
+.imixsfileupload table th:last-child,
+.imixsfileupload table td:last-child {
+	width: 30px;
+	text-align: center;
+}
+
 .imixsfileupload input[type="file"] {
 	width: 0.1px;
 	height: 0.1px;

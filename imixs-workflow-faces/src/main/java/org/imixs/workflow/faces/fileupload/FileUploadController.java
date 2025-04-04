@@ -56,9 +56,30 @@ import jakarta.interceptor.Interceptor;
 import jakarta.servlet.http.Part;
 
 /**
- * The FileUploadController is a conversation scoped bean and used to transfer
- * the parts to the associated workitem.
- * <code>jakarta.servlet.http.Part</code> is a JSF 4.0 component
+ * The FileUploadController is a conversation scoped JSF 4.0 component used to
+ * transfer the parts to the associated workitem.
+ * The controller supports two modes:
+ * <p>
+ * SingleMode:
+ * <p>
+ * In this mode one or multiple files can be transferred in a one request. This
+ * is mainly covered by JavaScript code and works in a simple straight forward
+ * way.
+ * <p>
+ * AjaxMode:
+ * <p>
+ * In the ajax mode one or multiple files can be transferred sequentiell in
+ * separate ajax request. This mode is more user friendly.
+ * <p>
+ * 
+ * <pre>
+ * 
+ * 	{@code <i:imixsFileUpload id="file_upload_id" 
+       showattachments="true"
+       workitem="#{workflowController.workitem}"
+       labelButton="#{message.documents_upload}" 
+       labelHelp="#{message.documents_upload_help}"/>
+    }</pre>
  * 
  * @author rsoika
  */
@@ -71,6 +92,7 @@ public class FileUploadController implements Serializable {
 
     public static final String FILEUPLOAD_ERROR = "FILEUPLOAD_ERROR";
 
+    private ItemCollection uploadData = null; // holds the temporally file list.
     private List<Part> files;
     private ItemCollection workitem = null;
     private boolean isCompleted = true;
@@ -80,6 +102,10 @@ public class FileUploadController implements Serializable {
 
     @Inject
     private WorkflowController workflowController;
+
+    public FileUploadController() {
+        uploadData = new ItemCollection();
+    }
 
     public List<Part> getFiles() {
         return files;
@@ -91,7 +117,7 @@ public class FileUploadController implements Serializable {
     }
 
     public ItemCollection getWorkitem() {
-        if (workitem == null || workflowController.getWorkitem() != null) {
+        if (workitem == null && workflowController.getWorkitem() != null) {
             workitem = workflowController.getWorkitem();
         }
         return workitem;
@@ -116,7 +142,6 @@ public class FileUploadController implements Serializable {
             throws PluginException {
 
         int eventType = workflowEvent.getEventType();
-
         // before the workitem is saved we update the field txtOrderItems
         if (WorkflowEvent.WORKITEM_BEFORE_PROCESS == eventType) {
             if (workitem != null) {
@@ -124,7 +149,6 @@ public class FileUploadController implements Serializable {
             } else {
                 attacheFiles(workflowEvent.getWorkitem());
             }
-
         }
 
     }
@@ -139,7 +163,6 @@ public class FileUploadController implements Serializable {
             throws PluginException {
 
         int eventType = documentEvent.getEventType();
-
         // before the workitem is saved we update the field txtOrderItems
         if (DocumentEvent.ON_DOCUMENT_SAVE == eventType) {
             if (workitem != null) {
@@ -148,7 +171,6 @@ public class FileUploadController implements Serializable {
                 attacheFiles(documentEvent.getDocument());
             }
         }
-
     }
 
     /**
@@ -157,7 +179,20 @@ public class FileUploadController implements Serializable {
      * @throws PluginException
      */
     public void attacheFiles(ItemCollection workitem) throws PluginException {
+
+        // Ajax mode - check fileUploads
+        if (uploadData != null && uploadData.getFileData().size() > 0) {
+            // In single mode - no upladData exits
+            for (FileData fileData : uploadData.getFileData()) {
+                workitem.addFileData(fileData);
+            }
+            // reset uploadData !
+            uploadData = new ItemCollection();
+        }
+
+        // Single mode - check files object list..
         if (files == null || files.size() == 0 || isCompleted) {
+            // in ajax mode no file data list exits
             return; // no attachments to upload!
         }
         logger.log(Level.FINE, "uploaded file size:{0}", files.size());
@@ -184,9 +219,7 @@ public class FileUploadController implements Serializable {
                 }
 
                 FileData filedata = new FileData(name, bytes, contentType, null);
-
                 workitem.addFileData(filedata);
-
             } catch (IOException e) {
                 throw new PluginException(FileUploadController.class.getSimpleName(),
                         "FILEUPLOAD_ERROR",
@@ -199,17 +232,14 @@ public class FileUploadController implements Serializable {
     }
 
     /**
-     * The method adds the file
-     * to the workitem but also updates the list of temporary files, which are not
-     * yet persisted.
+     * The method adds a FileData object to the workitem
      * 
-     * @param document
-     * @param aFilename
+     * For example this method is used by the Imixs WopiController
+     * 
+     * @param fileData
      */
-    public void addAttachedFile(FileData filedata) {
-        if (getWorkitem() != null) {
-            getWorkitem().addFileData(filedata);
-        }
+    public void addAttachedFile(FileData fileData) {
+        addFileUpload(fileData);
     }
 
     /**
@@ -222,7 +252,29 @@ public class FileUploadController implements Serializable {
         if (getWorkitem() != null) {
             getWorkitem().removeFile(aFilename);
         }
+    }
 
+    /**
+     * Returns the user info (creator / modified) by filename
+     * 
+     * @return
+     */
+    public String getUserInfo(String aFilename) {
+        String result = "";
+        if (getWorkitem() != null) {
+            FileData fileData = getWorkitem().getFileData(aFilename);
+            if (fileData != null) {
+                List<Object> creatorList = (List<Object>) fileData.getAttribute("$creator");
+                if (creatorList != null && creatorList.size() > 0) {
+                    result = result + creatorList.get(0);
+                }
+                List<Object> createdList = (List<Object>) fileData.getAttribute("$created");
+                if (createdList != null && createdList.size() > 0) {
+                    result = result + " - " + createdList.get(0);
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -238,30 +290,32 @@ public class FileUploadController implements Serializable {
     public String getFileSize(String aFilename) {
         if (getWorkitem() != null) {
             FileData fileData = getWorkitem().getFileData(aFilename);
-            double bytes = fileData.getContent().length;
-            if (bytes == 0) {
-                // test if we have the attribute size
-                List<Object> sizeAttribute = (List<Object>) fileData.getAttribute("size");
-                if (sizeAttribute != null && sizeAttribute.size() > 0) {
-                    try {
-                        bytes = Double.parseDouble(sizeAttribute.get(0).toString());
-                    } catch (NumberFormatException n) {
-                        logger.log(Level.WARNING, "unable to parse size attribute in FileData for file ''{0}''",
-                                aFilename);
+            if (fileData != null) {
+                double bytes = fileData.getContent().length;
+                if (bytes == 0) {
+                    // test if we have the attribute size
+                    List<Object> sizeAttribute = (List<Object>) fileData.getAttribute("size");
+                    if (sizeAttribute != null && sizeAttribute.size() > 0) {
+                        try {
+                            bytes = Double.parseDouble(sizeAttribute.get(0).toString());
+                        } catch (NumberFormatException n) {
+                            logger.log(Level.WARNING, "unable to parse size attribute in FileData for file ''{0}''",
+                                    aFilename);
+                        }
                     }
                 }
-            }
-            if (bytes >= 1000000000) {
-                bytes = (bytes / 1000000000);
-                return round(bytes) + " GB";
-            } else if (bytes >= 1000000) {
-                bytes = (bytes / 1000000);
-                return round(bytes) + " MB";
-            } else if (bytes >= 1000) {
-                bytes = (bytes / 1000);
-                return round(bytes) + " KB";
-            } else {
-                return round(bytes) + " bytes";
+                if (bytes >= 1000000000) {
+                    bytes = (bytes / 1000000000);
+                    return round(bytes) + " GB";
+                } else if (bytes >= 1000000) {
+                    bytes = (bytes / 1000000);
+                    return round(bytes) + " MB";
+                } else if (bytes >= 1000) {
+                    bytes = (bytes / 1000);
+                    return round(bytes) + " KB";
+                } else {
+                    return round(bytes) + " bytes";
+                }
             }
         }
         return "";
@@ -297,14 +351,53 @@ public class FileUploadController implements Serializable {
     }
 
     /**
-     * Removes a file object from a given workitem.
+     * returns the list of currently new attached files. This list is not equal the
+     * $file item!
      * 
-     * @param sFilename - filename to be removed
-     * @return - null
+     * This method is called by the AjaxFileUpload Servlet.
+     * 
+     * @return
      */
-    public void removePersistedFile(String aFilename) {
-        if (getWorkitem() != null) {
-            getWorkitem().removeFile(aFilename);
+    public List<FileData> getFileUploads() {
+        if (uploadData == null) {
+            uploadData = new ItemCollection();
         }
+        return uploadData.getFileData();
     }
+
+    /**
+     * returns the single fileData object form the upload list by name
+     * 
+     * This method is called by the AjaxFileUpload Servlet.
+     * 
+     * @return
+     */
+    public FileData getFileUpload(String fileName) {
+        if (uploadData == null) {
+            uploadData = new ItemCollection();
+        }
+        return uploadData.getFileData(fileName);
+    }
+
+    /**
+     * Adds a FileData object to the uploaded File list
+     * 
+     * @param document
+     * @param aFilename
+     */
+    public void addFileUpload(FileData fileData) {
+        uploadData.addFileData(fileData);
+
+    }
+
+    /**
+     * Removes a FileData object from the uploaded File list
+     * 
+     * @param document
+     * @param aFilename
+     */
+    public void removeFileUpload(String aFilename) {
+        uploadData.removeFile(aFilename);
+    }
+
 }
