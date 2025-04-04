@@ -351,57 +351,96 @@ imixsFileUploadRefresh = function () {
 		// Clear previous table content
 		fileTableContainer.innerHTML = '';
 		if (fileInput.files.length > 0) {
-			currentFileUploads = Array.from(fileInput.files);
-			currentFileUploadsMap.set(container, currentFileUploads);
 
-			var table = document.createElement('table');
-			// Create table header
-			var thead = document.createElement('thead');
-			var headerRow = document.createElement('tr');
-			var headers = ['Name', 'Size', 'Type', ' '];
-			headers.forEach(function (headerText) {
-				var th = document.createElement('th');
-				th.textContent = headerText;
-				headerRow.appendChild(th);
-			});
-			thead.appendChild(headerRow);
-			table.appendChild(thead);
-			// Create table body
-			var tbody = document.createElement('tbody');
-			currentFileUploads.forEach(function (file, index) {
-				var row = document.createElement('tr');
+			// Ajax Mode?
+			if (fileInput.classList.contains('imixsfileuploadinputajax')) {
 
-				// Add file name
-				var nameCell = document.createElement('td');
-				nameCell.textContent = file.name;
-				row.appendChild(nameCell);
+				/***********
+				 * Ajax Upload
+				 */
+				const url = fileInput.getAttribute('data-url');
+				const formData = new FormData();
+				// add all selected filed to the FormData-Object 
+				for (let i = 0; i < fileInput.files.length; i++) {
+					formData.append('files[]', fileInput.files[i]);
+				}
+				// Send POST request
+				fetch(url, {
+					method: 'POST',
+					body: formData,
+					// no headers needed
+				})
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('Upload failed');
+					}
+					
+					return response.json(); 
+				})
+				.then(data => {
+					if (refreshFileUploadAjaxTable) {
+						refreshFileUploadAjaxTable();
+					}
+				})
+				.catch(error => {
+					console.error('Upload error: ', error);
+				});
+			} else {
+				/**
+				 * Single mode - build upload info with script.
+				 */
+				currentFileUploads = Array.from(fileInput.files);
+				currentFileUploadsMap.set(container, currentFileUploads);
 
-				// Add file size
-				var sizeCell = document.createElement('td');
-				sizeCell.textContent = fileSizeToString(file.size) + ' bytes';
-				row.appendChild(sizeCell);
+				var table = document.createElement('table');
+				// Create table header
+				var thead = document.createElement('thead');
+				var headerRow = document.createElement('tr');
+				var headers = ['New Files', 'Size', 'Type', ' '];
+				headers.forEach(function (headerText) {
+					var th = document.createElement('th');
+					th.textContent = headerText;
+					headerRow.appendChild(th);
+				});
+				thead.appendChild(headerRow);
+				table.appendChild(thead);
+				// Create table body
+				var tbody = document.createElement('tbody');
+				currentFileUploads.forEach(function (file, index) {
+					var row = document.createElement('tr');
 
-				// Add file type
-				var typeCell = document.createElement('td');
-				typeCell.textContent = file.type;
-				row.appendChild(typeCell);
+					// Add file name
+					var nameCell = document.createElement('td');
+					nameCell.textContent = file.name;
+					row.appendChild(nameCell);
 
-				// Add remove link
-				var actionCell = document.createElement('td');
-				var removeLink = document.createElement('a');
-				removeLink.textContent = '🗙';
-				removeLink.className = 'remove-link';
-				removeLink.onclick = function () {
-					imixsFileUploadRemoveFile(index, container);
-				};
-				actionCell.appendChild(removeLink);
-				row.appendChild(actionCell);
+					// Add file size
+					var sizeCell = document.createElement('td');
+					sizeCell.textContent = fileSizeToString(file.size) + ' bytes';
+					row.appendChild(sizeCell);
 
-				tbody.appendChild(row);
-			});
+					// Add file type
+					var typeCell = document.createElement('td');
+					typeCell.textContent = file.type;
+					row.appendChild(typeCell);
 
-			table.appendChild(tbody);
-			fileTableContainer.appendChild(table);
+					// Add remove link
+					var actionCell = document.createElement('td');
+					var removeLink = document.createElement('a');
+					removeLink.textContent = '🗙';
+					removeLink.className = 'remove-link';
+					removeLink.onclick = function () {
+						imixsFileUploadRemoveFile(index, container);
+					};
+					actionCell.appendChild(removeLink);
+					row.appendChild(actionCell);
+
+					tbody.appendChild(row);
+				});
+
+				table.appendChild(tbody);
+				fileTableContainer.appendChild(table);
+			}
 		}
 	});
 };
@@ -435,7 +474,21 @@ imixsFileUploadRemoveFile = function (index, container) {
 	imixsFileUploadRefresh(container);
 };
 
-
+/**
+ * reloads the uploaded files and refresh the filelist
+ */
+// function updateFileUpload() {
+// 	// upload url
+// 	var base_url = $('.imixsfileuploadinput').attr('data-url');
+// 	$.ajax({
+// 		url: base_url,
+// 		type: 'GET',
+// 		dataType: "json",
+// 		success: function (data) {
+// 			refreshFileList(data.files);
+// 		}
+// 	});
+// }
 
 
 function fileSizeToString(bytes) {

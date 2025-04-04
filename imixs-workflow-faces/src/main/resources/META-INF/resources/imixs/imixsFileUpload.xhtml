@@ -22,28 +22,38 @@
 
 			<!-- show  attachments from workitem -->
 			<ui:fragment rendered="#{cc.attrs.showattachments}">
-				<h:panelGroup id="persistendFileListID" binding="#{persistedFileListComponent}">
+				<h:panelGroup layout="block" styleClass="imixsfileupload-table" id="persistendFileListID" binding="#{persistedFileListComponent}">
 					<!-- attached files -->
-					<strong></strong>
-					<br />
-					<h:dataTable value="#{cc.attrs.workitem.fileData}" var="fileData"
-						styleClass="imixsFileUpload_uploadlist">
-						<h:column>
-							<h:outputText escape="false"
-								value="&lt;a class='imixsFileUpload_file' target='_blank' href='" />
-							<h:outputText escape="false" value="#{cc.attrs.context_url}/file/#{fileData.name}" />
-							<h:outputText escape="false" value="'&gt;#{fileData.name}&lt;/a&gt;" />
-						</h:column>
-						<h:column>#{fileUploadController.getFileSize(fileData.name)}</h:column>
-						<h:column>#{fileData.contentType}</h:column>
-						<!--  delete stored file  -->
-						<h:column>
-							<h:commandLink value="🗙" styleClass="remove-link"
-								actionListener="#{fileUploadController.removePersistedFile(fileData.name)}">
-								<f:ajax render="#{persistedFileListComponent.clientId}" />
-								<f:param name="cid" value="#{fileUploadController.getCID()}" />
-							</h:commandLink>
-						</h:column>
+					<h:dataTable value="#{cc.attrs.workitem.fileData}" var="fileData" id="persistedFileListID"
+						styleClass="imixsFileUpload_uploadlist" >
+							<h:column>
+								<f:facet name="header">File Name</f:facet>
+								<h:outputText escape="false" value="&lt;a class='imixsFileUpload_file' target='_blank' href='" />
+								<h:outputText escape="false"
+									value="#{cc.attrs.context_url}/file/#{fileData.name}" />
+								<h:outputText escape="false" value="'&gt;#{fileData.name}&lt;/a&gt;" />
+							</h:column>
+							<h:column>
+								<f:facet name="header">Size</f:facet>
+								#{fileUploadController.getFileSize(fileData.name)}
+							</h:column>
+							<h:column>
+								<f:facet name="header">User Info</f:facet>
+								#{fileUploadController.getUserInfo(fileData.name)}
+							</h:column>
+							<h:column><f:facet name="header">Type</f:facet>
+								#{fileData.contentType}
+							</h:column>
+							<!--  delete stored file  -->
+							<h:column>
+								<h:commandLink value="🗙"
+									styleClass="remove-link"
+									actionListener="#{fileUploadController.removeAttachedFile(fileData.name)}">
+									<f:ajax
+										render="#{persistedFileListComponent.clientId}"/>
+									<f:param name="cid" value="#{fileUploadController.getCID()}" />
+								</h:commandLink>
+							</h:column>
 					</h:dataTable>
 				</h:panelGroup>
 			</ui:fragment>

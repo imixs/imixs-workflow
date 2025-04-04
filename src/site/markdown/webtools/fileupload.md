@@ -59,3 +59,13 @@ public void doUploadModel(ActionEvent event)
 	....
 }
 ```
+
+## Ajax Support
+
+Optional you can also use a fileUpload widget with Ajax support. This allows the user to upload several files in multiple requests:
+
+```xml
+<i:imixsFileUploadAjax showattachments="true"
+	workitem="#{documentController.document}"
+	context_url="#{facesContext.externalContext.requestContextPath}/api/" />
+```
