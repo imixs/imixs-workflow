@@ -62,11 +62,9 @@
 						</h:column>
 				</h:dataTable>
 			</h:panelGroup>
-			
-
 			<!-- show  attachments from workitem -->
 			<ui:fragment rendered="#{cc.attrs.showattachments}">
-				<h:panelGroup layout="block" styleClass="imixsfileupload-table" id="persistendFileListID" binding="#{persistedFileListComponent}">
+				<h:panelGroup layout="block" styleClass="imixsfileupload-table" id="persistendFileListID">
 					<!-- attached files -->
 					<h:dataTable value="#{cc.attrs.workitem.fileData}" var="fileData"
 						styleClass="imixsFileUpload_uploadlist" >
@@ -90,11 +88,9 @@
 							</h:column>
 							<!--  delete stored file  -->
 							<h:column>
-								<h:commandLink value="🗙"
-									styleClass="remove-link"
+								<h:commandLink value="🗙" styleClass="remove-link"
 									actionListener="#{fileUploadController.removeAttachedFile(fileData.name)}">
-									<f:ajax
-										render="#{persistedFileListComponent.clientId}"/>
+									<f:ajax render=":#{component.parent.parent.parent.clientId}"/>
 									<f:param name="cid" value="#{fileUploadController.getCID()}" />
 								</h:commandLink>
 							</h:column>
@@ -102,10 +98,5 @@
 				</h:panelGroup>
 			</ui:fragment>
 		</div>
-
-		
 	</cc:implementation>
-
-
-
 </ui:composition>
